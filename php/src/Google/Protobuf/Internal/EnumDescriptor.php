@@ -10,6 +10,7 @@ class EnumDescriptor
 
     private $klass;
     private $legacy_klass;
+    private $previous_klass;
     private $full_name;
     private $value;
     private $name_to_value;
@@ -86,6 +87,16 @@ class EnumDescriptor
         return $this->legacy_klass;
     }
 
+    public function setPreviousClass($klass)
+    {
+        $this->previous_klass = $klass;
+    }
+
+    public function getPreviousClass()
+    {
+        return $this->previous_klass;
+    }
+
     public static function buildFromProto($proto, $file_proto, $containing)
     {
         $desc = new EnumDescriptor();
@@ -101,10 +112,12 @@ class EnumDescriptor
             $enum_name_without_package,
             $classname,
             $legacy_classname,
-            $fullname);
+            $fullname,
+            $previous_classname);
         $desc->setFullName($fullname);
         $desc->setClass($classname);
         $desc->setLegacyClass($legacy_classname);
+        $desc->setPreviousClass($previous_classname);
         $values = $proto->getValue();
         foreach ($values as $value) {
             $desc->addValue($value->getNumber(), $value);
