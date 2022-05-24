@@ -23,7 +23,8 @@ internal_build_cpp() {
 
   ./autogen.sh
   # -fPIC is needed for python cpp test. See python/setup.py for more details
-  PKG_CONFIG_PATH=$PWD/abseil_install/lib/pkgconfig ./configure CXXFLAGS="-fPIC -std=c++11"
+  export PKG_CONFIG_PATH=$PWD/abseil_install/lib/pkgconfig
+  ./configure CXXFLAGS="-fPIC -std=c++11"
   make -j$(nproc)
 }
 
@@ -81,7 +82,7 @@ build_cpp_distcheck() {
   fi
 
   # Do the regular dist-check for C++.
-  PKG_CONFIG_PATH=$PWD/abseil_install/lib/pkgconfig make distcheck -j$(nproc)
+  make distcheck -j$(nproc)
 }
 
 build_dist_install() {
