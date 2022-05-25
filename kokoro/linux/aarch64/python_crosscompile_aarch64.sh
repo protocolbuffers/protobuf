@@ -70,14 +70,17 @@ ls /usr/xcc/aarch64-unknown-linux-gnueabi/aarch64-unknown-linux-gnueabi/sysroot/
 #        -DCMAKE_C_COMPILER_RANLIB=/usr/xcc/aarch64-unknown-linux-gnueabi/bin/aarch64-unknown-linux-gnueabi-ranlib \
 #        -DCMAKE_EXE_LINKER_FLAGS=-static
 #cmake -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_EXE_LINKER_FLAGS="-lstdc++ -lgcc -lc" -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_VERBOSE=1 ..
-cmake -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_VERBOSE=1 ..
+cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_VERBOSE=1 ..
 
 make VERBOSE=1 -j8
-export PROTOC=cmake/protoc
+cd ../..
+
+mkdir -p src/.libs
+ln -f cmake/crossbuild_aarch64/*.a src/.libs/
 
 # create a simple shell wrapper that runs crosscompiled protoc under qemu
 echo '#!/bin/bash' >protoc_qemu_wrapper.sh
-echo 'exec qemu-aarch64 "../src/protoc" "$@"' >>protoc_qemu_wrapper.sh
+echo 'exec qemu-aarch64 "../cmake/crossbuild_aarch64/protoc" "$@"' >>protoc_qemu_wrapper.sh
 chmod ugo+x protoc_qemu_wrapper.sh
 
 # PROTOC variable is by build_py step that runs under ./python directory

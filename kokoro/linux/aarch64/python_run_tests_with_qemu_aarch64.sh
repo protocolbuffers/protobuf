@@ -16,7 +16,7 @@ ${PYTHON} -m pip install --user pytest auditwheel
 # we've built the python extension previously with --inplace option
 # so we can just discover all the unittests and run them directly under 
 # the python/ directory.
-LD_LIBRARY_PATH=../src/.libs PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp ${PYTHON} -m pytest google/protobuf
+LD_LIBRARY_PATH=../cmake/crossbuild_aarch64/lib PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp ${PYTHON} -m pytest google/protobuf
 
 # step 2: run auditwheel show to check that the wheel is manylinux2014 compatible.
 # auditwheel needs to run on wheel's target platform (or under an emulator)
