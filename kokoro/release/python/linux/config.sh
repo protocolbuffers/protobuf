@@ -9,8 +9,8 @@ function pre_build {
     # Build protoc and libprotobuf
     if [ "$PLAT" == "aarch64" ]
     then
-      cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -Dprotobuf_WITH_ZLIB=0 .
-      make -j8
+      cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_VERBOSE=1 ..
+      make VERBOSE=1 -j8
       # Move protoc to the expected location.
       mv protoc src/protoc
     else
