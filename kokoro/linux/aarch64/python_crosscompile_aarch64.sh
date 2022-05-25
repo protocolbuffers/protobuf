@@ -8,6 +8,9 @@ set -ex
 
 PYTHON="/opt/python/cp38-cp38/bin/python"
 
+# Initialize any submodules.
+git submodule update --init --recursive
+
 # Build protoc and libprotobuf
 cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -Dprotobuf_WITH_ZLIB=0 .
 make -j8

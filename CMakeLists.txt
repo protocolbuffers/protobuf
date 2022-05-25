@@ -3,14 +3,6 @@ cmake_minimum_required(VERSION 3.5)
 
 if(protobuf_VERBOSE)
   message(STATUS "Protocol Buffers Configuring...")
-  message("Compiler C Version: ${CMAKE_C_COMPILER_VERSION}")
-  message("C Compiler: ${CMAKE_C_COMPILER}")
-  message("C AR: ${CMAKE_C_COMPILER_AR}")
-  message("C RANLIB: ${CMAKE_C_COMPILER_RANLIB}")
-  message("Compiler CXX Version: ${CMAKE_CXX_COMPILER_VERSION}")
-  message("CXX Compiler: ${CMAKE_CXX_COMPILER}")
-  message("CXX AR: ${CMAKE_CXX_COMPILER_AR}")
-  message("CXX RANLIB: ${CMAKE_CXX_COMPILER_RANLIB}")
 endif()
 
 # CMake policies
@@ -139,7 +131,6 @@ if(protobuf_VERBOSE)
 endif()
 
 add_definitions(-DGOOGLE_PROTOBUF_CMAKE_BUILD)
-#add_definitions(-D_GLIBCXX_USE_CXX11_ABI=1)
 if (protobuf_DISABLE_RTTI)
   add_definitions(-DGOOGLE_PROTOBUF_NO_RTTI=1)
 endif()

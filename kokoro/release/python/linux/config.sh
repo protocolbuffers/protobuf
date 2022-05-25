@@ -7,8 +7,13 @@ function pre_build {
     pushd protobuf
 
     # Build protoc and libprotobuf
-    cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -Dprotobuf_WITH_ZLIB=0 .
-    make -j8
+    if [ "$PLAT" == "aarch64" ]
+      cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -Dprotobuf_WITH_ZLIB=0 .
+      make -j8
+    else
+      ./autogen.sh
+      CXXFLAGS="-fPIC -g -O2" ./configure
+    fi
 
     if [ "$PLAT" == "aarch64" ]
     then
