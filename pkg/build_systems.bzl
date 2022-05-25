@@ -1,7 +1,13 @@
 # Starlark utilities for working with other build systems
 
 load("@rules_pkg//:providers.bzl", "PackageFilegroupInfo", "PackageFilesInfo")
-load(":cc_dist_library.bzl", "CcFileList")
+load(
+    ":file_list_aspects.bzl",
+    "CcFileList",
+    "ProtoFileList",
+    "cc_file_list_aspect",
+    "proto_file_list_aspect",
+)
 
 ################################################################################
 # Macro to create CMake and Automake source lists.
@@ -27,73 +33,6 @@ def gen_file_lists(name, out_stem, **kwargs):
             out_stem + ".am",
         ],
     )
-
-################################################################################
-# Aspect that extracts srcs, hdrs, etc.
-################################################################################
-
-ProtoFileList = provider(
-    doc = "List of proto files and generated code to be built into a library.",
-    fields = {
-        # Proto files:
-        "proto_srcs": "proto file sources",
-
-        # Generated sources:
-        "hdrs": "header files that are expected to be generated",
-        "srcs": "source files that are expected to be generated",
-    },
-)
-
-def _flatten_target_files(targets):
-    files = []
-    for target in targets:
-        for tfile in target.files.to_list():
-            files.append(tfile)
-    return files
-
-def _file_list_aspect_impl(target, ctx):
-    # We're going to reach directly into the attrs on the traversed rule.
-    rule_attr = ctx.rule.attr
-    providers = []
-
-    # Extract sources from a `proto_library`:
-    if ProtoInfo in target:
-        proto_srcs = []
-        srcs = []
-        hdrs = []
-        for src in _flatten_target_files(rule_attr.srcs):
-            proto_srcs.append(src)
-            srcs.append("%s/%s.pb.cc" % (src.dirname, src.basename))
-            hdrs.append("%s/%s.pb.h" % (src.dirname, src.basename))
-
-        providers.append(ProtoFileList(
-            proto_srcs = proto_srcs,
-            srcs = srcs,
-            hdrs = hdrs,
-        ))
-
-    return providers
-
-file_list_aspect = aspect(
-    doc = """
-Aspect to provide the list of sources and headers from a rule.
-
-Output is a ProtoFileList. Example:
-
-  proto_library(
-      name = "bar_proto",
-      srcs = ["bar.proto"],
-  )
-  # produces:
-  # ProtoFileList(
-  #     proto_srcs = ["bar.proto"],
-  #     # Generated filenames are synthesized:
-  #     hdrs = ["bar.pb.h"],
-  #     srcs = ["bar.pb.cc"],
-  # )
-""",
-    implementation = _file_list_aspect_impl,
-)
 
 ################################################################################
 # Generic source lists generation
@@ -221,9 +160,13 @@ _source_list_common_attrs = {
     "src_libs": attr.label_keyed_string_dict(
         doc = (
             "A dict, {target: libname} of libraries to include. " +
-            "Targets can be files, `filegroup` rules, `proto_library` " +
-            "rules, `cc_dist_library` rules, `pkg_files` rules, or " +
-            "`pkg_filegroup` rules. " +
+            "Targets can be " +
+            "files, `filegroup` rules, " +
+            "`proto_library` rules, " +
+            "`cc_library` (or similar C++) rules, " +
+            "`cc_dist_library` rules, " +
+            "`pkg_files` rules, `pkg_filegroup` rules, " +
+            "or `test_suite` rules that expand to `cc_test`s. " +
             "The libname is a string, and used to construct the variable " +
             "name in the `out` file holding the target's sources. " +
             "For generated files, the output root (like `bazel-bin/`) is not " +
@@ -239,7 +182,7 @@ _source_list_common_attrs = {
             [PackageFilesInfo],
             [ProtoFileList],
         ],
-        aspects = [file_list_aspect],
+        aspects = [cc_file_list_aspect, proto_file_list_aspect],
     ),
     "source_prefix": attr.string(
         doc = "String to prepend to each source path.",

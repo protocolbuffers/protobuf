@@ -759,6 +759,7 @@ cc_test(
             "-Wno-error=sign-compare",
         ],
     }),
+    visibility = ["//pkg:__pkg__"],
     deps = [
         ":protobuf",
         ":lite_test_util",
@@ -771,6 +772,7 @@ cc_test(
 cc_test(
     name = "lite_unittest",
     srcs = ["lite_unittest.cc"],
+    visibility = ["//pkg:__pkg__"],
     deps = [
         ":cc_lite_test_protos",
         ":protobuf",
@@ -1105,11 +1107,5 @@ pkg_files(
 test_suite(
     name = "full_tests",
     tags = ["-lite"],
-    visibility = ["//pkg:__pkg__"],
-)
-
-test_suite(
-    name = "lite_tests",
-    tags = ["lite"],
     visibility = ["//pkg:__pkg__"],
 )

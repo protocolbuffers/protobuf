@@ -308,13 +308,15 @@ gen_file_lists(
         ":protobuf": "libprotobuf",
         ":protoc": "libprotoc",
         ":protobuf_lite": "libprotobuf_lite",
+
         # Tests:
-        ":protobuf_compiler_tests": "compiler_test",
-        ":protobuf_full_tests": "protobuf_test",
-        ":protobuf_io_tests": "io_test",
-        ":protobuf_lite_tests": "lite_test",
-        ":protobuf_stubs_tests": "stubs_test",
-        ":protobuf_util_tests": "util_test",
+        "//src/google/protobuf:full_tests": "protobuf_test",
+        "//src/google/protobuf:lite_unittest": "lite_test",
+        "//src/google/protobuf:lite_arena_unittest": "lite_arena_test",
+        "//src/google/protobuf/compiler:tests": "compiler_test",
+        "//src/google/protobuf/io:tests": "io_test",
+        "//src/google/protobuf/stubs:tests": "stubs_test",
+        "//src/google/protobuf/util:tests": "util_test",
     },
 )
 
@@ -403,64 +405,6 @@ cc_dist_library(
         "//src/google/protobuf/compiler/php",
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
-    ],
-)
-
-################################################################################
-# Protobuf runtime tests
-################################################################################
-
-cc_dist_library(
-    name = "protobuf_full_tests",
-    testonly = 1,
-    tags = ["manual"],
-    deps = [
-        "//src/google/protobuf:full_tests",
-    ],
-)
-
-cc_dist_library(
-    name = "protobuf_lite_tests",
-    testonly = 1,
-    tags = ["manual"],
-    deps = [
-        "//src/google/protobuf:lite_tests",
-    ],
-)
-
-cc_dist_library(
-    name = "protobuf_compiler_tests",
-    testonly = 1,
-    tags = ["manual"],
-    deps = [
-        "//src/google/protobuf/compiler:tests",
-    ],
-)
-
-cc_dist_library(
-    name = "protobuf_io_tests",
-    testonly = 1,
-    tags = ["manual"],
-    deps = [
-        "//src/google/protobuf/io:tests",
-    ],
-)
-
-cc_dist_library(
-    name = "protobuf_stubs_tests",
-    testonly = 1,
-    tags = ["manual"],
-    deps = [
-        "//src/google/protobuf/stubs:tests",
-    ],
-)
-
-cc_dist_library(
-    name = "protobuf_util_tests",
-    testonly = 1,
-    tags = ["manual"],
-    deps = [
-        "//src/google/protobuf/util:tests",
     ],
 )
 
