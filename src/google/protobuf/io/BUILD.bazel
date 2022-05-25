@@ -114,6 +114,7 @@ cc_test(
         ":gzip_stream",
         ":io",
         "//:protobuf",
+        "//src/google/protobuf:test_util2",
         "//src/google/protobuf/testing",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",

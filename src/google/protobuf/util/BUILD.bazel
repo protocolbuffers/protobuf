@@ -27,6 +27,7 @@ cc_test(
     deps = [
         ":delimited_message_util",
         "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:test_util",
         "//src/google/protobuf/testing",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
