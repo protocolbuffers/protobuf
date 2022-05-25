@@ -107,6 +107,8 @@ cc_test(
         ":unittest_lib",
         "//:protobuf",
         "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:test_util",
+        "//src/google/protobuf:test_util2",
         "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
@@ -129,6 +131,7 @@ cc_test(
     deps = [
         ":cpp",
         "//:protobuf",
+        "//src/google/protobuf:test_util2",
         "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
