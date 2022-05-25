@@ -78,24 +78,7 @@ file_list_aspect = aspect(
     doc = """
 Aspect to provide the list of sources and headers from a rule.
 
-Output is CcFileList and/or ProtoFileList. Example:
-
-  cc_library(
-      name = "foo",
-      srcs = [
-          "foo.cc",
-          "foo_internal.h",
-      ],
-      hdrs = ["foo.h"],
-      textual_hdrs = ["foo_inl.inc"],
-  )
-  # produces:
-  # CcFileList(
-  #     hdrs = [File("foo.h")],
-  #     textual_hdrs = [File("foo_inl.inc")],
-  #     internal_hdrs = [File("foo_internal.h")],
-  #     srcs = [File("foo.cc")],
-  # )
+Output is a ProtoFileList. Example:
 
   proto_library(
       name = "bar_proto",
@@ -238,9 +221,9 @@ _source_list_common_attrs = {
     "src_libs": attr.label_keyed_string_dict(
         doc = (
             "A dict, {target: libname} of libraries to include. " +
-            "Targets can be C++ rules (like `cc_library` or `cc_test`), " +
-            "`proto_library` rules, files, `filegroup` rules, `pkg_files` " +
-            "rules, or `pkg_filegroup` rules. " +
+            "Targets can be files, `filegroup` rules, `proto_library` " +
+            "rules, `cc_dist_library` rules, `pkg_files` rules, or " +
+            "`pkg_filegroup` rules. " +
             "The libname is a string, and used to construct the variable " +
             "name in the `out` file holding the target's sources. " +
             "For generated files, the output root (like `bazel-bin/`) is not " +

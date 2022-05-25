@@ -1101,3 +1101,15 @@ pkg_files(
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//src:__pkg__"],
 )
+
+test_suite(
+    name = "full_tests",
+    tags = ["-lite"],
+    visibility = ["//pkg:__pkg__"],
+)
+
+test_suite(
+    name = "lite_tests",
+    tags = ["lite"],
+    visibility = ["//pkg:__pkg__"],
+)

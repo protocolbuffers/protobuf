@@ -295,3 +295,19 @@ pkg_files(
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//src:__pkg__"],
 )
+
+test_suite(name = "package_tests")
+
+test_suite(
+    name = "tests",
+    tests = [
+        ":package_tests",
+        "//src/google/protobuf/compiler/cpp:tests",
+        "//src/google/protobuf/compiler/csharp:tests",
+        "//src/google/protobuf/compiler/java:tests",
+        "//src/google/protobuf/compiler/objectivec:tests",
+        "//src/google/protobuf/compiler/python:tests",
+        "//src/google/protobuf/compiler/ruby:tests",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)

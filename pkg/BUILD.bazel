@@ -27,7 +27,7 @@ pkg_files(
 pkg_files(
     name = "compiler_plugin_protos_files",
     srcs = [
-      "//src/google/protobuf/compiler:compiler_plugin_protos_files",
+        "//src/google/protobuf/compiler:compiler_plugin_protos_files",
     ],
     prefix = "include/google/protobuf/compiler",
     visibility = ["//visibility:private"],
@@ -304,10 +304,17 @@ gen_file_lists(
     testonly = 1,
     out_stem = "src_file_lists",
     src_libs = {
-        # source rule: name in generated file
+        # {[source rule]: [name in generated file]}
         ":protobuf": "libprotobuf",
         ":protoc": "libprotoc",
         ":protobuf_lite": "libprotobuf_lite",
+        # Tests:
+        ":protobuf_compiler_tests": "compiler_test",
+        ":protobuf_full_tests": "protobuf_test",
+        ":protobuf_io_tests": "io_test",
+        ":protobuf_lite_tests": "lite_test",
+        ":protobuf_stubs_tests": "stubs_test",
+        ":protobuf_util_tests": "util_test",
     },
 )
 
@@ -337,6 +344,7 @@ gen_automake_file_lists(
 
 cc_dist_library(
     name = "protobuf_lite",
+    testonly = 1,
     linkopts = select({
         "//build_defs:config_msvc": [],
         "//conditions:default": ["-lpthread"],
@@ -362,15 +370,15 @@ cc_dist_library(
     }),
     tags = ["manual"],
     deps = [
+        "//src/google/protobuf",
         "//src/google/protobuf:arena",
+        "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:gzip_stream",
         "//src/google/protobuf/io:io_win32",
         "//src/google/protobuf/io:printer",
         "//src/google/protobuf/io:tokenizer",
-        "//src/google/protobuf:protobuf",
-        "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/stubs:lite",
         "//src/google/protobuf/util:delimited_message_util",
@@ -395,6 +403,64 @@ cc_dist_library(
         "//src/google/protobuf/compiler/php",
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
+    ],
+)
+
+################################################################################
+# Protobuf runtime tests
+################################################################################
+
+cc_dist_library(
+    name = "protobuf_full_tests",
+    testonly = 1,
+    tags = ["manual"],
+    deps = [
+        "//src/google/protobuf:full_tests",
+    ],
+)
+
+cc_dist_library(
+    name = "protobuf_lite_tests",
+    testonly = 1,
+    tags = ["manual"],
+    deps = [
+        "//src/google/protobuf:lite_tests",
+    ],
+)
+
+cc_dist_library(
+    name = "protobuf_compiler_tests",
+    testonly = 1,
+    tags = ["manual"],
+    deps = [
+        "//src/google/protobuf/compiler:tests",
+    ],
+)
+
+cc_dist_library(
+    name = "protobuf_io_tests",
+    testonly = 1,
+    tags = ["manual"],
+    deps = [
+        "//src/google/protobuf/io:tests",
+    ],
+)
+
+cc_dist_library(
+    name = "protobuf_stubs_tests",
+    testonly = 1,
+    tags = ["manual"],
+    deps = [
+        "//src/google/protobuf/stubs:tests",
+    ],
+)
+
+cc_dist_library(
+    name = "protobuf_util_tests",
+    testonly = 1,
+    tags = ["manual"],
+    deps = [
+        "//src/google/protobuf/util:tests",
     ],
 )
 

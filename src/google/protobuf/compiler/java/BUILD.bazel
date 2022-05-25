@@ -124,3 +124,8 @@ pkg_files(
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//src:__pkg__"],
 )
+
+test_suite(
+    name = "tests",
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+)
