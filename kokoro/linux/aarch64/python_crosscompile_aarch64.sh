@@ -9,78 +9,16 @@ set -ex
 PYTHON="/opt/python/cp38-cp38/bin/python"
 
 # Build protoc and libprotobuf
-#ls /usr/bin
-#ls /usr/lib
-#ls /usr/local/bin
-#ls /usr/local/lib
-#ls /usr/include
-#ls /usr/include/c++/*
-#ls /usr/lib/clang/*
-find /usr -name zlib
-ls /opt/rh/devtoolset-9/root/usr/*
-ls /opt/rh/devtoolset-9/root/usr/local/*
-#bazel --bazelrc toolchain/toolchains.bazelrc build --config=linux-aarch_64 //:protoc  --sandbox_debug
-#export PROTOC=bazel-bin/protoc
-# Initialize any submodules.
-git submodule update --init --recursive
+cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -Dprotobuf_WITH_ZLIB=0 .
+make -j8
 
-# the build commands are expected to run under dockcross docker image
-# where the CC, CXX and other toolchain variables already point to the crosscompiler
-gcc --version
-g++ --version
-cmake --version
-which gcc
-which g++
-which cmake
-mkdir -p cmake/crossbuild_aarch64
-cd cmake/crossbuild_aarch64
-echo $CC
-echo $CXX
-echo $LD_LIBRARY_PATH
-#export PATH=/opt/rh/devtoolset-9/root/usr/bin:$PATH
-#export CC=/opt/rh/devtoolset-9/root/usr/bin/gcc
-#export CXX=/opt/rh/devtoolset-9/root/usr/bin/g++
-#export LD_LIBRARY_PATH=/opt/rh/devtoolset-9/root/usr/lib
-#exit
-#cmake -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_VERBOSE=1 -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY -DBUILD_SHARED_LIBS=OFF ..
-#cmake -DCMAKE_CXX_FLAGS="-std=c++11 -stdlib=libc++" -DCMAKE_EXE_LINKER_FLAGS="-static" -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_VERBOSE=1 ..
-#cmake -DCMAKE_CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/g++\
-#        -DCMAKE_CXX_COMPILER_AR=/opt/rh/devtoolset-9/root/usr/bin/gcc-ar \
-#        -DCMAKE_CXX_COMPILER_RANLIB=/opt/rh/devtoolset-9/root/usr/bin/gcc-ranlib \
-#        -DCMAKE_C_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/gcc \
-#        -DCMAKE_C_COMPILER_AR=/opt/rh/devtoolset-9/root/usr/bin/gcc-ar \
-#        -DCMAKE_C_COMPILER_RANLIB=/opt/rh/devtoolset-9/root/usr/bin/gcc-ranlib \
-#        -DCMAKE_CXX_COMPILER_WORKS=1 -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_VERBOSE=1 ..
-#cmake -DCMAKE_CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/g++\
-#        -DCMAKE_C_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/gcc \
-#        -DCMAKE_AR=/opt/rh/devtoolset-9/root/usr/bin/gcc-ar \
-#        -DCMAKE_RANLIB=/opt/rh/devtoolset-9/root/usr/bin/gcc-ranlib \
-#        -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_VERBOSE=1 ..
-#cmake -DCMAKE_CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/g++ -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_VERBOSE=1 ..
-
-ls /usr/xcc/aarch64-unknown-linux-gnueabi/*
-ls /usr/xcc/aarch64-unknown-linux-gnueabi/aarch64-unknown-linux-gnueabi/*
-ls /usr/xcc/aarch64-unknown-linux-gnueabi/aarch64-unknown-linux-gnueabi/sysroot/*
-#export LD_LIBRARY_PATH=/usr/xcc/aarch64-unknown-linux-gnueabi/lib:/usr/xcc/aarch64-unknown-linux-gnueabi/aarch64-unknown-linux-gnueabi/sysroot/lib
-#cmake -DCMAKE_CXX_COMPILER=/usr/xcc/aarch64-unknown-linux-gnueabi/bin/aarch64-unknown-linux-gnueabi-g++\
-#        -DCMAKE_CXX_COMPILER_AR=/usr/xcc/aarch64-unknown-linux-gnueabi/bin/aarch64-unknown-linux-gnueabi-ar \
-#        -DCMAKE_CXX_COMPILER_RANLIB=/usr/xcc/aarch64-unknown-linux-gnueabi/bin/aarch64-unknown-linux-gnueabi-ranlib \
-#        -DCMAKE_C_COMPILER=/usr/xcc/aarch64-unknown-linux-gnueabi/bin/aarch64-unknown-linux-gnueabi-gcc \
-#        -DCMAKE_C_COMPILER_AR=/usr/xcc/aarch64-unknown-linux-gnueabi/bin/aarch64-unknown-linux-gnueabi-ar \
-#        -DCMAKE_C_COMPILER_RANLIB=/usr/xcc/aarch64-unknown-linux-gnueabi/bin/aarch64-unknown-linux-gnueabi-ranlib \
-#        -DCMAKE_EXE_LINKER_FLAGS=-static
-#cmake -DCMAKE_CXX_FLAGS="-stdlib=libc++" -DCMAKE_EXE_LINKER_FLAGS="-lstdc++ -lgcc -lc" -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_VERBOSE=1 ..
-cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_VERBOSE=1 ..
-
-make VERBOSE=1 -j8
-cd ../..
-
+# Copy lib files to the expected location.
 mkdir -p src/.libs
-ln -f cmake/crossbuild_aarch64/*.a src/.libs/
+ln -f *.a src/.libs/
 
 # create a simple shell wrapper that runs crosscompiled protoc under qemu
 echo '#!/bin/bash' >protoc_qemu_wrapper.sh
-echo 'exec qemu-aarch64 "../cmake/crossbuild_aarch64/protoc" "$@"' >>protoc_qemu_wrapper.sh
+echo 'exec qemu-aarch64 "../protoc" "$@"' >>protoc_qemu_wrapper.sh
 chmod ugo+x protoc_qemu_wrapper.sh
 
 # PROTOC variable is by build_py step that runs under ./python directory

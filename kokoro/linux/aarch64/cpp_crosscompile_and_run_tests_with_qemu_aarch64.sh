@@ -5,12 +5,9 @@
 
 set -ex
 
-mkdir -p cmake/crossbuild_aarch64
-cd cmake/crossbuild_aarch64
-
 # the build commands are expected to run under dockcross docker image
 # where the CC, CXX and other toolchain variables already point to the crosscompiler
-cmake ..
+cmake .
 make -j8
 
 # check that the resulting test binary is indeed an aarch64 ELF
