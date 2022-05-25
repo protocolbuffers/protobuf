@@ -9,8 +9,7 @@ function pre_build {
     # Build protoc and libprotobuf
     if [ "$PLAT" == "aarch64" ]
     then
-      git submodule update --init --recursive
-      cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_VERBOSE=1 ..
+      cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_VERBOSE=1 .
       make VERBOSE=1 -j8
       # Move protoc to the expected location.
       mv protoc src/protoc
