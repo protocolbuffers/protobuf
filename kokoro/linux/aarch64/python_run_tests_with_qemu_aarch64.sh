@@ -20,9 +20,9 @@ LD_LIBRARY_PATH=../cmake/crossbuild_aarch64/lib PROTOCOL_BUFFERS_PYTHON_IMPLEMEN
 
 # step 2: run auditwheel show to check that the wheel is manylinux2014 compatible.
 # auditwheel needs to run on wheel's target platform (or under an emulator)
-${PYTHON} -m auditwheel show dist/protobuf-*-manylinux2014_aarch64.whl
+${PYTHON} -m auditwheel show dist/protobuf-*-manylinux_2_24_aarch64.whl
 
 # step 3: smoketest that the wheel can be installed and run a smokecheck
-${PYTHON} -m pip install dist/protobuf-*-manylinux2014_aarch64.whl
+${PYTHON} -m pip install dist/protobuf-*-manylinux_2_24_aarch64.whl
 # when python cpp extension is on, simply importing a message type will trigger loading the cpp extension
 PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp ${PYTHON} -c 'import google.protobuf.timestamp_pb2; print("Successfully loaded the python cpp extension!")'
