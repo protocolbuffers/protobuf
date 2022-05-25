@@ -361,11 +361,11 @@ static bool ApplyMapping(const std::string& filename,
       // does not match the filename "foo/barbaz".
       int after_prefix_start = -1;
       if (filename[old_prefix.size()] == '/') {
-        after_prefix_start = old_prefix.size() + 1;
+        after_prefix_start = static_cast<int>(old_prefix.size() + 1);
       } else if (filename[old_prefix.size() - 1] == '/') {
         // old_prefix is never empty, and canonicalized paths never have
         // consecutive '/' characters.
-        after_prefix_start = old_prefix.size();
+        after_prefix_start = static_cast<int>(old_prefix.size());
       }
       if (after_prefix_start != -1) {
         // Yep.  So the prefixes are directories and the filename is a file

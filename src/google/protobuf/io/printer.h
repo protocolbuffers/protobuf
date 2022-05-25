@@ -92,15 +92,15 @@ class AnnotationProtoCollector : public AnnotationCollector {
       annotation->add_path(path[i]);
     }
     annotation->set_source_file(file_path);
-    annotation->set_begin(begin_offset);
-    annotation->set_end(end_offset);
+    annotation->set_begin(static_cast<int32_t>(begin_offset));
+    annotation->set_end(static_cast<int32_t>(end_offset));
   }
   // Override for AnnotationCollector::AddAnnotation.
   void AddAnnotationNew(Annotation& a) override {
     auto* annotation = annotation_proto_->add_annotation();
     annotation->ParseFromString(a.second);
-    annotation->set_begin(a.first.first);
-    annotation->set_end(a.first.second);
+    annotation->set_begin(static_cast<int32_t>(a.first.first));
+    annotation->set_end(static_cast<int32_t>(a.first.second));
   }
 
  private:

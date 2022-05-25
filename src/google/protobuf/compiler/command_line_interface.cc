@@ -499,7 +499,7 @@ bool CommandLineInterface::GeneratorContextImpl::WriteAllToDisk(
   for (const auto& pair : files_) {
     const std::string& relative_filename = pair.first;
     const char* data = pair.second.data();
-    int size = pair.second.size();
+    int size = static_cast<int>(pair.second.size());
 
     if (!TryCreateParentDirectory(prefix, relative_filename)) {
       return false;
@@ -683,7 +683,7 @@ void CommandLineInterface::MemoryOutputStream::InsertShiftedInfo(
   insertion_offset += indent_length;
   for (const auto& source_annotation : info_to_insert_.annotation()) {
     GeneratedCodeInfo::Annotation* annotation = target_info.add_annotation();
-    int inner_indent = 0;
+    size_t inner_indent = 0;
     // insertion_content is guaranteed to end in an endline. This last endline
     // has no effect on indentation.
     for (; pos < source_annotation.end() && pos < insertion_content.size() - 1;
@@ -699,9 +699,9 @@ void CommandLineInterface::MemoryOutputStream::InsertShiftedInfo(
       }
     }
     *annotation = source_annotation;
-    annotation->set_begin(annotation->begin() + insertion_offset);
+    annotation->set_begin(static_cast<int32_t>(annotation->begin() + insertion_offset));
     insertion_offset += inner_indent;
-    annotation->set_end(annotation->end() + insertion_offset);
+    annotation->set_end(static_cast<int32_t>(annotation->end() + insertion_offset));
   }
 }
 
@@ -756,8 +756,8 @@ void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
     }
     GeneratedCodeInfo::Annotation* annotation = new_metadata.add_annotation();
     *annotation = source_annotation;
-    annotation->set_begin(annotation->begin() + to_add);
-    annotation->set_end(annotation->end() + to_add);
+    annotation->set_begin(static_cast<int32_t>(annotation->begin() + to_add));
+    annotation->set_end(static_cast<int32_t>(annotation->end() + to_add));
   }
   // If there were never any annotations at or after the insertion point,
   // make sure to still insert the new metadata from info_to_insert_.
@@ -854,7 +854,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
       UpdateMetadata(data_, pos, data_.size(), 0);
     } else {
       // Calculate how much space we need.
-      int indent_size = 0;
+      size_t indent_size = 0;
       for (int i = 0; i < data_.size(); i++) {
         if (data_[i] == '\n') indent_size += indent_.size();
       }

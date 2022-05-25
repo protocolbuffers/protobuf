@@ -775,7 +775,7 @@ inline FieldType ZigZagDecodeHelper(uint64_t value) {
 
 template <>
 inline int32_t ZigZagDecodeHelper<int32_t, true>(uint64_t value) {
-  return WireFormatLite::ZigZagDecode32(value);
+  return WireFormatLite::ZigZagDecode32(static_cast<uint32_t>(value));
 }
 
 template <>
@@ -982,12 +982,12 @@ const char* TcParser::PackedVarint(PROTOBUF_TC_PARAM_DECL) {
     FieldType val;
     if (zigzag) {
       if (sizeof(FieldType) == 8) {
-        val = WireFormatLite::ZigZagDecode64(varint);
+        val = static_cast<FieldType>(WireFormatLite::ZigZagDecode64(varint));
       } else {
-        val = WireFormatLite::ZigZagDecode32(varint);
+        val = static_cast<FieldType>(WireFormatLite::ZigZagDecode32(static_cast<uint32_t>(varint)));
       }
     } else {
-      val = varint;
+      val = static_cast<FieldType>(varint);
     }
     field->Add(val);
   });
@@ -1071,7 +1071,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularEnum(
     PROTOBUF_MUSTTAIL return FastUnknownEnumFallback(PROTOBUF_TC_PARAM_PASS);
   }
   hasbits |= (uint64_t{1} << data.hasbit_idx());
-  RefAt<int32_t>(msg, data.offset()) = tmp;
+  RefAt<int32_t>(msg, data.offset()) = static_cast<int32_t>(tmp);
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
 }
 
@@ -1541,7 +1541,7 @@ const char* TcParser::MpVarint(PROTOBUF_TC_PARAM_DECL) {
     }
   } else if (rep == field_layout::kRep32Bits) {
     if (is_validated_enum) {
-      if (!EnumIsValidAux(tmp, xform_val, *table->field_aux(&entry))) {
+      if (!EnumIsValidAux(static_cast<int32_t>(tmp), xform_val, *table->field_aux(&entry))) {
         ptr = ptr2;
         PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
       }
@@ -1610,14 +1610,14 @@ const char* TcParser::MpRepeatedVarint(PROTOBUF_TC_PARAM_DECL) {
       ptr = ParseVarint(ptr2, &tmp);
       if (ptr == nullptr) return Error(PROTOBUF_TC_PARAM_PASS);
       if (is_validated_enum) {
-        if (!EnumIsValidAux(tmp, xform_val, *table->field_aux(&entry))) {
+        if (!EnumIsValidAux(static_cast<int32_t>(tmp), xform_val, *table->field_aux(&entry))) {
           ptr = ptr2;
           PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
         }
       } else if (is_zigzag) {
-        tmp = WireFormatLite::ZigZagDecode32(tmp);
+        tmp = WireFormatLite::ZigZagDecode32(static_cast<uint32_t>(tmp));
       }
-      field.Add(tmp);
+      field.Add(static_cast<uint32_t>(tmp));
       if (!ctx->DataAvailable(ptr)) break;
       ptr2 = ReadTag(ptr, &next_tag);
     } while (next_tag == decoded_tag);
@@ -1669,9 +1669,9 @@ const char* TcParser::MpPackedVarint(PROTOBUF_TC_PARAM_DECL) {
   } else if (rep == field_layout::kRep32Bits) {
     auto* field = &RefAt<RepeatedField<uint32_t>>(msg, entry.offset);
     return ctx->ReadPackedVarint(ptr, [field, is_zigzag](uint64_t value) {
-      field->Add(is_zigzag ? WireFormatLite::ZigZagDecode32(
+      field->Add(static_cast<uint32_t>(is_zigzag ? WireFormatLite::ZigZagDecode32(
                                  static_cast<uint32_t>(value))
-                           : value);
+                           : value));
     });
   } else {
     GOOGLE_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep8Bits));

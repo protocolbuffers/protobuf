@@ -400,7 +400,7 @@ void FieldMaskTree::RemovePath(const std::string& path,
     }
   }
   // Remove path.
-  for (int i = parts.size() - 1; i >= 0; i--) {
+  for (int i = static_cast<int>(parts.size() - 1); i >= 0; i--) {
     delete nodes[i]->children[parts[i]];
     nodes[i]->children.erase(parts[i]);
     if (!nodes[i]->children.empty()) {

@@ -114,7 +114,7 @@ class ProtostreamObjectSourceTest
     std::ostringstream oss;
     msg.SerializePartialToOstream(&oss);
     std::string proto = oss.str();
-    ArrayInputStream arr_stream(proto.data(), proto.size());
+    ArrayInputStream arr_stream(proto.data(), static_cast<int>(proto.size()));
     CodedInputStream in_stream(&arr_stream);
 
     ProtoStreamObjectSource::RenderOptions render_options;

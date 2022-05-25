@@ -164,7 +164,7 @@ const char* EpsCopyInputStream::Next() {
     SetEndOfStream();
     return nullptr;
   }
-  limit_ -= buffer_end_ - p;  // Adjust limit_ relative to new anchor
+  limit_ -= static_cast<int>(buffer_end_ - p);  // Adjust limit_ relative to new anchor
   limit_end_ = buffer_end_ + std::min(0, limit_);
   return p;
 }
@@ -197,9 +197,9 @@ std::pair<const char*, bool> EpsCopyInputStream::DoneFallback(int overrun,
       SetEndOfStream();
       return {buffer_end_, true};
     }
-    limit_ -= buffer_end_ - p;  // Adjust limit_ relative to new anchor
+    limit_ -= static_cast<int>(buffer_end_ - p);  // Adjust limit_ relative to new anchor
     p += overrun;
-    overrun = p - buffer_end_;
+    overrun = static_cast<int>(p - buffer_end_);
   } while (overrun >= 0);
   limit_end_ = buffer_end_ + std::min(0, limit_);
   return {p, false};
@@ -288,11 +288,11 @@ const char* ParseContext::ParseMessage(MessageLite* msg, const char* ptr) {
 
 inline void WriteVarint(uint64_t val, std::string* s) {
   while (val >= 128) {
-    uint8_t c = val | 0x80;
+    uint8_t c = static_cast<uint8_t>(val | 0x80);
     s->push_back(c);
     val >>= 7;
   }
-  s->push_back(val);
+  s->push_back(static_cast<char>(val));
 }
 
 void WriteVarint(uint32_t num, uint64_t val, std::string* s) {
@@ -403,12 +403,12 @@ const char* VarintParser(void* object, const char* ptr, ParseContext* ctx) {
     T val;
     if (sign) {
       if (sizeof(T) == 8) {
-        val = WireFormatLite::ZigZagDecode64(varint);
+        val = static_cast<T>(WireFormatLite::ZigZagDecode64(varint));
       } else {
-        val = WireFormatLite::ZigZagDecode32(varint);
+        val = static_cast<T>(WireFormatLite::ZigZagDecode32(static_cast<uint32_t>(varint)));
       }
     } else {
-      val = varint;
+      val = static_cast<T>(varint);
     }
     static_cast<RepeatedField<T>*>(object)->Add(val);
   });

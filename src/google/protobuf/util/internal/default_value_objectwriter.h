@@ -186,7 +186,7 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
 
     NodeKind kind() const { return kind_; }
 
-    int number_of_children() const { return children_.size(); }
+    int number_of_children() const { return static_cast<int>(children_.size()); }
 
     void set_data(const DataPiece& data) { data_ = data; }
 

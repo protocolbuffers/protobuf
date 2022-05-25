@@ -157,7 +157,7 @@ Status GetNanosFromStringPiece(StringPiece s_nanos,
   if (i_nanos > 0) {
     // 'scale' is the number of digits to the right of the decimal
     // point in "0." + s_nanos.ToString()
-    int32_t scale = num_leading_zeros + s_nanos.size();
+    int32_t scale = static_cast<int32_t>(num_leading_zeros + s_nanos.size());
     // 'conversion' converts i_nanos into nanoseconds.
     // conversion = kNanosPerSecond / static_cast<int32_t>(std::pow(10, scale))
     // For efficiency, we precompute the conversion factor.

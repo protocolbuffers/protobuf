@@ -383,8 +383,8 @@ Timestamp TimeUtil::TimevalToTimestamp(const timeval& value) {
 
 timeval TimeUtil::TimestampToTimeval(const Timestamp& value) {
   timeval result;
-  result.tv_sec = value.seconds();
-  result.tv_usec = RoundTowardZero(value.nanos(), kNanosPerMicrosecond);
+  result.tv_sec = static_cast<long>(value.seconds());
+  result.tv_usec = static_cast<long>(RoundTowardZero(value.nanos(), kNanosPerMicrosecond));
   return result;
 }
 
@@ -395,8 +395,8 @@ Duration TimeUtil::TimevalToDuration(const timeval& value) {
 
 timeval TimeUtil::DurationToTimeval(const Duration& value) {
   timeval result;
-  result.tv_sec = value.seconds();
-  result.tv_usec = RoundTowardZero(value.nanos(), kNanosPerMicrosecond);
+  result.tv_sec = static_cast<long>(value.seconds());
+  result.tv_usec = static_cast<long>(RoundTowardZero(value.nanos(), kNanosPerMicrosecond));
   // timeval.tv_usec's range is [0, 1000000)
   if (result.tv_usec < 0) {
     result.tv_sec -= 1;

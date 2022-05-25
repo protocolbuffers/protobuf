@@ -109,7 +109,7 @@ class ParserTest : public testing::Test {
 
   // Set up the parser to parse the given text.
   void SetupParser(const char* text) {
-    raw_input_.reset(new io::ArrayInputStream(text, strlen(text)));
+    raw_input_.reset(new io::ArrayInputStream(text, static_cast<int>(strlen(text))));
     input_.reset(new io::Tokenizer(raw_input_.get(), &error_collector_));
     parser_.reset(new Parser());
     parser_->RecordErrorsTo(&error_collector_);

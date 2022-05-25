@@ -325,7 +325,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
   template <typename A>
   const char* AppendSize(const char* ptr, int size, const A& append) {
-    int chunk_size = buffer_end_ + kSlopBytes - ptr;
+    int chunk_size = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
     do {
       GOOGLE_DCHECK(size > chunk_size);
       if (next_chunk_ == nullptr) return nullptr;
@@ -339,7 +339,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       ptr = Next();
       if (ptr == nullptr) return nullptr;  // passed the limit
       ptr += kSlopBytes;
-      chunk_size = buffer_end_ + kSlopBytes - ptr;
+      chunk_size = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
     } while (size > chunk_size);
     append(ptr, size);
     return ptr + size;
@@ -825,7 +825,7 @@ template <typename T>
 const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
                                                 RepeatedField<T>* out) {
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-  int nbytes = buffer_end_ + kSlopBytes - ptr;
+  int nbytes = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
   while (size > nbytes) {
     int num = nbytes / sizeof(T);
     int old_entries = out->size();
@@ -843,7 +843,7 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
     ptr = Next();
     if (ptr == nullptr) return nullptr;
     ptr += kSlopBytes - (nbytes - block_size);
-    nbytes = buffer_end_ + kSlopBytes - ptr;
+    nbytes = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
   }
   int num = size / sizeof(T);
   int old_entries = out->size();
@@ -875,11 +875,11 @@ template <typename Add>
 const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add) {
   int size = ReadSize(&ptr);
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-  int chunk_size = buffer_end_ - ptr;
+  int chunk_size = static_cast<int>(buffer_end_ - ptr);
   while (size > chunk_size) {
     ptr = ReadPackedVarintArray(ptr, buffer_end_, add);
     if (ptr == nullptr) return nullptr;
-    int overrun = ptr - buffer_end_;
+    int overrun = static_cast<int>(ptr - buffer_end_);
     GOOGLE_DCHECK(overrun >= 0 && overrun <= kSlopBytes);
     if (size - chunk_size <= kSlopBytes) {
       // The current buffer contains all the information needed, we don't need
@@ -900,7 +900,7 @@ const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add) {
     ptr = Next();
     if (ptr == nullptr) return nullptr;
     ptr += overrun;
-    chunk_size = buffer_end_ - ptr;
+    chunk_size = static_cast<int>(buffer_end_ - ptr);
   }
   auto end = ptr + size;
   ptr = ReadPackedVarintArray(ptr, end, add);
@@ -923,7 +923,7 @@ PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* InlineGreedyStringParser(
 template <typename T>
 PROTOBUF_NODISCARD const char* FieldParser(uint64_t tag, T& field_parser,
                                            const char* ptr, ParseContext* ctx) {
-  uint32_t number = tag >> 3;
+  uint32_t number = static_cast<uint32_t>(tag >> 3);
   GOOGLE_PROTOBUF_PARSER_ASSERT(number != 0);
   using WireType = internal::WireFormatLite::WireType;
   switch (tag & 7) {
@@ -1011,8 +1011,8 @@ PROTOBUF_NODISCARD const char* PackedEnumParser(void* object, const char* ptr,
                                                 int field_num) {
   return ctx->ReadPackedVarint(
       ptr, [object, is_valid, metadata, field_num](uint64_t val) {
-        if (is_valid(val)) {
-          static_cast<RepeatedField<int>*>(object)->Add(val);
+        if (is_valid(static_cast<int>(val))) {
+          static_cast<RepeatedField<int>*>(object)->Add(static_cast<int32_t>(val));
         } else {
           WriteVarint(field_num, val, metadata->mutable_unknown_fields<T>());
         }
@@ -1026,8 +1026,8 @@ PROTOBUF_NODISCARD const char* PackedEnumParserArg(
     InternalMetadata* metadata, int field_num) {
   return ctx->ReadPackedVarint(
       ptr, [object, is_valid, data, metadata, field_num](uint64_t val) {
-        if (is_valid(data, val)) {
-          static_cast<RepeatedField<int>*>(object)->Add(val);
+        if (is_valid(data, static_cast<int>(val))) {
+          static_cast<RepeatedField<int>*>(object)->Add(static_cast<int32_t>(val));
         } else {
           WriteVarint(field_num, val, metadata->mutable_unknown_fields<T>());
         }

@@ -643,7 +643,7 @@ TEST(ZeroCopyStreamByteSinkTest, TestAllInputOutputPatterns) {
 
 TEST_F(JsonUtilTest, TestWrongJsonInput) {
   const char json[] = "{\"unknown_field\":\"some_value\"}";
-  io::ArrayInputStream input_stream(json, strlen(json));
+  io::ArrayInputStream input_stream(json, static_cast<int>(strlen(json)));
   char proto_buffer[10000];
   io::ArrayOutputStream output_stream(proto_buffer, sizeof(proto_buffer));
   std::string message_type = "type.googleapis.com/proto3.TestMessage";

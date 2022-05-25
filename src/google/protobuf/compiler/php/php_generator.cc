@@ -334,7 +334,7 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       const Options& options) {
   const std::string& proto_file = file->name();
   int start_index = 0;
-  int first_index = proto_file.find_first_of("/", start_index);
+  int first_index = static_cast<int>(proto_file.find_first_of("/", start_index));
   std::string result = "";
   std::string segment = "";
 
@@ -347,7 +347,7 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
 
   // Append directory name.
   std::string file_no_suffix;
-  int lastindex = proto_file.find_last_of(".");
+  int lastindex = static_cast<int>(proto_file.find_last_of("."));
   if (proto_file == kEmptyFile) {
     return kEmptyMetadataFile;
   } else {
@@ -371,12 +371,12 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
           file_no_suffix.substr(start_index, first_index - start_index), true);
       result += ReservedNamePrefix(segment, file) + segment + "/";
       start_index = first_index + 1;
-      first_index = file_no_suffix.find_first_of("/", start_index);
+      first_index = static_cast<int>(file_no_suffix.find_first_of("/", start_index));
     }
   }
 
   // Append file name.
-  int file_name_start = file_no_suffix.find_last_of("/");
+  int file_name_start = static_cast<int>(file_no_suffix.find_last_of("/"));
   if (file_name_start == std::string::npos) {
     file_name_start = 0;
   } else {
@@ -1217,7 +1217,7 @@ void GenerateHead(const FileDescriptor* file, io::Printer* printer) {
 }
 
 std::string FilenameToClassname(const std::string& filename) {
-  int lastindex = filename.find_last_of(".");
+  int lastindex = static_cast<int>(filename.find_last_of("."));
   std::string result = filename.substr(0, lastindex);
   for (int i = 0; i < result.size(); i++) {
     if (result[i] == '/') {
@@ -1237,7 +1237,7 @@ void GenerateMetadataFile(const FileDescriptor* file, const Options& options,
   GenerateHead(file, &printer);
 
   std::string fullname = FilenameToClassname(filename);
-  int lastindex = fullname.find_last_of("\\");
+  size_t lastindex = fullname.find_last_of("\\");
 
   if (lastindex != std::string::npos) {
     printer.Print(
@@ -1299,7 +1299,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   GenerateHead(file, &printer);
 
   std::string fullname = FilenameToClassname(filename);
-  int lastindex = fullname.find_last_of("\\");
+  size_t lastindex = fullname.find_last_of("\\");
 
   if (lastindex != std::string::npos) {
     printer.Print(
@@ -1440,7 +1440,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   GenerateHead(file, &printer);
 
   std::string fullname = FilenameToClassname(filename);
-  int lastindex = fullname.find_last_of("\\");
+  size_t lastindex = fullname.find_last_of("\\");
 
   if (lastindex != std::string::npos) {
     printer.Print(
@@ -1570,7 +1570,7 @@ void GenerateServiceFile(
   GenerateHead(file, &printer);
 
   std::string fullname = FilenameToClassname(filename);
-  int lastindex = fullname.find_last_of("\\");
+  size_t lastindex = fullname.find_last_of("\\");
 
   if (!file->options().php_namespace().empty() ||
       (!file->options().has_php_namespace() && !file->package().empty()) ||

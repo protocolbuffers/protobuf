@@ -1090,7 +1090,7 @@ std::string DefaultValue(const FieldDescriptor* field) {
 
         // Must convert to a standard byte order for packing length into
         // a cstring.
-        uint32_t length = ghtonl(default_string.length());
+        uint32_t length = ghtonl(static_cast<uint32_t>(default_string.length()));
         std::string bytes((const char*)&length, sizeof(length));
         bytes.append(default_string);
         return "(NSData*)\"" + EscapeTrigraphs(CEscape(bytes)) + "\"";
@@ -1272,7 +1272,7 @@ bool ReadLine(StringPiece* input, StringPiece* line) {
 }
 
 void RemoveComment(StringPiece* input) {
-  int offset = input->find('#');
+  int offset = static_cast<int>(input->find('#'));
   if (offset != StringPiece::npos) {
     input->remove_suffix(input->length() - offset);
   }
@@ -1282,7 +1282,7 @@ namespace {
 
 bool PackageToPrefixesCollector::ConsumeLine(
     const StringPiece& line, std::string* out_error) {
-  int offset = line.find('=');
+  int offset = static_cast<int>(line.find('='));
   if (offset == StringPiece::npos) {
     *out_error = usage_ + " file line without equal sign: '" + StrCat(line) + "'.";
     return false;
@@ -1532,7 +1532,7 @@ std::string TextFormatDecodeData::Data() const {
     io::OstreamOutputStream data_outputstream(&data_stringstream);
     io::CodedOutputStream output_stream(&data_outputstream);
 
-    output_stream.WriteVarint32(num_entries());
+    output_stream.WriteVarint32(static_cast<uint32_t>(num_entries()));
     for (std::vector<DataEntry>::const_iterator i = entries_.begin();
          i != entries_.end(); ++i) {
       output_stream.WriteVarint32(i->first);
@@ -1990,7 +1990,7 @@ void ImportWriter::ParseFrameworkMappings() {
 
 bool ImportWriter::ProtoFrameworkCollector::ConsumeLine(
     const StringPiece& line, std::string* out_error) {
-  int offset = line.find(':');
+  int offset = static_cast<int>(line.find(':'));
   if (offset == StringPiece::npos) {
     *out_error =
         std::string("Framework/proto file mapping line without colon sign: '") +
@@ -2003,9 +2003,9 @@ bool ImportWriter::ProtoFrameworkCollector::ConsumeLine(
 
   int start = 0;
   while (start < proto_file_list.length()) {
-    offset = proto_file_list.find(',', start);
+    offset = static_cast<int>(proto_file_list.find(',', start));
     if (offset == StringPiece::npos) {
-      offset = proto_file_list.length();
+      offset = static_cast<int>(proto_file_list.length());
     }
 
     StringPiece proto_file = proto_file_list.substr(start, offset - start);

@@ -491,7 +491,7 @@ int UTF8GenericScan(const UTF8ScanObj* st,
     goto DoAgain;
   }
 
-  *bytes_consumed = src - isrc;
+  *bytes_consumed = static_cast<int>(src - isrc);
   return e;
 }
 
@@ -527,12 +527,12 @@ int UTF8GenericScanFastAscii(const UTF8ScanObj* st,
       src++;
     }
     // Run state table on the rest
-    n = src - isrc;
+    n = static_cast<int>(src - isrc);
     exit_reason = UTF8GenericScan(st, str + n, str_length - n, &rest_consumed);
     src += rest_consumed;
   } while ( exit_reason == kExitDoAgain );
 
-  *bytes_consumed = src - isrc;
+  *bytes_consumed = static_cast<int>(src - isrc);
   return exit_reason;
 }
 
@@ -564,11 +564,11 @@ bool IsStructurallyValidUTF8(const char* buf, int len) {
 }
 
 int UTF8SpnStructurallyValid(StringPiece str) {
-  if (!module_initialized_) return str.size();
+  if (!module_initialized_) return static_cast<int>(str.size());
 
   int bytes_consumed = 0;
   UTF8GenericScanFastAscii(&utf8acceptnonsurrogates_obj,
-                           str.data(), str.size(), &bytes_consumed);
+                           str.data(), static_cast<int>(str.size()), &bytes_consumed);
   return bytes_consumed;
 }
 
@@ -587,7 +587,7 @@ int UTF8SpnStructurallyValid(StringPiece str) {
 char* UTF8CoerceToStructurallyValid(StringPiece src_str, char* idst,
                                     const char replace_char) {
   const char* isrc = src_str.data();
-  const int len = src_str.length();
+  const int len = static_cast<int>(src_str.length());
   int n = UTF8SpnStructurallyValid(src_str);
   if (n == len) {               // Normal case -- all is cool, return
     return const_cast<char*>(isrc);

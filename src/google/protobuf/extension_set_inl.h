@@ -81,32 +81,34 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
     }
   } else {
     switch (extension.type) {
-#define HANDLE_VARINT_TYPE(UPPERCASE, CPP_CAMELCASE)                        \
+#define HANDLE_VARINT_TYPE(UPPERCASE, CPP_CAMELCASE, CPPTYPE)               \
   case WireFormatLite::TYPE_##UPPERCASE: {                                  \
     uint64_t value;                                                         \
     ptr = VarintParse(ptr, &value);                                         \
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);                                    \
+    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);                                     \
     if (extension.is_repeated) {                                            \
       Add##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE,          \
-                         extension.is_packed, value, extension.descriptor); \
-    } else {                                                                \
-      Set##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE, value,   \
+                         extension.is_packed, static_cast<CPPTYPE>(value),  \
                          extension.descriptor);                             \
+    } else {                                                                \
+      Set##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE,          \
+                         static_cast<CPPTYPE>(value), extension.descriptor);\
     }                                                                       \
   } break
 
-      HANDLE_VARINT_TYPE(INT32, Int32);
-      HANDLE_VARINT_TYPE(INT64, Int64);
-      HANDLE_VARINT_TYPE(UINT32, UInt32);
-      HANDLE_VARINT_TYPE(UINT64, UInt64);
-      HANDLE_VARINT_TYPE(BOOL, Bool);
+      HANDLE_VARINT_TYPE(INT32, Int32, int32_t);
+      HANDLE_VARINT_TYPE(INT64, Int64, int64_t);
+      HANDLE_VARINT_TYPE(UINT32, UInt32, uint32_t);
+      HANDLE_VARINT_TYPE(UINT64, UInt64, uint64_t);
+      HANDLE_VARINT_TYPE(BOOL, Bool, bool);
 #undef HANDLE_VARINT_TYPE
 #define HANDLE_SVARINT_TYPE(UPPERCASE, CPP_CAMELCASE, SIZE)                 \
   case WireFormatLite::TYPE_##UPPERCASE: {                                  \
     uint64_t val;                                                           \
     ptr = VarintParse(ptr, &val);                                           \
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);                                    \
-    auto value = WireFormatLite::ZigZagDecode##SIZE(val);                   \
+    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);                                     \
+    auto value =                                                            \
+      WireFormatLite::ZigZagDecode##SIZE(static_cast<uint##SIZE##_t>(val)); \
     if (extension.is_repeated) {                                            \
       Add##CPP_CAMELCASE(number, WireFormatLite::TYPE_##UPPERCASE,          \
                          extension.is_packed, value, extension.descriptor); \
@@ -144,7 +146,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
         uint64_t val;
         ptr = VarintParse(ptr, &val);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        int value = val;
+        int value = static_cast<int>(val);
 
         if (!extension.enum_validity_check.func(
                 extension.enum_validity_check.arg, value)) {
@@ -214,7 +216,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
       uint64_t tmp;
       ptr = ParseBigVarint(ptr, &tmp);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-      type_id = tmp;
+      type_id = static_cast<uint32_t>(tmp);
       if (payload_read) {
         ExtensionInfo extension;
         bool was_packed_on_wire;

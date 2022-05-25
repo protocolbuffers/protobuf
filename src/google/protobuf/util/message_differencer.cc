@@ -1573,8 +1573,8 @@ bool MessageDifferencer::CompareUnknownFields(
         focus_field->type() != current_repeated->type()) {
       // We've started a new repeated field.
       current_repeated = focus_field;
-      current_repeated_start1 = index1;
-      current_repeated_start2 = index2;
+      current_repeated_start1 = static_cast<int>(index1);
+      current_repeated_start2 = static_cast<int>(index2);
     }
 
     if (change_type == NO_CHANGE && reporter_ == NULL) {
@@ -1601,11 +1601,11 @@ bool MessageDifferencer::CompareUnknownFields(
 
     // Calculate the field index.
     if (change_type == ADDITION) {
-      specific_field.index = index2 - current_repeated_start2;
-      specific_field.new_index = index2 - current_repeated_start2;
+      specific_field.index = static_cast<int>(index2 - current_repeated_start2);
+      specific_field.new_index = static_cast<int>(index2 - current_repeated_start2);
     } else {
-      specific_field.index = index1 - current_repeated_start1;
-      specific_field.new_index = index2 - current_repeated_start2;
+      specific_field.index = static_cast<int>(index1 - current_repeated_start1);
+      specific_field.new_index = static_cast<int>(index2 - current_repeated_start2);
     }
 
     if (IsUnknownFieldIgnored(message1, message2, specific_field,

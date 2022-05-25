@@ -89,8 +89,8 @@ class FileGenerator {
   // one .cc file per message, one .cc file per extension, and a main pb.cc file
   // containing everything else.
 
-  int NumMessages() const { return message_generators_.size(); }
-  int NumExtensions() const { return extension_generators_.size(); }
+  int NumMessages() const { return static_cast<int>(message_generators_.size()); }
+  int NumExtensions() const { return static_cast<int>(extension_generators_.size()); }
   // Generates the source file for one message.
   void GenerateSourceForMessage(int idx, io::Printer* printer);
   // Generates the source file for one extension.

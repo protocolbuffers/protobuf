@@ -198,7 +198,7 @@ TEST_F(UnknownFieldSetTest, Group) {
 
 TEST_F(UnknownFieldSetTest, SerializeFastAndSlowAreEquivalent) {
   int size =
-      WireFormat::ComputeUnknownFieldsSize(empty_message_.unknown_fields());
+      static_cast<int>(WireFormat::ComputeUnknownFieldsSize(empty_message_.unknown_fields()));
   std::string slow_buffer;
   std::string fast_buffer;
   slow_buffer.resize(size);
@@ -239,7 +239,7 @@ TEST_F(UnknownFieldSetTest, ParseViaReflection) {
 
   unittest::TestEmptyMessage message;
   io::ArrayInputStream raw_input(all_fields_data_.data(),
-                                 all_fields_data_.size());
+                                 static_cast<int>(all_fields_data_.size()));
   io::CodedInputStream input(&raw_input);
   ASSERT_TRUE(WireFormat::ParseAndMergePartial(&input, &message));
 
@@ -256,7 +256,7 @@ TEST_F(UnknownFieldSetTest, SerializeViaReflection) {
     io::StringOutputStream raw_output(&data);
     io::CodedOutputStream output(&raw_output);
     size_t size = WireFormat::ByteSize(empty_message_);
-    WireFormat::SerializeWithCachedSizes(empty_message_, size, &output);
+    WireFormat::SerializeWithCachedSizes(empty_message_, static_cast<int>(size), &output);
     ASSERT_FALSE(output.HadError());
   }
 
@@ -411,7 +411,7 @@ TEST_F(UnknownFieldSetTest, WrongTypeTreatedAsUnknownViaReflection) {
   unittest::TestAllTypes all_types_message;
   unittest::TestEmptyMessage empty_message;
   std::string bizarro_data = GetBizarroData();
-  io::ArrayInputStream raw_input(bizarro_data.data(), bizarro_data.size());
+  io::ArrayInputStream raw_input(bizarro_data.data(), static_cast<int>(bizarro_data.size()));
   io::CodedInputStream input(&raw_input);
   ASSERT_TRUE(WireFormat::ParseAndMergePartial(&input, &all_types_message));
   ASSERT_TRUE(empty_message.ParseFromString(bizarro_data));
@@ -434,7 +434,7 @@ TEST_F(UnknownFieldSetTest, UnknownExtensionsReflection) {
 
   unittest::TestEmptyMessageWithExtensions message;
   io::ArrayInputStream raw_input(all_fields_data_.data(),
-                                 all_fields_data_.size());
+                                 static_cast<int>(all_fields_data_.size()));
   io::CodedInputStream input(&raw_input);
   ASSERT_TRUE(WireFormat::ParseAndMergePartial(&input, &message));
 

@@ -661,7 +661,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, SerializationToArray) {
   UNITTEST::TestAllTypes message1, message2;
   std::string data;
   TestUtil::SetAllFields(&message1);
-  int size = message1.ByteSizeLong();
+  int size = static_cast<int>(message1.ByteSizeLong());
   data.resize(size);
   uint8_t* start = reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&data));
   uint8_t* end = message1.SerializeWithCachedSizesToArray(start);
@@ -675,7 +675,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, PackedFieldsSerializationToArray) {
   UNITTEST::TestPackedTypes packed_message1, packed_message2;
   std::string packed_data;
   TestUtil::SetPackedFields(&packed_message1);
-  int packed_size = packed_message1.ByteSizeLong();
+  int packed_size = static_cast<int>(packed_message1.ByteSizeLong());
   packed_data.resize(packed_size);
   uint8_t* start =
       reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&packed_data));
@@ -690,7 +690,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, PackedFieldsSerializationToArray) {
 TEST(GENERATED_MESSAGE_TEST_NAME, SerializationToStream) {
   UNITTEST::TestAllTypes message1, message2;
   TestUtil::SetAllFields(&message1);
-  int size = message1.ByteSizeLong();
+  int size = static_cast<int>(message1.ByteSizeLong());
   std::string data;
   data.resize(size);
   {
@@ -709,7 +709,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, SerializationToStream) {
 TEST(GENERATED_MESSAGE_TEST_NAME, PackedFieldsSerializationToStream) {
   UNITTEST::TestPackedTypes message1, message2;
   TestUtil::SetPackedFields(&message1);
-  int size = message1.ByteSizeLong();
+  int size = static_cast<int>(message1.ByteSizeLong());
   std::string data;
   data.resize(size);
   {
@@ -892,7 +892,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestSpaceUsed) {
   // Setting a string to a value larger than the string object itself should
   // increase SpaceUsedLong(), because it cannot store the value internally.
   message1->set_optional_string(std::string(sizeof(std::string) + 1, 'x'));
-  int min_expected_increase = message1->optional_string().capacity();
+  int min_expected_increase = static_cast<int>(message1->optional_string().capacity());
   EXPECT_LE(empty_message_size + min_expected_increase,
             message1->SpaceUsedLong());
 
@@ -930,7 +930,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, TestOneofSpaceUsed) {
   // internally.
   message1->set_foo_string(std::string(sizeof(std::string) + 1, 'x'));
   int min_expected_increase =
-      message1->foo_string().capacity() + sizeof(std::string);
+      static_cast<int>(message1->foo_string().capacity() + sizeof(std::string));
   EXPECT_LE(empty_message_size + min_expected_increase,
             message1->SpaceUsedLong());
 
@@ -1838,7 +1838,7 @@ TEST_F(OneofTest, SerializationToArray) {
     UNITTEST::TestOneof2 message1, message2;
 std::string data;
 message1.set_foo_int(123);
-int size = message1.ByteSizeLong();
+int size = static_cast<int>(message1.ByteSizeLong());
 data.resize(size);
 uint8_t* start = reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&data));
 uint8_t* end = message1.SerializeWithCachedSizesToArray(start);
@@ -1852,7 +1852,7 @@ EXPECT_EQ(message2.foo_int(), 123);
     UNITTEST::TestOneof2 message1, message2;
     std::string data;
     message1.set_foo_string("foo");
-    int size = message1.ByteSizeLong();
+    int size = static_cast<int>(message1.ByteSizeLong());
     data.resize(size);
     uint8_t* start = reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&data));
     uint8_t* end = message1.SerializeWithCachedSizesToArray(start);
@@ -1867,7 +1867,7 @@ EXPECT_EQ(message2.foo_int(), 123);
     UNITTEST::TestOneof2 message1, message2;
     std::string data;
     message1.set_foo_bytes("moo");
-    int size = message1.ByteSizeLong();
+    int size = static_cast<int>(message1.ByteSizeLong());
     data.resize(size);
     uint8_t* start = reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&data));
     uint8_t* end = message1.SerializeWithCachedSizesToArray(start);
@@ -1881,7 +1881,7 @@ EXPECT_EQ(message2.foo_int(), 123);
     UNITTEST::TestOneof2 message1, message2;
     std::string data;
     message1.set_foo_enum(UNITTEST::TestOneof2::FOO);
-    int size = message1.ByteSizeLong();
+    int size = static_cast<int>(message1.ByteSizeLong());
     data.resize(size);
     uint8_t* start = reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&data));
     uint8_t* end = message1.SerializeWithCachedSizesToArray(start);
@@ -1895,7 +1895,7 @@ EXPECT_EQ(message2.foo_int(), 123);
     UNITTEST::TestOneof2 message1, message2;
     std::string data;
     message1.mutable_foo_message()->set_moo_int(234);
-    int size = message1.ByteSizeLong();
+    int size = static_cast<int>(message1.ByteSizeLong());
     data.resize(size);
     uint8_t* start = reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&data));
     uint8_t* end = message1.SerializeWithCachedSizesToArray(start);
@@ -1909,7 +1909,7 @@ EXPECT_EQ(message2.foo_int(), 123);
     UNITTEST::TestOneof2 message1, message2;
     std::string data;
     message1.mutable_foogroup()->set_a(345);
-    int size = message1.ByteSizeLong();
+    int size = static_cast<int>(message1.ByteSizeLong());
     data.resize(size);
     uint8_t* start = reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&data));
     uint8_t* end = message1.SerializeWithCachedSizesToArray(start);
@@ -1931,7 +1931,7 @@ TEST_F(OneofTest, SerializationToStream) {
     UNITTEST::TestOneof2 message1, message2;
 std::string data;
 message1.set_foo_int(123);
-int size = message1.ByteSizeLong();
+int size = static_cast<int>(message1.ByteSizeLong());
 data.resize(size);
 
 {
@@ -1952,7 +1952,7 @@ data.resize(size);
     UNITTEST::TestOneof2 message1, message2;
     std::string data;
     message1.set_foo_string("foo");
-    int size = message1.ByteSizeLong();
+    int size = static_cast<int>(message1.ByteSizeLong());
     data.resize(size);
 
     {
@@ -1974,7 +1974,7 @@ data.resize(size);
     UNITTEST::TestOneof2 message1, message2;
     std::string data;
     message1.set_foo_bytes("moo");
-    int size = message1.ByteSizeLong();
+    int size = static_cast<int>(message1.ByteSizeLong());
     data.resize(size);
 
     {
@@ -1995,7 +1995,7 @@ data.resize(size);
     UNITTEST::TestOneof2 message1, message2;
     std::string data;
     message1.set_foo_enum(UNITTEST::TestOneof2::FOO);
-    int size = message1.ByteSizeLong();
+    int size = static_cast<int>(message1.ByteSizeLong());
     data.resize(size);
 
     {
@@ -2016,7 +2016,7 @@ data.resize(size);
     UNITTEST::TestOneof2 message1, message2;
     std::string data;
     message1.mutable_foo_message()->set_moo_int(234);
-    int size = message1.ByteSizeLong();
+    int size = static_cast<int>(message1.ByteSizeLong());
     data.resize(size);
 
     {
@@ -2037,7 +2037,7 @@ data.resize(size);
     UNITTEST::TestOneof2 message1, message2;
     std::string data;
     message1.mutable_foogroup()->set_a(345);
-    int size = message1.ByteSizeLong();
+    int size = static_cast<int>(message1.ByteSizeLong());
     data.resize(size);
 
     {

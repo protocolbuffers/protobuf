@@ -702,7 +702,7 @@ TEST_1D(CodedStreamTest, ReadString, kBlockSizes) {
     CodedInputStream coded_input(&input);
 
     std::string str;
-    EXPECT_TRUE(coded_input.ReadString(&str, strlen(kRawBytes)));
+    EXPECT_TRUE(coded_input.ReadString(&str, static_cast<int>(strlen(kRawBytes))));
     EXPECT_EQ(kRawBytes, str);
   }
 
@@ -748,7 +748,7 @@ TEST_1D(CodedStreamTest, ReadStringReservesMemoryOnTotalLimit, kBlockSizes) {
     EXPECT_EQ(sizeof(kRawBytes), coded_input.BytesUntilTotalBytesLimit());
 
     std::string str;
-    EXPECT_TRUE(coded_input.ReadString(&str, strlen(kRawBytes)));
+    EXPECT_TRUE(coded_input.ReadString(&str, static_cast<int>(strlen(kRawBytes))));
     EXPECT_EQ(sizeof(kRawBytes) - strlen(kRawBytes),
               coded_input.BytesUntilTotalBytesLimit());
     EXPECT_EQ(kRawBytes, str);
@@ -768,7 +768,7 @@ TEST_1D(CodedStreamTest, ReadStringReservesMemoryOnPushedLimit, kBlockSizes) {
     coded_input.PushLimit(sizeof(buffer_));
 
     std::string str;
-    EXPECT_TRUE(coded_input.ReadString(&str, strlen(kRawBytes)));
+    EXPECT_TRUE(coded_input.ReadString(&str, static_cast<int>(strlen(kRawBytes))));
     EXPECT_EQ(kRawBytes, str);
     // TODO(liujisi): Replace with a more meaningful test (see cl/60966023).
     EXPECT_GE(str.capacity(), strlen(kRawBytes));
@@ -788,7 +788,7 @@ TEST_F(CodedStreamTest, ReadStringNoReservationIfLimitsNotSet) {
     CodedInputStream coded_input(&input);
 
     std::string str;
-    EXPECT_TRUE(coded_input.ReadString(&str, strlen(kRawBytes)));
+    EXPECT_TRUE(coded_input.ReadString(&str, static_cast<int>(strlen(kRawBytes))));
     EXPECT_EQ(kRawBytes, str);
     // Note: this check depends on string class implementation. It
     // expects that string will allocate more than strlen(kRawBytes)
@@ -850,7 +850,7 @@ TEST_F(CodedStreamTest, ReadStringNoReservationSizeIsOverTheLimit) {
     coded_input.PushLimit(16);
 
     std::string str;
-    EXPECT_FALSE(coded_input.ReadString(&str, strlen(kRawBytes)));
+    EXPECT_FALSE(coded_input.ReadString(&str, static_cast<int>(strlen(kRawBytes))));
     // Note: this check depends on string class implementation. It
     // expects that string will allocate less than strlen(kRawBytes)
     // for an empty string.
@@ -870,7 +870,7 @@ TEST_F(CodedStreamTest, ReadStringNoReservationSizeIsOverTheTotalBytesLimit) {
     coded_input.SetTotalBytesLimit(16);
 
     std::string str;
-    EXPECT_FALSE(coded_input.ReadString(&str, strlen(kRawBytes)));
+    EXPECT_FALSE(coded_input.ReadString(&str, static_cast<int>(strlen(kRawBytes))));
     // Note: this check depends on string class implementation. It
     // expects that string will allocate less than strlen(kRawBytes)
     // for an empty string.
@@ -892,7 +892,7 @@ TEST_F(CodedStreamTest,
     coded_input.SetTotalBytesLimit(16);
 
     std::string str;
-    EXPECT_FALSE(coded_input.ReadString(&str, strlen(kRawBytes)));
+    EXPECT_FALSE(coded_input.ReadString(&str, static_cast<int>(strlen(kRawBytes))));
     // Note: this check depends on string class implementation. It
     // expects that string will allocate less than strlen(kRawBytes)
     // for an empty string.
@@ -915,7 +915,7 @@ TEST_F(CodedStreamTest,
     EXPECT_EQ(sizeof(buffer_), coded_input.BytesUntilTotalBytesLimit());
 
     std::string str;
-    EXPECT_FALSE(coded_input.ReadString(&str, strlen(kRawBytes)));
+    EXPECT_FALSE(coded_input.ReadString(&str, static_cast<int>(strlen(kRawBytes))));
     // Note: this check depends on string class implementation. It
     // expects that string will allocate less than strlen(kRawBytes)
     // for an empty string.
@@ -938,10 +938,10 @@ TEST_1D(CodedStreamTest, SkipInput, kBlockSizes) {
     CodedInputStream coded_input(&input);
 
     std::string str;
-    EXPECT_TRUE(coded_input.ReadString(&str, strlen("<Before skipping>")));
+    EXPECT_TRUE(coded_input.ReadString(&str, static_cast<int>(strlen("<Before skipping>"))));
     EXPECT_EQ("<Before skipping>", str);
-    EXPECT_TRUE(coded_input.Skip(strlen("<To be skipped>")));
-    EXPECT_TRUE(coded_input.ReadString(&str, strlen("<After skipping>")));
+    EXPECT_TRUE(coded_input.Skip(static_cast<int>(strlen("<To be skipped>"))));
+    EXPECT_TRUE(coded_input.ReadString(&str, static_cast<int>(strlen("<After skipping>"))));
     EXPECT_EQ("<After skipping>", str);
   }
 

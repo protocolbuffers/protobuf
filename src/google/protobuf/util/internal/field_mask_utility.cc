@@ -86,7 +86,7 @@ std::string ConvertFieldMaskPath(const StringPiece path,
       } else if (path[i] == '\\') {
         is_escaping = true;
       } else if (path[i] == '\"') {
-        current_segment_start = i + 1;
+        current_segment_start = static_cast<int>(i + 1);
         is_quoted = false;
       }
       continue;
@@ -98,7 +98,7 @@ std::string ConvertFieldMaskPath(const StringPiece path,
       if (i < path.size()) {
         result.push_back(path[i]);
       }
-      current_segment_start = i + 1;
+      current_segment_start = static_cast<int>(i + 1);
     }
     if (i < path.size() && path[i] == '\"') {
       is_quoted = true;
@@ -110,7 +110,7 @@ std::string ConvertFieldMaskPath(const StringPiece path,
 util::Status DecodeCompactFieldMaskPaths(StringPiece paths,
                                          PathSinkCallback path_sink) {
   std::stack<std::string> prefix;
-  int length = paths.length();
+  int length = static_cast<int>(paths.length());
   int previous_position = 0;
   bool in_map_key = false;
   bool is_escaping = false;

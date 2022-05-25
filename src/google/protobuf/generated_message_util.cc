@@ -239,8 +239,8 @@ struct PrimitiveTypeHelper<WireFormatLite::TYPE_STRING> {
   typedef std::string Type;
   static void Serialize(const void* ptr, io::CodedOutputStream* output) {
     const Type& value = *static_cast<const Type*>(ptr);
-    output->WriteVarint32(value.size());
-    output->WriteRawMaybeAliased(value.data(), value.size());
+    output->WriteVarint32(static_cast<uint32_t>(value.size()));
+    output->WriteRawMaybeAliased(value.data(), static_cast<int>(value.size()));
   }
   static uint8_t* SerializeToArray(const void* ptr, uint8_t* buffer) {
     const Type& value = *static_cast<const Type*>(ptr);

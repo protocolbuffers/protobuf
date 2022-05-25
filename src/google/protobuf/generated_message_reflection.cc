@@ -286,7 +286,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
   auto* arena = Arena::InternalGetArenaForAllocation(&message);
   if (arena != nullptr && Arena::InternalGetOwningArena(&message) == nullptr &&
       arena->InternalIsMessageOwnedArena()) {
-    total_size += arena->SpaceAllocated() - arena->SpaceUsed();
+    total_size += static_cast<size_t>(arena->SpaceAllocated() - arena->SpaceUsed());
   }
 
   if (schema_.HasExtensionSet()) {

@@ -206,13 +206,13 @@ int IoTest::ReadFromInput(ZeroCopyInputStream* input, void* data, int size) {
 }
 
 void IoTest::WriteString(ZeroCopyOutputStream* output, const std::string& str) {
-  EXPECT_TRUE(WriteToOutput(output, str.c_str(), str.size()));
+  EXPECT_TRUE(WriteToOutput(output, str.c_str(), static_cast<int>(str.size())));
 }
 
 void IoTest::ReadString(ZeroCopyInputStream* input, const std::string& str) {
   std::unique_ptr<char[]> buffer(new char[str.size() + 1]);
   buffer[str.size()] = '\0';
-  EXPECT_EQ(ReadFromInput(input, buffer.get(), str.size()), str.size());
+  EXPECT_EQ(ReadFromInput(input, buffer.get(), static_cast<int>(str.size())), str.size());
   EXPECT_STREQ(str.c_str(), buffer.get());
 }
 
@@ -226,7 +226,7 @@ int IoTest::WriteStuff(ZeroCopyOutputStream* output) {
 
   EXPECT_EQ(output->ByteCount(), 68);
 
-  int result = output->ByteCount();
+  int result = static_cast<int>(output->ByteCount());
   return result;
 }
 
@@ -260,7 +260,7 @@ int IoTest::WriteStuffLarge(ZeroCopyOutputStream* output) {
 
   EXPECT_EQ(output->ByteCount(), 200055);
 
-  int result = output->ByteCount();
+  int result = static_cast<int>(output->ByteCount());
   return result;
 }
 
@@ -316,22 +316,22 @@ TEST_F(IoTest, TwoSessionWrite) {
       ArrayOutputStream* output =
           new ArrayOutputStream(buffer, kBufferSize, kBlockSizes[i]);
       CodedOutputStream* coded_output = new CodedOutputStream(output);
-      coded_output->WriteVarint32(strlen(strA));
-      coded_output->WriteRaw(strA, strlen(strA));
+      coded_output->WriteVarint32(static_cast<uint32_t>(strlen(strA)));
+      coded_output->WriteRaw(strA, static_cast<int>(strlen(strA)));
       delete coded_output;  // flush
       int64 pos = output->ByteCount();
       delete output;
-      output = new ArrayOutputStream(buffer + pos, kBufferSize - pos,
+      output = new ArrayOutputStream(buffer + pos, static_cast<int>(kBufferSize - pos),
                                      kBlockSizes[i]);
       coded_output = new CodedOutputStream(output);
-      coded_output->WriteVarint32(strlen(strB));
-      coded_output->WriteRaw(strB, strlen(strB));
+      coded_output->WriteVarint32(static_cast<uint32_t>(strlen(strB)));
+      coded_output->WriteRaw(strB, static_cast<int>(strlen(strB)));
       delete coded_output;  // flush
       int64 size = pos + output->ByteCount();
       delete output;
 
       ArrayInputStream* input =
-          new ArrayInputStream(buffer, size, kBlockSizes[j]);
+          new ArrayInputStream(buffer, static_cast<int>(size), kBlockSizes[j]);
       CodedInputStream* coded_input = new CodedInputStream(input);
       uint32 insize;
       EXPECT_TRUE(coded_input->ReadVarint32(&insize));
@@ -713,7 +713,7 @@ TEST_F(IoTest, StringIo) {
     WriteStuff(&output);
   }
   {
-    ArrayInputStream input(str.data(), str.size());
+    ArrayInputStream input(str.data(), static_cast<int>(str.size()));
     ReadStuff(&input);
   }
 }

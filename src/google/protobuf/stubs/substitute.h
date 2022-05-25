@@ -91,11 +91,11 @@ namespace internal {  // Implementation details.
 class SubstituteArg {
  public:
   inline SubstituteArg(const char* value)
-    : text_(value), size_(strlen(text_)) {}
+    : text_(value), size_(static_cast<int>(strlen(text_))) {}
   inline SubstituteArg(const std::string& value)
-      : text_(value.data()), size_(value.size()) {}
+      : text_(value.data()), size_(static_cast<int>(value.size())) {}
   inline SubstituteArg(const StringPiece value)
-      : text_(value.data()), size_(value.size()) {}
+      : text_(value.data()), size_(static_cast<int>(value.size())) {}
 
   // Indicates that no argument was given.
   inline explicit SubstituteArg()
@@ -110,27 +110,27 @@ class SubstituteArg {
   inline SubstituteArg(char value)
     : text_(scratch_), size_(1) { scratch_[0] = value; }
   inline SubstituteArg(short value)
-    : text_(FastInt32ToBuffer(value, scratch_)), size_(strlen(text_)) {}
+    : text_(FastInt32ToBuffer(value, scratch_)), size_(static_cast<int>(strlen(text_))) {}
   inline SubstituteArg(unsigned short value)
-    : text_(FastUInt32ToBuffer(value, scratch_)), size_(strlen(text_)) {}
+    : text_(FastUInt32ToBuffer(value, scratch_)), size_(static_cast<int>(strlen(text_))) {}
   inline SubstituteArg(int value)
-    : text_(FastInt32ToBuffer(value, scratch_)), size_(strlen(text_)) {}
+    : text_(FastInt32ToBuffer(value, scratch_)), size_(static_cast<int>(strlen(text_))) {}
   inline SubstituteArg(unsigned int value)
-    : text_(FastUInt32ToBuffer(value, scratch_)), size_(strlen(text_)) {}
+    : text_(FastUInt32ToBuffer(value, scratch_)), size_(static_cast<int>(strlen(text_))) {}
   inline SubstituteArg(long value)
-    : text_(FastLongToBuffer(value, scratch_)), size_(strlen(text_)) {}
+    : text_(FastLongToBuffer(value, scratch_)), size_(static_cast<int>(strlen(text_))) {}
   inline SubstituteArg(unsigned long value)
-    : text_(FastULongToBuffer(value, scratch_)), size_(strlen(text_)) {}
+    : text_(FastULongToBuffer(value, scratch_)), size_(static_cast<int>(strlen(text_))) {}
   inline SubstituteArg(long long value)
-    : text_(FastInt64ToBuffer(value, scratch_)), size_(strlen(text_)) {}
+    : text_(FastInt64ToBuffer(value, scratch_)), size_(static_cast<int>(strlen(text_))) {}
   inline SubstituteArg(unsigned long long value)
-    : text_(FastUInt64ToBuffer(value, scratch_)), size_(strlen(text_)) {}
+    : text_(FastUInt64ToBuffer(value, scratch_)), size_(static_cast<int>(strlen(text_))) {}
   inline SubstituteArg(float value)
-    : text_(FloatToBuffer(value, scratch_)), size_(strlen(text_)) {}
+    : text_(FloatToBuffer(value, scratch_)), size_(static_cast<int>(strlen(text_))) {}
   inline SubstituteArg(double value)
-    : text_(DoubleToBuffer(value, scratch_)), size_(strlen(text_)) {}
+    : text_(DoubleToBuffer(value, scratch_)), size_(static_cast<int>(strlen(text_))) {}
   inline SubstituteArg(bool value)
-    : text_(value ? "true" : "false"), size_(strlen(text_)) {}
+    : text_(value ? "true" : "false"), size_(static_cast<int>(strlen(text_))) {}
 
   inline const char* data() const { return text_; }
   inline int size() const { return size_; }

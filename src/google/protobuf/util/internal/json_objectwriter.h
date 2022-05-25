@@ -101,7 +101,7 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
     // See if we have a trivial sequence of indent characters.
     if (!indent_string.empty()) {
       indent_char_ = indent_string[0];
-      indent_count_ = indent_string.length();
+      indent_count_ = static_cast<int>(indent_string.length());
       for (int i = 1; i < indent_string.length(); i++) {
         if (indent_char_ != indent_string_[i]) {
           indent_char_ = '\0';
@@ -176,7 +176,7 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
 
     // ByteSink methods.
     void Append(const char* bytes, size_t n) override {
-      stream_->WriteRaw(bytes, n);
+      stream_->WriteRaw(bytes, static_cast<int>(n));
     }
 
    private:
@@ -223,7 +223,7 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
       // us from using memset.
       uint8_t* out = nullptr;
       if (indent_count_ > 0) {
-        out = stream_->GetDirectBufferForNBytesAndAdvance(len);
+        out = stream_->GetDirectBufferForNBytesAndAdvance(static_cast<int>(len));
       }
 
       if (out != nullptr) {
@@ -233,7 +233,7 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
         // Slow path, no contiguous output buffer available.
         WriteChar('\n');
         for (int i = 0; i < element()->level(); i++) {
-          stream_->WriteRaw(indent_string_.c_str(), indent_string_.length());
+          stream_->WriteRaw(indent_string_.c_str(), static_cast<int>(indent_string_.length()));
         }
       }
     }
@@ -249,7 +249,7 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
 
   // Writes a string to the output.
   void WriteRawString(StringPiece s) {
-    stream_->WriteRaw(s.data(), s.length());
+    stream_->WriteRaw(s.data(), static_cast<int>(s.length()));
   }
 
   std::unique_ptr<Element> element_;

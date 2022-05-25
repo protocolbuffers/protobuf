@@ -289,7 +289,7 @@ size_t WireFormat::ComputeUnknownFieldsSize(
         size += io::CodedOutputStream::VarintSize32(WireFormatLite::MakeTag(
             field.number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED));
         size += io::CodedOutputStream::VarintSize32(
-            field.length_delimited().size());
+            static_cast<uint32_t>(field.length_delimited().size()));
         size += field.length_delimited().size();
         break;
       case UnknownField::TYPE_GROUP:
@@ -317,7 +317,7 @@ size_t WireFormat::ComputeUnknownMessageSetItemsSize(
       size += WireFormatLite::kMessageSetItemTagsSize;
       size += io::CodedOutputStream::VarintSize32(field.number());
 
-      int field_size = field.GetLengthDelimitedSize();
+      int field_size = static_cast<int>(field.GetLengthDelimitedSize());
       size += io::CodedOutputStream::VarintSize32(field_size);
       size += field_size;
     }
@@ -569,13 +569,13 @@ bool WireFormat::ParseAndMergeField(
         std::string value;
         if (!WireFormatLite::ReadString(input, &value)) return false;
         if (strict_utf8_check) {
-          if (!WireFormatLite::VerifyUtf8String(value.data(), value.length(),
+          if (!WireFormatLite::VerifyUtf8String(value.data(), static_cast<int>(value.length()),
                                                 WireFormatLite::PARSE,
                                                 field->full_name().c_str())) {
             return false;
           }
         } else {
-          VerifyUTF8StringNamedField(value.data(), value.length(), PARSE,
+          VerifyUTF8StringNamedField(value.data(), static_cast<int>(value.length()), PARSE,
                                      field->full_name().c_str());
         }
         if (field->is_repeated()) {
@@ -668,7 +668,7 @@ struct WireFormat::MessageSetParser {
         uint64_t tmp;
         ptr = ParseBigVarint(ptr, &tmp);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        type_id = tmp;
+        type_id = static_cast<uint32_t>(tmp);
         if (payload_read) {
           const FieldDescriptor* field;
           if (ctx->data().pool == nullptr) {
@@ -823,9 +823,9 @@ const char* WireFormat::_InternalParseAndMergeField(
     return internal::UnknownFieldParse(
         tag, reflection->MutableUnknownFields(msg), ptr, ctx);
   }
-  if (WireFormatLite::GetTagWireType(tag) !=
+  if (WireFormatLite::GetTagWireType(static_cast<uint32_t>(tag)) !=
       WireTypeForFieldType(field->type())) {
-    if (field->is_packable() && WireFormatLite::GetTagWireType(tag) ==
+    if (field->is_packable() && WireFormatLite::GetTagWireType(static_cast<uint32_t>(tag)) ==
                                     WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
       switch (field->type()) {
 #define HANDLE_PACKED_TYPE(TYPE, CPPTYPE, CPPTYPE_METHOD)                   \
@@ -864,8 +864,8 @@ const char* WireFormat::_InternalParseAndMergeField(
           } else {
             return ctx->ReadPackedVarint(
                 ptr, [rep_enum, field, reflection, msg](uint64_t val) {
-                  if (field->enum_type()->FindValueByNumber(val) != nullptr) {
-                    rep_enum->Add(val);
+                  if (field->enum_type()->FindValueByNumber(static_cast<int>(val)) != nullptr) {
+                    rep_enum->Add(static_cast<int32_t>(val));
                   } else {
                     WriteVarint(field->number(), val,
                                 reflection->MutableUnknownFields(msg));
@@ -981,13 +981,13 @@ const char* WireFormat::_InternalParseAndMergeField(
       if (ptr == nullptr) return nullptr;
       if (utf8_check) {
         if (strict_utf8_check) {
-          if (!WireFormatLite::VerifyUtf8String(value.data(), value.length(),
+          if (!WireFormatLite::VerifyUtf8String(value.data(), static_cast<int>(value.length()),
                                                 WireFormatLite::PARSE,
                                                 field->full_name().c_str())) {
             return nullptr;
           }
         } else {
-          VerifyUTF8StringNamedField(value.data(), value.length(), PARSE,
+          VerifyUTF8StringNamedField(value.data(), static_cast<int>(value.length()), PARSE,
                                      field->full_name().c_str());
         }
       }
@@ -1008,7 +1008,7 @@ const char* WireFormat::_InternalParseAndMergeField(
             reflection->MutableMessage(msg, field, ctx->data().factory);
       }
 
-      return ctx->ParseGroup(sub_message, ptr, tag);
+      return ctx->ParseGroup(sub_message, ptr, static_cast<uint32_t>(tag));
     }
 
     case FieldDescriptor::TYPE_MESSAGE: {
@@ -1195,7 +1195,7 @@ static uint8_t* InternalSerializeMapEntry(const FieldDescriptor* field,
   target = stream->EnsureSpace(target);
   target = WireFormatLite::WriteTagToArray(
       field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED, target);
-  target = io::CodedOutputStream::WriteVarint32ToArray(size, target);
+  target = io::CodedOutputStream::WriteVarint32ToArray(static_cast<uint32_t>(size), target);
   target = SerializeMapKeyWithCachedSizes(key_field, key, target, stream);
   target =
       SerializeMapValueRefWithCachedSizes(value_field, value, target, stream);
@@ -1284,7 +1284,8 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
     auto r =                                                                   \
         message_reflection->GetRepeatedFieldInternal<CPPTYPE>(message, field); \
     target = stream->Write##TYPE_METHOD##Packed(                               \
-        field->number(), r, FieldDataOnlyByteSize(field, message), target);    \
+        field->number(), r,                                                    \
+        static_cast<int>(FieldDataOnlyByteSize(field, message)), target);      \
     break;                                                                     \
   }
 
@@ -1398,11 +1399,11 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
                 : message_reflection->GetStringReference(message, field,
                                                          &scratch);
         if (strict_utf8_check) {
-          WireFormatLite::VerifyUtf8String(value.data(), value.length(),
+          WireFormatLite::VerifyUtf8String(value.data(), static_cast<int>(value.length()),
                                            WireFormatLite::SERIALIZE,
                                            field->full_name().c_str());
         } else {
-          VerifyUTF8StringNamedField(value.data(), value.length(), SERIALIZE,
+          VerifyUTF8StringNamedField(value.data(), static_cast<int>(value.length()), SERIALIZE,
                                      field->full_name().c_str());
         }
         target = stream->WriteString(field->number(), value, target);
@@ -1522,7 +1523,7 @@ size_t WireFormat::FieldByteSize(const FieldDescriptor* field,
       // Technically this doesn't really matter; the size only changes if it's
       // a GROUP
       our_size += TagSize(field->number(), FieldDescriptor::TYPE_STRING);
-      our_size += io::CodedOutputStream::VarintSize32(data_size);
+      our_size += io::CodedOutputStream::VarintSize32(static_cast<uint32_t>(data_size));
     }
   } else {
     our_size += count * TagSize(field->number(), field->type());
@@ -1654,7 +1655,7 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
       for (size_t j = 0; j < count; j++) {                                  \
         data_size += WireFormatLite::TYPE_METHOD##Size(                     \
             message_reflection->GetRepeated##CPPTYPE_METHOD(message, field, \
-                                                            j));            \
+                                                            static_cast<int>(j)));            \
       }                                                                     \
     } else {                                                                \
       data_size += WireFormatLite::TYPE_METHOD##Size(                       \
@@ -1693,7 +1694,7 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
       if (field->is_repeated()) {
         for (size_t j = 0; j < count; j++) {
           data_size += WireFormatLite::EnumSize(
-              message_reflection->GetRepeatedEnum(message, field, j)->number());
+              message_reflection->GetRepeatedEnum(message, field, static_cast<int>(j))->number());
         }
       } else {
         data_size += WireFormatLite::EnumSize(
@@ -1711,7 +1712,7 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
         const std::string& value =
             field->is_repeated()
                 ? message_reflection->GetRepeatedStringReference(message, field,
-                                                                 j, &scratch)
+                                                                 static_cast<int>(j), &scratch)
                 : message_reflection->GetStringReference(message, field,
                                                          &scratch);
         data_size += WireFormatLite::StringSize(value);
@@ -1735,7 +1736,7 @@ size_t WireFormat::MessageSetItemByteSize(const FieldDescriptor* field,
   const Message& sub_message = message_reflection->GetMessage(message, field);
   size_t message_size = sub_message.ByteSizeLong();
 
-  our_size += io::CodedOutputStream::VarintSize32(message_size);
+  our_size += io::CodedOutputStream::VarintSize32(static_cast<uint32_t>(message_size));
   our_size += message_size;
 
   return our_size;

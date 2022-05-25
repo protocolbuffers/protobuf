@@ -152,7 +152,7 @@ std::string StringPrintfVector(const char* format,
   for (int i = 0; i < v.size(); ++i) {
     cstr[i] = v[i].c_str();
   }
-  for (int i = v.size(); i < GOOGLE_ARRAYSIZE(cstr); ++i) {
+  for (int i = static_cast<int>(v.size()); i < GOOGLE_ARRAYSIZE(cstr); ++i) {
     cstr[i] = &string_printf_empty_block[0];
   }
 

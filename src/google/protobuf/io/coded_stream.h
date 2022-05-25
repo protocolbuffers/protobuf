@@ -782,7 +782,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     ptr = EnsureSpace(ptr);
     constexpr auto element_size = sizeof(typename T::value_type);
     auto size = r.size() * element_size;
-    ptr = WriteLengthDelim(num, size, ptr);
+    ptr = WriteLengthDelim(num, static_cast<uint32_t>(size), ptr);
     return WriteRawLittleEndian<element_size>(r.data(), static_cast<int>(size),
                                               ptr);
   }

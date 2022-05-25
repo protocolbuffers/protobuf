@@ -267,7 +267,7 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
         if (annotate) {
           auto* annotation = info.add_annotation();
           annotation->set_begin(0);
-          annotation->set_end(content.size());
+          annotation->set_end(static_cast<int32_t>(content.size()));
           annotation->set_source_file("first_path");
         }
         std::unique_ptr<io::ZeroCopyOutputStream> output(
@@ -292,7 +292,7 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
         if (annotate) {
           auto* annotation = info.add_annotation();
           annotation->set_begin(0);
-          annotation->set_end(content.size());
+          annotation->set_end(static_cast<int32_t>(content.size()));
           annotation->set_source_file("second_path");
         }
         std::unique_ptr<io::ZeroCopyOutputStream> output(

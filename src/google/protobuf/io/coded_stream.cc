@@ -224,7 +224,7 @@ bool CodedInputStream::SkipFallback(int count, int original_buffer_size) {
   }
 
   if (!input_->Skip(count)) {
-    total_bytes_read_ = input_->ByteCount();
+    total_bytes_read_ = static_cast<int>(input_->ByteCount());
     return false;
   }
   total_bytes_read_ += count;
@@ -482,7 +482,7 @@ int CodedInputStream::ReadVarintSizeAsIntSlow() {
   // for one-byte varints.
   std::pair<uint64_t, bool> p = ReadVarint64Fallback();
   if (!p.second || p.first > static_cast<uint64_t>(INT_MAX)) return -1;
-  return p.first;
+  return static_cast<int>(p.first);
 }
 
 int CodedInputStream::ReadVarintSizeAsIntFallback() {
@@ -494,7 +494,7 @@ int CodedInputStream::ReadVarintSizeAsIntFallback() {
     ::std::pair<bool, const uint8_t*> p = ReadVarint64FromArray(buffer_, &temp);
     if (!p.first || temp > static_cast<uint64_t>(INT_MAX)) return -1;
     buffer_ = p.second;
-    return temp;
+    return static_cast<int>(temp);
   } else {
     // Really slow case: we will incur the cost of an extra function call here,
     // but moving this out of line reduces the size of this function, which
@@ -673,7 +673,7 @@ void EpsCopyOutputStream::EnableAliasing(bool enabled) {
 
 int64_t EpsCopyOutputStream::ByteCount(uint8_t* ptr) const {
   // Calculate the current offset relative to the end of the stream buffer.
-  int delta = (end_ - ptr) + (buffer_end_ ? 0 : kSlopBytes);
+  int delta = static_cast<int>((end_ - ptr) + (buffer_end_ ? 0 : kSlopBytes));
   return stream_->ByteCount() - delta;
 }
 
@@ -682,7 +682,7 @@ int64_t EpsCopyOutputStream::ByteCount(uint8_t* ptr) const {
 // of the remaining buffer, ie. [buffer_end_, buffer_end_ + return value)
 int EpsCopyOutputStream::Flush(uint8_t* ptr) {
   while (buffer_end_ && ptr > end_) {
-    int overrun = ptr - end_;
+    int overrun = static_cast<int>(ptr - end_);
     GOOGLE_DCHECK(!had_error_);
     GOOGLE_DCHECK(overrun <= kSlopBytes);  // NOLINT
     ptr = Next() + overrun;
@@ -692,10 +692,10 @@ int EpsCopyOutputStream::Flush(uint8_t* ptr) {
   if (buffer_end_) {
     std::memcpy(buffer_end_, buffer_, ptr - buffer_);
     buffer_end_ += ptr - buffer_;
-    s = end_ - ptr;
+    s = static_cast<int>(end_ - ptr);
   } else {
     // The stream is writing directly in the ZeroCopyOutputStream buffer.
-    s = end_ + kSlopBytes - ptr;
+    s = static_cast<int>(end_ + kSlopBytes - ptr);
     buffer_end_ = ptr;
   }
   GOOGLE_DCHECK(s >= 0);  // NOLINT
@@ -826,7 +826,7 @@ uint8_t* EpsCopyOutputStream::Next() {
 uint8_t* EpsCopyOutputStream::EnsureSpaceFallback(uint8_t* ptr) {
   do {
     if (PROTOBUF_PREDICT_FALSE(had_error_)) return buffer_;
-    int overrun = ptr - end_;
+    int overrun = static_cast<int>(ptr - end_);
     GOOGLE_DCHECK(overrun >= 0);           // NOLINT
     GOOGLE_DCHECK(overrun <= kSlopBytes);  // NOLINT
     ptr = Next() + overrun;
@@ -837,13 +837,13 @@ uint8_t* EpsCopyOutputStream::EnsureSpaceFallback(uint8_t* ptr) {
 
 uint8_t* EpsCopyOutputStream::WriteRawFallback(const void* data, int size,
                                              uint8_t* ptr) {
-  int s = GetSize(ptr);
+  int s = static_cast<int>(GetSize(ptr));
   while (s < size) {
     std::memcpy(ptr, data, s);
     size -= s;
     data = static_cast<const uint8_t*>(data) + s;
     ptr = EnsureSpaceFallback(ptr + s);
-    s = GetSize(ptr);
+    s = static_cast<int>(GetSize(ptr));
   }
   std::memcpy(ptr, data, size);
   return ptr + size;
@@ -914,7 +914,7 @@ uint8_t* EpsCopyOutputStream::WriteStringMaybeAliasedOutline(uint32_t num,
                                                            const std::string& s,
                                                            uint8_t* ptr) {
   ptr = EnsureSpace(ptr);
-  uint32_t size = s.size();
+  uint32_t size = static_cast<uint32_t>(s.size());
   ptr = WriteLengthDelim(num, size, ptr);
   return WriteRawMaybeAliased(s.data(), size, ptr);
 }
@@ -922,7 +922,7 @@ uint8_t* EpsCopyOutputStream::WriteStringMaybeAliasedOutline(uint32_t num,
 uint8_t* EpsCopyOutputStream::WriteStringOutline(uint32_t num, const std::string& s,
                                                uint8_t* ptr) {
   ptr = EnsureSpace(ptr);
-  uint32_t size = s.size();
+  uint32_t size = static_cast<uint32_t>(s.size());
   ptr = WriteLengthDelim(num, size, ptr);
   return WriteRaw(s.data(), size, ptr);
 }
@@ -936,7 +936,7 @@ CodedOutputStream::~CodedOutputStream() { Trim(); }
 uint8_t* CodedOutputStream::WriteStringWithSizeToArray(const std::string& str,
                                                      uint8_t* target) {
   GOOGLE_DCHECK_LE(str.size(), std::numeric_limits<uint32_t>::max());
-  target = WriteVarint32ToArray(str.size(), target);
+  target = WriteVarint32ToArray(static_cast<uint32_t>(str.size()), target);
   return WriteStringToArray(str, target);
 }
 

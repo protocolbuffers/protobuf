@@ -160,7 +160,7 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
     int table_size_log2, const Options& options,
     MessageSCCAnalyzer* scc_analyzer) {
   std::vector<TailCallTableInfo::FastFieldInfo> result(1 << table_size_log2);
-  const uint32_t idx_mask = result.size() - 1;
+  const uint32_t idx_mask = static_cast<uint32_t>(result.size() - 1);
 
   for (const auto& entry : field_entries) {
     if (!IsFieldEligibleForFastParsing(entry, options, scc_analyzer)) {
@@ -332,7 +332,7 @@ TailCallTableInfo::TailCallTableInfo(
       } else if (IsLazy(field, options, scc_analyzer)) {
         // Lazy fields are handled by the generated fallback function.
       } else {
-        field_entries.back().aux_idx = aux_entries.size();
+        field_entries.back().aux_idx = static_cast<uint16_t>(aux_entries.size());
         if (UseDirectTcParserTable(field, options)) {
           const Descriptor* field_type = field->message_type();
           aux_entries.push_back(
@@ -358,7 +358,7 @@ TailCallTableInfo::TailCallTableInfo(
       // an int16_t) and count (a uint16_t). Otherwise, the entry holds a
       // pointer to the generated Name_IsValid function.
 
-      entry.aux_idx = aux_entries.size();
+      entry.aux_idx = static_cast<uint16_t>(aux_entries.size());
       const EnumDescriptor* enum_type = field->enum_type();
       GOOGLE_CHECK_GT(enum_type->value_count(), 0) << enum_type->DebugString();
 
@@ -392,7 +392,7 @@ TailCallTableInfo::TailCallTableInfo(
       int idx = inlined_string_indices[field->index()];
       // For mini parsing, the donation state index is stored as an `offset`
       // auxiliary entry.
-      entry.aux_idx = aux_entries.size();
+      entry.aux_idx = static_cast<uint16_t>(aux_entries.size());
       aux_entries.push_back(StrCat("_fl::Offset{", idx, "}"));
       // For fast table parsing, the donation state index is stored instead of
       // the aux_idx (this will limit the range to 8 bits).
@@ -602,7 +602,7 @@ struct NumToEntryTable {
     int size = 2;  // for the termination field#
     for (const auto& block : blocks) {
       // 2 for the field#, 1 for a count of skip entries, 2 for each entry.
-      size += 3 + block.entries.size() * 2;
+      size += static_cast<int>(3 + block.entries.size() * 2);
     }
     return size;
   }
@@ -705,7 +705,7 @@ static NumToEntryTable MakeNumToEntryTable(
   // appending to.  cur_block_first_fnum is the number of the first
   // field represented by the block.
   uint16_t field_entry_index = 0;
-  uint16_t N = field_descriptors.size();
+  uint16_t N = static_cast<uint16_t>(field_descriptors.size());
   // First, handle field numbers 1-32, which affect only the initial
   // skipmap32 and don't generate additional skip-entry blocks.
   for (; field_entry_index != N; ++field_entry_index) {
@@ -848,7 +848,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
       // field_lookup_table[]
       auto field_lookup_scope = format.ScopedIndent();
       int line_entries = 0;
-      for (int i = 0, N = field_num_to_entry_table.blocks.size(); i < N; ++i) {
+      for (int i = 0, N = static_cast<int>(field_num_to_entry_table.blocks.size()); i < N; ++i) {
         SkipEntryBlock& entry_block = field_num_to_entry_table.blocks[i];
         format("$1$, $2$, $3$,\n", entry_block.first_fnum & 65535,
                entry_block.first_fnum / 65536, entry_block.entries.size());
@@ -1114,7 +1114,7 @@ int ParseFunctionGenerator::CalculateFieldNamesSize() const {
   for (const auto& entry : tc_table_info_->field_entries) {
     const FieldDescriptor* field = entry.field;
     GOOGLE_CHECK_LE(field->name().size(), kMaxNameLength);
-    size += field->name().size();
+    size += static_cast<int>(field->name().size());
     lengths_size += 1;
   }
   // align to an 8-byte boundary
@@ -1137,7 +1137,7 @@ void ParseFunctionGenerator::GenerateFieldNames(Formatter& format) {
   FormatOctal(format,
               std::min(static_cast<int>(descriptor_->full_name().size()), 255));
   for (const auto& entry : tc_table_info_->field_entries) {
-    FormatOctal(format, entry.field->name().size());
+    FormatOctal(format, static_cast<int>(entry.field->name().size()));
     ++count;
   }
   while (count & 7) {  // align to an 8-byte boundary
@@ -1415,7 +1415,7 @@ void ParseFunctionGenerator::GenerateFieldBody(
             "$uint64$ val = ::$proto_ns$::internal::ReadVarint64(&ptr);\n"
             "CHK_(ptr);\n");
         if (!HasPreservingUnknownEnumSemantics(field)) {
-          format("if (PROTOBUF_PREDICT_TRUE($enum_type$_IsValid(val))) {\n");
+          format("if (PROTOBUF_PREDICT_TRUE($enum_type$_IsValid(static_cast<int>(val)))) {\n");
           format.Indent();
         }
         format("$msg$_internal_$put_field$(static_cast<$enum_type$>(val));\n");
@@ -1612,7 +1612,7 @@ void ParseFunctionGenerator::GenerateFieldSwitch(
     }
     auto wiretype = WireFormatLite::GetTagWireType(expected_tag);
     uint32_t tag = WireFormatLite::MakeTag(field->number(), wiretype);
-    int tag_size = io::CodedOutputStream::VarintSize32(tag);
+    int tag_size = static_cast<int>(io::CodedOutputStream::VarintSize32(tag));
     bool is_repeat = ShouldRepeat(field, wiretype);
     if (is_repeat) {
       format(

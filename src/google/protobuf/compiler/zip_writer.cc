@@ -117,9 +117,9 @@ bool ZipWriter::Write(const std::string& filename,
   FileInfo info;
 
   info.name = filename;
-  uint16_t filename_size = filename.size();
-  info.offset = raw_output_->ByteCount();
-  info.size = contents.size();
+  uint16_t filename_size = static_cast<uint16_t>(filename.size());
+  info.offset = static_cast<uint32_t>(raw_output_->ByteCount());
+  info.size = static_cast<uint32_t>(contents.size());
   info.crc32 = ComputeCRC32(contents);
 
   files_.push_back(info);
@@ -144,14 +144,14 @@ bool ZipWriter::Write(const std::string& filename,
 }
 
 bool ZipWriter::WriteDirectory() {
-  uint16_t num_entries = files_.size();
-  uint32_t dir_ofs = raw_output_->ByteCount();
+  uint16_t num_entries = static_cast<uint16_t>(files_.size());
+  uint32_t dir_ofs = static_cast<uint32_t>(raw_output_->ByteCount());
 
   // write central directory
   io::CodedOutputStream output(raw_output_);
   for (int i = 0; i < num_entries; ++i) {
     const std::string& filename = files_[i].name;
-    uint16_t filename_size = filename.size();
+    uint16_t filename_size = static_cast<uint16_t>(filename.size());
     uint32_t crc32 = files_[i].crc32;
     uint32_t size = files_[i].size;
     uint32_t offset = files_[i].offset;

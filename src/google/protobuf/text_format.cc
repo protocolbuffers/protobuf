@@ -846,7 +846,7 @@ class TextFormat::Parser::ParserImpl {
                    LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
           DO(ConsumeSignedInteger(&int_value, kint32max));
           value = StrCat(int_value);  // for error reporting
-          enum_value = enum_type->FindValueByNumber(int_value);
+          enum_value = enum_type->FindValueByNumber(static_cast<int>(int_value));
         } else {
           ReportError("Expected integer or identifier, got: " +
                       tokenizer_.current().text);
@@ -856,7 +856,7 @@ class TextFormat::Parser::ParserImpl {
         if (enum_value == nullptr) {
           if (int_value != kint64max &&
               reflection->SupportsUnknownEnumValues()) {
-            SET_FIELD(EnumValue, int_value);
+            SET_FIELD(EnumValue, static_cast<int>(int_value));
             return true;
           } else if (!allow_unknown_enum_) {
             ReportError("Unknown enumeration value of \"" + value +
@@ -1470,7 +1470,7 @@ class TextFormat::Printer::TextGenerator
     // Buffer is big enough to receive the data; copy it.
     memcpy(buffer_, data, size);
     buffer_ += size;
-    buffer_size_ -= size;
+    buffer_size_ -= static_cast<int>(size);
   }
 
   void WriteIndent() {
@@ -1478,7 +1478,7 @@ class TextFormat::Printer::TextGenerator
       return;
     }
     GOOGLE_DCHECK(!failed_);
-    int size = GetCurrentIndentationSize();
+    int size = static_cast<int>(GetCurrentIndentationSize());
 
     while (size > buffer_size_) {
       // Data exceeds space in the buffer. Write what we can and request a new
@@ -1640,7 +1640,7 @@ bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
 bool TextFormat::Parser::ParseFromString(ConstStringParam input,
                                          Message* output) {
   DO(CheckParseInputSize(input, error_collector_));
-  io::ArrayInputStream input_stream(input.data(), input.size());
+  io::ArrayInputStream input_stream(input.data(), static_cast<int>(input.size()));
   return Parse(&input_stream, output);
 }
 
@@ -1658,7 +1658,7 @@ bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
 bool TextFormat::Parser::MergeFromString(ConstStringParam input,
                                          Message* output) {
   DO(CheckParseInputSize(input, error_collector_));
-  io::ArrayInputStream input_stream(input.data(), input.size());
+  io::ArrayInputStream input_stream(input.data(), static_cast<int>(input.size()));
   return Merge(&input_stream, output);
 }
 
@@ -1680,7 +1680,7 @@ bool TextFormat::Parser::MergeUsingImpl(io::ZeroCopyInputStream* /* input */,
 bool TextFormat::Parser::ParseFieldValueFromString(const std::string& input,
                                                    const FieldDescriptor* field,
                                                    Message* output) {
-  io::ArrayInputStream input_stream(input.data(), input.size());
+  io::ArrayInputStream input_stream(input.data(), static_cast<int>(input.size()));
   ParserImpl parser(
       output->GetDescriptor(), &input_stream, error_collector_, finder_,
       parse_info_tree_, ParserImpl::ALLOW_SINGULAR_OVERWRITES,
@@ -2189,7 +2189,7 @@ void TextFormat::Printer::Print(const Message& message,
     UnknownFieldSet unknown_fields;
     {
       std::string serialized = message.SerializeAsString();
-      io::ArrayInputStream input(serialized.data(), serialized.size());
+      io::ArrayInputStream input(serialized.data(), static_cast<int>(serialized.size()));
       unknown_fields.ParseFromZeroCopyStream(&input);
     }
     PrintUnknownFields(unknown_fields, generator, kUnknownFieldRecursionLimit);
@@ -2562,7 +2562,7 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
       if (truncate_string_field_longer_than_ > 0 &&
           static_cast<size_t>(truncate_string_field_longer_than_) <
               value.size()) {
-        truncated_value = value.substr(0, truncate_string_field_longer_than_) +
+        truncated_value = value.substr(0, static_cast<size_t>(truncate_string_field_longer_than_)) +
                           "...<truncated>...";
         value_to_print = &truncated_value;
       }
@@ -2685,7 +2685,7 @@ void TextFormat::Printer::PrintUnknownFields(
         // budget when we attempt to parse the data. UnknownFieldSet parsing is
         // recursive because of groups.
         io::CodedInputStream input_stream(
-            reinterpret_cast<const uint8_t*>(value.data()), value.size());
+            reinterpret_cast<const uint8_t*>(value.data()), static_cast<int>(value.size()));
         input_stream.SetRecursionLimit(recursion_budget);
         UnknownFieldSet embedded_unknown_fields;
         if (!value.empty() && recursion_budget > 0 &&

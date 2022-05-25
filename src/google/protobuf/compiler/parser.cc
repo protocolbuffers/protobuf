@@ -246,7 +246,7 @@ bool Parser::ConsumeInteger(int* output, const char* error) {
       AddError("Integer out of range.");
       // We still return true because we did, in fact, parse an integer.
     }
-    *output = value;
+    *output = static_cast<int>(value);
     input_->Next();
     return true;
   } else {
@@ -265,7 +265,7 @@ bool Parser::ConsumeSignedInteger(int* output, const char* error) {
   uint64_t value = 0;
   DO(ConsumeInteger64(max_value, &value, error));
   if (is_negative) value *= -1;
-  *output = value;
+  *output = static_cast<int>(value);
   return true;
 }
 
@@ -300,7 +300,7 @@ bool Parser::ConsumeNumber(double* output, const char* error) {
       AddError("Integer out of range.");
       // We still return true because we did, in fact, parse a number.
     }
-    *output = value;
+    *output = static_cast<double>(value);
     input_->Next();
     return true;
   } else if (LookingAt("inf")) {

@@ -380,7 +380,7 @@ void CommandLineInterfaceTest::RunWithArgs(std::vector<std::string> args) {
 #endif
   CaptureTestStderr();
 
-  return_code_ = cli_.Run(args.size(), argv.get());
+  return_code_ = cli_.Run(static_cast<int>(args.size()), argv.get());
 
   error_text_ = GetCapturedTestStderr();
 #if !defined(__CYGWIN__)
@@ -2614,7 +2614,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
     CaptureTestStdout();
     CaptureTestStderr();
 
-    int result = cli.Run(args.size(), argv.get());
+    int result = cli.Run(static_cast<int>(args.size()), argv.get());
 
     captured_stdout_ = GetCapturedTestStdout();
     captured_stderr_ = GetCapturedTestStderr();

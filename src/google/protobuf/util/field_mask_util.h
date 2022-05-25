@@ -63,7 +63,7 @@ class PROTOBUF_EXPORT FieldMaskUtil {
                                FieldMask* out) {
     for (const auto field_number : field_numbers) {
       const FieldDescriptor* field_desc =
-          T::descriptor()->FindFieldByNumber(field_number);
+          T::descriptor()->FindFieldByNumber(static_cast<int>(field_number));
       GOOGLE_CHECK(field_desc != nullptr)
           << "Invalid field number for " << T::descriptor()->full_name() << ": "
           << field_number;

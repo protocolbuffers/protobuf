@@ -59,8 +59,8 @@ util::StatusOr<To> ValidateNumberConversion(To after, From before) {
   } else {
     return util::InvalidArgumentError(
         std::is_integral<From>::value       ? ValueAsString(before)
-        : std::is_same<From, double>::value ? DoubleAsString(before)
-                                            : FloatAsString(before));
+        : std::is_same<From, double>::value ? DoubleAsString(static_cast<double>(before))
+                                            : FloatAsString(static_cast<float>(before)));
   }
 }
 
@@ -69,7 +69,18 @@ util::StatusOr<To> ValidateNumberConversion(To after, From before) {
 // except conversion between double and float.
 template <typename To, typename From>
 util::StatusOr<To> NumberConvertAndCheck(From before) {
-  if (std::is_same<From, To>::value) return before;
+  if (std::is_same<From, To>::value) {
+    // Disable the warning (4244: 'conversion' conversion from 'type1' to 'type2', possible loss of data) since the types
+    // are being compared directly.
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4244)
+#endif // if defined(_MSC_VER)
+    return before;
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // if defined(_MSC_VER)
+  }
 
   To after = static_cast<To>(before);
   return ValidateNumberConversion(after, before);
@@ -79,7 +90,18 @@ util::StatusOr<To> NumberConvertAndCheck(From before) {
 // point types (double, float) only.
 template <typename To, typename From>
 util::StatusOr<To> FloatingPointToIntConvertAndCheck(From before) {
-  if (std::is_same<From, To>::value) return before;
+  if (std::is_same<From, To>::value) {
+    // Disable the warning (4244: 'conversion' conversion from 'type1' to 'type2', possible loss of data) since the types
+    // are being compared directly.
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4244)
+#endif // if defined(_MSC_VER)
+    return before;
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // if defined(_MSC_VER)
+  }
 
   To after = static_cast<To>(before);
   return ValidateNumberConversion(after, before);
@@ -402,7 +424,7 @@ bool DataPiece::DecodeBase64(StringPiece src, std::string* dest) const {
     if (use_strict_base64_decoding_) {
       std::string encoded;
       Base64Escape(reinterpret_cast<const unsigned char*>(dest->data()),
-                         dest->length(), &encoded, false);
+                         static_cast<int>(dest->length()), &encoded, false);
       StringPiece src_no_padding = StringPiece(src).substr(
           0, HasSuffixString(src, "=") ? src.find_last_not_of('=') + 1
                                       : src.length());

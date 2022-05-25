@@ -255,7 +255,7 @@ class FlatAllocation {
   FlatAllocation(const TypeMap<IntT, T...>& ends) : ends_(ends) {
     // The arrays start just after FlatAllocation, so adjust the ends.
     Fold({(ends_.template Get<T>() +=
-           RoundUpTo<kMaxAlign>(sizeof(FlatAllocation)))...});
+           static_cast<int>(RoundUpTo<kMaxAlign>(sizeof(FlatAllocation))))...});
     Fold({Init<T>()...});
   }
 
@@ -293,7 +293,7 @@ class FlatAllocation {
         typename std::tuple_element<prev_type_index, std::tuple<T...>>::type;
     // Ensure the types are properly aligned.
     static_assert(EffectiveAlignof<PrevType>() >= EffectiveAlignof<U>(), "");
-    return type_index == 0 ? RoundUpTo<kMaxAlign>(sizeof(FlatAllocation))
+    return type_index == 0 ? static_cast<int>(RoundUpTo<kMaxAlign>(sizeof(FlatAllocation)))
                            : ends_.template Get<PrevType>();
   }
 
@@ -371,7 +371,7 @@ class FlatAllocatorImpl {
     if (std::is_trivially_destructible<U>::value) {
       // Trivial types are aligned to 8 bytes.
       static_assert(alignof(U) <= 8, "");
-      total_.template Get<char>() += RoundUpTo<8>(array_size * sizeof(U));
+      total_.template Get<char>() += static_cast<int>(RoundUpTo<8>(array_size * sizeof(U)));
     } else {
       // Since we can't use `if constexpr`, just make the expression compile
       // when this path is not taken.
@@ -393,7 +393,7 @@ class FlatAllocatorImpl {
     TypeToUse*& data = pointers_.template Get<TypeToUse>();
     int& used = used_.template Get<TypeToUse>();
     U* res = reinterpret_cast<U*>(data + used);
-    used += trivial ? RoundUpTo<8>(array_size * sizeof(U)) : array_size;
+    used += trivial ? static_cast<int>(RoundUpTo<8>(array_size * sizeof(U))) : array_size;
     GOOGLE_CHECK_LE(used, total_.template Get<TypeToUse>());
     return res;
   }
@@ -495,13 +495,13 @@ class FlatAllocatorImpl {
 
     std::string lowercase_name = name;
     LowerString(&lowercase_name);
-    result.lowercase_index = push_name(std::move(lowercase_name));
+    result.lowercase_index = static_cast<int>(push_name(std::move(lowercase_name)));
     result.camelcase_index =
-        push_name(ToCamelCase(name, /* lower_first = */ true));
+        static_cast<int>(push_name(ToCamelCase(name, /* lower_first = */ true)));
     result.json_index =
-        push_name(opt_json_name != nullptr ? *opt_json_name : ToJsonName(name));
+        static_cast<int>(push_name(opt_json_name != nullptr ? *opt_json_name : ToJsonName(name)));
 
-    std::string* all_names = AllocateArray<std::string>(names.size());
+    std::string* all_names = AllocateArray<std::string>(static_cast<int>(names.size()));
     result.array = all_names;
     std::move(names.begin(), names.end(), all_names);
 
@@ -1404,11 +1404,11 @@ class DescriptorPool::Tables {
           misc_allocations_before_checkpoint(
               static_cast<int>(tables->misc_allocs_.size())),
           pending_symbols_before_checkpoint(
-              tables->symbols_after_checkpoint_.size()),
+              static_cast<int>(tables->symbols_after_checkpoint_.size())),
           pending_files_before_checkpoint(
-              tables->files_after_checkpoint_.size()),
+              static_cast<int>(tables->files_after_checkpoint_.size())),
           pending_extensions_before_checkpoint(
-              tables->extensions_after_checkpoint_.size()) {}
+              static_cast<int>(tables->extensions_after_checkpoint_.size())) {}
     int flat_allocations_before_checkpoint;
     int misc_allocations_before_checkpoint;
     int pending_symbols_before_checkpoint;
@@ -2870,7 +2870,7 @@ bool RetrieveOptions(int depth, const Message& options,
     std::string serialized = options.SerializeAsString();
     io::CodedInputStream input(
         reinterpret_cast<const uint8_t*>(serialized.c_str()),
-        serialized.size());
+        static_cast<int>(serialized.size()));
     input.SetExtensionRegistry(pool, &factory);
     if (dynamic_options->ParseFromCodedStream(&input)) {
       return RetrieveOptionsAssumingRightPool(depth, *dynamic_options,
@@ -5027,7 +5027,7 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
   //   at all.
   for (size_t i = 0; i < tables_->pending_files_.size(); i++) {
     if (tables_->pending_files_[i] == proto.name()) {
-      AddRecursiveImportError(proto, i);
+      AddRecursiveImportError(proto, static_cast<int>(i));
       return nullptr;
     }
   }
@@ -7597,7 +7597,7 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
         loc_matches = false;
       } else {
         for (size_t j = 0; j < pathv.size(); j++) {
-          if (loc->path(j) != pathv[j]) {
+          if (loc->path(static_cast<int>(j)) != pathv[j]) {
             loc_matches = false;
             break;
           }
@@ -7741,7 +7741,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
                                option_field->full_name() + "\".");
         } else {
           SetInt32(option_field->number(),
-                   uninterpreted_option_->positive_int_value(),
+                   static_cast<int32_t>(uninterpreted_option_->positive_int_value()),
                    option_field->type(), unknown_fields);
         }
       } else if (uninterpreted_option_->has_negative_int_value()) {
@@ -7751,7 +7751,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
                                option_field->full_name() + "\".");
         } else {
           SetInt32(option_field->number(),
-                   uninterpreted_option_->negative_int_value(),
+                   static_cast<int32_t>(uninterpreted_option_->negative_int_value()),
                    option_field->type(), unknown_fields);
         }
       } else {
@@ -7789,7 +7789,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
                                option_field->name() + "\".");
         } else {
           SetUInt32(option_field->number(),
-                    uninterpreted_option_->positive_int_value(),
+                    static_cast<uint32_t>(uninterpreted_option_->positive_int_value()),
                     option_field->type(), unknown_fields);
         }
       } else {
@@ -7816,11 +7816,11 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
     case FieldDescriptor::CPPTYPE_FLOAT: {
       float value;
       if (uninterpreted_option_->has_double_value()) {
-        value = uninterpreted_option_->double_value();
+        value = static_cast<float>(uninterpreted_option_->double_value());
       } else if (uninterpreted_option_->has_positive_int_value()) {
-        value = uninterpreted_option_->positive_int_value();
+        value = static_cast<float>(uninterpreted_option_->positive_int_value());
       } else if (uninterpreted_option_->has_negative_int_value()) {
-        value = uninterpreted_option_->negative_int_value();
+        value = static_cast<float>(uninterpreted_option_->negative_int_value());
       } else {
         return AddValueError("Value must be number for float option \"" +
                              option_field->full_name() + "\".");
@@ -7835,9 +7835,9 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       if (uninterpreted_option_->has_double_value()) {
         value = uninterpreted_option_->double_value();
       } else if (uninterpreted_option_->has_positive_int_value()) {
-        value = uninterpreted_option_->positive_int_value();
+        value = static_cast<double>(uninterpreted_option_->positive_int_value());
       } else if (uninterpreted_option_->has_negative_int_value()) {
-        value = uninterpreted_option_->negative_int_value();
+        value = static_cast<double>(uninterpreted_option_->negative_int_value());
       } else {
         return AddValueError("Value must be number for double option \"" +
                              option_field->full_name() + "\".");

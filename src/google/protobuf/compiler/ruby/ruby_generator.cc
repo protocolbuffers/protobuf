@@ -68,7 +68,7 @@ std::string NumberToString(numeric_type value) {
 }
 
 std::string GetRequireName(const std::string& proto_file) {
-  int lastindex = proto_file.find_last_of(".");
+  int lastindex = static_cast<int>(proto_file.find_last_of("."));
   return proto_file.substr(0, lastindex) + "_pb";
 }
 

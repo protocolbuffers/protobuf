@@ -695,7 +695,7 @@ TEST(Lite, AllLite29) {
     data.resize(size);
     {
       // Allow the output stream to buffer only one byte at a time.
-      io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), size, 1);
+      io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), static_cast<int>(size), 1);
       io::CodedOutputStream output_stream(&array_stream);
       message1.SerializeWithCachedSizes(&output_stream);
       EXPECT_FALSE(output_stream.HadError());
@@ -936,7 +936,7 @@ TEST(Lite, AllLite43) {
     message2.mutable_oneof_submessage();
     io::CodedInputStream input_stream(
         reinterpret_cast<const ::uint8_t*>(serialized.data()),
-        serialized.size());
+        static_cast<int>(serialized.size()));
     EXPECT_TRUE(message2.MergeFromCodedStream(&input_stream));
     EXPECT_EQ(17, message2.oneof_int32());
   }
@@ -947,7 +947,7 @@ TEST(Lite, AllLite43) {
     message2.set_oneof_string("string");
     io::CodedInputStream input_stream(
         reinterpret_cast<const ::uint8_t*>(serialized.data()),
-        serialized.size());
+        static_cast<int>(serialized.size()));
     EXPECT_TRUE(message2.MergeFromCodedStream(&input_stream));
     EXPECT_EQ(17, message2.oneof_int32());
   }
@@ -958,7 +958,7 @@ TEST(Lite, AllLite43) {
     message2.set_oneof_bytes("bytes");
     io::CodedInputStream input_stream(
         reinterpret_cast<const ::uint8_t*>(serialized.data()),
-        serialized.size());
+        static_cast<int>(serialized.size()));
     EXPECT_TRUE(message2.MergeFromCodedStream(&input_stream));
     EXPECT_EQ(17, message2.oneof_int32());
   }
@@ -978,7 +978,7 @@ TEST(Lite, AllLite44) {
     for (int i = 0; i < 2; ++i) {
       io::CodedInputStream input_stream(
           reinterpret_cast<const ::uint8_t*>(serialized.data()),
-          serialized.size());
+          static_cast<int>(serialized.size()));
       EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
       EXPECT_EQ(17, parsed.oneof_int32());
     }
@@ -994,7 +994,7 @@ TEST(Lite, AllLite44) {
     for (int i = 0; i < 2; ++i) {
       io::CodedInputStream input_stream(
           reinterpret_cast<const ::uint8_t*>(serialized.data()),
-          serialized.size());
+          static_cast<int>(serialized.size()));
       EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
       EXPECT_EQ(5, parsed.oneof_submessage().optional_int32());
     }
@@ -1010,7 +1010,7 @@ TEST(Lite, AllLite44) {
     for (int i = 0; i < 2; ++i) {
       io::CodedInputStream input_stream(
           reinterpret_cast<const ::uint8_t*>(serialized.data()),
-          serialized.size());
+          static_cast<int>(serialized.size()));
       EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
       EXPECT_EQ("string", parsed.oneof_string());
     }
@@ -1026,7 +1026,7 @@ TEST(Lite, AllLite44) {
     for (int i = 0; i < 2; ++i) {
       io::CodedInputStream input_stream(
           reinterpret_cast<const ::uint8_t*>(serialized.data()),
-          serialized.size());
+          static_cast<int>(serialized.size()));
       EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
       EXPECT_EQ("bytes", parsed.oneof_bytes());
     }
@@ -1042,7 +1042,7 @@ TEST(Lite, AllLite44) {
     for (int i = 0; i < 2; ++i) {
       io::CodedInputStream input_stream(
           reinterpret_cast<const ::uint8_t*>(serialized.data()),
-          serialized.size());
+          static_cast<int>(serialized.size()));
       EXPECT_TRUE(parsed.MergeFromCodedStream(&input_stream));
       EXPECT_EQ(protobuf_unittest::V2_SECOND, parsed.oneof_enum());
     }
@@ -1058,7 +1058,7 @@ TEST(Lite, AllLite45) {
   protobuf_unittest::ForeignMessageLite a;
   EXPECT_TRUE(a.ParseFromString(data));
   io::CodedInputStream input_stream(
-      reinterpret_cast<const ::uint8_t*>(data.data()), data.size());
+      reinterpret_cast<const ::uint8_t*>(data.data()), static_cast<int>(data.size()));
   EXPECT_TRUE(a.MergePartialFromCodedStream(&input_stream));
 
   std::string serialized = a.SerializeAsString();
@@ -1258,8 +1258,8 @@ TEST(Lite, CodedInputStreamRollback) {
     std::string serialized = m.SerializeAsString();
     serialized += '\014';
     serialized += std::string(3, ' ');
-    io::ArrayInputStream is(serialized.data(), serialized.size(),
-                            serialized.size() - 6);
+    io::ArrayInputStream is(serialized.data(), static_cast<int>(serialized.size()),
+                            static_cast<int>(serialized.size() - 6));
     {
       io::CodedInputStream cis(&is);
       m.Clear();
@@ -1282,8 +1282,8 @@ TEST(Lite, CodedInputStreamRollback) {
     serialized += '\014';
     serialized += std::string(3, ' ');
     // Buffer breaks in middle of a fixed32.
-    io::ArrayInputStream is(serialized.data(), serialized.size(),
-                            serialized.size() - 7);
+    io::ArrayInputStream is(serialized.data(), static_cast<int>(serialized.size()),
+                            static_cast<int>(serialized.size() - 7));
     {
       io::CodedInputStream cis(&is);
       m.Clear();
@@ -1309,8 +1309,8 @@ TEST(Lite, CodedInputStreamRollback) {
     serialized += '\014';
     serialized += std::string(3, ' ');
     // Buffer breaks in middle of a 2 byte varint.
-    io::ArrayInputStream is(serialized.data(), serialized.size(),
-                            serialized.size() - 5);
+    io::ArrayInputStream is(serialized.data(), static_cast<int>(serialized.size()),
+                            static_cast<int>(serialized.size() - 5));
     {
       io::CodedInputStream cis(&is);
       m.Clear();

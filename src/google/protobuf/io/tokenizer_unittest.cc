@@ -249,7 +249,7 @@ SimpleTokenCase kSimpleTokenCases[] = {
 TEST_2D(TokenizerTest, SimpleTokens, kSimpleTokenCases, kBlockSizes) {
   // Set up the tokenizer.
   TestInputStream input(kSimpleTokenCases_case.input.data(),
-                        kSimpleTokenCases_case.input.size(), kBlockSizes_case);
+                        static_cast<int>(kSimpleTokenCases_case.input.size()), kBlockSizes_case);
   TestErrorCollector error_collector;
   Tokenizer tokenizer(&input, &error_collector);
 
@@ -293,7 +293,7 @@ TEST_1D(TokenizerTest, FloatSuffix, kBlockSizes) {
 
   // Set up the tokenizer.
   const char* text = "1f 2.5f 6e3f 7F";
-  TestInputStream input(text, strlen(text), kBlockSizes_case);
+  TestInputStream input(text, static_cast<int>(strlen(text)), kBlockSizes_case);
   TestErrorCollector error_collector;
   Tokenizer tokenizer(&input, &error_collector);
   tokenizer.set_allow_f_after_float(true);
@@ -333,7 +333,7 @@ SimpleTokenCase kWhitespaceTokenCases[] = {
 TEST_2D(TokenizerTest, Whitespace, kWhitespaceTokenCases, kBlockSizes) {
   {
     TestInputStream input(kWhitespaceTokenCases_case.input.data(),
-                          kWhitespaceTokenCases_case.input.size(),
+                          static_cast<int>(kWhitespaceTokenCases_case.input.size()),
                           kBlockSizes_case);
     TestErrorCollector error_collector;
     Tokenizer tokenizer(&input, &error_collector);
@@ -342,7 +342,7 @@ TEST_2D(TokenizerTest, Whitespace, kWhitespaceTokenCases, kBlockSizes) {
   }
   {
     TestInputStream input(kWhitespaceTokenCases_case.input.data(),
-                          kWhitespaceTokenCases_case.input.size(),
+                          static_cast<int>(kWhitespaceTokenCases_case.input.size()),
                           kBlockSizes_case);
     TestErrorCollector error_collector;
     Tokenizer tokenizer(&input, &error_collector);
@@ -468,7 +468,7 @@ MultiTokenCase kMultiTokenCases[] = {
 TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
   // Set up the tokenizer.
   TestInputStream input(kMultiTokenCases_case.input.data(),
-                        kMultiTokenCases_case.input.size(), kBlockSizes_case);
+                        static_cast<int>(kMultiTokenCases_case.input.size()), kBlockSizes_case);
   TestErrorCollector error_collector;
   Tokenizer tokenizer(&input, &error_collector);
 
@@ -540,7 +540,7 @@ TEST_2D(TokenizerTest, MultipleWhitespaceTokens, kMultiWhitespaceTokenCases,
         kBlockSizes) {
   // Set up the tokenizer.
   TestInputStream input(kMultiWhitespaceTokenCases_case.input.data(),
-                        kMultiWhitespaceTokenCases_case.input.size(),
+                        static_cast<int>(kMultiWhitespaceTokenCases_case.input.size()),
                         kBlockSizes_case);
   TestErrorCollector error_collector;
   Tokenizer tokenizer(&input, &error_collector);
@@ -608,7 +608,7 @@ TEST_1D(TokenizerTest, ShCommentStyle, kBlockSizes) {
                                  "*",   "grault", "*", "/",   "garply"};
 
   // Set up the tokenizer.
-  TestInputStream input(text, strlen(text), kBlockSizes_case);
+  TestInputStream input(text, static_cast<int>(strlen(text)), kBlockSizes_case);
   TestErrorCollector error_collector;
   Tokenizer tokenizer(&input, &error_collector);
   tokenizer.set_comment_style(Tokenizer::SH_COMMENT_STYLE);
@@ -768,13 +768,13 @@ DocCommentCase kDocCommentCases[] = {
 TEST_2D(TokenizerTest, DocComments, kDocCommentCases, kBlockSizes) {
   // Set up the tokenizer.
   TestInputStream input(kDocCommentCases_case.input.data(),
-                        kDocCommentCases_case.input.size(), kBlockSizes_case);
+                        static_cast<int>(kDocCommentCases_case.input.size()), kBlockSizes_case);
   TestErrorCollector error_collector;
   Tokenizer tokenizer(&input, &error_collector);
 
   // Set up a second tokenizer where we'll pass all NULLs to NextWithComments().
   TestInputStream input2(kDocCommentCases_case.input.data(),
-                         kDocCommentCases_case.input.size(), kBlockSizes_case);
+                         static_cast<int>(kDocCommentCases_case.input.size()), kBlockSizes_case);
   Tokenizer tokenizer2(&input2, &error_collector);
 
   tokenizer.Next();
@@ -1131,7 +1131,7 @@ ErrorCase kErrorCases[] = {
 TEST_2D(TokenizerTest, Errors, kErrorCases, kBlockSizes) {
   // Set up the tokenizer.
   TestInputStream input(kErrorCases_case.input.data(),
-                        kErrorCases_case.input.size(), kBlockSizes_case);
+                        static_cast<int>(kErrorCases_case.input.size()), kBlockSizes_case);
   TestErrorCollector error_collector;
   Tokenizer tokenizer(&input, &error_collector);
 
@@ -1154,7 +1154,7 @@ TEST_2D(TokenizerTest, Errors, kErrorCases, kBlockSizes) {
 
 TEST_1D(TokenizerTest, BackUpOnDestruction, kBlockSizes) {
   std::string text = "foo bar";
-  TestInputStream input(text.data(), text.size(), kBlockSizes_case);
+  TestInputStream input(text.data(), static_cast<int>(text.size()), kBlockSizes_case);
 
   // Create a tokenizer, read one token, then destroy it.
   {

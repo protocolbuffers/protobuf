@@ -61,7 +61,7 @@ const UnknownFieldSet& UnknownFieldSet::default_instance() {
 
 void UnknownFieldSet::ClearFallback() {
   GOOGLE_DCHECK(!fields_.empty());
-  int n = fields_.size();
+  int n = static_cast<int>(fields_.size());
   do {
     (fields_)[--n].Delete();
   } while (n > 0);
@@ -290,8 +290,8 @@ uint8_t* UnknownField::InternalSerializeLengthDelimitedNoTag(
     uint8_t* target, io::EpsCopyOutputStream* stream) const {
   GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
   const std::string& data = *data_.length_delimited_.string_value;
-  target = io::CodedOutputStream::WriteVarint32ToArray(data.size(), target);
-  target = stream->WriteRaw(data.data(), data.size(), target);
+  target = io::CodedOutputStream::WriteVarint32ToArray(static_cast<uint32_t>(data.size()), target);
+  target = stream->WriteRaw(data.data(), static_cast<int>(data.size()), target);
   return target;
 }
 

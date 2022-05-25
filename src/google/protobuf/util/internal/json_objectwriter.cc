@@ -157,7 +157,7 @@ JsonObjectWriter* JsonObjectWriter::RenderBytes(StringPiece name,
   // TODO(wpoon): Consider a ByteSink solution that writes the base64 bytes
   //              directly to the stream, rather than first putting them
   //              into a string and then writing them to the stream.
-  stream_->WriteRaw(base64.data(), base64.size());
+  stream_->WriteRaw(base64.data(), static_cast<int>(base64.size()));
   WriteChar('"');
   return this;
 }

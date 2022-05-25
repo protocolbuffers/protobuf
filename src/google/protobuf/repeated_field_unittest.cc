@@ -331,7 +331,7 @@ TEST(RepeatedField, ReserveLessThanDouble) {
   RepeatedField<int> field;
   field.Reserve(20);
   int capacity = field.Capacity();
-  field.Reserve(capacity * 1.5);
+  field.Reserve(static_cast<int>(capacity * 1.5));
 
   EXPECT_LE(2 * capacity, ReservedSpace(&field));
 }

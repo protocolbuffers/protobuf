@@ -470,7 +470,7 @@ TEST_F(MapImplTest, HashFlood) {
 
 TEST_F(MapImplTest, CopyIteratorStressTest) {
   std::vector<Map<int32_t, int32_t>::iterator> v;
-  const int kIters = 1e5;
+  const int kIters = static_cast<int>(1e5);
   for (uint32_t i = 0; i < kIters; i++) {
     int32_t key = (3 + i * (5 + i * (-8 + i * (62 + i)))) & 0x77777777;
     map_[key] = i;
@@ -516,7 +516,7 @@ static void TestEqualIterators(Iter i0, Iter i1, Iter end) {
 
 template <typename IteratorType>
 static void TestOldVersusNewIterator(int skip, Map<int, int>* m) {
-  const int initial_size = m->size();
+  const int initial_size = static_cast<int>(m->size());
   IteratorType it = m->begin();
   for (int i = 0; i < skip && it != m->end(); it++, i++) {
   }
@@ -596,7 +596,7 @@ static void StressTestIterators(int n) {
   int position_of_last_key = 0;
   for (Map<int, int>::iterator it = m.begin(); it != m.end(); ++it) {
     if (it->first == last_key) {
-      position_of_last_key = v.size();
+      position_of_last_key = static_cast<int>(v.size());
     }
     v.push_back(it);
   }
@@ -640,7 +640,7 @@ TEST_F(MapImplTest, IteratorInvalidation) {
 // Test that erase() revalidates iterators.
 TEST_F(MapImplTest, EraseRevalidates) {
   map_[3] = map_[13] = map_[20] = 0;
-  const int initial_size = map_.size();
+  const int initial_size = static_cast<int>(map_.size());
   EXPECT_EQ(3, initial_size);
   std::vector<Map<int, int>::iterator> v;
   for (Map<int, int>::iterator it = map_.begin(); it != map_.end(); ++it) {
@@ -650,7 +650,7 @@ TEST_F(MapImplTest, EraseRevalidates) {
   for (int i = 0; map_.size() <= initial_size * 20; i++) {
     map_[i] = 0;
   }
-  const int larger_size = map_.size();
+  const int larger_size = static_cast<int>(map_.size());
   // We've greatly increased the size of the map, so it is highly likely that
   // the following will corrupt m if erase() doesn't properly revalidate
   // iterators passed to it.  Finishing this routine without crashing indicates
@@ -2613,7 +2613,7 @@ TEST(GeneratedMapFieldTest, SerializationToStream) {
   data.resize(size);
   {
     // Allow the output stream to buffer only one byte at a time.
-    io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), size, 1);
+    io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), static_cast<int>(size), 1);
     io::CodedOutputStream output_stream(&array_stream);
     message1.SerializeWithCachedSizes(&output_stream);
     EXPECT_FALSE(output_stream.HadError());
@@ -2924,7 +2924,7 @@ TEST(GeneratedMapFieldTest, MessagesMustMerge) {
   // (*) http://google3/net/proto2/internal/map_test.cc?l=2433&rcl=310012028
   std::string dummy4_s = with_dummy4.SerializePartialAsString();
   std::string dummy5_s = with_dummy5.SerializePartialAsString();
-  int payload_size = dummy4_s.size() + dummy5_s.size();
+  int payload_size = static_cast<int>(dummy4_s.size() + dummy5_s.size());
   // Makes sure the payload size fits into one byte.
   ASSERT_LT(payload_size, 128);
 
@@ -3265,7 +3265,7 @@ TEST_F(MapFieldInDynamicMessageTest, MapSpaceUsed) {
   std::unique_ptr<Message> message(map_prototype_->New());
   MapReflectionTester reflection_tester(map_descriptor_);
 
-  int initial_space_used = message->SpaceUsedLong();
+  int initial_space_used = static_cast<int>(message->SpaceUsedLong());
 
   reflection_tester.SetMapFieldsViaReflection(message.get());
   EXPECT_LT(initial_space_used, message->SpaceUsedLong());
@@ -3430,7 +3430,7 @@ TEST(WireFormatForMapFieldTest, ParseMap) {
   source.SerializeToString(&data);
 
   // Parse using WireFormat.
-  io::ArrayInputStream raw_input(data.data(), data.size());
+  io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
   io::CodedInputStream input(&raw_input);
   WireFormat::ParseAndMergePartial(&input, &dest);
 
@@ -3469,7 +3469,7 @@ TEST(WireFormatForMapFieldTest, SerializeMap) {
     io::StringOutputStream raw_output(&dynamic_data);
     io::CodedOutputStream output(&raw_output);
     size_t size = WireFormat::ByteSize(message);
-    WireFormat::SerializeWithCachedSizes(message, size, &output);
+    WireFormat::SerializeWithCachedSizes(message, static_cast<int>(size), &output);
     ASSERT_FALSE(output.HadError());
   }
 
@@ -3514,7 +3514,7 @@ TEST(WireFormatForMapFieldTest, MapByteSizeDynamicMessage) {
   reflection_tester.ExpectMapFieldsSetViaReflection(*dynamic_message);
   std::string expected_serialized_data;
   dynamic_message->SerializeToString(&expected_serialized_data);
-  int expected_size = expected_serialized_data.size();
+  int expected_size = static_cast<int>(expected_serialized_data.size());
   EXPECT_EQ(dynamic_message->ByteSizeLong(), expected_size);
   TestMap expected_message;
   expected_message.ParseFromString(expected_serialized_data);
@@ -3577,7 +3577,7 @@ TEST(WireFormatForMapFieldTest, MapByteSizeDynamicMessage) {
   EXPECT_EQ(reflection_tester.MapSize(*dynamic_message, "map_int32_foreign_message"), 2);
   // The map field is marked as CLEAN, ByteSizeLong() will use map which do not
   // have duplicate keys to calculate.
-  int size = dynamic_message->ByteSizeLong();
+  int size = static_cast<int>(dynamic_message->ByteSizeLong());
   EXPECT_EQ(expected_size, size);
 
   // Protobuf used to have a bug for serialize when map it marked CLEAN. It used
@@ -3621,19 +3621,19 @@ TEST(WireFormatForMapFieldTest, MapParseHelpers) {
     // Test ParseFromBoundedZeroCopyStream.
     std::string data_with_junk(data);
     data_with_junk.append("some junk on the end");
-    io::ArrayInputStream stream(data_with_junk.data(), data_with_junk.size());
+    io::ArrayInputStream stream(data_with_junk.data(), static_cast<int>(data_with_junk.size()));
     UNITTEST::TestMap message;
-    EXPECT_TRUE(message.ParseFromBoundedZeroCopyStream(&stream, data.size()));
+    EXPECT_TRUE(message.ParseFromBoundedZeroCopyStream(&stream, static_cast<int>(data.size())));
     MapTestUtil::ExpectMapFieldsSet(message);
   }
 
   {
     // Test that ParseFromBoundedZeroCopyStream fails (but doesn't crash) if
     // EOF is reached before the expected number of bytes.
-    io::ArrayInputStream stream(data.data(), data.size());
+    io::ArrayInputStream stream(data.data(), static_cast<int>(data.size()));
     UNITTEST::TestAllTypes message;
     EXPECT_FALSE(
-        message.ParseFromBoundedZeroCopyStream(&stream, data.size() + 1));
+        message.ParseFromBoundedZeroCopyStream(&stream, static_cast<int>(data.size() + 1)));
   }
 }
 
@@ -3644,7 +3644,7 @@ static std::string DeterministicSerializationWithSerializePartialToCodedStream(
     const T& t) {
   const size_t size = t.ByteSizeLong();
   std::string result(size, '\0');
-  io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&result), size);
+  io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&result), static_cast<int>(size));
   io::CodedOutputStream output_stream(&array_stream);
   output_stream.SetSerializationDeterministic(true);
   t.SerializePartialToCodedStream(&output_stream);
@@ -3658,7 +3658,7 @@ static std::string DeterministicSerializationWithSerializeToCodedStream(
     const T& t) {
   const size_t size = t.ByteSizeLong();
   std::string result(size, '\0');
-  io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&result), size);
+  io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&result), static_cast<int>(size));
   io::CodedOutputStream output_stream(&array_stream);
   output_stream.SetSerializationDeterministic(true);
   t.SerializeToCodedStream(&output_stream);
@@ -3671,7 +3671,7 @@ template <typename T>
 static std::string DeterministicSerialization(const T& t) {
   const size_t size = t.ByteSizeLong();
   std::string result(size, '\0');
-  io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&result), size);
+  io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&result), static_cast<int>(size));
   {
     io::CodedOutputStream output_stream(&array_stream);
     output_stream.SetSerializationDeterministic(true);
@@ -3972,7 +3972,7 @@ TEST(ArenaTest, StringMapNoLeak) {
       Arena::CreateMessage<UNITTEST::TestArenaMap>(&arena);
   std::string data;
   // String with length less than 16 will not be allocated from heap.
-  int original_capacity = data.capacity();
+  int original_capacity = static_cast<int>(data.capacity());
   while (data.capacity() <= original_capacity) {
     data.append("a");
   }

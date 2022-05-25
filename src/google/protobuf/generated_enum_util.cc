@@ -75,7 +75,7 @@ int LookUpEnumName(const EnumEntry* enums, const int* sorted_indices,
   auto it =
       std::lower_bound(sorted_indices, sorted_indices + size, -1, comparator);
   if (it != sorted_indices + size && enums[*it].value == value) {
-    return it - sorted_indices;
+    return static_cast<int>(it - sorted_indices);
   }
   return -1;
 }

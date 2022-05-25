@@ -1232,13 +1232,13 @@ const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
                                      internal::InternalMetadata* metadata,
                                      internal::ParseContext* ctx) {
   GeneratedExtensionFinder finder(extendee);
-  int number = tag >> 3;
+  int number = static_cast<int>(tag >> 3);
   bool was_packed_on_wire;
   ExtensionInfo extension;
   if (!FindExtensionInfoFromFieldNumber(tag & 7, number, &finder, &extension,
                                         &was_packed_on_wire)) {
     return UnknownFieldParse(
-        tag, metadata->mutable_unknown_fields<std::string>(), ptr, ctx);
+        static_cast<uint32_t>(tag), metadata->mutable_unknown_fields<std::string>(), ptr, ctx);
   }
   return ParseFieldWithExtensionInfo<std::string>(
       number, was_packed_on_wire, extension, metadata, ptr, ctx);
@@ -1401,7 +1401,7 @@ size_t ExtensionSet::Extension::ByteSize(int number) const {
 
       cached_size = ToCachedSize(result);
       if (result > 0) {
-        result += io::CodedOutputStream::VarintSize32(result);
+        result += io::CodedOutputStream::VarintSize32(static_cast<uint32_t>(result));
         result += io::CodedOutputStream::VarintSize32(WireFormatLite::MakeTag(
             number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED));
       }
@@ -1469,7 +1469,7 @@ size_t ExtensionSet::Extension::ByteSize(int number) const {
       case WireFormatLite::TYPE_MESSAGE: {
         if (is_lazy) {
           size_t size = lazymessage_value->ByteSizeLong();
-          result += io::CodedOutputStream::VarintSize32(size) + size;
+          result += io::CodedOutputStream::VarintSize32(static_cast<uint32_t>(size)) + size;
         } else {
           result += WireFormatLite::MessageSize(*message_value);
         }
@@ -1936,7 +1936,7 @@ size_t ExtensionSet::Extension::MessageSetItemByteSize(int number) const {
     message_size = message_value->ByteSizeLong();
   }
 
-  our_size += io::CodedOutputStream::VarintSize32(message_size);
+  our_size += io::CodedOutputStream::VarintSize32(static_cast<uint32_t>(message_size));
   our_size += message_size;
 
   return our_size;

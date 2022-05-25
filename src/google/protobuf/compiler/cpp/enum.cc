@@ -69,7 +69,7 @@ int CountUniqueValues(const EnumDescriptor* descriptor) {
   for (int i = 0; i < descriptor->value_count(); ++i) {
     values.insert(descriptor->value(i)->number());
   }
-  return values.size();
+  return static_cast<int>(values.size());
 }
 
 }  // namespace
@@ -357,7 +357,7 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
         number_to_index.emplace(p.second, i);
       }
       ++i;
-      data_index += p.first.size();
+      data_index += static_cast<int>(p.first.size());
     }
 
     format(

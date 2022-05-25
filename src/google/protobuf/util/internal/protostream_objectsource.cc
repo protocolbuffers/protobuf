@@ -620,7 +620,7 @@ util::Status ProtoStreamObjectSource::RenderAny(
   // nested_type cannot be null at this time.
   const google::protobuf::Type* nested_type = resolved_type.value();
 
-  io::ArrayInputStream zero_copy_stream(value.data(), value.size());
+  io::ArrayInputStream zero_copy_stream(value.data(), static_cast<int>(value.size()));
   io::CodedInputStream in_stream(&zero_copy_stream);
   // We know the type so we can render it. Recursively parse the nested stream
   // using a nested ProtoStreamObjectSource using our nested type information.

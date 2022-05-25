@@ -84,7 +84,7 @@ class MathUtil {
     if (value == T(0) || internal::IsNan(value)) {
       return value;
     }
-    return value > T(0) ? 1 : -1;
+    return value > T(0) ? static_cast<T>(1) : static_cast<T>(-1);
   }
 
   template <typename T>

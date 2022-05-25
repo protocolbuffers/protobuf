@@ -95,7 +95,7 @@ void ReplaceCharacters(std::string *s, const char *remove, char replacewith) {
 }
 
 void StripWhitespace(std::string *str) {
-  int str_length = str->length();
+  int str_length = static_cast<int>(str->length());
 
   // Strip off leading whitespace.
   int first = 0;
@@ -263,7 +263,7 @@ static void JoinStringsIterator(const ITERATOR &start, const ITERATOR &end,
                                 const char *delim, std::string *result) {
   GOOGLE_CHECK(result != nullptr);
   result->clear();
-  int delim_length = strlen(delim);
+  int delim_length = static_cast<int>(strlen(delim));
 
   // Precompute resulting length so we can reserve() memory in one shot.
   int length = 0;
@@ -271,7 +271,7 @@ static void JoinStringsIterator(const ITERATOR &start, const ITERATOR &end,
     if (iter != start) {
       length += delim_length;
     }
-    length += iter->size();
+    length += static_cast<int>(iter->size());
   }
   result->reserve(length);
 
@@ -330,7 +330,7 @@ int UnescapeCEscapeSequences(const char *source, char *dest,
         case '\0':
           LOG_STRING(ERROR, errors) << "String cannot end with \\";
           *d = '\0';
-          return d - dest;   // we're done with p
+          return static_cast<int>(d - dest);   // we're done with p
         case 'a':  *d++ = '\a';  break;
         case 'b':  *d++ = '\b';  break;
         case 'f':  *d++ = '\f';  break;
@@ -428,7 +428,7 @@ int UnescapeCEscapeSequences(const char *source, char *dest,
     }
   }
   *d = '\0';
-  return d - dest;
+  return static_cast<int>(d - dest);
 }
 
 // ----------------------------------------------------------------------
@@ -601,18 +601,18 @@ std::string CEscape(const std::string &src) {
 namespace strings {
 
 std::string Utf8SafeCEscape(const std::string &src) {
-  const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
+  const int dest_length = static_cast<int>(src.size() * 4 + 1); // Maximum possible expansion
   std::unique_ptr<char[]> dest(new char[dest_length]);
-  const int len = CEscapeInternal(src.data(), src.size(),
+  const int len = CEscapeInternal(src.data(), static_cast<int>(src.size()),
                                   dest.get(), dest_length, false, true);
   GOOGLE_DCHECK_GE(len, 0);
   return std::string(dest.get(), len);
 }
 
 std::string CHexEscape(const std::string &src) {
-  const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
+  const int dest_length = static_cast<int>(src.size() * 4 + 1); // Maximum possible expansion
   std::unique_ptr<char[]> dest(new char[dest_length]);
-  const int len = CEscapeInternal(src.data(), src.size(),
+  const int len = CEscapeInternal(src.data(), static_cast<int>(src.size()),
                                   dest.get(), dest_length, true, false);
   GOOGLE_DCHECK_GE(len, 0);
   return std::string(dest.get(), len);
@@ -818,7 +818,7 @@ char *FastInt64ToBuffer(int64_t i, char* buffer) {
     // we don't divide negative numbers.
     if (i > -10) {
       i = -i;
-      *p-- = '0' + i;
+      *p-- = static_cast<char>('0' + i);
       *p = '-';
       return p;
     } else {
@@ -1062,7 +1062,7 @@ char* FastUInt64ToBufferLeft(uint64_t u64, char* buffer) {
 
   uint64_t top_11_digits = u64 / 1000000000;
   buffer = FastUInt64ToBufferLeft(top_11_digits, buffer);
-  u = u64 - (top_11_digits * 1000000000);
+  u = static_cast<uint32_t>(u64 - (top_11_digits * 1000000000));
 
   digits = u / 10000000;  // 10,000,000
   GOOGLE_DCHECK_LT(digits, 100);
@@ -1144,14 +1144,14 @@ std::string SimpleItoa(unsigned long i) {
 std::string SimpleItoa(long long i) {
   char buffer[kFastToBufferSize];
   return (sizeof(i) == 4) ?
-    FastInt32ToBuffer(i, buffer) :
+    FastInt32ToBuffer(static_cast<int32_t>(i), buffer) :
     FastInt64ToBuffer(i, buffer);
 }
 
 std::string SimpleItoa(unsigned long long i) {
   char buffer[kFastToBufferSize];
   return std::string(buffer, (sizeof(i) == 4)
-                                 ? FastUInt32ToBufferLeft(i, buffer)
+                                 ? FastUInt32ToBufferLeft(static_cast<uint32_t>(i), buffer)
                                  : FastUInt64ToBufferLeft(i, buffer));
 }
 
@@ -1322,7 +1322,7 @@ bool safe_strtof(const char* str, float* value) {
   char* endptr;
   errno = 0;  // errno only gets set on errors
 #if defined(_WIN32) || defined (__hpux)  // has no strtof()
-  *value = internal::NoLocaleStrtod(str, &endptr);
+  *value = static_cast<float>(internal::NoLocaleStrtod(str, &endptr));
 #else
   *value = strtof(str, &endptr);
 #endif
@@ -1621,7 +1621,7 @@ int GlobalReplaceSubstring(const std::string &substring,
   int pos = 0;
   for (StringPiece::size_type match_pos =
            s->find(substring.data(), pos, substring.length());
-       match_pos != std::string::npos; pos = match_pos + substring.length(),
+       match_pos != std::string::npos; pos = static_cast<int>(match_pos + substring.length()),
                               match_pos = s->find(substring.data(), pos,
                                                   substring.length())) {
     ++num_replacements;
@@ -2079,11 +2079,11 @@ static bool Base64UnescapeInternal(const char *src, int slen, std::string *dest,
 }
 
 bool Base64Unescape(StringPiece src, std::string *dest) {
-  return Base64UnescapeInternal(src.data(), src.size(), dest, kUnBase64);
+  return Base64UnescapeInternal(src.data(), static_cast<int>(src.size()), dest, kUnBase64);
 }
 
 bool WebSafeBase64Unescape(StringPiece src, std::string *dest) {
-  return Base64UnescapeInternal(src.data(), src.size(), dest, kUnWebSafeBase64);
+  return Base64UnescapeInternal(src.data(), static_cast<int>(src.size()), dest, kUnWebSafeBase64);
 }
 
 int Base64EscapeInternal(const unsigned char *src, int szsrc,
@@ -2118,8 +2118,8 @@ int Base64EscapeInternal(const unsigned char *src, int szsrc,
     cur_src += 3;
   }
   // To save time, we didn't update szdest or szsrc in the loop.  So do it now.
-  szdest = limit_dest - cur_dest;
-  szsrc = limit_src - cur_src;
+  szdest = static_cast<int>(limit_dest - cur_dest);
+  szsrc = static_cast<int>(limit_src - cur_src);
 
   /* now deal with the tail (<=3 bytes) */
   switch (szsrc) {
@@ -2183,7 +2183,7 @@ int Base64EscapeInternal(const unsigned char *src, int szsrc,
       GOOGLE_LOG(FATAL) << "Logic problem? szsrc = " << szsrc;
       break;
   }
-  return (cur_dest - dest);
+  return static_cast<int>(cur_dest - dest);
 }
 
 static const char kBase64Chars[] =
@@ -2209,7 +2209,7 @@ void Base64EscapeInternal(const unsigned char *src, int szsrc,
   dest->resize(calc_escaped_size);
   const int escaped_len = Base64EscapeInternal(src, szsrc,
                                                string_as_array(dest),
-                                               dest->size(),
+                                               static_cast<int>(dest->size()),
                                                base64_chars,
                                                do_padding);
   GOOGLE_DCHECK_EQ(calc_escaped_size, escaped_len);
@@ -2228,17 +2228,17 @@ void WebSafeBase64Escape(const unsigned char *src, int szsrc, std::string *dest,
 
 void Base64Escape(StringPiece src, std::string *dest) {
   Base64Escape(reinterpret_cast<const unsigned char*>(src.data()),
-               src.size(), dest, true);
+               static_cast<int>(src.size()), dest, true);
 }
 
 void WebSafeBase64Escape(StringPiece src, std::string *dest) {
   WebSafeBase64Escape(reinterpret_cast<const unsigned char*>(src.data()),
-                      src.size(), dest, false);
+                      static_cast<int>(src.size()), dest, false);
 }
 
 void WebSafeBase64EscapeWithPadding(StringPiece src, std::string *dest) {
   WebSafeBase64Escape(reinterpret_cast<const unsigned char*>(src.data()),
-                      src.size(), dest, true);
+                      static_cast<int>(src.size()), dest, true);
 }
 
 // Helper to append a Unicode code point to a string as UTF8, without bringing
@@ -2463,7 +2463,7 @@ double NoLocaleStrtod(const char *str, char **endptr) {
     // Update endptr to point at the right location.
     if (endptr != NULL) {
       // size_diff is non-zero if the localized radix has multiple bytes.
-      int size_diff = localized.size() - strlen(str);
+      int size_diff = static_cast<int>(localized.size() - strlen(str));
       // const_cast is necessary to match the strtod() interface.
       *endptr = const_cast<char *>(
           str + (localized_endptr - localized_cstr - size_diff));

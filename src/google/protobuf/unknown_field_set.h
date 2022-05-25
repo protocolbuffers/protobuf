@@ -203,7 +203,7 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   bool InternalMergeFromMessage(const MessageType& message) {
     const auto& unknown_fields = message.unknown_fields();
     io::ArrayInputStream array_stream(unknown_fields.data(),
-                                      unknown_fields.size());
+                                      static_cast<int>(unknown_fields.size()));
     io::CodedInputStream coded_stream(&array_stream);
     return MergeFromCodedStream(&coded_stream);
   }

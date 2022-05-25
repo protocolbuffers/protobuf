@@ -826,8 +826,8 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
       int offset = 0;
       for (int i = 0; i < message_generators_.size(); i++) {
         message_generators_[i]->GenerateSchema(printer, offset,
-                                               pairs[i].second);
-        offset += pairs[i].first;
+                                               static_cast<int>(pairs[i].second));
+        offset += static_cast<int>(pairs[i].first);
       }
     }
     format.Outdent();
@@ -901,7 +901,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* printer) {
   CrossFileReferences refs;
   GetCrossFileReferencesForFile(file_, &refs);
   int num_deps =
-      refs.strong_reflection_files.size() + refs.weak_reflection_files.size();
+      static_cast<int>(refs.strong_reflection_files.size() + refs.weak_reflection_files.size());
 
   // Build array of DescriptorTable deps.
   if (num_deps > 0) {

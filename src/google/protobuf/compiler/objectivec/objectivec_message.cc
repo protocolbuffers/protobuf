@@ -437,9 +437,9 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
     }
     // Tell all the fields the oneof base.
     for (const auto& generator : oneof_generators_) {
-      generator->SetOneofIndexBase(sizeof_has_storage);
+      generator->SetOneofIndexBase(static_cast<int>(sizeof_has_storage));
     }
-    field_generators_.SetOneofIndexBase(sizeof_has_storage);
+    field_generators_.SetOneofIndexBase(static_cast<int>(sizeof_has_storage));
     // sizeof_has_storage needs enough bits for the single fields that aren't in
     // any oneof, and then one int32 for each oneof (to store the field number).
     sizeof_has_storage += oneof_generators_.size();

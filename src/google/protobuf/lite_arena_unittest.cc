@@ -77,11 +77,11 @@ TEST_F(LiteArenaTest, UnknownFieldMemLeak) {
       Arena::CreateMessage<protobuf_unittest::ForeignMessageArenaLite>(
           arena_.get());
   std::string data = "\012\000";
-  int original_capacity = data.capacity();
+  int original_capacity = static_cast<int>(data.capacity());
   while (data.capacity() <= original_capacity) {
     data.append("a");
   }
-  data[1] = data.size() - 2;
+  data[1] = static_cast<char>(data.size() - 2);
   message->ParseFromString(data);
 }
 

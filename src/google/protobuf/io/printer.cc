@@ -115,7 +115,7 @@ void Printer::Annotate(const char* begin_varname, const char* end_varname,
 
 void Printer::Print(const std::map<std::string, std::string>& variables,
                     const char* text) {
-  int size = strlen(text);
+  int size = static_cast<int>(strlen(text));
   int pos = 0;  // The number of bytes we've written so far.
   substitutions_.clear();
   line_start_variables_.clear();
@@ -145,7 +145,7 @@ void Printer::Print(const std::map<std::string, std::string>& variables,
         GOOGLE_LOG(DFATAL) << " Unclosed variable name.";
         end = text + pos;
       }
-      int endpos = end - text;
+      int endpos = static_cast<int>(end - text);
 
       std::string varname(text + pos, endpos - pos);
       if (varname.empty()) {
@@ -161,7 +161,7 @@ void Printer::Print(const std::map<std::string, std::string>& variables,
           if (at_start_of_line_ && iter->second.empty()) {
             line_start_variables_.push_back(varname);
           }
-          WriteRaw(iter->second.data(), iter->second.size());
+          WriteRaw(iter->second.data(), static_cast<int>(iter->second.size()));
           std::pair<std::map<std::string, std::pair<size_t, size_t> >::iterator,
                     bool>
               inserted = substitutions_.insert(std::make_pair(
@@ -198,12 +198,12 @@ void Printer::Outdent() {
 }
 
 void Printer::PrintRaw(const std::string& data) {
-  WriteRaw(data.data(), data.size());
+  WriteRaw(data.data(), static_cast<int>(data.size()));
 }
 
 void Printer::PrintRaw(const char* data) {
   if (failed_) return;
-  WriteRaw(data, strlen(data));
+  WriteRaw(data, static_cast<int>(strlen(data)));
 }
 
 void Printer::WriteRaw(const char* data, int size) {
@@ -213,7 +213,7 @@ void Printer::WriteRaw(const char* data, int size) {
   if (at_start_of_line_ && (size > 0) && (data[0] != '\n')) {
     // Insert an indent.
     at_start_of_line_ = false;
-    CopyToBuffer(indent_.data(), indent_.size());
+    CopyToBuffer(indent_.data(), static_cast<int>(indent_.size()));
     if (failed_) return;
     // Fix up empty variables (e.g., "{") that should be annotated as
     // coming after the indent.
@@ -272,7 +272,7 @@ void Printer::CopyToBuffer(const char* data, int size) {
 
 void Printer::IndentIfAtStart() {
   if (at_start_of_line_) {
-    CopyToBuffer(indent_.data(), indent_.size());
+    CopyToBuffer(indent_.data(), static_cast<int>(indent_.size()));
     at_start_of_line_ = false;
   }
 }
@@ -390,11 +390,11 @@ const char* Printer::WriteVariable(
   IndentIfAtStart();
 
   // Write the possible spaces in front.
-  CopyToBuffer(start, start_var - start);
+  CopyToBuffer(start, static_cast<int>(start_var - start));
   // Write a non-empty substituted variable.
-  CopyToBuffer(sub.c_str(), sub.size());
+  CopyToBuffer(sub.c_str(), static_cast<int>(sub.size()));
   // Finish off with writing possible trailing spaces.
-  CopyToBuffer(end_var, end - end_var);
+  CopyToBuffer(end_var, static_cast<int>(end - end_var));
   return format;
 }
 

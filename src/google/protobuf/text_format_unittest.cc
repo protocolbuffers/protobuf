@@ -374,9 +374,9 @@ TEST_F(TextFormatTest, PrintDeeplyNestedUnknownMessage) {
   lengths.push_back(0);
   for (int i = 0; i < kNestingDepth - 1; ++i) {
     lengths.push_back(
-        internal::WireFormatLite::TagSize(
+        static_cast<int>(internal::WireFormatLite::TagSize(
             kUnknownFieldNumber, internal::WireFormatLite::TYPE_BYTES) +
-        internal::WireFormatLite::LengthDelimitedSize(lengths.back()));
+        internal::WireFormatLite::LengthDelimitedSize(lengths.back())));
   }
   std::string serialized;
   {
@@ -735,13 +735,13 @@ class MultilineStringPrinter : public TextFormat::FastFieldValuePrinter {
                    TextFormat::BaseTextGenerator* generator) const override {
     generator->Indent();
     int last_pos = 0;
-    int newline_pos = val.find('\n');
+    int newline_pos = static_cast<int>(val.find('\n'));
     while (newline_pos != std::string::npos) {
       generator->PrintLiteral("\n");
       TextFormat::FastFieldValuePrinter::PrintString(
           val.substr(last_pos, newline_pos + 1 - last_pos), generator);
       last_pos = newline_pos + 1;
-      newline_pos = val.find('\n', last_pos);
+      newline_pos = static_cast<int>(val.find('\n', last_pos));
     }
     if (last_pos < val.size()) {
       generator->PrintLiteral("\n");
@@ -802,14 +802,14 @@ TEST_F(TextFormatTest, CustomMessagePrinter) {
 
 TEST_F(TextFormatTest, ParseBasic) {
   io::ArrayInputStream input_stream(proto_text_format_.data(),
-                                    proto_text_format_.size());
+                                    static_cast<int>(proto_text_format_.size()));
   TextFormat::Parse(&input_stream, &proto_);
   TestUtil::ExpectAllFieldsSet(proto_);
 }
 
 TEST_F(TextFormatExtensionsTest, ParseExtensions) {
   io::ArrayInputStream input_stream(proto_text_format_.data(),
-                                    proto_text_format_.size());
+                                    static_cast<int>(proto_text_format_.size()));
   TextFormat::Parse(&input_stream, &proto_);
   TestUtil::ExpectAllExtensionsSet(proto_);
 }
@@ -870,7 +870,7 @@ TEST_F(TextFormatTest, ParseStringEscape) {
   std::string parse_string =
       "optional_string: " + kEscapeTestStringEscaped + "\n";
 
-  io::ArrayInputStream input_stream(parse_string.data(), parse_string.size());
+  io::ArrayInputStream input_stream(parse_string.data(), static_cast<int>(parse_string.size()));
   TextFormat::Parse(&input_stream, &proto_);
 
   // Compare.
@@ -881,7 +881,7 @@ TEST_F(TextFormatTest, ParseConcatenatedString) {
   // Create a parse string with multiple parts on one line.
   std::string parse_string = "optional_string: \"foo\" \"bar\"\n";
 
-  io::ArrayInputStream input_stream1(parse_string.data(), parse_string.size());
+  io::ArrayInputStream input_stream1(parse_string.data(), static_cast<int>(parse_string.size()));
   TextFormat::Parse(&input_stream1, &proto_);
 
   // Compare.
@@ -892,7 +892,7 @@ TEST_F(TextFormatTest, ParseConcatenatedString) {
       "optional_string: \"foo\"\n"
       "\"bar\"\n";
 
-  io::ArrayInputStream input_stream2(parse_string.data(), parse_string.size());
+  io::ArrayInputStream input_stream2(parse_string.data(), static_cast<int>(parse_string.size()));
   TextFormat::Parse(&input_stream2, &proto_);
 
   // Compare.
@@ -906,7 +906,7 @@ TEST_F(TextFormatTest, ParseFloatWithSuffix) {
   // Have it parse a float with the 'f' suffix.
   std::string parse_string = "optional_float: 1.0f\n";
 
-  io::ArrayInputStream input_stream(parse_string.data(), parse_string.size());
+  io::ArrayInputStream input_stream(parse_string.data(), static_cast<int>(parse_string.size()));
 
   TextFormat::Parse(&input_stream, &proto_);
 
@@ -1056,7 +1056,7 @@ TEST_F(TextFormatTest, Comments) {
       "optional_int32: 1  # a comment\n"
       "optional_int64: 2  # another comment";
 
-  io::ArrayInputStream input_stream(parse_string.data(), parse_string.size());
+  io::ArrayInputStream input_stream(parse_string.data(), static_cast<int>(parse_string.size()));
 
   TextFormat::Parse(&input_stream, &proto_);
 
@@ -1071,7 +1071,7 @@ TEST_F(TextFormatTest, OptionalColon) {
 
   std::string parse_string = "optional_nested_message: { bb: 1}\n";
 
-  io::ArrayInputStream input_stream(parse_string.data(), parse_string.size());
+  io::ArrayInputStream input_stream(parse_string.data(), static_cast<int>(parse_string.size()));
 
   TextFormat::Parse(&input_stream, &proto_);
 

@@ -55,7 +55,7 @@ void FieldGeneratorBase::SetCommonFieldVariables(
   // Note: this will be valid even though the tag emitted for packed and unpacked versions of
   // repeated fields varies by wire format. The wire format is encoded in the bottom 3 bits, which
   // never effects the tag size.
-  int tag_size = internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type());
+  int tag_size = static_cast<int>(internal::WireFormat::TagSize(descriptor_->number(), descriptor_->type()));
   int part_tag_size = tag_size;
   if (descriptor_->type() == FieldDescriptor::TYPE_GROUP) {
     part_tag_size /= 2;

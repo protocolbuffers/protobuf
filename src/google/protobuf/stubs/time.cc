@@ -216,7 +216,7 @@ bool SecondsToDateTime(int64_t seconds, DateTime* time) {
   seconds = seconds + kSecondsFromEraToEpoch;
   int year = 1;
   if (seconds >= kSecondsPer400Years) {
-    int count_400years = seconds / kSecondsPer400Years;
+    int count_400years = static_cast<int>(seconds / kSecondsPer400Years);
     year += 400 * count_400years;
     seconds %= kSecondsPer400Years;
   }
@@ -238,11 +238,11 @@ bool SecondsToDateTime(int64_t seconds, DateTime* time) {
     seconds -= SecondsPerMonth(month, leap);
     ++month;
   }
-  int day = 1 + seconds / kSecondsPerDay;
+  int day = static_cast<int>(1 + seconds / kSecondsPerDay);
   seconds %= kSecondsPerDay;
-  int hour = seconds / kSecondsPerHour;
+  int hour = static_cast<int>(seconds / kSecondsPerHour);
   seconds %= kSecondsPerHour;
-  int minute = seconds / kSecondsPerMinute;
+  int minute = static_cast<int>(seconds / kSecondsPerMinute);
   seconds %= kSecondsPerMinute;
   time->year = year;
   time->month = month;

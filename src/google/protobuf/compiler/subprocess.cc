@@ -205,10 +205,10 @@ bool Subprocess::Communicate(const Message& input, Message* output,
     if (signaled_handle == child_stdin_) {
       DWORD n;
       if (!WriteFile(child_stdin_, input_data.data() + input_pos,
-                     input_data.size() - input_pos, &n, nullptr)) {
+                     static_cast<DWORD>(input_data.size() - input_pos), &n, nullptr)) {
         // Child closed pipe.  Presumably it will report an error later.
         // Pretend we're done for now.
-        input_pos = input_data.size();
+        input_pos = static_cast<int>(input_data.size());
       } else {
         input_pos += n;
       }

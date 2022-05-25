@@ -180,19 +180,19 @@ TEST(MESSAGE_TEST_NAME, ParseHelpers) {
     // Test ParseFromBoundedZeroCopyStream.
     std::string data_with_junk(data);
     data_with_junk.append("some junk on the end");
-    io::ArrayInputStream stream(data_with_junk.data(), data_with_junk.size());
+    io::ArrayInputStream stream(data_with_junk.data(), static_cast<int>(data_with_junk.size()));
     UNITTEST::TestAllTypes message;
-    EXPECT_TRUE(message.ParseFromBoundedZeroCopyStream(&stream, data.size()));
+    EXPECT_TRUE(message.ParseFromBoundedZeroCopyStream(&stream, static_cast<int>(data.size())));
     TestUtil::ExpectAllFieldsSet(message);
   }
 
   {
     // Test that ParseFromBoundedZeroCopyStream fails (but doesn't crash) if
     // EOF is reached before the expected number of bytes.
-    io::ArrayInputStream stream(data.data(), data.size());
+    io::ArrayInputStream stream(data.data(), static_cast<int>(data.size()));
     UNITTEST::TestAllTypes message;
     EXPECT_FALSE(
-        message.ParseFromBoundedZeroCopyStream(&stream, data.size() + 1));
+        message.ParseFromBoundedZeroCopyStream(&stream, static_cast<int>(data.size() + 1)));
   }
 }
 
@@ -297,7 +297,7 @@ TEST(MESSAGE_TEST_NAME, ExplicitLazyExceedRecursionLimit) {
 
   // User annotated LazyField ([lazy = true]) is eagerly verified and should
   // catch the recursion limit violation.
-  io::ArrayInputStream array_stream(serialized.data(), serialized.size());
+  io::ArrayInputStream array_stream(serialized.data(), static_cast<int>(serialized.size()));
   io::CodedInputStream input_stream(&array_stream);
   input_stream.SetRecursionLimit(2);
   EXPECT_FALSE(parsed.ParseFromCodedStream(&input_stream));
@@ -321,7 +321,7 @@ TEST(MESSAGE_TEST_NAME, NestedExplicitLazyExceedRecursionLimit) {
 
   // User annotated LazyField ([lazy = true]) is eagerly verified and should
   // catch the recursion limit violation.
-  io::ArrayInputStream array_stream(serialized.data(), serialized.size());
+  io::ArrayInputStream array_stream(serialized.data(), static_cast<int>(serialized.size()));
   io::CodedInputStream input_stream(&array_stream);
   input_stream.SetRecursionLimit(4);
   EXPECT_FALSE(parsed.ParseFromCodedStream(&input_stream));
@@ -464,8 +464,8 @@ TEST(MESSAGE_TEST_NAME, ParseStrictlyBoundedStream) {
   std::string data;
   EXPECT_TRUE(o.SerializeToString(&data));
 
-  TestUtil::BoundedArrayInputStream stream(data.data(), data.size());
-  EXPECT_TRUE(p.ParseFromBoundedZeroCopyStream(&stream, data.size()));
+  TestUtil::BoundedArrayInputStream stream(data.data(), static_cast<int>(data.size()));
+  EXPECT_TRUE(p.ParseFromBoundedZeroCopyStream(&stream, static_cast<int>(data.size())));
   TestUtil::ExpectAllFieldsSet(p.child().payload());
 }
 
@@ -529,7 +529,7 @@ TEST(MESSAGE_TEST_NAME, SupportCustomRecursionLimitRead) {
   EXPECT_TRUE(o.SerializeToString(&serialized));
 
   // Should pass with custom limit + reads.
-  io::ArrayInputStream raw_input(serialized.data(), serialized.size());
+  io::ArrayInputStream raw_input(serialized.data(), static_cast<int>(serialized.size()));
   io::CodedInputStream input(&raw_input);
   input.SetRecursionLimit(kDepth + 10);
   EXPECT_TRUE(p.ParseFromCodedStream(&input));
@@ -550,7 +550,7 @@ TEST(MESSAGE_TEST_NAME, SupportCustomRecursionLimitWrite) {
   EXPECT_TRUE(o.SerializeToString(&serialized));
 
   // Should pass with custom limit + writes.
-  io::ArrayInputStream raw_input(serialized.data(), serialized.size());
+  io::ArrayInputStream raw_input(serialized.data(), static_cast<int>(serialized.size()));
   io::CodedInputStream input(&raw_input);
   input.SetRecursionLimit(kDepth + 10);
   EXPECT_TRUE(p.ParseFromCodedStream(&input));
@@ -575,7 +575,7 @@ TEST(MESSAGE_TEST_NAME, SupportDeepRecursionLimit) {
   std::string serialized;
   EXPECT_TRUE(o.SerializeToString(&serialized));
 
-  io::ArrayInputStream raw_input(serialized.data(), serialized.size());
+  io::ArrayInputStream raw_input(serialized.data(), static_cast<int>(serialized.size()));
   io::CodedInputStream input(&raw_input);
   input.SetRecursionLimit(1100);
   EXPECT_TRUE(p.ParseFromCodedStream(&input));
@@ -1029,7 +1029,7 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
     // followed by the rest of the stream
     // space is ascii 32 so no end group
     data += std::string(30, ' ');
-    io::ArrayInputStream zcis(data.data(), data.size(), 17);
+    io::ArrayInputStream zcis(data.data(), static_cast<int>(data.size()), 17);
     io::CodedInputStream cis(&zcis);
     EXPECT_TRUE(msg.MergePartialFromCodedStream(&cis));
     EXPECT_EQ(cis.CurrentPosition(), 3 * 4 + 1);
@@ -1043,7 +1043,7 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
     for (int i = 0; i < 3; i++) data += "\370\1\1";
     data += '\14';  // Octal end-group tag 12 (1 * 8 + 4(
     data += std::string(30, ' ');
-    io::ArrayInputStream zcis(data.data(), data.size(), 17);
+    io::ArrayInputStream zcis(data.data(), static_cast<int>(data.size()), 17);
     io::CodedInputStream cis(&zcis);
     EXPECT_TRUE(msg.MergePartialFromCodedStream(&cis));
     EXPECT_EQ(cis.CurrentPosition(), 3 * 3 + 1);
@@ -1058,7 +1058,7 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
     data += "\22\3foo";
     data += '\14';  // Octal end-group tag 12 (1 * 8 + 4(
     data += std::string(30, ' ');
-    io::ArrayInputStream zcis(data.data(), data.size(), 17);
+    io::ArrayInputStream zcis(data.data(), static_cast<int>(data.size()), 17);
     io::CodedInputStream cis(&zcis);
     EXPECT_TRUE(msg.MergePartialFromCodedStream(&cis));
     EXPECT_EQ(cis.CurrentPosition(), 6);
@@ -1073,7 +1073,7 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
     // 13 byte is terminator
     data += '\0';  // Terminator
     data += std::string(30, ' ');
-    io::ArrayInputStream zcis(data.data(), data.size(), 17);
+    io::ArrayInputStream zcis(data.data(), static_cast<int>(data.size()), 17);
     EXPECT_FALSE(msg.ParsePartialFromZeroCopyStream(&zcis));
   }
 }

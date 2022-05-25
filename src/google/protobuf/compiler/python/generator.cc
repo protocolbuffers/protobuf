@@ -339,7 +339,7 @@ void Generator::PrintImports() const {
       printer_->Print("$alias$ = importlib.import_module('$name$')\n", "alias",
                       module_alias, "name", module_name);
     } else {
-      int last_dot_pos = module_name.rfind('.');
+      int last_dot_pos = static_cast<int>(module_name.rfind('.'));
       std::string import_statement;
       if (last_dot_pos == std::string::npos) {
         // NOTE(petya): this is not tested as it would require a protocol buffer
@@ -1159,7 +1159,7 @@ void Generator::PrintSerializedPbInterval(const DescriptorT& descriptor,
   descriptor.CopyTo(&proto);
   std::string sp;
   proto.SerializeToString(&sp);
-  int offset = file_descriptor_serialized_.find(sp);
+  int offset = static_cast<int>(file_descriptor_serialized_.find(sp));
   GOOGLE_CHECK_GE(offset, 0);
 
   printer_->Print(

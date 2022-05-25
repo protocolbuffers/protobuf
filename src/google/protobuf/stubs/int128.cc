@@ -61,7 +61,7 @@ static inline int Fls64(uint64_t n) {
   GOOGLE_DCHECK_NE(0, n);
   int pos = 0;
   STEP(uint64_t, n, pos, 0x20);
-  uint32_t n32 = n;
+  uint32_t n32 = static_cast<uint32_t>(n);
   STEP(uint32_t, n32, pos, 0x10);
   STEP(uint32_t, n32, pos, 0x08);
   STEP(uint32_t, n32, pos, 0x04);
@@ -175,10 +175,11 @@ std::ostream& operator<<(std::ostream& o, const uint128& b) {
   std::streamsize width = o.width(0);
   auto repSize = static_cast<std::streamsize>(rep.size());
   if (width > repSize) {
+    const size_t padding = static_cast<size_t>(width - repSize);
     if ((flags & std::ios::adjustfield) == std::ios::left) {
-      rep.append(width - repSize, o.fill());
+      rep.append(padding, o.fill());
     } else {
-      rep.insert(static_cast<std::string::size_type>(0), width - repSize,
+      rep.insert(static_cast<std::string::size_type>(0), padding,
                  o.fill());
     }
   }

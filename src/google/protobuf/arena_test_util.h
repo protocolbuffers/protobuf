@@ -53,7 +53,7 @@ void TestParseCorruptedString(const T& message) {
     message.SerializePartialToCodedStream(&out);
   }
   const int kMaxIters = 900;
-  const int stride = s.size() <= kMaxIters ? 1 : s.size() / kMaxIters;
+  const int stride = s.size() <= kMaxIters ? 1 : static_cast<int>(s.size() / kMaxIters);
   const int start = stride == 1 || use_arena ? 0 : (stride + 1) / 2;
   for (int i = start; i < s.size(); i += stride) {
     for (int c = 1 + (i % 17); c < 256; c += 2 * c + (i & 3)) {

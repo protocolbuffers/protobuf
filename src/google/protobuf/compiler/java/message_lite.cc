@@ -495,7 +495,7 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
     printer->Indent();
 
     // Record the number of oneofs.
-    WriteIntToUtf16CharSequence(oneofs_.size(), &chars);
+    WriteIntToUtf16CharSequence(static_cast<int>(oneofs_.size()), &chars);
     for (auto oneof : oneofs_) {
       printer->Print(
           "\"$oneof_name$_\",\n"
@@ -544,7 +544,7 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
         fields_for_is_initialized_check.push_back(descriptor_->field(i));
       }
     }
-    WriteIntToUtf16CharSequence(fields_for_is_initialized_check.size(), &chars);
+    WriteIntToUtf16CharSequence(static_cast<int>(fields_for_is_initialized_check.size()), &chars);
 
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* field = sorted_fields[i];

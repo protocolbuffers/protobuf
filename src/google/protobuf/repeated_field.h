@@ -796,9 +796,9 @@ inline typename RepeatedField<Element>::iterator RepeatedField<Element>::erase(
 template <typename Element>
 inline typename RepeatedField<Element>::iterator RepeatedField<Element>::erase(
     const_iterator first, const_iterator last) {
-  size_type first_offset = first - cbegin();
+  size_type first_offset = static_cast<size_type>(first - cbegin());
   if (first != last) {
-    Truncate(std::copy(last, cend(), begin() + first_offset) - cbegin());
+    Truncate(static_cast<int>(std::copy(last, cend(), begin() + first_offset) - cbegin()));
   }
   return begin() + first_offset;
 }

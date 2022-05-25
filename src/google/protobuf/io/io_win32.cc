@@ -347,13 +347,13 @@ int dup(int fd) { return ::_dup(fd); }
 int dup2(int fd1, int fd2) { return ::_dup2(fd1, fd2); }
 
 int read(int fd, void* buffer, size_t size) {
-  return ::_read(fd, buffer, size);
+  return ::_read(fd, buffer, static_cast<unsigned int>(size));
 }
 
 int setmode(int fd, int mode) { return ::_setmode(fd, mode); }
 
 int write(int fd, const void* buffer, size_t size) {
-  return ::_write(fd, buffer, size);
+  return ::_write(fd, buffer, static_cast<unsigned int>(size));
 }
 
 wstring testonly_utf8_to_winpath(const char* path) {

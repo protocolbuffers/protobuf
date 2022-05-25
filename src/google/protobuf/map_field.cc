@@ -235,7 +235,7 @@ DynamicMapField::~DynamicMapField() {
   Destruct();
 }
 
-int DynamicMapField::size() const { return GetMap().size(); }
+int DynamicMapField::size() const { return static_cast<int>(GetMap().size()); }
 
 void DynamicMapField::Clear() {
   Map<MapKey, MapValueRef>* map = &const_cast<DynamicMapField*>(this)->map_;

@@ -315,7 +315,7 @@ ProtoWriter::ProtoElement::ProtoElement(ProtoWriter::ProtoElement* parent,
       type_(type),
       size_index_(!is_list &&
                           field->kind() == google::protobuf::Field::TYPE_MESSAGE
-                      ? ow_->size_insert_.size()
+                      ? static_cast<int>(ow_->size_insert_.size())
                       : -1),
       array_index_(is_list ? 0 : -1),
       // oneof_indices_ values are 1-indexed (0 means not present).
@@ -369,7 +369,7 @@ ProtoWriter::ProtoElement* ProtoWriter::ProtoElement::pop() {
     // message, and propagate this additional size information upward to
     // all enclosing messages.
     int size = ow_->size_insert_[size_index_].size;
-    int length = CodedOutputStream::VarintSize32(size);
+    int length = static_cast<int>(CodedOutputStream::VarintSize32(size));
     for (ProtoElement* e = parent(); e != nullptr; e = e->parent()) {
       // Only nested messages have size field, lists do not have size field.
       if (e->size_index_ >= 0) {
@@ -777,7 +777,7 @@ void ProtoWriter::WriteRootMessage() {
   stream_.reset(nullptr);
   const void* data;
   int length;
-  io::ArrayInputStream input_stream(buffer_.data(), buffer_.size());
+  io::ArrayInputStream input_stream(buffer_.data(), static_cast<int>(buffer_.size()));
   while (input_stream.Next(&data, &length)) {
     if (length == 0) continue;
     int num_bytes = length;

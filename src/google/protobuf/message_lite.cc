@@ -455,7 +455,7 @@ bool MessageLite::AppendPartialToString(std::string* output) const {
   STLStringResizeUninitializedAmortized(output, old_size + byte_size);
   uint8_t* start =
       reinterpret_cast<uint8_t*>(io::mutable_string_data(output) + old_size);
-  SerializeToArrayImpl(*this, start, byte_size);
+  SerializeToArrayImpl(*this, start, static_cast<int>(byte_size));
   return true;
 }
 
@@ -483,7 +483,7 @@ bool MessageLite::SerializePartialToArray(void* data, int size) const {
   }
   if (size < static_cast<int64_t>(byte_size)) return false;
   uint8_t* start = reinterpret_cast<uint8_t*>(data);
-  SerializeToArrayImpl(*this, start, byte_size);
+  SerializeToArrayImpl(*this, start, static_cast<int>(byte_size));
   return true;
 }
 

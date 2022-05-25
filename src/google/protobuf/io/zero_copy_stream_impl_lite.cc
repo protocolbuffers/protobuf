@@ -164,7 +164,7 @@ bool StringOutputStream::Next(void** data, int* size) {
                kMinimumSize + 0));  // "+ 0" works around GCC4 weirdness.
 
   *data = mutable_string_data(target_) + old_size;
-  *size = target_->size() - old_size;
+  *size = static_cast<int>(target_->size() - old_size);
   return true;
 }
 
@@ -187,7 +187,7 @@ int CopyingInputStream::Skip(int count) {
   int skipped = 0;
   while (skipped < count) {
     int bytes = Read(junk, std::min(count - skipped,
-                                    implicit_cast<int>(sizeof(junk))));
+                                    static_cast<int>(sizeof(junk))));
     if (bytes <= 0) {
       // EOF or read error.
       return skipped;
@@ -420,7 +420,7 @@ LimitingInputStream::LimitingInputStream(ZeroCopyInputStream* input,
 
 LimitingInputStream::~LimitingInputStream() {
   // If we overshot the limit, back up.
-  if (limit_ < 0) input_->BackUp(-limit_);
+  if (limit_ < 0) input_->BackUp(static_cast<int>(-limit_));
 }
 
 bool LimitingInputStream::Next(const void** data, int* size) {
@@ -430,14 +430,14 @@ bool LimitingInputStream::Next(const void** data, int* size) {
   limit_ -= *size;
   if (limit_ < 0) {
     // We overshot the limit.  Reduce *size to hide the rest of the buffer.
-    *size += limit_;
+    *size += static_cast<int>(limit_);
   }
   return true;
 }
 
 void LimitingInputStream::BackUp(int count) {
   if (limit_ < 0) {
-    input_->BackUp(count - limit_);
+    input_->BackUp(static_cast<int>(count - limit_));
     limit_ = count;
   } else {
     input_->BackUp(count);
@@ -448,7 +448,7 @@ void LimitingInputStream::BackUp(int count) {
 bool LimitingInputStream::Skip(int count) {
   if (count > limit_) {
     if (limit_ < 0) return false;
-    input_->Skip(limit_);
+    input_->Skip(static_cast<int>(limit_));
     limit_ = 0;
     return false;
   } else {

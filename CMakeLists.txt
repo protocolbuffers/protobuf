@@ -257,10 +257,9 @@ if (MSVC)
   add_definitions(/utf-8)
   # MSVC warning suppressions
   add_definitions(
+    /WX # Warnings as errors
     /wd4065 # switch statement contains 'default' but no 'case' labels
-    /wd4244 # 'conversion' conversion from 'type1' to 'type2', possible loss of data
     /wd4251 # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
-    /wd4267 # 'var' : conversion from 'size_t' to 'type', possible loss of data
     /wd4305 # 'identifier' : truncation from 'type1' to 'type2'
     /wd4307 # 'operator' : integral constant overflow
     /wd4309 # 'conversion' : truncation of constant value

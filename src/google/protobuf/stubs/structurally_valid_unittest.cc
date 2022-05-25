@@ -46,22 +46,22 @@ TEST(StructurallyValidTest, ValidUTF8String) {
   std::string valid_str(
       "abcd 1234 - \342\200\224\342\200\223\342\210\222 - xyz789");
   EXPECT_TRUE(IsStructurallyValidUTF8(valid_str.data(),
-                                      valid_str.size()));
+                                      static_cast<int>(valid_str.size())));
   // Additional check for pointer alignment
   for (int i = 1; i < 8; ++i) {
     EXPECT_TRUE(IsStructurallyValidUTF8(valid_str.data() + i,
-                                        valid_str.size() - i));
+                                        static_cast<int>(valid_str.size() - i)));
   }
 }
 
 TEST(StructurallyValidTest, InvalidUTF8String) {
   const std::string invalid_str("abcd\xA0\xB0\xA0\xB0\xA0\xB0 - xyz789");
   EXPECT_FALSE(IsStructurallyValidUTF8(invalid_str.data(),
-                                       invalid_str.size()));
+                                       static_cast<int>(invalid_str.size())));
   // Additional check for pointer alignment
   for (int i = 1; i < 8; ++i) {
     EXPECT_FALSE(IsStructurallyValidUTF8(invalid_str.data() + i,
-                                         invalid_str.size() - i));
+                                         static_cast<int>(invalid_str.size() - i)));
   }
 }
 

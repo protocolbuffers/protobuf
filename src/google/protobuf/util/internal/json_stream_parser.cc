@@ -586,7 +586,7 @@ util::Status JsonStreamParser::ParseDoubleHelper(const std::string& number,
 
 util::Status JsonStreamParser::ParseNumberHelper(NumberResult* result) {
   const char* data = p_.data();
-  int length = p_.length();
+  int length = static_cast<int>(p_.length());
 
   // Look for the first non-numeric character, or the end of the string.
   int index = 0;
@@ -914,7 +914,7 @@ void JsonStreamParser::Advance() {
   // Advance by moving one UTF8 character while making sure we don't go beyond
   // the length of StringPiece.
   p_.remove_prefix(std::min<int>(
-      p_.length(), UTF8FirstLetterNumBytes(p_.data(), p_.length())));
+      static_cast<int>(p_.length()), UTF8FirstLetterNumBytes(p_.data(), static_cast<int>(p_.length()))));
 }
 
 util::Status JsonStreamParser::ParseKey() {
@@ -946,7 +946,7 @@ util::Status JsonStreamParser::ParseKey() {
 JsonStreamParser::TokenType JsonStreamParser::GetNextTokenType() {
   SkipWhitespace();
 
-  int size = p_.size();
+  int size = static_cast<int>(p_.size());
   if (size == 0) {
     // If we ran out of data, report unknown and we'll place the previous parse
     // type onto the stack and try again when we have more data.

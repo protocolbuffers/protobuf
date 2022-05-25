@@ -81,6 +81,12 @@ std::string TestSourceDir() {
   if (result != NULL) {
     return result;
   }
+#else
+  // Allow the user to set a "PROTOSRC" environment variable.
+  char* result = std::getenv("PROTOSRC");
+  if (result != NULL) {
+    return result;
+  }
 #endif  // _MSC_VER
 
   // Look for the "src" directory.
@@ -119,10 +125,15 @@ std::string GetTemporaryDirectoryName() {
   // testing.  We cannot use tmpfile() or mkstemp() since we're creating a
   // directory.
   char b[L_tmpnam + 1];     // HPUX multithread return 0 if s is 0
+#ifndef _MSC_VER // MSVC warns about '#pragma GCC'
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif  // _MSC_VER
   std::string result = tmpnam(b);
+#ifndef _MSC_VER
 #pragma GCC diagnostic pop
+#endif  // _MSC_VER
+
 #ifdef _WIN32
   // Avoid a trailing dot by changing it to an underscore. On Win32 the names of
   // files and directories can, but should not, end with dot.

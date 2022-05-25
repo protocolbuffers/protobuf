@@ -328,7 +328,7 @@ const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
                                      const Message* containing_type,
                                      internal::InternalMetadata* metadata,
                                      internal::ParseContext* ctx) {
-  int number = tag >> 3;
+  int number = static_cast<int>(tag >> 3);
   bool was_packed_on_wire;
   ExtensionInfo extension;
   if (!FindExtension(tag & 7, number, containing_type, ctx, &extension,
@@ -354,7 +354,7 @@ const char* ExtensionSet::ParseMessageSetItem(
 }
 
 int ExtensionSet::SpaceUsedExcludingSelf() const {
-  return internal::FromIntSize(SpaceUsedExcludingSelfLong());
+  return internal::ToIntSize(SpaceUsedExcludingSelfLong());
 }
 
 size_t ExtensionSet::SpaceUsedExcludingSelfLong() const {
@@ -427,7 +427,7 @@ size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
 uint8_t* ExtensionSet::SerializeMessageSetWithCachedSizesToArray(
     const MessageLite* extendee, uint8_t* target) const {
   io::EpsCopyOutputStream stream(
-      target, MessageSetByteSize(),
+      target, static_cast<int>(MessageSetByteSize()),
       io::CodedOutputStream::IsDefaultSerializationDeterministic());
   return InternalSerializeMessageSetWithCachedSizesToArray(extendee, target,
                                                            &stream);

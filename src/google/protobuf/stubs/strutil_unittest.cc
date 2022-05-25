@@ -454,7 +454,7 @@ TEST(Base64, EscapeAndUnescape) {
     StringPiece plaintext(base64_tests[i].plaintext,
                           base64_tests[i].plain_length);
 
-    cipher_length = strlen(base64_tests[i].ciphertext);
+    cipher_length = static_cast<int>(strlen(base64_tests[i].ciphertext));
 
     // The basic escape function:
     memset(encode_buffer, 0, sizeof(encode_buffer));
@@ -551,10 +551,10 @@ TEST(Base64, EscapeAndUnescape) {
       // decoder should accept this.
       if (equals == 2) {
         snprintf(first_equals, 6, " = = ");
-        len = first_equals - encode_buffer + 5;
+        len = static_cast<int>(first_equals - encode_buffer + 5);
       } else {
         snprintf(first_equals, 6, " = ");
-        len = first_equals - encode_buffer + 3;
+        len = static_cast<int>(first_equals - encode_buffer + 3);
       }
       decoded2.assign("this junk should be ignored");
       EXPECT_TRUE(
@@ -567,10 +567,10 @@ TEST(Base64, EscapeAndUnescape) {
       // refuse these strings.
       if (equals == 1) {
         snprintf(first_equals, 6, " = = ");
-        len = first_equals - encode_buffer + 5;
+        len = static_cast<int>(first_equals - encode_buffer + 5);
       } else {
         snprintf(first_equals, 6, " = ");
-        len = first_equals - encode_buffer + 3;
+        len = static_cast<int>(first_equals - encode_buffer + 3);
       }
       EXPECT_TRUE(
           !Base64Unescape(StringPiece(encode_buffer, len), &decoded2));
@@ -767,13 +767,13 @@ TEST(Base64, EscapeAndUnescape) {
        ++i) {
     const unsigned char* unsigned_plaintext =
       reinterpret_cast<const unsigned char*>(base64_strings[i].plaintext);
-    int plain_length = strlen(base64_strings[i].plaintext);
-    int cipher_length = strlen(base64_strings[i].ciphertext);
+    int plain_length = static_cast<int>(strlen(base64_strings[i].plaintext));
+    int cipher_length = static_cast<int>(strlen(base64_strings[i].ciphertext));
     std::vector<char> buffer(cipher_length + 1);
     int encode_length = WebSafeBase64Escape(unsigned_plaintext,
                                                      plain_length,
                                                      &buffer[0],
-                                                     buffer.size(),
+                                                     static_cast<int>(buffer.size()),
                                                      false);
     EXPECT_EQ(cipher_length, encode_length);
     EXPECT_EQ(

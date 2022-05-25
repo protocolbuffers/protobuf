@@ -107,7 +107,7 @@ void SubstituteAndAppend(std::string* output, const char* format,
   if (size == 0) return;
 
   // Build the string.
-  int original_size = output->size();
+  int original_size = static_cast<int>(output->size());
   STLStringResizeUninitialized(output, original_size + size);
   char* target = string_as_array(output) + original_size;
   for (int i = 0; format[i] != '\0'; i++) {

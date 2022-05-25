@@ -285,7 +285,7 @@ TEST(ObjCHelper, ParseSimple_BasicsSuccess) {
 
   for (const auto& test : tests) {
     for (int i = 0; i < kBlockSizeCount; i++) {
-      io::ArrayInputStream input(test.first.data(), test.first.size(), kBlockSizes[i]);
+      io::ArrayInputStream input(test.first.data(), static_cast<int>(test.first.size()), kBlockSizes[i]);
       std::string err_str;
       std::vector<std::string> lines;
       TestLineCollector collector(&lines);
@@ -313,7 +313,7 @@ TEST(ObjCHelper, ParseSimple_DropsComments) {
 
   for (const auto& test : tests) {
     for (int i = 0; i < kBlockSizeCount; i++) {
-      io::ArrayInputStream input(test.first.data(), test.first.size(), kBlockSizes[i]);
+      io::ArrayInputStream input(test.first.data(), static_cast<int>(test.first.size()), kBlockSizes[i]);
       std::string err_str;
       std::vector<std::string> lines;
       TestLineCollector collector(&lines);
@@ -334,7 +334,7 @@ TEST(ObjCHelper, ParseSimple_RejectLines) {
 
   for (const auto& test : tests) {
     for (int i = 0; i < kBlockSizeCount; i++) {
-      io::ArrayInputStream input(std::get<0>(test).data(), std::get<0>(test).size(),
+      io::ArrayInputStream input(std::get<0>(test).data(), static_cast<int>(std::get<0>(test).size()),
                                  kBlockSizes[i]);
       std::string err_str;
       TestLineCollector collector(nullptr, &std::get<1>(test));
@@ -356,7 +356,7 @@ TEST(ObjCHelper, ParseSimple_RejectLinesNoMessage) {
 
   for (const auto& test : tests) {
     for (int i = 0; i < kBlockSizeCount; i++) {
-      io::ArrayInputStream input(std::get<0>(test).data(), std::get<0>(test).size(),
+      io::ArrayInputStream input(std::get<0>(test).data(), static_cast<int>(std::get<0>(test).size()),
                                  kBlockSizes[i]);
       std::string err_str;
       TestLineCollector collector(nullptr, &std::get<1>(test), true /* skip msg */);

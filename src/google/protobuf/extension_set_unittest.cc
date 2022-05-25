@@ -569,7 +569,7 @@ TEST(ExtensionSetTest, SerializationToStream) {
   std::string data;
   data.resize(size);
   {
-    io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), size, 1);
+    io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), static_cast<int>(size), 1);
     io::CodedOutputStream output_stream(&array_stream);
     source.SerializeWithCachedSizes(&output_stream);
     ASSERT_FALSE(output_stream.HadError());
@@ -613,7 +613,7 @@ TEST(ExtensionSetTest, PackedSerializationToStream) {
   std::string data;
   data.resize(size);
   {
-    io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), size, 1);
+    io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), static_cast<int>(size), 1);
     io::CodedOutputStream output_stream(&array_stream);
     source.SerializeWithCachedSizes(&output_stream);
     ASSERT_FALSE(output_stream.HadError());
@@ -769,7 +769,7 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
 #define TEST_SCALAR_EXTENSIONS_SPACE_USED(type, value)                       \
   do {                                                                       \
     unittest::TestAllExtensions message;                                     \
-    const int base_size = message.SpaceUsedLong();                           \
+    const int base_size = static_cast<int>(message.SpaceUsedLong());         \
     message.SetExtension(unittest::optional_##type##_extension, value);      \
     int min_expected_size =                                                  \
         base_size +                                                          \
@@ -793,7 +793,7 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
 #undef TEST_SCALAR_EXTENSIONS_SPACE_USED
   {
     unittest::TestAllExtensions message;
-    const int base_size = message.SpaceUsedLong();
+    const int base_size = static_cast<int>(message.SpaceUsedLong());
     message.SetExtension(unittest::optional_nested_enum_extension,
                          unittest::TestAllTypes::FOO);
     int min_expected_size =
@@ -805,23 +805,23 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
     // Strings may cause extra allocations depending on their length; ensure
     // that gets included as well.
     unittest::TestAllExtensions message;
-    const int base_size = message.SpaceUsedLong();
+    const int base_size = static_cast<int>(message.SpaceUsedLong());
     const std::string s(
         "this is a fairly large string that will cause some "
         "allocation in order to store it in the extension");
     message.SetExtension(unittest::optional_string_extension, s);
-    int min_expected_size = base_size + s.length();
+    int min_expected_size = base_size + static_cast<int>(s.length());
     EXPECT_LE(min_expected_size, message.SpaceUsedLong());
   }
   {
     // Messages also have additional allocation that need to be counted.
     unittest::TestAllExtensions message;
-    const int base_size = message.SpaceUsedLong();
+    const int base_size = static_cast<int>(message.SpaceUsedLong());
     unittest::ForeignMessage foreign;
     foreign.set_c(42);
     message.MutableExtension(unittest::optional_foreign_message_extension)
         ->CopyFrom(foreign);
-    int min_expected_size = base_size + foreign.SpaceUsedLong();
+    int min_expected_size = base_size + static_cast<int>(foreign.SpaceUsedLong());
     EXPECT_LE(min_expected_size, message.SpaceUsedLong());
   }
 
@@ -857,7 +857,7 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
     for (int i = 0; i < 16; ++i) {                                             \
       message->AddExtension(unittest::repeated_##type##_extension, value);     \
     }                                                                          \
-    int expected_size =                                                        \
+    size_t expected_size =                                                        \
         sizeof(cpptype) *                                                      \
             (message                                                           \
                  ->GetRepeatedExtension(unittest::repeated_##type##_extension) \
@@ -1278,7 +1278,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
   // Now we can parse this using our dynamic extension definitions...
   unittest::TestAllExtensions message;
   {
-    io::ArrayInputStream raw_input(data.data(), data.size());
+    io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
     io::CodedInputStream input(&raw_input);
     input.SetExtensionRegistry(&dynamic_pool, &dynamic_factory);
     ASSERT_TRUE(message.ParseFromCodedStream(&input));
@@ -1315,7 +1315,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
   // What if we parse using the reflection-based parser?
   {
     unittest::TestAllExtensions message2;
-    io::ArrayInputStream raw_input(data.data(), data.size());
+    io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
     io::CodedInputStream input(&raw_input);
     input.SetExtensionRegistry(&dynamic_pool, &dynamic_factory);
     ASSERT_TRUE(WireFormat::ParseAndMergePartial(&input, &message2));

@@ -67,7 +67,7 @@ void ZeroCopyStreamByteSink::Append(const char* bytes, size_t len) {
     if (len <= buffer_size_) {  // NOLINT
       memcpy(buffer_, bytes, len);
       buffer_ = static_cast<char*>(buffer_) + len;
-      buffer_size_ -= len;
+      buffer_size_ -= static_cast<int>(len);
       return;
     }
     if (buffer_size_ > 0) {
@@ -119,7 +119,7 @@ util::Status BinaryToJsonString(TypeResolver* resolver,
                                 const std::string& binary_input,
                                 std::string* json_output,
                                 const JsonPrintOptions& options) {
-  io::ArrayInputStream input_stream(binary_input.data(), binary_input.size());
+  io::ArrayInputStream input_stream(binary_input.data(), static_cast<int>(binary_input.size()));
   io::StringOutputStream output_stream(json_output);
   return BinaryToJsonStream(resolver, type_url, &input_stream, &output_stream,
                             options);
@@ -210,7 +210,7 @@ util::Status JsonToBinaryString(TypeResolver* resolver,
                                 StringPiece json_input,
                                 std::string* binary_output,
                                 const JsonParseOptions& options) {
-  io::ArrayInputStream input_stream(json_input.data(), json_input.size());
+  io::ArrayInputStream input_stream(json_input.data(), static_cast<int>(json_input.size()));
   io::StringOutputStream output_stream(binary_output);
   return JsonToBinaryStream(resolver, type_url, &input_stream, &output_stream,
                             options);

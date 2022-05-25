@@ -95,7 +95,7 @@ bool RunProtoCompiler(const std::string& filename,
 bool DecodeMetadata(const std::string& path, GeneratedCodeInfo* info) {
   std::string data;
   GOOGLE_CHECK_OK(File::GetContents(path, &data, true));
-  io::ArrayInputStream input(data.data(), data.size());
+  io::ArrayInputStream input(data.data(), static_cast<int>(data.size()));
   return info->ParseFromZeroCopyStream(&input);
 }
 

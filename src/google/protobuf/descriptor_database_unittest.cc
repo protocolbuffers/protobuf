@@ -501,8 +501,8 @@ TEST(EncodedDescriptorDatabaseExtraTest, FindNameOfFileContainingSymbol) {
 
   // Create EncodedDescriptorDatabase containing both files.
   EncodedDescriptorDatabase db;
-  db.Add(data1.data(), data1.size());
-  db.Add(data2.data(), data2.size());
+  db.Add(data1.data(), static_cast<int>(data1.size()));
+  db.Add(data2.data(), static_cast<int>(data2.size()));
 
   // Test!
   std::string filename;

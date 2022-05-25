@@ -270,7 +270,7 @@ IstreamInputStream::CopyingIstreamInputStream::~CopyingIstreamInputStream() {}
 int IstreamInputStream::CopyingIstreamInputStream::Read(void* buffer,
                                                         int size) {
   input_->read(reinterpret_cast<char*>(buffer), size);
-  int result = input_->gcount();
+  int result = static_cast<int>(input_->gcount());
   if (result == 0 && input_->fail() && !input_->eof()) {
     return -1;
   }
@@ -345,7 +345,7 @@ bool ConcatenatingInputStream::Skip(int count) {
     // to skip.
     int64_t final_byte_count = streams_[0]->ByteCount();
     GOOGLE_DCHECK_LT(final_byte_count, target_byte_count);
-    count = target_byte_count - final_byte_count;
+    count = static_cast<int>(target_byte_count - final_byte_count);
 
     // That stream is done.  Advance to the next one.
     bytes_retired_ += final_byte_count;

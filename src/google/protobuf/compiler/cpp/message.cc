@@ -2034,7 +2034,7 @@ void MessageGenerator::GenerateSchema(io::Printer* printer, int offset,
   } else {
     GOOGLE_DCHECK_NE(has_offset, -1);
     GOOGLE_DCHECK(!IsMapEntryMessage(descriptor_));
-    inlined_string_indices_offset = has_offset + has_bit_indices_.size();
+    inlined_string_indices_offset = static_cast<int>(has_offset + has_bit_indices_.size());
   }
 
   format("{ $1$, $2$, $3$, sizeof($classtype$)},\n", offset, has_offset,
@@ -4021,7 +4021,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
   std::sort(sorted_extensions.begin(), sorted_extensions.end(),
             ExtensionRangeSorter());
 
-  int num_fields = ordered_fields.size() + sorted_extensions.size();
+  int num_fields = static_cast<int>(ordered_fields.size() + sorted_extensions.size());
   constexpr int kLargePrime = 1000003;
   GOOGLE_CHECK_LT(num_fields, kLargePrime)
       << "Prime offset must be greater than the number of fields to ensure "
@@ -4093,7 +4093,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
 }
 
 std::vector<uint32_t> MessageGenerator::RequiredFieldsBitMask() const {
-  const int array_size = HasBitsSize();
+  const int array_size = static_cast<int>(HasBitsSize());
   std::vector<uint32_t> masks(array_size, 0);
 
   for (auto field : FieldRange(descriptor_)) {

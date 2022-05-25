@@ -595,7 +595,7 @@ TEST_F(FileDescriptorTest, DebugStringRoundTrip) {
   for (int i = 0; i < debug_strings.size(); ++i) {
     const std::string& name = debug_strings[i].first;
     const std::string& content = debug_strings[i].second;
-    io::ArrayInputStream input_stream(content.data(), content.size());
+    io::ArrayInputStream input_stream(content.data(), static_cast<int>(content.size()));
     SimpleErrorCollector error_collector;
     io::Tokenizer tokenizer(&input_stream, &error_collector);
     compiler::Parser parser;
@@ -7325,8 +7325,8 @@ class ExponentialErrorDatabase : public DescriptorDatabase {
  private:
   void FullMatch(const std::string& name, const std::string& begin_with,
                  const std::string& end_with, int* file_num) {
-    int begin_size = begin_with.size();
-    int end_size = end_with.size();
+    int begin_size = static_cast<int>(begin_with.size());
+    int end_size = static_cast<int>(end_with.size());
     if (name.substr(0, begin_size) != begin_with ||
         name.substr(name.size() - end_size, end_size) != end_with) {
       return;
@@ -7420,7 +7420,7 @@ class SingletonSourceTree : public compiler::SourceTree {
 
   io::ZeroCopyInputStream* Open(const std::string& filename) override {
     return filename == filename_
-               ? new io::ArrayInputStream(contents_.data(), contents_.size())
+               ? new io::ArrayInputStream(contents_.data(), static_cast<int>(contents_.size()))
                : nullptr;
   }
 

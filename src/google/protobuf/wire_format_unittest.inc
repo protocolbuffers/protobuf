@@ -91,7 +91,7 @@ TEST(WireFormatTest, Parse) {
   source.SerializeToString(&data);
 
   // Parse using WireFormat.
-  io::ArrayInputStream raw_input(data.data(), data.size());
+  io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
   io::CodedInputStream input(&raw_input);
   WireFormat::ParseAndMergePartial(&input, &dest);
 
@@ -108,7 +108,7 @@ TEST(WireFormatTest, ParseExtensions) {
   source.SerializeToString(&data);
 
   // Parse using WireFormat.
-  io::ArrayInputStream raw_input(data.data(), data.size());
+  io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
   io::CodedInputStream input(&raw_input);
   WireFormat::ParseAndMergePartial(&input, &dest);
 
@@ -125,7 +125,7 @@ TEST(WireFormatTest, ParsePacked) {
   source.SerializeToString(&data);
 
   // Parse using WireFormat.
-  io::ArrayInputStream raw_input(data.data(), data.size());
+  io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
   io::CodedInputStream input(&raw_input);
   WireFormat::ParseAndMergePartial(&input, &dest);
 
@@ -141,7 +141,7 @@ TEST(WireFormatTest, ParsePackedFromUnpacked) {
 
   // Parse using WireFormat.
   UNITTEST::TestPackedTypes dest;
-  io::ArrayInputStream raw_input(data.data(), data.size());
+  io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
   io::CodedInputStream input(&raw_input);
   WireFormat::ParseAndMergePartial(&input, &dest);
 
@@ -157,7 +157,7 @@ TEST(WireFormatTest, ParseUnpackedFromPacked) {
 
   // Parse using WireFormat.
   UNITTEST::TestUnpackedTypes dest;
-  io::ArrayInputStream raw_input(data.data(), data.size());
+  io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
   io::CodedInputStream input(&raw_input);
   WireFormat::ParseAndMergePartial(&input, &dest);
 
@@ -174,7 +174,7 @@ TEST(WireFormatTest, ParsePackedExtensions) {
   source.SerializeToString(&data);
 
   // Parse using WireFormat.
-  io::ArrayInputStream raw_input(data.data(), data.size());
+  io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
   io::CodedInputStream input(&raw_input);
   WireFormat::ParseAndMergePartial(&input, &dest);
 
@@ -191,7 +191,7 @@ TEST(WireFormatTest, ParseOneof) {
   source.SerializeToString(&data);
 
   // Parse using WireFormat.
-  io::ArrayInputStream raw_input(data.data(), data.size());
+  io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
   io::CodedInputStream input(&raw_input);
   WireFormat::ParseAndMergePartial(&input, &dest);
 
@@ -214,11 +214,11 @@ TEST(WireFormatTest, OneofOnlySetLast) {
   {
     io::StringOutputStream raw_output(&data);
     io::CodedOutputStream output(&raw_output);
-    WireFormat::SerializeWithCachedSizes(source, source.ByteSizeLong(),
+    WireFormat::SerializeWithCachedSizes(source, static_cast<int>(source.ByteSizeLong()),
                                          &output);
     ASSERT_FALSE(output.HadError());
   }
-  io::ArrayInputStream raw_input(data.data(), data.size());
+  io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
   io::CodedInputStream input(&raw_input);
   WireFormat::ParseAndMergePartial(&input, &oneof_dest);
 
@@ -298,7 +298,7 @@ TEST(WireFormatTest, Serialize) {
   {
     io::StringOutputStream raw_output(&dynamic_data);
     io::CodedOutputStream output(&raw_output);
-    WireFormat::SerializeWithCachedSizes(message, size, &output);
+    WireFormat::SerializeWithCachedSizes(message, static_cast<int>(size), &output);
     ASSERT_FALSE(output.HadError());
   }
 
@@ -327,7 +327,7 @@ TEST(WireFormatTest, SerializeExtensions) {
   {
     io::StringOutputStream raw_output(&dynamic_data);
     io::CodedOutputStream output(&raw_output);
-    WireFormat::SerializeWithCachedSizes(message, size, &output);
+    WireFormat::SerializeWithCachedSizes(message, static_cast<int>(size), &output);
     ASSERT_FALSE(output.HadError());
   }
 
@@ -356,7 +356,7 @@ TEST(WireFormatTest, SerializeFieldsAndExtensions) {
   {
     io::StringOutputStream raw_output(&dynamic_data);
     io::CodedOutputStream output(&raw_output);
-    WireFormat::SerializeWithCachedSizes(message, size, &output);
+    WireFormat::SerializeWithCachedSizes(message, static_cast<int>(size), &output);
     ASSERT_FALSE(output.HadError());
   }
 
@@ -385,7 +385,7 @@ TEST(WireFormatTest, SerializeOneof) {
   {
     io::StringOutputStream raw_output(&dynamic_data);
     io::CodedOutputStream output(&raw_output);
-    WireFormat::SerializeWithCachedSizes(message, size, &output);
+    WireFormat::SerializeWithCachedSizes(message, static_cast<int>(size), &output);
     ASSERT_FALSE(output.HadError());
   }
 
@@ -411,7 +411,7 @@ TEST(WireFormatTest, ParseMultipleExtensionRanges) {
   // Also test using reflection-based parsing.
   {
     UNITTEST::TestFieldOrderings dest;
-    io::ArrayInputStream raw_input(data.data(), data.size());
+    io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
     io::CodedInputStream coded_input(&raw_input);
     EXPECT_TRUE(WireFormat::ParseAndMergePartial(&coded_input, &dest));
     EXPECT_EQ(source.DebugString(), dest.DebugString());
@@ -501,7 +501,7 @@ TEST(WireFormatTest, SerializeMessageSetVariousWaysAreEqual) {
 
   // Serialize to buffer
   {
-    io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&stream_data), size,
+    io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&stream_data), static_cast<int>(size),
                                        1);
     io::CodedOutputStream output_stream(&array_stream);
     message_set.SerializeWithCachedSizes(&output_stream);
@@ -512,7 +512,7 @@ TEST(WireFormatTest, SerializeMessageSetVariousWaysAreEqual) {
   {
     io::StringOutputStream string_stream(&dynamic_data);
     io::CodedOutputStream output_stream(&string_stream);
-    WireFormat::SerializeWithCachedSizes(message_set, size, &output_stream);
+    WireFormat::SerializeWithCachedSizes(message_set, static_cast<int>(size), &output_stream);
     ASSERT_FALSE(output_stream.HadError());
   }
 
@@ -576,7 +576,7 @@ TEST(WireFormatTest, ParseMessageSet) {
   // Also parse using WireFormat.
   PROTO2_WIREFORMAT_UNITTEST::TestMessageSet dynamic_message_set;
   io::CodedInputStream input(reinterpret_cast<const uint8_t*>(data.data()),
-                             data.size());
+                             static_cast<int>(data.size()));
   ASSERT_TRUE(WireFormat::ParseAndMergePartial(&input, &dynamic_message_set));
   EXPECT_EQ(message_set.DebugString(), dynamic_message_set.DebugString());
 }
@@ -595,7 +595,7 @@ TEST(WireFormatTest, ParseMessageSetWithReverseTagOrder) {
     WireFormatLite::WriteTag(WireFormatLite::kMessageSetMessageNumber,
                              WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
                              &coded_output);
-    coded_output.WriteVarint32(message.ByteSizeLong());
+    coded_output.WriteVarint32(static_cast<uint32_t>(message.ByteSizeLong()));
     message.SerializeWithCachedSizes(&coded_output);
     // Write the type id.
     uint32_t type_id = message.GetDescriptor()->extension(0)->number();
@@ -617,7 +617,7 @@ TEST(WireFormatTest, ParseMessageSetWithReverseTagOrder) {
     // Test parse the message via Reflection.
     PROTO2_WIREFORMAT_UNITTEST::TestMessageSet message_set;
     io::CodedInputStream input(reinterpret_cast<const uint8_t*>(data.data()),
-                               data.size());
+                               static_cast<int>(data.size()));
     EXPECT_TRUE(WireFormat::ParseAndMergePartial(&input, &message_set));
     EXPECT_TRUE(input.ConsumedEntireMessage());
 
@@ -761,7 +761,7 @@ TEST(WireFormatTest, RecursionLimit) {
   message.SerializeToString(&data);
 
   {
-    io::ArrayInputStream raw_input(data.data(), data.size());
+    io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
     io::CodedInputStream input(&raw_input);
     input.SetRecursionLimit(4);
     UNITTEST::TestRecursiveMessage message2;
@@ -769,7 +769,7 @@ TEST(WireFormatTest, RecursionLimit) {
   }
 
   {
-    io::ArrayInputStream raw_input(data.data(), data.size());
+    io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
     io::CodedInputStream input(&raw_input);
     input.SetRecursionLimit(3);
     UNITTEST::TestRecursiveMessage message2;
@@ -789,14 +789,14 @@ TEST(WireFormatTest, LargeRecursionLimit) {
   std::string data = src.SerializeAsString();
   {
     // Parse with default recursion limit. Should fail.
-    io::ArrayInputStream raw_input(data.data(), data.size());
+    io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
     io::CodedInputStream input(&raw_input);
     ASSERT_FALSE(dst.ParseFromCodedStream(&input));
   }
 
   {
     // Parse with custom recursion limit. Should pass.
-    io::ArrayInputStream raw_input(data.data(), data.size());
+    io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
     io::CodedInputStream input(&raw_input);
     input.SetRecursionLimit(kLargeLimit);
     ASSERT_TRUE(dst.ParseFromCodedStream(&input));
@@ -826,7 +826,7 @@ TEST(WireFormatTest, UnknownFieldRecursionLimit) {
   message.SerializeToString(&data);
 
   {
-    io::ArrayInputStream raw_input(data.data(), data.size());
+    io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
     io::CodedInputStream input(&raw_input);
     input.SetRecursionLimit(4);
     UNITTEST::TestEmptyMessage message2;
@@ -834,7 +834,7 @@ TEST(WireFormatTest, UnknownFieldRecursionLimit) {
   }
 
   {
-    io::ArrayInputStream raw_input(data.data(), data.size());
+    io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
     io::CodedInputStream input(&raw_input);
     input.SetRecursionLimit(3);
     UNITTEST::TestEmptyMessage message2;
@@ -920,7 +920,7 @@ TEST(WireFormatTest, RepeatedScalarsDifferentTagSizes) {
     msg1.add_repeated_int32(i);
     msg1.add_repeated_fixed64(i);
     msg1.add_repeated_int64(i);
-    msg1.add_repeated_float(i);
+    msg1.add_repeated_float(static_cast<float>(i));
     msg1.add_repeated_uint64(i);
   }
 
@@ -1103,7 +1103,7 @@ class Proto3PrimitiveRepeatedWireFormatTest : public ::testing::Test {
     {
       io::StringOutputStream raw_output(&dynamic_data);
       io::CodedOutputStream output(&raw_output);
-      WireFormat::SerializeWithCachedSizes(*message, size, &output);
+      WireFormat::SerializeWithCachedSizes(*message, static_cast<int>(size), &output);
       ASSERT_FALSE(output.HadError());
     }
     EXPECT_TRUE(expected == dynamic_data);
@@ -1118,7 +1118,7 @@ class Proto3PrimitiveRepeatedWireFormatTest : public ::testing::Test {
     message->Clear();
     io::CodedInputStream input(
         reinterpret_cast<const uint8_t*>(compatible_data.data()),
-        compatible_data.size());
+        static_cast<int>(compatible_data.size()));
     WireFormat::ParseAndMergePartial(&input, message);
     ExpectProto3PrimitiveRepeatedFieldsSet(*message);
   }
@@ -1221,7 +1221,7 @@ TEST_F(WireFormatInvalidInputTest, InvalidMessageWithExtraZero) {
 
   // Control case.
   {
-    io::ArrayInputStream ais(data.data(), data.size());
+    io::ArrayInputStream ais(data.data(), static_cast<int>(data.size()));
     io::CodedInputStream is(&ais);
     UNITTEST::TestAllTypes message;
     // It should fail but currently passes.
@@ -1291,7 +1291,7 @@ TEST_F(WireFormatInvalidInputTest, InvalidStringInUnknownGroup) {
 
   // Try to skip it.  Note that the bug was only present when parsing to an
   // UnknownFieldSet.
-  io::ArrayInputStream raw_input(data.data(), data.size());
+  io::ArrayInputStream raw_input(data.data(), static_cast<int>(data.size()));
   io::CodedInputStream coded_input(&raw_input);
   UnknownFieldSet unknown_fields;
   EXPECT_FALSE(WireFormat::SkipMessage(&coded_input, &unknown_fields));
@@ -1321,7 +1321,7 @@ bool WriteMessage(const char* value, T* message, std::string* wire_buffer) {
 
 template <typename T>
 bool ReadMessage(const std::string& wire_buffer, T* message) {
-  return message->ParseFromArray(wire_buffer.data(), wire_buffer.size());
+  return message->ParseFromArray(wire_buffer.data(), static_cast<int>(wire_buffer.size()));
 }
 
 class Utf8ValidationTest : public ::testing::Test {
@@ -1467,7 +1467,7 @@ TEST_F(Utf8ValidationTest, OldVerifyUTF8String) {
   std::vector<std::string> errors;
   {
     ScopedMemoryLog log;
-    WireFormat::VerifyUTF8String(data.data(), data.size(),
+    WireFormat::VerifyUTF8String(data.data(), static_cast<int>(data.size()),
                                  WireFormat::SERIALIZE);
     errors = log.GetMessages(ERROR);
   }

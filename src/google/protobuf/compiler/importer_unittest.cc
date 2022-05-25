@@ -103,7 +103,7 @@ class MockSourceTree : public SourceTree {
     if (contents == nullptr) {
       return nullptr;
     } else {
-      return new io::ArrayInputStream(contents, strlen(contents));
+      return new io::ArrayInputStream(contents, static_cast<int>(strlen(contents)));
     }
   }
 
