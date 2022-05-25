@@ -58,6 +58,7 @@ enum NotAllowed {
   PRIVATE = 51;
   PROTECTED = 52;
   PUBLIC = 53;
+  READONLY = 79;
   REQUIRE = 54;
   REQUIRE_ONCE = 55;
   RETURN = 56;
