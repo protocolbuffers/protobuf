@@ -6,6 +6,10 @@ option(protobuf_ABSOLUTE_TEST_PLUGIN_PATH
   "Using absolute test_plugin path in tests" ON)
 mark_as_advanced(protobuf_ABSOLUTE_TEST_PLUGIN_PATH)
 
+# The compile_proto_file macro places files in the source tree, so this option
+# must be turned off.
+set(CMAKE_DISABLE_SOURCE_CHANGES OFF)
+
 if (protobuf_USE_EXTERNAL_GTEST)
   find_package(GTest REQUIRED)
 else()
