@@ -40,6 +40,12 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/util/internal/mock_error_listener.h>
+#include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/stubs/strutil.h>
+#include <gtest/gtest.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/testdata/anys.pb.h>
 #include <google/protobuf/util/internal/testdata/books.pb.h>
 #include <google/protobuf/util/internal/testdata/field_mask.pb.h>
@@ -49,12 +55,6 @@
 #include <google/protobuf/util/internal/testdata/struct.pb.h>
 #include <google/protobuf/util/internal/testdata/timestamp_duration.pb.h>
 #include <google/protobuf/util/internal/testdata/wrappers.pb.h>
-#include <google/protobuf/stubs/bytestream.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <gtest/gtest.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/type_info_test_helper.h>
 #include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/util/type_resolver_util.h>

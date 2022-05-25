@@ -12,7 +12,10 @@ cc_library(
     hdrs = ["php_generator.h"],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/php",
-    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+    ],
     deps = [
         "//:protobuf",
         "//src/google/protobuf/compiler:code_generator",

@@ -1512,6 +1512,8 @@ void FileDescriptorSet::InternalSwap(FileDescriptorSet* other) {
 class FileDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<FileDescriptorProto>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_._has_bits_);
   static void set_has_name(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -2209,6 +2211,8 @@ void FileDescriptorProto::InternalSwap(FileDescriptorProto* other) {
 class DescriptorProto_ExtensionRange::_Internal {
  public:
   using HasBits = decltype(std::declval<DescriptorProto_ExtensionRange>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_._has_bits_);
   static void set_has_start(HasBits* has_bits) {
     (*has_bits)[0] |= 2u;
   }
@@ -2493,6 +2497,8 @@ void DescriptorProto_ExtensionRange::InternalSwap(DescriptorProto_ExtensionRange
 class DescriptorProto_ReservedRange::_Internal {
  public:
   using HasBits = decltype(std::declval<DescriptorProto_ReservedRange>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_._has_bits_);
   static void set_has_start(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -2730,6 +2736,8 @@ void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* 
 class DescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<DescriptorProto>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_._has_bits_);
   static void set_has_name(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -3505,6 +3513,8 @@ void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* other) {
 class FieldDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<FieldDescriptorProto>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_._has_bits_);
   static void set_has_name(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -4186,6 +4196,8 @@ void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* other) {
 class OneofDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<OneofDescriptorProto>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_._has_bits_);
   static void set_has_name(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -4461,6 +4473,8 @@ void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* other) {
 class EnumDescriptorProto_EnumReservedRange::_Internal {
  public:
   using HasBits = decltype(std::declval<EnumDescriptorProto_EnumReservedRange>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_._has_bits_);
   static void set_has_start(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -4698,6 +4712,8 @@ void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_Enu
 class EnumDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<EnumDescriptorProto>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_._has_bits_);
   static void set_has_name(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -5084,6 +5100,8 @@ void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* other) {
 class EnumValueDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<EnumValueDescriptorProto>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_._has_bits_);
   static void set_has_name(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -5395,6 +5413,8 @@ void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* other) {
 class ServiceDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<ServiceDescriptorProto>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_._has_bits_);
   static void set_has_name(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -5706,6 +5726,8 @@ void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* other) {
 class MethodDescriptorProto::_Internal {
  public:
   using HasBits = decltype(std::declval<MethodDescriptorProto>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_._has_bits_);
   static void set_has_name(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -6163,6 +6185,8 @@ void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* other) {
 class FileOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<FileOptions>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(FileOptions, _impl_._has_bits_);
   static void set_has_java_package(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -7282,6 +7306,8 @@ void FileOptions::InternalSwap(FileOptions* other) {
 class MessageOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<MessageOptions>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_._has_bits_);
   static void set_has_message_set_wire_format(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -7630,6 +7656,8 @@ void MessageOptions::InternalSwap(MessageOptions* other) {
 class FieldOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<FieldOptions>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_._has_bits_);
   static void set_has_ctype(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -8286,6 +8314,8 @@ void OneofOptions::InternalSwap(OneofOptions* other) {
 class EnumOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<EnumOptions>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_._has_bits_);
   static void set_has_allow_alias(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -8578,6 +8608,8 @@ void EnumOptions::InternalSwap(EnumOptions* other) {
 class EnumValueOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<EnumValueOptions>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_._has_bits_);
   static void set_has_deprecated(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -8827,6 +8859,8 @@ void EnumValueOptions::InternalSwap(EnumValueOptions* other) {
 class ServiceOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<ServiceOptions>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_._has_bits_);
   static void set_has_deprecated(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -9076,6 +9110,8 @@ void ServiceOptions::InternalSwap(ServiceOptions* other) {
 class MethodOptions::_Internal {
  public:
   using HasBits = decltype(std::declval<MethodOptions>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_._has_bits_);
   static void set_has_deprecated(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -9377,6 +9413,8 @@ void MethodOptions::InternalSwap(MethodOptions* other) {
 class UninterpretedOption_NamePart::_Internal {
  public:
   using HasBits = decltype(std::declval<UninterpretedOption_NamePart>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_._has_bits_);
   static void set_has_name_part(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -9653,6 +9691,8 @@ void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* ot
 class UninterpretedOption::_Internal {
  public:
   using HasBits = decltype(std::declval<UninterpretedOption>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_._has_bits_);
   static void set_has_identifier_value(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -10122,6 +10162,8 @@ void UninterpretedOption::InternalSwap(UninterpretedOption* other) {
 class SourceCodeInfo_Location::_Internal {
  public:
   using HasBits = decltype(std::declval<SourceCodeInfo_Location>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_._has_bits_);
   static void set_has_leading_comments(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }
@@ -10716,6 +10758,8 @@ void SourceCodeInfo::InternalSwap(SourceCodeInfo* other) {
 class GeneratedCodeInfo_Annotation::_Internal {
  public:
   using HasBits = decltype(std::declval<GeneratedCodeInfo_Annotation>()._impl_._has_bits_);
+  static constexpr int32_t kHasBitsOffset =
+    8 * PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_._has_bits_);
   static void set_has_source_file(HasBits* has_bits) {
     (*has_bits)[0] |= 1u;
   }

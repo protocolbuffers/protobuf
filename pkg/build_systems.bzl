@@ -1,6 +1,7 @@
 # Starlark utilities for working with other build systems
 
 load("@rules_pkg//:providers.bzl", "PackageFilegroupInfo", "PackageFilesInfo")
+load(":cc_dist_library.bzl", "CcFileList")
 
 ################################################################################
 # Macro to create CMake and Automake source lists.
@@ -31,21 +32,6 @@ def gen_file_lists(name, out_stem, **kwargs):
 # Aspect that extracts srcs, hdrs, etc.
 ################################################################################
 
-CcFileList = provider(
-    doc = "List of files to be built into a library.",
-    fields = {
-        # As a rule of thumb, `hdrs` and `textual_hdrs` are the files that
-        # would be installed along with a prebuilt library.
-        "hdrs": "public header files, including those used by generated code",
-        "textual_hdrs": "files which are included but are not self-contained",
-
-        # The `internal_hdrs` are header files which appear in `srcs`.
-        # These are only used when compiling the library.
-        "internal_hdrs": "internal header files (only used to build .cc files)",
-        "srcs": "source files",
-    },
-)
-
 ProtoFileList = provider(
     doc = "List of proto files and generated code to be built into a library.",
     fields = {
@@ -65,55 +51,10 @@ def _flatten_target_files(targets):
             files.append(tfile)
     return files
 
-def _combine_cc_file_lists(file_lists):
-    hdrs = {}
-    textual_hdrs = {}
-    internal_hdrs = {}
-    srcs = {}
-    for file_list in file_lists:
-        hdrs.update({f: 1 for f in file_list.hdrs})
-        textual_hdrs.update({f: 1 for f in file_list.textual_hdrs})
-        internal_hdrs.update({f: 1 for f in file_list.internal_hdrs})
-        srcs.update({f: 1 for f in file_list.srcs})
-    return CcFileList(
-        hdrs = sorted(hdrs.keys()),
-        textual_hdrs = sorted(textual_hdrs.keys()),
-        internal_hdrs = sorted(internal_hdrs.keys()),
-        srcs = sorted(srcs.keys()),
-    )
-
 def _file_list_aspect_impl(target, ctx):
     # We're going to reach directly into the attrs on the traversed rule.
     rule_attr = ctx.rule.attr
     providers = []
-
-    # Extract sources from a `cc_library` (or similar):
-    if CcInfo in target:
-        # CcInfo is a proxy for what we expect this rule to look like.
-        # However, some deps may expose `CcInfo` without having `srcs`,
-        # `hdrs`, etc., so we use `getattr` to handle that gracefully.
-
-        internal_hdrs = []
-        srcs = []
-
-        # Filter `srcs` so it only contains source files. Headers will go
-        # into `internal_headers`.
-        for src in _flatten_target_files(getattr(rule_attr, "srcs", [])):
-            if src.extension.lower() in ["c", "cc", "cpp", "cxx"]:
-                srcs.append(src)
-            else:
-                internal_hdrs.append(src)
-
-        providers.append(CcFileList(
-            hdrs = _flatten_target_files(getattr(rule_attr, "hdrs", [])),
-            textual_hdrs = _flatten_target_files(getattr(
-                rule_attr,
-                "textual_hdrs",
-                [],
-            )),
-            internal_hdrs = internal_hdrs,
-            srcs = srcs,
-        ))
 
     # Extract sources from a `proto_library`:
     if ProtoInfo in target:
@@ -178,7 +119,7 @@ Output is CcFileList and/or ProtoFileList. Example:
 # fragment generator function.
 ################################################################################
 
-def _create_file_list_impl(fragment_generator):
+def _create_file_list_impl(ctx, fragment_generator):
     # `fragment_generator` is a function like:
     #     def fn(originating_rule: Label,
     #            varname: str,
@@ -191,92 +132,98 @@ def _create_file_list_impl(fragment_generator):
     # When dealing with `File` objects, the `short_path` is used to strip
     # the output prefix for generated files.
 
-    def _impl(ctx):
-        out = ctx.outputs.out
+    out = ctx.outputs.out
 
-        fragments = []
-        for srcrule, libname in ctx.attr.src_libs.items():
-            if CcFileList in srcrule:
-                cc_file_list = srcrule[CcFileList]
-                fragments.extend([
-                    fragment_generator(
-                        srcrule.label,
-                        libname + "_srcs",
-                        ctx.attr.source_prefix,
-                        [f.short_path for f in cc_file_list.srcs],
-                    ),
-                    fragment_generator(
-                        srcrule.label,
-                        libname + "_hdrs",
-                        ctx.attr.source_prefix,
-                        [f.short_path for f in (cc_file_list.hdrs +
-                                                cc_file_list.textual_hdrs)],
-                    ),
-                ])
+    fragments = []
+    for srcrule, libname in ctx.attr.src_libs.items():
+        if CcFileList in srcrule:
+            cc_file_list = srcrule[CcFileList]
 
-            if ProtoFileList in srcrule:
-                proto_file_list = srcrule[ProtoFileList]
-                fragments.extend([
-                    fragment_generator(
-                        srcrule.label,
-                        libname + "_proto_srcs",
-                        ctx.attr.source_prefix,
-                        [f.short_path for f in proto_file_list.proto_srcs],
-                    ),
-                    fragment_generator(
-                        srcrule.label,
-                        libname + "_srcs",
-                        ctx.attr.source_prefix,
-                        proto_file_list.srcs,
-                    ),
-                    fragment_generator(
-                        srcrule.label,
-                        libname + "_hdrs",
-                        ctx.attr.source_prefix,
-                        proto_file_list.hdrs,
-                    ),
-                ])
+            # Turn depsets of files into sorted lists.
+            srcs = sorted(cc_file_list.srcs.to_list())
+            hdrs = sorted(
+                depset(transitive = [
+                    cc_file_list.textual_hdrs,
+                    cc_file_list.hdrs,
+                ]).to_list(),
+            )
 
-            files = {}
+            fragments.extend([
+                fragment_generator(
+                    srcrule.label,
+                    libname + "_srcs",
+                    ctx.attr.source_prefix,
+                    [f.short_path for f in srcs],
+                ),
+                fragment_generator(
+                    srcrule.label,
+                    libname + "_hdrs",
+                    ctx.attr.source_prefix,
+                    [f.short_path for f in hdrs],
+                ),
+            ])
 
-            if PackageFilegroupInfo in srcrule:
-                for pkg_files_info, origin in srcrule[PackageFilegroupInfo].pkg_files:
-                    # keys are the destination path:
-                    files.update(pkg_files_info.dest_src_map)
+        if ProtoFileList in srcrule:
+            proto_file_list = srcrule[ProtoFileList]
+            fragments.extend([
+                fragment_generator(
+                    srcrule.label,
+                    libname + "_proto_srcs",
+                    ctx.attr.source_prefix,
+                    [f.short_path for f in proto_file_list.proto_srcs],
+                ),
+                fragment_generator(
+                    srcrule.label,
+                    libname + "_srcs",
+                    ctx.attr.source_prefix,
+                    proto_file_list.srcs,
+                ),
+                fragment_generator(
+                    srcrule.label,
+                    libname + "_hdrs",
+                    ctx.attr.source_prefix,
+                    proto_file_list.hdrs,
+                ),
+            ])
 
-            if PackageFilesInfo in srcrule:
-                # keys are the destination:
-                files.update(srcrule[PackageFilesInfo].dest_src_map)
+        files = {}
 
-            if files == {} and DefaultInfo in srcrule and CcInfo not in srcrule:
-                # This could be an individual file or filegroup.
-                # We explicitly ignore rules with CcInfo, since their
-                # output artifacts are libraries or binaries.
-                files.update(
-                    {
-                        f.short_path: 1
-                        for f in srcrule[DefaultInfo].files.to_list()
-                    },
-                )
+        if PackageFilegroupInfo in srcrule:
+            for pkg_files_info, origin in srcrule[PackageFilegroupInfo].pkg_files:
+                # keys are the destination path:
+                files.update(pkg_files_info.dest_src_map)
 
-            if files:
-                fragments.append(
-                    fragment_generator(
-                        srcrule.label,
-                        libname + "_files",
-                        ctx.attr.source_prefix,
-                        sorted(files.keys()),
-                    ),
-                )
+        if PackageFilesInfo in srcrule:
+            # keys are the destination:
+            files.update(srcrule[PackageFilesInfo].dest_src_map)
 
-        ctx.actions.write(
-            output = out,
-            content = (ctx.attr._header % ctx.label) + "\n".join(fragments),
-        )
+        if files == {} and DefaultInfo in srcrule and CcFileList not in srcrule:
+            # This could be an individual file or filegroup.
+            # We explicitly ignore rules with CcInfo, since their
+            # output artifacts are libraries or binaries.
+            files.update(
+                {
+                    f.short_path: 1
+                    for f in srcrule[DefaultInfo].files.to_list()
+                },
+            )
 
-        return [DefaultInfo(files = depset([out]))]
+        if files:
+            fragments.append(
+                fragment_generator(
+                    srcrule.label,
+                    libname + "_files",
+                    ctx.attr.source_prefix,
+                    sorted(files.keys()),
+                ),
+            )
 
-    return _impl
+    ctx.actions.write(
+        output = out,
+        content = (ctx.attr._header % ctx.label) + "\n".join(fragments),
+    )
+
+    return [DefaultInfo(files = depset([out]))]
 
 # Common rule attrs for rules that use `_create_file_list_impl`:
 # (note that `_header` is also required)
@@ -343,6 +290,9 @@ def _cmake_var_fragment(owner, varname, prefix, entries):
         entries = "\n".join(["  %s%s" % (prefix, f) for f in entries]),
     )
 
+def _cmake_file_list_impl(ctx):
+    _create_file_list_impl(ctx, _cmake_var_fragment)
+
 gen_cmake_file_lists = rule(
     doc = """
 Generates a CMake-syntax file with lists of files.
@@ -361,7 +311,7 @@ For proto_library, the following are generated:
     {libname}_hdrs: contains syntesized paths for generated C++ headers.
 
 """,
-    implementation = _create_file_list_impl(_cmake_var_fragment),
+    implementation = _cmake_file_list_impl,
     attrs = dict(
         _source_list_common_attrs,
         _header = attr.string(
@@ -416,6 +366,9 @@ def _automake_var_fragment(owner, varname, prefix, entries):
     )
     return fragment.rstrip("\\ ") + "\n"
 
+def _automake_file_list_impl(ctx):
+    _create_file_list_impl(ctx, _automake_var_fragment)
+
 gen_automake_file_lists = rule(
     doc = """
 Generates an Automake-syntax file with lists of files.
@@ -434,7 +387,7 @@ For proto_library, the following are generated:
     {libname}_hdrs: contains syntesized paths for generated C++ headers.
 
 """,
-    implementation = _create_file_list_impl(_automake_var_fragment),
+    implementation = _automake_file_list_impl,
     attrs = dict(
         _source_list_common_attrs.items(),
         _header = attr.string(

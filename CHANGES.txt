@@ -1,3 +1,23 @@
+2022-05-19 version 21.0-rc2(C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+  Python
+  * Fix windows builds
+  * Throw more helpful error if generated code is out of date
+  * Fixed two reference leaks
+
+  Ruby
+  * Support x64-mingw-ucrt platform
+
+  PHP
+  * Fix SEGV by not writing to shared memory for zend_class_entry
+
+  C#
+  * Suppress warning CS8981
+
+  Other
+  * Fix Maven release to release actual osx_aarch64 binary
+  * Fix protoc zips to have the proto files for well known types
+
 2022-05-10 version 21.0-rc1 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
 
   C++
@@ -15,6 +35,7 @@
   Java
   * Update protobuf_version.bzl to separate protoc and per-language java … (#9900)
   * 6x speedup in ArrayEncoder.writeUInt32NotTag
+  * Java generated code is no longer compatible with runtimes 2.6.1 and earlier
 
   Python
   * Increment python major version to 4 in version.json for python upb (#9926)
@@ -26,6 +47,7 @@
   * Due to the breaking changes for Python, the major version number for Python
     has been incremented.
   * The binary wheel for macOS now supports Apple silicon.
+  * In TextFormat, transform UnicodeDecodeError into ParseError.
 
 
   PHP

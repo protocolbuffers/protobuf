@@ -61,6 +61,7 @@
 
 #include <memory>
 #include <sstream>
+#include <utility>
 
 #include <google/protobuf/testing/file.h>
 #include <google/protobuf/test_util2.h>
@@ -570,7 +571,7 @@ TEST_F(IoTest, CompressionOptions) {
   // Some ad-hoc testing of compression options.
 
   std::string golden_filename =
-      TestUtil::GetTestDataPath("net/proto2/internal/testdata/golden_message");
+      TestUtil::GetTestDataPath("third_party/protobuf/testdata/golden_message");
   std::string golden;
   GOOGLE_CHECK_OK(File::GetContents(golden_filename, &golden, true));
 

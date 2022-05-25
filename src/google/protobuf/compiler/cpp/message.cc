@@ -2101,7 +2101,9 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
   if (!has_bit_indices_.empty()) {
     format(
         "using HasBits = "
-        "decltype(std::declval<$classname$>().$has_bits$);\n");
+        "decltype(std::declval<$classname$>().$has_bits$);\n"
+        "static constexpr int32_t kHasBitsOffset =\n"
+        "  8 * PROTOBUF_FIELD_OFFSET($classname$, _impl_._has_bits_);\n");
   }
   for (auto field : FieldRange(descriptor_)) {
     field_generators_.get(field).GenerateInternalAccessorDeclarations(printer);

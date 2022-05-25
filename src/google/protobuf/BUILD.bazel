@@ -160,6 +160,7 @@ cc_library(
     linkopts = LINK_OPTS,
     visibility = [
         "//:__pkg__",
+        "//pkg:__pkg__",
         "//src/google/protobuf:__subpackages__",
     ],
     # In Bazel 6.0+, these will be `interface_deps`:
@@ -209,6 +210,7 @@ cc_library(
     linkopts = LINK_OPTS,
     visibility = [
         "//:__pkg__",
+        "//pkg:__pkg__",
         "//src/google/protobuf:__subpackages__",
     ],
     deps = [

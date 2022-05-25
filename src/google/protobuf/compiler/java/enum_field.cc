@@ -42,7 +42,6 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/compiler/java/context.h>
 #include <google/protobuf/compiler/java/doc_comment.h>
 #include <google/protobuf/compiler/java/helpers.h>
@@ -85,13 +84,6 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
           ? "@kotlin.Deprecated(message = \"Field " + (*variables)["name"] +
                 " is deprecated\") "
           : "";
-  (*variables)["on_changed"] = "onChanged();";
-  // Use deprecated valueOf() method to be compatible with old generated code
-  // for v2.5.0/v2.6.1.
-  // TODO(xiaofeng): Use "forNumber" when we no longer support compatibility
-  // with v2.5.0/v2.6.1, and remove the @SuppressWarnings annotations.
-  (*variables)["for_number"] = "valueOf";
-
   if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
@@ -204,8 +196,7 @@ void ImmutableEnumFieldGenerator::GenerateMembers(io::Printer* printer) const {
   printer->Print(variables_,
                  "@java.lang.Override $deprecation$public $type$ "
                  "${$get$capitalized_name$$}$() {\n"
-                 "  @SuppressWarnings(\"deprecation\")\n"
-                 "  $type$ result = $type$.$for_number$($name$_);\n"
+                 "  $type$ result = $type$.forNumber($name$_);\n"
                  "  return result == null ? $unknown$ : result;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -238,7 +229,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
                    "${$set$capitalized_name$Value$}$(int value) {\n"
                    "  $set_has_field_bit_builder$\n"
                    "  $name$_ = value;\n"
-                   "  $on_changed$\n"
+                   "  onChanged();\n"
                    "  return this;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -247,8 +238,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  "@java.lang.Override\n"
                  "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
-                 "  @SuppressWarnings(\"deprecation\")\n"
-                 "  $type$ result = $type$.$for_number$($name$_);\n"
+                 "  $type$ result = $type$.forNumber($name$_);\n"
                  "  return result == null ? $unknown$ : result;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -262,7 +252,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "  }\n"
                  "  $set_has_field_bit_builder$\n"
                  "  $name$_ = value.getNumber();\n"
-                 "  $on_changed$\n"
+                 "  onChanged();\n"
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -273,7 +263,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
       "  $clear_has_field_bit_builder$\n"
       "  $name$_ = $default_number$;\n"
-      "  $on_changed$\n"
+      "  onChanged();\n"
       "  return this;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -364,8 +354,7 @@ void ImmutableEnumFieldGenerator::GenerateParsingCode(
   } else {
     printer->Print(variables_,
                    "int rawValue = input.readEnum();\n"
-                   "  @SuppressWarnings(\"deprecation\")\n"
-                   "$type$ value = $type$.$for_number$(rawValue);\n"
+                   "$type$ value = $type$.forNumber(rawValue);\n"
                    "if (value == null) {\n"
                    "  unknownFields.mergeVarintField($number$, rawValue);\n"
                    "} else {\n"
@@ -453,8 +442,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateMembers(
   printer->Print(variables_,
                  "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
                  "  if ($has_oneof_case_message$) {\n"
-                 "    @SuppressWarnings(\"deprecation\")\n"
-                 "    $type$ result = $type$.$for_number$(\n"
+                 "    $type$ result = $type$.forNumber(\n"
                  "        (java.lang.Integer) $oneof_name$_);\n"
                  "    return result == null ? $unknown$ : result;\n"
                  "  }\n"
@@ -493,7 +481,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
                    "${$set$capitalized_name$Value$}$(int value) {\n"
                    "  $set_oneof_case_message$;\n"
                    "  $oneof_name$_ = value;\n"
-                   "  $on_changed$\n"
+                   "  onChanged();\n"
                    "  return this;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -503,8 +491,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
                  "@java.lang.Override\n"
                  "$deprecation$public $type$ ${$get$capitalized_name$$}$() {\n"
                  "  if ($has_oneof_case_message$) {\n"
-                 "    @SuppressWarnings(\"deprecation\")\n"
-                 "    $type$ result = $type$.$for_number$(\n"
+                 "    $type$ result = $type$.forNumber(\n"
                  "        (java.lang.Integer) $oneof_name$_);\n"
                  "    return result == null ? $unknown$ : result;\n"
                  "  }\n"
@@ -521,7 +508,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
                  "  }\n"
                  "  $set_oneof_case_message$;\n"
                  "  $oneof_name$_ = value.getNumber();\n"
-                 "  $on_changed$\n"
+                 "  onChanged();\n"
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -533,7 +520,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
       "  if ($has_oneof_case_message$) {\n"
       "    $clear_oneof_case_message$;\n"
       "    $oneof_name$_ = null;\n"
-      "    $on_changed$\n"
+      "    onChanged();\n"
       "  }\n"
       "  return this;\n"
       "}\n");
@@ -570,8 +557,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateParsingCode(
   } else {
     printer->Print(variables_,
                    "int rawValue = input.readEnum();\n"
-                   "@SuppressWarnings(\"deprecation\")\n"
-                   "$type$ value = $type$.$for_number$(rawValue);\n"
+                   "$type$ value = $type$.forNumber(rawValue);\n"
                    "if (value == null) {\n"
                    "  unknownFields.mergeVarintField($number$, rawValue);\n"
                    "} else {\n"
@@ -685,8 +671,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateMembers(
       "        new com.google.protobuf.Internal.ListAdapter.Converter<\n"
       "            java.lang.Integer, $type$>() {\n"
       "          public $type$ convert(java.lang.Integer from) {\n"
-      "            @SuppressWarnings(\"deprecation\")\n"
-      "            $type$ result = $type$.$for_number$(from);\n"
+      "            $type$ result = $type$.forNumber(from);\n"
       "            return result == null ? $unknown$ : result;\n"
       "          }\n"
       "        };\n");
@@ -802,7 +787,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "  }\n"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.set(index, value.getNumber());\n"
-                 "  $on_changed$\n"
+                 "  onChanged();\n"
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -816,7 +801,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "  }\n"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.add(value.getNumber());\n"
-                 "  $on_changed$\n"
+                 "  onChanged();\n"
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -829,7 +814,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "  for ($type$ value : values) {\n"
                  "    $name$_.add(value.getNumber());\n"
                  "  }\n"
-                 "  $on_changed$\n"
+                 "  onChanged();\n"
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -840,7 +825,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
       "  $name$_ = java.util.Collections.emptyList();\n"
       "  $clear_mutable_bit_builder$;\n"
-      "  $on_changed$\n"
+      "  onChanged();\n"
       "  return this;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -870,7 +855,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
         "    int index, int value) {\n"
         "  ensure$capitalized_name$IsMutable();\n"
         "  $name$_.set(index, value);\n"
-        "  $on_changed$\n"
+        "  onChanged();\n"
         "  return this;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -881,7 +866,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                    "${$add$capitalized_name$Value$}$(int value) {\n"
                    "  ensure$capitalized_name$IsMutable();\n"
                    "  $name$_.add(value);\n"
-                   "  $on_changed$\n"
+                   "  onChanged();\n"
                    "  return this;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -895,7 +880,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
         "  for (int value : values) {\n"
         "    $name$_.add(value);\n"
         "  }\n"
-        "  $on_changed$\n"
+        "  onChanged();\n"
         "  return this;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -935,7 +920,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateMergingCode(
                  "    ensure$capitalized_name$IsMutable();\n"
                  "    $name$_.addAll(other.$name$_);\n"
                  "  }\n"
-                 "  $on_changed$\n"
+                 "  onChanged();\n"
                  "}\n");
 }
 
@@ -967,8 +952,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateParsingCode(
     printer->Print(
         variables_,
         "int rawValue = input.readEnum();\n"
-        "@SuppressWarnings(\"deprecation\")\n"
-        "$type$ value = $type$.$for_number$(rawValue);\n"
+        "$type$ value = $type$.forNumber(rawValue);\n"
         "if (value == null) {\n"
         "  unknownFields.mergeVarintField($number$, rawValue);\n"
         "} else {\n"

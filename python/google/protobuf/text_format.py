@@ -856,9 +856,12 @@ class _Parser(object):
       ParseError: On text parsing problems.
     """
     # Tokenize expects native str lines.
-    str_lines = (
-        line if isinstance(line, str) else line.decode('utf-8')
-        for line in lines)
+    try:
+      str_lines = (
+          line if isinstance(line, str) else line.decode('utf-8')
+          for line in lines)
+    except UnicodeDecodeError as e:
+      raise self._StringParseError(e)
     tokenizer = Tokenizer(str_lines)
     while not tokenizer.AtEnd():
       self._MergeField(tokenizer, message)
@@ -1190,10 +1193,17 @@ def _SkipField(tokenizer):
     tokenizer: A tokenizer to parse the field name and values.
   """
   if tokenizer.TryConsume('['):
-    # Consume extension name.
+    # Consume extension or google.protobuf.Any type URL
     tokenizer.ConsumeIdentifier()
+    num_identifiers = 1
     while tokenizer.TryConsume('.'):
       tokenizer.ConsumeIdentifier()
+      num_identifiers += 1
+    # This is possibly a type URL for an Any message.
+    if num_identifiers == 3 and tokenizer.TryConsume('/'):
+      tokenizer.ConsumeIdentifier()
+      while tokenizer.TryConsume('.'):
+        tokenizer.ConsumeIdentifier()
     tokenizer.Consume(']')
   else:
     tokenizer.ConsumeIdentifierOrNumber()

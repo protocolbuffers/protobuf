@@ -87,7 +87,7 @@ pkg_filegroup(
     srcs = [
         ":dist_files",
         "//benchmarks/cpp:dist_files",
-        # "//benchmarks/datasets:dist_files",  # not in autotools dist
+        "//benchmarks/datasets:dist_files",  # not in autotools dist
         "//benchmarks/datasets/google_message1/proto2:dist_files",
         "//benchmarks/datasets/google_message1/proto3:dist_files",
         "//benchmarks/datasets/google_message2:dist_files",

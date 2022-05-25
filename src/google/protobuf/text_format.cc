@@ -905,16 +905,18 @@ class TextFormat::Parser::ParserImpl {
       return true;
     }
     if (TryConsume("[")) {
-      while (true) {
-        if (!LookingAt("{") && !LookingAt("<")) {
-          DO(SkipFieldValue());
-        } else {
-          DO(SkipFieldMessage());
+      if (!TryConsume("]")) {
+        while (true) {
+          if (!LookingAt("{") && !LookingAt("<")) {
+            DO(SkipFieldValue());
+          } else {
+            DO(SkipFieldMessage());
+          }
+          if (TryConsume("]")) {
+            break;
+          }
+          DO(Consume(","));
         }
-        if (TryConsume("]")) {
-          break;
-        }
-        DO(Consume(","));
       }
       ++recursion_limit_;
       return true;
