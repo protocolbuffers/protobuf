@@ -625,15 +625,27 @@ cc_test(
 )
 
 cc_test(
+    name = "lite_unittest",
+    srcs = ["lite_unittest.cc"],
+    deps = [
+        ":cc_lite_test_protos",
+        ":protobuf",
+        ":test_util",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "map_field_test",
     srcs = ["map_field_test.cc"],
     deps = [
         ":cc_test_protos",
         ":protobuf",
         ":test_util",
-        #"//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
-        #"//src/google/protobuf/testing",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
@@ -645,6 +657,12 @@ cc_test(
         "map_test.cc",
         "map_test.inc",
     ],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
     data = [":testdata"],
     deps = [
         ":cc_test_protos",
@@ -728,6 +746,12 @@ cc_test(
         "proto3_lite_unittest.cc",
         "proto3_lite_unittest.inc",
     ],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
     deps = [
         ":cc_test_protos",
         ":protobuf",
@@ -754,6 +778,12 @@ cc_test(
 cc_test(
     name = "repeated_field_reflection_unittest",
     srcs = ["repeated_field_reflection_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
     deps = [
         ":cc_test_protos",
         ":protobuf",
@@ -767,6 +797,12 @@ cc_test(
 cc_test(
     name = "repeated_field_unittest",
     srcs = ["repeated_field_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
     deps = [
         ":cc_test_protos",
         ":protobuf",
@@ -780,6 +816,12 @@ cc_test(
 cc_test(
     name = "text_format_unittest",
     srcs = ["text_format_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
     data = [":testdata"],
     deps = [
         ":cc_test_protos",
@@ -811,6 +853,12 @@ cc_test(
 cc_test(
     name = "well_known_types_unittest",
     srcs = ["well_known_types_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
     deps = [
         ":cc_test_protos",
         ":protobuf",
