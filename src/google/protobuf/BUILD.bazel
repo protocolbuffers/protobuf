@@ -507,6 +507,12 @@ cc_test(
 cc_test(
     name = "arena_unittest",
     srcs = ["arena_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
     deps = [
         ":cc_test_protos",
         ":lite_test_util",
@@ -554,6 +560,12 @@ cc_test(
 cc_test(
     name = "descriptor_unittest",
     srcs = ["descriptor_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
     deps = [
         ":cc_test_protos",
         ":protobuf",
@@ -578,6 +590,12 @@ cc_test(
 cc_test(
     name = "dynamic_message_unittest",
     srcs = ["dynamic_message_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
     deps = [
         ":cc_test_protos",
         ":protobuf",
@@ -591,6 +609,12 @@ cc_test(
 cc_test(
     name = "extension_set_unittest",
     srcs = ["extension_set_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
     deps = [
         ":cc_test_protos",
         ":protobuf",
@@ -606,6 +630,12 @@ cc_test(
 cc_test(
     name = "generated_message_reflection_unittest",
     srcs = ["generated_message_reflection_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
     deps = [
         ":cc_test_protos",
         ":protobuf",
@@ -620,6 +650,12 @@ cc_test(
 cc_test(
     name = "generated_message_tctable_lite_test",
     srcs = ["generated_message_tctable_lite_test.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
     deps = [
         ":protobuf_lite",
         "@com_google_googletest//:gtest",
@@ -643,6 +679,12 @@ cc_test(
 cc_test(
     name = "lite_arena_unittest",
     srcs = ["lite_arena_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
     deps = [
         ":protobuf",
         ":lite_test_util",
@@ -756,6 +798,12 @@ cc_test(
 cc_test(
     name = "proto3_arena_unittest",
     srcs = ["proto3_arena_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
     deps = [
         ":cc_test_protos",
         ":protobuf",
@@ -791,6 +839,12 @@ cc_test(
 cc_test(
     name = "reflection_ops_unittest",
     srcs = ["reflection_ops_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
     deps = [
         ":cc_test_protos",
         ":protobuf",
@@ -865,6 +919,12 @@ cc_test(
 cc_test(
     name = "unknown_field_set_unittest",
     srcs = ["unknown_field_set_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
     deps = [
         ":cc_lite_test_protos",
         ":protobuf",
