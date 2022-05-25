@@ -1,3 +1,53 @@
+2022-05-25 version 21.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+  C++
+  * cmake: Call get_filename_component() with DIRECTORY mode instead of PATH mode (#9614)
+  * Escape GetObject macro inside protoc-generated code (#9739)
+  * Update CMake configuration to add a dependency on Abseil (#9793)
+  * Fix cmake install targets (#9822)
+  * Use __constinit only in GCC 12.2 and up (#9936)
+
+  Java
+  * Update protobuf_version.bzl to separate protoc and per-language java … (#9900)
+
+  Python
+  * Increment python major version to 4 in version.json for python upb (#9926)
+  * The C extension module for Python has been rewritten to use the upb library.
+    This is expected to deliver significant performance benefits, especially when
+    parsing large payloads.  There are some minor breaking changes, but these
+    should not impact most users.  For more information see:
+    https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
+  * Fixed win32 build and fixed str(message) on all Windows platforms. (#9976)
+  * The binary wheel for macOS now supports Apple silicon.
+
+  PHP
+  * [PHP] fix PHP build system (#9571)
+  * Fix building packaged PHP extension (#9727)
+  * fix: reserve "ReadOnly" keyword for PHP 8.1 and add compatibility (#9633)
+  * fix: phpdoc syntax for repeatedfield parameters (#9784)
+  * fix: phpdoc for repeatedfield (#9783)
+  * Change enum string name for reserved words (#9780)
+  * chore: [PHP] fix phpdoc for MapField keys (#9536)
+  * Fixed PHP SEGV by not writing to shared memory for zend_class_entry. (#9996)
+
+  Ruby
+  * Allow pre-compiled binaries for ruby 3.1.0 (#9566)
+  * Implement `respond_to?` in RubyMessage (#9677)
+  * [Ruby] Fix RepeatedField#last, #first inconsistencies (#9722)
+  * Do not use range based UTF-8 validation in truffleruby (#9769)
+  * Improve range handling logic of `RepeatedField` (#9799)
+  * Support x64-mingw-ucrt platform
+
+  Other
+  * [Kotlin] remove redundant public modifiers for compiled code (#9642)
+  * [C#] Update GetExtension to support getting typed value (#9655)
+  * Fix invalid dependency manifest when using `descriptor_set_out` (#9647)
+  * Fix C# generator handling of a field named "none" in a oneof (#9636)
+  * Add initial version.json file for 21-dev (#9840)
+  * Remove duplicate java generated code (#9909)
+  * Cherry-pick PR #9981 into 21.x branch (#10000)
+
+
 2022-05-19 version 21.0-rc2(C++/Java/Python/PHP/Objective-C/C#/Ruby)
 
   Python
