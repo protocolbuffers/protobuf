@@ -16,6 +16,7 @@ function pre_build {
     else
       ./autogen.sh
       CXXFLAGS="-fPIC -g -O2" ./configure
+      make -j8
     fi
 
     if [ "$PLAT" == "aarch64" ]
