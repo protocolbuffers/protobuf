@@ -153,7 +153,7 @@ target_link_libraries(test_plugin
   ${protobuf_ABSL_USED_TARGETS}
 )
 
-add_executable(lite-test ${lite_test_files})
+add_executable(lite-test ${protobuf_lite_test_files})
 target_link_libraries(lite-test protobuf-lite-test-common libprotobuf-lite GTest::gmock_main)
 
 add_test(NAME lite-test
