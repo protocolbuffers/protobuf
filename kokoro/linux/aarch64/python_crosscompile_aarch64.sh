@@ -8,13 +8,20 @@ set -ex
 
 PYTHON="/opt/python/cp38-cp38/bin/python"
 
-./autogen.sh
-CXXFLAGS="-fPIC -g -O2" ./configure --host=aarch64
+# Initialize any submodules.
+git submodule update --init --recursive
+
+# Build protoc and libprotobuf
+cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -Dprotobuf_WITH_ZLIB=0 .
 make -j8
+
+# Copy lib files to the expected location.
+mkdir -p src/.libs
+ln -f *.a src/.libs/
 
 # create a simple shell wrapper that runs crosscompiled protoc under qemu
 echo '#!/bin/bash' >protoc_qemu_wrapper.sh
-echo 'exec qemu-aarch64 "../src/protoc" "$@"' >>protoc_qemu_wrapper.sh
+echo 'exec qemu-aarch64 "../protoc" "$@"' >>protoc_qemu_wrapper.sh
 chmod ugo+x protoc_qemu_wrapper.sh
 
 # PROTOC variable is by build_py step that runs under ./python directory
