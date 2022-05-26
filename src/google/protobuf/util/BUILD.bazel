@@ -218,8 +218,13 @@ filegroup(
     srcs = [
         "json_format.proto",
         "json_format_proto3.proto",
+        "message_differencer_unittest.proto",
+        "//src/google/protobuf/util/internal:test_proto_srcs",
     ],
-    visibility = ["//python:__pkg__"],
+    visibility = [
+        "//pkg:__pkg__",
+        "//python:__pkg__",
+    ],
 )
 
 proto_library(
@@ -280,4 +285,15 @@ pkg_files(
     srcs = glob(["**"]),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//src:__pkg__"],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob([
+        "*_test.cc",
+        "*unittest.cc",
+    ]) + [
+        "//src/google/protobuf/util/internal:test_srcs",
+    ],
+    visibility = ["//pkg:__pkg__"],
 )

@@ -202,3 +202,21 @@ pkg_files(
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//src:__pkg__"],
 )
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob([
+        "*_test.cc",
+        "*unittest.cc",
+    ]),
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+)
+
+filegroup(
+    name = "test_proto_srcs",
+    srcs = [
+        "test_bad_identifiers.proto",
+        "test_large_enum_value.proto",
+    ],
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+)

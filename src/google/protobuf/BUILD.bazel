@@ -87,6 +87,10 @@ proto_library(
     name = "descriptor_proto",
     srcs = ["descriptor.proto"],
     strip_import_prefix = "/src",
+    visibility = [
+        "//:__pkg__",
+        "//pkg:__pkg__",
+    ],
 )
 
 ################################################################################
@@ -760,8 +764,8 @@ cc_test(
         ],
     }),
     deps = [
-        ":protobuf",
         ":lite_test_util",
+        ":protobuf",
         ":test_util",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -773,8 +777,8 @@ cc_test(
     srcs = ["lite_unittest.cc"],
     deps = [
         ":cc_lite_test_protos",
-        ":protobuf",
         ":lite_test_util",
+        ":protobuf",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
         "@com_google_googletest//:gtest",
@@ -904,8 +908,8 @@ cc_test(
     }),
     deps = [
         ":cc_test_protos",
-        ":protobuf",
         ":lite_test_util",
+        ":protobuf",
         "//src/google/protobuf/testing",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -1100,4 +1104,28 @@ pkg_files(
     srcs = glob(["**"]),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//src:__pkg__"],
+)
+
+filegroup(
+    name = "full_test_srcs",
+    srcs = glob(
+        include = [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        exclude = [
+            "lite_unittest.cc",
+            "lite_arena_unittest.cc",
+        ],
+    ),
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "lite_test_srcs",
+    srcs = [
+        "lite_arena_unittest.cc",
+        "lite_unittest.cc",
+    ],
+    visibility = ["//pkg:__pkg__"],
 )
