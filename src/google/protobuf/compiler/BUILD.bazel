@@ -150,6 +150,11 @@ filegroup(
     ],
 )
 
+exports_files(
+    srcs = ["plugin.proto"],
+    visibility = ["//:__pkg__"],
+)
+
 cc_library(
     name = "mock_code_generator",
     testonly = 1,
