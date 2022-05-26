@@ -307,6 +307,26 @@ TEST(ArenaTest, InitialBlockTooSmall) {
   }
 }
 
+TEST(ArenaTest, CreateDestroy) {
+  TestAllTypes original;
+  TestUtil::SetAllFields(&original);
+
+  // Test memory leak.
+  Arena arena;
+  TestAllTypes* heap_message = Arena::CreateMessage<TestAllTypes>(nullptr);
+  TestAllTypes* arena_message = Arena::CreateMessage<TestAllTypes>(&arena);
+
+  *heap_message = original;
+  *arena_message = original;
+
+  Arena::Destroy(heap_message);
+  Arena::Destroy(arena_message);
+
+  // The arena message should still exist.
+  EXPECT_EQ(strlen(original.optional_string().c_str()),
+            strlen(arena_message->optional_string().c_str()));
+}
+
 TEST(ArenaTest, Parsing) {
   TestAllTypes original;
   TestUtil::SetAllFields(&original);

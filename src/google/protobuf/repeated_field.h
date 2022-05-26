@@ -246,7 +246,7 @@ class RepeatedField final {
   Element* mutable_data();
   const Element* data() const;
 
-  // Swaps entire contents with "other". If they are separate arenas then,
+  // Swaps entire contents with "other". If they are separate arenas, then
   // copies data between each other.
   void Swap(RepeatedField* other);
 
@@ -313,8 +313,14 @@ class RepeatedField final {
   iterator erase(const_iterator first, const_iterator last);
 
   // Gets the Arena on which this RepeatedField stores its elements.
+  // Message-owned arenas are not exposed by this method, which will return
+  // nullptr for messages owned by MOAs.
   inline Arena* GetArena() const {
-    return GetOwningArena();
+    Arena* arena = GetOwningArena();
+    if (arena == nullptr || arena->InternalIsMessageOwnedArena()) {
+      return nullptr;
+    }
+    return arena;
   }
 
   // For internal use only.
