@@ -6,18 +6,15 @@ function pre_build {
     # Runs in the root directory of this repository.
     pushd protobuf
 
-    # Build protoc and libprotobuf
     if [ "$PLAT" == "aarch64" ]
     then
-      cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_VERBOSE=1 .
-      make VERBOSE=1 -j8
-      # Move protoc to the expected location.
-      mv protoc src/protoc
-    else
-      ./autogen.sh
-      CXXFLAGS="-fPIC -g -O2" ./configure
-      make -j8
+      local configure_host_flag="--host=aarch64"
     fi
+
+    # Build protoc and libprotobuf
+    ./autogen.sh
+    CXXFLAGS="-fPIC -g -O2" ./configure $configure_host_flag
+    make -j8
 
     if [ "$PLAT" == "aarch64" ]
     then
@@ -41,7 +38,6 @@ function pre_build {
 
     # Generate python dependencies.
     pushd python
-    pip install --upgrade pip setuptools
     python setup.py build_py
     popd
 
