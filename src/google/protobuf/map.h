@@ -1364,7 +1364,8 @@ class Map {
   template <class InputIt>
   void insert(InputIt first, InputIt last) {
     for (; first != last; ++first) {
-      try_emplace(first->first, first->second);
+      auto&& pair = *first;
+      try_emplace(pair.first, pair.second);
     }
   }
   void insert(std::initializer_list<value_type> values) {

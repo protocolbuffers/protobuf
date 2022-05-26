@@ -1261,8 +1261,6 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
   const Reflection* reflection = message.GetReflection();
   const Descriptor* descriptor = message.GetDescriptor();
 
-#define f(NAME) descriptor->FindFieldByName(NAME)
-
   // Testing every single failure mode would be too much work.  Let's just
   // check a few.
   EXPECT_DEATH(
@@ -1301,8 +1299,6 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
       "  Message type: protobuf_unittest.TestAllTypes\n"
       "  Field       : protobuf_unittest.ForeignMessage.c\n"
       "  Problem     : Field does not match message type.");
-
-#undef f
 }
 
 #endif  // PROTOBUF_HAS_DEATH_TEST
