@@ -41,6 +41,7 @@ function pre_build {
 
     # Generate python dependencies.
     pushd python
+    pip install --upgrade pip setuptools
     python setup.py build_py
     popd
 
