@@ -139,6 +139,7 @@ filegroup(
     srcs = [
         ":descriptor_proto_srcs",
         ":well_known_type_protos",
+        "//src/google/protobuf/compiler:plugin.proto",
     ],
     deprecation = "Prefer :well_known_type_protos instead.",
     visibility = ["//visibility:public"],

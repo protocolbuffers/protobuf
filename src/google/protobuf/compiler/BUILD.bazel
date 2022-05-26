@@ -146,9 +146,13 @@ filegroup(
         "plugin.proto",
     ],
     visibility = [
-        "//:__pkg__",
         "//src/google/protobuf/compiler/cpp:__pkg__",
     ],
+)
+
+exports_files(
+    srcs = ["plugin.proto"],
+    visibility = ["//:__pkg__"],
 )
 
 cc_library(
