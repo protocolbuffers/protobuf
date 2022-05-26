@@ -146,6 +146,7 @@ filegroup(
         "plugin.proto",
     ],
     visibility = [
+        "//:__pkg__",
         "//src/google/protobuf/compiler/cpp:__pkg__",
     ],
 )

@@ -128,6 +128,22 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+# Source protos that are typically part of the protobuf runtime.
+#
+# DEPRECATED: Prefer :well_known_type_protos for the Well-Known Types
+# (https://developers.google.com/protocol-buffers/docs/reference/google.protobuf)
+# or :descriptor_proto(_srcs) for descriptor.proto (source), or
+# :compiler_plugin_proto for compiler/plugin.proto.
+filegroup(
+    name = "well_known_protos",
+    srcs = [
+        ":descriptor_proto_srcs",
+        ":well_known_type_protos",
+    ],
+    deprecation = "Prefer :well_known_type_protos instead.",
+    visibility = ["//visibility:public"],
+)
+
 ################################################################################
 # Protocol Buffers Compiler
 ################################################################################
