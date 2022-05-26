@@ -131,6 +131,7 @@ if(protobuf_VERBOSE)
 endif()
 
 add_definitions(-DGOOGLE_PROTOBUF_CMAKE_BUILD)
+
 if (protobuf_DISABLE_RTTI)
   add_definitions(-DGOOGLE_PROTOBUF_NO_RTTI=1)
 endif()
