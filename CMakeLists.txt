@@ -258,6 +258,7 @@ if (MSVC)
   # MSVC warning suppressions
   add_definitions(
     /WX # Warnings as errors
+    /wd4018 # 'token' : signed/unsigned mismatch
     /wd4065 # switch statement contains 'default' but no 'case' labels
     /wd4251 # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
     /wd4305 # 'identifier' : truncation from 'type1' to 'type2'
