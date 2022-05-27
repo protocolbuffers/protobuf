@@ -1,3 +1,13 @@
+2022-05-27 version 21.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+  
+  C++
+  * cmake: Revert "Fix cmake install targets (#9822)" (#10060) 
+  * Remove Abseil dependency from CMake build (#10056)
+
+  Python
+  * Update python wheel metadata with more information incl. required python version (#10058)
+  * Fix segmentation fault when instantiating field via repeated field assignment (#10066)
+  
 2022-05-25 version 21.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
 
   C++
