@@ -439,7 +439,7 @@ static int PyUpb_RepeatedContainer_AssignSubscript(PyObject* _self,
                                                    PyObject* value) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
-  upb_Array* arr = PyUpb_RepeatedContainer_GetIfReified(self);
+  upb_Array* arr = PyUpb_RepeatedContainer_EnsureReified(_self);
   Py_ssize_t size = arr ? upb_Array_Size(arr) : 0;
   Py_ssize_t idx, count, step;
   if (!IndexToRange(key, size, &idx, &count, &step)) return -1;
