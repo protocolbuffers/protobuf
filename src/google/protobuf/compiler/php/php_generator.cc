@@ -407,16 +407,6 @@ std::string GeneratedClassFileName(const DescriptorType* desc,
   return result + ".php";
 }
 
-template <typename DescriptorType>
-std::string LegacyReadOnlyGeneratedClassFileName(const DescriptorType* desc,
-                                   const Options& options) {
-  std::string php_namespace = RootPhpNamespace(desc, options);
-  if (!php_namespace.empty()) {
-    return php_namespace + "/" + desc->name() + ".php";
-  }
-  return desc->name() + ".php";
-}
-
 std::string GeneratedServiceFileName(const ServiceDescriptor* service,
                                      const Options& options) {
   std::string result = FullClassName(service, options) + "Interface";
@@ -1260,32 +1250,6 @@ void GenerateMetadataFile(const FileDescriptor* file, const Options& options,
 
   Outdent(&printer);
   printer.Print("}\n\n");
-}
-
-template <typename DescriptorType>
-void LegacyReadOnlyGenerateClassFile(const FileDescriptor* file,
-                             const DescriptorType* desc, const Options& options,
-                             GeneratorContext* generator_context) {
-  std::string filename = LegacyReadOnlyGeneratedClassFileName(desc, options);
-  std::unique_ptr<io::ZeroCopyOutputStream> output(
-      generator_context->Open(filename));
-  io::Printer printer(output.get(), '^');
-
-  GenerateHead(file, &printer);
-
-  std::string php_namespace = RootPhpNamespace(desc, options);
-  if (!php_namespace.empty()) {
-    printer.Print(
-        "namespace ^name^;\n\n",
-        "name", php_namespace);
-  }
-  std::string newname = FullClassName(desc, options);
-  printer.Print("class_exists(^new^::class);\n",
-      "new", GeneratedClassNameImpl(desc));
-  printer.Print("@trigger_error(__NAMESPACE__ . '\\^old^ is deprecated and will be removed in "
-      "the next major release. Use ^fullname^ instead', E_USER_DEPRECATED);\n\n",
-      "old", desc->name(),
-      "fullname", newname);
 }
 
 void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
