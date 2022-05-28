@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
     "main": {
         "protoc_version": "21-dev",
         "lts": false,
@@ -12,6 +13,21 @@
             "php": "3.21-dev",
             "python": "4.21-dev",
             "ruby": "3.21-dev"
+=======
+    "21.x": {
+        "protoc_version": "21.2-dev",
+        "lts": false,
+        "date": "2022-05-27",
+        "languages": {
+            "cpp": "3.21.2-dev",
+            "csharp": "3.21.2-dev",
+            "java": "3.21.2-dev",
+            "javascript": "3.21.2-dev",
+            "objectivec": "3.21.2-dev",
+            "php": "3.21.2-dev",
+            "python": "4.21.2-dev",
+            "ruby": "3.21.2-dev"
+>>>>>>> upstream/21.x
         }
     }
 }

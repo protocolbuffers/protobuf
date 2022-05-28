@@ -48,29 +48,29 @@ const std::string kDescriptorMetadataFile =
 const std::string kDescriptorDirName = "Google/Protobuf/Internal";
 const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
 const char* const kReservedNames[] = {
-    "abstract",     "and",        "array",        "as",         "break",
-    "callable",     "case",       "catch",        "class",      "clone",
-    "const",        "continue",   "declare",      "default",    "die",
-    "do",           "echo",       "else",         "elseif",     "empty",
-    "enddeclare",   "endfor",     "endforeach",   "endif",      "endswitch",
-    "endwhile",     "eval",       "exit",         "extends",    "final",
-    "finally",      "fn",         "for",          "foreach",    "function",
-    "global",       "goto",       "if",           "implements", "include",
-    "include_once", "instanceof", "insteadof",    "interface",  "isset",
-    "list",         "match",      "namespace",    "new",        "or",
-    "parent",       "print",      "private",      "protected",  "public",
-    "readonly",     "require",    "require_once", "return",     "self",
-    "static",       "switch",     "throw",        "trait",      "try",
-    "unset",        "use",        "var",          "while",      "xor",
-    "yield",        "int",        "float",        "bool",       "string",
-    "true",         "false",      "null",         "void",       "iterable"};
+    "abstract",     "and",          "array",      "as",         "break",
+    "callable",     "case",         "catch",      "class",      "clone",
+    "const",        "continue",     "declare",    "default",    "die",
+    "do",           "echo",         "else",       "elseif",     "empty",
+    "enddeclare",   "endfor",       "endforeach", "endif",      "endswitch",
+    "endwhile",     "eval",         "exit",       "extends",    "final",
+    "finally",      "fn",           "for",        "foreach",    "function",
+    "global",       "goto",         "if",         "implements", "include",
+    "include_once", "instanceof",   "insteadof",  "interface",  "isset",
+    "list",         "match",        "namespace",  "new",        "or",
+    "parent",       "print",        "private",    "protected",  "public",
+    "require",      "require_once", "return",     "self",       "static",
+    "switch",       "throw",        "trait",      "try",        "unset",
+    "use",          "var",          "while",      "xor",        "yield",
+    "int",          "float",        "bool",       "string",     "true",
+    "false",        "null",         "void",       "iterable"};
 const char* const kValidConstantNames[] = {
     "int",   "float", "bool", "string",   "true",
     "false", "null",  "void", "iterable", "parent",
-    "self", "readonly"
+    "self"
 };
-const int kReservedNamesSize = 80;
-const int kValidConstantNamesSize = 12;
+const int kReservedNamesSize = 79;
+const int kValidConstantNamesSize = 11;
 const int kFieldSetter = 1;
 const int kFieldGetter = 2;
 const int kFieldProperty = 3;
@@ -408,6 +408,7 @@ std::string GeneratedClassFileName(const DescriptorType* desc,
 }
 
 template <typename DescriptorType>
+<<<<<<< HEAD
 std::string LegacyReadOnlyGeneratedClassFileName(const DescriptorType* desc,
                                    const Options& options) {
   std::string php_namespace = RootPhpNamespace(desc, options);
@@ -415,6 +416,18 @@ std::string LegacyReadOnlyGeneratedClassFileName(const DescriptorType* desc,
     return php_namespace + "/" + desc->name() + ".php";
   }
   return desc->name() + ".php";
+=======
+std::string LegacyGeneratedClassFileName(const DescriptorType* desc,
+                                         const Options& options) {
+  std::string result = LegacyFullClassName(desc, options);
+
+  for (int i = 0; i < result.size(); i++) {
+    if (result[i] == '\\') {
+      result[i] = '/';
+    }
+  }
+  return result + ".php";
+>>>>>>> upstream/21.x
 }
 
 std::string GeneratedServiceFileName(const ServiceDescriptor* service,
@@ -1263,10 +1276,17 @@ void GenerateMetadataFile(const FileDescriptor* file, const Options& options,
 }
 
 template <typename DescriptorType>
+<<<<<<< HEAD
 void LegacyReadOnlyGenerateClassFile(const FileDescriptor* file,
                              const DescriptorType* desc, const Options& options,
                              GeneratorContext* generator_context) {
   std::string filename = LegacyReadOnlyGeneratedClassFileName(desc, options);
+=======
+void LegacyGenerateClassFile(const FileDescriptor* file,
+                             const DescriptorType* desc, const Options& options,
+                             GeneratorContext* generator_context) {
+  std::string filename = LegacyGeneratedClassFileName(desc, options);
+>>>>>>> upstream/21.x
   std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '^');
@@ -1280,11 +1300,30 @@ void LegacyReadOnlyGenerateClassFile(const FileDescriptor* file,
         "name", php_namespace);
   }
   std::string newname = FullClassName(desc, options);
+<<<<<<< HEAD
   printer.Print("class_exists(^new^::class);\n",
       "new", GeneratedClassNameImpl(desc));
   printer.Print("@trigger_error(__NAMESPACE__ . '\\^old^ is deprecated and will be removed in "
       "the next major release. Use ^fullname^ instead', E_USER_DEPRECATED);\n\n",
       "old", desc->name(),
+=======
+  printer.Print("if (false) {\n");
+  Indent(&printer);
+  printer.Print("/**\n");
+  printer.Print(" * This class is deprecated. Use ^new^ instead.\n",
+      "new", newname);
+  printer.Print(" * @deprecated\n");
+  printer.Print(" */\n");
+  printer.Print("class ^old^ {}\n",
+      "old", LegacyGeneratedClassName(desc));
+  Outdent(&printer);
+  printer.Print("}\n");
+  printer.Print("class_exists(^new^::class);\n",
+      "new", GeneratedClassNameImpl(desc));
+  printer.Print("@trigger_error('^old^ is deprecated and will be removed in "
+      "the next major release. Use ^fullname^ instead', E_USER_DEPRECATED);\n\n",
+      "old", LegacyFullClassName(desc, options),
+>>>>>>> upstream/21.x
       "fullname", newname);
 }
 
@@ -1408,19 +1447,6 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
         "new", fullname,
         "old", LegacyFullClassName(en, options));
   }
-
-  // Write legacy file for backwards compatibility with "readonly" keywword
-  std::string lower = en->name();
-  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
-  if (lower == "readonly") {
-    printer.Print(
-        "// Adding a class alias for backwards compatibility with the \"readonly\" keyword.\n");
-    printer.Print(
-        "class_alias(^new^::class, __NAMESPACE__ . '\\^old^');\n\n",
-        "new", fullname,
-        "old", en->name());
-    LegacyReadOnlyGenerateClassFile(file, en, options, generator_context);
-  }
 }
 
 void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
@@ -1534,19 +1560,6 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
         "class_alias(^new^::class, \\^old^::class);\n\n",
         "new", fullname,
         "old", LegacyFullClassName(message, options));
-  }
-
-  // Write legacy file for backwards compatibility with "readonly" keywword
-  std::string lower = message->name();
-  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
-  if (lower == "readonly") {
-    printer.Print(
-        "// Adding a class alias for backwards compatibility with the \"readonly\" keyword.\n");
-    printer.Print(
-        "class_alias(^new^::class, __NAMESPACE__ . '\\^old^');\n\n",
-        "new", fullname,
-        "old", message->name());
-    LegacyReadOnlyGenerateClassFile(file, message, options, generator_context);
   }
 
   // Nested messages and enums.

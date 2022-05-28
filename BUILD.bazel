@@ -5,8 +5,20 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library", "c
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
+<<<<<<< HEAD
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 load(":protobuf.bzl", "py_proto_library")
+=======
+load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS", "PROTOC_LINK_OPTS")
+load(
+    ":protobuf.bzl",
+    "adapt_proto_library",
+    "cc_proto_library",
+    "internal_copied_filegroup",
+    "internal_protobuf_py_tests",
+    "py_proto_library",
+)
+>>>>>>> upstream/21.x
 
 licenses(["notice"])
 
@@ -151,7 +163,12 @@ filegroup(
 
 cc_binary(
     name = "protoc",
+<<<<<<< HEAD
     linkopts = LINK_OPTS,
+=======
+    srcs = ["src/google/protobuf/compiler/main.cc"],
+    linkopts = LINK_OPTS + PROTOC_LINK_OPTS,
+>>>>>>> upstream/21.x
     visibility = ["//visibility:public"],
     deps = ["//src/google/protobuf/compiler:protoc_lib"],
 )
