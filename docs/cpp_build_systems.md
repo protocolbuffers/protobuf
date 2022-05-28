@@ -132,7 +132,7 @@ sources, not transitive sources. This is for two reasons:
     could conditionally add fine-grained libraries to some builds, but not
     others.
 
-Anoter subtlety for tests is due to Bazel internals: internally, a slightly
+Another subtlety for tests is due to Bazel internals: internally, a slightly
 different configuration is used when evaluating `cc_test` rules as compared to
 `cc_dist_library`. If `cc_test` targets are included in a `cc_dist_library`
 rule, and both are evaluated by Bazel, this can result in a build-time error:
