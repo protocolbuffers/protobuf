@@ -215,8 +215,8 @@ UPB_INLINE size_t upb_strtable_count(const upb_strtable* t) {
 void upb_strtable_clear(upb_strtable* t);
 
 /* Inserts the given key into the hashtable with the given value.  The key must
- * not already exist in the hash table.  For string tables, the key must be
- * NULL-terminated, and the table will make an internal copy of the key.
+ * not already exist in the hash table.  For strtables, the key is not required
+ * to be NULL-terminated, and the table will make an internal copy of the key.
  * Inttables must not insert a value of UINTPTR_MAX.
  *
  * If a table resize was required but memory allocation failed, false is
