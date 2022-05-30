@@ -61,6 +61,8 @@
 #include <machine/endian.h>  // __BYTE_ORDER
 #elif defined(__FreeBSD__)
 #include <sys/endian.h>  // __BYTE_ORDER
+#elif defined(__QNX__)
+#include <sys/param.h>  // BYTE_ORDER
 #elif (defined(sun) || defined(__sun)) && (defined(__SVR4) || defined(__svr4__))
 #include <sys/isa_defs.h>  // __BYTE_ORDER
 #elif defined(_AIX) || defined(__TOS_AIX__)
