@@ -20,7 +20,10 @@
   "autoload-dev": {
     "psr-4": {
       "": "tmp"
-    }
+    },
+    "classmap": [
+      "tests/generated_previous"
+    ]
   },
   "scripts": {
     "test_c": "./generate_test_protos.sh && ./tests/compile_extension.sh && php -dextension=ext/google/protobuf/modules/protobuf.so vendor/bin/phpunit --bootstrap tests/force_c_ext.php tests",

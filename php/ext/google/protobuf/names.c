@@ -89,10 +89,23 @@ const char *const kReservedNames[] = {
     "string",     "true",        "false",        "null",         "void",
     "iterable",   NULL};
 
+const char *const kPreviouslyUnreservedNames[] = {
+    "readonly", NULL};
+
 bool is_reserved_name(const char* name) {
   int i;
   for (i = 0; kReservedNames[i]; i++) {
     if (strcmp(kReservedNames[i], name) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool is_previously_unreserved_name(const char* name) {
+  int i;
+  for (i = 0; kPreviouslyUnreservedNames[i]; i++) {
+    if (strcmp(kPreviouslyUnreservedNames[i], name) == 0) {
       return true;
     }
   }
@@ -115,7 +128,7 @@ static char nolocale_toupper(char ch) {
   }
 }
 
-static bool is_reserved(const char *segment, int length) {
+static bool is_reserved(const char *segment, int length, bool previous) {
   bool result;
   char* lower = calloc(1, length + 1);
   memcpy(lower, segment, length);
@@ -126,6 +139,9 @@ static bool is_reserved(const char *segment, int length) {
   }
   lower[length] = 0;
   result = is_reserved_name(lower);
+  if (result && previous && is_previously_unreserved_name(lower)) {
+    result = false;
+  }
   free(lower);
   return result;
 }
@@ -133,11 +149,12 @@ static bool is_reserved(const char *segment, int length) {
 static void fill_prefix(const char *segment, int length,
                         const char *prefix_given,
                         const char *package_name,
-                        stringsink *classname) {
+                        stringsink *classname,
+                        bool previous) {
   if (prefix_given != NULL && strcmp(prefix_given, "") != 0) {
     stringsink_string(classname, prefix_given, strlen(prefix_given));
   } else {
-    if (is_reserved(segment, length)) {
+    if (is_reserved(segment, length, previous)) {
       if (package_name != NULL &&
           strcmp("google.protobuf", package_name) == 0) {
         stringsink_string(classname, "GPB", 3);
@@ -160,7 +177,7 @@ static void fill_segment(const char *segment, int length,
 }
 
 static void fill_namespace(const char *package, const char *php_namespace,
-                           stringsink *classname) {
+                           stringsink *classname, bool previous) {
   if (php_namespace != NULL) {
     if (strlen(php_namespace) != 0) {
       stringsink_string(classname, php_namespace, strlen(php_namespace));
@@ -174,7 +191,7 @@ static void fill_namespace(const char *package, const char *php_namespace,
       while (j < package_len && package[j] != '.') {
         j++;
       }
-      fill_prefix(package + i, j - i, "", package, classname);
+      fill_prefix(package + i, j - i, "", package, classname, previous);
       fill_segment(package + i, j - i, classname, true);
       stringsink_string(classname, "\\", 1);
       i = j + 1;
@@ -185,7 +202,8 @@ static void fill_namespace(const char *package, const char *php_namespace,
 static void fill_classname(const char *fullname,
                            const char *package,
                            const char *prefix,
-                           stringsink *classname) {
+                           stringsink *classname,
+                           bool previous) {
   int classname_start = 0;
   if (package != NULL) {
     size_t package_len = strlen(package);
@@ -199,7 +217,7 @@ static void fill_classname(const char *fullname,
     while (j < fullname_len && fullname[j] != '.') {
       j++;
     }
-    fill_prefix(fullname + i, j - i, prefix, package, classname);
+    fill_prefix(fullname + i, j - i, prefix, package, classname, previous);
     fill_segment(fullname + i, j - i, classname, false);
     if (j != fullname_len) {
       stringsink_string(classname, "\\", 1);
@@ -215,7 +233,7 @@ char *str_view_dup(upb_StringView str) {
   return ret;
 }
 
-char *GetPhpClassname(const upb_FileDef *file, const char *fullname) {
+char *GetPhpClassname(const upb_FileDef *file, const char *fullname, bool previous) {
   // Prepend '.' to package name to make it absolute. In the 5 additional
   // bytes allocated, one for '.', one for trailing 0, and 3 for 'GPB' if
   // given message is google.protobuf.Empty.
@@ -234,8 +252,8 @@ char *GetPhpClassname(const upb_FileDef *file, const char *fullname) {
   stringsink namesink;
   stringsink_init(&namesink);
 
-  fill_namespace(package, php_namespace, &namesink);
-  fill_classname(fullname, package, prefix, &namesink);
+  fill_namespace(package, php_namespace, &namesink, previous);
+  fill_classname(fullname, package, prefix, &namesink, previous);
   stringsink_string(&namesink, "\0", 1);
   ret = strdup(namesink.ptr);
   stringsink_uninit(&namesink);
