@@ -58,6 +58,32 @@ size_t upb_MiniTable_Field_GetSize(const upb_MiniTable_Field* f) {
   return upb_IsRepeatedOrMap(f) ? sizeof(void*) : sizes[f->descriptortype];
 }
 
+// Maps descriptor type to elem_size_lg2.
+int upb_MiniTable_Field_CTypeLg2Size(const upb_MiniTable_Field* f) {
+  static const uint8_t sizes[] = {
+      -1,             /* invalid descriptor type */
+      3,              /* DOUBLE */
+      2,              /* FLOAT */
+      3,              /* INT64 */
+      3,              /* UINT64 */
+      2,              /* INT32 */
+      3,              /* FIXED64 */
+      2,              /* FIXED32 */
+      0,              /* BOOL */
+      UPB_SIZE(3, 4), /* STRING */
+      UPB_SIZE(2, 3), /* GROUP */
+      UPB_SIZE(2, 3), /* MESSAGE */
+      UPB_SIZE(3, 4), /* BYTES */
+      2,              /* UINT32 */
+      2,              /* ENUM */
+      2,              /* SFIXED32 */
+      3,              /* SFIXED64 */
+      2,              /* SINT32 */
+      3,              /* SINT64 */
+  };
+  return sizes[f->descriptortype];
+}
+
 bool upb_MiniTable_HasField(const upb_Message* msg,
                             const upb_MiniTable_Field* field) {
   if (_upb_MiniTable_Field_InOneOf(field)) {
@@ -82,6 +108,13 @@ void upb_MiniTable_ClearField(upb_Message* msg,
     *oneof_case = 0;
   }
   memset(mem, 0, upb_MiniTable_Field_GetSize(field));
+}
+
+void* upb_MiniTable_ResizeArray(upb_Message* msg,
+                                const upb_MiniTable_Field* field, size_t len,
+                                upb_Arena* arena) {
+  return _upb_Array_Resize_accessor2(
+      msg, field->offset, len, upb_MiniTable_Field_CTypeLg2Size(field), arena);
 }
 
 typedef struct {

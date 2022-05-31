@@ -357,6 +357,25 @@ TEST(GeneratedCode, RepeatedScalar) {
   upb_Arena_Free(arena);
 }
 
+TEST(GeneratedCode, GetMutableMessage) {
+  upb_Arena* arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+  // Message.
+  const upb_MiniTable_Field* optional_message_field =
+      find_proto2_field(kFieldOptionalNestedMessage);
+  upb_Message* msg1 = upb_MiniTable_GetMutableMessage(
+      msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msginit,
+      optional_message_field, arena);
+  upb_Message* msg2 = upb_MiniTable_GetMutableMessage(
+      msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msginit,
+      optional_message_field, arena);
+  // Verify that newly constructed sub message is stored in msg.
+  EXPECT_EQ(msg1, msg2);
+
+  upb_Arena_Free(arena);
+}
+
 TEST(GeneratedCode, Extensions) {
   upb_Arena* arena = upb_Arena_New();
   upb_test_ModelWithExtensions* msg = upb_test_ModelWithExtensions_new(arena);

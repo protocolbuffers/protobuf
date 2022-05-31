@@ -194,7 +194,8 @@ UPB_INLINE const upb_Message* upb_MiniTable_GetMessage(
 UPB_INLINE void upb_MiniTable_SetMessage(upb_Message* msg,
                                          const upb_MiniTable_Field* field,
                                          upb_Message* sub_message) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message);
+  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
+             field->descriptortype == kUpb_FieldType_Group);
   _upb_MiniTable_SetPresence(msg, field);
   *UPB_PTR_AT(msg, field->offset, const upb_Message*) = sub_message;
 }
@@ -202,11 +203,14 @@ UPB_INLINE void upb_MiniTable_SetMessage(upb_Message* msg,
 UPB_INLINE upb_Message* upb_MiniTable_GetMutableMessage(
     upb_Message* msg, const upb_MiniTable* mini_table,
     const upb_MiniTable_Field* field, upb_Arena* arena) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message);
+  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
+             field->descriptortype == kUpb_FieldType_Group);
   upb_Message* sub_message = *UPB_PTR_AT(msg, field->offset, upb_Message*);
   if (!sub_message) {
     sub_message =
         _upb_Message_New(mini_table->subs[field->submsg_index].submsg, arena);
+    *UPB_PTR_AT(msg, field->offset, upb_Message*) = sub_message;
+    _upb_MiniTable_SetPresence(msg, field);
   }
   return sub_message;
 }
@@ -221,6 +225,9 @@ UPB_INLINE upb_Array* upb_MiniTable_GetMutableArray(
   return (upb_Array*)*UPB_PTR_AT(msg, field->offset, upb_Array*);
 }
 
+void* upb_MiniTable_ResizeArray(upb_Message* msg,
+                                const upb_MiniTable_Field* field, size_t len,
+                                upb_Arena* arena);
 typedef enum {
   kUpb_GetExtension_Ok,
   kUpb_GetExtension_NotPresent,

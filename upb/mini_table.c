@@ -316,6 +316,9 @@ char* upb_MtDataEncoder_PutEnumValue(upb_MtDataEncoder* e, char* ptr,
   uint32_t delta = val - in->state.enum_state.last_written_value;
   if (delta >= 5 && in->state.enum_state.present_values_mask) {
     ptr = upb_MtDataEncoder_FlushDenseEnumMask(e, ptr);
+    if (!ptr) {
+      return NULL;
+    }
     delta -= 5;
   }
 
