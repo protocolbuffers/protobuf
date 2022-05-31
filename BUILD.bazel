@@ -158,12 +158,8 @@ filegroup(
 
 cc_binary(
     name = "protoc",
-<<<<<<< HEAD
-    linkopts = LINK_OPTS,
-=======
     srcs = ["src/google/protobuf/compiler/main.cc"],
     linkopts = LINK_OPTS + PROTOC_LINK_OPTS,
->>>>>>> upstream/21.x
     visibility = ["//visibility:public"],
     deps = ["//src/google/protobuf/compiler:protoc_lib"],
 )
