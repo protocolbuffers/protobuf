@@ -5,29 +5,29 @@ systems.
 
 ## Background
 
-Protobuf uses [Bazel](https://bazel.build) as the source of truth for building
-the Protobuf C++ runtime and Protobuf compiler[^historical_sot]. However, there
-are several different build systems in common use for C++, each one of which
-requires essentially a complete copy of build definitions.
+Protobuf primarily uses [Bazel](https://bazel.build) to build the Protobuf C++
+runtime and Protobuf compiler[^historical_sot]. However, there are several
+different build systems in common use for C++, each one of which requires
+essentially a complete copy of the same build definitions.
 
 [^historical_sot]:
   On a historical note, prior to its [release as Open Source
   Software](https://opensource.googleblog.com/2008/07/protocol-buffers-googles-data.html),
-  the Protobuf project was developed using Blaze, Google's internal build
-  system, and predecessor to Bazel (the vast majority of Google's contributions
+  the Protobuf project was developed using Google's internal build system, which
+  was the predecessor to Bazel (the vast majority of Google's contributions
   continue to be developed this way). The Open Source Protobuf project, however,
-  historically used Autoconf as the source of truth for C++ build correctness.
+  historically used Autoconf to build the C++ implementation.
   Over time, other build systems (including Bazel) have been added, thanks in
   large part to substantial contributions from the Open Source community. Since
   the Protobuf project deals with multiple languages (all of which ultimately
   rely upon C++, for the Protobuf compiler), Bazel is a natural choice for a
-  project-wide source of truth -- in fact, Bazel (and its predecessor, Blaze)
-  were designed in large part to support exactly this type of rich,
+  project-wide build system -- in fact, Bazel (and its predecessor, Blaze)
+  was designed in large part to support exactly this type of rich,
   multi-language build.
 
-Currently, C++ Protobuf is buildable with Bazel, Autotools, and CMake. Each of
+Currently, C++ Protobuf can be built with Bazel, Autotools, and CMake. Each of
 these build systems has different semantics and structure, but share in common
-the list of files needed to build the runtime (and compiler).
+the list of files needed to build the runtime and compiler.
 
 ## Design
 
@@ -41,10 +41,10 @@ expose information through
 `proto_library` rules, and dynamically attaches actions to generate C++ code
 using the Protobuf compiler and compile using the C++ compiler.
 
-In order to support multiple build systems, the goal is to define the overall
-build structure once for each system, and expose frequently-changing metadata
+In order to support multiple build systems, the overall build structure is
+defined once for each system, and expose frequently-changing metadata
 from Bazel in a way that can be included from the build definition. Primarily,
-this means exposing the list of source files in a way that they can be included
+this means exposing the list of source files in a way that can be included
 in other build definitions.
 
 Two aspects are used to extract this information from the Bazel build
@@ -69,8 +69,8 @@ that, for example, lightweight unit tests can be written with narrow scope.
 Although Bazel does build library artifacts (such as `.so` and `.a` files on
 Linux), they correspond to `cc_library` rules.
 
-Since the entire "Protobuf library" includes several constituent `cc_library`
-files, a special rule, `cc_dist_library`, combines several fine-grained
+Since the entire "Protobuf library" includes many constituent `cc_library`
+rules, a special rule, `cc_dist_library`, combines several fine-grained
 libraries into a single, monolithic library.
 
 For the Protobuf project, these "distribution libraries" are intended to match
@@ -96,10 +96,17 @@ cc_library(
 cc_library(
     name = "b",
     srcs = ["b.cc"],
+    deps = [":c"],
+)
+
+# N.B.: not part of the cc_dist_library, even though it is in the deps of 'b':
+cc_library(
+    name = "c",
+    srcs = ["c.cc"],
 )
 
 cc_dist_library(
-    name = "c",
+    name = "lib",
     deps = [
         ":a",
         ":b",
@@ -107,8 +114,19 @@ cc_dist_library(
     visbility = ["//visibility:public"],
 )
 
-$ bazel cquery //cc_dist_library_example:c --output=starlark --starlark:expr='providers(target)["//pkg:cc_dist_library.bzl%CcFileList"]'
-struct(hdrs = depset([]), internal_hdrs = depset([]), srcs = depset([<source file cc_dist_library_example/a.cc>, <source file cc_dist_library_example/b.cc>]), textual_hdrs = depset([]))
+# Note: the output below has been formatted for clarity:
+$ bazel cquery //cc_dist_library_example:lib \
+    --output=starlark \
+    --starlark:expr='providers(target)["//pkg:cc_dist_library.bzl%CcFileList"]'
+struct(
+    hdrs = depset([]),
+    internal_hdrs = depset([]),
+    srcs = depset([
+        <source file cc_dist_library_example/a.cc>,
+        <source file cc_dist_library_example/b.cc>,
+    ]),
+    textual_hdrs = depset([]),
+)
 ```
 
 The upshot is that the "coarse-grained" library can be defined by the Bazel
@@ -116,7 +134,7 @@ build, and then export the list of source files that are needed to reproduce the
 library in a different build system.
 
 One major difference from most Bazel rule types is that the file list aspects do
-not propagate; in other words, they only expose the immediate dependency's
+not propagate. In other words, they only expose the immediate dependency's
 sources, not transitive sources. This is for two reasons:
 
 1.  Immediate dependencies are conceptually simple, while transitivity requires
@@ -132,7 +150,7 @@ sources, not transitive sources. This is for two reasons:
     could conditionally add fine-grained libraries to some builds, but not
     others.
 
-Another subtlety for tests is due to Bazel internals: internally, a slightly
+Another subtlety for tests is due to Bazel internals. Internally, a slightly
 different configuration is used when evaluating `cc_test` rules as compared to
 `cc_dist_library`. If `cc_test` targets are included in a `cc_dist_library`
 rule, and both are evaluated by Bazel, this can result in a build-time error:
@@ -248,31 +266,7 @@ add_library(distlib ${distlib_srcs} ${buff_srcs})
 In addition to `gen_cmake_file_lists`, there is also a `gen_automake_file_lists`
 rule. These rules actually share most of the same implementation, but define
 different file headers and different Starlark "fragment generator" functions
-which format the generated list variables. This is a very abbreviated example:
-
-```python
-# Adapted from //pkg:build_systems.bzl:
-
-def _cmake_var_fragment(owner, varname, prefix, entries):
-    # Format a CMake-style variable declaration:
-    return ("set({varname}\n{entries}\n)\n").format(
-        varname = varname,
-        entries = "\n".join(["  %s%s" % (prefix, f) for f in entries]),
-    )
-
-def _cmake_file_list_impl(ctx):
-    # Call the shared implementation with our fragment generator:
-    _create_file_list_impl(ctx, _cmake_var_fragment)
-    
-gen_cmake_file_lists = rule(
-    implementation = _cmake_file_list_impl,
-    attrs = dict(
-        # Attributes needed by _create_file_list_impl:
-        _source_list_common_attrs,
-        _header = attr.string(default = "# Header added to the output file\n"),
-    },
-)
-```
+which format the generated list variables.
 
 ### Protobuf usage
 
@@ -347,4 +341,4 @@ anyhow, so sharing logic with the file list aspects may not be beneficial.
 
 Currently, all of the file lists are checked in. However, it would be possible
 to build the file lists on-the-fly and include them in the distribution
-archives, rather than checking them in to the git repo.
+archives, rather than checking them in.
