@@ -36,6 +36,7 @@ package com.google.protobuf;
  *
  * @author jonp@google.com (Jon Perlow)
  */
+@CheckReturnValue
 public interface MessageLiteOrBuilder {
   /**
    * Get an instance of the type with no fields set. Because no fields are set, all getters for

@@ -178,7 +178,7 @@ void NullLogHandler(LogLevel /* level */, const char* /* filename */,
 }
 
 static LogHandler* log_handler_ = &DefaultLogHandler;
-static std::atomic<int> log_silencer_count_ = ATOMIC_VAR_INIT(0);
+static std::atomic<int> log_silencer_count_{0};
 
 LogMessage& LogMessage::operator<<(const std::string& value) {
   message_ += value;

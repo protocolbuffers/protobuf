@@ -1529,7 +1529,7 @@ public class GeneratedMessageTest {
       assertThat(builder.getFooInt()).isEqualTo(123);
       TestOneof2 message = builder.buildPartial();
       assertThat(message.hasFooInt()).isTrue();
-      assertThat(123).isEqualTo(message.getFooInt());
+      assertThat(message.getFooInt()).isEqualTo(123);
 
       assertThat(builder.clearFooInt().hasFooInt()).isFalse();
       TestOneof2 message2 = builder.build();
