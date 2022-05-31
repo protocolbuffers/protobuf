@@ -49,4 +49,12 @@ fi
 
 tar -C ${DIST_WORK_ROOT} --strip-components=1 -axf ${DIST_ARCHIVE}
 
+#
+# Run tests using extracted sources
+#
+SOURCE_DIR=${DIST_WORK_ROOT} \
+CMAKE_GENERATOR=Ninja \
+CTEST_PARALLEL_LEVEL=$(nproc) \
+kokoro/common/cmake.sh
+
 echo "PASS"
