@@ -16,7 +16,10 @@ load("//build_defs:cpp_opts.bzl", "COPTS")
 proto_library(
     name = "plugin_proto",
     srcs = ["plugin.proto"],
-    visibility = ["//:__pkg__"],
+    visibility = [
+        "//:__pkg__",
+        "//pkg:__pkg__",
+    ],
     deps = ["//:descriptor_proto"],
 )
 
@@ -162,6 +165,7 @@ cc_library(
     hdrs = ["mock_code_generator.h"],
     copts = COPTS,
     strip_include_prefix = "/src",
+    visibility = ["//pkg:__pkg__"],
     deps = [
         ":code_generator",
         "//src/google/protobuf/io",
@@ -299,4 +303,35 @@ pkg_files(
     srcs = glob(["**/*"]),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//src:__pkg__"],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob([
+        "*_test.cc",
+        "*unittest.cc",
+    ]) + [
+        "//src/google/protobuf/compiler/cpp:test_srcs",
+        "//src/google/protobuf/compiler/csharp:test_srcs",
+        "//src/google/protobuf/compiler/java:test_srcs",
+        "//src/google/protobuf/compiler/objectivec:test_srcs",
+        "//src/google/protobuf/compiler/php:test_srcs",
+        "//src/google/protobuf/compiler/python:test_srcs",
+        "//src/google/protobuf/compiler/ruby:test_srcs",
+    ],
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "test_plugin_srcs",
+    srcs = ["test_plugin.cc"],
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "test_proto_srcs",
+    srcs = [
+        "//src/google/protobuf/compiler/cpp:test_proto_srcs",
+    ],
+    visibility = ["//pkg:__pkg__"],
 )
