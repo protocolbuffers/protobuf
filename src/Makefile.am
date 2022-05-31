@@ -542,6 +542,7 @@ EXTRA_DIST =                                                   \
   $(protoc_inputs)                                             \
   BUILD.bazel                                                  \
   README.md                                                    \
+  file_lists.cmake                                             \
   google/protobuf/BUILD.bazel                                  \
   google/protobuf/compiler/BUILD.bazel                         \
   google/protobuf/compiler/cpp/BUILD.bazel                     \
