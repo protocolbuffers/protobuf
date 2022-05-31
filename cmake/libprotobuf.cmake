@@ -3,7 +3,6 @@
 include(${protobuf_SOURCE_DIR}/src/file_lists.cmake)
 
 add_library(libprotobuf ${protobuf_SHARED_OR_STATIC}
-  ${libprotobuf_lite_srcs}
   ${libprotobuf_srcs}
   ${libprotobuf_hdrs}
   ${protobuf_version_rc_file})
