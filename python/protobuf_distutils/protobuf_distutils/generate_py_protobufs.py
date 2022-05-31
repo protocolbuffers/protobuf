@@ -32,12 +32,12 @@
 
 __author__ = 'dlj@google.com (David L. Jones)'
 
-import glob
-import sys
 import os
-import distutils.spawn as spawn
-from distutils.cmd import Command
-from distutils.errors import DistutilsOptionError, DistutilsExecError
+import shutil
+import subprocess
+from pathlib import Path, PurePosixPath
+from setuptools import Command, DistutilsOptionError
+
 
 class generate_py_protobufs(Command):
     """Generates Python sources for .proto files."""
@@ -62,18 +62,29 @@ class generate_py_protobufs(Command):
         self.recurse = True
         self.protoc = None
 
+    @staticmethod
+    def _test_path(s, force=False):
+        path = Path(s).resolve()
+        if not path.is_dir() and not (force and path.parent.is_dir()):
+            raise DistutilsOptionError(s + " does not exist or is not a directory")
+        if force and path.parent.is_dir():
+            path.mkdir()
+        return path
+
+    def _test_paths(self):
+        self.source_path = self._test_path(self.source_dir)
+        if self.output_dir is None:
+            self.output_dir = '.'
+        self.output_path = self._test_path(self.output_dir, True)
+
     def finalize_options(self):
         """Sets the final values for the command options.
 
         Defaults were set in `initialize_options`, but could have been changed
         by command-line options or by other commands.
         """
-        self.ensure_dirname('source_dir')
+        self._test_paths()
         self.ensure_string_list('extra_proto_paths')
-
-        if self.output_dir is None:
-            self.output_dir = '.'
-        self.ensure_dirname('output_dir')
 
         # SUBTLE: if 'source_dir' is a subdirectory of any entry in
         # 'extra_proto_paths', then in general, the shortest --proto_path prefix
@@ -105,43 +116,49 @@ class generate_py_protobufs(Command):
         # DiskSourceTree class.)
 
         if self.proto_root_path is None:
-            self.proto_root_path = os.path.normpath(self.source_dir)
+            self.proto_root_path = self.source_path
             for root_candidate in self.extra_proto_paths:
-                root_candidate = os.path.normpath(root_candidate)
-                if self.proto_root_path.startswith(root_candidate):
-                    self.proto_root_path = root_candidate
+                root_candidate_path = self._test_path(root_candidate)
+                if root_candidate_path == self.proto_root_path or root_candidate_path in self.proto_root_path.parents:
+                    self.proto_root_path = root_candidate_path
             if self.proto_root_path != self.source_dir:
-                self.announce('using computed proto_root_path: ' + self.proto_root_path, level=2)
+                self.announce(f'using computed proto_root_path: '
+                              f'{self.proto_root_path}', level=2)
+        else:
+            self.proto_root_path = Path(self.proto_root_path).resolve()
 
-        if not self.source_dir.startswith(self.proto_root_path):
-            raise DistutilsOptionError('source_dir ' + self.source_dir +
-                                       ' is not under proto_root_path ' + self.proto_root_path)
+        if self.proto_root_path != self.source_path and self.proto_root_path not in self.source_path.parents:
+            raise DistutilsOptionError(f'source_dir {self.source_path} '
+                                       f'is not under proto_root_path {self.proto_root_path}')
 
         if self.proto_files is None:
-            files = glob.glob(os.path.join(self.source_dir, '*.proto'))
+            files = []
             if self.recurse:
-                files.extend(glob.glob(os.path.join(self.source_dir, '**', '*.proto'), recursive=True))
-            self.proto_files = [f.partition(self.proto_root_path + os.path.sep)[-1] for f in files]
-            if not self.proto_files:
-                raise DistutilsOptionError('no .proto files were found under ' + self.source_dir)
+                files.extend(self.source_path.rglob('*.proto'))
+            else:
+                files.extend(self.source_path.glob('*.proto'))
+            if not files:
+                raise DistutilsOptionError(f'no .proto files were found under {self.source_path}')
+            # Forced to cast to PurePosixPath since protoc requires POSIX-compliant relative paths
+            self.proto_files = [f'{PurePosixPath(f.relative_to(self.proto_root_path))}' for f in files]
 
         self.ensure_string_list('proto_files')
 
         if self.protoc is None:
             self.protoc = os.getenv('PROTOC')
         if self.protoc is None:
-            self.protoc = spawn.find_executable('protoc')
+            self.protoc = shutil.which('protoc')
 
     def run(self):
         # All proto file paths were adjusted in finalize_options to be relative
         # to self.proto_root_path.
-        proto_paths = ['--proto_path=' + self.proto_root_path]
-        proto_paths.extend(['--proto_path=' + x for x in self.extra_proto_paths])
+        proto_paths = [f'--proto_path={self.proto_root_path}']
+        proto_paths.extend([f'--proto_path={x}' for x in self.extra_proto_paths])
 
         # Run protoc. It was already resolved, so don't try to resolve
         # through PATH.
-        spawn.spawn(
-            [self.protoc,
-             '--python_out=' + self.output_dir,
-            ] + proto_paths + self.proto_files,
-            search_path=0)
+        command = [self.protoc,
+                   f'--python_out={self.output_path}',
+                   ] + proto_paths + self.proto_files
+        self.announce(' '.join(command), level=2)
+        subprocess.run(command)
