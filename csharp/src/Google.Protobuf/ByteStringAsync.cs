@@ -43,7 +43,6 @@ namespace Google.Protobuf
     /// </summary>
     internal static class ByteStringAsync
     {
-#if !NET35
         internal static async Task<ByteString> FromStreamAsyncCore(Stream stream, CancellationToken cancellationToken)
         {
             int capacity = stream.CanSeek ? checked((int)(stream.Length - stream.Position)) : 0;
@@ -59,6 +58,5 @@ namespace Google.Protobuf
 #endif
             return ByteString.AttachBytes(bytes);
         }
-#endif
     }
 }
