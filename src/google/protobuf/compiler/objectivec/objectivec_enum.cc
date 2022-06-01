@@ -128,7 +128,7 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
       continue;
     }
     if (all_values_[i]->GetSourceLocation(&location)) {
-      std::string comments = BuildCommentsString(location, true).c_str();
+      std::string comments = BuildCommentsString(location, true);
       if (comments.length() > 0) {
         if (i > 0) {
           printer->Print("\n");

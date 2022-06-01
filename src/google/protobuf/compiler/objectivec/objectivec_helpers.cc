@@ -990,9 +990,9 @@ static std::string HandleExtremeFloatingPoint(std::string val,
     return "-INFINITY";
   } else {
     // float strings with ., e or E need to have f appended
-    if (add_float_suffix && (val.find(".") != std::string::npos ||
-                             val.find("e") != std::string::npos ||
-                             val.find("E") != std::string::npos)) {
+    if (add_float_suffix && (val.find('.') != std::string::npos ||
+                             val.find('e') != std::string::npos ||
+                             val.find('E') != std::string::npos)) {
       val += "f";
     }
     return val;
