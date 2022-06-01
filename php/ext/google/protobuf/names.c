@@ -261,3 +261,32 @@ char *GetPhpClassname(const upb_FileDef *file, const char *fullname, bool previo
   free(prefix);
   return ret;
 }
+
+bool IsPreviouslyUnreservedClassName(const char* fullname) {
+  const char *classname = strrchr(fullname, '\\');
+  if (classname) {
+    classname += 1;
+  } else {
+    classname = fullname;
+  }
+  if (strncmp(classname, "PB", 2) != 0) {
+    return false;
+  }
+  classname += 2;
+  int length = strlen(classname);
+  char* lower = calloc(1, length + 1);
+  memcpy(lower, classname, length);
+  int i = 0;
+  while(lower[i]) {
+    lower[i] = nolocale_tolower(lower[i]);
+    i++;
+  }
+  lower[length] = 0;
+  int j;
+  for (j = 0; kPreviouslyUnreservedNames[j]; j++) {
+    if (strcmp(kPreviouslyUnreservedNames[j], lower) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
