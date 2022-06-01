@@ -724,3 +724,16 @@ filegroup(
 )
 
 # end:github_only
+
+# begin:google_only
+#
+# py_binary(
+#     name = "update_check_runs",
+#     srcs = ["update_check_runs.py"],
+#     main = "update_check_runs.py",
+#     deps = [
+#         "//third_party/py/absl:app",
+#     ],
+# )
+#
+# end:google_only
