@@ -107,7 +107,7 @@ CSharpType GetCSharpType(FieldDescriptor::Type type) {
 }
 
 std::string StripDotProto(const std::string& proto_file) {
-  int lastindex = proto_file.find_last_of(".");
+  int lastindex = proto_file.find_last_of('.');
   return proto_file.substr(0, lastindex);
 }
 
@@ -122,7 +122,7 @@ std::string GetFileNamespace(const FileDescriptor* descriptor) {
 // input of "google/protobuf/foo_bar.proto" would result in "FooBar".
 std::string GetFileNameBase(const FileDescriptor* descriptor) {
     std::string proto_file = descriptor->name();
-    int lastslash = proto_file.find_last_of("/");
+    int lastslash = proto_file.find_last_of('/');
     std::string base = proto_file.substr(lastslash + 1);
     return UnderscoresToPascalCase(StripDotProto(base));
 }
@@ -422,7 +422,7 @@ std::string GetOutputFile(const FileDescriptor* descriptor,
       return ""; // This will be ignored, because we've set an error.
     }
     namespace_suffix = ns.substr(base_namespace.length());
-    if (namespace_suffix.find(".") == 0) {
+    if (namespace_suffix.find('.') == 0) {
       namespace_suffix = namespace_suffix.substr(1);
     }
   }
