@@ -32,6 +32,9 @@ syntax = "proto2";
 
 package google.protobuf.python.internal.import_test_package;
 
+// Test public import
+import public "google/protobuf/internal/import_test_package/import_public.proto";
+
 message Inner {
   optional int32 value = 1 [default = 57];
 }

@@ -1,6 +1,167 @@
-Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+2022-05-27 version 21.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+  
+  C++
+  * cmake: Revert "Fix cmake install targets (#9822)" (#10060) 
+  * Remove Abseil dependency from CMake build (#10056)
+
+  Python
+  * Update python wheel metadata with more information incl. required python version (#10058)
+  * Fix segmentation fault when instantiating field via repeated field assignment (#10066)
+  
+2022-05-25 version 21.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+  C++
+  * cmake: Call get_filename_component() with DIRECTORY mode instead of PATH mode (#9614)
+  * Escape GetObject macro inside protoc-generated code (#9739)
+  * Update CMake configuration to add a dependency on Abseil (#9793)
+  * Fix cmake install targets (#9822)
+  * Use __constinit only in GCC 12.2 and up (#9936)
+
+  Java
+  * Update protobuf_version.bzl to separate protoc and per-language java … (#9900)
+
+  Python
+  * Increment python major version to 4 in version.json for python upb (#9926)
+  * The C extension module for Python has been rewritten to use the upb library.
+    This is expected to deliver significant performance benefits, especially when
+    parsing large payloads.  There are some minor breaking changes, but these
+    should not impact most users.  For more information see:
+    https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
+  * Fixed win32 build and fixed str(message) on all Windows platforms. (#9976)
+  * The binary wheel for macOS now supports Apple silicon.
+
+  PHP
+  * [PHP] fix PHP build system (#9571)
+  * Fix building packaged PHP extension (#9727)
+  * fix: reserve "ReadOnly" keyword for PHP 8.1 and add compatibility (#9633)
+  * fix: phpdoc syntax for repeatedfield parameters (#9784)
+  * fix: phpdoc for repeatedfield (#9783)
+  * Change enum string name for reserved words (#9780)
+  * chore: [PHP] fix phpdoc for MapField keys (#9536)
+  * Fixed PHP SEGV by not writing to shared memory for zend_class_entry. (#9996)
 
   Ruby
+  * Allow pre-compiled binaries for ruby 3.1.0 (#9566)
+  * Implement `respond_to?` in RubyMessage (#9677)
+  * [Ruby] Fix RepeatedField#last, #first inconsistencies (#9722)
+  * Do not use range based UTF-8 validation in truffleruby (#9769)
+  * Improve range handling logic of `RepeatedField` (#9799)
+  * Support x64-mingw-ucrt platform
+
+  Other
+  * [Kotlin] remove redundant public modifiers for compiled code (#9642)
+  * [C#] Update GetExtension to support getting typed value (#9655)
+  * Fix invalid dependency manifest when using `descriptor_set_out` (#9647)
+  * Fix C# generator handling of a field named "none" in a oneof (#9636)
+  * Add initial version.json file for 21-dev (#9840)
+  * Remove duplicate java generated code (#9909)
+  * Cherry-pick PR #9981 into 21.x branch (#10000)
+
+
+2022-05-19 version 21.0-rc2(C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+  Python
+  * Fix windows builds
+  * Throw more helpful error if generated code is out of date
+  * Fixed two reference leaks
+
+  Ruby
+  * Support x64-mingw-ucrt platform
+
+  PHP
+  * Fix SEGV by not writing to shared memory for zend_class_entry
+
+  C#
+  * Suppress warning CS8981
+
+  Other
+  * Fix Maven release to release actual osx_aarch64 binary
+  * Fix protoc zips to have the proto files for well known types
+
+2022-05-10 version 21.0-rc1 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+  C++
+  * Rename main cmake/CMakeLists.txt to CMakeLists.txt (#9603)
+  * avoid allocating memory if all extension are cleared (#9345)
+  * cmake: Call get_filename_component() with DIRECTORY mode instead of PATH mode (#9614)
+  * Escape GetObject macro inside protoc-generated code (#9739)
+  * Update CMake configuration to add a dependency on Abseil (#9793)
+  * Use __constinit only in GCC 12.2 and up (#9936)
+  * Refactor generated message class layout
+  * Optimize tokenizer ParseInteger by removing division
+  * Reserve exactly the right amount of capacity in ExtensionSet::MergeFrom
+  * Parse FLT_MAX correctly when represented in JSON
+
+  Java
+  * Update protobuf_version.bzl to separate protoc and per-language java … (#9900)
+  * 6x speedup in ArrayEncoder.writeUInt32NotTag
+  * Java generated code is no longer compatible with runtimes 2.6.1 and earlier
+
+  Python
+  * Increment python major version to 4 in version.json for python upb (#9926)
+  * The C extension module for Python has been rewritten to use the upb library.
+    This is expected to deliver significant performance benefits, especially when
+    parsing large payloads.  There are some minor breaking changes, but these
+    should not impact most users.  For more information see:
+    https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
+  * Due to the breaking changes for Python, the major version number for Python
+    has been incremented.
+  * The binary wheel for macOS now supports Apple silicon.
+  * In TextFormat, transform UnicodeDecodeError into ParseError.
+
+
+  PHP
+  * chore: [PHP] fix phpdoc for MapField keys (#9536)
+  * [PHP] Remove unnecessary zval initialization (#9600)
+  * [PHP] fix PHP build system (#9571)
+  * Fix building packaged PHP extension (#9727)
+  * fix: reserve "ReadOnly" keyword for PHP 8.1 and add compatibility (#9633)
+  * fix: phpdoc syntax for repeatedfield parameters (#9784)
+  * fix: phpdoc for repeatedfield (#9783)
+  * Change enum string name for reserved words (#9780)
+  * Fixed composer.json to only advertise compatibility with PHP 7.0+.  (#9819)
+
+  Ruby
+  * Allow pre-compiled binaries for ruby 3.1.0 (#9566)
+  * Implement `respond_to?` in RubyMessage (#9677)
+  * [Ruby] Fix RepeatedField#last, #first inconsistencies (#9722)
+  * Do not use range based UTF-8 validation in truffleruby (#9769)
+  * Improve range handling logic of `RepeatedField` (#9799)
+  * Disable the aarch64 build on macOS until it can be fixed. (#9816)
+
+  Other
+  * [Kotlin] remove redundant public modifiers for compiled code (#9642)
+  * [C#] Update GetExtension to support getting typed value (#9655)
+  * Fix invalid dependency manifest when using `descriptor_set_out` (#9647)
+  * Fix C# generator handling of a field named "none" in a oneof (#9636)
+  * Add initial version.json file for 21-dev (#9840)
+  * Remove duplicate java generated code (#9909)
+  * Fix versioning issues in 3.20.0
+
+  Compiler
+  * Protoc outputs the list of suggested field numbers when invalid field
+    numbers are specified in the .proto file.
+  * Require package names to be less than 512 bytes in length
+
+2022-04-21 version 3.20.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  PHP
+  * Fix building packaged PHP extension (#9727)
+
+  Other
+  * Fix versioning issues in 3.20.0
+
+2022-03-04 version 3.20.0 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
+
+  Ruby
+  * Dropped Ruby 2.3 and 2.4 support for CI and releases. (#9311)
+  * Added Ruby 3.1 support for CI and releases (#9566).
+  * Message.decode/encode: Add recursion_limit option (#9218/#9486)
+  * Allocate with xrealloc()/xfree() so message allocation is visible to the
+    Ruby GC.  In certain tests this leads to much lower memory usage due to more
+    frequent GC runs (#9586).
+  * Fix conversion of singleton classes in Ruby (#9342)
+  * Suppress warning for intentional circular require (#9556)
   * JSON will now output shorter strings for double and float fields when possible
     without losing precision.
   * Encoding and decoding of binary format will now work properly on big-endian
@@ -8,6 +169,119 @@ Unreleased Changes (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
   * UTF-8 verification was fixed to properly reject surrogate code points.
   * Unknown enums for proto2 protos now properly implement proto2's behavior of
     putting such values in unknown fields.
+
+  Java
+  * Revert "Standardize on Array copyOf" (#9400)
+  * Resolve more java field accessor name conflicts (#8198)
+  * Don't support map fields in DynamicMessage.Builder.{getFieldBuilder,getRepeatedFieldBuilder}
+  * Fix parseFrom to only throw InvalidProtocolBufferException
+  * InvalidProtocolBufferException now allows arbitrary wrapped Exception types.
+  * Fix bug in `FieldSet.Builder.mergeFrom`
+  * Flush CodedOutputStream also flushes underlying OutputStream
+  * When oneof case is the same and the field type is Message, merge the
+    subfield. (previously it was replaced.)’
+  * Add @CheckReturnValue to some protobuf types
+  * Report original exceptions when parsing JSON
+  * Add more info to @deprecated javadoc for set/get/has methods
+  * Fix initialization bug in doc comment line numbers
+  * Fix comments for message set wire format.
+
+  Kotlin
+  * Add test scope to kotlin-test for protobuf-kotlin-lite (#9518)
+  * Add orNull extensions for optional message fields.
+  * Add orNull extensions to all proto3 message fields.
+
+  Python
+  * Dropped support for Python < 3.7 (#9480)
+  * Protoc is now able to generate python stubs (.pyi) with --pyi_out
+  * Pin multibuild scripts to get manylinux1 wheels back (#9216)
+  * Fix type annotations of some Duration and Timestamp methods.
+  * Repeated field containers are now generic in field types and could be used
+    in type annotations.
+  * Protobuf python generated codes are simplified. Descriptors and message
+    classes' definitions are now dynamic created in internal/builder.py.
+    Insertion Points for messages classes are discarded.
+  * has_presence is added for FieldDescriptor in python
+  * Loosen indexing type requirements to allow valid __index__() implementations
+    rather than only PyLongObjects.
+  * Fix the deepcopy bug caused by not copying message_listener.
+  * Added python JSON parse recursion limit (default 100)
+  * Path info is added for python JSON parse errors
+  * Pure python repeated scalar fields will not able to pickle. Convert to list
+    first.
+  * Timestamp.ToDatetime() now accepts an optional tzinfo parameter. If
+    specified, the function returns a timezone-aware datetime in the given time
+    zone. If omitted or None, the function returns a timezone-naive UTC datetime
+    (as previously).
+  * Adds client_streaming and server_streaming fields to MethodDescriptor.
+  * Add "ensure_ascii" parameter to json_format.MessageToJson. This allows smaller
+    JSON serializations with UTF-8 or other non-ASCII encodings.
+  * Added experimental support for directly assigning numpy scalars and array.
+  * Improve the calculation of public_dependencies in DescriptorPool.
+  * [Breaking Change] Disallow setting fields to numpy singleton arrays or repeated fields to numpy
+    multi-dimensional arrays. Numpy arrays should be indexed or flattened explicitly before assignment.
+
+  Compiler
+  * Migrate IsDefault(const std::string*) and UnsafeSetDefault(const std::string*)
+  * Implement strong qualified tags for TaggedPtr
+  * Rework allocations to power-of-two byte sizes.
+  * Migrate IsDefault(const std::string*) and UnsafeSetDefault(const std::string*)
+  * Implement strong qualified tags for TaggedPtr
+  * Make TaggedPtr Set...() calls explicitly spell out the content type.
+  * Check for parsing error before verifying UTF8.
+  * Enforce a maximum message nesting limit of 32 in the descriptor builder to
+    guard against stack overflows
+  * Fixed bugs in operators for RepeatedPtrIterator
+  * Assert a maximum map alignment for allocated values
+  * Fix proto1 group extension protodb parsing error
+  * Do not log/report the same descriptor symbol multiple times if it contains
+    more than one invalid character.
+  * Add UnknownFieldSet::SerializeToString and SerializeToCodedStream.
+  * Remove explicit default pointers and deprecated API from protocol compiler
+
+  Arenas
+  * Change Repeated*Field to reuse memory when using arenas.
+  * Implements pbarenaz for profiling proto arenas
+  * Introduce CreateString() and CreateArenaString() for cleaner semantics
+  * Fix unreferenced parameter for MSVC builds
+  * Add UnsafeSetAllocated to be used for one-of string fields.
+  * Make Arena::AllocateAligned() a public function.
+  * Determine if ArenaDtor related code generation is necessary in one place.
+  * Implement on demand register ArenaDtor for InlinedStringField
+
+  C++
+  * Enable testing via CTest (#8737)
+  * Add option to use external GTest in CMake (#8736)
+  * CMake: Set correct sonames for libprotobuf-lite.so and libprotoc.so (#8635) (#9529)
+  * Add cmake option `protobuf_INSTALL` to not install files (#7123)
+  * CMake: Allow custom plugin options e.g. to generate mocks (#9105)
+  * CMake: Use linker version scripts (#9545)
+  * Manually *struct Cord fields to work better with arenas.
+  * Manually destruct map fields.
+  * Generate narrower code
+  * Fix https://github.com/protocolbuffers/protobuf/issues/9378 by removing
+    shadowed _cached_size_ field
+  * Remove GetPointer() and explicit nullptr defaults.
+  * Add proto_h flag for speeding up large builds
+  * Add missing overload for reference wrapped fields.
+  * Add MergedDescriptorDatabase::FindAllFileNames()
+  * RepeatedField now defines an iterator type instead of using a pointer.
+  * Remove obsolete macros GOOGLE_PROTOBUF_HAS_ONEOF and GOOGLE_PROTOBUF_HAS_ARENAS.
+
+  PHP
+  * Fix: add missing reserved classnames (#9458)
+  * PHP 8.1 compatibility (#9370)
+
+  C#
+  * Fix trim warnings (#9182)
+  * Fixes NullReferenceException when accessing FieldDescriptor.IsPacked (#9430)
+  * Add ToProto() method to all descriptor classes (#9426)
+  * Add an option to preserve proto names in JsonFormatter (#6307)
+
+  Objective-C
+  * Add prefix_to_proto_package_mappings_path option. (#9498)
+  * Rename `proto_package_to_prefix_mappings_path` to `package_to_prefix_mappings_path`. (#9552)
+  * Add a generation option to control use of forward declarations in headers. (#9568)
 
 2022-01-28 version 3.19.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 

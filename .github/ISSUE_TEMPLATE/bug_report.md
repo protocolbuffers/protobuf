@@ -16,7 +16,7 @@ Stack Overflow is also a useful if unofficial resource https://stackoverflow.com
 -->
 
 **What version of protobuf and what language are you using?**
-Version: master/v3.6.0/v3.5.0 etc.
+Version: main/v3.6.0/v3.5.0 etc.
 Language: C++/Java/Python/C#/Ruby/PHP/Objective-C/Javascript
 
 **What operating system (Linux, Windows, ...) and version?**

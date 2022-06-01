@@ -52,6 +52,7 @@ message MATCH {}
 message NAMESPACE {}
 message NEW {}
 message OR {}
+message PARENT {}
 message PRINT {}
 message PRIVATE {}
 message PROTECTED {}
@@ -59,6 +60,7 @@ message PUBLIC {}
 message REQUIRE {}
 message REQUIRE_ONCE {}
 message RETURN {}
+message SELF {}
 message STATIC {}
 message SWITCH {}
 message THROW {}

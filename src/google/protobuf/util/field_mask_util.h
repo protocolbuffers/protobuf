@@ -37,8 +37,8 @@
 #include <string>
 
 #include <google/protobuf/field_mask.pb.h>
-#include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/descriptor.h>
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -96,8 +96,9 @@ class PROTOBUF_EXPORT FieldMaskUtil {
   template <typename T>
   static bool IsValidFieldMask(const FieldMask& mask) {
     for (int i = 0; i < mask.paths_size(); ++i) {
-      if (!GetFieldDescriptors(T::descriptor(), mask.paths(i), nullptr))
+      if (!GetFieldDescriptors(T::descriptor(), mask.paths(i), nullptr)) {
         return false;
+      }
     }
     return true;
   }

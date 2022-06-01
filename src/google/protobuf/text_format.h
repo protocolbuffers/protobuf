@@ -38,17 +38,19 @@
 #ifndef GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 #define GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 
+
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/message_lite.h>
-#include <google/protobuf/port.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 #ifdef SWIG
@@ -57,6 +59,11 @@
 
 namespace google {
 namespace protobuf {
+
+namespace internal {
+PROTOBUF_EXPORT extern const char kDebugStringSilentMarker[1];
+PROTOBUF_EXPORT extern const char kDebugStringSilentMarkerForDetection[3];
+}  // namespace internal
 
 namespace io {
 class ErrorCollector;  // tokenizer.h
@@ -454,16 +461,15 @@ class PROTOBUF_EXPORT TextFormat {
   };
 
   // Parses a text-format protocol message from the given input stream to
-  // the given message object. This function parses the human-readable format
-  // written by Print(). Returns true on success. The message is cleared first,
-  // even if the function fails -- See Merge() to avoid this behavior.
+  // the given message object. This function parses the human-readable
+  // serialization format written by Print(). Returns true on success. The
+  // message is cleared first, even if the function fails -- See Merge() to
+  // avoid this behavior.
   //
   // Example input: "user {\n id: 123 extra { gender: MALE language: 'en' }\n}"
   //
-  // One use for this function is parsing handwritten strings in test code.
-  // Another use is to parse the output from google::protobuf::Message::DebugString()
-  // (or ShortDebugString()), because these functions output using
-  // google::protobuf::TextFormat::Print().
+  // One common use for this function is parsing handwritten strings in test
+  // code.
   //
   // If you would like to read a protocol buffer serialized in the
   // (non-human-readable) binary wire format, see

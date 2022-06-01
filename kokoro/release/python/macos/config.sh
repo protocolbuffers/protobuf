@@ -25,12 +25,12 @@ function pre_build {
     # Runs in the root directory of this repository.
     pushd protobuf
 
-    # Build protoc
-    ./autogen.sh
-    ./configure
-
-    CXXFLAGS="-std=c++14 -fPIC -g -O2" ./configure
-    make -j8
+    # Build protoc and protobuf libraries
+    use_bazel.sh 5.1.1
+    bazel build -c opt //:protoc //pkg:protobuf //pkg:protobuf_lite
+    local _bazel_bin=$(bazel info -c opt bazel-bin)
+    export PROTOC=${_bazel_bin}/protoc
+    export LIBPROTOBUF=${_bazel_bin}/pkg/libprotobuf.a
 
     # Generate python dependencies.
     pushd python
@@ -52,7 +52,8 @@ function bdist_wheel_cmd {
     # Modify build version
     pwd
     ls
-    python setup.py bdist_wheel --cpp_implementation --compile_static_extension
+    python setup.py build_ext --cpp_implementation -O${LIBPROTOBUF}
+    python setup.py bdist_wheel --cpp_implementation
     cp dist/*.whl $abs_wheelhouse
 }
 

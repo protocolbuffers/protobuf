@@ -1,47 +1,44 @@
 #!/bin/bash
 #
 # Build file to set up and run tests
-set -ex
+set -eu
 
 # Install Bazel 4.0.0.
 use_bazel.sh 4.0.0
 bazel version
 
-# Print bazel testlogs to stdout when tests failed.
-function print_test_logs {
-  # TODO(yannic): Only print logs of failing tests.
-  testlogs_dir=$(bazel info bazel-testlogs)
-  testlogs=$(find "${testlogs_dir}" -name "*.log")
-  for log in $testlogs; do
-    cat "${log}"
-  done
-}
-
 # Change to repo root
 cd $(dirname $0)/../../..
 
-git submodule update --init --recursive
+# Get kokoro scripts from repo root by default.
+: ${SCRIPT_ROOT:=$(pwd)}
+source ${SCRIPT_ROOT}/kokoro/common/pyenv.sh
 
 #  Disabled for now, re-enable if appropriate.
 #  //:build_files_updated_unittest \
 
-trap print_test_logs EXIT
-bazel test -k --copt=-Werror --host_copt=-Werror \
-  //java:tests \
-  //:protoc \
-  //:protobuf \
-  //:protobuf_python \
-  //:protobuf_test \
-  @com_google_protobuf//:cc_proto_blacklist_test
-trap - EXIT
+bazel_args=(
+  test
+  --keep_going
+  --copt=-Werror
+  --host_copt=-Werror
+  --test_output=errors
+  --
+  //...
+  -//objectivec/...  # only works on macOS
+  @com_google_protobuf_examples//...
+)
 
-pushd examples
-bazel build //...
-popd
+${SCRIPT_ROOT}/kokoro/common/bazel_wrapper.sh "${bazel_args[@]}"
 
 # Verify that we can build successfully from generated tar files.
-./autogen.sh && ./configure && make -j$(nproc) dist
+(
+  pyenv versions
+  pyenv shell 2.7.9  # python2 required for old googletest autotools support
+  git submodule update --init --recursive
+  ./autogen.sh && ./configure && make -j$(nproc) dist
+)
 DIST=`ls *.tar.gz`
 tar -xf $DIST
 cd ${DIST//.tar.gz}
-bazel build //:protobuf //:protobuf_java
+${SCRIPT_ROOT}/kokoro/common/bazel_wrapper.sh build //:protobuf //:protobuf_java

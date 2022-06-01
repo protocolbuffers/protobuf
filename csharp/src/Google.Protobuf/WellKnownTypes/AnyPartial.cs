@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -118,6 +118,26 @@ namespace Google.Protobuf.WellKnownTypes
             target.MergeFrom(Value);
             result = target;
             return true;
+        }
+
+        /// <summary>
+        /// Attempts to unpack the content of this Any message into one of the message types
+        /// in the given type registry, based on the type URL.
+        /// </summary>
+        /// <param name="registry">The type registry to consult for messages.</param>
+        /// <returns>The unpacked message, or <c>null</c> if no matching message was found.</returns>
+        public IMessage Unpack(TypeRegistry registry)
+        {
+            string typeName = GetTypeName(TypeUrl);
+            MessageDescriptor descriptor = registry.Find(typeName);
+            if (descriptor == null)
+            {
+                return null;
+            }
+
+            var message = descriptor.Parser.CreateTemplate();
+            message.MergeFrom(Value);
+            return message;
         }
 
         /// <summary>

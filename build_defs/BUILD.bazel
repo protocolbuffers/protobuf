@@ -1,0 +1,173 @@
+# Internal Starlark definitions for Protobuf.
+
+load("@rules_cc//cc:defs.bzl", starlark_cc_proto_library = "cc_proto_library")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load(":cc_proto_blacklist_test.bzl", "cc_proto_blacklist_test")
+load(":compiler_config_setting.bzl", "create_compiler_config_setting")
+
+package(
+    default_visibility = [
+        # Public, but Protobuf only visibility.
+        "//:__subpackages__",
+    ],
+)
+
+create_compiler_config_setting(
+    name = "config_msvc",
+    value = "msvc-cl",
+)
+
+# Android NDK builds can specify different crosstool_top flags to choose which
+# STL they use for C++. We need these multiple variants to catch all of those
+# versions of crosstool_top and reliably detect Android.
+#
+# For more info on the various crosstool_tops used by NDK Bazel builds, see:
+# https://docs.bazel.build/versions/master/android-ndk.html#configuring-the-stl
+
+config_setting(
+    name = "config_android",
+    values = {
+        "crosstool_top": "//external:android/crosstool",
+    },
+)
+
+config_setting(
+    name = "config_android-stlport",
+    values = {
+        "crosstool_top": "@androidndk//:toolchain-stlport",
+    },
+)
+
+config_setting(
+    name = "config_android-libcpp",
+    values = {
+        "crosstool_top": "@androidndk//:toolchain-libcpp",
+    },
+)
+
+config_setting(
+    name = "config_android-gnu-libstdcpp",
+    values = {
+        "crosstool_top": "@androidndk//:toolchain-gnu-libstdcpp",
+    },
+)
+
+config_setting(
+    name = "config_android-default",
+    values = {
+        "crosstool_top": "@androidndk//:default_crosstool",
+    },
+)
+
+config_setting(
+    name = "config_win32",
+    values = {
+        "cpu": "win32",
+    },
+)
+
+config_setting(
+    name = "config_win64",
+    values = {
+        "cpu": "win64",
+    },
+)
+
+# Internal testing:
+
+starlark_cc_proto_library(
+    name = "any_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:any_proto"],
+)
+
+starlark_cc_proto_library(
+    name = "api_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:api_proto"],
+)
+
+starlark_cc_proto_library(
+    name = "compiler_plugin_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:compiler_plugin_proto"],
+)
+
+starlark_cc_proto_library(
+    name = "descriptor_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:descriptor_proto"],
+)
+
+starlark_cc_proto_library(
+    name = "duration_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:duration_proto"],
+)
+
+starlark_cc_proto_library(
+    name = "empty_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:empty_proto"],
+)
+
+starlark_cc_proto_library(
+    name = "field_mask_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:field_mask_proto"],
+)
+
+starlark_cc_proto_library(
+    name = "source_context_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:source_context_proto"],
+)
+
+starlark_cc_proto_library(
+    name = "struct_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:struct_proto"],
+)
+
+starlark_cc_proto_library(
+    name = "timestamp_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:timestamp_proto"],
+)
+
+starlark_cc_proto_library(
+    name = "type_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:type_proto"],
+)
+
+starlark_cc_proto_library(
+    name = "wrappers_cc_proto",
+    visibility = ["//visibility:private"],
+    deps = ["//:wrappers_proto"],
+)
+
+cc_proto_blacklist_test(
+    name = "cc_proto_blacklist_test",
+    deps = [
+        ":any_cc_proto",
+        ":api_cc_proto",
+        ":compiler_plugin_cc_proto",
+        ":descriptor_cc_proto",
+        ":duration_cc_proto",
+        ":empty_cc_proto",
+        ":field_mask_cc_proto",
+        ":source_context_cc_proto",
+        ":struct_cc_proto",
+        ":timestamp_cc_proto",
+        ":type_cc_proto",
+        ":wrappers_cc_proto",
+    ],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["*"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
+)

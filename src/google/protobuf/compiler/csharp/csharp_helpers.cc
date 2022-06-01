@@ -393,6 +393,13 @@ std::string GetPropertyName(const FieldDescriptor* descriptor) {
   return property_name;
 }
 
+std::string GetOneofCaseName(const FieldDescriptor* descriptor) {
+  // The name in a oneof case enum is the same as for the property, but as we always have a "None"
+  // value as well, we need to reserve that by appending an underscore.
+  std::string property_name = GetPropertyName(descriptor);
+  return property_name == "None" ? "None_" : property_name;
+}
+
 std::string GetOutputFile(const FileDescriptor* descriptor,
                           const std::string file_extension,
                           const bool generate_directories,

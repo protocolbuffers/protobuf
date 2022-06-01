@@ -717,6 +717,25 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void MaximumFieldNumber()
+        {
+            MemoryStream ms = new MemoryStream();
+            CodedOutputStream output = new CodedOutputStream(ms);
+
+            int fieldNumber = 0x1FFFFFFF;
+            uint tag = WireFormat.MakeTag(fieldNumber, WireFormat.WireType.LengthDelimited);
+            output.WriteRawVarint32(tag);
+            output.WriteString("field 1");
+            output.Flush();
+            ms.Position = 0;
+
+            CodedInputStream input = new CodedInputStream(ms);
+
+            Assert.AreEqual(tag, input.ReadTag());
+            Assert.AreEqual(fieldNumber, WireFormat.GetTagFieldNumber(tag));
+        }
+
+        [Test]
         public void Tag0Throws()
         {
             var input = new CodedInputStream(new byte[] { 0 });

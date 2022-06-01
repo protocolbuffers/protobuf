@@ -28,17 +28,18 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/compiler/cpp/cpp_generator.h>
-#include <google/protobuf/compiler/java/java_generator.h>
-#include <google/protobuf/compiler/java/java_kotlin_generator.h>
-#include <google/protobuf/compiler/js/js_generator.h>
+#include <google/protobuf/compiler/cpp/generator.h>
+#include <google/protobuf/compiler/java/generator.h>
+#include <google/protobuf/compiler/java/kotlin_generator.h>
 #include <google/protobuf/compiler/command_line_interface.h>
-#include <google/protobuf/compiler/python/python_generator.h>
 #include <google/protobuf/compiler/csharp/csharp_generator.h>
 #include <google/protobuf/compiler/objectivec/objectivec_generator.h>
 #include <google/protobuf/compiler/php/php_generator.h>
+#include <google/protobuf/compiler/python/generator.h>
+#include <google/protobuf/compiler/python/pyi_generator.h>
 #include <google/protobuf/compiler/ruby/ruby_generator.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -75,6 +76,10 @@ int ProtobufMain(int argc, char* argv[]) {
   python::Generator py_generator;
   cli.RegisterGenerator("--python_out", "--python_opt", &py_generator,
                         "Generate Python source file.");
+  // Python pyi
+  python::PyiGenerator pyi_generator;
+  cli.RegisterGenerator("--pyi_out", &pyi_generator,
+                        "Generate python pyi stub.");
 
   // PHP
   php::Generator php_generator;
@@ -95,11 +100,6 @@ int ProtobufMain(int argc, char* argv[]) {
   objectivec::ObjectiveCGenerator objc_generator;
   cli.RegisterGenerator("--objc_out", "--objc_opt", &objc_generator,
                         "Generate Objective-C header and source.");
-
-  // JavaScript
-  js::Generator js_generator;
-  cli.RegisterGenerator("--js_out", "--js_opt", &js_generator,
-                        "Generate JavaScript source.");
 
   return cli.Run(argc, argv);
 }

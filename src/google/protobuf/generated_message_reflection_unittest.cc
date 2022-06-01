@@ -48,9 +48,7 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/map_test_util.h>
 #include <google/protobuf/map_unittest.pb.h>
-#include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_mset.pb.h>
 #include <google/protobuf/unittest_mset_wire_format.pb.h>
@@ -58,6 +56,8 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include <google/protobuf/map_test_util.h>
+#include <google/protobuf/test_util.h>
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -74,6 +74,17 @@ class GeneratedMessageReflectionTestHelper {
   }
   static bool IsLazyExtension(const Message& msg, const FieldDescriptor* ext) {
     return msg.GetReflection()->IsLazyExtension(msg, ext);
+  }
+  static bool IsLazyField(const Message& msg, const FieldDescriptor* field) {
+    return msg.GetReflection()->IsLazyField(field);
+  }
+  static bool IsEagerlyVerifiedLazyField(const Message& msg,
+                                         const FieldDescriptor* field) {
+    return msg.GetReflection()->IsEagerlyVerifiedLazyField(field);
+  }
+  static bool IsLazilyVerifiedLazyField(const Message& msg,
+                                        const FieldDescriptor* field) {
+    return msg.GetReflection()->IsLazilyVerifiedLazyField(field);
   }
 };
 
@@ -148,28 +159,6 @@ TEST(GeneratedMessageReflectionTest, GetStringReference) {
          "a reference to the underlying string.";
 }
 
-
-TEST(GeneratedMessageReflectionTest, DefaultsAfterClear) {
-  // Check that after setting all fields and then clearing, getting an
-  // embedded message does NOT return the default instance.
-  unittest::TestAllTypes message;
-  TestUtil::ReflectionTester reflection_tester(
-      unittest::TestAllTypes::descriptor());
-
-  TestUtil::SetAllFields(&message);
-  message.Clear();
-
-  const Reflection* reflection = message.GetReflection();
-
-  EXPECT_NE(&unittest::TestAllTypes::OptionalGroup::default_instance(),
-            &reflection->GetMessage(message, F("optionalgroup")));
-  EXPECT_NE(&unittest::TestAllTypes::NestedMessage::default_instance(),
-            &reflection->GetMessage(message, F("optional_nested_message")));
-  EXPECT_NE(&unittest::ForeignMessage::default_instance(),
-            &reflection->GetMessage(message, F("optional_foreign_message")));
-  EXPECT_NE(&unittest_import::ImportMessage::default_instance(),
-            &reflection->GetMessage(message, F("optional_import_message")));
-}
 
 class GeneratedMessageReflectionSwapTest : public testing::TestWithParam<bool> {
  protected:
@@ -303,53 +292,58 @@ TEST_P(GeneratedMessageReflectionSwapTest, OneofBothSet) {
 }
 
 TEST_P(GeneratedMessageReflectionSwapTest, SwapFields) {
-  unittest::TestAllTypes lhs, rhs;
-  lhs.set_optional_double(12.3);
-  lhs.mutable_repeated_int32()->Add(10);
-  lhs.mutable_repeated_int32()->Add(20);
+  std::unique_ptr<unittest::TestAllTypes> lhs(
+      Arena::CreateMessage<unittest::TestAllTypes>(nullptr));
+  std::unique_ptr<unittest::TestAllTypes> rhs(
+      Arena::CreateMessage<unittest::TestAllTypes>(nullptr));
+  lhs->set_optional_double(12.3);
+  lhs->mutable_repeated_int32()->Add(10);
+  lhs->mutable_repeated_int32()->Add(20);
 
-  rhs.set_optional_string("hello");
-  rhs.mutable_repeated_int64()->Add(30);
+  rhs->set_optional_string("hello");
+  rhs->mutable_repeated_int64()->Add(30);
 
   std::vector<const FieldDescriptor*> fields;
-  const Descriptor* descriptor = lhs.GetDescriptor();
+  const Descriptor* descriptor = lhs->GetDescriptor();
   fields.push_back(descriptor->FindFieldByName("optional_double"));
   fields.push_back(descriptor->FindFieldByName("repeated_int32"));
   fields.push_back(descriptor->FindFieldByName("optional_string"));
   fields.push_back(descriptor->FindFieldByName("optional_uint64"));
 
-  SwapFields(lhs.GetReflection(), &lhs, &rhs, fields);
+  SwapFields(lhs->GetReflection(), lhs.get(), rhs.get(), fields);
 
-  EXPECT_FALSE(lhs.has_optional_double());
-  EXPECT_EQ(0, lhs.repeated_int32_size());
-  EXPECT_TRUE(lhs.has_optional_string());
-  EXPECT_EQ("hello", lhs.optional_string());
-  EXPECT_EQ(0, lhs.repeated_int64_size());
-  EXPECT_FALSE(lhs.has_optional_uint64());
+  EXPECT_FALSE(lhs->has_optional_double());
+  EXPECT_EQ(0, lhs->repeated_int32_size());
+  EXPECT_TRUE(lhs->has_optional_string());
+  EXPECT_EQ("hello", lhs->optional_string());
+  EXPECT_EQ(0, lhs->repeated_int64_size());
+  EXPECT_FALSE(lhs->has_optional_uint64());
 
-  EXPECT_TRUE(rhs.has_optional_double());
-  EXPECT_EQ(12.3, rhs.optional_double());
-  EXPECT_EQ(2, rhs.repeated_int32_size());
-  EXPECT_EQ(10, rhs.repeated_int32(0));
-  EXPECT_EQ(20, rhs.repeated_int32(1));
-  EXPECT_FALSE(rhs.has_optional_string());
-  EXPECT_EQ(1, rhs.repeated_int64_size());
-  EXPECT_FALSE(rhs.has_optional_uint64());
+  EXPECT_TRUE(rhs->has_optional_double());
+  EXPECT_EQ(12.3, rhs->optional_double());
+  EXPECT_EQ(2, rhs->repeated_int32_size());
+  EXPECT_EQ(10, rhs->repeated_int32(0));
+  EXPECT_EQ(20, rhs->repeated_int32(1));
+  EXPECT_FALSE(rhs->has_optional_string());
+  EXPECT_EQ(1, rhs->repeated_int64_size());
+  EXPECT_FALSE(rhs->has_optional_uint64());
 }
 
 TEST_P(GeneratedMessageReflectionSwapTest, SwapFieldsAll) {
-  unittest::TestAllTypes lhs;
-  unittest::TestAllTypes rhs;
+  std::unique_ptr<unittest::TestAllTypes> lhs(
+      Arena::CreateMessage<unittest::TestAllTypes>(nullptr));
+  std::unique_ptr<unittest::TestAllTypes> rhs(
+      Arena::CreateMessage<unittest::TestAllTypes>(nullptr));
 
-  TestUtil::SetAllFields(&rhs);
+  TestUtil::SetAllFields(rhs.get());
 
   std::vector<const FieldDescriptor*> fields;
-  const Reflection* reflection = lhs.GetReflection();
-  reflection->ListFields(rhs, &fields);
-  SwapFields(reflection, &lhs, &rhs, fields);
+  const Reflection* reflection = lhs->GetReflection();
+  reflection->ListFields(*rhs, &fields);
+  SwapFields(reflection, lhs.get(), rhs.get(), fields);
 
-  TestUtil::ExpectAllFieldsSet(lhs);
-  TestUtil::ExpectClear(rhs);
+  TestUtil::ExpectAllFieldsSet(*lhs);
+  TestUtil::ExpectClear(*rhs);
 }
 
 TEST(GeneratedMessageReflectionTest, SwapFieldsAllOnDifferentArena) {
@@ -559,7 +553,7 @@ TEST(GeneratedMessageReflectionTest,
   auto* message1 = Arena::CreateMessage<unittest::TestOneof2>(&arena);
   auto* message2 = Arena::CreateMessage<unittest::TestOneof2>(&arena);
   TestUtil::SetOneof1(message1);
-  message1->mutable_foo_message()->set_qux_int(1000);
+  message1->mutable_foo_message()->set_moo_int(1000);
   auto* kept_foo_ptr = message1->mutable_foo_message();
 
   std::vector<const FieldDescriptor*> fields;
@@ -571,7 +565,7 @@ TEST(GeneratedMessageReflectionTest,
       message1, message2, fields);
 
   EXPECT_TRUE(message2->has_foo_message());
-  EXPECT_EQ(message2->foo_message().qux_int(), 1000);
+  EXPECT_EQ(message2->foo_message().moo_int(), 1000);
   EXPECT_EQ(kept_foo_ptr, message2->mutable_foo_message());
 }
 
@@ -1267,8 +1261,6 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
   const Reflection* reflection = message.GetReflection();
   const Descriptor* descriptor = message.GetDescriptor();
 
-#define f(NAME) descriptor->FindFieldByName(NAME)
-
   // Testing every single failure mode would be too much work.  Let's just
   // check a few.
   EXPECT_DEATH(
@@ -1307,12 +1299,70 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
       "  Message type: protobuf_unittest.TestAllTypes\n"
       "  Field       : protobuf_unittest.ForeignMessage.c\n"
       "  Problem     : Field does not match message type.");
-
-#undef f
 }
 
 #endif  // PROTOBUF_HAS_DEATH_TEST
 
+
+using internal::IsDescendant;
+
+TEST(GeneratedMessageReflection, IsDescendantMessage) {
+  unittest::TestAllTypes msg1, msg2;
+  TestUtil::SetAllFields(&msg1);
+  msg2 = msg1;
+
+  EXPECT_TRUE(IsDescendant(msg1, msg1.optional_nested_message()));
+  EXPECT_TRUE(IsDescendant(msg1, msg1.repeated_foreign_message(0)));
+
+  EXPECT_FALSE(IsDescendant(msg1, msg2.optional_nested_message()));
+  EXPECT_FALSE(IsDescendant(msg1, msg2.repeated_foreign_message(0)));
+}
+
+TEST(GeneratedMessageReflection, IsDescendantMap) {
+  unittest::TestMap msg1, msg2;
+  (*msg1.mutable_map_int32_foreign_message())[0].set_c(100);
+  TestUtil::SetAllFields(&(*msg1.mutable_map_int32_all_types())[0]);
+  msg2 = msg1;
+
+  EXPECT_TRUE(IsDescendant(msg1, msg1.map_int32_foreign_message().at(0)));
+  EXPECT_TRUE(IsDescendant(msg1, msg1.map_int32_all_types().at(0)));
+
+  EXPECT_FALSE(IsDescendant(msg1, msg2.map_int32_foreign_message().at(0)));
+  EXPECT_FALSE(IsDescendant(msg1, msg2.map_int32_all_types().at(0)));
+}
+
+TEST(GeneratedMessageReflection, IsDescendantExtension) {
+  unittest::TestAllExtensions msg1, msg2;
+  TestUtil::SetAllExtensions(&msg1);
+  msg2 = msg1;
+
+  EXPECT_TRUE(IsDescendant(
+      msg1, msg1.GetExtension(unittest::optional_nested_message_extension)));
+  EXPECT_TRUE(IsDescendant(
+      msg1,
+      msg1.GetExtension(unittest::repeated_foreign_message_extension, 0)));
+
+  EXPECT_FALSE(IsDescendant(
+      msg1, msg2.GetExtension(unittest::optional_nested_message_extension)));
+  EXPECT_FALSE(IsDescendant(
+      msg1,
+      msg2.GetExtension(unittest::repeated_foreign_message_extension, 0)));
+}
+
+TEST(GeneratedMessageReflection, IsDescendantOneof) {
+  unittest::TestOneof msg1, msg2;
+  TestUtil::SetAllFields(msg1.mutable_foo_message());
+  msg2 = msg1;
+
+  EXPECT_TRUE(IsDescendant(msg1, msg1.foo_message().optional_nested_message()));
+  EXPECT_TRUE(
+      IsDescendant(msg1, msg1.foo_message().repeated_foreign_message(0)));
+
+  EXPECT_FALSE(
+      IsDescendant(msg1, msg2.foo_message().optional_nested_message()));
+  EXPECT_FALSE(
+      IsDescendant(msg1, msg2.foo_message().repeated_foreign_message(0)));
+}
 
 }  // namespace
 }  // namespace protobuf

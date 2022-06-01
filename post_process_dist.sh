@@ -11,7 +11,7 @@
 #    2005 *or* 2008 can open them.  (In version control, we keep things in
 #    MSVC 2008 format since that's what we use in development.)
 # 4) Uses the result to create .tar.gz, .tar.bz2, and .zip versions and
-#    deposites them in the "dist" directory.  In the .zip version, all
+#    deposits them in the "dist" directory.  In the .zip version, all
 #    non-testdata .txt files are converted to Windows-style line endings.
 # 5) Cleans up after itself.
 
@@ -27,7 +27,7 @@ fi
 
 set -ex
 
-LANGUAGES="cpp csharp java js objectivec python ruby php all"
+LANGUAGES="cpp csharp java objectivec python ruby php all"
 BASENAME=`basename $1 .tar.gz`
 VERSION=${BASENAME:9}
 

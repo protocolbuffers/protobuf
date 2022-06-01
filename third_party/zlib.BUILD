@@ -2,6 +2,8 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 
 licenses(["notice"])  # BSD/MIT-like license (for zlib)
 
+exports_files(["zlib.BUILD"])
+
 _ZLIB_HEADERS = [
     "crc32.h",
     "deflate.h",
@@ -25,7 +27,11 @@ genrule(
     name = "copy_public_headers",
     srcs = _ZLIB_HEADERS,
     outs = _ZLIB_PREFIXED_HEADERS,
-    cmd = "cp $(SRCS) $(@D)/zlib/include/",
+    cmd_bash = "cp $(SRCS) $(@D)/zlib/include/",
+    cmd_bat = " && ".join(
+        ["@copy /Y $(location %s) $(@D)\\zlib\\include\\  >NUL" %
+         s for s in _ZLIB_HEADERS],
+    ),
 )
 
 cc_library(

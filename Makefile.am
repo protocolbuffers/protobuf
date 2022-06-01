@@ -9,6 +9,9 @@ AUTOMAKE_OPTIONS = foreign
 SUBDIRS = . src
 
 # Always include third_party directories in distributions.
+#
+# Note that distribution artifacts will be produced by Bazel in the future.
+# See pkg/BUILD.bazel for overall definitions.
 DIST_SUBDIRS = src conformance benchmarks third_party/googletest
 
 # Build gmock before we build protobuf tests.  We don't add gmock to SUBDIRS
@@ -48,8 +51,10 @@ clean-local:
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = protobuf.pc protobuf-lite.pc
 
+# Note: please keep this in sync with the dist_files rule in csharp/BUILD.bazel.
 csharp_EXTRA_DIST=                                                           \
   global.json                                                                \
+  csharp/.editorconfig                                                       \
   csharp/.gitignore                                                          \
   csharp/CHANGES.txt                                                         \
   csharp/Google.Protobuf.Tools.targets                                       \
@@ -278,10 +283,11 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/UnknownFieldSet.cs                              \
   csharp/src/Google.Protobuf/UnsafeByteOperations.cs
 
+# Note: please keep this in sync with the dist_files rules under java/.../BUILD.bazel.
 java_EXTRA_DIST=                                                                   \
   java/README.md                                                                   \
   java/bom/pom.xml                                                                 \
-  java/core/BUILD                                                                  \
+  java/core/BUILD.bazel                                                            \
   java/core/generate-sources-build.xml                                             \
   java/core/generate-test-sources-build.xml                                        \
   java/core/pom.xml                                                                \
@@ -308,6 +314,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/CodedInputStreamReader.java          \
   java/core/src/main/java/com/google/protobuf/CodedOutputStream.java               \
   java/core/src/main/java/com/google/protobuf/CodedOutputStreamWriter.java         \
+  java/core/src/main/java/com/google/protobuf/CompileTimeConstant.java             \
   java/core/src/main/java/com/google/protobuf/DescriptorMessageInfoFactory.java    \
   java/core/src/main/java/com/google/protobuf/Descriptors.java                     \
   java/core/src/main/java/com/google/protobuf/DiscardUnknownFieldsParser.java      \
@@ -331,6 +338,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/main/java/com/google/protobuf/GeneratedMessageInfoFactory.java     \
   java/core/src/main/java/com/google/protobuf/GeneratedMessageLite.java            \
   java/core/src/main/java/com/google/protobuf/GeneratedMessageV3.java              \
+  java/core/src/main/java/com/google/protobuf/InlineMe.java                        \
   java/core/src/main/java/com/google/protobuf/IntArrayList.java                    \
   java/core/src/main/java/com/google/protobuf/Internal.java                        \
   java/core/src/main/java/com/google/protobuf/InvalidProtocolBufferException.java  \
@@ -442,9 +450,9 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/java/com/google/protobuf/ExtensionRegistryFactoryTest.java    \
   java/core/src/test/java/com/google/protobuf/FieldPresenceTest.java               \
   java/core/src/test/java/com/google/protobuf/FloatArrayListTest.java              \
-  java/core/src/test/java/com/google/protobuf/ForceFieldBuildersPreRun.java        \
   java/core/src/test/java/com/google/protobuf/GeneratedMessageTest.java            \
   java/core/src/test/java/com/google/protobuf/IntArrayListTest.java                \
+  java/core/src/test/java/com/google/protobuf/InvalidProtocolBufferExceptionTest.java \
   java/core/src/test/java/com/google/protobuf/IsValidUtf8Test.java                 \
   java/core/src/test/java/com/google/protobuf/IsValidUtf8TestUtil.java             \
   java/core/src/test/java/com/google/protobuf/LazyFieldLiteTest.java               \
@@ -506,6 +514,7 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/any_test.proto                      \
   java/core/src/test/proto/com/google/protobuf/cached_field_size_test.proto        \
   java/core/src/test/proto/com/google/protobuf/deprecated_file.proto               \
+  java/core/src/test/proto/com/google/protobuf/dynamic_message_test.proto          \
   java/core/src/test/proto/com/google/protobuf/field_presence_test.proto           \
   java/core/src/test/proto/com/google/protobuf/lazy_fields_lite.proto              \
   java/core/src/test/proto/com/google/protobuf/lite_equals_and_hash.proto          \
@@ -534,13 +543,14 @@ java_EXTRA_DIST=                                                                
   java/core/src/test/proto/com/google/protobuf/test_check_utf8_size.proto          \
   java/core/src/test/proto/com/google/protobuf/test_custom_options.proto           \
   java/core/src/test/proto/com/google/protobuf/wrappers_test.proto                 \
-  java/internal/BUILD                                                              \
+  java/internal/BUILD.bazel                                                        \
   java/internal/testing.bzl                                                        \
-  java/kotlin/BUILD                                                                \
+  java/kotlin/BUILD.bazel                                                          \
   java/kotlin/generate-sources-build.xml                                           \
   java/kotlin/generate-test-sources-build.xml                                      \
   java/kotlin/pom.xml                                                              \
   java/kotlin/pom_template.xml                                                     \
+  java/kotlin/src/main/kotlin/com/google/protobuf/Anies.kt                         \
   java/kotlin/src/main/kotlin/com/google/protobuf/ByteStrings.kt                   \
   java/kotlin/src/main/kotlin/com/google/protobuf/DslList.kt                       \
   java/kotlin/src/main/kotlin/com/google/protobuf/DslMap.kt                        \
@@ -550,6 +560,7 @@ java_EXTRA_DIST=                                                                
   java/kotlin/src/main/kotlin/com/google/protobuf/OnlyForUseByGeneratedProtoCode.kt\
   java/kotlin/src/main/kotlin/com/google/protobuf/ProtoDslMarker.kt                \
   java/kotlin/src/main/kotlin/com/google/protobuf/UnmodifiableCollections.kt       \
+  java/kotlin/src/test/kotlin/com/google/protobuf/AniesTest.kt                     \
   java/kotlin/src/test/kotlin/com/google/protobuf/ByteStringsTest.kt               \
   java/kotlin/src/test/kotlin/com/google/protobuf/DslListTest.kt                   \
   java/kotlin/src/test/kotlin/com/google/protobuf/DslMapTest.kt                    \
@@ -561,7 +572,7 @@ java_EXTRA_DIST=                                                                
   java/kotlin/src/test/proto/com/google/protobuf/evil_names_proto3.proto           \
   java/kotlin/src/test/proto/com/google/protobuf/example_extensible_message.proto  \
   java/kotlin/src/test/proto/com/google/protobuf/multiple_files_proto3.proto       \
-  java/kotlin-lite/BUILD                                                           \
+  java/kotlin-lite/BUILD.bazel                                                     \
   java/kotlin-lite/generate-sources-build.xml                                      \
   java/kotlin-lite/generate-test-sources-build.xml                                 \
   java/kotlin-lite/lite.awk                                                        \
@@ -570,13 +581,9 @@ java_EXTRA_DIST=                                                                
   java/kotlin-lite/process-lite-sources-build.xml                                  \
   java/kotlin-lite/src/main/kotlin/com/google/protobuf/ExtendableMessageLiteExtensions.kt\
   java/kotlin-lite/src/test/kotlin/com/google/protobuf/ExtendableMessageLiteExtensionsTest.kt\
-  java/kotlin-lite/src/test/kotlin/com/google/protobuf/Proto3LiteTest.kt           \
   java/kotlin-lite/src/test/kotlin/com/google/protobuf/Proto2LiteTest.kt           \
-  java/kotlin-lite/src/test/proto/com/google/protobuf/evil_names_proto2.proto      \
-  java/kotlin-lite/src/test/proto/com/google/protobuf/evil_names_proto3.proto      \
-  java/kotlin-lite/src/test/proto/com/google/protobuf/multiple_files_proto3.proto  \
   java/lite.md                                                                     \
-  java/lite/BUILD                                                                  \
+  java/lite/BUILD.bazel                                                            \
   java/lite/generate-sources-build.xml                                             \
   java/lite/generate-test-sources-build.xml                                        \
   java/lite/lite.awk                                                               \
@@ -584,9 +591,9 @@ java_EXTRA_DIST=                                                                
   java/lite/pom_template.xml                                                       \
   java/lite/process-lite-sources-build.xml                                         \
   java/lite/src/test/java/com/google/protobuf/LiteTest.java                        \
-  java/BUILD                                                                       \
+  java/BUILD.bazel                                                                 \
   java/pom.xml                                                                     \
-  java/util/BUILD                                                                  \
+  java/util/BUILD.bazel                                                            \
   java/util/pom.xml                                                                \
   java/util/pom_template.xml                                                       \
   java/util/src/main/java/com/google/protobuf/util/Durations.java                  \
@@ -596,16 +603,19 @@ java_EXTRA_DIST=                                                                
   java/util/src/main/java/com/google/protobuf/util/Structs.java                    \
   java/util/src/main/java/com/google/protobuf/util/Timestamps.java                 \
   java/util/src/main/java/com/google/protobuf/util/Values.java                     \
+  java/util/src/test/java/com/google/protobuf/util/DurationsTest.java              \
   java/util/src/test/java/com/google/protobuf/util/FieldMaskTreeTest.java          \
   java/util/src/test/java/com/google/protobuf/util/FieldMaskUtilTest.java          \
   java/util/src/test/java/com/google/protobuf/util/JsonFormatTest.java             \
   java/util/src/test/java/com/google/protobuf/util/StructsTest.java                \
+  java/util/src/test/java/com/google/protobuf/util/TimestampsTest.java             \
   java/util/src/test/java/com/google/protobuf/util/ValuesTest.java                 \
   java/util/src/test/proto/com/google/protobuf/util/json_test.proto
 
+# Note: please keep this in sync with the dist_files rule in objectivec/BUILD.bazel.
 objectivec_EXTRA_DIST=                                                       \
   objectivec/.clang-format                                                   \
-  objectivec/BUILD                                                           \
+  objectivec/BUILD.bazel                                                     \
   objectivec/DevTools/check_version_stamps.sh                                \
   objectivec/DevTools/compile_testing_protos.sh                              \
   objectivec/DevTools/full_mac_build.sh                                      \
@@ -704,33 +714,6 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/ProtocolBuffers_tvOS.xcodeproj/xcshareddata/xcschemes/PerformanceTests.xcscheme \
   objectivec/ProtocolBuffers_tvOS.xcodeproj/xcshareddata/xcschemes/ProtocolBuffers.xcscheme \
   objectivec/README.md                                                       \
-  objectivec/Tests/CocoaPods/OSXCocoaPodsTester/OSXCocoaPodsTester.xcodeproj/project.pbxproj \
-  objectivec/Tests/CocoaPods/OSXCocoaPodsTester/OSXCocoaPodsTester.xcodeproj/project.xcworkspace/contents.xcworkspacedata \
-  objectivec/Tests/CocoaPods/OSXCocoaPodsTester/OSXCocoaPodsTester.xcodeproj/xcshareddata/xcschemes/OSXCocoaPodsTester.xcscheme \
-  objectivec/Tests/CocoaPods/OSXCocoaPodsTester/OSXCocoaPodsTester/AppDelegate.h \
-  objectivec/Tests/CocoaPods/OSXCocoaPodsTester/OSXCocoaPodsTester/AppDelegate.m \
-  objectivec/Tests/CocoaPods/OSXCocoaPodsTester/OSXCocoaPodsTester/Assets.xcassets/AppIcon.appiconset/Contents.json \
-  objectivec/Tests/CocoaPods/OSXCocoaPodsTester/OSXCocoaPodsTester/Base.lproj/MainMenu.xib \
-  objectivec/Tests/CocoaPods/OSXCocoaPodsTester/OSXCocoaPodsTester/Info.plist \
-  objectivec/Tests/CocoaPods/OSXCocoaPodsTester/OSXCocoaPodsTester/main.m    \
-  objectivec/Tests/CocoaPods/OSXCocoaPodsTester/Podfile-framework            \
-  objectivec/Tests/CocoaPods/OSXCocoaPodsTester/Podfile-static               \
-  objectivec/Tests/CocoaPods/README.md                                       \
-  objectivec/Tests/CocoaPods/iOSCocoaPodsTester/Podfile-framework            \
-  objectivec/Tests/CocoaPods/iOSCocoaPodsTester/Podfile-static               \
-  objectivec/Tests/CocoaPods/iOSCocoaPodsTester/iOSCocoaPodsTester.xcodeproj/project.pbxproj \
-  objectivec/Tests/CocoaPods/iOSCocoaPodsTester/iOSCocoaPodsTester.xcodeproj/project.xcworkspace/contents.xcworkspacedata \
-  objectivec/Tests/CocoaPods/iOSCocoaPodsTester/iOSCocoaPodsTester.xcodeproj/xcshareddata/xcschemes/iOSCocoaPodsTester.xcscheme \
-  objectivec/Tests/CocoaPods/iOSCocoaPodsTester/iOSCocoaPodsTester/AppDelegate.h \
-  objectivec/Tests/CocoaPods/iOSCocoaPodsTester/iOSCocoaPodsTester/AppDelegate.m \
-  objectivec/Tests/CocoaPods/iOSCocoaPodsTester/iOSCocoaPodsTester/Assets.xcassets/AppIcon.appiconset/Contents.json \
-  objectivec/Tests/CocoaPods/iOSCocoaPodsTester/iOSCocoaPodsTester/Base.lproj/LaunchScreen.storyboard \
-  objectivec/Tests/CocoaPods/iOSCocoaPodsTester/iOSCocoaPodsTester/Base.lproj/Main.storyboard \
-  objectivec/Tests/CocoaPods/iOSCocoaPodsTester/iOSCocoaPodsTester/Info.plist \
-  objectivec/Tests/CocoaPods/iOSCocoaPodsTester/iOSCocoaPodsTester/ViewController.h \
-  objectivec/Tests/CocoaPods/iOSCocoaPodsTester/iOSCocoaPodsTester/ViewController.m \
-  objectivec/Tests/CocoaPods/iOSCocoaPodsTester/iOSCocoaPodsTester/main.m    \
-  objectivec/Tests/CocoaPods/run_tests.sh                                    \
   objectivec/Tests/golden_message                                            \
   objectivec/Tests/golden_packed_fields_message                              \
   objectivec/Tests/GPBARCUnittestProtos.m                                    \
@@ -811,11 +794,12 @@ objectivec_EXTRA_DIST=                                                       \
   objectivec/Tests/UnitTests-Info.plist                                       \
   Protobuf.podspec
 
+# Note: please keep this in sync with the dist_files rule in php/BUILD.bazel.
 php_EXTRA_DIST=                                                       \
-  composer.json                                                       \
   php/README.md                                                       \
   php/REFCOUNTING.md                                                  \
   php/composer.json                                                   \
+  php/composer.json.dist                                              \
   php/ext/google/protobuf/arena.c                                     \
   php/ext/google/protobuf/arena.h                                     \
   php/ext/google/protobuf/array.c                                     \
@@ -834,9 +818,11 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/package.xml                                 \
   php/ext/google/protobuf/php-upb.c                                   \
   php/ext/google/protobuf/php-upb.h                                   \
+  php/ext/google/protobuf/php_protobuf.h                              \
   php/ext/google/protobuf/protobuf.c                                  \
   php/ext/google/protobuf/protobuf.h                                  \
   php/ext/google/protobuf/wkt.inc                                     \
+  php/ext/google/protobuf/tests/unnecessary_zval.phpt                 \
   php/generate_descriptor_protos.sh                                   \
   php/generate_test_protos.sh                                         \
   php/release.sh                                                      \
@@ -1005,7 +991,9 @@ php_EXTRA_DIST=                                                       \
   php/tests/WellKnownTest.php                                         \
   php/tests/WrapperTypeSettersTest.php
 
+# Note: please keep this in sync with the python_dist_files rule in BUILD.bazel.
 python_EXTRA_DIST=                                                           \
+  python/BUILD.bazel                                                         \
   python/MANIFEST.in                                                         \
   python/google/__init__.py                                                  \
   python/google/protobuf/__init__.py                                         \
@@ -1019,6 +1007,7 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/any_test.proto                             \
   python/google/protobuf/internal/api_implementation.cc                      \
   python/google/protobuf/internal/api_implementation.py                      \
+  python/google/protobuf/internal/builder.py                                 \
   python/google/protobuf/internal/containers.py                              \
   python/google/protobuf/internal/decoder.py                                 \
   python/google/protobuf/internal/descriptor_database_test.py                \
@@ -1033,7 +1022,10 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/internal/factory_test2.proto                        \
   python/google/protobuf/internal/file_options_test.proto                    \
   python/google/protobuf/internal/generator_test.py                          \
+  python/google/protobuf/internal/import_test.py                             \
   python/google/protobuf/internal/import_test_package/__init__.py            \
+  python/google/protobuf/internal/import_test_package/import_public.proto    \
+  python/google/protobuf/internal/import_test_package/import_public_nested.proto \
   python/google/protobuf/internal/import_test_package/inner.proto            \
   python/google/protobuf/internal/import_test_package/outer.proto            \
   python/google/protobuf/internal/json_format_test.py                        \
@@ -1105,6 +1097,8 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/pyext/repeated_scalar_container.h                   \
   python/google/protobuf/pyext/safe_numerics.h                               \
   python/google/protobuf/pyext/scoped_pyobject_ptr.h                         \
+  python/google/protobuf/pyext/unknown_field_set.cc                          \
+  python/google/protobuf/pyext/unknown_field_set.h                           \
   python/google/protobuf/python_protobuf.h                                   \
   python/google/protobuf/reflection.py                                       \
   python/google/protobuf/service.py                                          \
@@ -1112,7 +1106,9 @@ python_EXTRA_DIST=                                                           \
   python/google/protobuf/symbol_database.py                                  \
   python/google/protobuf/text_encoding.py                                    \
   python/google/protobuf/text_format.py                                      \
+  python/google/protobuf/unknown_fields.py                                   \
   python/google/protobuf/util/__init__.py                                    \
+  python/internal.bzl                                                        \
   python/release.sh                                                          \
   python/mox.py                                                              \
   python/setup.cfg                                                           \
@@ -1121,6 +1117,7 @@ python_EXTRA_DIST=                                                           \
   python/tox.ini                                                             \
   python/README.md
 
+# Note: please keep this in sync with the dist_files rule in ruby/BUILD.bazel.
 ruby_EXTRA_DIST=                                                             \
   ruby/Gemfile                                                               \
   ruby/.gitignore                                                            \
@@ -1196,189 +1193,9 @@ ruby_EXTRA_DIST=                                                             \
   ruby/tests/type_errors.rb                                                  \
   ruby/travis-test.sh
 
-js_EXTRA_DIST=                                                         \
-  js/README.md                                                         \
-  js/binary/arith.js                                                   \
-  js/binary/arith_test.js                                              \
-  js/binary/constants.js                                               \
-  js/binary/decoder.js                                                 \
-  js/binary/decoder_test.js                                            \
-  js/binary/encoder.js                                                 \
-  js/binary/message_test.js                                            \
-  js/binary/proto_test.js                                              \
-  js/binary/reader.js                                                  \
-  js/binary/reader_test.js                                             \
-  js/binary/utils.js                                                   \
-  js/binary/utils_test.js                                              \
-  js/binary/writer.js                                                  \
-  js/binary/writer_test.js                                             \
-  js/commonjs/export.js                                                \
-  js/commonjs/export_asserts.js                                        \
-  js/commonjs/export_testdeps.js                                       \
-  js/commonjs/import_test.js                                           \
-  js/commonjs/jasmine.json                                             \
-  js/commonjs/rewrite_tests_for_commonjs.js                            \
-  js/commonjs/strict_test.js                                           \
-  js/commonjs/test6/test6.proto                                        \
-  js/commonjs/test7/test7.proto                                        \
-  js/compatibility_tests/v3.0.0/binary/arith_test.js                   \
-  js/compatibility_tests/v3.0.0/binary/decoder_test.js                 \
-  js/compatibility_tests/v3.0.0/binary/proto_test.js                   \
-  js/compatibility_tests/v3.0.0/binary/reader_test.js                  \
-  js/compatibility_tests/v3.0.0/binary/utils_test.js                   \
-  js/compatibility_tests/v3.0.0/binary/writer_test.js                  \
-  js/compatibility_tests/v3.0.0/commonjs/export_asserts.js             \
-  js/compatibility_tests/v3.0.0/commonjs/export_testdeps.js            \
-  js/compatibility_tests/v3.0.0/commonjs/import_test.js                \
-  js/compatibility_tests/v3.0.0/commonjs/jasmine.json                  \
-  js/compatibility_tests/v3.0.0/commonjs/rewrite_tests_for_commonjs.js \
-  js/compatibility_tests/v3.0.0/commonjs/test6/test6.proto             \
-  js/compatibility_tests/v3.0.0/commonjs/test7/test7.proto             \
-  js/compatibility_tests/v3.0.0/data.proto                             \
-  js/compatibility_tests/v3.0.0/debug_test.js                          \
-  js/compatibility_tests/v3.0.0/jasmine1.json                          \
-  js/compatibility_tests/v3.0.0/jasmine2.json                          \
-  js/compatibility_tests/v3.0.0/jasmine3.json                          \
-  js/compatibility_tests/v3.0.0/message_test.js                        \
-  js/compatibility_tests/v3.0.0/proto3_test.js                         \
-  js/compatibility_tests/v3.0.0/proto3_test.proto                      \
-  js/compatibility_tests/v3.0.0/test2.proto                            \
-  js/compatibility_tests/v3.0.0/test3.proto                            \
-  js/compatibility_tests/v3.0.0/test4.proto                            \
-  js/compatibility_tests/v3.0.0/test5.proto                            \
-  js/compatibility_tests/v3.0.0/testbinary.proto                       \
-  js/compatibility_tests/v3.0.0/testempty.proto                        \
-  js/compatibility_tests/v3.0.0/test.proto                             \
-  js/compatibility_tests/v3.0.0/test.sh                                \
-  js/compatibility_tests/v3.1.0/testempty.proto                        \
-  js/compatibility_tests/v3.1.0/testbinary.proto                       \
-  js/compatibility_tests/v3.1.0/test5.proto                            \
-  js/compatibility_tests/v3.1.0/test4.proto                            \
-  js/compatibility_tests/v3.1.0/test3.proto                            \
-  js/compatibility_tests/v3.1.0/test2.proto                            \
-  js/compatibility_tests/v3.1.0/test.proto                             \
-  js/compatibility_tests/v3.1.0/proto3_test.proto                      \
-  js/compatibility_tests/v3.1.0/proto3_test.js                         \
-  js/compatibility_tests/v3.1.0/message_test.js                        \
-  js/compatibility_tests/v3.1.0/maps_test.js                           \
-  js/compatibility_tests/v3.1.0/debug_test.js                          \
-  js/compatibility_tests/v3.1.0/data.proto                             \
-  js/compatibility_tests/v3.1.0/commonjs/test7/test7.proto             \
-  js/compatibility_tests/v3.1.0/commonjs/test6/test6.proto             \
-  js/compatibility_tests/v3.1.0/binary/writer_test.js                  \
-  js/compatibility_tests/v3.1.0/binary/utils_test.js                   \
-  js/compatibility_tests/v3.1.0/binary/reader_test.js                  \
-  js/compatibility_tests/v3.1.0/binary/proto_test.js                   \
-  js/compatibility_tests/v3.1.0/binary/decoder_test.js                 \
-  js/compatibility_tests/v3.1.0/binary/arith_test.js                   \
-  js/data.proto                                                        \
-  js/debug.js                                                          \
-  js/debug_test.js                                                     \
-  js/experimental/runtime/kernel/message_set.js                        \
-  js/experimental/runtime/kernel/message_set_test.js                   \
-  js/experimental/runtime/kernel/tag.js                                \
-  js/experimental/runtime/kernel/tag_test.js                           \
-  js/gulpfile.js                                                       \
-  js/jasmine.json                                                      \
-  js/map.js                                                            \
-  js/maps_test.js                                                      \
-  js/message.js                                                        \
-  js/message_test.js                                                   \
-  js/node_loader.js                                                    \
-  js/package.json                                                      \
-  js/proto3_test.js                                                    \
-  js/proto3_test.proto                                                 \
-  js/test.proto                                                        \
-  js/test2.proto                                                       \
-  js/test3.proto                                                       \
-  js/test4.proto                                                       \
-  js/test5.proto                                                       \
-  js/test8.proto                                                       \
-  js/test9.proto                                                       \
-  js/test10.proto                                                      \
-  js/test11.proto                                                      \
-  js/test12.proto                                                      \
-  js/test13.proto                                                      \
-  js/test14.proto                                                      \
-  js/test15.proto                                                      \
-  js/test_bootstrap.js                                                 \
-  js/testbinary.proto                                                  \
-  js/testempty.proto                                                   \
-  js/testlargenumbers.proto                                            \
-  js/experimental/runtime/testing/jasmine_protobuf.js                  \
-  js/experimental/runtime/testing/ensure_custom_equality_test.js       \
-  js/experimental/runtime/testing/binary/test_message.js               \
-  js/experimental/runtime/kernel/writer_test.js                        \
-  js/experimental/runtime/kernel/writer.js                             \
-  js/experimental/runtime/kernel/wire_type.js                          \
-  js/experimental/runtime/kernel/uint8arrays_test.js                   \
-  js/experimental/runtime/kernel/uint8arrays.js                        \
-  js/experimental/runtime/kernel/uint32_test_pairs.js                  \
-  js/experimental/runtime/kernel/typed_arrays_test.js                  \
-  js/experimental/runtime/kernel/typed_arrays.js                       \
-  js/experimental/runtime/kernel/textencoding_test.js                  \
-  js/experimental/runtime/kernel/textencoding.js                       \
-  js/experimental/runtime/kernel/storage.js                            \
-  js/experimental/runtime/kernel/sint64_test_pairs.js                  \
-  js/experimental/runtime/kernel/sint32_test_pairs.js                  \
-  js/experimental/runtime/kernel/sfixed64_test_pairs.js                \
-  js/experimental/runtime/kernel/sfixed32_test_pairs.js                \
-  js/experimental/runtime/kernel/reader_test.js                        \
-  js/experimental/runtime/kernel/reader.js                             \
-  js/experimental/runtime/kernel/packed_uint32_test_pairs.js           \
-  js/experimental/runtime/kernel/packed_sint64_test_pairs.js           \
-  js/experimental/runtime/kernel/packed_sint32_test_pairs.js           \
-  js/experimental/runtime/kernel/packed_sfixed64_test_pairs.js         \
-  js/experimental/runtime/kernel/packed_sfixed32_test_pairs.js         \
-  js/experimental/runtime/kernel/packed_int64_test_pairs.js            \
-  js/experimental/runtime/kernel/packed_int32_test_pairs.js            \
-  js/experimental/runtime/kernel/packed_float_test_pairs.js            \
-  js/experimental/runtime/kernel/packed_fixed32_test_pairs.js          \
-  js/experimental/runtime/kernel/packed_double_test_pairs.js           \
-  js/experimental/runtime/kernel/packed_bool_test_pairs.js             \
-  js/experimental/runtime/kernel/kernel_test.js                        \
-  js/experimental/runtime/kernel/kernel_repeated_test.js               \
-  js/experimental/runtime/kernel/kernel_compatibility_test.js          \
-  js/experimental/runtime/kernel/kernel.js                             \
-  js/experimental/runtime/kernel/internal_message.js                   \
-  js/experimental/runtime/kernel/int64_test_pairs.js                   \
-  js/experimental/runtime/kernel/int32_test_pairs.js                   \
-  js/experimental/runtime/kernel/indexer_test.js                       \
-  js/experimental/runtime/kernel/indexer.js                            \
-  js/experimental/runtime/kernel/float_test_pairs.js                   \
-  js/experimental/runtime/kernel/fixed32_test_pairs.js                 \
-  js/experimental/runtime/kernel/field.js                              \
-  js/experimental/runtime/kernel/double_test_pairs.js                  \
-  js/experimental/runtime/kernel/conformance/wire_format.js            \
-  js/experimental/runtime/kernel/conformance/test_all_types_proto3.js  \
-  js/experimental/runtime/kernel/conformance/test_all_types_proto2.js  \
-  js/experimental/runtime/kernel/conformance/conformance_testee_runner_node.js \
-  js/experimental/runtime/kernel/conformance/conformance_testee.js     \
-  js/experimental/runtime/kernel/conformance/conformance_response.js   \
-  js/experimental/runtime/kernel/conformance/conformance_request.js    \
-  js/experimental/runtime/kernel/buffer_decoder_test.js                \
-  js/experimental/runtime/kernel/buffer_decoder_helper.js              \
-  js/experimental/runtime/kernel/buffer_decoder.js                     \
-  js/experimental/runtime/kernel/bool_test_pairs.js                    \
-  js/experimental/runtime/kernel/binary_storage_test.js                \
-  js/experimental/runtime/kernel/binary_storage.js                     \
-  js/experimental/runtime/internal/checks_test.js                      \
-  js/experimental/runtime/internal/checks.js                           \
-  js/experimental/runtime/int64_test.js                                \
-  js/experimental/runtime/int64.js                                     \
-  js/experimental/runtime/bytestring_test.js                           \
-  js/experimental/runtime/bytestring_internal.js                       \
-  js/experimental/runtime/bytestring.js                                \
-  js/experimental/benchmarks/code_size/kernel/popular_types.js         \
-  js/experimental/benchmarks/code_size/kernel/all_types.js             \
-  js/experimental/benchmarks/code_size/code_size_base.js               \
-  js/experimental/benchmarks/code_size/apps_jspb/popular_types_proto3.js \
-  js/experimental/benchmarks/code_size/apps_jspb/popular_types_proto2.js \
-  js/experimental/benchmarks/code_size/apps_jspb/all_types_proto3.js \
-  js/experimental/benchmarks/code_size/apps_jspb/all_types_proto2.js
+all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(java_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(php_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST)
 
-all_EXTRA_DIST=$(csharp_EXTRA_DIST) $(java_EXTRA_DIST) $(objectivec_EXTRA_DIST) $(php_EXTRA_DIST) $(python_EXTRA_DIST) $(ruby_EXTRA_DIST) $(js_EXTRA_DIST)
-
+# Note: please keep this in sync with the common_dist_files rule in BUILD.bazel.
 EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   autogen.sh                                        \
   generate_descriptor_proto.sh                      \
@@ -1387,16 +1204,22 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   CONTRIBUTORS.txt                                  \
   CHANGES.txt                                       \
   update_file_lists.sh                              \
-  BUILD                                             \
+  BUILD.bazel                                       \
   WORKSPACE                                         \
+  CMakeLists.txt                                    \
+  build_defs/BUILD.bazel                            \
+  build_defs/cc_proto_blacklist_test.bzl            \
+  build_defs/compiler_config_setting.bzl            \
+  build_defs/cpp_opts.bzl                           \
+  build_files_updated_unittest.sh                   \
   cmake/CMakeLists.txt                              \
   cmake/README.md                                   \
   cmake/conformance.cmake                           \
   cmake/examples.cmake                              \
   cmake/extract_includes.bat.in                     \
   cmake/install.cmake                               \
-  cmake/libprotobuf.cmake                           \
   cmake/libprotobuf-lite.cmake                      \
+  cmake/libprotobuf.cmake                           \
   cmake/libprotoc.cmake                             \
   cmake/protobuf-config-version.cmake.in            \
   cmake/protobuf-config.cmake.in                    \
@@ -1407,14 +1230,12 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   cmake/protoc.cmake                                \
   cmake/tests.cmake                                 \
   cmake/version.rc.in                               \
-  compiler_config_setting.bzl                       \
-  build_files_updated_unittest.sh                   \
-  cc_proto_blacklist_test.bzl                       \
+  csharp/BUILD.bazel                                \
   editors/README.txt                                \
   editors/proto.vim                                 \
   editors/protobuf-mode.el                          \
   examples/AddPerson.java                           \
-  examples/BUILD                                    \
+  examples/BUILD.bazel                              \
   examples/CMakeLists.txt                           \
   examples/ListPeople.java                          \
   examples/Makefile                                 \
@@ -1434,15 +1255,17 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   examples/list_people.dart                         \
   examples/list_people.py                           \
   examples/pubspec.yaml                             \
+  conformance/BUILD.bazel                           \
+  conformance/defs.bzl                              \
   maven_install.json                                \
+  php/BUILD.bazel                                   \
   protobuf.bzl                                      \
   protobuf_deps.bzl                                 \
   protobuf_release.bzl                              \
   protobuf_version.bzl                              \
+  ruby/BUILD.bazel                                  \
   third_party/zlib.BUILD                            \
-  util/python/BUILD                                 \
-  internal.bzl
-
+  util/python/BUILD.bazel
 
 # Deletes all the files generated by autogen.sh.
 MAINTAINERCLEANFILES =   \

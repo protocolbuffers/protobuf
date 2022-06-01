@@ -43,6 +43,7 @@
 #include <vector>
 #include <google/protobuf/stubs/common.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -188,9 +189,9 @@ typedef GeneratorContext OutputDirectory;
 // Several code generators treat the parameter argument as holding a
 // list of options separated by commas.  This helper function parses
 // a set of comma-delimited name/value pairs: e.g.,
-//   "foo=bar,baz,qux=corge"
+//   "foo=bar,baz,moo=corge"
 // parses to the pairs:
-//   ("foo", "bar"), ("baz", ""), ("qux", "corge")
+//   ("foo", "bar"), ("baz", ""), ("moo", "corge")
 PROTOC_EXPORT void ParseGeneratorParameter(
     const std::string&, std::vector<std::pair<std::string, std::string> >*);
 

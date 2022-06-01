@@ -1,1 +1,0 @@
-package(default_visibility = ["//java:__subpackages__"])

@@ -56,17 +56,14 @@ ZEND_BEGIN_MODULE_GLOBALS(protobuf)
   // Set by the user to make the descriptor pool persist between requests.
   zend_bool keep_descriptor_pool_after_request;
 
-  // Currently we make the generated pool a "global", which means that if a user
-  // does explicitly create threads within their request, the other threads will
-  // get different results from DescriptorPool::getGeneratedPool(). We require
-  // that all descriptors are loaded from the main thread.
-  zval generated_pool;
+  // Set by the user to make the descriptor pool persist between requests.
+  zend_class_entry* constructing_class;
 
-  // A upb_symtab that we are saving for the next request so that we don't have
+  // A upb_DefPool that we are saving for the next request so that we don't have
   // to rebuild it from scratch. When keep_descriptor_pool_after_request==true,
-  // we steal the upb_symtab from the global DescriptorPool object just before
+  // we steal the upb_DefPool from the global DescriptorPool object just before
   // destroying it.
-  upb_symtab *global_symtab;
+  upb_DefPool *global_symtab;
 
   // Object cache (see interface in protobuf.h).
   HashTable object_cache;
@@ -85,14 +82,14 @@ ZEND_END_MODULE_GLOBALS(protobuf)
 void free_protobuf_globals(zend_protobuf_globals *globals) {
   zend_hash_destroy(&globals->name_msg_cache);
   zend_hash_destroy(&globals->name_enum_cache);
-  upb_symtab_free(globals->global_symtab);
+  upb_DefPool_Free(globals->global_symtab);
   globals->global_symtab = NULL;
 }
 
 ZEND_DECLARE_MODULE_GLOBALS(protobuf)
 
-const zval *get_generated_pool() {
-  return &PROTOBUF_G(generated_pool);
+upb_DefPool *get_global_symtab() {
+  return PROTOBUF_G(global_symtab);
 }
 
 // This is a PHP extension (not a Zend extension). What follows is a summary of
@@ -159,7 +156,6 @@ static PHP_GSHUTDOWN_FUNCTION(protobuf) {
 }
 
 static PHP_GINIT_FUNCTION(protobuf) {
-  ZVAL_NULL(&protobuf_globals->generated_pool);
   protobuf_globals->global_symtab = NULL;
 }
 
@@ -171,16 +167,16 @@ static PHP_GINIT_FUNCTION(protobuf) {
 static PHP_RINIT_FUNCTION(protobuf) {
   // Create the global generated pool.
   // Reuse the symtab (if any) left to us by the last request.
-  upb_symtab *symtab = PROTOBUF_G(global_symtab);
+  upb_DefPool *symtab = PROTOBUF_G(global_symtab);
   if (!symtab) {
-    PROTOBUF_G(global_symtab) = symtab = upb_symtab_new();
+    PROTOBUF_G(global_symtab) = symtab = upb_DefPool_New();
     zend_hash_init(&PROTOBUF_G(name_msg_cache), 64, NULL, NULL, 0);
     zend_hash_init(&PROTOBUF_G(name_enum_cache), 64, NULL, NULL, 0);
   }
-  DescriptorPool_CreateWithSymbolTable(&PROTOBUF_G(generated_pool), symtab);
 
   zend_hash_init(&PROTOBUF_G(object_cache), 64, NULL, NULL, 0);
   zend_hash_init(&PROTOBUF_G(descriptors), 64, NULL, ZVAL_PTR_DTOR, 0);
+  PROTOBUF_G(constructing_class) = NULL;
 
   return SUCCESS;
 }
@@ -196,7 +192,6 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
     free_protobuf_globals(ZEND_MODULE_GLOBALS_BULK(protobuf));
   }
 
-  zval_dtor(&PROTOBUF_G(generated_pool));
   zend_hash_destroy(&PROTOBUF_G(object_cache));
   zend_hash_destroy(&PROTOBUF_G(descriptors));
 
@@ -246,23 +241,23 @@ bool ObjCache_Get(const void *upb_obj, zval *val) {
 // Name Cache.
 // -----------------------------------------------------------------------------
 
-void NameMap_AddMessage(const upb_msgdef *m) {
-  char *k = GetPhpClassname(upb_msgdef_file(m), upb_msgdef_fullname(m));
+void NameMap_AddMessage(const upb_MessageDef *m) {
+  char *k = GetPhpClassname(upb_MessageDef_File(m), upb_MessageDef_FullName(m));
   zend_hash_str_add_ptr(&PROTOBUF_G(name_msg_cache), k, strlen(k), (void*)m);
   free(k);
 }
 
-void NameMap_AddEnum(const upb_enumdef *e) {
-  char *k = GetPhpClassname(upb_enumdef_file(e), upb_enumdef_fullname(e));
+void NameMap_AddEnum(const upb_EnumDef *e) {
+  char *k = GetPhpClassname(upb_EnumDef_File(e), upb_EnumDef_FullName(e));
   zend_hash_str_add_ptr(&PROTOBUF_G(name_enum_cache), k, strlen(k), (void*)e);
   free(k);
 }
 
-const upb_msgdef *NameMap_GetMessage(zend_class_entry *ce) {
-  const upb_msgdef *ret =
+const upb_MessageDef *NameMap_GetMessage(zend_class_entry *ce) {
+  const upb_MessageDef *ret =
       zend_hash_find_ptr(&PROTOBUF_G(name_msg_cache), ce->name);
 
-  if (!ret && ce->create_object) {
+  if (!ret && ce->create_object && ce != PROTOBUF_G(constructing_class)) {
 #if PHP_VERSION_ID < 80000
     zval tmp;
     zval zv;
@@ -282,10 +277,20 @@ const upb_msgdef *NameMap_GetMessage(zend_class_entry *ce) {
   return ret;
 }
 
-const upb_enumdef *NameMap_GetEnum(zend_class_entry *ce) {
-  const upb_enumdef *ret =
+const upb_EnumDef *NameMap_GetEnum(zend_class_entry *ce) {
+  const upb_EnumDef *ret =
       zend_hash_find_ptr(&PROTOBUF_G(name_enum_cache), ce->name);
   return ret;
+}
+
+void NameMap_EnterConstructor(zend_class_entry* ce) {
+  assert(!PROTOBUF_G(constructing_class));
+  PROTOBUF_G(constructing_class) = ce;
+}
+
+void NameMap_ExitConstructor(zend_class_entry* ce) {
+  assert(PROTOBUF_G(constructing_class) == ce);
+  PROTOBUF_G(constructing_class) = NULL;
 }
 
 // -----------------------------------------------------------------------------

@@ -41,6 +41,10 @@ import com.google.protobuf.testing.Proto3Testing.Proto3MessageWithMaps;
 
 /** Schemas to support testing. */
 public class TestSchemas {
+
+  private TestSchemas() {
+  }
+
   public static final Schema<Proto2Message> genericProto2Schema =
       new ManifestSchemaFactory().createSchema(Proto2Message.class);
   public static final Schema<Proto3Message> genericProto3Schema =

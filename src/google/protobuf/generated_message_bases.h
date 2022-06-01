@@ -35,11 +35,11 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_MESSAGE_BASES_H__
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_BASES_H__
 
-#include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message.h>
+#include <google/protobuf/parse_context.h>
 
 // Must come last:
 #include <google/protobuf/port_def.inc>
@@ -71,8 +71,8 @@ class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
 
   void SetCachedSize(int size) const final { _cached_size_.Set(size); }
 
-  static void MergeImpl(Message* to, const Message& from);
-  static void CopyImpl(Message* to, const Message& from);
+  static void MergeImpl(Message& to, const Message& from);
+  static void CopyImpl(Message& to, const Message& from);
   void InternalSwap(ZeroFieldsBase* other);
 
   mutable internal::CachedSize _cached_size_;

@@ -41,6 +41,7 @@ import java.util.RandomAccess;
 
 /** Helper methods used by schemas. */
 @ExperimentalApi
+@CheckReturnValue
 final class SchemaUtil {
   private static final Class<?> GENERATED_MESSAGE_CLASS = getGeneratedMessageClass();
   private static final UnknownFieldSchema<?, ?> PROTO2_UNKNOWN_FIELD_SET_SCHEMA =
@@ -980,6 +981,7 @@ final class SchemaUtil {
   }
 
   /** Stores an unrecognized enum value as an unknown value. */
+  @CanIgnoreReturnValue
   static <UT, UB> UB storeUnknownEnum(
       int number, int enumValue, UB unknownFields, UnknownFieldSchema<UT, UB> unknownFieldSchema) {
     if (unknownFields == null) {

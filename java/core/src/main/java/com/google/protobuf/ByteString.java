@@ -236,6 +236,11 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     return size() == 0;
   }
 
+  /** Returns an empty {@code ByteString} of size {@code 0}. */
+  public static final ByteString empty() {
+    return EMPTY;
+  }
+
   // =================================================================
   // Comparison
 
@@ -253,6 +258,38 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     return value & UNSIGNED_BYTE_MASK;
   }
 
+  /** Returns the numeric value of the given character in hex, or -1 if invalid. */
+  private static int hexDigit(char c) {
+    if (c >= '0' && c <= '9') {
+      return c - '0';
+    } else if (c >= 'A' && c <= 'F') {
+      return c - 'A' + 10;
+    } else if (c >= 'a' && c <= 'f') {
+      return c - 'a' + 10;
+    } else {
+      return -1;
+    }
+  }
+
+  /**
+   * Returns the numeric value of the given character at index in hexString.
+   *
+   * @throws NumberFormatException if the hexString character is invalid.
+   */
+  private static int extractHexDigit(String hexString, int index) {
+    int digit = hexDigit(hexString.charAt(index));
+    if (digit == -1) {
+      throw new NumberFormatException(
+          "Invalid hexString "
+              + hexString
+              + " must only contain [0-9a-fA-F] but contained "
+              + hexString.charAt(index)
+              + " at index "
+              + index);
+    }
+    return digit;
+  }
+
   /**
    * Compares two {@link ByteString}s lexicographically, treating their contents as unsigned byte
    * values between 0 and 255 (inclusive).
@@ -268,8 +305,9 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
           ByteIterator latterBytes = latter.iterator();
 
           while (formerBytes.hasNext() && latterBytes.hasNext()) {
-            int result = Integer.valueOf(toInt(formerBytes.nextByte()))
-                .compareTo(toInt(latterBytes.nextByte()));
+            int result =
+                Integer.valueOf(toInt(formerBytes.nextByte()))
+                    .compareTo(toInt(latterBytes.nextByte()));
             if (result != 0) {
               return result;
             }
@@ -279,8 +317,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       };
 
   /**
-   * Returns a {@link Comparator} which compares {@link ByteString}-s lexicographically
-   * as sequences of unsigned byte values between 0 and 255, inclusive.
+   * Returns a {@link Comparator} which compares {@link ByteString}-s lexicographically as sequences
+   * of unsigned bytes (i.e. values between 0 and 255, inclusive).
    *
    * <p>For example, {@code (byte) -1} is considered to be greater than {@code (byte) 1} because it
    * is interpreted as an unsigned value, {@code 255}:
@@ -341,6 +379,30 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    */
   public final boolean endsWith(ByteString suffix) {
     return size() >= suffix.size() && substring(size() - suffix.size()).equals(suffix);
+  }
+
+  // =================================================================
+  // String -> ByteString
+
+  /**
+   * Returns a {@code ByteString} from a hexadecimal String. Alternative CharSequences should use
+   * {@link ByteStrings#decode(CharSequence, BaseEncoding)}
+   *
+   * @param hexString String of hexadecimal digits to create {@code ByteString} from.
+   * @throws NumberFormatException if the hexString does not contain a parsable hex String.
+   */
+  public static ByteString fromHex(@CompileTimeConstant String hexString) {
+    if (hexString.length() % 2 != 0) {
+      throw new NumberFormatException(
+          "Invalid hexString " + hexString + " of length " + hexString.length() + " must be even.");
+    }
+    byte[] bytes = new byte[hexString.length() / 2];
+    for (int i = 0; i < bytes.length; i++) {
+      int d1 = extractHexDigit(hexString, 2 * i);
+      int d2 = extractHexDigit(hexString, 2 * i + 1);
+      bytes[i] = (byte) (d1 << 4 | d2);
+    }
+    return new LiteralByteString(bytes);
   }
 
   // =================================================================

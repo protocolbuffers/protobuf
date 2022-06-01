@@ -37,22 +37,26 @@
 
 #include <google/protobuf/unknown_field_set.h>
 
+#include <string>
 #include <unordered_set>
+#include <vector>
 
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/unittest_lite.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/mutex.h>
+#include <google/protobuf/text_format.h>
 #include <google/protobuf/wire_format.h>
+#include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/time.h>
+#include <google/protobuf/test_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 namespace google {
@@ -62,7 +66,7 @@ using internal::WireFormat;
 
 class UnknownFieldSetTest : public testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     descriptor_ = unittest::TestAllTypes::descriptor();
     TestUtil::SetAllFields(&all_fields_);
     all_fields_.SerializeToString(&all_fields_data_);
@@ -130,12 +134,12 @@ TEST_F(UnknownFieldSetTest, AllFieldsPresent) {
     }
   }
 
-  std::unordered_set<uint32> unknown_tags;
+  std::unordered_set<uint32_t> unknown_tags;
   for (int i = 0; i < unknown_fields_->field_count(); i++) {
     unknown_tags.insert(unknown_fields_->field(i).number());
   }
 
-  for (uint32 t : unknown_tags) {
+  for (uint32_t t : unknown_tags) {
     EXPECT_NE(descriptor_->FindFieldByNumber(t), nullptr);
   }
 
@@ -200,8 +204,9 @@ TEST_F(UnknownFieldSetTest, SerializeFastAndSlowAreEquivalent) {
   slow_buffer.resize(size);
   fast_buffer.resize(size);
 
-  uint8* target = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&fast_buffer));
-  uint8* result = WireFormat::SerializeUnknownFieldsToArray(
+  uint8_t* target =
+      reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&fast_buffer));
+  uint8_t* result = WireFormat::SerializeUnknownFieldsToArray(
       empty_message_.unknown_fields(), target);
   EXPECT_EQ(size, result - target);
 
@@ -302,6 +307,8 @@ TEST_F(UnknownFieldSetTest, MergeFrom) {
 
   destination.MergeFrom(source);
 
+  std::string destination_text;
+  TextFormat::PrintToString(destination, &destination_text);
   EXPECT_EQ(
       // Note:  The ordering of fields here depends on the ordering of adds
       //   and merging, above.
@@ -309,7 +316,7 @@ TEST_F(UnknownFieldSetTest, MergeFrom) {
       "3: 2\n"
       "2: 3\n"
       "3: 4\n",
-      destination.DebugString());
+      destination_text);
 }
 
 TEST_F(UnknownFieldSetTest, MergeFromMessage) {
@@ -322,6 +329,8 @@ TEST_F(UnknownFieldSetTest, MergeFromMessage) {
 
   destination.mutable_unknown_fields()->MergeFromMessage(source);
 
+  std::string destination_text;
+  TextFormat::PrintToString(destination, &destination_text);
   EXPECT_EQ(
       // Note:  The ordering of fields here depends on the ordering of adds
       //   and merging, above.
@@ -329,7 +338,7 @@ TEST_F(UnknownFieldSetTest, MergeFromMessage) {
       "3: 2\n"
       "2: 3\n"
       "3: 4\n",
-      destination.DebugString());
+      destination_text);
 }
 
 TEST_F(UnknownFieldSetTest, MergeFromMessageLite) {
@@ -531,38 +540,61 @@ TEST_F(UnknownFieldSetTest, UnknownEnumValue) {
 TEST_F(UnknownFieldSetTest, SpaceUsedExcludingSelf) {
   UnknownFieldSet empty;
   empty.AddVarint(1, 0);
-  EXPECT_EQ(sizeof(std::vector<UnknownField>) + sizeof(UnknownField),
-            empty.SpaceUsedExcludingSelf());
+  EXPECT_EQ(sizeof(UnknownField), empty.SpaceUsedExcludingSelf());
 }
 
 TEST_F(UnknownFieldSetTest, SpaceUsed) {
+  // Keep shadow vectors to avoid making assumptions about its capacity growth.
+  // We imitate the push back calls here to determine the expected capacity.
+  std::vector<UnknownField> shadow_vector, shadow_vector_group;
   unittest::TestEmptyMessage empty_message;
 
   // Make sure an unknown field set has zero space used until a field is
   // actually added.
-  size_t base_size = empty_message.SpaceUsedLong();
+  const size_t base = empty_message.SpaceUsedLong();
+  std::string* str = nullptr;
+  UnknownFieldSet* group = nullptr;
+  const auto total = [&] {
+    size_t result = base;
+    result += shadow_vector.capacity() * sizeof(UnknownField);
+    result += shadow_vector_group.capacity() * sizeof(UnknownField);
+    if (str != nullptr) {
+      result += sizeof(std::string);
+      static const size_t sso_capacity = std::string().capacity();
+      if (str->capacity() > sso_capacity) result += str->capacity();
+    }
+    if (group != nullptr) {
+      result += sizeof(UnknownFieldSet);
+    }
+    return result;
+  };
+
   UnknownFieldSet* unknown_fields = empty_message.mutable_unknown_fields();
-  EXPECT_EQ(base_size, empty_message.SpaceUsedLong());
+  EXPECT_EQ(total(), empty_message.SpaceUsedLong());
 
   // Make sure each thing we add to the set increases the SpaceUsedLong().
   unknown_fields->AddVarint(1, 0);
-  EXPECT_LT(base_size, empty_message.SpaceUsedLong());
-  base_size = empty_message.SpaceUsedLong();
+  shadow_vector.emplace_back();
+  EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Var";
 
-  std::string* str = unknown_fields->AddLengthDelimited(1);
-  EXPECT_LT(base_size, empty_message.SpaceUsedLong());
-  base_size = empty_message.SpaceUsedLong();
+  str = unknown_fields->AddLengthDelimited(1);
+  shadow_vector.emplace_back();
+  EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Str";
 
   str->assign(sizeof(std::string) + 1, 'x');
-  EXPECT_LT(base_size, empty_message.SpaceUsedLong());
-  base_size = empty_message.SpaceUsedLong();
+  EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Str2";
 
-  UnknownFieldSet* group = unknown_fields->AddGroup(1);
-  EXPECT_LT(base_size, empty_message.SpaceUsedLong());
-  base_size = empty_message.SpaceUsedLong();
+  group = unknown_fields->AddGroup(1);
+  shadow_vector.emplace_back();
+  EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Group";
 
   group->AddVarint(1, 0);
-  EXPECT_LT(base_size, empty_message.SpaceUsedLong());
+  shadow_vector_group.emplace_back();
+  EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Group2";
+
+  unknown_fields->AddVarint(1, 0);
+  shadow_vector.emplace_back();
+  EXPECT_EQ(total(), empty_message.SpaceUsedLong()) << "Var2";
 }
 
 
@@ -646,6 +678,7 @@ TEST_F(UnknownFieldSetTest, DeleteByNumber) {
                       MAKE_VECTOR(kExpectedFieldNumbers5));
 }
 #undef MAKE_VECTOR
+
 }  // namespace
 
 }  // namespace protobuf

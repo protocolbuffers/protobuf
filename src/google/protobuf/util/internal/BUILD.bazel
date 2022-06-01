@@ -1,0 +1,468 @@
+################################################################################
+# Protocol Buffers C++ util internals.
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library", "cc_test")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+package(
+    default_visibility = [
+        "//src/google/protobuf/util:__pkg__",
+        "//pkg:__pkg__",
+    ],
+)
+
+cc_library(
+    name = "constants",
+    hdrs = ["constants.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        "//src/google/protobuf/stubs",
+    ],
+)
+
+cc_library(
+    name = "datapiece",
+    srcs = ["datapiece.cc"],
+    hdrs = ["datapiece.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":constants",
+        ":utility",
+        "//src/google/protobuf",
+        "//src/google/protobuf/stubs",
+    ],
+)
+
+cc_library(
+    name = "default_value",
+    srcs = ["default_value_objectwriter.cc"],
+    hdrs = ["default_value_objectwriter.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":datapiece",
+        ":object_writer",
+        ":type_info",
+        ":utility",
+        "//src/google/protobuf/stubs",
+    ],
+)
+
+cc_test(
+    name = "default_value_objectwriter_test",
+    srcs = ["default_value_objectwriter_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":default_value",
+        ":default_value_test_cc_proto",
+        ":expecting_objectwriter",
+        ":type_info_test_helper",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "expecting_objectwriter",
+    testonly = 1,
+    hdrs = ["expecting_objectwriter.h"],
+    strip_include_prefix = "/src",
+    deps = [":object_writer"],
+)
+
+cc_library(
+    name = "field_mask_utility",
+    srcs = ["field_mask_utility.cc"],
+    hdrs = ["field_mask_utility.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        ":utility",
+        "//src/google/protobuf/stubs",
+    ],
+)
+
+cc_library(
+    name = "json",
+    srcs = [
+        "json_escaping.cc",
+        "json_objectwriter.cc",
+        "json_stream_parser.cc",
+    ],
+    hdrs = [
+        "json_escaping.h",
+        "json_objectwriter.h",
+        "json_stream_parser.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":object_writer",
+        ":utility",
+        "//src/google/protobuf",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+    ],
+)
+
+cc_test(
+    name = "json_objectwriter_test",
+    srcs = ["json_objectwriter_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":json",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "json_stream_parser_test",
+    srcs = ["json_stream_parser_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":expecting_objectwriter",
+        ":json",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "mock_error_listener",
+    testonly = 1,
+    hdrs = ["mock_error_listener.h"],
+    strip_include_prefix = "/src",
+    deps = [":protostream"],
+)
+
+cc_library(
+    name = "object_writer",
+    srcs = ["object_writer.cc"],
+    hdrs = [
+        "object_source.h",
+        "object_writer.h",
+        "structured_objectwriter.h",
+    ],
+    strip_include_prefix = "/src",
+    deps = [
+        ":datapiece",
+        "//src/google/protobuf/stubs",
+    ],
+)
+
+cc_library(
+    name = "type_info",
+    srcs = ["type_info.cc"],
+    hdrs = ["type_info.h"],
+    strip_include_prefix = "/src",
+    deps = [
+        ":utility",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/util:type_resolver_util",
+    ],
+)
+
+cc_library(
+    name = "type_info_test_helper",
+    testonly = 1,
+    srcs = ["type_info_test_helper.cc"],
+    hdrs = ["type_info_test_helper.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":default_value",
+        ":protostream",
+        ":type_info",
+    ],
+)
+
+cc_library(
+    name = "protostream",
+    srcs = [
+        "error_listener.cc",
+        "proto_writer.cc",
+        "protostream_objectsource.cc",
+        "protostream_objectwriter.cc",
+    ],
+    hdrs = [
+        "error_listener.h",
+        "location_tracker.h",
+        "object_location_tracker.h",
+        "proto_writer.h",
+        "protostream_objectsource.h",
+        "protostream_objectwriter.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":constants",
+        ":datapiece",
+        ":field_mask_utility",
+        ":object_writer",
+        ":type_info",
+        ":utility",
+        "//src/google/protobuf",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/util:type_resolver_util",
+    ],
+)
+
+cc_test(
+    name = "protostream_objectsource_test",
+    srcs = ["protostream_objectsource_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":anys_cc_proto",
+        ":books_cc_proto",
+        ":expecting_objectwriter",
+        ":field_mask_cc_proto",
+        ":maps_cc_proto",
+        ":oneofs_cc_proto",
+        ":proto3_cc_proto",
+        ":protostream",
+        ":struct_cc_proto",
+        ":timestamp_duration_cc_proto",
+        ":type_info_test_helper",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "protostream_objectwriter_test",
+    srcs = ["protostream_objectwriter_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":anys_cc_proto",
+        ":books_cc_proto",
+        ":field_mask_cc_proto",
+        ":maps_cc_proto",
+        ":mock_error_listener",
+        ":oneofs_cc_proto",
+        ":proto3_cc_proto",
+        ":protostream",
+        ":struct_cc_proto",
+        ":timestamp_duration_cc_proto",
+        ":type_info_test_helper",
+        ":wrappers_cc_proto",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "utility",
+    srcs = ["utility.cc"],
+    hdrs = ["utility.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":constants",
+        "//src/google/protobuf",
+        "//src/google/protobuf/stubs",
+    ],
+)
+
+# Testing protos:
+
+proto_library(
+    name = "anys_proto",
+    testonly = 1,
+    srcs = ["testdata/anys.proto"],
+    strip_import_prefix = "/src",
+    deps = [
+        "//:any_proto",
+        "//:duration_proto",
+        "//:empty_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+        "//:wrappers_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "anys_cc_proto",
+    testonly = 1,
+    visibility = ["//src/google/protobuf/util:__pkg__"],
+    deps = [":anys_proto"],
+)
+
+proto_library(
+    name = "books_proto",
+    testonly = 1,
+    srcs = ["testdata/books.proto"],
+    strip_import_prefix = "/src",
+    deps = [":anys_proto"],
+)
+
+cc_proto_library(
+    name = "books_cc_proto",
+    testonly = 1,
+    deps = [":books_proto"],
+)
+
+proto_library(
+    name = "default_value_proto",
+    testonly = 1,
+    srcs = ["testdata/default_value.proto"],
+    strip_import_prefix = "/src",
+    deps = [
+        "//:any_proto",
+        "//:struct_proto",
+        "//:wrappers_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "default_value_cc_proto",
+    testonly = 1,
+    deps = [":default_value_proto"],
+)
+
+proto_library(
+    name = "default_value_test_proto",
+    testonly = 1,
+    srcs = ["testdata/default_value_test.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "default_value_test_cc_proto",
+    testonly = 1,
+    deps = [":default_value_test_proto"],
+)
+
+proto_library(
+    name = "field_mask_proto",
+    testonly = 1,
+    srcs = ["testdata/field_mask.proto"],
+    strip_import_prefix = "/src",
+    deps = ["//:field_mask_proto"],
+)
+
+cc_proto_library(
+    name = "field_mask_cc_proto",
+    testonly = 1,
+    deps = [":field_mask_proto"],
+)
+
+proto_library(
+    name = "maps_proto",
+    testonly = 1,
+    srcs = ["testdata/maps.proto"],
+    strip_import_prefix = "/src",
+    deps = ["//:any_proto"],
+)
+
+cc_proto_library(
+    name = "maps_cc_proto",
+    testonly = 1,
+    deps = [":maps_proto"],
+)
+
+proto_library(
+    name = "oneofs_proto",
+    testonly = 1,
+    srcs = ["testdata/oneofs.proto"],
+    strip_import_prefix = "/src",
+    deps = [
+        "//:any_proto",
+        "//:struct_proto",
+        "//:timestamp_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "oneofs_cc_proto",
+    testonly = 1,
+    deps = [":oneofs_proto"],
+)
+
+proto_library(
+    name = "proto3_proto",
+    testonly = 1,
+    srcs = ["testdata/proto3.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "proto3_cc_proto",
+    testonly = 1,
+    deps = [":proto3_proto"],
+)
+
+proto_library(
+    name = "struct_proto",
+    testonly = 1,
+    srcs = ["testdata/struct.proto"],
+    strip_import_prefix = "/src",
+    deps = ["//:struct_proto"],
+)
+
+cc_proto_library(
+    name = "struct_cc_proto",
+    testonly = 1,
+    deps = [":struct_proto"],
+)
+
+proto_library(
+    name = "timestamp_duration_proto",
+    testonly = 1,
+    srcs = ["testdata/timestamp_duration.proto"],
+    strip_import_prefix = "/src",
+    deps = [
+        "//:duration_proto",
+        "//:timestamp_proto",
+    ],
+)
+
+cc_proto_library(
+    name = "timestamp_duration_cc_proto",
+    testonly = 1,
+    deps = [":timestamp_duration_proto"],
+)
+
+proto_library(
+    name = "wrappers_proto",
+    testonly = 1,
+    srcs = ["testdata/wrappers.proto"],
+    strip_import_prefix = "/src",
+    deps = ["//:wrappers_proto"],
+)
+
+cc_proto_library(
+    name = "wrappers_cc_proto",
+    testonly = 1,
+    deps = [":wrappers_proto"],
+)
+
+################################################################################
+# Distribution packaging
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["**/*"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//src:__pkg__"],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob([
+        "*_test.cc",
+        "*unittest.cc",
+    ]) + [
+        "type_info_test_helper.cc",
+    ],
+)
+
+filegroup(
+    name = "test_proto_srcs",
+    srcs = glob(["testdata/*.proto"]),
+)

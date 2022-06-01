@@ -13,7 +13,11 @@ else
 fi
 
 # Pin the dockcross image since newer versions of the image break the build
-PINNED_DOCKCROSS_IMAGE_VERSION=dockcross/manylinux2014-aarch64:20210803-41e5c69
+# We use an older version of dockcross image that has gcc4.9.4 because it was built
+# before https://github.com/dockcross/dockcross/pull/449
+# Thanks to that, wheel build with this image aren't actually
+# compliant with manylinux2014, but only with manylinux_2_24
+PINNED_DOCKCROSS_IMAGE_VERSION=dockcross/manylinux2014-aarch64:20200929-608e6ac
 
 # running dockcross image without any arguments generates a wrapper
 # scripts that can be used to run commands under the dockcross image

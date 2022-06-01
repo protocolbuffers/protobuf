@@ -42,9 +42,9 @@ namespace internal {
 // in making a string replacement, how many bytes to add 0..255, and the offset
 // 0..64k-1 of the replacement string in remap_string.
 struct RemapEntry {
-  uint8 delete_bytes;
-  uint8 add_bytes;
-  uint16 bytes_offset;
+  uint8_t delete_bytes;
+  uint8_t add_bytes;
+  uint16_t bytes_offset;
 };
 
 // Exit type codes for state tables. All but the first get stuffed into
@@ -81,18 +81,18 @@ typedef enum {
 // byte value and 6 for space-optimized tables subscripted by only six
 // significant bits in UTF-8 continuation bytes.
 typedef struct {
-  const uint32 state0;
-  const uint32 state0_size;
-  const uint32 total_size;
+  const uint32_t state0;
+  const uint32_t state0_size;
+  const uint32_t total_size;
   const int max_expand;
   const int entry_shift;
   const int bytes_per_entry;
-  const uint32 losub;
-  const uint32 hiadd;
-  const uint8* state_table;
+  const uint32_t losub;
+  const uint32_t hiadd;
+  const uint8_t* state_table;
   const RemapEntry* remap_base;
-  const uint8* remap_string;
-  const uint8* fast_state;
+  const uint8_t* remap_string;
+  const uint8_t* fast_state;
 } UTF8StateMachineObj;
 
 typedef UTF8StateMachineObj UTF8ScanObj;
@@ -122,7 +122,7 @@ static const unsigned int utf8acceptnonsurrogates_BYTES = 1;
 static const unsigned int utf8acceptnonsurrogates_LOSUB = 0x20202020;
 static const unsigned int utf8acceptnonsurrogates_HIADD = 0x00000000;
 
-static const uint8 utf8acceptnonsurrogates[] = {
+static const uint8_t utf8acceptnonsurrogates[] = {
 // state[0] 0x000000 Byte 1
   0,   0,   0,   0,   0,   0,   0,   0,    0,   0,   0,   0,   0,   0,   0,   0,
   0,   0,   0,   0,   0,   0,   0,   0,    0,   0,   0,   0,   0,   0,   0,   0,
@@ -376,10 +376,12 @@ static const UTF8ScanObj utf8acceptnonsurrogates_obj = {
 
 // Return true if current Tbl pointer is within state0 range
 // Note that unsigned compare checks both ends of range simultaneously
-static inline bool InStateZero(const UTF8ScanObj* st, const uint8* Tbl) {
-  const uint8* Tbl0 = &st->state_table[st->state0];
-  return (static_cast<uint32>(Tbl - Tbl0) < st->state0_size);
+static inline bool InStateZero(const UTF8ScanObj* st, const uint8_t* Tbl) {
+  const uint8_t* Tbl0 = &st->state_table[st->state0];
+  return (static_cast<uint32_t>(Tbl - Tbl0) < st->state0_size);
 }
+
+namespace {
 
 // Scan a UTF-8 string based on state table.
 // Always scan complete UTF-8 characters
@@ -392,19 +394,19 @@ int UTF8GenericScan(const UTF8ScanObj* st,
   if (str_length == 0) return kExitOK;
 
   int eshift = st->entry_shift;
-  const uint8* isrc = reinterpret_cast<const uint8*>(str);
-  const uint8* src = isrc;
-  const uint8* srclimit = isrc + str_length;
-  const uint8* srclimit8 = str_length < 7 ? isrc : srclimit - 7;
-  const uint8* Tbl_0 = &st->state_table[st->state0];
+  const uint8_t* isrc = reinterpret_cast<const uint8_t*>(str);
+  const uint8_t* src = isrc;
+  const uint8_t* srclimit = isrc + str_length;
+  const uint8_t* srclimit8 = str_length < 7 ? isrc : srclimit - 7;
+  const uint8_t* Tbl_0 = &st->state_table[st->state0];
 
  DoAgain:
   // Do state-table scan
   int e = 0;
-  uint8 c;
-  const uint8* Tbl2 = &st->fast_state[0];
-  const uint32 losub = st->losub;
-  const uint32 hiadd = st->hiadd;
+  uint8_t c;
+  const uint8_t* Tbl2 = &st->fast_state[0];
+  const uint32_t losub = st->losub;
+  const uint32_t hiadd = st->hiadd;
   // Check initial few bytes one at a time until 8-byte aligned
   //----------------------------
   while ((((uintptr_t)src & 0x07) != 0) &&
@@ -418,12 +420,12 @@ int UTF8GenericScan(const UTF8ScanObj* st,
     // including slowing slightly on cr/lf/ht
     //----------------------------
     while (src < srclimit8) {
-      uint32 s0123 = (reinterpret_cast<const uint32 *>(src))[0];
-      uint32 s4567 = (reinterpret_cast<const uint32 *>(src))[1];
+      uint32_t s0123 = (reinterpret_cast<const uint32_t *>(src))[0];
+      uint32_t s4567 = (reinterpret_cast<const uint32_t *>(src))[1];
       src += 8;
       // This is a fast range check for all bytes in [lowsub..0x80-hiadd)
-      uint32 temp = (s0123 - losub) | (s0123 + hiadd) |
-                    (s4567 - losub) | (s4567 + hiadd);
+      uint32_t temp = (s0123 - losub) | (s0123 + hiadd) |
+                      (s4567 - losub) | (s4567 + hiadd);
       if ((temp & 0x80808080) != 0) {
         // We typically end up here on cr/lf/ht; src was incremented
         int e0123 = (Tbl2[src[-8]] | Tbl2[src[-7]]) |
@@ -446,7 +448,7 @@ int UTF8GenericScan(const UTF8ScanObj* st,
 
   // Byte-at-a-time scan
   //----------------------------
-  const uint8* Tbl = Tbl_0;
+  const uint8_t* Tbl = Tbl_0;
   while (src < srclimit) {
     c = *src;
     e = Tbl[c];
@@ -500,10 +502,10 @@ int UTF8GenericScanFastAscii(const UTF8ScanObj* st,
   *bytes_consumed = 0;
   if (str_length == 0) return kExitOK;
 
-  const uint8* isrc =  reinterpret_cast<const uint8*>(str);
-  const uint8* src = isrc;
-  const uint8* srclimit = isrc + str_length;
-  const uint8* srclimit8 = str_length < 7 ? isrc : srclimit - 7;
+  const uint8_t* isrc =  reinterpret_cast<const uint8_t*>(str);
+  const uint8_t* src = isrc;
+  const uint8_t* srclimit = isrc + str_length;
+  const uint8_t* srclimit8 = str_length < 7 ? isrc : srclimit - 7;
   int n;
   int rest_consumed;
   int exit_reason;
@@ -515,8 +517,9 @@ int UTF8GenericScanFastAscii(const UTF8ScanObj* st,
     }
     if (((uintptr_t)src & 0x07) == 0) {
       while ((src < srclimit8) &&
-             (((reinterpret_cast<const uint32*>(src)[0] |
-                reinterpret_cast<const uint32*>(src)[1]) & 0x80808080) == 0)) {
+             (((reinterpret_cast<const uint32_t*>(src)[0] |
+                reinterpret_cast<const uint32_t*>(src)[1]) &
+               0x80808080) == 0)) {
         src += 8;
       }
     }
@@ -539,7 +542,6 @@ int UTF8GenericScanFastAscii(const UTF8ScanObj* st,
 //   UTF-8 strings.  Since UTF-8 validation is only used for debugging
 //   anyway, we simply always return success if initialization hasn't
 //   occurred yet.
-namespace {
 
 bool module_initialized_ = false;
 

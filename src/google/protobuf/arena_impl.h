@@ -39,11 +39,15 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/port.h>
 
 #ifdef ADDRESS_SANITIZER
 #include <sanitizer/asan_interface.h>
 #endif  // ADDRESS_SANITIZER
 
+#include <google/protobuf/arenaz_sampler.h>
+
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 
@@ -177,6 +181,8 @@ class TaggedAllocationPolicyPtr {
   uintptr_t policy_;
 };
 
+enum class AllocationClient { kDefault, kArray };
+
 // A simple arena allocator. Calls to allocate functions must be properly
 // serialized by the caller, hence this class cannot be used as a general
 // purpose allocator in a multi-threaded program. It serves as a building block
@@ -208,11 +214,47 @@ class PROTOBUF_EXPORT SerialArena {
   }
   uint64_t SpaceUsed() const;
 
-  bool HasSpace(size_t n) { return n <= static_cast<size_t>(limit_ - ptr_); }
+  bool HasSpace(size_t n) const {
+    return n <= static_cast<size_t>(limit_ - ptr_);
+  }
 
+  // See comments on `cached_blocks_` member for details.
+  PROTOBUF_ALWAYS_INLINE void* TryAllocateFromCachedBlock(size_t size) {
+    if (PROTOBUF_PREDICT_FALSE(size < 16)) return nullptr;
+    // We round up to the next larger block in case the memory doesn't match
+    // the pattern we are looking for.
+    const size_t index = Bits::Log2FloorNonZero64(size - 1) - 3;
+
+    if (index >= cached_block_length_) return nullptr;
+    auto& cached_head = cached_blocks_[index];
+    if (cached_head == nullptr) return nullptr;
+
+    void* ret = cached_head;
+#ifdef ADDRESS_SANITIZER
+    ASAN_UNPOISON_MEMORY_REGION(ret, size);
+#endif  // ADDRESS_SANITIZER
+    cached_head = cached_head->next;
+    return ret;
+  }
+
+  // In kArray mode we look through cached blocks.
+  // We do not do this by default because most non-array allocations will not
+  // have the right size and will fail to find an appropriate cached block.
+  //
+  // TODO(sbenza): Evaluate if we should use cached blocks for message types of
+  // the right size. We can statically know if the allocation size can benefit
+  // from it.
+  template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAligned(size_t n, const AllocationPolicy* policy) {
     GOOGLE_DCHECK_EQ(internal::AlignUpTo8(n), n);  // Must be already aligned.
     GOOGLE_DCHECK_GE(limit_, ptr_);
+
+    if (alloc_client == AllocationClient::kArray) {
+      if (void* res = TryAllocateFromCachedBlock(n)) {
+        return res;
+      }
+    }
+
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(n))) {
       return AllocateAlignedFallback(n, policy);
     }
@@ -227,6 +269,50 @@ class PROTOBUF_EXPORT SerialArena {
     ASAN_UNPOISON_MEMORY_REGION(ret, n);
 #endif  // ADDRESS_SANITIZER
     return ret;
+  }
+
+  // See comments on `cached_blocks_` member for details.
+  void ReturnArrayMemory(void* p, size_t size) {
+    // We only need to check for 32-bit platforms.
+    // In 64-bit platforms the minimum allocation size from Repeated*Field will
+    // be 16 guaranteed.
+    if (sizeof(void*) < 8) {
+      if (PROTOBUF_PREDICT_FALSE(size < 16)) return;
+    } else {
+      GOOGLE_DCHECK(size >= 16);
+    }
+
+    // We round down to the next smaller block in case the memory doesn't match
+    // the pattern we are looking for. eg, someone might have called Reserve()
+    // on the repeated field.
+    const size_t index = Bits::Log2FloorNonZero64(size) - 4;
+
+    if (PROTOBUF_PREDICT_FALSE(index >= cached_block_length_)) {
+      // We can't put this object on the freelist so make this object the
+      // freelist. It is guaranteed it is larger than the one we have, and
+      // large enough to hold another allocation of `size`.
+      CachedBlock** new_list = static_cast<CachedBlock**>(p);
+      size_t new_size = size / sizeof(CachedBlock*);
+
+      std::copy(cached_blocks_, cached_blocks_ + cached_block_length_,
+                new_list);
+      std::fill(new_list + cached_block_length_, new_list + new_size, nullptr);
+      cached_blocks_ = new_list;
+      // Make the size fit in uint8_t. This is the power of two, so we don't
+      // need anything larger.
+      cached_block_length_ =
+          static_cast<uint8_t>(std::min(size_t{64}, new_size));
+
+      return;
+    }
+
+    auto& cached_head = cached_blocks_[index];
+    auto* new_node = static_cast<CachedBlock*>(p);
+    new_node->next = cached_head;
+    cached_head = new_node;
+#ifdef ADDRESS_SANITIZER
+    ASAN_POISON_MEMORY_REGION(p, size);
+#endif  // ADDRESS_SANITIZER
   }
 
  public:
@@ -279,7 +365,8 @@ class PROTOBUF_EXPORT SerialArena {
 
   // Creates a new SerialArena inside mem using the remaining memory as for
   // future allocations.
-  static SerialArena* New(SerialArena::Memory mem, void* owner);
+  static SerialArena* New(SerialArena::Memory mem, void* owner,
+                          ThreadSafeArenaStats* stats);
   // Free SerialArena returning the memory passed in to New
   template <typename Deallocator>
   Memory Free(Deallocator deallocator);
@@ -310,10 +397,28 @@ class PROTOBUF_EXPORT SerialArena {
   // head_ (and head_->pos will always be non-canonical).  We keep these
   // here to reduce indirection.
   char* ptr_;
+  // Limiting address up to which memory can be allocated from the head block.
   char* limit_;
+  // For holding sampling information.  The pointer is owned by the
+  // ThreadSafeArena that holds this serial arena.
+  ThreadSafeArenaStats* arena_stats_;
+
+  // Repeated*Field and Arena play together to reduce memory consumption by
+  // reusing blocks. Currently, natural growth of the repeated field types makes
+  // them allocate blocks of size `8 + 2^N, N>=3`.
+  // When the repeated field grows returns the previous block and we put it in
+  // this free list.
+  // `cached_blocks_[i]` points to the free list for blocks of size `8+2^(i+3)`.
+  // The array of freelists is grown when needed in `ReturnArrayMemory()`.
+  struct CachedBlock {
+    // Simple linked list.
+    CachedBlock* next;
+  };
+  uint8_t cached_block_length_ = 0;
+  CachedBlock** cached_blocks_ = nullptr;
 
   // Constructor is private as only New() should be used.
-  inline SerialArena(Block* b, void* owner);
+  inline SerialArena(Block* b, void* owner, ThreadSafeArenaStats* stats);
   void* AllocateAlignedFallback(size_t n, const AllocationPolicy* policy);
   std::pair<void*, CleanupNode*> AllocateAlignedWithCleanupFallback(
       size_t n, const AllocationPolicy* policy);
@@ -368,13 +473,21 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   uint64_t SpaceAllocated() const;
   uint64_t SpaceUsed() const;
 
+  template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAligned(size_t n, const std::type_info* type) {
     SerialArena* arena;
     if (PROTOBUF_PREDICT_TRUE(!alloc_policy_.should_record_allocs() &&
                               GetSerialArenaFast(&arena))) {
-      return arena->AllocateAligned(n, AllocPolicy());
+      return arena->AllocateAligned<alloc_client>(n, AllocPolicy());
     } else {
       return AllocateAlignedFallback(n, type);
+    }
+  }
+
+  void ReturnArrayMemory(void* p, size_t size) {
+    SerialArena* arena;
+    if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+      arena->ReturnArrayMemory(p, size);
     }
   }
 
@@ -411,6 +524,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   TaggedAllocationPolicyPtr alloc_policy_;  // Tagged pointer to AllocPolicy.
 
+  static_assert(std::is_trivially_destructible<SerialArena>{},
+                "SerialArena needs to be trivially destructible.");
   // Pointer to a linked list of SerialArena.
   std::atomic<SerialArena*> threads_;
   std::atomic<SerialArena*> hint_;  // Fast thread-local block access
@@ -534,6 +649,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   static PROTOBUF_THREAD_LOCAL ThreadCache thread_cache_;
   static ThreadCache& thread_cache() { return thread_cache_; }
 #endif
+
+  ThreadSafeArenaStatsHandle arena_stats_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ThreadSafeArena);
   // All protos have pointers back to the arena hence Arena must have

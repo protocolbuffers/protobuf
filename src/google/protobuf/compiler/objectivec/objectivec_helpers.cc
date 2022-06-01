@@ -95,9 +95,30 @@ class SimpleLineCollector : public LineConsumer {
   std::unordered_set<std::string>* set_;
 };
 
+class PackageToPrefixesCollector : public LineConsumer {
+ public:
+  PackageToPrefixesCollector(const std::string &usage,
+                             std::map<std::string, std::string>* inout_package_to_prefix_map)
+      : usage_(usage), prefix_map_(inout_package_to_prefix_map) {}
+
+  virtual bool ConsumeLine(const StringPiece& line, std::string* out_error) override;
+
+ private:
+  const std::string usage_;
+  std::map<std::string, std::string>* prefix_map_;
+};
+
 class PrefixModeStorage {
  public:
   PrefixModeStorage();
+
+  const std::string package_to_prefix_mappings_path() const { return package_to_prefix_mappings_path_; }
+  void set_package_to_prefix_mappings_path(const std::string& path) {
+    package_to_prefix_mappings_path_ = path;
+    package_to_prefix_map_.clear();
+  }
+
+  std::string prefix_from_proto_package_mappings(const FileDescriptor* file);
 
   bool use_package_name() const { return use_package_name_; }
   void set_use_package_name(bool on_or_off) { use_package_name_ = on_or_off; }
@@ -116,6 +137,8 @@ class PrefixModeStorage {
 
  private:
   bool use_package_name_;
+  std::map<std::string, std::string> package_to_prefix_map_;
+  std::string package_to_prefix_mappings_path_;
   std::string exception_path_;
   std::string forced_prefix_;
   std::unordered_set<std::string> exceptions_;
@@ -138,6 +161,44 @@ PrefixModeStorage::PrefixModeStorage() {
   if (prefix) {
     forced_prefix_ = prefix;
   }
+}
+
+std::string PrefixModeStorage::prefix_from_proto_package_mappings(const FileDescriptor* file) {
+  if (!file) {
+    return "";
+  }
+
+  if (package_to_prefix_map_.empty() && !package_to_prefix_mappings_path_.empty()) {
+    std::string error_str;
+    // Re use the same collector as we use for expected_prefixes_path since the file
+    // format is the same.
+    PackageToPrefixesCollector collector("Package to prefixes", &package_to_prefix_map_);
+    if (!ParseSimpleFile(package_to_prefix_mappings_path_, &collector, &error_str)) {
+      if (error_str.empty()) {
+        error_str = std::string("protoc:0: warning: Failed to parse")
+           + std::string(" prefix to proto package mappings file: ")
+           + package_to_prefix_mappings_path_;
+      }
+      std::cerr << error_str << std::endl;
+      std::cerr.flush();
+      package_to_prefix_map_.clear();
+    }
+  }
+
+  const std::string package = file->package();
+  // For files without packages, the can be registered as "no_package:PATH",
+  // allowing the expected prefixes file.
+  static const std::string no_package_prefix("no_package:");
+  const std::string lookup_key = package.empty() ? no_package_prefix + file->name() : package;
+
+  std::map<std::string, std::string>::const_iterator prefix_lookup =
+      package_to_prefix_map_.find(lookup_key);
+
+  if (prefix_lookup != package_to_prefix_map_.end()) {
+    return prefix_lookup->second;
+  }  
+
+  return "";
 }
 
 bool PrefixModeStorage::is_package_exempted(const std::string& package) {
@@ -168,6 +229,14 @@ bool PrefixModeStorage::is_package_exempted(const std::string& package) {
 PrefixModeStorage g_prefix_mode;
 
 }  // namespace
+
+std::string GetPackageToPrefixMappingsPath() {
+  return g_prefix_mode.package_to_prefix_mappings_path();
+}
+
+void SetPackageToPrefixMappingsPath(const std::string& file_path) {
+  g_prefix_mode.set_package_to_prefix_mappings_path(file_path);
+}
 
 bool UseProtoPackageAsDefaultPrefix() {
   return g_prefix_mode.use_package_name();
@@ -529,6 +598,12 @@ std::string FileClassPrefix(const FileDescriptor* file) {
   // Always honor the file option.
   if (file->options().has_objc_class_prefix()) {
     return file->options().objc_class_prefix();
+  }
+
+  // If package prefix is specified in an prefix to proto mappings file then use that.
+  std::string objc_class_prefix = g_prefix_mode.prefix_from_proto_package_mappings(file);
+  if (!objc_class_prefix.empty()) {
+    return objc_class_prefix;
   }
 
   // If package prefix isn't enabled, done.
@@ -1205,23 +1280,11 @@ void RemoveComment(StringPiece* input) {
 
 namespace {
 
-class ExpectedPrefixesCollector : public LineConsumer {
- public:
-  ExpectedPrefixesCollector(std::map<std::string, std::string>* inout_package_to_prefix_map)
-      : prefix_map_(inout_package_to_prefix_map) {}
-
-  virtual bool ConsumeLine(const StringPiece& line, std::string* out_error) override;
-
- private:
-  std::map<std::string, std::string>* prefix_map_;
-};
-
-bool ExpectedPrefixesCollector::ConsumeLine(
+bool PackageToPrefixesCollector::ConsumeLine(
     const StringPiece& line, std::string* out_error) {
   int offset = line.find('=');
   if (offset == StringPiece::npos) {
-    *out_error = std::string("Expected prefixes file line without equal sign: '") +
-                 std::string(line) + "'.";
+    *out_error = usage_ + " file line without equal sign: '" + StrCat(line) + "'.";
     return false;
   }
   StringPiece package = line.substr(0, offset);
@@ -1235,16 +1298,16 @@ bool ExpectedPrefixesCollector::ConsumeLine(
   return true;
 }
 
-bool LoadExpectedPackagePrefixes(const Options& generation_options,
+bool LoadExpectedPackagePrefixes(const std::string& expected_prefixes_path,
                                  std::map<std::string, std::string>* prefix_map,
                                  std::string* out_error) {
-  if (generation_options.expected_prefixes_path.empty()) {
+  if (expected_prefixes_path.empty()) {
     return true;
   }
 
-  ExpectedPrefixesCollector collector(prefix_map);
+  PackageToPrefixesCollector collector("Expected prefixes", prefix_map);
   return ParseSimpleFile(
-      generation_options.expected_prefixes_path, &collector, out_error);
+      expected_prefixes_path, &collector, out_error);
 }
 
 bool ValidateObjCClassPrefix(
@@ -1392,6 +1455,13 @@ bool ValidateObjCClassPrefix(
 }  // namespace
 
 bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
+                               std::string* out_error) {
+    // Options's ctor load from the environment.
+    Options options;
+    return ValidateObjCClassPrefixes(files, options, out_error);
+}
+
+bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
                                const Options& generation_options,
                                std::string* out_error) {
   // Allow a '-' as the path for the expected prefixes to completely disable
@@ -1402,7 +1472,7 @@ bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
 
   // Load the expected package prefixes, if available, to validate against.
   std::map<std::string, std::string> expected_package_prefixes;
-  if (!LoadExpectedPackagePrefixes(generation_options,
+  if (!LoadExpectedPackagePrefixes(generation_options.expected_prefixes_path,
                                    &expected_package_prefixes,
                                    out_error)) {
     return false;

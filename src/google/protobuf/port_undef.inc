@@ -34,6 +34,10 @@
 #ifndef PROTOBUF_NAMESPACE
 #error "port_undef.inc must be included after port_def.inc"
 #endif
+
+#undef PROTOBUF_BUILTIN_BSWAP16
+#undef PROTOBUF_BUILTIN_BSWAP32
+#undef PROTOBUF_BUILTIN_BSWAP64
 #undef PROTOBUF_GNUC_MIN
 #undef PROTOBUF_MSC_VER_MIN
 #undef PROTOBUF_CPLUSPLUS_MIN
@@ -67,6 +71,7 @@
 #undef PROTOBUF_FORCE_COPY_IN_RELEASE
 #undef PROTOBUF_FORCE_COPY_IN_SWAP
 #undef PROTOBUF_FORCE_COPY_IN_MOVE
+#undef PROTOBUF_FORCE_RESET_IN_CLEAR
 #undef PROTOBUF_FORCE_COPY_DEFAULT_STRING
 #undef PROTOBUF_NAMESPACE_OPEN
 #undef PROTOBUF_NAMESPACE_CLOSE
@@ -76,22 +81,24 @@
 #undef PROTOBUF_EXPORT_TEMPLATE_DEFINE
 #undef PROTOBUF_ALIGNAS
 #undef PROTOBUF_FINAL
+#undef PROTOBUF_FUTURE_FINAL
 #undef PROTOBUF_THREAD_LOCAL
+#undef PROTOBUF_LITTLE_ENDIAN
+#undef PROTOBUF_BIG_ENDIAN
 #undef PROTOBUF_MESSAGE_OWNED_ARENA_EXPERIMENT
 #undef PROTOBUF_CONSTINIT
+#undef PROTOBUF_CONSTEXPR
 #undef PROTOBUF_ATTRIBUTE_WEAK
 #undef PROTOBUF_HAVE_ATTRIBUTE_WEAK
 #undef PROTOBUF_ATTRIBUTE_NO_DESTROY
-#undef PROTOBUF_ATTRIBUTE_INIT_PRIORITY
+#undef PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG
+#undef PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
+#undef PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
 #undef PROTOBUF_PRAGMA_INIT_SEG
 #undef PROTOBUF_ASAN
 #undef PROTOBUF_MSAN
 #undef PROTOBUF_TSAN
 #undef PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED
-#undef PROTOBUF_TC_STATIC_PARSE_SINGULAR1
-#undef PROTOBUF_TC_STATIC_PARSE_SINGULAR2
-#undef PROTOBUF_TC_STATIC_PARSE_REPEATED1
-#undef PROTOBUF_TC_STATIC_PARSE_REPEATED2
 #undef PROTOBUF_TC_PARAM_DECL
 #undef PROTOBUF_EXCLUSIVE_LOCKS_REQUIRED
 #undef PROTOBUF_LOCKS_EXCLUDED
@@ -111,7 +118,9 @@
 #pragma pop_macro("ERROR_BUSY")
 #pragma pop_macro("ERROR_INSTALL_FAILED")
 #pragma pop_macro("ERROR_NOT_FOUND")
+#pragma pop_macro("GetClassName")
 #pragma pop_macro("GetMessage")
+#pragma pop_macro("GetObject")
 #pragma pop_macro("IGNORE")
 #pragma pop_macro("IN")
 #pragma pop_macro("INPUT_KEYBOARD")
@@ -126,16 +135,22 @@
 #pragma pop_macro("SERVICE_DISABLED")
 #pragma pop_macro("SEVERITY_ERROR")
 #pragma pop_macro("STRICT")
+#pragma pop_macro("STATUS_PENDING")
 #pragma pop_macro("timezone")
 #endif
+
+#ifdef __APPLE__
+#pragma pop_macro("DOMAIN")
+#pragma pop_macro("TRUE")
+#pragma pop_macro("FALSE")
+#pragma pop_macro("UID_MAX")
+#endif  // __APPLE__
 
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 #pragma pop_macro("DEBUG")
 #endif // defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#elif defined(__GNUC__)
+#if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
 

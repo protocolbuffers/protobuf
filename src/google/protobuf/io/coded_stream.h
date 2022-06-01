@@ -109,7 +109,6 @@
 #ifndef GOOGLE_PROTOBUF_IO_CODED_STREAM_H__
 #define GOOGLE_PROTOBUF_IO_CODED_STREAM_H__
 
-
 #include <assert.h>
 
 #include <atomic>
@@ -121,36 +120,13 @@
 #include <type_traits>
 #include <utility>
 
-#ifdef _WIN32
-// Assuming windows is always little-endian.
-#if !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
-#define PROTOBUF_LITTLE_ENDIAN 1
-#endif
 #if defined(_MSC_VER) && _MSC_VER >= 1300 && !defined(__INTEL_COMPILER)
 // If MSVC has "/RTCc" set, it will complain about truncating casts at
 // runtime.  This file contains some intentional truncating casts.
 #pragma runtime_checks("c", off)
 #endif
-#else
-#ifdef __APPLE__
-#include <machine/endian.h>  // __BYTE_ORDER
-#elif defined(__FreeBSD__)
-#include <sys/endian.h>  // __BYTE_ORDER
-#elif (defined(sun) || defined(__sun)) && (defined(__SVR4) || defined(__svr4__))
-#include <sys/isa_defs.h>  // __BYTE_ORDER
-#elif defined(_AIX) || defined(__TOS_AIX__)
-#include <sys/machine.h>  // BYTE_ORDER
-#else
-#if !defined(__QNX__)
-#include <endian.h>  // __BYTE_ORDER
-#endif
-#endif
-#if ((defined(__LITTLE_ENDIAN__) && !defined(__BIG_ENDIAN__)) ||    \
-     (defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN)) && \
-    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
-#define PROTOBUF_LITTLE_ENDIAN 1
-#endif
-#endif
+
+
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -158,6 +134,7 @@
 #include <google/protobuf/stubs/port.h>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -848,6 +825,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   bool had_error_ = false;
   bool aliasing_enabled_ = false;  // See EnableAliasing().
   bool is_serialization_deterministic_;
+  bool skip_check_consistency = false;
 
   uint8_t* EnsureSpaceFallback(uint8_t* ptr);
   inline uint8_t* Next();
@@ -955,7 +933,8 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
 
   template <int S>
   uint8_t* WriteRawLittleEndian(const void* data, int size, uint8_t* ptr);
-#ifndef PROTOBUF_LITTLE_ENDIAN
+#if !defined(PROTOBUF_LITTLE_ENDIAN) || \
+    defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   uint8_t* WriteRawLittleEndian32(const void* data, int size, uint8_t* ptr);
   uint8_t* WriteRawLittleEndian64(const void* data, int size, uint8_t* ptr);
 #endif
@@ -1002,7 +981,8 @@ template <>
 inline uint8_t* EpsCopyOutputStream::WriteRawLittleEndian<4>(const void* data,
                                                              int size,
                                                              uint8_t* ptr) {
-#ifdef PROTOBUF_LITTLE_ENDIAN
+#if defined(PROTOBUF_LITTLE_ENDIAN) && \
+    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   return WriteRaw(data, size, ptr);
 #else
   return WriteRawLittleEndian32(data, size, ptr);
@@ -1012,7 +992,8 @@ template <>
 inline uint8_t* EpsCopyOutputStream::WriteRawLittleEndian<8>(const void* data,
                                                              int size,
                                                              uint8_t* ptr) {
-#ifdef PROTOBUF_LITTLE_ENDIAN
+#if defined(PROTOBUF_LITTLE_ENDIAN) && \
+    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   return WriteRaw(data, size, ptr);
 #else
   return WriteRawLittleEndian64(data, size, ptr);
@@ -1067,10 +1048,18 @@ inline uint8_t* EpsCopyOutputStream::WriteRawLittleEndian<8>(const void* data,
 //   delete coded_output;
 class PROTOBUF_EXPORT CodedOutputStream {
  public:
-  // Create an CodedOutputStream that writes to the given ZeroCopyOutputStream.
-  explicit CodedOutputStream(ZeroCopyOutputStream* stream)
-      : CodedOutputStream(stream, true) {}
-  CodedOutputStream(ZeroCopyOutputStream* stream, bool do_eager_refresh);
+  // Creates a CodedOutputStream that writes to the given `stream`.
+  // The provided stream must publicly derive from `ZeroCopyOutputStream`.
+  template <class Stream, class = typename std::enable_if<std::is_base_of<
+                              ZeroCopyOutputStream, Stream>::value>::type>
+  explicit CodedOutputStream(Stream* stream);
+
+  // Creates a CodedOutputStream that writes to the given `stream`, and does
+  // an 'eager initialization' of the internal state if `eager_init` is true.
+  // The provided stream must publicly derive from `ZeroCopyOutputStream`.
+  template <class Stream, class = typename std::enable_if<std::is_base_of<
+                              ZeroCopyOutputStream, Stream>::value>::type>
+  CodedOutputStream(Stream* stream, bool eager_init);
 
   // Destroy the CodedOutputStream and position the underlying
   // ZeroCopyOutputStream immediately after the last byte written.
@@ -1233,7 +1222,7 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // remains live until all of the data has been consumed from the stream.
   void EnableAliasing(bool enabled) { impl_.EnableAliasing(enabled); }
 
-  // Indicate to the serializer whether the user wants derministic
+  // Indicate to the serializer whether the user wants deterministic
   // serialization. The default when this is not called comes from the global
   // default, controlled by SetDefaultSerializationDeterministic.
   //
@@ -1276,6 +1265,9 @@ class PROTOBUF_EXPORT CodedOutputStream {
   EpsCopyOutputStream* EpsCopy() { return &impl_; }
 
  private:
+  template <class Stream>
+  void InitEagerly(Stream* stream);
+
   EpsCopyOutputStream impl_;
   uint8_t* cur_;
   int64_t start_count_;
@@ -1344,7 +1336,8 @@ inline bool CodedInputStream::ReadVarintSizeAsInt(int* value) {
 // static
 inline const uint8_t* CodedInputStream::ReadLittleEndian32FromArray(
     const uint8_t* buffer, uint32_t* value) {
-#if defined(PROTOBUF_LITTLE_ENDIAN)
+#if defined(PROTOBUF_LITTLE_ENDIAN) && \
+    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   memcpy(value, buffer, sizeof(*value));
   return buffer + sizeof(*value);
 #else
@@ -1358,7 +1351,8 @@ inline const uint8_t* CodedInputStream::ReadLittleEndian32FromArray(
 // static
 inline const uint8_t* CodedInputStream::ReadLittleEndian64FromArray(
     const uint8_t* buffer, uint64_t* value) {
-#if defined(PROTOBUF_LITTLE_ENDIAN)
+#if defined(PROTOBUF_LITTLE_ENDIAN) && \
+    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   memcpy(value, buffer, sizeof(*value));
   return buffer + sizeof(*value);
 #else
@@ -1376,7 +1370,8 @@ inline const uint8_t* CodedInputStream::ReadLittleEndian64FromArray(
 }
 
 inline bool CodedInputStream::ReadLittleEndian32(uint32_t* value) {
-#if defined(PROTOBUF_LITTLE_ENDIAN)
+#if defined(PROTOBUF_LITTLE_ENDIAN) && \
+    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   if (PROTOBUF_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
     buffer_ = ReadLittleEndian32FromArray(buffer_, value);
     return true;
@@ -1389,7 +1384,8 @@ inline bool CodedInputStream::ReadLittleEndian32(uint32_t* value) {
 }
 
 inline bool CodedInputStream::ReadLittleEndian64(uint64_t* value) {
-#if defined(PROTOBUF_LITTLE_ENDIAN)
+#if defined(PROTOBUF_LITTLE_ENDIAN) && \
+    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   if (PROTOBUF_PREDICT_TRUE(BufferSize() >= static_cast<int>(sizeof(*value)))) {
     buffer_ = ReadLittleEndian64FromArray(buffer_, value);
     return true;
@@ -1620,6 +1616,31 @@ inline bool CodedInputStream::Skip(int count) {
   return SkipFallback(count, original_buffer_size);
 }
 
+template <class Stream, class>
+inline CodedOutputStream::CodedOutputStream(Stream* stream)
+    : impl_(stream, IsDefaultSerializationDeterministic(), &cur_),
+      start_count_(stream->ByteCount()) {
+  InitEagerly(stream);
+}
+
+template <class Stream, class>
+inline CodedOutputStream::CodedOutputStream(Stream* stream, bool eager_init)
+    : impl_(stream, IsDefaultSerializationDeterministic(), &cur_),
+      start_count_(stream->ByteCount()) {
+  if (eager_init) {
+    InitEagerly(stream);
+  }
+}
+
+template <class Stream>
+inline void CodedOutputStream::InitEagerly(Stream* stream) {
+  void* data;
+  int size;
+  if (PROTOBUF_PREDICT_TRUE(stream->Next(&data, &size) && size > 0)) {
+    cur_ = impl_.SetInitialBuffer(data, size);
+  }
+}
+
 inline uint8_t* CodedOutputStream::WriteVarint32ToArray(uint32_t value,
                                                         uint8_t* target) {
   return EpsCopyOutputStream::UnsafeVarint(value, target);
@@ -1651,7 +1672,8 @@ inline uint8_t* CodedOutputStream::WriteVarint32SignExtendedToArray(
 
 inline uint8_t* CodedOutputStream::WriteLittleEndian32ToArray(uint32_t value,
                                                               uint8_t* target) {
-#if defined(PROTOBUF_LITTLE_ENDIAN)
+#if defined(PROTOBUF_LITTLE_ENDIAN) && \
+    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   memcpy(target, &value, sizeof(value));
 #else
   target[0] = static_cast<uint8_t>(value);
@@ -1664,7 +1686,8 @@ inline uint8_t* CodedOutputStream::WriteLittleEndian32ToArray(uint32_t value,
 
 inline uint8_t* CodedOutputStream::WriteLittleEndian64ToArray(uint64_t value,
                                                               uint8_t* target) {
-#if defined(PROTOBUF_LITTLE_ENDIAN)
+#if defined(PROTOBUF_LITTLE_ENDIAN) && \
+    !defined(PROTOBUF_DISABLE_LITTLE_ENDIAN_OPT_FOR_TEST)
   memcpy(target, &value, sizeof(value));
 #else
   uint32_t part0 = static_cast<uint32_t>(value);

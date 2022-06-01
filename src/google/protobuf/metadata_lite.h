@@ -36,6 +36,7 @@
 #include <google/protobuf/arena.h>
 #include <google/protobuf/port.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 #ifdef SWIG
@@ -59,21 +60,29 @@ namespace internal {
 // It uses bit 0 == 0 to indicate an arena pointer and bit 0 == 1 to indicate a
 // UFS+Arena-container pointer. Besides it uses bit 1 == 0 to indicate arena
 // allocation and bit 1 == 1 to indicate heap allocation.
-class InternalMetadata {
+class PROTOBUF_EXPORT InternalMetadata {
  public:
   constexpr InternalMetadata() : ptr_(0) {}
-  explicit InternalMetadata(Arena* arena, bool is_message_owned = false)
-      : ptr_(is_message_owned
-                 ? reinterpret_cast<intptr_t>(arena) | kMessageOwnedArenaTagMask
-                 : reinterpret_cast<intptr_t>(arena)) {
+  explicit InternalMetadata(Arena* arena, bool is_message_owned = false) {
+    SetArena(arena, is_message_owned);
+  }
+
+  void SetArena(Arena* arena, bool is_message_owned) {
+    ptr_ = is_message_owned
+               ? reinterpret_cast<intptr_t>(arena) | kMessageOwnedArenaTagMask
+               : reinterpret_cast<intptr_t>(arena);
     GOOGLE_DCHECK(!is_message_owned || arena != nullptr);
   }
 
+#if defined(NDEBUG) || defined(_MSC_VER)
   ~InternalMetadata() {
     if (HasMessageOwnedArenaTag()) {
-      delete arena();
+      delete reinterpret_cast<Arena*>(ptr_ - kMessageOwnedArenaTagMask);
     }
   }
+#else
+  ~InternalMetadata();
+#endif
 
   template <typename T>
   void Delete() {
@@ -83,8 +92,29 @@ class InternalMetadata {
     }
   }
 
+  // DeleteReturnArena will delete the unknown fields only if they weren't
+  // allocated on an arena.  Then it updates the flags so that if you call
+  // have_unknown_fields(), it will return false.  Finally, it returns the
+  // current value of arena().  It is designed to be used as part of a
+  // Message class's destructor call, so that when control eventually gets
+  // to ~InternalMetadata(), we don't need to check for have_unknown_fields()
+  // again.
+  template <typename T>
+  Arena* DeleteReturnArena() {
+    if (have_unknown_fields()) {
+      return DeleteOutOfLineHelper<T>();
+    } else {
+      return PtrValue<Arena>();
+    }
+  }
+
   PROTOBUF_NDEBUG_INLINE Arena* owning_arena() const {
     return HasMessageOwnedArenaTag() ? nullptr : arena();
+  }
+
+  PROTOBUF_NDEBUG_INLINE Arena* user_arena() const {
+    Arena* a = arena();
+    return a && !a->IsMessageOwned() ? a : nullptr;
   }
 
   PROTOBUF_NDEBUG_INLINE Arena* arena() const {
@@ -187,9 +217,18 @@ class InternalMetadata {
   };
 
   template <typename T>
-  PROTOBUF_NOINLINE void DeleteOutOfLineHelper() {
-    if (arena() == nullptr) {
+  PROTOBUF_NOINLINE Arena* DeleteOutOfLineHelper() {
+    if (auto* a = arena()) {
+      // Subtle: we want to preserve the message-owned arena flag, while at the
+      // same time replacing the pointer to Container<T> with a pointer to the
+      // arena.
+      intptr_t message_owned_arena_tag = ptr_ & kMessageOwnedArenaTagMask;
+      ptr_ = reinterpret_cast<intptr_t>(a) | message_owned_arena_tag;
+      return a;
+    } else {
       delete PtrValue<Container<T>>();
+      ptr_ = 0;
+      return nullptr;
     }
   }
 

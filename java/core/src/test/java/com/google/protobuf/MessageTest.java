@@ -337,7 +337,7 @@ public class MessageTest {
   /** Test reading unset repeated message from DynamicMessage. */
   @Test
   public void testDynamicRepeatedMessageNull() throws Exception {
-    TestRequired.getDescriptor();
+    Descriptors.Descriptor unused = TestRequired.getDescriptor();
     DynamicMessage result =
         DynamicMessage.newBuilder(TestAllTypes.getDescriptor())
             .mergeFrom(DynamicMessage.newBuilder(MERGE_SOURCE).build())
@@ -365,7 +365,7 @@ public class MessageTest {
             .addRepeatedForeignMessage(ForeignMessage.getDefaultInstance())
             .addRepeatedForeignMessage(ForeignMessage.getDefaultInstance())
             .build();
-    TestRequired.getDescriptor();
+    Descriptors.Descriptor unused = TestRequired.getDescriptor();
     DynamicMessage result =
         DynamicMessage.newBuilder(TestAllTypes.getDescriptor())
             .mergeFrom(DynamicMessage.newBuilder(repeatedNested).build())

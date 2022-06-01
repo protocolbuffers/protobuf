@@ -76,7 +76,7 @@ public class LazyStringEndToEndTest {
     ByteString bytes = tV2.toByteString();
     assertThat(bytes).isEqualTo(TEST_ALL_TYPES_SERIALIZED_WITH_ILLEGAL_UTF8);
 
-    tV2.getOptionalString();
+    String unused = tV2.getOptionalString();
     bytes = tV2.toByteString();
     assertThat(bytes).isEqualTo(TEST_ALL_TYPES_SERIALIZED_WITH_ILLEGAL_UTF8);
   }
@@ -112,7 +112,7 @@ public class LazyStringEndToEndTest {
     assertThat(proto.getRepeatedString(1)).isSameInstanceAs(c);
 
     // Ensure serialization keeps strings cached.
-    proto.toByteString();
+    ByteString unused = proto.toByteString();
 
     // And now the string should stay cached.
     assertThat(proto.getOptionalString()).isSameInstanceAs(a);

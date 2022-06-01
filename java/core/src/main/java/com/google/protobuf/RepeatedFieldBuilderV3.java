@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.RandomAccess;
 
 /**
  * {@code RepeatedFieldBuilderV3} implements a structure that a protocol message uses to hold a
@@ -572,7 +573,7 @@ public class RepeatedFieldBuilderV3<
           MType extends AbstractMessage,
           BType extends AbstractMessage.Builder,
           IType extends MessageOrBuilder>
-      extends AbstractList<MType> implements List<MType> {
+      extends AbstractList<MType> implements List<MType>, RandomAccess {
 
     RepeatedFieldBuilderV3<MType, BType, IType> builder;
 
@@ -606,7 +607,7 @@ public class RepeatedFieldBuilderV3<
           MType extends AbstractMessage,
           BType extends AbstractMessage.Builder,
           IType extends MessageOrBuilder>
-      extends AbstractList<BType> implements List<BType> {
+      extends AbstractList<BType> implements List<BType>, RandomAccess {
 
     RepeatedFieldBuilderV3<MType, BType, IType> builder;
 
@@ -640,7 +641,7 @@ public class RepeatedFieldBuilderV3<
           MType extends AbstractMessage,
           BType extends AbstractMessage.Builder,
           IType extends MessageOrBuilder>
-      extends AbstractList<IType> implements List<IType> {
+      extends AbstractList<IType> implements List<IType>, RandomAccess {
 
     RepeatedFieldBuilderV3<MType, BType, IType> builder;
 

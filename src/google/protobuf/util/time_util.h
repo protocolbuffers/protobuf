@@ -40,8 +40,8 @@
 #ifdef _MSC_VER
 #ifdef _XBOX_ONE
 struct timeval {
-  int64 tv_sec;  /* seconds */
-  int64 tv_usec; /* and microseconds */
+  int64_t tv_sec;  /* seconds */
+  int64_t tv_usec; /* and microseconds */
 };
 #else
 #include <winsock2.h>
@@ -53,6 +53,7 @@ struct timeval {
 #include <google/protobuf/duration.pb.h>
 #include <google/protobuf/timestamp.pb.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -68,11 +69,29 @@ class PROTOBUF_EXPORT TimeUtil {
   // The min/max Timestamp/Duration values we support.
   //
   // For "0001-01-01T00:00:00Z".
-  static const int64_t kTimestampMinSeconds = -62135596800LL;
+  static constexpr int64_t kTimestampMinSeconds = -62135596800LL;
   // For "9999-12-31T23:59:59.999999999Z".
-  static const int64_t kTimestampMaxSeconds = 253402300799LL;
-  static const int64_t kDurationMinSeconds = -315576000000LL;
-  static const int64_t kDurationMaxSeconds = 315576000000LL;
+  static constexpr int64_t kTimestampMaxSeconds = 253402300799LL;
+  static constexpr int32_t kTimestampMinNanoseconds = 0;
+  static constexpr int32_t kTimestampMaxNanoseconds = 999999999;
+  static constexpr int64_t kDurationMinSeconds = -315576000000LL;
+  static constexpr int64_t kDurationMaxSeconds = 315576000000LL;
+  static constexpr int32_t kDurationMinNanoseconds = -999999999;
+  static constexpr int32_t kDurationMaxNanoseconds = 999999999;
+
+  static bool IsTimestampValid(const Timestamp& timestamp) {
+    return timestamp.seconds() <= kTimestampMaxSeconds &&
+           timestamp.seconds() >= kTimestampMinSeconds &&
+           timestamp.nanos() <= kTimestampMaxNanoseconds &&
+           timestamp.nanos() >= kTimestampMinNanoseconds;
+  }
+
+  static bool IsDurationValid(const Duration& duration) {
+    return duration.seconds() <= kDurationMaxSeconds &&
+           duration.seconds() >= kDurationMinSeconds &&
+           duration.nanos() <= kDurationMaxNanoseconds &&
+           duration.nanos() >= kDurationMinNanoseconds;
+  }
 
   // Converts Timestamp to/from RFC 3339 date string format.
   // Generated output will always be Z-normalized and uses 3, 6 or 9

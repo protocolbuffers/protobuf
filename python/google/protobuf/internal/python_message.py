@@ -1479,7 +1479,7 @@ class _Listener(object):
 
   In order to support semantics like:
 
-    foo.bar.baz.qux = 23
+    foo.bar.baz.moo = 23
     assert foo.HasField('bar')
 
   ...child objects must have back references to their parents.

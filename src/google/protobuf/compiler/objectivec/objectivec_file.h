@@ -31,10 +31,10 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
 
-#include <string>
+#include <map>
 #include <set>
+#include <string>
 #include <vector>
-#include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/printer.h>
 
@@ -49,7 +49,40 @@ class MessageGenerator;
 
 class FileGenerator {
  public:
-  FileGenerator(const FileDescriptor* file, const Options& options);
+  struct GenerationOptions {
+    GenerationOptions()
+      // TODO(thomasvl): Eventually flip this default to false for better
+      // interop with Swift if proto usages span modules made from ObjC sources.
+      : headers_use_forward_declarations(true) {}
+    std::string generate_for_named_framework;
+    std::string named_framework_to_proto_path_mappings_path;
+    std::string runtime_import_prefix;
+    bool headers_use_forward_declarations;
+  };
+
+  // Wrapper for some common state that is shared between file generations to
+  // improve performance when more than one file is generated at a time.
+  struct CommonState {
+    CommonState();
+
+    const std::vector<const FileDescriptor*>
+    CollectMinimalFileDepsContainingExtensions(const FileDescriptor* file);
+
+   private:
+    struct MinDepsEntry {
+      bool has_extensions;
+      std::set<const FileDescriptor*> min_deps;
+      // `covered_deps` are the transtive deps of `min_deps_w_exts` that also
+      // have extensions.
+      std::set<const FileDescriptor*> covered_deps;
+    };
+    const MinDepsEntry& CollectMinimalFileDepsContainingExtensionsInternal(const FileDescriptor* file);
+    std::map<const FileDescriptor*, MinDepsEntry> deps_info_cache_;
+  };
+
+  FileGenerator(const FileDescriptor* file,
+                const GenerationOptions& generation_options,
+                CommonState& common_state);
   ~FileGenerator();
 
   FileGenerator(const FileGenerator&) = delete;
@@ -60,14 +93,14 @@ class FileGenerator {
 
  private:
   const FileDescriptor* file_;
+  const GenerationOptions& generation_options_;
+  CommonState& common_state_;
   std::string root_class_name_;
   bool is_bundled_proto_;
 
   std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;
   std::vector<std::unique_ptr<MessageGenerator>> message_generators_;
   std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
-
-  const Options options_;
 
   void PrintFileRuntimePreamble(
       io::Printer* printer,

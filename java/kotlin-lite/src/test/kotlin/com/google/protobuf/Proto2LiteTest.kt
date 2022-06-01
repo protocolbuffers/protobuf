@@ -71,123 +71,111 @@ class Proto2LiteTest {
   @Test
   fun testSetters() {
     assertThat(
-      testAllTypesLite {
-        optionalInt32 = 101
-        optionalInt64 = 102
-        optionalUint32 = 103
-        optionalUint64 = 104
-        optionalSint32 = 105
-        optionalSint64 = 106
-        optionalFixed32 = 107
-        optionalFixed64 = 108
-        optionalSfixed32 = 109
-        optionalSfixed64 = 110
-        optionalFloat = 111.0f
-        optionalDouble = 112.0
-        optionalBool = true
-        optionalString = "115"
-        optionalBytes = toBytes("116")
-        optionalGroup =
-          TestAllTypesLiteKt.optionalGroup { a = 117 }
-        optionalNestedMessage = nestedMessage { bb = 118 }
-        optionalForeignMessage =
-          foreignMessageLite { c = 119 }
-        optionalImportMessage =
-          ImportMessageLite.newBuilder().setD(120).build()
-        optionalPublicImportMessage =
-          PublicImportMessageLite.newBuilder().setE(126).build()
-        optionalLazyMessage = nestedMessage { bb = 127 }
-        optionalNestedEnum = NestedEnum.BAZ
-        optionalForeignEnum = ForeignEnumLite.FOREIGN_LITE_BAZ
-        optionalImportEnum = ImportEnumLite.IMPORT_LITE_BAZ
-        optionalStringPiece = "124"
-        optionalCord = "125"
-        repeatedInt32.add(201)
-        repeatedInt64.add(202)
-        repeatedUint32.add(203)
-        repeatedUint64.add(204)
-        repeatedSint32.add(205)
-        repeatedSint64.add(206)
-        repeatedFixed32.add(207)
-        repeatedFixed64.add(208)
-        repeatedSfixed32.add(209)
-        repeatedSfixed64.add(210)
-        repeatedFloat.add(211f)
-        repeatedDouble.add(212.0)
-        repeatedBool.add(true)
-        repeatedString.add("215")
-        repeatedBytes.add(toBytes("216"))
-        repeatedGroup.add(TestAllTypesLiteKt.repeatedGroup { a = 217 })
-        repeatedNestedMessage.add(nestedMessage { bb = 218 })
-        repeatedForeignMessage.add(
-          foreignMessageLite { c = 219 }
-        )
-        repeatedImportMessage.add(
-          ImportMessageLite.newBuilder().setD(220).build()
-        )
-        repeatedLazyMessage.add(nestedMessage { bb = 227 })
-        repeatedNestedEnum.add(NestedEnum.BAR)
-        repeatedForeignEnum.add(ForeignEnumLite.FOREIGN_LITE_BAR)
-        repeatedImportEnum.add(ImportEnumLite.IMPORT_LITE_BAR)
-        repeatedStringPiece.add("224")
-        repeatedCord.add("225")
-        repeatedInt32 += 301
-        repeatedInt64 += 302
-        repeatedUint32 += 303
-        repeatedUint64 += 304
-        repeatedSint32 += 305
-        repeatedSint64 += 306
-        repeatedFixed32 += 307
-        repeatedFixed64 += 308
-        repeatedSfixed32 += 309
-        repeatedSfixed64 += 310
-        repeatedFloat += 311f
-        repeatedDouble += 312.0
-        repeatedBool += false
-        repeatedString += "315"
-        repeatedBytes += toBytes("316")
-        repeatedGroup += TestAllTypesLiteKt.repeatedGroup { a = 317 }
-        repeatedNestedMessage += nestedMessage { bb = 318 }
-        repeatedForeignMessage +=
-          foreignMessageLite { c = 319 }
-        repeatedImportMessage +=
-          ImportMessageLite.newBuilder().setD(320).build()
-        repeatedLazyMessage +=
-          TestAllTypesLiteKt.nestedMessage { bb = 327 }
-        repeatedNestedEnum += NestedEnum.BAZ
-        repeatedForeignEnum += ForeignEnumLite.FOREIGN_LITE_BAZ
-        repeatedImportEnum += ImportEnumLite.IMPORT_LITE_BAZ
-        repeatedStringPiece += "324"
-        repeatedCord += "325"
-        defaultInt32 = 401
-        defaultInt64 = 402
-        defaultUint32 = 403
-        defaultUint64 = 404
-        defaultSint32 = 405
-        defaultSint64 = 406
-        defaultFixed32 = 407
-        defaultFixed64 = 408
-        defaultSfixed32 = 409
-        defaultSfixed64 = 410
-        defaultFloat = 411f
-        defaultDouble = 412.0
-        defaultBool = false
-        defaultString = "415"
-        defaultBytes = toBytes("416")
-        defaultNestedEnum = NestedEnum.FOO
-        defaultForeignEnum = ForeignEnumLite.FOREIGN_LITE_FOO
-        defaultImportEnum = ImportEnumLite.IMPORT_LITE_FOO
-        defaultStringPiece = "424"
-        defaultCord = "425"
-        oneofUint32 = 601
-        oneofNestedMessage =
-          TestAllTypesLiteKt.nestedMessage { bb = 602 }
-        oneofString = "603"
-        oneofBytes = toBytes("604")
-      }
-    ).isEqualTo(
-      TestUtilLite.getAllLiteSetBuilder().build()
-    )
+        testAllTypesLite {
+          optionalInt32 = 101
+          optionalInt64 = 102
+          optionalUint32 = 103
+          optionalUint64 = 104
+          optionalSint32 = 105
+          optionalSint64 = 106
+          optionalFixed32 = 107
+          optionalFixed64 = 108
+          optionalSfixed32 = 109
+          optionalSfixed64 = 110
+          optionalFloat = 111.0f
+          optionalDouble = 112.0
+          optionalBool = true
+          optionalString = "115"
+          optionalBytes = toBytes("116")
+          optionalGroup = TestAllTypesLiteKt.optionalGroup { a = 117 }
+          optionalNestedMessage = nestedMessage { bb = 118 }
+          optionalForeignMessage = foreignMessageLite { c = 119 }
+          optionalImportMessage = ImportMessageLite.newBuilder().setD(120).build()
+          optionalPublicImportMessage = PublicImportMessageLite.newBuilder().setE(126).build()
+          optionalLazyMessage = nestedMessage { bb = 127 }
+          optionalUnverifiedLazyMessage = nestedMessage { bb = 128 }
+          optionalNestedEnum = NestedEnum.BAZ
+          optionalForeignEnum = ForeignEnumLite.FOREIGN_LITE_BAZ
+          optionalImportEnum = ImportEnumLite.IMPORT_LITE_BAZ
+          optionalStringPiece = "124"
+          optionalCord = "125"
+          repeatedInt32.add(201)
+          repeatedInt64.add(202)
+          repeatedUint32.add(203)
+          repeatedUint64.add(204)
+          repeatedSint32.add(205)
+          repeatedSint64.add(206)
+          repeatedFixed32.add(207)
+          repeatedFixed64.add(208)
+          repeatedSfixed32.add(209)
+          repeatedSfixed64.add(210)
+          repeatedFloat.add(211f)
+          repeatedDouble.add(212.0)
+          repeatedBool.add(true)
+          repeatedString.add("215")
+          repeatedBytes.add(toBytes("216"))
+          repeatedGroup.add(TestAllTypesLiteKt.repeatedGroup { a = 217 })
+          repeatedNestedMessage.add(nestedMessage { bb = 218 })
+          repeatedForeignMessage.add(foreignMessageLite { c = 219 })
+          repeatedImportMessage.add(ImportMessageLite.newBuilder().setD(220).build())
+          repeatedLazyMessage.add(nestedMessage { bb = 227 })
+          repeatedNestedEnum.add(NestedEnum.BAR)
+          repeatedForeignEnum.add(ForeignEnumLite.FOREIGN_LITE_BAR)
+          repeatedImportEnum.add(ImportEnumLite.IMPORT_LITE_BAR)
+          repeatedStringPiece.add("224")
+          repeatedCord.add("225")
+          repeatedInt32 += 301
+          repeatedInt64 += 302
+          repeatedUint32 += 303
+          repeatedUint64 += 304
+          repeatedSint32 += 305
+          repeatedSint64 += 306
+          repeatedFixed32 += 307
+          repeatedFixed64 += 308
+          repeatedSfixed32 += 309
+          repeatedSfixed64 += 310
+          repeatedFloat += 311f
+          repeatedDouble += 312.0
+          repeatedBool += false
+          repeatedString += "315"
+          repeatedBytes += toBytes("316")
+          repeatedGroup += TestAllTypesLiteKt.repeatedGroup { a = 317 }
+          repeatedNestedMessage += nestedMessage { bb = 318 }
+          repeatedForeignMessage += foreignMessageLite { c = 319 }
+          repeatedImportMessage += ImportMessageLite.newBuilder().setD(320).build()
+          repeatedLazyMessage += TestAllTypesLiteKt.nestedMessage { bb = 327 }
+          repeatedNestedEnum += NestedEnum.BAZ
+          repeatedForeignEnum += ForeignEnumLite.FOREIGN_LITE_BAZ
+          repeatedImportEnum += ImportEnumLite.IMPORT_LITE_BAZ
+          repeatedStringPiece += "324"
+          repeatedCord += "325"
+          defaultInt32 = 401
+          defaultInt64 = 402
+          defaultUint32 = 403
+          defaultUint64 = 404
+          defaultSint32 = 405
+          defaultSint64 = 406
+          defaultFixed32 = 407
+          defaultFixed64 = 408
+          defaultSfixed32 = 409
+          defaultSfixed64 = 410
+          defaultFloat = 411f
+          defaultDouble = 412.0
+          defaultBool = false
+          defaultString = "415"
+          defaultBytes = toBytes("416")
+          defaultNestedEnum = NestedEnum.FOO
+          defaultForeignEnum = ForeignEnumLite.FOREIGN_LITE_FOO
+          defaultImportEnum = ImportEnumLite.IMPORT_LITE_FOO
+          defaultStringPiece = "424"
+          defaultCord = "425"
+          oneofUint32 = 601
+          oneofNestedMessage = TestAllTypesLiteKt.nestedMessage { bb = 602 }
+          oneofString = "603"
+          oneofBytes = toBytes("604")
+        }
+      )
+      .isEqualTo(TestUtilLite.getAllLiteSetBuilder().build())
   }
 
   @Test
@@ -243,71 +231,70 @@ class Proto2LiteTest {
           TestAllTypesLiteKt.repeatedGroup { a = 2 }
         )
       )
-      assertThat(repeatedGroup).isEqualTo(
-        listOf(
-          TestAllTypesLiteKt.repeatedGroup { a = 1 },
-          TestAllTypesLiteKt.repeatedGroup { a = 2 }
+      assertThat(repeatedGroup)
+        .isEqualTo(
+          listOf(
+            TestAllTypesLiteKt.repeatedGroup { a = 1 },
+            TestAllTypesLiteKt.repeatedGroup { a = 2 }
+          )
         )
-      )
       repeatedGroup +=
         listOf(
           TestAllTypesLiteKt.repeatedGroup { a = 3 },
           TestAllTypesLiteKt.repeatedGroup { a = 4 }
         )
-      assertThat(repeatedGroup).isEqualTo(
-        listOf(
-          TestAllTypesLiteKt.repeatedGroup { a = 1 },
-          TestAllTypesLiteKt.repeatedGroup { a = 2 },
-          TestAllTypesLiteKt.repeatedGroup { a = 3 },
-          TestAllTypesLiteKt.repeatedGroup { a = 4 }
+      assertThat(repeatedGroup)
+        .isEqualTo(
+          listOf(
+            TestAllTypesLiteKt.repeatedGroup { a = 1 },
+            TestAllTypesLiteKt.repeatedGroup { a = 2 },
+            TestAllTypesLiteKt.repeatedGroup { a = 3 },
+            TestAllTypesLiteKt.repeatedGroup { a = 4 }
+          )
         )
-      )
       repeatedGroup[0] = TestAllTypesLiteKt.repeatedGroup { a = 5 }
-      assertThat(repeatedGroup).isEqualTo(
-        listOf(
-          TestAllTypesLiteKt.repeatedGroup { a = 5 },
-          TestAllTypesLiteKt.repeatedGroup { a = 2 },
-          TestAllTypesLiteKt.repeatedGroup { a = 3 },
-          TestAllTypesLiteKt.repeatedGroup { a = 4 }
+      assertThat(repeatedGroup)
+        .isEqualTo(
+          listOf(
+            TestAllTypesLiteKt.repeatedGroup { a = 5 },
+            TestAllTypesLiteKt.repeatedGroup { a = 2 },
+            TestAllTypesLiteKt.repeatedGroup { a = 3 },
+            TestAllTypesLiteKt.repeatedGroup { a = 4 }
+          )
         )
-      )
 
       repeatedNestedMessage.addAll(listOf(nestedMessage { bb = 1 }, nestedMessage { bb = 2 }))
-      assertThat(repeatedNestedMessage).isEqualTo(
-        listOf(
-          nestedMessage { bb = 1 },
-          nestedMessage { bb = 2 }
-        )
-      )
+      assertThat(repeatedNestedMessage)
+        .isEqualTo(listOf(nestedMessage { bb = 1 }, nestedMessage { bb = 2 }))
       repeatedNestedMessage += listOf(nestedMessage { bb = 3 }, nestedMessage { bb = 4 })
-      assertThat(repeatedNestedMessage).isEqualTo(
-        listOf(
-          nestedMessage { bb = 1 },
-          nestedMessage { bb = 2 },
-          nestedMessage { bb = 3 },
-          nestedMessage { bb = 4 }
+      assertThat(repeatedNestedMessage)
+        .isEqualTo(
+          listOf(
+            nestedMessage { bb = 1 },
+            nestedMessage { bb = 2 },
+            nestedMessage { bb = 3 },
+            nestedMessage { bb = 4 }
+          )
         )
-      )
       repeatedNestedMessage[0] = nestedMessage { bb = 5 }
-      assertThat(repeatedNestedMessage).isEqualTo(
-        listOf(
-          nestedMessage { bb = 5 },
-          nestedMessage { bb = 2 },
-          nestedMessage { bb = 3 },
-          nestedMessage { bb = 4 }
+      assertThat(repeatedNestedMessage)
+        .isEqualTo(
+          listOf(
+            nestedMessage { bb = 5 },
+            nestedMessage { bb = 2 },
+            nestedMessage { bb = 3 },
+            nestedMessage { bb = 4 }
+          )
         )
-      )
 
       repeatedNestedEnum.addAll(listOf(NestedEnum.FOO, NestedEnum.BAR))
       assertThat(repeatedNestedEnum).isEqualTo(listOf(NestedEnum.FOO, NestedEnum.BAR))
       repeatedNestedEnum += listOf(NestedEnum.BAZ, NestedEnum.FOO)
-      assertThat(repeatedNestedEnum).isEqualTo(
-        listOf(NestedEnum.FOO, NestedEnum.BAR, NestedEnum.BAZ, NestedEnum.FOO)
-      )
+      assertThat(repeatedNestedEnum)
+        .isEqualTo(listOf(NestedEnum.FOO, NestedEnum.BAR, NestedEnum.BAZ, NestedEnum.FOO))
       repeatedNestedEnum[0] = NestedEnum.BAR
-      assertThat(repeatedNestedEnum).isEqualTo(
-        listOf(NestedEnum.BAR, NestedEnum.BAR, NestedEnum.BAZ, NestedEnum.FOO)
-      )
+      assertThat(repeatedNestedEnum)
+        .isEqualTo(listOf(NestedEnum.BAR, NestedEnum.BAR, NestedEnum.BAZ, NestedEnum.FOO))
     }
   }
 
@@ -380,165 +367,157 @@ class Proto2LiteTest {
       optionalInt32 = 101
       optionalString = "115"
     }
-    val modifiedMessage = message.copy {
-      optionalInt32 = 201
-    }
+    val modifiedMessage = message.copy { optionalInt32 = 201 }
 
-    assertThat(message).isEqualTo(
-      TestAllTypesLite.newBuilder()
-        .setOptionalInt32(101)
-        .setOptionalString("115")
-        .build()
-    )
-    assertThat(modifiedMessage).isEqualTo(
-      TestAllTypesLite.newBuilder()
-        .setOptionalInt32(201)
-        .setOptionalString("115")
-        .build()
-    )
+    assertThat(message)
+      .isEqualTo(
+        TestAllTypesLite.newBuilder().setOptionalInt32(101).setOptionalString("115").build()
+      )
+    assertThat(modifiedMessage)
+      .isEqualTo(
+        TestAllTypesLite.newBuilder().setOptionalInt32(201).setOptionalString("115").build()
+      )
   }
 
   @Test
   fun testOneof() {
     val message = testAllTypesLite {
       oneofString = "foo"
-      assertThat(oneofFieldCase)
-        .isEqualTo(TestAllTypesLite.OneofFieldCase.ONEOF_STRING)
+      assertThat(oneofFieldCase).isEqualTo(TestAllTypesLite.OneofFieldCase.ONEOF_STRING)
       assertThat(oneofString).isEqualTo("foo")
       clearOneofField()
       assertThat(hasOneofUint32()).isFalse()
-      assertThat(oneofFieldCase)
-        .isEqualTo(TestAllTypesLite.OneofFieldCase.ONEOFFIELD_NOT_SET)
+      assertThat(oneofFieldCase).isEqualTo(TestAllTypesLite.OneofFieldCase.ONEOFFIELD_NOT_SET)
       oneofUint32 = 5
     }
 
-    assertThat(message.getOneofFieldCase())
-      .isEqualTo(TestAllTypesLite.OneofFieldCase.ONEOF_UINT32)
+    assertThat(message.getOneofFieldCase()).isEqualTo(TestAllTypesLite.OneofFieldCase.ONEOF_UINT32)
     assertThat(message.getOneofUint32()).isEqualTo(5)
   }
 
   @Test
   fun testExtensionsSet() {
     assertThat(
-      testAllExtensionsLite {
-        this[UnittestLite.optionalInt32ExtensionLite] = 101
-        this[UnittestLite.optionalInt64ExtensionLite] = 102L
-        this[UnittestLite.optionalUint32ExtensionLite] = 103
-        this[UnittestLite.optionalUint64ExtensionLite] = 104L
-        this[UnittestLite.optionalSint32ExtensionLite] = 105
-        this[UnittestLite.optionalSint64ExtensionLite] = 106L
-        this[UnittestLite.optionalFixed32ExtensionLite] = 107
-        this[UnittestLite.optionalFixed64ExtensionLite] = 108L
-        this[UnittestLite.optionalSfixed32ExtensionLite] = 109
-        this[UnittestLite.optionalSfixed64ExtensionLite] = 110L
-        this[UnittestLite.optionalFloatExtensionLite] = 111F
-        this[UnittestLite.optionalDoubleExtensionLite] = 112.0
-        this[UnittestLite.optionalBoolExtensionLite] = true
-        this[UnittestLite.optionalStringExtensionLite] = "115"
-        this[UnittestLite.optionalBytesExtensionLite] = toBytes("116")
-        this[UnittestLite.optionalGroupExtensionLite] = optionalGroupExtensionLite { a = 117 }
-        this[UnittestLite.optionalNestedMessageExtensionLite] =
-          TestAllTypesLiteKt.nestedMessage { bb = 118 }
-        this[UnittestLite.optionalForeignMessageExtensionLite] = foreignMessageLite { c = 119 }
-        this[UnittestLite.optionalImportMessageExtensionLite] =
-          ImportMessageLite.newBuilder().setD(120).build()
-        this[UnittestLite.optionalPublicImportMessageExtensionLite] =
-          PublicImportMessageLite.newBuilder().setE(126).build()
-        this[UnittestLite.optionalLazyMessageExtensionLite] =
-          TestAllTypesLiteKt.nestedMessage { bb = 127 }
-        this[UnittestLite.optionalNestedEnumExtensionLite] = NestedEnum.BAZ
-        this[UnittestLite.optionalForeignEnumExtensionLite] = ForeignEnumLite.FOREIGN_LITE_BAZ
-        this[UnittestLite.optionalImportEnumExtensionLite] = ImportEnumLite.IMPORT_LITE_BAZ
-        this[UnittestLite.optionalStringPieceExtensionLite] = "124"
-        this[UnittestLite.optionalCordExtensionLite] = "125"
-        this[UnittestLite.repeatedInt32ExtensionLite].add(201)
-        this[UnittestLite.repeatedInt64ExtensionLite].add(202L)
-        this[UnittestLite.repeatedUint32ExtensionLite].add(203)
-        this[UnittestLite.repeatedUint64ExtensionLite].add(204L)
-        this[UnittestLite.repeatedSint32ExtensionLite].add(205)
-        this[UnittestLite.repeatedSint64ExtensionLite].add(206L)
-        this[UnittestLite.repeatedFixed32ExtensionLite].add(207)
-        this[UnittestLite.repeatedFixed64ExtensionLite].add(208L)
-        this[UnittestLite.repeatedSfixed32ExtensionLite].add(209)
-        this[UnittestLite.repeatedSfixed64ExtensionLite].add(210L)
-        this[UnittestLite.repeatedFloatExtensionLite].add(211F)
-        this[UnittestLite.repeatedDoubleExtensionLite].add(212.0)
-        this[UnittestLite.repeatedBoolExtensionLite].add(true)
-        this[UnittestLite.repeatedStringExtensionLite].add("215")
-        this[UnittestLite.repeatedBytesExtensionLite].add(toBytes("216"))
-        this[UnittestLite.repeatedGroupExtensionLite].add(repeatedGroupExtensionLite { a = 217 })
-        this[UnittestLite.repeatedNestedMessageExtensionLite].add(
-          TestAllTypesLiteKt.nestedMessage { bb = 218 }
-        )
-        this[UnittestLite.repeatedForeignMessageExtensionLite].add(foreignMessageLite { c = 219 })
-        this[UnittestLite.repeatedImportMessageExtensionLite].add(
-          ImportMessageLite.newBuilder().setD(220).build()
-        )
-        this[UnittestLite.repeatedLazyMessageExtensionLite].add(
-          TestAllTypesLiteKt.nestedMessage { bb = 227 }
-        )
-        this[UnittestLite.repeatedNestedEnumExtensionLite].add(NestedEnum.BAR)
-        this[UnittestLite.repeatedForeignEnumExtensionLite].add(ForeignEnumLite.FOREIGN_LITE_BAR)
-        this[UnittestLite.repeatedImportEnumExtensionLite].add(ImportEnumLite.IMPORT_LITE_BAR)
-        this[UnittestLite.repeatedStringPieceExtensionLite].add("224")
-        this[UnittestLite.repeatedCordExtensionLite].add("225")
-        this[UnittestLite.repeatedInt32ExtensionLite] += 301
-        this[UnittestLite.repeatedInt64ExtensionLite] += 302L
-        this[UnittestLite.repeatedUint32ExtensionLite] += 303
-        this[UnittestLite.repeatedUint64ExtensionLite] += 304L
-        this[UnittestLite.repeatedSint32ExtensionLite] += 305
-        this[UnittestLite.repeatedSint64ExtensionLite] += 306L
-        this[UnittestLite.repeatedFixed32ExtensionLite] += 307
-        this[UnittestLite.repeatedFixed64ExtensionLite] += 308L
-        this[UnittestLite.repeatedSfixed32ExtensionLite] += 309
-        this[UnittestLite.repeatedSfixed64ExtensionLite] += 310L
-        this[UnittestLite.repeatedFloatExtensionLite] += 311F
-        this[UnittestLite.repeatedDoubleExtensionLite] += 312.0
-        this[UnittestLite.repeatedBoolExtensionLite] += false
-        this[UnittestLite.repeatedStringExtensionLite] += "315"
-        this[UnittestLite.repeatedBytesExtensionLite] += toBytes("316")
-        this[UnittestLite.repeatedGroupExtensionLite] += repeatedGroupExtensionLite { a = 317 }
-        this[UnittestLite.repeatedNestedMessageExtensionLite] +=
-          TestAllTypesLiteKt.nestedMessage { bb = 318 }
-        this[UnittestLite.repeatedForeignMessageExtensionLite] += foreignMessageLite { c = 319 }
-        this[UnittestLite.repeatedImportMessageExtensionLite] +=
-          ImportMessageLite.newBuilder().setD(320).build()
-        this[UnittestLite.repeatedLazyMessageExtensionLite] +=
-          TestAllTypesLiteKt.nestedMessage { bb = 327 }
-        this[UnittestLite.repeatedNestedEnumExtensionLite] += NestedEnum.BAZ
-        this[UnittestLite.repeatedForeignEnumExtensionLite] += ForeignEnumLite.FOREIGN_LITE_BAZ
-        this[UnittestLite.repeatedImportEnumExtensionLite] += ImportEnumLite.IMPORT_LITE_BAZ
-        this[UnittestLite.repeatedStringPieceExtensionLite] += "324"
-        this[UnittestLite.repeatedCordExtensionLite] += "325"
-        this[UnittestLite.defaultInt32ExtensionLite] = 401
-        this[UnittestLite.defaultInt64ExtensionLite] = 402L
-        this[UnittestLite.defaultUint32ExtensionLite] = 403
-        this[UnittestLite.defaultUint64ExtensionLite] = 404L
-        this[UnittestLite.defaultSint32ExtensionLite] = 405
-        this[UnittestLite.defaultSint64ExtensionLite] = 406L
-        this[UnittestLite.defaultFixed32ExtensionLite] = 407
-        this[UnittestLite.defaultFixed64ExtensionLite] = 408L
-        this[UnittestLite.defaultSfixed32ExtensionLite] = 409
-        this[UnittestLite.defaultSfixed64ExtensionLite] = 410L
-        this[UnittestLite.defaultFloatExtensionLite] = 411F
-        this[UnittestLite.defaultDoubleExtensionLite] = 412.0
-        this[UnittestLite.defaultBoolExtensionLite] = false
-        this[UnittestLite.defaultStringExtensionLite] = "415"
-        this[UnittestLite.defaultBytesExtensionLite] = toBytes("416")
-        this[UnittestLite.defaultNestedEnumExtensionLite] = NestedEnum.FOO
-        this[UnittestLite.defaultForeignEnumExtensionLite] = ForeignEnumLite.FOREIGN_LITE_FOO
-        this[UnittestLite.defaultImportEnumExtensionLite] = ImportEnumLite.IMPORT_LITE_FOO
-        this[UnittestLite.defaultStringPieceExtensionLite] = "424"
-        this[UnittestLite.defaultCordExtensionLite] = "425"
-        this[UnittestLite.oneofUint32ExtensionLite] = 601
-        this[UnittestLite.oneofNestedMessageExtensionLite] =
-          TestAllTypesLiteKt.nestedMessage { bb = 602 }
-        this[UnittestLite.oneofStringExtensionLite] = "603"
-        this[UnittestLite.oneofBytesExtensionLite] = toBytes("604")
-      }
-    ).isEqualTo(
-      TestUtilLite.getAllLiteExtensionsSet()
-    )
+        testAllExtensionsLite {
+          this[UnittestLite.optionalInt32ExtensionLite] = 101
+          this[UnittestLite.optionalInt64ExtensionLite] = 102L
+          this[UnittestLite.optionalUint32ExtensionLite] = 103
+          this[UnittestLite.optionalUint64ExtensionLite] = 104L
+          this[UnittestLite.optionalSint32ExtensionLite] = 105
+          this[UnittestLite.optionalSint64ExtensionLite] = 106L
+          this[UnittestLite.optionalFixed32ExtensionLite] = 107
+          this[UnittestLite.optionalFixed64ExtensionLite] = 108L
+          this[UnittestLite.optionalSfixed32ExtensionLite] = 109
+          this[UnittestLite.optionalSfixed64ExtensionLite] = 110L
+          this[UnittestLite.optionalFloatExtensionLite] = 111F
+          this[UnittestLite.optionalDoubleExtensionLite] = 112.0
+          this[UnittestLite.optionalBoolExtensionLite] = true
+          this[UnittestLite.optionalStringExtensionLite] = "115"
+          this[UnittestLite.optionalBytesExtensionLite] = toBytes("116")
+          this[UnittestLite.optionalGroupExtensionLite] = optionalGroupExtensionLite { a = 117 }
+          this[UnittestLite.optionalNestedMessageExtensionLite] =
+            TestAllTypesLiteKt.nestedMessage { bb = 118 }
+          this[UnittestLite.optionalForeignMessageExtensionLite] = foreignMessageLite { c = 119 }
+          this[UnittestLite.optionalImportMessageExtensionLite] =
+            ImportMessageLite.newBuilder().setD(120).build()
+          this[UnittestLite.optionalPublicImportMessageExtensionLite] =
+            PublicImportMessageLite.newBuilder().setE(126).build()
+          this[UnittestLite.optionalLazyMessageExtensionLite] =
+            TestAllTypesLiteKt.nestedMessage { bb = 127 }
+          this[UnittestLite.optionalUnverifiedLazyMessageExtensionLite] =
+            TestAllTypesLiteKt.nestedMessage { bb = 128 }
+          this[UnittestLite.optionalNestedEnumExtensionLite] = NestedEnum.BAZ
+          this[UnittestLite.optionalForeignEnumExtensionLite] = ForeignEnumLite.FOREIGN_LITE_BAZ
+          this[UnittestLite.optionalImportEnumExtensionLite] = ImportEnumLite.IMPORT_LITE_BAZ
+          this[UnittestLite.optionalStringPieceExtensionLite] = "124"
+          this[UnittestLite.optionalCordExtensionLite] = "125"
+          this[UnittestLite.repeatedInt32ExtensionLite].add(201)
+          this[UnittestLite.repeatedInt64ExtensionLite].add(202L)
+          this[UnittestLite.repeatedUint32ExtensionLite].add(203)
+          this[UnittestLite.repeatedUint64ExtensionLite].add(204L)
+          this[UnittestLite.repeatedSint32ExtensionLite].add(205)
+          this[UnittestLite.repeatedSint64ExtensionLite].add(206L)
+          this[UnittestLite.repeatedFixed32ExtensionLite].add(207)
+          this[UnittestLite.repeatedFixed64ExtensionLite].add(208L)
+          this[UnittestLite.repeatedSfixed32ExtensionLite].add(209)
+          this[UnittestLite.repeatedSfixed64ExtensionLite].add(210L)
+          this[UnittestLite.repeatedFloatExtensionLite].add(211F)
+          this[UnittestLite.repeatedDoubleExtensionLite].add(212.0)
+          this[UnittestLite.repeatedBoolExtensionLite].add(true)
+          this[UnittestLite.repeatedStringExtensionLite].add("215")
+          this[UnittestLite.repeatedBytesExtensionLite].add(toBytes("216"))
+          this[UnittestLite.repeatedGroupExtensionLite].add(repeatedGroupExtensionLite { a = 217 })
+          this[UnittestLite.repeatedNestedMessageExtensionLite].add(
+            TestAllTypesLiteKt.nestedMessage { bb = 218 }
+          )
+          this[UnittestLite.repeatedForeignMessageExtensionLite].add(foreignMessageLite { c = 219 })
+          this[UnittestLite.repeatedImportMessageExtensionLite].add(
+            ImportMessageLite.newBuilder().setD(220).build()
+          )
+          this[UnittestLite.repeatedLazyMessageExtensionLite].add(
+            TestAllTypesLiteKt.nestedMessage { bb = 227 }
+          )
+          this[UnittestLite.repeatedNestedEnumExtensionLite].add(NestedEnum.BAR)
+          this[UnittestLite.repeatedForeignEnumExtensionLite].add(ForeignEnumLite.FOREIGN_LITE_BAR)
+          this[UnittestLite.repeatedImportEnumExtensionLite].add(ImportEnumLite.IMPORT_LITE_BAR)
+          this[UnittestLite.repeatedStringPieceExtensionLite].add("224")
+          this[UnittestLite.repeatedCordExtensionLite].add("225")
+          this[UnittestLite.repeatedInt32ExtensionLite] += 301
+          this[UnittestLite.repeatedInt64ExtensionLite] += 302L
+          this[UnittestLite.repeatedUint32ExtensionLite] += 303
+          this[UnittestLite.repeatedUint64ExtensionLite] += 304L
+          this[UnittestLite.repeatedSint32ExtensionLite] += 305
+          this[UnittestLite.repeatedSint64ExtensionLite] += 306L
+          this[UnittestLite.repeatedFixed32ExtensionLite] += 307
+          this[UnittestLite.repeatedFixed64ExtensionLite] += 308L
+          this[UnittestLite.repeatedSfixed32ExtensionLite] += 309
+          this[UnittestLite.repeatedSfixed64ExtensionLite] += 310L
+          this[UnittestLite.repeatedFloatExtensionLite] += 311F
+          this[UnittestLite.repeatedDoubleExtensionLite] += 312.0
+          this[UnittestLite.repeatedBoolExtensionLite] += false
+          this[UnittestLite.repeatedStringExtensionLite] += "315"
+          this[UnittestLite.repeatedBytesExtensionLite] += toBytes("316")
+          this[UnittestLite.repeatedGroupExtensionLite] += repeatedGroupExtensionLite { a = 317 }
+          this[UnittestLite.repeatedNestedMessageExtensionLite] +=
+            TestAllTypesLiteKt.nestedMessage { bb = 318 }
+          this[UnittestLite.repeatedForeignMessageExtensionLite] += foreignMessageLite { c = 319 }
+          this[UnittestLite.repeatedImportMessageExtensionLite] +=
+            ImportMessageLite.newBuilder().setD(320).build()
+          this[UnittestLite.repeatedLazyMessageExtensionLite] +=
+            TestAllTypesLiteKt.nestedMessage { bb = 327 }
+          this[UnittestLite.repeatedNestedEnumExtensionLite] += NestedEnum.BAZ
+          this[UnittestLite.repeatedForeignEnumExtensionLite] += ForeignEnumLite.FOREIGN_LITE_BAZ
+          this[UnittestLite.repeatedImportEnumExtensionLite] += ImportEnumLite.IMPORT_LITE_BAZ
+          this[UnittestLite.repeatedStringPieceExtensionLite] += "324"
+          this[UnittestLite.repeatedCordExtensionLite] += "325"
+          this[UnittestLite.defaultInt32ExtensionLite] = 401
+          this[UnittestLite.defaultInt64ExtensionLite] = 402L
+          this[UnittestLite.defaultUint32ExtensionLite] = 403
+          this[UnittestLite.defaultUint64ExtensionLite] = 404L
+          this[UnittestLite.defaultSint32ExtensionLite] = 405
+          this[UnittestLite.defaultSint64ExtensionLite] = 406L
+          this[UnittestLite.defaultFixed32ExtensionLite] = 407
+          this[UnittestLite.defaultFixed64ExtensionLite] = 408L
+          this[UnittestLite.defaultSfixed32ExtensionLite] = 409
+          this[UnittestLite.defaultSfixed64ExtensionLite] = 410L
+          this[UnittestLite.defaultFloatExtensionLite] = 411F
+          this[UnittestLite.defaultDoubleExtensionLite] = 412.0
+          this[UnittestLite.defaultBoolExtensionLite] = false
+          this[UnittestLite.defaultStringExtensionLite] = "415"
+          this[UnittestLite.defaultBytesExtensionLite] = toBytes("416")
+          this[UnittestLite.defaultNestedEnumExtensionLite] = NestedEnum.FOO
+          this[UnittestLite.defaultForeignEnumExtensionLite] = ForeignEnumLite.FOREIGN_LITE_FOO
+          this[UnittestLite.defaultImportEnumExtensionLite] = ImportEnumLite.IMPORT_LITE_FOO
+          this[UnittestLite.defaultStringPieceExtensionLite] = "424"
+          this[UnittestLite.defaultCordExtensionLite] = "425"
+          this[UnittestLite.oneofUint32ExtensionLite] = 601
+          this[UnittestLite.oneofNestedMessageExtensionLite] =
+            TestAllTypesLiteKt.nestedMessage { bb = 602 }
+          this[UnittestLite.oneofStringExtensionLite] = "603"
+          this[UnittestLite.oneofBytesExtensionLite] = toBytes("604")
+        }
+      )
+      .isEqualTo(TestUtilLite.getAllLiteExtensionsSet())
   }
 
   @Test
@@ -584,78 +563,72 @@ class Proto2LiteTest {
         .isEqualTo(listOf("5", "2", "3", "4"))
 
       this[UnittestLite.repeatedGroupExtensionLite].addAll(
-        listOf(
-          repeatedGroupExtensionLite { a = 1 },
-          repeatedGroupExtensionLite { a = 2 }
-        )
+        listOf(repeatedGroupExtensionLite { a = 1 }, repeatedGroupExtensionLite { a = 2 })
       )
-      assertThat(this[UnittestLite.repeatedGroupExtensionLite]).isEqualTo(
-        listOf(
-          repeatedGroupExtensionLite { a = 1 },
-          repeatedGroupExtensionLite { a = 2 }
+      assertThat(this[UnittestLite.repeatedGroupExtensionLite])
+        .isEqualTo(
+          listOf(repeatedGroupExtensionLite { a = 1 }, repeatedGroupExtensionLite { a = 2 })
         )
-      )
       this[UnittestLite.repeatedGroupExtensionLite] +=
-        listOf(
-          repeatedGroupExtensionLite { a = 3 },
-          repeatedGroupExtensionLite { a = 4 }
+        listOf(repeatedGroupExtensionLite { a = 3 }, repeatedGroupExtensionLite { a = 4 })
+      assertThat(this[UnittestLite.repeatedGroupExtensionLite])
+        .isEqualTo(
+          listOf(
+            repeatedGroupExtensionLite { a = 1 },
+            repeatedGroupExtensionLite { a = 2 },
+            repeatedGroupExtensionLite { a = 3 },
+            repeatedGroupExtensionLite { a = 4 }
+          )
         )
-      assertThat(this[UnittestLite.repeatedGroupExtensionLite]).isEqualTo(
-        listOf(
-          repeatedGroupExtensionLite { a = 1 },
-          repeatedGroupExtensionLite { a = 2 },
-          repeatedGroupExtensionLite { a = 3 },
-          repeatedGroupExtensionLite { a = 4 }
-        )
-      )
       this[UnittestLite.repeatedGroupExtensionLite][0] = repeatedGroupExtensionLite { a = 5 }
-      assertThat(this[UnittestLite.repeatedGroupExtensionLite]).isEqualTo(
-        listOf(
-          repeatedGroupExtensionLite { a = 5 },
-          repeatedGroupExtensionLite { a = 2 },
-          repeatedGroupExtensionLite { a = 3 },
-          repeatedGroupExtensionLite { a = 4 }
+      assertThat(this[UnittestLite.repeatedGroupExtensionLite])
+        .isEqualTo(
+          listOf(
+            repeatedGroupExtensionLite { a = 5 },
+            repeatedGroupExtensionLite { a = 2 },
+            repeatedGroupExtensionLite { a = 3 },
+            repeatedGroupExtensionLite { a = 4 }
+          )
         )
-      )
 
       this[UnittestLite.repeatedNestedMessageExtensionLite].addAll(
         listOf(nestedMessage { bb = 1 }, nestedMessage { bb = 2 })
       )
-      assertThat(this[UnittestLite.repeatedNestedMessageExtensionLite]).isEqualTo(
-        listOf(nestedMessage { bb = 1 }, nestedMessage { bb = 2 })
-      )
+      assertThat(this[UnittestLite.repeatedNestedMessageExtensionLite])
+        .isEqualTo(listOf(nestedMessage { bb = 1 }, nestedMessage { bb = 2 }))
       this[UnittestLite.repeatedNestedMessageExtensionLite] +=
         listOf(nestedMessage { bb = 3 }, nestedMessage { bb = 4 })
-      assertThat(this[UnittestLite.repeatedNestedMessageExtensionLite]).isEqualTo(
-        listOf(
-          nestedMessage { bb = 1 },
-          nestedMessage { bb = 2 },
-          nestedMessage { bb = 3 },
-          nestedMessage { bb = 4 }
+      assertThat(this[UnittestLite.repeatedNestedMessageExtensionLite])
+        .isEqualTo(
+          listOf(
+            nestedMessage { bb = 1 },
+            nestedMessage { bb = 2 },
+            nestedMessage { bb = 3 },
+            nestedMessage { bb = 4 }
+          )
         )
-      )
       this[UnittestLite.repeatedNestedMessageExtensionLite][0] = nestedMessage { bb = 5 }
-      assertThat(this[UnittestLite.repeatedNestedMessageExtensionLite]).isEqualTo(
-        listOf(
-          nestedMessage { bb = 5 },
-          nestedMessage { bb = 2 },
-          nestedMessage { bb = 3 },
-          nestedMessage { bb = 4 }
+      assertThat(this[UnittestLite.repeatedNestedMessageExtensionLite])
+        .isEqualTo(
+          listOf(
+            nestedMessage { bb = 5 },
+            nestedMessage { bb = 2 },
+            nestedMessage { bb = 3 },
+            nestedMessage { bb = 4 }
+          )
         )
-      )
 
-      this[UnittestLite.repeatedNestedEnumExtensionLite]
-        .addAll(listOf(NestedEnum.FOO, NestedEnum.BAR))
+      this[UnittestLite.repeatedNestedEnumExtensionLite].addAll(
+        listOf(NestedEnum.FOO, NestedEnum.BAR)
+      )
       assertThat(this[UnittestLite.repeatedNestedEnumExtensionLite])
         .isEqualTo(listOf(NestedEnum.FOO, NestedEnum.BAR))
       this[UnittestLite.repeatedNestedEnumExtensionLite] += listOf(NestedEnum.BAZ, NestedEnum.FOO)
-      assertThat(this[UnittestLite.repeatedNestedEnumExtensionLite]).isEqualTo(
-        listOf(NestedEnum.FOO, NestedEnum.BAR, NestedEnum.BAZ, NestedEnum.FOO)
-      )
+      assertThat(this[UnittestLite.repeatedNestedEnumExtensionLite])
+        .isEqualTo(listOf(NestedEnum.FOO, NestedEnum.BAR, NestedEnum.BAZ, NestedEnum.FOO))
       this[UnittestLite.repeatedNestedEnumExtensionLite][0] = NestedEnum.BAR
-      assertThat(this[UnittestLite.repeatedNestedEnumExtensionLite]).isEqualTo(
-        listOf(NestedEnum.BAR, NestedEnum.BAR, NestedEnum.BAZ, NestedEnum.FOO)
-      )
+      assertThat(this[UnittestLite.repeatedNestedEnumExtensionLite])
+        .isEqualTo(listOf(NestedEnum.BAR, NestedEnum.BAR, NestedEnum.BAZ, NestedEnum.FOO))
     }
   }
 
@@ -726,62 +699,56 @@ class Proto2LiteTest {
 
   @Test
   fun testEmptyMessages() {
-    assertThat(
-      testEmptyMessageLite {}
-    ).isEqualTo(
-      TestEmptyMessageLite.newBuilder().build()
-    )
+    assertThat(testEmptyMessageLite {}).isEqualTo(TestEmptyMessageLite.newBuilder().build())
 
-    assertThat(
-      testEmptyMessageWithExtensionsLite {}
-    ).isEqualTo(
-      TestEmptyMessageWithExtensionsLite.newBuilder().build()
-    )
+    assertThat(testEmptyMessageWithExtensionsLite {})
+      .isEqualTo(TestEmptyMessageWithExtensionsLite.newBuilder().build())
   }
 
   @Test
   fun testMapSetters() {
     assertThat(
-      testMapLite {
-        mapInt32Int32[1] = 2
-        mapInt64Int64[1L] = 2L
-        mapUint32Uint32[1] = 2
-        mapUint64Uint64[1L] = 2L
-        mapSint32Sint32[1] = 2
-        mapSint64Sint64[1L] = 2L
-        mapFixed32Fixed32[1] = 2
-        mapFixed64Fixed64[1L] = 2L
-        mapSfixed32Sfixed32[1] = 2
-        mapSfixed64Sfixed64[1L] = 2L
-        mapInt32Float[1] = 2F
-        mapInt32Double[1] = 2.0
-        mapBoolBool[true] = true
-        mapStringString["1"] = "2"
-        mapInt32Bytes[1] = toBytes("2")
-        mapInt32Enum[1] = MapEnumLite.MAP_ENUM_FOO_LITE
-        mapInt32ForeignMessage[1] = foreignMessageLite { c = 1 }
-      }
-    ).isEqualTo(
-      TestMapLite.newBuilder()
-        .putMapInt32Int32(1, 2)
-        .putMapInt64Int64(1L, 2L)
-        .putMapUint32Uint32(1, 2)
-        .putMapUint64Uint64(1L, 2L)
-        .putMapSint32Sint32(1, 2)
-        .putMapSint64Sint64(1L, 2L)
-        .putMapFixed32Fixed32(1, 2)
-        .putMapFixed64Fixed64(1L, 2L)
-        .putMapSfixed32Sfixed32(1, 2)
-        .putMapSfixed64Sfixed64(1L, 2L)
-        .putMapInt32Float(1, 2F)
-        .putMapInt32Double(1, 2.0)
-        .putMapBoolBool(true, true)
-        .putMapStringString("1", "2")
-        .putMapInt32Bytes(1, toBytes("2"))
-        .putMapInt32Enum(1, MapEnumLite.MAP_ENUM_FOO_LITE)
-        .putMapInt32ForeignMessage(1, foreignMessageLite { c = 1 })
-        .build()
-    )
+        testMapLite {
+          mapInt32Int32[1] = 2
+          mapInt64Int64[1L] = 2L
+          mapUint32Uint32[1] = 2
+          mapUint64Uint64[1L] = 2L
+          mapSint32Sint32[1] = 2
+          mapSint64Sint64[1L] = 2L
+          mapFixed32Fixed32[1] = 2
+          mapFixed64Fixed64[1L] = 2L
+          mapSfixed32Sfixed32[1] = 2
+          mapSfixed64Sfixed64[1L] = 2L
+          mapInt32Float[1] = 2F
+          mapInt32Double[1] = 2.0
+          mapBoolBool[true] = true
+          mapStringString["1"] = "2"
+          mapInt32Bytes[1] = toBytes("2")
+          mapInt32Enum[1] = MapEnumLite.MAP_ENUM_FOO_LITE
+          mapInt32ForeignMessage[1] = foreignMessageLite { c = 1 }
+        }
+      )
+      .isEqualTo(
+        TestMapLite.newBuilder()
+          .putMapInt32Int32(1, 2)
+          .putMapInt64Int64(1L, 2L)
+          .putMapUint32Uint32(1, 2)
+          .putMapUint64Uint64(1L, 2L)
+          .putMapSint32Sint32(1, 2)
+          .putMapSint64Sint64(1L, 2L)
+          .putMapFixed32Fixed32(1, 2)
+          .putMapFixed64Fixed64(1L, 2L)
+          .putMapSfixed32Sfixed32(1, 2)
+          .putMapSfixed64Sfixed64(1L, 2L)
+          .putMapInt32Float(1, 2F)
+          .putMapInt32Double(1, 2.0)
+          .putMapBoolBool(true, true)
+          .putMapStringString("1", "2")
+          .putMapInt32Bytes(1, toBytes("2"))
+          .putMapInt32Enum(1, MapEnumLite.MAP_ENUM_FOO_LITE)
+          .putMapInt32ForeignMessage(1, foreignMessageLite { c = 1 })
+          .build()
+      )
   }
 
   @Test
@@ -804,38 +771,38 @@ class Proto2LiteTest {
       mapInt32Enum.put(1, MapEnumLite.MAP_ENUM_FOO_LITE)
       assertThat(mapInt32Enum).isEqualTo(mapOf(1 to MapEnumLite.MAP_ENUM_FOO_LITE))
       mapInt32Enum[2] = MapEnumLite.MAP_ENUM_BAR_LITE
-      assertThat(mapInt32Enum).isEqualTo(
-        mapOf(1 to MapEnumLite.MAP_ENUM_FOO_LITE, 2 to MapEnumLite.MAP_ENUM_BAR_LITE)
-      )
+      assertThat(mapInt32Enum)
+        .isEqualTo(mapOf(1 to MapEnumLite.MAP_ENUM_FOO_LITE, 2 to MapEnumLite.MAP_ENUM_BAR_LITE))
       mapInt32Enum.putAll(
         mapOf(3 to MapEnumLite.MAP_ENUM_BAZ_LITE, 4 to MapEnumLite.MAP_ENUM_FOO_LITE)
       )
-      assertThat(mapInt32Enum).isEqualTo(
-        mapOf(
-          1 to MapEnumLite.MAP_ENUM_FOO_LITE,
-          2 to MapEnumLite.MAP_ENUM_BAR_LITE,
-          3 to MapEnumLite.MAP_ENUM_BAZ_LITE,
-          4 to MapEnumLite.MAP_ENUM_FOO_LITE
+      assertThat(mapInt32Enum)
+        .isEqualTo(
+          mapOf(
+            1 to MapEnumLite.MAP_ENUM_FOO_LITE,
+            2 to MapEnumLite.MAP_ENUM_BAR_LITE,
+            3 to MapEnumLite.MAP_ENUM_BAZ_LITE,
+            4 to MapEnumLite.MAP_ENUM_FOO_LITE
+          )
         )
-      )
 
       mapInt32ForeignMessage.put(1, foreignMessageLite { c = 1 })
       assertThat(mapInt32ForeignMessage).isEqualTo(mapOf(1 to foreignMessageLite { c = 1 }))
       mapInt32ForeignMessage[2] = foreignMessageLite { c = 2 }
-      assertThat(mapInt32ForeignMessage).isEqualTo(
-        mapOf(1 to foreignMessageLite { c = 1 }, 2 to foreignMessageLite { c = 2 })
-      )
+      assertThat(mapInt32ForeignMessage)
+        .isEqualTo(mapOf(1 to foreignMessageLite { c = 1 }, 2 to foreignMessageLite { c = 2 }))
       mapInt32ForeignMessage.putAll(
         mapOf(3 to foreignMessageLite { c = 3 }, 4 to foreignMessageLite { c = 4 })
       )
-      assertThat(mapInt32ForeignMessage).isEqualTo(
-        mapOf(
-          1 to foreignMessageLite { c = 1 },
-          2 to foreignMessageLite { c = 2 },
-          3 to foreignMessageLite { c = 3 },
-          4 to foreignMessageLite { c = 4 }
+      assertThat(mapInt32ForeignMessage)
+        .isEqualTo(
+          mapOf(
+            1 to foreignMessageLite { c = 1 },
+            2 to foreignMessageLite { c = 2 },
+            3 to foreignMessageLite { c = 3 },
+            4 to foreignMessageLite { c = 4 }
+          )
         )
-      )
     }
   }
 
@@ -892,56 +859,57 @@ class Proto2LiteTest {
   @Test
   fun testEvilNames() {
     assertThat(
-      evilNamesProto2 {
-        initialized = true
-        hasFoo = true
-        bar = "foo"
-        isInitialized = true
-        fooBar = "foo"
-        aLLCAPS += "foo"
-        aLLCAPSMAP[1] = true
-        hasUnderbarPrecedingNumeric1Foo = true
-        hasUnderbarPrecedingNumeric42Bar = true
-        hasUnderbarPrecedingNumeric123Foo42BarBaz = true
-        extension += "foo"
-        class_ += 1
-        int = 1.0
-        long = true
-        boolean = 1L
-        sealed = "foo"
-        interface_ = 1F
-        in_ = 1
-        object_ = "foo"
-        cachedSize_ = "foo"
-        serializedSize_ = true
-        by = "foo"
-      }
-    ).isEqualTo(
-      EvilNamesProto2.newBuilder()
-        .setInitialized(true)
-        .setHasFoo(true)
-        .setBar("foo")
-        .setIsInitialized(true)
-        .setFooBar("foo")
-        .addALLCAPS("foo")
-        .putALLCAPSMAP(1, true)
-        .setHasUnderbarPrecedingNumeric1Foo(true)
-        .setHasUnderbarPrecedingNumeric42Bar(true)
-        .setHasUnderbarPrecedingNumeric123Foo42BarBaz(true)
-        .addExtension("foo")
-        .addClass_(1)
-        .setInt(1.0)
-        .setLong(true)
-        .setBoolean(1L)
-        .setSealed("foo")
-        .setInterface(1F)
-        .setIn(1)
-        .setObject("foo")
-        .setCachedSize_("foo")
-        .setSerializedSize_(true)
-        .setBy("foo")
-        .build()
-    )
+        evilNamesProto2 {
+          initialized = true
+          hasFoo = true
+          bar = "foo"
+          isInitialized = true
+          fooBar = "foo"
+          aLLCAPS += "foo"
+          aLLCAPSMAP[1] = true
+          hasUnderbarPrecedingNumeric1Foo = true
+          hasUnderbarPrecedingNumeric42Bar = true
+          hasUnderbarPrecedingNumeric123Foo42BarBaz = true
+          extension += "foo"
+          class_ += 1
+          int = 1.0
+          long = true
+          boolean = 1L
+          sealed = "foo"
+          interface_ = 1F
+          in_ = 1
+          object_ = "foo"
+          cachedSize_ = "foo"
+          serializedSize_ = true
+          by = "foo"
+        }
+      )
+      .isEqualTo(
+        EvilNamesProto2.newBuilder()
+          .setInitialized(true)
+          .setHasFoo(true)
+          .setBar("foo")
+          .setIsInitialized(true)
+          .setFooBar("foo")
+          .addALLCAPS("foo")
+          .putALLCAPSMAP(1, true)
+          .setHasUnderbarPrecedingNumeric1Foo(true)
+          .setHasUnderbarPrecedingNumeric42Bar(true)
+          .setHasUnderbarPrecedingNumeric123Foo42BarBaz(true)
+          .addExtension("foo")
+          .addClass_(1)
+          .setInt(1.0)
+          .setLong(true)
+          .setBoolean(1L)
+          .setSealed("foo")
+          .setInterface(1F)
+          .setIn(1)
+          .setObject("foo")
+          .setCachedSize_("foo")
+          .setSerializedSize_(true)
+          .setBy("foo")
+          .build()
+      )
 
     assertThat(interface_ {}).isEqualTo(Interface.newBuilder().build())
   }

@@ -1,8 +1,8 @@
 include(GNUInstallDirs)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/protobuf.pc.cmake
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf.pc.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc @ONLY)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/protobuf-lite.pc.cmake
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/protobuf-lite.pc.cmake
                ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc @ONLY)
 
 set(_protobuf_libraries libprotobuf-lite libprotobuf)
@@ -13,7 +13,7 @@ endif (protobuf_BUILD_LIBPROTOC)
 foreach(_library ${_protobuf_libraries})
   set_property(TARGET ${_library}
     PROPERTY INTERFACE_INCLUDE_DIRECTORIES
-    $<BUILD_INTERFACE:${protobuf_source_dir}/src>
+    $<BUILD_INTERFACE:${protobuf_SOURCE_DIR}/src>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
   if (UNIX AND NOT APPLE)
     set_property(TARGET ${_library}
@@ -43,15 +43,15 @@ endif (protobuf_BUILD_PROTOC_BINARIES)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
-file(STRINGS extract_includes.bat.in _extract_strings
+file(STRINGS ${protobuf_SOURCE_DIR}/cmake/extract_includes.bat.in _extract_strings
   REGEX "^copy")
 foreach(_extract_string ${_extract_strings})
   string(REGEX REPLACE "^.* .+ include\\\\(.+)$" "\\1"
     _header ${_extract_string})
   string(REPLACE "\\" "/" _header ${_header})
-  get_filename_component(_extract_from "${protobuf_SOURCE_DIR}/../src/${_header}" ABSOLUTE)
+  get_filename_component(_extract_from "${protobuf_SOURCE_DIR}/src/${_header}" ABSOLUTE)
   get_filename_component(_extract_name ${_header} NAME)
-  get_filename_component(_extract_to "${CMAKE_INSTALL_INCLUDEDIR}/${_header}" PATH)
+  get_filename_component(_extract_to "${CMAKE_INSTALL_INCLUDEDIR}/${_header}" DIRECTORY)
   if(EXISTS "${_extract_from}")
     install(FILES "${_extract_from}"
       DESTINATION "${_extract_to}"
@@ -84,19 +84,19 @@ function(_protobuf_auto_list FILE_NAME VARIABLE)
 endfunction()
 
 # Install well-known type proto files
-_protobuf_auto_list("../src/Makefile.am" nobase_dist_proto_DATA)
+_protobuf_auto_list("${protobuf_SOURCE_DIR}/src/Makefile.am" nobase_dist_proto_DATA)
 foreach(_file ${nobase_dist_proto_DATA})
-  get_filename_component(_file_from "../src/${_file}" ABSOLUTE)
+  get_filename_component(_file_from "${protobuf_SOURCE_DIR}/src/${_file}" ABSOLUTE)
   get_filename_component(_file_name ${_file} NAME)
-  get_filename_component(_file_path ${_file} PATH)
+  get_filename_component(_dir ${_file} DIRECTORY)
   if(EXISTS "${_file_from}")
     install(FILES "${_file_from}"
-      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_file_path}"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_dir}"
       COMPONENT protobuf-protos
       RENAME "${_file_name}")
   else()
     message(AUTHOR_WARNING "The file \"${_file_from}\" is listed in "
-      "\"${protobuf_SOURCE_DIR}/../src/Makefile.am\" as nobase_dist_proto_DATA "
+      "\"${protobuf_SOURCE_DIR}/src/Makefile.am\" as nobase_dist_proto_DATA "
       "but there not exists. The file will not be installed.")
   endif()
 endforeach()
@@ -114,13 +114,13 @@ endif()
 mark_as_advanced(CMAKE_INSTALL_CMAKEDIR)
 mark_as_advanced(CMAKE_INSTALL_EXAMPLEDIR)
 
-configure_file(protobuf-config.cmake.in
+configure_file(${protobuf_SOURCE_DIR}/cmake/protobuf-config.cmake.in
   ${CMAKE_INSTALL_CMAKEDIR}/protobuf-config.cmake @ONLY)
-configure_file(protobuf-config-version.cmake.in
+configure_file(${protobuf_SOURCE_DIR}/cmake/protobuf-config-version.cmake.in
   ${CMAKE_INSTALL_CMAKEDIR}/protobuf-config-version.cmake @ONLY)
-configure_file(protobuf-module.cmake.in
+configure_file(${protobuf_SOURCE_DIR}/cmake/protobuf-module.cmake.in
   ${CMAKE_INSTALL_CMAKEDIR}/protobuf-module.cmake @ONLY)
-configure_file(protobuf-options.cmake
+configure_file(${protobuf_SOURCE_DIR}/cmake/protobuf-options.cmake
   ${CMAKE_INSTALL_CMAKEDIR}/protobuf-options.cmake @ONLY)
 
 # Allows the build directory to be used as a find directory.
@@ -150,7 +150,7 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}/
 
 option(protobuf_INSTALL_EXAMPLES "Install the examples folder" OFF)
 if(protobuf_INSTALL_EXAMPLES)
-  install(DIRECTORY ../examples/
+  install(DIRECTORY examples/
     DESTINATION "${CMAKE_INSTALL_EXAMPLEDIR}"
     COMPONENT protobuf-examples)
 endif()

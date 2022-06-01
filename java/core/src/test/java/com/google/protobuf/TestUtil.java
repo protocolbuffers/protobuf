@@ -80,6 +80,7 @@ import static com.google.protobuf.UnittestLite.optionalStringExtensionLite;
 import static com.google.protobuf.UnittestLite.optionalStringPieceExtensionLite;
 import static com.google.protobuf.UnittestLite.optionalUint32ExtensionLite;
 import static com.google.protobuf.UnittestLite.optionalUint64ExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalUnverifiedLazyMessageExtensionLite;
 import static com.google.protobuf.UnittestLite.packedBoolExtensionLite;
 import static com.google.protobuf.UnittestLite.packedDoubleExtensionLite;
 import static com.google.protobuf.UnittestLite.packedEnumExtensionLite;
@@ -169,6 +170,7 @@ import static protobuf_unittest.UnittestProto.optionalStringExtension;
 import static protobuf_unittest.UnittestProto.optionalStringPieceExtension;
 import static protobuf_unittest.UnittestProto.optionalUint32Extension;
 import static protobuf_unittest.UnittestProto.optionalUint64Extension;
+import static protobuf_unittest.UnittestProto.optionalUnverifiedLazyMessageExtension;
 import static protobuf_unittest.UnittestProto.packedBoolExtension;
 import static protobuf_unittest.UnittestProto.packedDoubleExtension;
 import static protobuf_unittest.UnittestProto.packedEnumExtension;
@@ -233,13 +235,14 @@ import protobuf_unittest.UnittestProto.TestRequired;
 import protobuf_unittest.UnittestProto.TestUnpackedTypes;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 /**
  * Contains methods for setting all fields of {@code TestAllTypes} to some values as well as
@@ -343,6 +346,8 @@ public final class TestUtil {
     message.setOptionalImportMessage(ImportMessage.newBuilder().setD(120).build());
     message.setOptionalPublicImportMessage(PublicImportMessage.newBuilder().setE(126).build());
     message.setOptionalLazyMessage(TestAllTypes.NestedMessage.newBuilder().setBb(127).build());
+    message.setOptionalUnverifiedLazyMessage(
+        TestAllTypes.NestedMessage.newBuilder().setBb(128).build());
 
     message.setOptionalNestedEnum(TestAllTypes.NestedEnum.BAZ);
     message.setOptionalForeignEnum(ForeignEnum.FOREIGN_BAZ);
@@ -901,8 +906,8 @@ public final class TestUtil {
     Assert.assertEquals(208L, message.getRepeatedFixed64(0));
     Assert.assertEquals(209, message.getRepeatedSfixed32(0));
     Assert.assertEquals(210L, message.getRepeatedSfixed64(0));
-    Assert.assertEquals(211F, message.getRepeatedFloat(0));
-    Assert.assertEquals(212D, message.getRepeatedDouble(0));
+    Assert.assertEquals(211F, message.getRepeatedFloat(0), 0.0);
+    Assert.assertEquals(212D, message.getRepeatedDouble(0), 0.0);
     Assert.assertEquals(true, message.getRepeatedBool(0));
     Assert.assertEquals("215", message.getRepeatedString(0));
     Assert.assertEquals(toBytes("216"), message.getRepeatedBytes(0));
@@ -931,8 +936,8 @@ public final class TestUtil {
     Assert.assertEquals(508L, message.getRepeatedFixed64(1));
     Assert.assertEquals(509, message.getRepeatedSfixed32(1));
     Assert.assertEquals(510L, message.getRepeatedSfixed64(1));
-    Assert.assertEquals(511F, message.getRepeatedFloat(1));
-    Assert.assertEquals(512D, message.getRepeatedDouble(1));
+    Assert.assertEquals(511F, message.getRepeatedFloat(1), 0.0);
+    Assert.assertEquals(512D, message.getRepeatedDouble(1), 0.0);
     Assert.assertEquals(true, message.getRepeatedBool(1));
     Assert.assertEquals("515", message.getRepeatedString(1));
     Assert.assertEquals(toBytes("516"), message.getRepeatedBytes(1));
@@ -1240,6 +1245,9 @@ public final class TestUtil {
         optionalPublicImportMessageExtension, PublicImportMessage.newBuilder().setE(126).build());
     message.setExtension(
         optionalLazyMessageExtension, TestAllTypes.NestedMessage.newBuilder().setBb(127).build());
+    message.setExtension(
+        optionalUnverifiedLazyMessageExtension,
+        TestAllTypes.NestedMessage.newBuilder().setBb(128).build());
 
     message.setExtension(optionalNestedEnumExtension, TestAllTypes.NestedEnum.BAZ);
     message.setExtension(optionalForeignEnumExtension, ForeignEnum.FOREIGN_BAZ);
@@ -1459,6 +1467,8 @@ public final class TestUtil {
     assertEqualsExactType(120, message.getExtension(optionalImportMessageExtension).getD());
     assertEqualsExactType(126, message.getExtension(optionalPublicImportMessageExtension).getE());
     assertEqualsExactType(127, message.getExtension(optionalLazyMessageExtension).getBb());
+    assertEqualsExactType(
+        128, message.getExtension(optionalUnverifiedLazyMessageExtension).getBb());
 
     assertEqualsExactType(
         TestAllTypes.NestedEnum.BAZ, message.getExtension(optionalNestedEnumExtension));
@@ -2051,6 +2061,8 @@ public final class TestUtil {
     assertEqualsExactType(
         126, message.getExtension(optionalPublicImportMessageExtensionLite).getE());
     assertEqualsExactType(127, message.getExtension(optionalLazyMessageExtensionLite).getBb());
+    assertEqualsExactType(
+        128, message.getExtension(optionalUnverifiedLazyMessageExtensionLite).getBb());
 
     assertEqualsExactType(
         TestAllTypesLite.NestedEnum.BAZ, message.getExtension(optionalNestedEnumExtensionLite));
@@ -2244,6 +2256,7 @@ public final class TestUtil {
     Assert.assertFalse(message.hasExtension(optionalImportMessageExtensionLite));
     Assert.assertFalse(message.hasExtension(optionalPublicImportMessageExtensionLite));
     Assert.assertFalse(message.hasExtension(optionalLazyMessageExtensionLite));
+    Assert.assertFalse(message.hasExtension(optionalUnverifiedLazyMessageExtensionLite));
 
     Assert.assertFalse(message.hasExtension(optionalNestedEnumExtensionLite));
     Assert.assertFalse(message.hasExtension(optionalForeignEnumExtensionLite));
@@ -2276,6 +2289,7 @@ public final class TestUtil {
     Assert.assertFalse(message.getExtension(optionalImportMessageExtensionLite).hasD());
     Assert.assertFalse(message.getExtension(optionalPublicImportMessageExtensionLite).hasE());
     Assert.assertFalse(message.getExtension(optionalLazyMessageExtensionLite).hasBb());
+    Assert.assertFalse(message.getExtension(optionalUnverifiedLazyMessageExtensionLite).hasBb());
 
     assertEqualsExactType(0, message.getExtension(optionalGroupExtensionLite).getA());
     assertEqualsExactType(0, message.getExtension(optionalNestedMessageExtensionLite).getBb());
@@ -2283,6 +2297,8 @@ public final class TestUtil {
     assertEqualsExactType(0, message.getExtension(optionalImportMessageExtensionLite).getD());
     assertEqualsExactType(0, message.getExtension(optionalPublicImportMessageExtensionLite).getE());
     assertEqualsExactType(0, message.getExtension(optionalLazyMessageExtensionLite).getBb());
+    assertEqualsExactType(
+        0, message.getExtension(optionalUnverifiedLazyMessageExtensionLite).getBb());
 
     // Enums without defaults are set to the first value in the enum.
     assertEqualsExactType(
@@ -2537,7 +2553,7 @@ public final class TestUtil {
   // ===================================================================
   // oneof
   public static void setOneof(TestOneof2.Builder message) {
-    message.setFooLazyMessage(TestOneof2.NestedMessage.newBuilder().setQuxInt(100).build());
+    message.setFooLazyMessage(TestOneof2.NestedMessage.newBuilder().setMooInt(100).build());
     message.setBarString("101");
     message.setBazInt(102);
     message.setBazString("103");
@@ -2545,13 +2561,13 @@ public final class TestUtil {
 
   public static void assertOneofSet(TestOneof2 message) {
     Assert.assertTrue(message.hasFooLazyMessage());
-    Assert.assertTrue(message.getFooLazyMessage().hasQuxInt());
+    Assert.assertTrue(message.getFooLazyMessage().hasMooInt());
 
     Assert.assertTrue(message.hasBarString());
     Assert.assertTrue(message.hasBazInt());
     Assert.assertTrue(message.hasBazString());
 
-    Assert.assertEquals(100, message.getFooLazyMessage().getQuxInt());
+    Assert.assertEquals(100, message.getFooLazyMessage().getMooInt());
     Assert.assertEquals("101", message.getBarString());
     Assert.assertEquals(102, message.getBazInt());
     Assert.assertEquals("103", message.getBazString());
@@ -2850,6 +2866,11 @@ public final class TestUtil {
       message.setField(
           f("optional_lazy_message"),
           newBuilderForField(message, f("optional_lazy_message")).setField(nestedB, 127).build());
+      message.setField(
+          f("optional_unverified_lazy_message"),
+          newBuilderForField(message, f("optional_unverified_lazy_message"))
+              .setField(nestedB, 128)
+              .build());
 
       message.setField(f("optional_nested_enum"), nestedBaz);
       message.setField(f("optional_foreign_enum"), foreignBaz);
@@ -3100,6 +3121,9 @@ public final class TestUtil {
           126, ((Message) message.getField(f("optional_public_import_message"))).getField(importE));
       Assert.assertEquals(
           127, ((Message) message.getField(f("optional_lazy_message"))).getField(nestedB));
+      Assert.assertEquals(
+          128,
+          ((Message) message.getField(f("optional_unverified_lazy_message"))).getField(nestedB));
 
       Assert.assertEquals(nestedBaz, message.getField(f("optional_nested_enum")));
       Assert.assertEquals(foreignBaz, message.getField(f("optional_foreign_enum")));
@@ -3351,6 +3375,8 @@ public final class TestUtil {
           ((Message) message.getField(f("optional_public_import_message"))).hasField(importE));
       Assert.assertFalse(
           ((Message) message.getField(f("optional_lazy_message"))).hasField(nestedB));
+      Assert.assertFalse(
+          ((Message) message.getField(f("optional_unverified_lazy_message"))).hasField(nestedB));
 
       Assert.assertEquals(0, ((Message) message.getField(f("optionalgroup"))).getField(groupA));
       Assert.assertEquals(
@@ -3363,6 +3389,8 @@ public final class TestUtil {
           0, ((Message) message.getField(f("optional_public_import_message"))).getField(importE));
       Assert.assertEquals(
           0, ((Message) message.getField(f("optional_lazy_message"))).getField(nestedB));
+      Assert.assertEquals(
+          0, ((Message) message.getField(f("optional_unverified_lazy_message"))).getField(nestedB));
 
       // Enums without defaults are set to the first value in the enum.
       Assert.assertEquals(nestedFoo, message.getField(f("optional_nested_enum")));
@@ -3815,7 +3843,11 @@ public final class TestUtil {
 
   private static ByteString readBytesFromResource(String name) {
     try {
-      return ByteString.readFrom(TestUtil.class.getResourceAsStream(name));
+      InputStream in = TestUtil.class.getResourceAsStream(name);
+      if (in == null) { //
+        throw new RuntimeException("Tests data file " + name + " is missing.");
+      }
+      return ByteString.readFrom(in);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

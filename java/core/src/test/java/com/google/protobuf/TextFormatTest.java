@@ -67,11 +67,7 @@ import org.junit.function.ThrowingRunnable;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/**
- * Test case for {@link TextFormat}.
- *
- * <p>TODO(wenboz): ExtensionTest and rest of text_format_unittest.cc.
- */
+/** Test case for {@link TextFormat}. */
 @RunWith(JUnit4.class)
 public class TextFormatTest {
 
@@ -170,6 +166,13 @@ public class TextFormatTest {
     javaText = javaText.replace(".0\n", "\n");
 
     assertThat(javaText).isEqualTo(ALL_FIELDS_SET_TEXT);
+  }
+
+  @Test
+  // https://github.com/protocolbuffers/protobuf/issues/9447
+  public void testCharacterNotInUnicodeBlock() throws TextFormat.InvalidEscapeSequenceException {
+    ByteString actual = TextFormat.unescapeBytes("\\U000358da");
+    assertThat(actual.size()).isEqualTo(4);
   }
 
   /** Print TestAllTypes as Builder and compare with golden file. */
@@ -1445,6 +1448,18 @@ public class TextFormatTest {
             + "unknown_field3: 3\n");
   }
 
+  @Test
+  public void testParseUnknownExtensionWithAnyMessage() throws Exception {
+    assertParseSuccessWithUnknownExtensions(
+        "[unknown_extension]: { "
+            + "  any_value { "
+            + "    [type.googleapis.com/protobuf_unittest.OneString] { "
+            + "      data: 123 "
+            + "    } "
+            + " } "
+            + "}");
+  }
+
   // See additional coverage in testOneofOverwriteForbidden and testMapOverwriteForbidden.
   @Test
   public void testParseNonRepeatedFields() throws Exception {
@@ -1826,4 +1841,5 @@ public class TextFormatTest {
     assertThat(TextFormat.printer().printToString(message))
         .isEqualTo("optional_float: -0.0\noptional_double: -0.0\n");
   }
+
 }

@@ -67,6 +67,12 @@ class ReferenceLeakCheckerMixin(object):
   NB_RUNS = 3
 
   def run(self, result=None):
+    testMethod = getattr(self, self._testMethodName)
+    expecting_failure_method = getattr(testMethod, "__unittest_expecting_failure__", False)
+    expecting_failure_class = getattr(self, "__unittest_expecting_failure__", False)
+    if expecting_failure_class or expecting_failure_method:
+      return
+
     # python_message.py registers all Message classes to some pickle global
     # registry, which makes the classes immortal.
     # We save a copy of this registry, and reset it before we could references.
@@ -78,12 +84,23 @@ class ReferenceLeakCheckerMixin(object):
 
     oldrefcount = 0
     local_result = LocalTestResult(result)
+    num_flakes = 0
 
     refcount_deltas = []
-    for _ in range(self.NB_RUNS):
+    while len(refcount_deltas) < self.NB_RUNS:
       oldrefcount = self._getRefcounts()
       super(ReferenceLeakCheckerMixin, self).run(result=local_result)
       newrefcount = self._getRefcounts()
+      # If the GC was able to collect some objects after the call to run() that
+      # it could not collect before the call, then the counts won't match.
+      if newrefcount < oldrefcount and num_flakes < 2:
+        # This result is (probably) a flake -- garbage collectors aren't very
+        # predictable, but a lower ending refcount is the opposite of the
+        # failure we are testing for. If the result is repeatable, then we will
+        # eventually report it, but not after trying to eliminate it.
+        num_flakes += 1
+        continue
+      num_flakes = 0
       refcount_deltas.append(newrefcount - oldrefcount)
     print(refcount_deltas, self)
 

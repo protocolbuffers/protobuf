@@ -244,10 +244,16 @@ public abstract class GeneratedMessageLite<
    *
    * <p>For use by generated code only.
    */
-  protected abstract Object dynamicMethod(MethodToInvoke method, Object arg0, Object arg1);
+  protected abstract Object dynamicMethod(
+      MethodToInvoke method,
+          Object arg0,
+          Object arg1);
 
   /** Same as {@link #dynamicMethod(MethodToInvoke, Object, Object)} with {@code null} padding. */
-  protected Object dynamicMethod(MethodToInvoke method, Object arg0) {
+  @CanIgnoreReturnValue
+  protected Object dynamicMethod(
+      MethodToInvoke method,
+          Object arg0) {
     return dynamicMethod(method, arg0, null);
   }
 
@@ -571,7 +577,8 @@ public abstract class GeneratedMessageLite<
         return parseUnknownField(tag, input);
       }
 
-      ensureExtensionsAreMutable();
+      // TODO(b/230609037): remove the unused variable
+      FieldSet<ExtensionDescriptor> unused = ensureExtensionsAreMutable();
 
       if (packed) {
         int length = input.readRawVarint32();
@@ -692,7 +699,7 @@ public abstract class GeneratedMessageLite<
       // The wire format for MessageSet is:
       //   message MessageSet {
       //     repeated group Item = 1 {
-      //       required int32 typeId = 2;
+      //       required uint32 typeId = 2;
       //       required bytes message = 3;
       //     }
       //   }
@@ -764,7 +771,8 @@ public abstract class GeneratedMessageLite<
         throws IOException {
       int fieldNumber = typeId;
       int tag = WireFormat.makeTag(typeId, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-      parseExtension(input, extensionRegistry, extension, tag, fieldNumber);
+      // TODO(b/230609037): remove the unused variable
+      boolean unused = parseExtension(input, extensionRegistry, extension, tag, fieldNumber);
     }
 
     private void mergeMessageSetExtensionFromBytes(
@@ -787,6 +795,7 @@ public abstract class GeneratedMessageLite<
           .setField(extension.descriptor, extension.singularToFieldSetType(value));
     }
 
+    @CanIgnoreReturnValue
     FieldSet<ExtensionDescriptor> ensureExtensionsAreMutable() {
       if (extensions.isImmutable()) {
         extensions = extensions.clone();
@@ -985,7 +994,6 @@ public abstract class GeneratedMessageLite<
 
     /** Get one element of a repeated extension. */
     @Override
-    @SuppressWarnings("unchecked")
     public final <Type> Type getExtension(
         final ExtensionLite<MessageType, List<Type>> extension, final int index) {
       return instance.getExtension(extension, index);
@@ -1242,11 +1250,11 @@ public abstract class GeneratedMessageLite<
     }
 
     @SuppressWarnings("unchecked")
-    Object fromFieldSetType(final Object value) {
+    Object fromFieldSetType(Object value) {
       if (descriptor.isRepeated()) {
         if (descriptor.getLiteJavaType() == WireFormat.JavaType.ENUM) {
-          final List result = new ArrayList<>();
-          for (final Object element : (List) value) {
+          List<Object> result = new ArrayList<>();
+          for (Object element : (List) value) {
             result.add(singularFromFieldSetType(element));
           }
           return result;
@@ -1258,7 +1266,7 @@ public abstract class GeneratedMessageLite<
       }
     }
 
-    Object singularFromFieldSetType(final Object value) {
+    Object singularFromFieldSetType(Object value) {
       if (descriptor.getLiteJavaType() == WireFormat.JavaType.ENUM) {
         return descriptor.enumTypeMap.findValueByNumber((Integer) value);
       } else {
@@ -1266,12 +1274,11 @@ public abstract class GeneratedMessageLite<
       }
     }
 
-    @SuppressWarnings("unchecked")
-    Object toFieldSetType(final Object value) {
+    Object toFieldSetType(Object value) {
       if (descriptor.isRepeated()) {
         if (descriptor.getLiteJavaType() == WireFormat.JavaType.ENUM) {
-          final List result = new ArrayList<>();
-          for (final Object element : (List) value) {
+          List<Object> result = new ArrayList<>();
+          for (Object element : (List) value) {
             result.add(singularToFieldSetType(element));
           }
           return result;
@@ -1283,7 +1290,7 @@ public abstract class GeneratedMessageLite<
       }
     }
 
-    Object singularToFieldSetType(final Object value) {
+    Object singularToFieldSetType(Object value) {
       if (descriptor.getLiteJavaType() == WireFormat.JavaType.ENUM) {
         return ((Internal.EnumLite) value).getNumber();
       } else {
@@ -1342,7 +1349,6 @@ public abstract class GeneratedMessageLite<
      *
      * @return a GeneratedMessage of the type that was serialized
      */
-    @SuppressWarnings("unchecked")
     protected Object readResolve() throws ObjectStreamException {
       try {
         Class<?> messageClass = resolveMessageClass();
@@ -1426,8 +1432,10 @@ public abstract class GeneratedMessageLite<
     }
     boolean isInitialized = Protobuf.getInstance().schemaFor(message).isInitialized(message);
     if (shouldMemoize) {
-      message.dynamicMethod(
-          MethodToInvoke.SET_MEMOIZED_IS_INITIALIZED, isInitialized ? message : null);
+      // TODO(b/230609037): remove the unused variable
+      Object unused =
+          message.dynamicMethod(
+              MethodToInvoke.SET_MEMOIZED_IS_INITIALIZED, isInitialized ? message : null);
     }
     return isInitialized;
   }
@@ -1542,6 +1550,8 @@ public abstract class GeneratedMessageLite<
         e = new InvalidProtocolBufferException(e);
       }
       throw e.setUnfinishedMessage(result);
+    } catch (UninitializedMessageException e) {
+      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(result);
     } catch (IOException e) {
       if (e.getCause() instanceof InvalidProtocolBufferException) {
         throw (InvalidProtocolBufferException) e.getCause();
@@ -1557,7 +1567,7 @@ public abstract class GeneratedMessageLite<
   }
 
   /** A static helper method for parsing a partial from byte array. */
-  static <T extends GeneratedMessageLite<T, ?>> T parsePartialFrom(
+  private static <T extends GeneratedMessageLite<T, ?>> T parsePartialFrom(
       T instance, byte[] input, int offset, int length, ExtensionRegistryLite extensionRegistry)
       throws InvalidProtocolBufferException {
     @SuppressWarnings("unchecked") // Guaranteed by protoc
@@ -1575,6 +1585,8 @@ public abstract class GeneratedMessageLite<
         e = new InvalidProtocolBufferException(e);
       }
       throw e.setUnfinishedMessage(result);
+    } catch (UninitializedMessageException e) {
+      throw e.asInvalidProtocolBufferException().setUnfinishedMessage(result);
     } catch (IOException e) {
       if (e.getCause() instanceof InvalidProtocolBufferException) {
         throw (InvalidProtocolBufferException) e.getCause();
@@ -1641,28 +1653,14 @@ public abstract class GeneratedMessageLite<
   private static <T extends GeneratedMessageLite<T, ?>> T parsePartialFrom(
       T defaultInstance, ByteString data, ExtensionRegistryLite extensionRegistry)
       throws InvalidProtocolBufferException {
-    T message;
+    CodedInputStream input = data.newCodedInput();
+    T message = parsePartialFrom(defaultInstance, input, extensionRegistry);
     try {
-      CodedInputStream input = data.newCodedInput();
-      message = parsePartialFrom(defaultInstance, input, extensionRegistry);
-      try {
-        input.checkLastTagWas(0);
-      } catch (InvalidProtocolBufferException e) {
-        throw e.setUnfinishedMessage(message);
-      }
-      return message;
+      input.checkLastTagWas(0);
     } catch (InvalidProtocolBufferException e) {
-      throw e;
+      throw e.setUnfinishedMessage(message);
     }
-  }
-
-  // This is a special case since we want to verify that the last tag is 0. We assume we exhaust the
-  // ByteString.
-  private static <T extends GeneratedMessageLite<T, ?>> T parsePartialFrom(
-      T defaultInstance, byte[] data, ExtensionRegistryLite extensionRegistry)
-      throws InvalidProtocolBufferException {
-    return checkMessageInitialized(
-        parsePartialFrom(defaultInstance, data, 0, data.length, extensionRegistry));
+    return message;
   }
 
   // Validates last tag.

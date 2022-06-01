@@ -44,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 
 /** An adapter between the {@link Reader} interface and {@link CodedInputStream}. */
+@CheckReturnValue
 @ExperimentalApi
 final class CodedInputStreamReader implements Reader {
   private static final int FIXED32_MULTIPLE_MASK = FIXED32_SIZE - 1;
@@ -165,7 +166,6 @@ final class CodedInputStreamReader implements Reader {
     return input.readStringRequireUtf8();
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public <T> T readMessage(Class<T> clazz, ExtensionRegistryLite extensionRegistry)
       throws IOException {
@@ -181,7 +181,7 @@ final class CodedInputStreamReader implements Reader {
     return readMessage(schema, extensionRegistry);
   }
 
-  @SuppressWarnings("unchecked")
+  @Deprecated
   @Override
   public <T> T readGroup(Class<T> clazz, ExtensionRegistryLite extensionRegistry)
       throws IOException {
@@ -189,7 +189,7 @@ final class CodedInputStreamReader implements Reader {
     return readGroup(Protobuf.getInstance().schemaFor(clazz), extensionRegistry);
   }
 
-  @SuppressWarnings("unchecked")
+  @Deprecated
   @Override
   public <T> T readGroupBySchemaWithCheck(Schema<T> schema, ExtensionRegistryLite extensionRegistry)
       throws IOException {
@@ -821,6 +821,7 @@ final class CodedInputStreamReader implements Reader {
     }
   }
 
+  @Deprecated
   @Override
   public <T> void readGroupList(
       List<T> target, Class<T> targetType, ExtensionRegistryLite extensionRegistry)
@@ -829,6 +830,7 @@ final class CodedInputStreamReader implements Reader {
     readGroupList(target, schema, extensionRegistry);
   }
 
+  @Deprecated
   @Override
   public <T> void readGroupList(
       List<T> target, Schema<T> schema, ExtensionRegistryLite extensionRegistry)
@@ -1314,7 +1316,7 @@ final class CodedInputStreamReader implements Reader {
       case UINT64:
         return readUInt64();
       default:
-        throw new RuntimeException("unsupported field type.");
+        throw new IllegalArgumentException("unsupported field type.");
     }
   }
 

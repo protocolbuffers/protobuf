@@ -37,9 +37,9 @@
 #include <google/protobuf/struct.pb.h>
 #include <google/protobuf/type.pb.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/mathutil.h>
 
 namespace google {
@@ -100,6 +100,24 @@ util::StatusOr<float> DoubleToFloat(double before) {
     return static_cast<float>(before);
   } else if (before > std::numeric_limits<float>::max() ||
              before < -std::numeric_limits<float>::max()) {
+    // Some doubles are larger than the largest float, but after
+    // rounding they will be equal to the largest float.
+    // We can't just attempt the conversion because that has UB if
+    // the value really is out-of-range.
+    // Here we take advantage that 1/2-ing a large floating point
+    // will not lose precision.
+    double half_before = before * 0.5;
+    if (half_before < std::numeric_limits<float>::max() &&
+        half_before > -std::numeric_limits<float>::max()) {
+      const float half_fmax = std::numeric_limits<float>::max() * 0.5f;
+      // If after being cut in half, the value is less than the largest float,
+      // then it's safe to convert it to float.  Importantly, this conversion
+      // rounds in the same way that the original does.
+      float half_after = static_cast<float>(half_before);
+      if (half_after <= half_fmax && half_after >= -half_fmax) {
+        return half_after + half_after;
+      }
+    }
     // Double value outside of the range of float.
     return util::InvalidArgumentError(DoubleAsString(before));
   } else {

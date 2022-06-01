@@ -278,14 +278,13 @@ public final class Descriptors {
     /**
      * Construct a {@code FileDescriptor}.
      *
-     * @param proto The protocol message form of the FileDescriptor.
-     * @param dependencies {@code FileDescriptor}s corresponding to all of the file's dependencies.
+     * @param proto the protocol message form of the FileDescriptort
+     * @param dependencies {@code FileDescriptor}s corresponding to all of the file's dependencies
      * @throws DescriptorValidationException {@code proto} is not a valid descriptor. This can occur
-     *     for a number of reasons, e.g. because a field has an undefined type or because two
-     *     messages were defined with the same name.
+     *     for a number of reasons; for instance, because a field has an undefined type or because
+     *     two messages were defined with the same name.
      */
-    public static FileDescriptor buildFrom(
-        final FileDescriptorProto proto, final FileDescriptor[] dependencies)
+    public static FileDescriptor buildFrom(FileDescriptorProto proto, FileDescriptor[] dependencies)
         throws DescriptorValidationException {
       return buildFrom(proto, dependencies, false);
     }
@@ -293,18 +292,19 @@ public final class Descriptors {
     /**
      * Construct a {@code FileDescriptor}.
      *
-     * @param proto The protocol message form of the FileDescriptor.
-     * @param dependencies {@code FileDescriptor}s corresponding to all of the file's dependencies.
-     * @param allowUnknownDependencies If true, non-exist dependenncies will be ignored and
-     *     undefined message types will be replaced with a placeholder type.
+     * @param proto the protocol message form of the FileDescriptor
+     * @param dependencies {@code FileDescriptor}s corresponding to all of the file's dependencies
+     * @param allowUnknownDependencies if true, non-existing dependencies will be ignored and
+     *     undefined message types will be replaced with a placeholder type. Undefined enum types
+     *     still cause a DescriptorValidationException.
      * @throws DescriptorValidationException {@code proto} is not a valid descriptor. This can occur
-     *     for a number of reasons, e.g. because a field has an undefined type or because two
-     *     messages were defined with the same name.
+     *     for a number of reasons; for instance, because a field has an undefined type or because
+     *     two messages were defined with the same name.
      */
     public static FileDescriptor buildFrom(
-        final FileDescriptorProto proto,
-        final FileDescriptor[] dependencies,
-        final boolean allowUnknownDependencies)
+        FileDescriptorProto proto,
+        FileDescriptor[] dependencies,
+        boolean allowUnknownDependencies)
         throws DescriptorValidationException {
       // Building descriptors involves two steps:  translating and linking.
       // In the translation step (implemented by FileDescriptor's
@@ -315,8 +315,8 @@ public final class Descriptors {
       // FieldDescriptor for an embedded message contains a pointer directly
       // to the Descriptor for that message's type.  We also detect undefined
       // types in the linking step.
-      final DescriptorPool pool = new DescriptorPool(dependencies, allowUnknownDependencies);
-      final FileDescriptor result =
+      DescriptorPool pool = new DescriptorPool(dependencies, allowUnknownDependencies);
+      FileDescriptor result =
           new FileDescriptor(proto, dependencies, pool, allowUnknownDependencies);
       result.crossLink();
       return result;
@@ -461,21 +461,20 @@ public final class Descriptors {
     }
 
     /**
-     * This method is to be called by generated code only. It is used to update the
+     * This method is to be called by generated code only. It updates the
      * FileDescriptorProto associated with the descriptor by parsing it again with the given
      * ExtensionRegistry. This is needed to recognize custom options.
      */
     public static void internalUpdateFileDescriptor(
-        final FileDescriptor descriptor, final ExtensionRegistry registry) {
+        FileDescriptor descriptor, ExtensionRegistry registry) {
       ByteString bytes = descriptor.proto.toByteString();
-      FileDescriptorProto proto;
       try {
-        proto = FileDescriptorProto.parseFrom(bytes, registry);
+        FileDescriptorProto proto = FileDescriptorProto.parseFrom(bytes, registry);
+        descriptor.setProto(proto);
       } catch (InvalidProtocolBufferException e) {
         throw new IllegalArgumentException(
             "Failed to parse protocol buffer descriptor for generated code.", e);
       }
-      descriptor.setProto(proto);
     }
 
     /**
@@ -814,7 +813,7 @@ public final class Descriptors {
     /**
      * Finds a nested message type by name.
      *
-     * @param name The unqualified name of the nested type (e.g. "Foo").
+     * @param name The unqualified name of the nested type such as "Foo"
      * @return The types's descriptor, or {@code null} if not found.
      */
     public Descriptor findNestedTypeByName(final String name) {
@@ -829,7 +828,7 @@ public final class Descriptors {
     /**
      * Finds a nested enum type by name.
      *
-     * @param name The unqualified name of the nested type (e.g. "Foo").
+     * @param name The unqualified name of the nested type such as "Foo"
      * @return The types's descriptor, or {@code null} if not found.
      */
     public EnumDescriptor findEnumTypeByName(final String name) {
@@ -1202,7 +1201,7 @@ public final class Descriptors {
       }
     }
 
-    /** Can this field be packed? i.e. is it a repeated primitive field? */
+    /** Can this field be packed? That is, is it a repeated primitive field? */
     public boolean isPackable() {
       return isRepeated() && getLiteType().isPackable();
     }
@@ -1295,13 +1294,13 @@ public final class Descriptors {
      *   }
      *   message Bar {
      *     extend Foo {
-     *       optional int32 qux = 4321;
+     *       optional int32 moo = 4321;
      *     }
      *   }
      * </pre>
      *
-     * Both {@code baz}'s and {@code qux}'s containing type is {@code Foo}. However, {@code baz}'s
-     * extension scope is {@code null} while {@code qux}'s extension scope is {@code Bar}.
+     * Both {@code baz}'s and {@code moo}'s containing type is {@code Foo}. However, {@code baz}'s
+     * extension scope is {@code null} while {@code moo}'s extension scope is {@code Bar}.
      */
     public Descriptor getExtensionScope() {
       if (!isExtension()) {
@@ -1332,11 +1331,11 @@ public final class Descriptors {
 
     /**
      * Compare with another {@code FieldDescriptor}. This orders fields in "canonical" order, which
-     * simply means ascending order by field number. {@code other} must be a field of the same type
-     * -- i.e. {@code getContainingType()} must return the same {@code Descriptor} for both fields.
+     * simply means ascending order by field number. {@code other} must be a field of the same type.
+     * That is, {@code getContainingType()} must return the same {@code Descriptor} for both fields.
      *
      * @return negative, zero, or positive if {@code this} is less than, equal to, or greater than
-     *     {@code other}, respectively.
+     *     {@code other}, respectively
      */
     @Override
     public int compareTo(final FieldDescriptor other) {
@@ -1791,8 +1790,8 @@ public final class Descriptors {
     /**
      * Find an enum value by name.
      *
-     * @param name The unqualified name of the value (e.g. "FOO").
-     * @return the value's descriptor, or {@code null} if not found.
+     * @param name the unqualified name of the value such as "FOO"
+     * @return the value's descriptor, or {@code null} if not found
      */
     public EnumValueDescriptor findValueByName(final String name) {
       final GenericDescriptor result = file.pool.findSymbol(fullName + '.' + name);
@@ -1837,8 +1836,8 @@ public final class Descriptors {
       // The number represents an unknown enum value.
       synchronized (this) {
         if (cleanupQueue == null) {
-          cleanupQueue = new ReferenceQueue<EnumValueDescriptor>();
-          unknownValues = new HashMap<Integer, WeakReference<EnumValueDescriptor>>();
+          cleanupQueue = new ReferenceQueue<>();
+          unknownValues = new HashMap<>();
         } else {
           while (true) {
             UnknownEnumValueReference toClean = (UnknownEnumValueReference) cleanupQueue.poll();
@@ -2102,8 +2101,8 @@ public final class Descriptors {
     /**
      * Find a method by name.
      *
-     * @param name The unqualified name of the method (e.g. "Foo").
-     * @return the method's descriptor, or {@code null} if not found.
+     * @param name the unqualified name of the method such as "Foo"
+     * @return the method's descriptor, or {@code null} if not found
      */
     public MethodDescriptor findMethodByName(final String name) {
       final GenericDescriptor result = file.pool.findSymbol(fullName + '.' + name);
@@ -2415,7 +2414,7 @@ public final class Descriptors {
     }
 
     private final Set<FileDescriptor> dependencies;
-    private boolean allowUnknownDependencies;
+    private final boolean allowUnknownDependencies;
 
     private final Map<String, GenericDescriptor> descriptorsByName = new HashMap<>();
 
@@ -2475,7 +2474,6 @@ public final class Descriptors {
         final GenericDescriptor relativeTo,
         final DescriptorPool.SearchFilter filter)
         throws DescriptorValidationException {
-      // TODO(kenton):  This could be optimized in a number of ways.
 
       GenericDescriptor result;
       String fullname;
@@ -2547,11 +2545,11 @@ public final class Descriptors {
           logger.warning(
               "The descriptor for message type \""
                   + name
-                  + "\" can not be found and a placeholder is created for it");
+                  + "\" cannot be found and a placeholder is created for it");
           // We create a dummy message descriptor here regardless of the
           // expected type. If the type should be message, this dummy
           // descriptor will work well and if the type should be enum, a
-          // DescriptorValidationException will be thrown latter. In either
+          // DescriptorValidationException will be thrown later. In either
           // case, the code works as expected: we allow unknown message types
           // but not unknown enum types.
           result = new Descriptor(fullname);
@@ -2677,8 +2675,8 @@ public final class Descriptors {
     }
 
     /**
-     * Verifies that the descriptor's name is valid (i.e. it contains only letters, digits, and
-     * underscores, and does not start with a digit).
+     * Verifies that the descriptor's name is valid. That is, it contains only letters, digits, and
+     * underscores, and does not start with a digit.
      */
     static void validateSymbolName(final GenericDescriptor descriptor)
         throws DescriptorValidationException {
@@ -2706,7 +2704,7 @@ public final class Descriptors {
     }
   }
 
-  /** Describes an oneof of a message type. */
+  /** Describes a oneof of a message type. */
   public static final class OneofDescriptor extends GenericDescriptor {
     /** Get the index of this descriptor within its parent. */
     public int getIndex() {
@@ -2766,8 +2764,7 @@ public final class Descriptors {
         final OneofDescriptorProto proto,
         final FileDescriptor file,
         final Descriptor parent,
-        final int index)
-        throws DescriptorValidationException {
+        final int index) {
       this.proto = proto;
       fullName = computeFullName(file, parent, proto.getName());
       this.file = file;

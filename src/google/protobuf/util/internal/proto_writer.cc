@@ -33,19 +33,21 @@
 #include <cstdint>
 #include <functional>
 #include <stack>
+#include <unordered_set>
 
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/util/internal/field_mask_utility.h>
-#include <google/protobuf/util/internal/object_location_tracker.h>
-#include <google/protobuf/util/internal/constants.h>
-#include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/statusor.h>
 #include <google/protobuf/stubs/time.h>
+#include <google/protobuf/util/internal/constants.h>
+#include <google/protobuf/util/internal/field_mask_utility.h>
+#include <google/protobuf/util/internal/object_location_tracker.h>
+#include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/map_util.h>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -269,9 +271,9 @@ inline util::Status WriteString(int field_number, const DataPiece& data,
 }
 
 // Given a google::protobuf::Type, returns the set of all required fields.
-std::set<const google::protobuf::Field*> GetRequiredFields(
+std::unordered_set<const google::protobuf::Field*> GetRequiredFields(
     const google::protobuf::Type& type) {
-  std::set<const google::protobuf::Field*> required;
+  std::unordered_set<const google::protobuf::Field*> required;
   for (int i = 0; i < type.fields_size(); i++) {
     const google::protobuf::Field& field = type.fields(i);
     if (field.cardinality() == google::protobuf::Field::CARDINALITY_REQUIRED) {
@@ -346,7 +348,7 @@ ProtoWriter::ProtoElement* ProtoWriter::ProtoElement::pop() {
   if (!proto3_) {
     // Calls the registered error listener for any required field(s) not yet
     // seen.
-    for (std::set<const google::protobuf::Field*>::iterator it =
+    for (std::unordered_set<const google::protobuf::Field*>::iterator it =
              required_fields_.begin();
          it != required_fields_.end(); ++it) {
       ow_->MissingField(ow_->use_json_name_in_missing_fields_

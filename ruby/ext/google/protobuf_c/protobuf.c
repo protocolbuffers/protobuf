@@ -42,12 +42,12 @@ VALUE cTypeError;
 
 const upb_FieldDef *map_field_key(const upb_FieldDef *field) {
   const upb_MessageDef *entry = upb_FieldDef_MessageSubDef(field);
-  return upb_MessageDef_FindFieldByNumberWithSize(entry, 1);
+  return upb_MessageDef_FindFieldByNumber(entry, 1);
 }
 
 const upb_FieldDef *map_field_value(const upb_FieldDef *field) {
   const upb_MessageDef *entry = upb_FieldDef_MessageSubDef(field);
-  return upb_MessageDef_FindFieldByNumberWithSize(entry, 2);
+  return upb_MessageDef_FindFieldByNumber(entry, 2);
 }
 
 // -----------------------------------------------------------------------------
@@ -193,9 +193,20 @@ const rb_data_type_t Arena_type = {
     .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
 
+static void* ruby_upb_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize, size_t size) {
+  if (size == 0) {
+    xfree(ptr);
+    return NULL;
+  } else {
+    return xrealloc(ptr, size);
+  }
+}
+
+upb_alloc ruby_upb_alloc = {&ruby_upb_allocfunc};
+
 static VALUE Arena_alloc(VALUE klass) {
   Arena *arena = ALLOC(Arena);
-  arena->arena = upb_Arena_New();
+  arena->arena = upb_Arena_Init(NULL, 0, &ruby_upb_alloc);
   arena->pinned_objs = Qnil;
   return TypedData_Wrap_Struct(klass, &Arena_type, arena);
 }

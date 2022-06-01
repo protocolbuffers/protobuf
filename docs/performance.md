@@ -301,4 +301,4 @@ This table contains the results of three separate languages:
 </tr>
 </tbody></table>
 
-\* The cpp performance can be improved by using [tcmalloc](https://gperftools.github.io/gperftools/tcmalloc.html), please follow the (instruction)[https://github.com/protocolbuffers/protobuf/blob/master/benchmarks/README.md] to link with tcmalloc to get the faster result.
+\* The cpp performance can be improved by using [tcmalloc](https://gperftools.github.io/gperftools/tcmalloc.html), please follow the (instruction)[https://github.com/protocolbuffers/protobuf/blob/main/benchmarks/README.md] to link with tcmalloc to get the faster result.

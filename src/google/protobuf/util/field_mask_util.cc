@@ -32,8 +32,8 @@
 
 #include <cstdint>
 
-#include <google/protobuf/message.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/message.h>
 #include <google/protobuf/stubs/map_util.h>
 
 // Must be included last.
@@ -339,7 +339,7 @@ void FieldMaskTree::AddPath(const std::string& path) {
       return;
     }
     Node*& child = node->children[node_name];
-    if (child == NULL) {
+    if (child == nullptr) {
       new_branch = true;
       child = new Node();
     }
@@ -423,7 +423,7 @@ void FieldMaskTree::IntersectPath(const std::string& path, FieldMaskTree* out) {
       return;
     }
     const Node* result = FindPtrOrNull(node->children, node_name);
-    if (result == NULL) {
+    if (result == nullptr) {
       // No intersection found.
       return;
     }
@@ -459,7 +459,7 @@ void FieldMaskTree::MergeMessage(const Node* node, const Message& source,
     const std::string& field_name = it->first;
     const Node* child = it->second;
     const FieldDescriptor* field = descriptor->FindFieldByName(field_name);
-    if (field == NULL) {
+    if (field == nullptr) {
       GOOGLE_LOG(ERROR) << "Cannot find field \"" << field_name << "\" in message "
                  << descriptor->full_name();
       continue;

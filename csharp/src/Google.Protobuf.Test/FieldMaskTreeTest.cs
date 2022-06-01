@@ -432,5 +432,89 @@ namespace Google.Protobuf
             Assert.IsNotNull(destination.Payload);
         }
 
+        [Test]
+        public void MergeWrapperFieldsWithNonNullFieldsInSource()
+        {
+            // Instantiate a destination with wrapper-based field types.
+            var destination = new TestWellKnownTypes()
+            {
+                StringField = "Hello",
+                Int32Field = 12,
+                Int64Field = 24,
+                BoolField = true,
+            };
+
+            // Set up a targeted update.
+            var source = new TestWellKnownTypes()
+            {
+                StringField = "Hi",
+                Int64Field = 240
+            };
+
+            Merge(new FieldMaskTree().AddFieldPath("string_field").AddFieldPath("int64_field"),
+                source,
+                destination,
+                new FieldMask.MergeOptions(),
+                false);
+
+            // Make sure the targeted fields changed.
+            Assert.AreEqual("Hi", destination.StringField);
+            Assert.AreEqual(240, destination.Int64Field);
+
+            // Prove that non-targeted fields stay intact...
+            Assert.AreEqual(12, destination.Int32Field);
+            Assert.IsTrue(destination.BoolField);
+
+            // ...including default values which were not explicitly set in the destination object.
+            Assert.IsNull(destination.FloatField);
+        }
+
+        [Test]
+        [TestCase(false, "Hello", 24)]
+        [TestCase(true, null, null)]
+        public void MergeWrapperFieldsWithNullFieldsInSource(
+            bool replaceMessageFields,
+            string expectedStringValue,
+            long? expectedInt64Value)
+        {
+            // Instantiate a destination with wrapper-based field types.
+            var destination = new TestWellKnownTypes()
+            {
+                StringField = "Hello",
+                Int32Field = 12,
+                Int64Field = 24,
+                BoolField = true,
+            };
+
+            // Set up a targeted update with null valued fields.
+            var source = new TestWellKnownTypes()
+            {
+                StringField = null,
+                Int64Field = null
+            };
+
+            Merge(new FieldMaskTree().AddFieldPath("string_field").AddFieldPath("int64_field"),
+                source,
+                destination,
+                new FieldMask.MergeOptions()
+                {
+                    ReplaceMessageFields = replaceMessageFields
+                },
+                false);
+
+            // Make sure the targeted fields changed according to our expectations, depending on the value of ReplaceMessageFields.
+            // When ReplaceMessageFields is false, the null values are not applied to the destination, because, although wrapped types
+            // are semantically primitives, FieldMaskTree.Merge still treats them as message types in order to maintain consistency with other Protobuf
+            // libraries such as Java and C++.
+            Assert.AreEqual(expectedStringValue, destination.StringField);
+            Assert.AreEqual(expectedInt64Value, destination.Int64Field);
+
+            // Prove that non-targeted fields stay intact...
+            Assert.AreEqual(12, destination.Int32Field);
+            Assert.IsTrue(destination.BoolField);
+
+            // ...including default values which were not explicitly set in the destination object.
+            Assert.IsNull(destination.FloatField);
+        }
     }
 }

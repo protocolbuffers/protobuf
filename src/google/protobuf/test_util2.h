@@ -33,18 +33,26 @@
 
 #include <google/protobuf/stubs/strutil.h>
 
-#include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/testing/googletest.h>
+#include <google/protobuf/io/zero_copy_stream.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include <google/protobuf/util/message_differencer.h>
 
 namespace google {
 namespace protobuf {
 namespace TestUtil {
 
-// Translate net/proto2/* -> google/protobuf/*
+// Translate net/proto2/* or third_party/protobuf/* to google/protobuf/*.
 inline std::string TranslatePathToOpensource(const std::string& google3_path) {
-  const std::string prefix = "net/proto2/";
-  GOOGLE_CHECK(google3_path.find(prefix) == 0) << google3_path;
-  std::string path = google3_path.substr(prefix.size());
+  std::string net_proto2 = "net/proto2/";
+  std::string third_party_protobuf = "third_party/protobuf/";
+  std::string path;
+  if (google3_path.find(net_proto2) == 0) {
+    path = google3_path.substr(net_proto2.size());
+  } else {
+    GOOGLE_CHECK(google3_path.find(third_party_protobuf) == 0) << google3_path;
+    path = google3_path.substr(third_party_protobuf.size());
+  }
 
   path = StringReplace(path, "internal/", "", false);
   path = StringReplace(path, "proto/", "", false);
@@ -74,6 +82,28 @@ bool EqualsToSerialized(const ProtoType& message, const std::string& data) {
   other.ParsePartialFromString(data);
   return util::MessageDifferencer::Equals(message, other);
 }
+
+// Wraps io::ArrayInputStream while checking against bound. When a blocking
+// stream is used with bounded length, proto parsing must not access beyond the
+// bound. Otherwise, it can result in unintended block, then deadlock.
+class BoundedArrayInputStream : public io::ZeroCopyInputStream {
+ public:
+  BoundedArrayInputStream(const void* data, int size)
+      : stream_(data, size), bound_(size) {}
+  ~BoundedArrayInputStream() override {}
+
+  bool Next(const void** data, int* size) override {
+    GOOGLE_CHECK_LT(stream_.ByteCount(), bound_);
+    return stream_.Next(data, size);
+  }
+  void BackUp(int count) override { stream_.BackUp(count); }
+  bool Skip(int count) override { return stream_.Skip(count); }
+  int64_t ByteCount() const override { return stream_.ByteCount(); }
+
+ private:
+  io::ArrayInputStream stream_;
+  int bound_;
+};
 
 }  // namespace TestUtil
 }  // namespace protobuf

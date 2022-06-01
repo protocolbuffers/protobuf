@@ -83,7 +83,7 @@ class MockValidationErrorCollector : public DescriptorPool::ErrorCollector {
                                io::ErrorCollector* wrapped_collector)
       : source_locations_(source_locations),
         wrapped_collector_(wrapped_collector) {}
-  ~MockValidationErrorCollector() {}
+  ~MockValidationErrorCollector() override {}
 
   // implements ErrorCollector ---------------------------------------
   void AddError(const std::string& filename, const std::string& element_name,
@@ -173,7 +173,7 @@ class ParserTest : public testing::Test {
     MockValidationErrorCollector validation_error_collector(source_locations,
                                                             &error_collector_);
     EXPECT_TRUE(pool_.BuildFileCollectingErrors(
-                    file, &validation_error_collector) == NULL);
+                    file, &validation_error_collector) == nullptr);
     EXPECT_EQ(expected_errors, error_collector_.text_);
   }
 
@@ -194,7 +194,7 @@ TEST_F(ParserTest, StopAfterSyntaxIdentifier) {
       "syntax = \"foobar\";\n"
       "this line will not be parsed\n");
   parser_->SetStopAfterSyntaxIdentifier(true);
-  EXPECT_TRUE(parser_->Parse(input_.get(), NULL));
+  EXPECT_TRUE(parser_->Parse(input_.get(), nullptr));
   EXPECT_EQ("", error_collector_.text_);
   EXPECT_EQ("foobar", parser_->GetSyntaxIdentifier());
 }
@@ -204,7 +204,7 @@ TEST_F(ParserTest, StopAfterOmittedSyntaxIdentifier) {
       "// blah\n"
       "this line will not be parsed\n");
   parser_->SetStopAfterSyntaxIdentifier(true);
-  EXPECT_TRUE(parser_->Parse(input_.get(), NULL));
+  EXPECT_TRUE(parser_->Parse(input_.get(), nullptr));
   EXPECT_EQ("", error_collector_.text_);
   EXPECT_EQ("", parser_->GetSyntaxIdentifier());
 }
@@ -214,7 +214,7 @@ TEST_F(ParserTest, StopAfterSyntaxIdentifierWithErrors) {
       "// blah\n"
       "syntax = error;\n");
   parser_->SetStopAfterSyntaxIdentifier(true);
-  EXPECT_FALSE(parser_->Parse(input_.get(), NULL));
+  EXPECT_FALSE(parser_->Parse(input_.get(), nullptr));
   EXPECT_EQ("1:9: Expected syntax identifier.\n", error_collector_.text_);
 }
 
@@ -1792,7 +1792,7 @@ TEST_F(ParserValidationErrorTest, PackageNameError) {
   FileDescriptorProto other_file;
   other_file.set_name("bar.proto");
   other_file.add_message_type()->set_name("foo");
-  EXPECT_TRUE(pool_.BuildFile(other_file) != NULL);
+  EXPECT_TRUE(pool_.BuildFile(other_file) != nullptr);
 
   // Now try to define it as a package.
   ExpectHasValidationErrors(
@@ -1861,7 +1861,8 @@ TEST_F(ParserValidationErrorTest, FieldNumberError) {
       "message Foo {\n"
       "  optional int32 bar = 0;\n"
       "}\n",
-      "1:23: Field numbers must be positive integers.\n");
+      "1:23: Field numbers must be positive integers.\n"
+      "1:23: Suggested field numbers for Foo: 1\n");
 }
 
 TEST_F(ParserValidationErrorTest, FieldExtendeeError) {
@@ -1926,7 +1927,8 @@ TEST_F(ParserValidationErrorTest, ExtensionRangeNumberError) {
       "message Foo {\n"
       "  extensions 0;\n"
       "}\n",
-      "1:13: Extension numbers must be positive integers.\n");
+      "1:13: Extension numbers must be positive integers.\n"
+      "1:13: Suggested field numbers for Foo: 1\n");
 }
 
 TEST_F(ParserValidationErrorTest, Proto3ExtensionError) {
@@ -2071,7 +2073,7 @@ TEST_F(ParserValidationErrorTest, ResolvedUndefinedError) {
   other_file.set_name("base.proto");
   other_file.set_package("base");
   other_file.add_message_type()->set_name("bar");
-  EXPECT_TRUE(pool_.BuildFile(other_file) != NULL);
+  EXPECT_TRUE(pool_.BuildFile(other_file) != nullptr);
 
   // Define "foo.base" and try "base.bar".
   // "base.bar" is resolved to "foo.base.bar" which is not defined.
@@ -2092,7 +2094,7 @@ TEST_F(ParserValidationErrorTest, ResovledUndefinedOptionError) {
   // Build descriptor message in test pool
   FileDescriptorProto descriptor_proto;
   DescriptorProto::descriptor()->file()->CopyTo(&descriptor_proto);
-  ASSERT_TRUE(pool_.BuildFile(descriptor_proto) != NULL);
+  ASSERT_TRUE(pool_.BuildFile(descriptor_proto) != nullptr);
 
   // base2.proto:
   //   package baz
@@ -2121,7 +2123,7 @@ TEST_F(ParserValidationErrorTest, ResovledUndefinedOptionError) {
   extension->set_type_name("Bar");
   extension->set_extendee("google.protobuf.FileOptions");
 
-  EXPECT_TRUE(pool_.BuildFile(other_file) != NULL);
+  EXPECT_TRUE(pool_.BuildFile(other_file) != nullptr);
 
   // qux.proto:
   //   package qux.baz
@@ -2228,17 +2230,17 @@ TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
       protobuf_unittest_import::PublicImportMessage::descriptor()->file();
   FileDescriptorProto public_import_proto;
   public_import->CopyTo(&public_import_proto);
-  ASSERT_TRUE(pool_.BuildFile(public_import_proto) != NULL);
+  ASSERT_TRUE(pool_.BuildFile(public_import_proto) != nullptr);
   const FileDescriptor* import =
       protobuf_unittest_import::ImportMessage::descriptor()->file();
   FileDescriptorProto import_proto;
   import->CopyTo(&import_proto);
-  ASSERT_TRUE(pool_.BuildFile(import_proto) != NULL);
+  ASSERT_TRUE(pool_.BuildFile(import_proto) != nullptr);
   const FileDescriptor* actual = pool_.BuildFile(parsed);
   parsed.Clear();
-  ASSERT_TRUE(actual != NULL) << "Failed to validate:\n" << debug_string;
+  ASSERT_TRUE(actual != nullptr) << "Failed to validate:\n" << debug_string;
   actual->CopyTo(&parsed);
-  ASSERT_TRUE(actual != NULL);
+  ASSERT_TRUE(actual != nullptr);
 
   // The messages might be in different orders, making them hard to compare.
   // So, sort the messages in the descriptor protos (including nested messages,
@@ -2276,14 +2278,14 @@ TEST_F(ParseDescriptorDebugTest, TestCustomOptions) {
   const FileDescriptor* import = FileDescriptorProto::descriptor()->file();
   FileDescriptorProto import_proto;
   import->CopyTo(&import_proto);
-  ASSERT_TRUE(pool_.BuildFile(import_proto) != NULL);
+  ASSERT_TRUE(pool_.BuildFile(import_proto) != nullptr);
 
   FileDescriptorProto any_import;
   google::protobuf::Any::descriptor()->file()->CopyTo(&any_import);
   ASSERT_TRUE(pool_.BuildFile(any_import) != nullptr);
 
   const FileDescriptor* actual = pool_.BuildFile(parsed);
-  ASSERT_TRUE(actual != NULL);
+  ASSERT_TRUE(actual != nullptr);
   parsed.Clear();
   actual->CopyTo(&parsed);
 
@@ -2365,7 +2367,7 @@ TEST_F(ParseDescriptorDebugTest, TestCommentsInDebugString) {
   MockValidationErrorCollector collector(source_locations, &error_collector_);
   const FileDescriptor* descriptor =
       pool_.BuildFileCollectingErrors(parsed_desc, &collector);
-  ASSERT_TRUE(descriptor != NULL);
+  ASSERT_TRUE(descriptor != nullptr);
 
   // Ensure that each of the comments appears somewhere in the DebugString().
   // We don't test the exact comment placement or formatting, because we do not
@@ -2429,7 +2431,7 @@ TEST_F(ParseDescriptorDebugTest, TestMaps) {
   EXPECT_TRUE(parser_->Parse(input_.get(), &original));
   original.set_name("foo.proto");
   const FileDescriptor* file = pool_.BuildFile(original);
-  ASSERT_TRUE(file != NULL);
+  ASSERT_TRUE(file != nullptr);
 
   // Make sure the debug string uses map syntax and does not have the auto
   // generated entry.
@@ -2466,13 +2468,15 @@ TEST_F(ParseDescriptorDebugTest, TestMaps) {
 //   *output_field to the descriptor of the field, and *output_index to -1.
 // Returns true if the path was valid, false otherwise.  A gTest failure is
 // recorded before returning false.
-bool FollowPath(const Message& root, const int* path_begin, const int* path_end,
+bool FollowPath(const Message& root,
+                RepeatedField<int>::const_iterator path_begin,
+                RepeatedField<int>::const_iterator path_end,
                 const Message** output_message,
                 const FieldDescriptor** output_field, int* output_index) {
   if (path_begin == path_end) {
     // Path refers to this whole message.
     *output_message = &root;
-    *output_field = NULL;
+    *output_field = nullptr;
     *output_index = -1;
     return true;
   }
@@ -2482,7 +2486,7 @@ bool FollowPath(const Message& root, const int* path_begin, const int* path_end,
 
   const FieldDescriptor* field = descriptor->FindFieldByNumber(*path_begin);
 
-  if (field == NULL) {
+  if (field == nullptr) {
     ADD_FAILURE() << descriptor->name()
                   << " has no field number: " << *path_begin;
     return false;
@@ -2573,8 +2577,8 @@ class SourceInfoTest : public ParserTest {
     const SourceCodeInfo& source_info = file_.source_code_info();
     for (int i = 0; i < source_info.location_size(); i++) {
       const SourceCodeInfo::Location& location = source_info.location(i);
-      const Message* descriptor_proto = NULL;
-      const FieldDescriptor* field = NULL;
+      const Message* descriptor_proto = nullptr;
+      const FieldDescriptor* field = nullptr;
       int index = 0;
       if (!FollowPath(file_, location.path().begin(), location.path().end(),
                       &descriptor_proto, &field, &index)) {
@@ -2601,8 +2605,8 @@ class SourceInfoTest : public ParserTest {
 
   bool HasSpan(char start_marker, char end_marker,
                const Message& descriptor_proto) {
-    return HasSpanWithComment(start_marker, end_marker, descriptor_proto, NULL,
-                              -1, NULL, NULL, NULL);
+    return HasSpanWithComment(start_marker, end_marker, descriptor_proto,
+                              nullptr, -1, nullptr, nullptr, nullptr);
   }
 
   bool HasSpanWithComment(char start_marker, char end_marker,
@@ -2610,8 +2614,8 @@ class SourceInfoTest : public ParserTest {
                           const char* expected_leading_comments,
                           const char* expected_trailing_comments,
                           const char* expected_leading_detached_comments) {
-    return HasSpanWithComment(start_marker, end_marker, descriptor_proto, NULL,
-                              -1, expected_leading_comments,
+    return HasSpanWithComment(start_marker, end_marker, descriptor_proto,
+                              nullptr, -1, expected_leading_comments,
                               expected_trailing_comments,
                               expected_leading_detached_comments);
   }
@@ -2625,7 +2629,7 @@ class SourceInfoTest : public ParserTest {
                const Message& descriptor_proto, const std::string& field_name,
                int index) {
     return HasSpan(start_marker, end_marker, descriptor_proto, field_name,
-                   index, NULL, NULL, NULL);
+                   index, nullptr, nullptr, nullptr);
   }
 
   bool HasSpan(char start_marker, char end_marker,
@@ -2635,7 +2639,7 @@ class SourceInfoTest : public ParserTest {
                const char* expected_leading_detached_comments) {
     const FieldDescriptor* field =
         descriptor_proto.GetDescriptor()->FindFieldByName(field_name);
-    if (field == NULL) {
+    if (field == nullptr) {
       ADD_FAILURE() << descriptor_proto.GetDescriptor()->name()
                     << " has no such field: " << field_name;
       return false;
@@ -2648,8 +2652,8 @@ class SourceInfoTest : public ParserTest {
   }
 
   bool HasSpan(const Message& descriptor_proto) {
-    return HasSpanWithComment('\0', '\0', descriptor_proto, NULL, -1, NULL,
-                              NULL, NULL);
+    return HasSpanWithComment('\0', '\0', descriptor_proto, nullptr, -1,
+                              nullptr, nullptr, nullptr);
   }
 
   bool HasSpan(const Message& descriptor_proto, const std::string& field_name) {
@@ -2686,21 +2690,21 @@ class SourceInfoTest : public ParserTest {
 
       for (SpanMap::iterator iter = range.first; iter != range.second; ++iter) {
         if (CompareSpans(expected_span, iter->second->span())) {
-          if (expected_leading_comments == NULL) {
+          if (expected_leading_comments == nullptr) {
             EXPECT_FALSE(iter->second->has_leading_comments());
           } else {
             EXPECT_TRUE(iter->second->has_leading_comments());
             EXPECT_EQ(expected_leading_comments,
                       iter->second->leading_comments());
           }
-          if (expected_trailing_comments == NULL) {
+          if (expected_trailing_comments == nullptr) {
             EXPECT_FALSE(iter->second->has_trailing_comments());
           } else {
             EXPECT_TRUE(iter->second->has_trailing_comments());
             EXPECT_EQ(expected_trailing_comments,
                       iter->second->trailing_comments());
           }
-          if (expected_leading_detached_comments == NULL) {
+          if (expected_leading_detached_comments == nullptr) {
             EXPECT_EQ(0, iter->second->leading_detached_comments_size());
           } else {
             EXPECT_EQ(
@@ -3496,7 +3500,7 @@ TEST_F(SourceInfoTest, DocComments) {
   const FieldDescriptorProto& bar = foo.field(0);
 
   EXPECT_TRUE(HasSpanWithComment('a', 'd', foo, " Foo leading\n line 2\n",
-                                 " Foo trailing\n line 2\n", NULL));
+                                 " Foo trailing\n line 2\n", nullptr));
   EXPECT_TRUE(HasSpanWithComment('b', 'c', bar, " bar leading\n",
                                  " bar trailing\n", " detached\n"));
 
@@ -3572,7 +3576,7 @@ TEST_F(SourceInfoTest, DocComments3) {
   const FieldDescriptorProto& bar = foo.field(0);
 
   EXPECT_TRUE(HasSpanWithComment('b', 'c', bar, " bar leading\n",
-                                 " bar trailing\n", NULL));
+                                 " bar trailing\n", nullptr));
 
   // Ignore these.
   EXPECT_TRUE(HasSpan(file_));
@@ -3655,7 +3659,7 @@ TEST_F(SourceInfoTest, DocCommentsOneof) {
   const FieldDescriptorProto& bar_int = foo.field(0);
 
   EXPECT_TRUE(HasSpanWithComment('a', 'f', foo, " Foo leading\n",
-                                 " Foo trailing\n", NULL));
+                                 " Foo trailing\n", nullptr));
   EXPECT_TRUE(HasSpanWithComment('b', 'e', bar, " bar leading\n line 2 ",
                                  " bar trailing\n line 2 ",
                                  " detached before oneof\n"));

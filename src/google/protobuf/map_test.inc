@@ -48,31 +48,30 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/testing/file.h>
-#include <google/protobuf/arena_test_util.h>
-#include <google/protobuf/test_util2.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/tokenizer.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor_database.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/map.h>
-#include <google/protobuf/map_field_inl.h>
-#include <google/protobuf/message.h>
-#include <google/protobuf/reflection.h>
-#include <google/protobuf/reflection_ops.h>
-#include <google/protobuf/text_format.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/util/message_differencer.h>
-#include <google/protobuf/util/time_util.h>
 #include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/substitute.h>
+#include <google/protobuf/arena_test_util.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor_database.h>
+#include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/tokenizer.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/map.h>
+#include <google/protobuf/map_field_inl.h>
+#include <google/protobuf/message.h>
+#include <google/protobuf/reflection.h>
+#include <google/protobuf/reflection_ops.h>
+#include <google/protobuf/test_util2.h>
+#include <google/protobuf/text_format.h>
+#include <google/protobuf/util/message_differencer.h>
+#include <google/protobuf/util/time_util.h>
+#include <google/protobuf/wire_format.h>
 
 
 // Must be included last.
@@ -99,29 +98,29 @@ namespace {
 class MapImplTest : public ::testing::Test {
  protected:
   MapImplTest()
-      : map_ptr_(new Map<int32, int32>()),
+      : map_ptr_(new Map<int32_t, int32_t>()),
         map_(*map_ptr_),
         const_map_(*map_ptr_) {
     EXPECT_TRUE(map_.empty());
     EXPECT_EQ(0, map_.size());
   }
 
-  void ExpectSingleElement(int32 key, int32 value) {
+  void ExpectSingleElement(int32_t key, int32_t value) {
     EXPECT_FALSE(map_.empty());
     EXPECT_EQ(1, map_.size());
     ExpectElement(key, value);
   }
 
-  void ExpectElements(const std::map<int32, int32>& map) {
+  void ExpectElements(const std::map<int32_t, int32_t>& map) {
     EXPECT_FALSE(map_.empty());
     EXPECT_EQ(map.size(), map_.size());
-    for (std::map<int32, int32>::const_iterator it = map.begin();
+    for (std::map<int32_t, int32_t>::const_iterator it = map.begin();
          it != map.end(); ++it) {
       ExpectElement(it->first, it->second);
     }
   }
 
-  void ExpectElement(int32 key, int32 value) {
+  void ExpectElement(int32_t key, int32_t value) {
     // Test map size is correct.
     EXPECT_EQ(value, map_[key]);
     EXPECT_EQ(1, map_.count(key));
@@ -129,7 +128,7 @@ class MapImplTest : public ::testing::Test {
 
     // Check mutable at and find work correctly.
     EXPECT_EQ(value, map_.at(key));
-    Map<int32, int32>::iterator it = map_.find(key);
+    Map<int32_t, int32_t>::iterator it = map_.find(key);
 
     // iterator dereferenceable
     EXPECT_EQ(key, (*it).first);
@@ -149,7 +148,7 @@ class MapImplTest : public ::testing::Test {
     EXPECT_EQ(value, map_[key]);
 
     // copy constructor
-    Map<int32, int32>::iterator it_copy = it;
+    Map<int32_t, int32_t>::iterator it_copy = it;
     EXPECT_EQ(key, it_copy->first);
     EXPECT_EQ(value, it_copy->second);
 
@@ -157,7 +156,7 @@ class MapImplTest : public ::testing::Test {
 
     // Check immutable at and find work correctly.
     EXPECT_EQ(value, const_map_.at(key));
-    Map<int32, int32>::const_iterator const_it = const_map_.find(key);
+    Map<int32_t, int32_t>::const_iterator const_it = const_map_.find(key);
 
     // iterator dereferenceable
     EXPECT_EQ(key, (*const_it).first);
@@ -166,20 +165,20 @@ class MapImplTest : public ::testing::Test {
     EXPECT_EQ(value, const_it->second);
 
     // copy constructor
-    Map<int32, int32>::const_iterator const_it_copy = const_it;
+    Map<int32_t, int32_t>::const_iterator const_it_copy = const_it;
     EXPECT_EQ(key, const_it_copy->first);
     EXPECT_EQ(value, const_it_copy->second);
   }
 
-  std::unique_ptr<Map<int32, int32> > map_ptr_;
-  Map<int32, int32>& map_;
-  const Map<int32, int32>& const_map_;
+  std::unique_ptr<Map<int32_t, int32_t>> map_ptr_;
+  Map<int32_t, int32_t>& map_;
+  const Map<int32_t, int32_t>& const_map_;
 };
 
 TEST_F(MapImplTest, OperatorBracket) {
-  int32 key = 0;
-  int32 value1 = 100;
-  int32 value2 = 101;
+  int32_t key = 0;
+  int32_t value1 = 100;
+  int32_t value2 = 101;
 
   EXPECT_EQ(0, map_[key]);
 
@@ -247,17 +246,17 @@ TEST_F(MapImplTest, OperatorBracketRValue) {
 }
 
 TEST_F(MapImplTest, OperatorBracketNonExist) {
-  int32 key = 0;
-  int32 default_value = 0;
+  int32_t key = 0;
+  int32_t default_value = 0;
 
   EXPECT_EQ(default_value, map_[key]);
   ExpectSingleElement(key, default_value);
 }
 
 TEST_F(MapImplTest, MutableAt) {
-  int32 key = 0;
-  int32 value1 = 100;
-  int32 value2 = 101;
+  int32_t key = 0;
+  int32_t value1 = 100;
+  int32_t value2 = 101;
 
   map_[key] = value1;
   ExpectSingleElement(key, value1);
@@ -326,20 +325,20 @@ TEST_F(MapImplTest, GetReferenceFromIterator) {
     map_[i] = i;
   }
 
-  for (Map<int32, int32>::const_iterator it = map_.cbegin();
+  for (Map<int32_t, int32_t>::const_iterator it = map_.cbegin();
        it != map_.cend();) {
-    Map<int32, int32>::const_reference entry = *it++;
+    Map<int32_t, int32_t>::const_reference entry = *it++;
     EXPECT_EQ(entry.first, entry.second);
   }
 
-  for (Map<int32, int32>::const_iterator it = const_map_.begin();
+  for (Map<int32_t, int32_t>::const_iterator it = const_map_.begin();
        it != const_map_.end();) {
-    Map<int32, int32>::const_reference entry = *it++;
+    Map<int32_t, int32_t>::const_reference entry = *it++;
     EXPECT_EQ(entry.first, entry.second);
   }
 
-  for (Map<int32, int32>::iterator it = map_.begin(); it != map_.end();) {
-    Map<int32, int32>::reference entry = *it++;
+  for (Map<int32_t, int32_t>::iterator it = map_.begin(); it != map_.end();) {
+    Map<int32_t, int32_t>::reference entry = *it++;
     EXPECT_EQ(entry.first + 1, ++entry.second);
   }
 }
@@ -367,13 +366,13 @@ TEST_F(MapImplTest, IteratorBasic) {
 }
 
 template <typename Iterator>
-static int64 median(Iterator i0, Iterator i1) {
-  std::vector<int64> v(i0, i1);
+static int64_t median(Iterator i0, Iterator i1) {
+  std::vector<int64_t> v(i0, i1);
   std::nth_element(v.begin(), v.begin() + v.size() / 2, v.end());
   return v[v.size() / 2];
 }
 
-static int64 Now() {
+static int64_t Now() {
   return util::TimeUtil::TimestampToNanoseconds(
       util::TimeUtil::GetCurrentTime());
 }
@@ -388,14 +387,14 @@ static int k2 = 1321555333;
 // avoid that, as std::unordered_map does.
 TEST_F(MapImplTest, BeginIsFast) {
   if (true) return;  // TODO(gpike): make this less flaky and re-enable it.
-  Map<int32, int32> map;
+  Map<int32_t, int32_t> map;
   const int kTestSize = 250000;
   // Create a random-looking map of size n.  Use non-negative integer keys.
-  uint32 frog = 123983;
+  uint32_t frog = 123983;
   int last_key = 0;
   int counter = 0;
   while (map.size() < kTestSize) {
-    frog *= static_cast<uint32>(k0);
+    frog *= static_cast<uint32_t>(k0);
     frog ^= frog >> 17;
     frog += counter++;
     last_key =
@@ -403,18 +402,18 @@ TEST_F(MapImplTest, BeginIsFast) {
     GOOGLE_DCHECK_GE(last_key, 0);
     map[last_key] = last_key ^ 1;
   }
-  std::vector<int64> times;
+  std::vector<int64_t> times;
   // We're going to do map.erase(map.begin()) over and over again.  But,
   // just in case one iteration is fast compared to the granularity of
   // our time keeping, we measure kChunkSize iterations per outer-loop iter.
   const int kChunkSize = 1000;
   GOOGLE_CHECK_EQ(kTestSize % kChunkSize, 0);
   do {
-    const int64 start = Now();
+    const int64_t start = Now();
     for (int i = 0; i < kChunkSize; i++) {
       map.erase(map.begin());
     }
-    const int64 end = Now();
+    const int64_t end = Now();
     if (end > start) {
       times.push_back(end - start);
     }
@@ -423,8 +422,8 @@ TEST_F(MapImplTest, BeginIsFast) {
     GOOGLE_LOG(WARNING) << "Now() isn't helping us measure time";
     return;
   }
-  int64 x0 = median(times.begin(), times.begin() + 9);
-  int64 x1 = median(times.begin() + times.size() - 9, times.end());
+  int64_t x0 = median(times.begin(), times.begin() + 9);
+  int64_t x1 = median(times.begin() + times.size() - 9, times.end());
   GOOGLE_LOG(INFO) << "x0=" << x0 << ", x1=" << x1;
   // x1 will greatly exceed x0 if the code we just executed took O(n^2) time.
   // And we'll probably time out and never get here.  So, this test is
@@ -448,13 +447,13 @@ TEST_F(MapImplTest, HashFlood) {
   // 1024 (or 512 or 2048 or ...) entries.  This assumes that map_ uses powers
   // of 2 for table sizes, and that it's sufficient to "flood" with respect to
   // the low bits of the output of map_.hash_function().
-  std::vector<int64> times;
+  std::vector<int64_t> times;
   std::set<int>::iterator it = s.begin();
   int count = 0;
   do {
-    const int64 start = Now();
+    const int64_t start = Now();
     map_[*it] = 0;
-    const int64 end = Now();
+    const int64_t end = Now();
     if (end > start) {
       times.push_back(end - start);
     }
@@ -462,24 +461,25 @@ TEST_F(MapImplTest, HashFlood) {
     ++it;
   } while (it != s.end());
   if (times.size() < .99 * count) return;
-  int64 x0 = median(times.begin(), times.begin() + 9);
-  int64 x1 = median(times.begin() + times.size() - 9, times.end());
+  int64_t x0 = median(times.begin(), times.begin() + 9);
+  int64_t x1 = median(times.begin() + times.size() - 9, times.end());
   // x1 will greatly exceed x0 if the code we just executed took O(n^2) time.
   // But we want to allow O(n log n).  A factor of 20 should be generous enough.
   EXPECT_LE(x1, x0 * 20);
 }
 
 TEST_F(MapImplTest, CopyIteratorStressTest) {
-  std::vector<Map<int32, int32>::iterator> v;
+  std::vector<Map<int32_t, int32_t>::iterator> v;
   const int kIters = 1e5;
-  for (uint32 i = 0; i < kIters; i++) {
-    int32 key = (3 + i * (5 + i * (-8 + i * (62 + i)))) & 0x77777777;
+  for (uint32_t i = 0; i < kIters; i++) {
+    int32_t key = (3 + i * (5 + i * (-8 + i * (62 + i)))) & 0x77777777;
     map_[key] = i;
     v.push_back(map_.find(key));
   }
-  for (std::vector<Map<int32, int32>::iterator>::const_iterator it = v.begin();
+  for (std::vector<Map<int32_t, int32_t>::iterator>::const_iterator it =
+           v.begin();
        it != v.end(); it++) {
-    Map<int32, int32>::iterator i = *it;
+    Map<int32_t, int32_t>::iterator i = *it;
     ASSERT_EQ(i->first, (*it)->first);
     ASSERT_EQ(i->second, (*it)->second);
   }
@@ -554,11 +554,11 @@ static void StressTestIterators(int n) {
   GOOGLE_CHECK_GT(n, 0);
   // Create a random-looking map of size n.  Use non-negative integer keys.
   Map<int, int> m;
-  uint32 frog = 123987 + n;
+  uint32_t frog = 123987 + n;
   int last_key = 0;
   int counter = 0;
   while (m.size() < n) {
-    frog *= static_cast<uint32>(k0);
+    frog *= static_cast<uint32_t>(k0);
     frog ^= frog >> 17;
     frog += counter++;
     last_key =
@@ -687,47 +687,233 @@ TEST_F(MapImplTest, IteratorCategory) {
           Map<int, int>::const_iterator>::iterator_category()));
 }
 
-TEST_F(MapImplTest, InsertSingle) {
-  int32 key = 0;
-  int32 value1 = 100;
-  int32 value2 = 101;
+TEST_F(MapImplTest, InsertSingleLValue) {
+  int32_t key = 0;
+  int32_t value1 = 100;
+  int32_t value2 = 101;
 
-  // Insert a non-existed key.
-  std::pair<Map<int32, int32>::iterator, bool> result1 =
-      map_.insert(Map<int32, int32>::value_type(key, value1));
+  // Insert a non-existing key.
+  Map<int32_t, int32_t>::value_type v1(key, value1);
+  std::pair<Map<int32_t, int32_t>::iterator, bool> result1 = map_.insert(v1);
   ExpectSingleElement(key, value1);
 
-  Map<int32, int32>::iterator it1 = result1.first;
+  Map<int32_t, int32_t>::iterator it1 = result1.first;
   EXPECT_EQ(key, it1->first);
   EXPECT_EQ(value1, it1->second);
   EXPECT_TRUE(result1.second);
 
-  // Insert an existed key.
-  std::pair<Map<int32, int32>::iterator, bool> result2 =
-      map_.insert(Map<int32, int32>::value_type(key, value2));
+  // Insert an existing key.
+  Map<int32_t, int32_t>::value_type v2(key, value2);
+  std::pair<Map<int32_t, int32_t>::iterator, bool> result2 = map_.insert(v2);
   ExpectSingleElement(key, value1);
 
-  Map<int32, int32>::iterator it2 = result2.first;
+  Map<int32_t, int32_t>::iterator it2 = result2.first;
+  EXPECT_TRUE(it1 == it2);
+  EXPECT_FALSE(result2.second);
+}
+
+TEST_F(MapImplTest, InsertSingleRValue) {
+  int32_t key = 0;
+  int32_t value1 = 100;
+  int32_t value2 = 101;
+
+  // Insert a non-existing key.
+  std::pair<Map<int32_t, int32_t>::iterator, bool> result1 =
+      map_.insert(Map<int32_t, int32_t>::value_type(key, value1));
+  ExpectSingleElement(key, value1);
+
+  Map<int32_t, int32_t>::iterator it1 = result1.first;
+  EXPECT_EQ(key, it1->first);
+  EXPECT_EQ(value1, it1->second);
+  EXPECT_TRUE(result1.second);
+
+  // Insert an existing key.
+  std::pair<Map<int32_t, int32_t>::iterator, bool> result2 =
+      map_.insert(Map<int32_t, int32_t>::value_type(key, value2));
+  ExpectSingleElement(key, value1);
+
+  Map<int32_t, int32_t>::iterator it2 = result2.first;
+  EXPECT_TRUE(it1 == it2);
+  EXPECT_FALSE(result2.second);
+}
+
+TEST_F(MapImplTest, TryEmplace) {
+  using ::testing::Pair;
+  using ::testing::UnorderedElementsAre;
+
+  Map<int32_t, std::string> m;
+
+  m.try_emplace(1, "one");
+  EXPECT_EQ(m.size(), 1);
+
+  const int32_t key = 42;
+  m.try_emplace(key, 3, 'a');
+  m.try_emplace(2, std::string("two"));
+  EXPECT_THAT(
+      m, UnorderedElementsAre(Pair(1, "one"), Pair(2, "two"), Pair(42, "aaa")));
+}
+
+TEST_F(MapImplTest, Emplace) {
+  using ::testing::Pair;
+  using ::testing::UnorderedElementsAre;
+
+  Map<int32_t, std::string> m;
+
+  m.emplace(1, "one");
+  EXPECT_EQ(m.size(), 1);
+
+  const int32_t key = 42;
+  m.emplace(key, "aaa");
+  m.emplace(2, std::string("two"));
+  EXPECT_THAT(
+      m, UnorderedElementsAre(Pair(1, "one"), Pair(2, "two"), Pair(42, "aaa")));
+}
+
+struct CountedInstance {
+  CountedInstance() { ++num_created; }
+  CountedInstance(const CountedInstance&) : CountedInstance() {}
+  CountedInstance(CountedInstance&&) : CountedInstance() {}
+
+  CountedInstance& operator=(const CountedInstance&) {
+    ++num_assigned;
+    return *this;
+  }
+
+  explicit CountedInstance(int x) : CountedInstance() {}
+
+  static int num_created;
+  static int num_assigned;
+};
+
+int CountedInstance::num_created = 0;
+int CountedInstance::num_assigned = 0;
+
+TEST_F(MapImplTest, TryEmplaceExisting) {
+  Map<int32_t, CountedInstance> m;
+
+  m.try_emplace(1, 1);
+  ASSERT_EQ(m.size(), 1);
+
+  CountedInstance::num_created = 0;
+  CountedInstance::num_assigned = 0;
+  m.try_emplace(1, 123);
+  EXPECT_EQ(m.size(), 1);
+  EXPECT_EQ(CountedInstance::num_created, 0);
+  EXPECT_EQ(CountedInstance::num_assigned, 0);
+}
+
+struct ArenaConstructible {
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+
+  ArenaConstructible() = default;
+  ArenaConstructible(const ArenaConstructible&) = default;
+  ArenaConstructible(Arena*) : ArenaConstructible() {}
+
+  ArenaConstructible& operator=(const ArenaConstructible&) = default;
+
+  explicit ArenaConstructible(int) : ArenaConstructible() {}
+
+  Arena* arena() const { return nullptr; }
+
+  CountedInstance unused;
+};
+
+TEST_F(MapImplTest, TryEmplaceArenaConstructible) {
+  ASSERT_TRUE(Arena::is_arena_constructable<ArenaConstructible>::value);
+
+  ArenaConstructible v1, v2;
+
+  Map<int32_t, ArenaConstructible> m;
+
+  // "default" construction
+  CountedInstance::num_created = 0;
+  CountedInstance::num_assigned = 0;
+  m.try_emplace(1);
+  EXPECT_EQ(m.size(), 1);
+  EXPECT_EQ(CountedInstance::num_created, 1);
+  EXPECT_EQ(CountedInstance::num_assigned, 0);
+
+  // "default" construction + copy assignment
+  CountedInstance::num_created = 0;
+  CountedInstance::num_assigned = 0;
+  m.try_emplace(2, v1);
+  EXPECT_EQ(m.size(), 2);
+  EXPECT_EQ(CountedInstance::num_created, 1);
+  EXPECT_EQ(CountedInstance::num_assigned, 1);
+
+  // "default" construction + move assignment
+  CountedInstance::num_created = 0;
+  CountedInstance::num_assigned = 0;
+  m.try_emplace(3, std::move(v2));
+  EXPECT_EQ(m.size(), 3);
+  EXPECT_EQ(CountedInstance::num_created, 1);
+  EXPECT_EQ(CountedInstance::num_assigned, 1);
+
+  // "default" construction + in-place temporary + move assignment
+  CountedInstance::num_created = 0;
+  CountedInstance::num_assigned = 0;
+  m.try_emplace(4, 239);
+  EXPECT_EQ(m.size(), 4);
+  EXPECT_EQ(CountedInstance::num_created, 2);
+  EXPECT_EQ(CountedInstance::num_assigned, 1);
+}
+
+TEST_F(MapImplTest, TryEmplaceExistingArenaConstructible) {
+  ASSERT_TRUE(Arena::is_arena_constructable<ArenaConstructible>::value);
+
+  Map<int32_t, ArenaConstructible> m;
+
+  m.try_emplace(1, 1);
+  ASSERT_EQ(m.size(), 1);
+
+  CountedInstance::num_created = 0;
+  CountedInstance::num_assigned = 0;
+  m.try_emplace(1, 123);
+  EXPECT_EQ(m.size(), 1);
+  EXPECT_EQ(CountedInstance::num_created, 0);
+  EXPECT_EQ(CountedInstance::num_assigned, 0);
+}
+
+TEST_F(MapImplTest, EmplaceSingle) {
+  int32_t key = 0;
+  int32_t value1 = 100;
+  int32_t value2 = 101;
+
+  // Emplace a non-existing key.
+  auto result1 = map_.emplace(key, value1);
+  ExpectSingleElement(key, value1);
+
+  Map<int32_t, int32_t>::iterator it1 = result1.first;
+  EXPECT_EQ(key, it1->first);
+  EXPECT_EQ(value1, it1->second);
+  EXPECT_TRUE(result1.second);
+
+  // Emplace an existing key.
+  auto result2 = map_.emplace(key, value2);
+  ExpectSingleElement(key, value1);
+
+  Map<int32_t, int32_t>::iterator it2 = result2.first;
   EXPECT_TRUE(it1 == it2);
   EXPECT_FALSE(result2.second);
 }
 
 TEST_F(MapImplTest, InsertByIterator) {
-  int32 key1 = 0;
-  int32 key2 = 1;
-  int32 value1a = 100;
-  int32 value1b = 101;
-  int32 value2a = 200;
-  int32 value2b = 201;
+  int32_t key1 = 0;
+  int32_t key2 = 1;
+  int32_t value1a = 100;
+  int32_t value1b = 101;
+  int32_t value2a = 200;
+  int32_t value2b = 201;
 
-  std::map<int32, int32> map1;
+  std::map<int32_t, int32_t> map1;
   map1[key1] = value1a;
   map1[key2] = value2a;
 
   map_.insert(map1.begin(), map1.end());
   ExpectElements(map1);
 
-  std::map<int32, int32> map2;
+  std::map<int32_t, int32_t> map2;
   map2[key1] = value1b;
   map2[key2] = value2b;
 
@@ -744,8 +930,8 @@ TEST_F(MapImplTest, InsertByInitializerList) {
 }
 
 TEST_F(MapImplTest, EraseSingleByKey) {
-  int32 key = 0;
-  int32 value = 100;
+  int32_t key = 0;
+  int32_t value = 100;
 
   map_[key] = value;
   ExpectSingleElement(key, value);
@@ -789,13 +975,13 @@ TEST_F(MapImplTest, EraseMutipleByKey) {
 }
 
 TEST_F(MapImplTest, EraseSingleByIterator) {
-  int32 key = 0;
-  int32 value = 100;
+  int32_t key = 0;
+  int32_t value = 100;
 
   map_[key] = value;
   ExpectSingleElement(key, value);
 
-  Map<int32, int32>::iterator it = map_.find(key);
+  Map<int32_t, int32_t>::iterator it = map_.find(key);
   map_.erase(it);
   EXPECT_TRUE(map_.empty());
   EXPECT_EQ(0, map_.size());
@@ -810,7 +996,7 @@ TEST_F(MapImplTest, ValidIteratorAfterErase) {
 
   int count = 0;
 
-  for (Map<int32, int32>::iterator it = map_.begin(); it != map_.end();) {
+  for (Map<int32_t, int32_t>::iterator it = map_.begin(); it != map_.end();) {
     count++;
     if (it->first % 2 == 1) {
       map_.erase(it++);
@@ -824,12 +1010,12 @@ TEST_F(MapImplTest, ValidIteratorAfterErase) {
 }
 
 TEST_F(MapImplTest, EraseByIterator) {
-  int32 key1 = 0;
-  int32 key2 = 1;
-  int32 value1 = 100;
-  int32 value2 = 101;
+  int32_t key1 = 0;
+  int32_t key2 = 1;
+  int32_t value1 = 100;
+  int32_t value2 = 101;
 
-  std::map<int32, int32> map;
+  std::map<int32_t, int32_t> map;
   map[key1] = value1;
   map[key2] = value2;
 
@@ -845,8 +1031,8 @@ TEST_F(MapImplTest, EraseByIterator) {
 }
 
 TEST_F(MapImplTest, Clear) {
-  int32 key = 0;
-  int32 value = 100;
+  int32_t key = 0;
+  int32_t value = 100;
 
   map_[key] = value;
   ExpectSingleElement(key, value);
@@ -859,19 +1045,19 @@ TEST_F(MapImplTest, Clear) {
   EXPECT_TRUE(map_.begin() == map_.end());
 }
 
-static void CopyConstructorHelper(Arena* arena, Map<int32, int32>* m) {
-  int32 key1 = 0;
-  int32 key2 = 1;
-  int32 value1 = 100;
-  int32 value2 = 101;
+static void CopyConstructorHelper(Arena* arena, Map<int32_t, int32_t>* m) {
+  int32_t key1 = 0;
+  int32_t key2 = 1;
+  int32_t value1 = 100;
+  int32_t value2 = 101;
 
-  std::map<int32, int32> map;
+  std::map<int32_t, int32_t> map;
   map[key1] = value1;
   map[key2] = value2;
 
   m->insert(map.begin(), map.end());
 
-  Map<int32, int32> other(*m);
+  Map<int32_t, int32_t> other(*m);
 
   EXPECT_EQ(2, other.size());
   EXPECT_EQ(value1, other.at(key1));
@@ -888,16 +1074,16 @@ TEST_F(MapImplTest, CopyConstructorWithoutArena) {
 }
 
 TEST_F(MapImplTest, IterConstructor) {
-  int32 key1 = 0;
-  int32 key2 = 1;
-  int32 value1 = 100;
-  int32 value2 = 101;
+  int32_t key1 = 0;
+  int32_t key2 = 1;
+  int32_t value1 = 100;
+  int32_t value2 = 101;
 
-  std::map<int32, int32> map;
+  std::map<int32_t, int32_t> map;
   map[key1] = value1;
   map[key2] = value2;
 
-  Map<int32, int32> new_map(map.begin(), map.end());
+  Map<int32_t, int32_t> new_map(map.begin(), map.end());
 
   EXPECT_EQ(2, new_map.size());
   EXPECT_EQ(value1, new_map.at(key1));
@@ -905,20 +1091,20 @@ TEST_F(MapImplTest, IterConstructor) {
 }
 
 TEST_F(MapImplTest, Assigner) {
-  int32 key1 = 0;
-  int32 key2 = 1;
-  int32 value1 = 100;
-  int32 value2 = 101;
+  int32_t key1 = 0;
+  int32_t key2 = 1;
+  int32_t value1 = 100;
+  int32_t value2 = 101;
 
-  std::map<int32, int32> map;
+  std::map<int32_t, int32_t> map;
   map[key1] = value1;
   map[key2] = value2;
 
   map_.insert(map.begin(), map.end());
 
-  Map<int32, int32> other;
-  int32 key_other = 123;
-  int32 value_other = 321;
+  Map<int32_t, int32_t> other;
+  int32_t key_other = 123;
+  int32_t value_other = 321;
   other[key_other] = value_other;
   EXPECT_EQ(1, other.size());
 
@@ -938,7 +1124,7 @@ TEST_F(MapImplTest, Assigner) {
 
 TEST_F(MapImplTest, Rehash) {
   const int test_size = 50;
-  std::map<int32, int32> reference_map;
+  std::map<int32_t, int32_t> reference_map;
   for (int i = 0; i < test_size; i++) {
     reference_map[i] = i;
   }
@@ -957,8 +1143,8 @@ TEST_F(MapImplTest, EqualRange) {
   int key = 100, key_missing = 101;
   map_[key] = 100;
 
-  std::pair<Map<int32, int32>::iterator, Map<int32, int32>::iterator> range =
-      map_.equal_range(key);
+  std::pair<Map<int32_t, int32_t>::iterator, Map<int32_t, int32_t>::iterator>
+      range = map_.equal_range(key);
   EXPECT_TRUE(map_.find(key) == range.first);
   EXPECT_TRUE(++map_.find(key) == range.second);
 
@@ -966,8 +1152,8 @@ TEST_F(MapImplTest, EqualRange) {
   EXPECT_TRUE(map_.end() == range.first);
   EXPECT_TRUE(map_.end() == range.second);
 
-  std::pair<Map<int32, int32>::const_iterator,
-            Map<int32, int32>::const_iterator>
+  std::pair<Map<int32_t, int32_t>::const_iterator,
+            Map<int32_t, int32_t>::const_iterator>
       const_range = const_map_.equal_range(key);
   EXPECT_TRUE(const_map_.find(key) == const_range.first);
   EXPECT_TRUE(++const_map_.find(key) == const_range.second);
@@ -979,21 +1165,21 @@ TEST_F(MapImplTest, EqualRange) {
 
 TEST_F(MapImplTest, ConvertToStdMap) {
   map_[100] = 101;
-  std::map<int32, int32> std_map(map_.begin(), map_.end());
+  std::map<int32_t, int32_t> std_map(map_.begin(), map_.end());
   EXPECT_EQ(1, std_map.size());
   EXPECT_EQ(101, std_map[100]);
 }
 
 TEST_F(MapImplTest, ConvertToStdVectorOfPairs) {
   map_[100] = 101;
-  std::vector<std::pair<int32, int32> > std_vec(map_.begin(), map_.end());
+  std::vector<std::pair<int32_t, int32_t>> std_vec(map_.begin(), map_.end());
   EXPECT_EQ(1, std_vec.size());
   EXPECT_EQ(100, std_vec[0].first);
   EXPECT_EQ(101, std_vec[0].second);
 }
 
 TEST_F(MapImplTest, SwapBasic) {
-  Map<int32, int32> another;
+  Map<int32_t, int32_t> another;
   map_[9398] = 41999;
   another[9398] = 41999;
   another[8070] = 42056;
@@ -1006,8 +1192,8 @@ TEST_F(MapImplTest, SwapBasic) {
 
 TEST_F(MapImplTest, SwapArena) {
   Arena arena1, arena2;
-  Map<int32, int32> m1(&arena1);
-  Map<int32, int32> m2(&arena2);
+  Map<int32_t, int32_t> m1(&arena1);
+  Map<int32_t, int32_t> m2(&arena2);
   map_[9398] = 41999;
   m1[9398] = 41999;
   m1[8070] = 42056;
@@ -1063,7 +1249,7 @@ TEST_F(MapImplTest, CopyAssignMapIterator) {
 TEST_F(MapImplTest, SpaceUsed) {
   constexpr size_t kMinCap = 8;
 
-  Map<int32, int32> m;
+  Map<int32_t, int32_t> m;
   // An newly constructed map should have no space used.
   EXPECT_EQ(m.SpaceUsedExcludingSelfLong(), 0);
 
@@ -1074,26 +1260,27 @@ TEST_F(MapImplTest, SpaceUsed) {
     if (m.size() >= capacity * kMaxLoadFactor) {
       capacity *= 2;
     }
-    EXPECT_EQ(m.SpaceUsedExcludingSelfLong(),
-              sizeof(void*) * capacity +
-                  m.size() * sizeof(std::pair<std::pair<int32, int32>, void*>));
+    EXPECT_EQ(
+        m.SpaceUsedExcludingSelfLong(),
+        sizeof(void*) * capacity +
+            m.size() * sizeof(std::pair<std::pair<int32_t, int32_t>, void*>));
   }
 
   // Test string, and non-scalar keys.
-  Map<std::string, int32> m2;
+  Map<std::string, int32_t> m2;
   std::string str = "Some arbitrarily large string";
   m2[str] = 1;
   EXPECT_EQ(m2.SpaceUsedExcludingSelfLong(),
             sizeof(void*) * kMinCap +
-                sizeof(std::pair<std::pair<std::string, int32>, void*>) +
+                sizeof(std::pair<std::pair<std::string, int32_t>, void*>) +
                 internal::StringSpaceUsedExcludingSelfLong(str));
 
   // Test messages, and non-scalar values.
-  Map<int32, TestAllTypes> m3;
+  Map<int32_t, TestAllTypes> m3;
   m3[0].set_optional_string(str);
   EXPECT_EQ(m3.SpaceUsedExcludingSelfLong(),
             sizeof(void*) * kMinCap +
-                sizeof(std::pair<std::pair<int32, TestAllTypes>, void*>) +
+                sizeof(std::pair<std::pair<int32_t, TestAllTypes>, void*>) +
                 m3[0].SpaceUsedLong() - sizeof(m3[0]));
 }
 
@@ -1102,12 +1289,12 @@ TEST_F(MapImplTest, SpaceUsed) {
 bool MapOrderingIsRandom(int a, int b) {
   bool saw_a_first = false;
   bool saw_b_first = false;
-  std::vector<Map<int32, int32>> v(50);
+  std::vector<Map<int32_t, int32_t>> v(50);
   for (int i = 0; i < 50; ++i) {
-    Map<int32, int32>& m = v[i];
+    Map<int32_t, int32_t>& m = v[i];
     m[a] = 0;
     m[b] = 0;
-    int32 first_element = m.begin()->first;
+    int32_t first_element = m.begin()->first;
     if (first_element == a) saw_a_first = true;
     if (first_element == b) saw_b_first = true;
     if (saw_a_first && saw_b_first) {
@@ -1234,11 +1421,11 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
   const Reflection* refl = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
-  Map<int32, int32>* map_int32_int32 = message.mutable_map_int32_int32();
-  Map<int32, double>* map_int32_double = message.mutable_map_int32_double();
+  Map<int32_t, int32_t>* map_int32_int32 = message.mutable_map_int32_int32();
+  Map<int32_t, double>* map_int32_double = message.mutable_map_int32_double();
   Map<std::string, std::string>* map_string_string =
       message.mutable_map_string_string();
-  Map<int32, ForeignMessage>* map_int32_foreign_message =
+  Map<int32_t, ForeignMessage>* map_int32_foreign_message =
       message.mutable_map_int32_foreign_message();
 
   for (int i = 0; i < 10; ++i) {
@@ -1301,14 +1488,14 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
     {
       // Check gets through const objects.
       const Message& message_int32_int32 = mf_int32_int32.Get(i);
-      int32 key_int32_int32 = message_int32_int32.GetReflection()->GetInt32(
+      int32_t key_int32_int32 = message_int32_int32.GetReflection()->GetInt32(
           message_int32_int32, fd_map_int32_in32_key);
-      int32 value_int32_int32 = message_int32_int32.GetReflection()->GetInt32(
+      int32_t value_int32_int32 = message_int32_int32.GetReflection()->GetInt32(
           message_int32_int32, fd_map_int32_in32_value);
       EXPECT_EQ(value_int32_int32, Func(key_int32_int32, 1));
 
       const Message& message_int32_double = mf_int32_double.Get(i);
-      int32 key_int32_double = message_int32_double.GetReflection()->GetInt32(
+      int32_t key_int32_double = message_int32_double.GetReflection()->GetInt32(
           message_int32_double, fd_map_int32_double_key);
       double value_int32_double =
           message_int32_double.GetReflection()->GetDouble(
@@ -1325,8 +1512,9 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
       EXPECT_EQ(value_string_string, StrFunc(Int(key_string_string), 5));
 
       const Message& message_int32_message = mf_int32_foreign_message.Get(i);
-      int32 key_int32_message = message_int32_message.GetReflection()->GetInt32(
-          message_int32_message, fd_map_int32_foreign_message_key);
+      int32_t key_int32_message =
+          message_int32_message.GetReflection()->GetInt32(
+              message_int32_message, fd_map_int32_foreign_message_key);
       const ForeignMessage& value_int32_message =
           down_cast<const ForeignMessage&>(
               message_int32_message.GetReflection()->GetMessage(
@@ -1337,14 +1525,14 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
     {
       // Check gets through mutable objects.
       const Message& message_int32_int32 = mmf_int32_int32->Get(i);
-      int32 key_int32_int32 = message_int32_int32.GetReflection()->GetInt32(
+      int32_t key_int32_int32 = message_int32_int32.GetReflection()->GetInt32(
           message_int32_int32, fd_map_int32_in32_key);
-      int32 value_int32_int32 = message_int32_int32.GetReflection()->GetInt32(
+      int32_t value_int32_int32 = message_int32_int32.GetReflection()->GetInt32(
           message_int32_int32, fd_map_int32_in32_value);
       EXPECT_EQ(value_int32_int32, Func(key_int32_int32, 1));
 
       const Message& message_int32_double = mmf_int32_double->Get(i);
-      int32 key_int32_double = message_int32_double.GetReflection()->GetInt32(
+      int32_t key_int32_double = message_int32_double.GetReflection()->GetInt32(
           message_int32_double, fd_map_int32_double_key);
       double value_int32_double =
           message_int32_double.GetReflection()->GetDouble(
@@ -1361,8 +1549,9 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
       EXPECT_EQ(value_string_string, StrFunc(Int(key_string_string), 5));
 
       const Message& message_int32_message = mmf_int32_foreign_message->Get(i);
-      int32 key_int32_message = message_int32_message.GetReflection()->GetInt32(
-          message_int32_message, fd_map_int32_foreign_message_key);
+      int32_t key_int32_message =
+          message_int32_message.GetReflection()->GetInt32(
+              message_int32_message, fd_map_int32_foreign_message_key);
       const ForeignMessage& value_int32_message =
           down_cast<const ForeignMessage&>(
               message_int32_message.GetReflection()->GetMessage(
@@ -1375,15 +1564,16 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
   for (int i = 0; i < 10; i++) {
     {
       Message* message_int32_int32 = mmf_int32_int32->Mutable(i);
-      int32 key_int32_int32 = message_int32_int32->GetReflection()->GetInt32(
+      int32_t key_int32_int32 = message_int32_int32->GetReflection()->GetInt32(
           *message_int32_int32, fd_map_int32_in32_key);
       message_int32_int32->GetReflection()->SetInt32(message_int32_int32,
                                                      fd_map_int32_in32_value,
                                                      Func(key_int32_int32, -1));
 
       Message* message_int32_double = mmf_int32_double->Mutable(i);
-      int32 key_int32_double = message_int32_double->GetReflection()->GetInt32(
-          *message_int32_double, fd_map_int32_double_key);
+      int32_t key_int32_double =
+          message_int32_double->GetReflection()->GetInt32(
+              *message_int32_double, fd_map_int32_double_key);
       message_int32_double->GetReflection()->SetDouble(
           message_int32_double, fd_map_int32_double_value,
           Func(key_int32_double, -2));
@@ -1397,7 +1587,7 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
           StrFunc(Int(key_string_string), -5));
 
       Message* message_int32_message = mmf_int32_foreign_message->Mutable(i);
-      int32 key_int32_message =
+      int32_t key_int32_message =
           message_int32_message->GetReflection()->GetInt32(
               *message_int32_message, fd_map_int32_foreign_message_key);
       ForeignMessage* value_int32_message = down_cast<ForeignMessage*>(
@@ -1421,11 +1611,11 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
   const Reflection* refl = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
 
-  Map<int32, int32>* map_int32_int32 = message.mutable_map_int32_int32();
-  Map<int32, double>* map_int32_double = message.mutable_map_int32_double();
+  Map<int32_t, int32_t>* map_int32_int32 = message.mutable_map_int32_int32();
+  Map<int32_t, double>* map_int32_double = message.mutable_map_int32_double();
   Map<std::string, std::string>* map_string_string =
       message.mutable_map_string_string();
-  Map<int32, ForeignMessage>* map_int32_foreign_message =
+  Map<int32_t, ForeignMessage>* map_int32_foreign_message =
       message.mutable_map_int32_foreign_message();
 
   for (int i = 0; i < 10; ++i) {
@@ -1525,15 +1715,15 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
       // Check gets through const objects.
       const Message& message_int32_int32 =
           mf_int32_int32.Get(i, entry_int32_int32.get());
-      int32 key_int32_int32 = message_int32_int32.GetReflection()->GetInt32(
+      int32_t key_int32_int32 = message_int32_int32.GetReflection()->GetInt32(
           message_int32_int32, fd_map_int32_in32_key);
-      int32 value_int32_int32 = message_int32_int32.GetReflection()->GetInt32(
+      int32_t value_int32_int32 = message_int32_int32.GetReflection()->GetInt32(
           message_int32_int32, fd_map_int32_in32_value);
       EXPECT_EQ(value_int32_int32, Func(key_int32_int32, 1));
 
       const Message& message_int32_double =
           mf_int32_double.Get(i, entry_int32_double.get());
-      int32 key_int32_double = message_int32_double.GetReflection()->GetInt32(
+      int32_t key_int32_double = message_int32_double.GetReflection()->GetInt32(
           message_int32_double, fd_map_int32_double_key);
       double value_int32_double =
           message_int32_double.GetReflection()->GetDouble(
@@ -1552,8 +1742,9 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
 
       const Message& message_int32_message =
           mf_int32_foreign_message.Get(i, entry_int32_foreign_message.get());
-      int32 key_int32_message = message_int32_message.GetReflection()->GetInt32(
-          message_int32_message, fd_map_int32_foreign_message_key);
+      int32_t key_int32_message =
+          message_int32_message.GetReflection()->GetInt32(
+              message_int32_message, fd_map_int32_foreign_message_key);
       const ForeignMessage& value_int32_message =
           down_cast<const ForeignMessage&>(
               message_int32_message.GetReflection()->GetMessage(
@@ -1565,15 +1756,15 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
       // Check gets through mutable objects.
       const Message& message_int32_int32 =
           mmf_int32_int32.Get(i, entry_int32_int32.get());
-      int32 key_int32_int32 = message_int32_int32.GetReflection()->GetInt32(
+      int32_t key_int32_int32 = message_int32_int32.GetReflection()->GetInt32(
           message_int32_int32, fd_map_int32_in32_key);
-      int32 value_int32_int32 = message_int32_int32.GetReflection()->GetInt32(
+      int32_t value_int32_int32 = message_int32_int32.GetReflection()->GetInt32(
           message_int32_int32, fd_map_int32_in32_value);
       EXPECT_EQ(value_int32_int32, Func(key_int32_int32, 1));
 
       const Message& message_int32_double =
           mmf_int32_double.Get(i, entry_int32_double.get());
-      int32 key_int32_double = message_int32_double.GetReflection()->GetInt32(
+      int32_t key_int32_double = message_int32_double.GetReflection()->GetInt32(
           message_int32_double, fd_map_int32_double_key);
       double value_int32_double =
           message_int32_double.GetReflection()->GetDouble(
@@ -1592,8 +1783,9 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
 
       const Message& message_int32_message =
           mmf_int32_foreign_message.Get(i, entry_int32_foreign_message.get());
-      int32 key_int32_message = message_int32_message.GetReflection()->GetInt32(
-          message_int32_message, fd_map_int32_foreign_message_key);
+      int32_t key_int32_message =
+          message_int32_message.GetReflection()->GetInt32(
+              message_int32_message, fd_map_int32_foreign_message_key);
       const ForeignMessage& value_int32_message =
           down_cast<const ForeignMessage&>(
               message_int32_message.GetReflection()->GetMessage(
@@ -1654,19 +1846,20 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
   // Test iterators.
   {
     int index = 0;
-    std::unordered_map<int32, int32> result;
+    std::unordered_map<int32_t, int32_t> result;
     for (RepeatedFieldRef<Message>::iterator it = mf_int32_int32.begin();
          it != mf_int32_int32.end(); ++it) {
       const Message& message = *it;
-      int32 key =
+      int32_t key =
           message.GetReflection()->GetInt32(message, fd_map_int32_in32_key);
-      int32 value =
+      int32_t value =
           message.GetReflection()->GetInt32(message, fd_map_int32_in32_value);
       result[key] = value;
       ++index;
     }
     EXPECT_EQ(10, index);
-    for (std::unordered_map<int32, int32>::const_iterator it = result.begin();
+    for (std::unordered_map<int32_t, int32_t>::const_iterator it =
+             result.begin();
          it != result.end(); ++it) {
       EXPECT_EQ(message.map_int32_int32().at(it->first), it->second);
     }
@@ -1674,11 +1867,11 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
 
   {
     int index = 0;
-    std::unordered_map<int32, double> result;
+    std::unordered_map<int32_t, double> result;
     for (RepeatedFieldRef<Message>::iterator it = mf_int32_double.begin();
          it != mf_int32_double.end(); ++it) {
       const Message& message = *it;
-      int32 key =
+      int32_t key =
           message.GetReflection()->GetInt32(message, fd_map_int32_double_key);
       double value = message.GetReflection()->GetDouble(
           message, fd_map_int32_double_value);
@@ -1686,7 +1879,8 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
       ++index;
     }
     EXPECT_EQ(10, index);
-    for (std::unordered_map<int32, double>::const_iterator it = result.begin();
+    for (std::unordered_map<int32_t, double>::const_iterator it =
+             result.begin();
          it != result.end(); ++it) {
       EXPECT_EQ(message.map_int32_double().at(it->first), it->second);
     }
@@ -1715,12 +1909,12 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
 
   {
     int index = 0;
-    std::map<int32, ForeignMessage> result;
+    std::map<int32_t, ForeignMessage> result;
     for (RepeatedFieldRef<Message>::iterator it =
              mf_int32_foreign_message.begin();
          it != mf_int32_foreign_message.end(); ++it) {
       const Message& message = *it;
-      int32 key = message.GetReflection()->GetInt32(
+      int32_t key = message.GetReflection()->GetInt32(
           message, fd_map_int32_foreign_message_key);
       const ForeignMessage& sub_message =
           down_cast<const ForeignMessage&>(message.GetReflection()->GetMessage(
@@ -1729,7 +1923,7 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
       ++index;
     }
     EXPECT_EQ(10, index);
-    for (std::map<int32, ForeignMessage>::const_iterator it = result.begin();
+    for (std::map<int32_t, ForeignMessage>::const_iterator it = result.begin();
          it != result.end(); ++it) {
       EXPECT_EQ(message.map_int32_foreign_message().at(it->first).c(),
                 it->second.c());
@@ -1805,19 +1999,19 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
   // Test MutableRepeatedFieldRef::SwapElements()
   {
     const Message& message0a = mmf_int32_int32.Get(0, entry_int32_int32.get());
-    int32 int32_value0a =
+    int32_t int32_value0a =
         message0a.GetReflection()->GetInt32(message0a, fd_map_int32_in32_value);
     const Message& message9a = mmf_int32_int32.Get(9, entry_int32_int32.get());
-    int32 int32_value9a =
+    int32_t int32_value9a =
         message9a.GetReflection()->GetInt32(message9a, fd_map_int32_in32_value);
 
     mmf_int32_int32.SwapElements(0, 9);
 
     const Message& message0b = mmf_int32_int32.Get(0, entry_int32_int32.get());
-    int32 int32_value0b =
+    int32_t int32_value0b =
         message0b.GetReflection()->GetInt32(message0b, fd_map_int32_in32_value);
     const Message& message9b = mmf_int32_int32.Get(9, entry_int32_int32.get());
-    int32 int32_value9b =
+    int32_t int32_value9b =
         message9b.GetReflection()->GetInt32(message9b, fd_map_int32_in32_value);
 
     EXPECT_EQ(int32_value9a, int32_value0b);
@@ -1880,13 +2074,13 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
     const ForeignMessage& sub_message0a =
         down_cast<const ForeignMessage&>(message0a.GetReflection()->GetMessage(
             message0a, fd_map_int32_foreign_message_value));
-    int32 int32_value0a = sub_message0a.c();
+    int32_t int32_value0a = sub_message0a.c();
     const Message& message9a =
         mmf_int32_foreign_message.Get(9, entry_int32_foreign_message.get());
     const ForeignMessage& sub_message9a =
         down_cast<const ForeignMessage&>(message9a.GetReflection()->GetMessage(
             message9a, fd_map_int32_foreign_message_value));
-    int32 int32_value9a = sub_message9a.c();
+    int32_t int32_value9a = sub_message9a.c();
 
     mmf_int32_foreign_message.SwapElements(0, 9);
 
@@ -1895,13 +2089,13 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
     const ForeignMessage& sub_message0b =
         down_cast<const ForeignMessage&>(message0b.GetReflection()->GetMessage(
             message0b, fd_map_int32_foreign_message_value));
-    int32 int32_value0b = sub_message0b.c();
+    int32_t int32_value0b = sub_message0b.c();
     const Message& message9b =
         mmf_int32_foreign_message.Get(9, entry_int32_foreign_message.get());
     const ForeignMessage& sub_message9b =
         down_cast<const ForeignMessage&>(message9b.GetReflection()->GetMessage(
             message9b, fd_map_int32_foreign_message_value));
-    int32 int32_value9b = sub_message9b.c();
+    int32_t int32_value9b = sub_message9b.c();
 
     EXPECT_EQ(int32_value9a, int32_value0b);
     EXPECT_EQ(int32_value0a, int32_value9b);
@@ -2037,8 +2231,7 @@ TEST_F(MapFieldReflectionTest, MapSizeWithDuplicatedKey) {
     Message* entry2 = reflection->AddMessage(message.get(), field);
 
     const Reflection* entry_reflection = entry1->GetReflection();
-    const FieldDescriptor* key_field =
-        entry1->GetDescriptor()->map_key();
+    const FieldDescriptor* key_field = entry1->GetDescriptor()->map_key();
     entry_reflection->SetInt32(entry1, key_field, 1);
     entry_reflection->SetInt32(entry2, key_field, 1);
 
@@ -2058,8 +2251,7 @@ TEST_F(MapFieldReflectionTest, MapSizeWithDuplicatedKey) {
     Message* entry2 = reflection->AddMessage(&message, field);
 
     const Reflection* entry_reflection = entry1->GetReflection();
-    const FieldDescriptor* key_field =
-        entry1->GetDescriptor()->map_key();
+    const FieldDescriptor* key_field = entry1->GetDescriptor()->map_key();
     entry_reflection->SetInt32(entry1, key_field, 1);
     entry_reflection->SetInt32(entry2, key_field, 1);
 
@@ -2079,7 +2271,7 @@ TEST_F(MapFieldReflectionTest, UninitializedEntry) {
 }
 
 class MyMapEntry
-    : public internal::MapEntry<MyMapEntry, ::google::protobuf::int32, ::google::protobuf::int32,
+    : public internal::MapEntry<MyMapEntry, ::int32_t, ::int32_t,
                                 internal::WireFormatLite::TYPE_INT32,
                                 internal::WireFormatLite::TYPE_INT32> {
  public:
@@ -2091,7 +2283,7 @@ class MyMapEntry
 };
 
 class MyMapEntryLite
-    : public internal::MapEntryLite<MyMapEntryLite, ::google::protobuf::int32, ::google::protobuf::int32,
+    : public internal::MapEntryLite<MyMapEntryLite, ::int32_t, ::int32_t,
                                     internal::WireFormatLite::TYPE_INT32,
                                     internal::WireFormatLite::TYPE_INT32> {
  public:
@@ -2405,8 +2597,8 @@ TEST(GeneratedMapFieldTest, SerializationToArray) {
   MapTestUtil::SetMapFields(&message1);
   size_t size = message1.ByteSizeLong();
   data.resize(size);
-  uint8* start = reinterpret_cast<uint8*>(::google::protobuf::string_as_array(&data));
-  uint8* end = message1.SerializeWithCachedSizesToArray(start);
+  uint8_t* start = reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&data));
+  uint8_t* end = message1.SerializeWithCachedSizesToArray(start);
   EXPECT_EQ(size, end - start);
   EXPECT_TRUE(message2.ParseFromString(data));
   MapTestUtil::ExpectMapFieldsSet(message2);
@@ -2699,7 +2891,7 @@ TEST(GeneratedMapFieldTest, SpaceUsed) {
   // The exact value will depend on internal state, like collisions,
   // so we can't predict it. But we can predict a lower bound.
   size_t lower_bound =
-      initial + kNumValues * (space_used_message + sizeof(int32) +
+      initial + kNumValues * (space_used_message + sizeof(int32_t) +
                               /* Node::next */ sizeof(void*) +
                               /* table entry */ sizeof(void*));
 
@@ -2950,8 +3142,7 @@ TEST(GeneratedMapFieldReflectionTest, EmbedProto2Message) {
   const FieldDescriptor* map_field =
       UNITTEST::TestMessageMap::descriptor()->FindFieldByName(
           "map_int32_message");
-  const FieldDescriptor* value =
-      map_field->message_type()->map_value();
+  const FieldDescriptor* value = map_field->message_type()->map_value();
 
   Message* entry_message =
       message.GetReflection()->AddMessage(&message, map_field);
@@ -2970,10 +3161,8 @@ TEST(GeneratedMapFieldReflectionTest, MergeFromClearMapEntry) {
   UNITTEST::TestMap message;
   const FieldDescriptor* map_field =
       UNITTEST::TestMap::descriptor()->FindFieldByName("map_int32_int32");
-  const FieldDescriptor* key =
-      map_field->message_type()->map_key();
-  const FieldDescriptor* value =
-      map_field->message_type()->map_value();
+  const FieldDescriptor* key = map_field->message_type()->map_key();
+  const FieldDescriptor* value = map_field->message_type()->map_value();
 
   Message* entry_message1 =
       message.GetReflection()->AddMessage(&message, map_field);
@@ -3035,7 +3224,7 @@ class MapFieldInDynamicMessageTest : public testing::Test {
   MapFieldInDynamicMessageTest()
       : pool_(DescriptorPool::generated_pool()), factory_(pool_) {}
 
-  virtual void SetUp() {
+  void SetUp() override {
     map_descriptor_ = pool_->FindMessageTypeByName(
         std::string(UNITTEST_PACKAGE_NAME) + ".TestMap");
     recursive_map_descriptor_ = pool_->FindMessageTypeByName(
@@ -3497,8 +3686,8 @@ static std::string DeterministicSerialization(const T& t) {
 }
 
 // Helper for MapSerializationTest.  Return a 7-bit ASCII string.
-static std::string ConstructKey(uint64 n) {
-  std::string s(n % static_cast<uint64>(9), '\0');
+static std::string ConstructKey(uint64_t n) {
+  std::string s(n % static_cast<uint64_t>(9), '\0');
   if (s.empty()) {
     return StrCat(n);
   } else {
@@ -3516,13 +3705,13 @@ TEST(MapSerializationTest, Deterministic) {
   UNITTEST::TestIntIntMap inner;
   (*inner.mutable_m())[0] = (*inner.mutable_m())[10] =
       (*inner.mutable_m())[-200] = 0;
-  uint64 frog = 9;
-  const uint64 multiplier = 0xa29cd16f;
+  uint64_t frog = 9;
+  const uint64_t multiplier = 0xa29cd16f;
   for (int i = 0; i < kIters; i++) {
-    const int32 i32 = static_cast<int32>(frog & 0xffffffff);
-    const uint32 u32 = static_cast<uint32>(i32) * 91919;
-    const int64 i64 = static_cast<int64>(frog);
-    const uint64 u64 = frog * static_cast<uint64>(187321);
+    const int32_t i32 = static_cast<int32_t>(frog & 0xffffffff);
+    const uint32_t u32 = static_cast<uint32_t>(i32) * 91919;
+    const int64_t i64 = static_cast<int64_t>(frog);
+    const uint64_t u64 = frog * static_cast<uint64_t>(187321);
     const bool b = i32 > 0;
     const std::string s = ConstructKey(frog);
     (*inner.mutable_m())[i] = i32;
@@ -3534,8 +3723,9 @@ TEST(MapSerializationTest, Deterministic) {
     (*t.mutable_m_uint64())[u64] = (*t.mutable_m_fixed64())[u64] = inner;
     (*t.mutable_m_bool())[b] = inner;
     (*t.mutable_m_string())[s] = inner;
-    (*t.mutable_m_string())[s + std::string(1 << (u32 % static_cast<uint32>(9)),
-                                            b)] = inner;
+    (*t.mutable_m_string())[s + std::string(
+                                    1 << (u32 % static_cast<uint32_t>(9)), b)] =
+        inner;
     inner.mutable_m()->erase(i);
     frog = frog * multiplier + i;
     frog ^= (frog >> 41);
@@ -3559,7 +3749,7 @@ TEST(MapSerializationTest, DeterministicSubmessage) {
   const std::string filename = "golden_message_maps";
   std::string golden;
   GOOGLE_CHECK_OK(File::GetContents(
-      TestUtil::GetTestDataPath("net/proto2/internal/testdata/" + filename),
+      TestUtil::GetTestDataPath("third_party/protobuf/testdata/" + filename),
       &golden, true));
   t.ParseFromString(golden);
   *(p.mutable_m()) = t;
@@ -3569,6 +3759,7 @@ TEST(MapSerializationTest, DeterministicSubmessage) {
   // randomly-chosen hash function.
   const int kAttempts = 10;
   for (int i = 0; i < kAttempts; i++) {
+    // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
     UNITTEST::TestSubmessageMaps q(p);
     ASSERT_EQ(DeterministicSerialization(q), DeterministicSerialization(p));
   }
@@ -3600,12 +3791,14 @@ TEST(TextFormatMapTest, DynamicMessage) {
 
   std::string expected_text;
   GOOGLE_CHECK_OK(
-      File::GetContents(TestUtil::GetTestDataPath("net/proto2/internal/"
+      File::GetContents(TestUtil::GetTestDataPath("third_party/protobuf/"
                                                   "testdata/map_test_data.txt"),
                         &expected_text, true));
 
   CleanStringLineEndings(&expected_text, false);
-  EXPECT_EQ(message->DebugString(), expected_text);
+  std::string actual_text;
+  TextFormat::PrintToString(*message, &actual_text);
+  EXPECT_EQ(actual_text, expected_text);
 }
 
 TEST(TextFormatMapTest, Sorted) {
@@ -3615,26 +3808,30 @@ TEST(TextFormatMapTest, Sorted) {
 
   std::string expected_text;
   GOOGLE_CHECK_OK(
-      File::GetContents(TestUtil::GetTestDataPath("net/proto2/internal/"
+      File::GetContents(TestUtil::GetTestDataPath("third_party/protobuf/"
                                                   "testdata/map_test_data.txt"),
                         &expected_text, true));
 
   CleanStringLineEndings(&expected_text, false);
-  EXPECT_EQ(message.DebugString(), expected_text);
+  TextFormat::Printer printer;
+  std::string actual_text;
+  printer.PrintToString(message, &actual_text);
+  EXPECT_EQ(actual_text, expected_text);
 
   // Test again on the reverse order.
   UNITTEST::TestMap message2;
   tester.SetMapFieldsViaReflection(&message2);
   tester.SwapMapsViaReflection(&message2);
-  EXPECT_EQ(message2.DebugString(), expected_text);
+  printer.PrintToString(message2, &actual_text);
+  EXPECT_EQ(actual_text, expected_text);
 }
 
 TEST(TextFormatMapTest, ParseCorruptedString) {
   std::string serialized_message;
-  GOOGLE_CHECK_OK(
-      File::GetContents(TestUtil::GetTestDataPath(
-                            "net/proto2/internal/testdata/golden_message_maps"),
-                        &serialized_message, true));
+  GOOGLE_CHECK_OK(File::GetContents(
+      TestUtil::GetTestDataPath(
+          "third_party/protobuf/testdata/golden_message_maps"),
+      &serialized_message, true));
   UNITTEST::TestMaps message;
   GOOGLE_CHECK(message.ParseFromString(serialized_message));
   TestParseCorruptedString<UNITTEST::TestMaps, true>(message);
@@ -3649,7 +3846,8 @@ TEST(TextFormatMapTest, NoDisableIterator) {
   (*source.mutable_map_int32_int32())[1] = 1;
 
   // Get iterator.
-  Map<int32, int32>::iterator iter = source.mutable_map_int32_int32()->find(1);
+  Map<int32_t, int32_t>::iterator iter =
+      source.mutable_map_int32_int32()->find(1);
 
   // Serialize message to text format, which will invalidate the previous
   // iterator previously.
@@ -3695,8 +3893,7 @@ TEST(TextFormatMapTest, NoDisableReflectionIterator) {
 
   // Modify map via the iterator (invalidated in previous implementation.).
   const Reflection* map_entry_reflection = iter->GetReflection();
-  const FieldDescriptor* value_field_desc =
-      iter->GetDescriptor()->map_value();
+  const FieldDescriptor* value_field_desc = iter->GetDescriptor()->map_value();
   map_entry_reflection->SetInt32(&(*iter), value_field_desc, 2);
   GOOGLE_LOG(INFO) << iter->DebugString();
 
@@ -3831,13 +4028,13 @@ TEST(ArenaTest, DynamicMapFieldOnArenaMemoryLeak) {
 }
 
 TEST(MoveTest, MoveConstructorWorks) {
-  Map<int32, TestAllTypes> original_map;
+  Map<int32_t, TestAllTypes> original_map;
   original_map[42].mutable_optional_nested_message()->set_bb(42);
   original_map[43].mutable_optional_nested_message()->set_bb(43);
   const auto* nested_msg42_ptr = &original_map[42].optional_nested_message();
   const auto* nested_msg43_ptr = &original_map[43].optional_nested_message();
 
-  Map<int32, TestAllTypes> moved_to_map(std::move(original_map));
+  Map<int32_t, TestAllTypes> moved_to_map(std::move(original_map));
   EXPECT_TRUE(original_map.empty());
   EXPECT_EQ(2, moved_to_map.size());
   EXPECT_EQ(42, moved_to_map[42].optional_nested_message().bb());
@@ -3849,13 +4046,13 @@ TEST(MoveTest, MoveConstructorWorks) {
 }
 
 TEST(MoveTest, MoveAssignmentWorks) {
-  Map<int32, TestAllTypes> original_map;
+  Map<int32_t, TestAllTypes> original_map;
   original_map[42].mutable_optional_nested_message()->set_bb(42);
   original_map[43].mutable_optional_nested_message()->set_bb(43);
   const auto* nested_msg42_ptr = &original_map[42].optional_nested_message();
   const auto* nested_msg43_ptr = &original_map[43].optional_nested_message();
 
-  Map<int32, TestAllTypes> moved_to_map = std::move(original_map);
+  Map<int32_t, TestAllTypes> moved_to_map = std::move(original_map);
   EXPECT_TRUE(original_map.empty());
   EXPECT_EQ(2, moved_to_map.size());
   EXPECT_EQ(42, moved_to_map[42].optional_nested_message().bb());

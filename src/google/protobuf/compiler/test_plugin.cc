@@ -34,7 +34,9 @@
 // command_line_interface_unittest.
 
 #include <stdlib.h>
+
 #include <string>
+
 #include <google/protobuf/compiler/mock_code_generator.h>
 #include <google/protobuf/compiler/plugin.h>
 

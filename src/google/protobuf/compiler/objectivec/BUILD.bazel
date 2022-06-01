@@ -1,0 +1,81 @@
+################################################################################
+# Protocol Buffers Compiler - ObjC code generator
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+cc_library(
+    name = "objectivec",
+    srcs = [
+        "objectivec_enum.cc",
+        "objectivec_enum_field.cc",
+        "objectivec_extension.cc",
+        "objectivec_field.cc",
+        "objectivec_file.cc",
+        "objectivec_generator.cc",
+        "objectivec_helpers.cc",
+        "objectivec_map_field.cc",
+        "objectivec_message.cc",
+        "objectivec_message_field.cc",
+        "objectivec_oneof.cc",
+        "objectivec_primitive_field.cc",
+    ],
+    hdrs = [
+        "objectivec_enum.h",
+        "objectivec_enum_field.h",
+        "objectivec_extension.h",
+        "objectivec_field.h",
+        "objectivec_file.h",
+        "objectivec_generator.h",
+        "objectivec_helpers.h",
+        "objectivec_map_field.h",
+        "objectivec_message.h",
+        "objectivec_message_field.h",
+        "objectivec_nsobject_methods.h",
+        "objectivec_oneof.h",
+        "objectivec_primitive_field.h",
+    ],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/objectivec",
+    visibility = [
+        "//pkg:__pkg__",
+        "//src/google/protobuf/compiler:__pkg__",
+    ],
+    deps = [
+        "//:protobuf",
+        "//src/google/protobuf/compiler:code_generator",
+    ],
+)
+
+cc_test(
+    name = "helpers_unittest",
+    srcs = ["objectivec_helpers_unittest.cc"],
+    deps = [
+        ":objectivec",
+        "//src/google/protobuf/io",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+################################################################################
+# Distribution packaging
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["**/*"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//src:__pkg__"],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob([
+        "*_test.cc",
+        "*unittest.cc",
+    ]),
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+)

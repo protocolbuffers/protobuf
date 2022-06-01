@@ -156,3 +156,17 @@ message MixedRegularAndOptional {
   string regular_field = 1;
   optional string optional_field = 2;
 }
+
+message OneofWithNoneField {
+  oneof test {
+    string x = 1;
+    string none = 2;
+  }
+}
+
+message OneofWithNoneName {
+  oneof none {
+    string x = 1;
+    string y = 2;
+  }
+}

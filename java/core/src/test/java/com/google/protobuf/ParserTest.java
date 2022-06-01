@@ -40,6 +40,7 @@ import protobuf_unittest.UnittestProto;
 import protobuf_unittest.UnittestProto.ForeignMessage;
 import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestEmptyMessage;
+import protobuf_unittest.UnittestProto.TestMergeException;
 import protobuf_unittest.UnittestProto.TestParsingMerge;
 import protobuf_unittest.UnittestProto.TestRequired;
 import java.io.ByteArrayInputStream;
@@ -194,8 +195,7 @@ public class ParserTest {
   @Test
   public void testParseUnknownFields() throws Exception {
     // All fields will be treated as unknown fields in emptyMessage.
-    TestEmptyMessage emptyMessage =
-        TestEmptyMessage.parser().parseFrom(TestUtil.getAllSet().toByteString());
+    TestEmptyMessage emptyMessage = TestEmptyMessage.parseFrom(TestUtil.getAllSet().toByteString());
     assertThat(emptyMessage.toByteString()).isEqualTo(TestUtil.getAllSet().toByteString());
   }
 
@@ -277,7 +277,7 @@ public class ParserTest {
     // Parse TestParsingMerge.
     ExtensionRegistry registry = ExtensionRegistry.newInstance();
     UnittestProto.registerAllExtensions(registry);
-    TestParsingMerge parsingMerge = TestParsingMerge.parser().parseFrom(data, registry);
+    TestParsingMerge parsingMerge = TestParsingMerge.parseFrom(data, registry);
 
     // Required and optional fields should be merged.
     assertMessageMerged(parsingMerge.getRequiredAllTypes());
@@ -289,6 +289,71 @@ public class ParserTest {
     assertThat(parsingMerge.getRepeatedAllTypesCount()).isEqualTo(3);
     assertThat(parsingMerge.getRepeatedGroupCount()).isEqualTo(3);
     assertThat(parsingMerge.getExtensionCount(TestParsingMerge.repeatedExt)).isEqualTo(3);
+  }
+
+  @Test
+  public void testExceptionWhenMergingExtendedMessagesMissingRequiredFields() {
+    // create a TestMergeException message (missing required fields) that looks like
+    //   all_extensions {
+    //     [TestRequired.single] {
+    //     }
+    //   }
+    TestMergeException.Builder message = TestMergeException.newBuilder();
+    message
+        .getAllExtensionsBuilder()
+        .setExtension(TestRequired.single, TestRequired.newBuilder().buildPartial());
+    ByteString byteString = message.buildPartial().toByteString();
+
+    // duplicate the bytestring to make the `all_extensions` field repeat twice, so that it will
+    // need merging when parsing back
+    ByteString duplicatedByteString = byteString.concat(byteString);
+
+    byte[] bytes = duplicatedByteString.toByteArray();
+    ExtensionRegistry registry = ExtensionRegistry.newInstance();
+    UnittestProto.registerAllExtensions(registry);
+
+    // `parseFrom` should throw InvalidProtocolBufferException, not UninitializedMessageException,
+    // for each of the 5 possible input types:
+
+    // parseFrom(ByteString)
+    try {
+      TestMergeException.parseFrom(duplicatedByteString, registry);
+      assertWithMessage("Expected InvalidProtocolBufferException").fail();
+    } catch (Exception e) {
+      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
+    }
+
+    // parseFrom(ByteArray)
+    try {
+      TestMergeException.parseFrom(bytes, registry);
+      assertWithMessage("Expected InvalidProtocolBufferException").fail();
+    } catch (Exception e) {
+      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
+    }
+
+    // parseFrom(InputStream)
+    try {
+      TestMergeException.parseFrom(new ByteArrayInputStream(bytes), registry);
+      assertWithMessage("Expected InvalidProtocolBufferException").fail();
+    } catch (Exception e) {
+      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
+    }
+
+    // parseFrom(CodedInputStream)
+    try {
+      TestMergeException.parseFrom(CodedInputStream.newInstance(bytes), registry);
+      assertWithMessage("Expected InvalidProtocolBufferException").fail();
+    } catch (Exception e) {
+      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
+    }
+
+    // parseFrom(ByteBuffer)
+    try {
+      TestMergeException.parseFrom(duplicatedByteString.asReadOnlyByteBuffer(), registry);
+      assertWithMessage("Expected InvalidProtocolBufferException").fail();
+    } catch (Exception e) {
+      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
+    }
   }
 
   @Test

@@ -58,6 +58,7 @@ import protobuf_unittest.UnittestProto.TestEmptyMessageWithExtensions
 import protobuf_unittest.copy
 import protobuf_unittest.foreignMessage
 import protobuf_unittest.optionalGroupExtension
+import protobuf_unittest.optionalNestedMessageOrNull
 import protobuf_unittest.repeatedGroupExtension
 import protobuf_unittest.testAllExtensions
 import protobuf_unittest.testAllTypes
@@ -97,6 +98,7 @@ class Proto2Test {
           optionalImportMessage = ImportMessage.newBuilder().setD(120).build()
           optionalPublicImportMessage = PublicImportMessage.newBuilder().setE(126).build()
           optionalLazyMessage = nestedMessage { bb = 127 }
+          optionalUnverifiedLazyMessage = nestedMessage { bb = 128 }
           optionalNestedEnum = NestedEnum.BAZ
           optionalForeignEnum = ForeignEnum.FOREIGN_BAZ
           optionalImportEnum = ImportEnum.IMPORT_BAZ
@@ -414,6 +416,8 @@ class Proto2Test {
             PublicImportMessage.newBuilder().setE(126).build()
           this[UnittestProto.optionalLazyMessageExtension] =
             TestAllTypesKt.nestedMessage { bb = 127 }
+          this[UnittestProto.optionalUnverifiedLazyMessageExtension] =
+            TestAllTypesKt.nestedMessage { bb = 128 }
           this[UnittestProto.optionalNestedEnumExtension] = NestedEnum.BAZ
           this[UnittestProto.optionalForeignEnumExtension] = ForeignEnum.FOREIGN_BAZ
           this[UnittestProto.optionalImportEnumExtension] = ImportEnum.IMPORT_BAZ
@@ -952,5 +956,17 @@ class Proto2Test {
       clearDo_()
       assertThat(hasDo_()).isFalse()
     }
+  }
+
+  @Test
+  fun testGetOrNull() {
+    val noNestedMessage = testAllTypes {}
+    assertThat(noNestedMessage.optionalNestedMessageOrNull).isEqualTo(null)
+
+    val someNestedMessage = testAllTypes {
+      optionalNestedMessage = TestAllTypesKt.nestedMessage { bb = 118 }
+    }
+    assertThat(someNestedMessage.optionalNestedMessageOrNull)
+      .isEqualTo(TestAllTypesKt.nestedMessage { bb = 118 })
   }
 }

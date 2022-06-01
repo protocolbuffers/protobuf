@@ -36,17 +36,19 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/generated_message_tctable_decl.h>
 #include <google/protobuf/generated_message_tctable_impl.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/stl_util.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -109,7 +111,7 @@ void UnknownFieldSet::MergeToInternalMetadata(
 size_t UnknownFieldSet::SpaceUsedExcludingSelfLong() const {
   if (fields_.empty()) return 0;
 
-  size_t total_size = sizeof(fields_) + sizeof(UnknownField) * fields_.size();
+  size_t total_size = sizeof(UnknownField) * fields_.capacity();
 
   for (const UnknownField& field : fields_) {
     switch (field.type()) {
@@ -238,6 +240,20 @@ bool UnknownFieldSet::ParseFromArray(const void* data, int size) {
   return ParseFromZeroCopyStream(&input);
 }
 
+bool UnknownFieldSet::SerializeToString(std::string* output) const {
+  const size_t size =
+      google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(*this);
+  STLStringResizeUninitializedAmortized(output, size);
+  google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+      *this, reinterpret_cast<uint8_t*>(const_cast<char*>(output->data())));
+  return true;
+}
+
+bool UnknownFieldSet::SerializeToCodedStream(
+    io::CodedOutputStream* output) const {
+  google::protobuf::internal::WireFormat::SerializeUnknownFields(*this, output);
+  return !output->HadError();
+}
 void UnknownField::Delete() {
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:

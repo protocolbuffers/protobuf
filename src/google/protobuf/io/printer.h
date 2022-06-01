@@ -37,12 +37,13 @@
 #ifndef GOOGLE_PROTOBUF_IO_PRINTER_H__
 #define GOOGLE_PROTOBUF_IO_PRINTER_H__
 
-
 #include <map>
 #include <string>
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
+
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {

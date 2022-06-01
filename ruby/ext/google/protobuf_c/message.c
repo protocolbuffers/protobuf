@@ -161,10 +161,8 @@ void Message_PrintMessage(StringBuilder* b, const upb_Message* msg,
 
     if (upb_FieldDef_IsMap(field)) {
       const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(field);
-      const upb_FieldDef* key_f =
-          upb_MessageDef_FindFieldByNumberWithSize(entry_m, 1);
-      const upb_FieldDef* val_f =
-          upb_MessageDef_FindFieldByNumberWithSize(entry_m, 2);
+      const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry_m, 1);
+      const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(entry_m, 2);
       TypeInfo val_info = TypeInfo_get(val_f);
       Map_Inspect(b, msgval.map_val, upb_FieldDef_CType(key_f), val_info);
     } else if (upb_FieldDef_IsRepeated(field)) {
@@ -365,7 +363,7 @@ static VALUE Message_field_accessor(VALUE _self, const upb_FieldDef* f,
         upb_MessageValue wrapper = upb_Message_Get(self->msg, f);
         const upb_MessageDef* wrapper_m = upb_FieldDef_MessageSubDef(f);
         const upb_FieldDef* value_f =
-            upb_MessageDef_FindFieldByNumberWithSize(wrapper_m, 1);
+            upb_MessageDef_FindFieldByNumber(wrapper_m, 1);
         upb_MessageValue value = upb_Message_Get(wrapper.msg_val, value_f);
         return Convert_UpbToRuby(value, TypeInfo_get(value_f), self->arena);
       } else {
@@ -377,8 +375,8 @@ static VALUE Message_field_accessor(VALUE _self, const upb_FieldDef* f,
       if (argv[1] == Qnil) {
         upb_Message_ClearField(msg, f);
       } else {
-        const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumberWithSize(
-            upb_FieldDef_MessageSubDef(f), 1);
+        const upb_FieldDef* val_f =
+            upb_MessageDef_FindFieldByNumber(upb_FieldDef_MessageSubDef(f), 1);
         upb_MessageValue msgval = Convert_RubyToUpb(
             argv[1], upb_FieldDef_Name(f), TypeInfo_get(val_f), arena);
         upb_Message* wrapper = upb_Message_Mutable(msg, f, arena).msg;
@@ -527,10 +525,8 @@ static int Map_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
 static void Map_InitFromValue(upb_Map* map, const upb_FieldDef* f, VALUE val,
                               upb_Arena* arena) {
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
-  const upb_FieldDef* key_f =
-      upb_MessageDef_FindFieldByNumberWithSize(entry_m, 1);
-  const upb_FieldDef* val_f =
-      upb_MessageDef_FindFieldByNumberWithSize(entry_m, 2);
+  const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry_m, 1);
+  const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(entry_m, 2);
   if (TYPE(val) != T_HASH) {
     rb_raise(rb_eArgError,
              "Expected Hash object as initializer value for map field '%s' "
@@ -748,7 +744,7 @@ uint64_t Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
                     &size);
 
   if (data) {
-    uint64_t ret = Wyhash(data, size, seed, kWyhashSalt);
+    uint64_t ret = _upb_Hash(data, size, seed);
     upb_Arena_Free(arena);
     return ret;
   } else {
@@ -847,10 +843,8 @@ static VALUE Message_CreateHash(const upb_Message* msg,
 
     if (upb_FieldDef_IsMap(field)) {
       const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(field);
-      const upb_FieldDef* key_f =
-          upb_MessageDef_FindFieldByNumberWithSize(entry_m, 1);
-      const upb_FieldDef* val_f =
-          upb_MessageDef_FindFieldByNumberWithSize(entry_m, 2);
+      const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry_m, 1);
+      const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(entry_m, 2);
       upb_CType key_type = upb_FieldDef_CType(key_f);
       msg_value = Map_CreateHash(msgval.map_val, key_type, TypeInfo_get(val_f));
     } else if (upb_FieldDef_IsRepeated(field)) {
@@ -953,13 +947,35 @@ static VALUE Message_index_set(VALUE _self, VALUE field_name, VALUE value) {
 
 /*
  * call-seq:
- *     MessageClass.decode(data) => message
+ *     MessageClass.decode(data, options) => message
  *
  * Decodes the given data (as a string containing bytes in protocol buffers wire
  * format) under the interpretration given by this message class's definition
  * and returns a message object with the corresponding field values.
+ * @param options [Hash] options for the decoder
+ *  recursion_limit: set to maximum decoding depth for message (default is 64)
  */
-static VALUE Message_decode(VALUE klass, VALUE data) {
+static VALUE Message_decode(int argc, VALUE* argv, VALUE klass) {
+  VALUE data = argv[0];
+  int options = 0;
+
+  if (argc < 1 || argc > 2) {
+    rb_raise(rb_eArgError, "Expected 1 or 2 arguments.");
+  }
+
+  if (argc == 2) {
+    VALUE hash_args = argv[1];
+    if (TYPE(hash_args) != T_HASH) {
+      rb_raise(rb_eArgError, "Expected hash arguments.");
+    }
+
+    VALUE depth = rb_hash_lookup(hash_args, ID2SYM(rb_intern("recursion_limit")));
+
+    if (depth != Qnil && TYPE(depth) == T_FIXNUM) {
+      options |= UPB_DECODE_MAXDEPTH(FIX2INT(depth));
+    }
+  }
+
   if (TYPE(data) != T_STRING) {
     rb_raise(rb_eArgError, "Expected string for binary protobuf data.");
   }
@@ -969,7 +985,7 @@ static VALUE Message_decode(VALUE klass, VALUE data) {
 
   upb_DecodeStatus status = upb_Decode(
       RSTRING_PTR(data), RSTRING_LEN(data), (upb_Message*)msg->msg,
-      upb_MessageDef_MiniTable(msg->msgdef), NULL, 0, Arena_get(msg->arena));
+      upb_MessageDef_MiniTable(msg->msgdef), NULL, options, Arena_get(msg->arena));
 
   if (status != kUpb_DecodeStatus_Ok) {
     rb_raise(cParseError, "Error occurred during parsing");
@@ -1043,24 +1059,43 @@ static VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
 
 /*
  * call-seq:
- *     MessageClass.encode(msg) => bytes
+ *     MessageClass.encode(msg, options) => bytes
  *
  * Encodes the given message object to its serialized form in protocol buffers
  * wire format.
+ * @param options [Hash] options for the encoder
+ *  recursion_limit: set to maximum encoding depth for message (default is 64)
  */
-static VALUE Message_encode(VALUE klass, VALUE msg_rb) {
-  Message* msg = ruby_to_Message(msg_rb);
+static VALUE Message_encode(int argc, VALUE* argv, VALUE klass) {
+  Message* msg = ruby_to_Message(argv[0]);
+  int options = 0;
   const char* data;
   size_t size;
 
-  if (CLASS_OF(msg_rb) != klass) {
+  if (CLASS_OF(argv[0]) != klass) {
     rb_raise(rb_eArgError, "Message of wrong type.");
   }
 
-  upb_Arena* arena = upb_Arena_New();
+  if (argc < 1 || argc > 2) {
+    rb_raise(rb_eArgError, "Expected 1 or 2 arguments.");
+  }
 
-  data = upb_Encode(msg->msg, upb_MessageDef_MiniTable(msg->msgdef), 0, arena,
-                    &size);
+  if (argc == 2) {
+    VALUE hash_args = argv[1];
+    if (TYPE(hash_args) != T_HASH) {
+      rb_raise(rb_eArgError, "Expected hash arguments.");
+    }
+    VALUE depth = rb_hash_lookup(hash_args, ID2SYM(rb_intern("recursion_limit")));
+
+    if (depth != Qnil && TYPE(depth) == T_FIXNUM) {
+      options |= UPB_DECODE_MAXDEPTH(FIX2INT(depth));
+    }
+  }
+
+  upb_Arena *arena = upb_Arena_New();
+
+  data = upb_Encode(msg->msg, upb_MessageDef_MiniTable(msg->msgdef),
+                    options, arena, &size);
 
   if (data) {
     VALUE ret = rb_str_new(data, size);
@@ -1100,7 +1135,11 @@ static VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   if (argc == 2) {
     VALUE hash_args = argv[1];
     if (TYPE(hash_args) != T_HASH) {
-      rb_raise(rb_eArgError, "Expected hash arguments.");
+      if (RTEST(rb_funcall(hash_args, rb_intern("respond_to?"), 1, rb_str_new2("to_h")))) {
+        hash_args = rb_funcall(hash_args, rb_intern("to_h"), 0);
+      } else {
+        rb_raise(rb_eArgError, "Expected hash arguments.");
+      }
     }
 
     if (RTEST(rb_hash_lookup2(hash_args,
@@ -1186,8 +1225,8 @@ VALUE build_class_from_descriptor(VALUE descriptor) {
   rb_define_method(klass, "to_s", Message_inspect, 0);
   rb_define_method(klass, "[]", Message_index, 1);
   rb_define_method(klass, "[]=", Message_index_set, 2);
-  rb_define_singleton_method(klass, "decode", Message_decode, 1);
-  rb_define_singleton_method(klass, "encode", Message_encode, 1);
+  rb_define_singleton_method(klass, "decode", Message_decode, -1);
+  rb_define_singleton_method(klass, "encode", Message_encode, -1);
   rb_define_singleton_method(klass, "decode_json", Message_decode_json, -1);
   rb_define_singleton_method(klass, "encode_json", Message_encode_json, -1);
   rb_define_singleton_method(klass, "descriptor", Message_descriptor, 0);
@@ -1312,10 +1351,8 @@ const upb_Message* Message_GetUpbMessage(VALUE value, const upb_MessageDef* m,
         upb_Message* msg = upb_Message_New(m, arena);
         upb_MessageValue sec, nsec;
         struct timespec time;
-        const upb_FieldDef* sec_f =
-            upb_MessageDef_FindFieldByNumberWithSize(m, 1);
-        const upb_FieldDef* nsec_f =
-            upb_MessageDef_FindFieldByNumberWithSize(m, 2);
+        const upb_FieldDef* sec_f = upb_MessageDef_FindFieldByNumber(m, 1);
+        const upb_FieldDef* nsec_f = upb_MessageDef_FindFieldByNumber(m, 2);
 
         if (!rb_obj_is_kind_of(value, rb_cTime)) goto badtype;
 
@@ -1330,10 +1367,8 @@ const upb_Message* Message_GetUpbMessage(VALUE value, const upb_MessageDef* m,
         // Numeric -> Google::Protobuf::Duration
         upb_Message* msg = upb_Message_New(m, arena);
         upb_MessageValue sec, nsec;
-        const upb_FieldDef* sec_f =
-            upb_MessageDef_FindFieldByNumberWithSize(m, 1);
-        const upb_FieldDef* nsec_f =
-            upb_MessageDef_FindFieldByNumberWithSize(m, 2);
+        const upb_FieldDef* sec_f = upb_MessageDef_FindFieldByNumber(m, 1);
+        const upb_FieldDef* nsec_f = upb_MessageDef_FindFieldByNumber(m, 2);
 
         if (!rb_obj_is_kind_of(value, rb_cNumeric)) goto badtype;
 

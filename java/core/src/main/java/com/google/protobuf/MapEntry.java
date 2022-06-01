@@ -336,13 +336,17 @@ public final class MapEntry<K, V> extends AbstractMessage {
     @Override
     public Builder<K, V> setField(FieldDescriptor field, Object value) {
       checkFieldDescriptor(field);
+      if (value == null) {
+        throw new NullPointerException(field.getFullName() + " is null");
+      }
+
       if (field.getNumber() == 1) {
         setKey((K) value);
       } else {
         if (field.getType() == FieldDescriptor.Type.ENUM) {
           value = ((EnumValueDescriptor) value).getNumber();
         } else if (field.getType() == FieldDescriptor.Type.MESSAGE) {
-          if (value != null && !metadata.defaultValue.getClass().isInstance(value)) {
+          if (!metadata.defaultValue.getClass().isInstance(value)) {
             // The value is not the exact right message type.  However, if it
             // is an alternative implementation of the same type -- e.g. a
             // DynamicMessage -- we should accept it.  In this case we can make
@@ -437,7 +441,6 @@ public final class MapEntry<K, V> extends AbstractMessage {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Builder<K, V> clone() {
       return new Builder<>(metadata, key, value, hasKey, hasValue);
     }

@@ -30,9 +30,9 @@
 
 #include <google/protobuf/generated_message_bases.h>
 
-#include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/wire_format_lite.h>
@@ -52,8 +52,7 @@ void ZeroFieldsBase::Clear() {
 }
 
 ZeroFieldsBase::~ZeroFieldsBase() {
-  if (GetArenaForAllocation() != nullptr) return;
-  _internal_metadata_.Delete<UnknownFieldSet>();
+  (void)_internal_metadata_.DeleteReturnArena<UnknownFieldSet>();
 }
 
 size_t ZeroFieldsBase::ByteSizeLong() const {
@@ -99,15 +98,15 @@ failure:
   return target;
 }
 
-void ZeroFieldsBase::MergeImpl(Message* to_param, const Message& from_param) {
-  auto* to = static_cast<ZeroFieldsBase*>(to_param);
+void ZeroFieldsBase::MergeImpl(Message& to_param, const Message& from_param) {
+  auto* to = static_cast<ZeroFieldsBase*>(&to_param);
   const auto* from = static_cast<const ZeroFieldsBase*>(&from_param);
   GOOGLE_DCHECK_NE(from, to);
   to->_internal_metadata_.MergeFrom<UnknownFieldSet>(from->_internal_metadata_);
 }
 
-void ZeroFieldsBase::CopyImpl(Message* to_param, const Message& from_param) {
-  auto* to = static_cast<ZeroFieldsBase*>(to_param);
+void ZeroFieldsBase::CopyImpl(Message& to_param, const Message& from_param) {
+  auto* to = static_cast<ZeroFieldsBase*>(&to_param);
   const auto* from = static_cast<const ZeroFieldsBase*>(&from_param);
   if (from == to) return;
   to->_internal_metadata_.Clear<UnknownFieldSet>();

@@ -28,8 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTOSTREAM_OBJECTWRITER_H__
-#define GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTOSTREAM_OBJECTWRITER_H__
+#ifndef GOOGLE_PROTOBUF_UTIL_INTERNAL_PROTOSTREAM_OBJECTWRITER_H__
+#define GOOGLE_PROTOBUF_UTIL_INTERNAL_PROTOSTREAM_OBJECTWRITER_H__
 
 #include <deque>
 #include <string>
@@ -41,16 +41,17 @@
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/util/internal/type_info.h>
+#include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/stubs/status.h>
 #include <google/protobuf/util/internal/datapiece.h>
 #include <google/protobuf/util/internal/error_listener.h>
 #include <google/protobuf/util/internal/proto_writer.h>
 #include <google/protobuf/util/internal/structured_objectwriter.h>
+#include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/type_resolver.h>
-#include <google/protobuf/stubs/bytestream.h>
-#include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/hash.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -449,4 +450,4 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
 
 #include <google/protobuf/port_undef.inc>
 
-#endif  // GOOGLE_PROTOBUF_UTIL_CONVERTER_PROTOSTREAM_OBJECTWRITER_H__
+#endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_PROTOSTREAM_OBJECTWRITER_H__

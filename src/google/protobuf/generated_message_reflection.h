@@ -38,17 +38,16 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_MESSAGE_REFLECTION_H__
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_REFLECTION_H__
 
-#include <string>
-#include <vector>
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/port.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
 
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 #ifdef SWIG
@@ -137,8 +136,8 @@ struct ReflectionSchema {
   uint32_t GetFieldOffset(const FieldDescriptor* field) const {
     if (InRealOneof(field)) {
       size_t offset =
-          static_cast<size_t>(field->containing_type()->field_count() +
-                              field->containing_oneof()->index());
+          static_cast<size_t>(field->containing_type()->field_count()) +
+          field->containing_oneof()->index();
       return OffsetValue(offsets_[offset], field->type());
     } else {
       return GetFieldOffsetNonOneof(field);
@@ -225,13 +224,6 @@ struct ReflectionSchema {
     return false;
   }
 
-  // Returns true if the field's accessor is called by any external code (aka,
-  // non proto library code).
-  bool IsFieldUsed(const FieldDescriptor* field) const {
-    (void)field;
-    return true;
-  }
-
   bool IsFieldStripped(const FieldDescriptor* field) const {
     (void)field;
     return false;
@@ -269,9 +261,9 @@ struct ReflectionSchema {
     if (type == FieldDescriptor::TYPE_MESSAGE ||
         type == FieldDescriptor::TYPE_STRING ||
         type == FieldDescriptor::TYPE_BYTES) {
-      return v & 0x7FFFFFFEu;
+      return v & 0xFFFFFFFEu;
     }
-    return v & 0x7FFFFFFFu;
+    return v;
   }
 
   static bool Inlined(uint32_t v, FieldDescriptor::Type type) {

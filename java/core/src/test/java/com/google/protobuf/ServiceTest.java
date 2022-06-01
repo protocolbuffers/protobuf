@@ -32,6 +32,8 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.MethodDescriptor;
@@ -46,145 +48,124 @@ import protobuf_unittest.UnittestProto.TestService;
 import protobuf_unittest.no_generic_services_test.UnittestNoGenericServices;
 import java.util.HashSet;
 import java.util.Set;
-import org.easymock.EasyMock;
-import org.easymock.IArgumentMatcher;
-import org.easymock.IMocksControl;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
 
-/** Tests services and stubs. */
 @RunWith(JUnit4.class)
 public class ServiceTest {
-  private IMocksControl control;
-  private RpcController mockController;
-
   private final Descriptors.MethodDescriptor fooDescriptor =
       TestService.getDescriptor().getMethods().get(0);
   private final Descriptors.MethodDescriptor barDescriptor =
       TestService.getDescriptor().getMethods().get(1);
-
-  @Before
-  public void setUp() throws Exception {
-    control = EasyMock.createStrictControl();
-    mockController = control.createMock(RpcController.class);
-  }
-
-  // =================================================================
+  private static final FooRequest FOO_REQUEST = FooRequest.getDefaultInstance();
+  private static final BarRequest BAR_REQUEST = BarRequest.getDefaultInstance();
+  private static final RpcController MOCK_RPC_CONTROLLER = Mockito.mock(RpcController.class);
+  private static final FooResponse FOO_RESPONSE = FooResponse.getDefaultInstance();
+  private static final BarResponse BAR_RESPONSE = BarResponse.getDefaultInstance();
+  private static final MessageWithNoOuter MESSAGE_WITH_NO_OUTER =
+      MessageWithNoOuter.getDefaultInstance();
 
   /** Tests Service.callMethod(). */
   @Test
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public void testCallMethod() throws Exception {
-    FooRequest fooRequest = FooRequest.newBuilder().build();
-    BarRequest barRequest = BarRequest.newBuilder().build();
-    MockCallback<Message> fooCallback = new MockCallback<Message>();
-    MockCallback<Message> barCallback = new MockCallback<Message>();
-    TestService mockService = EasyMock.createMock(TestService.class);
+    TestService mockService = Mockito.mock(TestService.class);
+    RpcCallback mockFooRpcCallback = Mockito.mock(RpcCallback.class);
+    RpcCallback mockBarRpcCallback = Mockito.mock(RpcCallback.class);
+    InOrder order = Mockito.inOrder(mockService);
 
-    mockService.foo(
-        EasyMock.same(mockController),
-        EasyMock.same(fooRequest),
-        this.<FooResponse>wrapsCallback(fooCallback));
-    mockService.bar(
-        EasyMock.same(mockController),
-        EasyMock.same(barRequest),
-        this.<BarResponse>wrapsCallback(barCallback));
-    control.replay();
-
-    mockService.callMethod(
-        fooDescriptor, mockController,
-        fooRequest, fooCallback);
-    mockService.callMethod(
-        barDescriptor, mockController,
-        barRequest, barCallback);
-    control.verify();
+    mockService.callMethod(fooDescriptor, MOCK_RPC_CONTROLLER, FOO_REQUEST, mockFooRpcCallback);
+    mockService.callMethod(barDescriptor, MOCK_RPC_CONTROLLER, BAR_REQUEST, mockBarRpcCallback);
+    order
+        .verify(mockService)
+        .foo(
+            Mockito.same(MOCK_RPC_CONTROLLER),
+            Mockito.same(FOO_REQUEST),
+            Mockito.same(mockFooRpcCallback));
+    order
+        .verify(mockService)
+        .bar(
+            Mockito.same(MOCK_RPC_CONTROLLER),
+            Mockito.same(BAR_REQUEST),
+            Mockito.same(mockBarRpcCallback));
   }
 
   /** Tests Service.get{Request,Response}Prototype(). */
   @Test
   public void testGetPrototype() throws Exception {
-    TestService mockService = EasyMock.createMock(TestService.class);
+    Descriptors.MethodDescriptor fooDescriptor = TestService.getDescriptor().getMethods().get(0);
+    Descriptors.MethodDescriptor barDescriptor = TestService.getDescriptor().getMethods().get(1);
+    TestService mockService = Mockito.mock(TestService.class);
 
-    assertThat(mockService.getRequestPrototype(fooDescriptor))
-        .isSameInstanceAs(FooRequest.getDefaultInstance());
-    assertThat(mockService.getResponsePrototype(fooDescriptor))
-        .isSameInstanceAs(FooResponse.getDefaultInstance());
-    assertThat(mockService.getRequestPrototype(barDescriptor))
-        .isSameInstanceAs(BarRequest.getDefaultInstance());
-    assertThat(mockService.getResponsePrototype(barDescriptor))
-        .isSameInstanceAs(BarResponse.getDefaultInstance());
+    assertThat(mockService.getRequestPrototype(fooDescriptor)).isSameInstanceAs(FOO_REQUEST);
+    assertThat(mockService.getResponsePrototype(fooDescriptor)).isSameInstanceAs(FOO_RESPONSE);
+    assertThat(mockService.getRequestPrototype(barDescriptor)).isSameInstanceAs(BAR_REQUEST);
+    assertThat(mockService.getResponsePrototype(barDescriptor)).isSameInstanceAs(BAR_RESPONSE);
   }
 
   /** Tests generated stubs. */
   @Test
+  @SuppressWarnings({"unchecked", "rawtypes"})
   public void testStub() throws Exception {
-    FooRequest fooRequest = FooRequest.newBuilder().build();
-    BarRequest barRequest = BarRequest.newBuilder().build();
-    MockCallback<FooResponse> fooCallback = new MockCallback<FooResponse>();
-    MockCallback<BarResponse> barCallback = new MockCallback<BarResponse>();
-    RpcChannel mockChannel = control.createMock(RpcChannel.class);
-    TestService stub = TestService.newStub(mockChannel);
+    RpcCallback mockFooRpcCallback = Mockito.mock(RpcCallback.class);
+    RpcCallback mockBarRpcCallback = Mockito.mock(RpcCallback.class);
+    RpcChannel mockRpcChannel = Mockito.mock(RpcChannel.class);
+    InOrder order = Mockito.inOrder(mockRpcChannel);
+    TestService stub = TestService.newStub(mockRpcChannel);
 
-    mockChannel.callMethod(
-        EasyMock.same(fooDescriptor),
-        EasyMock.same(mockController),
-        EasyMock.same(fooRequest),
-        EasyMock.same(FooResponse.getDefaultInstance()),
-        this.<Message>wrapsCallback(fooCallback));
-    mockChannel.callMethod(
-        EasyMock.same(barDescriptor),
-        EasyMock.same(mockController),
-        EasyMock.same(barRequest),
-        EasyMock.same(BarResponse.getDefaultInstance()),
-        this.<Message>wrapsCallback(barCallback));
-    control.replay();
+    stub.foo(MOCK_RPC_CONTROLLER, FOO_REQUEST, mockFooRpcCallback);
+    stub.bar(MOCK_RPC_CONTROLLER, BAR_REQUEST, mockBarRpcCallback);
 
-    stub.foo(mockController, fooRequest, fooCallback);
-    stub.bar(mockController, barRequest, barCallback);
-    control.verify();
+    order
+        .verify(mockRpcChannel)
+        .callMethod(
+            Mockito.same(fooDescriptor),
+            Mockito.same(MOCK_RPC_CONTROLLER),
+            Mockito.same(FOO_REQUEST),
+            Mockito.same(FOO_RESPONSE),
+            Mockito.any(RpcCallback.class));
+    order
+        .verify(mockRpcChannel)
+        .callMethod(
+            Mockito.same(barDescriptor),
+            Mockito.same(MOCK_RPC_CONTROLLER),
+            Mockito.same(BAR_REQUEST),
+            Mockito.same(BAR_RESPONSE),
+            Mockito.any(RpcCallback.class));
   }
 
   /** Tests generated blocking stubs. */
   @Test
   public void testBlockingStub() throws Exception {
-    FooRequest fooRequest = FooRequest.newBuilder().build();
-    BarRequest barRequest = BarRequest.newBuilder().build();
-    BlockingRpcChannel mockChannel = control.createMock(BlockingRpcChannel.class);
-    TestService.BlockingInterface stub = TestService.newBlockingStub(mockChannel);
+    BlockingRpcChannel mockBlockingRpcChannel = Mockito.mock(BlockingRpcChannel.class);
+    TestService.BlockingInterface stub = TestService.newBlockingStub(mockBlockingRpcChannel);
 
-    FooResponse fooResponse = FooResponse.newBuilder().build();
-    BarResponse barResponse = BarResponse.newBuilder().build();
+    when(mockBlockingRpcChannel.callBlockingMethod(
+            Mockito.same(fooDescriptor),
+            Mockito.same(MOCK_RPC_CONTROLLER),
+            Mockito.same(FOO_REQUEST),
+            Mockito.same(FOO_RESPONSE)))
+        .thenReturn(FOO_RESPONSE);
+    when(mockBlockingRpcChannel.callBlockingMethod(
+            Mockito.same(barDescriptor),
+            Mockito.same(MOCK_RPC_CONTROLLER),
+            Mockito.same(BAR_REQUEST),
+            Mockito.same(BAR_RESPONSE)))
+        .thenReturn(BAR_RESPONSE);
 
-    EasyMock.expect(
-            mockChannel.callBlockingMethod(
-                EasyMock.same(fooDescriptor),
-                EasyMock.same(mockController),
-                EasyMock.same(fooRequest),
-                EasyMock.same(FooResponse.getDefaultInstance())))
-        .andReturn(fooResponse);
-    EasyMock.expect(
-            mockChannel.callBlockingMethod(
-                EasyMock.same(barDescriptor),
-                EasyMock.same(mockController),
-                EasyMock.same(barRequest),
-                EasyMock.same(BarResponse.getDefaultInstance())))
-        .andReturn(barResponse);
-    control.replay();
-
-    assertThat(fooResponse).isSameInstanceAs(stub.foo(mockController, fooRequest));
-    assertThat(barResponse).isSameInstanceAs(stub.bar(mockController, barRequest));
-    control.verify();
+    assertThat(FOO_RESPONSE).isSameInstanceAs(stub.foo(MOCK_RPC_CONTROLLER, FOO_REQUEST));
+    assertThat(BAR_RESPONSE).isSameInstanceAs(stub.bar(MOCK_RPC_CONTROLLER, BAR_REQUEST));
   }
 
   @Test
   public void testNewReflectiveService() {
-    ServiceWithNoOuter.Interface impl = control.createMock(ServiceWithNoOuter.Interface.class);
-    RpcController controller = control.createMock(RpcController.class);
+    ServiceWithNoOuter.Interface impl = Mockito.mock(ServiceWithNoOuter.Interface.class);
     Service service = ServiceWithNoOuter.newReflectiveService(impl);
 
     MethodDescriptor fooMethod = ServiceWithNoOuter.getDescriptor().findMethodByName("Foo");
-    MessageWithNoOuter request = MessageWithNoOuter.getDefaultInstance();
     RpcCallback<Message> callback =
         new RpcCallback<Message>() {
           @Override
@@ -195,36 +176,30 @@ public class ServiceTest {
         };
     RpcCallback<TestAllTypes> specializedCallback = RpcUtil.specializeCallback(callback);
 
-    impl.foo(EasyMock.same(controller), EasyMock.same(request), EasyMock.same(specializedCallback));
-    EasyMock.expectLastCall();
-
-    control.replay();
-
-    service.callMethod(fooMethod, controller, request, callback);
-
-    control.verify();
+    service.callMethod(fooMethod, MOCK_RPC_CONTROLLER, MESSAGE_WITH_NO_OUTER, callback);
+    verify(impl)
+        .foo(
+            Mockito.same(MOCK_RPC_CONTROLLER),
+            Mockito.same(MESSAGE_WITH_NO_OUTER),
+            Mockito.same(specializedCallback));
   }
 
   @Test
   public void testNewReflectiveBlockingService() throws ServiceException {
     ServiceWithNoOuter.BlockingInterface impl =
-        control.createMock(ServiceWithNoOuter.BlockingInterface.class);
-    RpcController controller = control.createMock(RpcController.class);
+        Mockito.mock(ServiceWithNoOuter.BlockingInterface.class);
+
     BlockingService service = ServiceWithNoOuter.newReflectiveBlockingService(impl);
 
     MethodDescriptor fooMethod = ServiceWithNoOuter.getDescriptor().findMethodByName("Foo");
-    MessageWithNoOuter request = MessageWithNoOuter.getDefaultInstance();
 
     TestAllTypes expectedResponse = TestAllTypes.getDefaultInstance();
-    EasyMock.expect(impl.foo(EasyMock.same(controller), EasyMock.same(request)))
-        .andReturn(expectedResponse);
 
-    control.replay();
-
-    Message response = service.callBlockingMethod(fooMethod, controller, request);
+    when(impl.foo(Mockito.same(MOCK_RPC_CONTROLLER), Mockito.same(MESSAGE_WITH_NO_OUTER)))
+        .thenReturn(expectedResponse);
+    Message response =
+        service.callBlockingMethod(fooMethod, MOCK_RPC_CONTROLLER, MESSAGE_WITH_NO_OUTER);
     assertThat(response).isEqualTo(expectedResponse);
-
-    control.verify();
   }
 
   @Test
@@ -243,7 +218,7 @@ public class ServiceTest {
         "protobuf_unittest.no_generic_services_test.UnittestNoGenericServices";
     Class<?> outerClass = Class.forName(outerName);
 
-    Set<String> innerClassNames = new HashSet<String>();
+    Set<String> innerClassNames = new HashSet<>();
     for (Class<?> innerClass : outerClass.getClasses()) {
       String fullName = innerClass.getName();
       // Figure out the unqualified name of the inner class.
@@ -275,61 +250,5 @@ public class ServiceTest {
     assertThat(file.getServices().get(0).getName()).isEqualTo("TestService");
     assertThat(file.getServices().get(0).getMethods()).hasSize(1);
     assertThat(file.getServices().get(0).getMethods().get(0).getName()).isEqualTo("Foo");
-  }
-
-
-  // =================================================================
-
-  /**
-   * wrapsCallback() is an EasyMock argument predicate. wrapsCallback(c) matches a callback if
-   * calling that callback causes c to be called. In other words, c wraps the given callback.
-   */
-  private <T extends Message> RpcCallback<T> wrapsCallback(MockCallback<?> callback) {
-    EasyMock.reportMatcher(new WrapsCallback(callback));
-    return null;
-  }
-
-  /** The parameter to wrapsCallback() must be a MockCallback. */
-  private static class MockCallback<T extends Message> implements RpcCallback<T> {
-    private boolean called = false;
-
-    public boolean isCalled() {
-      return called;
-    }
-
-    public void reset() {
-      called = false;
-    }
-
-    @Override
-    public void run(T message) {
-      called = true;
-    }
-  }
-
-  /** Implementation of the wrapsCallback() argument matcher. */
-  private static class WrapsCallback implements IArgumentMatcher {
-    private MockCallback<?> callback;
-
-    public WrapsCallback(MockCallback<?> callback) {
-      this.callback = callback;
-    }
-
-    @Override
-    public boolean matches(Object actual) {
-      if (!(actual instanceof RpcCallback)) {
-        return false;
-      }
-      RpcCallback<?> actualCallback = (RpcCallback<?>) actual;
-
-      callback.reset();
-      actualCallback.run(null);
-      return callback.isCalled();
-    }
-
-    @Override
-    public void appendTo(StringBuffer buffer) {
-      buffer.append("wrapsCallback(mockCallback)");
-    }
   }
 }

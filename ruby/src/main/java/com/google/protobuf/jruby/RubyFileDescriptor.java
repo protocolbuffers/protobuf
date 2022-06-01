@@ -32,7 +32,6 @@
 
 package com.google.protobuf.jruby;
 
-import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FileDescriptor;
 import com.google.protobuf.Descriptors.FileDescriptor.Syntax.*;
 import com.google.protobuf.Descriptors.GenericDescriptor;
@@ -46,61 +45,67 @@ import org.jruby.runtime.builtin.IRubyObject;
 
 @JRubyClass(name = "FileDescriptor")
 public class RubyFileDescriptor extends RubyObject {
-    public static void createRubyFileDescriptor(Ruby runtime) {
-        RubyModule mProtobuf = runtime.getClassFromPath("Google::Protobuf");
-        cFileDescriptor = mProtobuf.defineClassUnder("FileDescriptor", runtime.getObject(), new ObjectAllocator() {
-            @Override
-            public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
+  public static void createRubyFileDescriptor(Ruby runtime) {
+    RubyModule mProtobuf = runtime.getClassFromPath("Google::Protobuf");
+    cFileDescriptor =
+        mProtobuf.defineClassUnder(
+            "FileDescriptor",
+            runtime.getObject(),
+            new ObjectAllocator() {
+              @Override
+              public IRubyObject allocate(Ruby runtime, RubyClass klazz) {
                 return new RubyFileDescriptor(runtime, klazz);
-            }
-        });
-        cFileDescriptor.defineAnnotatedMethods(RubyFileDescriptor.class);
+              }
+            });
+    cFileDescriptor.defineAnnotatedMethods(RubyFileDescriptor.class);
+  }
+
+  public static RubyFileDescriptor getRubyFileDescriptor(
+      ThreadContext context, GenericDescriptor descriptor) {
+    RubyFileDescriptor rfd =
+        (RubyFileDescriptor) cFileDescriptor.newInstance(context, Block.NULL_BLOCK);
+    rfd.fileDescriptor = descriptor.getFile();
+    return rfd;
+  }
+
+  public RubyFileDescriptor(Ruby runtime, RubyClass klazz) {
+    super(runtime, klazz);
+  }
+
+  /*
+   * call-seq:
+   *     FileDescriptor.name => name
+   *
+   * Returns the name of the file.
+   */
+  @JRubyMethod(name = "name")
+  public IRubyObject getName(ThreadContext context) {
+    String name = fileDescriptor.getName();
+    return name == null ? context.nil : context.runtime.newString(name);
+  }
+
+  /*
+   * call-seq:
+   *     FileDescriptor.syntax => syntax
+   *
+   * Returns this file descriptors syntax.
+   *
+   * Valid syntax versions are:
+   *     :proto2 or :proto3.
+   */
+  @JRubyMethod(name = "syntax")
+  public IRubyObject getSyntax(ThreadContext context) {
+    switch (fileDescriptor.getSyntax()) {
+      case PROTO2:
+        return context.runtime.newSymbol("proto2");
+      case PROTO3:
+        return context.runtime.newSymbol("proto3");
+      default:
+        return context.nil;
     }
+  }
 
-    public static RubyFileDescriptor getRubyFileDescriptor(ThreadContext context, GenericDescriptor descriptor) {
-        RubyFileDescriptor rfd = (RubyFileDescriptor) cFileDescriptor.newInstance(context, Block.NULL_BLOCK);
-        rfd.fileDescriptor = descriptor.getFile();
-        return rfd;
-    }
+  private static RubyClass cFileDescriptor;
 
-    public RubyFileDescriptor(Ruby runtime, RubyClass klazz) {
-        super(runtime, klazz);
-    }
-
-    /*
-     * call-seq:
-     *     FileDescriptor.name => name
-     *
-     * Returns the name of the file.
-     */
-    @JRubyMethod(name = "name")
-    public IRubyObject getName(ThreadContext context) {
-        String name = fileDescriptor.getName();
-        return name == null ? context.nil : context.runtime.newString(name);
-    }
-
-    /*
-     * call-seq:
-     *     FileDescriptor.syntax => syntax
-     *
-     * Returns this file descriptors syntax.
-     *
-     * Valid syntax versions are:
-     *     :proto2 or :proto3.
-     */
-    @JRubyMethod(name = "syntax")
-    public IRubyObject getSyntax(ThreadContext context) {
-        switch (fileDescriptor.getSyntax()) {
-            case PROTO2:
-                return context.runtime.newSymbol("proto2");
-            case PROTO3:
-                return context.runtime.newSymbol("proto3");
-            default:
-                return context.nil;
-        }
-    }
-
-    private static RubyClass cFileDescriptor;
-
-    private FileDescriptor fileDescriptor;
+  private FileDescriptor fileDescriptor;
 }

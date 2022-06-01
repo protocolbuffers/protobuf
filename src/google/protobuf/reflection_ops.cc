@@ -38,12 +38,13 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/unknown_field_set.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -169,8 +170,10 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
     }
   }
 
-  to_reflection->MutableUnknownFields(to)->MergeFrom(
-      from_reflection->GetUnknownFields(from));
+  if (!from_reflection->GetUnknownFields(from).empty()) {
+    to_reflection->MutableUnknownFields(to)->MergeFrom(
+        from_reflection->GetUnknownFields(from));
+  }
 }
 
 void ReflectionOps::Clear(Message* message) {
@@ -182,7 +185,9 @@ void ReflectionOps::Clear(Message* message) {
     reflection->ClearField(message, field);
   }
 
-  reflection->MutableUnknownFields(message)->Clear();
+  if (reflection->GetInternalMetadata(*message).have_unknown_fields()) {
+    reflection->MutableUnknownFields(message)->Clear();
+  }
 }
 
 bool ReflectionOps::IsInitialized(const Message& message, bool check_fields,
@@ -420,16 +425,16 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
 
 void GenericSwap(Message* lhs, Message* rhs) {
 #ifndef PROTOBUF_FORCE_COPY_IN_SWAP
-  GOOGLE_DCHECK(Arena::InternalHelper<Message>::GetOwningArena(lhs) !=
-         Arena::InternalHelper<Message>::GetOwningArena(rhs));
-  GOOGLE_DCHECK(Arena::InternalHelper<Message>::GetOwningArena(lhs) != nullptr ||
-         Arena::InternalHelper<Message>::GetOwningArena(rhs) != nullptr);
+  GOOGLE_DCHECK(Arena::InternalGetOwningArena(lhs) !=
+         Arena::InternalGetOwningArena(rhs));
+  GOOGLE_DCHECK(Arena::InternalGetOwningArena(lhs) != nullptr ||
+         Arena::InternalGetOwningArena(rhs) != nullptr);
 #endif  // !PROTOBUF_FORCE_COPY_IN_SWAP
   // At least one of these must have an arena, so make `rhs` point to it.
-  Arena* arena = Arena::InternalHelper<Message>::GetOwningArena(rhs);
+  Arena* arena = Arena::InternalGetOwningArena(rhs);
   if (arena == nullptr) {
     std::swap(lhs, rhs);
-    arena = Arena::InternalHelper<Message>::GetOwningArena(rhs);
+    arena = Arena::InternalGetOwningArena(rhs);
   }
 
   // Improve efficiency by placing the temporary on an arena so that messages

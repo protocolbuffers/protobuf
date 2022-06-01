@@ -49,7 +49,7 @@ from google.protobuf.internal import testing_refleaks
 from google.protobuf.internal import type_checkers
 from google.protobuf.internal import wire_format
 from google.protobuf import descriptor
-
+from google.protobuf import unknown_fields
 try:
   import tracemalloc  # pylint: disable=g-import-not-at-top
 except ImportError:
@@ -106,14 +106,14 @@ class UnknownFieldsTest(unittest.TestCase):
     proto = message_set_extensions_pb2.TestMessageSet()
     proto.MergeFromString(serialized)
 
-    unknown_fields = proto.UnknownFields()
-    self.assertEqual(len(unknown_fields), 1)
+    unknown_field_set = unknown_fields.UnknownFieldSet(proto)
+    self.assertEqual(len(unknown_field_set), 1)
     # Unknown field should have wire format data which can be parsed back to
     # original message.
-    self.assertEqual(unknown_fields[0].field_number, item.type_id)
-    self.assertEqual(unknown_fields[0].wire_type,
+    self.assertEqual(unknown_field_set[0].field_number, item.type_id)
+    self.assertEqual(unknown_field_set[0].wire_type,
                      wire_format.WIRETYPE_LENGTH_DELIMITED)
-    d = unknown_fields[0].data
+    d = unknown_field_set[0].data
     message_new = message_set_extensions_pb2.TestMessageSetExtension1()
     message_new.ParseFromString(d)
     self.assertEqual(message1, message_new)
@@ -184,7 +184,7 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
   # serialized string is checked.
   # TODO(jieluo): Remove message._unknown_fields.
   def InternalCheckUnknownField(self, name, expected_value):
-    if api_implementation.Type() == 'cpp':
+    if api_implementation.Type() != 'python':
       return
     field_descriptor = self.descriptor.fields_by_name[name]
     wire_type = type_checkers.FIELD_TYPE_TO_WIRE_TYPE[field_descriptor.type]
@@ -196,11 +196,11 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
         decoder(memoryview(value), 0, len(value), self.all_fields, result_dict)
     self.assertEqual(expected_value, result_dict[field_descriptor])
 
-  def CheckUnknownField(self, name, unknown_fields, expected_value):
+  def CheckUnknownField(self, name, unknown_field_set, expected_value):
     field_descriptor = self.descriptor.fields_by_name[name]
     expected_type = type_checkers.FIELD_TYPE_TO_WIRE_TYPE[
         field_descriptor.type]
-    for unknown_field in unknown_fields:
+    for unknown_field in unknown_field_set:
       if unknown_field.field_number == field_descriptor.number:
         self.assertEqual(expected_type, unknown_field.wire_type)
         if expected_type == 3:
@@ -218,57 +218,57 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
           self.assertEqual(expected_value, unknown_field.data)
 
   def testCheckUnknownFieldValue(self):
-    unknown_fields = self.empty_message.UnknownFields()
+    unknown_field_set = unknown_fields.UnknownFieldSet(self.empty_message)
     # Test enum.
     self.CheckUnknownField('optional_nested_enum',
-                           unknown_fields,
+                           unknown_field_set,
                            self.all_fields.optional_nested_enum)
     self.InternalCheckUnknownField('optional_nested_enum',
                                    self.all_fields.optional_nested_enum)
 
     # Test repeated enum.
     self.CheckUnknownField('repeated_nested_enum',
-                           unknown_fields,
+                           unknown_field_set,
                            self.all_fields.repeated_nested_enum)
     self.InternalCheckUnknownField('repeated_nested_enum',
                                    self.all_fields.repeated_nested_enum)
 
     # Test varint.
     self.CheckUnknownField('optional_int32',
-                           unknown_fields,
+                           unknown_field_set,
                            self.all_fields.optional_int32)
     self.InternalCheckUnknownField('optional_int32',
                                    self.all_fields.optional_int32)
 
     # Test fixed32.
     self.CheckUnknownField('optional_fixed32',
-                           unknown_fields,
+                           unknown_field_set,
                            self.all_fields.optional_fixed32)
     self.InternalCheckUnknownField('optional_fixed32',
                                    self.all_fields.optional_fixed32)
 
     # Test fixed64.
     self.CheckUnknownField('optional_fixed64',
-                           unknown_fields,
+                           unknown_field_set,
                            self.all_fields.optional_fixed64)
     self.InternalCheckUnknownField('optional_fixed64',
                                    self.all_fields.optional_fixed64)
 
     # Test length delimited.
     self.CheckUnknownField('optional_string',
-                           unknown_fields,
+                           unknown_field_set,
                            self.all_fields.optional_string.encode('utf-8'))
     self.InternalCheckUnknownField('optional_string',
                                    self.all_fields.optional_string)
 
     # Test group.
     self.CheckUnknownField('optionalgroup',
-                           unknown_fields,
+                           unknown_field_set,
                            (17, 0, 117))
     self.InternalCheckUnknownField('optionalgroup',
                                    self.all_fields.optionalgroup)
 
-    self.assertEqual(97, len(unknown_fields))
+    self.assertEqual(98, len(unknown_field_set))
 
   def testCopyFrom(self):
     message = unittest_pb2.TestEmptyMessage()
@@ -286,18 +286,14 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
     message.optional_int64 = 3
     message.optional_uint32 = 4
     destination = unittest_pb2.TestEmptyMessage()
-    unknown_fields = destination.UnknownFields()
-    self.assertEqual(0, len(unknown_fields))
+    unknown_field_set = unknown_fields.UnknownFieldSet(destination)
+    self.assertEqual(0, len(unknown_field_set))
     destination.ParseFromString(message.SerializeToString())
-    # ParseFromString clears the message thus unknown fields is invalid.
-    with self.assertRaises(ValueError) as context:
-      len(unknown_fields)
-    self.assertIn('UnknownFields does not exist.',
-                  str(context.exception))
-    unknown_fields = destination.UnknownFields()
-    self.assertEqual(2, len(unknown_fields))
+    self.assertEqual(0, len(unknown_field_set))
+    unknown_field_set = unknown_fields.UnknownFieldSet(destination)
+    self.assertEqual(2, len(unknown_field_set))
     destination.MergeFrom(source)
-    self.assertEqual(4, len(unknown_fields))
+    self.assertEqual(2, len(unknown_field_set))
     # Check that the fields where correctly merged, even stored in the unknown
     # fields set.
     message.ParseFromString(destination.SerializeToString())
@@ -306,14 +302,11 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
     self.assertEqual(message.optional_int64, 3)
 
   def testClear(self):
-    unknown_fields = self.empty_message.UnknownFields()
+    unknown_field_set = unknown_fields.UnknownFieldSet(self.empty_message)
     self.empty_message.Clear()
     # All cleared, even unknown fields.
     self.assertEqual(self.empty_message.SerializeToString(), b'')
-    with self.assertRaises(ValueError) as context:
-      len(unknown_fields)
-    self.assertIn('UnknownFields does not exist.',
-                  str(context.exception))
+    self.assertEqual(len(unknown_field_set), 98)
 
   @unittest.skipIf((sys.version_info.major, sys.version_info.minor) < (3, 4),
                    'tracemalloc requires python 3.4+')
@@ -323,7 +316,7 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
 
     def leaking_function():
       for _ in range(nb_leaks):
-        self.empty_message.UnknownFields()
+        unknown_fields.UnknownFieldSet(self.empty_message)
 
     tracemalloc.start()
     snapshot1 = tracemalloc.take_snapshot()
@@ -340,49 +333,39 @@ class UnknownFieldsAccessorsTest(unittest.TestCase):
     message.optionalgroup.a = 123
     destination = unittest_pb2.TestEmptyMessage()
     destination.ParseFromString(message.SerializeToString())
-    sub_unknown_fields = destination.UnknownFields()[0].data
+    sub_unknown_fields = unknown_fields.UnknownFieldSet(destination)[0].data
     self.assertEqual(1, len(sub_unknown_fields))
     self.assertEqual(sub_unknown_fields[0].data, 123)
     destination.Clear()
-    with self.assertRaises(ValueError) as context:
-      len(sub_unknown_fields)
-    self.assertIn('UnknownFields does not exist.',
-                  str(context.exception))
-    with self.assertRaises(ValueError) as context:
-      # pylint: disable=pointless-statement
-      sub_unknown_fields[0]
-    self.assertIn('UnknownFields does not exist.',
-                  str(context.exception))
+    self.assertEqual(1, len(sub_unknown_fields))
+    self.assertEqual(sub_unknown_fields[0].data, 123)
     message.Clear()
     message.optional_uint32 = 456
     nested_message = unittest_pb2.NestedTestAllTypes()
     nested_message.payload.optional_nested_message.ParseFromString(
         message.SerializeToString())
-    unknown_fields = (
-        nested_message.payload.optional_nested_message.UnknownFields())
-    self.assertEqual(unknown_fields[0].data, 456)
+    unknown_field_set = unknown_fields.UnknownFieldSet(
+        nested_message.payload.optional_nested_message)
+    self.assertEqual(unknown_field_set[0].data, 456)
     nested_message.ClearField('payload')
-    self.assertEqual(unknown_fields[0].data, 456)
-    unknown_fields = (
-        nested_message.payload.optional_nested_message.UnknownFields())
-    self.assertEqual(0, len(unknown_fields))
+    self.assertEqual(unknown_field_set[0].data, 456)
+    unknown_field_set = unknown_fields.UnknownFieldSet(
+        nested_message.payload.optional_nested_message)
+    self.assertEqual(0, len(unknown_field_set))
 
   def testUnknownField(self):
     message = unittest_pb2.TestAllTypes()
     message.optional_int32 = 123
     destination = unittest_pb2.TestEmptyMessage()
     destination.ParseFromString(message.SerializeToString())
-    unknown_field = destination.UnknownFields()[0]
+    unknown_field = unknown_fields.UnknownFieldSet(destination)[0]
     destination.Clear()
-    with self.assertRaises(ValueError) as context:
-      unknown_field.data    # pylint: disable=pointless-statement
-    self.assertIn('The parent message might be cleared.',
-                  str(context.exception))
+    self.assertEqual(unknown_field.data, 123)
 
   def testUnknownExtensions(self):
     message = unittest_pb2.TestEmptyMessageWithExtensions()
     message.ParseFromString(self.all_fields_data)
-    self.assertEqual(len(message.UnknownFields()), 97)
+    self.assertEqual(len(unknown_fields.UnknownFieldSet(message)), 98)
     self.assertEqual(message.SerializeToString(), self.all_fields_data)
 
 
@@ -416,9 +399,10 @@ class UnknownEnumValuesTest(unittest.TestCase):
 
   def CheckUnknownField(self, name, expected_value):
     field_descriptor = self.descriptor.fields_by_name[name]
-    unknown_fields = self.missing_message.UnknownFields()
+    unknown_field_set = unknown_fields.UnknownFieldSet(self.missing_message)
+    self.assertIsInstance(unknown_field_set, unknown_fields.UnknownFieldSet)
     count = 0
-    for field in unknown_fields:
+    for field in unknown_field_set:
       if field.field_number == field_descriptor.number:
         count += 1
         if field_descriptor.label == descriptor.FieldDescriptor.LABEL_REPEATED:
@@ -458,8 +442,8 @@ class UnknownEnumValuesTest(unittest.TestCase):
     self.assertEqual([], self.missing_message.packed_nested_enum)
 
   def testCheckUnknownFieldValueForEnum(self):
-    unknown_fields = self.missing_message.UnknownFields()
-    self.assertEqual(len(unknown_fields), 5)
+    unknown_field_set = unknown_fields.UnknownFieldSet(self.missing_message)
+    self.assertEqual(len(unknown_field_set), 5)
     self.CheckUnknownField('optional_nested_enum',
                            self.message.optional_nested_enum)
     self.CheckUnknownField('repeated_nested_enum',

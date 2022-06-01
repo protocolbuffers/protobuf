@@ -31,10 +31,15 @@
 package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
 
+import com.google.protobuf.UnittestLite.TestAllExtensionsLite;
 import com.google.protobuf.UnittestLite.TestAllTypesLite;
+import com.google.protobuf.UnittestLite.TestMergeExceptionLite;
 import com.google.protobuf.UnittestLite.TestPackedExtensionsLite;
 import com.google.protobuf.UnittestLite.TestParsingMergeLite;
+import protobuf_unittest.MapLiteUnittest;
+import protobuf_unittest.MapLiteUnittest.TestRequiredLite;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -187,7 +192,7 @@ public class ParserLiteTest {
     // Parse TestParsingMergeLite.
     ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance();
     UnittestLite.registerAllExtensions(registry);
-    TestParsingMergeLite parsingMerge = TestParsingMergeLite.parser().parseFrom(data, registry);
+    TestParsingMergeLite parsingMerge = TestParsingMergeLite.parseFrom(data, registry);
 
     // Required and optional fields should be merged.
     assertMessageMerged(parsingMerge.getRequiredAllTypes());
@@ -199,5 +204,71 @@ public class ParserLiteTest {
     assertThat(parsingMerge.getRepeatedAllTypesCount()).isEqualTo(3);
     assertThat(parsingMerge.getRepeatedGroupCount()).isEqualTo(3);
     assertThat(parsingMerge.getExtensionCount(TestParsingMergeLite.repeatedExt)).isEqualTo(3);
+  }
+
+  @Test
+  public void testExceptionWhenMergingExtendedMessagesMissingRequiredFieldsLite() {
+    // create a TestMergeExceptionLite message (missing required fields) that looks like
+    //   all_extensions {
+    //     [TestRequiredLite.single] {
+    //     }
+    //   }
+    TestMergeExceptionLite.Builder message = TestMergeExceptionLite.newBuilder();
+    message.setAllExtensions(
+        TestAllExtensionsLite.newBuilder()
+            .setExtension(TestRequiredLite.single, TestRequiredLite.newBuilder().buildPartial())
+            .buildPartial());
+    ByteString byteString = message.buildPartial().toByteString();
+
+    // duplicate the bytestring to make the `all_extensions` field repeat twice, so that it will
+    // need merging when parsing back
+    ByteString duplicatedByteString = byteString.concat(byteString);
+
+    byte[] bytes = duplicatedByteString.toByteArray();
+    ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance();
+    MapLiteUnittest.registerAllExtensions(registry);
+
+    // `parseFrom` should throw InvalidProtocolBufferException, not UninitializedMessageException,
+    // for each of the 5 possible input types:
+
+    // parseFrom(ByteString)
+    try {
+      TestMergeExceptionLite.parseFrom(duplicatedByteString, registry);
+      assertWithMessage("Expected InvalidProtocolBufferException").fail();
+    } catch (Exception e) {
+      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
+    }
+
+    // parseFrom(ByteArray)
+    try {
+      TestMergeExceptionLite.parseFrom(bytes, registry);
+      assertWithMessage("Expected InvalidProtocolBufferException").fail();
+    } catch (Exception e) {
+      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
+    }
+
+    // parseFrom(InputStream)
+    try {
+      TestMergeExceptionLite.parseFrom(new ByteArrayInputStream(bytes), registry);
+      assertWithMessage("Expected InvalidProtocolBufferException").fail();
+    } catch (Exception e) {
+      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
+    }
+
+    // parseFrom(CodedInputStream)
+    try {
+      TestMergeExceptionLite.parseFrom(CodedInputStream.newInstance(bytes), registry);
+      assertWithMessage("Expected InvalidProtocolBufferException").fail();
+    } catch (Exception e) {
+      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
+    }
+
+    // parseFrom(ByteBuffer)
+    try {
+      TestMergeExceptionLite.parseFrom(duplicatedByteString.asReadOnlyByteBuffer(), registry);
+      assertWithMessage("Expected InvalidProtocolBufferException").fail();
+    } catch (Exception e) {
+      assertThat(e.getClass()).isEqualTo(InvalidProtocolBufferException.class);
+    }
   }
 }

@@ -6,6 +6,7 @@ load(
     "flag_group",
     "flag_set",
     "tool_path",
+    "with_feature_set",
 )
 
 all_link_actions = [
@@ -28,13 +29,16 @@ all_compile_actions = [
 ]
 
 def _impl(ctx):
-  artifact_name_patterns = [
-      artifact_name_pattern(
-          category_name = "executable",
-          prefix = "",
-          extension = ".exe",
-      ),
-  ]
+  if "mingw" in ctx.attr.target_full_name:
+      artifact_name_patterns = [
+          artifact_name_pattern(
+              category_name = "executable",
+              prefix = "",
+              extension = ".exe",
+          ),
+      ]
+  else:
+      artifact_name_patterns = []
 
   tool_paths = [
       tool_path(
@@ -93,7 +97,7 @@ def _impl(ctx):
                   flag_group(
                       flags = [
                           "-B" + ctx.attr.linker_path,
-                          ctx.attr.cpp_flag,
+                          "-lstdc++",
                           "--target=" + ctx.attr.target_full_name,
                       ] + ctx.attr.extra_linker_flags,
                   ),
@@ -102,13 +106,18 @@ def _impl(ctx):
       ],
   )
 
+  if "osx" in ctx.attr.target_full_name:
+    sysroot_action_set = all_link_actions
+  else:
+    sysroot_action_set = all_link_actions + all_compile_actions
+
   sysroot_flags = feature(
       name = "sysroot_flags",
       #Only enable this if a sysroot was specified
       enabled = (ctx.attr.sysroot != ""),
       flag_sets = [
           flag_set(
-              actions = all_link_actions,
+              actions = sysroot_action_set,
               flag_groups = [
                   flag_group(
                       flags = [
@@ -121,6 +130,10 @@ def _impl(ctx):
       ],
   )
 
+  if ctx.attr.target_cpu == "x86_32":
+    bit_flag = "-m32"
+  else:
+    bit_flag = "-m64"
   compiler_flags = feature(
       name = "default_compile_flags",
       enabled = True,
@@ -130,20 +143,58 @@ def _impl(ctx):
               flag_groups = [
                   flag_group(
                       flags = [
-                          ctx.attr.bit_flag,
+                          bit_flag,
                           "-Wall",
                           "-no-canonical-prefixes",
                           "--target=" + ctx.attr.target_full_name,
                           "-fvisibility=hidden",
                       ] + ctx.attr.extra_compiler_flags + [
                           "-isystem",
-                          ctx.attr.toolchain_dir,
+                          ctx.attr.sysroot,
                       ],
                   ),
               ],
           ),
+          flag_set(
+              actions = all_compile_actions,
+              flag_groups = [flag_group(flags = ["-DNDEBUG", "-O3"])],
+              with_features = [with_feature_set(features = ["opt"])],
+          ),
+          flag_set(
+              actions = all_compile_actions,
+              flag_groups = [flag_group(flags = ["-g"])],
+              with_features = [with_feature_set(features = ["dbg"])],
+          ),
+          flag_set(
+              actions = all_compile_actions,
+              flag_groups = [flag_group(flags = ["-O1"])],
+              with_features = [with_feature_set(features = ["fastbuild"])],
+          ),
       ],
   )
+
+  features = [
+      linker_flags,
+      compiler_flags,
+      sysroot_flags,
+      feature(name = "dbg"),
+      feature(name = "opt"),
+  ]
+
+  if "mingw" in ctx.attr.target_full_name:
+      features.append(
+          feature(
+              name = "targets_windows",
+              enabled = True,
+          )
+      )
+  else:
+      features.append(
+          feature(
+              name = "supports_pic",
+              enabled = True
+          )
+      )
 
   return cc_common.create_cc_toolchain_config_info(
       abi_libc_version = ctx.attr.abi_version,
@@ -152,17 +203,17 @@ def _impl(ctx):
       ctx = ctx,
       compiler = "clang",
       cxx_builtin_include_directories = [
-          ctx.attr.toolchain_dir,
+          ctx.attr.sysroot,
           ctx.attr.extra_include,
           "/usr/local/include",
           "/usr/local/lib/clang",
       ],
-      features = [linker_flags, compiler_flags, sysroot_flags],
+      features = features,
       host_system_name = "local",
       target_cpu = ctx.attr.target_cpu,
       target_libc = ctx.attr.target_cpu,
       target_system_name = ctx.attr.target_full_name,
-      toolchain_identifier = ctx.attr.toolchain_name,
+      toolchain_identifier = ctx.attr.target_full_name,
       tool_paths = tool_paths,
   )
 
@@ -170,8 +221,6 @@ cc_toolchain_config = rule(
     implementation = _impl,
     attrs = {
         "abi_version": attr.string(default = "local"),
-        "bit_flag": attr.string(mandatory = True, values = ["-m32", "-m64"]),
-        "cpp_flag": attr.string(mandatory = True),
         "extra_compiler_flags": attr.string_list(),
         "extra_include": attr.string(mandatory = False),
         "extra_linker_flags": attr.string_list(),
@@ -179,8 +228,6 @@ cc_toolchain_config = rule(
         "sysroot": attr.string(mandatory = False),
         "target_cpu": attr.string(mandatory = True, values = ["aarch64", "ppc64", "systemz", "x86_32", "x86_64"]),
         "target_full_name": attr.string(mandatory = True),
-        "toolchain_dir": attr.string(mandatory = True),
-        "toolchain_name": attr.string(mandatory = True),
     },
     provides = [CcToolchainConfigInfo],
 )

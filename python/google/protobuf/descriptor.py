@@ -40,11 +40,15 @@ import warnings
 from google.protobuf.internal import api_implementation
 
 _USE_C_DESCRIPTORS = False
-if api_implementation.Type() == 'cpp':
+if api_implementation.Type() != 'python':
   # Used by MakeDescriptor in cpp mode
   import binascii
   import os
-  from google.protobuf.pyext import _message
+  # pylint: disable=protected-access
+  _message = api_implementation._c_module
+  # TODO(jieluo): Remove this import after fix api_implementation
+  if _message is None:
+    from google.protobuf.pyext import _message
   _USE_C_DESCRIPTORS = True
 
 
@@ -598,13 +602,13 @@ class FieldDescriptor(DescriptorBase):
     self.is_extension = is_extension
     self.extension_scope = extension_scope
     self.containing_oneof = containing_oneof
-    if api_implementation.Type() == 'cpp':
+    if api_implementation.Type() == 'python':
+      self._cdescriptor = None
+    else:
       if is_extension:
         self._cdescriptor = _message.default_pool.FindExtensionByName(full_name)
       else:
         self._cdescriptor = _message.default_pool.FindFieldByName(full_name)
-    else:
-      self._cdescriptor = None
 
   @property
   def camelcase_name(self):
@@ -616,6 +620,26 @@ class FieldDescriptor(DescriptorBase):
     if self._camelcase_name is None:
       self._camelcase_name = _ToCamelCase(self.name)
     return self._camelcase_name
+
+  @property
+  def has_presence(self):
+    """Whether the field distinguishes between unpopulated and default values.
+
+    Raises:
+      RuntimeError: singular field that is not linked with message nor file.
+    """
+    if self.label == FieldDescriptor.LABEL_REPEATED:
+      return False
+    if (self.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE or
+        self.containing_oneof):
+      return True
+    if hasattr(self.file, 'syntax'):
+      return self.file.syntax == 'proto2'
+    if hasattr(self.message_type, 'syntax'):
+      return self.message_type.syntax == 'proto2'
+    raise RuntimeError(
+        'has_presence is not ready to use because field %s is not'
+        ' linked with message type nor file' % self.full_name)
 
   @staticmethod
   def ProtoTypeToCppProtoType(proto_type):
@@ -879,6 +903,8 @@ class MethodDescriptor(DescriptorBase):
       accepts.
     output_type (Descriptor): The descriptor of the message that this method
       returns.
+    client_streaming (bool): Whether this method uses client streaming.
+    server_streaming (bool): Whether this method uses server streaming.
     options (descriptor_pb2.MethodOptions or None): Method options message, or
       None to use default method options.
   """
@@ -886,14 +912,32 @@ class MethodDescriptor(DescriptorBase):
   if _USE_C_DESCRIPTORS:
     _C_DESCRIPTOR_CLASS = _message.MethodDescriptor
 
-    def __new__(cls, name, full_name, index, containing_service,
-                input_type, output_type, options=None, serialized_options=None,
+    def __new__(cls,
+                name,
+                full_name,
+                index,
+                containing_service,
+                input_type,
+                output_type,
+                client_streaming=False,
+                server_streaming=False,
+                options=None,
+                serialized_options=None,
                 create_key=None):
       _message.Message._CheckCalledFromGeneratedFile()  # pylint: disable=protected-access
       return _message.default_pool.FindMethodByName(full_name)
 
-  def __init__(self, name, full_name, index, containing_service,
-               input_type, output_type, options=None, serialized_options=None,
+  def __init__(self,
+               name,
+               full_name,
+               index,
+               containing_service,
+               input_type,
+               output_type,
+               client_streaming=False,
+               server_streaming=False,
+               options=None,
+               serialized_options=None,
                create_key=None):
     """The arguments are as described in the description of MethodDescriptor
     attributes above.
@@ -911,6 +955,8 @@ class MethodDescriptor(DescriptorBase):
     self.containing_service = containing_service
     self.input_type = input_type
     self.output_type = output_type
+    self.client_streaming = client_streaming
+    self.server_streaming = server_streaming
 
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.MethodDescriptorProto.
@@ -1093,7 +1139,7 @@ def MakeDescriptor(desc_proto, package='', build_file_if_cpp=True,
   Returns:
     A Descriptor for protobuf messages.
   """
-  if api_implementation.Type() == 'cpp' and build_file_if_cpp:
+  if api_implementation.Type() != 'python' and build_file_if_cpp:
     # The C++ implementation requires all descriptors to be backed by the same
     # definition in the C++ descriptor pool. To do this, we build a
     # FileDescriptorProto with the same definition as this descriptor and build

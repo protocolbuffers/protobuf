@@ -80,6 +80,7 @@ import static com.google.protobuf.UnittestLite.optionalStringExtensionLite;
 import static com.google.protobuf.UnittestLite.optionalStringPieceExtensionLite;
 import static com.google.protobuf.UnittestLite.optionalUint32ExtensionLite;
 import static com.google.protobuf.UnittestLite.optionalUint64ExtensionLite;
+import static com.google.protobuf.UnittestLite.optionalUnverifiedLazyMessageExtensionLite;
 import static com.google.protobuf.UnittestLite.packedBoolExtensionLite;
 import static com.google.protobuf.UnittestLite.packedDoubleExtensionLite;
 import static com.google.protobuf.UnittestLite.packedEnumExtensionLite;
@@ -197,6 +198,8 @@ public final class TestUtilLite {
     builder.setOptionalImportMessage(ImportMessageLite.newBuilder().setD(120).build());
     builder.setOptionalPublicImportMessage(PublicImportMessageLite.newBuilder().setE(126).build());
     builder.setOptionalLazyMessage(TestAllTypesLite.NestedMessage.newBuilder().setBb(127).build());
+    builder.setOptionalUnverifiedLazyMessage(
+        TestAllTypesLite.NestedMessage.newBuilder().setBb(128).build());
 
     builder.setOptionalNestedEnum(TestAllTypesLite.NestedEnum.BAZ);
     builder.setOptionalForeignEnum(ForeignEnumLite.FOREIGN_LITE_BAZ);
@@ -355,6 +358,9 @@ public final class TestUtilLite {
     message.setExtension(
         optionalLazyMessageExtensionLite,
         TestAllTypesLite.NestedMessage.newBuilder().setBb(127).build());
+    message.setExtension(
+        optionalUnverifiedLazyMessageExtensionLite,
+        TestAllTypesLite.NestedMessage.newBuilder().setBb(128).build());
 
     message.setExtension(optionalNestedEnumExtensionLite, TestAllTypesLite.NestedEnum.BAZ);
     message.setExtension(optionalForeignEnumExtensionLite, ForeignEnumLite.FOREIGN_LITE_BAZ);

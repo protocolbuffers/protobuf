@@ -38,7 +38,7 @@ page, check out the maven repo here:
   [https://repo1.maven.org/maven2/com/google/protobuf/protoc/](https://repo1.maven.org/maven2/com/google/protobuf/protoc/)
 
 These pre-built binaries are only provided for released versions. If you want
-to use the github master version at HEAD, or you need to modify protobuf code,
+to use the github main version at HEAD, or you need to modify protobuf code,
 or you are using C++, it's recommended to build your own protoc binary from
 source.
 
@@ -59,7 +59,6 @@ how to install protobuf runtime for that specific language:
 | Python                               | [python](python)                                            |
 | Objective-C                          | [objectivec](objectivec)                                    |
 | C#                                   | [csharp](csharp)                                            |
-| JavaScript                           | [js](js)                                                    |
 | Ruby                                 | [ruby](ruby)                                                |
 | Go                                   | [protocolbuffers/protobuf-go](https://github.com/protocolbuffers/protobuf-go)|
 | PHP                                  | [php](php)                                                  |

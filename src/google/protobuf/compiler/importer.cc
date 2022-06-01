@@ -93,13 +93,13 @@ class SourceTreeDescriptorDatabase::SingleFileErrorCollector
       : filename_(filename),
         multi_file_error_collector_(multi_file_error_collector),
         had_errors_(false) {}
-  ~SingleFileErrorCollector() {}
+  ~SingleFileErrorCollector() override {}
 
   bool had_errors() { return had_errors_; }
 
   // implements ErrorCollector ---------------------------------------
   void AddError(int line, int column, const std::string& message) override {
-    if (multi_file_error_collector_ != NULL) {
+    if (multi_file_error_collector_ != nullptr) {
       multi_file_error_collector_->AddError(filename_, line, column, message);
     }
     had_errors_ = true;
@@ -134,12 +134,12 @@ SourceTreeDescriptorDatabase::~SourceTreeDescriptorDatabase() {}
 bool SourceTreeDescriptorDatabase::FindFileByName(const std::string& filename,
                                                   FileDescriptorProto* output) {
   std::unique_ptr<io::ZeroCopyInputStream> input(source_tree_->Open(filename));
-  if (input == NULL) {
+  if (input == nullptr) {
     if (fallback_database_ != nullptr &&
         fallback_database_->FindFileByName(filename, output)) {
       return true;
     }
-    if (error_collector_ != NULL) {
+    if (error_collector_ != nullptr) {
       error_collector_->AddError(filename, -1, 0,
                                  source_tree_->GetLastErrorMessage());
     }
@@ -151,7 +151,7 @@ bool SourceTreeDescriptorDatabase::FindFileByName(const std::string& filename,
   io::Tokenizer tokenizer(input.get(), &file_error_collector);
 
   Parser parser;
-  if (error_collector_ != NULL) {
+  if (error_collector_ != nullptr) {
     parser.RecordErrorsTo(&file_error_collector);
   }
   if (using_validation_error_collector_) {
@@ -187,7 +187,7 @@ void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddError(
     const std::string& filename, const std::string& element_name,
     const Message* descriptor, ErrorLocation location,
     const std::string& message) {
-  if (owner_->error_collector_ == NULL) return;
+  if (owner_->error_collector_ == nullptr) return;
 
   int line, column;
   if (location == DescriptorPool::ErrorCollector::IMPORT) {
@@ -203,7 +203,7 @@ void SourceTreeDescriptorDatabase::ValidationErrorCollector::AddWarning(
     const std::string& filename, const std::string& element_name,
     const Message* descriptor, ErrorLocation location,
     const std::string& message) {
-  if (owner_->error_collector_ == NULL) return;
+  if (owner_->error_collector_ == nullptr) return;
 
   int line, column;
   if (location == DescriptorPool::ErrorCollector::IMPORT) {
@@ -429,7 +429,7 @@ DiskSourceTree::DiskFileToVirtualFile(const std::string& disk_file,
   // of verifying that we are not canonicalizing away any non-existent
   // directories.
   std::unique_ptr<io::ZeroCopyInputStream> stream(OpenDiskFile(disk_file));
-  if (stream == NULL) {
+  if (stream == nullptr) {
     return CANNOT_OPEN;
   }
 
@@ -440,11 +440,11 @@ bool DiskSourceTree::VirtualFileToDiskFile(const std::string& virtual_file,
                                            std::string* disk_file) {
   std::unique_ptr<io::ZeroCopyInputStream> stream(
       OpenVirtualFile(virtual_file, disk_file));
-  return stream != NULL;
+  return stream != nullptr;
 }
 
 io::ZeroCopyInputStream* DiskSourceTree::Open(const std::string& filename) {
-  return OpenVirtualFile(filename, NULL);
+  return OpenVirtualFile(filename, nullptr);
 }
 
 std::string DiskSourceTree::GetLastErrorMessage() {
@@ -461,7 +461,7 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenVirtualFile(
     last_error_message_ =
         "Backslashes, consecutive slashes, \".\", or \"..\" "
         "are not allowed in the virtual path";
-    return NULL;
+    return nullptr;
   }
 
   for (const auto& mapping : mappings_) {
@@ -469,8 +469,8 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenVirtualFile(
     if (ApplyMapping(virtual_file, mapping.virtual_path, mapping.disk_path,
                      &temp_disk_file)) {
       io::ZeroCopyInputStream* stream = OpenDiskFile(temp_disk_file);
-      if (stream != NULL) {
-        if (disk_file != NULL) {
+      if (stream != nullptr) {
+        if (disk_file != nullptr) {
           *disk_file = temp_disk_file;
         }
         return stream;
@@ -480,12 +480,12 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenVirtualFile(
         // The file exists but is not readable.
         last_error_message_ =
             "Read access is denied for file: " + temp_disk_file;
-        return NULL;
+        return nullptr;
       }
     }
   }
   last_error_message_ = "File not found.";
-  return NULL;
+  return nullptr;
 }
 
 io::ZeroCopyInputStream* DiskSourceTree::OpenDiskFile(
@@ -498,12 +498,12 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenDiskFile(
 #if defined(_WIN32)
   if (ret == 0 && sb.st_mode & S_IFDIR) {
     last_error_message_ = "Input file is a directory.";
-    return NULL;
+    return nullptr;
   }
 #else
   if (ret == 0 && S_ISDIR(sb.st_mode)) {
     last_error_message_ = "Input file is a directory.";
-    return NULL;
+    return nullptr;
   }
 #endif
   int file_descriptor;
@@ -515,7 +515,7 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenDiskFile(
     result->SetCloseOnDelete(true);
     return result;
   } else {
-    return NULL;
+    return nullptr;
   }
 }
 

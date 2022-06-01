@@ -33,12 +33,13 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_JSON_UTIL_H__
 #define GOOGLE_PROTOBUF_UTIL_JSON_UTIL_H__
 
-#include <google/protobuf/message.h>
-#include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/stubs/bytestream.h>
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/message.h>
+#include <google/protobuf/util/type_resolver.h>
 
+// Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
@@ -61,8 +62,7 @@ struct JsonParseOptions {
   bool case_insensitive_enum_parsing;
 
   JsonParseOptions()
-      : ignore_unknown_fields(false),
-        case_insensitive_enum_parsing(false) {}
+      : ignore_unknown_fields(false), case_insensitive_enum_parsing(false) {}
 };
 
 struct JsonPrintOptions {
@@ -181,8 +181,8 @@ namespace internal {
 class PROTOBUF_EXPORT ZeroCopyStreamByteSink : public strings::ByteSink {
  public:
   explicit ZeroCopyStreamByteSink(io::ZeroCopyOutputStream* stream)
-      : stream_(stream), buffer_(NULL), buffer_size_(0) {}
-  ~ZeroCopyStreamByteSink();
+      : stream_(stream), buffer_(nullptr), buffer_size_(0) {}
+  ~ZeroCopyStreamByteSink() override;
 
   void Append(const char* bytes, size_t len) override;
 
