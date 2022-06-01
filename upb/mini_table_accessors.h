@@ -187,7 +187,8 @@ UPB_INLINE void upb_MiniTable_SetString(upb_Message* msg,
 
 UPB_INLINE const upb_Message* upb_MiniTable_GetMessage(
     const upb_Message* msg, const upb_MiniTable_Field* field) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message);
+  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
+             field->descriptortype == kUpb_FieldType_Group);
   return *UPB_PTR_AT(msg, field->offset, const upb_Message*);
 }
 
