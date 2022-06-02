@@ -285,8 +285,10 @@ bool IsPreviouslyUnreservedClassName(const char* fullname) {
   int j;
   for (j = 0; kPreviouslyUnreservedNames[j]; j++) {
     if (strcmp(kPreviouslyUnreservedNames[j], lower) == 0) {
+      free(lower);
       return true;
     }
   }
+  free(lower);
   return false;
 }
