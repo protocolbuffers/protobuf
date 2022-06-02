@@ -422,6 +422,25 @@ TEST(MESSAGE_TEST_NAME, ParseFailsIfExtensionWireMalformed) {
   EXPECT_FALSE(p.ParseFromString(serialized));
 }
 
+TEST(MESSAGE_TEST_NAME, ParseFailsIfGroupFieldMalformed) {
+  UNITTEST::TestMutualRecursionA original, parsed;
+  original.mutable_bb()
+      ->mutable_a()
+      ->mutable_subgroup()
+      ->mutable_sub_message()
+      ->mutable_b()
+      ->set_optional_int32(-1);
+
+  std::string data;
+  ASSERT_TRUE(original.SerializeToString(&data));
+  // Should parse correctly.
+  ASSERT_TRUE(parsed.ParseFromString(data));
+  // Overwriting the last byte of varint (-1) to 0xFF results in malformed wire.
+  data[data.size() - 2] = 0xFF;
+
+  EXPECT_FALSE(parsed.ParseFromString(data));
+}
+
 TEST(MESSAGE_TEST_NAME, UninitializedAndMalformed) {
   UNITTEST::TestRequiredForeign o, p1, p2;
   o.mutable_optional_message()->set_a(-1);

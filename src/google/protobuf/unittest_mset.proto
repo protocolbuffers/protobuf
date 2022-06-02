@@ -55,6 +55,7 @@ message NestedTestMessageSetContainer {
 
 message NestedTestInt {
   optional fixed32 a = 1;
+  optional int32 b = 3;
   optional NestedTestInt child = 2;
 }
 
