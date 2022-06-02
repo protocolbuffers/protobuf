@@ -94,6 +94,7 @@ target_link_libraries(protobuf-test-common libprotobuf GTest::gmock)
 set(tests_files
   ${protobuf_test_files}
   ${compiler_test_files}
+  ${annotation_test_util_srcs}
   ${io_test_files}
   ${util_test_files}
   ${stubs_test_files}
@@ -132,9 +133,9 @@ endif()
 target_link_libraries(tests protobuf-lite-test-common protobuf-test-common libprotoc libprotobuf GTest::gmock_main)
 
 set(test_plugin_files
+  ${test_plugin_files}
   ${mock_code_generator_srcs}
   ${testing_srcs}
-  ${test_plugin_srcs}
 )
 
 add_executable(test_plugin ${test_plugin_files})
