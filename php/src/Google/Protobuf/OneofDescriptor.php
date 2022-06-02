@@ -38,6 +38,7 @@ class OneofDescriptor
 {
     use GetPublicDescriptorTrait;
 
+    /** @var  \Google\Protobuf\Internal\OneofDescriptor $internal_desc */
     private $internal_desc;
 
     /**
@@ -75,6 +76,6 @@ class OneofDescriptor
 
     public function isSynthetic()
     {
-      return $this->internal_desc->isSynthetic();
+        return $this->internal_desc->isSynthetic();
     }
 }

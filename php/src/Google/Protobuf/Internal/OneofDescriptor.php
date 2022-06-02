@@ -37,6 +37,7 @@ class OneofDescriptor
     use HasPublicDescriptorTrait;
 
     private $name;
+    /** @var \Google\Protobuf\FieldDescriptor[] $fields */
     private $fields;
 
     public function __construct()
@@ -62,6 +63,11 @@ class OneofDescriptor
     public function getFields()
     {
         return $this->fields;
+    }
+
+    public function isSynthetic()
+    {
+        return count($this->fields) === 1 && $this->fields[0]->getProto3Optional();
     }
 
     public static function buildFromProto($oneof_proto, $desc, $index)

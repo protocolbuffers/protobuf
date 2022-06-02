@@ -46,8 +46,8 @@ class FieldDescriptor
     private $message_type;
     private $enum_type;
     private $packed;
-    private $is_map;
     private $oneof_index = -1;
+    private $proto3_optional;
 
     public function __construct()
     {
@@ -169,6 +169,16 @@ class FieldDescriptor
         return $this->packed;
     }
 
+    public function getProto3Optional()
+    {
+        return $this->proto3_optional;
+    }
+
+    public function setProto3Optional($proto3_optional)
+    {
+        $this->proto3_optional = $proto3_optional;
+    }
+
     public function isPackable()
     {
         return $this->isRepeated() && self::isTypePackable($this->type);
@@ -214,6 +224,10 @@ class FieldDescriptor
             $field_type !== GPBType::BYTES);
     }
 
+    /**
+     * @param FieldDescriptorProto $proto
+     * @return FieldDescriptor
+     */
     public static function getFieldDescriptor($proto)
     {
         $type_name = null;
@@ -269,6 +283,7 @@ class FieldDescriptor
         $field->setLabel($proto->getLabel());
         $field->setPacked($packed);
         $field->setOneofIndex($oneof_index);
+        $field->setProto3Optional($proto->getProto3Optional());
 
         // At this time, the message/enum type may have not been added to pool.
         // So we use the type name as place holder and will replace it with the

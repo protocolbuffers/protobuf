@@ -39,6 +39,7 @@ class FieldDescriptor
 {
     use GetPublicDescriptorTrait;
 
+    /** @var  \Google\Protobuf\Internal\FieldDescriptor $internal_desc */
     private $internal_desc;
 
     /**
@@ -82,6 +83,22 @@ class FieldDescriptor
     }
 
     /**
+     * @return int
+     */
+    public function getOneofIndex()
+    {
+        return $this->internal_desc->getOneofIndex();
+    }
+
+    /**
+     * @return boolean
+     */
+    public function getProto3Optional()
+    {
+        return $this->internal_desc->getProto3Optional();
+    }
+
+    /**
      * @return Descriptor Returns a descriptor for the field type if the field type is a message, otherwise throws \Exception
      * @throws \Exception
      */
@@ -113,13 +130,5 @@ class FieldDescriptor
     public function isMap()
     {
         return $this->internal_desc->isMap();
-    }
-
-    /**
-     * @return boolean
-     */
-    public function hasOptionalKeyword()
-    {
-        return $this->internal_desc->hasOptionalKeyword();
     }
 }
