@@ -98,7 +98,7 @@ PROTOBUF_EXPORT std::string GetStringFromAny(const google::protobuf::Any& any);
 
 // Returns the type string without the url prefix. e.g.: If the passed type is
 // 'type.googleapis.com/tech.type.Bool', the returned value is 'tech.type.Bool'.
-PROTOBUF_EXPORT const StringPiece GetTypeWithoutUrl(
+PROTOBUF_EXPORT StringPiece GetTypeWithoutUrl(
     StringPiece type_url);
 
 // Returns the simple_type with the base type url (kTypeServiceBaseUrl)
@@ -107,7 +107,7 @@ PROTOBUF_EXPORT const StringPiece GetTypeWithoutUrl(
 // E.g:
 // GetFullTypeWithUrl("google.protobuf.Timestamp") returns the string
 // "type.googleapis.com/google.protobuf.Timestamp".
-PROTOBUF_EXPORT const std::string GetFullTypeWithUrl(
+PROTOBUF_EXPORT std::string GetFullTypeWithUrl(
     StringPiece simple_type);
 
 // Finds and returns option identified by name and option_name within the

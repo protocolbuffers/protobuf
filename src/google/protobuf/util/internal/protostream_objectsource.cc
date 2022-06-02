@@ -83,7 +83,7 @@ const google::protobuf::EnumValue* FindEnumValueByNumber(
     const google::protobuf::Enum& tech_enum, int number);
 
 // Utility function to format nanos.
-const std::string FormatNanos(uint32_t nanos, bool with_trailing_zeros);
+std::string FormatNanos(uint32_t nanos, bool with_trailing_zeros);
 
 util::StatusOr<std::string> MapKeyDefaultValueAsString(
     const google::protobuf::Field& field) {
@@ -892,7 +892,7 @@ util::Status ProtoStreamObjectSource::RenderNonMessageField(
 }
 
 // TODO(skarvaje): Fix this to avoid code duplication.
-const std::string ProtoStreamObjectSource::ReadFieldValueAsString(
+std::string ProtoStreamObjectSource::ReadFieldValueAsString(
     const google::protobuf::Field& field) const {
   std::string result;
   switch (field.kind()) {
@@ -1093,7 +1093,7 @@ const google::protobuf::EnumValue* FindEnumValueByNumber(
 
 // TODO(skarvaje): Look into optimizing this by not doing computation on
 // double.
-const std::string FormatNanos(uint32_t nanos, bool with_trailing_zeros) {
+std::string FormatNanos(uint32_t nanos, bool with_trailing_zeros) {
   if (nanos == 0) {
     return with_trailing_zeros ? ".000" : "";
   }

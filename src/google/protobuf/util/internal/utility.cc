@@ -125,7 +125,7 @@ std::string GetStringFromAny(const google::protobuf::Any& any) {
   return s.value();
 }
 
-const StringPiece GetTypeWithoutUrl(StringPiece type_url) {
+StringPiece GetTypeWithoutUrl(StringPiece type_url) {
   if (type_url.size() > kTypeUrlSize && type_url[kTypeUrlSize] == '/') {
     return type_url.substr(kTypeUrlSize + 1);
   } else {
@@ -137,7 +137,7 @@ const StringPiece GetTypeWithoutUrl(StringPiece type_url) {
   }
 }
 
-const std::string GetFullTypeWithUrl(StringPiece simple_type) {
+std::string GetFullTypeWithUrl(StringPiece simple_type) {
   return StrCat(kTypeServiceBaseUrl, "/", simple_type);
 }
 
