@@ -87,6 +87,16 @@ TEST(StatusOr, TestValueCtor) {
   EXPECT_EQ(kI, thing.value());
 }
 
+TEST(StatusOr, TestPtrOps) {
+  const int kI = 4;
+  StatusOr<int> thing(kI);
+  EXPECT_TRUE(thing.ok());
+  EXPECT_EQ(kI, *thing);
+
+  StatusOr<StatusOr<int>> thing2(thing);
+  EXPECT_EQ(kI, thing2->value());
+}
+
 TEST(StatusOr, TestCopyCtorStatusOk) {
   const int kI = 4;
   StatusOr<int> original(kI);

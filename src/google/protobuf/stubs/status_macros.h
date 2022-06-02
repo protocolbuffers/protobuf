@@ -37,9 +37,14 @@
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/statusor.h>
 
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace util {
+namespace status_macros_internal {
+using PROTOBUF_NAMESPACE_ID::util::Status;
+}  // namespace status_macros_internal
 
 // Run a command that returns a util::Status.  If the called code returns an
 // error status, return that status up out of this method too.
@@ -49,7 +54,8 @@ namespace util {
 #define RETURN_IF_ERROR(expr)                                                \
   do {                                                                       \
     /* Using _status below to avoid capture problems if expr is "status". */ \
-    const PROTOBUF_NAMESPACE_ID::util::Status _status = (expr);              \
+    const ::google::protobuf::util::status_macros_internal::Status _status = \
+        (expr);                                                              \
     if (PROTOBUF_PREDICT_FALSE(!_status.ok())) return _status;               \
   } while (0)
 
@@ -57,7 +63,7 @@ namespace util {
 #define STATUS_MACROS_CONCAT_NAME_INNER(x, y) x##y
 #define STATUS_MACROS_CONCAT_NAME(x, y) STATUS_MACROS_CONCAT_NAME_INNER(x, y)
 
-template<typename T>
+template <typename T>
 Status DoAssignOrReturn(T& lhs, StatusOr<T> result) {
   if (result.ok()) {
     lhs = result.value();
@@ -79,11 +85,13 @@ Status DoAssignOrReturn(T& lhs, StatusOr<T> result) {
 // WARNING: ASSIGN_OR_RETURN expands into multiple statements; it cannot be used
 //  in a single statement (e.g. as the body of an if statement without {})!
 #define ASSIGN_OR_RETURN(lhs, rexpr) \
-  ASSIGN_OR_RETURN_IMPL( \
+  ASSIGN_OR_RETURN_IMPL(             \
       STATUS_MACROS_CONCAT_NAME(_status_or_value, __COUNTER__), lhs, rexpr);
 
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
 
 #endif  // GOOGLE_PROTOBUF_STUBS_STATUS_H_

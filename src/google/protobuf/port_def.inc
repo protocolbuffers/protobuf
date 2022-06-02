@@ -865,6 +865,8 @@
 // Inconvenient macro names from usr/include/sys/syslimits.h in some macOS SDKs.
 #pragma push_macro("UID_MAX")
 #undef UID_MAX
+#pragma push_macro("GID_MAX")
+#undef GID_MAX
 #endif  // __APPLE__
 
 #if defined(__clang__) || PROTOBUF_GNUC_MIN(3, 0) || defined(_MSC_VER)
