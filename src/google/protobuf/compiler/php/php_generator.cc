@@ -48,29 +48,29 @@ const std::string kDescriptorMetadataFile =
 const std::string kDescriptorDirName = "Google/Protobuf/Internal";
 const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
 const char* const kReservedNames[] = {
-    "abstract",     "and",        "array",        "as",         "break",
-    "callable",     "case",       "catch",        "class",      "clone",
-    "const",        "continue",   "declare",      "default",    "die",
-    "do",           "echo",       "else",         "elseif",     "empty",
-    "enddeclare",   "endfor",     "endforeach",   "endif",      "endswitch",
-    "endwhile",     "eval",       "exit",         "extends",    "final",
-    "finally",      "fn",         "for",          "foreach",    "function",
-    "global",       "goto",       "if",           "implements", "include",
-    "include_once", "instanceof", "insteadof",    "interface",  "isset",
-    "list",         "match",      "namespace",    "new",        "or",
-    "parent",       "print",      "private",      "protected",  "public",
-    "readonly",     "require",    "require_once", "return",     "self",
-    "static",       "switch",     "throw",        "trait",      "try",
-    "unset",        "use",        "var",          "while",      "xor",
-    "yield",        "int",        "float",        "bool",       "string",
-    "true",         "false",      "null",         "void",       "iterable"};
+    "abstract",     "and",          "array",      "as",         "break",
+    "callable",     "case",         "catch",      "class",      "clone",
+    "const",        "continue",     "declare",    "default",    "die",
+    "do",           "echo",         "else",       "elseif",     "empty",
+    "enddeclare",   "endfor",       "endforeach", "endif",      "endswitch",
+    "endwhile",     "eval",         "exit",       "extends",    "final",
+    "finally",      "fn",           "for",        "foreach",    "function",
+    "global",       "goto",         "if",         "implements", "include",
+    "include_once", "instanceof",   "insteadof",  "interface",  "isset",
+    "list",         "match",        "namespace",  "new",        "or",
+    "parent",       "print",        "private",    "protected",  "public",
+    "require",      "require_once", "return",     "self",       "static",
+    "switch",       "throw",        "trait",      "try",        "unset",
+    "use",          "var",          "while",      "xor",        "yield",
+    "int",          "float",        "bool",       "string",     "true",
+    "false",        "null",         "void",       "iterable"};
 const char* const kValidConstantNames[] = {
     "int",   "float", "bool", "string",   "true",
     "false", "null",  "void", "iterable", "parent",
-    "self", "readonly"
+    "self"
 };
-const int kReservedNamesSize = 80;
-const int kValidConstantNamesSize = 12;
+const int kReservedNamesSize = 79;
+const int kValidConstantNamesSize = 11;
 const int kFieldSetter = 1;
 const int kFieldGetter = 2;
 const int kFieldProperty = 3;
@@ -334,7 +334,7 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       const Options& options) {
   const std::string& proto_file = file->name();
   int start_index = 0;
-  int first_index = proto_file.find_first_of("/", start_index);
+  int first_index = proto_file.find_first_of('/', start_index);
   std::string result = "";
   std::string segment = "";
 
@@ -347,7 +347,7 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
 
   // Append directory name.
   std::string file_no_suffix;
-  int lastindex = proto_file.find_last_of(".");
+  int lastindex = proto_file.find_last_of('.');
   if (proto_file == kEmptyFile) {
     return kEmptyMetadataFile;
   } else {
@@ -371,12 +371,12 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
           file_no_suffix.substr(start_index, first_index - start_index), true);
       result += ReservedNamePrefix(segment, file) + segment + "/";
       start_index = first_index + 1;
-      first_index = file_no_suffix.find_first_of("/", start_index);
+      first_index = file_no_suffix.find_first_of('/', start_index);
     }
   }
 
   // Append file name.
-  int file_name_start = file_no_suffix.find_last_of("/");
+  int file_name_start = file_no_suffix.find_last_of('/');
   if (file_name_start == std::string::npos) {
     file_name_start = 0;
   } else {
@@ -405,16 +405,6 @@ std::string GeneratedClassFileName(const DescriptorType* desc,
     }
   }
   return result + ".php";
-}
-
-template <typename DescriptorType>
-std::string LegacyReadOnlyGeneratedClassFileName(const DescriptorType* desc,
-                                   const Options& options) {
-  std::string php_namespace = RootPhpNamespace(desc, options);
-  if (!php_namespace.empty()) {
-    return php_namespace + "/" + desc->name() + ".php";
-  }
-  return desc->name() + ".php";
 }
 
 std::string GeneratedServiceFileName(const ServiceDescriptor* service,
@@ -485,7 +475,7 @@ std::string PhpSetterTypeName(const FieldDescriptor* field,
   }
   if (field->is_repeated()) {
     // accommodate for edge case with multiple types.
-    size_t start_pos = type.find("|");
+    size_t start_pos = type.find('|');
     if (start_pos != std::string::npos) {
       type.replace(start_pos, 1, ">|array<");
     }
@@ -1217,7 +1207,7 @@ void GenerateHead(const FileDescriptor* file, io::Printer* printer) {
 }
 
 std::string FilenameToClassname(const std::string& filename) {
-  int lastindex = filename.find_last_of(".");
+  int lastindex = filename.find_last_of('.');
   std::string result = filename.substr(0, lastindex);
   for (int i = 0; i < result.size(); i++) {
     if (result[i] == '/') {
@@ -1237,7 +1227,7 @@ void GenerateMetadataFile(const FileDescriptor* file, const Options& options,
   GenerateHead(file, &printer);
 
   std::string fullname = FilenameToClassname(filename);
-  int lastindex = fullname.find_last_of("\\");
+  int lastindex = fullname.find_last_of('\\');
 
   if (lastindex != std::string::npos) {
     printer.Print(
@@ -1262,32 +1252,6 @@ void GenerateMetadataFile(const FileDescriptor* file, const Options& options,
   printer.Print("}\n\n");
 }
 
-template <typename DescriptorType>
-void LegacyReadOnlyGenerateClassFile(const FileDescriptor* file,
-                             const DescriptorType* desc, const Options& options,
-                             GeneratorContext* generator_context) {
-  std::string filename = LegacyReadOnlyGeneratedClassFileName(desc, options);
-  std::unique_ptr<io::ZeroCopyOutputStream> output(
-      generator_context->Open(filename));
-  io::Printer printer(output.get(), '^');
-
-  GenerateHead(file, &printer);
-
-  std::string php_namespace = RootPhpNamespace(desc, options);
-  if (!php_namespace.empty()) {
-    printer.Print(
-        "namespace ^name^;\n\n",
-        "name", php_namespace);
-  }
-  std::string newname = FullClassName(desc, options);
-  printer.Print("class_exists(^new^::class);\n",
-      "new", GeneratedClassNameImpl(desc));
-  printer.Print("@trigger_error(__NAMESPACE__ . '\\^old^ is deprecated and will be removed in "
-      "the next major release. Use ^fullname^ instead', E_USER_DEPRECATED);\n\n",
-      "old", desc->name(),
-      "fullname", newname);
-}
-
 void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
                       const Options& options,
                       GeneratorContext* generator_context) {
@@ -1299,7 +1263,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   GenerateHead(file, &printer);
 
   std::string fullname = FilenameToClassname(filename);
-  int lastindex = fullname.find_last_of("\\");
+  int lastindex = fullname.find_last_of('\\');
 
   if (lastindex != std::string::npos) {
     printer.Print(
@@ -1408,19 +1372,6 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
         "new", fullname,
         "old", LegacyFullClassName(en, options));
   }
-
-  // Write legacy file for backwards compatibility with "readonly" keywword
-  std::string lower = en->name();
-  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
-  if (lower == "readonly") {
-    printer.Print(
-        "// Adding a class alias for backwards compatibility with the \"readonly\" keyword.\n");
-    printer.Print(
-        "class_alias(^new^::class, __NAMESPACE__ . '\\^old^');\n\n",
-        "new", fullname,
-        "old", en->name());
-    LegacyReadOnlyGenerateClassFile(file, en, options, generator_context);
-  }
 }
 
 void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
@@ -1440,7 +1391,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   GenerateHead(file, &printer);
 
   std::string fullname = FilenameToClassname(filename);
-  int lastindex = fullname.find_last_of("\\");
+  int lastindex = fullname.find_last_of('\\');
 
   if (lastindex != std::string::npos) {
     printer.Print(
@@ -1536,19 +1487,6 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
         "old", LegacyFullClassName(message, options));
   }
 
-  // Write legacy file for backwards compatibility with "readonly" keywword
-  std::string lower = message->name();
-  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
-  if (lower == "readonly") {
-    printer.Print(
-        "// Adding a class alias for backwards compatibility with the \"readonly\" keyword.\n");
-    printer.Print(
-        "class_alias(^new^::class, __NAMESPACE__ . '\\^old^');\n\n",
-        "new", fullname,
-        "old", message->name());
-    LegacyReadOnlyGenerateClassFile(file, message, options, generator_context);
-  }
-
   // Nested messages and enums.
   for (int i = 0; i < message->nested_type_count(); i++) {
     GenerateMessageFile(file, message->nested_type(i), options,
@@ -1570,7 +1508,7 @@ void GenerateServiceFile(
   GenerateHead(file, &printer);
 
   std::string fullname = FilenameToClassname(filename);
-  int lastindex = fullname.find_last_of("\\");
+  int lastindex = fullname.find_last_of('\\');
 
   if (!file->options().php_namespace().empty() ||
       (!file->options().has_php_namespace() && !file->package().empty()) ||

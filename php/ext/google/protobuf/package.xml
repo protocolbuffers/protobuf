@@ -10,15 +10,15 @@
   <email>protobuf-opensource@google.com</email>
   <active>yes</active>
  </lead>
- <date>2022-05-19</date>
- <time>13:35:18</time>
+ <date>2022-05-27</date>
+ <time>09:36:34</time>
  <version>
-  <release>3.21.0RC2</release>
-  <api>3.21.0</api>
+  <release>3.21.1</release>
+  <api>3.21.1</api>
  </version>
  <stability>
-  <release>beta</release>
-  <api>beta</api>
+  <release>stable</release>
+  <api>stable</api>
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
  <notes>
@@ -1309,6 +1309,36 @@ G  A release.
    </stability>
    <date>2022-05-19</date>
    <time>13:35:18</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.21.0</release>
+    <api>3.21.0</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2022-05-25</date>
+   <time>13:50:26</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.21.1</release>
+    <api>3.21.1</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2022-05-27</date>
+   <time>09:36:34</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
    <notes>
    </notes>

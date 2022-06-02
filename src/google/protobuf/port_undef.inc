@@ -144,6 +144,7 @@
 #pragma pop_macro("TRUE")
 #pragma pop_macro("FALSE")
 #pragma pop_macro("UID_MAX")
+#pragma pop_macro("GID_MAX")
 #endif  // __APPLE__
 
 #if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)

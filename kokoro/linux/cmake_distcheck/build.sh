@@ -52,15 +52,9 @@ tar -C ${DIST_WORK_ROOT} --strip-components=1 -axf ${DIST_ARCHIVE}
 #
 # Run tests using extracted sources
 #
-if SOURCE_DIR=${DIST_WORK_ROOT} \
-  CMAKE_GENERATOR=Ninja \
-  CTEST_PARALLEL_LEVEL=$(nproc) \
-  kokoro/common/cmake.sh; then
-  # TODO: remove this conditional.
-  # The cmake build is expected to fail due to missing abseil sources.
-  echo "$0: Expected failure, but build passed." >&2
-  echo "Please update $(basename $0) to remove failure expectation." >&2
-  echo "FAIL" >&2
-  exit 1
-fi
+SOURCE_DIR=${DIST_WORK_ROOT} \
+CMAKE_GENERATOR=Ninja \
+CTEST_PARALLEL_LEVEL=$(nproc) \
+kokoro/common/cmake.sh
+
 echo "PASS"
