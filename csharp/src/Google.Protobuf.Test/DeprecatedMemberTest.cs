@@ -50,6 +50,5 @@ namespace Google.Protobuf
         {
             AssertIsDeprecated(typeof(TestDeprecatedFields).GetProperty("DeprecatedInt32"));
         }
-
     }
 }

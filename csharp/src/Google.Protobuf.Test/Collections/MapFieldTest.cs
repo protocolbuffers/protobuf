@@ -91,10 +91,12 @@ namespace Google.Protobuf.Collections
         [Test]
         public void AddPreservesInsertionOrder()
         {
-            var map = new MapField<string, string>();
-            map.Add("a", "v1");
-            map.Add("b", "v2");
-            map.Add("c", "v3");
+            var map = new MapField<string, string>
+            {
+                { "a", "v1" },
+                { "b", "v2" },
+                { "c", "v3" }
+            };
             map.Remove("b");
             map.Add("d", "v4");
             CollectionAssert.AreEqual(new[] { "a", "c", "d" }, map.Keys);
@@ -104,13 +106,17 @@ namespace Google.Protobuf.Collections
         [Test]
         public void EqualityIsOrderInsensitive()
         {
-            var map1 = new MapField<string, string>();
-            map1.Add("a", "v1");
-            map1.Add("b", "v2");
+            var map1 = new MapField<string, string>
+            {
+                { "a", "v1" },
+                { "b", "v2" }
+            };
 
-            var map2 = new MapField<string, string>();
-            map2.Add("b", "v2");
-            map2.Add("a", "v1");
+            var map2 = new MapField<string, string>
+            {
+                { "b", "v2" },
+                { "a", "v1" }
+            };
 
             EqualityTester.AssertEquality(map1, map2);
         }
@@ -118,13 +124,17 @@ namespace Google.Protobuf.Collections
         [Test]
         public void EqualityIsKeySensitive()
         {
-            var map1 = new MapField<string, string>();
-            map1.Add("first key", "v1");
-            map1.Add("second key", "v2");
+            var map1 = new MapField<string, string>
+            {
+                { "first key", "v1" },
+                { "second key", "v2" }
+            };
 
-            var map2 = new MapField<string, string>();
-            map2.Add("third key", "v1");
-            map2.Add("fourth key", "v2");
+            var map2 = new MapField<string, string>
+            {
+                { "third key", "v1" },
+                { "fourth key", "v2" }
+            };
 
             EqualityTester.AssertInequality(map1, map2);
         }
@@ -143,13 +153,17 @@ namespace Google.Protobuf.Collections
         {
             // Note: Without some care, it's a little easier than one might
             // hope to see hash collisions, but only in some environments...
-            var map1 = new MapField<string, string>();
-            map1.Add("a", "first value");
-            map1.Add("b", "second value");
+            var map1 = new MapField<string, string>
+            {
+                { "a", "first value" },
+                { "b", "second value" }
+            };
 
-            var map2 = new MapField<string, string>();
-            map2.Add("a", "third value");
-            map2.Add("b", "fourth value");
+            var map2 = new MapField<string, string>
+            {
+                { "a", "third value" },
+                { "b", "fourth value" }
+            };
 
             EqualityTester.AssertInequality(map1, map2);
         }
@@ -183,8 +197,7 @@ namespace Google.Protobuf.Collections
         [Test]
         public void Add_KeyAlreadyExists()
         {
-            var map = new MapField<string, string>();
-            map.Add("foo", "bar");
+            var map = new MapField<string, string> { { "foo", "bar" } };
             Assert.Throws<ArgumentException>(() => map.Add("foo", "baz"));
         }
 
@@ -211,8 +224,7 @@ namespace Google.Protobuf.Collections
         [Test]
         public void Remove_Key()
         {
-            var map = new MapField<string, string>();
-            map.Add("foo", "bar");
+            var map = new MapField<string, string> { { "foo", "bar" } };
             Assert.AreEqual(1, map.Count);
             Assert.IsFalse(map.Remove("missing"));
             Assert.AreEqual(1, map.Count);
@@ -224,8 +236,7 @@ namespace Google.Protobuf.Collections
         [Test]
         public void Remove_Pair()
         {
-            var map = new MapField<string, string>();
-            map.Add("foo", "bar");
+            var map = new MapField<string, string> { { "foo", "bar" } };
             ICollection<KeyValuePair<string, string>> collection = map;
             Assert.AreEqual(1, map.Count);
             Assert.IsFalse(collection.Remove(NewKeyValuePair("wrong key", "bar")));
@@ -240,8 +251,7 @@ namespace Google.Protobuf.Collections
         [Test]
         public void CopyTo_Pair()
         {
-            var map = new MapField<string, string>();
-            map.Add("foo", "bar");
+            var map = new MapField<string, string> { { "foo", "bar" } };
             ICollection<KeyValuePair<string, string>> collection = map;
             KeyValuePair<string, string>[] array = new KeyValuePair<string, string>[3];
             collection.CopyTo(array, 1);
@@ -270,8 +280,7 @@ namespace Google.Protobuf.Collections
         [Test]
         public void Indexer_Set()
         {
-            var map = new MapField<string, string>();
-            map["x"] = "y";
+            var map = new MapField<string, string> { ["x"] = "y" };
             Assert.AreEqual("y", map["x"]);
             map["x"] = "z"; // This won't throw, unlike Add.
             Assert.AreEqual("z", map["x"]);
@@ -357,12 +366,10 @@ namespace Google.Protobuf.Collections
             IDictionary dictionary = map;
             var array = new DictionaryEntry[3];
             dictionary.CopyTo(array, 1);
-            CollectionAssert.AreEqual(new[] { default(DictionaryEntry), new DictionaryEntry("x", "y"), default(DictionaryEntry) },
-                array);
+            CollectionAssert.AreEqual(new[] { default, new DictionaryEntry("x", "y"), default }, array);
             var objectArray = new object[3];
             dictionary.CopyTo(objectArray, 1);
-            CollectionAssert.AreEqual(new object[] { null, new DictionaryEntry("x", "y"), null },
-                objectArray);
+            CollectionAssert.AreEqual(new object[] { null, new DictionaryEntry("x", "y"), null }, objectArray);
         }
 
         [Test]
@@ -580,8 +587,7 @@ namespace Google.Protobuf.Collections
             };
             Assert.AreEqual("x", map[SampleNaNs.Regular]);
             Assert.AreEqual("y", map[SampleNaNs.SignallingFlipped]);
-            string ignored;
-            Assert.False(map.TryGetValue(SampleNaNs.PayloadFlipped, out ignored));
+            Assert.False(map.TryGetValue(SampleNaNs.PayloadFlipped, out _));
         }
 
         [Test]

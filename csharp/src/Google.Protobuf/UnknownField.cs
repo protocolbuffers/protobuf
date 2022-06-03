@@ -73,8 +73,7 @@ namespace Google.Protobuf
             {
                 return true;
             }
-            UnknownField otherField = other as UnknownField;
-            return otherField != null
+            return other is UnknownField otherField
                    && Lists.Equals(varintList, otherField.varintList)
                    && Lists.Equals(fixed32List, otherField.fixed32List)
                    && Lists.Equals(fixed64List, otherField.fixed64List)

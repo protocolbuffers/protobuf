@@ -77,7 +77,7 @@ namespace Google.Protobuf
             this.codec = codec;
         }
 
-        internal TValue DefaultValue => codec != null ? codec.DefaultValue : default(TValue);
+        internal TValue DefaultValue => codec != null ? codec.DefaultValue : default;
 
         internal override Type TargetType => typeof(TTarget);
 

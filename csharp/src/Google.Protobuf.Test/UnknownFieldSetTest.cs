@@ -30,10 +30,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using System;
 using System.IO;
 using Google.Protobuf.TestProtos;
-using Proto2 = Google.Protobuf.TestProtos.Proto2;
 using NUnit.Framework;
 
 namespace Google.Protobuf
@@ -127,8 +125,7 @@ namespace Google.Protobuf
         public void TestClone(IMessage message)
         {
             var emptyMessage = new TestEmptyMessage();
-            var otherEmptyMessage = new TestEmptyMessage();
-            otherEmptyMessage = emptyMessage.Clone();
+            TestEmptyMessage otherEmptyMessage = emptyMessage.Clone();
             Assert.AreEqual(emptyMessage.CalculateSize(), otherEmptyMessage.CalculateSize());
             Assert.AreEqual(emptyMessage.ToByteArray(), otherEmptyMessage.ToByteArray());
 
@@ -169,13 +166,13 @@ namespace Google.Protobuf
             byte[] data = message.ToByteArray();
             int fullSize = message.CalculateSize();
 
-            Action<IMessage> assertEmpty = msg =>
+            void assertEmpty(IMessage msg)
             {
                 Assert.AreEqual(0, msg.CalculateSize());
                 Assert.AreEqual(goldenEmptyMessage, msg);
-            };
+            }
 
-            Action<IMessage> assertFull = msg => Assert.AreEqual(fullSize, msg.CalculateSize());
+            void assertFull(IMessage msg) => Assert.AreEqual(fullSize, msg.CalculateSize());
 
             // Test the behavior of the parsers with and without discarding, both generic and non-generic.
             MessageParser<TestEmptyMessage> retainingParser1 = TestEmptyMessage.Parser;

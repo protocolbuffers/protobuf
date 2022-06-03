@@ -112,7 +112,7 @@ namespace Google.Protobuf.WellKnownTypes
             T target = new T();
             if (GetTypeName(TypeUrl) != target.Descriptor.FullName)
             {
-                result = default(T); // Can't use null as there's no class constraint, but this always *will* be null in real usage.
+                result = default; // Can't use null as there's no class constraint, but this always *will* be null in real usage.
                 return false;
             }
             target.MergeFrom(Value);

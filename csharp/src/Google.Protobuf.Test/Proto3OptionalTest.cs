@@ -38,7 +38,7 @@ using UnitTest.Issues.TestProtos;
 
 namespace Google.Protobuf.Test
 {
-    class Proto3OptionalTest
+    public class Proto3OptionalTest
     {
         [Test]
         public void OptionalInt32FieldLifecycle()

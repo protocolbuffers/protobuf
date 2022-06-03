@@ -32,10 +32,7 @@
 
 using Google.Protobuf.Collections;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Security;
 
 namespace Google.Protobuf
@@ -647,21 +644,6 @@ namespace Google.Protobuf
                 var span = new ReadOnlySpan<byte>(buffer);
                 return SegmentedBufferHelper.IsAtEnd(ref span, ref state);
             }
-        }
-
-        /// <summary>
-        /// Called when buffer is empty to read more bytes from the
-        /// input.  If <paramref name="mustSucceed"/> is true, RefillBuffer() guarantees that
-        /// either there will be at least one byte in the buffer when it returns
-        /// or it will throw an exception.  If <paramref name="mustSucceed"/> is false,
-        /// RefillBuffer() returns false if no more bytes were available.
-        /// </summary>
-        /// <param name="mustSucceed"></param>
-        /// <returns></returns>
-        private bool RefillBuffer(bool mustSucceed)
-        {
-            var span = new ReadOnlySpan<byte>(buffer);
-            return state.segmentedBufferHelper.RefillBuffer(ref span, ref state, mustSucceed);
         }
 
         /// <summary>

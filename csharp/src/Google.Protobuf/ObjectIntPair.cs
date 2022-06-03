@@ -25,11 +25,7 @@ namespace Google.Protobuf
 
         public override bool Equals(object obj)
         {
-            if (obj is ObjectIntPair<T>)
-            {
-                return Equals((ObjectIntPair<T>)obj);
-            }
-            return false;
+            return obj is ObjectIntPair<T> pair && Equals(pair);
         }
 
         public override int GetHashCode()

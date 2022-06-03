@@ -31,9 +31,7 @@
 #endregion
 
 using Google.Protobuf.Compatibility;
-using Google.Protobuf.Reflection;
 using System;
-using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -74,9 +72,8 @@ namespace Google.Protobuf.Collections
         private static readonly EqualityComparer<TKey> KeyEqualityComparer = ProtobufEqualityComparers.GetEqualityComparer<TKey>();
 
         // TODO: Don't create the map/list until we have an entry. (Assume many maps will be empty.)
-        private readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> map =
-            new Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>(KeyEqualityComparer);
-        private readonly LinkedList<KeyValuePair<TKey, TValue>> list = new LinkedList<KeyValuePair<TKey, TValue>>();
+        private readonly Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> map = new(KeyEqualityComparer);
+        private readonly LinkedList<KeyValuePair<TKey, TValue>> list = new();
 
         /// <summary>
         /// Creates a deep clone of this object.
@@ -144,8 +141,7 @@ namespace Google.Protobuf.Collections
         public bool Remove(TKey key)
         {
             ProtoPreconditions.CheckNotNullUnconstrained(key, nameof(key));
-            LinkedListNode<KeyValuePair<TKey, TValue>> node;
-            if (map.TryGetValue(key, out node))
+            if (map.TryGetValue(key, out LinkedListNode<KeyValuePair<TKey, TValue>> node))
             {
                 map.Remove(key);
                 node.List.Remove(node);
@@ -167,15 +163,14 @@ namespace Google.Protobuf.Collections
         /// <returns><c>true</c> if the map contains an element with the specified key; otherwise, <c>false</c>.</returns>
         public bool TryGetValue(TKey key, out TValue value)
         {
-            LinkedListNode<KeyValuePair<TKey, TValue>> node;
-            if (map.TryGetValue(key, out node))
+            if (map.TryGetValue(key, out LinkedListNode<KeyValuePair<TKey, TValue>> node))
             {
                 value = node.Value.Value;
                 return true;
             }
             else
             {
-                value = default(TValue);
+                value = default;
                 return false;
             }
         }
@@ -192,8 +187,7 @@ namespace Google.Protobuf.Collections
             get
             {
                 ProtoPreconditions.CheckNotNullUnconstrained(key, nameof(key));
-                TValue value;
-                if (TryGetValue(key, out value))
+                if (TryGetValue(key, out TValue value))
                 {
                     return value;
                 }
@@ -207,9 +201,8 @@ namespace Google.Protobuf.Collections
                 {
                     ProtoPreconditions.CheckNotNullUnconstrained(value, nameof(value));
                 }
-                LinkedListNode<KeyValuePair<TKey, TValue>> node;
                 var pair = new KeyValuePair<TKey, TValue>(key, value);
-                if (map.TryGetValue(key, out node))
+                if (map.TryGetValue(key, out LinkedListNode<KeyValuePair<TKey, TValue>> node))
                 {
                     node.Value = pair;
                 }
@@ -291,8 +284,7 @@ namespace Google.Protobuf.Collections
         /// <returns></returns>
         bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
         {
-            TValue value;
-            return TryGetValue(item.Key, out value) && ValueEqualityComparer.Equals(item.Value, value);
+            return TryGetValue(item.Key, out TValue value) && ValueEqualityComparer.Equals(item.Value, value);
         }
 
         /// <summary>
@@ -317,8 +309,7 @@ namespace Google.Protobuf.Collections
             {
                 throw new ArgumentException("Key is null", nameof(item));
             }
-            LinkedListNode<KeyValuePair<TKey, TValue>> node;
-            if (map.TryGetValue(item.Key, out node) &&
+            if (map.TryGetValue(item.Key, out LinkedListNode<KeyValuePair<TKey, TValue>> node) &&
                 EqualityComparer<TValue>.Default.Equals(item.Value, node.Value.Value))
             {
                 map.Remove(item.Key);
@@ -396,8 +387,7 @@ namespace Google.Protobuf.Collections
             var valueComparer = ValueEqualityComparer;
             foreach (var pair in this)
             {
-                TValue value;
-                if (!other.TryGetValue(pair.Key, out value))
+                if (!other.TryGetValue(pair.Key, out TValue value))
                 {
                     return false;
                 }
@@ -536,11 +526,7 @@ namespace Google.Protobuf.Collections
 
         bool IDictionary.Contains(object key)
         {
-            if (!(key is TKey))
-            {
-                return false;
-            }
-            return ContainsKey((TKey)key);
+            return key is TKey k && ContainsKey(k);
         }
 
         IDictionaryEnumerator IDictionary.GetEnumerator()
@@ -551,11 +537,10 @@ namespace Google.Protobuf.Collections
         void IDictionary.Remove(object key)
         {
             ProtoPreconditions.CheckNotNull(key, nameof(key));
-            if (!(key is TKey))
+            if (key is TKey k)
             {
-                return;
+                Remove(k);
             }
-            Remove((TKey)key);
         }
 
         void ICollection.CopyTo(Array array, int index)
@@ -580,13 +565,12 @@ namespace Google.Protobuf.Collections
             get
             {
                 ProtoPreconditions.CheckNotNull(key, nameof(key));
-                if (!(key is TKey))
+                if (key is TKey k)
                 {
-                    return null;
+                    TryGetValue(k, out TValue value);
+                    return value;
                 }
-                TValue value;
-                TryGetValue((TKey)key, out value);
-                return value;
+                return null;
             }
 
             set

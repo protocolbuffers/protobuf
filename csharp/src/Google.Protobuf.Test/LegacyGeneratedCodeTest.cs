@@ -29,14 +29,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
-using Google.Protobuf;
-using Google.Protobuf.Reflection;
+
 using System.Buffers;
-using pb = global::Google.Protobuf;
-using pbr = global::Google.Protobuf.Reflection;
+using pb = Google.Protobuf;
+using pbr = Google.Protobuf.Reflection;
 using NUnit.Framework;
 using System.IO;
-using System;
 using Google.Protobuf.Buffers;
 
 namespace Google.Protobuf

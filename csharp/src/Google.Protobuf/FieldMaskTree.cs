@@ -120,8 +120,7 @@ namespace Google.Protobuf
                     return this;
                 }
 
-                Node childNode;
-                if (!node.Children.TryGetValue(part, out childNode))
+                if (!node.Children.TryGetValue(part, out Node childNode))
                 {
                     createNewBranch = true;
                     childNode = new Node();
@@ -157,7 +156,7 @@ namespace Google.Protobuf
             if (root.Children.Count != 0)
             {
                 var paths = new List<string>();
-                GetFieldPaths(root, "", paths);
+                GetFieldPaths(root, string.Empty, paths);
                 mask.Paths.AddRange(paths);
             }
 
@@ -240,7 +239,7 @@ namespace Google.Protobuf
                 return;
             }
 
-            Merge(root, "", source, destination, options);
+            Merge(root, string.Empty, source, destination, options);
         }
 
         /// <summary>
