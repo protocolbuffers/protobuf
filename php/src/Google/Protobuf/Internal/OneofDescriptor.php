@@ -67,7 +67,8 @@ class OneofDescriptor
 
     public function isSynthetic()
     {
-        return count($this->fields) === 1 && $this->fields[0]->getProto3Optional();
+        return !is_null($this->fields) && count($this->fields) === 1
+            && $this->fields[0]->getProto3Optional();
     }
 
     public static function buildFromProto($oneof_proto, $desc, $index)

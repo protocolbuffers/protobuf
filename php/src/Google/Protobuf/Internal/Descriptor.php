@@ -193,10 +193,6 @@ class Descriptor
         $desc->setLegacyClass($legacy_classname);
         $desc->setOptions($proto->getOptions());
 
-        foreach ($proto->getField() as $field_proto) {
-            $desc->addField(FieldDescriptor::buildFromProto($field_proto, $desc));
-        }
-
         // Handle nested types.
         foreach ($proto->getNestedType() as $nested_proto) {
             $desc->addNestedType(Descriptor::buildFromProto(
@@ -215,6 +211,11 @@ class Descriptor
             $desc->addOneofDecl(
                 OneofDescriptor::buildFromProto($oneof_proto, $desc, $index));
             $index++;
+        }
+
+        // Pass the descriptor to build FieldDescriptor after the OneofDescriptors are populated.
+        foreach ($proto->getField() as $field_proto) {
+            $desc->addField(FieldDescriptor::buildFromProto($field_proto, $desc));
         }
 
         return $desc;

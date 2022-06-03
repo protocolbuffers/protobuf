@@ -83,14 +83,6 @@ class FieldDescriptor
     }
 
     /**
-     * @return int
-     */
-    public function getOneofIndex()
-    {
-        return $this->internal_desc->getOneofIndex();
-    }
-
-    /**
      * @return OneofDescriptor
      */
     public function getContainingOneof()

@@ -49,8 +49,6 @@ class FieldDescriptor
     private $oneof_index = -1;
     private $proto3_optional;
 
-    /** @var Descriptor $containing_type */
-    private $containing_type;
     /** @var OneofDescriptor $containing_oneof */
     private $containing_oneof;
 
@@ -242,10 +240,10 @@ class FieldDescriptor
 
     /**
      * @param FieldDescriptorProto $proto
-     * @param Descriptor $parent_desc
+     * @param Descriptor $desc
      * @return FieldDescriptor
      */
-    public static function getFieldDescriptor($proto, $parent_desc)
+    public static function getFieldDescriptor($proto, $desc)
     {
         $type_name = null;
         $type = $proto->getType();
@@ -261,10 +259,10 @@ class FieldDescriptor
 
         if ($proto->hasOneofIndex()) {
             $oneof_index = $proto->getOneofIndex();
-            $containing_oneof = $parent_desc->getOneofDecl()[$oneof_index];
+            $containing_oneof = $desc->getOneofDecl()[$oneof_index];
         } else {
-            $containing_oneof = null;
             $oneof_index = -1;
+            $containing_oneof = null;
         }
         // TODO: once proto2 is supported, this default should be false
         // for proto2.
@@ -284,7 +282,6 @@ class FieldDescriptor
 
         $field = new FieldDescriptor();
         $field->setName($proto->getName());
-        $field->containing_type = $parent_desc;
         $field->containing_oneof = $containing_oneof;
 
         $json_name = $proto->hasJsonName() ? $proto->getJsonName() :
