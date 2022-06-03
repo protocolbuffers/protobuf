@@ -194,7 +194,7 @@ class Descriptor
         $desc->setOptions($proto->getOptions());
 
         foreach ($proto->getField() as $field_proto) {
-            $desc->addField(FieldDescriptor::buildFromProto($field_proto));
+            $desc->addField(FieldDescriptor::buildFromProto($field_proto, $desc));
         }
 
         // Handle nested types.

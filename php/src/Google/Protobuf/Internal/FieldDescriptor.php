@@ -49,6 +49,11 @@ class FieldDescriptor
     private $oneof_index = -1;
     private $proto3_optional;
 
+    /** @var Descriptor $containing_type */
+    private $containing_type;
+    /** @var OneofDescriptor $containing_oneof */
+    private $containing_oneof;
+
     public function __construct()
     {
         $this->public_desc = new \Google\Protobuf\FieldDescriptor($this);
@@ -179,6 +184,17 @@ class FieldDescriptor
         $this->proto3_optional = $proto3_optional;
     }
 
+    public function getContainingOneof()
+    {
+        return $this->containing_oneof;
+    }
+
+    public function getRealContainingOneof()
+    {
+        return !is_null($this->containing_oneof) && !$this->containing_oneof->isSynthetic()
+            ? $this->containing_oneof : null;
+    }
+
     public function isPackable()
     {
         return $this->isRepeated() && self::isTypePackable($this->type);
@@ -226,9 +242,10 @@ class FieldDescriptor
 
     /**
      * @param FieldDescriptorProto $proto
+     * @param Descriptor $parent_desc
      * @return FieldDescriptor
      */
-    public static function getFieldDescriptor($proto)
+    public static function getFieldDescriptor($proto, $parent_desc)
     {
         $type_name = null;
         $type = $proto->getType();
@@ -242,7 +259,13 @@ class FieldDescriptor
                 break;
         }
 
-        $oneof_index = $proto->hasOneofIndex() ? $proto->getOneofIndex() : -1;
+        if ($proto->hasOneofIndex()) {
+            $oneof_index = $proto->getOneofIndex();
+            $containing_oneof = $parent_desc->getOneofDecl()[$oneof_index];
+        } else {
+            $containing_oneof = null;
+            $oneof_index = -1;
+        }
         // TODO: once proto2 is supported, this default should be false
         // for proto2.
         if ($proto->getLabel() === GPBLabel::REPEATED &&
@@ -261,6 +284,8 @@ class FieldDescriptor
 
         $field = new FieldDescriptor();
         $field->setName($proto->getName());
+        $field->containing_type = $parent_desc;
+        $field->containing_oneof = $containing_oneof;
 
         $json_name = $proto->hasJsonName() ? $proto->getJsonName() :
             lcfirst(implode('', array_map('ucwords', explode('_', $proto->getName()))));
@@ -302,8 +327,8 @@ class FieldDescriptor
         return $field;
     }
 
-    public static function buildFromProto($proto)
+    public static function buildFromProto($proto, $parent_desc)
     {
-        return FieldDescriptor::getFieldDescriptor($proto);
+        return FieldDescriptor::getFieldDescriptor($proto, $parent_desc);
     }
 }
