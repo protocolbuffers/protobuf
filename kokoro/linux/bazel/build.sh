@@ -21,6 +21,7 @@ bazel_args=(
   test
   --keep_going
   --copt=-Werror
+  --copt=-Wundef
   --host_copt=-Werror
   --test_output=errors
   --
