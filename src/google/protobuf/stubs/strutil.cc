@@ -503,7 +503,7 @@ int CEscapeInternal(const char* src, int src_len, char* dest,
              (last_hex_escape && isxdigit(*src)))) {
           if (dest_len - used < 4) // need space for 4 letter escape
             return -1;
-          sprintf(dest + used, (use_hex ? "\\x%02x" : "\\%03o"),
+          snprintf(dest + used, 5, (use_hex ? "\\x%02x" : "\\%03o"),
                   static_cast<uint8_t>(*src));
           is_hex_escape = use_hex;
           used += 4;
