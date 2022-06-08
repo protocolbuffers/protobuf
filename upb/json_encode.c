@@ -210,7 +210,10 @@ static void jsonenc_enum(int32_t val, const upb_FieldDef* f, jsonenc* e) {
   if (strcmp(upb_EnumDef_FullName(e_def), "google.protobuf.NullValue") == 0) {
     jsonenc_putstr(e, "null");
   } else {
-    const upb_EnumValueDef* ev = upb_EnumDef_FindValueByNumber(e_def, val);
+    const upb_EnumValueDef* ev =
+        (e->options & upb_JsonEncode_FormatEnumsAsIntegers)
+            ? NULL
+            : upb_EnumDef_FindValueByNumber(e_def, val);
 
     if (ev) {
       jsonenc_printf(e, "\"%s\"", upb_EnumValueDef_Name(ev));

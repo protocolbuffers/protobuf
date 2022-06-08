@@ -36,11 +36,14 @@ extern "C" {
 
 enum {
   /* When set, emits 0/default values.  TODO(haberman): proto3 only? */
-  upb_JsonEncode_EmitDefaults = 1,
+  upb_JsonEncode_EmitDefaults = 1 << 0,
 
-  /* When set, use normal (snake_caes) field names instead of JSON (camelCase)
+  /* When set, use normal (snake_case) field names instead of JSON (camelCase)
      names. */
-  upb_JsonEncode_UseProtoNames = 2
+  upb_JsonEncode_UseProtoNames = 1 << 1,
+
+  /* When set, emits enums as their integer values instead of as their names. */
+  upb_JsonEncode_FormatEnumsAsIntegers = 1 << 2
 };
 
 /* Encodes the given |msg| to JSON format.  The message's reflection is given in

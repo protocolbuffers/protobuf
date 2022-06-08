@@ -412,6 +412,39 @@ upb_proto_library(
     deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
 )
 
+proto_library(
+    name = "json_test_proto",
+    testonly = 1,
+    srcs = ["upb/json_test.proto"],
+    deps = ["@com_google_protobuf//:struct_proto"],
+)
+
+upb_proto_library(
+    name = "json_test_upb_proto",
+    testonly = 1,
+    deps = [":json_test_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "json_test_upb_proto_reflection",
+    testonly = 1,
+    deps = [":json_test_proto"],
+)
+
+cc_test(
+    name = "json_test",
+    srcs = ["upb/json_test.cc"],
+    deps = [
+        ":json",
+        ":json_test_upb_proto",
+        ":json_test_upb_proto_reflection",
+        ":reflection",
+        ":struct_upb_proto",
+        ":upb",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
 cc_test(
     name = "msg_test",
     srcs = ["upb/msg_test.cc"],
@@ -459,6 +492,11 @@ upb_proto_library(
 upb_proto_reflection_library(
     name = "test_cpp_upb_proto_reflection",
     deps = ["test_cpp_proto"],
+)
+
+upb_proto_library(
+    name = "struct_upb_proto",
+    deps = ["@com_google_protobuf//:struct_proto"],
 )
 
 upb_proto_library(
