@@ -8,7 +8,10 @@ load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 package(
-    default_visibility = ["//src/google/protobuf/util:__pkg__"],
+    default_visibility = [
+        "//src/google/protobuf/util:__pkg__",
+        "//pkg:__pkg__",
+    ],
 )
 
 cc_library(
@@ -447,4 +450,19 @@ pkg_files(
     srcs = glob(["**/*"]),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//src:__pkg__"],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob([
+        "*_test.cc",
+        "*unittest.cc",
+    ]) + [
+        "type_info_test_helper.cc",
+    ],
+)
+
+filegroup(
+    name = "test_proto_srcs",
+    srcs = glob(["testdata/*.proto"]),
 )

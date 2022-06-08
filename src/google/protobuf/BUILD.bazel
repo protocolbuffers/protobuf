@@ -87,6 +87,10 @@ proto_library(
     name = "descriptor_proto",
     srcs = ["descriptor.proto"],
     strip_import_prefix = "/src",
+    visibility = [
+        "//:__pkg__",
+        "//pkg:__pkg__",
+    ],
 )
 
 ################################################################################
@@ -146,10 +150,35 @@ cc_library(
         "repeated_ptr_field.cc",
         "wire_format_lite.cc",
     ],
-    hdrs = glob([
-        "**/*.h",
-        "**/*.inc",
-    ]),
+    hdrs = [
+        "any.h",
+        "arena.h",
+        "arena_impl.h",
+        "arenastring.h",
+        "arenaz_sampler.h",
+        "endian.h",
+        "explicitly_constructed.h",
+        "extension_set.h",
+        "extension_set_inl.h",
+        "generated_enum_util.h",
+        "generated_message_tctable_decl.h",
+        "generated_message_tctable_impl.h",
+        "generated_message_util.h",
+        "has_bits.h",
+        "implicit_weak_message.h",
+        "inlined_string_field.h",
+        "map.h",
+        "map_entry_lite.h",
+        "map_field_lite.h",
+        "map_type_handler.h",
+        "message_lite.h",
+        "metadata_lite.h",
+        "parse_context.h",
+        "port.h",
+        "repeated_field.h",
+        "repeated_ptr_field.h",
+        "wire_format_lite.h",
+    ],
     copts = COPTS + select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
@@ -201,10 +230,38 @@ cc_library(
         "wire_format.cc",
         "wrappers.pb.cc",
     ],
-    hdrs = glob([
-        "**/*.h",
-        "**/*.inc",
-    ]),
+    hdrs = [
+        "any.pb.h",
+        "api.pb.h",
+        "descriptor.h",
+        "descriptor.pb.h",
+        "descriptor_database.h",
+        "duration.pb.h",
+        "dynamic_message.h",
+        "empty.pb.h",
+        "field_access_listener.h",
+        "field_mask.pb.h",
+        "generated_enum_reflection.h",
+        "generated_message_bases.h",
+        "generated_message_reflection.h",
+        "map_entry.h",
+        "map_field.h",
+        "map_field_inl.h",
+        "message.h",
+        "metadata.h",
+        "reflection.h",
+        "reflection_internal.h",
+        "reflection_ops.h",
+        "service.h",
+        "source_context.pb.h",
+        "struct.pb.h",
+        "text_format.h",
+        "timestamp.pb.h",
+        "type.pb.h",
+        "unknown_field_set.h",
+        "wire_format.h",
+        "wrappers.pb.h",
+    ],
     copts = COPTS,
     include_prefix = "google/protobuf",
     linkopts = LINK_OPTS,
@@ -442,23 +499,46 @@ filegroup(
 )
 
 cc_library(
-    name = "test_util",
+    name = "lite_test_util",
     testonly = 1,
     srcs = [
         "arena_test_util.cc",
         "map_lite_test_util.cc",
-        "reflection_tester.cc",
-        "test_util.cc",
         "test_util_lite.cc",
     ],
     hdrs = [
         "arena_test_util.h",
         "map_lite_test_util.h",
-        "map_test_util.h",
         "map_test_util_impl.h",
-        "test_util.h",
-        "test_util2.h",
+        "proto3_lite_unittest.inc",
         "test_util_lite.h",
+    ],
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":cc_lite_test_protos",
+        ":test_util2",
+        "@com_google_googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "test_util",
+    testonly = 1,
+    srcs = [
+        "reflection_tester.cc",
+        "test_util.cc",
+    ],
+    hdrs = [
+        "map_test.inc",
+        "map_test_util.h",
+        "map_test_util.inc",
+        "message_unittest.inc",
+        "reflection_tester.h",
+        "test_util.h",
+        "test_util.inc",
+        "test_util_lite.h",
+        "wire_format_unittest.inc",
     ],
     copts = COPTS + select({
         "//build_defs:config_msvc": [],
@@ -467,76 +547,524 @@ cc_library(
         ],
     }),
     strip_include_prefix = "/src",
-    textual_hdrs = [
-        "map_test_util.inc",
-        "test_util.inc",
-    ],
     visibility = ["//:__subpackages__"],
     deps = [
         ":cc_lite_test_protos",
         ":cc_test_protos",
+        ":lite_test_util",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "test_util2",
+    testonly = 1,
+    hdrs = ["test_util2.h"],
+    strip_include_prefix = "/src",
+    textual_hdrs = ["test_util.inc"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//src/google/protobuf/io",
         "@com_google_googletest//:gtest",
     ],
 )
 
 cc_test(
-    name = "protobuf_test",
-    srcs = [
-        "any_test.cc",
-        "arena_unittest.cc",
-        "arenastring_unittest.cc",
-        "arenaz_sampler_test.cc",
-        "descriptor_database_unittest.cc",
-        "descriptor_unittest.cc",
-        "drop_unknown_fields_test.cc",
-        "dynamic_message_unittest.cc",
-        "extension_set_unittest.cc",
-        "generated_message_reflection_unittest.cc",
-        "generated_message_tctable_lite_test.cc",
-        "inlined_string_field_unittest.cc",
-        "map_field_test.cc",
-        "map_test.cc",
-        "map_test.inc",
-        "message_unittest.cc",
-        "message_unittest.inc",
-        "no_field_presence_test.cc",
-        "preserve_unknown_enum_test.cc",
-        "proto3_arena_lite_unittest.cc",
-        "proto3_arena_unittest.cc",
-        "proto3_lite_unittest.cc",
-        "proto3_lite_unittest.inc",
-        "reflection_ops_unittest.cc",
-        "repeated_field_reflection_unittest.cc",
-        "repeated_field_unittest.cc",
-        "text_format_unittest.cc",
-        "unknown_field_set_unittest.cc",
-        "well_known_types_unittest.cc",
-        "wire_format_unittest.cc",
-        "wire_format_unittest.inc",
+    name = "any_test",
+    srcs = ["any_test.cc"],
+    deps = [
+        ":protobuf",
+        ":test_util",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
+)
+
+cc_test(
+    name = "arena_unittest",
+    srcs = ["arena_unittest.cc"],
     copts = COPTS + select({
         "//build_defs:config_msvc": [],
         "//conditions:default": [
-            "-Wno-deprecated-declarations",
             "-Wno-error=sign-compare",
         ],
     }),
-    data = [
-        ":testdata",
-    ] + glob([
-        "**/*",
-    ]),
-    linkopts = LINK_OPTS,
     deps = [
-        ":cc_lite_test_protos",
         ":cc_test_protos",
+        ":lite_test_util",
         ":protobuf",
         ":test_util",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "arenastring_unittest",
+    srcs = ["arenastring_unittest.cc"],
+    deps = [
+        ":protobuf",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "arenaz_sampler_test",
+    srcs = ["arenaz_sampler_test.cc"],
+    deps = [
+        ":protobuf",
+        "//src/google/protobuf/stubs",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "descriptor_database_unittest",
+    srcs = ["descriptor_database_unittest.cc"],
+    deps = [
+        ":protobuf",
         "//src/google/protobuf/testing",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
 )
+
+cc_test(
+    name = "descriptor_unittest",
+    srcs = ["descriptor_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "drop_unknown_fields_test",
+    srcs = ["drop_unknown_fields_test.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "dynamic_message_unittest",
+    srcs = ["dynamic_message_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        ":test_util",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "extension_set_unittest",
+    srcs = ["extension_set_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        ":test_util",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "generated_message_reflection_unittest",
+    srcs = ["generated_message_reflection_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        ":test_util",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "generated_message_tctable_lite_test",
+    srcs = ["generated_message_tctable_lite_test.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":protobuf_lite",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "inlined_string_field_unittest",
+    srcs = ["inlined_string_field_unittest.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "lite_arena_unittest",
+    srcs = ["lite_arena_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":lite_test_util",
+        ":protobuf",
+        ":test_util",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "lite_unittest",
+    srcs = ["lite_unittest.cc"],
+    deps = [
+        ":cc_lite_test_protos",
+        ":lite_test_util",
+        ":protobuf",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "map_field_test",
+    srcs = ["map_field_test.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        ":test_util",
+        "//src/google/protobuf/stubs",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "map_test",
+    srcs = [
+        "map_test.cc",
+        "map_test.inc",
+    ],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    data = [":testdata"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        ":test_util",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "message_unittest",
+    srcs = [
+        "message_unittest.cc",
+        "message_unittest.inc",
+    ],
+    data = [":testdata"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        ":test_util",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "no_field_presence_test",
+    srcs = ["no_field_presence_test.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "preserve_unknown_enum_test",
+    srcs = ["preserve_unknown_enum_test.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "proto3_arena_lite_unittest",
+    srcs = ["proto3_arena_lite_unittest.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "proto3_arena_unittest",
+    srcs = ["proto3_arena_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        ":test_util",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "proto3_lite_unittest",
+    srcs = [
+        "proto3_lite_unittest.cc",
+        "proto3_lite_unittest.inc",
+    ],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    deps = [
+        ":cc_test_protos",
+        ":lite_test_util",
+        ":protobuf",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "reflection_ops_unittest",
+    srcs = ["reflection_ops_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        ":test_util",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "repeated_field_reflection_unittest",
+    srcs = ["repeated_field_reflection_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        ":test_util",
+        "//src/google/protobuf/stubs",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "repeated_field_unittest",
+    srcs = ["repeated_field_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "text_format_unittest",
+    srcs = ["text_format_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    data = [":testdata"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        ":test_util",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "unknown_field_set_unittest",
+    srcs = ["unknown_field_set_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-error=sign-compare",
+        ],
+    }),
+    deps = [
+        ":cc_lite_test_protos",
+        ":protobuf",
+        ":test_util",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "well_known_types_unittest",
+    srcs = ["well_known_types_unittest.cc"],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "wire_format_unittest",
+    srcs = [
+        "wire_format_unittest.cc",
+        "wire_format_unittest.inc",
+    ],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        ":test_util",
+        ":test_util2",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/stubs",
+        "//src/google/protobuf/testing",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+# Legacy target: all test sources used to be part of this rule. It is
+# still kept around for now.
+cc_test(
+    name = "protobuf_test",
+    srcs = [],
+    deps = [
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
 ################################################################################
 # Helper targets for Kotlin tests
 ################################################################################
@@ -576,4 +1104,28 @@ pkg_files(
     srcs = glob(["**"]),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//src:__pkg__"],
+)
+
+filegroup(
+    name = "full_test_srcs",
+    srcs = glob(
+        include = [
+            "*_test.cc",
+            "*unittest.cc",
+        ],
+        exclude = [
+            "lite_unittest.cc",
+            "lite_arena_unittest.cc",
+        ],
+    ),
+    visibility = ["//pkg:__pkg__"],
+)
+
+filegroup(
+    name = "lite_test_srcs",
+    srcs = [
+        "lite_arena_unittest.cc",
+        "lite_unittest.cc",
+    ],
+    visibility = ["//pkg:__pkg__"],
 )

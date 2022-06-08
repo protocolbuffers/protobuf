@@ -1214,7 +1214,6 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   build_files_updated_unittest.sh                   \
   cmake/CMakeLists.txt                              \
   cmake/README.md                                   \
-  cmake/abseil-cpp.cmake                            \
   cmake/conformance.cmake                           \
   cmake/examples.cmake                              \
   cmake/extract_includes.bat.in                     \

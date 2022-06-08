@@ -112,7 +112,7 @@ class PrefixModeStorage {
  public:
   PrefixModeStorage();
 
-  const std::string package_to_prefix_mappings_path() const { return package_to_prefix_mappings_path_; }
+  std::string package_to_prefix_mappings_path() const { return package_to_prefix_mappings_path_; }
   void set_package_to_prefix_mappings_path(const std::string& path) {
     package_to_prefix_mappings_path_ = path;
     package_to_prefix_map_.clear();
@@ -123,7 +123,7 @@ class PrefixModeStorage {
   bool use_package_name() const { return use_package_name_; }
   void set_use_package_name(bool on_or_off) { use_package_name_ = on_or_off; }
 
-  const std::string exception_path() const { return exception_path_; }
+  std::string exception_path() const { return exception_path_; }
   void set_exception_path(const std::string& path) {
     exception_path_ = path;
     exceptions_.clear();

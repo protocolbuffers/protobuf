@@ -35,6 +35,7 @@
 #include <google/protobuf/generated_message_reflection.h>
 
 #include <algorithm>
+#include <cstring>
 #include <set>
 
 #include <google/protobuf/stubs/logging.h>
@@ -1114,7 +1115,13 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
     const FieldDescriptor* field = descriptor_->field(i);
     if (schema_.InRealOneof(field)) continue;
     if (schema_.IsFieldStripped(field)) continue;
+    if (schema_.IsSplit(field)) {
+      continue;
+    }
     UnsafeShallowSwapField(lhs, rhs, field);
+  }
+  if (schema_.IsSplit()) {
+    std::swap(*MutableSplitField(lhs), *MutableSplitField(rhs));
   }
   const int oneof_decl_count = descriptor_->oneof_decl_count();
   for (int i = 0; i < oneof_decl_count; i++) {
@@ -2437,13 +2444,34 @@ bool Reflection::SupportsUnknownEnumValues() const {
 template <class Type>
 const Type& Reflection::GetRawNonOneof(const Message& message,
                                        const FieldDescriptor* field) const {
+  if (schema_.IsSplit(field)) {
+    return *GetConstPointerAtOffset<Type>(
+        GetSplitField(&message), schema_.GetFieldOffsetNonOneof(field));
+  }
   return GetConstRefAtOffset<Type>(message,
                                    schema_.GetFieldOffsetNonOneof(field));
+}
+
+void Reflection::PrepareSplitMessageForWrite(Message* message) const {
+  void** split = MutableSplitField(message);
+  const void* default_split = GetSplitField(schema_.default_instance_);
+  if (*split == default_split) {
+    uint32_t size = schema_.SizeofSplit();
+    Arena* arena = message->GetArenaForAllocation();
+    *split = (arena == nullptr) ? ::operator new(size)
+                                : arena->AllocateAligned(size);
+    memcpy(*split, default_split, size);
+  }
 }
 
 template <class Type>
 Type* Reflection::MutableRawNonOneof(Message* message,
                                      const FieldDescriptor* field) const {
+  if (schema_.IsSplit(field)) {
+    PrepareSplitMessageForWrite(message);
+    return GetPointerAtOffset<Type>(*MutableSplitField(message),
+                                    schema_.GetFieldOffsetNonOneof(field));
+  }
   return GetPointerAtOffset<Type>(message,
                                   schema_.GetFieldOffsetNonOneof(field));
 }
@@ -2451,6 +2479,11 @@ Type* Reflection::MutableRawNonOneof(Message* message,
 template <typename Type>
 Type* Reflection::MutableRaw(Message* message,
                              const FieldDescriptor* field) const {
+  if (schema_.IsSplit(field)) {
+    PrepareSplitMessageForWrite(message);
+    return GetPointerAtOffset<Type>(*MutableSplitField(message),
+                                    schema_.GetFieldOffset(field));
+  }
   return GetPointerAtOffset<Type>(message, schema_.GetFieldOffset(field));
 }
 
@@ -2875,9 +2908,11 @@ ReflectionSchema MigrationToReflectionSchema(
     MigrationSchema migration_schema) {
   ReflectionSchema result;
   result.default_instance_ = *default_instance;
-  // First 7 offsets are offsets to the special fields. The following offsets
+  // First 9 offsets are offsets to the special fields. The following offsets
   // are the proto fields.
-  result.offsets_ = offsets + migration_schema.offsets_index + 6;
+  //
+  // TODO(congliu): Find a way to not encode sizeof_split_ in offsets.
+  result.offsets_ = offsets + migration_schema.offsets_index + 8;
   result.has_bit_indices_ = offsets + migration_schema.has_bit_indices_index;
   result.has_bits_offset_ = offsets[migration_schema.offsets_index + 0];
   result.metadata_offset_ = offsets[migration_schema.offsets_index + 1];
@@ -2887,6 +2922,8 @@ ReflectionSchema MigrationToReflectionSchema(
   result.weak_field_map_offset_ = offsets[migration_schema.offsets_index + 4];
   result.inlined_string_donated_offset_ =
       offsets[migration_schema.offsets_index + 5];
+  result.split_offset_ = offsets[migration_schema.offsets_index + 6];
+  result.sizeof_split_ = offsets[migration_schema.offsets_index + 7];
   result.inlined_string_indices_ =
       offsets + migration_schema.inlined_string_indices_index;
   return result;

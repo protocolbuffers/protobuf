@@ -86,7 +86,7 @@ const std::string& LazyString::Init() const {
 namespace {
 
 
-#if defined(NDEBUG) || !GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL
+#if defined(NDEBUG) || !defined(GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL)
 
 class ScopedCheckPtrInvariants {
  public:
@@ -102,7 +102,7 @@ inline TaggedStringPtr CreateString(ConstStringParam value) {
   return res;
 }
 
-#if !GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL
+#ifndef GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL
 
 // Creates an arena allocated std::string value.
 TaggedStringPtr CreateArenaString(Arena& arena, ConstStringParam s) {
@@ -123,7 +123,17 @@ void ArenaStringPtr::Set(ConstStringParam value, Arena* arena) {
     tagged_ptr_ = arena != nullptr ? CreateArenaString(*arena, value)
                                    : CreateString(value);
   } else {
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    if (arena == nullptr) {
+      Destroy();
+      tagged_ptr_ = CreateString(value);
+    } else {
+      UnsafeMutablePointer()->assign("garbagedata");
+      tagged_ptr_ = CreateArenaString(*arena, value);
+    }
+#else   // PROTOBUF_FORCE_COPY_DEFAULT_STRING
     UnsafeMutablePointer()->assign(value.data(), value.length());
+#endif  // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   }
 }
 

@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name     = 'Protobuf-C++'
-  s.version  = '3.21.0-rc1'
+  s.version  = '3.21.1'
   s.summary  = 'Protocol Buffers v3 runtime library for C++.'
   s.homepage = 'https://github.com/google/protobuf'
   s.license  = 'BSD-3-Clause'
@@ -35,6 +35,7 @@ Pod::Spec.new do |s|
     # Do not let src/google/protobuf/stubs/time.h override system API
     'USE_HEADERMAP' => 'NO',
     'ALWAYS_SEARCH_USER_PATHS' => 'NO',
+    'HEADER_SEARCH_PATHS' => '"$(PODS_TARGET_SRCROOT)/src"'
   }
 
 end

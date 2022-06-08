@@ -5,7 +5,7 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library", "c
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
-load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS", "PROTOC_LINK_OPTS")
 load(":protobuf.bzl", "py_proto_library")
 
 licenses(["notice"])
@@ -128,13 +128,30 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+# Source protos that are typically part of the protobuf runtime.
+#
+# DEPRECATED: Prefer :well_known_type_protos for the Well-Known Types
+# (https://developers.google.com/protocol-buffers/docs/reference/google.protobuf)
+# or :descriptor_proto(_srcs) for descriptor.proto (source), or
+# :compiler_plugin_proto for compiler/plugin.proto.
+filegroup(
+    name = "well_known_protos",
+    srcs = [
+        ":descriptor_proto_srcs",
+        ":well_known_type_protos",
+        "//src/google/protobuf/compiler:plugin.proto",
+    ],
+    deprecation = "Prefer :well_known_type_protos instead.",
+    visibility = ["//visibility:public"],
+)
+
 ################################################################################
 # Protocol Buffers Compiler
 ################################################################################
 
 cc_binary(
     name = "protoc",
-    linkopts = LINK_OPTS,
+    linkopts = LINK_OPTS + PROTOC_LINK_OPTS,
     visibility = ["//visibility:public"],
     deps = ["//src/google/protobuf/compiler:protoc_lib"],
 )

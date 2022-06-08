@@ -178,7 +178,7 @@
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 3021000
+#define PROTOBUF_VERSION 3021001
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
@@ -193,7 +193,7 @@
 #ifdef PROTOBUF_VERSION_SUFFIX
 #error PROTOBUF_VERSION_SUFFIX was previously defined
 #endif
-#define PROTOBUF_VERSION_SUFFIX "-rc2"
+#define PROTOBUF_VERSION_SUFFIX ""
 
 #if defined(PROTOBUF_NAMESPACE) || defined(PROTOBUF_NAMESPACE_ID)
 #error PROTOBUF_NAMESPACE or PROTOBUF_NAMESPACE_ID was previously defined
@@ -798,7 +798,7 @@
 
 // Windows declares several inconvenient macro names.  We #undef them and then
 // restore them in port_undef.inc.
-#ifdef _MSC_VER
+#ifdef _WIN32
 #pragma push_macro("CREATE_NEW")
 #undef CREATE_NEW
 #pragma push_macro("DELETE")
@@ -851,7 +851,7 @@
 #undef STRICT
 #pragma push_macro("timezone")
 #undef timezone
-#endif  // _MSC_VER
+#endif  // _WIN32
 
 #ifdef __APPLE__
 // Inconvenient macro names from usr/include/math.h in some macOS SDKs.

@@ -517,6 +517,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FileDescriptorSet, _impl_.file_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FileDescriptorProto, _impl_._has_bits_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FileDescriptorProto, _internal_metadata_),
@@ -524,6 +526,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FileDescriptorProto, _impl_.name_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FileDescriptorProto, _impl_.package_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FileDescriptorProto, _impl_.dependency_),
@@ -554,6 +558,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange, _impl_.start_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange, _impl_.end_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange, _impl_.options_),
@@ -566,6 +572,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange, _impl_.start_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange, _impl_.end_),
   0,
@@ -576,6 +584,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::DescriptorProto, _impl_.name_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::DescriptorProto, _impl_.field_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::DescriptorProto, _impl_.extension_),
@@ -602,6 +612,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions, _impl_.uninterpreted_option_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto, _impl_._has_bits_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto, _internal_metadata_),
@@ -609,6 +621,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto, _impl_.name_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto, _impl_.number_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto, _impl_.label_),
@@ -637,6 +651,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto, _impl_.name_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto, _impl_.options_),
   0,
@@ -647,6 +663,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange, _impl_.start_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange, _impl_.end_),
   0,
@@ -657,6 +675,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto, _impl_.name_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto, _impl_.value_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto, _impl_.options_),
@@ -673,6 +693,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto, _impl_.name_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto, _impl_.number_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto, _impl_.options_),
@@ -685,6 +707,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto, _impl_.name_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto, _impl_.method_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto, _impl_.options_),
@@ -697,6 +721,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto, _impl_.name_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto, _impl_.input_type_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto, _impl_.output_type_),
@@ -715,6 +741,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FileOptions, _impl_.java_package_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FileOptions, _impl_.java_outer_classname_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FileOptions, _impl_.java_multiple_files_),
@@ -763,6 +791,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::MessageOptions, _impl_.message_set_wire_format_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::MessageOptions, _impl_.no_standard_descriptor_accessor_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::MessageOptions, _impl_.deprecated_),
@@ -779,6 +809,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FieldOptions, _impl_.ctype_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FieldOptions, _impl_.packed_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FieldOptions, _impl_.jstype_),
@@ -801,6 +833,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::OneofOptions, _impl_.uninterpreted_option_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumOptions, _impl_._has_bits_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumOptions, _internal_metadata_),
@@ -808,6 +842,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumOptions, _impl_.allow_alias_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumOptions, _impl_.deprecated_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumOptions, _impl_.uninterpreted_option_),
@@ -820,6 +856,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumValueOptions, _impl_.deprecated_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::EnumValueOptions, _impl_.uninterpreted_option_),
   0,
@@ -830,6 +868,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::ServiceOptions, _impl_.deprecated_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::ServiceOptions, _impl_.uninterpreted_option_),
   0,
@@ -840,6 +880,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::MethodOptions, _impl_.deprecated_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::MethodOptions, _impl_.idempotency_level_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::MethodOptions, _impl_.uninterpreted_option_),
@@ -852,6 +894,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart, _impl_.name_part_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart, _impl_.is_extension_),
   0,
@@ -862,6 +906,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::UninterpretedOption, _impl_.name_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::UninterpretedOption, _impl_.identifier_value_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::UninterpretedOption, _impl_.positive_int_value_),
@@ -882,6 +928,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location, _impl_.path_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location, _impl_.span_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location, _impl_.leading_comments_),
@@ -898,6 +946,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo, _impl_.location_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation, _impl_._has_bits_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation, _internal_metadata_),
@@ -905,6 +955,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation, _impl_.path_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation, _impl_.source_file_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation, _impl_.begin_),
@@ -919,36 +971,38 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo, _impl_.annotation_),
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FileDescriptorSet)},
-  { 7, 25, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FileDescriptorProto)},
-  { 37, 46, -1, sizeof(::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange)},
-  { 49, 57, -1, sizeof(::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange)},
-  { 59, 75, -1, sizeof(::PROTOBUF_NAMESPACE_ID::DescriptorProto)},
-  { 85, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions)},
-  { 92, 109, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto)},
-  { 120, 128, -1, sizeof(::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto)},
-  { 130, 138, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange)},
-  { 140, 151, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto)},
-  { 156, 165, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto)},
-  { 168, 177, -1, sizeof(::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto)},
-  { 180, 192, -1, sizeof(::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto)},
-  { 198, 225, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FileOptions)},
-  { 246, 257, -1, sizeof(::PROTOBUF_NAMESPACE_ID::MessageOptions)},
-  { 262, 276, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FieldOptions)},
-  { 284, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::OneofOptions)},
-  { 291, 300, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumOptions)},
-  { 303, 311, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumValueOptions)},
-  { 313, 321, -1, sizeof(::PROTOBUF_NAMESPACE_ID::ServiceOptions)},
-  { 323, 332, -1, sizeof(::PROTOBUF_NAMESPACE_ID::MethodOptions)},
-  { 335, 343, -1, sizeof(::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart)},
-  { 345, 358, -1, sizeof(::PROTOBUF_NAMESPACE_ID::UninterpretedOption)},
-  { 365, 376, -1, sizeof(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location)},
-  { 381, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo)},
-  { 388, 398, -1, sizeof(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation)},
-  { 402, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo)},
+  { 9, 29, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FileDescriptorProto)},
+  { 41, 52, -1, sizeof(::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange)},
+  { 55, 65, -1, sizeof(::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange)},
+  { 67, 85, -1, sizeof(::PROTOBUF_NAMESPACE_ID::DescriptorProto)},
+  { 95, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions)},
+  { 104, 123, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto)},
+  { 134, 144, -1, sizeof(::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto)},
+  { 146, 156, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange)},
+  { 158, 171, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto)},
+  { 176, 187, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto)},
+  { 190, 201, -1, sizeof(::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto)},
+  { 204, 218, -1, sizeof(::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto)},
+  { 224, 253, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FileOptions)},
+  { 274, 287, -1, sizeof(::PROTOBUF_NAMESPACE_ID::MessageOptions)},
+  { 292, 308, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FieldOptions)},
+  { 316, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::OneofOptions)},
+  { 325, 336, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumOptions)},
+  { 339, 349, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumValueOptions)},
+  { 351, 361, -1, sizeof(::PROTOBUF_NAMESPACE_ID::ServiceOptions)},
+  { 363, 374, -1, sizeof(::PROTOBUF_NAMESPACE_ID::MethodOptions)},
+  { 377, 387, -1, sizeof(::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart)},
+  { 389, 404, -1, sizeof(::PROTOBUF_NAMESPACE_ID::UninterpretedOption)},
+  { 411, 424, -1, sizeof(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location)},
+  { 429, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo)},
+  { 438, 450, -1, sizeof(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation)},
+  { 454, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {

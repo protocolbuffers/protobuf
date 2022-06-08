@@ -107,6 +107,8 @@ cc_test(
         ":unittest_lib",
         "//:protobuf",
         "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:test_util",
+        "//src/google/protobuf:test_util2",
         "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
@@ -129,6 +131,7 @@ cc_test(
     deps = [
         ":cpp",
         "//:protobuf",
+        "//src/google/protobuf:test_util2",
         "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
@@ -198,4 +201,22 @@ pkg_files(
     srcs = glob(["**/*"]),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//src:__pkg__"],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob([
+        "*_test.cc",
+        "*unittest.cc",
+    ]),
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+)
+
+filegroup(
+    name = "test_proto_srcs",
+    srcs = [
+        "test_bad_identifiers.proto",
+        "test_large_enum_value.proto",
+    ],
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
 )

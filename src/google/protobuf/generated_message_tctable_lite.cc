@@ -315,24 +315,43 @@ const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
   data.data = entry_offset << 32 | tag;
 
   using field_layout::FieldKind;
-  auto field_type = entry->type_card & FieldKind::kFkMask;
+  auto field_type =
+      entry->type_card & (+field_layout::kSplitMask | FieldKind::kFkMask);
   switch (field_type) {
     case FieldKind::kFkNone:
       PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
     case FieldKind::kFkVarint:
-      PROTOBUF_MUSTTAIL return MpVarint(PROTOBUF_TC_PARAM_PASS);
+      PROTOBUF_MUSTTAIL return MpVarint<false>(PROTOBUF_TC_PARAM_PASS);
     case FieldKind::kFkPackedVarint:
       PROTOBUF_MUSTTAIL return MpPackedVarint(PROTOBUF_TC_PARAM_PASS);
     case FieldKind::kFkFixed:
-      PROTOBUF_MUSTTAIL return MpFixed(PROTOBUF_TC_PARAM_PASS);
+      PROTOBUF_MUSTTAIL return MpFixed<false>(PROTOBUF_TC_PARAM_PASS);
     case FieldKind::kFkPackedFixed:
       PROTOBUF_MUSTTAIL return MpPackedFixed(PROTOBUF_TC_PARAM_PASS);
     case FieldKind::kFkString:
-      PROTOBUF_MUSTTAIL return MpString(PROTOBUF_TC_PARAM_PASS);
+      PROTOBUF_MUSTTAIL return MpString<false>(PROTOBUF_TC_PARAM_PASS);
     case FieldKind::kFkMessage:
-      PROTOBUF_MUSTTAIL return MpMessage(PROTOBUF_TC_PARAM_PASS);
+      PROTOBUF_MUSTTAIL return MpMessage<false>(PROTOBUF_TC_PARAM_PASS);
     case FieldKind::kFkMap:
       PROTOBUF_MUSTTAIL return MpMap(PROTOBUF_TC_PARAM_PASS);
+
+    case +field_layout::kSplitMask | FieldKind::kFkNone:
+      PROTOBUF_FALLTHROUGH_INTENDED;
+    case +field_layout::kSplitMask | FieldKind::kFkPackedVarint:
+      PROTOBUF_FALLTHROUGH_INTENDED;
+    case +field_layout::kSplitMask | FieldKind::kFkPackedFixed:
+      PROTOBUF_FALLTHROUGH_INTENDED;
+    case +field_layout::kSplitMask | FieldKind::kFkMap:
+      return Error(PROTOBUF_TC_PARAM_PASS);
+
+    case +field_layout::kSplitMask | FieldKind::kFkVarint:
+      PROTOBUF_MUSTTAIL return MpVarint<true>(PROTOBUF_TC_PARAM_PASS);
+    case +field_layout::kSplitMask | FieldKind::kFkFixed:
+      PROTOBUF_MUSTTAIL return MpFixed<true>(PROTOBUF_TC_PARAM_PASS);
+    case +field_layout::kSplitMask | FieldKind::kFkString:
+      PROTOBUF_MUSTTAIL return MpString<true>(PROTOBUF_TC_PARAM_PASS);
+    case +field_layout::kSplitMask | FieldKind::kFkMessage:
+      PROTOBUF_MUSTTAIL return MpMessage<true>(PROTOBUF_TC_PARAM_PASS);
     default:
       return Error(PROTOBUF_TC_PARAM_PASS);
   }
@@ -1392,6 +1411,43 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
   return true;
 }
 
+namespace {
+enum {
+  kSplitOffsetIdx = 2,
+  kSplitSizeIdx = 3,
+};
+uint32_t GetSplitOffset(const TcParseTableBase* table) {
+  return table->field_aux(kSplitOffsetIdx)->offset;
+}
+
+uint32_t GetSizeofSplit(const TcParseTableBase* table) {
+  return table->field_aux(kSplitSizeIdx)->offset;
+}
+
+void* MaybeGetSplitBase(MessageLite* msg, const bool is_split,
+                        const TcParseTableBase* table,
+                        ::google::protobuf::internal::ParseContext* ctx) {
+  void* out = msg;
+  if (is_split) {
+    const uint32_t split_offset = GetSplitOffset(table);
+    void* default_split =
+        TcParser::RefAt<void*>(table->default_instance, split_offset);
+    void*& split = TcParser::RefAt<void*>(msg, split_offset);
+    if (split == default_split) {
+      // Allocate split instance when needed.
+      uint32_t size = GetSizeofSplit(table);
+      Arena* arena = ctx->data().arena;
+      split = (arena == nullptr) ? ::operator new(size)
+                                 : arena->AllocateAligned(size);
+      memcpy(split, default_split, size);
+    }
+    out = split;
+  }
+  return out;
+}
+}  // namespace
+
+template <bool is_split>
 const char* TcParser::MpFixed(PROTOBUF_TC_PARAM_DECL) {
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   const uint16_t type_card = entry.type_card;
@@ -1420,12 +1476,13 @@ const char* TcParser::MpFixed(PROTOBUF_TC_PARAM_DECL) {
   } else if (card == field_layout::kFcOneof) {
     ChangeOneof(table, entry, data.tag() >> 3, ctx, msg);
   }
+  void* const base = MaybeGetSplitBase(msg, is_split, table, ctx);
   // Copy the value:
   if (rep == field_layout::kRep64Bits) {
-    RefAt<uint64_t>(msg, entry.offset) = UnalignedLoad<uint64_t>(ptr);
+    RefAt<uint64_t>(base, entry.offset) = UnalignedLoad<uint64_t>(ptr);
     ptr += sizeof(uint64_t);
   } else {
-    RefAt<uint32_t>(msg, entry.offset) = UnalignedLoad<uint32_t>(ptr);
+    RefAt<uint32_t>(base, entry.offset) = UnalignedLoad<uint32_t>(ptr);
     ptr += sizeof(uint32_t);
   }
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
@@ -1510,6 +1567,7 @@ const char* TcParser::MpPackedFixed(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
 }
 
+template <bool is_split>
 const char* TcParser::MpVarint(PROTOBUF_TC_PARAM_DECL) {
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   const uint16_t type_card = entry.type_card;
@@ -1558,13 +1616,14 @@ const char* TcParser::MpVarint(PROTOBUF_TC_PARAM_DECL) {
     ChangeOneof(table, entry, data.tag() >> 3, ctx, msg);
   }
 
+  void* const base = MaybeGetSplitBase(msg, is_split, table, ctx);
   if (rep == field_layout::kRep64Bits) {
-    RefAt<uint64_t>(msg, entry.offset) = tmp;
+    RefAt<uint64_t>(base, entry.offset) = tmp;
   } else if (rep == field_layout::kRep32Bits) {
-    RefAt<uint32_t>(msg, entry.offset) = static_cast<uint32_t>(tmp);
+    RefAt<uint32_t>(base, entry.offset) = static_cast<uint32_t>(tmp);
   } else {
     GOOGLE_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep8Bits));
-    RefAt<bool>(msg, entry.offset) = static_cast<bool>(tmp);
+    RefAt<bool>(base, entry.offset) = static_cast<bool>(tmp);
   }
 
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
@@ -1705,6 +1764,7 @@ bool TcParser::MpVerifyUtf8(StringPiece wire_bytes,
   return true;
 }
 
+template <bool is_split>
 const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   const uint16_t type_card = entry.type_card;
@@ -1735,9 +1795,10 @@ const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
 
   bool is_valid = false;
   Arena* arena = ctx->data().arena;
+  void* const base = MaybeGetSplitBase(msg, is_split, table, ctx);
   switch (rep) {
     case field_layout::kRepAString: {
-      auto& field = RefAt<ArenaStringPtr>(msg, entry.offset);
+      auto& field = RefAt<ArenaStringPtr>(base, entry.offset);
       if (need_init) field.InitDefault();
       if (arena) {
         ptr = ctx->ReadArenaString(ptr, &field, arena);
@@ -1803,6 +1864,7 @@ const char* TcParser::MpRepeatedString(PROTOBUF_TC_PARAM_DECL) {
   return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
 }
 
+template <bool is_split>
 const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   const uint16_t type_card = entry.type_card;
@@ -1845,8 +1907,10 @@ const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
   } else if (is_oneof) {
     need_init = ChangeOneof(table, entry, data.tag() >> 3, ctx, msg);
   }
+
+  void* const base = MaybeGetSplitBase(msg, is_split, table, ctx);
   SyncHasbits(msg, hasbits, table);
-  MessageLite*& field = RefAt<MessageLite*>(msg, entry.offset);
+  MessageLite*& field = RefAt<MessageLite*>(base, entry.offset);
   if ((type_card & field_layout::kTvMask) == field_layout::kTvTable) {
     auto* inner_table = table->field_aux(&entry)->table;
     if (need_init || field == nullptr) {

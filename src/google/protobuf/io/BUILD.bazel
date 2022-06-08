@@ -114,6 +114,7 @@ cc_test(
         ":gzip_stream",
         ":io",
         "//:protobuf",
+        "//src/google/protobuf:test_util2",
         "//src/google/protobuf/testing",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
@@ -143,4 +144,13 @@ pkg_files(
     srcs = glob(["**/*"]),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//src:__pkg__"],
+)
+
+filegroup(
+    name = "test_srcs",
+    srcs = glob([
+        "*_test.cc",
+        "*unittest.cc",
+    ]),
+    visibility = ["//pkg:__pkg__"],
 )
