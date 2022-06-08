@@ -1986,9 +1986,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   }
 
   if (ShouldSplit(descriptor_, options_)) {
-    format(
-        "static Impl_::Split* CreateSplitMessage("
-        "::$proto_ns$::Arena* arena);\n");
     format("friend struct $1$;\n",
            DefaultInstanceType(descriptor_, options_, /*split=*/true));
   }
@@ -2036,7 +2033,6 @@ void MessageGenerator::GenerateSchema(io::Printer* printer, int offset,
     GOOGLE_DCHECK(!IsMapEntryMessage(descriptor_));
     inlined_string_indices_offset = has_offset + has_bit_indices_.size();
   }
-
   format("{ $1$, $2$, $3$, sizeof($classtype$)},\n", offset, has_offset,
          inlined_string_indices_offset);
 }
@@ -2199,9 +2195,13 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
     format(
         "void $classname$::PrepareSplitMessageForWrite() {\n"
         "  if (IsSplitMessageDefault()) {\n"
-        "    $split$ = CreateSplitMessage(GetArenaForAllocation());\n"
+        "    void* chunk = "
+        "::PROTOBUF_NAMESPACE_ID::internal::CreateSplitMessageGeneric("
+        "GetArenaForAllocation(), &$1$, sizeof(Impl_::Split));\n"
+        "    $split$ = reinterpret_cast<Impl_::Split*>(chunk);\n"
         "  }\n"
-        "}\n");
+        "}\n",
+        DefaultInstanceName(descriptor_, options_, /*split=*/true));
   }
 
   GenerateVerify(printer);
@@ -2276,7 +2276,16 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
   } else {
     format("~0u,  // no _inlined_string_donated_\n");
   }
-  const int kNumGenericOffsets = 6;  // the number of fixed offsets above
+  if (ShouldSplit(descriptor_, options_)) {
+    format(
+        "PROTOBUF_FIELD_OFFSET($classtype$, $split$),\n"
+        "sizeof($classtype$::Impl_::Split),\n");
+  } else {
+    format(
+        "~0u,  // no _split_\n"
+        "~0u,  // no sizeof(Split)\n");
+  }
+  const int kNumGenericOffsets = 8;  // the number of fixed offsets above
   const size_t offsets = kNumGenericOffsets + descriptor_->field_count() +
                          descriptor_->real_oneof_decl_count();
   size_t entries = offsets;
@@ -2304,12 +2313,17 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
     // offset of the field, so that the information is available when
     // reflectively accessing the field at run time.
     //
-    // Embed whether the field is eagerly verified lazy or inlined string to the
-    // LSB of the offset.
+    // We embed whether the field is cold to the MSB of the offset, and whether
+    // the field is eagerly verified lazy or inlined string to the LSB of the
+    // offset.
+
+    if (ShouldSplit(field, options_)) {
+      format(" | ::_pbi::kSplitFieldOffsetMask /*split*/");
+    }
     if (IsEagerlyVerifiedLazy(field, options_, scc_analyzer_)) {
-      format(" | 0x1u  // eagerly verified lazy\n");
+      format(" | 0x1u /*eagerly verified lazy*/");
     } else if (IsStringInlined(field, options_)) {
-      format(" | 0x1u  // inlined\n");
+      format(" | 0x1u /*inlined*/");
     }
     format(",\n");
   }
@@ -2468,45 +2482,6 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* printer) {
 
   format.Outdent();
   format("}\n\n");
-}
-
-void MessageGenerator::GenerateCreateSplitMessage(io::Printer* printer) {
-  Formatter format(printer, variables_);
-  format(
-      "$classname$::Impl_::Split* "
-      "$classname$::CreateSplitMessage(::$proto_ns$::Arena* arena) {\n");
-  format.Indent();
-  const char* field_sep = " ";
-  const auto put_sep = [&] {
-    format("\n$1$ ", field_sep);
-    field_sep = ",";
-  };
-  format(
-      "const size_t size = sizeof(Impl_::Split);\n"
-      "void* chunk = (arena == nullptr) ?\n"
-      "  ::operator new(size) :\n"
-      "  arena->AllocateAligned(size, alignof(Impl_::Split));\n"
-      "Impl_::Split* ptr = reinterpret_cast<Impl_::Split*>(chunk);\n"
-      "new (ptr) Impl_::Split{");
-  format.Indent();
-  for (const FieldDescriptor* field : optimized_order_) {
-    GOOGLE_DCHECK(!IsFieldStripped(field, options_));
-    if (ShouldSplit(field, options_)) {
-      put_sep();
-      field_generators_.get(field).GenerateAggregateInitializer(printer);
-    }
-  }
-  format.Outdent();
-  format("};\n");
-  for (const FieldDescriptor* field : optimized_order_) {
-    GOOGLE_DCHECK(!IsFieldStripped(field, options_));
-    if (ShouldSplit(field, options_)) {
-      field_generators_.get(field).GenerateCreateSplitMessageCode(printer);
-    }
-  }
-  format("return ptr;\n");
-  format.Outdent();
-  format("}\n");
 }
 
 void MessageGenerator::GenerateInitDefaultSplitInstance(io::Printer* printer) {
@@ -2946,10 +2921,6 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
 
   // Generate the shared constructor code.
   GenerateSharedConstructorCode(printer);
-
-  if (ShouldSplit(descriptor_, options_)) {
-    GenerateCreateSplitMessage(printer);
-  }
 
   // Generate the destructor.
   if (!HasSimpleBaseClass(descriptor_, options_)) {

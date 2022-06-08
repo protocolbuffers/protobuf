@@ -385,8 +385,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   // String -> ByteString
 
   /**
-   * Returns a {@code ByteString} from a hexadecimal String. Alternative CharSequences should use
-   * {@link ByteStrings#decode(CharSequence, BaseEncoding)}
+   * Returns a {@code ByteString} from a hexadecimal String.
    *
    * @param hexString String of hexadecimal digits to create {@code ByteString} from.
    * @throws NumberFormatException if the hexString does not contain a parsable hex String.

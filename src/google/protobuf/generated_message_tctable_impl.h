@@ -64,10 +64,11 @@ namespace internal {
 //     |15        ..          8|7         ..          0|
 //     +-----------------------+-----------------------+
 //     :  .  :  .  :  .  :  .  :  .  :  .  : 3|========| [3] FieldType
-//     :     :     :     :     :     : 5|=====|  :     : [2] FieldCardinality
-//     :  .  :  .  :  .  :  . 8|========|  :  .  :  .  : [3] FieldRep
-//     :     :     :   10|=====|     :     :     :     : [2] TransformValidation
-//     :  .  :  .12|=====|  .  :  .  :  .  :  .  :  .  : [2] FormatDiscriminator
+//     :     :     :     :     :     :  . 4|==|  :     : [1] FieldSplit
+//     :     :     :     :     :    6|=====|  .  :     : [2] FieldCardinality
+//     :  .  :  .  :  .  : 9|========|  .  :  .  :  .  : [3] FieldRep
+//     :     :     :11|=====|  :     :     :     :     : [2] TransformValidation
+//     :  .  :13|=====|  :  .  :  .  :  .  :  .  :  .  : [2] FormatDiscriminator
 //     +-----------------------+-----------------------+
 //     |15        ..          8|7         ..          0|
 //     +-----------------------+-----------------------+
@@ -95,11 +96,21 @@ enum FieldKind : uint16_t {
 
 static_assert(kFkMap < (1 << kFkBits), "too many types");
 
+// Split (1 bit):
+enum FieldSplit : uint16_t {
+  kSplitShift = kFkShift+ kFkBits,
+  kSplitBits  = 1,
+  kSplitMask  = ((1 << kSplitBits) - 1) << kSplitShift,
+
+  kSplitFalse = 0,
+  kSplitTrue  = 1 << kSplitShift,
+};
+
 // Cardinality (2 bits):
 // These values determine how many values a field can have and its presence.
 // Packed fields are represented in FieldType.
 enum Cardinality : uint16_t {
-  kFcShift    = kFkShift + kFkBits,
+  kFcShift    = kSplitShift+ kSplitBits,
   kFcBits     = 2,
   kFcMask     = ((1 << kFcBits) - 1) << kFcShift,
 
@@ -179,7 +190,7 @@ enum FormatDiscriminator : uint16_t {
 };
 
 // Update this assertion (and comments above) when adding or removing bits:
-static_assert(kFmtShift + kFmtBits == 12, "number of bits changed");
+static_assert(kFmtShift + kFmtBits == 13, "number of bits changed");
 
 // This assertion should not change unless the storage width changes:
 static_assert(kFmtShift + kFmtBits <= 16, "too many bits");
@@ -549,14 +560,18 @@ class PROTOBUF_EXPORT TcParser final {
   static constexpr const uint32_t kMtSmallScanSize = 4;
 
   // Mini parsing:
+  template <bool is_split>
   static const char* MpVarint(PROTOBUF_TC_PARAM_DECL);
   static const char* MpRepeatedVarint(PROTOBUF_TC_PARAM_DECL);
   static const char* MpPackedVarint(PROTOBUF_TC_PARAM_DECL);
+  template <bool is_split>
   static const char* MpFixed(PROTOBUF_TC_PARAM_DECL);
   static const char* MpRepeatedFixed(PROTOBUF_TC_PARAM_DECL);
   static const char* MpPackedFixed(PROTOBUF_TC_PARAM_DECL);
+  template <bool is_split>
   static const char* MpString(PROTOBUF_TC_PARAM_DECL);
   static const char* MpRepeatedString(PROTOBUF_TC_PARAM_DECL);
+  template <bool is_split>
   static const char* MpMessage(PROTOBUF_TC_PARAM_DECL);
   static const char* MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL);
   static const char* MpMap(PROTOBUF_TC_PARAM_DECL);

@@ -798,7 +798,7 @@
 
 // Windows declares several inconvenient macro names.  We #undef them and then
 // restore them in port_undef.inc.
-#ifdef _MSC_VER
+#ifdef _WIN32
 #pragma push_macro("CREATE_NEW")
 #undef CREATE_NEW
 #pragma push_macro("DELETE")
@@ -851,7 +851,7 @@
 #undef STRICT
 #pragma push_macro("timezone")
 #undef timezone
-#endif  // _MSC_VER
+#endif  // _WIN32
 
 #ifdef __APPLE__
 // Inconvenient macro names from usr/include/math.h in some macOS SDKs.
