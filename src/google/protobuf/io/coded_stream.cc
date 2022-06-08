@@ -286,6 +286,8 @@ bool CodedInputStream::ReadStringFallback(std::string* buffer, int size) {
     if (bytes_to_limit > 0 && size > 0 && size <= bytes_to_limit) {
       buffer->reserve(size);
     }
+  } else {
+    buffer->reserve(size);
   }
 
   int current_buffer_size;
