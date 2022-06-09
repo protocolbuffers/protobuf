@@ -297,9 +297,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
       if (descriptor_->default_value_string().empty()) {
         format(
             "#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING\n"
-            "  if ($field$.IsDefault()) {\n"
-            "    $field$.Set(\"\", GetArenaForAllocation());\n"
-            "  }\n"
+            "  $field$.Set(\"\", GetArenaForAllocation());\n"
             "#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING\n");
       }
       format("  return p;\n");
@@ -539,13 +537,9 @@ void StringFieldGenerator::GenerateConstexprAggregateInitializer(
     format("/*decltype($field$)*/{nullptr, false}");
     return;
   }
-  if (descriptor_->default_value_string().empty()) {
-    format(
-        "/*decltype($field$)*/{&::_pbi::fixed_address_empty_string, "
-        "::_pbi::ConstantInitialized{}}");
-  } else {
-    format("/*decltype($field$)*/{nullptr, ::_pbi::ConstantInitialized{}}");
-  }
+  format(
+      "/*decltype($field$)*/{&::_pbi::fixed_address_empty_string, "
+      "::_pbi::ConstantInitialized{}}");
 }
 
 void StringFieldGenerator::GenerateAggregateInitializer(
