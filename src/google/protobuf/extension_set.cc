@@ -112,7 +112,7 @@ static const ExtensionRegistry* global_registry = nullptr;
 // Separate from ExtensionEq since we do a complete comparison.
 bool IsDifferent(const ExtensionInfo& a, const ExtensionInfo& b) {
   return std::tie(a.message, a.number, a.type, a.is_repeated, a.is_packed) != 
-         std::tie(b.number, b.type, b.is_repeated, b.is_packed);
+         std::tie(b.message, b.number, b.type, b.is_repeated, b.is_packed);
 }
 
 // This function is only called at startup, so there is no need for thread-
