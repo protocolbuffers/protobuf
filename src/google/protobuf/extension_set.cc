@@ -110,9 +110,9 @@ using ExtensionRegistry =
 static const ExtensionRegistry* global_registry = nullptr;
 
 // Separate from ExtensionEq since we do a complete comparison.
-bool IsDifferent(const ExtensionInfo* a, const ExtensionInfo& b) {
-  return !(a->message == b.message && a->number == b.number && a->type==b.type 
-         && a->is_repeated == b.is_repeated && a->is_packed == b.is_packed);
+bool IsDifferent(const ExtensionInfo& a, const ExtensionInfo& b) {
+  return std::tie(a.message, a.number, a.type, a.is_repeated, a.is_packed) != 
+         std::tie(b.number, b.type, b.is_repeated, b.is_packed);
 }
 
 // This function is only called at startup, so there is no need for thread-
@@ -120,8 +120,8 @@ bool IsDifferent(const ExtensionInfo* a, const ExtensionInfo& b) {
 void Register(const ExtensionInfo& info) {
   static auto local_static_registry = OnShutdownDelete(new ExtensionRegistry);
   global_registry = local_static_registry;
-  ExtensionInfo* existing = InsertOrReturnExisting(local_static_registry, info);
-  if (existing != nullptr && IsDifferent(existing, info)) {
+  auto existing = local_static_registry->insert(info);
+  if (!existing.second && IsDifferent(existing.first, info)) {
       GOOGLE_LOG(FATAL) << "Multiple extension registrations for type \""
         << info.message->GetTypeName() << "\", field number "
         << info.number << ".";
