@@ -109,15 +109,22 @@ using ExtensionRegistry =
 
 static const ExtensionRegistry* global_registry = nullptr;
 
+// Separate from ExtensionEq since we do a complete comparison.
+bool IsDifferent(const ExtensionInfo* a, const ExtensionInfo& b) {
+  return !(a->message == b.message && a->number == b.number && a->type==b.type 
+         && a->is_repeated == b.is_repeated && a->is_packed == b.is_packed);
+}
+
 // This function is only called at startup, so there is no need for thread-
 // safety.
 void Register(const ExtensionInfo& info) {
   static auto local_static_registry = OnShutdownDelete(new ExtensionRegistry);
   global_registry = local_static_registry;
-  if (!InsertIfNotPresent(local_static_registry, info)) {
-    GOOGLE_LOG(FATAL) << "Multiple extension registrations for type \""
-               << info.message->GetTypeName() << "\", field number "
-               << info.number << ".";
+  ExtensionInfo* existing = InsertOrReturnExisting(local_static_registry, info);
+  if (existing != nullptr && IsDifferent(existing, info)) {
+      GOOGLE_LOG(FATAL) << "Multiple extension registrations for type \""
+        << info.message->GetTypeName() << "\", field number "
+        << info.number << ".";
   }
 }
 
