@@ -1,4 +1,4 @@
-// See README.txt for information and build instructions.
+// See README.md for information and build instructions.
 
 #include <fstream>
 #include <google/protobuf/util/time_util.h>
