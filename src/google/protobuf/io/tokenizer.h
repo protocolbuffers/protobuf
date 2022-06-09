@@ -148,11 +148,11 @@ class PROTOBUF_EXPORT Tokenizer {
 
   // Get the current token.  This is updated when Next() is called.  Before
   // the first call to Next(), current() has type TYPE_START and no contents.
-  const Token& current();
+  const Token& current() const;
 
   // Return the previous token -- i.e. what current() returned before the
   // previous call to Next().
-  const Token& previous();
+  const Token& previous() const;
 
   // Advance to the next token.  Returns false if the end of the input is
   // reached.
@@ -422,9 +422,9 @@ class PROTOBUF_EXPORT Tokenizer {
 };
 
 // inline methods ====================================================
-inline const Tokenizer::Token& Tokenizer::current() { return current_; }
+inline const Tokenizer::Token& Tokenizer::current() const { return current_; }
 
-inline const Tokenizer::Token& Tokenizer::previous() { return previous_; }
+inline const Tokenizer::Token& Tokenizer::previous() const { return previous_; }
 
 inline void Tokenizer::ParseString(const std::string& text,
                                    std::string* output) {

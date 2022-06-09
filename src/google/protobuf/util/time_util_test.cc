@@ -415,6 +415,7 @@ TEST(TimeUtilTest, IsTimestampValid) {
 }
 
 #ifdef PROTOBUF_HAS_DEATH_TEST  // death tests do not work on Windows yet.
+#ifndef NDEBUG
 
 TEST(TimeUtilTest, DurationBounds) {
   Duration overflow;
@@ -426,38 +427,38 @@ TEST(TimeUtilTest, DurationBounds) {
   Duration underflow_nanos;
   underflow_nanos.set_nanos(TimeUtil::kDurationMinNanoseconds - 1);
 
-  EXPECT_DEBUG_DEATH({ TimeUtil::SecondsToDuration(overflow.seconds()); },
+  EXPECT_DEATH({ TimeUtil::SecondsToDuration(overflow.seconds()); },
                      "Duration seconds");
-  EXPECT_DEBUG_DEATH({ TimeUtil::SecondsToDuration(underflow.seconds()); },
+  EXPECT_DEATH({ TimeUtil::SecondsToDuration(underflow.seconds()); },
                      "Duration seconds");
-  EXPECT_DEBUG_DEATH(
+  EXPECT_DEATH(
       { TimeUtil::MinutesToDuration(overflow.seconds() / 60 + 1); },
       "Duration minutes");
-  EXPECT_DEBUG_DEATH(
+  EXPECT_DEATH(
       { TimeUtil::MinutesToDuration(underflow.seconds() / 60 - 1); },
       "Duration minutes");
-  EXPECT_DEBUG_DEATH(
+  EXPECT_DEATH(
       { TimeUtil::HoursToDuration(overflow.seconds() / 60 + 1); },
       "Duration hours");
-  EXPECT_DEBUG_DEATH(
+  EXPECT_DEATH(
       { TimeUtil::HoursToDuration(underflow.seconds() / 60 - 1); },
       "Duration hours");
 
-  EXPECT_DEBUG_DEATH({ TimeUtil::DurationToNanoseconds(overflow); },
+  EXPECT_DEATH({ TimeUtil::DurationToNanoseconds(overflow); },
                      "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::DurationToNanoseconds(underflow); },
+  EXPECT_DEATH({ TimeUtil::DurationToNanoseconds(underflow); },
                      "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::DurationToNanoseconds(overflow_nanos); },
+  EXPECT_DEATH({ TimeUtil::DurationToNanoseconds(overflow_nanos); },
                      "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::DurationToNanoseconds(underflow_nanos); },
+  EXPECT_DEATH({ TimeUtil::DurationToNanoseconds(underflow_nanos); },
                      "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::DurationToSeconds(overflow); },
+  EXPECT_DEATH({ TimeUtil::DurationToSeconds(overflow); },
                      "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::DurationToSeconds(underflow); },
+  EXPECT_DEATH({ TimeUtil::DurationToSeconds(underflow); },
                      "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::DurationToSeconds(overflow_nanos); },
+  EXPECT_DEATH({ TimeUtil::DurationToSeconds(overflow_nanos); },
                      "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::DurationToSeconds(underflow_nanos); },
+  EXPECT_DEATH({ TimeUtil::DurationToSeconds(underflow_nanos); },
                      "outside of the valid range");
 }
 
@@ -471,43 +472,43 @@ TEST(TimeUtilTest, TimestampBounds) {
   Timestamp underflow_nanos;
   underflow_nanos.set_nanos(TimeUtil::kDurationMinNanoseconds - 1);
 
-  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToNanoseconds(overflow); },
+  EXPECT_DEATH({ TimeUtil::TimestampToNanoseconds(overflow); },
                      "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToNanoseconds(underflow); },
+  EXPECT_DEATH({ TimeUtil::TimestampToNanoseconds(underflow); },
                      "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToNanoseconds(overflow_nanos); },
+  EXPECT_DEATH({ TimeUtil::TimestampToNanoseconds(overflow_nanos); },
                      "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToNanoseconds(underflow_nanos); },
-                     "outside of the valid range");
-
-  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToMicroseconds(overflow); },
-                     "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToMicroseconds(underflow); },
-                     "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToMicroseconds(overflow_nanos); },
-                     "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToMicroseconds(underflow_nanos); },
+  EXPECT_DEATH({ TimeUtil::TimestampToNanoseconds(underflow_nanos); },
                      "outside of the valid range");
 
-  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToMilliseconds(overflow); },
+  EXPECT_DEATH({ TimeUtil::TimestampToMicroseconds(overflow); },
                      "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToMilliseconds(underflow); },
+  EXPECT_DEATH({ TimeUtil::TimestampToMicroseconds(underflow); },
                      "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToMilliseconds(overflow_nanos); },
+  EXPECT_DEATH({ TimeUtil::TimestampToMicroseconds(overflow_nanos); },
                      "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToMilliseconds(underflow_nanos); },
+  EXPECT_DEATH({ TimeUtil::TimestampToMicroseconds(underflow_nanos); },
                      "outside of the valid range");
 
-  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToSeconds(overflow); },
+  EXPECT_DEATH({ TimeUtil::TimestampToMilliseconds(overflow); },
                      "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToSeconds(underflow); },
+  EXPECT_DEATH({ TimeUtil::TimestampToMilliseconds(underflow); },
                      "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToSeconds(overflow_nanos); },
+  EXPECT_DEATH({ TimeUtil::TimestampToMilliseconds(overflow_nanos); },
                      "outside of the valid range");
-  EXPECT_DEBUG_DEATH({ TimeUtil::TimestampToSeconds(underflow_nanos); },
+  EXPECT_DEATH({ TimeUtil::TimestampToMilliseconds(underflow_nanos); },
+                     "outside of the valid range");
+
+  EXPECT_DEATH({ TimeUtil::TimestampToSeconds(overflow); },
+                     "outside of the valid range");
+  EXPECT_DEATH({ TimeUtil::TimestampToSeconds(underflow); },
+                     "outside of the valid range");
+  EXPECT_DEATH({ TimeUtil::TimestampToSeconds(overflow_nanos); },
+                     "outside of the valid range");
+  EXPECT_DEATH({ TimeUtil::TimestampToSeconds(underflow_nanos); },
                      "outside of the valid range");
 }
-
+#endif  // !NDEBUG
 #endif  // PROTOBUF_HAS_DEATH_TEST
 
 }  // namespace
