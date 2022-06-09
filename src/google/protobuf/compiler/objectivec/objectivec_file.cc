@@ -145,9 +145,9 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
     return it->second;
   }
 
-  std::set<const FileDescriptor*> min_deps_collector;
-  std::set<const FileDescriptor*> covered_deps_collector;
-  std::set<const FileDescriptor*> to_prune;
+  std::unordered_set<const FileDescriptor*> min_deps_collector;
+  std::unordered_set<const FileDescriptor*> covered_deps_collector;
+  std::unordered_set<const FileDescriptor*> to_prune;
   for (int i = 0; i < file->dependency_count(); i++) {
     const FileDescriptor* dep = file->dependency(i);
     MinDepsEntry dep_info =
@@ -180,7 +180,7 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
         {file, {file_has_exts, min_deps_collector, covered_deps_collector}}).first->second;
   }
 
-  std::set<const FileDescriptor*> min_deps;
+  std::unordered_set<const FileDescriptor*> min_deps;
   std::copy_if(min_deps_collector.begin(), min_deps_collector.end(),
                std::inserter(min_deps, min_deps.end()),
                [&](const FileDescriptor* value){
@@ -202,7 +202,7 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
 const std::vector<const FileDescriptor*>
 FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensions(
     const FileDescriptor* file) {
-  std::set<const FileDescriptor*> min_deps =
+  std::unordered_set<const FileDescriptor*> min_deps =
     CollectMinimalFileDepsContainingExtensionsInternal(file).min_deps;
   // Sort the list since pointer order isn't stable across runs.
   std::vector<const FileDescriptor*> result(min_deps.begin(), min_deps.end());
