@@ -121,7 +121,7 @@ void Register(const ExtensionInfo& info) {
   static auto local_static_registry = OnShutdownDelete(new ExtensionRegistry);
   global_registry = local_static_registry;
   auto existing = local_static_registry->insert(info);
-  if (!existing.second && IsDifferent(existing.first, info)) {
+  if (!existing.second && IsDifferent(*existing.first, info)) {
       GOOGLE_LOG(FATAL) << "Multiple extension registrations for type \""
         << info.message->GetTypeName() << "\", field number "
         << info.number << ".";
