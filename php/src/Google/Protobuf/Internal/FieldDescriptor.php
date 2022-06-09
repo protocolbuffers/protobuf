@@ -187,6 +187,11 @@ class FieldDescriptor
         return $this->containing_oneof;
     }
 
+    public function setContainingOneof($containing_oneof)
+    {
+        $this->containing_oneof = $containing_oneof;
+    }
+
     public function getRealContainingOneof()
     {
         return !is_null($this->containing_oneof) && !$this->containing_oneof->isSynthetic()
@@ -240,10 +245,9 @@ class FieldDescriptor
 
     /**
      * @param FieldDescriptorProto $proto
-     * @param Descriptor $desc
      * @return FieldDescriptor
      */
-    public static function getFieldDescriptor($proto, $desc)
+    public static function getFieldDescriptor($proto)
     {
         $type_name = null;
         $type = $proto->getType();
@@ -257,13 +261,7 @@ class FieldDescriptor
                 break;
         }
 
-        if ($proto->hasOneofIndex()) {
-            $oneof_index = $proto->getOneofIndex();
-            $containing_oneof = $desc->getOneofDecl()[$oneof_index];
-        } else {
-            $oneof_index = -1;
-            $containing_oneof = null;
-        }
+        $oneof_index = $proto->hasOneofIndex() ? $proto->getOneofIndex() : -1;
         // TODO: once proto2 is supported, this default should be false
         // for proto2.
         if ($proto->getLabel() === GPBLabel::REPEATED &&
@@ -282,10 +280,7 @@ class FieldDescriptor
 
         $field = new FieldDescriptor();
         $field->setName($proto->getName());
-        $field->containing_oneof = $containing_oneof;
 
-        $json_name = $proto->hasJsonName() ? $proto->getJsonName() :
-            lcfirst(implode('', array_map('ucwords', explode('_', $proto->getName()))));
         if ($proto->hasJsonName()) {
             $json_name = $proto->getJsonName();
         } else {
@@ -324,8 +319,8 @@ class FieldDescriptor
         return $field;
     }
 
-    public static function buildFromProto($proto, $parent_desc)
+    public static function buildFromProto($proto)
     {
-        return FieldDescriptor::getFieldDescriptor($proto, $parent_desc);
+        return FieldDescriptor::getFieldDescriptor($proto);
     }
 }

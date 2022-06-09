@@ -63,6 +63,12 @@ class OneofDescriptor
      */
     public function getField($index)
     {
+        if (
+            is_null($this->internal_desc->getFields())
+            || !isset($this->internal_desc->getFields()[$index])
+        ) {
+            return null;
+        }
         return $this->getPublicDescriptor($this->internal_desc->getFields()[$index]);
     }
 

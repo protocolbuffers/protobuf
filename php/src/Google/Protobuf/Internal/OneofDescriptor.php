@@ -76,8 +76,10 @@ class OneofDescriptor
         $oneof = new OneofDescriptor();
         $oneof->setName($oneof_proto->getName());
         foreach ($desc->getField() as $field) {
+            /** @var FieldDescriptor $field */
             if ($field->getOneofIndex() == $index) {
                 $oneof->addField($field);
+                $field->setContainingOneof($oneof);
             }
         }
         return $oneof;
