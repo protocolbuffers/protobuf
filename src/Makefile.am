@@ -18,7 +18,7 @@ else
 PTHREAD_DEF =
 endif
 
-PROTOBUF_VERSION = 32:0:0
+PROTOBUF_VERSION = 32:1:0
 
 if GCC
 # Turn on all warnings except for sign comparison (we ignore sign comparison
@@ -542,6 +542,7 @@ EXTRA_DIST =                                                   \
   $(protoc_inputs)                                             \
   BUILD.bazel                                                  \
   README.md                                                    \
+  file_lists.cmake                                             \
   google/protobuf/BUILD.bazel                                  \
   google/protobuf/compiler/BUILD.bazel                         \
   google/protobuf/compiler/cpp/BUILD.bazel                     \
