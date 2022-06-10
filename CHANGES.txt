@@ -2,6 +2,7 @@
 Unreleased version
   * Handle reflection for message splitting.
   * make metadata fields lazy.
+  * Extend visibility of plugin library to upb
 
 2022-05-27 version 21.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
   
