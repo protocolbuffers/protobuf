@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package upbc;
+
+import "google/protobuf/compiler/plugin.proto";
+
+message CodeGeneratorRequest {
+  // The pb sent by protoc to its plugins.
+  optional google.protobuf.compiler.CodeGeneratorRequest request = 1;
+
+  // Mini descriptors for the above pb, keyed by the fully qualified names.
+  map<string, string> mini_descriptors = 2;
+}
