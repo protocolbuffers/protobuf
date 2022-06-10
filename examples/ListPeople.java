@@ -1,4 +1,4 @@
-// See README.txt for information and build instructions.
+// See README.md for information and build instructions.
 
 import com.example.tutorial.protos.AddressBook;
 import com.example.tutorial.protos.Person;

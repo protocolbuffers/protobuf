@@ -72,18 +72,15 @@ class DefaultEmptyOneof;
 class ExtensionSet;  // extension_set.h
 class WeakFieldMap;  // weak_field_map.h
 
-enum {
-  // Tag used on offsets for fields that don't have a real offset.
-  // For example, weak message fields go into the WeakFieldMap and not in an
-  // actual field.
-  kInvalidFieldOffsetTag = 0x40000000u,
+// Tag used on offsets for fields that don't have a real offset.
+// For example, weak message fields go into the WeakFieldMap and not in an
+// actual field.
+constexpr uint32_t kInvalidFieldOffsetTag = 0x40000000u;
 
-  // Mask used on offsets for split fields.
-  kSplitFieldOffsetMask = 0x80000000u,
-
-  kLazyMask = 0x1u,
-  kInlinedMask = 0x1u,
-};
+// Mask used on offsets for split fields.
+constexpr uint32_t kSplitFieldOffsetMask = 0x80000000u;
+constexpr uint32_t kLazyMask = 0x1u;
+constexpr uint32_t kInlinedMask = 0x1u;
 
 // This struct describes the internal layout of the message, hence this is
 // used to act on the message reflectively.

@@ -1,4 +1,4 @@
-# See README.txt.
+# See README.md.
 
 .PHONY: all cpp java python clean
 

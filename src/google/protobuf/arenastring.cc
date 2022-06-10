@@ -125,11 +125,14 @@ void ArenaStringPtr::Set(ConstStringParam value, Arena* arena) {
   } else {
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
     if (arena == nullptr) {
-      Destroy();
+      GOOGLE_DCHECK(tagged_ptr_.IsAllocated());
+      auto* old = tagged_ptr_.Get();
       tagged_ptr_ = CreateString(value);
+      delete old;
     } else {
-      UnsafeMutablePointer()->assign("garbagedata");
+      auto* old = UnsafeMutablePointer();
       tagged_ptr_ = CreateArenaString(*arena, value);
+      old->assign("garbagedata");
     }
 #else   // PROTOBUF_FORCE_COPY_DEFAULT_STRING
     UnsafeMutablePointer()->assign(value.data(), value.length());

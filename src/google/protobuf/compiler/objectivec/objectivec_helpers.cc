@@ -83,7 +83,7 @@ bool BoolFromEnvVar(const char* env_var, bool default_value) {
 
 class SimpleLineCollector : public LineConsumer {
  public:
-  SimpleLineCollector(std::unordered_set<std::string>* inout_set)
+  explicit SimpleLineCollector(std::unordered_set<std::string>* inout_set)
       : set_(inout_set) {}
 
   virtual bool ConsumeLine(const StringPiece& line, std::string* out_error) override {
