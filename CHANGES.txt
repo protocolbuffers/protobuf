@@ -1,6 +1,7 @@
 
-2022-06-?? version 21.?
+Unreleased version
   * Handle reflection for message splitting.
+  * make metadata fields lazy.
 
 2022-05-27 version 21.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
   
