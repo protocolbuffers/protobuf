@@ -85,6 +85,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fapi_2eproto::offsets[] PROTOBUF_S
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Api, _impl_.name_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Api, _impl_.methods_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Api, _impl_.options_),
@@ -98,6 +100,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fapi_2eproto::offsets[] PROTOBUF_S
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Method, _impl_.name_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Method, _impl_.request_type_url_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Method, _impl_.request_streaming_),
@@ -111,13 +115,15 @@ const uint32_t TableStruct_google_2fprotobuf_2fapi_2eproto::offsets[] PROTOBUF_S
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Mixin, _impl_.name_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Mixin, _impl_.root_),
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Api)},
-  { 13, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Method)},
-  { 26, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Mixin)},
+  { 15, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Method)},
+  { 30, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Mixin)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {

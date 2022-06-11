@@ -81,6 +81,9 @@ class DescriptorPool;  // descriptor.h
 // encapsulates this "cache".  All DynamicMessages of the same type created
 // from the same factory will share the same support data.  Any Descriptors
 // used with a particular factory must outlive the factory.
+//
+// The thread safety for this class is subtle, see comments around GetPrototype
+// for details
 class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
  public:
   // Construct a DynamicMessageFactory that will search for extensions in

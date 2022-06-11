@@ -125,8 +125,9 @@ static void DeallocExtensionIterator(PyObject* _self) {
   ExtensionIterator* self = reinterpret_cast<ExtensionIterator*>(_self);
   self->fields.clear();
   Py_XDECREF(self->extension_dict);
+  freefunc tp_free = Py_TYPE(_self)->tp_free;
   self->~ExtensionIterator();
-  Py_TYPE(_self)->tp_free(_self);
+  (*tp_free)(_self);
 }
 
 PyObject* subscript(ExtensionDict* self, PyObject* key) {

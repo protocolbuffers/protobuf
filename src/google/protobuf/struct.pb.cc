@@ -84,6 +84,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fstruct_2eproto::offsets[] PROTOBU
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse, key_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse, value_),
   0,
@@ -94,6 +96,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fstruct_2eproto::offsets[] PROTOBU
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Struct, _impl_.fields_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Value, _internal_metadata_),
@@ -101,6 +105,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fstruct_2eproto::offsets[] PROTOBU
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Value, _impl_._oneof_case_[0]),
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   ::_pbi::kInvalidFieldOffsetTag,
   ::_pbi::kInvalidFieldOffsetTag,
   ::_pbi::kInvalidFieldOffsetTag,
@@ -114,13 +120,15 @@ const uint32_t TableStruct_google_2fprotobuf_2fstruct_2eproto::offsets[] PROTOBU
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::ListValue, _impl_.values_),
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
-  { 0, 8, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse)},
-  { 10, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Struct)},
-  { 17, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Value)},
-  { 30, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::ListValue)},
+  { 0, 10, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Struct_FieldsEntry_DoNotUse)},
+  { 12, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Struct)},
+  { 21, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::Value)},
+  { 36, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::ListValue)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {

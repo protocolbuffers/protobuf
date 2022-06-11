@@ -203,12 +203,12 @@ struct Metadata {
 
 namespace internal {
 template <class To>
-inline To* GetPointerAtOffset(Message* message, uint32_t offset) {
+inline To* GetPointerAtOffset(void* message, uint32_t offset) {
   return reinterpret_cast<To*>(reinterpret_cast<char*>(message) + offset);
 }
 
 template <class To>
-const To* GetConstPointerAtOffset(const Message* message, uint32_t offset) {
+const To* GetConstPointerAtOffset(const void* message, uint32_t offset) {
   return reinterpret_cast<const To*>(reinterpret_cast<const char*>(message) +
                                      offset);
 }
@@ -406,6 +406,9 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 };
 
 namespace internal {
+// Creates and returns an allocation for a split message.
+void* CreateSplitMessageGeneric(Arena* arena, void* default_split, size_t size);
+
 // Forward-declare interfaces used to implement RepeatedFieldRef.
 // These are protobuf internals that users shouldn't care about.
 class RepeatedFieldAccessor;
@@ -1029,6 +1032,10 @@ class PROTOBUF_EXPORT Reflection final {
   bool IsLazilyVerifiedLazyField(const FieldDescriptor* field) const;
   bool IsEagerlyVerifiedLazyField(const FieldDescriptor* field) const;
 
+  bool IsSplit(const FieldDescriptor* field) const {
+    return schema_.IsSplit(field);
+  }
+
   friend class FastReflectionMessageMutator;
   friend bool internal::IsDescendant(Message& root, const Message& message);
 
@@ -1174,6 +1181,14 @@ class PROTOBUF_EXPORT Reflection final {
   inline void SwapInlinedStringDonated(Message* lhs, Message* rhs,
                                        const FieldDescriptor* field) const;
 
+  // Returns the `_split_` pointer. Requires: IsSplit() == true.
+  inline const void* GetSplitField(const Message* message) const;
+  // Returns the address of the `_split_` pointer. Requires: IsSplit() == true.
+  inline void** MutableSplitField(Message* message) const;
+
+  // Allocate the split instance if needed.
+  void PrepareSplitMessageForWrite(Message* message) const;
+
   // Shallow-swap fields listed in fields vector of two messages. It is the
   // caller's responsibility to make sure shallow swap is safe.
   void UnsafeShallowSwapFields(
@@ -1267,6 +1282,9 @@ class PROTOBUF_EXPORT Reflection final {
 };
 
 // Abstract interface for a factory for message objects.
+//
+// The thread safety for this class is implementation dependent, see comments
+// around GetPrototype for details
 class PROTOBUF_EXPORT MessageFactory {
  public:
   inline MessageFactory() {}
@@ -1483,11 +1501,26 @@ bool Reflection::HasOneofField(const Message& message,
           static_cast<uint32_t>(field->number()));
 }
 
+const void* Reflection::GetSplitField(const Message* message) const {
+  GOOGLE_DCHECK(schema_.IsSplit());
+  return *internal::GetConstPointerAtOffset<void*>(message,
+                                                   schema_.SplitOffset());
+}
+
+void** Reflection::MutableSplitField(Message* message) const {
+  GOOGLE_DCHECK(schema_.IsSplit());
+  return internal::GetPointerAtOffset<void*>(message, schema_.SplitOffset());
+}
+
 template <typename Type>
 const Type& Reflection::GetRaw(const Message& message,
                                const FieldDescriptor* field) const {
   GOOGLE_DCHECK(!schema_.InRealOneof(field) || HasOneofField(message, field))
       << "Field = " << field->full_name();
+  if (schema_.IsSplit(field)) {
+    return *internal::GetConstPointerAtOffset<Type>(
+        GetSplitField(&message), schema_.GetFieldOffset(field));
+  }
   return internal::GetConstRefAtOffset<Type>(message,
                                              schema_.GetFieldOffset(field));
 }

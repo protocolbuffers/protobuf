@@ -93,7 +93,7 @@ bool IsFieldEligibleForFastParsing(
   if (field->is_map() || field->real_containing_oneof() ||
       field->options().weak() ||
       IsImplicitWeakField(field, options, scc_analyzer) ||
-      IsLazy(field, options, scc_analyzer)) {
+      IsLazy(field, options, scc_analyzer) || ShouldSplit(field, options)) {
     return false;
   }
 
@@ -311,6 +311,16 @@ TailCallTableInfo::TailCallTableInfo(
     aux_entries[1] =
         StrCat("_fl::Offset{offsetof(", ClassName(descriptor),
                      ", _impl_._inlined_string_donated_)}");
+  }
+
+  // If this message is split, store the split pointer offset in the third
+  // auxiliary entry.
+  if (ShouldSplit(descriptor, options)) {
+    aux_entries.resize(4);  // pad if necessary
+    aux_entries[2] = StrCat("_fl::Offset{offsetof(",
+                                  ClassName(descriptor), ", _impl_._split_)}");
+    aux_entries[3] = StrCat("_fl::Offset{sizeof(", ClassName(descriptor),
+                                  "::Impl_::Split)}");
   }
 
   // Fill in mini table entries.
@@ -919,14 +929,12 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
     if (info.func_name.empty()) {
       format("{::_pbi::TcParser::MiniParse, {}},\n");
     } else {
-      bool cold = ShouldSplit(info.field, options_);
+      GOOGLE_CHECK(!ShouldSplit(info.field, options_));
       format(
           "{$1$,\n"
-          " {$2$, $3$, $4$, PROTOBUF_FIELD_OFFSET($classname$$5$, $6$)}},\n",
+          " {$2$, $3$, $4$, PROTOBUF_FIELD_OFFSET($classname$, $5$)}},\n",
           info.func_name, info.coded_tag, info.hasbit_idx, info.aux_idx,
-          cold ? "::Impl_::Split" : "",
-          cold ? FieldName(info.field) + "_"
-               : FieldMemberName(info.field, /*cold=*/false));
+          FieldMemberName(info.field, /*split=*/false));
     }
   }
 }
@@ -1067,6 +1075,10 @@ static void FormatFieldKind(Formatter& format,
     }
   }
 
+  if (ShouldSplit(field, options)) {
+    format(" | ::_fl::kSplitTrue");
+  }
+
   format(")");
 }
 
@@ -1081,11 +1093,14 @@ void ParseFunctionGenerator::GenerateFieldEntries(Formatter& format) {
       format("/* weak */ 0, 0, 0, 0");
     } else {
       const OneofDescriptor* oneof = field->real_containing_oneof();
-      bool cold = ShouldSplit(field, options_);
-      format("PROTOBUF_FIELD_OFFSET($classname$$1$, $2$), ",
-             cold ? "::Impl_::Split" : "",
-             cold ? FieldName(field) + "_"
-                  : FieldMemberName(field, /*cold=*/false));
+      bool split = ShouldSplit(field, options_);
+      if (split) {
+        format("PROTOBUF_FIELD_OFFSET($classname$::Impl_::Split, $1$), ",
+               FieldName(field) + "_");
+      } else {
+        format("PROTOBUF_FIELD_OFFSET($classname$, $1$), ",
+               FieldMemberName(field, /*cold=*/false));
+      }
       if (oneof) {
         format("$1$, ", oneof->index());
       } else if (num_hasbits_ > 0 || IsMapEntryMessage(descriptor_)) {
