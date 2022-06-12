@@ -40,16 +40,14 @@ extern "C" {
 
 /** upb_MiniDescriptor ********************************************************/
 
-upb_StringView upb_MiniDescriptor_EncodeEnum(
-    const google_protobuf_EnumDescriptorProto* enum_type, upb_Arena* a);
+upb_StringView upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* enum_def,
+                                             upb_Arena* a);
 
-upb_StringView upb_MiniDescriptor_EncodeExtension(
-    const google_protobuf_FieldDescriptorProto* extension_type, upb_Syntax syntax,
-    upb_Arena* a);
+upb_StringView upb_MiniDescriptor_EncodeExtension(const upb_FieldDef* field_def,
+                                                  upb_Arena* a);
 
 upb_StringView upb_MiniDescriptor_EncodeMessage(
-    const google_protobuf_DescriptorProto* message_type, upb_Syntax syntax,
-    upb_Arena* a);
+    const upb_MessageDef* message_def, upb_Arena* a);
 
 #ifdef __cplusplus
 } /* extern "C" */

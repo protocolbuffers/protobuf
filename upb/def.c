@@ -649,6 +649,14 @@ bool upb_FieldDef_IsString(const upb_FieldDef* f) {
          upb_FieldDef_CType(f) == kUpb_CType_Bytes;
 }
 
+bool upb_FieldDef_IsOptional(const upb_FieldDef* f) {
+  return upb_FieldDef_Label(f) == kUpb_Label_Optional;
+}
+
+bool upb_FieldDef_IsRequired(const upb_FieldDef* f) {
+  return upb_FieldDef_Label(f) == kUpb_Label_Required;
+}
+
 bool upb_FieldDef_IsRepeated(const upb_FieldDef* f) {
   return upb_FieldDef_Label(f) == kUpb_Label_Repeated;
 }

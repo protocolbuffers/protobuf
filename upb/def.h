@@ -116,6 +116,8 @@ const upb_OneofDef* upb_FieldDef_RealContainingOneof(const upb_FieldDef* f);
 uint32_t upb_FieldDef_Index(const upb_FieldDef* f);
 bool upb_FieldDef_IsSubMessage(const upb_FieldDef* f);
 bool upb_FieldDef_IsString(const upb_FieldDef* f);
+bool upb_FieldDef_IsOptional(const upb_FieldDef* f);
+bool upb_FieldDef_IsRequired(const upb_FieldDef* f);
 bool upb_FieldDef_IsRepeated(const upb_FieldDef* f);
 bool upb_FieldDef_IsPrimitive(const upb_FieldDef* f);
 bool upb_FieldDef_IsMap(const upb_FieldDef* f);
