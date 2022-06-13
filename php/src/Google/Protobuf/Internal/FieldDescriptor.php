@@ -46,8 +46,11 @@ class FieldDescriptor
     private $message_type;
     private $enum_type;
     private $packed;
-    private $is_map;
     private $oneof_index = -1;
+    private $proto3_optional;
+
+    /** @var OneofDescriptor $containing_oneof */
+    private $containing_oneof;
 
     public function __construct()
     {
@@ -169,6 +172,32 @@ class FieldDescriptor
         return $this->packed;
     }
 
+    public function getProto3Optional()
+    {
+        return $this->proto3_optional;
+    }
+
+    public function setProto3Optional($proto3_optional)
+    {
+        $this->proto3_optional = $proto3_optional;
+    }
+
+    public function getContainingOneof()
+    {
+        return $this->containing_oneof;
+    }
+
+    public function setContainingOneof($containing_oneof)
+    {
+        $this->containing_oneof = $containing_oneof;
+    }
+
+    public function getRealContainingOneof()
+    {
+        return !is_null($this->containing_oneof) && !$this->containing_oneof->isSynthetic()
+            ? $this->containing_oneof : null;
+    }
+
     public function isPackable()
     {
         return $this->isRepeated() && self::isTypePackable($this->type);
@@ -214,6 +243,10 @@ class FieldDescriptor
             $field_type !== GPBType::BYTES);
     }
 
+    /**
+     * @param FieldDescriptorProto $proto
+     * @return FieldDescriptor
+     */
     public static function getFieldDescriptor($proto)
     {
         $type_name = null;
@@ -248,8 +281,6 @@ class FieldDescriptor
         $field = new FieldDescriptor();
         $field->setName($proto->getName());
 
-        $json_name = $proto->hasJsonName() ? $proto->getJsonName() :
-            lcfirst(implode('', array_map('ucwords', explode('_', $proto->getName()))));
         if ($proto->hasJsonName()) {
             $json_name = $proto->getJsonName();
         } else {
@@ -269,6 +300,7 @@ class FieldDescriptor
         $field->setLabel($proto->getLabel());
         $field->setPacked($packed);
         $field->setOneofIndex($oneof_index);
+        $field->setProto3Optional($proto->getProto3Optional());
 
         // At this time, the message/enum type may have not been added to pool.
         // So we use the type name as place holder and will replace it with the
