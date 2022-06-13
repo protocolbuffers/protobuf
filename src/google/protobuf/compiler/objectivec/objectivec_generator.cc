@@ -230,6 +230,10 @@ bool ObjectiveCGenerator::GenerateAll(
       //   - A comment can go on a line after a expected package/prefix pair.
       //     (i.e. - "some.proto.package # comment")
       SetProtoPackagePrefixExceptionList(options[i].second);
+    } else if (options[i].first == "package_as_prefix_forced_prefix") {
+      // String to use as the prefix when deriving a prefix from the package
+      // name. So this only applies when use_package_as_prefix is also used.
+      SetForcedPackagePrefix(options[i].second);
     } else if (options[i].first == "headers_use_forward_declarations") {
       if (!StringToBool(options[i].second,
                         &generation_options.headers_use_forward_declarations)) {
