@@ -247,12 +247,13 @@ upb_GetExtensionAsBytes_Status upb_MiniTable_GetExtensionAsBytes(
   const upb_Message_Extension* msg_ext = _upb_Message_Getext(msg, ext_table);
   UPB_ASSERT(ext_table->field.descriptortype == kUpb_FieldType_Message);
   if (msg_ext) {
-    *extension_data = upb_Encode(msg_ext->data.ptr, msg_ext->ext->sub.submsg,
-                                 encode_options, arena, len);
-    if (extension_data) {
-      return kUpb_GetExtensionAsBytes_Ok;
+    upb_EncodeStatus status =
+        upb_Encode(msg_ext->data.ptr, msg_ext->ext->sub.submsg, encode_options,
+                   arena, (char**)extension_data, len);
+    if (status != kUpb_EncodeStatus_Ok) {
+      return kUpb_GetExtensionAsBytes_EncodeError;
     }
-    return kUpb_GetExtensionAsBytes_EncodeError;
+    return kUpb_GetExtensionAsBytes_Ok;
   }
   int field_number = ext_table->field.number;
   find_unknown_ret result = UnknownFieldSet_FindField(msg, field_number);

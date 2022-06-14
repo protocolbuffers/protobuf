@@ -983,19 +983,17 @@ static int lupb_Encode(lua_State* L) {
   const upb_MessageDef* m = lupb_Message_Getmsgdef(L, 1);
   const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
   int options = lupb_getoptions(L, 2);
-  upb_Arena* arena;
+  upb_Arena* arena = lupb_Arena_pushnew(L);
+  char* buf;
   size_t size;
-  char* result;
-
-  arena = lupb_Arena_pushnew(L);
-  result = upb_Encode(msg, (const void*)layout, options, arena, &size);
-
-  if (!result) {
+  upb_EncodeStatus status =
+      upb_Encode(msg, (const void*)layout, options, arena, &buf, &size);
+  if (status != kUpb_EncodeStatus_Ok) {
     lua_pushstring(L, "Error encoding protobuf.");
     return lua_error(L);
   }
 
-  lua_pushlstring(L, result, size);
+  lua_pushlstring(L, buf, size);
 
   return 1;
 }
@@ -1106,8 +1104,8 @@ void lupb_msg_registertypes(lua_State* L) {
   lupb_setfieldi(L, "TXTENC_SKIPUNKNOWN", UPB_TXTENC_SKIPUNKNOWN);
   lupb_setfieldi(L, "TXTENC_NOSORT", UPB_TXTENC_NOSORT);
 
-  lupb_setfieldi(L, "ENCODE_DETERMINISTIC", kUpb_Encode_Deterministic);
-  lupb_setfieldi(L, "ENCODE_SKIPUNKNOWN", kUpb_Encode_SkipUnknown);
+  lupb_setfieldi(L, "ENCODE_DETERMINISTIC", kUpb_EncodeOption_Deterministic);
+  lupb_setfieldi(L, "ENCODE_SKIPUNKNOWN", kUpb_EncodeOption_SkipUnknown);
 
   lupb_setfieldi(L, "JSONENC_EMITDEFAULTS", upb_JsonEncode_EmitDefaults);
   lupb_setfieldi(L, "JSONENC_PROTONAMES", upb_JsonEncode_UseProtoNames);

@@ -801,6 +801,8 @@ void GenerateExtensionInHeader(const protobuf::FieldDescriptor* ext,
 
 void GenerateMessageFunctionsInHeader(const protobuf::Descriptor* message,
                                       Output& output) {
+  // TODO(b/235839510): The generated code here does not check the return values
+  // from upb_Encode(). How can we even fix this without breaking other things?
   output(
       R"cc(
         UPB_INLINE $0* $0_new(upb_Arena* arena) {
@@ -826,11 +828,15 @@ void GenerateMessageFunctionsInHeader(const protobuf::Descriptor* message,
           return ret;
         }
         UPB_INLINE char* $0_serialize(const $0* msg, upb_Arena* arena, size_t* len) {
-          return upb_Encode(msg, &$1, 0, arena, len);
+          char* ptr;
+          (void)upb_Encode(msg, &$1, 0, arena, &ptr, len);
+          return ptr;
         }
         UPB_INLINE char* $0_serialize_ex(const $0* msg, int options,
                                          upb_Arena* arena, size_t* len) {
-          return upb_Encode(msg, &$1, options, arena, len);
+          char* ptr;
+          (void)upb_Encode(msg, &$1, options, arena, &ptr, len);
+          return ptr;
         }
       )cc",
       MessageName(message), MessageInit(message));

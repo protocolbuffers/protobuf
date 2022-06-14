@@ -407,13 +407,13 @@ TEST(MessageTest, EncodeRequiredFields) {
   // Fails, we asked for required field checking but the required field is
   // missing.
   serialized = upb_test_TestRequiredFields_serialize_ex(
-      test_msg, kUpb_Encode_CheckRequired, arena.ptr(), &size);
+      test_msg, kUpb_EncodeOption_CheckRequired, arena.ptr(), &size);
   ASSERT_TRUE(serialized == nullptr);
 
   // Fails, some required fields are present but not others.
   upb_test_TestRequiredFields_set_required_int32(test_msg, 1);
   serialized = upb_test_TestRequiredFields_serialize_ex(
-      test_msg, kUpb_Encode_CheckRequired, arena.ptr(), &size);
+      test_msg, kUpb_EncodeOption_CheckRequired, arena.ptr(), &size);
   ASSERT_TRUE(serialized == nullptr);
 
   // Succeeds, all required fields are set.
@@ -421,7 +421,7 @@ TEST(MessageTest, EncodeRequiredFields) {
   upb_test_TestRequiredFields_set_required_int64(test_msg, 2);
   upb_test_TestRequiredFields_set_required_message(test_msg, empty_msg);
   serialized = upb_test_TestRequiredFields_serialize_ex(
-      test_msg, kUpb_Encode_CheckRequired, arena.ptr(), &size);
+      test_msg, kUpb_EncodeOption_CheckRequired, arena.ptr(), &size);
   ASSERT_TRUE(serialized != nullptr);
 }
 
@@ -434,7 +434,7 @@ TEST(MessageTest, MaxRequiredFields) {
   // missing.
   size_t size;
   char* serialized = upb_test_TestMaxRequiredFields_serialize_ex(
-      test_msg, kUpb_Encode_CheckRequired, arena.ptr(), &size);
+      test_msg, kUpb_EncodeOption_CheckRequired, arena.ptr(), &size);
   ASSERT_TRUE(serialized == nullptr);
 
   upb::SymbolTable symtab;
@@ -449,7 +449,7 @@ TEST(MessageTest, MaxRequiredFields) {
 
   // Fails, field 63 still isn't set.
   serialized = upb_test_TestMaxRequiredFields_serialize_ex(
-      test_msg, kUpb_Encode_CheckRequired, arena.ptr(), &size);
+      test_msg, kUpb_EncodeOption_CheckRequired, arena.ptr(), &size);
   ASSERT_TRUE(serialized == nullptr);
 
   // Succeeds, all required fields are set.
@@ -457,7 +457,7 @@ TEST(MessageTest, MaxRequiredFields) {
   ASSERT_TRUE(f);
   upb_Message_Set(test_msg, f.ptr(), val, arena.ptr());
   serialized = upb_test_TestMaxRequiredFields_serialize_ex(
-      test_msg, kUpb_Encode_CheckRequired, arena.ptr(), &size);
+      test_msg, kUpb_EncodeOption_CheckRequired, arena.ptr(), &size);
   ASSERT_TRUE(serialized != nullptr);
 }
 

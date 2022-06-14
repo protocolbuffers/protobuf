@@ -123,14 +123,16 @@ static PyObject* PyUpb_DescriptorBase_GetOptions(PyUpb_DescriptorBase* self,
     size_t size;
     PyObject* py_arena = PyUpb_Arena_New();
     upb_Arena* arena = PyUpb_Arena_Get(py_arena);
-    char* pb = upb_Encode(opts, layout, 0, arena, &size);
+    char* pb;
+    // TODO(b/235839510): Need to correctly handle failed return codes.
+    (void)upb_Encode(opts, layout, 0, arena, &pb, &size);
     upb_Message* opts2 = upb_Message_New(m, arena);
     assert(opts2);
-    bool ok = upb_Decode(pb, size, opts2, upb_MessageDef_MiniTable(m),
-                         upb_DefPool_ExtensionRegistry(symtab), 0,
-                         arena) == kUpb_DecodeStatus_Ok;
-    (void)ok;
-    assert(ok);
+    upb_DecodeStatus ds =
+        upb_Decode(pb, size, opts2, upb_MessageDef_MiniTable(m),
+                   upb_DefPool_ExtensionRegistry(symtab), 0, arena);
+    (void)ds;
+    assert(ds == kUpb_DecodeStatus_Ok);
 
     self->options = PyUpb_Message_Get(opts2, m, py_arena);
     Py_DECREF(py_arena);
@@ -150,8 +152,9 @@ static PyObject* PyUpb_DescriptorBase_GetSerializedProto(
   upb_Message* proto = func(self->def, arena);
   if (!proto) goto oom;
   size_t size;
-  char* pb = upb_Encode(proto, layout, 0, arena, &size);
-  if (!pb) goto oom;
+  char* pb;
+  upb_EncodeStatus status = upb_Encode(proto, layout, 0, arena, &pb, &size);
+  if (status) goto oom;  // TODO(b/235839510) non-oom errors are possible here
   PyObject* str = PyBytes_FromStringAndSize(pb, size);
   upb_Arena_Free(arena);
   return str;
