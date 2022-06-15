@@ -328,3 +328,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. Protoc-gen-xo
    * Website: https://github.com/xo/ecosystem
    * Extension: 1147
+
+1. Ballerina gRPC
+   * Website: https://github.com/ballerina-platform/module-ballerina-grpc
+   * Extension: 1148
