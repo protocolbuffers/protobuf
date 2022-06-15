@@ -1,0 +1,64 @@
+load("//build_defs:internal_shell.bzl", "inline_sh_binary")
+
+inline_sh_binary(
+    name = "build",
+    srcs = ["ConformanceCSharp.csproj"],
+    cmd = "dotnet build -c Release $(SRCS)",
+    visibility = ["//php:__subpackages__"],
+)
+
+CONFORMANCE_DEPS = [
+    "ConformanceCSharp.deps.json",
+    "ConformanceCSharp.pdb",
+    "ConformanceCSharp.runtimeconfig.json",
+    "Google.Protobuf.dll",
+    "Google.Protobuf.Test.dll",
+    "Google.Protobuf.Test.TestProtos.dll",
+    "Microsoft.TestPlatform.CommunicationUtilities.dll",
+    "Microsoft.TestPlatform.CoreUtilities.dll",
+    "Microsoft.TestPlatform.CrossPlatEngine.dll",
+    "Microsoft.TestPlatform.PlatformAbstractions.dll",
+    "Microsoft.TestPlatform.Utilities.dll",
+    "Microsoft.VisualStudio.CodeCoverage.Shim.dll",
+    "Microsoft.VisualStudio.TestPlatform.Common.dll",
+    "Microsoft.VisualStudio.TestPlatform.ObjectModel.dll",
+    "NUnit3.TestAdapter.dll",
+    "Newtonsoft.Json.dll",
+    "NuGet.Frameworks.dll",
+    "nunit.engine.api.dll",
+    "nunit.engine.core.dll",
+    "nunit.engine.dll",
+    "nunit.framework.dll",
+    "testcentric.engine.metadata.dll",
+    "testhost.dll",
+]
+
+genrule(
+    name = "package",
+    srcs = [
+        "Program.cs",
+        "ConformanceCSharp.csproj",
+        "//conformance:conformance_csharp_proto",
+        "//csharp:srcs",
+        "//benchmarks/datasets",
+    ],
+    tools = [":build"],
+    outs = CONFORMANCE_DEPS + ["ConformanceCSharp.dll"],
+    cmd = "cp $(location //conformance:conformance_csharp_proto) conformance/ConformanceCSharp\n"+
+          "DOTNET_CLI_HOME=/tmp ./$(location :build)\n" +
+          "cp -r conformance/ConformanceCSharp/bin/Release/netcoreapp3.1/* $(RULEDIR)\n",
+)
+
+filegroup(
+    name = "conformance_dll",
+    srcs = ["ConformanceCSharp.dll"],
+    data = [":package"],
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "conformance_runfiles",
+    srcs = CONFORMANCE_DEPS,
+    data = [":package"],
+    visibility = ["//visibility:public"],
+)

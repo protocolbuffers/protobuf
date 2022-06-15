@@ -8,8 +8,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Google.Protobuf", "Google.P
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Google.Protobuf.Test", "Google.Protobuf.Test\Google.Protobuf.Test.csproj", "{580EB013-D3C7-4578-B845-015F4A3B0591}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Google.Protobuf.Conformance", "Google.Protobuf.Conformance\Google.Protobuf.Conformance.csproj", "{DDDC055B-E185-4181-BAB0-072F0F984569}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Google.Protobuf.JsonDump", "Google.Protobuf.JsonDump\Google.Protobuf.JsonDump.csproj", "{9695E08F-9829-497D-B95C-B38F28D48690}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Google.Protobuf.Benchmarks", "Google.Protobuf.Benchmarks\Google.Protobuf.Benchmarks.csproj", "{D25E4804-4DEA-45AB-9F8C-BA4DBD8E5A07}"
@@ -34,10 +32,6 @@ Global
 		{580EB013-D3C7-4578-B845-015F4A3B0591}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{580EB013-D3C7-4578-B845-015F4A3B0591}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{580EB013-D3C7-4578-B845-015F4A3B0591}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DDDC055B-E185-4181-BAB0-072F0F984569}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DDDC055B-E185-4181-BAB0-072F0F984569}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DDDC055B-E185-4181-BAB0-072F0F984569}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DDDC055B-E185-4181-BAB0-072F0F984569}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9695E08F-9829-497D-B95C-B38F28D48690}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9695E08F-9829-497D-B95C-B38F28D48690}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9695E08F-9829-497D-B95C-B38F28D48690}.Release|Any CPU.ActiveCfg = Release|Any CPU

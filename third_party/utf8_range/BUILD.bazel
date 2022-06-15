@@ -13,7 +13,11 @@ cc_library(
 )
 
 filegroup(
-    name = "cmake_files",
+    name = "all_files",
     srcs = glob(["*"]),
-    visibility = ["//cmake:__pkg__"],
+    visibility = [
+        "//cmake:__pkg__",
+        "//php:__pkg__",
+        "//ruby:__pkg__",
+    ],
 )

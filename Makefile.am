@@ -35,10 +35,6 @@ clean-local:
 	  echo "Making clean in googletest"; \
 	  cd third_party/googletest && $(MAKE) $(AM_MAKEFLAGS) clean; \
 	fi; \
-	if test -e conformance/Makefile; then \
-	  echo "Making clean in conformance"; \
-	  cd conformance && $(MAKE) $(AM_MAKEFLAGS) clean; \
-	fi; \
 	if test -e benchmarks/Makefile; then \
 	  echo "Making clean in benchmarks"; \
 	  cd benchmarks && $(MAKE) $(AM_MAKEFLAGS) clean; \

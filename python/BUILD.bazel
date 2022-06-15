@@ -11,6 +11,7 @@ load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@rules_python//python:defs.bzl", "py_library")
 load("//:protobuf.bzl", "py_proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
+load("//conformance:defs.bzl", "conformance_test")
 load(":internal.bzl", "internal_copy_files")
 
 py_library(
@@ -167,6 +168,24 @@ internal_copy_files(
     strip_prefix = "src",
 )
 
+internal_copy_files(
+    name = "copied_test_messages_proto2_files",
+    testonly = 1,
+    srcs = [
+        "//:test_messages_proto2_proto_srcs",
+    ],
+    strip_prefix = "src",
+)
+
+internal_copy_files(
+    name = "copied_test_messages_proto3_files",
+    testonly = 1,
+    srcs = [
+        "//:test_messages_proto3_proto_srcs",
+    ],
+    strip_prefix = "src",
+)
+
 py_proto_library(
     name = "python_common_test_protos",
     testonly = 1,
@@ -192,6 +211,33 @@ py_proto_library(
     srcs_version = "PY2AND3",
     visibility = ["//:__pkg__"],
     deps = [":python_common_test_protos"],
+)
+
+py_proto_library(
+    name = "test_messages_proto2_py_proto",
+    testonly = 1,
+    visibility = [
+        "//conformance:__pkg__",
+        "//python:__subpackages__",
+    ],
+    srcs = [":copied_test_messages_proto2_files"],
+    include = ".",
+    default_runtime = "//:protobuf_python",
+    protoc = "//:protoc",
+)
+
+py_proto_library(
+    name = "test_messages_proto3_py_proto",
+    testonly = 1,
+    visibility = [
+        "//conformance:__pkg__",
+        "//python:__subpackages__",
+    ],
+    srcs = [":copied_test_messages_proto3_files"],
+    deps = [":well_known_types_py_pb2"],
+    include = ".",
+    default_runtime = "//:protobuf_python",
+    protoc = "//:protoc",
 )
 
 py_library(
@@ -324,6 +370,20 @@ cc_library(
     deps = [
         "//external:python_headers",
     ],
+)
+
+conformance_test(
+    name = "conformance_test",
+    failure_list = "//conformance:failure_list_python.txt",
+    testee = "//conformance:conformance_python",
+    text_format_failure_list = "//conformance:text_format_failure_list_python.txt",
+)
+
+conformance_test(
+    name = "conformance_cpp_test",
+    failure_list = "//conformance:failure_list_python.txt",
+    testee = "//conformance:conformance_python",
+    text_format_failure_list = "//conformance:text_format_failure_list_python_cpp.txt",
 )
 
 ################################################################################
