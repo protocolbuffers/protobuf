@@ -22,7 +22,7 @@ exports_files(["LICENSE"])
 #
 # java_proto_library(
 #   name = "any_java_proto",
-#   deps = ["@com_google_protobuf//:any_proto],
+#   deps = ["@com_google_protobuf//:any_proto"],
 # )
 ################################################################################
 

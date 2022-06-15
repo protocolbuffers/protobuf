@@ -63,6 +63,10 @@ void PROTOC_EXPORT SetUseProtoPackageAsDefaultPrefix(bool on_or_off);
 std::string PROTOC_EXPORT GetProtoPackagePrefixExceptionList();
 void PROTOC_EXPORT SetProtoPackagePrefixExceptionList(
     const std::string& file_path);
+// Get/Set a prefix to add before the prefix generated from the package name.
+// This is only used when UseProtoPackageAsDefaultPrefix() is True.
+std::string PROTOC_EXPORT GetForcedPackagePrefix();
+void PROTOC_EXPORT SetForcedPackagePrefix(const std::string& prefix);
 
 // Generator Prefix Validation Options (see objectivec_generator.cc for a
 // description of each):

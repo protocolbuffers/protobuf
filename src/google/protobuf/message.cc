@@ -213,6 +213,16 @@ uint64_t Message::GetInvariantPerBuild(uint64_t salt) {
   return salt;
 }
 
+namespace internal {
+void* CreateSplitMessageGeneric(Arena* arena, void* default_split,
+                                size_t size) {
+  void* split =
+      (arena == nullptr) ? ::operator new(size) : arena->AllocateAligned(size);
+  memcpy(split, default_split, size);
+  return split;
+}
+}  // namespace internal
+
 // =============================================================================
 // MessageFactory
 

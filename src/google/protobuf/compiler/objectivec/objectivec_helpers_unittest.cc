@@ -244,7 +244,7 @@ TEST(ObjCHelperDeathTest, TextFormatDecodeData_Failures) {
 
 class TestLineCollector : public LineConsumer {
  public:
-  TestLineCollector(std::vector<std::string>* inout_lines,
+  explicit TestLineCollector(std::vector<std::string>* inout_lines,
                     const std::string* reject_line = nullptr,
                     bool skip_msg = false)
     : lines_(inout_lines), reject_(reject_line), skip_msg_(skip_msg) {}

@@ -31,9 +31,9 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
 
-#include <map>
-#include <set>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/printer.h>
@@ -71,13 +71,13 @@ class FileGenerator {
    private:
     struct MinDepsEntry {
       bool has_extensions;
-      std::set<const FileDescriptor*> min_deps;
+      std::unordered_set<const FileDescriptor*> min_deps;
       // `covered_deps` are the transtive deps of `min_deps_w_exts` that also
       // have extensions.
-      std::set<const FileDescriptor*> covered_deps;
+      std::unordered_set<const FileDescriptor*> covered_deps;
     };
     const MinDepsEntry& CollectMinimalFileDepsContainingExtensionsInternal(const FileDescriptor* file);
-    std::map<const FileDescriptor*, MinDepsEntry> deps_info_cache_;
+    std::unordered_map<const FileDescriptor*, MinDepsEntry> deps_info_cache_;
   };
 
   FileGenerator(const FileDescriptor* file,

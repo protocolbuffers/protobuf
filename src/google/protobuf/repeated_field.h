@@ -94,23 +94,6 @@ constexpr int RepeatedFieldLowerClampLimit() {
 constexpr int kRepeatedFieldUpperClampLimit =
     (std::numeric_limits<int>::max() / 2) + 1;
 
-template <typename Iter>
-inline int CalculateReserve(Iter begin, Iter end, std::forward_iterator_tag) {
-  return static_cast<int>(std::distance(begin, end));
-}
-
-template <typename Iter>
-inline int CalculateReserve(Iter /*begin*/, Iter /*end*/,
-                            std::input_iterator_tag /*unused*/) {
-  return -1;
-}
-
-template <typename Iter>
-inline int CalculateReserve(Iter begin, Iter end) {
-  typedef typename std::iterator_traits<Iter>::iterator_category Category;
-  return CalculateReserve(begin, end, Category());
-}
-
 // Swaps two blocks of memory of size sizeof(T).
 template <typename T>
 inline void SwapBlock(char* p, char* q) {
@@ -722,13 +705,13 @@ inline Element* RepeatedField<Element>::Add() {
 template <typename Element>
 template <typename Iter>
 inline void RepeatedField<Element>::Add(Iter begin, Iter end) {
-  int reserve = internal::CalculateReserve(begin, end);
-  if (reserve != -1) {
-    if (reserve == 0) {
-      return;
-    }
+  if (std::is_base_of<
+          std::forward_iterator_tag,
+          typename std::iterator_traits<Iter>::iterator_category>::value) {
+    int additional = std::distance(begin, end);
+    if (additional == 0) return;
 
-    Reserve(reserve + size());
+    Reserve(size() + additional);
     // TODO(ckennelly):  The compiler loses track of the buffer freshly
     // allocated by Reserve() by the time we call elements, so it cannot
     // guarantee that elements does not alias [begin(), end()).
@@ -736,7 +719,7 @@ inline void RepeatedField<Element>::Add(Iter begin, Iter end) {
     // If restrict is available, annotating the pointer obtained from elements()
     // causes this to lower to memcpy instead of memmove.
     std::copy(begin, end, elements() + size());
-    current_size_ = reserve + size();
+    current_size_ = size() + additional;
   } else {
     FastAdder fast_adder(this);
     for (; begin != end; ++begin) fast_adder.Add(*begin);

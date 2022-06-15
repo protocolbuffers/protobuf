@@ -52,6 +52,8 @@ const uint32_t TableStruct_google_2fprotobuf_2fany_2eproto::offsets[] PROTOBUF_S
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   ~0u,  // no _inlined_string_donated_
+  ~0u,  // no _split_
+  ~0u,  // no sizeof(Split)
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Any, _impl_.type_url_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Any, _impl_.value_),
 };

@@ -34,7 +34,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-#if !NET35
 namespace Google.Protobuf.Compatibility
 {
     /// <summary>
@@ -112,4 +111,3 @@ namespace Google.Protobuf.Compatibility
         }
     }
 }
-#endif

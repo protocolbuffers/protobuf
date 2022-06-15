@@ -34,6 +34,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 import static java.lang.Math.min;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -48,52 +49,6 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class SmallSortedMapTest {
-  // java.util.AbstractMap.SimpleEntry is private in JDK 1.5. We re-implement it
-  // here for JDK 1.5 users.
-  private static class SimpleEntry<K, V> implements Map.Entry<K, V> {
-    private final K key;
-    private V value;
-
-    SimpleEntry(K key, V value) {
-      this.key = key;
-      this.value = value;
-    }
-
-    @Override
-    public K getKey() {
-      return key;
-    }
-
-    @Override
-    public V getValue() {
-      return value;
-    }
-
-    @Override
-    public V setValue(V value) {
-      V oldValue = this.value;
-      this.value = value;
-      return oldValue;
-    }
-
-    private static boolean eq(Object o1, Object o2) {
-      return o1 == null ? o2 == null : o1.equals(o2);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (!(o instanceof Map.Entry)) {
-        return false;
-      }
-      Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
-      return eq(key, e.getKey()) && eq(value, e.getValue());
-    }
-
-    @Override
-    public int hashCode() {
-      return ((key == null) ? 0 : key.hashCode()) ^ ((value == null) ? 0 : value.hashCode());
-    }
-  }
 
   @Test
   public void testPutAndGetArrayEntriesOnly() {
@@ -242,8 +197,8 @@ public class SmallSortedMapTest {
     }
     Set<Map.Entry<Integer, Integer>> entrySet = map.entrySet();
     for (int i = 0; i < 6; i++) {
-      assertThat(entrySet).contains(new SimpleEntry<Integer, Integer>(i, i + 1));
-      assertThat(entrySet).doesNotContain(new SimpleEntry<Integer, Integer>(i, i));
+      assertThat(entrySet).contains(new AbstractMap.SimpleEntry<Integer, Integer>(i, i + 1));
+      assertThat(entrySet).doesNotContain(new AbstractMap.SimpleEntry<Integer, Integer>(i, i));
     }
   }
 
@@ -252,7 +207,7 @@ public class SmallSortedMapTest {
     SmallSortedMap<Integer, Integer> map = SmallSortedMap.newInstanceForTest(3);
     Set<Map.Entry<Integer, Integer>> entrySet = map.entrySet();
     for (int i = 0; i < 6; i++) {
-      Map.Entry<Integer, Integer> entry = new SimpleEntry<>(i, i + 1);
+      Map.Entry<Integer, Integer> entry = new AbstractMap.SimpleEntry<>(i, i + 1);
       assertThat(entrySet.add(entry)).isTrue();
       assertThat(entrySet.add(entry)).isFalse();
     }
@@ -272,7 +227,7 @@ public class SmallSortedMapTest {
       assertThat(map.put(i, i + 1)).isNull();
     }
     for (int i = 0; i < 6; i++) {
-      Map.Entry<Integer, Integer> entry = new SimpleEntry<>(i, i + 1);
+      Map.Entry<Integer, Integer> entry = new AbstractMap.SimpleEntry<>(i, i + 1);
       assertThat(entrySet.remove(entry)).isTrue();
       assertThat(entrySet.remove(entry)).isFalse();
     }

@@ -635,7 +635,6 @@ namespace Google.Protobuf.Collections
             Assert.IsTrue(input.IsAtEnd);
         }
 
-#if !NET35
         [Test]
         public void IDictionaryKeys_Equals_IReadOnlyDictionaryKeys()
         {
@@ -649,7 +648,6 @@ namespace Google.Protobuf.Collections
             var map = new MapField<string, string> { { "foo", "bar" }, { "x", "y" } };
             CollectionAssert.AreEquivalent(((IDictionary<string, string>)map).Values, ((IReadOnlyDictionary<string, string>)map).Values);
         }
-#endif
 
         private static KeyValuePair<TKey, TValue> NewKeyValuePair<TKey, TValue>(TKey key, TValue value)
         {

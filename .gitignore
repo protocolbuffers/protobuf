@@ -9,6 +9,7 @@ depcomp
 install-sh
 ltmain.sh
 missing
+configure~
 
 aclocal.m4
 m4/libtool.m4
