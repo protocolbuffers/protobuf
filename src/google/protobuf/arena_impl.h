@@ -602,7 +602,11 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 #ifdef _MSC_VER
 #pragma warning(disable : 4324)
 #endif
+#ifdef __cpp_aligned_new
   struct alignas(64) ThreadCache {
+#else
+  struct ThreadCache {
+#endif
 #if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
     // If we are using the ThreadLocalStorage class to store the ThreadCache,
     // then the ThreadCache's default constructor has to be responsible for
