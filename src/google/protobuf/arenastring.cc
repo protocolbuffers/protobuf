@@ -200,7 +200,7 @@ std::string* ArenaStringPtr::Release() {
   if (IsDefault()) return nullptr;
 
   std::string* released = tagged_ptr_.Get();
-  if (!tagged_ptr_.IsAllocated()) {
+  if (tagged_ptr_.IsArena()) {
     released = tagged_ptr_.IsMutable() ? new std::string(std::move(*released))
                                        : new std::string(*released);
   }
@@ -229,9 +229,7 @@ void ArenaStringPtr::SetAllocated(std::string* value, Arena* arena) {
 }
 
 void ArenaStringPtr::Destroy() {
-  if (tagged_ptr_.IsAllocated()) {
-    delete tagged_ptr_.Get();
-  }
+  delete tagged_ptr_.GetIfAllocated();
 }
 
 void ArenaStringPtr::ClearToEmpty() {

@@ -369,6 +369,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_field_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_lite.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_serialization.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/name_resolver.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/primitive_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/primitive_field_lite.cc
@@ -461,6 +462,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_field_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_lite.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_serialization.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/name_resolver.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/options.h

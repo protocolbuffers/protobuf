@@ -84,7 +84,7 @@ util::Status GetStatus(const util::StatusOr<T>& s) {
 }
 
 MATCHER_P(StatusIs, status,
-          StrCat(".status() is ",  testing::PrintToString(status))) {
+          StrCat(".status() is ", testing::PrintToString(status))) {
   return GetStatus(arg).code() == status;
 }
 
@@ -412,6 +412,110 @@ TEST(JsonUtilTest, TestDynamicMessage) {
   EXPECT_EQ(*message_json, *generated_json);
 }
 
+TEST(JsonUtilTest, TestParsingAny) {
+  StringPiece input = R"json(
+    {
+      "value": {
+        "@type": "type.googleapis.com/proto3.TestMessage",
+        "int32_value": 5,
+        "string_value": "expected_value",
+        "message_value": {"value": 1}
+      }
+    }
+  )json";
+
+  TestAny m;
+  ASSERT_OK(FromJson(input, &m));
+
+  TestMessage t;
+  EXPECT_TRUE(m.value().UnpackTo(&t));
+  EXPECT_EQ(t.int32_value(), 5);
+  EXPECT_EQ(t.string_value(), "expected_value");
+  EXPECT_EQ(t.message_value().value(), 1);
+
+  EXPECT_THAT(
+      ToJson(m),
+      IsOkAndHolds(
+          R"json({"value":{"@type":"type.googleapis.com/proto3.TestMessage","int32Value":5,"stringValue":"expected_value","messageValue":{"value":1}}})json"));
+}
+
+TEST(JsonUtilTest, TestParsingAnyMiddleAtType) {
+  StringPiece input = R"json(
+    {
+      "value": {
+        "int32_value": 5,
+        "string_value": "expected_value",
+        "@type": "type.googleapis.com/proto3.TestMessage",
+        "message_value": {"value": 1}
+      }
+    }
+  )json";
+
+  TestAny m;
+  ASSERT_OK(FromJson(input, &m));
+
+  TestMessage t;
+  EXPECT_TRUE(m.value().UnpackTo(&t));
+  EXPECT_EQ(t.int32_value(), 5);
+  EXPECT_EQ(t.string_value(), "expected_value");
+  EXPECT_EQ(t.message_value().value(), 1);
+}
+
+TEST(JsonUtilTest, TestParsingAnyEndAtType) {
+  StringPiece input = R"json(
+    {
+      "value": {
+        "int32_value": 5,
+        "string_value": "expected_value",
+        "message_value": {"value": 1},
+        "@type": "type.googleapis.com/proto3.TestMessage"
+      }
+    }
+  )json";
+
+  TestAny m;
+  ASSERT_OK(FromJson(input, &m));
+
+  TestMessage t;
+  EXPECT_TRUE(m.value().UnpackTo(&t));
+  EXPECT_EQ(t.int32_value(), 5);
+  EXPECT_EQ(t.string_value(), "expected_value");
+  EXPECT_EQ(t.message_value().value(), 1);
+}
+
+TEST(JsonUtilTest, TestParsingNestedAnys) {
+  StringPiece input = R"json(
+    {
+      "value": {
+        "value": {
+          "int32_value": 5,
+          "string_value": "expected_value",
+          "message_value": {"value": 1},
+          "@type": "type.googleapis.com/proto3.TestMessage"
+        },
+        "@type": "type.googleapis.com/google.protobuf.Any"
+      }
+    }
+  )json";
+
+  TestAny m;
+  ASSERT_OK(FromJson(input, &m));
+
+  google::protobuf::Any inner;
+  EXPECT_TRUE(m.value().UnpackTo(&inner));
+
+  TestMessage t;
+  EXPECT_TRUE(inner.UnpackTo(&t));
+  EXPECT_EQ(t.int32_value(), 5);
+  EXPECT_EQ(t.string_value(), "expected_value");
+  EXPECT_EQ(t.message_value().value(), 1);
+
+  EXPECT_THAT(
+      ToJson(m),
+      IsOkAndHolds(
+          R"json({"value":{"@type":"type.googleapis.com/google.protobuf.Any","value":{"@type":"type.googleapis.com/proto3.TestMessage","int32Value":5,"stringValue":"expected_value","messageValue":{"value":1}}}})json"));
+}
+
 TEST(JsonUtilTest, TestParsingUnknownAnyFields) {
   StringPiece input = R"json(
     {
@@ -672,9 +776,9 @@ TEST(JsonUtilTest, TestWrongJsonInput) {
   auto* resolver = NewTypeResolverForDescriptorPool(
       "type.googleapis.com", DescriptorPool::generated_pool());
 
-  EXPECT_THAT(JsonToBinaryStream(resolver, message_type, &input_stream,
-                                 &output_stream),
-              StatusIs(util::StatusCode::kInvalidArgument));
+  EXPECT_THAT(
+      JsonToBinaryStream(resolver, message_type, &input_stream, &output_stream),
+      StatusIs(util::StatusCode::kInvalidArgument));
   delete resolver;
 }
 

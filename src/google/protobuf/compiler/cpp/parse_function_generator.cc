@@ -292,23 +292,11 @@ TailCallTableInfo::TailCallTableInfo(
     const std::vector<int>& has_bit_indices,
     const std::vector<int>& inlined_string_indices,
     MessageSCCAnalyzer* scc_analyzer) {
-  int oneof_count = descriptor->real_oneof_decl_count();
-  // If this message has any oneof fields, store the case offset in the first
-  // auxiliary entry.
-  if (oneof_count > 0) {
-    GOOGLE_LOG_IF(DFATAL, ordered_fields.empty())
-        << "Invalid message: " << descriptor->full_name() << " has "
-        << oneof_count << " oneof declarations, but no fields";
-    aux_entries.push_back(StrCat("_fl::Offset{offsetof(",
-                                       ClassName(descriptor),
-                                       ", _impl_._oneof_case_)}"));
-  }
-
   // If this message has any inlined string fields, store the donation state
   // offset in the second auxiliary entry.
   if (!inlined_string_indices.empty()) {
-    aux_entries.resize(2);  // pad if necessary
-    aux_entries[1] =
+    aux_entries.resize(1);  // pad if necessary
+    aux_entries[0] =
         StrCat("_fl::Offset{offsetof(", ClassName(descriptor),
                      ", _impl_._inlined_string_donated_)}");
   }
@@ -1102,7 +1090,7 @@ void ParseFunctionGenerator::GenerateFieldEntries(Formatter& format) {
                FieldMemberName(field, /*cold=*/false));
       }
       if (oneof) {
-        format("$1$, ", oneof->index());
+        format("_Internal::kOneofCaseOffset + $1$, ", 4 * oneof->index());
       } else if (num_hasbits_ > 0 || IsMapEntryMessage(descriptor_)) {
         if (entry.hasbit_idx >= 0) {
           format("_Internal::kHasBitsOffset + $1$, ", entry.hasbit_idx);

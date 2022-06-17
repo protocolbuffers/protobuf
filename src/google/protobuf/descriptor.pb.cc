@@ -10437,7 +10437,7 @@ uint8_t* SourceCodeInfo_Location::_InternalSerialize(
 
   // repeated int32 path = 1 [packed = true];
   {
-    int byte_size = _impl_._path_cached_byte_size_.load(std::memory_order_relaxed);
+    int byte_size = _impl_._path_cached_byte_size_.Get();
     if (byte_size > 0) {
       target = stream->WriteInt32Packed(
           1, _internal_path(), byte_size, target);
@@ -10446,7 +10446,7 @@ uint8_t* SourceCodeInfo_Location::_InternalSerialize(
 
   // repeated int32 span = 2 [packed = true];
   {
-    int byte_size = _impl_._span_cached_byte_size_.load(std::memory_order_relaxed);
+    int byte_size = _impl_._span_cached_byte_size_.Get();
     if (byte_size > 0) {
       target = stream->WriteInt32Packed(
           2, _internal_span(), byte_size, target);
@@ -10509,8 +10509,7 @@ size_t SourceCodeInfo_Location::ByteSizeLong() const {
         ::_pbi::WireFormatLite::Int32Size(static_cast<int32_t>(data_size));
     }
     int cached_size = ::_pbi::ToCachedSize(data_size);
-    _impl_._path_cached_byte_size_.store(cached_size,
-                                    std::memory_order_relaxed);
+    _impl_._path_cached_byte_size_.Set(cached_size);
     total_size += data_size;
   }
 
@@ -10523,8 +10522,7 @@ size_t SourceCodeInfo_Location::ByteSizeLong() const {
         ::_pbi::WireFormatLite::Int32Size(static_cast<int32_t>(data_size));
     }
     int cached_size = ::_pbi::ToCachedSize(data_size);
-    _impl_._span_cached_byte_size_.store(cached_size,
-                                    std::memory_order_relaxed);
+    _impl_._span_cached_byte_size_.Set(cached_size);
     total_size += data_size;
   }
 
@@ -10996,7 +10994,7 @@ uint8_t* GeneratedCodeInfo_Annotation::_InternalSerialize(
 
   // repeated int32 path = 1 [packed = true];
   {
-    int byte_size = _impl_._path_cached_byte_size_.load(std::memory_order_relaxed);
+    int byte_size = _impl_._path_cached_byte_size_.Get();
     if (byte_size > 0) {
       target = stream->WriteInt32Packed(
           1, _internal_path(), byte_size, target);
@@ -11051,8 +11049,7 @@ size_t GeneratedCodeInfo_Annotation::ByteSizeLong() const {
         ::_pbi::WireFormatLite::Int32Size(static_cast<int32_t>(data_size));
     }
     int cached_size = ::_pbi::ToCachedSize(data_size);
-    _impl_._path_cached_byte_size_.store(cached_size,
-                                    std::memory_order_relaxed);
+    _impl_._path_cached_byte_size_.Set(cached_size);
     total_size += data_size;
   }
 
