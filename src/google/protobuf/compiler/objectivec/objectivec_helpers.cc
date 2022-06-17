@@ -134,6 +134,7 @@ class PrefixModeStorage {
   // When using a proto package as the prefix, this should be added as the
   // prefix in front of it.
   const std::string& forced_package_prefix() const { return forced_prefix_; }
+  void set_forced_package_prefix(const std::string& prefix) { forced_prefix_ = prefix; }
 
  private:
   bool use_package_name_;
@@ -155,8 +156,6 @@ PrefixModeStorage::PrefixModeStorage() {
     exception_path_ = exception_path;
   }
 
-  // This one is a not expected to be common, so it doesn't get a generation
-  // option, just the env var.
   const char* prefix = getenv("GPB_OBJC_USE_PACKAGE_AS_PREFIX_PREFIX");
   if (prefix) {
     forced_prefix_ = prefix;
@@ -252,6 +251,14 @@ std::string GetProtoPackagePrefixExceptionList() {
 
 void SetProtoPackagePrefixExceptionList(const std::string& file_path) {
   g_prefix_mode.set_exception_path(file_path);
+}
+
+std::string GetForcedPackagePrefix() {
+  return g_prefix_mode.forced_package_prefix();
+}
+
+void SetForcedPackagePrefix(const std::string& prefix) {
+  g_prefix_mode.set_forced_package_prefix(prefix);
 }
 
 Options::Options() {

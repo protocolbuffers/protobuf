@@ -463,15 +463,15 @@ public class DescriptorsTest {
   /** Tests that parsing an unknown enum throws an exception */
   @Test
   public void testParseUnknownEnum() {
-    FieldDescriptorProto.Builder field = FieldDescriptorProto.newBuilder()
-        .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
-        .setTypeName("UnknownEnum")
-        .setType(FieldDescriptorProto.Type.TYPE_ENUM)
-        .setName("bar")
-        .setNumber(1);
-    DescriptorProto.Builder messageType = DescriptorProto.newBuilder()
-        .setName("Foo")
-        .addField(field);
+    FieldDescriptorProto.Builder field =
+        FieldDescriptorProto.newBuilder()
+            .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+            .setTypeName("UnknownEnum")
+            .setType(FieldDescriptorProto.Type.TYPE_ENUM)
+            .setName("bar")
+            .setNumber(1);
+    DescriptorProto.Builder messageType =
+        DescriptorProto.newBuilder().setName("Foo").addField(field);
     FileDescriptorProto fooProto =
         FileDescriptorProto.newBuilder()
             .setName("foo.proto")
@@ -485,7 +485,6 @@ public class DescriptorsTest {
       assertThat(expected.getMessage()).contains("\"UnknownEnum\" is not an enum type.");
     }
   }
-
 
   /**
    * Tests the translate/crosslink for an example where a message field's name and type name are the

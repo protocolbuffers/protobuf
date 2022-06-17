@@ -7962,9 +7962,9 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
     ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedField< int32_t > path_;
-    mutable std::atomic<int> _path_cached_byte_size_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _path_cached_byte_size_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedField< int32_t > span_;
-    mutable std::atomic<int> _span_cached_byte_size_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _span_cached_byte_size_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string> leading_detached_comments_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr leading_comments_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr trailing_comments_;
@@ -8350,7 +8350,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
     ::PROTOBUF_NAMESPACE_ID::internal::HasBits<1> _has_bits_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
     ::PROTOBUF_NAMESPACE_ID::RepeatedField< int32_t > path_;
-    mutable std::atomic<int> _path_cached_byte_size_;
+    mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _path_cached_byte_size_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr source_file_;
     int32_t begin_;
     int32_t end_;

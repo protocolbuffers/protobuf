@@ -38,6 +38,7 @@ class OneofDescriptor
 {
     use GetPublicDescriptorTrait;
 
+    /** @var  \Google\Protobuf\Internal\OneofDescriptor $internal_desc */
     private $internal_desc;
 
     /**
@@ -62,6 +63,12 @@ class OneofDescriptor
      */
     public function getField($index)
     {
+        if (
+            is_null($this->internal_desc->getFields())
+            || !isset($this->internal_desc->getFields()[$index])
+        ) {
+            return null;
+        }
         return $this->getPublicDescriptor($this->internal_desc->getFields()[$index]);
     }
 
@@ -75,6 +82,6 @@ class OneofDescriptor
 
     public function isSynthetic()
     {
-      return $this->internal_desc->isSynthetic();
+        return $this->internal_desc->isSynthetic();
     }
 }

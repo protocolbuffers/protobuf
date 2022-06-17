@@ -185,13 +185,58 @@ T* GetOwnedMessage(Arena* message_arena, T* submessage,
 
 // Hide atomic from the public header and allow easy change to regular int
 // on platforms where the atomic might have a perf impact.
+//
+// CachedSize is like std::atomic<int> but with some important changes:
+//
+// 1) CachedSize uses Get / Set rather than load / store.
+// 2) CachedSize always uses relaxed ordering.
+// 3) CachedSize is assignable and copy-constructible.
+// 4) CachedSize has a constexpr default constructor, and a constexpr
+//    constructor that takes an int argument.
+// 5) If the compiler supports the __atomic_load_n / __atomic_store_n builtins,
+//    then CachedSize is trivially copyable.
+//
+// Developed at https://godbolt.org/z/vYcx7zYs1 ; supports gcc, clang, MSVC.
 class PROTOBUF_EXPORT CachedSize {
+ private:
+  using Scalar = int;
+
  public:
-  int Get() const { return size_.load(std::memory_order_relaxed); }
-  void Set(int size) { size_.store(size, std::memory_order_relaxed); }
+  constexpr CachedSize() noexcept : atom_(Scalar{}) {}
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  constexpr CachedSize(Scalar desired) noexcept : atom_(desired) {}
+#if PROTOBUF_BUILTIN_ATOMIC
+  constexpr CachedSize(const CachedSize& other) = default;
+
+  Scalar Get() const noexcept {
+    return __atomic_load_n(&atom_, __ATOMIC_RELAXED);
+  }
+
+  void Set(Scalar desired) noexcept {
+    __atomic_store_n(&atom_, desired, __ATOMIC_RELAXED);
+  }
+#else
+  CachedSize(const CachedSize& other) noexcept : atom_(other.Get()) {}
+  CachedSize& operator=(const CachedSize& other) noexcept {
+    Set(other.Get());
+    return *this;
+  }
+
+  Scalar Get() const noexcept {  //
+    return atom_.load(std::memory_order_relaxed);
+  }
+
+  void Set(Scalar desired) noexcept {
+    atom_.store(desired, std::memory_order_relaxed);
+  }
+#endif
 
  private:
-  std::atomic<int> size_{0};
+#if PROTOBUF_BUILTIN_ATOMIC
+  Scalar atom_;
+#else
+  std::atomic<Scalar> atom_;
+#endif
 };
 
 PROTOBUF_EXPORT void DestroyMessage(const void* message);

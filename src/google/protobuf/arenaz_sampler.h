@@ -58,8 +58,11 @@ struct ThreadSafeArenaStats
   ~ThreadSafeArenaStats();
 
   // Puts the object into a clean state, fills in the logically `const` members,
-  // blocking for any readers that are currently sampling the object.
-  void PrepareForSampling() ABSL_EXCLUSIVE_LOCKS_REQUIRED(init_mu);
+  // blocking for any readers that are currently sampling the object.  The
+  // 'stride' parameter is the number of ThreadSafeArenas that were instantiated
+  // between this sample and the previous one.
+  void PrepareForSampling(int64_t stride)
+      ABSL_EXCLUSIVE_LOCKS_REQUIRED(init_mu);
 
   // These fields are mutated by the various Record* APIs and need to be
   // thread-safe.
@@ -91,7 +94,18 @@ struct ThreadSafeArenaStats
   }
 };
 
-ThreadSafeArenaStats* SampleSlow(int64_t* next_sample);
+struct SamplingState {
+  // Number of ThreadSafeArenas that should be instantiated before the next
+  // ThreadSafeArena is sampled.  This variable is decremented with each
+  // instantiation.
+  int64_t next_sample;
+  // When we make a sampling decision, we record that distance between from the
+  // previous sample so we can weight each sample.  'distance' here is the
+  // number of instantiations of ThreadSafeArena.
+  int64_t sample_stride;
+};
+
+ThreadSafeArenaStats* SampleSlow(SamplingState& sampling_state);
 void UnsampleSlow(ThreadSafeArenaStats* info);
 
 class ThreadSafeArenaStatsHandle {
@@ -138,24 +152,27 @@ class ThreadSafeArenaStatsHandle {
 using ThreadSafeArenazSampler =
     ::absl::profiling_internal::SampleRecorder<ThreadSafeArenaStats>;
 
-extern PROTOBUF_THREAD_LOCAL int64_t global_next_sample;
+extern PROTOBUF_THREAD_LOCAL SamplingState global_sampling_state;
 
 // Returns an RAII sampling handle that manages registration and unregistation
 // with the global sampler.
 inline ThreadSafeArenaStatsHandle Sample() {
-  if (PROTOBUF_PREDICT_TRUE(--global_next_sample > 0)) {
+  if (PROTOBUF_PREDICT_TRUE(--global_sampling_state.next_sample > 0)) {
     return ThreadSafeArenaStatsHandle(nullptr);
   }
-  return ThreadSafeArenaStatsHandle(SampleSlow(&global_next_sample));
+  return ThreadSafeArenaStatsHandle(SampleSlow(global_sampling_state));
 }
 
 #else
+
+using SamplingState = int64_t;
+
 struct ThreadSafeArenaStats {
   static void RecordAllocateStats(ThreadSafeArenaStats*, size_t /*requested*/,
                                   size_t /*allocated*/, size_t /*wasted*/) {}
 };
 
-ThreadSafeArenaStats* SampleSlow(int64_t* next_sample);
+ThreadSafeArenaStats* SampleSlow(SamplingState& next_sample);
 void UnsampleSlow(ThreadSafeArenaStats* info);
 
 class ThreadSafeArenaStatsHandle {

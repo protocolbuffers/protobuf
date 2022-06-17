@@ -28,9 +28,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <google/protobuf/stubs/status.h>
+#include <stdio.h>
+#include <string.h>
 
 #include <ostream>
-#include <stdio.h>
 #include <string>
 #include <utility>
 
@@ -254,6 +255,12 @@ Status UnimplementedError(StringPiece message) {
 
 Status UnknownError(StringPiece message) {
   return Status(StatusCode::kUnknown, message);
+}
+
+Status ErrnoToStatus(int error_number, StringPiece message) {
+  // We will take an Abseil dependency soon, so no reason to do anything
+  // elaborate here.
+  return InternalError(StrCat(message, ": ", strerror(error_number)));
 }
 
 }  // namespace status_internal

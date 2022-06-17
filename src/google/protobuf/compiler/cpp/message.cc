@@ -2101,6 +2101,11 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
         "static constexpr int32_t kHasBitsOffset =\n"
         "  8 * PROTOBUF_FIELD_OFFSET($classname$, _impl_._has_bits_);\n");
   }
+  if (descriptor_->real_oneof_decl_count() > 0) {
+    format(
+        "static constexpr int32_t kOneofCaseOffset =\n"
+        "  PROTOBUF_FIELD_OFFSET($classtype$, $oneof_case$);\n");
+  }
   for (auto field : FieldRange(descriptor_)) {
     field_generators_.get(field).GenerateInternalAccessorDeclarations(printer);
     if (IsFieldStripped(field, options_)) {

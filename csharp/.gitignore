@@ -18,6 +18,7 @@ lib/NUnit
 # 	Untracked files
 #
 .vs
+.cr
 *.user
 *.suo
 *.nupkg

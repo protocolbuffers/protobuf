@@ -1943,7 +1943,7 @@ public class GeneratedMessageTest {
 
   @Test
   public void
-  extendableBuilder_extensionFieldContainingBuilder_setRepeatedFieldOverwritesElement() {
+      extendableBuilder_extensionFieldContainingBuilder_setRepeatedFieldOverwritesElement() {
     TestAllExtensions.Builder builder = TestAllExtensions.newBuilder();
     builder.addRepeatedField(REPEATED_NESTED_MESSAGE_EXTENSION, NestedMessage.getDefaultInstance());
     // Calling getRepeatedFieldBuilder and ignoring the returned Builder should have no
