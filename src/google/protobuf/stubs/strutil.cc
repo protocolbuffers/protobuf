@@ -129,9 +129,14 @@ void StripWhitespace(std::string *str) {
 //    it only replaces the first instance of "old."
 // ----------------------------------------------------------------------
 
+#define DONOTCHECKIN_GOOGLE_DCHECK_NO_OVERLAP(dest, src) \
+    GOOGLE_DCHECK_GT(uintptr_t((src).data() - (dest).data()), \
+                     uintptr_t((dest).size()))
+
 void StringReplace(StringPiece s, StringPiece oldsub, StringPiece newsub,
                    bool replace_all, std::string *res) {
   if (oldsub.empty()) {
+    DONOTCHECKIN_GOOGLE_DCHECK_NO_OVERLAP(*res, s);
     StrAppend(res, s);  // if empty, append the given string.
     return;
   }
@@ -143,10 +148,13 @@ void StringReplace(StringPiece s, StringPiece oldsub, StringPiece newsub,
     if (pos == std::string::npos) {
       break;
     }
+    DONOTCHECKIN_GOOGLE_DCHECK_NO_OVERLAP(*res, s);
     StrAppend(res, s.substr(start_pos, pos - start_pos));
+    DONOTCHECKIN_GOOGLE_DCHECK_NO_OVERLAP(*res, newsub);
     StrAppend(res, newsub);
     start_pos = pos + oldsub.size();  // start searching again after the "old"
   } while (replace_all);
+  DONOTCHECKIN_GOOGLE_DCHECK_NO_OVERLAP(*res, s);
   StrAppend(res, s.substr(start_pos, s.length() - start_pos));
 }
 
