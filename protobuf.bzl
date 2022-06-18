@@ -692,7 +692,7 @@ def source_proto_library(
       lang: the language to (optionally) generate code for.
       outs: a list of expected output files.  This is only required for
         languages where we can't predict the outputs.
-      include: a string indicating the include path of the .proto files.
+      includes: strings indicating the include path of the .proto files.
       protoc: the label of the protocol compiler to generate the sources.
       testonly: common rule attribute (see:
           https://bazel.build/reference/be/common-definitions#common-attributes)

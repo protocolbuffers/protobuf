@@ -1,8 +1,9 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("//benchmarks:defs.bzl", "benchmark_test")
 
 cc_binary(
-    name = "cpp",
+    name = "cpp_benchmark",
     srcs = [
         "cpp_benchmark.cc",
     ],
@@ -12,6 +13,14 @@ cc_binary(
         "//benchmarks:benchmarks_cc_proto",
         "//benchmarks/datasets:cc_protos",
         "@com_github_google_benchmark//:benchmark_main",
+    ],
+)
+
+benchmark_test(
+    name = "cpp",
+    binary = ":cpp_benchmark",
+    datasets = [
+        "//benchmarks/datasets",
     ],
 )
 

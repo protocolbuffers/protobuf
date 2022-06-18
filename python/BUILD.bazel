@@ -365,7 +365,7 @@ py_test(
 
 cc_library(
     name = "proto_api",
-    hdrs = ["python/google/protobuf/proto_api.h"],
+    hdrs = ["google/protobuf/proto_api.h"],
     visibility = ["//visibility:public"],
     deps = [
         "//external:python_headers",

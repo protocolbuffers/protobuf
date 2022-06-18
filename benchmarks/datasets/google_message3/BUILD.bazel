@@ -2,6 +2,7 @@ load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@rules_java//java:defs.bzl", "java_proto_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
+load("//:protobuf.bzl", "py_proto_library", "csharp_proto_library")
 
 filegroup(
     name = "datasets",
@@ -24,7 +25,6 @@ proto_library(
         "benchmark_message3_7.proto",
         "benchmark_message3_8.proto",
     ],
-    strip_import_prefix = "/benchmarks",
     visibility = [
         "//benchmarks/datasets:__pkg__",
     ],
@@ -40,6 +40,24 @@ cc_proto_library(
     ],
 )
 
+csharp_proto_library(
+    name = "benchmark_message3_csharp_proto",
+    srcs = [
+        "benchmark_message3.proto",
+        "benchmark_message3_1.proto",
+        "benchmark_message3_2.proto",
+        "benchmark_message3_3.proto",
+        "benchmark_message3_4.proto",
+        "benchmark_message3_5.proto",
+        "benchmark_message3_6.proto",
+        "benchmark_message3_7.proto",
+        "benchmark_message3_8.proto",
+    ],
+    visibility = [
+        "//benchmarks/datasets:__pkg__",
+    ],
+)
+
 java_proto_library(
     name = "benchmark_message3_java_proto",
     visibility = [
@@ -47,6 +65,24 @@ java_proto_library(
     ],
     deps = [
         "benchmark_message3_proto",
+    ],
+)
+
+py_proto_library(
+    name = "benchmark_message3_py_proto",
+    srcs = [
+        "benchmark_message3.proto",
+        "benchmark_message3_1.proto",
+        "benchmark_message3_2.proto",
+        "benchmark_message3_3.proto",
+        "benchmark_message3_4.proto",
+        "benchmark_message3_5.proto",
+        "benchmark_message3_6.proto",
+        "benchmark_message3_7.proto",
+        "benchmark_message3_8.proto",
+    ],
+    visibility = [
+        "//benchmarks/datasets:__pkg__",
     ],
 )
 

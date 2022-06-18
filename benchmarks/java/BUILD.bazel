@@ -1,0 +1,55 @@
+load("@rules_java//java:defs.bzl", "java_library", "java_binary")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("//build_defs:internal_shell.bzl", "inline_sh_binary")
+load("//benchmarks:defs.bzl", "benchmark_test")
+
+java_binary(
+    name = "java_benchmark_jar",
+    srcs = [
+        "src/main/java/com/google/protobuf/ProtoCaliperBenchmark.java",
+    ],
+    main_class = "com.google.caliper.runner.CaliperMain",
+    tags = ["benchmark"],
+    deps = [
+        "//:protobuf_java",
+        "//benchmarks:benchmarks_java_proto",
+        "//benchmarks/datasets:java_protos",
+        "@maven//:com_google_caliper_caliper",
+        "@maven//:com_google_caliper_caliper_api",
+    ],
+)
+
+inline_sh_binary(
+    name = "java_benchmark",
+    srcs = ["//benchmarks/datasets"],
+    tools = [":java_benchmark_jar"],
+    cmd = """
+        data_files=""
+        conf=()
+        for arg in "$${@:1}"; do
+            if [[ $${arg:0:1} == "-" ]]; then
+                conf+=($$arg)
+            else
+                data_files+="$$arg,"
+            fi
+        done
+        $(rootpath :java_benchmark_jar) com.google.protobuf.ProtoCaliperBenchmark \
+            -i runtime -DdataFile=$${data_files:0:-1} $${conf[*]}
+    """
+)
+
+benchmark_test(
+    name = "java",
+    binary = ":java_benchmark",
+    datasets = ["//benchmarks/datasets"],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = [
+        "BUILD.bazel",
+        "pom.xml",
+    ] + glob(["**/*.java"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//benchmarks:__pkg__"],
+)

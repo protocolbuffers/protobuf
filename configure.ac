@@ -243,5 +243,5 @@ export CFLAGS
 export CXXFLAGS
 AC_CONFIG_SUBDIRS([third_party/googletest])
 
-AC_CONFIG_FILES([Makefile src/Makefile benchmarks/Makefile protobuf.pc protobuf-lite.pc])
+AC_CONFIG_FILES([Makefile src/Makefile protobuf.pc protobuf-lite.pc])
 AC_OUTPUT

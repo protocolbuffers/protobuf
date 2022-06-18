@@ -271,7 +271,6 @@ inline_sh_binary(
     ],
     deps = [
         ":conformance_php_proto",
-        "//php:source_files",
         "//:test_messages_proto3_php_proto",
     ],
     cmd = """

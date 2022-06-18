@@ -1,0 +1,65 @@
+load("//benchmarks:defs.bzl", "benchmark_test")
+load("//build_defs:internal_shell.bzl", "inline_sh_binary")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+
+inline_sh_binary(
+    name = "php_benchmark",
+    srcs = [
+        "PhpBenchmark.php",
+        "autoload.php",
+    ],
+    deps = [
+        "//benchmarks:benchmarks_php_proto",
+        "//benchmarks/datasets:php_protos",
+        "//php:source_files",
+    ],
+    cmd = """
+        php -d include_path=benchmarks:php/src \\
+            -d auto_prepend_file=$(rootpath autoload.php) \\
+            $(rootpath PhpBenchmark.php) $$@
+    """,
+    testonly = 1,
+)
+
+benchmark_test(
+    name = "php",
+    binary = ":php_benchmark",
+    datasets = ["//benchmarks/datasets:proto3_datasets"],
+    env_vars = ["PROTOBUF_PHP_SRCDIR=php/src"],
+    args = ["--behavior_prefix='php'"],
+)
+
+inline_sh_binary(
+    name = "php_c_benchmark",
+    srcs = [
+        "PhpBenchmark.php",
+        "//php:extension",
+    ],
+    deps = [
+        "//benchmarks:benchmarks_php_proto",
+        "//benchmarks/datasets:php_protos",
+    ],
+    cmd = """
+        php -d include_path=benchmarks:php/src \\
+            -dextension=$(rootpath //php:extension) \\
+            $(rootpath PhpBenchmark.php) $$@
+    """,
+    testonly = 1,
+)
+
+benchmark_test(
+    name = "php_c",
+    binary = ":php_c_benchmark",
+    datasets = ["//benchmarks/datasets:proto3_datasets"],
+    env_vars = ["PROTOBUF_PHP_SRCDIR=php/src"],
+    args = ["--behavior_prefix='php_c'"],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["*.php"]) + [
+        "BUILD.bazel",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//benchmarks:__pkg__"],
+)

@@ -1,6 +1,7 @@
 def inline_sh_binary(
         name,
         srcs = [],
+        tools = [],
         deps = [],
         cmd = "",
         testonly = None,
@@ -14,8 +15,9 @@ def inline_sh_binary(
 
     Args:
       name: the name of the inline_sh_binary.
-      srcs: the files used directly by the script.  Any target used with
-        rootpath/execpath/location must be declared here.
+      srcs: the files used directly by the script.
+      tools: the executable tools used directly by the script.  Any target used
+        with rootpath/execpath/location must be declared here or in `srcs`.
       deps: a list of dependency labels that are required to run this binary.
       **kargs: other keyword arguments that are passed to sh_binary.
       testonly: common rule attribute (see:
@@ -26,6 +28,7 @@ def inline_sh_binary(
     native.genrule(
         name = name + "_genrule",
         srcs = srcs,
+        exec_tools = tools,
         outs = [name + ".sh"],
         cmd = "cat <<'EOF' >$(OUTS)\n#!/bin/bash -eu\n%s\nEOF\n" % cmd,
         testonly = testonly,
@@ -35,7 +38,7 @@ def inline_sh_binary(
     native.sh_binary(
         name = name,
         srcs = [name + "_genrule"],
-        data = srcs + deps,
+        data = srcs + tools + deps,
         testonly = testonly,
         **kwargs
     )

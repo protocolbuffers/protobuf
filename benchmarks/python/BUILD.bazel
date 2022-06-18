@@ -1,0 +1,66 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_python//python:defs.bzl", "py_library", "py_binary")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("//:protobuf.bzl", "py_proto_library")
+load("//benchmarks:defs.bzl", "benchmark_test")
+
+cc_binary(
+    name = "libbenchmark_messages.so",
+    srcs = ["python_benchmark_messages.cc"],
+    deps = [
+        "@local_config_python//:python_headers",
+        "//external:python_headers",
+        "//benchmarks:benchmarks_cc_proto",
+        "//benchmarks/datasets:cc_protos",
+    ],
+    linkshared = True,
+    linkstatic = True,
+    visibility = ["//visibility:private"],
+)
+
+py_binary(
+    name = "python_benchmark",
+    srcs = ["py_benchmark.py"],
+    main = "py_benchmark.py",
+    tags = ["benchmark"],
+    data = ["libbenchmark_messages.so"],
+    deps = [
+        "//:protobuf_python",
+        "//benchmarks:benchmarks_py_proto",
+        "//benchmarks/datasets:py_protos",
+    ],
+)
+
+benchmark_test(
+    name = "python",
+    binary = ":python_benchmark",
+    datasets = ["//benchmarks/datasets"],
+    env_vars = ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python"],
+)
+
+# Note: this requires --define=use_fast_cpp_protos=true
+benchmark_test(
+    name = "cpp_reflection",
+    binary = ":python_benchmark",
+    datasets = ["//benchmarks/datasets"],
+    env_vars = ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp"],
+)
+
+# Note: this requires --define=use_fast_cpp_protos=true
+benchmark_test(
+    name = "cpp_generated_code",
+    binary = ":python_benchmark",
+    datasets = ["//benchmarks/datasets"],
+    env_vars = ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp"],
+    args = ["--cpp_generated"],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["*.py"]) + [
+        "BUILD.bazel",
+        "python_benchmark_messages.cc",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//benchmarks:__pkg__"],
+)
