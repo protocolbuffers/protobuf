@@ -154,7 +154,7 @@ void StringReplace(StringPiece s, StringPiece oldsub, StringPiece newsub,
     StrAppend(res, newsub);
     start_pos = pos + oldsub.size();  // start searching again after the "old"
   } while (replace_all);
-  DONOTCHECKIN_GOOGLE_DCHECK_NO_OVERLAP(*res, s);
+  DONOTCHECKIN_GOOGLE_DCHECK_NO_OVERLAP(*res, s) << " res=" << *res << " s=" << s;
   StrAppend(res, s.substr(start_pos, s.length() - start_pos));
 }
 
