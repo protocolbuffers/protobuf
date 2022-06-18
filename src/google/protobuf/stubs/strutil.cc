@@ -43,6 +43,8 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/stl_util.h>
 
+#undef StringReplace
+
 #ifdef _WIN32
 // MSVC has only _snprintf, not snprintf.
 //
@@ -134,7 +136,7 @@ void StripWhitespace(std::string *str) {
                      uintptr_t((dest).size()))
 
 void StringReplace(StringPiece s, StringPiece oldsub, StringPiece newsub,
-                   bool replace_all, std::string *res) {
+                   bool replace_all, std::string *res, char *filename, int linenum) {
   if (oldsub.empty()) {
     DONOTCHECKIN_GOOGLE_DCHECK_NO_OVERLAP(*res, s);
     StrAppend(res, s);  // if empty, append the given string.
@@ -154,7 +156,8 @@ void StringReplace(StringPiece s, StringPiece oldsub, StringPiece newsub,
     StrAppend(res, newsub);
     start_pos = pos + oldsub.size();  // start searching again after the "old"
   } while (replace_all);
-  DONOTCHECKIN_GOOGLE_DCHECK_NO_OVERLAP(*res, s) << " res=" << *res << " s=" << s;
+  DONOTCHECKIN_GOOGLE_DCHECK_NO_OVERLAP(*res, s)
+      << " file=" << (filename ? filename : "") << " line=" << linenum;
   StrAppend(res, s.substr(start_pos, s.length() - start_pos));
 }
 
@@ -167,10 +170,10 @@ void StringReplace(StringPiece s, StringPiece oldsub, StringPiece newsub,
 //    happened or not.
 // ----------------------------------------------------------------------
 
-std::string StringReplace(StringPiece s, StringPiece oldsub, StringPiece newsub,
-                          bool replace_all) {
+std::string StringReplaceImpl(StringPiece s, StringPiece oldsub, StringPiece newsub,
+                          bool replace_all, char *filename, int linenum) {
   std::string ret;
-  StringReplace(s, oldsub, newsub, replace_all, &ret);
+  StringReplace(s, oldsub, newsub, replace_all, &ret, filename, linenum);
   return ret;
 }
 
