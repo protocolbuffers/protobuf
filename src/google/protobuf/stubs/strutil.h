@@ -205,7 +205,7 @@ inline std::string ToUpper(StringPiece s) {
 // ----------------------------------------------------------------------
 
 PROTOBUF_EXPORT std::string StringReplaceImpl(StringPiece s, StringPiece oldsub,
-                                          StringPiece newsub, bool replace_all, char *filename = nullptr, int linenum = 0);
+                                          StringPiece newsub, bool replace_all, const char *filename = nullptr, int linenum = 0);
 #define StringReplace(s,o,n,all) StringReplaceImpl(s,o,n,all,__FILE__, __LINE__);
 
 // ----------------------------------------------------------------------

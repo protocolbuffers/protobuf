@@ -136,7 +136,7 @@ void StripWhitespace(std::string *str) {
                      uintptr_t((dest).size()))
 
 void StringReplace(StringPiece s, StringPiece oldsub, StringPiece newsub,
-                   bool replace_all, std::string *res, char *filename, int linenum) {
+                   bool replace_all, std::string *res, const char *filename, int linenum) {
   if (oldsub.empty()) {
     DONOTCHECKIN_GOOGLE_DCHECK_NO_OVERLAP(*res, s);
     StrAppend(res, s);  // if empty, append the given string.
@@ -171,7 +171,7 @@ void StringReplace(StringPiece s, StringPiece oldsub, StringPiece newsub,
 // ----------------------------------------------------------------------
 
 std::string StringReplaceImpl(StringPiece s, StringPiece oldsub, StringPiece newsub,
-                          bool replace_all, char *filename, int linenum) {
+                          bool replace_all, const char *filename, int linenum) {
   std::string ret;
   StringReplace(s, oldsub, newsub, replace_all, &ret, filename, linenum);
   return ret;
