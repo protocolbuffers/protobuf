@@ -3,7 +3,6 @@ Unreleased version
   * Handle reflection for message splitting.
   * make metadata fields lazy.
   * Extend visibility of plugin library to upb
-  * Take StringPiece instead of const string& in absl stubs.
   * Modernize conformance_cpp.cc.
   * Don't request 64-byte alignment unless the toolchain supports it.
 
