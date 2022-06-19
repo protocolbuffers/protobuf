@@ -332,3 +332,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. Ballerina gRPC
    * Website: https://github.com/ballerina-platform/module-ballerina-grpc
    * Extension: 1148
+
+1. Protoc-gen-validate-references
+   * Website: https://github.com/ComponentCorp/protoc-gen-validate-references
+   * Extension: 1149
