@@ -429,6 +429,8 @@ libprotoc_la_SOURCES =                                         \
   google/protobuf/compiler/java/message_field_lite.h           \
   google/protobuf/compiler/java/message_lite.cc                \
   google/protobuf/compiler/java/message_lite.h                 \
+  google/protobuf/compiler/java/message_serialization.cc       \
+  google/protobuf/compiler/java/message_serialization.h        \
   google/protobuf/compiler/java/name_resolver.cc               \
   google/protobuf/compiler/java/name_resolver.h                \
   google/protobuf/compiler/java/options.h                      \

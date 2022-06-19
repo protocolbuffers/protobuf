@@ -419,6 +419,8 @@ void Struct::InternalSwap(Struct* other) {
 
 class Value::_Internal {
  public:
+  static constexpr int32_t kOneofCaseOffset =
+    PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::Value, _impl_._oneof_case_);
   static const ::PROTOBUF_NAMESPACE_ID::Struct& struct_value(const Value* msg);
   static const ::PROTOBUF_NAMESPACE_ID::ListValue& list_value(const Value* msg);
 };

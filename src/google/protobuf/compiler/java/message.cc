@@ -53,6 +53,7 @@
 #include <google/protobuf/compiler/java/helpers.h>
 #include <google/protobuf/compiler/java/message_builder.h>
 #include <google/protobuf/compiler/java/message_builder_lite.h>
+#include <google/protobuf/compiler/java/message_serialization.h>
 #include <google/protobuf/compiler/java/name_resolver.h>
 #include <google/protobuf/descriptor.pb.h>
 
@@ -587,13 +588,6 @@ void ImmutableMessageGenerator::GenerateMessageSerializationMethods(
   std::unique_ptr<const FieldDescriptor*[]> sorted_fields(
       SortFieldsByNumber(descriptor_));
 
-  std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
-  sorted_extensions.reserve(descriptor_->extension_range_count());
-  for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
-    sorted_extensions.push_back(descriptor_->extension_range(i));
-  }
-  std::sort(sorted_extensions.begin(), sorted_extensions.end(),
-            ExtensionRangeOrdering());
   printer->Print(
       "@java.lang.Override\n"
       "public void writeTo(com.google.protobuf.CodedOutputStream output)\n"
@@ -628,19 +622,8 @@ void ImmutableMessageGenerator::GenerateMessageSerializationMethods(
     }
   }
 
-  // Merge the fields and the extension ranges, both sorted by field number.
-  for (int i = 0, j = 0;
-       i < descriptor_->field_count() || j < sorted_extensions.size();) {
-    if (i == descriptor_->field_count()) {
-      GenerateSerializeOneExtensionRange(printer, sorted_extensions[j++]);
-    } else if (j == sorted_extensions.size()) {
-      GenerateSerializeOneField(printer, sorted_fields[i++]);
-    } else if (sorted_fields[i]->number() < sorted_extensions[j]->start) {
-      GenerateSerializeOneField(printer, sorted_fields[i++]);
-    } else {
-      GenerateSerializeOneExtensionRange(printer, sorted_extensions[j++]);
-    }
-  }
+  GenerateSerializeFieldsAndExtensions(printer, field_generators_, descriptor_,
+                                       sorted_fields.get());
 
   if (descriptor_->options().message_set_wire_format()) {
     printer->Print("unknownFields.writeAsMessageSetTo(output);\n");
@@ -768,17 +751,6 @@ void ImmutableMessageGenerator::GenerateParseFromMethods(io::Printer* printer) {
       "\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_), "ver",
       GeneratedCodeVersionSuffix());
-}
-
-void ImmutableMessageGenerator::GenerateSerializeOneField(
-    io::Printer* printer, const FieldDescriptor* field) {
-  field_generators_.get(field).GenerateSerializationCode(printer);
-}
-
-void ImmutableMessageGenerator::GenerateSerializeOneExtensionRange(
-    io::Printer* printer, const Descriptor::ExtensionRange* range) {
-  printer->Print("extensionWriter.writeUntil($end$, output);\n", "end",
-                 StrCat(range->end));
 }
 
 // ===================================================================
@@ -1017,8 +989,8 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
       " return true;\n"
       "}\n"
       "if (!(obj instanceof $classname$)) {\n"
-         // don't simply return false because mutable and immutable types
-         // can be equal
+      // don't simply return false because mutable and immutable types
+      // can be equal
       "  return super.equals(obj);\n"
       "}\n"
       "$classname$ other = ($classname$) obj;\n"

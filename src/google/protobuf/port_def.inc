@@ -139,6 +139,11 @@
 #define PROTOBUF_BUILTIN_BSWAP64(x) __builtin_bswap64(x)
 #endif
 
+// Portable check for gcc-style atomic built-ins
+#if __has_builtin(__atomic_load_n)
+#define PROTOBUF_BUILTIN_ATOMIC 1
+#endif
+
 // Portable check for GCC minimum version:
 // https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
 #if defined(__GNUC__) && defined(__GNUC_MINOR__) \

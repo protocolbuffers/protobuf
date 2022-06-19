@@ -64,8 +64,9 @@ std::vector<size_t> GetBytesAllocated(ThreadSafeArenazSampler* s) {
   return res;
 }
 
-ThreadSafeArenaStats* Register(ThreadSafeArenazSampler* s, size_t size) {
-  auto* info = s->Register();
+ThreadSafeArenaStats* Register(ThreadSafeArenazSampler* s, size_t size,
+                               int64_t stride) {
+  auto* info = s->Register(stride);
   assert(info != nullptr);
   info->bytes_allocated.store(size);
   return info;
@@ -79,8 +80,9 @@ namespace {
 
 TEST(ThreadSafeArenaStatsTest, PrepareForSampling) {
   ThreadSafeArenaStats info;
+  constexpr int64_t kTestStride = 107;
   MutexLock l(&info.init_mu);
-  info.PrepareForSampling();
+  info.PrepareForSampling(kTestStride);
 
   EXPECT_EQ(info.num_allocations.load(), 0);
   EXPECT_EQ(info.num_resets.load(), 0);
@@ -88,6 +90,7 @@ TEST(ThreadSafeArenaStatsTest, PrepareForSampling) {
   EXPECT_EQ(info.bytes_allocated.load(), 0);
   EXPECT_EQ(info.bytes_wasted.load(), 0);
   EXPECT_EQ(info.max_bytes_allocated.load(), 0);
+  EXPECT_EQ(info.weight, kTestStride);
 
   info.num_allocations.store(1, std::memory_order_relaxed);
   info.num_resets.store(1, std::memory_order_relaxed);
@@ -96,19 +99,21 @@ TEST(ThreadSafeArenaStatsTest, PrepareForSampling) {
   info.bytes_wasted.store(1, std::memory_order_relaxed);
   info.max_bytes_allocated.store(1, std::memory_order_relaxed);
 
-  info.PrepareForSampling();
+  info.PrepareForSampling(2 * kTestStride);
   EXPECT_EQ(info.num_allocations.load(), 0);
   EXPECT_EQ(info.num_resets.load(), 0);
   EXPECT_EQ(info.bytes_requested.load(), 0);
   EXPECT_EQ(info.bytes_allocated.load(), 0);
   EXPECT_EQ(info.bytes_wasted.load(), 0);
   EXPECT_EQ(info.max_bytes_allocated.load(), 0);
+  EXPECT_EQ(info.weight, 2 * kTestStride);
 }
 
 TEST(ThreadSafeArenaStatsTest, RecordAllocateSlow) {
   ThreadSafeArenaStats info;
+  constexpr int64_t kTestStride = 458;
   MutexLock l(&info.init_mu);
-  info.PrepareForSampling();
+  info.PrepareForSampling(kTestStride);
   RecordAllocateSlow(&info, /*requested=*/100, /*allocated=*/128, /*wasted=*/0);
   EXPECT_EQ(info.num_allocations.load(), 1);
   EXPECT_EQ(info.num_resets.load(), 0);
@@ -128,8 +133,9 @@ TEST(ThreadSafeArenaStatsTest, RecordAllocateSlow) {
 
 TEST(ThreadSafeArenaStatsTest, RecordResetSlow) {
   ThreadSafeArenaStats info;
+  constexpr int64_t kTestStride = 584;
   MutexLock l(&info.init_mu);
-  info.PrepareForSampling();
+  info.PrepareForSampling(kTestStride);
   EXPECT_EQ(info.num_resets.load(), 0);
   EXPECT_EQ(info.bytes_allocated.load(), 0);
   RecordAllocateSlow(&info, /*requested=*/100, /*allocated=*/128, /*wasted=*/0);
@@ -143,11 +149,12 @@ TEST(ThreadSafeArenaStatsTest, RecordResetSlow) {
 TEST(ThreadSafeArenazSamplerTest, SmallSampleParameter) {
   SetThreadSafeArenazEnabled(true);
   SetThreadSafeArenazSampleParameter(100);
+  constexpr int64_t kTestStride = 0;
 
   for (int i = 0; i < 1000; ++i) {
-    int64_t next_sample = 0;
-    ThreadSafeArenaStats* sample = SampleSlow(&next_sample);
-    EXPECT_GT(next_sample, 0);
+    SamplingState sampling_state = {kTestStride, kTestStride};
+    ThreadSafeArenaStats* sample = SampleSlow(sampling_state);
+    EXPECT_GT(sampling_state.next_sample, 0);
     EXPECT_NE(sample, nullptr);
     UnsampleSlow(sample);
   }
@@ -156,11 +163,12 @@ TEST(ThreadSafeArenazSamplerTest, SmallSampleParameter) {
 TEST(ThreadSafeArenazSamplerTest, LargeSampleParameter) {
   SetThreadSafeArenazEnabled(true);
   SetThreadSafeArenazSampleParameter(std::numeric_limits<int32_t>::max());
+  constexpr int64_t kTestStride = 0;
 
   for (int i = 0; i < 1000; ++i) {
-    int64_t next_sample = 0;
-    ThreadSafeArenaStats* sample = SampleSlow(&next_sample);
-    EXPECT_GT(next_sample, 0);
+    SamplingState sampling_state = {kTestStride, kTestStride};
+    ThreadSafeArenaStats* sample = SampleSlow(sampling_state);
+    EXPECT_GT(sampling_state.next_sample, 0);
     EXPECT_NE(sample, nullptr);
     UnsampleSlow(sample);
   }
@@ -187,7 +195,8 @@ TEST(ThreadSafeArenazSamplerTest, Sample) {
 
 TEST(ThreadSafeArenazSamplerTest, Handle) {
   auto& sampler = GlobalThreadSafeArenazSampler();
-  ThreadSafeArenaStatsHandle h(sampler.Register());
+  constexpr int64_t kTestStride = 17;
+  ThreadSafeArenaStatsHandle h(sampler.Register(kTestStride));
   auto* info = ThreadSafeArenaStatsHandlePeer::GetInfo(&h);
   info->bytes_allocated.store(0x12345678, std::memory_order_relaxed);
 
@@ -195,6 +204,7 @@ TEST(ThreadSafeArenazSamplerTest, Handle) {
   sampler.Iterate([&](const ThreadSafeArenaStats& h) {
     if (&h == info) {
       EXPECT_EQ(h.bytes_allocated.load(), 0x12345678);
+      EXPECT_EQ(h.weight, kTestStride);
       found = true;
     }
   });
@@ -216,10 +226,11 @@ TEST(ThreadSafeArenazSamplerTest, Handle) {
 
 TEST(ThreadSafeArenazSamplerTest, Registration) {
   ThreadSafeArenazSampler sampler;
-  auto* info1 = Register(&sampler, 1);
+  constexpr int64_t kTestStride = 100;
+  auto* info1 = Register(&sampler, 1, kTestStride);
   EXPECT_THAT(GetBytesAllocated(&sampler), UnorderedElementsAre(1));
 
-  auto* info2 = Register(&sampler, 2);
+  auto* info2 = Register(&sampler, 2, kTestStride);
   EXPECT_THAT(GetBytesAllocated(&sampler), UnorderedElementsAre(1, 2));
   info1->bytes_allocated.store(3);
   EXPECT_THAT(GetBytesAllocated(&sampler), UnorderedElementsAre(3, 2));
@@ -231,16 +242,17 @@ TEST(ThreadSafeArenazSamplerTest, Registration) {
 TEST(ThreadSafeArenazSamplerTest, Unregistration) {
   ThreadSafeArenazSampler sampler;
   std::vector<ThreadSafeArenaStats*> infos;
+  constexpr int64_t kTestStride = 200;
   for (size_t i = 0; i < 3; ++i) {
-    infos.push_back(Register(&sampler, i));
+    infos.push_back(Register(&sampler, i, kTestStride));
   }
   EXPECT_THAT(GetBytesAllocated(&sampler), UnorderedElementsAre(0, 1, 2));
 
   sampler.Unregister(infos[1]);
   EXPECT_THAT(GetBytesAllocated(&sampler), UnorderedElementsAre(0, 2));
 
-  infos.push_back(Register(&sampler, 3));
-  infos.push_back(Register(&sampler, 4));
+  infos.push_back(Register(&sampler, 3, kTestStride));
+  infos.push_back(Register(&sampler, 4, kTestStride));
   EXPECT_THAT(GetBytesAllocated(&sampler), UnorderedElementsAre(0, 2, 3, 4));
   sampler.Unregister(infos[3]);
   EXPECT_THAT(GetBytesAllocated(&sampler), UnorderedElementsAre(0, 2, 4));
@@ -257,18 +269,19 @@ TEST(ThreadSafeArenazSamplerTest, MultiThreaded) {
   ThreadPool pool(10);
 
   for (int i = 0; i < 10; ++i) {
-    pool.Schedule([&sampler, &stop]() {
+    const int64_t sampling_stride = 11 + i % 3;
+    pool.Schedule([&sampler, &stop, sampling_stride]() {
       std::random_device rd;
       std::mt19937 gen(rd());
 
       std::vector<ThreadSafeArenaStats*> infoz;
       while (!stop.HasBeenNotified()) {
         if (infoz.empty()) {
-          infoz.push_back(sampler.Register());
+          infoz.push_back(sampler.Register(sampling_stride));
         }
         switch (std::uniform_int_distribution<>(0, 1)(gen)) {
           case 0: {
-            infoz.push_back(sampler.Register());
+            infoz.push_back(sampler.Register(sampling_stride));
             break;
           }
           case 1: {
@@ -277,6 +290,7 @@ TEST(ThreadSafeArenazSamplerTest, MultiThreaded) {
             ThreadSafeArenaStats* info = infoz[p];
             infoz[p] = infoz.back();
             infoz.pop_back();
+            EXPECT_EQ(info->weight, sampling_stride);
             sampler.Unregister(info);
             break;
           }
@@ -292,9 +306,10 @@ TEST(ThreadSafeArenazSamplerTest, MultiThreaded) {
 
 TEST(ThreadSafeArenazSamplerTest, Callback) {
   ThreadSafeArenazSampler sampler;
+  constexpr int64_t kTestStride = 203;
 
-  auto* info1 = Register(&sampler, 1);
-  auto* info2 = Register(&sampler, 2);
+  auto* info1 = Register(&sampler, 1, kTestStride);
+  auto* info2 = Register(&sampler, 2, kTestStride);
 
   static const ThreadSafeArenaStats* expected;
 

@@ -252,7 +252,9 @@ void RepeatedEnumFieldGenerator::GeneratePrivateMembers(
   format("::$proto_ns$::RepeatedField<int> $name$_;\n");
   if (descriptor_->is_packed() &&
       HasGeneratedMethods(descriptor_->file(), options_)) {
-    format("mutable std::atomic<int> $cached_byte_size_name$;\n");
+    format(
+        "mutable ::$proto_ns$::internal::CachedSize "
+        "$cached_byte_size_name$;\n");
   }
 }
 
@@ -364,7 +366,7 @@ void RepeatedEnumFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     format(
         "{\n"
         "  int byte_size = "
-        "$cached_byte_size_field$.load(std::memory_order_relaxed);\n"
+        "$cached_byte_size_field$.Get();\n"
         "  if (byte_size > 0) {\n"
         "    target = stream->WriteEnumPacked(\n"
         "        $number$, $field$, byte_size, target);\n"
@@ -402,8 +404,7 @@ void RepeatedEnumFieldGenerator::GenerateByteSize(io::Printer* printer) const {
         "::_pbi::WireFormatLite::Int32Size(static_cast<$int32$>(data_size));\n"
         "}\n"
         "int cached_size = ::_pbi::ToCachedSize(data_size);\n"
-        "$cached_byte_size_field$.store(cached_size,\n"
-        "                                std::memory_order_relaxed);\n"
+        "$cached_byte_size_field$.Set(cached_size);\n"
         "total_size += data_size;\n");
   } else {
     format("total_size += ($tag_size$UL * count) + data_size;\n");
