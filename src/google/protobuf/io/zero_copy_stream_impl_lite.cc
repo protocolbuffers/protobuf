@@ -376,7 +376,6 @@ bool CopyingOutputStreamAdaptor::WriteAliasedRaw(const void* data, int size) {
     data = static_cast<const char*>(data) + out_size;
     size -= out_size;
   }
-  return true;
 }
 
 
