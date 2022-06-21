@@ -72,7 +72,6 @@ const void* PyUpb_AnyDescriptor_GetDef(PyObject* _self);
 // Returns the underlying |def| for a given wrapper object. The caller must
 // have already verified that the given Python object is of the expected type.
 const upb_FileDef* PyUpb_FileDescriptor_GetDef(PyObject* file);
-const void* PyUpb_AnyDescriptor_GetDef(PyObject* _self);
 
 // Module-level init.
 bool PyUpb_InitDescriptor(PyObject* m);
