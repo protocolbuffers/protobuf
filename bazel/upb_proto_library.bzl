@@ -29,7 +29,7 @@
 """
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
+load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
 
 # Generic support code #########################################################
 
@@ -315,7 +315,7 @@ _upb_proto_library_aspect = aspect(
     ],
     attr_aspects = ["deps"],
     fragments = ["cpp"],
-    toolchains = ["@bazel_tools//tools/cpp:toolchain_type"],
+    toolchains = use_cpp_toolchain(),
     incompatible_use_toolchain_transition = True,
 )
 
@@ -368,7 +368,7 @@ _upb_proto_reflection_library_aspect = aspect(
     ],
     attr_aspects = ["deps"],
     fragments = ["cpp"],
-    toolchains = ["@bazel_tools//tools/cpp:toolchain_type"],
+    toolchains = use_cpp_toolchain(),
     incompatible_use_toolchain_transition = True,
 )
 
