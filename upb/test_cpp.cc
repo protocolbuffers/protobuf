@@ -50,8 +50,8 @@
 #include "upb/port_def.inc"
 
 TEST(Cpp, Iteration) {
-  upb::SymbolTable symtab;
-  upb::MessageDefPtr md(upb_test_TestMessage_getmsgdef(symtab.ptr()));
+  upb::DefPool defpool;
+  upb::MessageDefPtr md(upb_test_TestMessage_getmsgdef(defpool.ptr()));
 
   // Test range-based for on both fields and oneofs (with the iterator adaptor).
   int field_count = 0;
@@ -131,17 +131,17 @@ TEST(Cpp, InlinedArena) {
 }
 
 TEST(Cpp, Default) {
-  upb::SymbolTable symtab;
+  upb::DefPool defpool;
   upb::Arena arena;
-  upb::MessageDefPtr md(upb_test_TestMessage_getmsgdef(symtab.ptr()));
+  upb::MessageDefPtr md(upb_test_TestMessage_getmsgdef(defpool.ptr()));
   upb_test_TestMessage* msg = upb_test_TestMessage_new(arena.ptr());
   size_t size = upb_JsonEncode(msg, md.ptr(), NULL, 0, NULL, 0, NULL);
   EXPECT_EQ(2, size);  // "{}"
 }
 
 TEST(Cpp, JsonNull) {
-  upb::SymbolTable symtab;
-  upb::MessageDefPtr md(upb_test_TestMessage_getmsgdef(symtab.ptr()));
+  upb::DefPool defpool;
+  upb::MessageDefPtr md(upb_test_TestMessage_getmsgdef(defpool.ptr()));
   upb::FieldDefPtr i32_f = md.FindFieldByName("i32");
   upb::FieldDefPtr str_f = md.FindFieldByName("str");
   ASSERT_TRUE(i32_f);
@@ -152,9 +152,9 @@ TEST(Cpp, JsonNull) {
 }
 
 TEST(Cpp, TimestampEncoder) {
-  upb::SymbolTable symtab;
+  upb::DefPool defpool;
   upb::Arena arena;
-  upb::MessageDefPtr md(google_protobuf_Timestamp_getmsgdef(symtab.ptr()));
+  upb::MessageDefPtr md(google_protobuf_Timestamp_getmsgdef(defpool.ptr()));
   google_protobuf_Timestamp* timestamp_upb =
       google_protobuf_Timestamp_new(arena.ptr());
   google_protobuf_Timestamp* timestamp_upb_decoded =

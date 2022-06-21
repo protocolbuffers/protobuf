@@ -36,15 +36,15 @@
 static std::string JsonEncode(const upb_test_Box* msg, int options) {
   upb::Arena a;
   upb::Status status;
-  upb::SymbolTable symtab;
-  upb::MessageDefPtr m(upb_test_Box_getmsgdef(symtab.ptr()));
+  upb::DefPool defpool;
+  upb::MessageDefPtr m(upb_test_Box_getmsgdef(defpool.ptr()));
   EXPECT_TRUE(m.ptr() != nullptr);
 
-  size_t json_size = upb_JsonEncode(msg, m.ptr(), symtab.ptr(), options, NULL,
+  size_t json_size = upb_JsonEncode(msg, m.ptr(), defpool.ptr(), options, NULL,
                                     0, status.ptr());
   char* json_buf = (char*)upb_Arena_Malloc(a.ptr(), json_size + 1);
 
-  size_t size = upb_JsonEncode(msg, m.ptr(), symtab.ptr(), options, json_buf,
+  size_t size = upb_JsonEncode(msg, m.ptr(), defpool.ptr(), options, json_buf,
                                json_size + 1, status.ptr());
   EXPECT_EQ(size, json_size);
   return std::string(json_buf, json_size);

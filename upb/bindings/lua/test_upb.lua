@@ -408,7 +408,7 @@ function test_finalizer()
       end)
     end)
     t = {
-      upb.SymbolTable(),
+      upb.DefPool(),
     }
   end
   collectgarbage()
@@ -666,14 +666,14 @@ function test_unknown()
 end
 
 function test_foo()
-  local symtab = upb.SymbolTable()
+  local defpool = upb.DefPool()
   local filename = "external/com_google_protobuf/descriptor_proto-descriptor-set.proto.bin"
   local file = io.open(filename, "rb") or io.open("bazel-bin/" .. filename, "rb")
   assert_not_nil(file)
   local descriptor = file:read("*a")
   assert_true(#descriptor > 0)
-  symtab:add_set(descriptor)
-  local FileDescriptorSet = symtab:lookup_msg("google.protobuf.FileDescriptorSet")
+  defpool:add_set(descriptor)
+  local FileDescriptorSet = defpool:lookup_msg("google.protobuf.FileDescriptorSet")
   assert_not_nil(FileDescriptorSet)
   set = FileDescriptorSet()
   assert_equal(#set.file, 0)
@@ -690,7 +690,7 @@ function test_foo()
 end
 
 function test_descriptor()
-  local symtab = upb.SymbolTable()
+  local defpool = upb.DefPool()
   local file_proto = descriptor.FileDescriptorProto {
     name = "test.proto",
     message_type = upb.Array(descriptor.DescriptorProto, {
@@ -699,12 +699,12 @@ function test_descriptor()
       },
     })
   }
-  local file = symtab:add_file(upb.encode(file_proto))
-  assert_equal(file:symtab(), symtab)
+  local file = defpool:add_file(upb.encode(file_proto))
+  assert_equal(file:defpool(), defpool)
 end
 
 function test_descriptor_error()
-  local symtab = upb.SymbolTable()
+  local defpool = upb.DefPool()
   local file = descriptor.FileDescriptorProto()
   file.name = "test.proto"
   file.message_type[1] = descriptor.DescriptorProto{
@@ -713,12 +713,12 @@ function test_descriptor_error()
   file.message_type[2] = descriptor.DescriptorProto{
     name = "BC."
   }
-  assert_error(function () symtab:add_file(upb.encode(file)) end)
-  assert_nil(symtab:lookup_msg("ABC"))
+  assert_error(function () defpool:add_file(upb.encode(file)) end)
+  assert_nil(defpool:lookup_msg("ABC"))
 end
 
 function test_duplicate_enumval()
-  local symtab = upb.SymbolTable()
+  local defpool = upb.DefPool()
   local file_proto = descriptor.FileDescriptorProto {
     name = "test.proto",
     message_type = upb.Array(descriptor.DescriptorProto, {
@@ -738,16 +738,16 @@ function test_duplicate_enumval()
       },
     })
   }
-  assert_error(function () symtab:add_file(upb.encode(file_proto)) end)
+  assert_error(function () defpool:add_file(upb.encode(file_proto)) end)
 end
 
 function test_duplicate_filename_error()
-  local symtab = upb.SymbolTable()
+  local defpool = upb.DefPool()
   local file = descriptor.FileDescriptorProto()
   file.name = "test.proto"
-  symtab:add_file(upb.encode(file))
+  defpool:add_file(upb.encode(file))
   -- Second add with the same filename fails.
-  assert_error(function () symtab:add_file(upb.encode(file)) end)
+  assert_error(function () defpool:add_file(upb.encode(file)) end)
 end
 
 function test_encode_skipunknown()

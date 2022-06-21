@@ -42,7 +42,7 @@
 #define LUPB_FILEDEF "lupb.filedef"
 #define LUPB_MSGDEF "lupb.msgdef"
 #define LUPB_ONEOFDEF "lupb.oneof"
-#define LUPB_SYMTAB "lupb.symtab"
+#define LUPB_SYMTAB "lupb.defpool"
 #define LUPB_OBJCACHE "lupb.objcache"
 
 static void lupb_DefPool_pushwrapper(lua_State* L, int narg, const void* def,
@@ -51,7 +51,7 @@ static void lupb_DefPool_pushwrapper(lua_State* L, int narg, const void* def,
 /* lupb_wrapper ***************************************************************/
 
 /* Wrappers around upb def objects.  The userval contains a reference to the
- * symtab. */
+ * defpool. */
 
 #define LUPB_SYMTAB_INDEX 1
 
@@ -65,19 +65,19 @@ static const void* lupb_wrapper_check(lua_State* L, int narg,
   return w->def;
 }
 
-static void lupb_wrapper_pushsymtab(lua_State* L, int narg) {
+static void lupb_wrapper_pushdefpool(lua_State* L, int narg) {
   lua_getiuservalue(L, narg, LUPB_SYMTAB_INDEX);
 }
 
 /* lupb_wrapper_pushwrapper()
  *
  * For a given def wrapper at index |narg|, pushes a wrapper for the given |def|
- * and the given |type|.  The new wrapper will be part of the same symtab. */
+ * and the given |type|.  The new wrapper will be part of the same defpool. */
 static void lupb_wrapper_pushwrapper(lua_State* L, int narg, const void* def,
                                      const char* type) {
-  lupb_wrapper_pushsymtab(L, narg);
+  lupb_wrapper_pushdefpool(L, narg);
   lupb_DefPool_pushwrapper(L, -1, def, type);
-  lua_replace(L, -2); /* Remove symtab from stack. */
+  lua_replace(L, -2); /* Remove defpool from stack. */
 }
 
 /* lupb_MessageDef_pushsubmsgdef()
@@ -337,8 +337,8 @@ static int lupb_MessageDef_OneofCount(lua_State* L) {
 
 static bool lupb_MessageDef_pushnested(lua_State* L, int msgdef, int name) {
   const upb_MessageDef* m = lupb_MessageDef_check(L, msgdef);
-  lupb_wrapper_pushsymtab(L, msgdef);
-  upb_DefPool* symtab = lupb_DefPool_check(L, -1);
+  lupb_wrapper_pushdefpool(L, msgdef);
+  upb_DefPool* defpool = lupb_DefPool_check(L, -1);
   lua_pop(L, 1);
 
   /* Construct full package.Message.SubMessage name. */
@@ -350,7 +350,7 @@ static bool lupb_MessageDef_pushnested(lua_State* L, int msgdef, int name) {
 
   /* Try lookup. */
   const upb_MessageDef* nested =
-      upb_DefPool_FindMessageByName(symtab, nested_name);
+      upb_DefPool_FindMessageByName(defpool, nested_name);
   if (!nested) return false;
   lupb_wrapper_pushwrapper(L, msgdef, nested, LUPB_MSGDEF);
   return true;
@@ -671,8 +671,8 @@ static int lupb_FileDef_Package(lua_State* L) {
 
 static int lupb_FileDef_Pool(lua_State* L) {
   const upb_FileDef* f = lupb_FileDef_check(L, 1);
-  const upb_DefPool* symtab = upb_FileDef_Pool(f);
-  lupb_wrapper_pushwrapper(L, 1, symtab, LUPB_SYMTAB);
+  const upb_DefPool* defpool = upb_FileDef_Pool(f);
+  lupb_wrapper_pushwrapper(L, 1, defpool, LUPB_SYMTAB);
   return 1;
 }
 
@@ -691,30 +691,30 @@ static const struct luaL_Reg lupb_FileDef_m[] = {
     {"msgcount", lupb_FileDef_msgcount},
     {"name", lupb_FileDef_Name},
     {"package", lupb_FileDef_Package},
-    {"symtab", lupb_FileDef_Pool},
+    {"defpool", lupb_FileDef_Pool},
     {"syntax", lupb_FileDef_Syntax},
     {NULL, NULL}};
 
 /* lupb_DefPool
  * ****************************************************************/
 
-/* The symtab owns all defs.  Thus GC-rooting the symtab ensures that all
+/* The defpool owns all defs.  Thus GC-rooting the defpool ensures that all
  * underlying defs stay alive.
  *
- * The symtab's userval is a cache of def* -> object. */
+ * The defpool's userval is a cache of def* -> object. */
 
 #define LUPB_CACHE_INDEX 1
 
 typedef struct {
-  upb_DefPool* symtab;
+  upb_DefPool* defpool;
 } lupb_DefPool;
 
 upb_DefPool* lupb_DefPool_check(lua_State* L, int narg) {
-  lupb_DefPool* lsymtab = luaL_checkudata(L, narg, LUPB_SYMTAB);
-  if (!lsymtab->symtab) {
+  lupb_DefPool* ldefpool = luaL_checkudata(L, narg, LUPB_SYMTAB);
+  if (!ldefpool->defpool) {
     luaL_error(L, "called into dead object");
   }
-  return lsymtab->symtab;
+  return ldefpool->defpool;
 }
 
 void lupb_DefPool_pushwrapper(lua_State* L, int narg, const void* def,
@@ -739,7 +739,7 @@ void lupb_DefPool_pushwrapper(lua_State* L, int narg, const void* def,
     w->def = def;
     lua_replace(L, -2); /* Replace nil */
 
-    /* Set symtab as userval. */
+    /* Set defpool as userval. */
     lua_pushvalue(L, narg);
     lua_setiuservalue(L, -2, LUPB_SYMTAB_INDEX);
 
@@ -754,11 +754,12 @@ void lupb_DefPool_pushwrapper(lua_State* L, int narg, const void* def,
 /* upb_DefPool_New()
  *
  * Handles:
- *   upb.SymbolTable() -> <new instance>
+ *   upb.DefPool() -> <new instance>
  */
 static int lupb_DefPool_New(lua_State* L) {
-  lupb_DefPool* lsymtab = lupb_newuserdata(L, sizeof(*lsymtab), 1, LUPB_SYMTAB);
-  lsymtab->symtab = upb_DefPool_New();
+  lupb_DefPool* ldefpool =
+      lupb_newuserdata(L, sizeof(*ldefpool), 1, LUPB_SYMTAB);
+  ldefpool->defpool = upb_DefPool_New();
 
   /* Create our object cache. */
   lua_newtable(L);
@@ -769,9 +770,9 @@ static int lupb_DefPool_New(lua_State* L) {
   lua_setfield(L, -2, "__mode");
   lua_setmetatable(L, -2);
 
-  /* Put the symtab itself in the cache metatable. */
+  /* Put the defpool itself in the cache metatable. */
   lua_pushvalue(L, -2);
-  lua_rawsetp(L, -2, lsymtab->symtab);
+  lua_rawsetp(L, -2, ldefpool->defpool);
 
   /* Set the cache as our userval. */
   lua_setiuservalue(L, -2, LUPB_CACHE_INDEX);
@@ -780,9 +781,9 @@ static int lupb_DefPool_New(lua_State* L) {
 }
 
 static int lupb_DefPool_gc(lua_State* L) {
-  lupb_DefPool* lsymtab = luaL_checkudata(L, 1, LUPB_SYMTAB);
-  upb_DefPool_Free(lsymtab->symtab);
-  lsymtab->symtab = NULL;
+  lupb_DefPool* ldefpool = luaL_checkudata(L, 1, LUPB_SYMTAB);
+  upb_DefPool_Free(ldefpool->defpool);
+  ldefpool->defpool = NULL;
   return 0;
 }
 
@@ -859,7 +860,7 @@ static int lupb_DefPool_FindEnumByNameval(lua_State* L) {
 }
 
 static int lupb_DefPool_tostring(lua_State* L) {
-  lua_pushfstring(L, "<upb.SymbolTable>");
+  lua_pushfstring(L, "<upb.DefPool>");
   return 1;
 }
 
@@ -884,7 +885,7 @@ static void lupb_setfieldi(lua_State* L, const char* field, int i) {
 }
 
 static const struct luaL_Reg lupbdef_toplevel_m[] = {
-    {"SymbolTable", lupb_DefPool_New}, {NULL, NULL}};
+    {"DefPool", lupb_DefPool_New}, {NULL, NULL}};
 
 void lupb_def_registertypes(lua_State* L) {
   lupb_setfuncs(L, lupbdef_toplevel_m);

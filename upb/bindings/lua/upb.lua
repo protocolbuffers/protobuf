@@ -29,7 +29,7 @@
 
 local upb = require("lupb")
 
-upb.generated_pool = upb.SymbolTable()
+upb.generated_pool = upb.DefPool()
 
 local module_metatable = {
   __index = function(t, k)

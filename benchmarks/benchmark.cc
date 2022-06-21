@@ -136,15 +136,15 @@ template <LoadDescriptorMode Mode>
 static void BM_LoadAdsDescriptor_Upb(benchmark::State& state) {
   size_t bytes_per_iter = 0;
   for (auto _ : state) {
-    upb::SymbolTable symtab;
+    upb::DefPool defpool;
     if (Mode == NoLayout) {
       google_ads_googleads_v11_services_SearchGoogleAdsRequest_getmsgdef(
-          symtab.ptr());
-      bytes_per_iter = _upb_DefPool_BytesLoaded(symtab.ptr());
+          defpool.ptr());
+      bytes_per_iter = _upb_DefPool_BytesLoaded(defpool.ptr());
     } else {
       bytes_per_iter = 0;
       LoadDefInit_BuildLayout(
-          symtab.ptr(),
+          defpool.ptr(),
           &google_ads_googleads_v11_services_google_ads_service_proto_upbdefinit,
           &bytes_per_iter);
     }

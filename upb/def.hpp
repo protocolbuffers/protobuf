@@ -373,11 +373,11 @@ class FileDefPtr {
   const upb_FileDef* ptr_;
 };
 
-// Non-const methods in upb::SymbolTable are NOT thread-safe.
-class SymbolTable {
+// Non-const methods in upb::DefPool are NOT thread-safe.
+class DefPool {
  public:
-  SymbolTable() : ptr_(upb_DefPool_New(), upb_DefPool_Free) {}
-  explicit SymbolTable(upb_DefPool* s) : ptr_(s, upb_DefPool_Free) {}
+  DefPool() : ptr_(upb_DefPool_New(), upb_DefPool_Free) {}
+  explicit DefPool(upb_DefPool* s) : ptr_(s, upb_DefPool_Free) {}
 
   const upb_DefPool* ptr() const { return ptr_.get(); }
   upb_DefPool* ptr() { return ptr_.get(); }
@@ -408,6 +408,9 @@ class SymbolTable {
  private:
   std::unique_ptr<upb_DefPool, decltype(&upb_DefPool_Free)> ptr_;
 };
+
+// TODO(b/236632406): This typedef is deprecated. Delete it.
+using SymbolTable = DefPool;
 
 inline FileDefPtr MessageDefPtr::file() const {
   return FileDefPtr(upb_MessageDef_File(ptr_));

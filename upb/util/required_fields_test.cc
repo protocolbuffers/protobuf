@@ -60,25 +60,25 @@ std::vector<std::string> PathsToText(upb_FieldPathEntry* entry) {
 void CheckRequired(absl::string_view json,
                    const std::vector<std::string>& missing) {
   upb::Arena arena;
-  upb::SymbolTable symtab;
+  upb::DefPool defpool;
   upb_util_test_TestRequiredFields* test_msg =
       upb_util_test_TestRequiredFields_new(arena.ptr());
   upb::MessageDefPtr m(
-      upb_util_test_TestRequiredFields_getmsgdef(symtab.ptr()));
+      upb_util_test_TestRequiredFields_getmsgdef(defpool.ptr()));
   upb::Status status;
   EXPECT_TRUE(upb_JsonDecode(json.data(), json.size(), test_msg, m.ptr(),
-                             symtab.ptr(), 0, arena.ptr(), status.ptr()))
+                             defpool.ptr(), 0, arena.ptr(), status.ptr()))
       << status.error_message();
   upb_FieldPathEntry* entries;
   EXPECT_EQ(!missing.empty(), upb_util_HasUnsetRequired(
-                                  test_msg, m.ptr(), symtab.ptr(), &entries));
+                                  test_msg, m.ptr(), defpool.ptr(), &entries));
   EXPECT_EQ(missing, PathsToText(entries));
   free(entries);
 
   // Verify that we can pass a NULL pointer to entries when we don't care about
   // them.
   EXPECT_EQ(!missing.empty(),
-            upb_util_HasUnsetRequired(test_msg, m.ptr(), symtab.ptr(), NULL));
+            upb_util_HasUnsetRequired(test_msg, m.ptr(), defpool.ptr(), NULL));
 }
 
 // message HasRequiredField {
