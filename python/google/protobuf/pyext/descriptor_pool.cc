@@ -43,6 +43,7 @@
 #include <google/protobuf/pyext/message_factory.h>
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 #include <google/protobuf/stubs/hash.h>
+#include <iostream>
 
 #define PyString_AsStringAndSize(ob, charpp, sizep)                           \
   (PyUnicode_Check(ob) ? ((*(charpp) = const_cast<char*>(                     \
@@ -575,6 +576,7 @@ static PyObject* AddServiceDescriptor(PyObject* self, PyObject* descriptor) {
 
 // The code below loads new Descriptors from a serialized FileDescriptorProto.
 static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
+  std::cout << "yoki1";
   PyDescriptorPool* self = reinterpret_cast<PyDescriptorPool*>(pself);
   char* message_type;
   Py_ssize_t message_len;
@@ -614,12 +616,15 @@ static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
         generated_file, serialized_pb);
   }
 
+  std::cout << "yoki2";
   BuildFileErrorCollector error_collector;
   const FileDescriptor* descriptor =
       // Pool is mutable, we can remove the "const".
       const_cast<DescriptorPool*>(self->pool)
           ->BuildFileCollectingErrors(file_proto, &error_collector);
+  std::cout << "yoki3";
   if (descriptor == NULL) {
+    std::cout << "yoki4";
     PyErr_Format(PyExc_TypeError,
                  "Couldn't build proto file into descriptor pool!\n%s",
                  error_collector.error_message.c_str());
