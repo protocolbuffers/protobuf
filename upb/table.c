@@ -31,9 +31,9 @@
  * Implementation is heavily inspired by Lua's ltable.c.
  */
 
-#include <string.h>
+#include "upb/internal/table.h"
 
-#include "upb/table_internal.h"
+#include <string.h>
 
 /* Must be last. */
 #include "upb/port_def.inc"

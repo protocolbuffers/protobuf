@@ -32,6 +32,7 @@
 #include <setjmp.h>
 #include <string.h>
 
+#include "upb/extension_registry.h"
 #include "upb/msg_internal.h"
 #include "upb/upb.h"
 

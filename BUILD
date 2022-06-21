@@ -102,29 +102,54 @@ cc_library(
 cc_library(
     name = "upb",
     srcs = [
+        "upb/arena.c",
         "upb/decode.c",
-        "upb/decode_internal.h",
         "upb/encode.c",
+        "upb/internal/decode.h",
+        "upb/internal/table.h",
+        "upb/internal/upb.h",
         "upb/msg.c",
         "upb/msg_internal.h",
+        "upb/status.c",
         "upb/table.c",
-        "upb/table_internal.h",
         "upb/upb.c",
-        "upb/upb_internal.h",
     ],
     hdrs = [
+        "upb/arena.h",
         "upb/decode.h",
         "upb/encode.h",
+        "upb/extension_registry.h",
         "upb/msg.h",
+        "upb/status.h",
         "upb/upb.h",
         "upb/upb.hpp",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":extension_registry",
         ":fastdecode",
         ":port",
         "//third_party/utf8_range",
+    ],
+)
+
+cc_library(
+    name = "extension_registry",
+    srcs = [
+        "upb/extension_registry.c",
+        "upb/msg.h",
+        "upb/msg_internal.h",
+        "upb/upb.h",
+    ],
+    hdrs = [
+        "upb/extension_registry.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":port",
+        ":table",
     ],
 )
 
@@ -150,8 +175,11 @@ cc_library(
 
 cc_library(
     name = "mini_table_internal",
-    hdrs = ["upb/msg_internal.h"],
+    hdrs = [
+        "upb/msg_internal.h",
+    ],
     deps = [
+        ":extension_registry",
         ":port",
         ":table",
         ":upb",
@@ -170,6 +198,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":extension_registry",
         ":mini_table_internal",
         ":port",
         ":upb",
@@ -179,8 +208,8 @@ cc_library(
 cc_library(
     name = "mini_table_accessors",
     srcs = [
+        "upb/internal/mini_table_accessors.h",
         "upb/mini_table_accessors.c",
-        "upb/mini_table_accessors_internal.h",
     ],
     hdrs = [
         "upb/mini_table_accessors.h",
@@ -198,10 +227,15 @@ cc_library(
 
 cc_test(
     name = "mini_table_test",
-    srcs = ["upb/mini_table_test.cc"],
+    srcs = [
+        "upb/internal/table.h",
+        "upb/mini_table_test.cc",
+    ],
     deps = [
+        ":extension_registry",
         ":mini_table",
         ":mini_table_internal",
+        ":port",
         ":upb",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_googletest//:gtest_main",
@@ -233,13 +267,14 @@ cc_library(
         "upb/decode.h",
         "upb/decode_fast.c",
         "upb/decode_fast.h",
-        "upb/decode_internal.h",
+        "upb/internal/decode.h",
+        "upb/internal/upb.h",
         "upb/msg.h",
         "upb/msg_internal.h",
-        "upb/upb_internal.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     deps = [
+        ":extension_registry",
         ":port",
         ":table",
         "//third_party/utf8_range",
@@ -258,6 +293,7 @@ cc_library(
         "upb/decode.h",
         "upb/decode_fast.h",
         "upb/encode.h",
+        "upb/extension_registry.h",
         "upb/msg.h",
         "upb/msg_internal.h",
         "upb/port_def.inc",
@@ -302,10 +338,14 @@ upb_proto_reflection_library(
 cc_library(
     name = "collections",
     srcs = [
-        "upb/collections.c",
+        "upb/array.c",
+        "upb/map.c",
     ],
     hdrs = [
+        "upb/array.h",
         "upb/collections.h",
+        "upb/map.h",
+        "upb/message_value.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -346,8 +386,8 @@ cc_library(
 cc_library(
     name = "textformat",
     srcs = [
+        "upb/internal/upb.h",
         "upb/text_encode.c",
-        "upb/upb_internal.h",
     ],
     hdrs = [
         "upb/text_encode.h",
@@ -364,9 +404,9 @@ cc_library(
 cc_library(
     name = "json",
     srcs = [
+        "upb/internal/upb.h",
         "upb/json_decode.c",
         "upb/json_encode.c",
-        "upb/upb_internal.h",
     ],
     hdrs = [
         "upb/json_decode.h",
@@ -667,6 +707,9 @@ sh_test(
 cc_library(
     name = "table",
     hdrs = [
+        "upb/arena.h",
+        "upb/internal/table.h",
+        "upb/status.h",
         "upb/table_internal.h",
         "upb/upb.h",
     ],
@@ -692,6 +735,7 @@ upb_amalgamation(
     libs = [
         ":collections",
         ":descriptor_upb_proto",
+        ":extension_registry",
         ":fastdecode",
         ":mini_table",
         ":port",
@@ -718,6 +762,7 @@ upb_amalgamation(
         ":collections",
         ":descriptor_upb_proto",
         ":descriptor_upb_proto_reflection",
+        ":extension_registry",
         ":fastdecode",
         ":json",
         ":mini_table",
@@ -745,6 +790,7 @@ upb_amalgamation(
     libs = [
         ":collections",
         ":descriptor_upb_proto",
+        ":extension_registry",
         ":fastdecode",
         ":json",
         ":mini_table",

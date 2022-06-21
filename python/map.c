@@ -30,7 +30,7 @@
 #include "python/convert.h"
 #include "python/message.h"
 #include "python/protobuf.h"
-#include "upb/collections.h"
+#include "upb/map.h"
 
 // -----------------------------------------------------------------------------
 // MapContainer

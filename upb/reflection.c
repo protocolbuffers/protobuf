@@ -29,9 +29,9 @@
 
 #include <string.h>
 
+#include "upb/internal/table.h"
 #include "upb/msg.h"
 #include "upb/port_def.inc"
-#include "upb/table_internal.h"
 
 static size_t get_field_size(const upb_MiniTable_Field* f) {
   static unsigned char sizes[] = {

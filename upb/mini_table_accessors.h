@@ -28,8 +28,8 @@
 #ifndef UPB_MINI_TABLE_ACCESSORS_H_
 #define UPB_MINI_TABLE_ACCESSORS_H_
 
-#include "upb/collections.h"
-#include "upb/mini_table_accessors_internal.h"
+#include "upb/array.h"
+#include "upb/internal/mini_table_accessors.h"
 #include "upb/msg_internal.h"
 
 // Must be last.

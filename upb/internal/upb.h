@@ -25,52 +25,44 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/internal/upb.h"
+#ifndef UPB_INTERNAL_UPB_H_
+#define UPB_INTERNAL_UPB_H_
 
-#include <errno.h>
-#include <float.h>
-#include <stdarg.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "upb/upb.h"
 
-#include "upb/arena.h"
-#include "upb/status.h"
+struct mem_block;
+typedef struct mem_block mem_block;
 
-// Must be last.
-#include "upb/port_def.inc"
+struct upb_Arena {
+  _upb_ArenaHead head;
+  /* Stores cleanup metadata for this arena.
+   * - a pointer to the current cleanup counter.
+   * - a boolean indicating if there is an unowned initial block.  */
+  uintptr_t cleanup_metadata;
 
-/* Miscellaneous utilities ****************************************************/
+  /* Allocator to allocate arena blocks.  We are responsible for freeing these
+   * when we are destroyed. */
+  upb_alloc* block_alloc;
+  uint32_t last_size;
 
-static void upb_FixLocale(char* p) {
-  /* printf() is dependent on locales; sadly there is no easy and portable way
-   * to avoid this. This little post-processing step will translate 1,2 -> 1.2
-   * since JSON needs the latter. Arguably a hack, but it is simple and the
-   * alternatives are far more complicated, platform-dependent, and/or larger
-   * in code size. */
-  for (; *p; p++) {
-    if (*p == ',') *p = '.';
-  }
-}
+  /* When multiple arenas are fused together, each arena points to a parent
+   * arena (root points to itself). The root tracks how many live arenas
+   * reference it. */
+  uint32_t refcount; /* Only used when a->parent == a */
+  struct upb_Arena* parent;
 
-void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size) {
-  assert(size >= kUpb_RoundTripBufferSize);
-  snprintf(buf, size, "%.*g", DBL_DIG, val);
-  if (strtod(buf, NULL) != val) {
-    snprintf(buf, size, "%.*g", DBL_DIG + 2, val);
-    assert(strtod(buf, NULL) == val);
-  }
-  upb_FixLocale(buf);
-}
+  /* Linked list of blocks to free/cleanup. */
+  mem_block *freelist, *freelist_tail;
+};
 
-void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size) {
-  assert(size >= kUpb_RoundTripBufferSize);
-  snprintf(buf, size, "%.*g", FLT_DIG, val);
-  if (strtof(buf, NULL) != val) {
-    snprintf(buf, size, "%.*g", FLT_DIG + 3, val);
-    assert(strtof(buf, NULL) == val);
-  }
-  upb_FixLocale(buf);
-}
+// Encodes a float or double that is round-trippable, but as short as possible.
+// These routines are not fully optimal (not guaranteed to be shortest), but are
+// short-ish and match the implementation that has been used in protobuf since
+// the beginning.
+//
+// The given buffer size must be at least kUpb_RoundTripBufferSize.
+enum { kUpb_RoundTripBufferSize = 32 };
+void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size);
+void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size);
+
+#endif /* UPB_INTERNAL_UPB_H_ */

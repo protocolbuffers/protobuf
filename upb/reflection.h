@@ -28,8 +28,9 @@
 #ifndef UPB_REFLECTION_H_
 #define UPB_REFLECTION_H_
 
-#include "upb/collections.h"
+#include "upb/array.h"
 #include "upb/def.h"
+#include "upb/map.h"
 #include "upb/msg.h"
 #include "upb/port_def.inc"
 #include "upb/upb.h"

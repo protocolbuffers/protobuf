@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/internal/upb.h"
+#include "upb/status.h"
 
 #include <errno.h>
 #include <float.h>
@@ -36,41 +36,51 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "upb/arena.h"
-#include "upb/status.h"
+#include "upb/internal/upb.h"
 
 // Must be last.
 #include "upb/port_def.inc"
 
-/* Miscellaneous utilities ****************************************************/
-
-static void upb_FixLocale(char* p) {
-  /* printf() is dependent on locales; sadly there is no easy and portable way
-   * to avoid this. This little post-processing step will translate 1,2 -> 1.2
-   * since JSON needs the latter. Arguably a hack, but it is simple and the
-   * alternatives are far more complicated, platform-dependent, and/or larger
-   * in code size. */
-  for (; *p; p++) {
-    if (*p == ',') *p = '.';
-  }
+void upb_Status_Clear(upb_Status* status) {
+  if (!status) return;
+  status->ok = true;
+  status->msg[0] = '\0';
 }
 
-void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size) {
-  assert(size >= kUpb_RoundTripBufferSize);
-  snprintf(buf, size, "%.*g", DBL_DIG, val);
-  if (strtod(buf, NULL) != val) {
-    snprintf(buf, size, "%.*g", DBL_DIG + 2, val);
-    assert(strtod(buf, NULL) == val);
-  }
-  upb_FixLocale(buf);
+bool upb_Status_IsOk(const upb_Status* status) { return status->ok; }
+
+const char* upb_Status_ErrorMessage(const upb_Status* status) {
+  return status->msg;
 }
 
-void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size) {
-  assert(size >= kUpb_RoundTripBufferSize);
-  snprintf(buf, size, "%.*g", FLT_DIG, val);
-  if (strtof(buf, NULL) != val) {
-    snprintf(buf, size, "%.*g", FLT_DIG + 3, val);
-    assert(strtof(buf, NULL) == val);
-  }
-  upb_FixLocale(buf);
+void upb_Status_SetErrorMessage(upb_Status* status, const char* msg) {
+  if (!status) return;
+  status->ok = false;
+  strncpy(status->msg, msg, _kUpb_Status_MaxMessage - 1);
+  status->msg[_kUpb_Status_MaxMessage - 1] = '\0';
+}
+
+void upb_Status_SetErrorFormat(upb_Status* status, const char* fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  upb_Status_VSetErrorFormat(status, fmt, args);
+  va_end(args);
+}
+
+void upb_Status_VSetErrorFormat(upb_Status* status, const char* fmt,
+                                va_list args) {
+  if (!status) return;
+  status->ok = false;
+  vsnprintf(status->msg, sizeof(status->msg), fmt, args);
+  status->msg[_kUpb_Status_MaxMessage - 1] = '\0';
+}
+
+void upb_Status_VAppendErrorFormat(upb_Status* status, const char* fmt,
+                                   va_list args) {
+  size_t len;
+  if (!status) return;
+  status->ok = false;
+  len = strlen(status->msg);
+  vsnprintf(status->msg + len, sizeof(status->msg) - len, fmt, args);
+  status->msg[_kUpb_Status_MaxMessage - 1] = '\0';
 }

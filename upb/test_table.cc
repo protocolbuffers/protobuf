@@ -39,7 +39,7 @@
 #include <vector>
 
 #include "gtest/gtest.h"
-#include "upb/table_internal.h"
+#include "upb/internal/table.h"
 #include "upb/upb.hpp"
 
 // Must be last.

@@ -32,7 +32,6 @@
 
 #include "python/descriptor.h"
 #include "python/python_api.h"
-#include "upb/table_internal.h"
 
 // begin:github_only
 #define PYUPB_PROTOBUF_PUBLIC_PACKAGE "google.protobuf"

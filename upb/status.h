@@ -25,52 +25,42 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/internal/upb.h"
+#ifndef UPB_STATUS_H_
+#define UPB_STATUS_H_
 
-#include <errno.h>
-#include <float.h>
 #include <stdarg.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stdbool.h>
 
-#include "upb/arena.h"
-#include "upb/status.h"
-
-// Must be last.
 #include "upb/port_def.inc"
 
-/* Miscellaneous utilities ****************************************************/
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-static void upb_FixLocale(char* p) {
-  /* printf() is dependent on locales; sadly there is no easy and portable way
-   * to avoid this. This little post-processing step will translate 1,2 -> 1.2
-   * since JSON needs the latter. Arguably a hack, but it is simple and the
-   * alternatives are far more complicated, platform-dependent, and/or larger
-   * in code size. */
-  for (; *p; p++) {
-    if (*p == ',') *p = '.';
-  }
-}
+#define _kUpb_Status_MaxMessage 127
 
-void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size) {
-  assert(size >= kUpb_RoundTripBufferSize);
-  snprintf(buf, size, "%.*g", DBL_DIG, val);
-  if (strtod(buf, NULL) != val) {
-    snprintf(buf, size, "%.*g", DBL_DIG + 2, val);
-    assert(strtod(buf, NULL) == val);
-  }
-  upb_FixLocale(buf);
-}
+typedef struct {
+  bool ok;
+  char msg[_kUpb_Status_MaxMessage]; /* Error message; NULL-terminated. */
+} upb_Status;
 
-void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size) {
-  assert(size >= kUpb_RoundTripBufferSize);
-  snprintf(buf, size, "%.*g", FLT_DIG, val);
-  if (strtof(buf, NULL) != val) {
-    snprintf(buf, size, "%.*g", FLT_DIG + 3, val);
-    assert(strtof(buf, NULL) == val);
-  }
-  upb_FixLocale(buf);
-}
+const char* upb_Status_ErrorMessage(const upb_Status* status);
+bool upb_Status_IsOk(const upb_Status* status);
+
+/* These are no-op if |status| is NULL. */
+void upb_Status_Clear(upb_Status* status);
+void upb_Status_SetErrorMessage(upb_Status* status, const char* msg);
+void upb_Status_SetErrorFormat(upb_Status* status, const char* fmt, ...)
+    UPB_PRINTF(2, 3);
+void upb_Status_VSetErrorFormat(upb_Status* status, const char* fmt,
+                                va_list args) UPB_PRINTF(2, 0);
+void upb_Status_VAppendErrorFormat(upb_Status* status, const char* fmt,
+                                   va_list args) UPB_PRINTF(2, 0);
+
+#include "upb/port_undef.inc"
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#endif /* UPB_STATUS_H_ */

@@ -37,9 +37,9 @@
 #include <string.h>
 
 #include "upb/decode.h"
+#include "upb/internal/upb.h"
 #include "upb/internal/vsnprintf_compat.h"
 #include "upb/reflection.h"
-#include "upb/upb_internal.h"
 
 /* Must be last. */
 #include "upb/port_def.inc"

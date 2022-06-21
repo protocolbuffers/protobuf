@@ -39,8 +39,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "upb/extension_registry.h"
+#include "upb/internal/table.h"
 #include "upb/msg.h"
-#include "upb/table_internal.h"
 #include "upb/upb.h"
 
 /* Must be last. */
@@ -672,7 +673,7 @@ typedef enum {
   _kUpb_MapInsertStatus_Inserted = 0,
   _kUpb_MapInsertStatus_Replaced = 1,
   _kUpb_MapInsertStatus_OutOfMemory = 2,
-  // LINT.ThenChange(//depot/google3/third_party/upb/upb/collections.h)
+  // LINT.ThenChange(//depot/google3/third_party/upb/upb/map.h)
 } _upb_MapInsertStatus;
 
 UPB_INLINE _upb_MapInsertStatus _upb_Map_Insert(upb_Map* map, const void* key,

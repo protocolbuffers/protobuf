@@ -25,52 +25,42 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/internal/upb.h"
+#ifndef UPB_MESSAGE_VALUE_H_
+#define UPB_MESSAGE_VALUE_H_
 
-#include <errno.h>
-#include <float.h>
-#include <stdarg.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "upb/arena.h"
-#include "upb/status.h"
-
-// Must be last.
+#include "google/protobuf/descriptor.upb.h"
 #include "upb/port_def.inc"
 
-/* Miscellaneous utilities ****************************************************/
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-static void upb_FixLocale(char* p) {
-  /* printf() is dependent on locales; sadly there is no easy and portable way
-   * to avoid this. This little post-processing step will translate 1,2 -> 1.2
-   * since JSON needs the latter. Arguably a hack, but it is simple and the
-   * alternatives are far more complicated, platform-dependent, and/or larger
-   * in code size. */
-  for (; *p; p++) {
-    if (*p == ',') *p = '.';
-  }
-}
+// Definitions commn to both upb_Array and upb_Map.
 
-void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size) {
-  assert(size >= kUpb_RoundTripBufferSize);
-  snprintf(buf, size, "%.*g", DBL_DIG, val);
-  if (strtod(buf, NULL) != val) {
-    snprintf(buf, size, "%.*g", DBL_DIG + 2, val);
-    assert(strtod(buf, NULL) == val);
-  }
-  upb_FixLocale(buf);
-}
+typedef union {
+  bool bool_val;
+  float float_val;
+  double double_val;
+  int32_t int32_val;
+  int64_t int64_val;
+  uint32_t uint32_val;
+  uint64_t uint64_val;
+  const upb_Map* map_val;
+  const upb_Message* msg_val;
+  const upb_Array* array_val;
+  upb_StringView str_val;
+} upb_MessageValue;
 
-void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size) {
-  assert(size >= kUpb_RoundTripBufferSize);
-  snprintf(buf, size, "%.*g", FLT_DIG, val);
-  if (strtof(buf, NULL) != val) {
-    snprintf(buf, size, "%.*g", FLT_DIG + 3, val);
-    assert(strtof(buf, NULL) == val);
-  }
-  upb_FixLocale(buf);
-}
+typedef union {
+  upb_Map* map;
+  upb_Message* msg;
+  upb_Array* array;
+} upb_MutableMessageValue;
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include "upb/port_undef.inc"
+
+#endif /* UPB_MESSAGE_VALUE_H_ */

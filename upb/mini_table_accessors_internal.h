@@ -28,32 +28,9 @@
 #ifndef UPB_MINI_TABLE_ACCESSORS_INTERNAL_H_
 #define UPB_MINI_TABLE_ACCESSORS_INTERNAL_H_
 
-#include "upb/msg_internal.h"
+// TODO(b/232091617): Delete this entire header which currently exists only for
+// temporary backwards compatibility.
 
-// Must be last.
-#include "upb/port_def.inc"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-UPB_INLINE bool _upb_MiniTable_Field_InOneOf(const upb_MiniTable_Field* field) {
-  return field->presence < 0;
-}
-
-UPB_INLINE void _upb_MiniTable_SetPresence(upb_Message* msg,
-                                           const upb_MiniTable_Field* field) {
-  if (field->presence > 0) {
-    _upb_sethas_field(msg, field);
-  } else if (_upb_MiniTable_Field_InOneOf(field)) {
-    *_upb_oneofcase_field(msg, field) = field->number;
-  }
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#include "upb/port_undef.inc"
+#include "upb/internal/mini_table_accessors.h"
 
 #endif  // UPB_MINI_TABLE_ACCESSORS_INTERNAL_H_
