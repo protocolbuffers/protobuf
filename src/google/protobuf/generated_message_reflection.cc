@@ -395,7 +395,19 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
       }
     }
   }
+#ifndef PROTOBUF_FUZZ_MESSAGE_SPACE_USED_LONG
   return total_size;
+#else
+  // Use both `this` and `dummy` to generate the seed so that the scale factor
+  // is both per-object and non-predictable, but consistent across multiple
+  // calls in the same binary.
+  static bool dummy;
+  uintptr_t seed =
+      reinterpret_cast<uintptr_t>(&dummy) ^ reinterpret_cast<uintptr_t>(this);
+  // Fuzz the size by +/- 50%.
+  double scale = (static_cast<double>(seed % 10000) / 10000) + 0.5;
+  return total_size * scale;
+#endif
 }
 
 namespace {

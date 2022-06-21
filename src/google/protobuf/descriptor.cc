@@ -2562,7 +2562,9 @@ void FileDescriptor::CopyTo(FileDescriptorProto* proto) const {
   proto->set_name(name());
   if (!package().empty()) proto->set_package(package());
   // TODO(liujisi): Also populate when syntax="proto2".
-  if (syntax() == SYNTAX_PROTO3) proto->set_syntax(SyntaxName(syntax()));
+  if (syntax() == SYNTAX_PROTO3
+  ) proto->set_syntax(SyntaxName(syntax()));
+
 
   for (int i = 0; i < dependency_count(); i++) {
     proto->add_dependency(dependency(i)->name());
@@ -4982,7 +4984,8 @@ static void PlanAllocationSize(const FileDescriptorProto& proto,
                                internal::FlatAllocator& alloc) {
   alloc.PlanArray<FileDescriptor>(1);
   alloc.PlanArray<FileDescriptorTables>(1);
-  alloc.PlanArray<std::string>(2);  // name + package
+  alloc.PlanArray<std::string>(2
+  );  // name + package
   if (proto.has_options()) alloc.PlanArray<FileOptions>(1);
   if (proto.has_source_code_info()) alloc.PlanArray<SourceCodeInfo>(1);
 

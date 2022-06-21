@@ -264,6 +264,7 @@ TEST_F(ParserTest, WarnIfFieldNameContainsNumberImmediatelyFollowUnderscore) {
                   "song_name_1.") != std::string::npos);
 }
 
+
 // ===================================================================
 
 typedef ParserTest ParseMessageTest;

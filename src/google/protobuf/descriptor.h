@@ -54,6 +54,9 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_H__
 #define GOOGLE_PROTOBUF_DESCRIPTOR_H__
 
+#include <cstdint>
+
+#include <google/protobuf/stubs/strutil.h>
 
 #include <atomic>
 #include <map>
@@ -1702,7 +1705,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileDescriptor);
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FileDescriptor, 144);
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FileDescriptor, 152);
 
 // ===================================================================
 

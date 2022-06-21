@@ -503,10 +503,9 @@ int CEscapeInternal(const char* src, int src_len, char* dest,
              (last_hex_escape && isxdigit(*src)))) {
           // need space for 4 letter escape and the trailing '\0' to
           // be written by snprintf.
-          if (dest_len - used < 5)
-            return -1;
+          if (dest_len - used < 5) return -1;
           snprintf(dest + used, 5, (use_hex ? "\\x%02x" : "\\%03o"),
-                  static_cast<uint8_t>(*src));
+                   static_cast<uint8_t>(*src));
           is_hex_escape = use_hex;
           used += 4;
         } else {
