@@ -90,12 +90,6 @@ class RepeatedPtrFieldBase;  // defined in repeated_ptr_field.h
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
 
-inline PROTOBUF_ALWAYS_INLINE
-void* AlignTo(void* ptr, size_t align) {
-  return reinterpret_cast<void*>(
-      (reinterpret_cast<uintptr_t>(ptr) + align - 1) & (~align + 1));
-}
-
 // Templated cleanup methods.
 template <typename T>
 void arena_destruct_object(void* object) {
@@ -420,7 +414,18 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename T>
   class InternalHelper {
    private:
-    struct Rank1 {};
+    // A SFINAE friendly trait that probes for `U` but always evalues to
+    // `Arena*`.
+    template <typename U>
+    using EnableIfArena =
+        typename std::enable_if<std::is_same<Arena*, U>::value, Arena*>::type;
+
+    // Rather than use SFINAE that must fully cover the space of options in a
+    // mutually exclusive fashion, we use implicit conversions to base classes
+    // to force an explicit ranking for our preferences.  The lowest ranked
+    // version that compiles will be accepted.
+    struct Rank2 {};
+    struct Rank1 : Rank2 {};
     struct Rank0 : Rank1 {};
 
     static Arena* GetOwningArena(const T* p) {
@@ -429,7 +434,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
     template <typename U>
     static auto GetOwningArena(Rank0, const U* p)
-        -> decltype(p->GetOwningArena()) {
+        -> EnableIfArena<decltype(p->GetOwningArena())> {
       return p->GetOwningArena();
     }
 
@@ -440,35 +445,31 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
     static void InternalSwap(T* a, T* b) { a->InternalSwap(b); }
 
-    static Arena* GetArenaForAllocationInternal(
-        const T* p, std::true_type /*is_derived_from<MessageLite>*/) {
+    static Arena* GetArenaForAllocation(const T* p) {
+      return GetArenaForAllocation(Rank0{}, p);
+    }
+
+    static Arena* GetArena(const T* p) {
+      // Rather than replicate probing for `GetArena` with fallback to nullptr,
+      // we borrow the implementation of `GetArenaForAllocation` but skip
+      // `Rank0` which probes for `GetArenaForAllocation`.
+      return GetArenaForAllocation(Rank1{}, p);
+    }
+
+    template <typename U>
+    static auto GetArenaForAllocation(Rank0, const U* p)
+        -> EnableIfArena<decltype(p->GetArenaForAllocation())> {
       return p->GetArenaForAllocation();
     }
 
-    static Arena* GetArenaForAllocationInternal(
-        const T* p, std::false_type /*is_derived_from<MessageLite>*/) {
-      return GetArenaForAllocationForNonMessage(
-          p, typename is_arena_constructable::type());
-    }
-
-    static Arena* GetArenaForAllocationForNonMessage(
-        const T* p, std::true_type /*is_arena_constructible*/) {
+    template <typename U>
+    static auto GetArenaForAllocation(Rank1, const U* p)
+        -> EnableIfArena<decltype(p->GetArena())> {
       return p->GetArena();
     }
 
-    static Arena* GetArenaForAllocationForNonMessage(
-        const T* p, std::false_type /*is_arena_constructible*/) {
-      return GetArenaForAllocationForNonMessageNonArenaConstructible(
-          p, typename has_get_arena::type());
-    }
-
-    static Arena* GetArenaForAllocationForNonMessageNonArenaConstructible(
-        const T* p, std::true_type /*has_get_arena*/) {
-      return p->GetArena();
-    }
-
-    static Arena* GetArenaForAllocationForNonMessageNonArenaConstructible(
-        const T* /* p */, std::false_type /*has_get_arena*/) {
+    template <typename U>
+    static Arena* GetArenaForAllocation(Rank2, const U* p) {
       return nullptr;
     }
 
@@ -494,18 +495,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                                              sizeof(char)>
         is_arena_constructable;
 
-    template <typename U,
-              typename std::enable_if<
-                  std::is_same<Arena*, decltype(std::declval<const U>()
-                                                    .GetArena())>::value,
-                  int>::type = 0>
-    static char HasGetArena(decltype(&U::GetArena));
-    template <typename U>
-    static double HasGetArena(...);
-
-    typedef std::integral_constant<bool, sizeof(HasGetArena<T>(nullptr)) ==
-                                             sizeof(char)>
-        has_get_arena;
 
     template <typename... Args>
     static T* Construct(void* ptr, Args&&... args) {
@@ -515,8 +504,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     static inline PROTOBUF_ALWAYS_INLINE T* New() {
       return new T(nullptr);
     }
-
-    static Arena* GetArena(const T* p) { return p->GetArena(); }
 
     friend class Arena;
     friend class TestUtil::ReflectionTester;
@@ -533,8 +520,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // For internal use only.
   template <typename T>
   static Arena* InternalGetArenaForAllocation(const T* p) {
-    return InternalHelper<T>::GetArenaForAllocationInternal(
-        p, std::is_convertible<T*, MessageLite*>());
+    return InternalHelper<T>::GetArenaForAllocation(p);
   }
 
   // Creates message-owned arena.  For internal use only.
@@ -565,9 +551,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
  private:
   internal::ThreadSafeArena impl_;
-
-  template <typename T>
-  struct has_get_arena : InternalHelper<T>::has_get_arena {};
 
   // Constructor solely used by message-owned arena.
   inline Arena(internal::MessageOwned) : impl_(internal::MessageOwned{}) {}
@@ -620,18 +603,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     if (destructor == nullptr) {
       return AllocateAlignedWithHook(size, align, type);
     } else {
-      if (align <= 8) {
-        auto res = AllocateAlignedWithCleanup(internal::AlignUpTo8(size), type);
-        res.second->elem = res.first;
-        res.second->cleanup = destructor;
-        return res.first;
-      } else {
-        auto res = AllocateAlignedWithCleanup(size + align - 8, type);
-        auto ptr = internal::AlignTo(res.first, align);
-        res.second->elem = ptr;
-        res.second->cleanup = destructor;
-        return ptr;
-      }
+      return AllocateAlignedWithCleanup(size, align, destructor, type);
     }
   }
 
@@ -774,25 +746,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // Implementation for GetArena(). Only message objects with
   // InternalArenaConstructable_ tags can be associated with an arena, and such
   // objects must implement a GetArena() method.
-  template <typename T, typename std::enable_if<
-                            is_arena_constructable<T>::value, int>::type = 0>
+  template <typename T>
   PROTOBUF_ALWAYS_INLINE static Arena* GetArenaInternal(const T* value) {
     return InternalHelper<T>::GetArena(value);
-  }
-  template <typename T,
-            typename std::enable_if<!is_arena_constructable<T>::value &&
-                                        has_get_arena<T>::value,
-                                    int>::type = 0>
-  PROTOBUF_ALWAYS_INLINE static Arena* GetArenaInternal(const T* value) {
-    return value->GetArena();
-  }
-  template <typename T,
-            typename std::enable_if<!is_arena_constructable<T>::value &&
-                                        !has_get_arena<T>::value,
-                                    int>::type = 0>
-  PROTOBUF_ALWAYS_INLINE static Arena* GetArenaInternal(const T* value) {
-    (void)value;
-    return nullptr;
   }
 
   void* AllocateAlignedWithHookForArray(size_t n, size_t align,
@@ -828,8 +784,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   void* AllocateAlignedNoHook(size_t n);
   void* AllocateAlignedWithHook(size_t n, const std::type_info* type);
   void* AllocateAlignedWithHookForArray(size_t n, const std::type_info* type);
-  std::pair<void*, internal::SerialArena::CleanupNode*>
-  AllocateAlignedWithCleanup(size_t n, const std::type_info* type);
+  void* AllocateAlignedWithCleanup(size_t n, size_t align,
+                                   void (*destructor)(void*),
+                                   const std::type_info* type);
 
   template <typename Type>
   friend class internal::GenericTypeHandler;

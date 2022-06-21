@@ -129,10 +129,11 @@ void StripWhitespace(std::string *str) {
 //    it only replaces the first instance of "old."
 // ----------------------------------------------------------------------
 
-void StringReplace(StringPiece s, StringPiece oldsub, StringPiece newsub,
-                   bool replace_all, std::string *res) {
+void StringReplace(const std::string &s, const std::string &oldsub,
+                   const std::string &newsub, bool replace_all,
+                   std::string *res) {
   if (oldsub.empty()) {
-    StrAppend(res, s);  // if empty, append the given string.
+    res->append(s);  // if empty, append the given string.
     return;
   }
 
@@ -143,11 +144,11 @@ void StringReplace(StringPiece s, StringPiece oldsub, StringPiece newsub,
     if (pos == std::string::npos) {
       break;
     }
-    StrAppend(res, s.substr(start_pos, pos - start_pos));
-    StrAppend(res, newsub);
+    res->append(s, start_pos, pos - start_pos);
+    res->append(newsub);
     start_pos = pos + oldsub.size();  // start searching again after the "old"
   } while (replace_all);
-  StrAppend(res, s.substr(start_pos, s.length() - start_pos));
+  res->append(s, start_pos, s.length() - start_pos);
 }
 
 // ----------------------------------------------------------------------
@@ -159,8 +160,8 @@ void StringReplace(StringPiece s, StringPiece oldsub, StringPiece newsub,
 //    happened or not.
 // ----------------------------------------------------------------------
 
-std::string StringReplace(StringPiece s, StringPiece oldsub, StringPiece newsub,
-                          bool replace_all) {
+std::string StringReplace(const std::string &s, const std::string &oldsub,
+                          const std::string &newsub, bool replace_all) {
   std::string ret;
   StringReplace(s, oldsub, newsub, replace_all, &ret);
   return ret;
@@ -444,24 +445,22 @@ int UnescapeCEscapeSequences(const char *source, char *dest,
 //    In the first and second calls, the length of dest is returned. In the
 //    the third call, the new string is returned.
 // ----------------------------------------------------------------------
-int UnescapeCEscapeString(StringPiece src, std::string *dest) {
+int UnescapeCEscapeString(const std::string &src, std::string *dest) {
   return UnescapeCEscapeString(src, dest, nullptr);
 }
 
-int UnescapeCEscapeString(StringPiece src, std::string *dest,
+int UnescapeCEscapeString(const std::string &src, std::string *dest,
                           std::vector<std::string> *errors) {
   std::unique_ptr<char[]> unescaped(new char[src.size() + 1]);
-  int len = UnescapeCEscapeSequences(std::string(src).c_str(), unescaped.get(),
-                                     errors);
+  int len = UnescapeCEscapeSequences(src.c_str(), unescaped.get(), errors);
   GOOGLE_CHECK(dest);
   dest->assign(unescaped.get(), len);
   return len;
 }
 
-std::string UnescapeCEscapeString(StringPiece src) {
+std::string UnescapeCEscapeString(const std::string &src) {
   std::unique_ptr<char[]> unescaped(new char[src.size() + 1]);
-  int len = UnescapeCEscapeSequences(std::string(src).c_str(), unescaped.get(),
-                                     nullptr);
+  int len = UnescapeCEscapeSequences(src.c_str(), unescaped.get(), nullptr);
   return std::string(unescaped.get(), len);
 }
 
@@ -502,10 +501,11 @@ int CEscapeInternal(const char* src, int src_len, char* dest,
         if ((!utf8_safe || static_cast<uint8_t>(*src) < 0x80) &&
             (!isprint(*src) ||
              (last_hex_escape && isxdigit(*src)))) {
-          if (dest_len - used < 4) // need space for 4 letter escape
-            return -1;
-          sprintf(dest + used, (use_hex ? "\\x%02x" : "\\%03o"),
-                  static_cast<uint8_t>(*src));
+          // need space for 4 letter escape and the trailing '\0' to
+          // be written by snprintf.
+          if (dest_len - used < 5) return -1;
+          snprintf(dest + used, 5, (use_hex ? "\\x%02x" : "\\%03o"),
+                   static_cast<uint8_t>(*src));
           is_hex_escape = use_hex;
           used += 4;
         } else {
@@ -593,7 +593,7 @@ void CEscapeAndAppend(StringPiece src, std::string *dest) {
   }
 }
 
-std::string CEscape(StringPiece src) {
+std::string CEscape(const std::string &src) {
   std::string dest;
   CEscapeAndAppend(src, &dest);
   return dest;
@@ -601,7 +601,7 @@ std::string CEscape(StringPiece src) {
 
 namespace strings {
 
-std::string Utf8SafeCEscape(StringPiece src) {
+std::string Utf8SafeCEscape(const std::string &src) {
   const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
   std::unique_ptr<char[]> dest(new char[dest_length]);
   const int len = CEscapeInternal(src.data(), src.size(),
@@ -610,7 +610,7 @@ std::string Utf8SafeCEscape(StringPiece src) {
   return std::string(dest.get(), len);
 }
 
-std::string CHexEscape(StringPiece src) {
+std::string CHexEscape(const std::string &src) {
   const int dest_length = src.size() * 4 + 1; // Maximum possible expansion
   std::unique_ptr<char[]> dest(new char[dest_length]);
   const int len = CEscapeInternal(src.data(), src.size(),
@@ -664,7 +664,7 @@ uint32_t strtou32_adaptor(const char *nptr, char **endptr, int base) {
   return static_cast<uint32_t>(result);
 }
 
-inline bool safe_parse_sign(StringPiece *text /*inout*/,
+inline bool safe_parse_sign(std::string *text /*inout*/,
                             bool *negative_ptr /*output*/) {
   const char* start = text->data();
   const char* end = start + text->size();
@@ -693,7 +693,7 @@ inline bool safe_parse_sign(StringPiece *text /*inout*/,
 }
 
 template <typename IntType>
-bool safe_parse_positive_int(StringPiece text, IntType *value_p) {
+bool safe_parse_positive_int(std::string text, IntType *value_p) {
   int base = 10;
   IntType value = 0;
   const IntType vmax = std::numeric_limits<IntType>::max();
@@ -726,7 +726,7 @@ bool safe_parse_positive_int(StringPiece text, IntType *value_p) {
 }
 
 template <typename IntType>
-bool safe_parse_negative_int(StringPiece text, IntType *value_p) {
+bool safe_parse_negative_int(const std::string &text, IntType *value_p) {
   int base = 10;
   IntType value = 0;
   const IntType vmin = std::numeric_limits<IntType>::min();
@@ -766,7 +766,7 @@ bool safe_parse_negative_int(StringPiece text, IntType *value_p) {
 }
 
 template <typename IntType>
-bool safe_int_internal(StringPiece text, IntType *value_p) {
+bool safe_int_internal(std::string text, IntType *value_p) {
   *value_p = 0;
   bool negative;
   if (!safe_parse_sign(&text, &negative)) {
@@ -780,7 +780,7 @@ bool safe_int_internal(StringPiece text, IntType *value_p) {
 }
 
 template <typename IntType>
-bool safe_uint_internal(StringPiece text, IntType *value_p) {
+bool safe_uint_internal(std::string text, IntType *value_p) {
   *value_p = 0;
   bool negative;
   if (!safe_parse_sign(&text, &negative) || negative) {
@@ -1342,19 +1342,19 @@ bool safe_strtod(const char* str, double* value) {
   return *str != '\0' && *endptr == '\0';
 }
 
-bool safe_strto32(StringPiece str, int32_t *value) {
+bool safe_strto32(const std::string &str, int32_t *value) {
   return safe_int_internal(str, value);
 }
 
-bool safe_strtou32(StringPiece str, uint32_t *value) {
+bool safe_strtou32(const std::string &str, uint32_t *value) {
   return safe_uint_internal(str, value);
 }
 
-bool safe_strto64(StringPiece str, int64_t *value) {
+bool safe_strto64(const std::string &str, int64_t *value) {
   return safe_int_internal(str, value);
 }
 
-bool safe_strtou64(StringPiece str, uint64_t *value) {
+bool safe_strtou64(const std::string &str, uint64_t *value) {
   return safe_uint_internal(str, value);
 }
 
@@ -1612,8 +1612,8 @@ void StrAppend(std::string *result, const AlphaNum &a, const AlphaNum &b,
   GOOGLE_DCHECK_EQ(out, begin + result->size());
 }
 
-int GlobalReplaceSubstring(StringPiece substring, StringPiece replacement,
-                           std::string *s) {
+int GlobalReplaceSubstring(const std::string &substring,
+                           const std::string &replacement, std::string *s) {
   GOOGLE_CHECK(s != nullptr);
   if (s->empty() || substring.empty())
     return 0;
@@ -2333,15 +2333,15 @@ int UTF8FirstLetterNumBytes(const char* src, int len) {
 //       (1) determines the presence of LF (first one is ok)
 //       (2) if yes, removes any CR, else convert every CR to LF
 
-void CleanStringLineEndings(StringPiece src, std::string *dst,
+void CleanStringLineEndings(const std::string &src, std::string *dst,
                             bool auto_end_last_line) {
   if (dst->empty()) {
-    StrAppend(dst, src);
+    dst->append(src);
     CleanStringLineEndings(dst, auto_end_last_line);
   } else {
-    std::string tmp(src);
+    std::string tmp = src;
     CleanStringLineEndings(&tmp, auto_end_last_line);
-    StrAppend(dst, tmp);
+    dst->append(tmp);
   }
 }
 

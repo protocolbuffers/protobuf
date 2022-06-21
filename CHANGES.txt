@@ -3,6 +3,9 @@ Unreleased version
   * Handle reflection for message splitting.
   * make metadata fields lazy.
   * Extend visibility of plugin library to upb
+  * Modernize conformance_cpp.cc.
+  * Don't request 64-byte alignment unless the toolchain supports it.
+
 
 2022-05-27 version 21.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
   

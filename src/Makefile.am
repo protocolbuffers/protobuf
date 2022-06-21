@@ -177,6 +177,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/util/field_comparator.h                        \
   google/protobuf/util/field_mask_util.h                         \
   google/protobuf/util/json_util.h                               \
+  google/protobuf/util/zero_copy_sink.h                          \
   google/protobuf/util/message_differencer.h                     \
   google/protobuf/util/time_util.h                               \
   google/protobuf/util/type_resolver.h                           \
@@ -311,6 +312,7 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/util/internal/utility.cc                     \
   google/protobuf/util/internal/utility.h                      \
   google/protobuf/util/json_util.cc                            \
+  google/protobuf/util/zero_copy_sink.cc                       \
   google/protobuf/util/message_differencer.cc                  \
   google/protobuf/util/time_util.cc                            \
   google/protobuf/util/type_resolver_util.cc                   \
@@ -829,6 +831,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/util/internal/protostream_objectwriter_test.cc \
   google/protobuf/util/internal/type_info_test_helper.cc       \
   google/protobuf/util/json_util_test.cc                       \
+  google/protobuf/util/zero_copy_sink_test.cc                  \
   google/protobuf/util/message_differencer_unittest.cc         \
   google/protobuf/util/time_util_test.cc                       \
   google/protobuf/util/type_resolver_util_test.cc              \

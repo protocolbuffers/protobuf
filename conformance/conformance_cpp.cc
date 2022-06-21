@@ -270,6 +270,6 @@ int main() {
     }
     total_runs++;
   }
-  GOOGLE_LOG(INFO) << "conformance-cpp: recieved EOF from test runner after "
+  GOOGLE_LOG(INFO) << "conformance-cpp: received EOF from test runner after "
             << total_runs << " tests";
 }

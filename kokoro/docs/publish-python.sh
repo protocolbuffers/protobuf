@@ -14,8 +14,8 @@ sudo apt-get -y install software-properties-common
 sudo add-apt-repository universe
 sudo apt-get update
 sudo apt-get -y install unzip
-wget https://github.com/protocolbuffers/protobuf/releases/download/v21.0-rc1/protoc-21.0-rc-1-linux-x86_64.zip
-unzip protoc-21.0-rc-1-linux-x86_64.zip bin/protoc
+wget https://github.com/protocolbuffers/protobuf/releases/download/v21.1/protoc-21.1-linux-x86_64.zip
+unzip protoc-21.1-linux-x86_64.zip bin/protoc
 mv bin/protoc ../src/protoc
 python3 -m venv venv
 source venv/bin/activate
@@ -30,7 +30,7 @@ make html
 cd ..
 deactivate
 
-python3 -m pip install protobuf==4.21.0rc1 gcp-docuploader
+python3 -m pip install protobuf==4.21.1 gcp-docuploader==0.6.3
 
 # install a json parser
 sudo apt-get -y install jq

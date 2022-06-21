@@ -359,11 +359,6 @@ const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
 
 namespace {
 
-// Offset returns the address `offset` bytes after `base`.
-inline void* Offset(void* base, uint32_t offset) {
-  return static_cast<uint8_t*>(base) + offset;
-}
-
 // InvertPacked changes tag bits from the given wire type to length
 // delimited. This is the difference expected between packed and non-packed
 // repeated fields.

@@ -67,6 +67,24 @@ inline constexpr size_t AlignUpTo8(size_t n) {
   return (n + 7) & static_cast<size_t>(-8);
 }
 
+inline constexpr size_t AlignUpTo(size_t n, size_t a) {
+  // We are wasting space by over allocating align - 8 bytes. Compared to a
+  // dedicated function that takes current alignment in consideration.  Such a
+  // scheme would only waste (align - 8)/2 bytes on average, but requires a
+  // dedicated function in the outline arena allocation functions. Possibly
+  // re-evaluate tradeoffs later.
+  return a <= 8 ? AlignUpTo8(n) : n + a - 8;
+}
+
+inline PROTOBUF_ALWAYS_INLINE void* AlignTo(void* p, size_t a) {
+  if (a <= 8) {
+    return p;
+  } else {
+    auto u = reinterpret_cast<uintptr_t>(p);
+    return reinterpret_cast<void*>((u + a - 1) & (~a + 1));
+  }
+}
+
 using LifecycleIdAtomic = uint64_t;
 
 // MetricsCollector collects stats for a particular arena.
@@ -198,21 +216,21 @@ enum class AllocationClient { kDefault, kArray };
 // This class manages
 // 1) Arena bump allocation + owning memory blocks.
 // 2) Maintaining a cleanup list.
-// It delagetes the actual memory allocation back to ThreadSafeArena, which
+// It delegates the actual memory allocation back to ThreadSafeArena, which
 // contains the information on block growth policy and backing memory allocation
 // used.
 class PROTOBUF_EXPORT SerialArena {
- public:
-  struct Memory {
-    void* ptr;
-    size_t size;
-  };
-
   // Node contains the ptr of the object to be cleaned up and the associated
   // cleanup function ptr.
   struct CleanupNode {
     void* elem;              // Pointer to the object to be cleaned up.
     void (*cleanup)(void*);  // Function pointer to the destructor or deleter.
+  };
+
+ public:
+  struct Memory {
+    void* ptr;
+    size_t size;
   };
 
   void CleanupList();
@@ -270,11 +288,11 @@ class PROTOBUF_EXPORT SerialArena {
 
  private:
   void* AllocateFromExisting(size_t n) {
+#ifdef ADDRESS_SANITIZER
+    ASAN_UNPOISON_MEMORY_REGION(ptr_, n);
+#endif  // ADDRESS_SANITIZER
     void* ret = ptr_;
     ptr_ += n;
-#ifdef ADDRESS_SANITIZER
-    ASAN_UNPOISON_MEMORY_REGION(ret, n);
-#endif  // ADDRESS_SANITIZER
     return ret;
   }
 
@@ -332,36 +350,48 @@ class PROTOBUF_EXPORT SerialArena {
     return true;
   }
 
-  std::pair<void*, CleanupNode*> AllocateAlignedWithCleanup(
-      size_t n, const AllocationPolicy* policy) {
-    GOOGLE_DCHECK_EQ(internal::AlignUpTo8(n), n);  // Must be already aligned.
-    if (PROTOBUF_PREDICT_FALSE(!HasSpace(n + kCleanupSize))) {
-      return AllocateAlignedWithCleanupFallback(n, policy);
+  void* AllocateAlignedWithCleanup(size_t n, size_t align,
+                                   void (*destructor)(void*),
+                                   const AllocationPolicy* policy) {
+    size_t required = AlignUpTo(n, align) + kCleanupSize;
+    if (PROTOBUF_PREDICT_FALSE(!HasSpace(required))) {
+      AllocateNewBlock(required, policy);
     }
-    return AllocateFromExistingWithCleanupFallback(n);
+    return AllocateFromExistingWithCleanupFallback(n, align, destructor);
+  }
+
+  void AddCleanup(void* elem, void (*cleanup)(void*),
+                  const AllocationPolicy* policy) {
+    if (PROTOBUF_PREDICT_FALSE(!HasSpace(kCleanupSize))) {
+      AllocateNewBlock(kCleanupSize, policy);
+    }
+    AddCleanupFromExisting(elem, cleanup);
   }
 
  private:
-  std::pair<void*, CleanupNode*> AllocateFromExistingWithCleanupFallback(
-      size_t n) {
-    void* ret = ptr_;
-    ptr_ += n;
-    limit_ -= kCleanupSize;
+  void* AllocateFromExistingWithCleanupFallback(size_t n, size_t align,
+                                                void (*destructor)(void*)) {
+    n = AlignUpTo(n, align);
 #ifdef ADDRESS_SANITIZER
-    ASAN_UNPOISON_MEMORY_REGION(ret, n);
-    ASAN_UNPOISON_MEMORY_REGION(limit_, kCleanupSize);
+    ASAN_UNPOISON_MEMORY_REGION(ptr_, n);
 #endif  // ADDRESS_SANITIZER
-    return CreatePair(ret, reinterpret_cast<CleanupNode*>(limit_));
+    void* ret = internal::AlignTo(ptr_, align);
+    ptr_ += n;
+    AddCleanupFromExisting(ret, destructor);
+    return ret;
+  }
+
+  void AddCleanupFromExisting(void* elem, void (*cleanup)(void*)) {
+#ifdef ADDRESS_SANITIZER
+    ASAN_UNPOISON_MEMORY_REGION(limit_ - kCleanupSize, kCleanupSize);
+#endif  // ADDRESS_SANITIZER
+    limit_ -= kCleanupSize;
+    auto c = reinterpret_cast<CleanupNode*>(limit_);
+    c->elem = elem;
+    c->cleanup = cleanup;
   }
 
  public:
-  void AddCleanup(void* elem, void (*cleanup)(void*),
-                  const AllocationPolicy* policy) {
-    auto res = AllocateAlignedWithCleanup(0, policy);
-    res.second->elem = elem;
-    res.second->cleanup = cleanup;
-  }
-
   void* owner() const { return owner_; }
   SerialArena* next() const { return next_; }
   void set_next(SerialArena* next) { next_ = next; }
@@ -427,13 +457,7 @@ class PROTOBUF_EXPORT SerialArena {
   // Constructor is private as only New() should be used.
   inline SerialArena(Block* b, void* owner, ThreadSafeArenaStats* stats);
   void* AllocateAlignedFallback(size_t n, const AllocationPolicy* policy);
-  std::pair<void*, CleanupNode*> AllocateAlignedWithCleanupFallback(
-      size_t n, const AllocationPolicy* policy);
   void AllocateNewBlock(size_t n, const AllocationPolicy* policy);
-
-  std::pair<void*, CleanupNode*> CreatePair(void* ptr, CleanupNode* node) {
-    return {ptr, node};
-  }
 
  public:
   static constexpr size_t kBlockHeaderSize = AlignUpTo8(sizeof(Block));
@@ -468,6 +492,13 @@ class PROTOBUF_EXPORT ThreadSafeArena {
                            const AllocationPolicy& policy) {
     InitializeWithPolicy(mem, size, policy);
   }
+
+  // All protos have pointers back to the arena hence Arena must have
+  // pointer stability.
+  ThreadSafeArena(const ThreadSafeArena&) = delete;
+  ThreadSafeArena& operator=(const ThreadSafeArena&) = delete;
+  ThreadSafeArena(ThreadSafeArena&&) = delete;
+  ThreadSafeArena& operator=(ThreadSafeArena&&) = delete;
 
   // Destructor deletes all owned heap allocated objects, and destructs objects
   // that have non-trivial destructors, except for proto2 message objects whose
@@ -512,8 +543,9 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     return false;
   }
 
-  std::pair<void*, SerialArena::CleanupNode*> AllocateAlignedWithCleanup(
-      size_t n, const std::type_info* type);
+  void* AllocateAlignedWithCleanup(size_t n, size_t align,
+                                   void (*destructor)(void*),
+                                   const std::type_info* type);
 
   // Add object pointer and cleanup function pointer to the list.
   void AddCleanup(void* elem, void (*cleanup)(void*));
@@ -541,8 +573,9 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   void InitializeFrom(void* mem, size_t size);
   void InitializeWithPolicy(void* mem, size_t size, AllocationPolicy policy);
   void* AllocateAlignedFallback(size_t n, const std::type_info* type);
-  std::pair<void*, SerialArena::CleanupNode*>
-  AllocateAlignedWithCleanupFallback(size_t n, const std::type_info* type);
+  void* AllocateAlignedWithCleanupFallback(size_t n, size_t align,
+                                           void (*destructor)(void*),
+                                           const std::type_info* type);
 
   void Init();
   void SetInitialBlock(void* mem, size_t size);
@@ -658,12 +691,6 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 #endif
 
   ThreadSafeArenaStatsHandle arena_stats_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ThreadSafeArena);
-  // All protos have pointers back to the arena hence Arena must have
-  // pointer stability.
-  ThreadSafeArena(ThreadSafeArena&&) = delete;
-  ThreadSafeArena& operator=(ThreadSafeArena&&) = delete;
 
  public:
   // kBlockHeaderSize is sizeof(Block), aligned up to the nearest multiple of 8
