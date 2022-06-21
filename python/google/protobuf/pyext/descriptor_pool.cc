@@ -625,9 +625,9 @@ static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
   std::cout << "yoki3";
   if (descriptor == NULL) {
     std::cout << "yoki4";
-    PyErr_Format(PyExc_TypeError,
-                 "Couldn't build proto file into descriptor pool!\n%s",
-                 error_collector.error_message.c_str());
+    // PyErr_Format(PyExc_TypeError,
+    //              "Couldn't build proto file into descriptor pool!\n%s",
+    //              error_collector.error_message.c_str());
     return NULL;
   }
 
