@@ -32,6 +32,7 @@
 #ifndef UPB_DECODE_H_
 #define UPB_DECODE_H_
 
+#include "upb/arena.h"
 #include "upb/extension_registry.h"
 #include "upb/msg.h"
 

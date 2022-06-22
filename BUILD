@@ -106,6 +106,7 @@ cc_library(
         "upb/arena.c",
         "upb/decode.c",
         "upb/encode.c",
+        "upb/internal/arena.h",
         "upb/internal/decode.h",
         "upb/internal/table.h",
         "upb/internal/upb.h",
@@ -269,8 +270,8 @@ cc_library(
         "upb/decode.h",
         "upb/decode_fast.c",
         "upb/decode_fast.h",
+        "upb/internal/arena.h",
         "upb/internal/decode.h",
-        "upb/internal/upb.h",
         "upb/msg.h",
         "upb/msg_internal.h",
     ],
@@ -406,6 +407,7 @@ cc_library(
 cc_library(
     name = "json",
     srcs = [
+        "upb/internal/arena.h",
         "upb/internal/upb.h",
         "upb/json_decode.c",
         "upb/json_encode.c",

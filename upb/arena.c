@@ -28,7 +28,7 @@
 #include "upb/arena.h"
 
 #include "upb/alloc.h"
-#include "upb/internal/upb.h"
+#include "upb/internal/arena.h"
 
 // Must be last.
 #include "upb/port_def.inc"

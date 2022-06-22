@@ -36,7 +36,7 @@
 #include <setjmp.h>
 
 #include "upb/decode.h"
-#include "upb/internal/upb.h"
+#include "upb/internal/arena.h"
 #include "upb/msg_internal.h"
 #include "third_party/utf8_range/utf8_range.h"
 
