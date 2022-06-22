@@ -27,26 +27,11 @@
 
 #include "upb/arena.h"
 
-#include <stdlib.h>
-
+#include "upb/alloc.h"
 #include "upb/internal/upb.h"
 
 // Must be last.
 #include "upb/port_def.inc"
-
-/* upb_alloc ******************************************************************/
-
-static void* upb_global_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
-                                  size_t size) {
-  UPB_UNUSED(alloc);
-  UPB_UNUSED(oldsize);
-  if (size == 0) {
-    free(ptr);
-    return NULL;
-  } else {
-    return realloc(ptr, size);
-  }
-}
 
 static uint32_t* upb_cleanup_pointer(uintptr_t cleanup_metadata) {
   return (uint32_t*)(cleanup_metadata & ~0x1);
@@ -60,10 +45,6 @@ static uintptr_t upb_cleanup_metadata(uint32_t* cleanup,
                                       bool has_initial_block) {
   return (uintptr_t)cleanup | has_initial_block;
 }
-
-upb_alloc upb_alloc_global = {&upb_global_allocfunc};
-
-/* upb_Arena ******************************************************************/
 
 struct mem_block {
   struct mem_block* next;
@@ -135,7 +116,7 @@ static void* upb_Arena_doalloc(upb_alloc* alloc, void* ptr, size_t oldsize,
 
 /* Public Arena API ***********************************************************/
 
-upb_Arena* arena_initslow(void* mem, size_t n, upb_alloc* alloc) {
+static upb_Arena* arena_initslow(void* mem, size_t n, upb_alloc* alloc) {
   const size_t first_block_overhead = sizeof(upb_Arena) + memblock_reserve;
   upb_Arena* a;
 

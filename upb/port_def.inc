@@ -54,8 +54,11 @@
 #error upb requires C99 or C++11 or MSVC >= 2015.
 #endif
 
-#include <stdint.h>
+#include <assert.h>
+#include <setjmp.h>
+#include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #if UINTPTR_MAX == 0xffffffff
 #define UPB_SIZE(size32, size64) size32

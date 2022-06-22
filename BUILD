@@ -102,6 +102,7 @@ cc_library(
 cc_library(
     name = "upb",
     srcs = [
+        "upb/alloc.c",
         "upb/arena.c",
         "upb/decode.c",
         "upb/encode.c",
@@ -115,6 +116,7 @@ cc_library(
         "upb/upb.c",
     ],
     hdrs = [
+        "upb/alloc.h",
         "upb/arena.h",
         "upb/decode.h",
         "upb/encode.h",
@@ -707,6 +709,7 @@ sh_test(
 cc_library(
     name = "table",
     hdrs = [
+        "upb/alloc.h",
         "upb/arena.h",
         "upb/internal/table.h",
         "upb/status.h",
