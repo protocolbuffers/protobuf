@@ -32,6 +32,7 @@
 
 #include <memory>
 #include <random>
+#include <utility>
 #include <vector>
 
 #include <gmock/gmock.h>
@@ -86,7 +87,7 @@ TEST(ThreadSafeArenaStatsTest, PrepareForSampling) {
 
   EXPECT_EQ(info.num_allocations.load(), 0);
   EXPECT_EQ(info.num_resets.load(), 0);
-  EXPECT_EQ(info.bytes_requested.load(), 0);
+  EXPECT_EQ(info.bytes_used.load(), 0);
   EXPECT_EQ(info.bytes_allocated.load(), 0);
   EXPECT_EQ(info.bytes_wasted.load(), 0);
   EXPECT_EQ(info.max_bytes_allocated.load(), 0);
@@ -94,7 +95,7 @@ TEST(ThreadSafeArenaStatsTest, PrepareForSampling) {
 
   info.num_allocations.store(1, std::memory_order_relaxed);
   info.num_resets.store(1, std::memory_order_relaxed);
-  info.bytes_requested.store(1, std::memory_order_relaxed);
+  info.bytes_used.store(1, std::memory_order_relaxed);
   info.bytes_allocated.store(1, std::memory_order_relaxed);
   info.bytes_wasted.store(1, std::memory_order_relaxed);
   info.max_bytes_allocated.store(1, std::memory_order_relaxed);
@@ -102,7 +103,7 @@ TEST(ThreadSafeArenaStatsTest, PrepareForSampling) {
   info.PrepareForSampling(2 * kTestStride);
   EXPECT_EQ(info.num_allocations.load(), 0);
   EXPECT_EQ(info.num_resets.load(), 0);
-  EXPECT_EQ(info.bytes_requested.load(), 0);
+  EXPECT_EQ(info.bytes_used.load(), 0);
   EXPECT_EQ(info.bytes_allocated.load(), 0);
   EXPECT_EQ(info.bytes_wasted.load(), 0);
   EXPECT_EQ(info.max_bytes_allocated.load(), 0);
@@ -117,7 +118,7 @@ TEST(ThreadSafeArenaStatsTest, RecordAllocateSlow) {
   RecordAllocateSlow(&info, /*requested=*/100, /*allocated=*/128, /*wasted=*/0);
   EXPECT_EQ(info.num_allocations.load(), 1);
   EXPECT_EQ(info.num_resets.load(), 0);
-  EXPECT_EQ(info.bytes_requested.load(), 100);
+  EXPECT_EQ(info.bytes_used.load(), 100);
   EXPECT_EQ(info.bytes_allocated.load(), 128);
   EXPECT_EQ(info.bytes_wasted.load(), 0);
   EXPECT_EQ(info.max_bytes_allocated.load(), 0);
@@ -125,7 +126,7 @@ TEST(ThreadSafeArenaStatsTest, RecordAllocateSlow) {
                      /*wasted=*/28);
   EXPECT_EQ(info.num_allocations.load(), 2);
   EXPECT_EQ(info.num_resets.load(), 0);
-  EXPECT_EQ(info.bytes_requested.load(), 200);
+  EXPECT_EQ(info.bytes_used.load(), 200);
   EXPECT_EQ(info.bytes_allocated.load(), 384);
   EXPECT_EQ(info.bytes_wasted.load(), 28);
   EXPECT_EQ(info.max_bytes_allocated.load(), 0);
