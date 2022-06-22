@@ -283,8 +283,22 @@ py_test(
 )
 
 py_test(
+    name = "import_test",
+    srcs = ["google/protobuf/internal/import_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
     name = "json_format_test",
     srcs = ["google/protobuf/internal/json_format_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
+    name = "keywords_test",
+    srcs = ["google/protobuf/internal/keywords_test.py"],
     imports = ["."],
     deps = [":python_test_lib"],
 )
@@ -352,6 +366,13 @@ py_test(
 py_test(
     name = "unknown_fields_test",
     srcs = ["google/protobuf/internal/unknown_fields_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
+    name = "well_known_types_test",
+    srcs = ["google/protobuf/internal/well_known_types_test.py"],
     imports = ["."],
     deps = [":python_test_lib"],
 )

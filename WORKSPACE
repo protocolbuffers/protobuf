@@ -30,11 +30,6 @@ http_archive(
 load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
 protobuf_deps()
 
-bind(
-    name = "python_headers",
-    actual = "//util/python:python_headers",
-)
-
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 maven_install(
@@ -69,3 +64,11 @@ kt_register_toolchains()
 
 load("@upb//bazel:workspace_deps.bzl", "upb_deps")
 upb_deps()
+
+load("@upb//bazel:system_python.bzl", "system_python")
+system_python(name = "local_config_python")
+
+bind(
+    name = "python_headers",
+    actual = "@local_config_python//:python_headers",
+)
