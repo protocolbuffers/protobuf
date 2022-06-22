@@ -50,7 +50,7 @@ namespace Google.Protobuf
         /// </summary>
         /// <param name="tag">The tag.</param>
         /// <returns>A codec for the given tag.</returns>
-        public static FieldCodec<string> ForString(uint tag) => ForString(tag, string.Empty);
+        public static FieldCodec<string> ForString(uint tag) => ForString(tag, "");
 
         /// <summary>
         /// Retrieves a codec suitable for a bytes field with the given tag.
@@ -160,10 +160,8 @@ namespace Google.Protobuf
         /// <param name="toInt32">A conversion function from <see cref="Int32"/> to the enum type.</param>
         /// <param name="fromInt32">A conversion function from the enum type to <see cref="Int32"/>.</param>
         /// <returns>A codec for the given tag.</returns>
-        public static FieldCodec<T> ForEnum<T>(uint tag, Func<T, int> toInt32, Func<int, T> fromInt32)
-        {
-            return ForEnum(tag, toInt32, fromInt32, default);
-        }
+        public static FieldCodec<T> ForEnum<T>(uint tag, Func<T, int> toInt32, Func<int, T> fromInt32) =>
+            ForEnum(tag, toInt32, fromInt32, default);
 
         /// <summary>
         /// Retrieves a codec suitable for a string field with the given tag.

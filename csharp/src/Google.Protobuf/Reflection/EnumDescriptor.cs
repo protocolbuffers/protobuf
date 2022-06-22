@@ -76,14 +76,12 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public override string Name => Proto.Name;
 
-        internal override IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber)
-        {
-            return fieldNumber switch
+        internal override IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber) =>
+            fieldNumber switch
             {
                 EnumDescriptorProto.ValueFieldNumber => (IReadOnlyList<DescriptorBase>)Values,
                 _ => null,
             };
-        }
 
         /// <summary>
         /// The CLR type for this enum. For generated code, this will be a CLR enum type.

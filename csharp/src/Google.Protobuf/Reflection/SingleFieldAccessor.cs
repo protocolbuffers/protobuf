@@ -115,9 +115,8 @@ namespace Google.Protobuf.Reflection
             }
         }
 
-        private static object GetDefaultValue(FieldDescriptor descriptor)
-        {
-            return descriptor.FieldType switch
+        private static object GetDefaultValue(FieldDescriptor descriptor) =>
+            descriptor.FieldType switch
             {
                 FieldType.Bool => false,
                 FieldType.Bytes => ByteString.Empty,
@@ -131,7 +130,6 @@ namespace Google.Protobuf.Reflection
                 FieldType.Message or FieldType.Group => null,
                 _ => throw new ArgumentException("Invalid field type"),
             };
-        }
 
         public override void Clear(IMessage message) => clearDelegate(message);
         public override bool HasValue(IMessage message) => hasDelegate(message);

@@ -347,10 +347,7 @@ namespace Google.Protobuf.Collections
         /// </summary>
         /// <param name="item">The item to find.</param>
         /// <returns><c>true</c> if this collection contains the given item; <c>false</c> otherwise.</returns>
-        public bool Contains(T item)
-        {
-            return IndexOf(item) != -1;
-        }
+        public bool Contains(T item) => IndexOf(item) != -1;
 
         /// <summary>
         /// Copies this collection to the given array.
@@ -480,21 +477,15 @@ namespace Google.Protobuf.Collections
         /// <returns>
         ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
         /// </returns>
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as RepeatedField<T>);
-        }
-
+        public override bool Equals(object obj) => Equals(obj as RepeatedField<T>);
+        
         /// <summary>
         /// Returns an enumerator that iterates through a collection.
         /// </summary>
         /// <returns>
         /// An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.
         /// </returns>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <summary>
         /// Returns a hash code for this instance.
@@ -638,10 +629,7 @@ namespace Google.Protobuf.Collections
         #region Explicit interface implementation for IList and ICollection.
         bool IList.IsFixedSize => false;
 
-        void ICollection.CopyTo(Array array, int index)
-        {
-            Array.Copy(this.array, 0, array, index, count);
-        }
+        void ICollection.CopyTo(Array array, int index) => Array.Copy(this.array, 0, array, index, count);
 
         bool ICollection.IsSynchronized => false;
 
@@ -659,24 +647,11 @@ namespace Google.Protobuf.Collections
             return count - 1;
         }
 
-        bool IList.Contains(object value)
-        {
-            return (value is T t && Contains(t));
-        }
+        bool IList.Contains(object value) => (value is T t && Contains(t));
 
-        int IList.IndexOf(object value)
-        {
-            if (value is T t)
-            {
-                return IndexOf(t);
-            }
-            return -1;
-        }
+        int IList.IndexOf(object value) => (value is T t) ? IndexOf(t) : -1;
 
-        void IList.Insert(int index, object value)
-        {
-            Insert(index, (T) value);
-        }
+        void IList.Insert(int index, object value) => Insert(index, (T) value);
 
         void IList.Remove(object value)
         {

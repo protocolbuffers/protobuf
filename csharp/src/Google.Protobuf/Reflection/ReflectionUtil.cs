@@ -226,13 +226,13 @@ namespace Google.Protobuf.Reflection
                     throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
                 }
 
-                if (extension is Extension<T1, T3> e13)
+                if (extension is Extension<T1, T3> ext13)
                 {
-                    return extensionMessage.GetExtension(e13);
+                    return extensionMessage.GetExtension(ext13);
                 }
-                else if (extension is RepeatedExtension<T1, T3> re13)
+                else if (extension is RepeatedExtension<T1, T3> repeatedExt13)
                 {
-                    return extensionMessage.GetOrInitializeExtension(re13);
+                    return extensionMessage.GetOrInitializeExtension(repeatedExt13);
                 }
                 else
                 {
@@ -247,9 +247,9 @@ namespace Google.Protobuf.Reflection
                     throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
                 }
 
-                if (extension is Extension<T1, T3> e13)
+                if (extension is Extension<T1, T3> ext13)
                 {
-                    return extensionMessage.HasExtension(e13);
+                    return extensionMessage.HasExtension(ext13);
                 }
                 else if (extension is RepeatedExtension<T1, T3>)
                 {
@@ -268,9 +268,9 @@ namespace Google.Protobuf.Reflection
                     throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
                 }
 
-                if (extension is Extension<T1, T3> e13)
+                if (extension is Extension<T1, T3> ext13)
                 {
-                    extensionMessage.SetExtension(e13, (T3)value);
+                    extensionMessage.SetExtension(ext13, (T3)value);
                 }
                 else if (extension is RepeatedExtension<T1, T3>)
                 {
@@ -289,13 +289,13 @@ namespace Google.Protobuf.Reflection
                     throw new InvalidCastException("Cannot access extension on message that isn't IExtensionMessage");
                 }
 
-                if (extension is Extension<T1, T3> e13)
+                if (extension is Extension<T1, T3> ext13)
                 {
-                    extensionMessage.ClearExtension(e13);
+                    extensionMessage.ClearExtension(ext13);
                 }
-                else if (extension is RepeatedExtension<T1, T3> re13)
+                else if (extension is RepeatedExtension<T1, T3> repeatedExt13)
                 {
-                    extensionMessage.GetExtension(re13).Clear();
+                    extensionMessage.GetExtension(repeatedExt13).Clear();
                 }
                 else
                 {

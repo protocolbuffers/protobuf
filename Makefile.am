@@ -92,6 +92,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/AddressBook/ListPeople.cs                                       \
   csharp/src/AddressBook/Program.cs                                          \
   csharp/src/AddressBook/SampleUsage.cs                                      \
+  csharp/src/Directory.Build.props                                           \
   csharp/src/Google.Protobuf.Benchmarks/BenchmarkDatasetConfig.cs            \
   csharp/src/Google.Protobuf.Benchmarks/BenchmarkMessage1Proto3.cs           \
   csharp/src/Google.Protobuf.Benchmarks/Benchmarks.cs                        \

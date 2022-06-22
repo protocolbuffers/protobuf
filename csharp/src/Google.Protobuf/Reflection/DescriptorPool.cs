@@ -176,8 +176,7 @@ namespace Google.Protobuf.Reflection
             descriptorsByName[fullName] = descriptor;
         }
 
-        private static readonly Regex ValidationRegex = new("^[_A-Za-z][_A-Za-z0-9]*$",
-                                                                  FrameworkPortability.CompiledRegexWhereAvailable);
+        private static readonly Regex ValidationRegex = new Regex("^[_A-Za-z][_A-Za-z0-9]*$", FrameworkPortability.CompiledRegexWhereAvailable);
 
         /// <summary>
         /// Verifies that the descriptor's name is valid (i.e. it contains

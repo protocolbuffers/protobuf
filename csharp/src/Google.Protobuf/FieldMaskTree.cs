@@ -156,7 +156,7 @@ namespace Google.Protobuf
             if (root.Children.Count != 0)
             {
                 var paths = new List<string>();
-                GetFieldPaths(root, string.Empty, paths);
+                GetFieldPaths(root, "", paths);
                 mask.Paths.AddRange(paths);
             }
 
@@ -239,7 +239,7 @@ namespace Google.Protobuf
                 return;
             }
 
-            Merge(root, string.Empty, source, destination, options);
+            Merge(root, "", source, destination, options);
         }
 
         /// <summary>

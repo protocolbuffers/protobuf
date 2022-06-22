@@ -103,7 +103,7 @@ namespace Google.Protobuf.Reflection
                                   ServiceDescriptor parent, int index)
             : base(file, parent.FullName + "." + proto.Name, index)
         {
-            this.Proto = proto;
+            Proto = proto;
             Service = parent;
             file.DescriptorPool.AddSymbol(this);
         }
@@ -126,18 +126,18 @@ namespace Google.Protobuf.Reflection
         internal void CrossLink()
         {
             IDescriptor lookup = File.DescriptorPool.LookupSymbol(Proto.InputType, this);
-            if (lookup is not MessageDescriptor md)
+            if (lookup is not MessageDescriptor inpoutType)
             {
                 throw new DescriptorValidationException(this, "\"" + Proto.InputType + "\" is not a message type.");
             }
-            InputType = md;
+            InputType = inpoutType;
 
             lookup = File.DescriptorPool.LookupSymbol(Proto.OutputType, this);
-            if (lookup is not MessageDescriptor md2)
+            if (lookup is not MessageDescriptor outputType)
             {
                 throw new DescriptorValidationException(this, "\"" + Proto.OutputType + "\" is not a message type.");
             }
-            OutputType = md2;
+            OutputType = outputType;
         }
     }
 }

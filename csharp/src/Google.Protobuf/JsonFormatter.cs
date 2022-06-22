@@ -320,15 +320,15 @@ namespace Google.Protobuf
             }
             return descriptor.FieldType switch
             {
-                FieldType.Bool => (bool)value == false,
-                FieldType.Bytes => (ByteString)value == ByteString.Empty,
-                FieldType.String => (string)value == "",
-                FieldType.Double => (double)value == 0.0,
-                FieldType.SInt32 or FieldType.Int32 or FieldType.SFixed32 or FieldType.Enum => (int)value == 0,
-                FieldType.Fixed32 or FieldType.UInt32 => (uint)value == 0,
-                FieldType.Fixed64 or FieldType.UInt64 => (ulong)value == 0,
-                FieldType.SFixed64 or FieldType.Int64 or FieldType.SInt64 => (long)value == 0,
-                FieldType.Float => (float)value == 0f,
+                FieldType.Bool => (bool) value == false,
+                FieldType.Bytes => (ByteString) value == ByteString.Empty,
+                FieldType.String => (string) value == "",
+                FieldType.Double => (double) value == 0.0,
+                FieldType.SInt32 or FieldType.Int32 or FieldType.SFixed32 or FieldType.Enum => (int) value == 0,
+                FieldType.Fixed32 or FieldType.UInt32 => (uint) value == 0,
+                FieldType.Fixed64 or FieldType.UInt64 => (ulong) value == 0,
+                FieldType.SFixed64 or FieldType.Int64 or FieldType.SInt64 => (long) value == 0,
+                FieldType.Float => (float) value == 0f,
                 FieldType.Message or FieldType.Group => value == null,
                 _ => throw new ArgumentException("Invalid field type"),
             };
@@ -352,11 +352,11 @@ namespace Google.Protobuf
             {
                 writer.Write(b ? "true" : "false");
             }
-            else if (value is ByteString bytestr)
+            else if (value is ByteString byteString)
             {
                 // Nothing in Base64 needs escaping
                 writer.Write('"');
-                writer.Write(bytestr.ToBase64());
+                writer.Write(byteString.ToBase64());
                 writer.Write('"');
             }
             else if (value is string str)

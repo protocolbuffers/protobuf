@@ -102,7 +102,7 @@ namespace Google.Protobuf.Reflection
 
         internal void CrossLink()
         {
-            Dictionary<MessageDescriptor, IList<FieldDescriptor>>  declarationOrder = new Dictionary<MessageDescriptor, IList<FieldDescriptor>>();
+            Dictionary<MessageDescriptor, IList<FieldDescriptor>> declarationOrder = new Dictionary<MessageDescriptor, IList<FieldDescriptor>>();
             foreach (FieldDescriptor descriptor in UnorderedExtensions)
             {
                 descriptor.CrossLink();

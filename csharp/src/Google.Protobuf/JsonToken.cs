@@ -36,24 +36,14 @@ namespace Google.Protobuf
 {
     internal sealed class JsonToken : IEquatable<JsonToken>
     {
-        // Tokens with no value can be reused.
-        private static readonly JsonToken _true = new JsonToken(TokenType.True);
-        private static readonly JsonToken _false = new JsonToken(TokenType.False);
-        private static readonly JsonToken _null = new JsonToken(TokenType.Null);
-        private static readonly JsonToken startObject = new JsonToken(TokenType.StartObject);
-        private static readonly JsonToken endObject = new JsonToken(TokenType.EndObject);
-        private static readonly JsonToken startArray = new JsonToken(TokenType.StartArray);
-        private static readonly JsonToken endArray = new JsonToken(TokenType.EndArray);
-        private static readonly JsonToken endDocument = new JsonToken(TokenType.EndDocument);
-
-        internal static JsonToken Null => _null;
-        internal static JsonToken False => _false;
-        internal static JsonToken True => _true;
-        internal static JsonToken StartObject => startObject;
-        internal static JsonToken EndObject => endObject;
-        internal static JsonToken StartArray => startArray;
-        internal static JsonToken EndArray => endArray;
-        internal static JsonToken EndDocument => endDocument;
+        internal static JsonToken Null { get; } = new JsonToken(TokenType.Null);
+        internal static JsonToken False { get; } = new JsonToken(TokenType.False);
+        internal static JsonToken True { get; } = new JsonToken(TokenType.True);
+        internal static JsonToken StartObject { get; } = new JsonToken(TokenType.StartObject);
+        internal static JsonToken EndObject { get; } = new JsonToken(TokenType.EndObject);
+        internal static JsonToken StartArray { get; } = new JsonToken(TokenType.StartArray);
+        internal static JsonToken EndArray { get; } = new JsonToken(TokenType.EndArray);
+        internal static JsonToken EndDocument { get; } = new JsonToken(TokenType.EndDocument);
 
         internal static JsonToken Name(string name)
         {
@@ -105,10 +95,7 @@ namespace Google.Protobuf
             this.numberValue = numberValue;
         }
 
-        public override bool Equals(object obj)
-        {
-            return Equals(obj as JsonToken);
-        }
+        public override bool Equals(object obj) => Equals(obj as JsonToken);
 
         public override int GetHashCode()
         {
@@ -129,15 +116,15 @@ namespace Google.Protobuf
                 TokenType.Null => "null",
                 TokenType.True => "true",
                 TokenType.False => "false",
-                TokenType.Name => "name (" + stringValue + ")",
-                TokenType.StringValue => "value (" + stringValue + ")",
-                TokenType.Number => "number (" + numberValue + ")",
+                TokenType.Name => $"name ({stringValue})",
+                TokenType.StringValue => $"value ({stringValue})",
+                TokenType.Number => $"number ({numberValue})",
                 TokenType.StartObject => "start-object",
                 TokenType.EndObject => "end-object",
                 TokenType.StartArray => "start-array",
                 TokenType.EndArray => "end-array",
                 TokenType.EndDocument => "end-document",
-                _ => throw new InvalidOperationException("Token is of unknown type " + type),
+                _ => throw new InvalidOperationException($"Token is of unknown type {type}"),
             };
         }
 

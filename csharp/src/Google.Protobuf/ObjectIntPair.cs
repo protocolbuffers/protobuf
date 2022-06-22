@@ -23,10 +23,7 @@ namespace Google.Protobuf
                    && number == other.number;
         }
 
-        public override bool Equals(object obj)
-        {
-            return obj is ObjectIntPair<T> pair && Equals(pair);
-        }
+        public override bool Equals(object obj) => obj is ObjectIntPair<T> pair && Equals(pair);
 
         public override int GetHashCode()
         {

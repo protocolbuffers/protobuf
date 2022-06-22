@@ -44,7 +44,7 @@ namespace Google.Protobuf.Reflection
         internal ServiceDescriptor(ServiceDescriptorProto proto, FileDescriptor file, int index)
             : base(file, file.ComputeFullName(null, proto.Name), index)
         {
-            this.Proto = proto;
+            Proto = proto;
             Methods = DescriptorUtil.ConvertAndMakeReadOnly(proto.Method,
                                                             (method, i) => new MethodDescriptor(method, file, this, i));
 
@@ -56,14 +56,12 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         public override string Name => Proto.Name;
 
-        internal override IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber)
-        {
-            return fieldNumber switch
+        internal override IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber) =>
+            fieldNumber switch
             {
                 ServiceDescriptorProto.MethodFieldNumber => (IReadOnlyList<DescriptorBase>)Methods,
                 _ => null,
             };
-        }
 
         internal ServiceDescriptorProto Proto { get; }
 
@@ -85,10 +83,8 @@ namespace Google.Protobuf.Reflection
         /// </summary>
         /// <param name="name">The unqualified name of the method (e.g. "Foo").</param>
         /// <returns>The method's descriptor, or null if not found.</returns>
-        public MethodDescriptor FindMethodByName(string name)
-        {
-            return File.DescriptorPool.FindSymbol<MethodDescriptor>(FullName + "." + name);
-        }
+        public MethodDescriptor FindMethodByName(string name) =>
+            File.DescriptorPool.FindSymbol<MethodDescriptor>(FullName + "." + name);
 
         /// <summary>
         /// The (possibly empty) set of custom options for this service.

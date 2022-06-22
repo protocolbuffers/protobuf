@@ -217,12 +217,12 @@ namespace Google.Protobuf.Collections
         /// <summary>
         /// Gets a collection containing the keys in the map.
         /// </summary>
-        public ICollection<TKey> Keys { get { return new MapView<TKey>(this, pair => pair.Key, ContainsKey); } }
+        public ICollection<TKey> Keys => new MapView<TKey>(this, pair => pair.Key, ContainsKey);
 
         /// <summary>
         /// Gets a collection containing the values in the map.
         /// </summary>
-        public ICollection<TValue> Values { get { return new MapView<TValue>(this, pair => pair.Value, ContainsValue); } }
+        public ICollection<TValue> Values => new MapView<TValue>(this, pair => pair.Value, ContainsValue);
 
         /// <summary>
         /// Adds the specified entries to the map. The keys and values are not automatically cloned.
@@ -243,10 +243,7 @@ namespace Google.Protobuf.Collections
         /// <returns>
         /// An enumerator that can be used to iterate through the collection.
         /// </returns>
-        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
-        {
-            return list.GetEnumerator();
-        }
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => list.GetEnumerator();
 
         /// <summary>
         /// Returns an enumerator that iterates through a collection.
@@ -254,19 +251,13 @@ namespace Google.Protobuf.Collections
         /// <returns>
         /// An <see cref="T:System.Collections.IEnumerator" /> object that can be used to iterate through the collection.
         /// </returns>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <summary>
         /// Adds the specified item to the map.
         /// </summary>
         /// <param name="item">The item to add to the map.</param>
-        void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item)
-        {
-            Add(item.Key, item.Value);
-        }
+        void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item) => Add(item.Key, item.Value);
 
         /// <summary>
         /// Removes all items from the map.
@@ -282,20 +273,16 @@ namespace Google.Protobuf.Collections
         /// </summary>
         /// <param name="item">The key/value pair to find.</param>
         /// <returns></returns>
-        bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
-        {
-            return TryGetValue(item.Key, out TValue value) && ValueEqualityComparer.Equals(item.Value, value);
-        }
+        bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item) =>
+            TryGetValue(item.Key, out TValue value) && ValueEqualityComparer.Equals(item.Value, value);
 
         /// <summary>
         /// Copies the key/value pairs in this map to an array.
         /// </summary>
         /// <param name="array">The array to copy the entries into.</param>
         /// <param name="arrayIndex">The index of the array at which to start copying values.</param>
-        void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
-        {
+        void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex) =>
             list.CopyTo(array, arrayIndex);
-        }
 
         /// <summary>
         /// Removes the specified key/value pair from the map.
@@ -325,12 +312,12 @@ namespace Google.Protobuf.Collections
         /// <summary>
         /// Gets the number of elements contained in the map.
         /// </summary>
-        public int Count { get { return list.Count; } }
+        public int Count => list.Count;
 
         /// <summary>
         /// Gets a value indicating whether the map is read-only.
         /// </summary>
-        public bool IsReadOnly { get { return false; } }
+        public bool IsReadOnly => false;
 
         /// <summary>
         /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
@@ -339,10 +326,7 @@ namespace Google.Protobuf.Collections
         /// <returns>
         ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
         /// </returns>
-        public override bool Equals(object other)
-        {
-            return Equals(other as MapField<TKey, TValue>);
-        }
+        public override bool Equals(object other) => Equals(other as MapField<TKey, TValue>);
 
         /// <summary>
         /// Returns a hash code for this instance.
@@ -519,20 +503,12 @@ namespace Google.Protobuf.Collections
         }
 
         #region IDictionary explicit interface implementation
-        void IDictionary.Add(object key, object value)
-        {
-            Add((TKey)key, (TValue)value);
-        }
 
-        bool IDictionary.Contains(object key)
-        {
-            return key is TKey k && ContainsKey(k);
-        }
+        void IDictionary.Add(object key, object value) => Add((TKey)key, (TValue)value);
 
-        IDictionaryEnumerator IDictionary.GetEnumerator()
-        {
-            return new DictionaryEnumerator(GetEnumerator());
-        }
+        bool IDictionary.Contains(object key) => key is TKey k && ContainsKey(k);
+
+        IDictionaryEnumerator IDictionary.GetEnumerator() => new DictionaryEnumerator(GetEnumerator());
 
         void IDictionary.Remove(object key)
         {
@@ -550,15 +526,15 @@ namespace Google.Protobuf.Collections
             temp.CopyTo(array, index);
         }
 
-        bool IDictionary.IsFixedSize { get { return false; } }
+        bool IDictionary.IsFixedSize => false;
 
-        ICollection IDictionary.Keys { get { return (ICollection)Keys; } }
+        ICollection IDictionary.Keys => (ICollection)Keys;
 
-        ICollection IDictionary.Values { get { return (ICollection)Values; } }
+        ICollection IDictionary.Values => (ICollection)Values;
 
-        bool ICollection.IsSynchronized { get { return false; } }
+        bool ICollection.IsSynchronized => false;
 
-        object ICollection.SyncRoot { get { return this; } }
+        object ICollection.SyncRoot => this;
 
         object IDictionary.this[object key]
         {
@@ -594,20 +570,14 @@ namespace Google.Protobuf.Collections
                 this.enumerator = enumerator;
             }
 
-            public bool MoveNext()
-            {
-                return enumerator.MoveNext();
-            }
+            public bool MoveNext() => enumerator.MoveNext();
 
-            public void Reset()
-            {
-                enumerator.Reset();
-            }
+            public void Reset() => enumerator.Reset();
 
-            public object Current { get { return Entry; } }
-            public DictionaryEntry Entry { get { return new DictionaryEntry(Key, Value); } }
-            public object Key { get { return enumerator.Current.Key; } }
-            public object Value { get { return enumerator.Current.Value; } }
+            public object Current => Entry;
+            public DictionaryEntry Entry => new DictionaryEntry(Key, Value);
+            public object Key => enumerator.Current.Key;
+            public object Value => enumerator.Current.Value;
         }
 
         /// <summary>
@@ -666,28 +636,19 @@ namespace Google.Protobuf.Collections
                 this.containsCheck = containsCheck;
             }
 
-            public int Count { get { return parent.Count; } }
+            public int Count => parent.Count; 
 
-            public bool IsReadOnly { get { return true; } }
+            public bool IsReadOnly => true;
 
-            public bool IsSynchronized { get { return false; } }
+            public bool IsSynchronized => false;
 
-            public object SyncRoot { get { return parent; } }
+            public object SyncRoot => parent;
 
-            public void Add(T item)
-            {
-                throw new NotSupportedException();
-            }
+            public void Add(T item) => throw new NotSupportedException();
 
-            public void Clear()
-            {
-                throw new NotSupportedException();
-            }
+            public void Clear() => throw new NotSupportedException();
 
-            public bool Contains(T item)
-            {
-                return containsCheck(item);
-            }
+            public bool Contains(T item) => containsCheck(item);
 
             public void CopyTo(T[] array, int arrayIndex)
             {
@@ -710,15 +671,9 @@ namespace Google.Protobuf.Collections
                 return parent.list.Select(projection).GetEnumerator();
             }
 
-            public bool Remove(T item)
-            {
-                throw new NotSupportedException();
-            }
+            public bool Remove(T item) => throw new NotSupportedException();
 
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
             public void CopyTo(Array array, int index)
             {

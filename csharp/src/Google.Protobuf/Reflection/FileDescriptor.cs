@@ -172,16 +172,14 @@ namespace Google.Protobuf.Reflection
             return list[index];
         }
 
-        private IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber)
-        {
-            return fieldNumber switch
+        private IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber) =>
+            fieldNumber switch
             {
                 FileDescriptorProto.ServiceFieldNumber => (IReadOnlyList<DescriptorBase>)Services,
                 FileDescriptorProto.MessageTypeFieldNumber => (IReadOnlyList<DescriptorBase>)MessageTypes,
                 FileDescriptorProto.EnumTypeFieldNumber => (IReadOnlyList<DescriptorBase>)EnumTypes,
                 _ => null,
             };
-        }
 
         internal DescriptorDeclaration GetDeclaration(IDescriptor descriptor)
         {
