@@ -70,7 +70,7 @@ ThreadSafeArenaStats::~ThreadSafeArenaStats() = default;
 void ThreadSafeArenaStats::PrepareForSampling(int64_t stride) {
   num_allocations.store(0, std::memory_order_relaxed);
   num_resets.store(0, std::memory_order_relaxed);
-  bytes_requested.store(0, std::memory_order_relaxed);
+  bytes_used.store(0, std::memory_order_relaxed);
   bytes_allocated.store(0, std::memory_order_relaxed);
   bytes_wasted.store(0, std::memory_order_relaxed);
   max_bytes_allocated.store(0, std::memory_order_relaxed);
@@ -90,17 +90,17 @@ void RecordResetSlow(ThreadSafeArenaStats* info) {
   if (max_bytes < allocated_bytes) {
     info->max_bytes_allocated.store(allocated_bytes);
   }
-  info->bytes_requested.store(0, std::memory_order_relaxed);
+  info->bytes_used.store(0, std::memory_order_relaxed);
   info->bytes_allocated.store(0, std::memory_order_relaxed);
-  info->bytes_wasted.fetch_add(0, std::memory_order_relaxed);
-  info->num_allocations.fetch_add(0, std::memory_order_relaxed);
+  info->bytes_wasted.store(0, std::memory_order_relaxed);
+  info->num_allocations.store(0, std::memory_order_relaxed);
   info->num_resets.fetch_add(1, std::memory_order_relaxed);
 }
 
-void RecordAllocateSlow(ThreadSafeArenaStats* info, size_t requested,
+void RecordAllocateSlow(ThreadSafeArenaStats* info, size_t used,
                         size_t allocated, size_t wasted) {
   info->num_allocations.fetch_add(1, std::memory_order_relaxed);
-  info->bytes_requested.fetch_add(requested, std::memory_order_relaxed);
+  info->bytes_used.fetch_add(used, std::memory_order_relaxed);
   info->bytes_allocated.fetch_add(allocated, std::memory_order_relaxed);
   info->bytes_wasted.fetch_add(wasted, std::memory_order_relaxed);
   const uint64_t tid = 1ULL << (GetCachedTID() % 63);
