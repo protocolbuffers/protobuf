@@ -161,7 +161,7 @@ void SerialArena::AllocateNewBlock(size_t n, const AllocationPolicy* policy) {
   // regular add.
   auto relaxed = std::memory_order_relaxed;
   space_allocated_.store(space_allocated_.load(relaxed) + mem.size, relaxed);
-  ThreadSafeArenaStats::RecordAllocateStats(arena_stats_, /*requested=*/n,
+  ThreadSafeArenaStats::RecordAllocateStats(arena_stats_, /*used=*/used,
                                             /*allocated=*/mem.size, wasted);
   head_ = new (mem.ptr) Block{head_, mem.size};
   ptr_ = head_->Pointer(kBlockHeaderSize);

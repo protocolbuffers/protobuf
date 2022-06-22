@@ -46,7 +46,7 @@ namespace internal {
 #if defined(PROTOBUF_ARENAZ_SAMPLE)
 struct ThreadSafeArenaStats;
 void RecordResetSlow(ThreadSafeArenaStats* info);
-void RecordAllocateSlow(ThreadSafeArenaStats* info, size_t requested,
+void RecordAllocateSlow(ThreadSafeArenaStats* info, size_t used,
                         size_t allocated, size_t wasted);
 // Stores information about a sampled thread safe arena.  All mutations to this
 // *must* be made through `Record*` functions below.  All reads from this *must*
@@ -68,7 +68,7 @@ struct ThreadSafeArenaStats
   // thread-safe.
   std::atomic<int> num_allocations;
   std::atomic<int> num_resets;
-  std::atomic<size_t> bytes_requested;
+  std::atomic<size_t> bytes_used;
   std::atomic<size_t> bytes_allocated;
   std::atomic<size_t> bytes_wasted;
   // Records the largest size an arena ever had.  Maintained across resets.
@@ -87,10 +87,10 @@ struct ThreadSafeArenaStats
   static constexpr int kMaxStackDepth = 64;
   int32_t depth;
   void* stack[kMaxStackDepth];
-  static void RecordAllocateStats(ThreadSafeArenaStats* info, size_t requested,
+  static void RecordAllocateStats(ThreadSafeArenaStats* info, size_t used,
                                   size_t allocated, size_t wasted) {
     if (PROTOBUF_PREDICT_TRUE(info == nullptr)) return;
-    RecordAllocateSlow(info, requested, allocated, wasted);
+    RecordAllocateSlow(info, used, allocated, wasted);
   }
 };
 
