@@ -39,6 +39,7 @@ class FieldDescriptor
 {
     use GetPublicDescriptorTrait;
 
+    /** @var  \Google\Protobuf\Internal\FieldDescriptor $internal_desc */
     private $internal_desc;
 
     /**
@@ -82,6 +83,32 @@ class FieldDescriptor
     }
 
     /**
+     * @return OneofDescriptor
+     */
+    public function getContainingOneof()
+    {
+        return $this->getPublicDescriptor($this->internal_desc->getContainingOneof());
+    }
+
+    /**
+     * Gets the field's containing oneof, only if non-synthetic.
+     *
+     * @return null|OneofDescriptor
+     */
+    public function getRealContainingOneof()
+    {
+        return $this->getPublicDescriptor($this->internal_desc->getRealContainingOneof());
+    }
+
+    /**
+     * @return boolean
+     */
+    public function hasOptionalKeyword()
+    {
+        return $this->internal_desc->hasOptionalKeyword();
+    }
+
+    /**
      * @return Descriptor Returns a descriptor for the field type if the field type is a message, otherwise throws \Exception
      * @throws \Exception
      */
@@ -113,13 +140,5 @@ class FieldDescriptor
     public function isMap()
     {
         return $this->internal_desc->isMap();
-    }
-
-    /**
-     * @return boolean
-     */
-    public function hasOptionalKeyword()
-    {
-        return $this->internal_desc->hasOptionalKeyword();
     }
 }
