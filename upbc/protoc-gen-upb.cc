@@ -1332,9 +1332,6 @@ void WriteHeader(const FileLayout& layout, Output& output) {
 
   // Forward-declare types defined in this file.
   for (auto message : this_file_messages) {
-    output("struct $0;\n", ToCIdent(message->full_name()));
-  }
-  for (auto message : this_file_messages) {
     output("typedef struct $0 $0;\n", ToCIdent(message->full_name()));
   }
   for (auto message : this_file_messages) {
