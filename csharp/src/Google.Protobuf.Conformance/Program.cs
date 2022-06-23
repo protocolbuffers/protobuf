@@ -43,7 +43,7 @@ namespace Google.Protobuf.Conformance
     /// </summary>
     class Program
     {
-        private static void Main(string[] args)
+        private static void Main()
         {
             // This way we get the binary streams instead of readers/writers.
             var input = new BinaryReader(Console.OpenStandardInput());
@@ -100,32 +100,22 @@ namespace Google.Protobuf.Conformance
                             return new ConformanceResponse { Skipped = "CSharp doesn't support skipping unknown fields in json parsing." };
                         }
                         var parser = new JsonParser(new JsonParser.Settings(20, typeRegistry));
-                        switch (request.MessageType)
+                        message = request.MessageType switch
                         {
-                            case "protobuf_test_messages.proto3.TestAllTypesProto3":
-                                message = parser.Parse<ProtobufTestMessages.Proto3.TestAllTypesProto3>(request.JsonPayload);
-                                break;
-                            case "protobuf_test_messages.proto2.TestAllTypesProto2":
-                                message = parser.Parse<ProtobufTestMessages.Proto2.TestAllTypesProto2>(request.JsonPayload);
-                                break;
-                            default:
-                                throw new Exception($" Protobuf request doesn't have specific payload type ({request.MessageType})");
-                        }
+                            "protobuf_test_messages.proto3.TestAllTypesProto3" => parser.Parse<ProtobufTestMessages.Proto3.TestAllTypesProto3>(request.JsonPayload),
+                            "protobuf_test_messages.proto2.TestAllTypesProto2" => parser.Parse<ProtobufTestMessages.Proto2.TestAllTypesProto2>(request.JsonPayload),
+                            _ => throw new Exception($" Protobuf request doesn't have specific payload type ({request.MessageType})"),
+                        };
                         break;
                     case ConformanceRequest.PayloadOneofCase.ProtobufPayload:
-                        switch (request.MessageType)
+                        message = request.MessageType switch
                         {
-                            case "protobuf_test_messages.proto3.TestAllTypesProto3":
-                                message = ProtobufTestMessages.Proto3.TestAllTypesProto3.Parser.ParseFrom(request.ProtobufPayload);
-                                break;
-                            case "protobuf_test_messages.proto2.TestAllTypesProto2":
-                                message = ProtobufTestMessages.Proto2.TestAllTypesProto2.Parser
-                                    .WithExtensionRegistry(proto2ExtensionRegistry)
-                                    .ParseFrom(request.ProtobufPayload);
-                                break;
-                            default:
-                                throw new Exception($" Protobuf request doesn't have specific payload type ({request.MessageType})");
-                        }
+                            "protobuf_test_messages.proto3.TestAllTypesProto3" => ProtobufTestMessages.Proto3.TestAllTypesProto3.Parser.ParseFrom(request.ProtobufPayload),
+                            "protobuf_test_messages.proto2.TestAllTypesProto2" => ProtobufTestMessages.Proto2.TestAllTypesProto2.Parser
+                                                                .WithExtensionRegistry(proto2ExtensionRegistry)
+                                                                .ParseFrom(request.ProtobufPayload),
+                            _ => throw new Exception($" Protobuf request doesn't have specific payload type ({request.MessageType})"),
+                        };
                         break;
 					case ConformanceRequest.PayloadOneofCase.TextPayload:
 						return new ConformanceResponse { Skipped = "CSharp doesn't support text format" };

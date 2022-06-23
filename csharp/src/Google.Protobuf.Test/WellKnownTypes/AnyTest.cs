@@ -126,7 +126,6 @@ namespace Google.Protobuf.WellKnownTypes
         [TestCase("foobar", "")]
         public void GetTypeName(string typeUrl, string expectedTypeName)
         {
-            var any = new Any { TypeUrl = typeUrl };
             Assert.AreEqual(expectedTypeName, Any.GetTypeName(typeUrl));
         }
 

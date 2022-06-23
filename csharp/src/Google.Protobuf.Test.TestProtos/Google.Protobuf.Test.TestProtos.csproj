@@ -7,7 +7,7 @@
   -->
   <PropertyGroup>
     <TargetFrameworks>net462;netstandard1.1;netstandard2.0</TargetFrameworks>
-    <LangVersion>3.0</LangVersion>
+    <LangVersion>10.0</LangVersion>
     <AssemblyOriginatorKeyFile>../../keys/Google.Protobuf.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <IsPackable>False</IsPackable>

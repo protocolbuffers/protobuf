@@ -70,8 +70,7 @@ namespace Google.Protobuf
 
         // TODO: Consider introducing a class containing parse state of the parser, tokenizer and depth. That would simplify these handlers
         // and the signatures of various methods.
-        private static readonly Dictionary<string, Action<JsonParser, IMessage, JsonTokenizer>>
-            WellKnownTypeHandlers = new Dictionary<string, Action<JsonParser, IMessage, JsonTokenizer>>
+        private static readonly Dictionary<string, Action<JsonParser, IMessage, JsonTokenizer>> WellKnownTypeHandlers = new()
         {
             { Timestamp.Descriptor.FullName, (parser, message, tokenizer) => MergeTimestamp(message, tokenizer.Next()) },
             { Duration.Descriptor.FullName, (parser, message, tokenizer) => MergeDuration(message, tokenizer.Next()) },
@@ -156,8 +155,7 @@ namespace Google.Protobuf
             }
             if (message.Descriptor.IsWellKnownType)
             {
-                Action<JsonParser, IMessage, JsonTokenizer> handler;
-                if (WellKnownTypeHandlers.TryGetValue(message.Descriptor.FullName, out handler))
+                if (WellKnownTypeHandlers.TryGetValue(message.Descriptor.FullName, out Action<JsonParser, IMessage, JsonTokenizer> handler))
                 {
                     handler(this, message, tokenizer);
                     return;
@@ -187,8 +185,7 @@ namespace Google.Protobuf
                     throw new InvalidOperationException("Unexpected token type " + token.Type);
                 }
                 string name = token.StringValue;
-                FieldDescriptor field;
-                if (jsonFieldMap.TryGetValue(name, out field))
+                if (jsonFieldMap.TryGetValue(name, out FieldDescriptor field))
                 {
                     if (field.ContainingOneof != null)
                     {
@@ -303,11 +300,7 @@ namespace Google.Protobuf
                 }
                 object key = ParseMapKey(keyField, token.StringValue);
                 object value = ParseSingleValue(valueField, tokenizer);
-                if (value == null)
-                {
-                    throw new InvalidProtocolBufferException("Map values must not be null");
-                }
-                dictionary[key] = value;
+                dictionary[key] = value ?? throw new InvalidProtocolBufferException("Map values must not be null");
             }
         }
 
@@ -853,7 +846,7 @@ namespace Google.Protobuf
                 if (secondsToAdd < 0 && nanosToAdd > 0)
                 {
                     secondsToAdd++;
-                    nanosToAdd = nanosToAdd - Duration.NanosecondsPerSecond;
+                    nanosToAdd -= Duration.NanosecondsPerSecond;
                 }
                 if (secondsToAdd != 0 || nanosToAdd != 0)
                 {
@@ -1049,23 +1042,20 @@ namespace Google.Protobuf
             /// when unknown fields are encountered.
             /// </summary>
             /// <param name="ignoreUnknownFields"><c>true</c> if unknown fields should be ignored when parsing; <c>false</c> to throw an exception.</param>
-            public Settings WithIgnoreUnknownFields(bool ignoreUnknownFields) =>
-                new Settings(RecursionLimit, TypeRegistry, ignoreUnknownFields);
+            public Settings WithIgnoreUnknownFields(bool ignoreUnknownFields) => new(RecursionLimit, TypeRegistry, ignoreUnknownFields);
 
             /// <summary>
             /// Creates a new <see cref="Settings"/> object based on this one, but with the specified recursion limit.
             /// </summary>
             /// <param name="recursionLimit">The new recursion limit.</param>
-            public Settings WithRecursionLimit(int recursionLimit) =>
-                new Settings(recursionLimit, TypeRegistry, IgnoreUnknownFields);
+            public Settings WithRecursionLimit(int recursionLimit) => new(recursionLimit, TypeRegistry, IgnoreUnknownFields);
 
             /// <summary>
             /// Creates a new <see cref="Settings"/> object based on this one, but with the specified type registry.
             /// </summary>
             /// <param name="typeRegistry">The new type registry. Must not be null.</param>
             public Settings WithTypeRegistry(TypeRegistry typeRegistry) =>
-                new Settings(
-                    RecursionLimit,
+                new(RecursionLimit,
                     ProtoPreconditions.CheckNotNull(typeRegistry, nameof(typeRegistry)),
                     IgnoreUnknownFields);
         }

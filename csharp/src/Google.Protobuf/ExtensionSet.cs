@@ -61,8 +61,7 @@ namespace Google.Protobuf
         /// </summary>
         public static TValue Get<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
         {
-            IExtensionValue value;
-            if (TryGetValue(ref set, extension, out value))
+            if (TryGetValue(ref set, extension, out IExtensionValue value))
             {
                 // The stored ExtensionValue can be a different type to what is being requested.
                 // This happens when the same extension proto is compiled in different assemblies.
@@ -98,7 +97,7 @@ namespace Google.Protobuf
                     }
                 }
             }
-            else 
+            else
             {
                 return extension.DefaultValue;
             }
@@ -109,8 +108,7 @@ namespace Google.Protobuf
         /// </summary>
         public static RepeatedField<TValue> Get<TTarget, TValue>(ref ExtensionSet<TTarget> set, RepeatedExtension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
         {
-            IExtensionValue value;
-            if (TryGetValue(ref set, extension, out value))
+            if (TryGetValue(ref set, extension, out IExtensionValue value))
             {
                 if (value is RepeatedExtensionValue<TValue> extensionValue)
                 {
@@ -132,7 +130,7 @@ namespace Google.Protobuf
                     }
                 }
             }
-            else 
+            else
             {
                 return null;
             }
@@ -193,8 +191,7 @@ namespace Google.Protobuf
         /// </summary>
         public static bool Has<TTarget, TValue>(ref ExtensionSet<TTarget> set, Extension<TTarget, TValue> extension) where TTarget : IExtendableMessage<TTarget>
         {
-            IExtensionValue value;
-            return TryGetValue(ref set, extension, out value);
+            return TryGetValue(ref set, extension, out IExtensionValue _);
         }
 
         /// <summary>
@@ -252,20 +249,18 @@ namespace Google.Protobuf
         /// </summary>
         public static bool TryMergeFieldFrom<TTarget>(ref ExtensionSet<TTarget> set, ref ParseContext ctx) where TTarget : IExtendableMessage<TTarget>
         {
-            Extension extension;
             int lastFieldNumber = WireFormat.GetTagFieldNumber(ctx.LastTag);
 
-            IExtensionValue extensionValue;
-            if (set != null && set.ValuesByNumber.TryGetValue(lastFieldNumber, out extensionValue))
+            if (set != null && set.ValuesByNumber.TryGetValue(lastFieldNumber, out IExtensionValue extensionValue))
             {
                 extensionValue.MergeFrom(ref ctx);
                 return true;
             }
-            else if (ctx.ExtensionRegistry != null && ctx.ExtensionRegistry.ContainsInputField(ctx.LastTag, typeof(TTarget), out extension))
+            else if (ctx.ExtensionRegistry != null && ctx.ExtensionRegistry.ContainsInputField(ctx.LastTag, typeof(TTarget), out Extension extension))
             {
                 IExtensionValue value = extension.CreateValue();
                 value.MergeFrom(ref ctx);
-                set = (set ?? new ExtensionSet<TTarget>());
+                set ??= new ExtensionSet<TTarget>();
                 set.ValuesByNumber.Add(extension.FieldNumber, value);
                 return true;
             }
@@ -290,8 +285,7 @@ namespace Google.Protobuf
             }
             foreach (var pair in second.ValuesByNumber)
             {
-                IExtensionValue value;
-                if (first.ValuesByNumber.TryGetValue(pair.Key, out value))
+                if (first.ValuesByNumber.TryGetValue(pair.Key, out IExtensionValue value))
                 {
                     value.MergeFrom(pair.Value);
                 }
@@ -365,8 +359,7 @@ namespace Google.Protobuf
             }
             foreach (var pair in ValuesByNumber)
             {
-                IExtensionValue secondValue;
-                if (!otherSet.ValuesByNumber.TryGetValue(pair.Key, out secondValue))
+                if (!otherSet.ValuesByNumber.TryGetValue(pair.Key, out IExtensionValue secondValue))
                 {
                     return false;
                 }

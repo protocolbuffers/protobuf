@@ -33,7 +33,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -59,8 +58,7 @@ namespace Google.Protobuf.Collections
         [Test]
         public void Add_SingleItem()
         {
-            var list = new RepeatedField<string>();
-            list.Add("foo");
+            var list = new RepeatedField<string> { "foo" };
             Assert.AreEqual(1, list.Count);
             Assert.AreEqual("foo", list[0]);
         }
@@ -68,8 +66,7 @@ namespace Google.Protobuf.Collections
         [Test]
         public void Add_Sequence()
         {
-            var list = new RepeatedField<string>();
-            list.Add(new[] { "foo", "bar" });
+            var list = new RepeatedField<string> { new[] { "foo", "bar" } };
             Assert.AreEqual(2, list.Count);
             Assert.AreEqual("foo", list[0]);
             Assert.AreEqual("bar", list[1]);
@@ -293,15 +290,13 @@ namespace Google.Protobuf.Collections
         public void Enumerator()
         {
             var list = new RepeatedField<string> { "first", "second" };
-            using (var enumerator = list.GetEnumerator())
-            {
-                Assert.IsTrue(enumerator.MoveNext());
-                Assert.AreEqual("first", enumerator.Current);
-                Assert.IsTrue(enumerator.MoveNext());
-                Assert.AreEqual("second", enumerator.Current);
-                Assert.IsFalse(enumerator.MoveNext());
-                Assert.IsFalse(enumerator.MoveNext());
-            }
+            using var enumerator = list.GetEnumerator();
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual("first", enumerator.Current);
+            Assert.IsTrue(enumerator.MoveNext());
+            Assert.AreEqual("second", enumerator.Current);
+            Assert.IsFalse(enumerator.MoveNext());
+            Assert.IsFalse(enumerator.MoveNext());
         }
 
         [Test]

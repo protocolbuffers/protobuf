@@ -189,7 +189,7 @@ namespace Google.Protobuf
         /// <param name="stream">The stream to copy into a ByteString.</param>
         /// <param name="cancellationToken">The cancellation token to use when reading from the stream, if any.</param>
         /// <returns>A ByteString with content read from the given stream.</returns>
-        public static Task<ByteString> FromStreamAsync(Stream stream, CancellationToken cancellationToken = default(CancellationToken))
+        public static Task<ByteString> FromStreamAsync(Stream stream, CancellationToken cancellationToken = default)
         {
             ProtoPreconditions.CheckNotNull(stream, nameof(stream));
             return ByteStringAsync.FromStreamAsyncCore(stream, cancellationToken);
@@ -340,7 +340,7 @@ namespace Google.Protobuf
             {
                 return true;
             }
-            if (ReferenceEquals(lhs, null) || ReferenceEquals(rhs, null))
+            if (lhs is null || rhs is null)
             {
                 return false;
             }
