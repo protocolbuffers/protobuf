@@ -201,8 +201,8 @@ static void decode_verifyutf8(upb_Decoder* d, const char* buf, int len) {
 }
 
 static bool decode_reserve(upb_Decoder* d, upb_Array* arr, size_t elem) {
-  bool need_realloc = arr->capacity - arr->len < elem;
-  if (need_realloc && !_upb_array_realloc(arr, arr->len + elem, &d->arena)) {
+  bool need_realloc = arr->capacity - arr->size < elem;
+  if (need_realloc && !_upb_array_realloc(arr, arr->size + elem, &d->arena)) {
     decode_err(d, kUpb_DecodeStatus_OutOfMemory);
   }
   return need_realloc;
@@ -445,8 +445,8 @@ static const char* decode_enum_toarray(upb_Decoder* d, const char* ptr,
                                        wireval* val) {
   const upb_MiniTable_Enum* e = subs[field->submsg_index].subenum;
   if (!decode_checkenum(d, ptr, msg, e, field, val)) return ptr;
-  void* mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->len * 4, void);
-  arr->len++;
+  void* mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->size * 4, void);
+  arr->size++;
   memcpy(mem, val, 4);
   return ptr;
 }
@@ -463,8 +463,8 @@ static const char* decode_fixed_packed(upb_Decoder* d, const char* ptr,
     return decode_err(d, kUpb_DecodeStatus_Malformed);
   }
   decode_reserve(d, arr, count);
-  void* mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->len << lg2, void);
-  arr->len += count;
+  void* mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->size << lg2, void);
+  arr->size += count;
   // Note: if/when the decoder supports multi-buffer input, we will need to
   // handle buffer seams here.
   if (_upb_IsLittleEndian()) {
@@ -501,15 +501,15 @@ static const char* decode_varint_packed(upb_Decoder* d, const char* ptr,
                                         int lg2) {
   int scale = 1 << lg2;
   int saved_limit = decode_pushlimit(d, ptr, val->size);
-  char* out = UPB_PTR_AT(_upb_array_ptr(arr), arr->len << lg2, void);
+  char* out = UPB_PTR_AT(_upb_array_ptr(arr), arr->size << lg2, void);
   while (!decode_isdone(d, &ptr)) {
     wireval elem;
     ptr = decode_varint64(d, ptr, &elem.uint64_val);
     decode_munge(field->descriptortype, &elem);
     if (decode_reserve(d, arr, 1)) {
-      out = UPB_PTR_AT(_upb_array_ptr(arr), arr->len << lg2, void);
+      out = UPB_PTR_AT(_upb_array_ptr(arr), arr->size << lg2, void);
     }
-    arr->len++;
+    arr->size++;
     memcpy(out, &elem, scale);
     out += scale;
   }
@@ -525,7 +525,7 @@ static const char* decode_enum_packed(upb_Decoder* d, const char* ptr,
                                       wireval* val) {
   const upb_MiniTable_Enum* e = subs[field->submsg_index].subenum;
   int saved_limit = decode_pushlimit(d, ptr, val->size);
-  char* out = UPB_PTR_AT(_upb_array_ptr(arr), arr->len * 4, void);
+  char* out = UPB_PTR_AT(_upb_array_ptr(arr), arr->size * 4, void);
   while (!decode_isdone(d, &ptr)) {
     wireval elem;
     ptr = decode_varint64(d, ptr, &elem.uint64_val);
@@ -534,9 +534,9 @@ static const char* decode_enum_packed(upb_Decoder* d, const char* ptr,
       continue;
     }
     if (decode_reserve(d, arr, 1)) {
-      out = UPB_PTR_AT(_upb_array_ptr(arr), arr->len * 4, void);
+      out = UPB_PTR_AT(_upb_array_ptr(arr), arr->size * 4, void);
     }
-    arr->len++;
+    arr->size++;
     memcpy(out, &elem, 4);
     out += 4;
   }
@@ -567,8 +567,8 @@ static const char* decode_toarray(upb_Decoder* d, const char* ptr,
     case OP_SCALAR_LG2(2):
     case OP_SCALAR_LG2(3):
       /* Append scalar value. */
-      mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->len << op, void);
-      arr->len++;
+      mem = UPB_PTR_AT(_upb_array_ptr(arr), arr->size << op, void);
+      arr->size++;
       memcpy(mem, val, 1 << op);
       return ptr;
     case OP_STRING:
@@ -576,16 +576,16 @@ static const char* decode_toarray(upb_Decoder* d, const char* ptr,
       /* Fallthrough. */
     case OP_BYTES: {
       /* Append bytes. */
-      upb_StringView* str = (upb_StringView*)_upb_array_ptr(arr) + arr->len;
-      arr->len++;
+      upb_StringView* str = (upb_StringView*)_upb_array_ptr(arr) + arr->size;
+      arr->size++;
       return decode_readstr(d, ptr, val->size, str);
     }
     case OP_SUBMSG: {
       /* Append submessage / group. */
       upb_Message* submsg = decode_newsubmsg(d, subs, field);
-      *UPB_PTR_AT(_upb_array_ptr(arr), arr->len * sizeof(void*), upb_Message*) =
-          submsg;
-      arr->len++;
+      *UPB_PTR_AT(_upb_array_ptr(arr), arr->size * sizeof(void*),
+                  upb_Message*) = submsg;
+      arr->size++;
       if (UPB_UNLIKELY(field->descriptortype == kUpb_FieldType_Group)) {
         return decode_togroup(d, ptr, submsg, subs, field);
       } else {

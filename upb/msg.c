@@ -220,7 +220,7 @@ bool _upb_Array_Append_fallback(upb_Array** arr_ptr, const void* value,
   upb_Array* arr = getorcreate_array(arr_ptr, elem_size_lg2, arena);
   if (!arr) return false;
 
-  size_t elems = arr->len;
+  size_t elems = arr->size;
 
   if (!_upb_Array_Resize(arr, elems + 1, arena)) {
     return false;

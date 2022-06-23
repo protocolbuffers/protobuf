@@ -412,7 +412,7 @@ UPB_INLINE bool _upb_has_submsg_nohasbit(const upb_Message* msg, size_t ofs) {
 /* Our internal representation for repeated fields.  */
 typedef struct {
   uintptr_t data;  /* Tagged ptr: low 3 bits of ptr are lg2(elem size). */
-  size_t len;      /* Measured in elements. */
+  size_t size;     /* The number of elements in the array. */
   size_t capacity; /* Allocated storage. Measured in elements. */
   uint64_t junk;
 } upb_Array;
@@ -444,7 +444,7 @@ UPB_INLINE upb_Array* _upb_Array_New(upb_Arena* a, size_t init_capacity,
   upb_Array* arr = (upb_Array*)upb_Arena_Malloc(a, bytes);
   if (!arr) return NULL;
   arr->data = _upb_tag_arrptr(UPB_PTR_AT(arr, arr_size, void), elem_size_lg2);
-  arr->len = 0;
+  arr->size = 0;
   arr->capacity = init_capacity;
   return arr;
 }
@@ -467,7 +467,7 @@ UPB_INLINE bool _upb_array_reserve(upb_Array* arr, size_t size,
 UPB_INLINE bool _upb_Array_Resize(upb_Array* arr, size_t size,
                                   upb_Arena* arena) {
   if (!_upb_array_reserve(arr, size, arena)) return false;
-  arr->len = size;
+  arr->size = size;
   return true;
 }
 
@@ -479,7 +479,7 @@ UPB_INLINE const void* _upb_array_accessor(const void* msg, size_t ofs,
                                            size_t* size) {
   const upb_Array* arr = *UPB_PTR_AT(msg, ofs, const upb_Array*);
   if (arr) {
-    if (size) *size = arr->len;
+    if (size) *size = arr->size;
     return _upb_array_constptr(arr);
   } else {
     if (size) *size = 0;
@@ -491,7 +491,7 @@ UPB_INLINE void* _upb_array_mutable_accessor(void* msg, size_t ofs,
                                              size_t* size) {
   upb_Array* arr = *UPB_PTR_AT(msg, ofs, upb_Array*);
   if (arr) {
-    if (size) *size = arr->len;
+    if (size) *size = arr->size;
     return _upb_array_ptr(arr);
   } else {
     if (size) *size = 0;
@@ -507,7 +507,7 @@ UPB_INLINE void* _upb_Array_Resize_accessor2(void* msg, size_t ofs, size_t size,
   if (!arr || arr->capacity < size) {
     return _upb_Array_Resize_fallback(arr_ptr, size, elem_size_lg2, arena);
   }
-  arr->len = size;
+  arr->size = size;
   return _upb_array_ptr(arr);
 }
 
@@ -519,12 +519,12 @@ UPB_INLINE bool _upb_Array_Append_accessor2(void* msg, size_t ofs,
   size_t elem_size = 1 << elem_size_lg2;
   upb_Array* arr = *arr_ptr;
   void* ptr;
-  if (!arr || arr->len == arr->capacity) {
+  if (!arr || arr->size == arr->capacity) {
     return _upb_Array_Append_fallback(arr_ptr, value, elem_size_lg2, arena);
   }
   ptr = _upb_array_ptr(arr);
-  memcpy(UPB_PTR_AT(ptr, arr->len * elem_size, char), value, elem_size);
-  arr->len++;
+  memcpy(UPB_PTR_AT(ptr, arr->size * elem_size, char), value, elem_size);
+  arr->size++;
   return true;
 }
 

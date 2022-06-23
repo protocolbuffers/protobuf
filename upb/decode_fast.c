@@ -244,7 +244,7 @@ static bool fastdecode_tagmatch(uint32_t tag, uint64_t data, int tagbytes) {
 UPB_FORCEINLINE
 static void fastdecode_commitarr(void* dst, fastdecode_arr* farr,
                                  int valbytes) {
-  farr->arr->len =
+  farr->arr->size =
       (size_t)((char*)dst - (char*)_upb_array_ptr(farr->arr)) / valbytes;
 }
 
@@ -315,7 +315,7 @@ static void* fastdecode_getfield(upb_Decoder* d, const char* ptr,
       begin = _upb_array_ptr(farr->arr);
       farr->end = begin + (farr->arr->capacity * valbytes);
       *data = fastdecode_loadtag(ptr);
-      return begin + (farr->arr->len * valbytes);
+      return begin + (farr->arr->size * valbytes);
     }
     default:
       UPB_UNREACHABLE();
@@ -600,7 +600,7 @@ TAGBYTES(p)
                                                                             \
   char* dst = _upb_array_ptr(arr);                                          \
   memcpy(dst, ptr, size);                                                   \
-  arr->len = elems;                                                         \
+  arr->size = elems;                                                        \
                                                                             \
   ptr += size;                                                              \
   UPB_MUSTTAIL return fastdecode_dispatch(UPB_PARSE_ARGS);

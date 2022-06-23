@@ -53,13 +53,13 @@ upb_Array* upb_Array_New(upb_Arena* a, upb_CType type) {
   return _upb_Array_New(a, 4, _upb_CTypeo_sizelg2[type]);
 }
 
-size_t upb_Array_Size(const upb_Array* arr) { return arr->len; }
+size_t upb_Array_Size(const upb_Array* arr) { return arr->size; }
 
 upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {
   upb_MessageValue ret;
   const char* data = _upb_array_constptr(arr);
   int lg2 = arr->data & 7;
-  UPB_ASSERT(i < arr->len);
+  UPB_ASSERT(i < arr->size);
   memcpy(&ret, data + (i << lg2), 1 << lg2);
   return ret;
 }
@@ -67,15 +67,15 @@ upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {
 void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val) {
   char* data = _upb_array_ptr(arr);
   int lg2 = arr->data & 7;
-  UPB_ASSERT(i < arr->len);
+  UPB_ASSERT(i < arr->size);
   memcpy(data + (i << lg2), &val, 1 << lg2);
 }
 
 bool upb_Array_Append(upb_Array* arr, upb_MessageValue val, upb_Arena* arena) {
-  if (!upb_Array_Resize(arr, arr->len + 1, arena)) {
+  if (!upb_Array_Resize(arr, arr->size + 1, arena)) {
     return false;
   }
-  upb_Array_Set(arr, arr->len - 1, val);
+  upb_Array_Set(arr, arr->size - 1, val);
   return true;
 }
 
@@ -88,10 +88,10 @@ void upb_Array_Move(upb_Array* arr, size_t dst_idx, size_t src_idx,
 
 bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
                       upb_Arena* arena) {
-  UPB_ASSERT(i <= arr->len);
-  UPB_ASSERT(count + arr->len >= count);
-  size_t oldsize = arr->len;
-  if (!upb_Array_Resize(arr, arr->len + count, arena)) {
+  UPB_ASSERT(i <= arr->size);
+  UPB_ASSERT(count + arr->size >= count);
+  size_t oldsize = arr->size;
+  if (!upb_Array_Resize(arr, arr->size + count, arena)) {
     return false;
   }
   upb_Array_Move(arr, i + count, i, oldsize - i);
@@ -99,15 +99,15 @@ bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
 }
 
 /*
- *              i        end      arr->len
+ *              i        end      arr->size
  * |------------|XXXXXXXX|--------|
  */
 void upb_Array_Delete(upb_Array* arr, size_t i, size_t count) {
   size_t end = i + count;
   UPB_ASSERT(i <= end);
-  UPB_ASSERT(end <= arr->len);
-  upb_Array_Move(arr, i, end, arr->len - end);
-  arr->len -= count;
+  UPB_ASSERT(end <= arr->size);
+  upb_Array_Move(arr, i, end, arr->size - end);
+  arr->size -= count;
 }
 
 bool upb_Array_Resize(upb_Array* arr, size_t size, upb_Arena* arena) {
