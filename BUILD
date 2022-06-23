@@ -123,6 +123,7 @@ cc_library(
         "upb/extension_registry.h",
         "upb/msg.h",
         "upb/status.h",
+        "upb/string_view.h",
         "upb/upb.h",
         "upb/upb.hpp",
     ],
@@ -143,6 +144,7 @@ cc_library(
         "upb/extension_registry.c",
         "upb/msg.h",
         "upb/msg_internal.h",
+        "upb/string_view.h",
         "upb/upb.h",
     ],
     hdrs = [
@@ -728,6 +730,7 @@ cc_library(
         "upb/arena.h",
         "upb/internal/table.h",
         "upb/status.h",
+        "upb/string_view.h",
         "upb/table_internal.h",
         "upb/upb.h",
     ],
