@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include "upb/msg.h"
+#include "upb/msg_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"

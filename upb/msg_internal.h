@@ -410,12 +410,12 @@ UPB_INLINE bool _upb_has_submsg_nohasbit(const upb_Message* msg, size_t ofs) {
 /** upb_Array *****************************************************************/
 
 /* Our internal representation for repeated fields.  */
-typedef struct {
+struct upb_Array {
   uintptr_t data;  /* Tagged ptr: low 3 bits of ptr are lg2(elem size). */
   size_t size;     /* The number of elements in the array. */
   size_t capacity; /* Allocated storage. Measured in elements. */
   uint64_t junk;
-} upb_Array;
+};
 
 UPB_INLINE const void* _upb_array_constptr(const upb_Array* arr) {
   UPB_ASSERT((arr->data & 7) <= 4);
@@ -567,14 +567,14 @@ UPB_INLINE bool _upb_Array_Append_accessor(void* msg, size_t ofs,
 
 /* Right now we use strmaps for everything.  We'll likely want to use
  * integer-specific maps for integer-keyed maps.*/
-typedef struct {
+struct upb_Map {
   /* Size of key and val, based on the map type.  Strings are represented as '0'
    * because they must be handled specially. */
   char key_size;
   char val_size;
 
   upb_strtable table;
-} upb_Map;
+};
 
 /* Map entries aren't actually stored, they are only used during parsing.  For
  * parsing, it helps a lot if all map entry messages have the same layout.

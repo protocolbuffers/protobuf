@@ -169,7 +169,6 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":descriptor_upb_proto",
         ":mini_table",
         ":port",
         ":reflection",
@@ -345,6 +344,7 @@ cc_library(
     srcs = [
         "upb/array.c",
         "upb/map.c",
+        "upb/msg_internal.h",
     ],
     hdrs = [
         "upb/array.h",
@@ -355,7 +355,6 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":descriptor_upb_proto",
         ":mini_table",
         ":port",
         ":table",

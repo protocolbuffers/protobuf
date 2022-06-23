@@ -28,14 +28,18 @@
 #ifndef UPB_MESSAGE_VALUE_H_
 #define UPB_MESSAGE_VALUE_H_
 
-#include "google/protobuf/descriptor.upb.h"
+#include "upb/msg.h"
+#include "upb/string_view.h"
+#include "upb/upb.h"
+
+// Must be last.
 #include "upb/port_def.inc"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// Definitions commn to both upb_Array and upb_Map.
+// Definitions common to both upb_Array and upb_Map.
 
 typedef union {
   bool bool_val;
@@ -45,16 +49,16 @@ typedef union {
   int64_t int64_val;
   uint32_t uint32_val;
   uint64_t uint64_val;
+  const upb_Array* array_val;
   const upb_Map* map_val;
   const upb_Message* msg_val;
-  const upb_Array* array_val;
   upb_StringView str_val;
 } upb_MessageValue;
 
 typedef union {
+  upb_Array* array;
   upb_Map* map;
   upb_Message* msg;
-  upb_Array* array;
 } upb_MutableMessageValue;
 
 #ifdef __cplusplus

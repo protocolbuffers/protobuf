@@ -33,7 +33,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "google/protobuf/descriptor.upb.h"
 #include "upb/mini_table.h"
 #include "upb/reflection.h"
 

@@ -36,11 +36,10 @@
 #ifndef UPB_MSG_H_
 #define UPB_MSG_H_
 
-#include <stddef.h>
+#include "upb/arena.h"
 
-// TODO(b/232091617): Remove this and fix everything that breaks as a result.
-#include "upb/extension_registry.h"
-#include "upb/upb.h"
+// Must be last.
+#include "upb/port_def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,7 +49,6 @@ typedef void upb_Message;
 
 /* For users these are opaque. They can be obtained from
  * upb_MessageDef_MiniTable() but users cannot access any of the members. */
-struct upb_MiniTable;
 typedef struct upb_MiniTable upb_MiniTable;
 
 /* Adds unknown data (serialized protobuf data) to the given message.  The data
@@ -63,6 +61,8 @@ const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
 
 /* Returns the number of extensions present in this message. */
 size_t upb_Message_ExtensionCount(const upb_Message* msg);
+
+#include "upb/port_undef.inc"
 
 #ifdef __cplusplus
 } /* extern "C" */

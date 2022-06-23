@@ -27,6 +27,8 @@
 
 #include "upb/mini_table_accessors.h"
 
+#include "upb/decode.h"
+#include "upb/encode.h"
 #include "upb/mini_table.h"
 #include "upb/msg_internal.h"
 
