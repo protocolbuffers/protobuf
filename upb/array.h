@@ -28,7 +28,6 @@
 #ifndef UPB_ARRAY_H_
 #define UPB_ARRAY_H_
 
-#include "google/protobuf/descriptor.upb.h"
 #include "upb/message_value.h"
 
 // Must be last.

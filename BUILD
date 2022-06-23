@@ -106,7 +106,6 @@ cc_library(
         "upb/arena.c",
         "upb/decode.c",
         "upb/encode.c",
-        "upb/internal/arena.h",
         "upb/internal/decode.h",
         "upb/internal/table.h",
         "upb/internal/upb.h",
@@ -130,6 +129,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":arena_internal",
         ":extension_registry",
         ":fastdecode",
         ":port",
@@ -270,13 +270,13 @@ cc_library(
         "upb/decode.h",
         "upb/decode_fast.c",
         "upb/decode_fast.h",
-        "upb/internal/arena.h",
         "upb/internal/decode.h",
         "upb/msg.h",
         "upb/msg_internal.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     deps = [
+        ":arena_internal",
         ":extension_registry",
         ":port",
         ":table",
@@ -407,7 +407,6 @@ cc_library(
 cc_library(
     name = "json",
     srcs = [
-        "upb/internal/arena.h",
         "upb/internal/upb.h",
         "upb/json_decode.c",
         "upb/json_encode.c",
@@ -709,6 +708,20 @@ sh_test(
 # Internal C/C++ libraries #####################################################
 
 cc_library(
+    name = "arena_internal",
+    srcs = [
+        "upb/alloc.h",
+        "upb/arena.h",
+    ],
+    hdrs = ["upb/internal/arena.h"],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":port",
+    ],
+)
+
+cc_library(
     name = "table",
     hdrs = [
         "upb/alloc.h",
@@ -738,6 +751,7 @@ upb_amalgamation(
         "upb.h",
     ],
     libs = [
+        ":arena_internal",
         ":collections",
         ":descriptor_upb_proto",
         ":extension_registry",
@@ -764,6 +778,7 @@ upb_amalgamation(
         "php-upb.h",
     ],
     libs = [
+        ":arena_internal",
         ":collections",
         ":descriptor_upb_proto",
         ":descriptor_upb_proto_reflection",
@@ -793,6 +808,7 @@ upb_amalgamation(
         "ruby-upb.h",
     ],
     libs = [
+        ":arena_internal",
         ":collections",
         ":descriptor_upb_proto",
         ":extension_registry",

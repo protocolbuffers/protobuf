@@ -28,13 +28,13 @@
 #ifndef UPB_ALLOC_H_
 #define UPB_ALLOC_H_
 
+// Must be last.
 #include "upb/port_def.inc"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct upb_alloc;
 typedef struct upb_alloc upb_alloc;
 
 /* A combined `malloc()`/`free()` function.

@@ -29,8 +29,9 @@
 
 #include <string.h>
 
-#include "upb/internal/table.h"
 #include "upb/msg.h"
+
+// Must be last.
 #include "upb/port_def.inc"
 
 static const char _upb_CTypeo_sizelg2[12] = {

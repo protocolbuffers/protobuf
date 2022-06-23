@@ -28,7 +28,6 @@
 #ifndef UPB_MAP_H_
 #define UPB_MAP_H_
 
-#include "google/protobuf/descriptor.upb.h"
 #include "upb/message_value.h"
 
 // Must be last.

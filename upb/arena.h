@@ -28,7 +28,6 @@
 #ifndef UPB_ARENA_H_
 #define UPB_ARENA_H_
 
-#include <stdbool.h>
 #include <string.h>
 
 #include "upb/alloc.h"
@@ -54,7 +53,6 @@ extern "C" {
 
 typedef void upb_CleanupFunc(void* ud);
 
-struct upb_Arena;
 typedef struct upb_Arena upb_Arena;
 
 typedef struct {
