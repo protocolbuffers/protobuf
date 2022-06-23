@@ -411,9 +411,9 @@ UPB_INLINE bool _upb_has_submsg_nohasbit(const upb_Message* msg, size_t ofs) {
 
 /* Our internal representation for repeated fields.  */
 typedef struct {
-  uintptr_t data; /* Tagged ptr: low 3 bits of ptr are lg2(elem size). */
-  size_t len;     /* Measured in elements. */
-  size_t size;    /* Measured in elements. */
+  uintptr_t data;  /* Tagged ptr: low 3 bits of ptr are lg2(elem size). */
+  size_t len;      /* Measured in elements. */
+  size_t capacity; /* Allocated storage. Measured in elements. */
   uint64_t junk;
 } upb_Array;
 
@@ -437,15 +437,15 @@ UPB_INLINE uintptr_t _upb_tag_arrptr(void* ptr, int elem_size_lg2) {
   return (uintptr_t)ptr | (unsigned)elem_size_lg2;
 }
 
-UPB_INLINE upb_Array* _upb_Array_New(upb_Arena* a, size_t init_size,
+UPB_INLINE upb_Array* _upb_Array_New(upb_Arena* a, size_t init_capacity,
                                      int elem_size_lg2) {
   const size_t arr_size = UPB_ALIGN_UP(sizeof(upb_Array), 8);
-  const size_t bytes = sizeof(upb_Array) + (init_size << elem_size_lg2);
+  const size_t bytes = sizeof(upb_Array) + (init_capacity << elem_size_lg2);
   upb_Array* arr = (upb_Array*)upb_Arena_Malloc(a, bytes);
   if (!arr) return NULL;
   arr->data = _upb_tag_arrptr(UPB_PTR_AT(arr, arr_size, void), elem_size_lg2);
   arr->len = 0;
-  arr->size = init_size;
+  arr->capacity = init_capacity;
   return arr;
 }
 
@@ -460,7 +460,7 @@ bool _upb_Array_Append_fallback(upb_Array** arr_ptr, const void* value,
 
 UPB_INLINE bool _upb_array_reserve(upb_Array* arr, size_t size,
                                    upb_Arena* arena) {
-  if (arr->size < size) return _upb_array_realloc(arr, size, arena);
+  if (arr->capacity < size) return _upb_array_realloc(arr, size, arena);
   return true;
 }
 
@@ -504,7 +504,7 @@ UPB_INLINE void* _upb_Array_Resize_accessor2(void* msg, size_t ofs, size_t size,
                                              upb_Arena* arena) {
   upb_Array** arr_ptr = UPB_PTR_AT(msg, ofs, upb_Array*);
   upb_Array* arr = *arr_ptr;
-  if (!arr || arr->size < size) {
+  if (!arr || arr->capacity < size) {
     return _upb_Array_Resize_fallback(arr_ptr, size, elem_size_lg2, arena);
   }
   arr->len = size;
@@ -519,7 +519,7 @@ UPB_INLINE bool _upb_Array_Append_accessor2(void* msg, size_t ofs,
   size_t elem_size = 1 << elem_size_lg2;
   upb_Array* arr = *arr_ptr;
   void* ptr;
-  if (!arr || arr->len == arr->size) {
+  if (!arr || arr->len == arr->capacity) {
     return _upb_Array_Append_fallback(arr_ptr, value, elem_size_lg2, arena);
   }
   ptr = _upb_array_ptr(arr);

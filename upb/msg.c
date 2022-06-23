@@ -175,17 +175,17 @@ size_t upb_Message_ExtensionCount(const upb_Message* msg) {
 
 /** upb_Array *****************************************************************/
 
-bool _upb_array_realloc(upb_Array* arr, size_t min_size, upb_Arena* arena) {
-  size_t new_size = UPB_MAX(arr->size, 4);
+bool _upb_array_realloc(upb_Array* arr, size_t min_capacity, upb_Arena* arena) {
+  size_t new_capacity = UPB_MAX(arr->capacity, 4);
   int elem_size_lg2 = arr->data & 7;
-  size_t old_bytes = arr->size << elem_size_lg2;
+  size_t old_bytes = arr->capacity << elem_size_lg2;
   size_t new_bytes;
   void* ptr = _upb_array_ptr(arr);
 
   /* Log2 ceiling of size. */
-  while (new_size < min_size) new_size *= 2;
+  while (new_capacity < min_capacity) new_capacity *= 2;
 
-  new_bytes = new_size << elem_size_lg2;
+  new_bytes = new_capacity << elem_size_lg2;
   ptr = upb_Arena_Realloc(arena, ptr, old_bytes, new_bytes);
 
   if (!ptr) {
@@ -193,7 +193,7 @@ bool _upb_array_realloc(upb_Array* arr, size_t min_size, upb_Arena* arena) {
   }
 
   arr->data = _upb_tag_arrptr(ptr, elem_size_lg2);
-  arr->size = new_size;
+  arr->capacity = new_capacity;
   return true;
 }
 

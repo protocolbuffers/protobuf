@@ -217,14 +217,14 @@ UPB_FORCEINLINE
 static void* fastdecode_resizearr(upb_Decoder* d, void* dst,
                                   fastdecode_arr* farr, int valbytes) {
   if (UPB_UNLIKELY(dst == farr->end)) {
-    size_t old_size = farr->arr->size;
+    size_t old_size = farr->arr->capacity;
     size_t old_bytes = old_size * valbytes;
     size_t new_size = old_size * 2;
     size_t new_bytes = new_size * valbytes;
     char* old_ptr = _upb_array_ptr(farr->arr);
     char* new_ptr = upb_Arena_Realloc(&d->arena, old_ptr, old_bytes, new_bytes);
     uint8_t elem_size_lg2 = __builtin_ctz(valbytes);
-    farr->arr->size = new_size;
+    farr->arr->capacity = new_size;
     farr->arr->data = _upb_array_tagptr(new_ptr, elem_size_lg2);
     dst = (void*)(new_ptr + (old_size * valbytes));
     farr->end = (void*)(new_ptr + (new_size * valbytes));
@@ -313,7 +313,7 @@ static void* fastdecode_getfield(upb_Decoder* d, const char* ptr,
         farr->arr = *arr_p;
       }
       begin = _upb_array_ptr(farr->arr);
-      farr->end = begin + (farr->arr->size * valbytes);
+      farr->end = begin + (farr->arr->capacity * valbytes);
       *data = fastdecode_loadtag(ptr);
       return begin + (farr->arr->len * valbytes);
     }

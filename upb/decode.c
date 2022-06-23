@@ -201,7 +201,7 @@ static void decode_verifyutf8(upb_Decoder* d, const char* buf, int len) {
 }
 
 static bool decode_reserve(upb_Decoder* d, upb_Array* arr, size_t elem) {
-  bool need_realloc = arr->size - arr->len < elem;
+  bool need_realloc = arr->capacity - arr->len < elem;
   if (need_realloc && !_upb_array_realloc(arr, arr->len + elem, &d->arena)) {
     decode_err(d, kUpb_DecodeStatus_OutOfMemory);
   }
