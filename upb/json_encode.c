@@ -31,17 +31,16 @@
 #include <float.h>
 #include <inttypes.h>
 #include <math.h>
-#include <setjmp.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "upb/decode.h"
-#include "upb/internal/upb.h"
+#include "upb/internal/encode.h"
 #include "upb/internal/vsnprintf_compat.h"
 #include "upb/reflection.h"
 
-/* Must be last. */
+// Must be last.
 #include "upb/port_def.inc"
 
 typedef struct {

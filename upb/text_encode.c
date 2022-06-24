@@ -34,7 +34,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "upb/internal/upb.h"
+#include "upb/internal/encode.h"
 #include "upb/internal/vsnprintf_compat.h"
 #include "upb/reflection.h"
 

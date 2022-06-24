@@ -27,14 +27,12 @@
 
 #include "upb/decode.h"
 
-#include <setjmp.h>
 #include <string.h>
 
 #include "upb/internal/decode.h"
-#include "upb/internal/upb.h"
 #include "upb/upb.h"
 
-/* Must be last. */
+// Must be last.
 #include "upb/port_def.inc"
 
 /* Maps descriptor type -> elem_size_lg2.  */

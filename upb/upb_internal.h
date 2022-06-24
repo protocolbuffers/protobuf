@@ -31,6 +31,6 @@
 // TODO(b/232091617): Delete this entire header which currently exists only for
 // temporary backwards compatibility.
 
-#include "upb/internal/upb.h"
+#include "upb/internal/encode.h"
 
 #endif /* UPB_INT_H_ */

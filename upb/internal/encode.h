@@ -25,10 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_INTERNAL_UPB_H_
-#define UPB_INTERNAL_UPB_H_
-
-#include "upb/upb.h"
+#ifndef UPB_INTERNAL_ENCODE_H_
+#define UPB_INTERNAL_ENCODE_H_
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -53,4 +51,4 @@ void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size);
 
 #include "upb/port_undef.inc"
 
-#endif /* UPB_INTERNAL_UPB_H_ */
+#endif /* UPB_INTERNAL_ENCODE_H_ */

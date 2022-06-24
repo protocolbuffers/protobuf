@@ -25,19 +25,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/internal/upb.h"
-
-#include <errno.h>
 #include <float.h>
-#include <stdarg.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-#include "upb/arena.h"
-#include "upb/status.h"
+#include "upb/internal/encode.h"
 
 // Must be last.
 #include "upb/port_def.inc"

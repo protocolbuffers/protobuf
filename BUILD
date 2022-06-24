@@ -108,7 +108,6 @@ cc_library(
         "upb/encode.c",
         "upb/internal/decode.h",
         "upb/internal/table.h",
-        "upb/internal/upb.h",
         "upb/msg.c",
         "upb/msg_internal.h",
         "upb/status.c",
@@ -130,6 +129,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":arena_internal",
+        ":encode_internal",
         ":extension_registry",
         ":fastdecode",
         ":port",
@@ -390,7 +390,6 @@ cc_library(
 cc_library(
     name = "textformat",
     srcs = [
-        "upb/internal/upb.h",
         "upb/text_encode.c",
     ],
     hdrs = [
@@ -399,6 +398,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":encode_internal",
         ":port",
         ":reflection",
         ":table_internal",
@@ -408,7 +408,6 @@ cc_library(
 cc_library(
     name = "json",
     srcs = [
-        "upb/internal/upb.h",
         "upb/json_decode.c",
         "upb/json_encode.c",
     ],
@@ -419,6 +418,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":encode_internal",
         ":port",
         ":reflection",
         ":upb",
@@ -721,6 +721,14 @@ cc_library(
 )
 
 cc_library(
+    name = "encode_internal",
+    hdrs = ["upb/internal/encode.h"],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//:__subpackages__"],
+    deps = [":port"],
+)
+
+cc_library(
     name = "table_internal",
     srcs = [
         "upb/internal/table.c",
@@ -752,6 +760,7 @@ upb_amalgamation(
         ":arena_internal",
         ":collections",
         ":descriptor_upb_proto",
+        ":encode_internal",
         ":extension_registry",
         ":fastdecode",
         ":mini_table",
@@ -780,6 +789,7 @@ upb_amalgamation(
         ":collections",
         ":descriptor_upb_proto",
         ":descriptor_upb_proto_reflection",
+        ":encode_internal",
         ":extension_registry",
         ":fastdecode",
         ":json",
@@ -809,6 +819,7 @@ upb_amalgamation(
         ":arena_internal",
         ":collections",
         ":descriptor_upb_proto",
+        ":encode_internal",
         ":extension_registry",
         ":fastdecode",
         ":json",
