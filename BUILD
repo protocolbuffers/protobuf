@@ -112,7 +112,6 @@ cc_library(
         "upb/msg.c",
         "upb/msg_internal.h",
         "upb/status.c",
-        "upb/table.c",
         "upb/upb.c",
     ],
     hdrs = [
@@ -134,6 +133,7 @@ cc_library(
         ":extension_registry",
         ":fastdecode",
         ":port",
+        ":table_internal",
         "//third_party/utf8_range",
     ],
 )
@@ -154,7 +154,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":port",
-        ":table",
+        ":table_internal",
     ],
 )
 
@@ -172,7 +172,7 @@ cc_library(
         ":mini_table",
         ":port",
         ":reflection",
-        ":table",
+        ":table_internal",
         ":upb",
     ],
 )
@@ -185,7 +185,7 @@ cc_library(
     deps = [
         ":extension_registry",
         ":port",
-        ":table",
+        ":table_internal",
         ":upb",
     ],
 )
@@ -280,7 +280,7 @@ cc_library(
         ":arena_internal",
         ":extension_registry",
         ":port",
-        ":table",
+        ":table_internal",
         "//third_party/utf8_range",
     ],
 )
@@ -306,7 +306,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":table",
+        ":table_internal",
         ":upb",
     ],
 )
@@ -323,7 +323,7 @@ cc_library(
     deps = [
         ":descriptor_upb_proto",
         ":reflection",
-        ":table",
+        ":table_internal",
     ],
 )
 
@@ -357,7 +357,7 @@ cc_library(
     deps = [
         ":mini_table",
         ":port",
-        ":table",
+        ":table_internal",
         ":upb",
     ],
 )
@@ -382,7 +382,7 @@ cc_library(
         ":descriptor_upb_proto",
         ":mini_table",
         ":port",
-        ":table",
+        ":table_internal",
         ":upb",
     ],
 )
@@ -401,7 +401,7 @@ cc_library(
     deps = [
         ":port",
         ":reflection",
-        ":table",
+        ":table_internal",
     ],
 )
 
@@ -596,7 +596,7 @@ cc_test(
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         "//:port",
-        "//:table",
+        "//:table_internal",
         "//:upb",
         "@com_google_googletest//:gtest_main",
     ],
@@ -717,29 +717,25 @@ cc_library(
     hdrs = ["upb/internal/arena.h"],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
-    deps = [
-        ":port",
-    ],
+    deps = [":port"],
 )
 
 cc_library(
-    name = "table",
+    name = "table_internal",
+    srcs = [
+        "upb/internal/table.c",
+    ],
     hdrs = [
         "upb/alloc.h",
         "upb/arena.h",
         "upb/internal/table.h",
         "upb/status.h",
         "upb/string_view.h",
-        "upb/table_internal.h",
         "upb/upb.h",
     ],
-    visibility = [
-        "//python:__pkg__",
-        "//tests:__pkg__",
-    ],
-    deps = [
-        ":port",
-    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//:__subpackages__"],
+    deps = [":port"],
 )
 
 # Amalgamation #################################################################

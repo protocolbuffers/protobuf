@@ -206,7 +206,7 @@ py_extension(
         "//:collections",
         "//:descriptor_upb_proto_reflection",
         "//:reflection",
-        "//:table",
+        "//:table_internal",
         "//:textformat",
         "//:upb",
         "//upb/util:compare",
