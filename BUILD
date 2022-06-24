@@ -106,7 +106,6 @@ cc_library(
         "upb/arena.c",
         "upb/decode.c",
         "upb/encode.c",
-        "upb/internal/decode.h",
         "upb/internal/table.h",
         "upb/msg.c",
         "upb/msg_internal.h",
@@ -129,12 +128,12 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":arena_internal",
+        ":decode_internal",
         ":encode_internal",
         ":extension_registry",
         ":fastdecode",
         ":port",
         ":table_internal",
-        "//third_party/utf8_range",
     ],
 )
 
@@ -271,17 +270,16 @@ cc_library(
         "upb/decode.h",
         "upb/decode_fast.c",
         "upb/decode_fast.h",
-        "upb/internal/decode.h",
         "upb/msg.h",
         "upb/msg_internal.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     deps = [
         ":arena_internal",
+        ":decode_internal",
         ":extension_registry",
         ":port",
         ":table_internal",
-        "//third_party/utf8_range",
     ],
 )
 
@@ -721,6 +719,25 @@ cc_library(
 )
 
 cc_library(
+    name = "decode_internal",
+    srcs = [
+        "upb/decode.h",
+        "upb/extension_registry.h",
+        "upb/msg.h",
+        "upb/msg_internal.h",
+    ],
+    hdrs = ["upb/internal/decode.h"],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":arena_internal",
+        ":port",
+        ":table_internal",
+        "//third_party/utf8_range",
+    ],
+)
+
+cc_library(
     name = "encode_internal",
     hdrs = ["upb/internal/encode.h"],
     copts = UPB_DEFAULT_COPTS,
@@ -759,6 +776,7 @@ upb_amalgamation(
     libs = [
         ":arena_internal",
         ":collections",
+        ":decode_internal",
         ":descriptor_upb_proto",
         ":encode_internal",
         ":extension_registry",
@@ -787,6 +805,7 @@ upb_amalgamation(
     libs = [
         ":arena_internal",
         ":collections",
+        ":decode_internal",
         ":descriptor_upb_proto",
         ":descriptor_upb_proto_reflection",
         ":encode_internal",
@@ -818,6 +837,7 @@ upb_amalgamation(
     libs = [
         ":arena_internal",
         ":collections",
+        ":decode_internal",
         ":descriptor_upb_proto",
         ":encode_internal",
         ":extension_registry",

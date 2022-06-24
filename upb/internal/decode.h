@@ -33,14 +33,12 @@
 #ifndef UPB_INTERNAL_DECODE_H_
 #define UPB_INTERNAL_DECODE_H_
 
-#include <setjmp.h>
-
 #include "upb/decode.h"
 #include "upb/internal/arena.h"
 #include "upb/msg_internal.h"
 #include "third_party/utf8_range/utf8_range.h"
 
-/* Must be last. */
+// Must be last.
 #include "upb/port_def.inc"
 
 #define DECODE_NOGROUP (uint32_t) - 1
