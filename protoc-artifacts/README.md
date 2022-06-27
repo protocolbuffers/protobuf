@@ -7,6 +7,9 @@ executable (a.k.a. artifact) to Maven repositories. The artifact can be used by
 build automation tools so that users would not need to compile and install
 ``protoc`` for their systems.
 
+The [pom.xml](pom.xml) file specifies configuration details used by Maven to
+publish the protoc binaries. This is only used internally for releases.
+
 ## Maven Location
 The published protoc artifacts are available on Maven here:
 
