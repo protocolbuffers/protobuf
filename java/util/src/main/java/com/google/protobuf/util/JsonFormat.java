@@ -1823,10 +1823,10 @@ public class JsonFormat {
     }
 
     private boolean parseBool(JsonElement json) throws InvalidProtocolBufferException {
-      if (json.getAsString().equals("true")) {
+      if (json.getAsString().equalsIgnoreCase("true")) {
         return true;
       }
-      if (json.getAsString().equals("false")) {
+      if (json.getAsString().equalsIgnoreCase("false")) {
         return false;
       }
       throw new InvalidProtocolBufferException("Invalid bool value: " + json);
