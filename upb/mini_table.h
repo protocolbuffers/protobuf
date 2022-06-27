@@ -93,7 +93,8 @@ typedef struct {
 //   char buf[256];
 //   char* ptr = buf;
 //   e.end = ptr + sizeof(buf);
-//   ptr = upb_MtDataEncoder_StartMessage(&e, ptr);
+//   unit64_t msg_mod = ...; // bitwise & of kUpb_MessageModifiers or zero
+//   ptr = upb_MtDataEncoder_StartMessage(&e, ptr, msg_mod);
 //   // Fields *must* be in field number order.
 //   ptr = upb_MtDataEncoder_PutField(&e, ptr, ...);
 //   ptr = upb_MtDataEncoder_PutField(&e, ptr, ...);
