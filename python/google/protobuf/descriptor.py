@@ -873,11 +873,14 @@ class ServiceDescriptor(_NestedDescriptorBase):
 
     Args:
       name (str): Name of the method.
+
     Returns:
-      MethodDescriptor or None: the descriptor for the requested method, if
-      found.
+      MethodDescriptor: The descriptor for the requested method.
+
+    Raises:
+      KeyError: if the method cannot be found in the service.
     """
-    return self.methods_by_name.get(name, None)
+    return self.methods_by_name[name]
 
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.ServiceDescriptorProto.

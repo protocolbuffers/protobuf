@@ -118,6 +118,14 @@ class DescriptorTest(unittest.TestCase):
   def GetDescriptorPool(self):
     return symbol_database.Default().pool
 
+  def testFindMethodByName(self):
+    service_descriptor = (unittest_custom_options_pb2.
+                          TestServiceWithCustomOptions.DESCRIPTOR)
+    method_descriptor = service_descriptor.FindMethodByName('Foo')
+    self.assertEqual(method_descriptor.name, 'Foo')
+    with self.assertRaises(KeyError):
+        service_descriptor.FindMethodByName('MethodDoesNotExist')
+
   def testEnumValueName(self):
     self.assertEqual(self.my_message.EnumValueName('ForeignEnum', 4),
                      'FOREIGN_FOO')
