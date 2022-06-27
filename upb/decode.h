@@ -36,7 +36,7 @@
 #include "upb/extension_registry.h"
 #include "upb/msg.h"
 
-/* Must be last. */
+// Must be last.
 #include "upb/port_def.inc"
 
 #ifdef __cplusplus

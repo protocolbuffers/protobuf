@@ -30,6 +30,9 @@
 
 #include "upb/def.h"
 
+// Must be last.
+#include "upb/port_def.inc"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -60,5 +63,7 @@ size_t upb_TextEncode(const upb_Message* msg, const upb_MessageDef* m,
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+#include "upb/port_undef.inc"
 
 #endif /* UPB_TEXTENCODE_H_ */

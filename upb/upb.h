@@ -152,10 +152,10 @@ UPB_INLINE int _upb_Log2Ceiling(int x) {
 
 UPB_INLINE int _upb_Log2CeilingSize(int x) { return 1 << _upb_Log2Ceiling(x); }
 
-#include "upb/port_undef.inc"
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+#include "upb/port_undef.inc"
 
 #endif /* UPB_H_ */

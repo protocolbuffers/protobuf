@@ -64,10 +64,10 @@ UPB_INLINE bool upb_StringView_IsEqual(upb_StringView a, upb_StringView b) {
 #define UPB_STRINGVIEW_FORMAT "%.*s"
 #define UPB_STRINGVIEW_ARGS(view) (int)(view).size, (view).data
 
-#include "upb/port_undef.inc"
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+#include "upb/port_undef.inc"
 
 #endif /* UPB_STRING_VIEW_H_ */

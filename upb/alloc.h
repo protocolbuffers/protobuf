@@ -89,10 +89,10 @@ UPB_INLINE void* upb_grealloc(void* ptr, size_t oldsize, size_t size) {
 
 UPB_INLINE void upb_gfree(void* ptr) { upb_free(&upb_alloc_global, ptr); }
 
-#include "upb/port_undef.inc"
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+#include "upb/port_undef.inc"
 
 #endif /* UPB_ALLOC_H_ */

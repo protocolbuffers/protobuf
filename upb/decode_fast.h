@@ -64,6 +64,13 @@
 
 #include "upb/msg.h"
 
+// Must be last.
+#include "upb/port_def.inc"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct upb_Decoder;
 
 // The fallback, generic parsing function that can handle any field type.
@@ -149,5 +156,11 @@ TAGBYTES(r)
 #undef F
 
 #undef UPB_PARSE_PARAMS
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include "upb/port_undef.inc"
 
 #endif /* UPB_DECODE_FAST_H_ */

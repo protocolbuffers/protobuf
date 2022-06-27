@@ -28,9 +28,10 @@
 #ifndef UPB_EXTENSION_REGISTRY_H_
 #define UPB_EXTENSION_REGISTRY_H_
 
-#include <stddef.h>
-
 #include "upb/upb.h"
+
+// Must be last.
+#include "upb/port_def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -80,5 +81,7 @@ upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena);
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+#include "upb/port_undef.inc"
 
 #endif /* UPB_EXTENSION_REGISTRY_H_ */

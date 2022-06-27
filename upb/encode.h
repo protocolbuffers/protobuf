@@ -34,7 +34,7 @@
 
 #include "upb/msg.h"
 
-/* Must be last. */
+// Must be last.
 #include "upb/port_def.inc"
 
 #ifdef __cplusplus
@@ -72,10 +72,10 @@ upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
                             int options, upb_Arena* arena, char** buf,
                             size_t* size);
 
-#include "upb/port_undef.inc"
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+#include "upb/port_undef.inc"
 
 #endif /* UPB_ENCODE_H_ */

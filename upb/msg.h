@@ -62,10 +62,10 @@ const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
 /* Returns the number of extensions present in this message. */
 size_t upb_Message_ExtensionCount(const upb_Message* msg);
 
-#include "upb/port_undef.inc"
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+#include "upb/port_undef.inc"
 
 #endif /* UPB_MSG_INT_H_ */

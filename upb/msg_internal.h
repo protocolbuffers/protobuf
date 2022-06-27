@@ -35,7 +35,6 @@
 #ifndef UPB_MSG_INT_H_
 #define UPB_MSG_INT_H_
 
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -44,7 +43,7 @@
 #include "upb/msg.h"
 #include "upb/upb.h"
 
-/* Must be last. */
+// Must be last.
 #include "upb/port_def.inc"
 
 #ifdef __cplusplus

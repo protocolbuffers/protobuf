@@ -32,8 +32,10 @@
 #include "upb/def.h"
 #include "upb/map.h"
 #include "upb/msg.h"
-#include "upb/port_def.inc"
 #include "upb/upb.h"
+
+// Must be last.
+#include "upb/port_def.inc"
 
 #ifdef __cplusplus
 extern "C" {

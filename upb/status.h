@@ -29,8 +29,8 @@
 #define UPB_STATUS_H_
 
 #include <stdarg.h>
-#include <stdbool.h>
 
+// Must be last.
 #include "upb/port_def.inc"
 
 #ifdef __cplusplus
@@ -57,10 +57,10 @@ void upb_Status_VSetErrorFormat(upb_Status* status, const char* fmt,
 void upb_Status_VAppendErrorFormat(upb_Status* status, const char* fmt,
                                    va_list args) UPB_PRINTF(2, 0);
 
-#include "upb/port_undef.inc"
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+#include "upb/port_undef.inc"
 
 #endif /* UPB_STATUS_H_ */
