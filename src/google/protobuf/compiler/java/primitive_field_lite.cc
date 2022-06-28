@@ -334,14 +334,15 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateKotlinDslMembers(
                  "  }\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
-                               /* builder */ false);
+                               /* builder */ false, /* kdoc */ true);
   printer->Print(variables_,
                  "fun ${$clear$kt_capitalized_name$$}$() {\n"
                  "  $kt_dsl_builder$.${$clear$capitalized_name$$}$()\n"
                  "}\n");
 
   if (HasHazzer(descriptor_)) {
-    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
+    WriteFieldAccessorDocComment(printer, descriptor_, HAZZER,
+                                 /* builder */ false, /* kdoc */ true);
     printer->Print(
         variables_,
         "fun ${$has$kt_capitalized_name$$}$(): kotlin.Boolean {\n"
@@ -685,7 +686,7 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateKotlinDslMembers(
                  "  )\n");
 
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
-                               /* builder */ false);
+                               /* builder */ false, /* kdoc */ true);
   printer->Print(variables_,
                  "@kotlin.jvm.JvmSynthetic\n"
                  "@kotlin.jvm.JvmName(\"add$kt_capitalized_name$\")\n"
@@ -696,7 +697,7 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateKotlinDslMembers(
                  "}");
 
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_ADDER,
-                               /* builder */ false);
+                               /* builder */ false, /* kdoc */ true);
   printer->Print(variables_,
                  "@kotlin.jvm.JvmSynthetic\n"
                  "@kotlin.jvm.JvmName(\"plusAssign$kt_capitalized_name$\")\n"
@@ -708,7 +709,7 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateKotlinDslMembers(
                  "}");
 
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
-                               /* builder */ false);
+                               /* builder */ false, /* kdoc */ true);
   printer->Print(variables_,
                  "@kotlin.jvm.JvmSynthetic\n"
                  "@kotlin.jvm.JvmName(\"addAll$kt_capitalized_name$\")\n"
@@ -719,7 +720,7 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateKotlinDslMembers(
                  "}");
 
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_MULTI_ADDER,
-                               /* builder */ false);
+                               /* builder */ false, /* kdoc */ true);
   printer->Print(
       variables_,
       "@kotlin.jvm.JvmSynthetic\n"
@@ -732,7 +733,7 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateKotlinDslMembers(
       "}");
 
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_SETTER,
-                               /* builder */ false);
+                               /* builder */ false, /* kdoc */ true);
   printer->Print(
       variables_,
       "@kotlin.jvm.JvmSynthetic\n"
@@ -744,7 +745,7 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateKotlinDslMembers(
       "}");
 
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
-                               /* builder */ false);
+                               /* builder */ false, /* kdoc */ true);
   printer->Print(variables_,
                  "@kotlin.jvm.JvmSynthetic\n"
                  "@kotlin.jvm.JvmName(\"clear$kt_capitalized_name$\")\n"

@@ -39,30 +39,15 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     internal sealed class PackageDescriptor : IDescriptor
     {
-        private readonly string name;
-        private readonly string fullName;
-        private readonly FileDescriptor file;
-
         internal PackageDescriptor(string name, string fullName, FileDescriptor file)
         {
-            this.file = file;
-            this.fullName = fullName;
-            this.name = name;
+            File = file;
+            FullName = fullName;
+            Name = name;
         }
 
-        public string Name
-        {
-            get { return name; }
-        }
-
-        public string FullName
-        {
-            get { return fullName; }
-        }
-
-        public FileDescriptor File
-        {
-            get { return file; }
-        }
+        public string Name { get; }
+        public string FullName { get; }
+        public FileDescriptor File { get; }
     }
 }

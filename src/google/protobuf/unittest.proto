@@ -459,6 +459,9 @@ message TestRequiredForeign {
   optional TestRequired optional_message = 1;
   repeated TestRequired repeated_message = 2;
   optional int32 dummy = 3;
+
+  // Missing required fields must not affect verification of child messages.
+  optional NestedTestAllTypes optional_lazy_message = 4 [lazy = true];
 }
 
 message TestRequiredMessage {
@@ -1415,4 +1418,106 @@ message TestVerifyBigFieldNumberUint32 {
   optional Nested optional_nested = 1;
 }
 
+
+// This message contains different kind of enums to exercise the different
+// parsers in table-driven.
+message EnumParseTester {
+  enum SeqSmall0 {
+    SEQ_SMALL_0_DEFAULT = 0;
+    SEQ_SMALL_0_1 = 1;
+    SEQ_SMALL_0_2 = 2;
+  };
+  optional SeqSmall0 optional_seq_small_0_lowfield = 1;
+  optional SeqSmall0 optional_seq_small_0_midfield = 1001;
+  optional SeqSmall0 optional_seq_small_0_hifield = 1000001;
+  repeated SeqSmall0 repeated_seq_small_0_lowfield = 2;
+  repeated SeqSmall0 repeated_seq_small_0_midfield = 1002;
+  repeated SeqSmall0 repeated_seq_small_0_hifield = 1000002;
+  repeated SeqSmall0 packed_seq_small_0_lowfield = 3 [packed = true];
+  repeated SeqSmall0 packed_seq_small_0_midfield = 1003 [packed = true];
+  repeated SeqSmall0 packed_seq_small_0_hifield = 1000003 [packed = true];
+
+  enum SeqSmall1 {
+    SEQ_SMALL_1_DEFAULT = 1;
+    SEQ_SMALL_1_2 = 2;
+    SEQ_SMALL_1_3 = 3;
+  };
+  optional SeqSmall1 optional_seq_small_1_lowfield = 4;
+  optional SeqSmall1 optional_seq_small_1_midfield = 1004;
+  optional SeqSmall1 optional_seq_small_1_hifield = 1000004;
+  repeated SeqSmall1 repeated_seq_small_1_lowfield = 5;
+  repeated SeqSmall1 repeated_seq_small_1_midfield = 1005;
+  repeated SeqSmall1 repeated_seq_small_1_hifield = 1000005;
+  repeated SeqSmall1 packed_seq_small_1_lowfield = 6 [packed = true];
+  repeated SeqSmall1 packed_seq_small_1_midfield = 1006 [packed = true];
+  repeated SeqSmall1 packed_seq_small_1_hifield = 1000006 [packed = true];
+
+  enum SeqLarge {
+    SEQ_LARGE_DEFAULT = -1;
+    SEQ_LARGE_0 = 0;
+    SEQ_LARGE_1 = 1;
+    SEQ_LARGE_2 = 2;
+    SEQ_LARGE_3 = 3;
+    SEQ_LARGE_4 = 4;
+    SEQ_LARGE_5 = 5;
+    SEQ_LARGE_6 = 6;
+    SEQ_LARGE_7 = 7;
+    SEQ_LARGE_8 = 8;
+    SEQ_LARGE_9 = 9;
+    SEQ_LARGE_10 = 10;
+    SEQ_LARGE_11 = 11;
+    SEQ_LARGE_12 = 12;
+    SEQ_LARGE_13 = 13;
+    SEQ_LARGE_14 = 14;
+    SEQ_LARGE_15 = 15;
+    SEQ_LARGE_16 = 16;
+    SEQ_LARGE_17 = 17;
+    SEQ_LARGE_18 = 18;
+    SEQ_LARGE_19 = 19;
+    SEQ_LARGE_20 = 20;
+    SEQ_LARGE_21 = 21;
+    SEQ_LARGE_22 = 22;
+    SEQ_LARGE_23 = 23;
+    SEQ_LARGE_24 = 24;
+    SEQ_LARGE_25 = 25;
+    SEQ_LARGE_26 = 26;
+    SEQ_LARGE_27 = 27;
+    SEQ_LARGE_28 = 28;
+    SEQ_LARGE_29 = 29;
+    SEQ_LARGE_30 = 30;
+    SEQ_LARGE_31 = 31;
+    SEQ_LARGE_32 = 32;
+    SEQ_LARGE_33 = 33;
+  };
+  optional SeqLarge optional_seq_large_lowfield = 7;
+  optional SeqLarge optional_seq_large_midfield = 1007;
+  optional SeqLarge optional_seq_large_hifield = 1000007;
+  repeated SeqLarge repeated_seq_large_lowfield = 8;
+  repeated SeqLarge repeated_seq_large_midfield = 1008;
+  repeated SeqLarge repeated_seq_large_hifield = 1000008;
+  repeated SeqLarge packed_seq_large_lowfield = 9 [packed = true];
+  repeated SeqLarge packed_seq_large_midfield = 1009 [packed = true];
+  repeated SeqLarge packed_seq_large_hifield = 1000009 [packed = true];
+
+  enum Arbitrary {
+    ARBITRARY_DEFAULT = -123123;
+    ARBITRARY_1 = -123;
+    ARBITRARY_2 = 213;
+    ARBITRARY_3 = 213213;
+    ARBITRARY_MIN = -2147483648;
+    ARBITRARY_MAX = 2147483647;
+  };
+  optional Arbitrary optional_arbitrary_lowfield = 10;
+  optional Arbitrary optional_arbitrary_midfield = 1010;
+  optional Arbitrary optional_arbitrary_hifield = 1000010;
+  repeated Arbitrary repeated_arbitrary_lowfield = 11;
+  repeated Arbitrary repeated_arbitrary_midfield = 1011;
+  repeated Arbitrary repeated_arbitrary_hifield = 1000011;
+  repeated Arbitrary packed_arbitrary_lowfield = 12 [packed = true];
+  repeated Arbitrary packed_arbitrary_midfield = 1012 [packed = true];
+  repeated Arbitrary packed_arbitrary_hifield = 1000012 [packed = true];
+
+  // An arbitrary field we can append to to break the runs of repeated fields.
+  optional int32 other_field = 99;
+};
 

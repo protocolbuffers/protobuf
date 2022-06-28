@@ -55,7 +55,7 @@ namespace Google.Protobuf
 
             internal static ExtensionComparer Instance = new ExtensionComparer();
         }
-        private IDictionary<ObjectIntPair<Type>, Extension> extensions;
+        private readonly IDictionary<ObjectIntPair<Type>, Extension> extensions;
 
         /// <summary>
         /// Creates a new empty extension registry

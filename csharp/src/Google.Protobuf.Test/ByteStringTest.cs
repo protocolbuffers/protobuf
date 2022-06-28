@@ -70,7 +70,7 @@ namespace Google.Protobuf
             Assert.IsFalse(b1 != b1);
             Assert.IsFalse(b1 != b2);
             Assert.IsTrue(ByteString.Empty == ByteString.Empty);
-#pragma warning disable 1718
+#pragma warning restore 1718
             Assert.IsTrue(b1 != b3);
             Assert.IsTrue(b1 != b4);
             Assert.IsTrue(b1 != null);
@@ -276,12 +276,9 @@ namespace Google.Protobuf
             Span<byte> s = stackalloc byte[data.Length];
             data.CopyTo(s);
 
-            using (UnmanagedMemoryManager<byte> manager = new UnmanagedMemoryManager<byte>(s))
-            {
-                ByteString bs = ByteString.AttachBytes(manager.Memory);
-
-                Assert.AreEqual("Hello world", bs.ToString(Encoding.UTF8));
-            }
+            using var manager = new UnmanagedMemoryManager<byte>(s);
+            ByteString bs = ByteString.AttachBytes(manager.Memory);
+            Assert.AreEqual("Hello world", bs.ToString(Encoding.UTF8));
         }
 
         [Test]
@@ -315,12 +312,9 @@ namespace Google.Protobuf
             Span<byte> s = stackalloc byte[data.Length];
             data.CopyTo(s);
 
-            using (UnmanagedMemoryManager<byte> manager = new UnmanagedMemoryManager<byte>(s))
-            {
-                ByteString bs = ByteString.AttachBytes(manager.Memory);
-
-                Assert.AreEqual("SGVsbG8gd29ybGQ=", bs.ToBase64());
-            }
+            using var manager = new UnmanagedMemoryManager<byte>(s);
+            ByteString bs = ByteString.AttachBytes(manager.Memory);
+            Assert.AreEqual("SGVsbG8gd29ybGQ=", bs.ToBase64());
         }
 
         [Test]

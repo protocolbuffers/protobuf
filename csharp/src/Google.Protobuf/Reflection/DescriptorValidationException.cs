@@ -40,25 +40,16 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public sealed class DescriptorValidationException : Exception
     {
-        private readonly String name;
-        private readonly string description;
-
         /// <value>
         /// The full name of the descriptor where the error occurred.
         /// </value>
-        public String ProblemSymbolName
-        {
-            get { return name; }
-        }
+        public string ProblemSymbolName { get; }
 
         /// <value>
         /// A human-readable description of the error. (The Message property
         /// is made up of the descriptor's name and this description.)
         /// </value>
-        public string Description
-        {
-            get { return description; }
-        }
+        public string Description { get; }
 
         internal DescriptorValidationException(IDescriptor problemDescriptor, string description) :
             base(problemDescriptor.FullName + ": " + description)
@@ -66,15 +57,15 @@ namespace Google.Protobuf.Reflection
             // Note that problemDescriptor may be partially uninitialized, so we
             // don't want to expose it directly to the user.  So, we only provide
             // the name and the original proto.
-            name = problemDescriptor.FullName;
-            this.description = description;
+            ProblemSymbolName = problemDescriptor.FullName;
+            Description = description;
         }
 
         internal DescriptorValidationException(IDescriptor problemDescriptor, string description, Exception cause) :
             base(problemDescriptor.FullName + ": " + description, cause)
         {
-            name = problemDescriptor.FullName;
-            this.description = description;
+            ProblemSymbolName = problemDescriptor.FullName;
+            Description = description;
         }
     }
 }

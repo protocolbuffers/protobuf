@@ -5,7 +5,7 @@
    .. warning::
 
       You are reading the documentation for the `latest committed changes
-      <https://github.com/protocolbuffers/protobuf/tree/master/python>`_ of
+      <https://github.com/protocolbuffers/protobuf/tree/main/python>`_ of
       the `Protocol Buffers package for Python
       <https://developers.google.com/protocol-buffers/docs/pythontutorial>`_.
       Some features may not yet be released. Read the documentation for the

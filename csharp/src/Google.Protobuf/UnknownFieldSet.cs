@@ -32,9 +32,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Security;
-using Google.Protobuf.Reflection;
 
 namespace Google.Protobuf
 {
@@ -49,14 +47,13 @@ namespace Google.Protobuf
     /// </summary>
     public sealed partial class UnknownFieldSet
     {
-        private readonly IDictionary<int, UnknownField> fields;
+        private readonly IDictionary<int, UnknownField> fields = new Dictionary<int, UnknownField>();
 
         /// <summary>
         /// Creates a new UnknownFieldSet.
         /// </summary>
         internal UnknownFieldSet()
         {
-            this.fields = new Dictionary<int, UnknownField>();
         }
 
         /// <summary>
@@ -125,8 +122,7 @@ namespace Google.Protobuf
             }
             foreach (KeyValuePair<int, UnknownField> leftEntry in fields)
             {
-                UnknownField rightValue;
-                if (!otherFields.TryGetValue(leftEntry.Key, out rightValue))
+                if (!otherFields.TryGetValue(leftEntry.Key, out UnknownField rightValue))
                 {
                     return false;
                 }
@@ -170,8 +166,7 @@ namespace Google.Protobuf
                 return null;
             }
 
-            UnknownField existing;
-            if (fields.TryGetValue(number, out existing))
+            if (fields.TryGetValue(number, out UnknownField existing))
             {
                 return existing;
             }

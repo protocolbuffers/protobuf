@@ -49,10 +49,10 @@ namespace Google.Protobuf.Benchmarks
     {
         const int MaxMessages = 100;
 
-        SubTest manyWrapperFieldsTest = new SubTest(CreateManyWrapperFieldsMessage(), ManyWrapperFieldsMessage.Parser, () => new ManyWrapperFieldsMessage(), MaxMessages);
-        SubTest manyPrimitiveFieldsTest = new SubTest(CreateManyPrimitiveFieldsMessage(), ManyPrimitiveFieldsMessage.Parser, () => new ManyPrimitiveFieldsMessage(), MaxMessages);
-        SubTest repeatedFieldTest = new SubTest(CreateRepeatedFieldMessage(), GoogleMessage1.Parser, () => new GoogleMessage1(), MaxMessages);
-        SubTest emptyMessageTest = new SubTest(new Empty(), Empty.Parser, () => new Empty(), MaxMessages);
+        private readonly SubTest manyWrapperFieldsTest = new(CreateManyWrapperFieldsMessage(), ManyWrapperFieldsMessage.Parser, () => new ManyWrapperFieldsMessage(), MaxMessages);
+        private readonly SubTest manyPrimitiveFieldsTest = new(CreateManyPrimitiveFieldsMessage(), ManyPrimitiveFieldsMessage.Parser, () => new ManyPrimitiveFieldsMessage(), MaxMessages);
+        private readonly SubTest repeatedFieldTest = new(CreateRepeatedFieldMessage(), GoogleMessage1.Parser, () => new GoogleMessage1(), MaxMessages);
+        private readonly SubTest emptyMessageTest = new(new Empty(), Empty.Parser, () => new Empty(), MaxMessages);
 
         public IEnumerable<int> MessageCountValues => new[] { 10, 100 };
 
@@ -204,8 +204,8 @@ namespace Google.Protobuf.Benchmarks
             private readonly byte[] data;
             private readonly byte[] multipleMessagesData;
 
-            private ReadOnlySequence<byte> dataSequence;
-            private ReadOnlySequence<byte> multipleMessagesDataSequence;
+            private readonly ReadOnlySequence<byte> dataSequence;
+            private readonly ReadOnlySequence<byte> multipleMessagesDataSequence;
 
             public SubTest(IMessage message, MessageParser parser, Func<IMessage> factory, int maxMessageCount)
             {

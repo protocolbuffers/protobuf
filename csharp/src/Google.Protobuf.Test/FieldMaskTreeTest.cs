@@ -30,7 +30,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using System.Collections.Generic;
 using Google.Protobuf.Collections;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;

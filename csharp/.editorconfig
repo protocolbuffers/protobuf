@@ -15,3 +15,6 @@ tab_width = 4
 end_of_line = lf
 insert_final_newline = false
 trim_trailing_whitespace = true
+
+[*.cs]
+csharp_space_after_cast = true

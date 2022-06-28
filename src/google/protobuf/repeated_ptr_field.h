@@ -1092,7 +1092,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // Gets the number of cleared objects that are currently being kept
   // around for reuse.
   int ClearedCount() const;
-#ifndef PROTOBUF_FUTURE_BREAKING_CHANGES
+#ifndef PROTOBUF_FUTURE_REMOVE_CLEARED_API
   // Adds an element to the pool of cleared objects, passing ownership to
   // the RepeatedPtrField.  The element must be cleared prior to calling
   // this method.
@@ -1107,7 +1107,7 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   // This method cannot be called when the repeated field is on an arena; doing
   // so will trigger a GOOGLE_DCHECK-failure.
   PROTOBUF_NODISCARD Element* ReleaseCleared();
-#endif  // !PROTOBUF_FUTURE_BREAKING_CHANGES
+#endif  // !PROTOBUF_FUTURE_REMOVE_CLEARED_API
 
   // Removes the element referenced by position.
   //
@@ -1514,7 +1514,7 @@ inline int RepeatedPtrField<Element>::ClearedCount() const {
   return RepeatedPtrFieldBase::ClearedCount();
 }
 
-#ifndef PROTOBUF_FUTURE_BREAKING_CHANGES
+#ifndef PROTOBUF_FUTURE_REMOVE_CLEARED_API
 template <typename Element>
 inline void RepeatedPtrField<Element>::AddCleared(Element* value) {
   return RepeatedPtrFieldBase::AddCleared<TypeHandler>(value);
@@ -1524,7 +1524,7 @@ template <typename Element>
 inline Element* RepeatedPtrField<Element>::ReleaseCleared() {
   return RepeatedPtrFieldBase::ReleaseCleared<TypeHandler>();
 }
-#endif  // !PROTOBUF_FUTURE_BREAKING_CHANGES
+#endif  // !PROTOBUF_FUTURE_REMOVE_CLEARED_API
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::Reserve(int new_size) {

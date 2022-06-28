@@ -52,6 +52,7 @@ Modules and Packages
    google/protobuf/text_format
    google/protobuf/timestamp_pb2
    google/protobuf/type_pb2
+   google/protobuf/unknown_fields
    google/protobuf/wrappers_pb2
 
 .. END REFTOC.

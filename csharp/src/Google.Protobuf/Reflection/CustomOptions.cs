@@ -31,7 +31,6 @@
 #endregion
 
 using Google.Protobuf.Collections;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -226,24 +225,21 @@ namespace Google.Protobuf.Reflection
         {
             if (values == null)
             {
-                value = default(T);
+                value = default;
                 return false;
             }
 
-            IExtensionValue extensionValue;
-            if (values.TryGetValue(field, out extensionValue))
+            if (values.TryGetValue(field, out IExtensionValue extensionValue))
             {
-                if (extensionValue is ExtensionValue<T>)
+                if (extensionValue is ExtensionValue<T> single)
                 {
-                    ExtensionValue<T> single = extensionValue as ExtensionValue<T>;
                     ByteString bytes = single.GetValue().ToByteString();
                     value = new T();
                     value.MergeFrom(bytes);
                     return true;
                 }
-                else if (extensionValue is RepeatedExtensionValue<T>)
+                else if (extensionValue is RepeatedExtensionValue<T> repeated)
                 {
-                    RepeatedExtensionValue<T> repeated = extensionValue as RepeatedExtensionValue<T>;
                     value = repeated.GetValue()
                         .Select(v => v.ToByteString())
                         .Aggregate(new T(), (t, b) =>
@@ -264,22 +260,19 @@ namespace Google.Protobuf.Reflection
         {
             if (values == null)
             {
-                value = default(T);
+                value = default;
                 return false;
             }
 
-            IExtensionValue extensionValue;
-            if (values.TryGetValue(field, out extensionValue))
+            if (values.TryGetValue(field, out IExtensionValue extensionValue))
             {
-                if (extensionValue is ExtensionValue<T>)
+                if (extensionValue is ExtensionValue<T> single)
                 {
-                    ExtensionValue<T> single = extensionValue as ExtensionValue<T>;
                     value = single.GetValue();
                     return true;
                 }
-                else if (extensionValue is RepeatedExtensionValue<T>)
+                else if (extensionValue is RepeatedExtensionValue<T> repeated)
                 {
-                    RepeatedExtensionValue<T> repeated = extensionValue as RepeatedExtensionValue<T>;
                     if (repeated.GetValue().Count != 0)
                     {
                         RepeatedField<T> repeatedField = repeated.GetValue();
@@ -317,7 +310,7 @@ namespace Google.Protobuf.Reflection
                 }
             }
 
-            value = default(T);
+            value = default;
             return false;
         }
     }
