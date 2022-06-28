@@ -73,7 +73,7 @@ class Arena {
       : ptr_(upb_Arena_Init(initial_block, size, &upb_alloc_global),
              upb_Arena_Free) {}
 
-  upb_Arena* ptr() { return ptr_.get(); }
+  upb_Arena* ptr() const { return ptr_.get(); }
 
   // Allows this arena to be used as a generic allocator.
   //
