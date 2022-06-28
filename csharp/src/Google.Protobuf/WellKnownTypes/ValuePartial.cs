@@ -41,7 +41,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>A newly-created Value message with the given value.</returns>
         public static Value ForString(string value)
         {
-            ProtoPreconditions.CheckNotNull(value, "value");
+            ProtoPreconditions.CheckNotNull(value, nameof(value));
             return new Value { StringValue = value };
         }
 
@@ -81,7 +81,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>A newly-created Value message an initial list value.</returns>
         public static Value ForList(params Value[] values)
         {
-            ProtoPreconditions.CheckNotNull(values, "values");
+            ProtoPreconditions.CheckNotNull(values, nameof(values));
             return new Value { ListValue = new ListValue { Values = { values } } };
         }
 
@@ -92,7 +92,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>A newly-created Value message an initial struct value.</returns>
         public static Value ForStruct(Struct value)
         {
-            ProtoPreconditions.CheckNotNull(value, "value");
+            ProtoPreconditions.CheckNotNull(value, nameof(value));
             return new Value { StructValue = value };
         }
     }

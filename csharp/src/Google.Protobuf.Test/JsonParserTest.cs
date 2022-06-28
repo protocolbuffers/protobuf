@@ -641,7 +641,7 @@ namespace Google.Protobuf
         [TestCase("9999-12-31T23:59:59.999999999Z", null)]
         public void Timestamp_Valid(string jsonValue, string expectedFormatted)
         {
-            expectedFormatted = expectedFormatted ?? jsonValue;
+            expectedFormatted ??= jsonValue;
             string json = WrapInQuotes(jsonValue);
             var parsed = Timestamp.Parser.ParseJson(json);
             Assert.AreEqual(WrapInQuotes(expectedFormatted), parsed.ToString());
@@ -758,7 +758,7 @@ namespace Google.Protobuf
         [TestCase("-315576000000s", null)]
         public void Duration_Valid(string jsonValue, string expectedFormatted)
         {
-            expectedFormatted = expectedFormatted ?? jsonValue;
+            expectedFormatted ??= jsonValue;
             string json = WrapInQuotes(jsonValue);
             var parsed = Duration.Parser.ParseJson(json);
             Assert.AreEqual(WrapInQuotes(expectedFormatted), parsed.ToString());
@@ -1066,25 +1066,26 @@ namespace Google.Protobuf
   ""mapStringNestedMessage"": null
 }";
 
-            TestAllTypesProto3 message = new TestAllTypesProto3();
-
-            message.OptionalInt32 = 1;
-            message.OptionalInt64 = 1;
-            message.OptionalUint32 = 1;
-            message.OptionalUint64 = 1;
-            message.OptionalSint32 = 1;
-            message.OptionalSint64 = 1;
-            message.OptionalFixed32 = 1;
-            message.OptionalFixed64 = 1;
-            message.OptionalSfixed32 = 1;
-            message.OptionalSfixed64 = 1;
-            message.OptionalFloat = 1;
-            message.OptionalDouble = 1;
-            message.OptionalBool = true;
-            message.OptionalString = "1";
-            message.OptionalBytes = ByteString.CopyFrom(new byte[] { 1 });
-            message.OptionalNestedEnum = TestAllTypesProto3.Types.NestedEnum.Bar;
-            message.OptionalNestedMessage = new TestAllTypesProto3.Types.NestedMessage();
+            var message = new TestAllTypesProto3
+            {
+                OptionalInt32 = 1,
+                OptionalInt64 = 1,
+                OptionalUint32 = 1,
+                OptionalUint64 = 1,
+                OptionalSint32 = 1,
+                OptionalSint64 = 1,
+                OptionalFixed32 = 1,
+                OptionalFixed64 = 1,
+                OptionalSfixed32 = 1,
+                OptionalSfixed64 = 1,
+                OptionalFloat = 1,
+                OptionalDouble = 1,
+                OptionalBool = true,
+                OptionalString = "1",
+                OptionalBytes = ByteString.CopyFrom(new byte[] { 1 }),
+                OptionalNestedEnum = TestAllTypesProto3.Types.NestedEnum.Bar,
+                OptionalNestedMessage = new TestAllTypesProto3.Types.NestedMessage()
+            };
             message.RepeatedInt32.Add(1);
             message.RepeatedInt64.Add(1);
             message.RepeatedUint32.Add(1);

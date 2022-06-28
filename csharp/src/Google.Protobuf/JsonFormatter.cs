@@ -62,7 +62,6 @@ namespace Google.Protobuf
         internal const string AnyTypeUrlField = "@type";
         internal const string AnyDiagnosticValueField = "@value";
         internal const string AnyWellKnownTypeValueField = "value";
-        private const string TypeUrlPrefix = "type.googleapis.com";
         private const string NameValueSeparator = ": ";
         private const string PropertySeparator = ", ";
 
@@ -202,8 +201,7 @@ namespace Google.Protobuf
             }
             if (DiagnosticOnly)
             {
-                ICustomDiagnosticMessage customDiagnosticMessage = message as ICustomDiagnosticMessage;
-                if (customDiagnosticMessage != null)
+                if (message is ICustomDiagnosticMessage customDiagnosticMessage)
                 {
                     writer.Write(customDiagnosticMessage.ToDiagnosticString());
                     return;
@@ -320,39 +318,20 @@ namespace Google.Protobuf
                 IList list = (IList) value;
                 return list.Count == 0;
             }
-            switch (descriptor.FieldType)
+            return descriptor.FieldType switch
             {
-                case FieldType.Bool:
-                    return (bool) value == false;
-                case FieldType.Bytes:
-                    return (ByteString) value == ByteString.Empty;
-                case FieldType.String:
-                    return (string) value == "";
-                case FieldType.Double:
-                    return (double) value == 0.0;
-                case FieldType.SInt32:
-                case FieldType.Int32:
-                case FieldType.SFixed32:
-                case FieldType.Enum:
-                    return (int) value == 0;
-                case FieldType.Fixed32:
-                case FieldType.UInt32:
-                    return (uint) value == 0;
-                case FieldType.Fixed64:
-                case FieldType.UInt64:
-                    return (ulong) value == 0;
-                case FieldType.SFixed64:
-                case FieldType.Int64:
-                case FieldType.SInt64:
-                    return (long) value == 0;
-                case FieldType.Float:
-                    return (float) value == 0f;
-                case FieldType.Message:
-                case FieldType.Group: // Never expect to get this, but...
-                    return value == null;
-                default:
-                    throw new ArgumentException("Invalid field type");
-            }
+                FieldType.Bool => (bool) value == false,
+                FieldType.Bytes => (ByteString) value == ByteString.Empty,
+                FieldType.String => (string) value == "",
+                FieldType.Double => (double) value == 0.0,
+                FieldType.SInt32 or FieldType.Int32 or FieldType.SFixed32 or FieldType.Enum => (int) value == 0,
+                FieldType.Fixed32 or FieldType.UInt32 => (uint) value == 0,
+                FieldType.Fixed64 or FieldType.UInt64 => (ulong) value == 0,
+                FieldType.SFixed64 or FieldType.Int64 or FieldType.SInt64 => (long) value == 0,
+                FieldType.Float => (float) value == 0f,
+                FieldType.Message or FieldType.Group => value == null,
+                _ => throw new ArgumentException("Invalid field type"),
+            };
         }
 
         /// <summary>
@@ -369,28 +348,28 @@ namespace Google.Protobuf
             {
                 WriteNull(writer);
             }
-            else if (value is bool)
+            else if (value is bool b)
             {
-                writer.Write((bool)value ? "true" : "false");
+                writer.Write(b ? "true" : "false");
             }
-            else if (value is ByteString)
+            else if (value is ByteString byteString)
             {
                 // Nothing in Base64 needs escaping
                 writer.Write('"');
-                writer.Write(((ByteString)value).ToBase64());
+                writer.Write(byteString.ToBase64());
                 writer.Write('"');
             }
-            else if (value is string)
+            else if (value is string str)
             {
-                WriteString(writer, (string)value);
+                WriteString(writer, str);
             }
-            else if (value is IDictionary)
+            else if (value is IDictionary dictionary)
             {
-                WriteDictionary(writer, (IDictionary)value);
+                WriteDictionary(writer, dictionary);
             }
-            else if (value is IList)
+            else if (value is IList list)
             {
-                WriteList(writer, (IList)value);
+                WriteList(writer, list);
             }
             else if (value is int || value is uint)
             {
@@ -437,9 +416,9 @@ namespace Google.Protobuf
                     writer.Write(text);
                 }
             }
-            else if (value is IMessage)
+            else if (value is IMessage message)
             {
-                Format((IMessage)value, writer);
+                Format(message, writer);
             }
             else
             {
@@ -469,9 +448,8 @@ namespace Google.Protobuf
             // WriteValue will do the right thing.)
             if (descriptor.IsWrapperType)
             {
-                if (value is IMessage)
+                if (value is IMessage message)
                 {
-                    var message = (IMessage) value;
                     value = message.Descriptor.Fields[WrappersReflection.WrapperValueFieldNumber].Accessor.GetValue(message);
                 }
                 WriteValue(writer, value);
@@ -679,15 +657,15 @@ namespace Google.Protobuf
                     writer.Write(PropertySeparator);
                 }
                 string keyText;
-                if (pair.Key is string)
+                if (pair.Key is string s)
                 {
-                    keyText = (string) pair.Key;
+                    keyText = s;
                 }
-                else if (pair.Key is bool)
+                else if (pair.Key is bool b)
                 {
-                    keyText = (bool) pair.Key ? "true" : "false";
+                    keyText = b ? "true" : "false";
                 }
-                else if (pair.Key is int || pair.Key is uint | pair.Key is long || pair.Key is ulong)
+                else if (pair.Key is int || pair.Key is uint || pair.Key is long || pair.Key is ulong)
                 {
                     keyText = ((IFormattable) pair.Key).ToString("d", CultureInfo.InvariantCulture);
                 }
@@ -916,9 +894,8 @@ namespace Google.Protobuf
                     }
                 }
 
-                string originalName;
                 // If this returns false, originalName will be null, which is what we want.
-                nameMapping.TryGetValue(value, out originalName);
+                nameMapping.TryGetValue(value, out string originalName);
                 return originalName;
             }
 

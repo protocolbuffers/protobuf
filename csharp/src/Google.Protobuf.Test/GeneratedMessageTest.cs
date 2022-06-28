@@ -33,10 +33,7 @@
 using System;
 using System.IO;
 using Google.Protobuf.TestProtos;
-using Proto2 = Google.Protobuf.TestProtos.Proto2;
 using NUnit.Framework;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using Google.Protobuf.WellKnownTypes;
 
@@ -658,9 +655,11 @@ namespace Google.Protobuf
         [Test]
         public void OneofSerialization_NonDefaultValue()
         {
-            var message = new TestAllTypes();
-            message.OneofString = "this would take a bit of space";
-            message.OneofUint32 = 10;
+            var message = new TestAllTypes
+            {
+                OneofString = "this would take a bit of space",
+                OneofUint32 = 10
+            };
             var bytes = message.ToByteArray();
             Assert.AreEqual(3, bytes.Length); // 2 bytes for the tag + 1 for the value - no string!
 
@@ -675,9 +674,11 @@ namespace Google.Protobuf
         [Test]
         public void OneofSerialization_DefaultValue()
         {
-            var message = new TestAllTypes();
-            message.OneofString = "this would take a bit of space";
-            message.OneofUint32 = 0; // This is the default value for UInt32; normally wouldn't be serialized
+            var message = new TestAllTypes
+            {
+                OneofString = "this would take a bit of space",
+                OneofUint32 = 0 // This is the default value for UInt32; normally wouldn't be serialized
+            };
             var bytes = message.ToByteArray();
             Assert.AreEqual(3, bytes.Length); // 2 bytes for the tag + 1 for the value - it's still serialized
 
@@ -746,7 +747,6 @@ namespace Google.Protobuf
         [Test]
         public void ExtraEndGroupThrows()
         {
-            var message = SampleMessages.CreateFullTestAllTypes();
             var stream = new MemoryStream();
             var output = new CodedOutputStream(stream);
 

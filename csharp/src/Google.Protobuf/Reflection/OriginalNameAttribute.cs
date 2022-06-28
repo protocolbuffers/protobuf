@@ -60,6 +60,5 @@ namespace Google.Protobuf.Reflection
             Name = ProtoPreconditions.CheckNotNull(name, nameof(name));
             PreferredAlias = true;
         }
-
     }
 }

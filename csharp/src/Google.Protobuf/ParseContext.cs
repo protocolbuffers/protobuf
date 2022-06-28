@@ -32,14 +32,8 @@
 
 using System;
 using System.Buffers;
-using System.Buffers.Binary;
-using System.Collections.Generic;
-using System.IO;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Security;
-using System.Text;
-using Google.Protobuf.Collections;
 
 namespace Google.Protobuf
 {
@@ -53,7 +47,7 @@ namespace Google.Protobuf
     public ref struct ParseContext
     {
         internal const int DefaultRecursionLimit = 100;
-        internal const int DefaultSizeLimit = Int32.MaxValue;
+        internal const int DefaultSizeLimit = int.MaxValue;
 
         internal ReadOnlySpan<byte> buffer;
         internal ParserInternalState state;
@@ -127,14 +121,15 @@ namespace Google.Protobuf
         /// Returns the last tag read, or 0 if no tags have been read or we've read beyond
         /// the end of the input.
         /// </summary>
-        internal uint LastTag { get { return state.lastTag; } }
+        internal uint LastTag => state.lastTag;
 
         /// <summary>
         /// Internal-only property; when set to true, unknown fields will be discarded while parsing.
         /// </summary>
-        internal bool DiscardUnknownFields {
-            get { return state.DiscardUnknownFields; }
-            set { state.DiscardUnknownFields = value; }
+        internal bool DiscardUnknownFields
+        {
+            get => state.DiscardUnknownFields;
+            set => state.DiscardUnknownFields = value;
         }
 
         /// <summary>
@@ -142,8 +137,8 @@ namespace Google.Protobuf
         /// </summary>
         internal ExtensionRegistry ExtensionRegistry
         {
-            get { return state.ExtensionRegistry; }
-            set { state.ExtensionRegistry = value; }
+            get => state.ExtensionRegistry;
+            set => state.ExtensionRegistry = value;
         }
 
         /// <summary>
@@ -156,125 +151,85 @@ namespace Google.Protobuf
         /// </remarks>
         /// <returns>The next field tag, or 0 for end of input. (0 is never a valid tag.)</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint ReadTag()
-        {
-            return ParsingPrimitives.ParseTag(ref buffer, ref state);
-        }
+        public uint ReadTag() => ParsingPrimitives.ParseTag(ref buffer, ref state);
 
         /// <summary>
         /// Reads a double field from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public double ReadDouble()
-        {
-            return ParsingPrimitives.ParseDouble(ref buffer, ref state);
-        }
+        public double ReadDouble() => ParsingPrimitives.ParseDouble(ref buffer, ref state);
 
         /// <summary>
         /// Reads a float field from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public float ReadFloat()
-        {
-            return ParsingPrimitives.ParseFloat(ref buffer, ref state);
-        }
+        public float ReadFloat() => ParsingPrimitives.ParseFloat(ref buffer, ref state);
 
         /// <summary>
         /// Reads a uint64 field from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ulong ReadUInt64()
-        {
-            return ParsingPrimitives.ParseRawVarint64(ref buffer, ref state);
-        }
+        public ulong ReadUInt64() => ParsingPrimitives.ParseRawVarint64(ref buffer, ref state);
 
         /// <summary>
         /// Reads an int64 field from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public long ReadInt64()
-        {
-            return (long)ParsingPrimitives.ParseRawVarint64(ref buffer, ref state);
-        }
+        public long ReadInt64() => (long)ParsingPrimitives.ParseRawVarint64(ref buffer, ref state);
 
         /// <summary>
         /// Reads an int32 field from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int ReadInt32()
-        {
-            return (int)ParsingPrimitives.ParseRawVarint32(ref buffer, ref state);
-        }
+        public int ReadInt32() => (int)ParsingPrimitives.ParseRawVarint32(ref buffer, ref state);
 
         /// <summary>
         /// Reads a fixed64 field from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ulong ReadFixed64()
-        {
-            return ParsingPrimitives.ParseRawLittleEndian64(ref buffer, ref state);
-        }
+        public ulong ReadFixed64() => ParsingPrimitives.ParseRawLittleEndian64(ref buffer, ref state);
 
         /// <summary>
         /// Reads a fixed32 field from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint ReadFixed32()
-        {
-            return ParsingPrimitives.ParseRawLittleEndian32(ref buffer, ref state);
-        }
+        public uint ReadFixed32() => ParsingPrimitives.ParseRawLittleEndian32(ref buffer, ref state);
 
         /// <summary>
         /// Reads a bool field from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool ReadBool()
-        {
-            return ParsingPrimitives.ParseRawVarint64(ref buffer, ref state) != 0;
-        }
+        public bool ReadBool() => ParsingPrimitives.ParseRawVarint64(ref buffer, ref state) != 0;
+
         /// <summary>
         /// Reads a string field from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string ReadString()
-        {
-            return ParsingPrimitives.ReadString(ref buffer, ref state);
-        }
+        public string ReadString() => ParsingPrimitives.ReadString(ref buffer, ref state);
 
         /// <summary>
         /// Reads an embedded message field value from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ReadMessage(IMessage message)
-        {
-            ParsingPrimitivesMessages.ReadMessage(ref this, message);
-        }
+        public void ReadMessage(IMessage message) => ParsingPrimitivesMessages.ReadMessage(ref this, message);
 
         /// <summary>
         /// Reads an embedded group field from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ReadGroup(IMessage message)
-        {
-            ParsingPrimitivesMessages.ReadGroup(ref this, message);
-        }
+        public void ReadGroup(IMessage message) => ParsingPrimitivesMessages.ReadGroup(ref this, message);
 
         /// <summary>
         /// Reads a bytes field value from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ByteString ReadBytes()
-        {
-            return ParsingPrimitives.ReadBytes(ref buffer, ref state);
-        }
+        public ByteString ReadBytes() => ParsingPrimitives.ReadBytes(ref buffer, ref state);
+
         /// <summary>
         /// Reads a uint32 field value from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public uint ReadUInt32()
-        {
-            return ParsingPrimitives.ParseRawVarint32(ref buffer, ref state);
-        }
+        public uint ReadUInt32() => ParsingPrimitives.ParseRawVarint32(ref buffer, ref state);
 
         /// <summary>
         /// Reads an enum field value from the input.
@@ -290,37 +245,25 @@ namespace Google.Protobuf
         /// Reads an sfixed32 field value from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int ReadSFixed32()
-        {
-            return (int)ParsingPrimitives.ParseRawLittleEndian32(ref buffer, ref state);
-        }
+        public int ReadSFixed32() => (int)ParsingPrimitives.ParseRawLittleEndian32(ref buffer, ref state);
 
         /// <summary>
         /// Reads an sfixed64 field value from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public long ReadSFixed64()
-        {
-            return (long)ParsingPrimitives.ParseRawLittleEndian64(ref buffer, ref state);
-        }
+        public long ReadSFixed64() => (long)ParsingPrimitives.ParseRawLittleEndian64(ref buffer, ref state);
 
         /// <summary>
         /// Reads an sint32 field value from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int ReadSInt32()
-        {
-            return ParsingPrimitives.DecodeZigZag32(ParsingPrimitives.ParseRawVarint32(ref buffer, ref state));
-        }
+        public int ReadSInt32() => ParsingPrimitives.DecodeZigZag32(ParsingPrimitives.ParseRawVarint32(ref buffer, ref state));
 
         /// <summary>
         /// Reads an sint64 field value from the input.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public long ReadSInt64()
-        {
-            return ParsingPrimitives.DecodeZigZag64(ParsingPrimitives.ParseRawVarint64(ref buffer, ref state));
-        }
+        public long ReadSInt64() => ParsingPrimitives.DecodeZigZag64(ParsingPrimitives.ParseRawVarint64(ref buffer, ref state));
 
         /// <summary>
         /// Reads a length for length-delimited data.
@@ -330,10 +273,7 @@ namespace Google.Protobuf
         /// to make the calling code clearer.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int ReadLength()
-        {
-            return (int)ParsingPrimitives.ParseRawVarint32(ref buffer, ref state);
-        }
+        public int ReadLength() => (int)ParsingPrimitives.ParseRawVarint32(ref buffer, ref state);
 
         internal void CopyStateTo(CodedInputStream input)
         {

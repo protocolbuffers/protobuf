@@ -90,15 +90,10 @@ class RepeatedPtrFieldBase;  // defined in repeated_ptr_field.h
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
 
-// Templated cleanup methods.
-template <typename T>
-void arena_destruct_object(void* object) {
-  reinterpret_cast<T*>(object)->~T();
-}
-
 template <bool destructor_skippable, typename T>
 struct ObjectDestructor {
-  constexpr static void (*destructor)(void*) = &arena_destruct_object<T>;
+  constexpr static void (*destructor)(void*) =
+      &internal::cleanup::arena_destruct_object<T>;
 };
 
 template <typename T>
@@ -362,9 +357,12 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // sizes of the underlying blocks.
   uint64_t SpaceAllocated() const { return impl_.SpaceAllocated(); }
   // Returns the total space used by the arena. Similar to SpaceAllocated but
-  // does not include free space and block overhead. The total space returned
-  // may not include space used by other threads executing concurrently with
-  // the call to this method.
+  // does not include free space and block overhead.  This is a best-effort
+  // estimate and may inaccurately calculate space used by other threads
+  // executing concurrently with the call to this method.  These inaccuracies
+  // are due to race conditions, and are bounded but unpredictable.  Stale data
+  // can lead to underestimates of the space used, and race conditions can lead
+  // to overestimates (up to the current block size).
   uint64_t SpaceUsed() const { return impl_.SpaceUsed(); }
 
   // Frees all storage allocated by this arena after calling destructors
@@ -389,7 +387,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename T>
   PROTOBUF_ALWAYS_INLINE void OwnDestructor(T* object) {
     if (object != NULL) {
-      impl_.AddCleanup(object, &internal::arena_destruct_object<T>);
+      impl_.AddCleanup(object, &internal::cleanup::arena_destruct_object<T>);
     }
   }
 

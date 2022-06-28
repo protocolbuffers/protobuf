@@ -12,10 +12,10 @@
       latest released package at `googleapis.dev
       <https://googleapis.dev/python/protobuf/latest/>`_.
 
-google.protobuf.message_factory
-===============================
+google.protobuf.unknown_fields
+==============================
 
-.. automodule:: google.protobuf.message_factory
+.. automodule:: google.protobuf.unknown_fields
    :members:
    :inherited-members:
    :undoc-members:

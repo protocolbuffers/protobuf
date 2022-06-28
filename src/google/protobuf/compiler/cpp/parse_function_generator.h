@@ -72,6 +72,8 @@ struct TailCallTableInfo {
     uint16_t aux_idx;
     // True for enums entirely covered by the start/length fields of FieldAux:
     bool is_enum_range;
+    int32_t enum_range_min;
+    int32_t enum_range_max;
   };
   std::vector<FieldEntryInfo> field_entries;
   std::vector<std::string> aux_entries;

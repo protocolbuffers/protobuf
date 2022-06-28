@@ -59,8 +59,8 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>The difference between the two specified timestamps.</returns>
         public static Duration operator -(Timestamp lhs, Timestamp rhs)
         {
-            ProtoPreconditions.CheckNotNull(lhs, "lhs");
-            ProtoPreconditions.CheckNotNull(rhs, "rhs");
+            ProtoPreconditions.CheckNotNull(lhs, nameof(lhs));
+            ProtoPreconditions.CheckNotNull(rhs, nameof(rhs));
             checked
             {
                 return Duration.Normalize(lhs.Seconds - rhs.Seconds, lhs.Nanos - rhs.Nanos);
@@ -75,8 +75,8 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>The result of adding the duration to the timestamp.</returns>
         public static Timestamp operator +(Timestamp lhs, Duration rhs)
         {
-            ProtoPreconditions.CheckNotNull(lhs, "lhs");
-            ProtoPreconditions.CheckNotNull(rhs, "rhs");
+            ProtoPreconditions.CheckNotNull(lhs, nameof(lhs));
+            ProtoPreconditions.CheckNotNull(rhs, nameof(rhs));
             checked
             {
                 return Normalize(lhs.Seconds + rhs.Seconds, lhs.Nanos + rhs.Nanos);
@@ -91,8 +91,8 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>The result of subtracting the duration from the timestamp.</returns>
         public static Timestamp operator -(Timestamp lhs, Duration rhs)
         {
-            ProtoPreconditions.CheckNotNull(lhs, "lhs");
-            ProtoPreconditions.CheckNotNull(rhs, "rhs");
+            ProtoPreconditions.CheckNotNull(lhs, nameof(lhs));
+            ProtoPreconditions.CheckNotNull(rhs, nameof(rhs));
             checked
             {
                 return Normalize(lhs.Seconds - rhs.Seconds, lhs.Nanos - rhs.Nanos);
@@ -308,7 +308,7 @@ namespace Google.Protobuf.WellKnownTypes
         /// <returns>true if the two timestamps refer to the same nanosecond</returns>
         public static bool operator ==(Timestamp a, Timestamp b)
         {
-            return ReferenceEquals(a, b) || (ReferenceEquals(a, null) ? (ReferenceEquals(b, null) ? true : false) : a.Equals(b));
+            return ReferenceEquals(a, b) || (a is null ? (b is null) : a.Equals(b));
         }
 
         /// <summary>

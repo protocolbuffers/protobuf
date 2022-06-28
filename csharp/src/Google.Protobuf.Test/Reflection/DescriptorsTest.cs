@@ -35,7 +35,6 @@ using NUnit.Framework;
 using ProtobufUnittest;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using UnitTest.Issues.TestProtos;
 

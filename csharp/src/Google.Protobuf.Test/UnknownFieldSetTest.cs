@@ -30,10 +30,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endregion
 
-using System;
 using System.IO;
 using Google.Protobuf.TestProtos;
-using Proto2 = Google.Protobuf.TestProtos.Proto2;
 using NUnit.Framework;
 
 namespace Google.Protobuf
@@ -127,8 +125,7 @@ namespace Google.Protobuf
         public void TestClone(IMessage message)
         {
             var emptyMessage = new TestEmptyMessage();
-            var otherEmptyMessage = new TestEmptyMessage();
-            otherEmptyMessage = emptyMessage.Clone();
+            TestEmptyMessage otherEmptyMessage = emptyMessage.Clone();
             Assert.AreEqual(emptyMessage.CalculateSize(), otherEmptyMessage.CalculateSize());
             Assert.AreEqual(emptyMessage.ToByteArray(), otherEmptyMessage.ToByteArray());
 
@@ -169,13 +166,13 @@ namespace Google.Protobuf
             byte[] data = message.ToByteArray();
             int fullSize = message.CalculateSize();
 
-            Action<IMessage> assertEmpty = msg =>
+            void AssertEmpty(IMessage msg)
             {
                 Assert.AreEqual(0, msg.CalculateSize());
                 Assert.AreEqual(goldenEmptyMessage, msg);
-            };
+            }
 
-            Action<IMessage> assertFull = msg => Assert.AreEqual(fullSize, msg.CalculateSize());
+            void AssertFull(IMessage msg) => Assert.AreEqual(fullSize, msg.CalculateSize());
 
             // Test the behavior of the parsers with and without discarding, both generic and non-generic.
             MessageParser<TestEmptyMessage> retainingParser1 = TestEmptyMessage.Parser;
@@ -184,28 +181,28 @@ namespace Google.Protobuf
             MessageParser discardingParser2 = retainingParser2.WithDiscardUnknownFields(true);
 
             // Test parse from byte[]
-            MessageParsingHelpers.AssertReadingMessage(retainingParser1, data, m => assertFull(m));
-            MessageParsingHelpers.AssertReadingMessage(retainingParser2, data, m => assertFull(m));
-            MessageParsingHelpers.AssertReadingMessage(discardingParser1, data, m => assertEmpty(m));
-            MessageParsingHelpers.AssertReadingMessage(discardingParser2, data, m => assertEmpty(m));
+            MessageParsingHelpers.AssertReadingMessage(retainingParser1, data, m => AssertFull(m));
+            MessageParsingHelpers.AssertReadingMessage(retainingParser2, data, m => AssertFull(m));
+            MessageParsingHelpers.AssertReadingMessage(discardingParser1, data, m => AssertEmpty(m));
+            MessageParsingHelpers.AssertReadingMessage(discardingParser2, data, m => AssertEmpty(m));
 
             // Test parse from byte[] with offset
-            assertFull(retainingParser1.ParseFrom(data, 0, data.Length));
-            assertFull(retainingParser2.ParseFrom(data, 0, data.Length));
-            assertEmpty(discardingParser1.ParseFrom(data, 0, data.Length));
-            assertEmpty(discardingParser2.ParseFrom(data, 0, data.Length));
+            AssertFull(retainingParser1.ParseFrom(data, 0, data.Length));
+            AssertFull(retainingParser2.ParseFrom(data, 0, data.Length));
+            AssertEmpty(discardingParser1.ParseFrom(data, 0, data.Length));
+            AssertEmpty(discardingParser2.ParseFrom(data, 0, data.Length));
 
             // Test parse from CodedInputStream
-            assertFull(retainingParser1.ParseFrom(new CodedInputStream(data)));
-            assertFull(retainingParser2.ParseFrom(new CodedInputStream(data)));
-            assertEmpty(discardingParser1.ParseFrom(new CodedInputStream(data)));
-            assertEmpty(discardingParser2.ParseFrom(new CodedInputStream(data)));
+            AssertFull(retainingParser1.ParseFrom(new CodedInputStream(data)));
+            AssertFull(retainingParser2.ParseFrom(new CodedInputStream(data)));
+            AssertEmpty(discardingParser1.ParseFrom(new CodedInputStream(data)));
+            AssertEmpty(discardingParser2.ParseFrom(new CodedInputStream(data)));
 
             // Test parse from Stream
-            assertFull(retainingParser1.ParseFrom(new MemoryStream(data)));
-            assertFull(retainingParser2.ParseFrom(new MemoryStream(data)));
-            assertEmpty(discardingParser1.ParseFrom(new MemoryStream(data)));
-            assertEmpty(discardingParser2.ParseFrom(new MemoryStream(data)));
+            AssertFull(retainingParser1.ParseFrom(new MemoryStream(data)));
+            AssertFull(retainingParser2.ParseFrom(new MemoryStream(data)));
+            AssertEmpty(discardingParser1.ParseFrom(new MemoryStream(data)));
+            AssertEmpty(discardingParser2.ParseFrom(new MemoryStream(data)));
         }
 
         [Test]

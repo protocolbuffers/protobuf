@@ -31,7 +31,6 @@
 #endregion
 
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Google.Protobuf.Compatibility;
@@ -108,7 +107,7 @@ namespace Google.Protobuf.Reflection
             // Primitive proto3 fields without the optional keyword, which aren't in oneofs.
             else
             {
-                hasDelegate = message => { throw new InvalidOperationException("Presence is not implemented for this field"); };
+                hasDelegate = message => throw new InvalidOperationException("Presence is not implemented for this field");
 
                 // While presence isn't supported, clearing still is; it's just setting to a default value.
                 object defaultValue = GetDefaultValue(descriptor);
@@ -116,42 +115,21 @@ namespace Google.Protobuf.Reflection
             }
         }
 
-        private static object GetDefaultValue(FieldDescriptor descriptor)
-        {
-            switch (descriptor.FieldType)
+        private static object GetDefaultValue(FieldDescriptor descriptor) =>
+            descriptor.FieldType switch
             {
-                case FieldType.Bool:
-                    return false;
-                case FieldType.Bytes:
-                    return ByteString.Empty;
-                case FieldType.String:
-                    return "";
-                case FieldType.Double:
-                    return 0.0;
-                case FieldType.SInt32:
-                case FieldType.Int32:
-                case FieldType.SFixed32:
-                case FieldType.Enum:
-                    return 0;
-                case FieldType.Fixed32:
-                case FieldType.UInt32:
-                    return (uint)0;
-                case FieldType.Fixed64:
-                case FieldType.UInt64:
-                    return 0UL;
-                case FieldType.SFixed64:
-                case FieldType.Int64:
-                case FieldType.SInt64:
-                    return 0L;
-                case FieldType.Float:
-                    return 0f;
-                case FieldType.Message:
-                case FieldType.Group: // Never expect to get this, but...
-                    return null;
-                default:
-                    throw new ArgumentException("Invalid field type");
-            }
-        }
+                FieldType.Bool => false,
+                FieldType.Bytes => ByteString.Empty,
+                FieldType.String => "",
+                FieldType.Double => 0.0,
+                FieldType.SInt32 or FieldType.Int32 or FieldType.SFixed32 or FieldType.Enum => 0,
+                FieldType.Fixed32 or FieldType.UInt32 => (uint)0,
+                FieldType.Fixed64 or FieldType.UInt64 => 0UL,
+                FieldType.SFixed64 or FieldType.Int64 or FieldType.SInt64 => 0L,
+                FieldType.Float => 0f,
+                FieldType.Message or FieldType.Group => null,
+                _ => throw new ArgumentException("Invalid field type"),
+            };
 
         public override void Clear(IMessage message) => clearDelegate(message);
         public override bool HasValue(IMessage message) => hasDelegate(message);
