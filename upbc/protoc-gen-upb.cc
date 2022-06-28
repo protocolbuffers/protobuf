@@ -923,13 +923,25 @@ void GenerateClear(const protobuf::FieldDescriptor* field,
         field->number(), oneof_fullname, default_value);
   } else {
     if (field->message_type()) {
-      output(
-          R"cc(
-            UPB_INLINE void $0_clear_$1(const $0* msg) {
-              *UPB_PTR_AT(msg, $2, const upb_Message*) = NULL;
-            }
-          )cc",
-          msg_name, field->name(), layout.GetFieldOffset(field));
+      if (layout.HasHasbit(field)) {
+        output(
+            R"cc(
+              UPB_INLINE void $0_clear_$1(const $0* msg) {
+                *UPB_PTR_AT(msg, $2, const upb_Message*) = NULL;
+                _upb_clearhas(msg, $3);
+              }
+            )cc",
+            msg_name, field->name(), layout.GetFieldOffset(field),
+            layout.GetHasbitIndex(field));
+      } else {
+        output(
+            R"cc(
+              UPB_INLINE void $0_clear_$1(const $0* msg) {
+                *UPB_PTR_AT(msg, $2, const upb_Message*) = NULL;
+              }
+            )cc",
+            msg_name, field->name(), layout.GetFieldOffset(field));
+      }
     } else if (layout.HasHasbit(field)) {
       if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING) {
         output(
@@ -979,13 +991,25 @@ void GenerateClear(const protobuf::FieldDescriptor* field,
 void GenerateRepeatedClear(const protobuf::FieldDescriptor* field,
                            const FileLayout& layout, absl::string_view msg_name,
                            Output& output) {
-  output(
-      R"cc(
-        UPB_INLINE void $0_clear_$1(const $0* msg) {
-          _upb_array_detach(msg, $2);
-        }
-      )cc",
-      msg_name, field->name(), layout.GetFieldOffset(field));
+  if (layout.HasHasbit(field)) {
+    output(
+        R"cc(
+          UPB_INLINE void $0_clear_$1(const $0* msg) {
+            _upb_array_detach(msg, $2);
+            _upb_clearhas(msg, $4);
+          }
+        )cc",
+        msg_name, field->name(), layout.GetFieldOffset(field),
+        layout.GetHasbitIndex(field));
+  } else {
+    output(
+        R"cc(
+          UPB_INLINE void $0_clear_$1(const $0* msg) {
+            _upb_array_detach(msg, $2);
+          }
+        )cc",
+        msg_name, field->name(), layout.GetFieldOffset(field));
+  }
 }
 
 void GenerateMapGetters(const protobuf::FieldDescriptor* field,
@@ -1910,7 +1934,7 @@ int WriteExtensions(const FileLayout& layout, Output& output) {
   return exts.size();
 }
 
-// Writes a .upb.c source file.
+// Writes a .upb.cc source file.
 void WriteSource(const FileLayout& layout, Output& output,
                  bool fasttable_enabled) {
   const protobuf::FileDescriptor* file = layout.descriptor();
