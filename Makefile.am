@@ -590,6 +590,7 @@ java_EXTRA_DIST=                                                                
   java/lite/src/test/java/com/google/protobuf/LiteTest.java                        \
   java/BUILD.bazel                                                                 \
   java/pom.xml                                                                     \
+  java/protoc/pom.xml                                                              \
   java/util/BUILD.bazel                                                            \
   java/util/pom.xml                                                                \
   java/util/pom_template.xml                                                       \
