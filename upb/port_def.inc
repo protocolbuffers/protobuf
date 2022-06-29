@@ -54,6 +54,15 @@
 #error upb requires C99 or C++11 or MSVC >= 2015.
 #endif
 
+// Portable check for GCC minimum version:
+// https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
+#if defined(__GNUC__) && defined(__GNUC_MINOR__) && defined(__GNUC_PATCHLEVEL__)
+#define UPB_GNUC_MIN(x, y) \
+  (__GNUC__ > (x) || __GNUC__ == (x) && __GNUC_MINOR__ >= (y))
+#else
+#define UPB_GNUC_MIN(x, y) 0
+#endif
+
 #include <assert.h>
 #include <setjmp.h>
 #include <stdbool.h>
@@ -262,4 +271,19 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #define UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 1
 #else
 #define UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 0
+#endif
+
+#if defined(__cplusplus)
+#if defined(__clang__) || UPB_GNUC_MIN(6, 0)
+// https://gcc.gnu.org/gcc-6/changes.html
+#if __cplusplus >= 201402L
+#define UPB_DEPRECATED [[deprecated]]
+#else
+#define UPB_DEPRECATED __attribute__((deprecated))
+#endif
+#else
+#define UPB_DEPRECATED
+#endif
+#else
+#define UPB_DEPRECATED
 #endif
