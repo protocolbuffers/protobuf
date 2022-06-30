@@ -650,7 +650,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   int total_size_;
 
   // Replaces current_size_ with new_size and returns the previous value of
-  // current_size_. This function is indended to be the only place where
+  // current_size_. This function is intended to be the only place where
   // current_size_ is modified.
   inline int ExchangeCurrentSize(int new_size) {
     int prev_size = current_size_;
