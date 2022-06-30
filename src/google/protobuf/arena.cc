@@ -153,12 +153,8 @@ void* SerialArena::AllocateAlignedWithCleanupFallback(
 PROTOBUF_NOINLINE
 void SerialArena::AddCleanupFallback(void* elem, void (*destructor)(void*),
                                      const AllocationPolicy* policy) {
-<<<<<<< HEAD
-  AllocateNewBlock(0, policy);
-=======
   size_t required = cleanup::Size(destructor);
   AllocateNewBlock(required, policy);
->>>>>>> 87d285c785cd1a4334e3e21e5d468a9bc3e85f62
   AddCleanupFromExisting(elem, destructor);
 }
 
