@@ -76,7 +76,8 @@ std::string DotsToColons(const std::string& name) {
   return StringReplace(name, ".", "::", true);
 }
 
-static const char* const kKeywordList[] = {  //
+static const char* const kKeywordList[] = {
+    //
     "NULL",
     "alignas",
     "alignof",
@@ -159,7 +160,21 @@ static const char* const kKeywordList[] = {  //
     "wchar_t",
     "while",
     "xor",
-    "xor_eq"};
+    "xor_eq",
+#ifdef PROTOBUF_FUTURE_CPP20_KEYWORDS  // C++20 keywords.
+    "char8_t",
+    "char16_t",
+    "char32_t",
+    "concept",
+    "consteval",
+    "constinit",
+    "co_await",
+    "co_return",
+    "co_yield",
+    "requires",
+#endif  // !PROTOBUF_FUTURE_BREAKING_CHANGES
+};
+
 
 static std::unordered_set<std::string>* MakeKeywordsMap() {
   auto* result = new std::unordered_set<std::string>();
@@ -509,6 +524,7 @@ std::string FieldName(const FieldDescriptor* field) {
   return result;
 }
 
+
 std::string FieldMemberName(const FieldDescriptor* field, bool split) {
   StringPiece prefix =
       IsMapEntryMessage(field->containing_type()) ? "" : "_impl_.";
@@ -855,6 +871,7 @@ std::string SafeFunctionName(const Descriptor* descriptor,
   }
   return function_name;
 }
+
 
 bool IsStringInlined(const FieldDescriptor* descriptor,
                      const Options& options) {

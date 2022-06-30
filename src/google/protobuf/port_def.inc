@@ -189,6 +189,10 @@
 // Used to remove the manipulation of cleared elements in RepeatedPtrField.
 // Owner: mkruskal@
 #define PROTOBUF_FUTURE_REMOVE_CLEARED_API 1
+
+// Used to escape C++20 keywords.
+// Owner: mkruskal@
+#define PROTOBUF_FUTURE_CPP20_KEYWORDS 1
 #else
 #define PROTOBUF_FUTURE_FINAL
 #endif
@@ -196,7 +200,7 @@
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 3021001
+#define PROTOBUF_VERSION 3021002
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined

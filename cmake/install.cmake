@@ -102,47 +102,55 @@ foreach(_file ${nobase_dist_proto_DATA})
 endforeach()
 
 # Install configuration
-set(_cmakedir_desc "Directory relative to CMAKE_INSTALL to install the cmake configuration files")
+set(_install_cmakedir_desc "Directory relative to CMAKE_INSTALL to install the cmake configuration files")
+set(_build_cmakedir_desc "Directory relative to CMAKE_CURRENT_BINARY_DIR for cmake configuration files")
 set(_exampledir_desc "Directory relative to CMAKE_INSTALL_DATA to install examples")
+set(_protobuf_subdir_desc "Subdirectory in which to install cmake configuration files")
 if(NOT MSVC)
-  set(CMAKE_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/protobuf" CACHE STRING "${_cmakedir_desc}")
+  set(protobuf_CMAKE_SUBDIR "cmake/protobuf" CACHE STRING "${_protobuf_subdir_desc}")
+  set(CMAKE_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/${protobuf_CMAKE_SUBDIR}" CACHE STRING "${_install_cmakedir_desc}")
   set(CMAKE_INSTALL_EXAMPLEDIR "${CMAKE_INSTALL_DATADIR}/protobuf/examples" CACHE STRING "${_exampledir_desc}")
 else()
+  set(protobuf_CMAKE_SUBDIR "cmake" CACHE STRING "${_protobuf_subdir_desc}")
   set(CMAKE_INSTALL_CMAKEDIR "cmake" CACHE STRING "${_cmakedir_desc}")
   set(CMAKE_INSTALL_EXAMPLEDIR "examples" CACHE STRING "${_exampledir_desc}")
 endif()
+set(CMAKE_BUILD_CMAKEDIR "${CMAKE_CURRENT_BINARY_DIR}/${protobuf_CMAKE_SUBDIR}" CACHE STRING "${_build_cmakedir_desc}")
+mark_as_advanced(protobuf_CMAKE_SUBDIR)
+mark_as_advanced(CMAKE_BUILD_CMAKEDIR)
 mark_as_advanced(CMAKE_INSTALL_CMAKEDIR)
 mark_as_advanced(CMAKE_INSTALL_EXAMPLEDIR)
 
 configure_file(${protobuf_SOURCE_DIR}/cmake/protobuf-config.cmake.in
-  ${CMAKE_INSTALL_CMAKEDIR}/protobuf-config.cmake @ONLY)
+  ${CMAKE_BUILD_CMAKEDIR}/protobuf-config.cmake @ONLY)
 configure_file(${protobuf_SOURCE_DIR}/cmake/protobuf-config-version.cmake.in
-  ${CMAKE_INSTALL_CMAKEDIR}/protobuf-config-version.cmake @ONLY)
+  ${CMAKE_BUILD_CMAKEDIR}/protobuf-config-version.cmake @ONLY)
 configure_file(${protobuf_SOURCE_DIR}/cmake/protobuf-module.cmake.in
-  ${CMAKE_INSTALL_CMAKEDIR}/protobuf-module.cmake @ONLY)
+  ${CMAKE_BUILD_CMAKEDIR}/protobuf-module.cmake @ONLY)
 configure_file(${protobuf_SOURCE_DIR}/cmake/protobuf-options.cmake
-  ${CMAKE_INSTALL_CMAKEDIR}/protobuf-options.cmake @ONLY)
+  ${CMAKE_BUILD_CMAKEDIR}/protobuf-options.cmake @ONLY)
 
 # Allows the build directory to be used as a find directory.
 
 if (protobuf_BUILD_PROTOC_BINARIES)
   export(TARGETS libprotobuf-lite libprotobuf libprotoc protoc
     NAMESPACE protobuf::
-    FILE ${CMAKE_INSTALL_CMAKEDIR}/protobuf-targets.cmake
+    FILE ${CMAKE_BUILD_CMAKEDIR}/protobuf-targets.cmake
   )
 else (protobuf_BUILD_PROTOC_BINARIES)
   export(TARGETS libprotobuf-lite libprotobuf
     NAMESPACE protobuf::
-    FILE ${CMAKE_INSTALL_CMAKEDIR}/protobuf-targets.cmake
+    FILE ${CMAKE_BUILD_CMAKEDIR}/protobuf-targets.cmake
   )
 endif (protobuf_BUILD_PROTOC_BINARIES)
 
 install(EXPORT protobuf-targets
   DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
   NAMESPACE protobuf::
-  COMPONENT protobuf-export)
+  COMPONENT protobuf-export
+)
 
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}/
+install(DIRECTORY ${CMAKE_BUILD_CMAKEDIR}/
   DESTINATION "${CMAKE_INSTALL_CMAKEDIR}"
   COMPONENT protobuf-export
   PATTERN protobuf-targets.cmake EXCLUDE
