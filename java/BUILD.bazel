@@ -33,6 +33,7 @@ pkg_files(
         "bom/pom.xml",
         "lite.md",
         "pom.xml",
+        "protoc/pom.xml",
     ],
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//pkg:__pkg__"],
