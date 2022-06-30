@@ -86,7 +86,6 @@ TEST(ThreadSafeArenaStatsTest, PrepareForSampling) {
   info.PrepareForSampling(kTestStride);
 
   EXPECT_EQ(info.num_allocations.load(), 0);
-  EXPECT_EQ(info.num_resets.load(), 0);
   EXPECT_EQ(info.bytes_used.load(), 0);
   EXPECT_EQ(info.bytes_allocated.load(), 0);
   EXPECT_EQ(info.bytes_wasted.load(), 0);
@@ -94,7 +93,6 @@ TEST(ThreadSafeArenaStatsTest, PrepareForSampling) {
   EXPECT_EQ(info.weight, kTestStride);
 
   info.num_allocations.store(1, std::memory_order_relaxed);
-  info.num_resets.store(1, std::memory_order_relaxed);
   info.bytes_used.store(1, std::memory_order_relaxed);
   info.bytes_allocated.store(1, std::memory_order_relaxed);
   info.bytes_wasted.store(1, std::memory_order_relaxed);
@@ -102,7 +100,6 @@ TEST(ThreadSafeArenaStatsTest, PrepareForSampling) {
 
   info.PrepareForSampling(2 * kTestStride);
   EXPECT_EQ(info.num_allocations.load(), 0);
-  EXPECT_EQ(info.num_resets.load(), 0);
   EXPECT_EQ(info.bytes_used.load(), 0);
   EXPECT_EQ(info.bytes_allocated.load(), 0);
   EXPECT_EQ(info.bytes_wasted.load(), 0);
@@ -117,7 +114,6 @@ TEST(ThreadSafeArenaStatsTest, RecordAllocateSlow) {
   info.PrepareForSampling(kTestStride);
   RecordAllocateSlow(&info, /*requested=*/100, /*allocated=*/128, /*wasted=*/0);
   EXPECT_EQ(info.num_allocations.load(), 1);
-  EXPECT_EQ(info.num_resets.load(), 0);
   EXPECT_EQ(info.bytes_used.load(), 100);
   EXPECT_EQ(info.bytes_allocated.load(), 128);
   EXPECT_EQ(info.bytes_wasted.load(), 0);
@@ -125,26 +121,28 @@ TEST(ThreadSafeArenaStatsTest, RecordAllocateSlow) {
   RecordAllocateSlow(&info, /*requested=*/100, /*allocated=*/256,
                      /*wasted=*/28);
   EXPECT_EQ(info.num_allocations.load(), 2);
-  EXPECT_EQ(info.num_resets.load(), 0);
   EXPECT_EQ(info.bytes_used.load(), 200);
   EXPECT_EQ(info.bytes_allocated.load(), 384);
   EXPECT_EQ(info.bytes_wasted.load(), 28);
   EXPECT_EQ(info.max_bytes_allocated.load(), 0);
 }
 
-TEST(ThreadSafeArenaStatsTest, RecordResetSlow) {
-  ThreadSafeArenaStats info;
-  constexpr int64_t kTestStride = 584;
-  MutexLock l(&info.init_mu);
-  info.PrepareForSampling(kTestStride);
-  EXPECT_EQ(info.num_resets.load(), 0);
-  EXPECT_EQ(info.bytes_allocated.load(), 0);
-  RecordAllocateSlow(&info, /*requested=*/100, /*allocated=*/128, /*wasted=*/0);
-  EXPECT_EQ(info.num_resets.load(), 0);
-  EXPECT_EQ(info.bytes_allocated.load(), 128);
-  RecordResetSlow(&info);
-  EXPECT_EQ(info.num_resets.load(), 1);
-  EXPECT_EQ(info.bytes_allocated.load(), 0);
+TEST(ThreadSafeArenazSamplerTest, SamplingCorrectness) {
+  SetThreadSafeArenazEnabled(true);
+  for (int p = 0; p <= 15; ++p) {
+    SetThreadSafeArenazSampleParameter(1 << p);
+    SetThreadSafeArenazGlobalNextSample(1 << p);
+    const int kTrials = 1000 << p;
+    std::vector<ThreadSafeArenaStatsHandle> hv;
+    for (int i = 0; i < kTrials; ++i) {
+      ThreadSafeArenaStatsHandle h = Sample();
+      if (h.MutableStats() != nullptr) hv.push_back(std::move(h));
+    }
+    // Ideally samples << p should be very close to kTrials.  But we keep a
+    // factor of two guard band.
+    EXPECT_GE(hv.size() << p, kTrials / 2);
+    EXPECT_LE(hv.size() << p, 2 * kTrials);
+  }
 }
 
 TEST(ThreadSafeArenazSamplerTest, SmallSampleParameter) {

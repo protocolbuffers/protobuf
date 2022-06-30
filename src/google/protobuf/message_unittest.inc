@@ -40,7 +40,9 @@
 #include <sys/types.h>
 
 #include <cmath>
+#include <functional>
 #include <limits>
+#include <vector>
 
 #include <google/protobuf/message.h>
 #ifndef _MSC_VER
@@ -283,6 +285,32 @@ TEST(MESSAGE_TEST_NAME, MergeFromUninitialized) {
   q.ParsePartialFromString(q.SerializePartialAsString());
   EXPECT_TRUE(TestUtil::EqualsToSerialized(q, o.SerializePartialAsString()));
   EXPECT_TRUE(TestUtil::EqualsToSerialized(q, p.SerializePartialAsString()));
+}
+
+TEST(MESSAGE_TEST_NAME, UninitializedAndTooDeep) {
+  UNITTEST::TestRequiredForeign original;
+  original.mutable_optional_message()->set_a(1);
+  original.mutable_optional_lazy_message()
+      ->mutable_child()
+      ->mutable_payload()
+      ->set_optional_int64(0);
+
+  std::string data;
+  ASSERT_TRUE(original.SerializePartialToString(&data));
+
+  UNITTEST::TestRequiredForeign pass;
+  ASSERT_TRUE(pass.ParsePartialFromString(data));
+  ASSERT_FALSE(pass.IsInitialized());
+
+  io::ArrayInputStream array_stream(data.data(), data.size());
+  io::CodedInputStream input_stream(&array_stream);
+  input_stream.SetRecursionLimit(2);
+
+  UNITTEST::TestRequiredForeign fail;
+  EXPECT_FALSE(fail.ParsePartialFromCodedStream(&input_stream));
+
+  UNITTEST::TestRequiredForeign fail_uninitialized;
+  EXPECT_FALSE(fail_uninitialized.ParseFromString(data));
 }
 
 TEST(MESSAGE_TEST_NAME, ExplicitLazyExceedRecursionLimit) {
@@ -1144,6 +1172,95 @@ TEST(MESSAGE_TEST_NAME, PreservesFloatingPointNegative0) {
   EXPECT_EQ(in_message.optional_double(), out_message.optional_double());
   EXPECT_EQ(std::signbit(in_message.optional_double()),
             std::signbit(out_message.optional_double()));
+}
+
+std::string EncodeEnumValue(int number, int value, int non_canonical_bytes) {
+  uint8_t buf[100];
+  uint8_t* p = buf;
+
+  p = internal::WireFormatLite::WriteEnumToArray(number, value, p);
+  // varint can have a max of 10 bytes.
+  while (non_canonical_bytes-- > 0 && p - buf < 10) {
+    // Add a dummy byte at the end.
+    p[-1] |= 0x80;
+    p[0] = 0;
+    ++p;
+  }
+
+  return std::string(buf, p);
+}
+
+std::string EncodeOtherField() {
+  UNITTEST::EnumParseTester obj;
+  obj.set_other_field(1);
+  return obj.SerializeAsString();
+}
+
+TEST(MESSAGE_TEST_NAME, TestEnumParsers) {
+  UNITTEST::EnumParseTester obj;
+
+  const auto other_field = EncodeOtherField();
+
+  constexpr int kInvalidValue = 0x900913;
+  auto* ref = obj.GetReflection();
+  auto* descriptor = obj.descriptor();
+  for (bool use_tail_field : {false, true}) {
+    SCOPED_TRACE(use_tail_field);
+    for (int non_canonical_bytes = 0; non_canonical_bytes < 5;
+         ++non_canonical_bytes) {
+      SCOPED_TRACE(non_canonical_bytes);
+      for (int i = 0; i < descriptor->field_count(); ++i) {
+        const auto* field = descriptor->field(i);
+        if (field->name() == "other_field") continue;
+        SCOPED_TRACE(field->full_name());
+        const auto* enum_desc = field->enum_type();
+        for (int e = 0; e < enum_desc->value_count(); ++e) {
+          const auto* value_desc = enum_desc->value(e);
+          if (value_desc->number() < 0 && non_canonical_bytes > 0) {
+            // Negative numbers only have a canonical representation.
+            continue;
+          }
+          SCOPED_TRACE(value_desc->number());
+          GOOGLE_CHECK_NE(value_desc->number(), kInvalidValue)
+              << "Invalid value is a real label.";
+          auto encoded = EncodeEnumValue(field->number(), value_desc->number(),
+                                         non_canonical_bytes);
+          if (use_tail_field) {
+            encoded += other_field;
+          }
+
+          EXPECT_TRUE(obj.ParseFromString(encoded));
+          if (field->is_repeated()) {
+            ASSERT_EQ(ref->FieldSize(obj, field), 1);
+            EXPECT_EQ(ref->GetRepeatedEnumValue(obj, field, 0),
+                      value_desc->number());
+          } else {
+            EXPECT_TRUE(ref->HasField(obj, field));
+            EXPECT_EQ(ref->GetEnumValue(obj, field), value_desc->number());
+          }
+          auto& unknown = ref->GetUnknownFields(obj);
+          ASSERT_EQ(unknown.field_count(), 0);
+        }
+
+        SCOPED_TRACE("Invalid value");
+        // Try an invalid value, which should go to the unknown fields.
+        EXPECT_TRUE(obj.ParseFromString(EncodeEnumValue(
+            field->number(), kInvalidValue, non_canonical_bytes)));
+        if (field->is_repeated()) {
+          ASSERT_EQ(ref->FieldSize(obj, field), 0);
+        } else {
+          EXPECT_FALSE(ref->HasField(obj, field));
+          EXPECT_EQ(ref->GetEnumValue(obj, field),
+                    enum_desc->value(0)->number());
+        }
+        auto& unknown = ref->GetUnknownFields(obj);
+        ASSERT_EQ(unknown.field_count(), 1);
+        EXPECT_EQ(unknown.field(0).number(), field->number());
+        EXPECT_EQ(unknown.field(0).type(), unknown.field(0).TYPE_VARINT);
+        EXPECT_EQ(unknown.field(0).varint(), kInvalidValue);
+      }
+    }
+  }
 }
 
 }  // namespace protobuf

@@ -32,9 +32,12 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <list>
+#include <memory>
 #include <string>
 #include <vector>
 
+#include <google/protobuf/wrappers.pb.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/status.h>
@@ -43,7 +46,7 @@
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/util/internal/testdata/maps.pb.h>
 #include <google/protobuf/util/json_format.pb.h>
 #include <google/protobuf/util/json_format_proto3.pb.h>
@@ -59,12 +62,12 @@ namespace google {
 namespace protobuf {
 namespace util {
 namespace {
-
 using ::proto3::TestAny;
 using ::proto3::TestEnumValue;
 using ::proto3::TestMap;
 using ::proto3::TestMessage;
 using ::proto3::TestOneof;
+using ::proto3::TestWrapper;
 using ::proto_util_converter::testing::MapIn;
 
 // TODO(b/234474291): Use the gtest versions once that's available in OSS.
@@ -288,7 +291,7 @@ TEST(JsonUtilTest, ParseMessage) {
     {
       "int32Value": 1234567891,
       "int64Value": 5302428716536692736,
-      "floatValue": 3.4028235e+38,
+      "floatValue": 3.40282002e+38,
       "repeatedInt32Value": [1, 2],
       "messageValue": {
         "value": 2048
@@ -303,7 +306,7 @@ TEST(JsonUtilTest, ParseMessage) {
 
   EXPECT_EQ(m.int32_value(), 1234567891);
   EXPECT_EQ(m.int64_value(), 5302428716536692736);
-  EXPECT_EQ(m.float_value(), 3.402823466e+38f);
+  EXPECT_EQ(m.float_value(), 3.40282002e+38f);
   ASSERT_EQ(m.repeated_int32_value_size(), 2);
   EXPECT_EQ(m.repeated_int32_value(0), 1);
   EXPECT_EQ(m.repeated_int32_value(1), 2);
@@ -436,7 +439,8 @@ TEST(JsonUtilTest, TestParsingAny) {
   EXPECT_THAT(
       ToJson(m),
       IsOkAndHolds(
-          R"json({"value":{"@type":"type.googleapis.com/proto3.TestMessage","int32Value":5,"stringValue":"expected_value","messageValue":{"value":1}}})json"));
+          R"({"value":{"@type":"type.googleapis.com/proto3.TestMessage",)"
+          R"("int32Value":5,"stringValue":"expected_value","messageValue":{"value":1}}})"));
 }
 
 TEST(JsonUtilTest, TestParsingAnyMiddleAtType) {
@@ -513,7 +517,32 @@ TEST(JsonUtilTest, TestParsingNestedAnys) {
   EXPECT_THAT(
       ToJson(m),
       IsOkAndHolds(
-          R"json({"value":{"@type":"type.googleapis.com/google.protobuf.Any","value":{"@type":"type.googleapis.com/proto3.TestMessage","int32Value":5,"stringValue":"expected_value","messageValue":{"value":1}}}})json"));
+          R"({"value":{"@type":"type.googleapis.com/google.protobuf.Any",)"
+          R"("value":{"@type":"type.googleapis.com/proto3.TestMessage",)"
+          R"("int32Value":5,"stringValue":"expected_value","messageValue":{"value":1}}}})"));
+}
+
+TEST(JsonUtilTest, ParseWrappers) {
+  StringPiece input = R"json(
+    {
+      "boolValue": true,
+      "int32Value": 42,
+      "stringValue": "ieieo",
+    }
+  )json";
+
+  TestWrapper m;
+  auto proto_buffer = FromJson(input, &m);
+  ASSERT_OK(proto_buffer);
+
+  EXPECT_TRUE(m.bool_value().value());
+  EXPECT_EQ(m.int32_value().value(), 42);
+  EXPECT_EQ(m.string_value().value(), "ieieo");
+
+  EXPECT_THAT(
+      ToJson(m),
+      IsOkAndHolds(
+          R"({"boolValue":true,"int32Value":42,"stringValue":"ieieo"})"));
 }
 
 TEST(JsonUtilTest, TestParsingUnknownAnyFields) {
@@ -632,157 +661,200 @@ TEST(JsonUtilTest, TestParsingEnumIgnoreCase) {
   ASSERT_EQ(m.enum_value(), proto3::BAR);
 }
 
-// A ZeroCopyOutputStream that writes to multiple buffers.
-class SegmentedZeroCopyOutputStream : public io::ZeroCopyOutputStream {
- public:
-  explicit SegmentedZeroCopyOutputStream(
-      std::vector<StringPiece> segments)
-      : segments_(segments) {
-    // absl::c_* functions are not cloned in OSS.
-    std::reverse(segments_.begin(), segments_.end());
+class TypeResolverTest : public testing::Test {
+ protected:
+  util::StatusOr<std::string> Proto2Json(StringPiece proto,
+                                         StringPiece type,
+                                         const JsonPrintOptions& options = {}) {
+    io::ArrayInputStream in(proto.data(), proto.size());
+
+    std::string result;
+    io::StringOutputStream out(&result);
+
+    RETURN_IF_ERROR(BinaryToJsonStream(
+        resolver_.get(), StrCat("type.googleapis.com/", type), &in,
+        &out));
+    return result;
   }
 
-  bool Next(void** buffer, int* length) override {
-    if (segments_.empty()) {
-      return false;
-    }
-    last_segment_ = segments_.back();
-    segments_.pop_back();
-    // TODO(b/234159981): This is only ever constructed in test code, and only
-    // from non-const bytes, so this is a valid cast. We need to do this since
-    // OSS proto does not yet have absl::Span; once we take a full Abseil
-    // dependency we should use that here instead.
-    *buffer = const_cast<char*>(last_segment_.data());
-    *length = static_cast<int>(last_segment_.size());
-    byte_count_ += static_cast<int64_t>(last_segment_.size());
-    return true;
+  util::StatusOr<std::string> Json2Proto(StringPiece json,
+                                         StringPiece type,
+                                         const JsonParseOptions& options = {}) {
+    io::ArrayInputStream in(json.data(), json.size());
+
+    std::string result;
+    io::StringOutputStream out(&result);
+
+    RETURN_IF_ERROR(JsonToBinaryStream(
+        resolver_.get(), StrCat("type.googleapis.com/", type), &in,
+        &out));
+
+    return result;
   }
 
-  void BackUp(int length) override {
-    GOOGLE_CHECK(length <= static_cast<int>(last_segment_.size()));
-
-    size_t backup = last_segment_.size() - static_cast<size_t>(length);
-    segments_.push_back(last_segment_.substr(backup));
-    last_segment_ = last_segment_.substr(0, backup);
-    byte_count_ -= static_cast<int64_t>(length);
-  }
-
-  int64_t ByteCount() const override { return byte_count_; }
-
- private:
-  std::vector<StringPiece> segments_;
-  StringPiece last_segment_;
-  int64_t byte_count_ = 0;
+  std::unique_ptr<TypeResolver> resolver_{NewTypeResolverForDescriptorPool(
+      "type.googleapis.com", DescriptorPool::generated_pool())};
 };
 
-// This test splits the output buffer and also the input data into multiple
-// segments and checks that the implementation of ZeroCopyStreamByteSink
-// handles all possible cases correctly.
-TEST(ZeroCopyStreamByteSinkTest, TestAllInputOutputPatterns) {
-  static constexpr int kOutputBufferLength = 10;
-  // An exhaustive test takes too long, skip some combinations to make the test
-  // run faster.
-  static constexpr int kSkippedPatternCount = 7;
+TEST_F(TypeResolverTest, ParseFromResolver) {
+  StringPiece json = R"json(
+    {
+      "boolValue": true,
+      "int32Value": 1234567891,
+      "int64Value": -5302428716536692736,
+      "uint32Value": 42,
+      "uint64Value": 530242871653669,
+      "floatValue": 3.4e+38,
+      "doubleValue": -55.5,
+      "stringValue": "foo bar baz",
+      "enumValue": "BAR",
+      "messageValue": {
+        "value": 2048
+      },
 
-  char buffer[kOutputBufferLength];
-  for (int split_pattern = 0; split_pattern < (1 << (kOutputBufferLength - 1));
-       split_pattern += kSkippedPatternCount) {
-    // Split the buffer into small segments according to the split_pattern.
-    std::vector<StringPiece> segments;
-    int segment_start = 0;
-    for (int i = 0; i < kOutputBufferLength - 1; ++i) {
-      if (split_pattern & (1 << i)) {
-        segments.push_back(
-            StringPiece(buffer + segment_start, i - segment_start + 1));
-        segment_start = i + 1;
-      }
+      "repeatedBoolValue": [true],
+      "repeatedInt32Value": [0, -42],
+      "repeatedUint64Value": [1, 2],
+      "repeatedDoubleValue": [1.5, -2.1],
+      "repeatedStringValue": ["foo", "bar ", ""],
+      "repeatedEnumValue": [1, "FOO"],
+      "repeatedMessageValue": [
+        {"value": 40},
+        {"value": 96}
+      ]
     }
-    segments.push_back(StringPiece(buffer + segment_start,
-                                         kOutputBufferLength - segment_start));
+  )json";
 
-    // Write exactly 10 bytes through the ByteSink.
-    std::string input_data = "0123456789";
-    for (int input_pattern = 0; input_pattern < (1 << (input_data.size() - 1));
-         input_pattern += kSkippedPatternCount) {
-      memset(buffer, 0, sizeof(buffer));
-      {
-        SegmentedZeroCopyOutputStream output_stream(segments);
-        internal::ZeroCopyStreamByteSink byte_sink(&output_stream);
-        int start = 0;
-        for (int j = 0; j < input_data.length() - 1; ++j) {
-          if (input_pattern & (1 << j)) {
-            byte_sink.Append(&input_data[start], j - start + 1);
-            start = j + 1;
-          }
-        }
-        byte_sink.Append(&input_data[start], input_data.length() - start);
-      }
-      EXPECT_EQ(std::string(buffer, input_data.length()), input_data);
-    }
+  auto proto_buffer = Json2Proto(json, "proto3.TestMessage");
+  ASSERT_OK(proto_buffer);
 
-    // Write only 9 bytes through the ByteSink.
-    input_data = "012345678";
-    for (int input_pattern = 0; input_pattern < (1 << (input_data.size() - 1));
-         input_pattern += kSkippedPatternCount) {
-      memset(buffer, 0, sizeof(buffer));
-      {
-        SegmentedZeroCopyOutputStream output_stream(segments);
-        internal::ZeroCopyStreamByteSink byte_sink(&output_stream);
-        int start = 0;
-        for (int j = 0; j < input_data.length() - 1; ++j) {
-          if (input_pattern & (1 << j)) {
-            byte_sink.Append(&input_data[start], j - start + 1);
-            start = j + 1;
-          }
-        }
-        byte_sink.Append(&input_data[start], input_data.length() - start);
-      }
-      EXPECT_EQ(std::string(buffer, input_data.length()), input_data);
-      EXPECT_EQ(buffer[input_data.length()], 0);
-    }
+  // Some random message but good enough to verify that the parsing wrapper
+  // functions are working properly.
+  TestMessage m;
+  ASSERT_TRUE(m.ParseFromString(*proto_buffer));
 
-    // Write 11 bytes through the ByteSink. The extra byte will just
-    // be ignored.
-    input_data = "0123456789A";
-    for (int input_pattern = 0; input_pattern < (1 << (input_data.size() - 1));
-         input_pattern += kSkippedPatternCount) {
-      memset(buffer, 0, sizeof(buffer));
-      {
-        SegmentedZeroCopyOutputStream output_stream(segments);
-        internal::ZeroCopyStreamByteSink byte_sink(&output_stream);
-        int start = 0;
-        for (int j = 0; j < input_data.length() - 1; ++j) {
-          if (input_pattern & (1 << j)) {
-            byte_sink.Append(&input_data[start], j - start + 1);
-            start = j + 1;
-          }
-        }
-        byte_sink.Append(&input_data[start], input_data.length() - start);
-      }
-      EXPECT_EQ(input_data.substr(0, kOutputBufferLength),
-                std::string(buffer, kOutputBufferLength));
-    }
-  }
+  EXPECT_TRUE(m.bool_value());
+  EXPECT_EQ(m.int32_value(), 1234567891);
+  EXPECT_EQ(m.int64_value(), -5302428716536692736);
+  EXPECT_EQ(m.uint32_value(), 42);
+  EXPECT_EQ(m.uint64_value(), 530242871653669);
+  EXPECT_EQ(m.float_value(), 3.4e+38f);
+  EXPECT_EQ(m.double_value(), -55.5);
+  EXPECT_EQ(m.string_value(), "foo bar baz");
+  EXPECT_EQ(m.enum_value(), proto3::EnumType::BAR);
+  EXPECT_EQ(m.message_value().value(), 2048);
+
+  ASSERT_EQ(m.repeated_bool_value_size(), 1);
+  EXPECT_TRUE(m.repeated_bool_value(0));
+
+  ASSERT_EQ(m.repeated_int32_value_size(), 2);
+  EXPECT_EQ(m.repeated_int32_value(0), 0);
+  EXPECT_EQ(m.repeated_int32_value(1), -42);
+
+  ASSERT_EQ(m.repeated_uint64_value_size(), 2);
+  EXPECT_EQ(m.repeated_uint64_value(0), 1);
+  EXPECT_EQ(m.repeated_uint64_value(1), 2);
+
+  ASSERT_EQ(m.repeated_double_value_size(), 2);
+  EXPECT_EQ(m.repeated_double_value(0), 1.5);
+  EXPECT_EQ(m.repeated_double_value(1), -2.1);
+
+  ASSERT_EQ(m.repeated_string_value_size(), 3);
+  EXPECT_EQ(m.repeated_string_value(0), "foo");
+  EXPECT_EQ(m.repeated_string_value(1), "bar ");
+  EXPECT_EQ(m.repeated_string_value(2), "");
+
+  ASSERT_EQ(m.repeated_enum_value_size(), 2);
+  EXPECT_EQ(m.repeated_enum_value(0), proto3::EnumType::BAR);
+  EXPECT_EQ(m.repeated_enum_value(1), proto3::EnumType::FOO);
+
+  ASSERT_EQ(m.repeated_message_value_size(), 2);
+  EXPECT_EQ(m.repeated_message_value(0).value(), 40);
+  EXPECT_EQ(m.repeated_message_value(1).value(), 96);
+
+  StringPiece compacted_json =
+      R"({"boolValue":true,"int32Value":1234567891,"int64Value":"-5302428716536692736",)"
+      R"("uint32Value":42,"uint64Value":"530242871653669","floatValue":3.4e+38,)"
+      R"("doubleValue":-55.5,"stringValue":"foo bar baz","enumValue":"BAR",)"
+      R"("messageValue":{"value":2048},"repeatedBoolValue":[true],"repeatedInt32Value":[0,-42])"
+      R"(,"repeatedUint64Value":["1","2"],"repeatedDoubleValue":[1.5,-2.1],)"
+      R"("repeatedStringValue":["foo","bar ",""],"repeatedEnumValue":["BAR","FOO"],)"
+      R"("repeatedMessageValue":[{"value":40},{"value":96}]})";
+
+  EXPECT_THAT(Proto2Json(*proto_buffer, "proto3.TestMessage"),
+              IsOkAndHolds(compacted_json));
+
+  // Proto3 messages always used packed, so this will make sure to exercise
+  // packed decoding.
+  std::string proto_buffer2;
+  m.SerializeToString(&proto_buffer2);
+
+  EXPECT_THAT(Proto2Json(proto_buffer2, "proto3.TestMessage"),
+              IsOkAndHolds(compacted_json));
 }
 
-TEST(JsonUtilTest, TestWrongJsonInput) {
-  StringPiece json = "{\"unknown_field\":\"some_value\"}";
-  io::ArrayInputStream input_stream(json.data(), json.size());
-  char proto_buffer[10000];
+TEST_F(TypeResolverTest, ParseAnyFromResolver) {
+  StringPiece input = R"json(
+    {
+      "value": {
+        "@type": "type.googleapis.com/proto3.TestMessage",
+        "int32_value": 5,
+        "string_value": "expected_value",
+        "message_value": {"value": 1}
+      }
+    }
+  )json";
 
-  io::ArrayOutputStream output_stream(proto_buffer, sizeof(proto_buffer));
-  std::string message_type = "type.googleapis.com/proto3.TestMessage";
+  auto proto_buffer = Json2Proto(input, "proto3.TestAny");
+  ASSERT_OK(proto_buffer);
 
-  auto* resolver = NewTypeResolverForDescriptorPool(
-      "type.googleapis.com", DescriptorPool::generated_pool());
+  TestAny m;
+  ASSERT_TRUE(m.ParseFromString(*proto_buffer));
+
+  TestMessage t;
+  EXPECT_TRUE(m.value().UnpackTo(&t));
+  EXPECT_EQ(t.int32_value(), 5);
+  EXPECT_EQ(t.string_value(), "expected_value");
+  EXPECT_EQ(t.message_value().value(), 1);
 
   EXPECT_THAT(
-      JsonToBinaryStream(resolver, message_type, &input_stream, &output_stream),
-      StatusIs(util::StatusCode::kInvalidArgument));
-  delete resolver;
+      Proto2Json(*proto_buffer, "proto3.TestAny"),
+      IsOkAndHolds(
+          R"({"value":{"@type":"type.googleapis.com/proto3.TestMessage",)"
+          R"("int32Value":5,"stringValue":"expected_value","messageValue":{"value":1}}})"));
 }
 
-TEST(JsonUtilTest, HtmlEscape) {
+TEST_F(TypeResolverTest, ParseWrappers) {
+  StringPiece input = R"json(
+    {
+      "boolValue": true,
+      "int32Value": 42,
+      "stringValue": "ieieo",
+    }
+  )json";
+
+  auto proto_buffer = Json2Proto(input, "proto3.TestWrapper");
+  ASSERT_OK(proto_buffer);
+
+  TestWrapper m;
+  ASSERT_TRUE(m.ParseFromString(*proto_buffer));
+  EXPECT_TRUE(m.bool_value().value());
+  EXPECT_EQ(m.int32_value().value(), 42);
+  EXPECT_EQ(m.string_value().value(), "ieieo");
+
+  EXPECT_THAT(
+      Proto2Json(*proto_buffer, "proto3.TestWrapper"),
+      IsOkAndHolds(
+          R"({"boolValue":true,"int32Value":42,"stringValue":"ieieo"})"));
+}
+
+TEST_F(TypeResolverTest, TestWrongJsonInput) {
+  EXPECT_THAT(Json2Proto(R"json({"unknown_field": "some_value"})json",
+                         "proto3.TestMessage"),
+              StatusIs(util::StatusCode::kInvalidArgument));
+}
+
+TEST(JsonUtilTest, DISABLED_HtmlEscape) {
   TestMessage m;
   m.set_string_value("</script>");
   JsonPrintOptions options;
