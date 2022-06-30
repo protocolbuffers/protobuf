@@ -12,6 +12,9 @@ set -eux
 # "autom4te: need GNU m4 1.4 or later: /usr/bin/m4"
 # go/kokoro/userdocs/macos/selecting_xcode.md for more information.
 export DEVELOPER_DIR=/Applications/Xcode_11.3.app/Contents/Developer
+sudo xcode-select -s /Applications/Xcode_11.3.app/Contents/Developer
+#sudo rm -rf /Library/Developer/CommandLineTools
+#sudo xcode-select --install
 
 ##
 # Select C/C++ compilers
@@ -38,3 +41,12 @@ if [[ "${KOKORO_INSTALL_RVM:-}" == "yes" ]] ; then
   # GitHub. See this issue for details: https://github.com/rvm/rvm/issues/5133
   curl -sSL https://raw.githubusercontent.com/rvm/rvm/master/binscripts/rvm-installer | bash -s master --ruby
 fi
+
+##
+# Install Homebrew
+mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/2.2.12 | tar xz --strip 1 -C homebrew
+eval "$(homebrew/bin/brew shellenv)"
+brew update --force --quiet
+chmod -R go-w "$(brew --prefix)/share/zsh"
+brew tap --repair
+#brew doctor
