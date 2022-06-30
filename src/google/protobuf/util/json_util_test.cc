@@ -848,6 +848,18 @@ TEST_F(TypeResolverTest, ParseWrappers) {
           R"({"boolValue":true,"int32Value":42,"stringValue":"ieieo"})"));
 }
 
+TEST_F(TypeResolverTest, RejectDuplicateOneof) {
+  StringPiece input = R"json(
+    {
+      "oneofInt32Value": 42,
+      "oneofStringValue": "bad",
+    }
+  )json";
+
+  EXPECT_THAT(Json2Proto(input, "proto3.TestOneof"),
+              StatusIs(util::StatusCode::kInvalidArgument));
+}
+
 TEST_F(TypeResolverTest, TestWrongJsonInput) {
   EXPECT_THAT(Json2Proto(R"json({"unknown_field": "some_value"})json",
                          "proto3.TestMessage"),
