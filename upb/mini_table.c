@@ -428,7 +428,6 @@ static const char* upb_MiniTable_DecodeBase92Varint(upb_MtDecoder* d,
   char ch = first_ch;
   while (1) {
     uint32_t bits = upb_FromBase92(ch) - upb_FromBase92(min);
-    UPB_ASSERT(shift < 32);
     val |= bits << shift;
     if (ptr == d->end || *ptr < min || max < *ptr) {
       *out_val = val;
@@ -436,6 +435,7 @@ static const char* upb_MiniTable_DecodeBase92Varint(upb_MtDecoder* d,
     }
     ch = *ptr++;
     shift += bits_per_char;
+    if (shift >= 32) upb_MtDecoder_ErrorFormat(d, "Overlong varint");
   }
 }
 
@@ -530,11 +530,15 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
     field->mode |= kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift;
     field->offset = kNoPresence;
   } else {
+    if (type >= sizeof(kUpb_EncodedToFieldRep)) {
+      upb_MtDecoder_ErrorFormat(d, "Invalid field type: %d", (int)type);
+      UPB_UNREACHABLE();
+    }
     field->mode = kUpb_FieldMode_Scalar;
     field->mode |= kUpb_EncodedToFieldRep[type] << kUpb_FieldRep_Shift;
     field->offset = kHasbitPresence;
   }
-  if (type >= 18) {
+  if (type >= sizeof(kUpb_EncodedToType)) {
     upb_MtDecoder_ErrorFormat(d, "Invalid field type: %d", (int)type);
     UPB_UNREACHABLE();
   }
@@ -728,9 +732,10 @@ static void upb_MtDecoder_AllocateSubs(upb_MtDecoder* d, uint32_t sub_count) {
   upb_MtDecoder_CheckOutOfMemory(d, d->table->subs);
 }
 
-static void upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr, size_t len,
-                                void* fields, size_t field_size,
-                                uint16_t* field_count, uint32_t* sub_count) {
+static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
+                                       size_t len, void* fields,
+                                       size_t field_size, uint16_t* field_count,
+                                       uint32_t* sub_count) {
   uint64_t msg_modifiers = 0;
   uint32_t last_field_number = 0;
   upb_MiniTable_Field* last_field = NULL;
@@ -741,6 +746,7 @@ static void upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr, size_t len,
   while (ptr < d->end) {
     char ch = *ptr++;
     if (ch <= kUpb_EncodedValue_MaxField) {
+      if (!d->table && last_field) return --ptr;
       upb_MiniTable_Field* field = fields;
       *field_count += 1;
       fields = (char*)fields + field_size;
@@ -777,6 +783,8 @@ static void upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr, size_t len,
   if (need_dense_below) {
     d->table->dense_below = d->table->field_count;
   }
+
+  return ptr;
 }
 
 static void upb_MtDecoder_ParseMessage(upb_MtDecoder* d, const char* data,
@@ -1092,9 +1100,10 @@ upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
   return table;
 }
 
-bool upb_MiniTable_BuildExtension(const char* data, size_t len,
-                                  upb_MiniTable_Extension* ext,
-                                  upb_MiniTable_Sub sub, upb_Status* status) {
+const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
+                                         upb_MiniTable_Extension* ext,
+                                         upb_MiniTable_Sub sub,
+                                         upb_Status* status) {
   upb_MtDecoder decoder = {
       .arena = NULL,
       .status = status,
@@ -1102,14 +1111,15 @@ bool upb_MiniTable_BuildExtension(const char* data, size_t len,
   };
 
   if (UPB_SETJMP(decoder.err)) {
-    return false;
+    return NULL;
   }
 
   uint16_t count = 0;
-  upb_MtDecoder_Parse(&decoder, data, len, ext, sizeof(*ext), &count, NULL);
+  const char* ret =
+      upb_MtDecoder_Parse(&decoder, data, len, ext, sizeof(*ext), &count, NULL);
   ext->field.mode |= kUpb_LabelFlags_IsExtension;
   ext->field.offset = 0;
-  return true;
+  return ret;
 }
 
 upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,

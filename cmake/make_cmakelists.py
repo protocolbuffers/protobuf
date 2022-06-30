@@ -68,6 +68,8 @@ class BuildFileFunctions(object):
       return
     if kwargs["name"] == "lupb":
       return
+    if "testonly" in kwargs:
+      return
     files = kwargs.get("srcs", []) + kwargs.get("hdrs", [])
     found_files = []
     pregenerated_files = [

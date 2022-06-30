@@ -29,11 +29,16 @@
 #include "gtest/gtest.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/def.hpp"
+#include "upb/fuzz_test_util.h"
 #include "upb/json_decode.h"
 #include "upb/json_encode.h"
 #include "upb/msg_test.upb.h"
 #include "upb/msg_test.upbdefs.h"
 #include "upb/upb.hpp"
+
+// begin:google_only
+// #include "testing/fuzzing/fuzztest.h"
+// end:google_only
 
 void VerifyMessage(const upb_test_TestExtensions* ext_msg) {
   EXPECT_TRUE(upb_test_TestExtensions_has_optional_int32_ext(ext_msg));
@@ -489,3 +494,25 @@ TEST(MessageTest, MapField) {
   ASSERT_TRUE(
       upb_test_TestMapFieldExtra_map_field_get(test_msg_extra2, 0, nullptr));
 }
+
+// begin:google_only
+//
+// static void DecodeEncodeArbitrarySchemaAndPayload(
+//     const upb::fuzz::MiniTableFuzzInput& input, std::string_view proto_payload,
+//     int decode_options, int encode_options) {
+//   upb::Arena arena;
+//   upb_ExtensionRegistry* exts;
+//   const upb_MiniTable* mini_table =
+//       upb::fuzz::BuildMiniTable(input, &exts, arena.ptr());
+//   if (!mini_table) return;
+//   upb::Status status;
+//   upb_Message* msg = _upb_Message_New(mini_table, arena.ptr());
+//   upb_Decode(proto_payload.data(), proto_payload.size(), msg, mini_table, exts,
+//              decode_options, arena.ptr());
+//   char* ptr;
+//   size_t size;
+//   upb_Encode(msg, mini_table, encode_options, arena.ptr(), &ptr, &size);
+// }
+// FUZZ_TEST(FuzzTest, DecodeEncodeArbitrarySchemaAndPayload);
+//
+// end:google_only
