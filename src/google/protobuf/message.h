@@ -298,6 +298,10 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // using reflection (rather than the generated code implementation for
   // ByteSize()). Like ByteSize(), its CPU time is linear in the number of
   // fields defined for the proto.
+  //
+  // Note: The precise value of this method should never be depended on, and can
+  // change substantially due to internal details.  In debug builds, this will
+  // include a random fuzz factor to prevent these dependencies.
   virtual size_t SpaceUsedLong() const;
 
   PROTOBUF_DEPRECATED_MSG("Please use SpaceUsedLong() instead")

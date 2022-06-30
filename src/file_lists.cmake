@@ -92,6 +92,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/message_differencer.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/time_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/type_resolver_util.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/zero_copy_sink.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.pb.cc
@@ -213,6 +214,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/time_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/type_resolver.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/type_resolver_util.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/zero_copy_sink.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.pb.h
@@ -843,6 +845,7 @@ set(util_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/message_differencer_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/time_util_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/type_resolver_util_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/zero_copy_sink_test.cc
 )
 
 # //src/google/protobuf/util:test_proto_srcs

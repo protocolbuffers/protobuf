@@ -1143,7 +1143,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       synchronized (this) {
         // Copy the information we need into local variables so as to hold
         // the lock for as short a time as possible.
-        cachedFlushBuffers = flushedBuffers.toArray(new ByteString[flushedBuffers.size()]);
+        cachedFlushBuffers = flushedBuffers.toArray(new ByteString[0]);
         cachedBuffer = buffer;
         cachedBufferPos = bufferPos;
       }
