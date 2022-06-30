@@ -136,6 +136,7 @@ inline PROTOBUF_ALWAYS_INLINE void CreateNode(Tag tag, void* pos,
 }
 
 inline PROTOBUF_ALWAYS_INLINE void PrefetchNode(const void* elem_address) {
+  (void)elem_address;
 }
 
 inline PROTOBUF_ALWAYS_INLINE void DestroyNode(Tag tag, const void* pos) {

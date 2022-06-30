@@ -790,38 +790,41 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
 
     std::map<std::string, std::string> vars;
     SetCommonFieldVariables(field, &vars, options_);
+
     format.AddMap(vars);
 
-    if (field->is_repeated()) {
-      format("$deprecated_attr$int ${1$$name$_size$}$() const$2$\n", field,
-             !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
-      if (!IsFieldStripped(field, options_)) {
+      if (field->is_repeated()) {
         format(
-            "private:\n"
-            "int ${1$_internal_$name$_size$}$() const;\n"
-            "public:\n",
-            field);
-      }
-    } else if (HasHasMethod(field)) {
-      format("$deprecated_attr$bool ${1$has_$name$$}$() const$2$\n", field,
-             !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
-      if (!IsFieldStripped(field, options_)) {
+            "$deprecated_attr$int ${1$$name$_size$}$() const$2$\n", field,
+            !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
+        if (!IsFieldStripped(field, options_)) {
+          format(
+              "private:\n"
+              "int ${1$_internal_$name$_size$}$() const;\n"
+              "public:\n",
+              field);
+        }
+      } else if (HasHasMethod(field)) {
         format(
-            "private:\n"
-            "bool _internal_has_$name$() const;\n"
-            "public:\n");
+            "$deprecated_attr$bool ${1$has_$name$$}$() const$2$\n", field,
+            !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
+        if (!IsFieldStripped(field, options_)) {
+          format(
+              "private:\n"
+              "bool _internal_has_$name$() const;\n"
+              "public:\n");
+        }
+      } else if (HasPrivateHasMethod(field)) {
+        if (!IsFieldStripped(field, options_)) {
+          format(
+              "private:\n"
+              "bool ${1$_internal_has_$name$$}$() const;\n"
+              "public:\n",
+              field);
+        }
       }
-    } else if (HasPrivateHasMethod(field)) {
-      if (!IsFieldStripped(field, options_)) {
-        format(
-            "private:\n"
-            "bool ${1$_internal_has_$name$$}$() const;\n"
-            "public:\n",
-            field);
-      }
-    }
-    format("$deprecated_attr$void ${1$clear_$name$$}$()$2$\n", field,
-           !IsFieldStripped(field, options_) ? ";" : "{__builtin_trap();}");
+      format("$deprecated_attr$void ${1$clear_$name$$}$()$2$\n", field,
+             !IsFieldStripped(field, options_) ? ";" : "{__builtin_trap();}");
 
     // Generate type-specific accessor declarations.
     field_generators_.get(field).GenerateAccessorDeclarations(printer);
@@ -1235,37 +1238,36 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
 
     Formatter::SaveState saver(&format);
     format.AddMap(vars);
-
-    // Generate has_$name$() or $name$_size().
-    if (field->is_repeated()) {
-      if (IsFieldStripped(field, options_)) {
-        format(
-            "inline int $classname$::$name$_size() const { "
-            "__builtin_trap(); }\n");
+      // Generate has_$name$() or $name$_size().
+      if (field->is_repeated()) {
+        if (IsFieldStripped(field, options_)) {
+          format(
+              "inline int $classname$::$name$_size() const { "
+              "__builtin_trap(); }\n");
+        } else {
+          format(
+              "inline int $classname$::_internal_$name$_size() const {\n"
+              "  return $field$$1$.size();\n"
+              "}\n"
+              "inline int $classname$::$name$_size() const {\n"
+              "$annotate_size$"
+              "  return _internal_$name$_size();\n"
+              "}\n",
+              IsImplicitWeakField(field, options_, scc_analyzer_) &&
+                      field->message_type()
+                  ? ".weak"
+                  : "");
+        }
+      } else if (field->real_containing_oneof()) {
+        format.Set("field_name", UnderscoresToCamelCase(field->name(), true));
+        format.Set("oneof_name", field->containing_oneof()->name());
+        format.Set("oneof_index",
+                   StrCat(field->containing_oneof()->index()));
+        GenerateOneofMemberHasBits(field, format);
       } else {
-        format(
-            "inline int $classname$::_internal_$name$_size() const {\n"
-            "  return $field$$1$.size();\n"
-            "}\n"
-            "inline int $classname$::$name$_size() const {\n"
-            "$annotate_size$"
-            "  return _internal_$name$_size();\n"
-            "}\n",
-            IsImplicitWeakField(field, options_, scc_analyzer_) &&
-                    field->message_type()
-                ? ".weak"
-                : "");
+        // Singular field.
+        GenerateSingularFieldHasBits(field, format);
       }
-    } else if (field->real_containing_oneof()) {
-      format.Set("field_name", UnderscoresToCamelCase(field->name(), true));
-      format.Set("oneof_name", field->containing_oneof()->name());
-      format.Set("oneof_index",
-                 StrCat(field->containing_oneof()->index()));
-      GenerateOneofMemberHasBits(field, format);
-    } else {
-      // Singular field.
-      GenerateSingularFieldHasBits(field, format);
-    }
 
     if (!IsCrossFileMaybeMap(field)) {
       GenerateFieldClear(field, true, format);
