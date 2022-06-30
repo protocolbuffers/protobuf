@@ -5,8 +5,7 @@
     <Copyright>Copyright 2015, Google Inc.</Copyright>
     <AssemblyTitle>Google Protocol Buffers</AssemblyTitle>
     <VersionPrefix>3.21.2</VersionPrefix>
-    <!-- C# 7.2 is required for Span/BufferWriter/ReadOnlySequence -->
-    <LangVersion>7.2</LangVersion>
+    <LangVersion>10.0</LangVersion>
     <Authors>Google Inc.</Authors>
     <TargetFrameworks>netstandard1.1;netstandard2.0;net45;net50</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
