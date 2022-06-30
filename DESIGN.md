@@ -123,7 +123,7 @@ static const upb_msglayout_field upb_test_MessageName__fields[2] = {
   {2, UPB_SIZE(8, 8), 2, 0, 5, _UPB_MODE_SCALAR},
 };
 
-const upb_msglayout upb_test_MessageName_msginit = {
+const upb_msglayout upb_test_MessageName_msg_init = {
   NULL,
   &upb_test_MessageName__fields[0],
   UPB_SIZE(16, 16), 2, false, 2, 255,

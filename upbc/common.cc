@@ -74,4 +74,12 @@ std::string HeaderFilename(const google::protobuf::FileDescriptor* file) {
   return StripExtension(file->name()) + ".upb.h";
 }
 
+std::string MessageInit(const protobuf::Descriptor* descriptor) {
+  return MessageName(descriptor) + "_msg_init";
+}
+
+std::string EnumInit(const protobuf::EnumDescriptor* descriptor) {
+  return ToCIdent(descriptor->full_name()) + "_enum_init";
+}
+
 }  // namespace upbc

@@ -68,13 +68,47 @@ upb_proto_reflection_library(
 
 cc_library(
     name = "common",
-    srcs = ["common.cc"],
-    hdrs = ["common.h"],
+    srcs = [
+        "common.cc",
+    ],
+    hdrs = [
+        "common.h",
+    ],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",
     ],
+)
+
+cc_library(
+    name = "file_layout",
+    srcs = [
+        "file_layout.cc",
+    ],
+    hdrs = [
+        "file_layout.h",
+    ],
+    copts = UPB_DEFAULT_CPPOPTS,
+    deps = [
+        ":common",
+        "//:mini_table",
+        "//:upb",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/strings",
+        "@com_google_protobuf//:protoc_lib",
+    ],
+)
+
+cc_library(
+    name = "keywords",
+    srcs = [
+        "keywords.cc",
+    ],
+    hdrs = [
+        "keywords.h",
+    ],
+    copts = UPB_DEFAULT_CPPOPTS,
 )
 
 cc_binary(
@@ -84,6 +118,7 @@ cc_binary(
     visibility = ["//visibility:public"],
     deps = [
         ":common",
+        ":file_layout",
         "//:mini_table",
         "//:port",
         "//:upb",

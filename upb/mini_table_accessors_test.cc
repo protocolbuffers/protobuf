@@ -64,12 +64,12 @@ const uint64_t kTestUInt64 = 0xFEDCBAFF87654321;
 
 const upb_MiniTable_Field* find_proto3_field(int field_number) {
   return upb_MiniTable_FindFieldByNumber(
-      &protobuf_test_messages_proto3_TestAllTypesProto3_msginit, field_number);
+      &protobuf_test_messages_proto3_TestAllTypesProto3_msg_init, field_number);
 }
 
 const upb_MiniTable_Field* find_proto2_field(int field_number) {
   return upb_MiniTable_FindFieldByNumber(
-      &protobuf_test_messages_proto2_TestAllTypesProto2_msginit, field_number);
+      &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init, field_number);
 }
 
 TEST(GeneratedCode, HazzersProto2) {
@@ -275,7 +275,7 @@ TEST(GeneratedCode, SubMessage) {
 
   const upb_MiniTable_Field* nested_message_a_field =
       upb_MiniTable_FindFieldByNumber(
-          &protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_msginit,
+          &protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_msg_init,
           kFieldOptionalNestedMessageA);
   EXPECT_EQ(5, upb_MiniTable_GetInt32(sub_message, nested_message_a_field));
 
@@ -292,7 +292,7 @@ TEST(GeneratedCode, SubMessage) {
   upb_MiniTable_SetMessage(msg, optional_message_field, new_nested_message);
 
   upb_Message* mutable_message = upb_MiniTable_GetMutableMessage(
-      msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msginit,
+      msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init,
       optional_message_field, arena);
   EXPECT_EQ(
       true,
@@ -365,10 +365,10 @@ TEST(GeneratedCode, GetMutableMessage) {
   const upb_MiniTable_Field* optional_message_field =
       find_proto2_field(kFieldOptionalNestedMessage);
   upb_Message* msg1 = upb_MiniTable_GetMutableMessage(
-      msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msginit,
+      msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init,
       optional_message_field, arena);
   upb_Message* msg2 = upb_MiniTable_GetMutableMessage(
-      msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msginit,
+      msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init,
       optional_message_field, arena);
   // Verify that newly constructed sub message is stored in msg.
   EXPECT_EQ(msg1, msg2);

@@ -30,17 +30,16 @@
 
 #include <vector>
 
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/descriptor.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/io/zero_copy_stream.h"
 
 namespace upbc {
 
 class Output {
  public:
-  Output(google::protobuf::io::ZeroCopyOutputStream* stream)
-      : stream_(stream) {}
+  Output(google::protobuf::io::ZeroCopyOutputStream* stream) : stream_(stream) {}
   ~Output() { stream_->BackUp((int)size_); }
 
   template <class... Arg>
@@ -101,11 +100,13 @@ class Output {
 std::string StripExtension(absl::string_view fname);
 std::string ToCIdent(absl::string_view str);
 std::string ToPreproc(absl::string_view str);
-void EmitFileWarning(const google::protobuf::FileDescriptor* file,
-                     Output& output);
+void EmitFileWarning(const google::protobuf::FileDescriptor* file, Output& output);
 std::string MessageName(const google::protobuf::Descriptor* descriptor);
 std::string FileLayoutName(const google::protobuf::FileDescriptor* file);
 std::string HeaderFilename(const google::protobuf::FileDescriptor* file);
+
+std::string MessageInit(const google::protobuf::Descriptor* descriptor);
+std::string EnumInit(const google::protobuf::EnumDescriptor* descriptor);
 
 }  // namespace upbc
 
