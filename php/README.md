@@ -14,10 +14,7 @@ generation functionality.
 
 ## Requirements
 
-To use PHP runtime library requires:
-
-- C extension: PHP 7.x, 8.0
-- [PHP package](http://php.net/downloads.php): PHP 5.5, 5.6, 7.x, or 8.0.
+The PHP runtime library supports PHP versions from 7.0 on Linux and 7.2 on OS X.
 
 ## Installation
 
@@ -93,7 +90,7 @@ Known Issues
 * Map fields may not be garbage-collected if there is cycle reference.
 * No debug information for messages in c extension.
 * HHVM not tested.
-* C extension not tested on windows, mac, php 7.0.
+* C extension not tested on windows, mac.
 * Message name cannot be Empty.
 
 ## Development
@@ -127,13 +124,11 @@ composer test
 
 After you have finished testing the native php, you can test the c extension:
 ```
-cd tests
-./test.sh 5.6 # The php runtime version.
-              # We provide 5.5, 5.5-zts, 5.6, 5.6-zts, 7.0, 7.0-zts, 7.1, 7.1-zts, 7.2, 7.2-zts, 7.3 and 7.3-zts
-              # ls /usr/local for more details
+composer test_c
 ```
 
 If you want to use gdb to debug the c extension, you can do:
 ```
+cd tests
 ./gdb_test.sh
 ```
