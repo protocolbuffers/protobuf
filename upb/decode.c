@@ -29,6 +29,7 @@
 
 #include <string.h>
 
+#include "upb/internal/array.h"
 #include "upb/internal/decode.h"
 #include "upb/upb.h"
 

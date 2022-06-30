@@ -29,14 +29,14 @@
 
 #include "upb/encode.h"
 
-#include <setjmp.h>
 #include <string.h>
 
 #include "upb/extension_registry.h"
+#include "upb/internal/array.h"
 #include "upb/msg_internal.h"
 #include "upb/upb.h"
 
-/* Must be last. */
+// Must be last.
 #include "upb/port_def.inc"
 
 #define UPB_PB_VARINT_MAX_LEN 10

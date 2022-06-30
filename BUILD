@@ -104,6 +104,7 @@ cc_library(
     srcs = [
         "upb/alloc.c",
         "upb/arena.c",
+        "upb/array.c",
         "upb/decode.c",
         "upb/encode.c",
         "upb/internal/table.h",
@@ -115,9 +116,11 @@ cc_library(
     hdrs = [
         "upb/alloc.h",
         "upb/arena.h",
+        "upb/array.h",
         "upb/decode.h",
         "upb/encode.h",
         "upb/extension_registry.h",
+        "upb/message_value.h",
         "upb/msg.h",
         "upb/status.h",
         "upb/string_view.h",
@@ -128,6 +131,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":arena_internal",
+        ":array_internal",
         ":decode_internal",
         ":encode_internal",
         ":extension_registry",
@@ -220,6 +224,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":array_internal",
         ":collections",
         ":mini_table",
         ":mini_table_internal",
@@ -276,6 +281,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     deps = [
         ":arena_internal",
+        ":array_internal",
         ":decode_internal",
         ":extension_registry",
         ":port",
@@ -292,10 +298,13 @@ cc_library(
 cc_library(
     name = "generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
+        "upb/array.h",
         "upb/decode.h",
         "upb/decode_fast.h",
         "upb/encode.h",
         "upb/extension_registry.h",
+        "upb/internal/array.h",
+        "upb/message_value.h",
         "upb/msg.h",
         "upb/msg_internal.h",
         "upb/port_def.inc",
@@ -340,12 +349,10 @@ upb_proto_reflection_library(
 cc_library(
     name = "collections",
     srcs = [
-        "upb/array.c",
         "upb/map.c",
         "upb/msg_internal.h",
     ],
     hdrs = [
-        "upb/array.h",
         "upb/collections.h",
         "upb/map.h",
         "upb/message_value.h",
@@ -719,6 +726,27 @@ cc_library(
 # Internal C/C++ libraries #####################################################
 
 cc_library(
+    name = "array_internal",
+    srcs = [
+        "upb/alloc.h",
+        "upb/arena.h",
+        "upb/array.h",
+        "upb/internal/array.c",
+        "upb/message_value.h",
+        "upb/msg.h",
+        "upb/status.h",
+        "upb/string_view.h",
+        "upb/upb.h",
+    ],
+    hdrs = ["upb/internal/array.h"],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":port",
+    ],
+)
+
+cc_library(
     name = "arena_internal",
     srcs = [
         "upb/alloc.h",
@@ -787,6 +815,7 @@ upb_amalgamation(
     ],
     libs = [
         ":arena_internal",
+        ":array_internal",
         ":collections",
         ":decode_internal",
         ":descriptor_upb_proto",
@@ -816,6 +845,7 @@ upb_amalgamation(
     ],
     libs = [
         ":arena_internal",
+        ":array_internal",
         ":collections",
         ":decode_internal",
         ":descriptor_upb_proto",
@@ -848,6 +878,7 @@ upb_amalgamation(
     ],
     libs = [
         ":arena_internal",
+        ":array_internal",
         ":collections",
         ":decode_internal",
         ":descriptor_upb_proto",

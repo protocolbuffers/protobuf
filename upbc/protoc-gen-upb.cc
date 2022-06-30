@@ -863,10 +863,11 @@ void WriteHeader(const FileLayout& layout, Output& output) {
   output(
       "#ifndef $0_UPB_H_\n"
       "#define $0_UPB_H_\n\n"
-      "#include \"upb/msg_internal.h\"\n"
       "#include \"upb/decode.h\"\n"
       "#include \"upb/decode_fast.h\"\n"
-      "#include \"upb/encode.h\"\n\n",
+      "#include \"upb/encode.h\"\n\n"
+      "#include \"upb/internal/array.h\"\n"
+      "#include \"upb/msg_internal.h\"\n",
       ToPreproc(file->name()));
 
   for (int i = 0; i < file->public_dependency_count(); i++) {
@@ -1480,6 +1481,7 @@ void WriteSource(const FileLayout& layout, Output& output,
 
   output(
       "#include <stddef.h>\n"
+      "#include \"upb/internal/array.h\"\n"
       "#include \"upb/msg_internal.h\"\n"
       "#include \"$0\"\n",
       HeaderFilename(file));

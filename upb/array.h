@@ -29,7 +29,6 @@
 #define UPB_ARRAY_H_
 
 #include "upb/message_value.h"
-#include "upb/upb.h"
 
 // Must be last.
 #include "upb/port_def.inc"

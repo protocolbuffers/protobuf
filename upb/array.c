@@ -25,12 +25,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/array.h"
+#include "upb/internal/array.h"
 
 #include <string.h>
-
-#include "upb/msg.h"
-#include "upb/msg_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"

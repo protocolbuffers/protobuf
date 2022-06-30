@@ -25,9 +25,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/arena.h"
-
-#include "upb/alloc.h"
 #include "upb/internal/arena.h"
 
 // Must be last.

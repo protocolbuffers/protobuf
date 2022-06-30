@@ -29,8 +29,8 @@
 
 #include "upb/decode.h"
 #include "upb/encode.h"
+#include "upb/internal/array.h"
 #include "upb/mini_table.h"
-#include "upb/msg_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"
