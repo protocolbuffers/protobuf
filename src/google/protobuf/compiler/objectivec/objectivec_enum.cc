@@ -28,6 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <algorithm>
+#include <limits>
 #include <map>
 #include <string>
 
@@ -35,12 +37,22 @@
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <algorithm> // std::find()
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
+namespace {
+std::string SafelyPrintIntToCode(int v) {
+  if (v == std::numeric_limits<int>::min()) {
+    // Some compilers try to parse -2147483648 as two tokens and then get spicy
+    // about the fact that +2147483648 cannot be represented as an int.
+    return "-2147483647 - 1";
+  } else {
+    return StrCat(v);
+  }
+}
+}  // namespace
 
 EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor)
     : descriptor_(descriptor),
@@ -141,7 +153,7 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
         "$name$$deprecated_attribute$ = $value$,\n",
         "name", EnumValueName(all_values_[i]),
         "deprecated_attribute", GetOptionalDeprecatedAttribute(all_values_[i]),
-        "value", StrCat(all_values_[i]->number()));
+        "value", SafelyPrintIntToCode(all_values_[i]->number()));
   }
   printer->Outdent();
   printer->Print(
