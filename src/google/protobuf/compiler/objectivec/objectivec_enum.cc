@@ -28,6 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <algorithm>
+#include <limits>
 #include <map>
 #include <string>
 
@@ -35,7 +37,6 @@
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <algorithm> // std::find()
 
 namespace google {
 namespace protobuf {
@@ -48,7 +49,7 @@ std::string SafelyPrintIntToCode(int v) {
     // about the fact that +2147483648 cannot be represented as an int.
     return "-2147483647 - 1";
   } else {
-    return absl::StrCat(v);
+    return StrCat(v);
   }
 }
 }  // namespace
