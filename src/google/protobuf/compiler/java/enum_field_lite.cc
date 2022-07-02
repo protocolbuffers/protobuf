@@ -73,7 +73,7 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
 
   (*variables)["type"] =
       name_resolver->GetImmutableClassName(descriptor->enum_type());
-  (*variables)["kt_type"] = (*variables)["type"];
+  (*variables)["kt_type"] = EscapeKotlinKeywords((*variables)["type"]);
   (*variables)["mutable_type"] =
       name_resolver->GetMutableClassName(descriptor->enum_type());
   (*variables)["default"] = ImmutableDefaultValue(descriptor, name_resolver);

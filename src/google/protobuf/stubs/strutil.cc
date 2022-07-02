@@ -1567,9 +1567,10 @@ std::string StrCat(const AlphaNum &a, const AlphaNum &b, const AlphaNum &c,
 // the string we're appending to.  However the results of this are random.
 // Therefore, check for this in debug mode.  Use unsigned math so we only have
 // to do one comparison.
-#define GOOGLE_DCHECK_NO_OVERLAP(dest, src) \
-    GOOGLE_DCHECK_GT(uintptr_t((src).data() - (dest).data()), \
-                     uintptr_t((dest).size()))
+#define GOOGLE_DCHECK_NO_OVERLAP(dest, src)               \
+  GOOGLE_DCHECK(((src).size() == 0) ||                    \
+                uintptr_t((src).data() - (dest).data()) > \
+                    uintptr_t((dest).size()))
 
 void StrAppend(std::string *result, const AlphaNum &a) {
   GOOGLE_DCHECK_NO_OVERLAP(*result, a);
