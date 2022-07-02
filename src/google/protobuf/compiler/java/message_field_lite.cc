@@ -64,7 +64,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
 
   (*variables)["type"] =
       name_resolver->GetImmutableClassName(descriptor->message_type());
-  (*variables)["kt_type"] = (*variables)["type"];
+  (*variables)["kt_type"] = EscapeKotlinKeywords((*variables)["type"]);
   (*variables)["mutable_type"] =
       name_resolver->GetMutableClassName(descriptor->message_type());
   (*variables)["group_or_message"] =
