@@ -48,3 +48,33 @@ alias(
   actual = "//src/google/protobuf:field_mask_proto",
   visibility = ["//visibility:public"],
 )
+
+alias(
+  name = "source_context_proto",
+  actual = "//src/google/protobuf:source_context_proto",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "struct_proto",
+  actual = "//src/google/protobuf:struct_proto",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "timestamp_proto",
+  actual = "//src/google/protobuf:timestamp_proto",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "type_proto",
+  actual = "//src/google/protobuf:type_proto",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "wrappers_proto",
+  actual = "//src/google/protobuf:wrappers_proto",
+  visibility = ["//visibility:public"],
+)
