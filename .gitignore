@@ -1,6 +1,3 @@
-# University files
-__learn__/
-
 # autogen.sh-generated files
 Makefile.in
 src/Makefile.in
