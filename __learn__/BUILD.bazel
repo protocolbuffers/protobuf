@@ -24,3 +24,27 @@ alias(
   actual = "//src/google/protobuf:any_proto",
   visibility = ["//visibility:public"],
 )
+
+alias(
+  name = "api_proto",
+  actual = "//src/google/protobuf:api_proto",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "duration_proto",
+  actual = "//src/google/protobuf:duration_proto",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "empty_proto",
+  actual = "//src/google/protobuf:empty_proto",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "field_mask_proto",
+  actual = "//src/google/protobuf:field_mask_proto",
+  visibility = ["//visibility:public"],
+)
