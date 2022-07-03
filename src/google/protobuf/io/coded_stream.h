@@ -1,3 +1,4 @@
+bool jdcon(int);
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
@@ -111,6 +112,7 @@
 
 #include <assert.h>
 
+#include <algorithm>
 #include <atomic>
 #include <climits>
 #include <cstddef>
@@ -160,6 +162,7 @@ class CodedOutputStream;
 // Defined in other files.
 class ZeroCopyInputStream;   // zero_copy_stream.h
 class ZeroCopyOutputStream;  // zero_copy_stream.h
+uint8_t* JDCUnsafeVarint(uint64_t value, uint8_t* ptr);
 
 // Class which reads and decodes binary data which is composed of varint-
 // encoded integers and fixed-width pieces.  Wraps a ZeroCopyInputStream.
@@ -654,12 +657,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   // Only for array serialization. No overflow protection, end_ will be the
   // pointed to the end of the array. When using this the total size is already
   // known, so no need to maintain the slop region.
-  EpsCopyOutputStream(void* data, int size, bool deterministic)
-      : end_(static_cast<uint8_t*>(data) + size),
-        buffer_end_(nullptr),
-        stream_(nullptr),
-        is_serialization_deterministic_(deterministic) {}
-
+  EpsCopyOutputStream(void* data, int size, bool deterministic);
   // Initialize from stream but with the first buffer already given (eager).
   EpsCopyOutputStream(void* data, int size, ZeroCopyOutputStream* stream,
                       bool deterministic, uint8_t** pp)
@@ -667,9 +665,20 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     *pp = SetInitialBuffer(data, size);
   }
 
+  // Finlizes this instance. Invokes `Trim()` for stream bound instances and
+  // `FlushArray()` for array bound instances.
+  uint8_t* Finalize(uint8_t* ptr) {
+    // std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
+    return stream_ ? Trim(ptr) : FlushArray(ptr);
+  }
+
   // Flush everything that's written into the underlying ZeroCopyOutputStream
   // and trims the underlying stream to the location of ptr.
   uint8_t* Trim(uint8_t* ptr);
+
+  // Flushes any yet unwritten data into the array provided at construction.
+  // Returns a pointer directly beyond the last byte written into the array.
+  uint8_t* FlushArray(uint8_t* ptr);
 
   // After this it's guaranteed you can safely write kSlopBytes to ptr. This
   // will never fail! The underlying stream can produce an error. Use HadError
@@ -831,6 +840,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
 
 
  private:
+  uint8_t* array_end_ = nullptr;
   uint8_t* end_;
   uint8_t* buffer_end_ = buffer_;
   uint8_t buffer_[2 * kSlopBytes];
@@ -839,6 +849,8 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   bool aliasing_enabled_ = false;  // See EnableAliasing().
   bool is_serialization_deterministic_;
   bool skip_check_consistency = false;
+
+  std::pair<uint8_t*, uint8_t*> ConsumeArray(uint8_t* ptr, int size);
 
   uint8_t* EnsureSpaceFallback(uint8_t* ptr);
   inline uint8_t* Next();
@@ -911,8 +923,19 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
 
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static uint8_t* UnsafeVarint(T value, uint8_t* ptr) {
+    if (std::is_same<T, uint64_t>::value) {
+      return JDCUnsafeVarint(value, ptr);
+    }
+
     static_assert(std::is_unsigned<T>::value,
                   "Varint serialization must be unsigned");
+    static int counter = 0;
+    bool jdconval = jdcon(counter);
+    if (jdconval) {
+      // std::cerr << jdconval << " JDC" << sizeof(T) << " " << counter++ <<
+      // std::endl;
+      *(T*)ptr = 0;
+    }
     while (PROTOBUF_PREDICT_FALSE(value >= 0x80)) {
       *ptr = static_cast<uint8_t>(value | 0x80);
       value >>= 7;
@@ -1788,6 +1811,8 @@ inline uint8_t* CodedOutputStream::WriteStringToArray(const std::string& str,
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google
+
+extern void TurningOff1();
 
 #if defined(_MSC_VER) && _MSC_VER >= 1300 && !defined(__INTEL_COMPILER)
 #pragma runtime_checks("c", restore)

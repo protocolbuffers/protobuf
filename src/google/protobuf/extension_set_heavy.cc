@@ -427,11 +427,12 @@ size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
 
 uint8_t* ExtensionSet::SerializeMessageSetWithCachedSizesToArray(
     const MessageLite* extendee, uint8_t* target) const {
+  // std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
   io::EpsCopyOutputStream stream(
       target, MessageSetByteSize(),
       io::CodedOutputStream::IsDefaultSerializationDeterministic());
-  return InternalSerializeMessageSetWithCachedSizesToArray(extendee, target,
-                                                           &stream);
+  return stream.Finalize(InternalSerializeMessageSetWithCachedSizesToArray(
+      extendee, target, &stream));
 }
 
 }  // namespace internal

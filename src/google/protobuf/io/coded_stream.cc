@@ -62,6 +62,37 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+int max_count = 0;
+
+void set_max_count(int count) { max_count = count; }
+
+bool jdcoff = false;
+bool jdcon(int count) { return !jdcoff && (count < max_count); }
+
+void TurningOff1() {
+  // std::cerr << "TURNINGOFF" << std::endl;
+  // std::cerr << "TURNINGOFF" << std::endl;
+  // std::cerr << "TURNINGOFF" << std::endl;
+  // std::cerr << "TURNINGOFF" << std::endl;
+  // std::cerr << "TURNINGOFF" << std::endl;
+  // std::cerr << "TURNINGOFF" << std::endl;
+  // std::cerr << "TURNINGOFF" << std::endl;
+  // std::cerr << "TURNINGOFF" << std::endl;
+  // std::cerr << "TURNINGOFF" << std::endl;
+  jdcoff = !jdcoff;
+}
+
+google::protobuf::io::EpsCopyOutputStream::EpsCopyOutputStream(void* data, int size,
+                                                     bool deterministic)
+    : array_end_(static_cast<uint8_t*>(data) + size),
+      buffer_end_(nullptr),
+      stream_(nullptr),
+      is_serialization_deterministic_(deterministic) {
+  // std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
+  // Added by jdcollin@
+  end_ = static_cast<uint8_t*>(data) + size - kSlopBytes;
+}
+
 namespace google {
 namespace protobuf {
 namespace io {
@@ -757,6 +788,45 @@ int EpsCopyOutputStream::Flush(uint8_t* ptr) {
   return s;
 }
 
+uint8_t* EpsCopyOutputStream::FlushArray(uint8_t* ptr) {
+  // std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
+  DCHECK(stream_ == nullptr);
+  if (PROTOBUF_PREDICT_FALSE(had_error_)) return ptr;
+  if (buffer_end_ != nullptr) {
+    const ptrdiff_t bytes = ptr - buffer_;
+    DCHECK_GE(bytes, 0);
+    DCHECK_LE(bytes, array_end_ - buffer_end_);
+    memcpy(buffer_end_, buffer_, static_cast<size_t>(bytes));
+    ptr = buffer_end_ + bytes;
+    buffer_end_ = nullptr;
+  }
+  return ptr;
+}
+
+std::pair<uint8_t*, uint8_t*> EpsCopyOutputStream::ConsumeArray(uint8_t* ptr,
+                                                                int size) {
+  // std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
+  DCHECK(array_end_ != nullptr);
+
+  if (buffer_end_ == nullptr) {
+    int avail = array_end_ - ptr;
+    if (size > avail) return {nullptr, nullptr};
+    return {ptr, ptr + size};
+  }
+  DCHECK(ptr >= buffer_ && ptr <= buffer_ + kSlopBytes);
+
+  int bytes = ptr - buffer_;
+  int avail = array_end_ - buffer_end_ - bytes;
+  if (size > avail) return {nullptr, nullptr};
+
+  memcpy(buffer_end_, buffer_, bytes);
+  ptr = buffer_end_ + bytes;
+  buffer_end_ += bytes + size;
+  end_ = buffer_ + kSlopBytes;
+
+  return {ptr, buffer_};
+}
+
 uint8_t* EpsCopyOutputStream::Trim(uint8_t* ptr) {
   if (had_error_) return ptr;
   int s = Flush(ptr);
@@ -879,6 +949,21 @@ uint8_t* EpsCopyOutputStream::Next() {
 }
 
 uint8_t* EpsCopyOutputStream::EnsureSpaceFallback(uint8_t* ptr) {
+  // std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
+  // if (!jdcoff && array_end_) {
+  if (array_end_) {
+    if (PROTOBUF_PREDICT_FALSE(had_error_)) return buffer_;
+    if (buffer_end_ == nullptr) {
+      buffer_end_ = ptr;
+    } else {
+      DCHECK(ptr >= buffer_ && ptr <= buffer_ + kSlopBytes);
+      int bytes = ptr - buffer_;
+      memcpy(buffer_end_, buffer_, bytes);
+      buffer_end_ += bytes;
+    }
+    end_ = buffer_ + kSlopBytes;
+    return buffer_;
+  }
   do {
     if (PROTOBUF_PREDICT_FALSE(had_error_)) return buffer_;
     int overrun = ptr - end_;
@@ -892,6 +977,15 @@ uint8_t* EpsCopyOutputStream::EnsureSpaceFallback(uint8_t* ptr) {
 
 uint8_t* EpsCopyOutputStream::WriteRawFallback(const void* data, int size,
                                              uint8_t* ptr) {
+  // std::cerr << __FUNCTION__ << " " << __LINE__ << std::endl;
+  if (array_end_) {
+    // if (!jdcoff && array_end_) {
+    auto ptrs = ConsumeArray(ptr, size);
+    if (PROTOBUF_PREDICT_FALSE(ptrs.first == nullptr)) return Error();
+    memcpy(ptrs.first, data, size);
+    return ptrs.second;
+  }
+
   int s = GetSize(ptr);
   while (s < size) {
     std::memcpy(ptr, data, s);
@@ -965,18 +1059,19 @@ uint8_t* EpsCopyOutputStream::WriteRawLittleEndian64(const void* data, int size,
 #endif
 
 uint8_t* EpsCopyOutputStream::WriteCord(const absl::Cord& cord, uint8_t* ptr) {
-  int s = GetSize(ptr);
+  // std::cerr << __FUNCTION__ << std::endl;
   if (stream_ == nullptr) {
-    if (static_cast<int64_t>(cord.size()) <= s) {
-      // Just copy it to the current buffer.
-      return CopyCordToArray(cord, ptr);
-    } else {
-      return Error();
-    }
-  } else if (static_cast<int64_t>(cord.size()) <= s &&
-             static_cast<int64_t>(cord.size()) < kMaxCordBytesToCopy) {
+    auto ptrs = ConsumeArray(ptr, static_cast<int>(cord.size()));
+    if (PROTOBUF_PREDICT_FALSE(ptrs.first == nullptr)) return Error();
+    cord.CopyToArray(reinterpret_cast<char*>(ptrs.first));
+    return ptrs.second;
+  }
+  int s = GetSize(ptr);
+  if (static_cast<int64_t>(cord.size()) <= s &&
+      static_cast<int64_t>(cord.size()) < kMaxCordBytesToCopy) {
     // Just copy it to the current buffer.
-    return CopyCordToArray(cord, ptr);
+    cord.CopyToArray(reinterpret_cast<char*>(ptr));
+    return ptr + cord.size();
   } else {
     // Back up to the position where the Cord should start.
     ptr = Trim(ptr);
@@ -1032,6 +1127,22 @@ uint8_t* CodedOutputStream::WriteStringWithSizeToArray(const std::string& str,
   GOOGLE_ABSL_DCHECK_LE(str.size(), std::numeric_limits<uint32_t>::max());
   target = WriteVarint32ToArray(str.size(), target);
   return WriteStringToArray(str, target);
+}
+
+uint8_t* JDCUnsafeVarint(uint64_t value, uint8_t* ptr) {
+  static int counter = 0;
+  bool jdconval = jdcon(counter);
+  if (jdconval) {
+    // std::cerr << jdconval << " JDC" << " " << counter++ << std::endl;
+    *(uint64_t*)ptr = 0;
+  }
+  while (PROTOBUF_PREDICT_FALSE(value >= 0x80)) {
+    *ptr = static_cast<uint8_t>(value | 0x80);
+    value >>= 7;
+    ++ptr;
+  }
+  *ptr++ = static_cast<uint8_t>(value);
+  return ptr;
 }
 
 }  // namespace io
