@@ -148,7 +148,7 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   // Create the process.
   PROCESS_INFORMATION process_info;
 
-  if (CreateProcessW((search_mode == SEARCH_PATH) ? NULL : wprogram.c_str(),
+  if (CreateProcessW((search_mode == SEARCH_PATH) ? nullptr : wprogram.c_str(),
                      (search_mode == SEARCH_PATH) ? wcommand_line_copy : NULL,
                      nullptr,  // process security attributes
                      nullptr,  // thread security attributes
