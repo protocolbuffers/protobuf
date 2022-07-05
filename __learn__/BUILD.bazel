@@ -78,3 +78,16 @@ alias(
   actual = "//src/google/protobuf:wrappers_proto",
   visibility = ["//visibility:public"],
 )
+
+# Source files - aliases to a filegroup, not a 'proto_library' - internal stuff
+alias(
+  name = "lite_well_known_protos",
+  actual = "//src/google/protobuf:well_known_type_protos", # filegroup
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "well_known_type_protos",
+  actual = "//src/google/protobuf:well_known_type_protos", # filegroup
+  visibility = ["//visibility:public"],
+)
