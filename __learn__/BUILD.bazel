@@ -1,0 +1,80 @@
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library", "cc_test")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
+load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
+load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS", "PROTOC_LINK_OPTS")
+load(":protobuf.bzl", "py_proto_library")
+
+licenses(["notice"])
+
+exports_files(["LICENCE"])
+
+# Well Known Types Proto Library rules
+# https://developers.google.com/protocol-buffers/docs/reference/google.protobuf
+# Can be used with one of the language specific proto library rules i.e. java_proto_library:
+#
+# java_proto_library(
+#   name = "any_java_proto",
+#   deps = ["@com_google_protobuf//:any_proto"],
+# )
+
+alias(
+  name = "any_proto",
+  actual = "//src/google/protobuf:any_proto",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "api_proto",
+  actual = "//src/google/protobuf:api_proto",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "duration_proto",
+  actual = "//src/google/protobuf:duration_proto",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "empty_proto",
+  actual = "//src/google/protobuf:empty_proto",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "field_mask_proto",
+  actual = "//src/google/protobuf:field_mask_proto",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "source_context_proto",
+  actual = "//src/google/protobuf:source_context_proto",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "struct_proto",
+  actual = "//src/google/protobuf:struct_proto",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "timestamp_proto",
+  actual = "//src/google/protobuf:timestamp_proto",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "type_proto",
+  actual = "//src/google/protobuf:type_proto",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "wrappers_proto",
+  actual = "//src/google/protobuf:wrappers_proto",
+  visibility = ["//visibility:public"],
+)
