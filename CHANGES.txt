@@ -3,10 +3,8 @@
   * Break ZeroCopyOutputByteSink into its own file.
   * Explicitly instantiate InternalMetadata members at UnknownFieldSet.
   * Support kdoc for Kotlin
-  * Delete unused function.
-  * Add more tests for json_util.cc
+  * Delete unused function: IsProto3Field.
   * Add C++20 keywords guarded by PROTOBUF_FUTURE_CPP20_KEYWORDS
-  * Unify unit tests for json_util.
   * Escape Kotlin keywords in package names in proto generated code
   * Fix StrAppend crashing on empty strings.
 
