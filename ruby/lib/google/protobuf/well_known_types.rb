@@ -170,6 +170,7 @@ module Google
     end
 
     Struct.class_eval do
+      #TODO(jatl) overriding [] this way breaks the ability of method_missing to dispatch directly to []
       def [](key)
         self.fields[key].to_ruby
       rescue NoMethodError

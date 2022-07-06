@@ -59,12 +59,6 @@ To build this Ruby extension, you will need:
 * Ruby development headers
 * a C compiler
 
-To Build the JRuby extension, you will need:
-
-* Maven
-* The latest version of the protobuf java library (see ../java/README.md)
-* Install JRuby via rbenv or RVM
-
 First switch to the desired platform with rbenv or RVM.
 
 Then install the required Ruby gems:
