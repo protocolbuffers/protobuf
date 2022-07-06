@@ -96,30 +96,6 @@ const char* kEnumsInit = "enums_layout";
 const char* kExtensionsInit = "extensions_layout";
 const char* kMessagesInit = "messages_layout";
 
-void AddEnums(const protobuf::Descriptor* message,
-              std::vector<const protobuf::EnumDescriptor*>* enums) {
-  enums->reserve(enums->size() + message->enum_type_count());
-  for (int i = 0; i < message->enum_type_count(); i++) {
-    enums->push_back(message->enum_type(i));
-  }
-  for (int i = 0; i < message->nested_type_count(); i++) {
-    AddEnums(message->nested_type(i), enums);
-  }
-}
-
-std::vector<const protobuf::EnumDescriptor*> SortedEnums(
-    const protobuf::FileDescriptor* file) {
-  std::vector<const protobuf::EnumDescriptor*> enums;
-  enums.reserve(file->enum_type_count());
-  for (int i = 0; i < file->enum_type_count(); i++) {
-    enums.push_back(file->enum_type(i));
-  }
-  for (int i = 0; i < file->message_type_count(); i++) {
-    AddEnums(file->message_type(i), &enums);
-  }
-  return enums;
-}
-
 std::string EnumValueSymbol(const protobuf::EnumValueDescriptor* value) {
   return ToCIdent(value->full_name());
 }
