@@ -318,6 +318,28 @@ cc_library(
     ],
 )
 
+# Common support code for C++ generated code.
+cc_library(
+    name = "generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+    hdrs = [
+        "upb/decode.h",
+        "upb/decode_fast.h",
+        "upb/encode.h",
+        "upb/msg.h",
+        "upb/msg_internal.h",
+        "upb/port_def.inc",
+        "upb/port_undef.inc",
+        "upb/upb.hpp",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":mini_table",
+        ":table_internal",
+        ":upb",
+    ],
+)
+
 cc_library(
     name = "generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [

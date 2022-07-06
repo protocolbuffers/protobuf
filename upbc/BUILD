@@ -90,6 +90,7 @@ cc_library(
         "file_layout.h",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
+    visibility = ["//third_party/upb/protos_generator:__pkg__"],
     deps = [
         ":common",
         "//:mini_table",
@@ -109,6 +110,7 @@ cc_library(
         "keywords.h",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
+    visibility = ["//third_party/upb/protos_generator:__pkg__"],
 )
 
 cc_binary(
