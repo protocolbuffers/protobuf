@@ -109,9 +109,39 @@ template <int kSize>
 inline typename std::enable_if<(kSize == 0), void>::type memswap(char*, char*) {
 }
 
+// Fall back implementation for blocks larger than 512 * sizeof(reg_type),
+// avoiding the recursive template limit of 1k (in clang).
+#ifdef __SIZEOF_INT128__
+#define MAXIMUM_REG_TYPE __uint128_t
+#else
+#define MAXIMUM_REG_TYPE uint64_t
+#endif
+#define KSIZE_LIMIT 512 * sizeof(MAXIMUM_REG_TYPE)
+
+template <int kSize>
+inline typename std::enable_if<(kSize >= KSIZE_LIMIT), void>::type
+memswap(char* p, char* q) {
+  int cur_size = kSize;
+  while (cur_size - sizeof(MAXIMUM_REG_TYPE) >= 0) {
+    SwapBlock<MAXIMUM_REG_TYPE>(p, q);
+    cur_size -= sizeof(MAXIMUM_REG_TYPE);
+    p += sizeof(MAXIMUM_REG_TYPE);
+    q += sizeof(MAXIMUM_REG_TYPE);
+  }
+  while (cur_size - sizeof(uint8_t) >= 0) {
+    SwapBlock<uint8_t>(p, q);
+    cur_size -= sizeof(uint8_t);
+    p += sizeof(uint8_t);
+    q += sizeof(uint8_t);
+  }
+}
+
 #define PROTO_MEMSWAP_DEF_SIZE(reg_type, max_size)                           \
   template <int kSize>                                                       \
-  typename std::enable_if<(kSize >= sizeof(reg_type) && kSize < (max_size)), \
+  typename std::enable_if<( kSize >= sizeof(reg_type) &&                     \
+                            kSize < (max_size) &&                            \
+                            kSize < KSIZE_LIMIT                              \
+                          ),                                                 \
                           void>::type                                        \
   memswap(char* p, char* q) {                                                \
     SwapBlock<reg_type>(p, q);                                               \
@@ -130,6 +160,8 @@ PROTO_MEMSWAP_DEF_SIZE(__uint128_t, (1u << 31))
 PROTO_MEMSWAP_DEF_SIZE(uint64_t, (1u << 31))
 #endif
 
+#undef MAXIMUM_REG_TYPE
+#undef KSIZE_LIMIT
 #undef PROTO_MEMSWAP_DEF_SIZE
 
 template <typename Element>

@@ -305,6 +305,31 @@ TEST(RepeatedField, SwapLargeLarge) {
   }
 }
 
+TEST(RepeatedField, SwapSuperLargeSuperLarge) {
+  RepeatedField<int> field1;
+  RepeatedField<int> field2;
+  const int added_size = 1280;
+
+  field1.Add(5);
+  field1.Add(42);
+  for (int i = 0; i < added_size; i++) {
+    field1.Add(i);
+    field2.Add(i * i);
+  }
+  field2.Swap(&field1);
+
+  EXPECT_EQ(field1.size(), added_size);
+  for (int i = 0; i < added_size; i++) {
+    EXPECT_EQ(field1.Get(i), i * i);
+  }
+  EXPECT_EQ(field2.size(), added_size + 2);
+  EXPECT_EQ(field2.Get(0), 5);
+  EXPECT_EQ(field2.Get(1), 42);
+  for (int i = 2; i < added_size + 2; i++) {
+    EXPECT_EQ(field2.Get(i), i - 2);
+  }
+}
+
 // Determines how much space was reserved by the given field by adding elements
 // to it until it re-allocates its space.
 static int ReservedSpace(RepeatedField<int>* field) {
