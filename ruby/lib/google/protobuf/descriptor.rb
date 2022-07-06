@@ -46,7 +46,7 @@ module Google
         # @param value [Descriptor] Descriptor to convert to an FFI native type
         # @param _ [Object] Unused
         def to_native(value, _ = nil)
-          msg_def_ptr = value.instance_variable_get(:@msg_def)
+          msg_def_ptr = value.nil? ? nil : value.instance_variable_get(:@msg_def)
           return ::FFI::Pointer::NULL if msg_def_ptr.nil?
           raise "Underlying msg_def was null!" if msg_def_ptr.null?
           msg_def_ptr
@@ -506,7 +506,7 @@ module Google
                       return original_method_missing(method_name, *args) if mode == :method_missing
                     else
                       return true if mode == :respond_to_missing?
-                      return Google::Protobuf::FFI.get_message_has?(msg, field_descriptor) if mode == :method_missing
+                      return Google::Protobuf::FFI.get_message_has(msg, field_descriptor) if mode == :method_missing
                     end
                   end
                 end
@@ -616,7 +616,7 @@ module Google
             field_def_ptr = ::FFI::MemoryPointer.new :pointer
             oneof_def_ptr = ::FFI::MemoryPointer.new :pointer
 
-              unless initial_value.nil?
+            unless initial_value.nil?
               raise ArgumentError.new "Expected hash arguments or message, not #{initial_value.class}" unless initial_value.respond_to? :each
               initial_value.each do |key, value|
                 raise ArgumentError.new "Expected string or symbols as hash keys when initializing proto from hash." unless [String, Symbol].include? key.class
@@ -654,7 +654,7 @@ module Google
           def self.inspect_internal(msg)
             field_output = []
             descriptor.each do |field_descriptor|
-              next if field_descriptor.has_presence? && !Google::Protobuf::FFI.get_message_has?(msg, field_descriptor)
+              next if field_descriptor.has_presence? && !Google::Protobuf::FFI.get_message_has(msg, field_descriptor)
               if field_descriptor.map?
                 # TODO(jatl) Adapted - from map#each_msg_val and map#inspect- can this be refactored to reduce echo without intrducing a arena allocation?
                 message_descriptor = field_descriptor.send(:subtype)
@@ -710,7 +710,7 @@ module Google
               mutable_message_value = Google::Protobuf::FFI.get_mutable_message @msg, field, @arena
               get_repeated_field(mutable_message_value[:array], field)
             elsif field.sub_message?
-              return nil unless Google::Protobuf::FFI.get_message_has? @msg, field
+              return nil unless Google::Protobuf::FFI.get_message_has @msg, field
               sub_message_def = Google::Protobuf::FFI.get_subtype_as_message(field)
               if unwrap
                 if field.has?(self)
@@ -737,14 +737,6 @@ module Google
                 convert_upb_to_ruby message_value, c_type
               end
             end
-          end
-
-          def arena
-            @arena
-          end
-
-          def msg
-            @msg
           end
 
           ##

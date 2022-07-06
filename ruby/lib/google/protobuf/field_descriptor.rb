@@ -113,8 +113,8 @@ module Google
       end
 
       def default
-        return nil if Google::Protobuf::FFI.sub_message?(self)
-        if Google::Protobuf::FFI.repeated?(self)
+        return nil if Google::Protobuf::FFI.is_sub_message(self)
+        if Google::Protobuf::FFI.is_repeated(self)
           message_value = Google::Protobuf::FFI::MessageValue.new
         else
           message_value = Google::Protobuf::FFI.get_default(self)
@@ -178,7 +178,7 @@ module Google
           raise ArgumentError.new "does not track presence"
         end
 
-        Google::Protobuf::FFI.get_message_has? msg.send(:msg), self
+        Google::Protobuf::FFI.get_message_has msg.send(:msg), self
       end
 
       ##
@@ -186,7 +186,7 @@ module Google
       #
       # @return [Boolean] True iff this field tracks presence
       def has_presence?
-        Google::Protobuf::FFI.get_has_presence?(self)
+        Google::Protobuf::FFI.get_has_presence(self)
       end
 
       # @param msg [Google::Protobuf::Message]
@@ -219,15 +219,15 @@ module Google
       end
 
       def map?
-        Google::Protobuf::FFI.map? self
+        Google::Protobuf::FFI.is_map self
       end
 
       def repeated?
-        Google::Protobuf::FFI.repeated? self
+        Google::Protobuf::FFI.is_repeated self
       end
 
       def sub_message?
-        Google::Protobuf::FFI.sub_message? self
+        Google::Protobuf::FFI.is_sub_message self
       end
 
       def wrapper?

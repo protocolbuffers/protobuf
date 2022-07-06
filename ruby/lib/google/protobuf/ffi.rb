@@ -197,7 +197,7 @@ module Google
         # array member, and we need to compile in gnu99 mode (constant initialization
         # of flexible array members is a GNU extension, not in C99 unfortunately. */
         #       _upb_FastTable_Entry fasttable[];
-        end
+      end
 
       ## Map
       Upb_Map_Begin = -1
@@ -272,10 +272,10 @@ module Google
       attach_function :get_c_type,                 :upb_FieldDef_CType,              [FieldDescriptor], CType
       attach_function :get_default,                :upb_FieldDef_Default,            [FieldDescriptor], MessageValue.by_value
       attach_function :get_subtype_as_enum,        :upb_FieldDef_EnumSubDef,         [FieldDescriptor], EnumDef
-      attach_function :get_has_presence?,          :upb_FieldDef_HasPresence,        [FieldDescriptor], :bool
-      attach_function :map?,                       :upb_FieldDef_IsMap,              [FieldDescriptor], :bool
-      attach_function :repeated?,                  :upb_FieldDef_IsRepeated,         [FieldDescriptor], :bool
-      attach_function :sub_message?,               :upb_FieldDef_IsSubMessage,       [FieldDescriptor], :bool
+      attach_function :get_has_presence,           :upb_FieldDef_HasPresence,        [FieldDescriptor], :bool
+      attach_function :is_map,                     :upb_FieldDef_IsMap,              [FieldDescriptor], :bool
+      attach_function :is_repeated,                :upb_FieldDef_IsRepeated,         [FieldDescriptor], :bool
+      attach_function :is_sub_message,             :upb_FieldDef_IsSubMessage,       [FieldDescriptor], :bool
       attach_function :get_json_name,              :upb_FieldDef_JsonName,           [FieldDescriptor], :string
       attach_function :get_label,                  :upb_FieldDef_Label,              [FieldDescriptor], Label
       attach_function :get_subtype_as_message,     :upb_FieldDef_MessageSubDef,      [FieldDescriptor], MessageDef
@@ -317,7 +317,7 @@ module Google
       # Message
       attach_function :clear_message_field,     :upb_Message_ClearField,      [:Message, FieldDescriptor], :void
       attach_function :get_message_value,       :upb_Message_Get,             [:Message, FieldDescriptor], MessageValue.by_value
-      attach_function :get_message_has?,        :upb_Message_Has,             [:Message, FieldDescriptor], :bool
+      attach_function :get_message_has,         :upb_Message_Has,             [:Message, FieldDescriptor], :bool
       attach_function :set_message_field,       :upb_Message_Set,             [:Message, FieldDescriptor, MessageValue.by_value, Arena], :bool
       attach_function :encode_message,          :upb_Encode,                  [:Message, MiniTable.by_ref, :size_t, Arena, :pointer], :binary_string
       attach_function :json_decode_message,     :upb_JsonDecode,              [:binary_string, :size_t, :Message, MessageDef, :DefPool, :int, Arena, Status.by_ref], :bool

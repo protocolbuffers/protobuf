@@ -230,13 +230,13 @@ module Google
             if !is_proto2 and
               field_descriptor.sub_message? and
               !field_descriptor.repeated? and
-              !Google::Protobuf::FFI.get_message_has?(msg, field_descriptor)
+              !Google::Protobuf::FFI.get_message_has(msg, field_descriptor)
               hash[field_descriptor.name.to_sym] = nil
               next
             end
 
             # Do not include fields that are not present (oneof or optional fields).
-            if is_proto2 and field_descriptor.has_presence? and !Google::Protobuf::FFI.get_message_has?(msg, field_descriptor)
+            if is_proto2 and field_descriptor.has_presence? and !Google::Protobuf::FFI.get_message_has(msg, field_descriptor)
               next
             end
 
