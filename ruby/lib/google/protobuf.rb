@@ -28,37 +28,30 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# require mixins before we hook them into the java & c code
 require 'google/protobuf/message_exts'
+require 'ffi'
+require 'google/protobuf/internal/type_safety'
+require 'google/protobuf/internal/arena'
 
-# We define these before requiring the platform-specific modules.
-# That way the module init can grab references to these.
+require 'google/protobuf/internal/convert'
+require 'google/protobuf/descriptor'
+require 'google/protobuf/enum_descriptor'
+require 'google/protobuf/field_descriptor'
+require 'google/protobuf/oneof_descriptor'
+require 'google/protobuf/ffi'
+require 'google/protobuf/descriptor_pool'
+require 'google/protobuf/file_descriptor'
+require 'google/protobuf/map'
+require 'google/protobuf/object_cache'
+require 'google/protobuf/repeated_field'
+
+require 'google/protobuf/descriptor_dsl'
+
 module Google
   module Protobuf
     class Error < StandardError; end
     class ParseError < Error; end
     class TypeError < ::TypeError; end
-  end
-end
-
-if RUBY_PLATFORM == "java"
-  require 'json'
-  require 'google/protobuf_java'
-else
-  begin
-    require "google/#{RUBY_VERSION.sub(/\.\d+$/, '')}/protobuf_c"
-  rescue LoadError
-    require 'google/protobuf_c'
-  end
-
-end
-
-require 'google/protobuf/descriptor_dsl'
-require 'google/protobuf/repeated_field'
-
-module Google
-  module Protobuf
-
     def self.encode(msg, options = {})
       msg.to_proto(options)
     end
@@ -75,5 +68,26 @@ module Google
       klass.decode_json(json, options)
     end
 
+    def self.deep_copy(object)
+      case object
+      when RepeatedField
+        RepeatedField.send(:deep_copy, object)
+      when Google::Protobuf::Map
+        Google::Protobuf::Map.deep_copy(object)
+      when Google::Protobuf::MessageExts
+        object.class.send(:deep_copy, object.send(:msg))
+      else
+        raise NotImplementedError
+      end
+    end
+
+    def self.discard_unknown(message)
+      raise FrozenError if message.frozen?
+      raise ArgumentError.new "Expected message, got #{message.class} instead." unless message.respond_to?(:msg, true)
+      unless Google::Protobuf::FFI.message_discard_unknown(message.send(:msg), message.class.descriptor, 128)
+        raise RuntimeError.new "Messages nested too deeply."
+      end
+      nil
+    end
   end
 end

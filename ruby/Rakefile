@@ -2,6 +2,7 @@ require "rubygems"
 require "rubygems/package_task"
 require "rake/extensiontask" unless RUBY_PLATFORM == "java"
 require "rake/testtask"
+require "ffi-compiler/compile_task"
 
 spec = Gem::Specification.load("google-protobuf.gemspec")
 
@@ -68,81 +69,84 @@ unless ENV['IN_DOCKER'] == 'true'
   end
 end
 
-if RUBY_PLATFORM == "java"
-  task :clean => :require_mvn do
-    system("mvn --batch-mode clean")
-  end
-
-  task :compile => :require_mvn do
-    system("mvn --batch-mode package")
-  end
-
-  task :require_mvn do
-    raise ArgumentError, "maven needs to be installed" if `which mvn` == ''
-  end
-
-else
+task :copy_third_party do
   unless ENV['IN_DOCKER'] == 'true'
     # We need utf8_range in-tree.
-    FileUtils.mkdir_p("ext/google/protobuf_c/third_party/utf8_range")
-    FileUtils.cp("../third_party/utf8_range/utf8_range.h", "ext/google/protobuf_c/third_party/utf8_range")
-    FileUtils.cp("../third_party/utf8_range/naive.c", "ext/google/protobuf_c/third_party/utf8_range")
-    FileUtils.cp("../third_party/utf8_range/range2-neon.c", "ext/google/protobuf_c/third_party/utf8_range")
-    FileUtils.cp("../third_party/utf8_range/range2-sse.c", "ext/google/protobuf_c/third_party/utf8_range")
-    FileUtils.cp("../third_party/utf8_range/LICENSE", "ext/google/protobuf_c/third_party/utf8_range")
-  end
-
-  Rake::ExtensionTask.new("protobuf_c", spec) do |ext|
-    unless RUBY_PLATFORM =~ /darwin/
-      # TODO: also set "no_native to true" for mac if possible. As is,
-      # "no_native" can only be set if the RUBY_PLATFORM doing
-      # cross-compilation is contained in the "ext.cross_platform" array.
-      ext.no_native = true
+    unless File.exists? 'ext/google/protobuf_c/third_party/utf8_range'
+      FileUtils.mkdir_p("ext/google/protobuf_c/third_party/utf8_range")
+      FileUtils.cp("../third_party/utf8_range/utf8_range.h", "ext/google/protobuf_c/third_party/utf8_range")
+      FileUtils.cp("../third_party/utf8_range/naive.c", "ext/google/protobuf_c/third_party/utf8_range")
+      FileUtils.cp("../third_party/utf8_range/range2-neon.c", "ext/google/protobuf_c/third_party/utf8_range")
+      FileUtils.cp("../third_party/utf8_range/range2-sse.c", "ext/google/protobuf_c/third_party/utf8_range")
+      FileUtils.cp("../third_party/utf8_range/LICENSE", "ext/google/protobuf_c/third_party/utf8_range")
     end
-    ext.ext_dir = "ext/google/protobuf_c"
-    ext.lib_dir = "lib/google"
-    ext.cross_compile = true
-    ext.cross_platform = [
-      'x86-mingw32', 'x64-mingw32', 'x64-mingw-ucrt',
-      'x86_64-linux', 'x86-linux',
-      'x86_64-darwin', 'arm64-darwin',
-    ]
-  end
-
-  task 'gem:java' do
-    sh "rm Gemfile.lock"
-    require 'rake_compiler_dock'
-    # Specify the repo root as the working and mount directory to provide access
-    # to the java directory
-    repo_root = File.realdirpath File.join(Dir.pwd, '..')
-    RakeCompilerDock.sh <<-"EOT", platform: 'jruby', rubyvm: :jruby, mountdir: repo_root, workdir: repo_root
-      sudo apt-get install maven -y && \
-      cd java && mvn install -Dmaven.test.skip=true && cd ../ruby && \
-      bundle && \
-      IN_DOCKER=true rake compile gem
-    EOT
-  end
-
-  task 'gem:windows' do
-    sh "rm Gemfile.lock"
-    require 'rake_compiler_dock'
-    ['x86-mingw32', 'x64-mingw32', 'x64-mingw-ucrt', 'x86_64-linux', 'x86-linux'].each do |plat|
-      RakeCompilerDock.sh <<-"EOT", platform: plat
-        bundle && \
-        IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0:2.6.0:2.5.0
-      EOT
-    end
-  end
-
-  if RUBY_PLATFORM =~ /darwin/
-    task 'gem:native' do
-      system "rake genproto"
-      system "rake cross native gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0:2.6.0:2.5.1"
-    end
-  else
-    task 'gem:native' => [:genproto, 'gem:windows', 'gem:java']
   end
 end
+
+# Rake::ExtensionTask.new("protobuf_c", spec) do |ext|
+#   unless RUBY_PLATFORM =~ /darwin/
+#     # TODO: also set "no_native to true" for mac if possible. As is,
+#     # "no_native" can only be set if the RUBY_PLATFORM doing
+#     # cross-compilation is contained in the "ext.cross_platform" array.
+#     ext.no_native = true
+#   end
+#   ext.ext_dir = "ext/google/protobuf_c"
+#   ext.lib_dir = "lib/google"
+#   ext.cross_compile = true
+#   ext.cross_platform = [
+#     'x86-mingw32', 'x64-mingw32', 'x64-mingw-ucrt',
+#     'x86_64-linux', 'x86-linux',
+#     'x86_64-darwin', 'arm64-darwin',
+#   ]
+# end
+#
+# task 'gem:java' do
+#   sh "rm Gemfile.lock"
+#   require 'rake_compiler_dock'
+#   RakeCompilerDock.sh <<-"EOT", platform: 'jruby', rubyvm: :jruby
+#     bundle && \
+#     IN_DOCKER=true rake compile gem
+#   EOT
+# end
+#
+# task 'gem:windows' do
+#   sh "rm Gemfile.lock"
+#   require 'rake_compiler_dock'
+#   ['x86-mingw32', 'x64-mingw32', 'x64-mingw-ucrt', 'x86_64-linux', 'x86-linux'].each do |plat|
+#     RakeCompilerDock.sh <<-"EOT", platform: plat
+#       bundle && \
+#       IN_DOCKER=true rake native:#{plat} pkg/#{spec.full_name}-#{plat}.gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0:2.6.0:2.5.0
+#     EOT
+#   end
+# end
+#
+# if RUBY_PLATFORM =~ /darwin/
+#   task 'gem:native' do
+#     system "rake genproto"
+#     system "rake cross native gem RUBY_CC_VERSION=3.1.0:3.0.0:2.7.0:2.6.0:2.5.1"
+#   end
+# else
+#   task 'gem:native' => [:genproto, 'gem:windows', 'gem:java']
+# end
+
+desc "compiler tasks"
+namespace "ffi-compiler" do
+  FFI::Compiler::CompileTask.new('ext/google/protobuf_c') do |c|
+    c.cflags << "-std=gnu99 -O3 -DNDEBUG"
+    if RbConfig::CONFIG['target_os'] =~ /darwin|linux/
+      # c.cflags << "-fvisibility=hidden -Wall -Wsign-compare -Wno-declaration-after-statement"
+      c.cflags << "-Wall -Wsign-compare -Wno-declaration-after-statement"
+    end
+    if RbConfig::CONFIG['target_os'] =~ /linux/
+      # Instruct the linker to point memcpy calls at our __wrap_memcpy wrapper.
+      c.ldflags << "-Wl,-wrap,memcpy"
+    end
+  end
+end
+
+task "ffi-compiler:default" => :copy_third_party
+
+task :compile => ["ffi-compiler:default"]
 
 task :genproto => genproto_output
 
@@ -150,8 +154,8 @@ task :clean do
   sh "rm -f #{genproto_output.join(' ')}"
 end
 
-Gem::PackageTask.new(spec) do |pkg|
-end
+# Gem::PackageTask.new(spec) do |pkg|
+# end
 
 Rake::TestTask.new(:test => [:build, :genproto]) do |t|
   t.test_files = FileList["tests/*.rb"].exclude("tests/gc_test.rb", "tests/common_tests.rb")
@@ -163,7 +167,7 @@ Rake::TestTask.new(:gc_test => :build) do |t|
   t.test_files = FileList["tests/gc_test.rb"]
 end
 
-task :build => [:clean, :genproto, :compile]
+task :build => :compile #[:clean, :genproto, :compile]
 task :default => [:build]
 
 # vim:sw=2:et
