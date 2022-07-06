@@ -28,7 +28,7 @@ test_version() {
        rake gc_test && \
        cd ../conformance && make ${RUBY_CONFORMANCE} && \
        cd ../ruby/compatibility_tests/v3.0.0 && \
-       cp -R ../../lib lib && ./test.sh"
+       cp -R ../../lib lib && cp -R ../../ext ext && ./test.sh"
   fi
 }
 
