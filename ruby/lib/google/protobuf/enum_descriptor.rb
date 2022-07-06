@@ -181,8 +181,9 @@ module Google
             warn(
               "Enum value '#{name}' does not start with an uppercase letter " +
                 "as is required for Ruby constants.")
+          else
+            dynamic_module.const_set(name.to_sym, value)
           end
-          dynamic_module.const_set(name.to_sym, value)
         end
         dynamic_module
       end
