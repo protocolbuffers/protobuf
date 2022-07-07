@@ -116,3 +116,20 @@ cc_library(
   deprecation = "Only for backward compatibility; please avoid",
   visibility = ["//visibility:public"],
 )
+
+# deprecated source protos typically part of the protobuf runtime
+# As an alternative try :well_known_type_protos (Well-Known Types) https://developers.google.com/protocol-buffers/docs/reference/google.protobuf
+# For descriptor.proto (source) try :descriptor_proto(_srcs)
+# For compiler/plugin.proto try :compiler_plugin_proto
+filegroup(
+  name = "well_known_protos",
+  srcs = [
+    ":descriptor_proto_srcs",
+    ":well_known_type_protos",
+    "//src/google/protobuf/compiler:plugin.proto"
+  ],
+  deprecation = "We recommend using :well_known_type_protos as an alternative",
+  visibility = ["//visibility:public"],
+)
+
+
