@@ -47,7 +47,7 @@ std::string SafelyPrintIntToCode(int v) {
   if (v == std::numeric_limits<int>::min()) {
     // Some compilers try to parse -2147483648 as two tokens and then get spicy
     // about the fact that +2147483648 cannot be represented as an int.
-    return "-2147483647 - 1";
+    return StrCat(v + 1, " - 1");
   } else {
     return StrCat(v);
   }
