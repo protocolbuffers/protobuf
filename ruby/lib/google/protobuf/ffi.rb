@@ -226,8 +226,6 @@ module Google
         end
       end
 
-      original_methods = public_methods
-
       # Arena
       attach_function :create_arena, :Arena_create,    [], Arena
       attach_function :fuse_arena,   :upb_Arena_Fuse,  [Arena, Arena], :bool
@@ -280,7 +278,7 @@ module Google
       attach_function :get_label,                  :upb_FieldDef_Label,              [FieldDescriptor], Label
       attach_function :get_subtype_as_message,     :upb_FieldDef_MessageSubDef,      [FieldDescriptor], MessageDef
       attach_function :get_full_name,              :upb_FieldDef_Name,               [FieldDescriptor], :string
-      attach_function :get_number,                 :upb_FieldDef_Number,             [FieldDescriptor], :uint32
+      attach_function :get_number,                 :upb_FieldDef_Number,             [FieldDescriptor], :uint32_t
       attach_function :real_containing_oneof,      :upb_FieldDef_RealContainingOneof,[FieldDescriptor], OneofDef
       attach_function :get_type,                   :upb_FieldDef_Type,               [FieldDescriptor], FieldType
 
@@ -347,35 +345,10 @@ module Google
       attach_function :memcpy, [:pointer, :pointer, :size_t], :int
 
       # Misc
-      attach_function :hash, :_upb_Hash, [:pointer, :size_t, :int], :uint64_t
-
-      ##
-      # Useful for debugging random buffer overreads that don't tell you what method was called
-      attached_methods = public_methods - original_methods
-      def self.create_class_method(method_name, &block)
-        (class << self; self; end).send(:alias_method, :"native_ffi_#{method_name}".to_sym, method_name)
-        (class << self; self; end).send(:define_method, method_name, block)
-      end
-
-      attached_methods.each do |method_name|
-        next unless [:jatldecode_message].include? method_name
-        self.create_class_method(method_name) do |*args|
-          puts "JATL - about to call FFI method #{method_name} from #{caller.join("\n")}"
-          args.each_with_index do |arg, index|
-            puts "Argument #{index}: #{arg}"
-            puts "Argument #{index}: #{arg.instance_variable_get(:@msg_def)}" if arg.is_a? Descriptor
-            if args.respond_to? :null? and arg.null?
-              puts "JATL args[#{index}] is null! Was that expected?"
-            end
-          end
-          return_value = send("native_ffi_#{method_name}", *args)
-          puts "JATL - completed call to FFI method #{method_name} returning to #{caller[0]}\n"
-          return_value
-        end
-      end
+      attach_function :hash, :_upb_Hash, [:pointer, :size_t, :uint64_t], :uint32_t
 
       # Alternatives to pre-processor macros
-      def self.decode_max_depth i
+      def self.decode_max_depth(i)
         i << 16
       end
     end

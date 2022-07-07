@@ -70,16 +70,14 @@ unless ENV['IN_DOCKER'] == 'true'
 end
 
 task :copy_third_party do
-  unless ENV['IN_DOCKER'] == 'true'
-    # We need utf8_range in-tree.
-    unless File.exists? 'ext/google/protobuf_c/third_party/utf8_range'
-      FileUtils.mkdir_p("ext/google/protobuf_c/third_party/utf8_range")
-      FileUtils.cp("../third_party/utf8_range/utf8_range.h", "ext/google/protobuf_c/third_party/utf8_range")
-      FileUtils.cp("../third_party/utf8_range/naive.c", "ext/google/protobuf_c/third_party/utf8_range")
-      FileUtils.cp("../third_party/utf8_range/range2-neon.c", "ext/google/protobuf_c/third_party/utf8_range")
-      FileUtils.cp("../third_party/utf8_range/range2-sse.c", "ext/google/protobuf_c/third_party/utf8_range")
-      FileUtils.cp("../third_party/utf8_range/LICENSE", "ext/google/protobuf_c/third_party/utf8_range")
-    end
+  # We need utf8_range in-tree.
+  unless File.exists? 'ext/google/protobuf_c/third_party/utf8_range'
+    FileUtils.mkdir_p("ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.cp("../third_party/utf8_range/utf8_range.h", "ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.cp("../third_party/utf8_range/naive.c", "ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.cp("../third_party/utf8_range/range2-neon.c", "ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.cp("../third_party/utf8_range/range2-sse.c", "ext/google/protobuf_c/third_party/utf8_range")
+    FileUtils.cp("../third_party/utf8_range/LICENSE", "ext/google/protobuf_c/third_party/utf8_range")
   end
 end
 
@@ -129,22 +127,36 @@ end
 #   task 'gem:native' => [:genproto, 'gem:windows', 'gem:java']
 # end
 
-desc "compiler tasks"
-namespace "ffi-compiler" do
-  FFI::Compiler::CompileTask.new('ext/google/protobuf_c') do |c|
-    c.cflags << "-std=gnu99 -O3 -DNDEBUG"
-    if RbConfig::CONFIG['target_os'] =~ /darwin|linux/
-      # c.cflags << "-fvisibility=hidden -Wall -Wsign-compare -Wno-declaration-after-statement"
-      c.cflags << "-Wall -Wsign-compare -Wno-declaration-after-statement"
-    end
-    if RbConfig::CONFIG['target_os'] =~ /linux/
-      # Instruct the linker to point memcpy calls at our __wrap_memcpy wrapper.
-      c.ldflags << "-Wl,-wrap,memcpy"
-    end
+# FFI::CompilerTask's constructor walks the filesystem at initialization time
+# in order to create subtasks for each source file, so the files from third_party
+# must be copied into place before the task is defined.
+ffi_compiler_config_block = Proc.new do |c|
+  c.cflags << "-std=gnu99 -O3 -DNDEBUG"
+  if RbConfig::CONFIG['target_os'] =~ /darwin|linux/
+    # c.cflags << "-fvisibility=hidden -Wall -Wsign-compare -Wno-declaration-after-statement"
+    c.cflags << "-Wall -Wsign-compare -Wno-declaration-after-statement"
+  end
+  if RbConfig::CONFIG['target_os'] =~ /linux/
+    # Instruct the linker to point memcpy calls at our __wrap_memcpy wrapper.
+    c.ldflags << "-Wl,-wrap,memcpy"
   end
 end
 
-task "ffi-compiler:default" => :copy_third_party
+if File.exists? 'ext/google/protobuf_c/third_party/utf8_range'
+  desc "compiler tasks"
+  namespace "ffi-compiler" do
+    FFI::Compiler::CompileTask.new('ext/google/protobuf_c', &ffi_compiler_config_block)
+  end
+else
+  task "ffi-compiler:default" do
+    Rake::Task[:copy_third_party].invoke
+    desc "compiler tasks"
+    namespace "ffi-compiler" do
+      FFI::Compiler::CompileTask.new('ext/google/protobuf_c', &ffi_compiler_config_block)
+      Rake::Task[Rake::Task[:default].prereqs.first].invoke
+    end
+  end
+end
 
 task :compile => ["ffi-compiler:default"]
 
@@ -152,6 +164,7 @@ task :genproto => genproto_output
 
 task :clean do
   sh "rm -f #{genproto_output.join(' ')}"
+  sh "rm -rf `find ext/google/protobuf_c/* -maxdepth 0 -type d`"
 end
 
 # Gem::PackageTask.new(spec) do |pkg|

@@ -156,7 +156,7 @@ module Google
             raise RangeError.new "Value assigned to uint64 field '#{name}' (given #{value.class}) with more than 64-bits." unless value.to_i.bit_length < 65
             return_value[:uint64_val] = value.to_i
           else
-            raise RuntimeError.new "JATL - shouldn't have gotten here. c_type = #{c_type}"
+            raise RuntimeError.new "Unsupported type #{c_type}"
           end
           return_value
         end
