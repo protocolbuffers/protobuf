@@ -40,12 +40,6 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-
-bool IsProto3Field(const FieldDescriptor* field_descriptor) {
-  const FileDescriptor* file_descriptor = field_descriptor->file();
-  return file_descriptor->syntax() == FileDescriptor::SYNTAX_PROTO3;
-}
-
 void SetMessageVariables(const FieldDescriptor* descriptor,
                          std::map<std::string, std::string>* variables,
                          const Options& options) {

@@ -101,9 +101,8 @@ public final class FieldMaskUtil {
   /**
    * Constructs a FieldMask for a list of field paths in a certain type.
    *
-   * @throws IllegalArgumentException if any of the field path is not valid.
+   * @throws IllegalArgumentException if any of the field path is not valid
    */
-  // TODO(xiaofeng): Consider renaming fromStrings()
   public static FieldMask fromStringList(Class<? extends Message> type, Iterable<String> paths) {
     return fromStringList(Internal.getDefaultInstance(type).getDescriptorForType(), paths);
   }

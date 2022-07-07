@@ -365,6 +365,16 @@ class RepeatedField final {
   // RepeatedField class to avoid costly cache misses due to the indirection.
   int current_size_;
   int total_size_;
+
+  // Replaces current_size_ with new_size and returns the previous value of
+  // current_size_. This function is intended to be the only place where
+  // current_size_ is modified.
+  inline int ExchangeCurrentSize(int new_size) {
+    int prev_size = current_size_;
+    current_size_ = new_size;
+    return prev_size;
+  }
+
   // Pad the Rep after arena allow for power-of-two byte sizes when
   // sizeof(Element) > sizeof(Arena*). eg for 16-byte objects.
   static PROTOBUF_CONSTEXPR const size_t kRepHeaderSize =
@@ -489,11 +499,11 @@ class RepeatedField final {
     }
     FastAdderImpl(const FastAdderImpl&) = delete;
     FastAdderImpl& operator=(const FastAdderImpl&) = delete;
-    ~FastAdderImpl() { repeated_field_->current_size_ = index_; }
+    ~FastAdderImpl() { repeated_field_->ExchangeCurrentSize(index_); }
 
     void Add(Element val) {
       if (index_ == capacity_) {
-        repeated_field_->current_size_ = index_;
+        repeated_field_->ExchangeCurrentSize(index_);
         repeated_field_->Reserve(index_ + 1);
         capacity_ = repeated_field_->total_size_;
         buffer_ = repeated_field_->unsafe_elements();
@@ -643,13 +653,13 @@ inline int RepeatedField<Element>::Capacity() const {
 template <typename Element>
 inline void RepeatedField<Element>::AddAlreadyReserved(const Element& value) {
   GOOGLE_DCHECK_LT(current_size_, total_size_);
-  elements()[current_size_++] = value;
+  elements()[ExchangeCurrentSize(current_size_ + 1)] = value;
 }
 
 template <typename Element>
 inline Element* RepeatedField<Element>::AddAlreadyReserved() {
   GOOGLE_DCHECK_LT(current_size_, total_size_);
-  return &elements()[current_size_++];
+  return &elements()[ExchangeCurrentSize(current_size_ + 1)];
 }
 
 template <typename Element>
@@ -660,9 +670,7 @@ inline Element* RepeatedField<Element>::AddNAlreadyReserved(int elements) {
   // total_size_ == 0. In this case the return pointer points to a zero size
   // array (n == 0). Hence we can just use unsafe_elements(), because the user
   // cannot dereference the pointer anyway.
-  Element* ret = unsafe_elements() + current_size_;
-  current_size_ += elements;
-  return ret;
+  return unsafe_elements() + ExchangeCurrentSize(current_size_ + elements);
 }
 
 template <typename Element>
@@ -670,9 +678,11 @@ inline void RepeatedField<Element>::Resize(int new_size, const Element& value) {
   GOOGLE_DCHECK_GE(new_size, 0);
   if (new_size > current_size_) {
     Reserve(new_size);
-    std::fill(&elements()[current_size_], &elements()[new_size], value);
+    std::fill(&elements()[ExchangeCurrentSize(new_size)], &elements()[new_size],
+              value);
+  } else {
+    ExchangeCurrentSize(new_size);
   }
-  current_size_ = new_size;
 }
 
 template <typename Element>
@@ -712,26 +722,21 @@ inline void RepeatedField<Element>::Set(int index, const Element& value) {
 
 template <typename Element>
 inline void RepeatedField<Element>::Add(const Element& value) {
-  uint32_t size = current_size_;
-  if (static_cast<int>(size) == total_size_) {
+  if (current_size_ == total_size_) {
     // value could reference an element of the array. Reserving new space will
     // invalidate the reference. So we must make a copy first.
     auto tmp = value;
     Reserve(total_size_ + 1);
-    elements()[size] = std::move(tmp);
+    elements()[ExchangeCurrentSize(current_size_ + 1)] = std::move(tmp);
   } else {
-    elements()[size] = value;
+    elements()[ExchangeCurrentSize(current_size_ + 1)] = value;
   }
-  current_size_ = size + 1;
 }
 
 template <typename Element>
 inline Element* RepeatedField<Element>::Add() {
-  uint32_t size = current_size_;
-  if (static_cast<int>(size) == total_size_) Reserve(total_size_ + 1);
-  auto ptr = &elements()[size];
-  current_size_ = size + 1;
-  return ptr;
+  if (current_size_ == total_size_) Reserve(total_size_ + 1);
+  return &elements()[ExchangeCurrentSize(current_size_ + 1)];
 }
 
 template <typename Element>
@@ -743,15 +748,15 @@ inline void RepeatedField<Element>::Add(Iter begin, Iter end) {
     int additional = std::distance(begin, end);
     if (additional == 0) return;
 
-    Reserve(size() + additional);
+    int new_size = current_size_ + additional;
+    Reserve(new_size);
     // TODO(ckennelly):  The compiler loses track of the buffer freshly
     // allocated by Reserve() by the time we call elements, so it cannot
     // guarantee that elements does not alias [begin(), end()).
     //
     // If restrict is available, annotating the pointer obtained from elements()
     // causes this to lower to memcpy instead of memmove.
-    std::copy(begin, end, elements() + size());
-    current_size_ = size() + additional;
+    std::copy(begin, end, elements() + ExchangeCurrentSize(new_size));
   } else {
     FastAdder fast_adder(this);
     for (; begin != end; ++begin) fast_adder.Add(*begin);
@@ -761,7 +766,7 @@ inline void RepeatedField<Element>::Add(Iter begin, Iter end) {
 template <typename Element>
 inline void RepeatedField<Element>::RemoveLast() {
   GOOGLE_DCHECK_GT(current_size_, 0);
-  current_size_--;
+  ExchangeCurrentSize(current_size_ - 1);
 }
 
 template <typename Element>
@@ -786,7 +791,7 @@ void RepeatedField<Element>::ExtractSubrange(int start, int num,
 
 template <typename Element>
 inline void RepeatedField<Element>::Clear() {
-  current_size_ = 0;
+  ExchangeCurrentSize(0);
 }
 
 template <typename Element>
@@ -1007,7 +1012,7 @@ template <typename Element>
 inline void RepeatedField<Element>::Truncate(int new_size) {
   GOOGLE_DCHECK_LE(new_size, current_size_);
   if (current_size_ > 0) {
-    current_size_ = new_size;
+    ExchangeCurrentSize(new_size);
   }
 }
 

@@ -634,14 +634,17 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
     root_location.RecordLegacyLocation(file,
                                        DescriptorPool::ErrorCollector::OTHER);
 
-    if (require_syntax_identifier_ || LookingAt("syntax")) {
+    if (require_syntax_identifier_ || LookingAt("syntax")
+    ) {
       if (!ParseSyntaxIdentifier(root_location)) {
         // Don't attempt to parse the file if we didn't recognize the syntax
         // identifier.
         return false;
       }
       // Store the syntax into the file.
-      if (file != nullptr) file->set_syntax(syntax_identifier_);
+      if (file != nullptr) {
+        file->set_syntax(syntax_identifier_);
+      }
     } else if (!stop_after_syntax_identifier_) {
       GOOGLE_LOG(WARNING) << "No syntax specified for the proto file: " << file->name()
                    << ". Please use 'syntax = \"proto2\";' "
@@ -678,9 +681,10 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
 bool Parser::ParseSyntaxIdentifier(const LocationRecorder& parent) {
   LocationRecorder syntax_location(parent,
                                    FileDescriptorProto::kSyntaxFieldNumber);
-  DO(Consume(
-      "syntax",
-      "File must begin with a syntax statement, e.g. 'syntax = \"proto2\";'."));
+    DO(Consume("syntax",
+               "File must begin with a syntax statement, e.g. 'syntax = "
+               "\"proto2\";'."));
+
   DO(Consume("="));
   io::Tokenizer::Token syntax_token = input_->current();
   std::string syntax;
@@ -688,7 +692,6 @@ bool Parser::ParseSyntaxIdentifier(const LocationRecorder& parent) {
   DO(ConsumeEndOfDeclaration(";", &syntax_location));
 
   syntax_identifier_ = syntax;
-
   if (syntax != "proto2" && syntax != "proto3" &&
       !stop_after_syntax_identifier_) {
     AddError(syntax_token.line, syntax_token.column,

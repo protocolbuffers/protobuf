@@ -125,8 +125,7 @@ def MessageToString(
     indent=0,
     message_formatter=None,
     print_unknown_fields=False,
-    force_colon=False):
-  # type: (...) -> str
+    force_colon=False) -> str:
   """Convert protobuf message to text format.
 
   Double values can be formatted compactly with 15 digits of
@@ -191,8 +190,7 @@ def MessageToString(
   return result
 
 
-def MessageToBytes(message, **kwargs):
-  # type: (...) -> bytes
+def MessageToBytes(message, **kwargs) -> bytes:
   """Convert protobuf message to encoded text format.  See MessageToString."""
   text = MessageToString(message, **kwargs)
   if isinstance(text, bytes):

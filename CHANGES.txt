@@ -1,3 +1,12 @@
+2022-07-01 Unreleased version
+  * Add TransferAllMessages() util function
+  * Break ZeroCopyOutputByteSink into its own file.
+  * Explicitly instantiate InternalMetadata members at UnknownFieldSet.
+  * Support kdoc for Kotlin
+  * Delete unused function: IsProto3Field.
+  * Add C++20 keywords guarded by PROTOBUF_FUTURE_CPP20_KEYWORDS
+  * Escape Kotlin keywords in package names in proto generated code
+  * Fix StrAppend crashing on empty strings.
 
 2022-06-27 Unreleased version
   * Handle reflection for message splitting.

@@ -118,6 +118,9 @@ std::string FileJavaPackage(const FileDescriptor* file, bool immutable);
 // Returns output directory for the given package name.
 std::string JavaPackageToDir(std::string package_name);
 
+// Returns the name with Kotlin keywords enclosed in backticks
+std::string EscapeKotlinKeywords(std::string name);
+
 // Comma-separate list of option-specified interfaces implemented by the
 // Message, to follow the "implements" declaration of the Message definition.
 std::string ExtraMessageInterfaces(const Descriptor* descriptor);

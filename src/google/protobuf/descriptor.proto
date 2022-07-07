@@ -86,8 +86,13 @@ message FileDescriptorProto {
   optional SourceCodeInfo source_code_info = 9;
 
   // The syntax of the proto file.
-  // The supported values are "proto2" and "proto3".
+  // The supported values are "proto2", "proto3", and "editions".
+  //
+  // If `edition` is present, this value must be "editions".
   optional string syntax = 12;
+
+  // The edition of the proto file, which is an opaque string.
+  optional string edition = 13;
 }
 
 // Describes a message type.
