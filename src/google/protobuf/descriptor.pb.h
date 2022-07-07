@@ -622,6 +622,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
     kNameFieldNumber = 1,
     kPackageFieldNumber = 2,
     kSyntaxFieldNumber = 12,
+    kEditionFieldNumber = 13,
     kOptionsFieldNumber = 8,
     kSourceCodeInfoFieldNumber = 9,
   };
@@ -819,6 +820,24 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   std::string* _internal_mutable_syntax();
   public:
 
+  // optional string edition = 13;
+  bool has_edition() const;
+  private:
+  bool _internal_has_edition() const;
+  public:
+  void clear_edition();
+  const std::string& edition() const;
+  template <typename ArgT0 = const std::string&, typename... ArgT>
+  void set_edition(ArgT0&& arg0, ArgT... args);
+  std::string* mutable_edition();
+  PROTOBUF_NODISCARD std::string* release_edition();
+  void set_allocated_edition(std::string* edition);
+  private:
+  const std::string& _internal_edition() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_edition(const std::string& value);
+  std::string* _internal_mutable_edition();
+  public:
+
   // optional .google.protobuf.FileOptions options = 8;
   bool has_options() const;
   private:
@@ -875,6 +894,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr package_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr syntax_;
+    ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr edition_;
     ::PROTOBUF_NAMESPACE_ID::FileOptions* options_;
     ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* source_code_info_;
   };
@@ -9042,7 +9062,7 @@ FileDescriptorProto::extension() const {
 
 // optional .google.protobuf.FileOptions options = 8;
 inline bool FileDescriptorProto::_internal_has_options() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
   PROTOBUF_ASSUME(!value || _impl_.options_ != nullptr);
   return value;
 }
@@ -9051,7 +9071,7 @@ inline bool FileDescriptorProto::has_options() const {
 }
 inline void FileDescriptorProto::clear_options() {
   if (_impl_.options_ != nullptr) _impl_.options_->Clear();
-  _impl_._has_bits_[0] &= ~0x00000008u;
+  _impl_._has_bits_[0] &= ~0x00000010u;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::FileOptions& FileDescriptorProto::_internal_options() const {
   const ::PROTOBUF_NAMESPACE_ID::FileOptions* p = _impl_.options_;
@@ -9069,14 +9089,14 @@ inline void FileDescriptorProto::unsafe_arena_set_allocated_options(
   }
   _impl_.options_ = options;
   if (options) {
-    _impl_._has_bits_[0] |= 0x00000008u;
+    _impl_._has_bits_[0] |= 0x00000010u;
   } else {
-    _impl_._has_bits_[0] &= ~0x00000008u;
+    _impl_._has_bits_[0] &= ~0x00000010u;
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FileDescriptorProto.options)
 }
 inline ::PROTOBUF_NAMESPACE_ID::FileOptions* FileDescriptorProto::release_options() {
-  _impl_._has_bits_[0] &= ~0x00000008u;
+  _impl_._has_bits_[0] &= ~0x00000010u;
   ::PROTOBUF_NAMESPACE_ID::FileOptions* temp = _impl_.options_;
   _impl_.options_ = nullptr;
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -9092,13 +9112,13 @@ inline ::PROTOBUF_NAMESPACE_ID::FileOptions* FileDescriptorProto::release_option
 }
 inline ::PROTOBUF_NAMESPACE_ID::FileOptions* FileDescriptorProto::unsafe_arena_release_options() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.options)
-  _impl_._has_bits_[0] &= ~0x00000008u;
+  _impl_._has_bits_[0] &= ~0x00000010u;
   ::PROTOBUF_NAMESPACE_ID::FileOptions* temp = _impl_.options_;
   _impl_.options_ = nullptr;
   return temp;
 }
 inline ::PROTOBUF_NAMESPACE_ID::FileOptions* FileDescriptorProto::_internal_mutable_options() {
-  _impl_._has_bits_[0] |= 0x00000008u;
+  _impl_._has_bits_[0] |= 0x00000010u;
   if (_impl_.options_ == nullptr) {
     auto* p = CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::FileOptions>(GetArenaForAllocation());
     _impl_.options_ = p;
@@ -9122,9 +9142,9 @@ inline void FileDescriptorProto::set_allocated_options(::PROTOBUF_NAMESPACE_ID::
       options = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
           message_arena, options, submessage_arena);
     }
-    _impl_._has_bits_[0] |= 0x00000008u;
+    _impl_._has_bits_[0] |= 0x00000010u;
   } else {
-    _impl_._has_bits_[0] &= ~0x00000008u;
+    _impl_._has_bits_[0] &= ~0x00000010u;
   }
   _impl_.options_ = options;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.options)
@@ -9132,7 +9152,7 @@ inline void FileDescriptorProto::set_allocated_options(::PROTOBUF_NAMESPACE_ID::
 
 // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
 inline bool FileDescriptorProto::_internal_has_source_code_info() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000020u) != 0;
   PROTOBUF_ASSUME(!value || _impl_.source_code_info_ != nullptr);
   return value;
 }
@@ -9141,7 +9161,7 @@ inline bool FileDescriptorProto::has_source_code_info() const {
 }
 inline void FileDescriptorProto::clear_source_code_info() {
   if (_impl_.source_code_info_ != nullptr) _impl_.source_code_info_->Clear();
-  _impl_._has_bits_[0] &= ~0x00000010u;
+  _impl_._has_bits_[0] &= ~0x00000020u;
 }
 inline const ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo& FileDescriptorProto::_internal_source_code_info() const {
   const ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* p = _impl_.source_code_info_;
@@ -9159,14 +9179,14 @@ inline void FileDescriptorProto::unsafe_arena_set_allocated_source_code_info(
   }
   _impl_.source_code_info_ = source_code_info;
   if (source_code_info) {
-    _impl_._has_bits_[0] |= 0x00000010u;
+    _impl_._has_bits_[0] |= 0x00000020u;
   } else {
-    _impl_._has_bits_[0] &= ~0x00000010u;
+    _impl_._has_bits_[0] &= ~0x00000020u;
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.FileDescriptorProto.source_code_info)
 }
 inline ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* FileDescriptorProto::release_source_code_info() {
-  _impl_._has_bits_[0] &= ~0x00000010u;
+  _impl_._has_bits_[0] &= ~0x00000020u;
   ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* temp = _impl_.source_code_info_;
   _impl_.source_code_info_ = nullptr;
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -9182,13 +9202,13 @@ inline ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* FileDescriptorProto::release_sou
 }
 inline ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* FileDescriptorProto::unsafe_arena_release_source_code_info() {
   // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.source_code_info)
-  _impl_._has_bits_[0] &= ~0x00000010u;
+  _impl_._has_bits_[0] &= ~0x00000020u;
   ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* temp = _impl_.source_code_info_;
   _impl_.source_code_info_ = nullptr;
   return temp;
 }
 inline ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* FileDescriptorProto::_internal_mutable_source_code_info() {
-  _impl_._has_bits_[0] |= 0x00000010u;
+  _impl_._has_bits_[0] |= 0x00000020u;
   if (_impl_.source_code_info_ == nullptr) {
     auto* p = CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::SourceCodeInfo>(GetArenaForAllocation());
     _impl_.source_code_info_ = p;
@@ -9212,9 +9232,9 @@ inline void FileDescriptorProto::set_allocated_source_code_info(::PROTOBUF_NAMES
       source_code_info = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
           message_arena, source_code_info, submessage_arena);
     }
-    _impl_._has_bits_[0] |= 0x00000010u;
+    _impl_._has_bits_[0] |= 0x00000020u;
   } else {
-    _impl_._has_bits_[0] &= ~0x00000010u;
+    _impl_._has_bits_[0] &= ~0x00000020u;
   }
   _impl_.source_code_info_ = source_code_info;
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.source_code_info)
@@ -9284,6 +9304,72 @@ inline void FileDescriptorProto::set_allocated_syntax(std::string* syntax) {
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.syntax)
+}
+
+// optional string edition = 13;
+inline bool FileDescriptorProto::_internal_has_edition() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
+  return value;
+}
+inline bool FileDescriptorProto::has_edition() const {
+  return _internal_has_edition();
+}
+inline void FileDescriptorProto::clear_edition() {
+  _impl_.edition_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000008u;
+}
+inline const std::string& FileDescriptorProto::edition() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FileDescriptorProto.edition)
+  return _internal_edition();
+}
+template <typename ArgT0, typename... ArgT>
+inline PROTOBUF_ALWAYS_INLINE
+void FileDescriptorProto::set_edition(ArgT0&& arg0, ArgT... args) {
+ _impl_._has_bits_[0] |= 0x00000008u;
+ _impl_.edition_.Set(static_cast<ArgT0 &&>(arg0), args..., GetArenaForAllocation());
+  // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.edition)
+}
+inline std::string* FileDescriptorProto::mutable_edition() {
+  std::string* _s = _internal_mutable_edition();
+  // @@protoc_insertion_point(field_mutable:google.protobuf.FileDescriptorProto.edition)
+  return _s;
+}
+inline const std::string& FileDescriptorProto::_internal_edition() const {
+  return _impl_.edition_.Get();
+}
+inline void FileDescriptorProto::_internal_set_edition(const std::string& value) {
+  _impl_._has_bits_[0] |= 0x00000008u;
+  _impl_.edition_.Set(value, GetArenaForAllocation());
+}
+inline std::string* FileDescriptorProto::_internal_mutable_edition() {
+  _impl_._has_bits_[0] |= 0x00000008u;
+  return _impl_.edition_.Mutable(GetArenaForAllocation());
+}
+inline std::string* FileDescriptorProto::release_edition() {
+  // @@protoc_insertion_point(field_release:google.protobuf.FileDescriptorProto.edition)
+  if (!_internal_has_edition()) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000008u;
+  auto* p = _impl_.edition_.Release();
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.edition_.Set("", GetArenaForAllocation());
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  return p;
+}
+inline void FileDescriptorProto::set_allocated_edition(std::string* edition) {
+  if (edition != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000008u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000008u;
+  }
+  _impl_.edition_.SetAllocated(edition, GetArenaForAllocation());
+#ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (_impl_.edition_.IsDefault()) {
+    _impl_.edition_.Set("", GetArenaForAllocation());
+  }
+#endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  // @@protoc_insertion_point(field_set_allocated:google.protobuf.FileDescriptorProto.edition)
 }
 
 // -------------------------------------------------------------------

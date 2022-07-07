@@ -747,7 +747,8 @@ void ImmutableMessageLiteGenerator::GenerateKotlinDsl(
       "  @kotlin.jvm.JvmSynthetic\n"
       "  @kotlin.PublishedApi\n"
       "  internal fun _build(): $message$ = _builder.build()\n",
-      "message", name_resolver_->GetClassName(descriptor_, true));
+      "message",
+      EscapeKotlinKeywords(name_resolver_->GetClassName(descriptor_, true)));
 
   printer->Indent();
 
@@ -768,7 +769,7 @@ void ImmutableMessageLiteGenerator::GenerateKotlinDsl(
         "oneof_name", context_->GetOneofGeneratorInfo(oneof)->name,
         "oneof_capitalized_name",
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name, "message",
-        name_resolver_->GetClassName(descriptor_, true));
+        EscapeKotlinKeywords(name_resolver_->GetClassName(descriptor_, true)));
   }
 
   if (descriptor_->extension_range_count() > 0) {
@@ -784,14 +785,17 @@ void ImmutableMessageLiteGenerator::GenerateKotlinMembers(
   printer->Print(
       "@kotlin.jvm.JvmName(\"-initialize$camelcase_name$\")\n"
       "inline fun $camelcase_name$(block: $message_kt$.Dsl.() -> "
-      "kotlin.Unit): "
-      "$message$ =\n"
+      "kotlin.Unit): $message$ =\n"
       "  $message_kt$.Dsl._create($message$.newBuilder()).apply { block() "
       "}._build()\n",
       "camelcase_name", name_resolver_->GetKotlinFactoryName(descriptor_),
-      "message_kt", name_resolver_->GetKotlinExtensionsClassName(descriptor_),
-      "message", name_resolver_->GetClassName(descriptor_, true));
+      "message_kt",
+      EscapeKotlinKeywords(
+          name_resolver_->GetKotlinExtensionsClassName(descriptor_)),
+      "message",
+      EscapeKotlinKeywords(name_resolver_->GetClassName(descriptor_, true)));
 
+  WriteMessageDocComment(printer, descriptor_, /* kdoc */ true);
   printer->Print("object $name$Kt {\n", "name", descriptor_->name());
   printer->Indent();
   GenerateKotlinDsl(printer);
@@ -808,12 +812,14 @@ void ImmutableMessageLiteGenerator::GenerateTopLevelKotlinMembers(
     io::Printer* printer) const {
   printer->Print(
       "inline fun $message$.copy(block: $message_kt$.Dsl.() -> "
-      "kotlin.Unit): "
-      "$message$ =\n"
+      "kotlin.Unit): $message$ =\n"
       "  $message_kt$.Dsl._create(this.toBuilder()).apply { block() "
       "}._build()\n\n",
-      "message", name_resolver_->GetClassName(descriptor_, true), "message_kt",
-      name_resolver_->GetKotlinExtensionsClassName(descriptor_));
+      "message",
+      EscapeKotlinKeywords(name_resolver_->GetClassName(descriptor_, true)),
+      "message_kt",
+      EscapeKotlinKeywords(
+          name_resolver_->GetKotlinExtensionsClassName(descriptor_)));
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     if (IsMapEntry(descriptor_->nested_type(i))) continue;
@@ -833,18 +839,21 @@ void ImmutableMessageLiteGenerator::GenerateKotlinOrNull(io::Printer* printer) c
           "val $full_classname$OrBuilder.$camelcase_name$OrNull: "
           "$full_name$?\n"
           "  get() = if (has$name$()) get$name$() else null\n\n",
-          "full_classname", name_resolver_->GetClassName(descriptor_, true),
+          "full_classname",
+          EscapeKotlinKeywords(name_resolver_->GetClassName(descriptor_, true)),
           "camelcase_name", context_->GetFieldGeneratorInfo(field)->name,
           "full_name",
-          name_resolver_->GetImmutableClassName(field->message_type()), "name",
-          context_->GetFieldGeneratorInfo(field)->capitalized_name);
+          EscapeKotlinKeywords(
+              name_resolver_->GetImmutableClassName(field->message_type())),
+          "name", context_->GetFieldGeneratorInfo(field)->capitalized_name);
     }
   }
 }
 
 void ImmutableMessageLiteGenerator::GenerateKotlinExtensions(
     io::Printer* printer) const {
-  std::string message_name = name_resolver_->GetClassName(descriptor_, true);
+  std::string message_name =
+      EscapeKotlinKeywords(name_resolver_->GetClassName(descriptor_, true));
 
   printer->Print(
       "@Suppress(\"UNCHECKED_CAST\")\n"

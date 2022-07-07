@@ -48,6 +48,7 @@ PROTOBUF_CONSTEXPR FileDescriptorProto::FileDescriptorProto(
   , /*decltype(_impl_.name_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.package_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.syntax_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
+  , /*decltype(_impl_.edition_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.options_)*/nullptr
   , /*decltype(_impl_.source_code_info_)*/nullptr} {}
 struct FileDescriptorProtoDefaultTypeInternal {
@@ -540,6 +541,7 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FileDescriptorProto, _impl_.options_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FileDescriptorProto, _impl_.source_code_info_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FileDescriptorProto, _impl_.syntax_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::FileDescriptorProto, _impl_.edition_),
   0,
   1,
   ~0u,
@@ -549,9 +551,10 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   ~0u,
   ~0u,
   ~0u,
-  3,
   4,
+  5,
   2,
+  3,
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange, _impl_._has_bits_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -977,32 +980,32 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
 };
 static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FileDescriptorSet)},
-  { 9, 29, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FileDescriptorProto)},
-  { 41, 52, -1, sizeof(::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange)},
-  { 55, 65, -1, sizeof(::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange)},
-  { 67, 85, -1, sizeof(::PROTOBUF_NAMESPACE_ID::DescriptorProto)},
-  { 95, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions)},
-  { 104, 123, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto)},
-  { 134, 144, -1, sizeof(::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto)},
-  { 146, 156, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange)},
-  { 158, 171, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto)},
-  { 176, 187, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto)},
-  { 190, 201, -1, sizeof(::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto)},
-  { 204, 218, -1, sizeof(::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto)},
-  { 224, 253, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FileOptions)},
-  { 274, 287, -1, sizeof(::PROTOBUF_NAMESPACE_ID::MessageOptions)},
-  { 292, 308, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FieldOptions)},
-  { 316, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::OneofOptions)},
-  { 325, 336, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumOptions)},
-  { 339, 349, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumValueOptions)},
-  { 351, 361, -1, sizeof(::PROTOBUF_NAMESPACE_ID::ServiceOptions)},
-  { 363, 374, -1, sizeof(::PROTOBUF_NAMESPACE_ID::MethodOptions)},
-  { 377, 387, -1, sizeof(::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart)},
-  { 389, 404, -1, sizeof(::PROTOBUF_NAMESPACE_ID::UninterpretedOption)},
-  { 411, 424, -1, sizeof(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location)},
-  { 429, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo)},
-  { 438, 450, -1, sizeof(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation)},
-  { 454, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo)},
+  { 9, 30, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FileDescriptorProto)},
+  { 43, 54, -1, sizeof(::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange)},
+  { 57, 67, -1, sizeof(::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange)},
+  { 69, 87, -1, sizeof(::PROTOBUF_NAMESPACE_ID::DescriptorProto)},
+  { 97, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions)},
+  { 106, 125, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto)},
+  { 136, 146, -1, sizeof(::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto)},
+  { 148, 158, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange)},
+  { 160, 173, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto)},
+  { 178, 189, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto)},
+  { 192, 203, -1, sizeof(::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto)},
+  { 206, 220, -1, sizeof(::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto)},
+  { 226, 255, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FileOptions)},
+  { 276, 289, -1, sizeof(::PROTOBUF_NAMESPACE_ID::MessageOptions)},
+  { 294, 310, -1, sizeof(::PROTOBUF_NAMESPACE_ID::FieldOptions)},
+  { 318, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::OneofOptions)},
+  { 327, 338, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumOptions)},
+  { 341, 351, -1, sizeof(::PROTOBUF_NAMESPACE_ID::EnumValueOptions)},
+  { 353, 363, -1, sizeof(::PROTOBUF_NAMESPACE_ID::ServiceOptions)},
+  { 365, 376, -1, sizeof(::PROTOBUF_NAMESPACE_ID::MethodOptions)},
+  { 379, 389, -1, sizeof(::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart)},
+  { 391, 406, -1, sizeof(::PROTOBUF_NAMESPACE_ID::UninterpretedOption)},
+  { 413, 426, -1, sizeof(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location)},
+  { 431, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo)},
+  { 440, 452, -1, sizeof(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation)},
+  { 456, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -1039,7 +1042,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] PR
   "\n google/protobuf/descriptor.proto\022\017goog"
   "le.protobuf\"G\n\021FileDescriptorSet\0222\n\004file"
   "\030\001 \003(\0132$.google.protobuf.FileDescriptorP"
-  "roto\"\333\003\n\023FileDescriptorProto\022\014\n\004name\030\001 \001"
+  "roto\"\354\003\n\023FileDescriptorProto\022\014\n\004name\030\001 \001"
   "(\t\022\017\n\007package\030\002 \001(\t\022\022\n\ndependency\030\003 \003(\t\022"
   "\031\n\021public_dependency\030\n \003(\005\022\027\n\017weak_depen"
   "dency\030\013 \003(\005\0226\n\014message_type\030\004 \003(\0132 .goog"
@@ -1051,147 +1054,148 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] PR
   "\022-\n\007options\030\010 \001(\0132\034.google.protobuf.File"
   "Options\0229\n\020source_code_info\030\t \001(\0132\037.goog"
   "le.protobuf.SourceCodeInfo\022\016\n\006syntax\030\014 \001"
-  "(\t\"\251\005\n\017DescriptorProto\022\014\n\004name\030\001 \001(\t\0224\n\005"
-  "field\030\002 \003(\0132%.google.protobuf.FieldDescr"
-  "iptorProto\0228\n\textension\030\006 \003(\0132%.google.p"
-  "rotobuf.FieldDescriptorProto\0225\n\013nested_t"
-  "ype\030\003 \003(\0132 .google.protobuf.DescriptorPr"
-  "oto\0227\n\tenum_type\030\004 \003(\0132$.google.protobuf"
-  ".EnumDescriptorProto\022H\n\017extension_range\030"
-  "\005 \003(\0132/.google.protobuf.DescriptorProto."
-  "ExtensionRange\0229\n\noneof_decl\030\010 \003(\0132%.goo"
-  "gle.protobuf.OneofDescriptorProto\0220\n\007opt"
-  "ions\030\007 \001(\0132\037.google.protobuf.MessageOpti"
-  "ons\022F\n\016reserved_range\030\t \003(\0132..google.pro"
-  "tobuf.DescriptorProto.ReservedRange\022\025\n\rr"
-  "eserved_name\030\n \003(\t\032e\n\016ExtensionRange\022\r\n\005"
-  "start\030\001 \001(\005\022\013\n\003end\030\002 \001(\005\0227\n\007options\030\003 \001("
-  "\0132&.google.protobuf.ExtensionRangeOption"
-  "s\032+\n\rReservedRange\022\r\n\005start\030\001 \001(\005\022\013\n\003end"
-  "\030\002 \001(\005\"g\n\025ExtensionRangeOptions\022C\n\024unint"
-  "erpreted_option\030\347\007 \003(\0132$.google.protobuf"
-  ".UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\"\325\005\n\024Fiel"
-  "dDescriptorProto\022\014\n\004name\030\001 \001(\t\022\016\n\006number"
-  "\030\003 \001(\005\022:\n\005label\030\004 \001(\0162+.google.protobuf."
-  "FieldDescriptorProto.Label\0228\n\004type\030\005 \001(\016"
-  "2*.google.protobuf.FieldDescriptorProto."
-  "Type\022\021\n\ttype_name\030\006 \001(\t\022\020\n\010extendee\030\002 \001("
-  "\t\022\025\n\rdefault_value\030\007 \001(\t\022\023\n\013oneof_index\030"
-  "\t \001(\005\022\021\n\tjson_name\030\n \001(\t\022.\n\007options\030\010 \001("
-  "\0132\035.google.protobuf.FieldOptions\022\027\n\017prot"
-  "o3_optional\030\021 \001(\010\"\266\002\n\004Type\022\017\n\013TYPE_DOUBL"
-  "E\020\001\022\016\n\nTYPE_FLOAT\020\002\022\016\n\nTYPE_INT64\020\003\022\017\n\013T"
-  "YPE_UINT64\020\004\022\016\n\nTYPE_INT32\020\005\022\020\n\014TYPE_FIX"
-  "ED64\020\006\022\020\n\014TYPE_FIXED32\020\007\022\r\n\tTYPE_BOOL\020\010\022"
-  "\017\n\013TYPE_STRING\020\t\022\016\n\nTYPE_GROUP\020\n\022\020\n\014TYPE"
-  "_MESSAGE\020\013\022\016\n\nTYPE_BYTES\020\014\022\017\n\013TYPE_UINT3"
-  "2\020\r\022\r\n\tTYPE_ENUM\020\016\022\021\n\rTYPE_SFIXED32\020\017\022\021\n"
-  "\rTYPE_SFIXED64\020\020\022\017\n\013TYPE_SINT32\020\021\022\017\n\013TYP"
-  "E_SINT64\020\022\"C\n\005Label\022\022\n\016LABEL_OPTIONAL\020\001\022"
-  "\022\n\016LABEL_REQUIRED\020\002\022\022\n\016LABEL_REPEATED\020\003\""
-  "T\n\024OneofDescriptorProto\022\014\n\004name\030\001 \001(\t\022.\n"
-  "\007options\030\002 \001(\0132\035.google.protobuf.OneofOp"
-  "tions\"\244\002\n\023EnumDescriptorProto\022\014\n\004name\030\001 "
-  "\001(\t\0228\n\005value\030\002 \003(\0132).google.protobuf.Enu"
-  "mValueDescriptorProto\022-\n\007options\030\003 \001(\0132\034"
-  ".google.protobuf.EnumOptions\022N\n\016reserved"
-  "_range\030\004 \003(\01326.google.protobuf.EnumDescr"
-  "iptorProto.EnumReservedRange\022\025\n\rreserved"
-  "_name\030\005 \003(\t\032/\n\021EnumReservedRange\022\r\n\005star"
-  "t\030\001 \001(\005\022\013\n\003end\030\002 \001(\005\"l\n\030EnumValueDescrip"
-  "torProto\022\014\n\004name\030\001 \001(\t\022\016\n\006number\030\002 \001(\005\0222"
-  "\n\007options\030\003 \001(\0132!.google.protobuf.EnumVa"
-  "lueOptions\"\220\001\n\026ServiceDescriptorProto\022\014\n"
-  "\004name\030\001 \001(\t\0226\n\006method\030\002 \003(\0132&.google.pro"
-  "tobuf.MethodDescriptorProto\0220\n\007options\030\003"
-  " \001(\0132\037.google.protobuf.ServiceOptions\"\301\001"
-  "\n\025MethodDescriptorProto\022\014\n\004name\030\001 \001(\t\022\022\n"
-  "\ninput_type\030\002 \001(\t\022\023\n\013output_type\030\003 \001(\t\022/"
-  "\n\007options\030\004 \001(\0132\036.google.protobuf.Method"
-  "Options\022\037\n\020client_streaming\030\005 \001(\010:\005false"
-  "\022\037\n\020server_streaming\030\006 \001(\010:\005false\"\245\006\n\013Fi"
-  "leOptions\022\024\n\014java_package\030\001 \001(\t\022\034\n\024java_"
-  "outer_classname\030\010 \001(\t\022\"\n\023java_multiple_f"
-  "iles\030\n \001(\010:\005false\022)\n\035java_generate_equal"
-  "s_and_hash\030\024 \001(\010B\002\030\001\022%\n\026java_string_chec"
-  "k_utf8\030\033 \001(\010:\005false\022F\n\014optimize_for\030\t \001("
-  "\0162).google.protobuf.FileOptions.Optimize"
-  "Mode:\005SPEED\022\022\n\ngo_package\030\013 \001(\t\022\"\n\023cc_ge"
-  "neric_services\030\020 \001(\010:\005false\022$\n\025java_gene"
-  "ric_services\030\021 \001(\010:\005false\022\"\n\023py_generic_"
-  "services\030\022 \001(\010:\005false\022#\n\024php_generic_ser"
-  "vices\030* \001(\010:\005false\022\031\n\ndeprecated\030\027 \001(\010:\005"
-  "false\022\036\n\020cc_enable_arenas\030\037 \001(\010:\004true\022\031\n"
-  "\021objc_class_prefix\030$ \001(\t\022\030\n\020csharp_names"
-  "pace\030% \001(\t\022\024\n\014swift_prefix\030\' \001(\t\022\030\n\020php_"
-  "class_prefix\030( \001(\t\022\025\n\rphp_namespace\030) \001("
-  "\t\022\036\n\026php_metadata_namespace\030, \001(\t\022\024\n\014rub"
-  "y_package\030- \001(\t\022C\n\024uninterpreted_option\030"
-  "\347\007 \003(\0132$.google.protobuf.UninterpretedOp"
-  "tion\":\n\014OptimizeMode\022\t\n\005SPEED\020\001\022\r\n\tCODE_"
-  "SIZE\020\002\022\020\n\014LITE_RUNTIME\020\003*\t\010\350\007\020\200\200\200\200\002J\004\010&\020"
-  "\'\"\204\002\n\016MessageOptions\022&\n\027message_set_wire"
-  "_format\030\001 \001(\010:\005false\022.\n\037no_standard_desc"
-  "riptor_accessor\030\002 \001(\010:\005false\022\031\n\ndeprecat"
-  "ed\030\003 \001(\010:\005false\022\021\n\tmap_entry\030\007 \001(\010\022C\n\024un"
-  "interpreted_option\030\347\007 \003(\0132$.google.proto"
-  "buf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002J\004\010\004\020\005"
-  "J\004\010\005\020\006J\004\010\006\020\007J\004\010\010\020\tJ\004\010\t\020\n\"\276\003\n\014FieldOption"
-  "s\022:\n\005ctype\030\001 \001(\0162#.google.protobuf.Field"
-  "Options.CType:\006STRING\022\016\n\006packed\030\002 \001(\010\022\?\n"
-  "\006jstype\030\006 \001(\0162$.google.protobuf.FieldOpt"
-  "ions.JSType:\tJS_NORMAL\022\023\n\004lazy\030\005 \001(\010:\005fa"
-  "lse\022\036\n\017unverified_lazy\030\017 \001(\010:\005false\022\031\n\nd"
-  "eprecated\030\003 \001(\010:\005false\022\023\n\004weak\030\n \001(\010:\005fa"
-  "lse\022C\n\024uninterpreted_option\030\347\007 \003(\0132$.goo"
-  "gle.protobuf.UninterpretedOption\"/\n\005CTyp"
-  "e\022\n\n\006STRING\020\000\022\010\n\004CORD\020\001\022\020\n\014STRING_PIECE\020"
-  "\002\"5\n\006JSType\022\r\n\tJS_NORMAL\020\000\022\r\n\tJS_STRING\020"
-  "\001\022\r\n\tJS_NUMBER\020\002*\t\010\350\007\020\200\200\200\200\002J\004\010\004\020\005\"^\n\014One"
-  "ofOptions\022C\n\024uninterpreted_option\030\347\007 \003(\013"
-  "2$.google.protobuf.UninterpretedOption*\t"
-  "\010\350\007\020\200\200\200\200\002\"\223\001\n\013EnumOptions\022\023\n\013allow_alias"
-  "\030\002 \001(\010\022\031\n\ndeprecated\030\003 \001(\010:\005false\022C\n\024uni"
-  "nterpreted_option\030\347\007 \003(\0132$.google.protob"
-  "uf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002J\004\010\005\020\006\""
-  "}\n\020EnumValueOptions\022\031\n\ndeprecated\030\001 \001(\010:"
-  "\005false\022C\n\024uninterpreted_option\030\347\007 \003(\0132$."
-  "google.protobuf.UninterpretedOption*\t\010\350\007"
-  "\020\200\200\200\200\002\"{\n\016ServiceOptions\022\031\n\ndeprecated\030!"
-  " \001(\010:\005false\022C\n\024uninterpreted_option\030\347\007 \003"
+  "(\t\022\017\n\007edition\030\r \001(\t\"\251\005\n\017DescriptorProto\022"
+  "\014\n\004name\030\001 \001(\t\0224\n\005field\030\002 \003(\0132%.google.pr"
+  "otobuf.FieldDescriptorProto\0228\n\textension"
+  "\030\006 \003(\0132%.google.protobuf.FieldDescriptor"
+  "Proto\0225\n\013nested_type\030\003 \003(\0132 .google.prot"
+  "obuf.DescriptorProto\0227\n\tenum_type\030\004 \003(\0132"
+  "$.google.protobuf.EnumDescriptorProto\022H\n"
+  "\017extension_range\030\005 \003(\0132/.google.protobuf"
+  ".DescriptorProto.ExtensionRange\0229\n\noneof"
+  "_decl\030\010 \003(\0132%.google.protobuf.OneofDescr"
+  "iptorProto\0220\n\007options\030\007 \001(\0132\037.google.pro"
+  "tobuf.MessageOptions\022F\n\016reserved_range\030\t"
+  " \003(\0132..google.protobuf.DescriptorProto.R"
+  "eservedRange\022\025\n\rreserved_name\030\n \003(\t\032e\n\016E"
+  "xtensionRange\022\r\n\005start\030\001 \001(\005\022\013\n\003end\030\002 \001("
+  "\005\0227\n\007options\030\003 \001(\0132&.google.protobuf.Ext"
+  "ensionRangeOptions\032+\n\rReservedRange\022\r\n\005s"
+  "tart\030\001 \001(\005\022\013\n\003end\030\002 \001(\005\"g\n\025ExtensionRang"
+  "eOptions\022C\n\024uninterpreted_option\030\347\007 \003(\0132"
+  "$.google.protobuf.UninterpretedOption*\t\010"
+  "\350\007\020\200\200\200\200\002\"\325\005\n\024FieldDescriptorProto\022\014\n\004nam"
+  "e\030\001 \001(\t\022\016\n\006number\030\003 \001(\005\022:\n\005label\030\004 \001(\0162+"
+  ".google.protobuf.FieldDescriptorProto.La"
+  "bel\0228\n\004type\030\005 \001(\0162*.google.protobuf.Fiel"
+  "dDescriptorProto.Type\022\021\n\ttype_name\030\006 \001(\t"
+  "\022\020\n\010extendee\030\002 \001(\t\022\025\n\rdefault_value\030\007 \001("
+  "\t\022\023\n\013oneof_index\030\t \001(\005\022\021\n\tjson_name\030\n \001("
+  "\t\022.\n\007options\030\010 \001(\0132\035.google.protobuf.Fie"
+  "ldOptions\022\027\n\017proto3_optional\030\021 \001(\010\"\266\002\n\004T"
+  "ype\022\017\n\013TYPE_DOUBLE\020\001\022\016\n\nTYPE_FLOAT\020\002\022\016\n\n"
+  "TYPE_INT64\020\003\022\017\n\013TYPE_UINT64\020\004\022\016\n\nTYPE_IN"
+  "T32\020\005\022\020\n\014TYPE_FIXED64\020\006\022\020\n\014TYPE_FIXED32\020"
+  "\007\022\r\n\tTYPE_BOOL\020\010\022\017\n\013TYPE_STRING\020\t\022\016\n\nTYP"
+  "E_GROUP\020\n\022\020\n\014TYPE_MESSAGE\020\013\022\016\n\nTYPE_BYTE"
+  "S\020\014\022\017\n\013TYPE_UINT32\020\r\022\r\n\tTYPE_ENUM\020\016\022\021\n\rT"
+  "YPE_SFIXED32\020\017\022\021\n\rTYPE_SFIXED64\020\020\022\017\n\013TYP"
+  "E_SINT32\020\021\022\017\n\013TYPE_SINT64\020\022\"C\n\005Label\022\022\n\016"
+  "LABEL_OPTIONAL\020\001\022\022\n\016LABEL_REQUIRED\020\002\022\022\n\016"
+  "LABEL_REPEATED\020\003\"T\n\024OneofDescriptorProto"
+  "\022\014\n\004name\030\001 \001(\t\022.\n\007options\030\002 \001(\0132\035.google"
+  ".protobuf.OneofOptions\"\244\002\n\023EnumDescripto"
+  "rProto\022\014\n\004name\030\001 \001(\t\0228\n\005value\030\002 \003(\0132).go"
+  "ogle.protobuf.EnumValueDescriptorProto\022-"
+  "\n\007options\030\003 \001(\0132\034.google.protobuf.EnumOp"
+  "tions\022N\n\016reserved_range\030\004 \003(\01326.google.p"
+  "rotobuf.EnumDescriptorProto.EnumReserved"
+  "Range\022\025\n\rreserved_name\030\005 \003(\t\032/\n\021EnumRese"
+  "rvedRange\022\r\n\005start\030\001 \001(\005\022\013\n\003end\030\002 \001(\005\"l\n"
+  "\030EnumValueDescriptorProto\022\014\n\004name\030\001 \001(\t\022"
+  "\016\n\006number\030\002 \001(\005\0222\n\007options\030\003 \001(\0132!.googl"
+  "e.protobuf.EnumValueOptions\"\220\001\n\026ServiceD"
+  "escriptorProto\022\014\n\004name\030\001 \001(\t\0226\n\006method\030\002"
+  " \003(\0132&.google.protobuf.MethodDescriptorP"
+  "roto\0220\n\007options\030\003 \001(\0132\037.google.protobuf."
+  "ServiceOptions\"\301\001\n\025MethodDescriptorProto"
+  "\022\014\n\004name\030\001 \001(\t\022\022\n\ninput_type\030\002 \001(\t\022\023\n\013ou"
+  "tput_type\030\003 \001(\t\022/\n\007options\030\004 \001(\0132\036.googl"
+  "e.protobuf.MethodOptions\022\037\n\020client_strea"
+  "ming\030\005 \001(\010:\005false\022\037\n\020server_streaming\030\006 "
+  "\001(\010:\005false\"\245\006\n\013FileOptions\022\024\n\014java_packa"
+  "ge\030\001 \001(\t\022\034\n\024java_outer_classname\030\010 \001(\t\022\""
+  "\n\023java_multiple_files\030\n \001(\010:\005false\022)\n\035ja"
+  "va_generate_equals_and_hash\030\024 \001(\010B\002\030\001\022%\n"
+  "\026java_string_check_utf8\030\033 \001(\010:\005false\022F\n\014"
+  "optimize_for\030\t \001(\0162).google.protobuf.Fil"
+  "eOptions.OptimizeMode:\005SPEED\022\022\n\ngo_packa"
+  "ge\030\013 \001(\t\022\"\n\023cc_generic_services\030\020 \001(\010:\005f"
+  "alse\022$\n\025java_generic_services\030\021 \001(\010:\005fal"
+  "se\022\"\n\023py_generic_services\030\022 \001(\010:\005false\022#"
+  "\n\024php_generic_services\030* \001(\010:\005false\022\031\n\nd"
+  "eprecated\030\027 \001(\010:\005false\022\036\n\020cc_enable_aren"
+  "as\030\037 \001(\010:\004true\022\031\n\021objc_class_prefix\030$ \001("
+  "\t\022\030\n\020csharp_namespace\030% \001(\t\022\024\n\014swift_pre"
+  "fix\030\' \001(\t\022\030\n\020php_class_prefix\030( \001(\t\022\025\n\rp"
+  "hp_namespace\030) \001(\t\022\036\n\026php_metadata_names"
+  "pace\030, \001(\t\022\024\n\014ruby_package\030- \001(\t\022C\n\024unin"
+  "terpreted_option\030\347\007 \003(\0132$.google.protobu"
+  "f.UninterpretedOption\":\n\014OptimizeMode\022\t\n"
+  "\005SPEED\020\001\022\r\n\tCODE_SIZE\020\002\022\020\n\014LITE_RUNTIME\020"
+  "\003*\t\010\350\007\020\200\200\200\200\002J\004\010&\020\'\"\204\002\n\016MessageOptions\022&\n"
+  "\027message_set_wire_format\030\001 \001(\010:\005false\022.\n"
+  "\037no_standard_descriptor_accessor\030\002 \001(\010:\005"
+  "false\022\031\n\ndeprecated\030\003 \001(\010:\005false\022\021\n\tmap_"
+  "entry\030\007 \001(\010\022C\n\024uninterpreted_option\030\347\007 \003"
   "(\0132$.google.protobuf.UninterpretedOption"
-  "*\t\010\350\007\020\200\200\200\200\002\"\255\002\n\rMethodOptions\022\031\n\ndepreca"
-  "ted\030! \001(\010:\005false\022_\n\021idempotency_level\030\" "
-  "\001(\0162/.google.protobuf.MethodOptions.Idem"
-  "potencyLevel:\023IDEMPOTENCY_UNKNOWN\022C\n\024uni"
-  "nterpreted_option\030\347\007 \003(\0132$.google.protob"
-  "uf.UninterpretedOption\"P\n\020IdempotencyLev"
-  "el\022\027\n\023IDEMPOTENCY_UNKNOWN\020\000\022\023\n\017NO_SIDE_E"
-  "FFECTS\020\001\022\016\n\nIDEMPOTENT\020\002*\t\010\350\007\020\200\200\200\200\002\"\236\002\n\023"
-  "UninterpretedOption\022;\n\004name\030\002 \003(\0132-.goog"
-  "le.protobuf.UninterpretedOption.NamePart"
-  "\022\030\n\020identifier_value\030\003 \001(\t\022\032\n\022positive_i"
-  "nt_value\030\004 \001(\004\022\032\n\022negative_int_value\030\005 \001"
-  "(\003\022\024\n\014double_value\030\006 \001(\001\022\024\n\014string_value"
-  "\030\007 \001(\014\022\027\n\017aggregate_value\030\010 \001(\t\0323\n\010NameP"
-  "art\022\021\n\tname_part\030\001 \002(\t\022\024\n\014is_extension\030\002"
-  " \002(\010\"\325\001\n\016SourceCodeInfo\022:\n\010location\030\001 \003("
-  "\0132(.google.protobuf.SourceCodeInfo.Locat"
-  "ion\032\206\001\n\010Location\022\020\n\004path\030\001 \003(\005B\002\020\001\022\020\n\004sp"
-  "an\030\002 \003(\005B\002\020\001\022\030\n\020leading_comments\030\003 \001(\t\022\031"
-  "\n\021trailing_comments\030\004 \001(\t\022!\n\031leading_det"
-  "ached_comments\030\006 \003(\t\"\247\001\n\021GeneratedCodeIn"
-  "fo\022A\n\nannotation\030\001 \003(\0132-.google.protobuf"
-  ".GeneratedCodeInfo.Annotation\032O\n\nAnnotat"
-  "ion\022\020\n\004path\030\001 \003(\005B\002\020\001\022\023\n\013source_file\030\002 \001"
-  "(\t\022\r\n\005begin\030\003 \001(\005\022\013\n\003end\030\004 \001(\005B~\n\023com.go"
-  "ogle.protobufB\020DescriptorProtosH\001Z-googl"
-  "e.golang.org/protobuf/types/descriptorpb"
-  "\370\001\001\242\002\003GPB\252\002\032Google.Protobuf.Reflection"
+  "*\t\010\350\007\020\200\200\200\200\002J\004\010\004\020\005J\004\010\005\020\006J\004\010\006\020\007J\004\010\010\020\tJ\004\010\t\020"
+  "\n\"\276\003\n\014FieldOptions\022:\n\005ctype\030\001 \001(\0162#.goog"
+  "le.protobuf.FieldOptions.CType:\006STRING\022\016"
+  "\n\006packed\030\002 \001(\010\022\?\n\006jstype\030\006 \001(\0162$.google."
+  "protobuf.FieldOptions.JSType:\tJS_NORMAL\022"
+  "\023\n\004lazy\030\005 \001(\010:\005false\022\036\n\017unverified_lazy\030"
+  "\017 \001(\010:\005false\022\031\n\ndeprecated\030\003 \001(\010:\005false\022"
+  "\023\n\004weak\030\n \001(\010:\005false\022C\n\024uninterpreted_op"
+  "tion\030\347\007 \003(\0132$.google.protobuf.Uninterpre"
+  "tedOption\"/\n\005CType\022\n\n\006STRING\020\000\022\010\n\004CORD\020\001"
+  "\022\020\n\014STRING_PIECE\020\002\"5\n\006JSType\022\r\n\tJS_NORMA"
+  "L\020\000\022\r\n\tJS_STRING\020\001\022\r\n\tJS_NUMBER\020\002*\t\010\350\007\020\200"
+  "\200\200\200\002J\004\010\004\020\005\"^\n\014OneofOptions\022C\n\024uninterpre"
+  "ted_option\030\347\007 \003(\0132$.google.protobuf.Unin"
+  "terpretedOption*\t\010\350\007\020\200\200\200\200\002\"\223\001\n\013EnumOptio"
+  "ns\022\023\n\013allow_alias\030\002 \001(\010\022\031\n\ndeprecated\030\003 "
+  "\001(\010:\005false\022C\n\024uninterpreted_option\030\347\007 \003("
+  "\0132$.google.protobuf.UninterpretedOption*"
+  "\t\010\350\007\020\200\200\200\200\002J\004\010\005\020\006\"}\n\020EnumValueOptions\022\031\n\n"
+  "deprecated\030\001 \001(\010:\005false\022C\n\024uninterpreted"
+  "_option\030\347\007 \003(\0132$.google.protobuf.Uninter"
+  "pretedOption*\t\010\350\007\020\200\200\200\200\002\"{\n\016ServiceOption"
+  "s\022\031\n\ndeprecated\030! \001(\010:\005false\022C\n\024uninterp"
+  "reted_option\030\347\007 \003(\0132$.google.protobuf.Un"
+  "interpretedOption*\t\010\350\007\020\200\200\200\200\002\"\255\002\n\rMethodO"
+  "ptions\022\031\n\ndeprecated\030! \001(\010:\005false\022_\n\021ide"
+  "mpotency_level\030\" \001(\0162/.google.protobuf.M"
+  "ethodOptions.IdempotencyLevel:\023IDEMPOTEN"
+  "CY_UNKNOWN\022C\n\024uninterpreted_option\030\347\007 \003("
+  "\0132$.google.protobuf.UninterpretedOption\""
+  "P\n\020IdempotencyLevel\022\027\n\023IDEMPOTENCY_UNKNO"
+  "WN\020\000\022\023\n\017NO_SIDE_EFFECTS\020\001\022\016\n\nIDEMPOTENT\020"
+  "\002*\t\010\350\007\020\200\200\200\200\002\"\236\002\n\023UninterpretedOption\022;\n\004"
+  "name\030\002 \003(\0132-.google.protobuf.Uninterpret"
+  "edOption.NamePart\022\030\n\020identifier_value\030\003 "
+  "\001(\t\022\032\n\022positive_int_value\030\004 \001(\004\022\032\n\022negat"
+  "ive_int_value\030\005 \001(\003\022\024\n\014double_value\030\006 \001("
+  "\001\022\024\n\014string_value\030\007 \001(\014\022\027\n\017aggregate_val"
+  "ue\030\010 \001(\t\0323\n\010NamePart\022\021\n\tname_part\030\001 \002(\t\022"
+  "\024\n\014is_extension\030\002 \002(\010\"\325\001\n\016SourceCodeInfo"
+  "\022:\n\010location\030\001 \003(\0132(.google.protobuf.Sou"
+  "rceCodeInfo.Location\032\206\001\n\010Location\022\020\n\004pat"
+  "h\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002\020\001\022\030\n\020leading"
+  "_comments\030\003 \001(\t\022\031\n\021trailing_comments\030\004 \001"
+  "(\t\022!\n\031leading_detached_comments\030\006 \003(\t\"\247\001"
+  "\n\021GeneratedCodeInfo\022A\n\nannotation\030\001 \003(\0132"
+  "-.google.protobuf.GeneratedCodeInfo.Anno"
+  "tation\032O\n\nAnnotation\022\020\n\004path\030\001 \003(\005B\002\020\001\022\023"
+  "\n\013source_file\030\002 \001(\t\022\r\n\005begin\030\003 \001(\005\022\013\n\003en"
+  "d\030\004 \001(\005B~\n\023com.google.protobufB\020Descript"
+  "orProtosH\001Z-google.golang.org/protobuf/t"
+  "ypes/descriptorpb\370\001\001\242\002\003GPB\252\002\032Google.Prot"
+  "obuf.Reflection"
   ;
 static ::_pbi::once_flag descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto = {
-    false, false, 6078, descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto,
+    false, false, 6095, descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto,
     "google/protobuf/descriptor.proto",
     &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once, nullptr, 0, 27,
     schemas, file_default_instances, TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets,
@@ -1576,14 +1580,17 @@ class FileDescriptorProto::_Internal {
   }
   static const ::PROTOBUF_NAMESPACE_ID::FileOptions& options(const FileDescriptorProto* msg);
   static void set_has_options(HasBits* has_bits) {
-    (*has_bits)[0] |= 8u;
+    (*has_bits)[0] |= 16u;
   }
   static const ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo& source_code_info(const FileDescriptorProto* msg);
   static void set_has_source_code_info(HasBits* has_bits) {
-    (*has_bits)[0] |= 16u;
+    (*has_bits)[0] |= 32u;
   }
   static void set_has_syntax(HasBits* has_bits) {
     (*has_bits)[0] |= 4u;
+  }
+  static void set_has_edition(HasBits* has_bits) {
+    (*has_bits)[0] |= 8u;
   }
 };
 
@@ -1617,6 +1624,7 @@ FileDescriptorProto::FileDescriptorProto(const FileDescriptorProto& from)
     , decltype(_impl_.name_){}
     , decltype(_impl_.package_){}
     , decltype(_impl_.syntax_){}
+    , decltype(_impl_.edition_){}
     , decltype(_impl_.options_){nullptr}
     , decltype(_impl_.source_code_info_){nullptr}};
 
@@ -1645,6 +1653,14 @@ FileDescriptorProto::FileDescriptorProto(const FileDescriptorProto& from)
     _this->_impl_.syntax_.Set(from._internal_syntax(), 
       _this->GetArenaForAllocation());
   }
+  _impl_.edition_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.edition_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  if (from._internal_has_edition()) {
+    _this->_impl_.edition_.Set(from._internal_edition(), 
+      _this->GetArenaForAllocation());
+  }
   if (from._internal_has_options()) {
     _this->_impl_.options_ = new ::PROTOBUF_NAMESPACE_ID::FileOptions(*from._impl_.options_);
   }
@@ -1671,6 +1687,7 @@ inline void FileDescriptorProto::SharedCtor(
     , decltype(_impl_.name_){}
     , decltype(_impl_.package_){}
     , decltype(_impl_.syntax_){}
+    , decltype(_impl_.edition_){}
     , decltype(_impl_.options_){nullptr}
     , decltype(_impl_.source_code_info_){nullptr}
   };
@@ -1685,6 +1702,10 @@ inline void FileDescriptorProto::SharedCtor(
   _impl_.syntax_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
     _impl_.syntax_.Set("", GetArenaForAllocation());
+  #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
+  _impl_.edition_.InitDefault();
+  #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
+    _impl_.edition_.Set("", GetArenaForAllocation());
   #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
 }
 
@@ -1709,6 +1730,7 @@ inline void FileDescriptorProto::SharedDtor() {
   _impl_.name_.Destroy();
   _impl_.package_.Destroy();
   _impl_.syntax_.Destroy();
+  _impl_.edition_.Destroy();
   if (this != internal_default_instance()) delete _impl_.options_;
   if (this != internal_default_instance()) delete _impl_.source_code_info_;
 }
@@ -1731,7 +1753,7 @@ void FileDescriptorProto::Clear() {
   _impl_.public_dependency_.Clear();
   _impl_.weak_dependency_.Clear();
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000001fu) {
+  if (cached_has_bits & 0x0000003fu) {
     if (cached_has_bits & 0x00000001u) {
       _impl_.name_.ClearNonDefaultToEmpty();
     }
@@ -1742,10 +1764,13 @@ void FileDescriptorProto::Clear() {
       _impl_.syntax_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000008u) {
+      _impl_.edition_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000010u) {
       GOOGLE_DCHECK(_impl_.options_ != nullptr);
       _impl_.options_->Clear();
     }
-    if (cached_has_bits & 0x00000010u) {
+    if (cached_has_bits & 0x00000020u) {
       GOOGLE_DCHECK(_impl_.source_code_info_ != nullptr);
       _impl_.source_code_info_->Clear();
     }
@@ -1914,6 +1939,18 @@ const char* FileDescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseCo
         } else
           goto handle_unusual;
         continue;
+      // optional string edition = 13;
+      case 13:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 106)) {
+          auto str = _internal_mutable_edition();
+          ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(ptr);
+          #ifndef NDEBUG
+          ::_pbi::VerifyUTF8(str, "google.protobuf.FileDescriptorProto.edition");
+          #endif  // !NDEBUG
+        } else
+          goto handle_unusual;
+        continue;
       default:
         goto handle_unusual;
     }  // switch
@@ -2008,14 +2045,14 @@ uint8_t* FileDescriptorProto::_InternalSerialize(
   }
 
   // optional .google.protobuf.FileOptions options = 8;
-  if (cached_has_bits & 0x00000008u) {
+  if (cached_has_bits & 0x00000010u) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessage(8, _Internal::options(this),
         _Internal::options(this).GetCachedSize(), target, stream);
   }
 
   // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
-  if (cached_has_bits & 0x00000010u) {
+  if (cached_has_bits & 0x00000020u) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessage(9, _Internal::source_code_info(this),
         _Internal::source_code_info(this).GetCachedSize(), target, stream);
@@ -2041,6 +2078,16 @@ uint8_t* FileDescriptorProto::_InternalSerialize(
       "google.protobuf.FileDescriptorProto.syntax");
     target = stream->WriteStringMaybeAliased(
         12, this->_internal_syntax(), target);
+  }
+
+  // optional string edition = 13;
+  if (cached_has_bits & 0x00000008u) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::VerifyUTF8StringNamedField(
+      this->_internal_edition().data(), static_cast<int>(this->_internal_edition().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::SERIALIZE,
+      "google.protobuf.FileDescriptorProto.edition");
+    target = stream->WriteStringMaybeAliased(
+        13, this->_internal_edition(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -2114,7 +2161,7 @@ size_t FileDescriptorProto::ByteSizeLong() const {
   }
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000001fu) {
+  if (cached_has_bits & 0x0000003fu) {
     // optional string name = 1;
     if (cached_has_bits & 0x00000001u) {
       total_size += 1 +
@@ -2136,15 +2183,22 @@ size_t FileDescriptorProto::ByteSizeLong() const {
           this->_internal_syntax());
     }
 
-    // optional .google.protobuf.FileOptions options = 8;
+    // optional string edition = 13;
     if (cached_has_bits & 0x00000008u) {
+      total_size += 1 +
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
+          this->_internal_edition());
+    }
+
+    // optional .google.protobuf.FileOptions options = 8;
+    if (cached_has_bits & 0x00000010u) {
       total_size += 1 +
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
           *_impl_.options_);
     }
 
     // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
-    if (cached_has_bits & 0x00000010u) {
+    if (cached_has_bits & 0x00000020u) {
       total_size += 1 +
         ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
           *_impl_.source_code_info_);
@@ -2177,7 +2231,7 @@ void FileDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, co
   _this->_impl_.public_dependency_.MergeFrom(from._impl_.public_dependency_);
   _this->_impl_.weak_dependency_.MergeFrom(from._impl_.weak_dependency_);
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x0000001fu) {
+  if (cached_has_bits & 0x0000003fu) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_name(from._internal_name());
     }
@@ -2188,10 +2242,13 @@ void FileDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, co
       _this->_internal_set_syntax(from._internal_syntax());
     }
     if (cached_has_bits & 0x00000008u) {
+      _this->_internal_set_edition(from._internal_edition());
+    }
+    if (cached_has_bits & 0x00000010u) {
       _this->_internal_mutable_options()->::PROTOBUF_NAMESPACE_ID::FileOptions::MergeFrom(
           from._internal_options());
     }
-    if (cached_has_bits & 0x00000010u) {
+    if (cached_has_bits & 0x00000020u) {
       _this->_internal_mutable_source_code_info()->::PROTOBUF_NAMESPACE_ID::SourceCodeInfo::MergeFrom(
           from._internal_source_code_info());
     }
@@ -2245,6 +2302,10 @@ void FileDescriptorProto::InternalSwap(FileDescriptorProto* other) {
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
       &_impl_.syntax_, lhs_arena,
       &other->_impl_.syntax_, rhs_arena
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &_impl_.edition_, lhs_arena,
+      &other->_impl_.edition_, rhs_arena
   );
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
       PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_.source_code_info_)

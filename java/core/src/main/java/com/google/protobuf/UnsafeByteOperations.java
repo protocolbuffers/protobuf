@@ -43,7 +43,7 @@ import java.nio.ByteBuffer;
  * ByteString} can lead to unexpected and undesirable consequences in your application, and will
  * likely be difficult to debug. Proceed with caution!
  *
- * <p>This can have a number of significant side affects that have spooky-action-at-a-distance-like
+ * <p>This can have a number of significant side effects that have spooky-action-at-a-distance-like
  * behavior. In particular, if the bytes value changes out from under a Protocol Buffer:
  *
  * <ul>

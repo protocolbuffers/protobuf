@@ -28,80 +28,47 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// LINT: LEGACY_NAMES
-syntax = "proto3";
+#ifndef GOOGLE_PROTOBUF_UTIL_ZERO_COPY_SINK_H__
+#define GOOGLE_PROTOBUF_UTIL_ZERO_COPY_SINK_H__
 
-package protobuf.kotlin.generator;
+#include <cstddef>
 
-option java_package = "com.google.protobuf.kotlin.generator.in";
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 
-message EvilNamesProto3 {
-  bool initialized = 1;
-  bool has_foo = 2;
-  string Bar = 3;
-  bool is_initialized = 4;
+// Must be included last.
+#include <google/protobuf/port_def.inc>
 
-  oneof camelCase {
-    string fooBar = 5;
+namespace google {
+namespace protobuf {
+namespace util {
+namespace zc_sink_internal {
+// Internal helper class. Put in the header so we can write unit-tests for it.
+class PROTOBUF_EXPORT ZeroCopyStreamByteSink : public strings::ByteSink {
+ public:
+  explicit ZeroCopyStreamByteSink(io::ZeroCopyOutputStream* stream)
+      : stream_(stream) {}
+
+  ~ZeroCopyStreamByteSink() override {
+    if (buffer_size_ > 0) {
+      stream_->BackUp(buffer_size_);
+    }
   }
 
-  repeated string ALL_CAPS = 7;
-  map<int32, bool> ALL_CAPS_MAP = 8;
+  void Append(const char* bytes, size_t len) override;
 
-  bool has_underbar_preceding_numeric_1foo = 9;
-  bool has_underbar_preceding_numeric_42bar = 10;
-  bool has_underbar_preceding_numeric_123foo42bar_baz = 11;
+ private:
+  io::ZeroCopyOutputStream* stream_;
+  void* buffer_ = nullptr;
+  int buffer_size_ = 0;
 
-  repeated string extension = 12;
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ZeroCopyStreamByteSink);
+};
+}  // namespace zc_sink_internal
+}  // namespace util
+}  // namespace protobuf
+}  // namespace google
 
-  string class = 13;
-  double int = 14;
-  bool long = 15;
-  int64 boolean = 16;
-  string sealed = 17;
-  float interface = 18;
-  int32 in = 19;
-  string object = 20;
-  string cached_size = 21;
-  bool serialized_size = 22;
-  string value = 23;
-  int64 index = 24;
-  repeated string values = 25;
-  repeated string new_values = 26;
-  bool builder = 27;
-  map<int32, int32> k = 28;
-  map<string, string> v = 29;
-  map<string, int32> key = 30;
-  map<int32, string> map = 31;
-  map<string, int32> pairs = 32;
-
-  string _leading_underscore = 33;
-  oneof _leading_underscore_oneof {
-    int32 option = 34;
-  }
-}
-
-message HardKeywordsAllTypesProto3 {
-  message NestedMessage {
-    optional int32 while = 1;
-  }
-
-  enum NestedEnum {
-    ZERO = 0;
-    FOO = 1;
-    BAR = 2;
-  }
-
-  optional int32 as = 1;
-  optional string in = 2;
-  optional NestedEnum break = 3;
-  map<int32, int32> continue = 4;
-  optional NestedMessage do = 5;
-
-  repeated int32 else = 6;
-  repeated string for = 7;
-  repeated NestedEnum fun = 8;
-  repeated NestedMessage if = 9;
-}
-
-message Class {}
+#include <google/protobuf/port_undef.inc>
+#endif  // GOOGLE_PROTOBUF_UTIL_ZERO_COPY_SINK_H__

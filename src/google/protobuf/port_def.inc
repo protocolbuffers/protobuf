@@ -176,9 +176,29 @@
 // user code can be updated before upgrading versions of protobuf.
 // PROTOBUF_FUTURE_FINAL is used on classes that are historically not marked as
 // final, but that may be marked final in future (breaking) releases.
-// #define PROTOBUF_FUTURE_BREAKING_CHANGES 1
-// #define PROTOBUF_FUTURE_FINAL final
+
+#ifdef PROTOBUF_FUTURE_BREAKING_CHANGES
+// Used on classes that are historically not marked as final.
+// Owner: kfm@
+#define PROTOBUF_FUTURE_FINAL final
+
+// Used to remove the RTTI checks for `DefaultFieldComparator`.
+// Owner: kfm@
+#define PROTOBUF_FUTURE_REMOVE_DEFAULT_FIELD_COMPARATOR 1
+
+// Used to remove the manipulation of cleared elements in RepeatedPtrField.
+// Owner: mkruskal@
+#define PROTOBUF_FUTURE_REMOVE_CLEARED_API 1
+<<<<<<< HEAD
+=======
+
+// Used to escape C++20 keywords.
+// Owner: mkruskal@
+#define PROTOBUF_FUTURE_CPP20_KEYWORDS 1
+>>>>>>> 87d285c785cd1a4334e3e21e5d468a9bc3e85f62
+#else
 #define PROTOBUF_FUTURE_FINAL
+#endif
 
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
@@ -530,6 +550,10 @@
 
 #ifdef PROTOBUF_FORCE_RESET_IN_CLEAR
 #error PROTOBUF_FORCE_RESET_IN_CLEAR was previously defined
+#endif
+
+#ifdef PROTOBUF_FUZZ_MESSAGE_SPACE_USED_LONG
+#error PROTOBUF_FUZZ_MESSAGE_SPACE_USED_LONG was previously defined
 #endif
 
 // Force copy the default string to a string field so that non-optimized builds

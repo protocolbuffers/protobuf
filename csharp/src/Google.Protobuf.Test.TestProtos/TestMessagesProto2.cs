@@ -213,12 +213,13 @@ namespace ProtobufTestMessages.Proto2 {
             "dGlvbmFsX2Jvb2wY7gcgASgIEhcKDnJlcGVhdGVkX2ludDMyGPMHIAMoBRoa",
             "Cg1PcHRpb25hbEdyb3VwEgkKAWEYASABKAUiFgoUTnVsbEh5cG90aGVzaXNQ",
             "cm90bzIiLwoORW51bU9ubHlQcm90bzIiHQoEQm9vbBIKCgZrRmFsc2UQABIJ",
-            "CgVrVHJ1ZRABIh8KD09uZVN0cmluZ1Byb3RvMhIMCgRkYXRhGAEgASgJKkYK",
-            "EUZvcmVpZ25FbnVtUHJvdG8yEg8KC0ZPUkVJR05fRk9PEAASDwoLRk9SRUlH",
-            "Tl9CQVIQARIPCgtGT1JFSUdOX0JBWhACOkoKD2V4dGVuc2lvbl9pbnQzMhIx",
-            "LnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8yLlRlc3RBbGxUeXBlc1By",
-            "b3RvMhh4IAEoBUIvCihjb20uZ29vZ2xlLnByb3RvYnVmX3Rlc3RfbWVzc2Fn",
-            "ZXMucHJvdG8ySAH4AQE="));
+            "CgVrVHJ1ZRABIh8KD09uZVN0cmluZ1Byb3RvMhIMCgRkYXRhGAEgASgJIkYK",
+            "EVByb3RvV2l0aEtleXdvcmRzEg4KBmlubGluZRgBIAEoBRIPCgdjb25jZXB0",
+            "GAIgASgJEhAKCHJlcXVpcmVzGAMgAygJKkYKEUZvcmVpZ25FbnVtUHJvdG8y",
+            "Eg8KC0ZPUkVJR05fRk9PEAASDwoLRk9SRUlHTl9CQVIQARIPCgtGT1JFSUdO",
+            "X0JBWhACOkoKD2V4dGVuc2lvbl9pbnQzMhIxLnByb3RvYnVmX3Rlc3RfbWVz",
+            "c2FnZXMucHJvdG8yLlRlc3RBbGxUeXBlc1Byb3RvMhh4IAEoBUIvCihjb20u",
+            "Z29vZ2xlLnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8ySAH4AQE="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Proto2.ForeignEnumProto2), }, new pb::Extension[] { TestMessagesProto2Extensions.ExtensionInt32 }, new pbr::GeneratedClrTypeInfo[] {
@@ -231,7 +232,8 @@ namespace ProtobufTestMessages.Proto2 {
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.UnknownToTestAllTypes), global::ProtobufTestMessages.Proto2.UnknownToTestAllTypes.Parser, new[]{ "OptionalInt32", "OptionalString", "NestedMessage", "OptionalGroup", "OptionalBool", "RepeatedInt32" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.UnknownToTestAllTypes.Types.OptionalGroup), global::ProtobufTestMessages.Proto2.UnknownToTestAllTypes.Types.OptionalGroup.Parser, new[]{ "A" }, null, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.NullHypothesisProto2), global::ProtobufTestMessages.Proto2.NullHypothesisProto2.Parser, null, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.EnumOnlyProto2), global::ProtobufTestMessages.Proto2.EnumOnlyProto2.Parser, null, null, new[]{ typeof(global::ProtobufTestMessages.Proto2.EnumOnlyProto2.Types.Bool) }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.OneStringProto2), global::ProtobufTestMessages.Proto2.OneStringProto2.Parser, new[]{ "Data" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.OneStringProto2), global::ProtobufTestMessages.Proto2.OneStringProto2.Parser, new[]{ "Data" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto2.ProtoWithKeywords), global::ProtobufTestMessages.Proto2.ProtoWithKeywords.Parser, new[]{ "Inline", "Concept", "Requires" }, null, null, null, null)
           }));
     }
     #endregion
@@ -8291,6 +8293,289 @@ namespace ProtobufTestMessages.Proto2 {
             break;
           case 10: {
             Data = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  public sealed partial class ProtoWithKeywords : pb::IMessage<ProtoWithKeywords>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<ProtoWithKeywords> _parser = new pb::MessageParser<ProtoWithKeywords>(() => new ProtoWithKeywords());
+    private pb::UnknownFieldSet _unknownFields;
+    private int _hasBits0;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<ProtoWithKeywords> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::ProtobufTestMessages.Proto2.TestMessagesProto2Reflection.Descriptor.MessageTypes[6]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public ProtoWithKeywords() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public ProtoWithKeywords(ProtoWithKeywords other) : this() {
+      _hasBits0 = other._hasBits0;
+      inline_ = other.inline_;
+      concept_ = other.concept_;
+      requires_ = other.requires_.Clone();
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public ProtoWithKeywords Clone() {
+      return new ProtoWithKeywords(this);
+    }
+
+    /// <summary>Field number for the "inline" field.</summary>
+    public const int InlineFieldNumber = 1;
+    private readonly static int InlineDefaultValue = 0;
+
+    private int inline_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Inline {
+      get { if ((_hasBits0 & 1) != 0) { return inline_; } else { return InlineDefaultValue; } }
+      set {
+        _hasBits0 |= 1;
+        inline_ = value;
+      }
+    }
+    /// <summary>Gets whether the "inline" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasInline {
+      get { return (_hasBits0 & 1) != 0; }
+    }
+    /// <summary>Clears the value of the "inline" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearInline() {
+      _hasBits0 &= ~1;
+    }
+
+    /// <summary>Field number for the "concept" field.</summary>
+    public const int ConceptFieldNumber = 2;
+    private readonly static string ConceptDefaultValue = "";
+
+    private string concept_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public string Concept {
+      get { return concept_ ?? ConceptDefaultValue; }
+      set {
+        concept_ = pb::ProtoPreconditions.CheckNotNull(value, "value");
+      }
+    }
+    /// <summary>Gets whether the "concept" field is set</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasConcept {
+      get { return concept_ != null; }
+    }
+    /// <summary>Clears the value of the "concept" field</summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearConcept() {
+      concept_ = null;
+    }
+
+    /// <summary>Field number for the "requires" field.</summary>
+    public const int RequiresFieldNumber = 3;
+    private static readonly pb::FieldCodec<string> _repeated_requires_codec
+        = pb::FieldCodec.ForString(26);
+    private readonly pbc::RepeatedField<string> requires_ = new pbc::RepeatedField<string>();
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public pbc::RepeatedField<string> Requires {
+      get { return requires_; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as ProtoWithKeywords);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(ProtoWithKeywords other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (Inline != other.Inline) return false;
+      if (Concept != other.Concept) return false;
+      if(!requires_.Equals(other.requires_)) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (HasInline) hash ^= Inline.GetHashCode();
+      if (HasConcept) hash ^= Concept.GetHashCode();
+      hash ^= requires_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (HasInline) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Inline);
+      }
+      if (HasConcept) {
+        output.WriteRawTag(18);
+        output.WriteString(Concept);
+      }
+      requires_.WriteTo(output, _repeated_requires_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (HasInline) {
+        output.WriteRawTag(8);
+        output.WriteInt32(Inline);
+      }
+      if (HasConcept) {
+        output.WriteRawTag(18);
+        output.WriteString(Concept);
+      }
+      requires_.WriteTo(ref output, _repeated_requires_codec);
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (HasInline) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Inline);
+      }
+      if (HasConcept) {
+        size += 1 + pb::CodedOutputStream.ComputeStringSize(Concept);
+      }
+      size += requires_.CalculateSize(_repeated_requires_codec);
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(ProtoWithKeywords other) {
+      if (other == null) {
+        return;
+      }
+      if (other.HasInline) {
+        Inline = other.Inline;
+      }
+      if (other.HasConcept) {
+        Concept = other.Concept;
+      }
+      requires_.Add(other.requires_);
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            Inline = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            Concept = input.ReadString();
+            break;
+          }
+          case 26: {
+            requires_.AddEntriesFrom(input, _repeated_requires_codec);
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            Inline = input.ReadInt32();
+            break;
+          }
+          case 18: {
+            Concept = input.ReadString();
+            break;
+          }
+          case 26: {
+            requires_.AddEntriesFrom(ref input, _repeated_requires_codec);
             break;
           }
         }

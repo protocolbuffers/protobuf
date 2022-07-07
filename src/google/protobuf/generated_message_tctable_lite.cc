@@ -66,26 +66,25 @@ const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
 // Core fast parsing implementation:
 //////////////////////////////////////////////////////////////////////////////
 
-class TcParser::ScopedArenaSwap final {
- public:
-  ScopedArenaSwap(MessageLite* msg, ParseContext* ctx)
-      : ctx_(ctx), saved_(ctx->data().arena) {
-    ctx_->data().arena = msg->GetArenaForAllocation();
-  }
-  ScopedArenaSwap(const ScopedArenaSwap&) = delete;
-  ~ScopedArenaSwap() { ctx_->data().arena = saved_; }
-
- private:
-  ParseContext* const ctx_;
-  Arena* const saved_;
-};
-
 PROTOBUF_NOINLINE const char* TcParser::ParseLoop(
     MessageLite* msg, const char* ptr, ParseContext* ctx,
     const TcParseTableBase* table) {
-  ScopedArenaSwap saved(msg, ctx);
+  // Note: TagDispatch uses a dispatch table at "&table->fast_entries".
+  // For fast dispatch, we'd like to have a pointer to that, but if we use
+  // that expression, there's no easy way to get back to "table", which we also
+  // need during dispatch.  It turns out that "table + 1" points exactly to
+  // fast_entries, so we just increment table by 1 here, to get the register
+  // holding the value we want.
+  table += 1;
   while (!ctx->Done(&ptr)) {
-    ptr = TagDispatch(msg, ptr, ctx, table, 0, {});
+#if defined(__GNUC__)
+    // Note: this asm prevents the compiler (clang, specifically) from
+    // believing (thanks to CSE) that it needs to dedicate a registeer both
+    // to "table" and "&table->fast_entries".
+    // TODO(b/64614992): remove this asm
+    asm("" : "+r"(table));
+#endif
+    ptr = TagDispatch(msg, ptr, ctx, table - 1, 0, {});
     if (ptr == nullptr) break;
     if (ctx->LastTag() != 1) break;  // Ended on terminating tag
   }
@@ -388,7 +387,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
   if (aux_is_table) {
     const auto* inner_table = table->field_aux(data.aux_idx())->table;
     if (field == nullptr) {
-      field = inner_table->default_instance->New(ctx->data().arena);
+      field = inner_table->default_instance->New(msg->GetArenaForAllocation());
     }
     if (group_coding) {
       return ctx->ParseGroup<TcParser>(field, ptr, FastDecodeTag(saved_tag),
@@ -399,7 +398,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
     if (field == nullptr) {
       const MessageLite* default_instance =
           table->field_aux(data.aux_idx())->message_default();
-      field = default_instance->New(ctx->data().arena);
+      field = default_instance->New(msg->GetArenaForAllocation());
     }
     if (group_coding) {
       return ctx->ParseGroup(field, ptr, FastDecodeTag(saved_tag));
@@ -850,7 +849,13 @@ PROTOBUF_NOINLINE const char* TcParser::SingularVarBigint(
     const ::google::protobuf::internal::TcParseTableBase* table;
     uint64_t hasbits;
   };
-  volatile Spill spill = {data.data, msg, table, hasbits};
+  Spill spill = {data.data, msg, table, hasbits};
+#if defined(__GNUC__)
+  // This empty asm block convinces the compiler that the contents of spill may
+  // have changed, and thus can't be cached in registers.  It's similar to, but
+  // more optimal then, the effect of declaring it "volatile".
+  asm("" : "+m"(spill));
+#endif
 
   uint64_t tmp;
   PROTOBUF_ASSUME(static_cast<int8_t>(*ptr) < 0);
@@ -1167,6 +1172,91 @@ const char* TcParser::FastEvR2(PROTOBUF_TC_PARAM_DECL) {
       PROTOBUF_TC_PARAM_PASS);
 }
 
+template <typename TagType, uint8_t min>
+PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularEnumSmallRange(
+    PROTOBUF_TC_PARAM_DECL) {
+  if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
+    PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
+  }
+
+  uint8_t v = ptr[sizeof(TagType)];
+  if (PROTOBUF_PREDICT_FALSE(min > v || v > data.aux_idx())) {
+    PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
+  }
+
+  RefAt<int32_t>(msg, data.offset()) = v;
+  ptr += sizeof(TagType) + 1;
+  hasbits |= (uint64_t{1} << data.hasbit_idx());
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
+}
+
+const char* TcParser::FastEr0S1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularEnumSmallRange<uint8_t, 0>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
+const char* TcParser::FastEr0S2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularEnumSmallRange<uint16_t, 0>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
+const char* TcParser::FastEr1S1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularEnumSmallRange<uint8_t, 1>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
+const char* TcParser::FastEr1S2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularEnumSmallRange<uint16_t, 1>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
+
+template <typename TagType, uint8_t min>
+PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedEnumSmallRange(
+    PROTOBUF_TC_PARAM_DECL) {
+  if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
+    InvertPacked<WireFormatLite::WIRETYPE_VARINT>(data);
+    if (data.coded_tag<TagType>() == 0) {
+      // Packed parsing is handled by generated fallback.
+      PROTOBUF_MUSTTAIL return FastUnknownEnumFallback(PROTOBUF_TC_PARAM_PASS);
+    } else {
+      PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
+    }
+  }
+  auto& field = RefAt<RepeatedField<int32_t>>(msg, data.offset());
+  auto expected_tag = UnalignedLoad<TagType>(ptr);
+  const uint8_t max = data.aux_idx();
+  do {
+    uint8_t v = ptr[sizeof(TagType)];
+    if (PROTOBUF_PREDICT_FALSE(min > v || v > max)) {
+      PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
+    }
+    field.Add(static_cast<int32_t>(v));
+    ptr += sizeof(TagType) + 1;
+    if (PROTOBUF_PREDICT_FALSE(!ctx->DataAvailable(ptr))) break;
+  } while (UnalignedLoad<TagType>(ptr) == expected_tag);
+
+  PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
+}
+
+const char* TcParser::FastEr0R1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return RepeatedEnumSmallRange<uint8_t, 0>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+const char* TcParser::FastEr0R2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return RepeatedEnumSmallRange<uint16_t, 0>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
+const char* TcParser::FastEr1R1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return RepeatedEnumSmallRange<uint8_t, 1>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+const char* TcParser::FastEr1R2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return RepeatedEnumSmallRange<uint16_t, 1>(
+      PROTOBUF_TC_PARAM_PASS);
+}
+
 //////////////////////////////////////////////////////////////////////////////
 // String/bytes fields
 //////////////////////////////////////////////////////////////////////////////
@@ -1206,7 +1296,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularString(
   ptr += sizeof(TagType);
   hasbits |= (uint64_t{1} << data.hasbit_idx());
   auto& field = RefAt<ArenaStringPtr>(msg, data.offset());
-  auto arena = ctx->data().arena;
+  auto arena = msg->GetArenaForAllocation();
   if (arena) {
     ptr = ctx->ReadArenaString(ptr, &field, arena);
   } else {
@@ -1395,7 +1485,7 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
       case field_layout::kRepGroup:
       case field_layout::kRepIWeak: {
         auto& field = RefAt<MessageLite*>(msg, current_entry->offset);
-        if (!ctx->data().arena) {
+        if (!msg->GetArenaForAllocation()) {
           delete field;
         }
         break;
@@ -1421,10 +1511,11 @@ uint32_t GetSplitOffset(const TcParseTableBase* table) {
 uint32_t GetSizeofSplit(const TcParseTableBase* table) {
   return table->field_aux(kSplitSizeIdx)->offset;
 }
+}  // namespace
 
-void* MaybeGetSplitBase(MessageLite* msg, const bool is_split,
-                        const TcParseTableBase* table,
-                        ::google::protobuf::internal::ParseContext* ctx) {
+void* TcParser::MaybeGetSplitBase(MessageLite* msg, const bool is_split,
+                                  const TcParseTableBase* table,
+                                  ::google::protobuf::internal::ParseContext* ctx) {
   void* out = msg;
   if (is_split) {
     const uint32_t split_offset = GetSplitOffset(table);
@@ -1434,7 +1525,7 @@ void* MaybeGetSplitBase(MessageLite* msg, const bool is_split,
     if (split == default_split) {
       // Allocate split instance when needed.
       uint32_t size = GetSizeofSplit(table);
-      Arena* arena = ctx->data().arena;
+      Arena* arena = msg->GetArenaForAllocation();
       split = (arena == nullptr) ? ::operator new(size)
                                  : arena->AllocateAligned(size);
       memcpy(split, default_split, size);
@@ -1443,7 +1534,6 @@ void* MaybeGetSplitBase(MessageLite* msg, const bool is_split,
   }
   return out;
 }
-}  // namespace
 
 template <bool is_split>
 const char* TcParser::MpFixed(PROTOBUF_TC_PARAM_DECL) {
@@ -1792,12 +1882,12 @@ const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   }
 
   bool is_valid = false;
-  Arena* arena = ctx->data().arena;
   void* const base = MaybeGetSplitBase(msg, is_split, table, ctx);
   switch (rep) {
     case field_layout::kRepAString: {
       auto& field = RefAt<ArenaStringPtr>(base, entry.offset);
       if (need_init) field.InitDefault();
+      Arena* arena = msg->GetArenaForAllocation();
       if (arena) {
         ptr = ctx->ReadArenaString(ptr, &field, arena);
       } else {
@@ -1912,7 +2002,7 @@ const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
   if ((type_card & field_layout::kTvMask) == field_layout::kTvTable) {
     auto* inner_table = table->field_aux(&entry)->table;
     if (need_init || field == nullptr) {
-      field = inner_table->default_instance->New(ctx->data().arena);
+      field = inner_table->default_instance->New(msg->GetArenaForAllocation());
     }
     if (is_group) {
       return ctx->ParseGroup<TcParser>(field, ptr, decoded_tag, inner_table);
@@ -1920,8 +2010,8 @@ const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
     return ctx->ParseMessage<TcParser>(field, ptr, inner_table);
   } else {
     if (need_init || field == nullptr) {
-      field =
-          table->field_aux(&entry)->message_default()->New(ctx->data().arena);
+      field = table->field_aux(&entry)->message_default()->New(
+          msg->GetArenaForAllocation());
     }
     if (is_group) {
       return ctx->ParseGroup(field, ptr, decoded_tag);

@@ -217,7 +217,7 @@ class DescriptorPool(object):
     file_desc.serialized_pb = serialized_file_desc_proto
     return file_desc
 
-  # Add Descriptor to descriptor pool is dreprecated. Please use Add()
+  # Add Descriptor to descriptor pool is deprecated. Please use Add()
   # or AddSerializedFile() to add a FileDescriptorProto instead.
   @_Deprecated
   def AddDescriptor(self, desc):
@@ -242,7 +242,7 @@ class DescriptorPool(object):
     self._descriptors[desc.full_name] = desc
     self._AddFileDescriptor(desc.file)
 
-  # Add EnumDescriptor to descriptor pool is dreprecated. Please use Add()
+  # Add EnumDescriptor to descriptor pool is deprecated. Please use Add()
   # or AddSerializedFile() to add a FileDescriptorProto instead.
   @_Deprecated
   def AddEnumDescriptor(self, enum_desc):
@@ -283,7 +283,7 @@ class DescriptorPool(object):
         self._top_enum_values[full_name] = enum_value
     self._AddFileDescriptor(enum_desc.file)
 
-  # Add ServiceDescriptor to descriptor pool is dreprecated. Please use Add()
+  # Add ServiceDescriptor to descriptor pool is deprecated. Please use Add()
   # or AddSerializedFile() to add a FileDescriptorProto instead.
   @_Deprecated
   def AddServiceDescriptor(self, service_desc):
@@ -304,7 +304,7 @@ class DescriptorPool(object):
                                 service_desc.file.name)
     self._service_descriptors[service_desc.full_name] = service_desc
 
-  # Add ExtensionDescriptor to descriptor pool is dreprecated. Please use Add()
+  # Add ExtensionDescriptor to descriptor pool is deprecated. Please use Add()
   # or AddSerializedFile() to add a FileDescriptorProto instead.
   @_Deprecated
   def AddExtensionDescriptor(self, extension):

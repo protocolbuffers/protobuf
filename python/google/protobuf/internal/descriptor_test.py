@@ -124,7 +124,7 @@ class DescriptorTest(unittest.TestCase):
     method_descriptor = service_descriptor.FindMethodByName('Foo')
     self.assertEqual(method_descriptor.name, 'Foo')
     with self.assertRaises(KeyError):
-        service_descriptor.FindMethodByName('MethodDoesNotExist')
+      service_descriptor.FindMethodByName('MethodDoesNotExist')
 
   def testEnumValueName(self):
     self.assertEqual(self.my_message.EnumValueName('ForeignEnum', 4),

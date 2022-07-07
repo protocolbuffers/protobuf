@@ -45,8 +45,7 @@ namespace internal {
 
 #if defined(PROTOBUF_ARENAZ_SAMPLE)
 struct ThreadSafeArenaStats;
-void RecordResetSlow(ThreadSafeArenaStats* info);
-void RecordAllocateSlow(ThreadSafeArenaStats* info, size_t requested,
+void RecordAllocateSlow(ThreadSafeArenaStats* info, size_t used,
                         size_t allocated, size_t wasted);
 // Stores information about a sampled thread safe arena.  All mutations to this
 // *must* be made through `Record*` functions below.  All reads from this *must*
@@ -67,16 +66,15 @@ struct ThreadSafeArenaStats
   // These fields are mutated by the various Record* APIs and need to be
   // thread-safe.
   std::atomic<int> num_allocations;
-  std::atomic<int> num_resets;
-  std::atomic<size_t> bytes_requested;
+  std::atomic<size_t> bytes_used;
   std::atomic<size_t> bytes_allocated;
   std::atomic<size_t> bytes_wasted;
-  // Records the largest size an arena ever had.  Maintained across resets.
+  // Records the largest size an arena ever had.
   std::atomic<size_t> max_bytes_allocated;
   // Bit `i` is set to 1 indicates that a thread with `tid % 63 = i` accessed
   // the underlying arena.  We use `% 63` as a rudimentary hash to ensure some
   // bit mixing for thread-ids; `% 64` would only grab the low bits and might
-  // create sampling artifacts.  Maintained across resets.
+  // create sampling artifacts.
   std::atomic<uint64_t> thread_ids;
 
   // All of the fields below are set by `PrepareForSampling`, they must not
@@ -87,10 +85,10 @@ struct ThreadSafeArenaStats
   static constexpr int kMaxStackDepth = 64;
   int32_t depth;
   void* stack[kMaxStackDepth];
-  static void RecordAllocateStats(ThreadSafeArenaStats* info, size_t requested,
+  static void RecordAllocateStats(ThreadSafeArenaStats* info, size_t used,
                                   size_t allocated, size_t wasted) {
     if (PROTOBUF_PREDICT_TRUE(info == nullptr)) return;
-    RecordAllocateSlow(info, requested, allocated, wasted);
+    RecordAllocateSlow(info, used, allocated, wasted);
   }
 };
 
@@ -129,11 +127,6 @@ class ThreadSafeArenaStatsHandle {
     }
     info_ = absl::exchange(other.info_, nullptr);
     return *this;
-  }
-
-  void RecordReset() {
-    if (PROTOBUF_PREDICT_TRUE(info_ == nullptr)) return;
-    RecordResetSlow(info_);
   }
 
   ThreadSafeArenaStats* MutableStats() { return info_; }
@@ -211,6 +204,9 @@ void SetThreadSafeArenazEnabled(bool enabled);
 
 // Sets the rate at which thread safe arena will be sampled.
 void SetThreadSafeArenazSampleParameter(int32_t rate);
+
+// Returns the rate at which thread safe arena will be sampled.
+int32_t ThreadSafeArenazSampleParameter();
 
 // Sets a soft max for the number of samples that will be kept.
 void SetThreadSafeArenazMaxSamples(int32_t max);
