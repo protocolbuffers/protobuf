@@ -67,8 +67,9 @@ typedef struct {
 
   // From descriptor_containers.c
   PyTypeObject* by_name_map_type;
+  PyTypeObject* by_name_iterator_type;
   PyTypeObject* by_number_map_type;
-  PyTypeObject* descriptor_iterator_type;
+  PyTypeObject* by_number_iterator_type;
   PyTypeObject* generic_sequence_type;
 
   // From descriptor_pool.c
