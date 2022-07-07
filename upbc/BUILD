@@ -75,6 +75,7 @@ cc_library(
         "common.h",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
+    visibility = ["//third_party/upb/protos_generator:__pkg__"],
     deps = [
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",
