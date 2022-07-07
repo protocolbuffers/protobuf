@@ -78,3 +78,41 @@ alias(
   actual = "//src/google/protobuf:wrappers_proto",
   visibility = ["//visibility:public"],
 )
+
+# Source files - aliases to a filegroup, not a 'proto_library' - internal stuff
+alias(
+  name = "lite_well_known_protos",
+  actual = "//src/google/protobuf:well_known_type_protos", # filegroup
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "well_known_type_protos",
+  actual = "//src/google/protobuf:well_known_type_protos", # filegroup
+  visibility = ["//visibility:public"],
+)
+
+# internal runtime protos - they're not well-known types
+alias(
+  name = "descriptor_proto",
+  actual = "//src/google/protobuf:descriptor_proto", # proto_library
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "descriptor_proto_srcs",
+  actual = "//src/google/protobuf:descriptor_proto_srcs", # filegroup
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "compiler_plugin_proto",
+  actual = "//src/google/protobuf/compiler:plugin_proto", # proto_library
+  visibility = ["//visibility:public"],
+)
+
+cc_library(
+  name = "cc_wkt_protos",
+  deprecation = "Only for backward compatibility; please avoid",
+  visibility = ["//visibility:public"],
+)
