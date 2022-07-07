@@ -132,4 +132,11 @@ filegroup(
   visibility = ["//visibility:public"],
 )
 
+# Compiler
+cc_binary(
+  name = "protoc",
+  linkopts = LINK_OPTS + PROTOC_LINK_OPTS,
+  visibility = ["//visibility:public"],
+  deps = ["//src/google/protobuf/compiler:protoc_lib"],
+)
 
