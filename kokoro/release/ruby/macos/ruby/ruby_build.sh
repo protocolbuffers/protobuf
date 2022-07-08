@@ -9,7 +9,8 @@ export PROTOC=$PWD/bazel-bin/protoc
 
 umask 0022
 pushd ruby
-bundle update && bundle exec rake gem:native
+gem install bundler
+bundle update && bundle exec rake gem
 ls pkg
 mv pkg/* $ARTIFACT_DIR
 popd
