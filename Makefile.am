@@ -1115,7 +1115,9 @@ python_EXTRA_DIST=                                                           \
   python/tox.ini                                                             \
   python/README.md
 
-# Note: please keep this in sync with the dist_files rule in ruby/BUILD.bazel.
+# Note: please keep this in sync with the dist_files rule in ruby/BUILD.bazel,
+# but don't include *_pb.rb files that are generated and included in the
+# distribution.
 ruby_EXTRA_DIST=                                                             \
   ruby/Gemfile                                                               \
   ruby/.gitignore                                                            \
@@ -1141,14 +1143,9 @@ ruby_EXTRA_DIST=                                                             \
   ruby/ext/google/protobuf_c/ruby-upb.h                                      \
   ruby/ext/google/protobuf_c/wrap_memcpy.c                                   \
   ruby/google-protobuf.gemspec                                               \
-  ruby/lib/google/protobuf/any_pb.rb                                         \
-  ruby/lib/google/protobuf/api_pb.rb                                         \
   ruby/lib/google/protobuf/descriptor.rb                                     \
   ruby/lib/google/protobuf/descriptor_dsl.rb                                 \
-  ruby/lib/google/protobuf/descriptor_pb.rb                                  \
   ruby/lib/google/protobuf/descriptor_pool.rb                                \
-  ruby/lib/google/protobuf/duration_pb.rb                                    \
-  ruby/lib/google/protobuf/empty_pb.rb                                       \
   ruby/lib/google/protobuf/enum_descriptor.rb                                \
   ruby/lib/google/protobuf/ffi.rb                                            \
   ruby/lib/google/protobuf/field_descriptor.rb                               \
@@ -1159,12 +1156,7 @@ ruby_EXTRA_DIST=                                                             \
   ruby/lib/google/protobuf/object_cache.rb                                   \
   ruby/lib/google/protobuf/oneof_descriptor.rb                               \
   ruby/lib/google/protobuf/repeated_field.rb                                 \
-  ruby/lib/google/protobuf/source_context_pb.rb                              \
-  ruby/lib/google/protobuf/struct_pb.rb                                      \
-  ruby/lib/google/protobuf/timestamp_pb.rb                                   \
-  ruby/lib/google/protobuf/type_pb.rb                                        \
   ruby/lib/google/protobuf/well_known_types.rb                               \
-  ruby/lib/google/protobuf/wrappers_pb.rb                                    \
   ruby/lib/google/protobuf/internal/arena.rb                                 \
   ruby/lib/google/protobuf/internal/convert.rb                               \
   ruby/lib/google/protobuf/internal/type_safety.rb                           \
