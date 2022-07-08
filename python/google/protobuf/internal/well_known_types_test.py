@@ -36,6 +36,8 @@ import collections.abc as collections_abc
 import datetime
 import unittest
 
+from absl.testing import parameterized
+
 from google.protobuf import any_pb2
 from google.protobuf import duration_pb2
 from google.protobuf import field_mask_pb2
@@ -48,7 +50,6 @@ from google.protobuf.internal import test_util
 from google.protobuf.internal import well_known_types
 from google.protobuf import descriptor
 from google.protobuf import text_format
-from google.protobuf.internal import _parameterized
 
 try:
   # New module in Python 3.9:
@@ -60,7 +61,7 @@ except ImportError:
   _TZ_PACIFIC = datetime.timezone(datetime.timedelta(hours=-8), 'US/Pacific')
 
 
-class TimeUtilTestBase(_parameterized.TestCase):
+class TimeUtilTestBase(parameterized.TestCase):
 
   def CheckTimestampConversion(self, message, text):
     self.assertEqual(text, message.ToJsonString())
@@ -275,7 +276,7 @@ class TimeUtilTest(TimeUtilTestBase):
     self.assertEqual(naive_end_of_time, message.ToDatetime())
 
   # Two hours after the Unix Epoch, around the world.
-  @_parameterized.named_parameters(
+  @parameterized.name_parameters(
       ('London', [1970, 1, 1, 2], datetime.timezone.utc),
       ('Tokyo', [1970, 1, 1, 11], _TZ_JAPAN),
       ('LA', [1969, 12, 31, 18], _TZ_PACIFIC),
