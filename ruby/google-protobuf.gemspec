@@ -9,16 +9,14 @@ Gem::Specification.new do |s|
   s.authors     = ["Protobuf Authors"]
   s.email       = "protobuf@googlegroups.com"
   s.metadata    = { "source_code_uri" => "https://github.com/protocolbuffers/protobuf/tree/#{git_tag}/ruby" }
-  s.files       = FileList.new('lib/**/*.rb')
-  s.extensions  = FileList.new("Rakefile", 'ext/**/*.{c,h}')
-  s.test_files  = ["tests/basic.rb",
-                  "tests/stress.rb",
-                  "tests/generated_code_test.rb"]
-  s.required_ruby_version = '>= 2.3'
-  s.add_dependency 'ffi', '~>1'
-  s.add_dependency 'ffi-compiler', '~>1'
-  s.add_dependency 'rake', '~>13'
+  s.files       = Dir.glob("lib/**/*.rb")
+  s.extensions  = Dir.glob(%w[Rakefile ext/**/*.{c,h}])
+  s.test_files  = %w[tests/basic.rb tests/stress.rb tests/generated_code_test.rb]
+  s.required_ruby_version = ">= 2.3"
+  s.add_dependency "ffi", "~>1"
+  s.add_dependency "ffi-compiler", "~>1"
+  s.add_dependency "rake", "~>13"
   s.add_development_dependency "rake-compiler-dock", "= 1.2.1"
   s.add_development_dependency "rake-compiler", "~> 1.1.0"
-  s.add_development_dependency "test-unit", '~> 3.0', '>= 3.0.9'
+  s.add_development_dependency "test-unit", "~> 3.0", ">= 3.0.9"
 end
