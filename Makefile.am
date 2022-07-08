@@ -1149,7 +1149,6 @@ ruby_EXTRA_DIST=                                                             \
   ruby/lib/google/protobuf/enum_descriptor.rb                                \
   ruby/lib/google/protobuf/ffi.rb                                            \
   ruby/lib/google/protobuf/field_descriptor.rb                               \
-  ruby/lib/google/protobuf/field_mask.rb                                     \
   ruby/lib/google/protobuf/file_descriptor.rb                                \
   ruby/lib/google/protobuf/map.rb                                            \
   ruby/lib/google/protobuf/message_exts.rb                                   \
