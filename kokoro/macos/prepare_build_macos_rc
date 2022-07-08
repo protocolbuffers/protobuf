@@ -23,7 +23,7 @@ export CXX=g++
 # Install Tox
 
 if [[ "${KOKORO_INSTALL_TOX:-}" == "yes" ]] ; then
-  sudo python3 -m pip install --upgrade pip tox
+  sudo python3 -m pip install --upgrade absl-py pip tox
 fi
 
 ##
