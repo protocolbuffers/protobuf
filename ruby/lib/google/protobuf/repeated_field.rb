@@ -112,28 +112,32 @@ module Google
             raise ArgumentError.new "Expected 1 when passing Range argument, but got #{args.size}"
           end
           range = args[0]
-          index = range.first
-          last = range.last
-          if last < 0
-            last += count
+          # Handle begin-less and/or endless ranges, when supported.
+          index_of_first = range.respond_to?(:begin) ? range.begin : range.last
+          index_of_first = 0 if index_of_first.nil?
+          end_of_range = range.respond_to?(:end) ? range.end : range.last
+          index_of_last = end_of_range.nil? ? -1 : end_of_range
+
+          if index_of_last < 0
+            index_of_last += count
           end
-          unless range.exclude_end?
-            last += 1
+          unless range.exclude_end? and !end_of_range.nil?
+            index_of_last += 1
           end
-          index += count if index < 0
-          length = last - index
+          index_of_first += count if index_of_first < 0
+          length = index_of_last - index_of_first
           return [] if length.zero?
         elsif args[0].is_a? Integer
-          index = args[0]
-          index += count if index < 0
+          index_of_first = args[0]
+          index_of_first += count if index_of_first < 0
           if args.size > 2
             raise ArgumentError.new "Expected 1 or 2 arguments, but got #{args.size}"
           end
           if args.size == 1 # No length specified, return one element
-            if array.null? or index < 0 or index >= count
+            if array.null? or index_of_first < 0 or index_of_first >= count
               return nil
             else
-              return convert_upb_to_ruby(Google::Protobuf::FFI.get_msgval_at(array, index), type, descriptor, arena)
+              return convert_upb_to_ruby(Google::Protobuf::FFI.get_msgval_at(array, index_of_first), type, descriptor, arena)
             end
           else
             length = [args[1],count].min
@@ -142,16 +146,16 @@ module Google
           raise NotImplementedError
         end
 
-        if array.null? or index < 0 or index >= count
+        if array.null? or index_of_first < 0 or index_of_first >= count
           nil
         else
-          if index + length > count
-            length = count - index
+          if index_of_first + length > count
+            length = count - index_of_first
           end
           if length < 0
             nil
           else
-            subarray(index, length)
+            subarray(index_of_first, length)
           end
         end
       end
@@ -488,7 +492,7 @@ module Google
         if [:enum, :message].include? field.type
           options[:descriptor] = field.subtype
         end
-        instance.send(:initialize, field.type, options)
+        instance.send(:initialize, field.type, **options)
         instance
       end
 

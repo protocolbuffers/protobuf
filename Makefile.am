@@ -1133,41 +1133,42 @@ ruby_EXTRA_DIST=                                                             \
   ruby/ext/google/protobuf_c/convert.c                                       \
   ruby/ext/google/protobuf_c/convert.h                                       \
   ruby/ext/google/protobuf_c/defs.c                                          \
-  ruby/ext/google/protobuf_c/defs.h                                          \
-  ruby/ext/google/protobuf_c/extconf.rb                                      \
-  ruby/ext/google/protobuf_c/map.c                                           \
-  ruby/ext/google/protobuf_c/map.h                                           \
   ruby/ext/google/protobuf_c/message.c                                       \
   ruby/ext/google/protobuf_c/message.h                                       \
   ruby/ext/google/protobuf_c/protobuf.c                                      \
   ruby/ext/google/protobuf_c/protobuf.h                                      \
-  ruby/ext/google/protobuf_c/repeated_field.c                                \
-  ruby/ext/google/protobuf_c/repeated_field.h                                \
   ruby/ext/google/protobuf_c/ruby-upb.c                                      \
   ruby/ext/google/protobuf_c/ruby-upb.h                                      \
   ruby/ext/google/protobuf_c/wrap_memcpy.c                                   \
   ruby/google-protobuf.gemspec                                               \
+  ruby/lib/google/protobuf/any_pb.rb                                         \
+  ruby/lib/google/protobuf/api_pb.rb                                         \
+  ruby/lib/google/protobuf/descriptor.rb                                     \
   ruby/lib/google/protobuf/descriptor_dsl.rb                                 \
+  ruby/lib/google/protobuf/descriptor_pb.rb                                  \
+  ruby/lib/google/protobuf/descriptor_pool.rb                                \
+  ruby/lib/google/protobuf/duration_pb.rb                                    \
+  ruby/lib/google/protobuf/empty_pb.rb                                       \
+  ruby/lib/google/protobuf/enum_descriptor.rb                                \
+  ruby/lib/google/protobuf/ffi.rb                                            \
+  ruby/lib/google/protobuf/field_descriptor.rb                               \
+  ruby/lib/google/protobuf/field_mask.rb                                     \
+  ruby/lib/google/protobuf/file_descriptor.rb                                \
+  ruby/lib/google/protobuf/map.rb                                            \
   ruby/lib/google/protobuf/message_exts.rb                                   \
+  ruby/lib/google/protobuf/object_cache.rb                                   \
+  ruby/lib/google/protobuf/oneof_descriptor.rb                               \
   ruby/lib/google/protobuf/repeated_field.rb                                 \
+  ruby/lib/google/protobuf/source_context_pb.rb                              \
+  ruby/lib/google/protobuf/struct_pb.rb                                      \
+  ruby/lib/google/protobuf/timestamp_pb.rb                                   \
+  ruby/lib/google/protobuf/type_pb.rb                                        \
   ruby/lib/google/protobuf/well_known_types.rb                               \
+  ruby/lib/google/protobuf/wrappers_pb.rb                                    \
+  ruby/lib/google/protobuf/internal/arena.rb                                 \
+  ruby/lib/google/protobuf/internal/convert.rb                               \
+  ruby/lib/google/protobuf/internal/type_safety.rb                           \
   ruby/lib/google/protobuf.rb                                                \
-  ruby/pom.xml                                                               \
-  ruby/src/main/java/com/google/protobuf/jruby/RubyDescriptor.java           \
-  ruby/src/main/java/com/google/protobuf/jruby/RubyDescriptorPool.java       \
-  ruby/src/main/java/com/google/protobuf/jruby/RubyEnum.java                 \
-  ruby/src/main/java/com/google/protobuf/jruby/RubyEnumDescriptor.java       \
-  ruby/src/main/java/com/google/protobuf/jruby/RubyFieldDescriptor.java      \
-  ruby/src/main/java/com/google/protobuf/jruby/RubyFileDescriptor.java       \
-  ruby/src/main/java/com/google/protobuf/jruby/RubyMap.java                  \
-  ruby/src/main/java/com/google/protobuf/jruby/RubyMessage.java              \
-  ruby/src/main/java/com/google/protobuf/jruby/RubyOneofDescriptor.java      \
-  ruby/src/main/java/com/google/protobuf/jruby/RubyProtobuf.java             \
-  ruby/src/main/java/com/google/protobuf/jruby/RubyRepeatedField.java        \
-  ruby/src/main/java/com/google/protobuf/jruby/SentinelOuterClass.java       \
-  ruby/src/main/java/com/google/protobuf/jruby/Utils.java                    \
-  ruby/src/main/java/google/ProtobufJavaService.java                         \
-  ruby/src/main/sentinel.proto                                               \
   ruby/tests/basic_proto2.rb                                                 \
   ruby/tests/basic_test_proto2.proto                                         \
   ruby/tests/basic_test.proto                                                \

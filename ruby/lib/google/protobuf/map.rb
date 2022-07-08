@@ -374,9 +374,7 @@ module Google
 
         value_field_def = Google::Protobuf::FFI.get_field_by_number(message_descriptor, 2)
         value_field_type = Google::Protobuf::FFI.get_type(value_field_def)
-        options = {initial_values: value, name: field.name, arena: arena, map: map, descriptor: value_field_def.subtype}
-
-        instance.send(:initialize, key_field_type, value_field_type, options)
+        instance.send(:initialize, key_field_type, value_field_type, initial_values: value, name: field.name, arena: arena, map: map, descriptor: value_field_def.subtype)
         instance
       end
 
