@@ -108,6 +108,7 @@ cc_library(
         "upb/decode.c",
         "upb/encode.c",
         "upb/internal/table.h",
+        "upb/internal/unicode.h",
         "upb/msg.c",
         "upb/msg_internal.h",
         "upb/status.c",
@@ -138,6 +139,7 @@ cc_library(
         ":fastdecode",
         ":port",
         ":table_internal",
+        ":unicode_internal",
     ],
 )
 
@@ -448,6 +450,7 @@ cc_library(
         ":encode_internal",
         ":port",
         ":reflection",
+        ":unicode_internal",
         ":upb",
     ],
 )
@@ -819,6 +822,19 @@ cc_library(
         "upb/status.h",
         "upb/string_view.h",
         "upb/upb.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//:__subpackages__"],
+    deps = [":port"],
+)
+
+cc_library(
+    name = "unicode_internal",
+    srcs = [
+        "upb/internal/unicode.c",
+    ],
+    hdrs = [
+        "upb/internal/unicode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],

@@ -32,14 +32,14 @@
 #include <inttypes.h>
 #include <limits.h>
 #include <math.h>
-#include <setjmp.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "upb/encode.h"
+#include "upb/internal/unicode.h"
 #include "upb/reflection.h"
 
-/* Special header, must be included last. */
+// Must be last.
 #include "upb/port_def.inc"
 
 typedef struct {
@@ -377,44 +377,20 @@ static uint32_t jsondec_codepoint(jsondec* d) {
 /* Parses a \uXXXX unicode escape (possibly a surrogate pair). */
 static size_t jsondec_unicode(jsondec* d, char* out) {
   uint32_t cp = jsondec_codepoint(d);
-  if (cp >= 0xd800 && cp <= 0xdbff) {
+  if (upb_Unicode_IsHigh(cp)) {
     /* Surrogate pair: two 16-bit codepoints become a 32-bit codepoint. */
-    uint32_t high = cp;
-    uint32_t low;
     jsondec_parselit(d, "\\u");
-    low = jsondec_codepoint(d);
-    if (low < 0xdc00 || low > 0xdfff) {
-      jsondec_err(d, "Invalid low surrogate");
-    }
-    cp = (high & 0x3ff) << 10;
-    cp |= (low & 0x3ff);
-    cp += 0x10000;
-  } else if (cp >= 0xdc00 && cp <= 0xdfff) {
+    uint32_t low = jsondec_codepoint(d);
+    if (!upb_Unicode_IsLow(low)) jsondec_err(d, "Invalid low surrogate");
+    cp = upb_Unicode_FromPair(cp, low);
+  } else if (upb_Unicode_IsLow(cp)) {
     jsondec_err(d, "Unpaired low surrogate");
   }
 
   /* Write to UTF-8 */
-  if (cp <= 0x7f) {
-    out[0] = cp;
-    return 1;
-  } else if (cp <= 0x07FF) {
-    out[0] = ((cp >> 6) & 0x1F) | 0xC0;
-    out[1] = ((cp >> 0) & 0x3F) | 0x80;
-    return 2;
-  } else if (cp <= 0xFFFF) {
-    out[0] = ((cp >> 12) & 0x0F) | 0xE0;
-    out[1] = ((cp >> 6) & 0x3F) | 0x80;
-    out[2] = ((cp >> 0) & 0x3F) | 0x80;
-    return 3;
-  } else if (cp < 0x10FFFF) {
-    out[0] = ((cp >> 18) & 0x07) | 0xF0;
-    out[1] = ((cp >> 12) & 0x3f) | 0x80;
-    out[2] = ((cp >> 6) & 0x3f) | 0x80;
-    out[3] = ((cp >> 0) & 0x3f) | 0x80;
-    return 4;
-  } else {
-    jsondec_err(d, "Invalid codepoint");
-  }
+  int bytes = upb_Unicode_ToUTF8(cp, out);
+  if (bytes == 0) jsondec_err(d, "Invalid codepoint");
+  return bytes;
 }
 
 static void jsondec_resize(jsondec* d, char** buf, char** end, char** buf_end) {
@@ -460,7 +436,7 @@ static upb_StringView jsondec_string(jsondec* d) {
         if (*d->ptr == 'u') {
           d->ptr++;
           if (buf_end - end < 4) {
-            /* Allow space for maximum-sized code point (4 bytes). */
+            /* Allow space for maximum-sized codepoint (4 bytes). */
             jsondec_resize(d, &buf, &end, &buf_end);
           }
           end += jsondec_unicode(d, end);
