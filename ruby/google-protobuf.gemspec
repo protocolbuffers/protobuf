@@ -9,9 +9,8 @@ Gem::Specification.new do |s|
   s.authors     = ["Protobuf Authors"]
   s.email       = "protobuf@googlegroups.com"
   s.metadata    = { "source_code_uri" => "https://github.com/protocolbuffers/protobuf/tree/#{git_tag}/ruby" }
-  s.require_paths = ["lib"]
-  s.files       = Dir.glob('lib/**/*.rb') + Dir.glob('ext/**/*')
-  s.extensions  = ["Rakefile"] + Dir.glob('ext/**/*')
+  s.files       = FileList.new('lib/**/*.rb')
+  s.extensions  = FileList.new("Rakefile", 'ext/**/*.{c,h}')
   s.test_files  = ["tests/basic.rb",
                   "tests/stress.rb",
                   "tests/generated_code_test.rb"]

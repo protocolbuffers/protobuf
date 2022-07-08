@@ -165,10 +165,11 @@ task :genproto => genproto_output
 task :clean do
   sh "rm -f #{genproto_output.join(' ')}"
   sh "rm -rf `find ext/google/protobuf_c/* -maxdepth 0 -type d`"
+  sh "rm -rf pkg"
 end
 
-# Gem::PackageTask.new(spec) do |pkg|
-# end
+Gem::PackageTask.new(spec) do |pkg|
+end
 
 Rake::TestTask.new(:test => [:build, :genproto]) do |t|
   t.test_files = FileList["tests/*.rb"].exclude("tests/gc_test.rb", "tests/common_tests.rb")
@@ -180,7 +181,8 @@ Rake::TestTask.new(:gc_test => :build) do |t|
   t.test_files = FileList["tests/gc_test.rb"]
 end
 
-task :build => :compile #[:clean, :genproto, :compile]
+Rake::Task[:gem].prereqs.prepend(:clean, :genproto, :copy_third_party)
+task :build => :compile
 task :default => [:build]
 
 # vim:sw=2:et

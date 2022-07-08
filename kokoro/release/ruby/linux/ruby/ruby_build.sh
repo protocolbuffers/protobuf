@@ -10,8 +10,8 @@ export PROTOC=$PWD/src/protoc
 
 umask 0022
 pushd ruby
-gem install bundler -v 2.1.4
-bundle update && bundle exec rake gem:native
+gem install bundler
+bundle update && bundle exec rake gem
 ls pkg
 mv pkg/* $ARTIFACT_DIR
 popd
