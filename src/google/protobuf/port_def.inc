@@ -667,7 +667,7 @@
 #ifdef PROTOBUF_CONSTINIT
 #error PROTOBUF_CONSTINIT was previously defined
 #endif
-#if defined(__cpp_constinit)
+#if defined(__cpp_constinit) && !defined(_MSC_VER)
 #define PROTOBUF_CONSTINIT constinit
 #define PROTOBUF_CONSTEXPR constexpr
 // Some older Clang versions incorrectly raise an error about
@@ -682,6 +682,11 @@
 #elif PROTOBUF_GNUC_MIN(12, 2)
 #define PROTOBUF_CONSTINIT __constinit
 #define PROTOBUF_CONSTEXPR constexpr
+// MSVC 17 currently seems to raise an error about constant-initialized pointers.
+#elif defined(_MSC_VER) && _MSC_VER >= 1930
+#define PROTOBUF_CONSTINIT
+#define PROTOBUF_CONSTEXPR constexpr
+#endif
 #else
 #define PROTOBUF_CONSTINIT
 #define PROTOBUF_CONSTEXPR
