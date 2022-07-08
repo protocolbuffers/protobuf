@@ -181,7 +181,7 @@ Rake::TestTask.new(:gc_test => :build) do |t|
   t.test_files = FileList["tests/gc_test.rb"]
 end
 
-Rake::Task[:gem].prereqs.prepend(:clean, :genproto, :copy_third_party)
+Rake::Task[:gem].prereqs.unshift(:clean, :genproto, :copy_third_party)
 task :build => :compile
 task :default => [:build]
 
