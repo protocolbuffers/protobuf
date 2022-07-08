@@ -9,6 +9,7 @@ pkg_files(
     srcs = glob([
         "compatibility_tests/v3.0.0/**/*",
         "ext/google/protobuf_c/*",
+        "lib/google/protobuf/**/*.rb",
         "tests/*.proto",
         "tests/*.rb",
     ]) + [
@@ -19,7 +20,6 @@ pkg_files(
         "Rakefile",
         "google-protobuf.gemspec",
         "lib/google/protobuf.rb",
-        "lib/google/protobuf/*.rb",
         "travis-test.sh",
     ],
     strip_prefix = strip_prefix.from_root(""),
