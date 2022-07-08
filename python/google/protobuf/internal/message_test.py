@@ -47,6 +47,7 @@ import pydoc
 import sys
 import unittest
 import warnings
+from absl.testing import parameterized
 
 cmp = lambda x, y: (x > y) - (x < y)
 
@@ -63,15 +64,14 @@ from google.protobuf.internal import test_util
 from google.protobuf.internal import test_proto3_optional_pb2
 from google.protobuf.internal import testing_refleaks
 from google.protobuf import message
-from google.protobuf.internal import _parameterized
 
 UCS2_MAXUNICODE = 65535
 
 warnings.simplefilter('error', DeprecationWarning)
 
 
-@_parameterized.named_parameters(('_proto2', unittest_pb2),
-                                ('_proto3', unittest_proto3_arena_pb2))
+@parameterized.named_parameters(('_proto2', unittest_pb2),
+                               ('_proto3', unittest_proto3_arena_pb2))
 @testing_refleaks.TestCase
 class MessageTest(unittest.TestCase):
 
