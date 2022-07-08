@@ -25,6 +25,7 @@ RUN apt-get update && apt-get install -y \
 
 # Install Python libraries.
 RUN python -m pip install --no-cache-dir --upgrade \
+  absl-py \
   pip \
   setuptools \
   tox \
