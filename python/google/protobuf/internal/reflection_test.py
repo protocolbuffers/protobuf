@@ -41,6 +41,8 @@ import sys
 import warnings
 import unittest
 
+from absl.testing import parameterized
+
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
@@ -58,7 +60,6 @@ from google.protobuf.internal import wire_format
 from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
 from google.protobuf.internal import decoder
-from google.protobuf.internal import _parameterized
 
 
 warnings.simplefilter('error', DeprecationWarning)
@@ -109,7 +110,7 @@ class _MiniDecoder(object):
     return self._pos == len(self._bytes)
 
 
-@_parameterized.named_parameters(
+@parameterized.named_parameters(
     ('_proto2', unittest_pb2),
     ('_proto3', unittest_proto3_arena_pb2))
 @testing_refleaks.TestCase
