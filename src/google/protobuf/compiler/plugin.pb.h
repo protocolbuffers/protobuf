@@ -92,9 +92,9 @@ inline const std::string& CodeGeneratorResponse_Feature_Name(T enum_t_value) {
   static_assert(::std::is_same<T, CodeGeneratorResponse_Feature>::value ||
     ::std::is_integral<T>::value,
     "Incorrect type passed to function CodeGeneratorResponse_Feature_Name.");
-  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
-    CodeGeneratorResponse_Feature_descriptor(), enum_t_value);
+  return CodeGeneratorResponse_Feature_Name(static_cast<CodeGeneratorResponse_Feature>(enum_t_value));
 }
+template<> PROTOC_EXPORT const std::string& CodeGeneratorResponse_Feature_Name(CodeGeneratorResponse_Feature value);
 inline bool CodeGeneratorResponse_Feature_Parse(
     ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, CodeGeneratorResponse_Feature* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<CodeGeneratorResponse_Feature>(

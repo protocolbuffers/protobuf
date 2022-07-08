@@ -829,6 +829,8 @@
 #undef CREATE_NEW
 #pragma push_macro("DELETE")
 #undef DELETE
+#pragma push_macro("DOMAIN")
+#undef DOMAIN
 #pragma push_macro("DOUBLE_CLICK")
 #undef DOUBLE_CLICK
 #pragma push_macro("ERROR")

@@ -327,6 +327,8 @@ inline bool IsWeak(const FieldDescriptor* field, const Options& options) {
   return false;
 }
 
+bool IsProfileDriven(const Options& options);
+
 bool IsStringInlined(const FieldDescriptor* descriptor, const Options& options);
 
 // For a string field, returns the effective ctype.  If the actual ctype is

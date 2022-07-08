@@ -38,6 +38,8 @@
 #ifndef GOOGLE_PROTOBUF_GENERATED_MESSAGE_REFLECTION_H__
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_REFLECTION_H__
 
+#include <string>
+
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/once.h>
@@ -367,6 +369,28 @@ PROTOBUF_EXPORT void UnknownFieldSetSerializer(const uint8_t* base,
 struct PROTOBUF_EXPORT AddDescriptorsRunner {
   explicit AddDescriptorsRunner(const DescriptorTable* table);
 };
+
+PROTOBUF_EXPORT const std::string** MakeDenseEnumCache(
+    const EnumDescriptor* desc, int min_val, int max_val);
+
+// Similar to the routine NameOfEnum, this routine returns the name of an enum.
+// Unlike that routine, it allocates, on-demand, a block of pointers to the
+// std::string objects allocated by reflection to store the enum names. This
+// way, as long as the enum values are fairly dense, looking them up can be
+// very fast. This assumes all the enums fall in the range [min_val .. max_val].
+template <const EnumDescriptor* (*descriptor_fn)(), int min_val, int max_val>
+const std::string& NameOfDenseEnum(int v) {
+  static_assert(max_val - min_val >= 0, "Too mamny enums between min and max.");
+  if (PROTOBUF_PREDICT_TRUE(v >= min_val && v <= max_val)) {
+    // This is declared static inside the function so that it's allocated
+    // on-demand.  Because this routine is templated, there is one of these
+    // caches per proto enum type.
+    static const std::string** cache =
+        MakeDenseEnumCache(descriptor_fn(), min_val, max_val);
+    return *cache[v - min_val];
+  }
+  return GetEmptyStringAlreadyInited();
+}
 
 }  // namespace internal
 }  // namespace protobuf

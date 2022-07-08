@@ -147,7 +147,9 @@ static void WriteDocCommentBodyForLocation(io::Printer* printer,
                              ? location.trailing_comments
                              : location.leading_comments;
   if (!comments.empty()) {
-    if (!kdoc) {
+    if (kdoc) {
+      comments = EscapeKdoc(comments);
+    } else {
       comments = EscapeJavadoc(comments);
     }
 

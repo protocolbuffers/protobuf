@@ -46,6 +46,7 @@ option java_outer_classname = "JsonFormatProto3";
 enum EnumType {
   FOO = 0;
   BAR = 1;
+  TLSv1_2 = 2;
 }
 
 message MessageType {

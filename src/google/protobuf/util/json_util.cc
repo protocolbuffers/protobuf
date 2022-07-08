@@ -164,6 +164,7 @@ util::Status JsonToBinaryStream(TypeResolver* resolver,
       options.case_insensitive_enum_parsing;
   converter::ProtoStreamObjectWriter proto_writer(
       resolver, type, &sink, &listener, proto_writer_options);
+  proto_writer.set_use_strict_base64_decoding(false);
 
   converter::JsonStreamParser parser(&proto_writer);
   const void* buffer;

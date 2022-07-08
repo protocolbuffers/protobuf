@@ -475,6 +475,13 @@ public class TimestampsTest {
     Timestamp timestamp = Timestamps.fromDate(date);
     assertThat(Timestamps.toString(timestamp)).isEqualTo("1970-01-01T00:00:01.111Z");
   }
+  
+  @Test
+  public void testFromSqlTimestamp_beforeEpoch() {
+    Date date = new java.sql.Timestamp(-1111);
+    Timestamp timestamp = Timestamps.fromDate(date);
+    assertThat(Timestamps.toString(timestamp)).isEqualTo("1969-12-31T23:59:58.889Z");
+  }
 
   @Test
   public void testTimeOperations() throws Exception {
