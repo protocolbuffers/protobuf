@@ -189,13 +189,10 @@
 // Used to remove the manipulation of cleared elements in RepeatedPtrField.
 // Owner: mkruskal@
 #define PROTOBUF_FUTURE_REMOVE_CLEARED_API 1
-<<<<<<< HEAD
-=======
 
 // Used to escape C++20 keywords.
 // Owner: mkruskal@
 #define PROTOBUF_FUTURE_CPP20_KEYWORDS 1
->>>>>>> 87d285c785cd1a4334e3e21e5d468a9bc3e85f62
 #else
 #define PROTOBUF_FUTURE_FINAL
 #endif
@@ -686,7 +683,6 @@
 #elif defined(_MSC_VER) && _MSC_VER >= 1930
 #define PROTOBUF_CONSTINIT
 #define PROTOBUF_CONSTEXPR constexpr
-#endif
 #else
 #define PROTOBUF_CONSTINIT
 #define PROTOBUF_CONSTEXPR
