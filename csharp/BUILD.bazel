@@ -51,3 +51,9 @@ pkg_files(
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//pkg:__pkg__"],
 )
+
+sh_binary(
+  name = "csharp_release_build",
+  srcs = ["csharp_release_build.sh"],
+  args = ["$(location csharp_release_build.sh)"],
+)
