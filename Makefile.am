@@ -1201,7 +1201,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   LICENSE                                           \
   CONTRIBUTORS.txt                                  \
   CHANGES.txt                                       \
-  update_file_lists.sh                              \
+  update_cmake.sh                                   \
   BUILD.bazel                                       \
   WORKSPACE                                         \
   CMakeLists.txt                                    \
@@ -1209,7 +1209,6 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   build_defs/cc_proto_blacklist_test.bzl            \
   build_defs/compiler_config_setting.bzl            \
   build_defs/cpp_opts.bzl                           \
-  build_files_updated_unittest.sh                   \
   cmake/CMakeLists.txt                              \
   cmake/README.md                                   \
   cmake/conformance.cmake                           \
