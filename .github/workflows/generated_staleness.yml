@@ -28,6 +28,6 @@ jobs:
         run: echo "BAZEL_CACHE_AUTH=--remote_upload_local_results=false" >> $GITHUB_ENV
         if: ${{ github.repository_owner != 'protocolbuffers' }}
       - name: Generate CMake files
-        run: cd ${{ github.workspace }} bazel build //pkg:gen_src_file_lists --test_output=errors $BAZEL_CACHE $BAZEL_CACHE_AUTH ...
+        run: cd ${{ github.workspace }} && bazel build //pkg:gen_src_file_lists --test_output=errors $BAZEL_CACHE $BAZEL_CACHE_AUTH ...
       - name: Compare to Golden file
         run: diff -du bazel-bin/pkg/src_file_lists.cmake src/file_lists.cmake
