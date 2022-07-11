@@ -1201,7 +1201,6 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   LICENSE                                           \
   CONTRIBUTORS.txt                                  \
   CHANGES.txt                                       \
-  update_cmake.sh                                   \
   BUILD.bazel                                       \
   WORKSPACE                                         \
   CMakeLists.txt                                    \
@@ -1225,6 +1224,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   cmake/protobuf-options.cmake                      \
   cmake/protobuf.pc.cmake                           \
   cmake/protoc.cmake                                \
+  cmake/update_cmake.sh                             \
   cmake/tests.cmake                                 \
   cmake/version.rc.in                               \
   csharp/BUILD.bazel                                \
