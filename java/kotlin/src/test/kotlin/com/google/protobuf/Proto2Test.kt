@@ -33,13 +33,6 @@ package com.google.protobuf.kotlin
 import com.google.common.truth.Truth.assertThat
 import com.google.protobuf.TestUtil
 import com.google.protobuf.TestUtil.toBytes
-import com.google.protobuf.kotlin.generator.EvilNamesProto2OuterClass.EvilNamesProto2
-import com.google.protobuf.kotlin.generator.EvilNamesProto2OuterClass.HardKeywordsAllTypesProto2
-import com.google.protobuf.kotlin.generator.EvilNamesProto2OuterClass.Interface
-import com.google.protobuf.kotlin.generator.HardKeywordsAllTypesProto2Kt
-import com.google.protobuf.kotlin.generator.evilNamesProto2
-import com.google.protobuf.kotlin.generator.hardKeywordsAllTypesProto2
-import com.google.protobuf.kotlin.generator.interface_
 import com.google.protobuf.test.UnittestImport.ImportEnum
 import com.google.protobuf.test.UnittestImport.ImportMessage
 import com.google.protobuf.test.UnittestImportPublic.PublicImportMessage
@@ -67,6 +60,13 @@ import protobuf_unittest.testEmptyMessageWithExtensions
 import protobuf_unittest.testEnumMap
 import protobuf_unittest.testIntIntMap
 import protobuf_unittest.testMaps
+import `in`.com.google.protobuf.kotlin.generator.EvilNamesProto2OuterClass.EvilNamesProto2
+import `in`.com.google.protobuf.kotlin.generator.EvilNamesProto2OuterClass.HardKeywordsAllTypesProto2
+import `in`.com.google.protobuf.kotlin.generator.EvilNamesProto2OuterClass.Interface
+import `in`.com.google.protobuf.kotlin.generator.HardKeywordsAllTypesProto2Kt
+import `in`.com.google.protobuf.kotlin.generator.evilNamesProto2
+import `in`.com.google.protobuf.kotlin.generator.hardKeywordsAllTypesProto2
+import `in`.com.google.protobuf.kotlin.generator.interface_
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -183,6 +183,7 @@ class Proto2Test {
       .isEqualTo(TestUtil.getAllSetBuilder().build())
   }
 
+  @Suppress("CheckResult")
   @Test
   fun testGetters() {
     testAllTypes {
@@ -203,6 +204,7 @@ class Proto2Test {
     }
   }
 
+  @Suppress("CheckResult")
   @Test
   fun testDefaultGetters() {
     testAllTypes {
@@ -213,6 +215,7 @@ class Proto2Test {
     }
   }
 
+  @Suppress("CheckResult")
   @Test
   fun testRepeatedGettersAndSetters() {
     testAllTypes {
@@ -294,6 +297,7 @@ class Proto2Test {
     }
   }
 
+  @Suppress("CheckResult")
   @Test
   fun testHazzers() {
     testAllTypes {
@@ -324,6 +328,7 @@ class Proto2Test {
     }
   }
 
+  @Suppress("CheckResult")
   @Test
   fun testClears() {
     testAllTypes {
@@ -512,6 +517,7 @@ class Proto2Test {
       .isEqualTo(TestUtil.getAllExtensionsSet())
   }
 
+  @Suppress("CheckResult")
   @Test
   fun testExtensionGetters() {
     testAllExtensions {
@@ -534,6 +540,7 @@ class Proto2Test {
     }
   }
 
+  @Suppress("CheckResult")
   @Test
   fun testRepeatedExtensionGettersAndSetters() {
     testAllExtensions {
@@ -614,6 +621,7 @@ class Proto2Test {
     }
   }
 
+  @Suppress("CheckResult")
   @Test
   fun testExtensionContains() {
     testAllExtensions {
@@ -644,6 +652,7 @@ class Proto2Test {
     }
   }
 
+  @Suppress("CheckResult")
   @Test
   fun testExtensionClears() {
     testAllExtensions {
@@ -725,6 +734,7 @@ class Proto2Test {
       )
   }
 
+  @Suppress("CheckResult")
   @Test
   fun testMapGettersAndSetters() {
     val intMap = testIntIntMap {
@@ -776,6 +786,7 @@ class Proto2Test {
     }
   }
 
+  @Suppress("CheckResult")
   @Test
   fun testMapRemove() {
     val intMap = testIntIntMap {
@@ -803,6 +814,7 @@ class Proto2Test {
     }
   }
 
+  @Suppress("CheckResult")
   @Test
   fun testMapClear() {
     val intMap = testIntIntMap {
@@ -851,7 +863,6 @@ class Proto2Test {
           boolean = 1L
           sealed = "foo"
           interface_ = 1F
-          in_ = 1
           object_ = "foo"
           cachedSize_ = "foo"
           serializedSize_ = true
@@ -877,7 +888,6 @@ class Proto2Test {
           .setBoolean(1L)
           .setSealed("foo")
           .setInterface(1F)
-          .setIn(1)
           .setObject("foo")
           .setCachedSize_("foo")
           .setSerializedSize_(true)
@@ -888,14 +898,12 @@ class Proto2Test {
     assertThat(interface_ {}).isEqualTo(Interface.newBuilder().build())
   }
 
+  @Suppress("CheckResult")
   @Test
   fun testHardKeywordGettersAndSetters() {
     hardKeywordsAllTypesProto2 {
       as_ = 1
       assertThat(as_).isEqualTo(1)
-
-      in_ = "foo"
-      assertThat(in_).isEqualTo("foo")
 
       break_ = HardKeywordsAllTypesProto2.NestedEnum.FOO
       assertThat(break_).isEqualTo(HardKeywordsAllTypesProto2.NestedEnum.FOO)
@@ -920,14 +928,12 @@ class Proto2Test {
     }
   }
 
+  @Suppress("CheckResult")
   @Test
   fun testHardKeywordHazzers() {
     hardKeywordsAllTypesProto2 {
       as_ = 1
       assertThat(hasAs_()).isTrue()
-
-      in_ = "foo"
-      assertThat(hasIn_()).isTrue()
 
       break_ = HardKeywordsAllTypesProto2.NestedEnum.FOO
       assertThat(hasBreak_()).isTrue()
@@ -937,16 +943,13 @@ class Proto2Test {
     }
   }
 
+  @Suppress("CheckResult")
   @Test
   fun testHardKeywordClears() {
     hardKeywordsAllTypesProto2 {
       as_ = 1
       clearAs_()
       assertThat(hasAs_()).isFalse()
-
-      in_ = "foo"
-      clearIn_()
-      assertThat(hasIn_()).isFalse()
 
       break_ = HardKeywordsAllTypesProto2.NestedEnum.FOO
       clearBreak_()

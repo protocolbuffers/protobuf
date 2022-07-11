@@ -78,6 +78,7 @@ import java.util.logging.Logger;
  *
  * @author kenton@google.com Kenton Varda
  */
+@CheckReturnValue
 public final class Descriptors {
   private static final Logger logger = Logger.getLogger(Descriptors.class.getName());
   private static final int[] EMPTY_INT_ARRAY = new int[0];
