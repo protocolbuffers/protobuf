@@ -7,26 +7,14 @@ on:
 jobs:
   cmake:
     runs-on: ubuntu-latest
-    env:
-      BAZEL_CACHE: --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache
 
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Cloud SDK
-        uses: google-github-actions/auth@v0
-        with:
-          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
-          export_environment_variables: true
-        if: ${{ github.repository_owner == 'protocolbuffers' }}
-      - name: Set up Bazel read/write caching
-        run: echo "BAZEL_CACHE_AUTH=--google_default_credentials" >> $GITHUB_ENV
-        if: ${{ github.repository_owner == 'protocolbuffers' }}
       - name: Set up Bazel read-only caching
         run: echo "BAZEL_CACHE_AUTH=--remote_upload_local_results=false" >> $GITHUB_ENV
-        if: ${{ github.repository_owner != 'protocolbuffers' }}
       - name: Generate CMake files
         run: cd ${{ github.workspace }} && bazel build //pkg:gen_src_file_lists --test_output=errors $BAZEL_CACHE $BAZEL_CACHE_AUTH
       - name: Compare to Golden file
