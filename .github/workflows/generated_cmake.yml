@@ -20,5 +20,5 @@ jobs:
       - name: Compare to Golden file
         run: diff -du bazel-bin/pkg/src_file_lists.cmake src/file_lists.cmake
       - name: Report
-        run: echo "::error CMake files are stale, please run cmake/update_file_lists.sh"
+        run: echo "::error file=cmake/update_file_lists.sh::CMake files are stale, please run cmake/update_file_lists.sh"
         if: failure()
