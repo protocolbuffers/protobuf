@@ -1224,7 +1224,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   cmake/protobuf-options.cmake                      \
   cmake/protobuf.pc.cmake                           \
   cmake/protoc.cmake                                \
-  cmake/update_cmake.sh                             \
+  cmake/update_file_lists.sh                             \
   cmake/tests.cmake                                 \
   cmake/version.rc.in                               \
   csharp/BUILD.bazel                                \
