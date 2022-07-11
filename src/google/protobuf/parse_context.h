@@ -387,7 +387,6 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   struct Data {
     const DescriptorPool* pool = nullptr;
     MessageFactory* factory = nullptr;
-    Arena* arena = nullptr;
   };
 
   template <typename... T>

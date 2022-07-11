@@ -330,6 +330,7 @@ void FieldGenerator::GenerateCopyConstructorCode(io::Printer* printer) const {
   }
 }
 
+
 void SetCommonOneofFieldVariables(
     const FieldDescriptor* descriptor,
     std::map<std::string, std::string>* variables) {
