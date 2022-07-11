@@ -192,7 +192,11 @@ inline const std::string& FieldDescriptorProto_Type_Name(T enum_t_value) {
     "Incorrect type passed to function FieldDescriptorProto_Type_Name.");
   return FieldDescriptorProto_Type_Name(static_cast<FieldDescriptorProto_Type>(enum_t_value));
 }
-template<> PROTOBUF_EXPORT const std::string& FieldDescriptorProto_Type_Name(FieldDescriptorProto_Type value);
+template<>
+inline const std::string& FieldDescriptorProto_Type_Name(FieldDescriptorProto_Type value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
+    <FieldDescriptorProto_Type_descriptor, 1, 18>(static_cast<int>(value));
+}
 inline bool FieldDescriptorProto_Type_Parse(
     ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, FieldDescriptorProto_Type* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldDescriptorProto_Type>(
@@ -216,7 +220,11 @@ inline const std::string& FieldDescriptorProto_Label_Name(T enum_t_value) {
     "Incorrect type passed to function FieldDescriptorProto_Label_Name.");
   return FieldDescriptorProto_Label_Name(static_cast<FieldDescriptorProto_Label>(enum_t_value));
 }
-template<> PROTOBUF_EXPORT const std::string& FieldDescriptorProto_Label_Name(FieldDescriptorProto_Label value);
+template<>
+inline const std::string& FieldDescriptorProto_Label_Name(FieldDescriptorProto_Label value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
+    <FieldDescriptorProto_Label_descriptor, 1, 3>(static_cast<int>(value));
+}
 inline bool FieldDescriptorProto_Label_Parse(
     ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, FieldDescriptorProto_Label* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldDescriptorProto_Label>(
@@ -240,7 +248,11 @@ inline const std::string& FileOptions_OptimizeMode_Name(T enum_t_value) {
     "Incorrect type passed to function FileOptions_OptimizeMode_Name.");
   return FileOptions_OptimizeMode_Name(static_cast<FileOptions_OptimizeMode>(enum_t_value));
 }
-template<> PROTOBUF_EXPORT const std::string& FileOptions_OptimizeMode_Name(FileOptions_OptimizeMode value);
+template<>
+inline const std::string& FileOptions_OptimizeMode_Name(FileOptions_OptimizeMode value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
+    <FileOptions_OptimizeMode_descriptor, 1, 3>(static_cast<int>(value));
+}
 inline bool FileOptions_OptimizeMode_Parse(
     ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, FileOptions_OptimizeMode* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FileOptions_OptimizeMode>(
@@ -264,7 +276,11 @@ inline const std::string& FieldOptions_CType_Name(T enum_t_value) {
     "Incorrect type passed to function FieldOptions_CType_Name.");
   return FieldOptions_CType_Name(static_cast<FieldOptions_CType>(enum_t_value));
 }
-template<> PROTOBUF_EXPORT const std::string& FieldOptions_CType_Name(FieldOptions_CType value);
+template<>
+inline const std::string& FieldOptions_CType_Name(FieldOptions_CType value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
+    <FieldOptions_CType_descriptor, 0, 2>(static_cast<int>(value));
+}
 inline bool FieldOptions_CType_Parse(
     ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, FieldOptions_CType* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldOptions_CType>(
@@ -288,7 +304,11 @@ inline const std::string& FieldOptions_JSType_Name(T enum_t_value) {
     "Incorrect type passed to function FieldOptions_JSType_Name.");
   return FieldOptions_JSType_Name(static_cast<FieldOptions_JSType>(enum_t_value));
 }
-template<> PROTOBUF_EXPORT const std::string& FieldOptions_JSType_Name(FieldOptions_JSType value);
+template<>
+inline const std::string& FieldOptions_JSType_Name(FieldOptions_JSType value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
+    <FieldOptions_JSType_descriptor, 0, 2>(static_cast<int>(value));
+}
 inline bool FieldOptions_JSType_Parse(
     ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, FieldOptions_JSType* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldOptions_JSType>(
@@ -312,7 +332,11 @@ inline const std::string& MethodOptions_IdempotencyLevel_Name(T enum_t_value) {
     "Incorrect type passed to function MethodOptions_IdempotencyLevel_Name.");
   return MethodOptions_IdempotencyLevel_Name(static_cast<MethodOptions_IdempotencyLevel>(enum_t_value));
 }
-template<> PROTOBUF_EXPORT const std::string& MethodOptions_IdempotencyLevel_Name(MethodOptions_IdempotencyLevel value);
+template<>
+inline const std::string& MethodOptions_IdempotencyLevel_Name(MethodOptions_IdempotencyLevel value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
+    <MethodOptions_IdempotencyLevel_descriptor, 0, 2>(static_cast<int>(value));
+}
 inline bool MethodOptions_IdempotencyLevel_Parse(
     ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, MethodOptions_IdempotencyLevel* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<MethodOptions_IdempotencyLevel>(
@@ -336,7 +360,11 @@ inline const std::string& GeneratedCodeInfo_Annotation_Semantic_Name(T enum_t_va
     "Incorrect type passed to function GeneratedCodeInfo_Annotation_Semantic_Name.");
   return GeneratedCodeInfo_Annotation_Semantic_Name(static_cast<GeneratedCodeInfo_Annotation_Semantic>(enum_t_value));
 }
-template<> PROTOBUF_EXPORT const std::string& GeneratedCodeInfo_Annotation_Semantic_Name(GeneratedCodeInfo_Annotation_Semantic value);
+template<>
+inline const std::string& GeneratedCodeInfo_Annotation_Semantic_Name(GeneratedCodeInfo_Annotation_Semantic value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
+    <GeneratedCodeInfo_Annotation_Semantic_descriptor, 0, 2>(static_cast<int>(value));
+}
 inline bool GeneratedCodeInfo_Annotation_Semantic_Parse(
     ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, GeneratedCodeInfo_Annotation_Semantic* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<GeneratedCodeInfo_Annotation_Semantic>(

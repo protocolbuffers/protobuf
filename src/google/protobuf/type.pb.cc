@@ -262,11 +262,6 @@ const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* Field_Kind_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[0];
 }
-template<> PROTOBUF_EXPORT const std::string& Field_Kind_Name(
-    Field_Kind value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
-    <Field_Kind_descriptor, 0, 18>(static_cast<int>(value));
-}
 bool Field_Kind_IsValid(int value) {
   switch (value) {
     case 0:
@@ -322,11 +317,6 @@ const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* Field_Cardinality_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[1];
 }
-template<> PROTOBUF_EXPORT const std::string& Field_Cardinality_Name(
-    Field_Cardinality value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
-    <Field_Cardinality_descriptor, 0, 3>(static_cast<int>(value));
-}
 bool Field_Cardinality_IsValid(int value) {
   switch (value) {
     case 0:
@@ -351,11 +341,6 @@ constexpr int Field::Cardinality_ARRAYSIZE;
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* Syntax_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2ftype_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2ftype_2eproto[2];
-}
-template<> PROTOBUF_EXPORT const std::string& Syntax_Name(
-    Syntax value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
-    <Syntax_descriptor, 0, 1>(static_cast<int>(value));
 }
 bool Syntax_IsValid(int value) {
   switch (value) {

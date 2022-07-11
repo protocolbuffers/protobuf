@@ -176,11 +176,6 @@ const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* NullValue_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fstruct_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fstruct_2eproto[0];
 }
-template<> PROTOBUF_EXPORT const std::string& NullValue_Name(
-    NullValue value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
-    <NullValue_descriptor, 0, 0>(static_cast<int>(value));
-}
 bool NullValue_IsValid(int value) {
   switch (value) {
     case 0:

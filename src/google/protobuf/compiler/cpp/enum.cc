@@ -219,8 +219,12 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     if (ShouldCacheDenseEnum(descriptor_, enum_limits)) {
       format(
-          "template<> $dllexport_decl $"
-          "const std::string& $classname$_Name($classname$ value);\n");
+          "template<>\n"
+          "inline const std::string& $classname$_Name($classname$ value) {\n"
+          "  return ::$proto_ns$::internal::NameOfDenseEnum\n"
+          "    <$classname$_descriptor, $1$, $2$>(static_cast<int>(value));\n"
+          "}\n",
+          enum_limits.min->number(), enum_limits.max->number());
     }
     format(
         "inline bool $classname$_Parse(\n"
@@ -316,18 +320,6 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
         "  return $file_level_enum_descriptors$[$1$];\n"
         "}\n",
         idx);
-
-    MinMaxEnumDescriptors enum_limits = EnumLimits(descriptor_);
-    if (ShouldCacheDenseEnum(descriptor_, enum_limits)) {
-      format(
-          "template<> $dllexport_decl $"
-          "const std::string& $classname$_Name(\n"
-          "    $classname$ value) {\n"
-          "  return ::$proto_ns$::internal::NameOfDenseEnum\n"
-          "    <$classname$_descriptor, $1$, $2$>(static_cast<int>(value));\n"
-          "}\n",
-          enum_limits.min->number(), enum_limits.max->number());
-    }
   }
 
   format(

@@ -219,11 +219,6 @@ const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* CodeGeneratorResponse_Feature_des
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fcompiler_2fplugin_2eproto[0];
 }
-template<> PROTOC_EXPORT const std::string& CodeGeneratorResponse_Feature_Name(
-    CodeGeneratorResponse_Feature value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
-    <CodeGeneratorResponse_Feature_descriptor, 0, 1>(static_cast<int>(value));
-}
 bool CodeGeneratorResponse_Feature_IsValid(int value) {
   switch (value) {
     case 0:

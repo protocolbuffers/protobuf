@@ -88,7 +88,11 @@ inline const std::string& NullValue_Name(T enum_t_value) {
     "Incorrect type passed to function NullValue_Name.");
   return NullValue_Name(static_cast<NullValue>(enum_t_value));
 }
-template<> PROTOBUF_EXPORT const std::string& NullValue_Name(NullValue value);
+template<>
+inline const std::string& NullValue_Name(NullValue value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
+    <NullValue_descriptor, 0, 0>(static_cast<int>(value));
+}
 inline bool NullValue_Parse(
     ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, NullValue* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<NullValue>(

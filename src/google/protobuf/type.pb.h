@@ -109,7 +109,11 @@ inline const std::string& Field_Kind_Name(T enum_t_value) {
     "Incorrect type passed to function Field_Kind_Name.");
   return Field_Kind_Name(static_cast<Field_Kind>(enum_t_value));
 }
-template<> PROTOBUF_EXPORT const std::string& Field_Kind_Name(Field_Kind value);
+template<>
+inline const std::string& Field_Kind_Name(Field_Kind value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
+    <Field_Kind_descriptor, 0, 18>(static_cast<int>(value));
+}
 inline bool Field_Kind_Parse(
     ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, Field_Kind* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<Field_Kind>(
@@ -136,7 +140,11 @@ inline const std::string& Field_Cardinality_Name(T enum_t_value) {
     "Incorrect type passed to function Field_Cardinality_Name.");
   return Field_Cardinality_Name(static_cast<Field_Cardinality>(enum_t_value));
 }
-template<> PROTOBUF_EXPORT const std::string& Field_Cardinality_Name(Field_Cardinality value);
+template<>
+inline const std::string& Field_Cardinality_Name(Field_Cardinality value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
+    <Field_Cardinality_descriptor, 0, 3>(static_cast<int>(value));
+}
 inline bool Field_Cardinality_Parse(
     ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, Field_Cardinality* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<Field_Cardinality>(
@@ -161,7 +169,11 @@ inline const std::string& Syntax_Name(T enum_t_value) {
     "Incorrect type passed to function Syntax_Name.");
   return Syntax_Name(static_cast<Syntax>(enum_t_value));
 }
-template<> PROTOBUF_EXPORT const std::string& Syntax_Name(Syntax value);
+template<>
+inline const std::string& Syntax_Name(Syntax value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
+    <Syntax_descriptor, 0, 1>(static_cast<int>(value));
+}
 inline bool Syntax_Parse(
     ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, Syntax* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<Syntax>(

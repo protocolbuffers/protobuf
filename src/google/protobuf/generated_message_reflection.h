@@ -370,8 +370,14 @@ struct PROTOBUF_EXPORT AddDescriptorsRunner {
   explicit AddDescriptorsRunner(const DescriptorTable* table);
 };
 
-PROTOBUF_EXPORT const std::string** MakeDenseEnumCache(
-    const EnumDescriptor* desc, int min_val, int max_val);
+struct DenseEnumCacheInfo {
+  std::atomic<const std::string**> cache;
+  int min_val;
+  int max_val;
+  const EnumDescriptor* (*descriptor_fn)();
+};
+PROTOBUF_EXPORT const std::string& NameOfDenseEnumSlow(int v,
+                                                       DenseEnumCacheInfo*);
 
 // Similar to the routine NameOfEnum, this routine returns the name of an enum.
 // Unlike that routine, it allocates, on-demand, a block of pointers to the
@@ -381,15 +387,15 @@ PROTOBUF_EXPORT const std::string** MakeDenseEnumCache(
 template <const EnumDescriptor* (*descriptor_fn)(), int min_val, int max_val>
 const std::string& NameOfDenseEnum(int v) {
   static_assert(max_val - min_val >= 0, "Too mamny enums between min and max.");
-  if (PROTOBUF_PREDICT_TRUE(v >= min_val && v <= max_val)) {
-    // This is declared static inside the function so that it's allocated
-    // on-demand.  Because this routine is templated, there is one of these
-    // caches per proto enum type.
-    static const std::string** cache =
-        MakeDenseEnumCache(descriptor_fn(), min_val, max_val);
-    return *cache[v - min_val];
+  static DenseEnumCacheInfo deci = {/* atomic ptr */ {}, min_val, max_val,
+                                    descriptor_fn};
+  const std::string** cache = deci.cache.load(std::memory_order_acquire );
+  if (PROTOBUF_PREDICT_TRUE(cache != nullptr)) {
+    if (PROTOBUF_PREDICT_TRUE(v >= min_val && v <= max_val)) {
+      return *cache[v - min_val];
+    }
   }
-  return GetEmptyStringAlreadyInited();
+  return NameOfDenseEnumSlow(v, &deci);
 }
 
 }  // namespace internal

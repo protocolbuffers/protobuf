@@ -1219,11 +1219,6 @@ const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FieldDescriptorProto_Type_descrip
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[0];
 }
-template<> PROTOBUF_EXPORT const std::string& FieldDescriptorProto_Type_Name(
-    FieldDescriptorProto_Type value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
-    <FieldDescriptorProto_Type_descriptor, 1, 18>(static_cast<int>(value));
-}
 bool FieldDescriptorProto_Type_IsValid(int value) {
   switch (value) {
     case 1:
@@ -1277,11 +1272,6 @@ const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FieldDescriptorProto_Label_descri
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[1];
 }
-template<> PROTOBUF_EXPORT const std::string& FieldDescriptorProto_Label_Name(
-    FieldDescriptorProto_Label value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
-    <FieldDescriptorProto_Label_descriptor, 1, 3>(static_cast<int>(value));
-}
 bool FieldDescriptorProto_Label_IsValid(int value) {
   switch (value) {
     case 1:
@@ -1304,11 +1294,6 @@ constexpr int FieldDescriptorProto::Label_ARRAYSIZE;
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FileOptions_OptimizeMode_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[2];
-}
-template<> PROTOBUF_EXPORT const std::string& FileOptions_OptimizeMode_Name(
-    FileOptions_OptimizeMode value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
-    <FileOptions_OptimizeMode_descriptor, 1, 3>(static_cast<int>(value));
 }
 bool FileOptions_OptimizeMode_IsValid(int value) {
   switch (value) {
@@ -1333,11 +1318,6 @@ const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FieldOptions_CType_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[3];
 }
-template<> PROTOBUF_EXPORT const std::string& FieldOptions_CType_Name(
-    FieldOptions_CType value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
-    <FieldOptions_CType_descriptor, 0, 2>(static_cast<int>(value));
-}
 bool FieldOptions_CType_IsValid(int value) {
   switch (value) {
     case 0:
@@ -1360,11 +1340,6 @@ constexpr int FieldOptions::CType_ARRAYSIZE;
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FieldOptions_JSType_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[4];
-}
-template<> PROTOBUF_EXPORT const std::string& FieldOptions_JSType_Name(
-    FieldOptions_JSType value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
-    <FieldOptions_JSType_descriptor, 0, 2>(static_cast<int>(value));
 }
 bool FieldOptions_JSType_IsValid(int value) {
   switch (value) {
@@ -1389,11 +1364,6 @@ const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* MethodOptions_IdempotencyLevel_de
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[5];
 }
-template<> PROTOBUF_EXPORT const std::string& MethodOptions_IdempotencyLevel_Name(
-    MethodOptions_IdempotencyLevel value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
-    <MethodOptions_IdempotencyLevel_descriptor, 0, 2>(static_cast<int>(value));
-}
 bool MethodOptions_IdempotencyLevel_IsValid(int value) {
   switch (value) {
     case 0:
@@ -1416,11 +1386,6 @@ constexpr int MethodOptions::IdempotencyLevel_ARRAYSIZE;
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* GeneratedCodeInfo_Annotation_Semantic_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[6];
-}
-template<> PROTOBUF_EXPORT const std::string& GeneratedCodeInfo_Annotation_Semantic_Name(
-    GeneratedCodeInfo_Annotation_Semantic value) {
-  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
-    <GeneratedCodeInfo_Annotation_Semantic_descriptor, 0, 2>(static_cast<int>(value));
 }
 bool GeneratedCodeInfo_Annotation_Semantic_IsValid(int value) {
   switch (value) {
