@@ -312,4 +312,31 @@ public class FieldMaskUtilTest {
                     TestAllTypes.newBuilder().setOptionalInt32(1234).setOptionalString("1234"))
                 .build());
   }
+
+  @Test
+  public void testClear() {
+    // Only test a simple case here and expect
+    // {@link FieldMaskTreeTest#testClear} to cover all scenarios.
+    TestAllTypes.Builder payload = TestAllTypes.newBuilder()
+        .setOptionalInt32(1234)
+        .setOptionalString("1234")
+        .setOptionalBool(true);
+    NestedTestAllTypes.Builder nestedChild = NestedTestAllTypes.newBuilder().setPayload(payload);
+    NestedTestAllTypes.Builder sourceBuilder = NestedTestAllTypes.newBuilder()
+        .setPayload(payload)
+        .setChild(nestedChild);
+    NestedTestAllTypes source = sourceBuilder.build();
+
+    FieldMask mask =
+        FieldMaskUtil.fromStringList(
+            ImmutableList.of("payload.optional_int32", "child.payload.optional_string"));
+
+    NestedTestAllTypes actual = FieldMaskUtil.clear(mask, source);
+
+    sourceBuilder.getPayloadBuilder().clearOptionalInt32();
+    sourceBuilder.getChildBuilder().getPayloadBuilder().clearOptionalString();
+    NestedTestAllTypes expected = sourceBuilder.build();
+
+    assertThat(actual).isEqualTo(expected);
+  }
 }

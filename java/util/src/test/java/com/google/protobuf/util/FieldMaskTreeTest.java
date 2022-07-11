@@ -395,4 +395,93 @@ public class FieldMaskTreeTest {
     assertThat(builder.hasPayload()).isTrue();
     assertThat(builder.getPayload().hasOptionalInt32()).isFalse();
   }
+
+
+  @Test
+  public void testMergeClear() {
+    TestAllTypes value =
+        TestAllTypes.newBuilder()
+            .setOptionalInt32(1234)
+            .setOptionalNestedMessage(NestedMessage.newBuilder().setBb(5678))
+            .addRepeatedInt32(4321)
+            .addRepeatedNestedMessage(NestedMessage.newBuilder().setBb(8765))
+            .build();
+    NestedTestAllTypes source =
+        NestedTestAllTypes.newBuilder()
+            .setPayload(value)
+            .setChild(NestedTestAllTypes.newBuilder().setPayload(value))
+            .build();
+    // Now we have a message source with the following structure:
+    //   [root] -+- payload -+- optional_int32
+    //           |           +- optional_nested_message
+    //           |           +- repeated_int32
+    //           |           +- repeated_nested_message
+    //           |
+    //           +- child --- payload -+- optional_int32
+    //                                 +- optional_nested_message
+    //                                 +- repeated_int32
+    //                                 +- repeated_nested_message
+
+    FieldMaskUtil.MergeOptions options = new FieldMaskUtil.MergeOptions().setClearFields(true);
+
+    // Test clearing with an empty FieldMask.
+    NestedTestAllTypes.Builder builder = NestedTestAllTypes.newBuilder();
+    new FieldMaskTree().mergeClear(source, builder);
+    assertThat(builder.build()).isEqualTo(source);
+
+    // Test clearing each individual field.
+    builder = NestedTestAllTypes.newBuilder();
+    new FieldMaskTree().addFieldPath("payload.optional_int32").mergeClear(source, builder);
+    NestedTestAllTypes.Builder expected = source.toBuilder();
+    expected.getPayloadBuilder().clearOptionalInt32();
+    assertThat(builder.build()).isEqualTo(expected.build());
+
+    builder = NestedTestAllTypes.newBuilder();
+    new FieldMaskTree().addFieldPath("payload.optional_nested_message").mergeClear(source, builder);
+    expected = source.toBuilder();
+    expected.getPayloadBuilder().clearOptionalNestedMessage();
+    assertThat(builder.build()).isEqualTo(expected.build());
+
+    builder = NestedTestAllTypes.newBuilder();
+    new FieldMaskTree().addFieldPath("payload.repeated_int32").mergeClear(source, builder);
+    expected = source.toBuilder();
+    expected.getPayloadBuilder().clearRepeatedInt32();
+    assertThat(builder.build()).isEqualTo(expected.build());
+
+    builder = NestedTestAllTypes.newBuilder();
+    new FieldMaskTree().addFieldPath("payload.repeated_nested_message").mergeClear(source, builder);
+    expected = source.toBuilder();
+    expected.getPayloadBuilder().clearRepeatedNestedMessage();
+    assertThat(builder.build()).isEqualTo(expected.build());
+
+    builder = NestedTestAllTypes.newBuilder();
+    new FieldMaskTree().addFieldPath("child.payload.optional_int32").mergeClear(source, builder);
+    expected = source.toBuilder();
+    expected.getChildBuilder().getPayloadBuilder().clearOptionalInt32();
+    assertThat(builder.build()).isEqualTo(expected.build());
+
+    builder = NestedTestAllTypes.newBuilder();
+    new FieldMaskTree().addFieldPath("child.payload.optional_nested_message").mergeClear(source, builder);
+    expected = source.toBuilder();
+    expected.getChildBuilder().getPayloadBuilder().clearOptionalNestedMessage();
+    assertThat(builder.build()).isEqualTo(expected.build());
+
+    builder = NestedTestAllTypes.newBuilder();
+    new FieldMaskTree().addFieldPath("child.payload.repeated_int32").mergeClear(source, builder);
+    expected = source.toBuilder();
+    expected.getChildBuilder().getPayloadBuilder().clearRepeatedInt32();
+    assertThat(builder.build()).isEqualTo(expected.build());
+
+    builder = NestedTestAllTypes.newBuilder();
+    new FieldMaskTree().addFieldPath("child.payload.repeated_nested_message").mergeClear(source, builder);
+    expected = source.toBuilder();
+    expected.getChildBuilder().getPayloadBuilder().clearRepeatedNestedMessage();
+    assertThat(builder.build()).isEqualTo(expected.build());
+
+    // Test clearing all fields.
+    builder = NestedTestAllTypes.newBuilder();
+    new FieldMaskTree().addFieldPath("child").addFieldPath("payload").mergeClear(source, builder);
+    assertThat(builder.build()).isEqualTo(NestedTestAllTypes.getDefaultInstance());
+  }
+
 }

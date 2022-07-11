@@ -312,6 +312,7 @@ public final class FieldMaskUtil {
     // TODO(b/28277137): change the default behavior to always replace primitive fields after
     // fixing all failing TAP tests.
     private boolean replacePrimitiveFields = false;
+    private boolean clearFields = false;
 
     /**
      * Whether to replace message fields (i.e., discard existing content in
@@ -336,6 +337,14 @@ public final class FieldMaskUtil {
      */
     public boolean replacePrimitiveFields() {
       return replacePrimitiveFields;
+    }
+
+    /**
+     * Whether to clear message fields (i.e., discard content in
+     * destination message fields).
+     */
+    boolean clearFields() {
+      return clearFields;
     }
 
     /**
@@ -380,6 +389,18 @@ public final class FieldMaskUtil {
       replacePrimitiveFields = value;
       return this;
     }
+
+    /**
+     * Specify whether to clear all fields specified in the mask. Defaults to false.
+     *
+     * <p>If true, copy all values from the source to the destination except those specified
+     * in the mask.
+     */
+    @CanIgnoreReturnValue
+    MergeOptions setClearFields(boolean value) {
+      clearFields = value;
+      return this;
+    }
   }
 
   /**
@@ -403,8 +424,19 @@ public final class FieldMaskUtil {
    */
   @SuppressWarnings("unchecked")
   public static <P extends Message> P trim(FieldMask mask, P source) {
-   Message.Builder destination = source.newBuilderForType();
+    Message.Builder destination = source.newBuilderForType();
     merge(mask, source, destination);
     return (P) destination.build();
   }
+
+  /**
+   * Returns the result of clearing all the masked fields of the given proto.
+   */
+  @SuppressWarnings("unchecked")
+  public static <P extends Message> P clear(FieldMask mask, P source) {
+    Message.Builder destination = source.newBuilderForType();
+    new FieldMaskTree(mask).mergeClear(source, destination);
+    return (P) destination.build();
+  }
+
 }

@@ -256,6 +256,17 @@ final class FieldMaskTree {
     merge(root, source, destination, options);
   }
 
+  /**
+   * Merges all fields from {@code source} to {@code destination} except for fields specified by this FieldMaskTree
+   */
+  void mergeClear(Message source, Message.Builder destination) {
+    if (source.getDescriptorForType() != destination.getDescriptorForType()) {
+      throw new IllegalArgumentException("Cannot merge messages of different types.");
+    }
+    destination.mergeFrom(source);
+    merge(root, source, destination, new FieldMaskUtil.MergeOptions().setClearFields(true));
+  }
+
   /** Merges all fields specified by a sub-tree from {@code source} to {@code destination}. */
   private static void merge(
       Node node, Message source, Message.Builder destination, FieldMaskUtil.MergeOptions options) {
@@ -276,6 +287,10 @@ final class FieldMaskTree {
                 + entry.getKey()
                 + "\" in message type "
                 + descriptor.getFullName());
+        continue;
+      }
+      if (options.clearFields() && entry.getValue().children.isEmpty()) {
+        destination.clearField(field);
         continue;
       }
       if (!entry.getValue().children.isEmpty()) {
@@ -331,4 +346,5 @@ final class FieldMaskTree {
       }
     }
   }
+
 }
