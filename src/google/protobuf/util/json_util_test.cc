@@ -37,6 +37,10 @@
 #include <string>
 #include <vector>
 
+#include <google/protobuf/duration.pb.h>
+#include <google/protobuf/field_mask.pb.h>
+#include <google/protobuf/struct.pb.h>
+#include <google/protobuf/timestamp.pb.h>
 #include <google/protobuf/wrappers.pb.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -163,14 +167,27 @@ INSTANTIATE_TEST_SUITE_P(JsonTestSuite, JsonTest,
 TEST_P(JsonTest, TestWhitespaces) {
   TestMessage m;
   m.mutable_message_value();
+  m.set_string_value("foo");
+  m.add_repeated_bool_value(true);
+  m.add_repeated_bool_value(false);
 
-  EXPECT_THAT(ToJson(m), IsOkAndHolds("{\"messageValue\":{}}"));
+  EXPECT_THAT(
+      ToJson(m),
+      IsOkAndHolds(
+          R"({"stringValue":"foo","messageValue":{},"repeatedBoolValue":[true,false]})"));
 
   JsonPrintOptions options;
   options.add_whitespace = true;
-  EXPECT_THAT(ToJson(m, options), IsOkAndHolds("{\n"
-                                               " \"messageValue\": {}\n"
-                                               "}\n"));
+  // Note: whitespace here is significant.
+  EXPECT_THAT(ToJson(m, options), IsOkAndHolds(R"({
+ "stringValue": "foo",
+ "messageValue": {},
+ "repeatedBoolValue": [
+  true,
+  false
+ ]
+}
+)"));
 }
 
 TEST_P(JsonTest, TestDefaultValues) {
@@ -202,7 +219,6 @@ TEST_P(JsonTest, TestDefaultValues) {
                                                "\"repeatedMessageValue\":[]"
                                                "}"));
 
-  options.always_print_primitive_fields = true;
   m.set_string_value("i am a test string value");
   m.set_bytes_value("i am a test bytes value");
   EXPECT_THAT(
@@ -230,33 +246,28 @@ TEST_P(JsonTest, TestDefaultValues) {
                    "\"repeatedMessageValue\":[]"
                    "}"));
 
-  options.preserve_proto_field_names = true;
-  m.set_string_value("i am a test string value");
-  m.set_bytes_value("i am a test bytes value");
   EXPECT_THAT(
-      ToJson(m, options),
-      IsOkAndHolds("{\"bool_value\":false,"
-                   "\"int32_value\":0,"
-                   "\"int64_value\":\"0\","
-                   "\"uint32_value\":0,"
-                   "\"uint64_value\":\"0\","
-                   "\"float_value\":0,"
-                   "\"double_value\":0,"
-                   "\"string_value\":\"i am a test string value\","
-                   "\"bytes_value\":\"aSBhbSBhIHRlc3QgYnl0ZXMgdmFsdWU=\","
-                   "\"enum_value\":\"FOO\","
-                   "\"repeated_bool_value\":[],"
-                   "\"repeated_int32_value\":[],"
-                   "\"repeated_int64_value\":[],"
-                   "\"repeated_uint32_value\":[],"
-                   "\"repeated_uint64_value\":[],"
-                   "\"repeated_float_value\":[],"
-                   "\"repeated_double_value\":[],"
-                   "\"repeated_string_value\":[],"
-                   "\"repeated_bytes_value\":[],"
-                   "\"repeated_enum_value\":[],"
-                   "\"repeated_message_value\":[]"
-                   "}"));
+      ToJson(protobuf_unittest::TestAllTypes(), options),
+      IsOkAndHolds(
+          R"({"optionalInt32":0,"optionalInt64":"0","optionalUint32":0,)"
+          R"("optionalUint64":"0","optionalSint32":0,"optionalSint64":"0","optionalFixed32":0,)"
+          R"("optionalFixed64":"0","optionalSfixed32":0,"optionalSfixed64":"0",)"
+          R"("optionalFloat":0,"optionalDouble":0,"optionalBool":false,"optionalString":"",)"
+          R"("optionalBytes":"","optionalgroup":null,"optionalNestedEnum":"FOO","optionalForeignEnum":"FOREIGN_FOO",)"
+          R"("optionalImportEnum":"IMPORT_FOO","optionalStringPiece":"","optionalCord":"",)"
+          R"("repeatedInt32":[],"repeatedInt64":[],"repeatedUint32":[],"repeatedUint64":[],)"
+          R"("repeatedSint32":[],"repeatedSint64":[],"repeatedFixed32":[],"repeatedFixed64":[],)"
+          R"("repeatedSfixed32":[],"repeatedSfixed64":[],"repeatedFloat":[],"repeatedDouble":[],)"
+          R"("repeatedBool":[],"repeatedString":[],"repeatedBytes":[],"repeatedgroup":[],)"
+          R"("repeatedNestedMessage":[],"repeatedForeignMessage":[],"repeatedImportMessage":[],)"
+          R"("repeatedNestedEnum":[],"repeatedForeignEnum":[],"repeatedImportEnum":[],)"
+          R"("repeatedStringPiece":[],"repeatedCord":[],"repeatedLazyMessage":[],"defaultInt32":41,)"
+          R"("defaultInt64":"42","defaultUint32":43,"defaultUint64":"44","defaultSint32":-45,)"
+          R"("defaultSint64":"46","defaultFixed32":47,"defaultFixed64":"48","defaultSfixed32":49,)"
+          R"("defaultSfixed64":"-50","defaultFloat":51.5,"defaultDouble":52000,"defaultBool":true,)"
+          R"("defaultString":"hello","defaultBytes":"d29ybGQ=","defaultNestedEnum":"BAR",)"
+          R"("defaultForeignEnum":"FOREIGN_BAR","defaultImportEnum":"IMPORT_BAR",)"
+          R"("defaultStringPiece":"abc","defaultCord":"123"})"));
 }
 
 TEST_P(JsonTest, TestPreserveProtoFieldNames) {
@@ -270,6 +281,7 @@ TEST_P(JsonTest, TestPreserveProtoFieldNames) {
   JsonPrintOptions options;
   options.preserve_proto_field_names = true;
   EXPECT_THAT(ToJson(m, options), IsOkAndHolds("{\"message_value\":{}}"));
+
 }
 
 TEST_P(JsonTest, TestAlwaysPrintEnumsAsInts) {
@@ -316,7 +328,7 @@ TEST_P(JsonTest, TestPrintEnumsAsIntsWithDefaultValue) {
   EXPECT_EQ(parsed->enum_value3(), proto3::BAR);
 }
 
-TEST_P(JsonTest, DISABLED_TestPrintProto2EnumAsIntWithDefaultValue) {
+TEST_P(JsonTest, TestPrintProto2EnumAsIntWithDefaultValue) {
   protobuf_unittest::TestDefaultEnumValue orig;
 
   JsonPrintOptions print_options;
@@ -332,6 +344,15 @@ TEST_P(JsonTest, DISABLED_TestPrintProto2EnumAsIntWithDefaultValue) {
   EXPECT_EQ(parsed->enum_value(), protobuf_unittest::DEFAULT);
 }
 
+TEST_P(JsonTest, WebSafeBytes) {
+  auto m = ToProto<TestMessage>(R"json({
+      "bytesValue": "-_"
+  })json");
+  ASSERT_OK(m);
+
+  EXPECT_EQ(m->bytes_value(), "\xfb");
+}
+
 TEST_P(JsonTest, ParseMessage) {
   auto m = ToProto<TestMessage>(R"json(
     {
@@ -341,7 +362,7 @@ TEST_P(JsonTest, ParseMessage) {
       "uint32Value": 42,
       "uint64Value": 530242871653669,
       "floatValue": 3.4e+38,
-      "doubleValue": -55.5,
+      "doubleValue": -55.3,
       "stringValue": "foo bar baz",
       "enumValue": "BAR",
       "messageValue": {
@@ -368,7 +389,11 @@ TEST_P(JsonTest, ParseMessage) {
   EXPECT_EQ(m->uint32_value(), 42);
   EXPECT_EQ(m->uint64_value(), 530242871653669);
   EXPECT_EQ(m->float_value(), 3.4e+38f);
-  EXPECT_EQ(m->double_value(), -55.5);
+  EXPECT_EQ(m->double_value(),
+            -55.3);  // This value is intentionally not a nice
+                     // round number in base 2, so its floating point
+                     // representation has many digits at the end, which
+                     // printing back to JSON must handle well.
   EXPECT_EQ(m->string_value(), "foo bar baz");
   EXPECT_EQ(m->enum_value(), proto3::EnumType::BAR);
   EXPECT_EQ(m->message_value().value(), 2048);
@@ -406,11 +431,61 @@ TEST_P(JsonTest, ParseMessage) {
       IsOkAndHolds(
           R"({"boolValue":true,"int32Value":1234567891,"int64Value":"-5302428716536692736",)"
           R"("uint32Value":42,"uint64Value":"530242871653669","floatValue":3.4e+38,)"
-          R"("doubleValue":-55.5,"stringValue":"foo bar baz","enumValue":"BAR",)"
+          R"("doubleValue":-55.3,"stringValue":"foo bar baz","enumValue":"BAR",)"
           R"("messageValue":{"value":2048},"repeatedBoolValue":[true],"repeatedInt32Value":[0,-42])"
           R"(,"repeatedUint64Value":["1","2"],"repeatedDoubleValue":[1.5,-2],)"
           R"("repeatedStringValue":["foo","bar ",""],"repeatedEnumValue":["BAR","FOO"],)"
           R"("repeatedMessageValue":[{"value":40},{"value":96}]})"));
+}
+
+TEST_P(JsonTest, CurseOfAtob) {
+  auto m = ToProto<TestMessage>(R"json(
+    {
+      repeatedBoolValue: ["0", "1", "false", "true", "f", "t", "no", "yes", "n", "y"]
+    }
+  )json");
+  ASSERT_OK(m);
+  EXPECT_EQ(m->repeated_bool_value_size(), 10);
+
+  EXPECT_FALSE(m->repeated_bool_value(0));
+  EXPECT_FALSE(m->repeated_bool_value(2));
+  EXPECT_FALSE(m->repeated_bool_value(4));
+  EXPECT_FALSE(m->repeated_bool_value(6));
+  EXPECT_FALSE(m->repeated_bool_value(8));
+
+  EXPECT_TRUE(m->repeated_bool_value(1));
+  EXPECT_TRUE(m->repeated_bool_value(3));
+  EXPECT_TRUE(m->repeated_bool_value(5));
+  EXPECT_TRUE(m->repeated_bool_value(7));
+  EXPECT_TRUE(m->repeated_bool_value(9));
+}
+
+TEST_P(JsonTest, ParseLegacySingleRepeatedField) {
+  auto m = ToProto<TestMessage>(R"json({
+    "repeatedInt32Value": 1997,
+    "repeatedStringValue": "oh no",
+    "repeatedEnumValue": "BAR",
+    "repeatedMessageValue": {"value": -1}
+  })json");
+  ASSERT_OK(m);
+
+  ASSERT_EQ(m->repeated_int32_value_size(), 1);
+  EXPECT_EQ(m->repeated_int32_value(0), 1997);
+
+  ASSERT_EQ(m->repeated_string_value_size(), 1);
+  EXPECT_EQ(m->repeated_string_value(0), "oh no");
+
+  ASSERT_EQ(m->repeated_enum_value_size(), 1);
+  EXPECT_EQ(m->repeated_enum_value(0), proto3::EnumType::BAR);
+
+  ASSERT_EQ(m->repeated_message_value_size(), 1);
+  EXPECT_EQ(m->repeated_message_value(0).value(), -1);
+
+  EXPECT_THAT(ToJson(*m),
+              IsOkAndHolds(R"({"repeatedInt32Value":[1997],)"
+                           R"("repeatedStringValue":["oh no"],)"
+                           R"("repeatedEnumValue":["BAR"],)"
+                           R"("repeatedMessageValue":[{"value":-1}]})"));
 }
 
 TEST_P(JsonTest, ParseMap) {
@@ -449,6 +524,15 @@ TEST_P(JsonTest, PrintPrimitiveOneof) {
   message.set_oneof_int32_value(1);
   EXPECT_THAT(ToJson(message, options),
               IsOkAndHolds(R"({"oneofInt32Value":1})"));
+}
+
+TEST_P(JsonTest, ParseOverOneof) {
+  TestOneof m;
+  m.set_oneof_string_value("foo");
+  ASSERT_OK(ToProto(m, R"json({
+    "oneofInt32Value": 5,
+  })json"));
+  EXPECT_EQ(m.oneof_int32_value(), 5);
 }
 
 TEST_P(JsonTest, TestParseIgnoreUnknownFields) {
@@ -626,6 +710,19 @@ TEST_P(JsonTest, ParseWrappers) {
       ToJson(*m),
       IsOkAndHolds(
           R"({"boolValue":true,"int32Value":42,"stringValue":"ieieo"})"));
+
+  auto m2 = ToProto<TestWrapper>(R"json(
+    {
+      "boolValue": { "value": true },
+      "int32Value": { "value": 42 },
+      "stringValue": { "value": "ieieo" },
+    }
+  )json");
+  ASSERT_OK(m2);
+
+  EXPECT_TRUE(m2->bool_value().value());
+  EXPECT_EQ(m2->int32_value().value(), 42);
+  EXPECT_EQ(m2->string_value().value(), "ieieo");
 }
 
 TEST_P(JsonTest, TestParsingUnknownAnyFields) {
@@ -728,6 +825,15 @@ TEST_P(JsonTest, TestParsingEnumCaseSensitive) {
   EXPECT_EQ(m.enum_value(), proto3::FOO);
 }
 
+
+TEST_P(JsonTest, TestParsingEnumLowercase) {
+  JsonParseOptions options;
+  options.case_insensitive_enum_parsing = true;
+  auto m = ToProto<TestMessage>(R"json({"enum_value": "TLSv1_2"})json", options);
+  ASSERT_OK(m);
+  EXPECT_THAT(m->enum_value(), proto3::TLSv1_2);
+}
+
 TEST_P(JsonTest, TestParsingEnumIgnoreCase) {
   TestMessage m;
   m.set_enum_value(proto3::FOO);
@@ -736,6 +842,153 @@ TEST_P(JsonTest, TestParsingEnumIgnoreCase) {
   options.case_insensitive_enum_parsing = true;
   ASSERT_OK(ToProto(m, R"json({"enum_value":"bar"})json", options));
   EXPECT_EQ(m.enum_value(), proto3::BAR);
+}
+
+// Parsing does NOT work like MergeFrom: existing repeated field values are
+// clobbered, not appended to.
+TEST_P(JsonTest, TestOverwriteRepeated) {
+  TestMessage m;
+  m.add_repeated_int32_value(5);
+
+  ASSERT_OK(ToProto(m, R"json({"repeated_int32_value": [1, 2, 3]})json"));
+  EXPECT_EQ(m.repeated_int32_value_size(), 3);
+  EXPECT_EQ(m.repeated_int32_value(0), 1);
+  EXPECT_EQ(m.repeated_int32_value(1), 2);
+  EXPECT_EQ(m.repeated_int32_value(2), 3);
+}
+
+
+TEST_P(JsonTest, TestDuration) {
+  auto m = ToProto<proto3::TestDuration>(R"json(
+    {
+      "value": "123456.789s",
+      "repeated_value": ["0.1s", "999s"]
+    }
+  )json");
+  ASSERT_OK(m);
+
+  EXPECT_EQ(m->value().seconds(), 123456);
+  EXPECT_EQ(m->value().nanos(), 789000000);
+  EXPECT_EQ(m->repeated_value().size(), 2);
+  EXPECT_EQ(m->repeated_value(0).seconds(), 0);
+  EXPECT_EQ(m->repeated_value(0).nanos(), 100000000);
+  EXPECT_EQ(m->repeated_value(1).seconds(), 999);
+  EXPECT_EQ(m->repeated_value(1).nanos(), 0);
+
+  EXPECT_THAT(
+      ToJson(*m),
+      IsOkAndHolds(
+          R"({"value":"123456.789s","repeatedValue":["0.100s","999s"]})"));
+
+  auto m2 = ToProto<proto3::TestDuration>(R"json(
+    {
+      "value": {"seconds": 4, "nanos": 5},
+    }
+  )json");
+  ASSERT_OK(m2);
+
+  EXPECT_EQ(m2->value().seconds(), 4);
+  EXPECT_EQ(m2->value().nanos(), 5);
+}
+
+// These tests are not exhaustive; tests in //third_party/protobuf/conformance
+// are more comprehensive.
+TEST_P(JsonTest, TestTimestamp) {
+  auto m = ToProto<proto3::TestTimestamp>(R"json(
+    {
+      "value": "1996-02-27T12:00:00Z",
+      "repeated_value": ["9999-12-31T23:59:59Z"]
+    }
+  )json");
+  ASSERT_OK(m);
+
+  EXPECT_EQ(m->value().seconds(), 825422400);
+  EXPECT_EQ(m->value().nanos(), 0);
+  EXPECT_EQ(m->repeated_value().size(), 1);
+  EXPECT_EQ(m->repeated_value(0).seconds(), 253402300799);
+  EXPECT_EQ(m->repeated_value(0).nanos(), 0);
+
+  EXPECT_THAT(
+      ToJson(*m),
+      IsOkAndHolds(
+          R"({"value":"1996-02-27T12:00:00Z","repeatedValue":["9999-12-31T23:59:59Z"]})"));
+
+  auto m2 = ToProto<proto3::TestTimestamp>(R"json(
+    {
+      "value": {"seconds": 4, "nanos": 5},
+    }
+  )json");
+  ASSERT_OK(m2);
+
+  EXPECT_EQ(m2->value().seconds(), 4);
+  EXPECT_EQ(m2->value().nanos(), 5);
+}
+
+// This test case comes from Envoy's tests. They like to parse a Value out of
+// YAML, turn it into JSON, and then parse it as a different proto. This means
+// we must be extremely careful with integer fields, because they need to
+// round-trip through doubles. This happens all over Envoy. :(
+TEST_P(JsonTest, TestEnvoyRoundTrip) {
+  auto m = ToProto<google::protobuf::Value>(R"json(
+    {
+      "value": {"seconds": 1234567891, "nanos": 234000000},
+    }
+  )json");
+  ASSERT_OK(m);
+
+  auto j = ToJson(*m);
+  ASSERT_OK(j);
+
+  auto m2 = ToProto<proto3::TestTimestamp>(*j);
+  ASSERT_OK(m2);
+
+  EXPECT_EQ(m2->value().seconds(), 1234567891);
+  EXPECT_EQ(m2->value().nanos(), 234000000);
+}
+
+TEST_P(JsonTest, TestFieldMask) {
+  auto m = ToProto<proto3::TestFieldMask>(R"json(
+    {
+      "value": "foo,bar.bazBaz"
+    }
+  )json");
+  ASSERT_OK(m);
+
+  EXPECT_EQ(m->value().paths_size(), 2);
+  EXPECT_EQ(m->value().paths(0), "foo");
+  EXPECT_EQ(m->value().paths(1), "bar.baz_baz");
+
+  EXPECT_THAT(ToJson(*m), IsOkAndHolds(R"({"value":"foo,bar.bazBaz"})"));
+
+  auto m2 = ToProto<proto3::TestFieldMask>(R"json(
+    {
+      "value": {
+        "paths": ["yep.really"]
+      },
+    }
+  )json");
+  ASSERT_OK(m2);
+
+  EXPECT_EQ(m2->value().paths_size(), 1);
+  EXPECT_EQ(m2->value().paths(0), "yep.really");
+}
+
+TEST_P(JsonTest, TestLegalNullsInArray) {
+  auto m = ToProto<proto3::TestNullValue>(R"json({
+    "repeatedNullValue": [null]
+  })json");
+  ASSERT_OK(m);
+
+  EXPECT_EQ(m->repeated_null_value_size(), 1);
+  EXPECT_EQ(m->repeated_null_value(0), google::protobuf::NULL_VALUE);
+
+  auto m2 = ToProto<proto3::TestValue>(R"json({
+    "repeatedValue": [null]
+  })json");
+  ASSERT_OK(m2);
+
+  EXPECT_EQ(m2->repeated_value_size(), 1);
+  EXPECT_TRUE(m2->repeated_value(0).has_null_value());
 }
 
 TEST_P(JsonTest, DISABLED_HtmlEscape) {

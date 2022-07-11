@@ -603,6 +603,12 @@ class GeneratedDescriptorTest(unittest.TestCase):
   def CheckDescriptorMapping(self, mapping):
     # Verifies that a property like 'messageDescriptor.fields' has all the
     # properties of an immutable abc.Mapping.
+    iterated_keys = []
+    for key in mapping:
+      iterated_keys.append(key)
+    self.assertEqual(len(iterated_keys), len(mapping))
+    self.assertEqual(set(iterated_keys), set(mapping.keys()))
+
     self.assertNotEqual(
         mapping, unittest_pb2.TestAllExtensions.DESCRIPTOR.fields_by_name)
     self.assertNotEqual(mapping, {})
@@ -619,10 +625,15 @@ class GeneratedDescriptorTest(unittest.TestCase):
     with self.assertRaises(TypeError):
       mapping.get()
     # TODO(jieluo): Fix python and cpp extension diff.
-    if api_implementation.Type() == 'python':
-      self.assertRaises(TypeError, mapping.get, [])
-    else:
+    if api_implementation.Type() == 'cpp':
       self.assertEqual(None, mapping.get([]))
+    else:
+      self.assertRaises(TypeError, mapping.get, [])
+      with self.assertRaises(TypeError):
+        if [] in mapping:
+          pass
+      with self.assertRaises(TypeError):
+        _ = mapping[[]]
     # keys(), iterkeys() &co
     item = (next(iter(mapping.keys())), next(iter(mapping.values())))
     self.assertEqual(item, next(iter(mapping.items())))
@@ -634,10 +645,12 @@ class GeneratedDescriptorTest(unittest.TestCase):
     self.assertRaises(KeyError, mapping.__getitem__, 'key_error')
     self.assertRaises(KeyError, mapping.__getitem__, len(mapping) + 1)
     # TODO(jieluo): Add __repr__ support for DescriptorMapping.
-    if api_implementation.Type() == 'python':
-      self.assertEqual(len(str(dict(mapping.items()))), len(str(mapping)))
-    else:
+    if api_implementation.Type() == 'cpp':
       self.assertEqual(str(mapping)[0], '<')
+    else:
+      print(str(dict(mapping.items()))[:100])
+      print(str(mapping)[:100])
+      self.assertEqual(len(str(dict(mapping.items()))), len(str(mapping)))
 
   def testDescriptor(self):
     message_descriptor = unittest_pb2.TestAllTypes.DESCRIPTOR

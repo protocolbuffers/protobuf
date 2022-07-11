@@ -34,6 +34,7 @@
 
 #include <google/protobuf/compiler/cpp/helpers.h>
 
+#include <algorithm>
 #include <cstdint>
 #include <functional>
 #include <limits>
@@ -870,6 +871,10 @@ std::string SafeFunctionName(const Descriptor* descriptor,
     function_name.append("_");
   }
   return function_name;
+}
+
+bool IsProfileDriven(const Options& options) {
+  return options.access_info_map != nullptr;
 }
 
 

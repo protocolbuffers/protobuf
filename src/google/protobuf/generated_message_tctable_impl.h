@@ -54,6 +54,12 @@ class UnknownFieldSet;
 
 namespace internal {
 
+enum {
+  kInlinedStringAuxIdx = 0,
+  kSplitOffsetAuxIdx = 1,
+  kSplitSizeAuxIdx = 2,
+};
+
 // Field layout enums.
 //
 // Structural information about fields is packed into a 16-bit value. The enum

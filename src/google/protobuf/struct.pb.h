@@ -86,8 +86,12 @@ inline const std::string& NullValue_Name(T enum_t_value) {
   static_assert(::std::is_same<T, NullValue>::value ||
     ::std::is_integral<T>::value,
     "Incorrect type passed to function NullValue_Name.");
-  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
-    NullValue_descriptor(), enum_t_value);
+  return NullValue_Name(static_cast<NullValue>(enum_t_value));
+}
+template<>
+inline const std::string& NullValue_Name(NullValue value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfDenseEnum
+    <NullValue_descriptor, 0, 0>(static_cast<int>(value));
 }
 inline bool NullValue_Parse(
     ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, NullValue* value) {
