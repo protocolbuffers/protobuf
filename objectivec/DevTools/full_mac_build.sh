@@ -8,6 +8,7 @@ set -eu
 # Some base locations.
 readonly ScriptDir=$(dirname "$(echo $0 | sed -e "s,^\([^/]\),$(pwd)/\1,")")
 readonly ProtoRootDir="${ScriptDir}/../.."
+readonly BazelFlags="-k --test_output=streamed --macos_minimum_os=10.9"
 
 printUsage() {
   NAME=$(basename "${0}")
@@ -217,15 +218,14 @@ fi
 
 if [[ "${CORE_ONLY}" == "yes" ]] ; then
   header "Building core Only"
-  wrapped_make -j "${NUM_MAKE_JOBS}"
+  bazel build //:protoc //:protobuf //:protobuf_lite -j "${NUM_JOBS}" $BazelFlags
 else
   header "Building"
   # Can't issue these together, when fully parallel, something sometimes chokes
   # at random.
-  wrapped_make -j "${NUM_MAKE_JOBS}" all
-  wrapped_make -j "${NUM_MAKE_JOBS}" check
+  bazel test //src/... $BazelFlags
   # Fire off the conformance tests also.
-  bazel test //objectivec:conformance_test
+  bazel test //objectivec:conformance_test $BazelFlags
 fi
 
 # Ensure the WKT sources checked in are current.
@@ -389,7 +389,7 @@ fi
 
 if [[ "${DO_OBJC_CONFORMANCE_TESTS}" == "yes" ]] ; then
   header "Running ObjC Conformance Tests"
-  bazel test //objectivec:conformance_test
+  bazel test //objectivec:conformance_test $BazelFlags
 fi
 
 echo ""
