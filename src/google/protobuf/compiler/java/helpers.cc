@@ -279,6 +279,19 @@ bool IsForbiddenKotlin(const std::string& field_name) {
          kKotlinForbiddenNames->end();
 }
 
+std::string EscapeKotlinKeywords(std::string name) {
+  std::vector<std::string> escaped_packages;
+  std::vector<std::string> packages = Split(name, "."); // NOLINT
+  for (const std::string& package : packages) {
+    if (IsForbiddenKotlin(package)) {
+      escaped_packages.push_back("`" + package + "`");
+    } else {
+      escaped_packages.push_back(package);
+    }
+  }
+  return Join(escaped_packages, ".");
+}
+
 std::string UniqueFileScopeIdentifier(const Descriptor* descriptor) {
   return "static_" + StringReplace(descriptor->full_name(), ".", "_", true);
 }

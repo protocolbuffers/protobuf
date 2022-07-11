@@ -116,7 +116,7 @@ void* RepeatedPtrFieldBase::AddOutOfLineHelper(void* obj) {
     InternalExtend(1);  // Equivalent to "Reserve(total_size_ + 1)"
   }
   ++rep_->allocated_size;
-  rep_->elements[current_size_++] = obj;
+  rep_->elements[ExchangeCurrentSize(current_size_ + 1)] = obj;
   return obj;
 }
 
@@ -125,13 +125,14 @@ void RepeatedPtrFieldBase::CloseGap(int start, int num) {
   // Close up a gap of "num" elements starting at offset "start".
   for (int i = start + num; i < rep_->allocated_size; ++i)
     rep_->elements[i - num] = rep_->elements[i];
-  current_size_ -= num;
+  ExchangeCurrentSize(current_size_ - num);
   rep_->allocated_size -= num;
 }
 
 MessageLite* RepeatedPtrFieldBase::AddWeak(const MessageLite* prototype) {
   if (rep_ != nullptr && current_size_ < rep_->allocated_size) {
-    return reinterpret_cast<MessageLite*>(rep_->elements[current_size_++]);
+    return reinterpret_cast<MessageLite*>(
+        rep_->elements[ExchangeCurrentSize(current_size_ + 1)]);
   }
   if (!rep_ || rep_->allocated_size == total_size_) {
     Reserve(total_size_ + 1);
@@ -140,7 +141,7 @@ MessageLite* RepeatedPtrFieldBase::AddWeak(const MessageLite* prototype) {
   MessageLite* result = prototype
                             ? prototype->New(arena_)
                             : Arena::CreateMessage<ImplicitWeakMessage>(arena_);
-  rep_->elements[current_size_++] = result;
+  rep_->elements[ExchangeCurrentSize(current_size_ + 1)] = result;
   return result;
 }
 

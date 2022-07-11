@@ -712,7 +712,7 @@ void FileGenerator::GenerateKotlinSiblings(
       printer.Print(
           "package $package$;\n"
           "\n",
-          "package", java_package_);
+          "package", EscapeKotlinKeywords(java_package_));
     }
 
     generator->GenerateKotlinMembers(&printer);

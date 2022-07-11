@@ -176,9 +176,29 @@
 // user code can be updated before upgrading versions of protobuf.
 // PROTOBUF_FUTURE_FINAL is used on classes that are historically not marked as
 // final, but that may be marked final in future (breaking) releases.
-// #define PROTOBUF_FUTURE_BREAKING_CHANGES 1
-// #define PROTOBUF_FUTURE_FINAL final
+
+#ifdef PROTOBUF_FUTURE_BREAKING_CHANGES
+// Used on classes that are historically not marked as final.
+// Owner: kfm@
+#define PROTOBUF_FUTURE_FINAL final
+
+// Used to remove the RTTI checks for `DefaultFieldComparator`.
+// Owner: kfm@
+#define PROTOBUF_FUTURE_REMOVE_DEFAULT_FIELD_COMPARATOR 1
+
+// Used to remove the manipulation of cleared elements in RepeatedPtrField.
+// Owner: mkruskal@
+#define PROTOBUF_FUTURE_REMOVE_CLEARED_API 1
+<<<<<<< HEAD
+=======
+
+// Used to escape C++20 keywords.
+// Owner: mkruskal@
+#define PROTOBUF_FUTURE_CPP20_KEYWORDS 1
+>>>>>>> 87d285c785cd1a4334e3e21e5d468a9bc3e85f62
+#else
 #define PROTOBUF_FUTURE_FINAL
+#endif
 
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
@@ -532,6 +552,10 @@
 #error PROTOBUF_FORCE_RESET_IN_CLEAR was previously defined
 #endif
 
+#ifdef PROTOBUF_FUZZ_MESSAGE_SPACE_USED_LONG
+#error PROTOBUF_FUZZ_MESSAGE_SPACE_USED_LONG was previously defined
+#endif
+
 // Force copy the default string to a string field so that non-optimized builds
 // have harder-to-rely-on address stability.
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -643,20 +667,25 @@
 #ifdef PROTOBUF_CONSTINIT
 #error PROTOBUF_CONSTINIT was previously defined
 #endif
-#if defined(__cpp_constinit)
+#if defined(__cpp_constinit) && !defined(_MSC_VER)
 #define PROTOBUF_CONSTINIT constinit
 #define PROTOBUF_CONSTEXPR constexpr
 // Some older Clang versions incorrectly raise an error about
 // constant-initializing weak default instance pointers. Versions 12.0 and
 // higher seem to work, except that XCode 12.5.1 shows the error even though it
 // uses Clang 12.0.5.
-#elif __has_cpp_attribute(clang::require_constant_initialization) && \
+// Clang-cl on Windows raises error also.
+#elif !defined(_MSC_VER) && __has_cpp_attribute(clang::require_constant_initialization) && \
     ((defined(__APPLE__) && __clang_major__ >= 13) ||                \
      (!defined(__APPLE__) && __clang_major__ >= 12))
 #define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
 #define PROTOBUF_CONSTEXPR constexpr
 #elif PROTOBUF_GNUC_MIN(12, 2)
 #define PROTOBUF_CONSTINIT __constinit
+#define PROTOBUF_CONSTEXPR constexpr
+// MSVC 17 currently seems to raise an error about constant-initialized pointers.
+#elif defined(_MSC_VER) && _MSC_VER >= 1930
+#define PROTOBUF_CONSTINIT
 #define PROTOBUF_CONSTEXPR constexpr
 #else
 #define PROTOBUF_CONSTINIT

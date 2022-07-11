@@ -175,26 +175,6 @@ inline util::Status JsonToBinaryString(TypeResolver* resolver,
   return JsonToBinaryString(resolver, type_url, json_input, binary_output,
                             JsonParseOptions());
 }
-
-namespace internal {
-// Internal helper class. Put in the header so we can write unit-tests for it.
-class PROTOBUF_EXPORT ZeroCopyStreamByteSink : public strings::ByteSink {
- public:
-  explicit ZeroCopyStreamByteSink(io::ZeroCopyOutputStream* stream)
-      : stream_(stream), buffer_(nullptr), buffer_size_(0) {}
-  ~ZeroCopyStreamByteSink() override;
-
-  void Append(const char* bytes, size_t len) override;
-
- private:
-  io::ZeroCopyOutputStream* stream_;
-  void* buffer_;
-  int buffer_size_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ZeroCopyStreamByteSink);
-};
-}  // namespace internal
-
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google

@@ -53,8 +53,7 @@ for byte, string in _cescape_chr_to_symbol_map.items():
 del byte, string
 
 
-def CEscape(text, as_utf8):
-  # type: (...) -> str
+def CEscape(text, as_utf8) -> str:
   """Escape a bytes string for use in an text protocol buffer.
 
   Args:
@@ -83,8 +82,7 @@ def CEscape(text, as_utf8):
 _CUNESCAPE_HEX = re.compile(r'(\\+)x([0-9a-fA-F])(?![0-9a-fA-F])')
 
 
-def CUnescape(text):
-  # type: (str) -> bytes
+def CUnescape(text: str) -> bytes:
   """Unescape a text string with C-style escape sequences to UTF-8 bytes.
 
   Args:
