@@ -38,7 +38,7 @@ module Google
           if value.kind_of?(self) or value.nil?
             super
           else
-            raise TypeError, "expected a kind of #{name}, was #{value.class}"
+            raise TypeError.new "Expected a kind of #{name}, was #{value.class}"
           end
         end
       end
