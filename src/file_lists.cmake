@@ -28,6 +28,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/empty.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set_heavy.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/field_mask.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_enum_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_bases.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_reflection.cc
