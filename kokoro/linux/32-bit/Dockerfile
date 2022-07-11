@@ -127,7 +127,7 @@ RUN cd /tmp && \
 # to get updates from pip.
 
 RUN pip install pip --upgrade
-RUN pip install virtualenv tox yattag
+RUN pip install virtualenv tox yattag absl-py
 
 ##################
 # Prepare ccache
