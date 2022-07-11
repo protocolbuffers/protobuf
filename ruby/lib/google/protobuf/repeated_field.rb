@@ -62,9 +62,6 @@ module Google
         :to_s, :transpose, :uniq, :|
 
       include Enumerable
-      include Google::Protobuf::Internal::Convert
-
-      attr :arena, :array, :type, :descriptor
 
       ##
       # call-seq:
@@ -220,7 +217,7 @@ module Google
         if other.is_a? RepeatedField
           return false unless other.length == length
           each_msg_val_with_index do |msg_val, i|
-            other_msg_val = Google::Protobuf::FFI.get_msgval_at(other.array, i)
+            other_msg_val = Google::Protobuf::FFI.get_msgval_at(other.send(:array), i)
             unless Google::Protobuf::FFI.message_value_equal(msg_val, other_msg_val, type, descriptor)
               return false
             end
@@ -259,7 +256,7 @@ module Google
           if type != other.instance_variable_get(:@type) or descriptor != other.instance_variable_get(:@descriptor)
             raise ArgumentError.new "Attempt to append RepeatedField with different element type."
           end
-          fuse_arena(other.arena)
+          fuse_arena(other.send(:arena))
           super_set = dup
           other.send(:each_msg_val) do |msg_val|
             super_set.send(:append_msg_val, msg_val)
@@ -396,8 +393,9 @@ module Google
       end
 
       private
-      # Here to support good error message during conversion
-      attr :name
+      include Google::Protobuf::Internal::Convert
+
+      attr :name, :arena, :array, :type, :descriptor
 
       def internal_push(*elements)
         elements.each do |element|
@@ -504,11 +502,11 @@ module Google
 
       def self.deep_copy(repeated_field)
         instance = allocate
-        instance.send(:initialize, repeated_field.type, descriptor: repeated_field.descriptor)
+        instance.send(:initialize, repeated_field.send(:type), descriptor: repeated_field.send(:descriptor))
         instance.send(:resize, repeated_field.length)
         new_array = instance.send(:array)
         repeated_field.send(:each_msg_val_with_index) do |element, i|
-          Google::Protobuf::FFI.array_set(new_array, i, message_value_deep_copy(element, repeated_field.send(:type), repeated_field.descriptor, instance.arena))
+          Google::Protobuf::FFI.array_set(new_array, i, message_value_deep_copy(element, repeated_field.send(:type), repeated_field.send(:descriptor), instance.send(:arena)))
         end
         instance
       end

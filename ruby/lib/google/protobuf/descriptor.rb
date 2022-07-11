@@ -159,7 +159,7 @@ module Google
         end
       end
 
-      def self.get_message msg, descriptor, arena
+      def self.get_message(msg, descriptor, arena)
         return nil if msg.nil? or msg.null?
         message = ObjectCache.get(msg)
         if message.nil?
@@ -188,7 +188,7 @@ module Google
           end
 
           alias original_method_missing method_missing
-          def method_missing method_name, *args
+          def method_missing(method_name, *args)
             method_missing_internal method_name, *args, mode: :method_missing
           end
 
@@ -205,11 +205,10 @@ module Google
           end
 
           def dup
-            duplicate = self.class.new
+            duplicate = self.class.private_constructor(arena)
             mini_table = Google::Protobuf::FFI.get_mini_table(self.class.descriptor)
             size = mini_table[:size]
             duplicate.send(:msg).write_string_length(@msg.read_string_length(size), size)
-            @arena.fuse(duplicate.send(:arena))
             duplicate
           end
           alias clone dup
@@ -638,7 +637,7 @@ module Google
                 # elsif field_descriptor.sub_message?
                 #   raise NotImplementedError
                 else
-                  self[key.to_s] = value
+                  index_assign_internal(value, name: key.to_s)
                 end
               end
             end
@@ -649,6 +648,16 @@ module Google
           end
 
           include Google::Protobuf::Internal::Convert
+
+
+          def self.inspect_field(field_descriptor, c_type, message_value)
+            if field_descriptor.sub_message?
+              sub_msg_descriptor = Google::Protobuf::FFI.get_subtype_as_message(field_descriptor)
+              sub_msg_descriptor.msgclass.send(:inspect_internal, message_value[:msg_val])
+            else
+              convert_upb_to_ruby(message_value, c_type, field_descriptor.subtype).inspect
+            end
+          end
 
           # @param field_def [::FFI::Pointer] Pointer to the Message
           def self.inspect_internal(msg)
@@ -672,8 +681,8 @@ module Google
                   iter_size_t = iter.read(:size_t)
                   key_message_value = Google::Protobuf::FFI.map_key(message_value[:map_val], iter_size_t)
                   value_message_value = Google::Protobuf::FFI.map_value(message_value[:map_val], iter_size_t)
-                  key_string = inspect_message_value(key_message_value, type: key_field_type)
-                  value_string = inspect_message_value(value_message_value, type: value_field_type, msg_or_enum_descriptor: value_field_def.subtype)
+                  key_string = convert_upb_to_ruby(key_message_value, key_field_type).inspect
+                  value_string = inspect_field(value_field_def, value_field_type, value_message_value)
                   key_value_pairs << "#{key_string}=>#{value_string}"
                 end
                 field_output << "#{field_descriptor.name}: {#{key_value_pairs.join(", ")}}"
@@ -685,13 +694,12 @@ module Google
                 n = array.null? ? 0 : Google::Protobuf::FFI.array_size(array)
                 0.upto(n - 1) do |i|
                   element = Google::Protobuf::FFI.get_msgval_at(array, i)
-                  rendered_value = inspect_message_value element, field_descriptor: field_descriptor
-                  repeated_field_output << rendered_value
+                  repeated_field_output << inspect_field(field_descriptor, field_descriptor.send(:c_type), element)
                 end
                 field_output << "#{field_descriptor.name}: [#{repeated_field_output.join(", ")}]"
               else
                 message_value = Google::Protobuf::FFI.get_message_value msg, field_descriptor
-                rendered_value = inspect_message_value message_value, field_descriptor: field_descriptor
+                rendered_value = inspect_field(field_descriptor, field_descriptor.send(:c_type), message_value)
                 field_output << "#{field_descriptor.name}: #{rendered_value}"
               end
             end

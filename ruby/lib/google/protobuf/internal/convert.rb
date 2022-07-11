@@ -333,50 +333,6 @@ module Google
           end
           new_message_value
         end
-
-        # @param message_value [Google::Protobuf::FFI::MessageValue] Value to inspect
-        # @param field_descriptor [FieldDescriptor] Pointer to the FieldDef
-        def inspect_message_value(message_value, type: nil, field_descriptor: nil, msg_or_enum_descriptor: nil)
-          raise ArgumentError.new "Expected message_value to be a MessageValue, but was #{message_value.class}" unless message_value.is_a? Google::Protobuf::FFI::MessageValue
-          c_type = type || Google::Protobuf::FFI.get_c_type(field_descriptor)
-          case c_type
-          when :bool
-            message_value[:bool_val].inspect
-          when :int32
-            message_value[:int32_val].inspect
-          when :uint32
-            message_value[:uint32_val].inspect
-          when :double
-            message_value[:double_val].inspect
-          when :int64
-            message_value[:int64_val].inspect
-          when :uint64
-            message_value[:uint64_val].inspect
-          when :string
-            if message_value[:str_val][:size].zero?
-              ""
-            else
-              message_value[:str_val][:data].read_string_length(message_value[:str_val][:size]).force_encoding("UTF-8")
-            end.inspect
-          when :bytes
-            if message_value[:str_val][:size].zero?
-              ""
-            else
-              message_value[:str_val][:data].read_string_length(message_value[:str_val][:size]).force_encoding("ASCII-8BIT")
-            end.inspect
-          when :float
-            message_value[:float_val].inspect
-          when :enum
-            enum_descriptor = msg_or_enum_descriptor || Google::Protobuf::FFI.get_subtype_as_enum(field_descriptor)
-            enum_value = EnumDescriptor.lookup_value enum_descriptor, message_value[:int32_val]
-            (enum_value || message_value[:int32_val]).inspect
-          when :message
-            sub_msg_descriptor = msg_or_enum_descriptor || Google::Protobuf::FFI.get_subtype_as_message(field_descriptor)
-            sub_msg_descriptor.msgclass.send(:inspect_internal, message_value[:msg_val])
-          else
-            raise RuntimeError.new "Unexpected type #{c_type}"
-          end
-        end
       end
     end
   end

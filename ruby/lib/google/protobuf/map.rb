@@ -232,8 +232,13 @@ module Google
       def inspect
         key_value_pairs = []
         each_msg_val do |key_message_value, value_message_value|
-          key_string = inspect_message_value(key_message_value, type: key_type)
-          value_string = inspect_message_value(value_message_value, type: value_type, msg_or_enum_descriptor: descriptor)
+          key_string = convert_upb_to_ruby(key_message_value, key_type).inspect
+          if value_type == :message
+            sub_msg_descriptor = Google::Protobuf::FFI.get_subtype_as_message(descriptor)
+            value_string = sub_msg_descriptor.msgclass.send(:inspect_internal, value_message_value[:msg_val])
+          else
+            value_string = convert_upb_to_ruby(value_message_value, value_type, descriptor).inspect
+          end
           key_value_pairs << "#{key_string}=>#{value_string}"
         end
         "{#{key_value_pairs.join(", ")}}"

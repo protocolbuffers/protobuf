@@ -278,14 +278,15 @@ module Google
 
           raise TypeError.new "Map value type has wrong message/enum class" unless value_field_def.subtype == value.send(:descriptor)
 
+          arena.fuse(value.send(:arena))
           message_value = Google::Protobuf::FFI::MessageValue.new
           message_value[:map_val] = value.send(:map_ptr)
         elsif repeated?
           raise TypeError.new "Expected repeated field array" unless value.is_a? RepeatedField
-          raise TypeError.new "Repeated field array has wrong message/enum class" unless value.type == type
+          raise TypeError.new "Repeated field array has wrong message/enum class" unless value.send(:type) == type
           arena.fuse(value.send(:arena))
           message_value = Google::Protobuf::FFI::MessageValue.new
-          message_value[:array_val] = value.array
+          message_value[:array_val] = value.send(:array)
         else
           if value.nil? and (sub_message? or !real_containing_oneof.nil?)
             Google::Protobuf::FFI.clear_message_field message_to_alter, field_def_to_set
@@ -294,13 +295,12 @@ module Google
           if wrap
             value_field_def = Google::Protobuf::FFI.get_field_by_number subtype, 1
             type_for_conversion = Google::Protobuf::FFI.get_c_type(value_field_def)
-            raise RuntimeError.new "I wasn't expecting to get a msg or enum when unwrapping" if [:enum, :message].include? type_for_conversion
+            raise RuntimeError.new "Not expecting to get a msg or enum when unwrapping" if [:enum, :message].include? type_for_conversion
             message_value = convert_ruby_to_upb(value, arena, type_for_conversion, nil)
             message_to_alter = Google::Protobuf::FFI.get_mutable_message(msg, self, arena)[:msg]
             field_def_to_set = value_field_def
           else
-            type_for_conversion = c_type
-            message_value = convert_ruby_to_upb(value, arena, type_for_conversion, subtype)
+            message_value = convert_ruby_to_upb(value, arena, c_type, subtype)
           end
         end
         Google::Protobuf::FFI.set_message_field message_to_alter, field_def_to_set, message_value, arena
