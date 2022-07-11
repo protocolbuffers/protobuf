@@ -39,6 +39,7 @@ pkg_files(
         "NuGet.Config",
         "README.md",
         "build_packages.bat",
+        "build_release.sh",
         "build_tools.sh",
         "buildall.bat",
         "buildall.sh",
@@ -53,7 +54,7 @@ pkg_files(
 )
 
 sh_binary(
-  name = "csharp_release_build",
-  srcs = ["csharp_release_build.sh"],
-  args = ["$(location csharp_release_build.sh)"],
+  name = "release",
+  srcs = ["build_release.sh"],
+  args = ["$(location build_release.sh)"],
 )

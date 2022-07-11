@@ -1,8 +1,4 @@
-## Process this file with automake to produce Makefile.in
-
-ACLOCAL_AMFLAGS = -I m4
-
-AUTOMAKE_OPTIONS = foreign
+## Process this file with automake to produce Makefile.in ACLOCAL_AMFLAGS = -I m4 AUTOMAKE_OPTIONS = foreign
 
 # Build . before src so that our all-local and clean-local hooks kicks in at
 # the right time.
@@ -62,6 +58,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/NuGet.Config                                                        \
   csharp/README.md                                                           \
   csharp/build_packages.bat                                                  \
+  csharp/build_release.sh                                                    \
   csharp/build_tools.sh                                                      \
   csharp/buildall.bat                                                        \
   csharp/buildall.sh                                                         \
