@@ -973,6 +973,24 @@ TEST_P(JsonTest, TestFieldMask) {
   EXPECT_EQ(m2->value().paths(0), "yep.really");
 }
 
+TEST_P(JsonTest, TestLegalNullsInArray) {
+  auto m = ToProto<proto3::TestNullValue>(R"json({
+    "repeatedNullValue": [null]
+  })json");
+  ASSERT_OK(m);
+
+  EXPECT_EQ(m->repeated_null_value_size(), 1);
+  EXPECT_EQ(m->repeated_null_value(0), google::protobuf::NULL_VALUE);
+
+  auto m2 = ToProto<proto3::TestValue>(R"json({
+    "repeatedValue": [null]
+  })json");
+  ASSERT_OK(m2);
+
+  EXPECT_EQ(m2->repeated_value_size(), 1);
+  EXPECT_TRUE(m2->repeated_value(0).has_null_value());
+}
+
 TEST_P(JsonTest, DISABLED_HtmlEscape) {
   TestMessage m;
   m.set_string_value("</script>");

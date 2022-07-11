@@ -82,7 +82,7 @@ public class SingleFieldBuilderV3Test {
     assertThat(mockParent.getInvalidationCount()).isEqualTo(0);
     assertThat(builder.getBuilder().getOptionalInt32()).isEqualTo(1);
     assertThat(builder.getMessage().getOptionalInt32()).isEqualTo(1);
-    builder.build();
+    TestAllTypes unused = builder.build();
     builder.getBuilder().setOptionalInt32(2);
     assertThat(builder.getBuilder().getOptionalInt32()).isEqualTo(2);
     assertThat(builder.getMessage().getOptionalInt32()).isEqualTo(2);

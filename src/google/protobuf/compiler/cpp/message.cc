@@ -3052,7 +3052,7 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
     GOOGLE_CHECK(!first_split_chunk_processed || chunk_is_split);
     if (chunk_is_split && !first_split_chunk_processed) {
       // Some fields are cleared without checking has_bit. So we add the
-      // condidtion here to avoid writing to the default split instance.
+      // condition here to avoid writing to the default split instance.
       format("if (!IsSplitMessageDefault()) {\n");
       format.Indent();
       first_split_chunk_processed = true;
