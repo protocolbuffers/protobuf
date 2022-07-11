@@ -37,6 +37,7 @@
 
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/compiler/cpp/helpers.h>
+#include <google/protobuf/generated_message_tctable_impl.h>
 
 namespace google {
 namespace protobuf {
@@ -289,21 +290,32 @@ TailCallTableInfo::TailCallTableInfo(
     MessageSCCAnalyzer* scc_analyzer) {
   // If this message has any inlined string fields, store the donation state
   // offset in the second auxiliary entry.
+
+  const auto set_fixed_aux_entry = [&](int index, const std::string& value) {
+    if (index >= aux_entries.size()) {
+      aux_entries.resize(index + 1);  // pad if necessary
+    }
+    aux_entries[index] = value;
+  };
+
   if (!inlined_string_indices.empty()) {
-    aux_entries.resize(1);  // pad if necessary
-    aux_entries[0] =
+    set_fixed_aux_entry(
+        internal::kInlinedStringAuxIdx,
         StrCat("_fl::Offset{offsetof(", ClassName(descriptor),
-                     ", _impl_._inlined_string_donated_)}");
+                     ", _impl_._inlined_string_donated_)}"));
   }
 
   // If this message is split, store the split pointer offset in the third
   // auxiliary entry.
   if (ShouldSplit(descriptor, options)) {
-    aux_entries.resize(4);  // pad if necessary
-    aux_entries[2] = StrCat("_fl::Offset{offsetof(",
-                                  ClassName(descriptor), ", _impl_._split_)}");
-    aux_entries[3] = StrCat("_fl::Offset{sizeof(", ClassName(descriptor),
-                                  "::Impl_::Split)}");
+    set_fixed_aux_entry(
+        internal::kSplitOffsetAuxIdx,
+        StrCat("_fl::Offset{offsetof(", ClassName(descriptor),
+                     ", _impl_._split_)}"));
+    set_fixed_aux_entry(
+        internal::kSplitSizeAuxIdx,
+        StrCat("_fl::Offset{sizeof(", ClassName(descriptor),
+                     "::Impl_::Split)}"));
   }
 
   // Fill in mini table entries.
