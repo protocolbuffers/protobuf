@@ -1,4 +1,4 @@
-name: Generated Staleness
+name: Generated CMake File Lists
 
 on:
   - push

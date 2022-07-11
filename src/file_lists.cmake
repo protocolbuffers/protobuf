@@ -92,7 +92,6 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/message_differencer.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/time_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/type_resolver_util.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/zero_copy_sink.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.pb.cc
