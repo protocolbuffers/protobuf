@@ -62,6 +62,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/NuGet.Config                                                        \
   csharp/README.md                                                           \
   csharp/build_packages.bat                                                  \
+  csharp/build_release.sh                                                    \
   csharp/build_tools.sh                                                      \
   csharp/buildall.bat                                                        \
   csharp/buildall.sh                                                         \
