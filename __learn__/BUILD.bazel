@@ -139,4 +139,3 @@ cc_binary(
   visibility = ["//visibility:public"],
   deps = ["//src/google/protobuf/compiler:protoc_lib"],
 )
-
