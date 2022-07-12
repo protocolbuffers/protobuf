@@ -268,6 +268,7 @@ const upb_FileDef* upb_EnumDef_File(const upb_EnumDef* e);
 const upb_MessageDef* upb_EnumDef_ContainingType(const upb_EnumDef* e);
 int32_t upb_EnumDef_Default(const upb_EnumDef* e);
 int upb_EnumDef_ValueCount(const upb_EnumDef* e);
+bool upb_EnumDef_IsSorted(const upb_EnumDef* e);
 const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i);
 
 const upb_EnumValueDef* upb_EnumDef_FindValueByNameWithSize(

@@ -164,25 +164,6 @@ cc_library(
 )
 
 cc_library(
-    name = "mini_descriptor",
-    srcs = [
-        "upb/mini_descriptor.c",
-    ],
-    hdrs = [
-        "upb/mini_descriptor.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":mini_table",
-        ":port",
-        ":reflection",
-        ":table_internal",
-        ":upb",
-    ],
-)
-
-cc_library(
     name = "mini_table_internal",
     hdrs = [
         "upb/msg_internal.h",
@@ -395,12 +376,14 @@ cc_library(
     name = "reflection",
     srcs = [
         "upb/def.c",
+        "upb/mini_descriptor.c",
         "upb/msg.h",
         "upb/reflection.c",
     ],
     hdrs = [
         "upb/def.h",
         "upb/def.hpp",
+        "upb/mini_descriptor.h",
         "upb/reflection.h",
         "upb/reflection.hpp",
     ],

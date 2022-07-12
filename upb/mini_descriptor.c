@@ -137,33 +137,50 @@ static int upb_MiniDescriptor_CompareFields(const void* a, const void* b) {
 
 bool upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e, char** data,
                                    size_t* size, upb_Arena* a) {
+  const size_t len = upb_EnumDef_ValueCount(e);
+
   DescState s;
   upb_DescState_Init(&s);
 
-  // Copy and sort.
-  const size_t len = upb_EnumDef_ValueCount(e);
-  const upb_EnumValueDef** sorted =
-      (const upb_EnumValueDef**)upb_Arena_Malloc(a, len * sizeof(void*));
-  if (!sorted) return false;
-
-  for (size_t i = 0; i < len; i++) {
-    sorted[i] = upb_EnumDef_Value(e, i);
-  }
-  qsort(sorted, len, sizeof(void*), upb_MiniDescriptor_CompareEnums);
+  // Duplicate values are allowed but we only encode each value once.
+  uint32_t previous = 0;
 
   upb_MtDataEncoder_StartEnum(&s.e);
 
-  for (size_t i = 0; i < len; i++) {
-    if (!upb_DescState_Grow(&s, a)) return false;
-    const upb_EnumValueDef* value_def = sorted[i];
-    const int number = upb_EnumValueDef_Number(value_def);
-    s.ptr = upb_MtDataEncoder_PutEnumValue(&s.e, s.ptr, number);
+  if (upb_EnumDef_IsSorted(e)) {
+    // The enum is well behaved so no need to copy/sort the pointers here.
+    for (size_t i = 0; i < len; i++) {
+      const uint32_t current = upb_EnumValueDef_Number(upb_EnumDef_Value(e, i));
+      if (i != 0 && previous == current) continue;
+
+      if (!upb_DescState_Grow(&s, a)) return false;
+      s.ptr = upb_MtDataEncoder_PutEnumValue(&s.e, s.ptr, current);
+      previous = current;
+    }
+  } else {
+    // The enum fields are unsorted.
+    const upb_EnumValueDef** sorted =
+        (const upb_EnumValueDef**)upb_Arena_Malloc(a, len * sizeof(void*));
+    if (!sorted) return false;
+
+    for (size_t i = 0; i < len; i++) {
+      sorted[i] = upb_EnumDef_Value(e, i);
+    }
+    qsort(sorted, len, sizeof(void*), upb_MiniDescriptor_CompareEnums);
+
+    for (size_t i = 0; i < len; i++) {
+      const uint32_t current = upb_EnumValueDef_Number(sorted[i]);
+      if (i != 0 && previous == current) continue;
+
+      if (!upb_DescState_Grow(&s, a)) return false;
+      s.ptr = upb_MtDataEncoder_PutEnumValue(&s.e, s.ptr, current);
+      previous = current;
+    }
   }
 
   if (!upb_DescState_Grow(&s, a)) return false;
   s.ptr = upb_MtDataEncoder_EndEnum(&s.e, s.ptr);
 
-  upb_gfree(sorted);
   *data = s.buf;
   *size = s.ptr - s.buf;
   return true;
@@ -239,7 +256,6 @@ bool upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m, char** data,
     }
   }
 
-  upb_gfree(sorted);
   *data = s.buf;
   *size = s.ptr - s.buf;
   return true;

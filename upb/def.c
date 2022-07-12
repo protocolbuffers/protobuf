@@ -29,10 +29,10 @@
 
 #include <ctype.h>
 #include <errno.h>
-#include <setjmp.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "upb/mini_descriptor.h"
 #include "upb/mini_table.h"
 #include "upb/reflection.h"
 
@@ -142,9 +142,7 @@ struct upb_EnumDef {
   const upb_EnumValueDef* values;
   int value_count;
   int32_t defaultval;
-#if UINTPTR_MAX == 0xffffffff
-  uint32_t padding;  // Increase size to a multiple of 8.
-#endif
+  bool is_sorted;  // Are all of the values defined in ascending order?
 };
 
 struct upb_EnumValueDef {
@@ -405,6 +403,8 @@ int32_t upb_EnumDef_Default(const upb_EnumDef* e) {
 }
 
 int upb_EnumDef_ValueCount(const upb_EnumDef* e) { return e->value_count; }
+
+bool upb_EnumDef_IsSorted(const upb_EnumDef* e) { return e->is_sorted; }
 
 const upb_EnumValueDef* upb_EnumDef_FindValueByNameWithSize(
     const upb_EnumDef* def, const char* name, size_t len) {
@@ -1002,8 +1002,7 @@ const upb_DefPool* upb_FileDef_Pool(const upb_FileDef* f) { return f->symtab; }
 
 /* upb_MethodDef **************************************************************/
 
-const google_protobuf_MethodOptions* upb_MethodDef_Options(
-    const upb_MethodDef* m) {
+const google_protobuf_MethodOptions* upb_MethodDef_Options(const upb_MethodDef* m) {
   return m->opts;
 }
 
@@ -1043,8 +1042,7 @@ bool upb_MethodDef_ServerStreaming(const upb_MethodDef* m) {
 
 /* upb_ServiceDef *************************************************************/
 
-const google_protobuf_ServiceOptions* upb_ServiceDef_Options(
-    const upb_ServiceDef* s) {
+const google_protobuf_ServiceOptions* upb_ServiceDef_Options(const upb_ServiceDef* s) {
   return s->opts;
 }
 
@@ -2457,54 +2455,18 @@ static int compare_int32(const void* a_ptr, const void* b_ptr) {
   return a < b ? -1 : (a == b ? 0 : 1);
 }
 
-upb_MiniTable_Enum* create_enumlayout(symtab_addctx* ctx,
-                                      const upb_EnumDef* e) {
-  int n = 0;
-  uint64_t mask = 0;
+static upb_MiniTable_Enum* create_enumlayout(symtab_addctx* ctx,
+                                             const upb_EnumDef* e) {
+  char* data;
+  size_t size;
+  bool ok = upb_MiniDescriptor_EncodeEnum(e, &data, &size, ctx->tmp_arena);
+  CHK_OOM(ok);
 
-  for (int i = 0; i < e->value_count; i++) {
-    uint32_t val = (uint32_t)e->values[i].number;
-    if (val < 64) {
-      mask |= 1ULL << val;
-    } else {
-      n++;
-    }
-  }
-
-  int32_t* values = symtab_alloc(ctx, sizeof(*values) * n);
-
-  if (n) {
-    int32_t* p = values;
-
-    // Add values outside the bitmask range to the list, as described in the
-    // comments for upb_MiniTable_Enum.
-    for (int i = 0; i < e->value_count; i++) {
-      int32_t val = e->values[i].number;
-      if ((uint32_t)val >= 64) {
-        *p++ = val;
-      }
-    }
-    UPB_ASSERT(p == values + n);
-  }
-
-  // Enums can have duplicate values; we must sort+uniq them.
-  if (values) qsort(values, n, sizeof(*values), &compare_int32);
-
-  int dst = 0;
-  for (int i = 0; i < n; dst++) {
-    int32_t val = values[i];
-    while (i < n && values[i] == val) i++;  // Skip duplicates.
-    values[dst] = val;
-  }
-  n = dst;
-
-  UPB_ASSERT(upb_inttable_count(&e->iton) == n + count_bits_debug(mask));
-
-  upb_MiniTable_Enum* layout = symtab_alloc(ctx, sizeof(*layout));
-  layout->value_count = n;
-  layout->mask = mask;
-  layout->values = values;
-
+  upb_Status status;
+  upb_MiniTable_Enum* layout =
+      upb_MiniTable_BuildEnum(data, size, ctx->arena, &status);
+  if (!layout)
+    symtab_errf(ctx, "Error building enum MiniTable: %s", status.msg);
   return layout;
 }
 
@@ -2542,7 +2504,6 @@ static void create_enumdef(
     const google_protobuf_EnumDescriptorProto* enum_proto,
     const upb_MessageDef* containing_type, const upb_EnumDef* _e) {
   upb_EnumDef* e = (upb_EnumDef*)_e;
-  ;
   const google_protobuf_EnumValueDescriptorProto* const* values;
   upb_StringView name;
   size_t i, n;
@@ -2561,6 +2522,7 @@ static void create_enumdef(
   CHK_OOM(upb_inttable_init(&e->iton, ctx->arena));
 
   e->defaultval = 0;
+  e->is_sorted = true;
   e->value_count = n;
   e->values = symtab_alloc(ctx, sizeof(*e->values) * n);
 
@@ -2571,8 +2533,12 @@ static void create_enumdef(
 
   SET_OPTIONS(e->opts, EnumDescriptorProto, EnumOptions, enum_proto);
 
+  uint32_t previous = 0;
   for (i = 0; i < n; i++) {
     create_enumvaldef(ctx, prefix, values[i], e, i);
+    const uint32_t current = e->values[i].number;
+    if (previous > current) e->is_sorted = false;
+    previous = current;
   }
 
   upb_inttable_compact(&e->iton, ctx->arena);
@@ -2767,8 +2733,7 @@ static void resolve_extension(
     symtab_errf(ctx, "extension for field '%s' had no extendee", f->full_name);
   }
 
-  upb_StringView name =
-      google_protobuf_FieldDescriptorProto_extendee(field_proto);
+  upb_StringView name = google_protobuf_FieldDescriptorProto_extendee(field_proto);
   const upb_MessageDef* m =
       symtab_resolve(ctx, f->full_name, prefix, name, UPB_DEFTYPE_MSG);
   f->msgdef = m;
@@ -2930,12 +2895,10 @@ static void build_filedef(
     symtab_errf(ctx, "File has no name");
   }
 
-  file->name =
-      strviewdup(ctx, google_protobuf_FileDescriptorProto_name(file_proto));
+  file->name = strviewdup(ctx, google_protobuf_FileDescriptorProto_name(file_proto));
 
   if (google_protobuf_FileDescriptorProto_has_package(file_proto)) {
-    upb_StringView package =
-        google_protobuf_FileDescriptorProto_package(file_proto);
+    upb_StringView package = google_protobuf_FileDescriptorProto_package(file_proto);
     check_ident(ctx, package, true);
     file->package = strviewdup(ctx, package);
   } else {
@@ -2943,8 +2906,7 @@ static void build_filedef(
   }
 
   if (google_protobuf_FileDescriptorProto_has_syntax(file_proto)) {
-    upb_StringView syntax =
-        google_protobuf_FileDescriptorProto_syntax(file_proto);
+    upb_StringView syntax = google_protobuf_FileDescriptorProto_syntax(file_proto);
 
     if (streql_view(syntax, "proto2")) {
       file->syntax = kUpb_Syntax_Proto2;
@@ -2978,8 +2940,7 @@ static void build_filedef(
     }
   }
 
-  public_deps =
-      google_protobuf_FileDescriptorProto_public_dependency(file_proto, &n);
+  public_deps = google_protobuf_FileDescriptorProto_public_dependency(file_proto, &n);
   file->public_dep_count = n;
   file->public_deps = symtab_alloc(ctx, sizeof(*file->public_deps) * n);
   int32_t* mutable_public_deps = (int32_t*)file->public_deps;
@@ -2990,8 +2951,7 @@ static void build_filedef(
     mutable_public_deps[i] = public_deps[i];
   }
 
-  weak_deps =
-      google_protobuf_FileDescriptorProto_weak_dependency(file_proto, &n);
+  weak_deps = google_protobuf_FileDescriptorProto_weak_dependency(file_proto, &n);
   file->weak_dep_count = n;
   file->weak_deps = symtab_alloc(ctx, sizeof(*file->weak_deps) * n);
   int32_t* mutable_weak_deps = (int32_t*)file->weak_deps;
