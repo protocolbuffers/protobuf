@@ -27,9 +27,6 @@
 
 #include "upb/mini_descriptor.h"
 
-#include <inttypes.h>
-#include <stdio.h>
-
 #include "upb/mini_table.h"
 
 // Must be last.
@@ -75,14 +72,10 @@ static bool upb_DescState_Grow(DescState* d, upb_Arena* a) {
   return true;
 }
 
-static void upb_DescState_Emit(const DescState* d, upb_StringView* str) {
-  *str = upb_StringView_FromDataAndSize(d->buf, d->ptr - d->buf);
-}
-
 /******************************************************************************/
 
 // Copied from upbc/protoc-gen-upb.cc TODO(salo): can we consolidate?
-static uint64_t upb_Field_Modifier(const upb_FieldDef* f) {
+static uint64_t upb_Field_Modifiers(const upb_FieldDef* f) {
   uint64_t out = 0;
   if (upb_FieldDef_IsRepeated(f)) {
     out |= kUpb_FieldModifier_IsRepeated;
@@ -101,6 +94,19 @@ static uint64_t upb_Field_Modifier(const upb_FieldDef* f) {
   }
   if (upb_FieldDef_IsRequired(f)) {
     out |= kUpb_FieldModifier_IsRequired;
+  }
+  return out;
+}
+
+static uint64_t upb_Message_Modifiers(const upb_MessageDef* m) {
+  uint64_t out = 0;
+  const upb_FileDef* file_def = upb_MessageDef_File(m);
+  if (upb_FileDef_Syntax(file_def) == kUpb_Syntax_Proto3) {
+    out |= kUpb_MessageModifier_ValidateUtf8;
+    out |= kUpb_MessageModifier_DefaultIsPacked;
+  }
+  if (upb_MessageDef_ExtensionRangeCount(m)) {
+    out |= kUpb_MessageModifier_IsExtendable;
   }
   return out;
 }
@@ -129,127 +135,112 @@ static int upb_MiniDescriptor_CompareFields(const void* a, const void* b) {
   return 0;
 }
 
-upb_StringView upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* enum_def,
-                                             upb_Arena* a) {
-  upb_StringView out;
-  out.data = NULL;
-  out.size = 0;
-
+bool upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e, char** data,
+                                   size_t* size, upb_Arena* a) {
   DescState s;
   upb_DescState_Init(&s);
 
   // Copy and sort.
-  const size_t len = upb_EnumDef_ValueCount(enum_def);
-  const upb_EnumValueDef** sorted = upb_gmalloc(len * sizeof(void*));
-  if (!sorted) goto err;
+  const size_t len = upb_EnumDef_ValueCount(e);
+  const upb_EnumValueDef** sorted =
+      (const upb_EnumValueDef**)upb_Arena_Malloc(a, len * sizeof(void*));
+  if (!sorted) return false;
 
   for (size_t i = 0; i < len; i++) {
-    sorted[i] = upb_EnumDef_Value(enum_def, i);
+    sorted[i] = upb_EnumDef_Value(e, i);
   }
   qsort(sorted, len, sizeof(void*), upb_MiniDescriptor_CompareEnums);
 
   upb_MtDataEncoder_StartEnum(&s.e);
 
   for (size_t i = 0; i < len; i++) {
-    if (!upb_DescState_Grow(&s, a)) goto err;
+    if (!upb_DescState_Grow(&s, a)) return false;
     const upb_EnumValueDef* value_def = sorted[i];
     const int number = upb_EnumValueDef_Number(value_def);
     s.ptr = upb_MtDataEncoder_PutEnumValue(&s.e, s.ptr, number);
-    UPB_ASSERT(s.ptr);
   }
 
-  if (!upb_DescState_Grow(&s, a)) goto err;
+  if (!upb_DescState_Grow(&s, a)) return false;
   s.ptr = upb_MtDataEncoder_EndEnum(&s.e, s.ptr);
-  UPB_ASSERT(s.ptr);
 
-  upb_DescState_Emit(&s, &out);
-
-err:
-  if (sorted) upb_gfree(sorted);
-  return out;
+  upb_gfree(sorted);
+  *data = s.buf;
+  *size = s.ptr - s.buf;
+  return true;
 }
 
-upb_StringView upb_MiniDescriptor_EncodeExtension(const upb_FieldDef* field_def,
-                                                  upb_Arena* a) {
-  upb_StringView out;
-  out.data = NULL;
-  out.size = 0;
-
+bool upb_MiniDescriptor_EncodeField(const upb_FieldDef* f, char** data,
+                                    size_t* size, upb_Arena* a) {
   DescState s;
   upb_DescState_Init(&s);
 
-  if (!upb_DescState_Grow(&s, a)) goto err;
+  if (!upb_DescState_Grow(&s, a)) return false;
   upb_MtDataEncoder_StartMessage(&s.e, s.ptr, 0);
 
-  UPB_ASSERT(upb_FieldDef_IsExtension(field_def));
-  const upb_FieldType type = upb_FieldDef_Type(field_def);
-  const int number = upb_FieldDef_Number(field_def);
-  const uint64_t modifier = upb_Field_Modifier(field_def);
-  upb_MtDataEncoder_PutField(&s.e, s.ptr, type, number, modifier);
+  UPB_ASSERT(upb_FieldDef_IsExtension(f));
+  const upb_FieldType type = upb_FieldDef_Type(f);
+  const int number = upb_FieldDef_Number(f);
+  const uint64_t modifiers = upb_Field_Modifiers(f);
 
-  upb_DescState_Emit(&s, &out);
+  if (!upb_DescState_Grow(&s, a)) return false;
+  upb_MtDataEncoder_PutField(&s.e, s.ptr, type, number, modifiers);
 
-err:
-  return out;
+  *data = s.buf;
+  *size = s.ptr - s.buf;
+  return true;
 }
 
-upb_StringView upb_MiniDescriptor_EncodeMessage(
-    const upb_MessageDef* message_def, upb_Arena* a) {
-  upb_StringView out;
-  out.data = NULL;
-  out.size = 0;
-
+bool upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m, char** data,
+                                      size_t* size, upb_Arena* a) {
   DescState s;
   upb_DescState_Init(&s);
 
   // Make a copy.
-  const size_t len = upb_MessageDef_FieldCount(message_def);
-  const upb_FieldDef** sorted = upb_gmalloc(len * sizeof(void*));
-  if (!sorted) goto err;
+  const size_t len = upb_MessageDef_FieldCount(m);
+  const upb_FieldDef** sorted =
+      (const upb_FieldDef**)upb_Arena_Malloc(a, len * sizeof(void*));
+  if (!sorted) return false;
 
   // Sort the copy.
   for (size_t i = 0; i < len; i++) {
-    sorted[i] = upb_MessageDef_Field(message_def, i);
+    sorted[i] = upb_MessageDef_Field(m, i);
   }
   qsort(sorted, len, sizeof(void*), upb_MiniDescriptor_CompareFields);
 
-  if (!upb_DescState_Grow(&s, a)) goto err;
-  upb_MtDataEncoder_StartMessage(&s.e, s.ptr, 0);
+  // Start encoding.
+  if (!upb_DescState_Grow(&s, a)) return false;
+  upb_MtDataEncoder_StartMessage(&s.e, s.ptr, upb_Message_Modifiers(m));
 
   // Encode the fields.
   for (size_t i = 0; i < len; i++) {
     const upb_FieldDef* field_def = sorted[i];
-    const int number = upb_FieldDef_Number(field_def);
     const upb_FieldType type = upb_FieldDef_Type(field_def);
-    const uint64_t modifier = upb_Field_Modifier(field_def);
+    const int number = upb_FieldDef_Number(field_def);
+    const uint64_t modifiers = upb_Field_Modifiers(field_def);
 
-    if (!upb_DescState_Grow(&s, a)) goto err;
-    s.ptr = upb_MtDataEncoder_PutField(&s.e, s.ptr, type, number, modifier);
-    UPB_ASSERT(s.ptr);
+    if (!upb_DescState_Grow(&s, a)) return false;
+    s.ptr = upb_MtDataEncoder_PutField(&s.e, s.ptr, type, number, modifiers);
   }
 
   // Encode the oneofs.
-  const int oneof_count = upb_MessageDef_OneofCount(message_def);
+  const int oneof_count = upb_MessageDef_OneofCount(m);
   for (int i = 0; i < oneof_count; i++) {
-    if (!upb_DescState_Grow(&s, a)) goto err;
+    if (!upb_DescState_Grow(&s, a)) return false;
     s.ptr = upb_MtDataEncoder_StartOneof(&s.e, s.ptr);
-    UPB_ASSERT(s.ptr);
 
-    const upb_OneofDef* oneof_def = upb_MessageDef_Oneof(message_def, i);
+    const upb_OneofDef* oneof_def = upb_MessageDef_Oneof(m, i);
     const int field_count = upb_OneofDef_FieldCount(oneof_def);
     for (int j = 0; j < field_count; j++) {
       const upb_FieldDef* field_def = upb_OneofDef_Field(oneof_def, j);
       const int number = upb_FieldDef_Number(field_def);
 
-      if (!upb_DescState_Grow(&s, a)) goto err;
+      if (!upb_DescState_Grow(&s, a)) return false;
       s.ptr = upb_MtDataEncoder_PutOneofField(&s.e, s.ptr, number);
-      UPB_ASSERT(s.ptr);
     }
   }
 
-  upb_DescState_Emit(&s, &out);
-
-err:
-  if (sorted) upb_gfree(sorted);
-  return out;
+  upb_gfree(sorted);
+  *data = s.buf;
+  *size = s.ptr - s.buf;
+  return true;
 }
