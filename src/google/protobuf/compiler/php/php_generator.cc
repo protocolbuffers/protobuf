@@ -422,7 +422,7 @@ std::string LegacyGeneratedClassFileName(const DescriptorType* desc,
 
 template <typename DescriptorType>
 std::string LegacyReadOnlyGeneratedClassFileName(const DescriptorType* desc,
-                                   const Options& options) {
+                                                 const Options& options) {
   std::string php_namespace = RootPhpNamespace(desc, options);
   if (!php_namespace.empty()) {
     return php_namespace + "/" + desc->name() + ".php";

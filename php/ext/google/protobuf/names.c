@@ -103,8 +103,7 @@ bool is_reserved_name(const char* name) {
 }
 
 bool is_previously_unreserved_name(const char* name) {
-  int i;
-  for (i = 0; kPreviouslyUnreservedNames[i]; i++) {
+  for (int i = 0; kPreviouslyUnreservedNames[i]; i++) {
     if (strcmp(kPreviouslyUnreservedNames[i], name) == 0) {
       return true;
     }
@@ -128,16 +127,18 @@ static char nolocale_toupper(char ch) {
   }
 }
 
+static char *strdup_nolocale_lower(char *str, int length) {
+  char* lower = malloc(length + 1);
+  lower[length] = '\0';
+  for(int i = 0; i < length; ++i) {
+    lower[i] = nolocale_tolower(str[i]);
+  }
+  return lower;
+}
+
 static bool is_reserved(const char *segment, int length, bool previous) {
   bool result;
-  char* lower = calloc(1, length + 1);
-  memcpy(lower, segment, length);
-  int i = 0;
-  while(lower[i]) {
-    lower[i] = nolocale_tolower(lower[i]);
-    i++;
-  }
-  lower[length] = 0;
+  char* lower = strdup_nolocale_lower(segment, length);
   result = is_reserved_name(lower);
   if (result && previous && is_previously_unreserved_name(lower)) {
     result = false;
@@ -274,14 +275,8 @@ bool IsPreviouslyUnreservedClassName(const char* fullname) {
   }
   classname += 2;
   int length = strlen(classname);
-  char* lower = calloc(1, length + 1);
-  memcpy(lower, classname, length);
-  int i = 0;
-  while(lower[i]) {
-    lower[i] = nolocale_tolower(lower[i]);
-    i++;
-  }
-  lower[length] = 0;
+  char* lower =strdup_nolocale_lower(classname, length);
+
   int j;
   for (j = 0; kPreviouslyUnreservedNames[j]; j++) {
     if (strcmp(kPreviouslyUnreservedNames[j], lower) == 0) {
