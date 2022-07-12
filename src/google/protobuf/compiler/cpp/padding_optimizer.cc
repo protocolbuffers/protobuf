@@ -85,41 +85,11 @@ class FieldGroup {
 
 }  // namespace
 
-// Reorder 'fields' so that if the fields are output into a c++ class in the new
-// order, fields of similar family (see below) are together and within each
-// family, alignment padding is minimized.
-//
-// We try to do this while keeping each field as close as possible to its field
-// number order so that we don't reduce cache locality much for function that
-// access each field in order.  Originally, OptimizePadding used declaration
-// order for its decisions, but generated code minus the serializer/parsers uses
-// the output of OptimizePadding as well (stored in
-// MessageGenerator::optimized_order_).  Since the serializers use field number
-// order, we use that as a tie-breaker.
-//
-// We classify each field into a particular "family" of fields, that we perform
-// the same operation on in our generated functions.
-//
-// REPEATED is placed first, as the C++ compiler automatically initializes
-// these fields in layout order.
-//
-// STRING is grouped next, as our Clear/SharedCtor/SharedDtor walks it and
-// calls ArenaStringPtr::Destroy on each.
-//
-// LAZY_MESSAGE is grouped next, as it interferes with the ability to memset
-// non-repeated fields otherwise.
-//
-// MESSAGE is grouped next, as our Clear/SharedDtor code walks it and calls
-// delete on each.  We initialize these fields with a NULL pointer (see
-// MessageFieldGenerator::GenerateConstructorCode), which allows them to be
-// memset.
-//
-// ZERO_INITIALIZABLE is memset in Clear/SharedCtor
-//
-// OTHER these fields are initialized one-by-one.
-void PaddingOptimizer::OptimizeLayout(
-    std::vector<const FieldDescriptor*>* fields, const Options& options,
-    MessageSCCAnalyzer* scc_analyzer) {
+static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
+                                 const Options& options,
+                                 MessageSCCAnalyzer* scc_analyzer) {
+  if (fields->empty()) return;
+
   // The sorted numeric order of Family determines the declaration order in the
   // memory layout.
   enum Family {
@@ -220,6 +190,61 @@ void PaddingOptimizer::OptimizeLayout(
                      aligned_to_8[f][i].fields().end());
     }
   }
+}
+
+// Reorder 'fields' so that if the fields are output into a c++ class in the new
+// order, fields of similar family (see below) are together and within each
+// family, alignment padding is minimized.
+//
+// We try to do this while keeping each field as close as possible to its field
+// number order so that we don't reduce cache locality much for function that
+// access each field in order.  Originally, OptimizePadding used declaration
+// order for its decisions, but generated code minus the serializer/parsers uses
+// the output of OptimizePadding as well (stored in
+// MessageGenerator::optimized_order_).  Since the serializers use field number
+// order, we use that as a tie-breaker.
+//
+// We classify each field into a particular "family" of fields, that we perform
+// the same operation on in our generated functions.
+//
+// REPEATED is placed first, as the C++ compiler automatically initializes
+// these fields in layout order.
+//
+// STRING is grouped next, as our Clear/SharedCtor/SharedDtor walks it and
+// calls ArenaStringPtr::Destroy on each.
+//
+// LAZY_MESSAGE is grouped next, as it interferes with the ability to memset
+// non-repeated fields otherwise.
+//
+// MESSAGE is grouped next, as our Clear/SharedDtor code walks it and calls
+// delete on each.  We initialize these fields with a NULL pointer (see
+// MessageFieldGenerator::GenerateConstructorCode), which allows them to be
+// memset.
+//
+// ZERO_INITIALIZABLE is memset in Clear/SharedCtor
+//
+// OTHER these fields are initialized one-by-one.
+//
+// If there are split fields in `fields`, they will be placed at the end. The
+// order within split fields follows the same rule, aka classify and order by
+// "family".
+void PaddingOptimizer::OptimizeLayout(
+    std::vector<const FieldDescriptor*>* fields, const Options& options,
+    MessageSCCAnalyzer* scc_analyzer) {
+  std::vector<const FieldDescriptor*> normal;
+  std::vector<const FieldDescriptor*> split;
+  for (const auto* field : *fields) {
+    if (ShouldSplit(field, options)) {
+      split.push_back(field);
+    } else {
+      normal.push_back(field);
+    }
+  }
+  OptimizeLayoutHelper(&normal, options, scc_analyzer);
+  OptimizeLayoutHelper(&split, options, scc_analyzer);
+  fields->clear();
+  fields->insert(fields->end(), normal.begin(), normal.end());
+  fields->insert(fields->end(), split.begin(), split.end());
 }
 
 }  // namespace cpp

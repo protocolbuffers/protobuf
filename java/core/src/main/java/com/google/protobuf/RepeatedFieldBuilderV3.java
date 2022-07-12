@@ -277,6 +277,7 @@ public class RepeatedFieldBuilderV3<
    * @param message the message to set
    * @return the builder
    */
+  @CanIgnoreReturnValue
   public RepeatedFieldBuilderV3<MType, BType, IType> setMessage(int index, MType message) {
     checkNotNull(message);
     ensureMutableMessageList();
@@ -298,6 +299,7 @@ public class RepeatedFieldBuilderV3<
    * @param message the message to add
    * @return the builder
    */
+  @CanIgnoreReturnValue
   public RepeatedFieldBuilderV3<MType, BType, IType> addMessage(MType message) {
     checkNotNull(message);
     ensureMutableMessageList();
@@ -319,6 +321,7 @@ public class RepeatedFieldBuilderV3<
    * @param message the message to add
    * @return the builder
    */
+  @CanIgnoreReturnValue
   public RepeatedFieldBuilderV3<MType, BType, IType> addMessage(int index, MType message) {
     checkNotNull(message);
     ensureMutableMessageList();
@@ -338,6 +341,7 @@ public class RepeatedFieldBuilderV3<
    * @param values the messages to add
    * @return the builder
    */
+  @CanIgnoreReturnValue
   public RepeatedFieldBuilderV3<MType, BType, IType> addAllMessages(
       Iterable<? extends MType> values) {
     for (final MType value : values) {

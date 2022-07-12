@@ -118,7 +118,7 @@ cc_library(
     hdrs = ["zero_copy_sink.h"],
     copts = COPTS,
     strip_include_prefix = "/src",
-    visibility = ["//visibility:private"],
+    visibility = ["//pkg:__pkg__"],
     deps = [
         "//src/google/protobuf",
         "//src/google/protobuf/io",
