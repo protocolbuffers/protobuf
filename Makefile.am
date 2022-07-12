@@ -192,6 +192,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/Compatibility/RequiresUnreferencedCodeAttribute.cs \
   csharp/src/Google.Protobuf/Compatibility/TypeExtensions.cs                 \
   csharp/src/Google.Protobuf/Compatibility/UnconditionalSuppressMessageAttribute.cs \
+  csharp/src/Google.Protobuf/Compiler/Plugin.cs                              \
   csharp/src/Google.Protobuf/Extension.cs                                    \
   csharp/src/Google.Protobuf/ExtensionRegistry.cs                            \
   csharp/src/Google.Protobuf/ExtensionSet.cs                                 \
