@@ -30,9 +30,6 @@
 
 // Author: kenton@google.com (Kenton Varda)
 //
-// WARNING:  The plugin interface is currently EXPERIMENTAL and is subject to
-//   change.
-//
 // protoc (aka the Protocol Compiler) can be extended via plugins.  A plugin is
 // just a program that reads a CodeGeneratorRequest from stdin and writes a
 // CodeGeneratorResponse to stdout.
