@@ -1136,21 +1136,17 @@ public class JsonFormat {
         case INT32:
         case SINT32:
         case SFIXED32:
-          if (alwaysWithQuotes) {
-            generator.print("\"");
-          }
-          generator.print(((Integer) value).toString());
-          if (alwaysWithQuotes) {
-            generator.print("\"");
-          }
-          break;
-
         case INT64:
         case SINT64:
         case SFIXED64:
-          generator.print("\"" + ((Long) value).toString() + "\"");
+          if (alwaysWithQuotes) {
+            generator.print("\"");
+          }
+          generator.print(value.toString());
+          if (alwaysWithQuotes) {
+            generator.print("\"");
+          }
           break;
-
         case BOOL:
           if (alwaysWithQuotes) {
             generator.print("\"");
