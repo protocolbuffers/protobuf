@@ -916,8 +916,20 @@ message GeneratedCodeInfo {
     optional int32 begin = 3;
 
     // Identifies the ending offset in bytes in the generated code that
-    // relates to the identified offset. The end offset should be one past
+    // relates to the identified object. The end offset should be one past
     // the last relevant byte (so the length of the text = end - begin).
     optional int32 end = 4;
+
+    // Represents the identified object's effect on the element in the original
+    // .proto file.
+    enum Semantic {
+      // There is no effect or the effect is indescribable.
+      NONE = 0;
+      // The element is set or otherwise mutated.
+      SET = 1;
+      // An alias to the element is returned.
+      ALIAS = 2;
+    }
+    optional Semantic semantic = 5;
   }
 }

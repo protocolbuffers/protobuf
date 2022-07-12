@@ -2722,19 +2722,6 @@ void MessageGenerator::GenerateCopyConstructorBody(io::Printer* printer) const {
       "  static_cast<size_t>(reinterpret_cast<char*>(&$last$) -\n"
       "  reinterpret_cast<char*>(&$first$)) + sizeof($last$));\n";
 
-  if (ShouldSplit(descriptor_, options_)) {
-    format("if (!from.IsSplitMessageDefault()) {\n");
-    format.Indent();
-    format("_this->PrepareSplitMessageForWrite();\n");
-    for (auto field : optimized_order_) {
-      if (ShouldSplit(field, options_)) {
-        field_generators_.get(field).GenerateCopyConstructorCode(printer);
-      }
-    }
-    format.Outdent();
-    format("}\n");
-  }
-
   for (size_t i = 0; i < optimized_order_.size(); ++i) {
     const FieldDescriptor* field = optimized_order_[i];
     if (ShouldSplit(field, options_)) {
@@ -2762,6 +2749,20 @@ void MessageGenerator::GenerateCopyConstructorBody(io::Printer* printer) const {
     } else {
       field_generators_.get(field).GenerateCopyConstructorCode(printer);
     }
+  }
+
+  if (ShouldSplit(descriptor_, options_)) {
+    format("if (!from.IsSplitMessageDefault()) {\n");
+    format.Indent();
+    format("_this->PrepareSplitMessageForWrite();\n");
+    // TODO(b/122856539): cache the split pointers.
+    for (auto field : optimized_order_) {
+      if (ShouldSplit(field, options_)) {
+        field_generators_.get(field).GenerateCopyConstructorCode(printer);
+      }
+    }
+    format.Outdent();
+    format("}\n");
   }
 }
 
@@ -3037,15 +3038,26 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
   ColdChunkSkipper cold_skipper(descriptor_, options_, chunks, has_bit_indices_,
                                 kColdRatio);
   int cached_has_word_index = -1;
-
-  for (int chunk_index = 0; chunk_index < chunks.size(); chunk_index++) {
+  bool first_split_chunk_processed = false;
+  for (size_t chunk_index = 0; chunk_index < chunks.size(); chunk_index++) {
     std::vector<const FieldDescriptor*>& chunk = chunks[chunk_index];
     cold_skipper.OnStartChunk(chunk_index, cached_has_word_index, "", printer);
 
     const FieldDescriptor* memset_start = nullptr;
     const FieldDescriptor* memset_end = nullptr;
     bool saw_non_zero_init = false;
-    bool chunk_is_cold = !chunk.empty() && ShouldSplit(chunk.front(), options_);
+    bool chunk_is_split =
+        !chunk.empty() && ShouldSplit(chunk.front(), options_);
+    // All chunks after the first split chunk should also be split.
+    GOOGLE_CHECK(!first_split_chunk_processed || chunk_is_split);
+    if (chunk_is_split && !first_split_chunk_processed) {
+      // Some fields are cleared without checking has_bit. So we add the
+      // condition here to avoid writing to the default split instance.
+      format("if (!IsSplitMessageDefault()) {\n");
+      format.Indent();
+      first_split_chunk_processed = true;
+    }
+
     for (const auto& field : chunk) {
       if (CanInitializeByZeroing(field)) {
         GOOGLE_CHECK(!saw_non_zero_init);
@@ -3085,25 +3097,20 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
       format.Indent();
     }
 
-    if (chunk_is_cold) {
-      format("if (!IsSplitMessageDefault()) {\n");
-      format.Indent();
-    }
-
     if (memset_start) {
       if (memset_start == memset_end) {
         // For clarity, do not memset a single field.
         field_generators_.get(memset_start)
             .GenerateMessageClearingCode(printer);
       } else {
-        GOOGLE_CHECK_EQ(chunk_is_cold, ShouldSplit(memset_start, options_));
-        GOOGLE_CHECK_EQ(chunk_is_cold, ShouldSplit(memset_end, options_));
+        GOOGLE_CHECK_EQ(chunk_is_split, ShouldSplit(memset_start, options_));
+        GOOGLE_CHECK_EQ(chunk_is_split, ShouldSplit(memset_end, options_));
         format(
             "::memset(&$1$, 0, static_cast<size_t>(\n"
             "    reinterpret_cast<char*>(&$2$) -\n"
             "    reinterpret_cast<char*>(&$1$)) + sizeof($2$));\n",
-            FieldMemberName(memset_start, chunk_is_cold),
-            FieldMemberName(memset_end, chunk_is_cold));
+            FieldMemberName(memset_start, chunk_is_split),
+            FieldMemberName(memset_end, chunk_is_split));
       }
     }
 
@@ -3132,14 +3139,16 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
       }
     }
 
-    if (chunk_is_cold) {
+    if (have_outer_if) {
       format.Outdent();
       format("}\n");
     }
 
-    if (have_outer_if) {
-      format.Outdent();
-      format("}\n");
+    if (chunk_index == chunks.size() - 1) {
+      if (first_split_chunk_processed) {
+        format.Outdent();
+        format("}\n");
+      }
     }
 
     if (cold_skipper.OnEndChunk(chunk_index, printer)) {

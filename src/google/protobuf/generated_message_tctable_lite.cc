@@ -1500,16 +1500,12 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
 }
 
 namespace {
-enum {
-  kSplitOffsetIdx = 2,
-  kSplitSizeIdx = 3,
-};
 uint32_t GetSplitOffset(const TcParseTableBase* table) {
-  return table->field_aux(kSplitOffsetIdx)->offset;
+  return table->field_aux(kSplitOffsetAuxIdx)->offset;
 }
 
 uint32_t GetSizeofSplit(const TcParseTableBase* table) {
-  return table->field_aux(kSplitSizeIdx)->offset;
+  return table->field_aux(kSplitSizeAuxIdx)->offset;
 }
 }  // namespace
 

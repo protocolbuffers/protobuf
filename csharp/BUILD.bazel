@@ -39,6 +39,7 @@ pkg_files(
         "NuGet.Config",
         "README.md",
         "build_packages.bat",
+        "build_release.sh",
         "build_tools.sh",
         "buildall.bat",
         "buildall.sh",
@@ -50,4 +51,10 @@ pkg_files(
     ],
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//pkg:__pkg__"],
+)
+
+sh_binary(
+  name = "release",
+  srcs = ["build_release.sh"],
+  args = ["$(location build_release.sh)"],
 )

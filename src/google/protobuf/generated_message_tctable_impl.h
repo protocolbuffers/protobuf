@@ -32,6 +32,7 @@
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_IMPL_H__
 
 #include <cstdint>
+#include <cstdlib>
 #include <type_traits>
 
 #include <google/protobuf/port.h>
@@ -52,6 +53,12 @@ class Message;
 class UnknownFieldSet;
 
 namespace internal {
+
+enum {
+  kInlinedStringAuxIdx = 0,
+  kSplitOffsetAuxIdx = 1,
+  kSplitSizeAuxIdx = 2,
+};
 
 // Field layout enums.
 //
@@ -262,11 +269,11 @@ enum FieldType : uint16_t {
 
 #ifndef NDEBUG
 template <size_t align>
-#ifndef _MSC_VER
-[[noreturn]]
-#endif
 void AlignFail(uintptr_t address) {
   GOOGLE_LOG(FATAL) << "Unaligned (" << align << ") access at " << address;
+
+  // Explicit abort to let compilers know this function does not return
+  abort();
 }
 
 extern template void AlignFail<4>(uintptr_t);
