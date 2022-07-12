@@ -929,7 +929,7 @@ py_proto_library(
     default_runtime = "",
     protoc = ":protoc",
     srcs_version = "PY2AND3",
-    visibility = ["@upb//:__subpackages__"],
+    visibility = ["//visibility:public"],
 )
 
 py_library(
@@ -941,6 +941,7 @@ py_library(
             ":python/google/protobuf/pyext/_message.so",
         ],
     }),
+    visibility = ["//visibility:public"],
     deps = [
         ":python_srcs",
         ":well_known_types_py_pb2",
