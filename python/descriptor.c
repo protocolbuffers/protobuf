@@ -1105,7 +1105,7 @@ static const void* PyUpb_FileDescriptor_NestedLookup(
     PyUpb_FileDescriptor_LookupFunc* func) {
   const upb_DefPool* symtab = upb_FileDef_Pool(filedef);
   const char* package = upb_FileDef_Package(filedef);
-  if (package) {
+  if (strlen(package)) {
     PyObject* qname = PyUnicode_FromFormat("%s.%s", package, name);
     const void* ret = func(symtab, PyUnicode_AsUTF8AndSize(qname, NULL));
     Py_DECREF(qname);

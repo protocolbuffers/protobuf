@@ -927,7 +927,9 @@ bool upb_FileDef_HasOptions(const upb_FileDef* f) {
 
 const char* upb_FileDef_Name(const upb_FileDef* f) { return f->name; }
 
-const char* upb_FileDef_Package(const upb_FileDef* f) { return f->package; }
+const char* upb_FileDef_Package(const upb_FileDef* f) {
+  return f->package ? f->package : "";
+}
 
 upb_Syntax upb_FileDef_Syntax(const upb_FileDef* f) { return f->syntax; }
 
@@ -2897,8 +2899,8 @@ static void build_filedef(
 
   file->name = strviewdup(ctx, google_protobuf_FileDescriptorProto_name(file_proto));
 
-  if (google_protobuf_FileDescriptorProto_has_package(file_proto)) {
-    upb_StringView package = google_protobuf_FileDescriptorProto_package(file_proto);
+  upb_StringView package = google_protobuf_FileDescriptorProto_package(file_proto);
+  if (package.size) {
     check_ident(ctx, package, true);
     file->package = strviewdup(ctx, package);
   } else {
