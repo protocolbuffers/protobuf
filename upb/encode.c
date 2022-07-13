@@ -62,7 +62,7 @@ static uint64_t encode_zz64(int64_t n) {
 
 typedef struct {
   jmp_buf err;
-  upb_alloc* alloc;
+  upb_Arena* arena;
   char *buf, *ptr, *limit;
   int options;
   int depth;
@@ -85,11 +85,13 @@ UPB_NOINLINE
 static void encode_growbuffer(upb_encstate* e, size_t bytes) {
   size_t old_size = e->limit - e->buf;
   size_t new_size = upb_roundup_pow2(bytes + (e->limit - e->ptr));
-  char* new_buf = upb_realloc(e->alloc, e->buf, old_size, new_size);
+  char* new_buf = upb_Arena_Realloc(e->arena, e->buf, old_size, new_size);
 
   if (!new_buf) encode_err(e, kUpb_EncodeStatus_OutOfMemory);
 
-  /* We want previous data at the end, realloc() put it at the beginning. */
+  // We want previous data at the end, realloc() put it at the beginning.
+  // TODO(salo): This is somewhat inefficient since we are copying twice.
+  // Maybe create a realloc() that copies to the end of the new buffer?
   if (old_size > 0) {
     memmove(new_buf + new_size - old_size, e->buf, old_size);
   }
@@ -579,7 +581,7 @@ upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
   upb_encstate e;
   unsigned depth = (unsigned)options >> 16;
 
-  e.alloc = upb_Arena_Alloc(arena);
+  e.arena = arena;
   e.buf = NULL;
   e.limit = NULL;
   e.ptr = NULL;
