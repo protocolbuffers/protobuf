@@ -556,6 +556,21 @@ static PyObject* PyUpb_Message_NewStub(PyObject* parent, const upb_FieldDef* f,
   return &msg->ob_base;
 }
 
+static bool PyUpb_Message_IsEmpty(const upb_Message* msg,
+                                  const upb_MessageDef* m,
+                                  const upb_DefPool* ext_pool) {
+  if (!msg) return true;
+
+  size_t iter = kUpb_Message_Begin;
+  const upb_FieldDef* f;
+  upb_MessageValue val;
+  if (upb_Message_Next(msg, m, ext_pool, &f, &val, &iter)) return false;
+
+  size_t len;
+  (void)upb_Message_GetUnknown(msg, &len);
+  return len == 0;
+}
+
 static bool PyUpb_Message_IsEqual(PyUpb_Message* m1, PyObject* _m2) {
   PyUpb_Message* m2 = (void*)_m2;
   if (m1 == m2) return true;
@@ -569,6 +584,12 @@ static bool PyUpb_Message_IsEqual(PyUpb_Message* m1, PyObject* _m2) {
 #endif
   const upb_Message* m1_msg = PyUpb_Message_GetIfReified((PyObject*)m1);
   const upb_Message* m2_msg = PyUpb_Message_GetIfReified(_m2);
+  const upb_DefPool* symtab = upb_FileDef_Pool(upb_MessageDef_File(m1_msgdef));
+
+  const bool e1 = PyUpb_Message_IsEmpty(m1_msg, m1_msgdef, symtab);
+  const bool e2 = PyUpb_Message_IsEmpty(m2_msg, m1_msgdef, symtab);
+  if (e1 || e2) return e1 && e2;
+
   return upb_Message_IsEqual(m1_msg, m2_msg, m1_msgdef);
 }
 
