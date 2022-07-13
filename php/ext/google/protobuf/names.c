@@ -275,10 +275,8 @@ bool IsPreviouslyUnreservedClassName(const char* fullname) {
   }
   classname += 2;
   int length = strlen(classname);
-  char* lower =strdup_nolocale_lower(classname, length);
-
-  int j;
-  for (j = 0; kPreviouslyUnreservedNames[j]; j++) {
+  char* lower = strdup_nolocale_lower(classname, length);
+  for (int j = 0; kPreviouslyUnreservedNames[j]; j++) {
     if (strcmp(kPreviouslyUnreservedNames[j], lower) == 0) {
       free(lower);
       return true;

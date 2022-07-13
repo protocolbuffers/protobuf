@@ -246,8 +246,10 @@ void NameMap_AddMessage(const upb_MessageDef *m) {
     char *k = GetPhpClassname(upb_MessageDef_File(m), upb_MessageDef_FullName(m), (bool)i);
     zend_hash_str_add_ptr(&PROTOBUF_G(name_msg_cache), k, strlen(k), (void*)m);
     if (!IsPreviouslyUnreservedClassName(k)) {
+      free(k);
       return;
     }
+    free(k);
   }
 }
 
