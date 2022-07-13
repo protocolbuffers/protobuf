@@ -63,7 +63,7 @@ cc_binary(
     visibility = ["//visibility:public"],
     deps = [
         "@com_google_absl//absl/strings",
-        "@com_google_protobuf//:protoc_lib",
+        "@com_google_protobuf//src/google/protobuf/compiler:code_generator",
     ],
 )
 

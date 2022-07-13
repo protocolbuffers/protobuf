@@ -848,6 +848,7 @@ upb_amalgamation(
         ":reflection",
         ":upb",
     ],
+    strip_import_prefix = ["src"],
 )
 
 cc_library(
@@ -881,6 +882,7 @@ upb_amalgamation(
         ":upb",
     ],
     prefix = "php-",
+    strip_import_prefix = ["src"],
 )
 
 cc_library(
@@ -913,6 +915,7 @@ upb_amalgamation(
         ":upb",
     ],
     prefix = "ruby-",
+    strip_import_prefix = ["src"],
 )
 
 cc_library(

@@ -7,7 +7,7 @@ def pyproto_test_wrapper(name):
         srcs = [src],
         legacy_create_init = False,
         main = src,
-        data = ["@com_google_protobuf//:testdata"],
+        data = ["@com_google_protobuf//src/google/protobuf:testdata"],
         deps = [
             "//python:_message",
             "@com_google_protobuf//:python_common_test_protos",

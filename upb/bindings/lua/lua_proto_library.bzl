@@ -29,6 +29,14 @@ load("@bazel_skylib//lib:paths.bzl", "paths")
 
 # Generic support code #########################################################
 
+# begin:github_only
+_is_google3 = False
+# end:github_only
+
+# begin:google_only
+# _is_google3 = True
+# end:google_only
+
 def _get_real_short_path(file):
     # For some reason, files from other archives have short paths that look like:
     #   ../com_google_protobuf/google/protobuf/descriptor.proto
@@ -39,18 +47,26 @@ def _get_real_short_path(file):
 
     # Sometimes it has another few prefixes like:
     #   _virtual_imports/any_proto/google/protobuf/any.proto
+    #   benchmarks/_virtual_imports/100_msgs_proto/benchmarks/100_msgs.proto
     # We want just google/protobuf/any.proto.
-    if short_path.startswith("_virtual_imports"):
-        short_path = short_path.split("/", 2)[-1]
+    virtual_imports = "_virtual_imports/"
+    if virtual_imports in short_path:
+        short_path = short_path.split(virtual_imports)[1].split("/", 1)[1]
     return short_path
 
-def _get_real_root(file):
+def _get_real_root(ctx, file):
     real_short_path = _get_real_short_path(file)
-    return file.path[:-len(real_short_path) - 1]
+    root = file.path[:-len(real_short_path) - 1]
+    if not _is_google3 and ctx.rule.attr.strip_import_prefix:
+        root = paths.join(root, ctx.rule.attr.strip_import_prefix[1:])
+    return root
 
 def _generate_output_file(ctx, src, extension):
+    package = ctx.label.package
+    if not _is_google3 and ctx.rule.attr.strip_import_prefix:
+        package = package[len(ctx.rule.attr.strip_import_prefix):]
     real_short_path = _get_real_short_path(src)
-    real_short_path = paths.relativize(real_short_path, ctx.label.package)
+    real_short_path = paths.relativize(real_short_path, package)
     output_filename = paths.replace_extension(real_short_path, extension)
     ret = ctx.actions.declare_file(output_filename)
     return ret
@@ -74,7 +90,7 @@ def _compile_upb_protos(ctx, proto_info, proto_sources):
         outputs = files,
         executable = ctx.executable._protoc,
         arguments = [
-                        "--lua_out=" + _get_real_root(files[0]),
+                        "--lua_out=" + _get_real_root(ctx, files[0]),
                         "--plugin=protoc-gen-lua=" + ctx.executable._upbc.path,
                         "--descriptor_set_in=" + ctx.configuration.host_path_separator.join([f.path for f in transitive_sets]),
                     ] +

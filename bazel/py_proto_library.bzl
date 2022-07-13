@@ -41,6 +41,14 @@ load("@rules_proto//proto:defs.bzl", "ProtoInfo")
 
 # Generic support code #########################################################
 
+# begin:github_only
+_is_google3 = False
+# end:github_only
+
+# begin:google_only
+# _is_google3 = True
+# end:google_only
+
 def _get_real_short_path(file):
     # For some reason, files from other archives have short paths that look like:
     #   ../com_google_protobuf/google/protobuf/descriptor.proto
@@ -58,13 +66,25 @@ def _get_real_short_path(file):
         short_path = short_path.split(virtual_imports)[1].split("/", 1)[1]
     return short_path
 
-def _get_real_root(file):
+def _get_real_root(ctx, file):
     real_short_path = _get_real_short_path(file)
-    return file.path[:-len(real_short_path) - 1]
+    root = file.path[:-len(real_short_path) - 1]
+
+    if not _is_google3 and ctx.rule.attr.strip_import_prefix:
+        root = paths.join(root, ctx.rule.attr.strip_import_prefix[1:])
+    return root
 
 def _generate_output_file(ctx, src, extension):
+    package = ctx.label.package
+    if not _is_google3:
+        strip_import_prefix = ctx.rule.attr.strip_import_prefix
+        if strip_import_prefix:
+            if not package.startswith(strip_import_prefix[1:]):
+                fail("%s does not begin with prefix %s" % (package, strip_import_prefix))
+            package = package[len(strip_import_prefix):]
+
     real_short_path = _get_real_short_path(src)
-    real_short_path = paths.relativize(real_short_path, ctx.label.package)
+    real_short_path = paths.relativize(real_short_path, package)
     output_filename = paths.replace_extension(real_short_path, extension)
     ret = ctx.actions.declare_file(output_filename)
     return ret
@@ -98,7 +118,7 @@ def _py_proto_library_aspect_impl(target, ctx):
         outputs = srcs,
         executable = ctx.executable._protoc,
         arguments = [
-                        "--python_out=" + _get_real_root(srcs[0]),
+                        "--python_out=" + _get_real_root(ctx, srcs[0]),
                         "--descriptor_set_in=" + ctx.configuration.host_path_separator.join([f.path for f in transitive_sets]),
                     ] +
                     [_get_real_short_path(file) for file in proto_sources],
