@@ -191,6 +191,7 @@
 #define PROTOBUF_FUTURE_REMOVE_CLEARED_API 1
 
 // Used to escape C++20 keywords.
+// TODO(mkruskal): ping b/238664698 when this lands in opensource.
 // Owner: mkruskal@
 #define PROTOBUF_FUTURE_CPP20_KEYWORDS 1
 #else
@@ -559,6 +560,10 @@
 #error PROTOBUF_FORCE_COPY_DEFAULT_STRING was previously defined
 #endif
 
+#ifdef PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION
+#error PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION was previously defined
+#endif
+
 #ifdef PROTOBUF_FALLTHROUGH_INTENDED
 #error PROTOBUF_FALLTHROUGH_INTENDED was previously defined
 #endif
@@ -664,20 +669,25 @@
 #ifdef PROTOBUF_CONSTINIT
 #error PROTOBUF_CONSTINIT was previously defined
 #endif
-#if defined(__cpp_constinit)
+#if defined(__cpp_constinit) && !defined(_MSC_VER)
 #define PROTOBUF_CONSTINIT constinit
 #define PROTOBUF_CONSTEXPR constexpr
 // Some older Clang versions incorrectly raise an error about
 // constant-initializing weak default instance pointers. Versions 12.0 and
 // higher seem to work, except that XCode 12.5.1 shows the error even though it
 // uses Clang 12.0.5.
-#elif __has_cpp_attribute(clang::require_constant_initialization) && \
+// Clang-cl on Windows raises error also.
+#elif !defined(_MSC_VER) && __has_cpp_attribute(clang::require_constant_initialization) && \
     ((defined(__APPLE__) && __clang_major__ >= 13) ||                \
      (!defined(__APPLE__) && __clang_major__ >= 12))
 #define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
 #define PROTOBUF_CONSTEXPR constexpr
 #elif PROTOBUF_GNUC_MIN(12, 2)
 #define PROTOBUF_CONSTINIT __constinit
+#define PROTOBUF_CONSTEXPR constexpr
+// MSVC 17 currently seems to raise an error about constant-initialized pointers.
+#elif defined(_MSC_VER) && _MSC_VER >= 1930
+#define PROTOBUF_CONSTINIT
 #define PROTOBUF_CONSTEXPR constexpr
 #else
 #define PROTOBUF_CONSTINIT

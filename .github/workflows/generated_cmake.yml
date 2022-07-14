@@ -1,0 +1,24 @@
+name: Generated CMake File Lists
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  cmake:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Bazel read-only caching
+        run: echo "BAZEL_CACHE_AUTH=--remote_upload_local_results=false" >> $GITHUB_ENV
+      - name: Generate CMake files
+        run: cd ${{ github.workspace }} && bazel build //pkg:gen_src_file_lists --test_output=errors $BAZEL_CACHE $BAZEL_CACHE_AUTH
+      - name: Compare to Golden file
+        run: diff -du bazel-bin/pkg/src_file_lists.cmake src/file_lists.cmake
+      - name: Report
+        run: echo "::error file=cmake/update_file_lists.sh::CMake files are stale, please run cmake/update_file_lists.sh"
+        if: failure()

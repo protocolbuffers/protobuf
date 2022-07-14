@@ -925,6 +925,13 @@ bool HasLazyFields(const FileDescriptor* file, const Options& options,
 bool ShouldSplit(const Descriptor*, const Options&) { return false; }
 bool ShouldSplit(const FieldDescriptor*, const Options&) { return false; }
 
+bool ShouldForceAllocationOnConstruction(const Descriptor* desc,
+                                         const Options& options) {
+  (void)desc;
+  (void)options;
+  return false;
+}
+
 static bool HasRepeatedFields(const Descriptor* descriptor) {
   for (int i = 0; i < descriptor->field_count(); ++i) {
     if (descriptor->field(i)->label() == FieldDescriptor::LABEL_REPEATED) {
