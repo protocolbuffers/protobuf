@@ -2455,6 +2455,26 @@ class Proto3Test(unittest.TestCase):
     with self.assertRaises(ValueError):
       unittest_proto3_arena_pb2.TestAllTypes(optional_string=u'\ud801\ud801')
 
+  def testCrashNullAA(self):
+    self.assertEqual(
+        unittest_proto3_arena_pb2.TestAllTypes.NestedMessage(),
+        unittest_proto3_arena_pb2.TestAllTypes.NestedMessage())
+
+  def testCrashNullAB(self):
+    self.assertEqual(
+        unittest_proto3_arena_pb2.TestAllTypes.NestedMessage(),
+        unittest_proto3_arena_pb2.TestAllTypes().optional_nested_message)
+
+  def testCrashNullBA(self):
+    self.assertEqual(
+        unittest_proto3_arena_pb2.TestAllTypes().optional_nested_message,
+        unittest_proto3_arena_pb2.TestAllTypes.NestedMessage())
+
+  def testCrashNullBB(self):
+    self.assertEqual(
+        unittest_proto3_arena_pb2.TestAllTypes().optional_nested_message,
+        unittest_proto3_arena_pb2.TestAllTypes().optional_nested_message)
+
 
 
 
