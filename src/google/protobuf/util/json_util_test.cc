@@ -539,6 +539,13 @@ TEST_P(JsonTest, TestParseIgnoreUnknownFields) {
   JsonParseOptions options;
   options.ignore_unknown_fields = true;
   EXPECT_OK(ToProto<TestMessage>(R"({"unknownName":0})", options));
+
+  TestMessage m;
+  m.GetReflection()->MutableUnknownFields(&m)->AddFixed32(9001, 9001);
+  m.GetReflection()->MutableUnknownFields(&m)->AddFixed64(9001, 9001);
+  m.GetReflection()->MutableUnknownFields(&m)->AddVarint(9001, 9001);
+  m.GetReflection()->MutableUnknownFields(&m)->AddLengthDelimited(9001, "9001");
+  EXPECT_THAT(ToJson(m), IsOkAndHolds("{}"));
 }
 
 TEST_P(JsonTest, TestParseErrors) {

@@ -382,7 +382,7 @@ void ThreadSafeArena::Init() {
 void ThreadSafeArena::SetInitialBlock(void* mem, size_t size) {
   SerialArena* serial = SerialArena::New({mem, size}, &thread_cache(),
                                          arena_stats_.MutableStats());
-  serial->set_next(NULL);
+  serial->set_next(nullptr);
   threads_.store(serial, std::memory_order_relaxed);
   CacheSerialArena(serial);
 }

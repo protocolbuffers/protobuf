@@ -191,6 +191,7 @@
 #define PROTOBUF_FUTURE_REMOVE_CLEARED_API 1
 
 // Used to escape C++20 keywords.
+// TODO(mkruskal): ping b/238664698 when this lands in opensource.
 // Owner: mkruskal@
 #define PROTOBUF_FUTURE_CPP20_KEYWORDS 1
 #else
@@ -557,6 +558,10 @@
 // have harder-to-rely-on address stability.
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
 #error PROTOBUF_FORCE_COPY_DEFAULT_STRING was previously defined
+#endif
+
+#ifdef PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION
+#error PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION was previously defined
 #endif
 
 #ifdef PROTOBUF_FALLTHROUGH_INTENDED
