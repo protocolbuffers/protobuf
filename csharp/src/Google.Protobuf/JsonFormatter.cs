@@ -145,11 +145,26 @@ namespace Google.Protobuf
         /// Formats the specified message as JSON.
         /// </summary>
         /// <param name="message">The message to format.</param>
+        /// <remarks>This method delegates to <c>Format(IMessage, int)</c> with <c>indentationLevel = 0</c>.</remarks>
         /// <returns>The formatted message.</returns>
-        public string Format(IMessage message)
+        public string Format(IMessage message) => Format(message, indentationLevel: 0);
+
+        /// <summary>
+        /// Formats the specified message as JSON.
+        /// </summary>
+        /// <param name="message">The message to format.</param>
+        /// <param name="indentationLevel">Indentation level to start at.</param>
+        /// <remarks>To keep consistent indentation when embedding a message inside another JSON string, set <see cref="indentationLevel"/>. E.g:
+        /// <code>
+        /// var response = $@"{{
+        ///   ""data"": { Format(message, indentationLevel: 1) }
+        /// }}"</code>
+        /// </remarks>
+        /// <returns>The formatted message.</returns>
+        public string Format(IMessage message, int indentationLevel)
         {
             var writer = new StringWriter();
-            Format(message, writer);
+            Format(message, writer, indentationLevel);
             return writer.ToString();
         }
 
@@ -168,6 +183,7 @@ namespace Google.Protobuf
         /// <param name="message">The message to format.</param>
         /// <param name="writer">The TextWriter to write the formatted message to.</param>
         /// <param name="indentationLevel">Indentation level to start at.</param>
+        /// <remarks>To keep consistent indentation when embedding a message inside another JSON string, set <see cref="indentationLevel"/>.</remarks>
         public void Format(IMessage message, TextWriter writer, int indentationLevel)
         {
             ProtoPreconditions.CheckNotNull(message, nameof(message));
