@@ -322,10 +322,12 @@ uint32_t field_rank(const upb_FieldDef* f) {
   return ret;
 }
 
-int cmp_fields(const void* p1, const void* p2) {
-  const upb_FieldDef* f1 = *(upb_FieldDef* const*)p1;
-  const upb_FieldDef* f2 = *(upb_FieldDef* const*)p2;
-  return field_rank(f1) - field_rank(f2);
+static int cmp_values(const void* a, const void* b) {
+  const upb_EnumValueDef* A = *(const upb_EnumValueDef**)a;
+  const upb_EnumValueDef* B = *(const upb_EnumValueDef**)b;
+  if ((uint32_t)A->number < (uint32_t)B->number) return -1;
+  if ((uint32_t)A->number > (uint32_t)B->number) return 1;
+  return 0;
 }
 
 static void upb_Status_setoom(upb_Status* status) {
@@ -404,8 +406,6 @@ int32_t upb_EnumDef_Default(const upb_EnumDef* e) {
 
 int upb_EnumDef_ValueCount(const upb_EnumDef* e) { return e->value_count; }
 
-bool upb_EnumDef_IsSorted(const upb_EnumDef* e) { return e->is_sorted; }
-
 const upb_EnumValueDef* upb_EnumDef_FindValueByNameWithSize(
     const upb_EnumDef* def, const char* name, size_t len) {
   upb_value v;
@@ -430,6 +430,21 @@ bool upb_EnumDef_CheckNumber(const upb_EnumDef* e, int32_t num) {
 const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i) {
   UPB_ASSERT(0 <= i && i < e->value_count);
   return &e->values[i];
+}
+
+const char* _upb_EnumDef_MiniDescriptor(const upb_EnumDef* e, upb_Arena* a) {
+  if (e->is_sorted) return upb_MiniDescriptor_EncodeEnum(e, NULL, a);
+
+  const upb_EnumValueDef** sorted = (const upb_EnumValueDef**)upb_Arena_Malloc(
+      a, e->value_count * sizeof(void*));
+  if (!sorted) return NULL;
+
+  for (size_t i = 0; i < e->value_count; i++) {
+    sorted[i] = upb_EnumDef_Value(e, i);
+  }
+  qsort(sorted, e->value_count, sizeof(void*), cmp_values);
+
+  return upb_MiniDescriptor_EncodeEnum(e, sorted, a);
 }
 
 /* upb_EnumValueDef ***********************************************************/
@@ -2459,26 +2474,22 @@ static int compare_int32(const void* a_ptr, const void* b_ptr) {
 
 static upb_MiniTable_Enum* create_enumlayout(symtab_addctx* ctx,
                                              const upb_EnumDef* e) {
-  char* data;
-  size_t size;
-  bool ok = upb_MiniDescriptor_EncodeEnum(e, &data, &size, ctx->tmp_arena);
-  CHK_OOM(ok);
+  const char* desc = _upb_EnumDef_MiniDescriptor(e, ctx->tmp_arena);
+  if (!desc) symtab_errf(ctx, "OOM while building enum MiniDescriptor");
 
   upb_Status status;
   upb_MiniTable_Enum* layout =
-      upb_MiniTable_BuildEnum(data, size, ctx->arena, &status);
+      upb_MiniTable_BuildEnum(desc, strlen(desc), ctx->arena, &status);
   if (!layout)
     symtab_errf(ctx, "Error building enum MiniTable: %s", status.msg);
   return layout;
 }
 
-static void create_enumvaldef(
-    symtab_addctx* ctx, const char* prefix,
-    const google_protobuf_EnumValueDescriptorProto* val_proto, upb_EnumDef* e,
-    int i) {
+static void create_enumvaldef(symtab_addctx* ctx, const char* prefix,
+                              const google_protobuf_EnumValueDescriptorProto* val_proto,
+                              upb_EnumDef* e, int i) {
   upb_EnumValueDef* val = (upb_EnumValueDef*)&e->values[i];
-  upb_StringView name =
-      google_protobuf_EnumValueDescriptorProto_name(val_proto);
+  upb_StringView name = google_protobuf_EnumValueDescriptorProto_name(val_proto);
   upb_value v = upb_value_constptr(val);
 
   val->parent = e; /* Must happen prior to symtab_add(). */

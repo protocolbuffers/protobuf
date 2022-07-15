@@ -85,12 +85,10 @@ static void upbc_State_Emit(upbc_State* s, const char* name, const char* data,
 static void upbc_Scrape_Message(upbc_State*, const upb_MessageDef*);
 
 static void upbc_Scrape_Enum(upbc_State* s, const upb_EnumDef* e) {
-  char* data;
-  size_t size;
-  bool ok = upb_MiniDescriptor_EncodeEnum(e, &data, &size, s->arena);
-  if (!ok) upbc_Error(s, __func__, "could not encode enum");
+  const char* desc = _upb_EnumDef_MiniDescriptor(e, s->arena);
+  if (!desc) upbc_Error(s, __func__, "could not encode enum");
 
-  upbc_State_Emit(s, upb_EnumDef_FullName(e), data, size);
+  upbc_State_Emit(s, upb_EnumDef_FullName(e), desc, strlen(desc));
 }
 
 static void upbc_Scrape_Extension(upbc_State* s, const upb_FieldDef* f) {

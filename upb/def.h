@@ -268,7 +268,6 @@ const upb_FileDef* upb_EnumDef_File(const upb_EnumDef* e);
 const upb_MessageDef* upb_EnumDef_ContainingType(const upb_EnumDef* e);
 int32_t upb_EnumDef_Default(const upb_EnumDef* e);
 int upb_EnumDef_ValueCount(const upb_EnumDef* e);
-bool upb_EnumDef_IsSorted(const upb_EnumDef* e);
 const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i);
 
 const upb_EnumValueDef* upb_EnumDef_FindValueByNameWithSize(
@@ -282,6 +281,9 @@ UPB_INLINE const upb_EnumValueDef* upb_EnumDef_FindValueByName(
     const upb_EnumDef* e, const char* name) {
   return upb_EnumDef_FindValueByNameWithSize(e, name, strlen(name));
 }
+
+// Builds and returns a mini descriptor, or NULL if OOM.
+const char* _upb_EnumDef_MiniDescriptor(const upb_EnumDef* e, upb_Arena* a);
 
 /* upb_EnumValueDef ***********************************************************/
 

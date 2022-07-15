@@ -113,19 +113,6 @@ static uint64_t upb_Message_Modifiers(const upb_MessageDef* m) {
 
 /******************************************************************************/
 
-// Sort by enum value.
-static int upb_MiniDescriptor_CompareEnums(const void* a, const void* b) {
-  const upb_EnumValueDef* A = *(void**)a;
-  const upb_EnumValueDef* B = *(void**)b;
-  if ((uint32_t)upb_EnumValueDef_Number(A) <
-      (uint32_t)upb_EnumValueDef_Number(B))
-    return -1;
-  if ((uint32_t)upb_EnumValueDef_Number(A) >
-      (uint32_t)upb_EnumValueDef_Number(B))
-    return 1;
-  return 0;
-}
-
 // Sort by field number.
 static int upb_MiniDescriptor_CompareFields(const void* a, const void* b) {
   const upb_FieldDef* A = *(void**)a;
@@ -135,55 +122,39 @@ static int upb_MiniDescriptor_CompareFields(const void* a, const void* b) {
   return 0;
 }
 
-bool upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e, char** data,
-                                   size_t* size, upb_Arena* a) {
-  const size_t len = upb_EnumDef_ValueCount(e);
-
+const char* upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e,
+                                          const upb_EnumValueDef** sorted,
+                                          upb_Arena* a) {
   DescState s;
   upb_DescState_Init(&s);
+
+  upb_MtDataEncoder_StartEnum(&s.e);
+
+  const size_t value_count = upb_EnumDef_ValueCount(e);
 
   // Duplicate values are allowed but we only encode each value once.
   uint32_t previous = 0;
 
-  upb_MtDataEncoder_StartEnum(&s.e);
+  for (size_t i = 0; i < value_count; i++) {
+    const uint32_t current =
+        upb_EnumValueDef_Number(sorted ? sorted[i] : upb_EnumDef_Value(e, i));
+    if (i != 0 && previous == current) continue;
 
-  if (upb_EnumDef_IsSorted(e)) {
-    // The enum is well behaved so no need to copy/sort the pointers here.
-    for (size_t i = 0; i < len; i++) {
-      const uint32_t current = upb_EnumValueDef_Number(upb_EnumDef_Value(e, i));
-      if (i != 0 && previous == current) continue;
-
-      if (!upb_DescState_Grow(&s, a)) return false;
-      s.ptr = upb_MtDataEncoder_PutEnumValue(&s.e, s.ptr, current);
-      previous = current;
-    }
-  } else {
-    // The enum fields are unsorted.
-    const upb_EnumValueDef** sorted =
-        (const upb_EnumValueDef**)upb_Arena_Malloc(a, len * sizeof(void*));
-    if (!sorted) return false;
-
-    for (size_t i = 0; i < len; i++) {
-      sorted[i] = upb_EnumDef_Value(e, i);
-    }
-    qsort(sorted, len, sizeof(void*), upb_MiniDescriptor_CompareEnums);
-
-    for (size_t i = 0; i < len; i++) {
-      const uint32_t current = upb_EnumValueDef_Number(sorted[i]);
-      if (i != 0 && previous == current) continue;
-
-      if (!upb_DescState_Grow(&s, a)) return false;
-      s.ptr = upb_MtDataEncoder_PutEnumValue(&s.e, s.ptr, current);
-      previous = current;
-    }
+    if (!upb_DescState_Grow(&s, a)) return false;
+    s.ptr = upb_MtDataEncoder_PutEnumValue(&s.e, s.ptr, current);
+    previous = current;
   }
 
   if (!upb_DescState_Grow(&s, a)) return false;
   s.ptr = upb_MtDataEncoder_EndEnum(&s.e, s.ptr);
 
-  *data = s.buf;
-  *size = s.ptr - s.buf;
-  return true;
+  // NULL-terminate the mini descriptor so we can return it as a C string.
+  // There will always be room for this in the encoder buffer because
+  // kUpb_MtDataEncoder_MinSize is overkill for upb_MtDataEncoder_EndEnum().
+  UPB_ASSERT(s.ptr < s.buf + s.bufsize);
+  *s.ptr++ = '\0';
+
+  return s.buf;
 }
 
 bool upb_MiniDescriptor_EncodeField(const upb_FieldDef* f, char** data,
@@ -213,23 +184,23 @@ bool upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m, char** data,
   upb_DescState_Init(&s);
 
   // Make a copy.
-  const size_t len = upb_MessageDef_FieldCount(m);
+  const size_t field_count = upb_MessageDef_FieldCount(m);
   const upb_FieldDef** sorted =
-      (const upb_FieldDef**)upb_Arena_Malloc(a, len * sizeof(void*));
+      (const upb_FieldDef**)upb_Arena_Malloc(a, field_count * sizeof(void*));
   if (!sorted) return false;
 
   // Sort the copy.
-  for (size_t i = 0; i < len; i++) {
+  for (size_t i = 0; i < field_count; i++) {
     sorted[i] = upb_MessageDef_Field(m, i);
   }
-  qsort(sorted, len, sizeof(void*), upb_MiniDescriptor_CompareFields);
+  qsort(sorted, field_count, sizeof(void*), upb_MiniDescriptor_CompareFields);
 
   // Start encoding.
   if (!upb_DescState_Grow(&s, a)) return false;
   upb_MtDataEncoder_StartMessage(&s.e, s.ptr, upb_Message_Modifiers(m));
 
   // Encode the fields.
-  for (size_t i = 0; i < len; i++) {
+  for (size_t i = 0; i < field_count; i++) {
     const upb_FieldDef* field_def = sorted[i];
     const upb_FieldType type = upb_FieldDef_Type(field_def);
     const int number = upb_FieldDef_Number(field_def);
