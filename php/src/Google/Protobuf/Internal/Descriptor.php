@@ -163,12 +163,12 @@ class Descriptor
         return $this->legacy_klass;
     }
 
-    public function setPreviouslyReservedClass($klass)
+    public function setPreviouslyUnreservedClass($klass)
     {
         $this->previous_klass = $klass;
     }
 
-    public function getPreviouslyReservedClass()
+    public function getPreviouslyUnreservedClass()
     {
         return $this->previous_klass;
     }
@@ -204,7 +204,7 @@ class Descriptor
         $desc->setFullName($fullname);
         $desc->setClass($classname);
         $desc->setLegacyClass($legacy_classname);
-        $desc->setPreviouslyReservedClass($previous_classname);
+        $desc->setPreviouslyUnreservedClass($previous_classname);
         $desc->setOptions($proto->getOptions());
 
         foreach ($proto->getField() as $field_proto) {

@@ -1330,7 +1330,8 @@ void LegacyReadOnlyGenerateClassFile(const FileDescriptor* file,
         "name", php_namespace);
   }
   std::string newname = FullClassName(desc, options);
-  printer.Print("class_exists(^new^::class);\n",
+  printer.Print("class_exists(^new^::class); // autoload the new class, which "
+      "will also create an alias to the deprecated class\n",
       "new", GeneratedClassNameImpl(desc));
   printer.Print("@trigger_error(__NAMESPACE__ . '\\^old^ is deprecated and will be removed in "
       "the next major release. Use ^fullname^ instead', E_USER_DEPRECATED);\n\n",

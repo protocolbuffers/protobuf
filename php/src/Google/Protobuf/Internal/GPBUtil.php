@@ -304,7 +304,7 @@ class GPBUtil
         return "";
     }
 
-    public static function getPreviouslyUnreservedClassNamePrefix(
+    private static function getPreviouslyUnreservedClassNamePrefix(
         $classname,
         $file_proto)
     {
@@ -344,7 +344,7 @@ class GPBUtil
         return implode('\\', $parts);
     }
 
-    public static function getPreviouslyUnreservedClassNameWithoutPackage(
+    private static function getPreviouslyUnreservedClassNameWithoutPackage(
         $name,
         $file_proto)
     {
