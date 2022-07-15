@@ -811,6 +811,27 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void FormatWithIndentation_EmbeddedMessage()
+        {
+            var value = new TestAllTypes { SingleInt32 = 100, SingleInt64 = 3210987654321L };
+            var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation());
+            var valueJson = formatter.Format(value, indentationLevel: 1);
+
+            var actualJson = $@"
+{{
+  ""data"": {valueJson}
+}}";
+            const string expectedJson = @"
+{
+  'data': {
+    'singleInt32': 100,
+    'singleInt64': '3210987654321'
+  }
+}";
+            AssertJson(expectedJson, actualJson.Trim());
+        }
+
+        [Test]
         public void WriteValueWithIndentation_Map()
         {
             var value = new TestMap
@@ -867,10 +888,14 @@ namespace Google.Protobuf
         /// all apostrophes in the expected JSON with double quotes, trimming leading whitespace and normalizing new lines.
         /// This basically makes the tests easier to read.
         /// </summary>
+        /// <remarks>
+        /// Line endings are normalized because indented JSON strings are generated with system-specific line endings,
+        /// while line endings in the test cases are hard-coded, but may be converted during source checkout, depending
+        /// on git settings, causing unpredictability in the test results otherwise.</remarks>
         private static void AssertJson(string expectedJsonWithApostrophes, string actualJson)
         {
             var expectedJson = expectedJsonWithApostrophes.Replace("'", "\"").Replace("\r\n", "\n").TrimStart();
-            Assert.AreEqual(expectedJson, actualJson);
+            Assert.AreEqual(expectedJson, actualJson.Replace("\r\n", "\n"));
         }
     }
 }
