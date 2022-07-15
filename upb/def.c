@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "upb/mini_descriptor.h"
+#include "upb/internal/mini_descriptor.h"
 #include "upb/mini_table.h"
 #include "upb/reflection.h"
 
@@ -433,7 +433,7 @@ const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i) {
 }
 
 const char* _upb_EnumDef_MiniDescriptor(const upb_EnumDef* e, upb_Arena* a) {
-  if (e->is_sorted) return upb_MiniDescriptor_EncodeEnum(e, NULL, a);
+  if (e->is_sorted) return _upb_MiniDescriptor_EncodeEnum(e, NULL, a);
 
   const upb_EnumValueDef** sorted = (const upb_EnumValueDef**)upb_Arena_Malloc(
       a, e->value_count * sizeof(void*));
@@ -444,7 +444,7 @@ const char* _upb_EnumDef_MiniDescriptor(const upb_EnumDef* e, upb_Arena* a) {
   }
   qsort(sorted, e->value_count, sizeof(void*), cmp_values);
 
-  return upb_MiniDescriptor_EncodeEnum(e, sorted, a);
+  return _upb_MiniDescriptor_EncodeEnum(e, sorted, a);
 }
 
 /* upb_EnumValueDef ***********************************************************/

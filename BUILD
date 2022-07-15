@@ -376,6 +376,8 @@ cc_library(
     name = "reflection",
     srcs = [
         "upb/def.c",
+        "upb/internal/mini_descriptor.c",
+        "upb/internal/mini_descriptor.h",
         "upb/mini_descriptor.c",
         "upb/msg.h",
         "upb/reflection.c",

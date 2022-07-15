@@ -25,21 +25,38 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/internal/mini_descriptor.h"
+#ifndef UPB_INTERNAL_MINI_DESCRIPTOR_H_
+#define UPB_INTERNAL_MINI_DESCRIPTOR_H_
+
+#include "upb/mini_descriptor.h"
 
 // Must be last.
 #include "upb/port_def.inc"
 
-const char* upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e, upb_Arena* a) {
-  return _upb_EnumDef_MiniDescriptor(e, a);
-}
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-const char* upb_MiniDescriptor_EncodeField(const upb_FieldDef* f,
-                                           upb_Arena* a) {
-  return _upb_MiniDescriptor_EncodeField(f, a);
-}
+// Creates and returns a mini descriptor string for an enum, or NULL on error.
+// If the values in the enum happen to be defined in ascending order (when cast
+// to uint32_t) then |sorted| should be NULL. Otherwise it must point to an
+// array containing pointers to the enum value defs in sorted order.
+const char* _upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e,
+                                           const upb_EnumValueDef** sorted,
+                                           upb_Arena* a);
 
-const char* upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m,
-                                             upb_Arena* a) {
-  return _upb_MiniDescriptor_EncodeMessage(m, a);
-}
+// Creates and returns a mini descriptor string for a field, or NULL on error.
+const char* _upb_MiniDescriptor_EncodeField(const upb_FieldDef* f,
+                                            upb_Arena* a);
+
+// Creates and returns a mini descriptor string for a message, or NULL on error.
+const char* _upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m,
+                                              upb_Arena* a);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include "upb/port_undef.inc"
+
+#endif /* UPB_INTERNAL_MINI_DESCRIPTOR_H_ */

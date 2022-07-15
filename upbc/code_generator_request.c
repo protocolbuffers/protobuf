@@ -70,10 +70,9 @@ static void upbc_State_Init(upbc_State* s) {
   if (!s->out) upbc_Error(s, __func__, "could not allocate request");
 }
 
-static void upbc_State_Emit(upbc_State* s, const char* name, const char* data,
-                            size_t size) {
+static void upbc_State_Emit(upbc_State* s, const char* name, const char* data) {
   const upb_StringView key = upb_StringView_FromString(name);
-  const upb_StringView encoding = upb_StringView_FromDataAndSize(data, size);
+  const upb_StringView encoding = upb_StringView_FromString(data);
   bool ok = upbc_CodeGeneratorRequest_mini_descriptors_set(s->out, key,
                                                            encoding, s->arena);
   if (!ok) upbc_Error(s, __func__, "could not set mini descriptor in map");
@@ -85,19 +84,17 @@ static void upbc_State_Emit(upbc_State* s, const char* name, const char* data,
 static void upbc_Scrape_Message(upbc_State*, const upb_MessageDef*);
 
 static void upbc_Scrape_Enum(upbc_State* s, const upb_EnumDef* e) {
-  const char* desc = _upb_EnumDef_MiniDescriptor(e, s->arena);
+  const char* desc = upb_MiniDescriptor_EncodeEnum(e, s->arena);
   if (!desc) upbc_Error(s, __func__, "could not encode enum");
 
-  upbc_State_Emit(s, upb_EnumDef_FullName(e), desc, strlen(desc));
+  upbc_State_Emit(s, upb_EnumDef_FullName(e), desc);
 }
 
 static void upbc_Scrape_Extension(upbc_State* s, const upb_FieldDef* f) {
-  char* data;
-  size_t size;
-  bool ok = upb_MiniDescriptor_EncodeField(f, &data, &size, s->arena);
-  if (!ok) upbc_Error(s, __func__, "could not encode extension");
+  const char* desc = upb_MiniDescriptor_EncodeField(f, s->arena);
+  if (!desc) upbc_Error(s, __func__, "could not encode extension");
 
-  upbc_State_Emit(s, upb_FieldDef_FullName(f), data, size);
+  upbc_State_Emit(s, upb_FieldDef_FullName(f), desc);
 }
 
 static void upbc_Scrape_FileEnums(upbc_State* s, const upb_FileDef* f) {
@@ -172,12 +169,10 @@ static void upbc_Scrape_NestedMessages(upbc_State* s, const upb_MessageDef* m) {
 }
 
 static void upbc_Scrape_Message(upbc_State* s, const upb_MessageDef* m) {
-  char* data;
-  size_t size;
-  bool ok = upb_MiniDescriptor_EncodeMessage(m, &data, &size, s->arena);
-  if (!ok) upbc_Error(s, __func__, "could not encode message");
+  const char* desc = upb_MiniDescriptor_EncodeMessage(m, s->arena);
+  if (!desc) upbc_Error(s, __func__, "could not encode message");
 
-  upbc_State_Emit(s, upb_MessageDef_FullName(m), data, size);
+  upbc_State_Emit(s, upb_MessageDef_FullName(m), desc);
 
   upbc_Scrape_NestedEnums(s, m);
   upbc_Scrape_NestedExtensions(s, m);
