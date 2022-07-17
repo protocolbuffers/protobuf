@@ -1269,9 +1269,9 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
         GenerateSingularFieldHasBits(field, format);
       }
 
-    if (!IsCrossFileMaybeMap(field)) {
-      GenerateFieldClear(field, true, format);
-    }
+      if (!IsCrossFileMaybeMap(field)) {
+        GenerateFieldClear(field, true, format);
+      }
 
     // Generate type-specific accessors.
     if (!IsFieldStripped(field, options_)) {
@@ -2483,6 +2483,13 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* printer) {
     field_generators_.get(field).GenerateConstructorCode(printer);
   }
 
+  if (ShouldForceAllocationOnConstruction(descriptor_, options_)) {
+    format(
+        "#ifdef PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION\n"
+        "$mutable_unknown_fields$;\n"
+        "#endif // PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION\n");
+  }
+
   for (auto oneof : OneOfRange(descriptor_)) {
     format("clear_has_$1$();\n", oneof->name());
   }
@@ -2721,6 +2728,13 @@ void MessageGenerator::GenerateCopyConstructorBody(io::Printer* printer) const {
       "::memcpy(&$first$, &from.$first$,\n"
       "  static_cast<size_t>(reinterpret_cast<char*>(&$last$) -\n"
       "  reinterpret_cast<char*>(&$first$)) + sizeof($last$));\n";
+
+  if (ShouldForceAllocationOnConstruction(descriptor_, options_)) {
+    format(
+        "#ifdef PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION\n"
+        "$mutable_unknown_fields$;\n"
+        "#endif // PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION\n");
+  }
 
   for (size_t i = 0; i < optimized_order_.size(); ++i) {
     const FieldDescriptor* field = optimized_order_[i];

@@ -1,19 +1,18 @@
 2022-07-01 Unreleased version
-  * Add TransferAllMessages() util function
-  * Break ZeroCopyOutputByteSink into its own file.
-  * Explicitly instantiate InternalMetadata members at UnknownFieldSet.
-  * Support kdoc for Kotlin
-  * Delete unused function: IsProto3Field.
+  C++
+  * Reduced .pb.o object file size slightly by explicitly instantiating
+    InternalMetadata templates in the runtime.
   * Add C++20 keywords guarded by PROTOBUF_FUTURE_CPP20_KEYWORDS
-  * Escape Kotlin keywords in package names in proto generated code
-  * Fix StrAppend crashing on empty strings.
+  * Fixed crash in ThreadLocalStorage for pre-C++17 compilers on 32-bit ARM.
+  * Clarified that JSON API non-OK statuses are not a stable API.
 
-2022-06-27 Unreleased version
-  * Handle reflection for message splitting.
-  * make metadata fields lazy.
-  * Extend visibility of plugin library to upb
-  * Modernize conformance_cpp.cc.
-  * Don't request 64-byte alignment unless the toolchain supports it.
+  Kotlin
+  * Kotlin generated code comments now use kdoc format instead of javadoc.
+  * Escape keywords in package names in proto generated code
+
+  Java
+  * Performance improvement for repeated use of FieldMaskUtil#merge by caching
+    constructed FieldMaskTrees.
 
 2022-06-27 version 21.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
   C++

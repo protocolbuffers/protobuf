@@ -379,6 +379,7 @@ class Map {
  public:
   using key_type = Key;
   using mapped_type = T;
+  using init_type = std::pair<Key, T>;
   using value_type = MapPair<Key, T>;
 
   using pointer = value_type*;
@@ -421,6 +422,22 @@ class Map {
   ~Map() {}
 
  private:
+  template <typename P>
+  struct SameAsElementReference
+      : std::is_same<typename std::remove_cv<
+                         typename std::remove_reference<reference>::type>::type,
+                     typename std::remove_cv<
+                         typename std::remove_reference<P>::type>::type> {};
+
+  template <class P>
+  using RequiresInsertable =
+      typename std::enable_if<std::is_convertible<P, init_type>::value ||
+                                  SameAsElementReference<P>::value,
+                              int>::type;
+  template <class P>
+  using RequiresNotInit =
+      typename std::enable_if<!std::is_same<P, init_type>::value, int>::type;
+
   using Allocator = internal::MapAllocator<void*>;
 
   // InnerMap is a generic hash-based map.  It doesn't contain any
@@ -1270,7 +1287,6 @@ class Map {
   const_iterator cbegin() const { return begin(); }
   const_iterator cend() const { return end(); }
 
-  // Capacity
   size_type size() const { return elements_.size(); }
   bool empty() const { return size() == 0; }
 
@@ -1351,15 +1367,17 @@ class Map {
         elements_.try_emplace(std::forward<K>(k), std::forward<Args>(args)...);
     return std::pair<iterator, bool>(iterator(p.first), p.second);
   }
-  std::pair<iterator, bool> insert(const value_type& value) {
-    return try_emplace(value.first, value.second);
+  std::pair<iterator, bool> insert(init_type&& value) {
+    return try_emplace(std::move(value.first), std::move(value.second));
   }
-  std::pair<iterator, bool> insert(value_type&& value) {
-    return try_emplace(value.first, std::move(value.second));
+  template <typename P, RequiresInsertable<P> = 0>
+  std::pair<iterator, bool> insert(P&& value) {
+    return try_emplace(std::forward<P>(value).first,
+                       std::forward<P>(value).second);
   }
   template <typename... Args>
   std::pair<iterator, bool> emplace(Args&&... args) {
-    return insert(value_type(std::forward<Args>(args)...));
+    return EmplaceInternal(Rank0{}, std::forward<Args>(args)...);
   }
   template <class InputIt>
   void insert(InputIt first, InputIt last) {
@@ -1368,7 +1386,12 @@ class Map {
       try_emplace(pair.first, pair.second);
     }
   }
-  void insert(std::initializer_list<value_type> values) {
+  void insert(std::initializer_list<init_type> values) {
+    insert(values.begin(), values.end());
+  }
+  template <typename P, RequiresNotInit<P> = 0,
+            RequiresInsertable<const P&> = 0>
+  void insert(std::initializer_list<P> values) {
     insert(values.begin(), values.end());
   }
 
@@ -1429,6 +1452,23 @@ class Map {
   }
 
  private:
+  struct Rank1 {};
+  struct Rank0 : Rank1 {};
+
+  // We try to construct `init_type` from `Args` with a fall back to
+  // `value_type`. The latter is less desired as it unconditionally makes a copy
+  // of `value_type::first`.
+  template <typename... Args>
+  auto EmplaceInternal(Rank0, Args&&... args) ->
+      typename std::enable_if<std::is_constructible<init_type, Args...>::value,
+                              std::pair<iterator, bool>>::type {
+    return insert(init_type(std::forward<Args>(args)...));
+  }
+  template <typename... Args>
+  std::pair<iterator, bool> EmplaceInternal(Rank1, Args&&... args) {
+    return insert(value_type(std::forward<Args>(args)...));
+  }
+
   Arena* arena() const { return elements_.arena(); }
   InnerMap elements_;
 

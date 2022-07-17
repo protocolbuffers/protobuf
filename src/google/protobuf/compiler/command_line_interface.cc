@@ -1680,8 +1680,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
         })) {
       case google::protobuf::io::win32::ExpandWildcardsResult::kSuccess:
         break;
-      case google::protobuf::io::win32::ExpandWildcardsResult::
-          kErrorNoMatchingFile:
+      case google::protobuf::io::win32::ExpandWildcardsResult::kErrorNoMatchingFile:
         // Path does not exist, is not a file, or it's longer than MAX_PATH and
         // long path handling is disabled.
         std::cerr << "Invalid file name pattern or missing input file \""
