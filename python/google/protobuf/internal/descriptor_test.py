@@ -118,6 +118,22 @@ class DescriptorTest(unittest.TestCase):
   def GetDescriptorPool(self):
     return symbol_database.Default().pool
 
+  def testMissingPackage(self):
+    file_proto = descriptor_pb2.FileDescriptorProto(
+        name='some/filename/some.proto')
+    serialized = file_proto.SerializeToString()
+    pool = descriptor_pool.DescriptorPool()
+    file_descriptor = pool.AddSerializedFile(serialized)
+    self.assertEqual('', file_descriptor.package)
+
+  def testEmptyPackage(self):
+    file_proto = descriptor_pb2.FileDescriptorProto(
+        name='some/filename/some.proto', package='')
+    serialized = file_proto.SerializeToString()
+    pool = descriptor_pool.DescriptorPool()
+    file_descriptor = pool.AddSerializedFile(serialized)
+    self.assertEqual('', file_descriptor.package)
+
   def testFindMethodByName(self):
     service_descriptor = (unittest_custom_options_pb2.
                           TestServiceWithCustomOptions.DESCRIPTOR)
