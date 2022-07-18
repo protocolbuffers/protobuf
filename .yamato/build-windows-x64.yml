@@ -31,4 +31,5 @@ csharp-bindings:
     - |
       cd csharp
       powershell -File install_dotnet_sdk.ps1
+      set PATH=%PATH%;C:\Users\bokken\AppData\Local\Microsoft\dotnet\
       buildall.bat
