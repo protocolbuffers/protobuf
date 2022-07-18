@@ -664,7 +664,7 @@
 #ifdef PROTOBUF_CONSTINIT
 #error PROTOBUF_CONSTINIT was previously defined
 #endif
-#if defined(__cpp_constinit) && !defined(_MSC_VER)
+#if defined(__cpp_constinit) && !defined(_MSC_VER) && !defined(__CYGWIN__)
 #define PROTOBUF_CONSTINIT constinit
 #define PROTOBUF_CONSTEXPR constexpr
 // Some older Clang versions incorrectly raise an error about
@@ -672,7 +672,7 @@
 // higher seem to work, except that XCode 12.5.1 shows the error even though it
 // uses Clang 12.0.5.
 // Clang-cl on Windows raises error also.
-#elif !defined(_MSC_VER) && __has_cpp_attribute(clang::require_constant_initialization) && \
+#elif !defined(_MSC_VER) && !defined(__CYGWIN__) && __has_cpp_attribute(clang::require_constant_initialization) && \
     ((defined(__APPLE__) && __clang_major__ >= 13) ||                \
      (!defined(__APPLE__) && __clang_major__ >= 12))
 #define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
