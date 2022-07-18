@@ -221,6 +221,12 @@ message TestReservedFields {
   reserved "bar", "baz";
 }
 
+enum TestReservedEnumFields {
+  UNKNOWN = 0;
+  reserved 2, 15, 9 to 11;
+  reserved "bar", "baz";
+}
+
 message TestAllExtensions {
   extensions 1 to max;
 }
