@@ -154,6 +154,13 @@
 #  define PROTOBUF_GNUC_MIN(x, y) 0
 #endif
 
+#if defined(__clang__) && defined(__clang_major__) && defined(__clang_minor__)
+#define PROTOBUF_CLANG_MIN(x, y) \
+  (__clang_major__ > (x) || __clang_major__ == (x) && __clang_minor__ >= (y))
+#else
+#define PROTOBUF_CLANG_MIN(x, y) 0
+#endif
+
 // Portable check for MSVC minimum version:
 // https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
 #if defined(_MSC_VER)
@@ -666,30 +673,37 @@
 // This experiment is purely for the purpose of gathering data. All code guarded
 // by this flag is supposed to be removed after this experiment.
 #define PROTOBUF_MESSAGE_OWNED_ARENA_EXPERIMENT
+
 #ifdef PROTOBUF_CONSTINIT
 #error PROTOBUF_CONSTINIT was previously defined
 #endif
-#if defined(__cpp_constinit) && !defined(_MSC_VER)
-#define PROTOBUF_CONSTINIT constinit
-#define PROTOBUF_CONSTEXPR constexpr
+
+#if defined(_MSC_VER)
+// MSVC 17 currently seems to raise an error about constant-initialized pointers.
+# if PROTOBUF_MSC_VER_MIN(1930)
+#  define PROTOBUF_CONSTINIT
+#  define PROTOBUF_CONSTEXPR constexpr
+# endif
+#else
+# if defined(__cpp_constinit)
+#  define PROTOBUF_CONSTINIT constinit
+#  define PROTOBUF_CONSTEXPR constexpr
 // Some older Clang versions incorrectly raise an error about
 // constant-initializing weak default instance pointers. Versions 12.0 and
 // higher seem to work, except that XCode 12.5.1 shows the error even though it
 // uses Clang 12.0.5.
-// Clang-cl on Windows raises error also.
-#elif !defined(_MSC_VER) && __has_cpp_attribute(clang::require_constant_initialization) && \
-    ((defined(__APPLE__) && __clang_major__ >= 13) ||                \
-     (!defined(__APPLE__) && __clang_major__ >= 12))
-#define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
-#define PROTOBUF_CONSTEXPR constexpr
-#elif PROTOBUF_GNUC_MIN(12, 2)
-#define PROTOBUF_CONSTINIT __constinit
-#define PROTOBUF_CONSTEXPR constexpr
-// MSVC 17 currently seems to raise an error about constant-initialized pointers.
-#elif defined(_MSC_VER) && _MSC_VER >= 1930
-#define PROTOBUF_CONSTINIT
-#define PROTOBUF_CONSTEXPR constexpr
-#else
+# elif __has_cpp_attribute(clang::require_constant_initialization) && \
+    ((defined(__APPLE__) && PROTOBUF_CLANG_MIN(13, 0)) ||             \
+     (!defined(__APPLE__) && PROTOBUF_CLANG_MIN(12, 0)))
+#  define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
+#  define PROTOBUF_CONSTEXPR constexpr
+# elif PROTOBUF_GNUC_MIN(12, 2)
+#  define PROTOBUF_CONSTINIT __constinit
+#  define PROTOBUF_CONSTEXPR constexpr
+# endif
+#endif
+
+#ifndef PROTOBUF_CONSTINIT
 #define PROTOBUF_CONSTINIT
 #define PROTOBUF_CONSTEXPR
 #endif
