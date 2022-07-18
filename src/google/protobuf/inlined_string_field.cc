@@ -40,6 +40,7 @@
 #include <google/protobuf/port_def.inc>
 // clang-format on
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -64,7 +65,7 @@ std::string* InlinedStringField::Mutable(Arena* arena, bool donated,
   return MutableSlow(arena, donated, donating_states, mask, msg);
 }
 
-std::string* InlinedStringField::MutableSlow(::google::protobuf::Arena* arena,
+std::string* InlinedStringField::MutableSlow(::unity::google::protobuf::Arena* arena,
                                              bool donated,
                                              uint32_t* donating_states,
                                              uint32_t mask, MessageLite* msg) {
@@ -116,3 +117,4 @@ void InlinedStringField::ClearToDefault(const LazyString& default_value,
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

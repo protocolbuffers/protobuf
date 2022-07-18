@@ -43,6 +43,7 @@
 #include <google/protobuf/port_def.inc>
 // clang-format on
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -764,8 +765,8 @@ PROTOBUF_NOINLINE const char* TcParser::SingularVarBigint(
   // code size, but for this heavily-used piece of code, that's fine.
   struct Spill {
     uint64_t field_data;
-    ::google::protobuf::MessageLite* msg;
-    const ::google::protobuf::internal::TcParseTableBase* table;
+    ::unity::google::protobuf::MessageLite* msg;
+    const ::unity::google::protobuf::internal::TcParseTableBase* table;
     uint64_t hasbits;
   };
   volatile Spill spill = {data.data, msg, table, hasbits};
@@ -1857,3 +1858,4 @@ const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

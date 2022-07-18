@@ -206,7 +206,7 @@
   namespace protobuf {
 #define PROTOBUF_NAMESPACE_CLOSE \
   } /* namespace protobuf */     \
-  } /* namespace google */
+  } /* namespace google */       \
   } /* namespace unity */
 
 #ifdef PROTOBUF_ALWAYS_INLINE
@@ -779,10 +779,10 @@
 #endif
 
 #define PROTOBUF_TC_PARAM_DECL                                 \
-  ::google::protobuf::MessageLite *msg, const char *ptr,                 \
-      ::google::protobuf::internal::ParseContext *ctx,                   \
-      const ::google::protobuf::internal::TcParseTableBase *table,       \
-      uint64_t hasbits, ::google::protobuf::internal::TcFieldData data
+  ::unity::google::protobuf::MessageLite *msg, const char *ptr,                 \
+      ::unity::google::protobuf::internal::ParseContext *ctx,                   \
+      const ::unity::google::protobuf::internal::TcParseTableBase *table,       \
+      uint64_t hasbits, ::unity::google::protobuf::internal::TcFieldData data
 
 #ifdef PROTOBUF_UNUSED
 #error PROTOBUF_UNUSED was previously defined

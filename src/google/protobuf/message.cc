@@ -223,7 +223,7 @@ namespace {
 
 
 #define HASH_MAP std::unordered_map
-#define STR_HASH_FXN hash<::google::protobuf::StringPiece>
+#define STR_HASH_FXN hash<::unity::google::protobuf::StringPiece>
 
 
 class GeneratedMessageFactory final : public MessageFactory {

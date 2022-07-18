@@ -381,7 +381,7 @@ extern std::ostream& operator<<(std::ostream& o, StringPiece piece);
 
 }  // namespace stringpiece_internal
 
-using ::google::protobuf::stringpiece_internal::StringPiece;
+using ::unity::google::protobuf::stringpiece_internal::StringPiece;
 
 }  // namespace protobuf
 }  // namespace google

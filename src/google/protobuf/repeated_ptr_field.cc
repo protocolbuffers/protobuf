@@ -43,6 +43,7 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 
@@ -148,5 +149,6 @@ MessageLite* RepeatedPtrFieldBase::AddWeak(const MessageLite* prototype) {
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>

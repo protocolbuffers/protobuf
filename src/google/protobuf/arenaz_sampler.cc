@@ -38,6 +38,7 @@
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -175,3 +176,4 @@ void SetThreadSafeArenazGlobalNextSample(int64_t next_sample) {}
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

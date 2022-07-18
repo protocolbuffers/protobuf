@@ -276,6 +276,7 @@ class PROTOBUF_EXPORT MapKey {
 
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 namespace std {
 template <>
 struct hash<::PROTOBUF_NAMESPACE_ID::MapKey> {
@@ -319,6 +320,7 @@ struct hash<::PROTOBUF_NAMESPACE_ID::MapKey> {
 };
 }  // namespace std
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace internal {

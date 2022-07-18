@@ -59,21 +59,21 @@
 
 #define GOOGLE_PROTOBUF_HAS_ONEOF
 
-using google::protobuf::internal::ArenaStringPtr;
-using google::protobuf::internal::DescriptorTable;
-using google::protobuf::internal::ExtensionSet;
-using google::protobuf::internal::GenericTypeHandler;
-using google::protobuf::internal::GetEmptyString;
-using google::protobuf::internal::InlinedStringField;
-using google::protobuf::internal::InternalMetadata;
-using google::protobuf::internal::LazyField;
-using google::protobuf::internal::MapFieldBase;
-using google::protobuf::internal::MigrationSchema;
-using google::protobuf::internal::OnShutdownDelete;
-using google::protobuf::internal::ReflectionSchema;
-using google::protobuf::internal::RepeatedPtrFieldBase;
-using google::protobuf::internal::StringSpaceUsedExcludingSelfLong;
-using google::protobuf::internal::WrappedMutex;
+using unity::google::protobuf::internal::ArenaStringPtr;
+using unity::google::protobuf::internal::DescriptorTable;
+using unity::google::protobuf::internal::ExtensionSet;
+using unity::google::protobuf::internal::GenericTypeHandler;
+using unity::google::protobuf::internal::GetEmptyString;
+using unity::google::protobuf::internal::InlinedStringField;
+using unity::google::protobuf::internal::InternalMetadata;
+using unity::google::protobuf::internal::LazyField;
+using unity::google::protobuf::internal::MapFieldBase;
+using unity::google::protobuf::internal::MigrationSchema;
+using unity::google::protobuf::internal::OnShutdownDelete;
+using unity::google::protobuf::internal::ReflectionSchema;
+using unity::google::protobuf::internal::RepeatedPtrFieldBase;
+using unity::google::protobuf::internal::StringSpaceUsedExcludingSelfLong;
+using unity::google::protobuf::internal::WrappedMutex;
 
 namespace unity {
 namespace google {

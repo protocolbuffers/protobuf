@@ -499,7 +499,7 @@ class RepeatedField final {
   using FastAdder = FastAdderImpl<>;
 
   friend class TestRepeatedFieldHelper;
-  friend class ::google::protobuf::internal::ParseContext;
+  friend class ::unity::google::protobuf::internal::ParseContext;
 };
 
 namespace internal {

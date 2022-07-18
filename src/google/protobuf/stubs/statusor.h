@@ -243,7 +243,7 @@ inline const T& StatusOr<T>::value() const {
 
 }  // namespace statusor_internal
 
-using ::google::protobuf::util::statusor_internal::StatusOr;
+using ::unity::google::protobuf::util::statusor_internal::StatusOr;
 
 }  // namespace util
 }  // namespace protobuf
