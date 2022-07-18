@@ -30,5 +30,5 @@ csharp-bindings:
   commands:
     - |
       cd csharp
-      powershell install_dotnet_sdk.ps1
+      powershell -File install_dotnet_sdk.ps1
       buildall.bat
