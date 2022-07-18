@@ -139,3 +139,36 @@ cc_binary(
   visibility = ["//visibility:public"],
   deps = ["//src/google/protobuf/compiler:protoc_lib"],
 )
+
+# C++ runtime
+# "lite" runtime works for .proto files that have this setting enabled: optimize_for = LITE_RUNTIME
+# This runtime excludes the `Reflection` APIs (which includes `Descriptor` etc) or Well-Known Types
+# Please see:
+# https://developers.google.com/protocol-buffers/docs/reference/cpp-generated#message
+# https://developers.google.com/protocol-buffers/docs/reference/google.protobuf
+alias(
+  name = "protobuf_lite",
+  actual = "//src/google/protobuf:protobuf_lite",
+  visibility = ["//visibility:public"],
+)
+
+cc_library(
+  name = "protobuf",
+  hdrs = glob([
+    "src/**/*.h",
+    "src/**/*.inc",
+  ]),
+  copts = COPTS,
+  include_prefix = "google/protobuf/io",
+  linkopts = LINK_OPTS,
+  visibility = ["//:visibility:public"],
+  deps = [
+    "//src/google/protobuf",
+    "//src/google/protobuf/util:delimited_message_util",
+    "//src/google/protobuf/util:differencer",
+    "//src/google/protobuf/util:field_mask_util",
+    "//src/google/protobuf/util:json_util",
+    "//src/google/protobuf/util:time_util",
+    "//src/google/protobuf/util:type_resolver_util",
+  ],
+)
