@@ -82,3 +82,10 @@ The complete documentation for Protocol Buffers is available via the
 web at:
 
 https://developers.google.com/protocol-buffers/
+
+Developer Community
+-------------------
+
+To be alerted to upcoming changes in Protocol Buffers and connect with protobuf developers and users,
+[join the Google Group](https://groups.google.com/g/protobuf).
+
