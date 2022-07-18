@@ -2,7 +2,7 @@ name: Build protobuf - CentOS 7 x64 with Clang9
 
 agent:
   type: Unity::VM
-  image: cds-ops/ubuntu-18.04-agent:latest
+  image: platform-foundation/linux-bokken:latest
   flavor: b1.small
 
 artifacts:
