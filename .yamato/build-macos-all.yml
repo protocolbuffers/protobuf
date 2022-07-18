@@ -11,4 +11,4 @@ artifacts:
       - builds/**
 
 commands:
-- mono bee/bee.exe mac_arm64 mac_x64
+- ./bee/bee mac_arm64 mac_x64

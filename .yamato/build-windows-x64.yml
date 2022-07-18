@@ -11,10 +11,4 @@ artifacts:
       - builds/**
 
 commands:
-  - |
-    cd cmake
-    BuildProtobufOnYamatoWithCMake.bat
-  - |
-    xcopy cmake\install\bin builds\bin\win64 /s /i
-    xcopy cmake\install\lib builds\lib\win64 /s /i
-    xcopy cmake\install_debug\lib\*.lib builds\lib\win64 /s /i
+- .\bee\bee win64_vs2015
