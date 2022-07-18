@@ -11,4 +11,4 @@ artifacts:
       - builds/**
 
 commands:
-- sh ./bee/bee mac_arm64 mac_x64
+- /usr/bin/bash ./bee/bee mac_arm64 mac_x64
