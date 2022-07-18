@@ -3,4 +3,4 @@ dependencies:
     - .yamato/build-linux-x64.yml
     - .yamato/build-macos-all.yml
     - .yamato/build-windows-x64.yml#windows-c-libraries
-    - .yamato/build-windows-x64.yml#windows-csharp-bindings
+    - .yamato/build-windows-x64.yml#csharp-bindings
