@@ -1,14 +1,34 @@
-name: Build protobuf - Windows 10 x64 with VS 2017
+windows-c-libraries:
+  name: Build protobuf - Windows 10 x64 with VS 2017
 
-agent:
-  type: Unity::VM
-  image: platform-foundation/windows-bokken:latest
-  flavor: b1.medium
+  agent:
+    type: Unity::VM
+    image: platform-foundation/windows-bokken:latest
+    flavor: b1.medium
 
-artifacts:
-  build_win:
-    paths:
-      - builds/**
+  artifacts:
+    build_win:
+      paths:
+        - builds/**
 
-commands:
+  commands:
 - .\bee\bee win64_vs2015
+
+windows-csharp-bindings:
+  name: Build C# protobuf - Windows 10 x64 with VS 2017
+
+  agent:
+    type: Unity::VM
+    image: desktop/desktop-vs2017:latest
+    flavor: b1.medium
+
+  artifacts:
+    build_win:
+      paths:
+        - csharp/src/Google.Protobuf/bin/Debug/**
+
+  commands:
+    - |
+      cd csharp
+      powershell install_dotnet_sdk.ps1
+      buildall.bat

@@ -13,4 +13,4 @@ artifacts:
 # After building, recursively copy .h and .inc files from the source to the destination, then rename the folder.
 # This is a superset of what make does, but only a couple of extra test files are included.
 commands:
-- /usr/bin/bash ./bee/bee linux_x64_clang
+- bash ./bee/bee linux_x64_clang
