@@ -81,7 +81,7 @@ module Google
               raise RuntimeError.new "Attempted to initialize message from Hash for field #{name} but have no definition" if msg_or_enum_def.nil?
               new_message = msg_or_enum_def.msgclass.
                 send(:private_constructor, arena, initial_value: value)
-              return_value[:msg_val] = new_message.send(:msg)
+              return_value[:msg_val] = new_message.instance_variable_get(:@msg)
               return return_value
             end
 
@@ -117,8 +117,8 @@ module Google
                 raise TypeError.new "Invalid type #{value.class} to assign to submessage field '#{name}'."
               end
             else
-              arena.fuse(value.send :arena)
-              return_value[:msg_val] = value.send :msg
+              arena.fuse(value.instance_variable_get(:@arena))
+              return_value[:msg_val] = value.instance_variable_get :@msg
             end
           when :enum
             return_value[:int32_val] = case value
@@ -221,7 +221,7 @@ module Google
           pool_def
         end
 
-        def to_h_internal msg, message_descriptor
+        def to_h_internal(msg, message_descriptor)
           return nil if msg.nil? or msg.null?
           hash = {}
           is_proto2 = Google::Protobuf::FFI.message_def_syntax(message_descriptor) == :Proto2
@@ -327,7 +327,7 @@ module Google
             new_message_value[:str_val][:data] = Google::Protobuf::FFI.arena_malloc(arena, message_value[:str_val][:size])
             Google::Protobuf::FFI.memcpy(new_message_value[:str_val][:data], message_value[:str_val][:data], message_value[:str_val][:size])
           when :message
-            new_message_value[:msg_val] = descriptor.msgclass.send(:deep_copy, message_value[:msg_val], arena).send(:msg)
+            new_message_value[:msg_val] = descriptor.msgclass.send(:deep_copy, message_value[:msg_val], arena).instance_variable_get(:@msg)
           else
             Google::Protobuf::FFI.memcpy(new_message_value.to_ptr, message_value.to_ptr, Google::Protobuf::FFI::MessageValue.size)
           end

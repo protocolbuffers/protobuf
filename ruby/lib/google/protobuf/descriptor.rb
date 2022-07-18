@@ -178,7 +178,6 @@ module Google
           require "google/protobuf/message_exts"
           include ::Google::Protobuf::MessageExts
           extend ::Google::Protobuf::MessageExts::ClassMethods
-          attr :arena, :msg
 
           @descriptor = descriptor
           class << self
@@ -205,10 +204,10 @@ module Google
           end
 
           def dup
-            duplicate = self.class.private_constructor(arena)
+            duplicate = self.class.private_constructor(@arena)
             mini_table = Google::Protobuf::FFI.get_mini_table(self.class.descriptor)
             size = mini_table[:size]
-            duplicate.send(:msg).write_string_length(@msg.read_string_length(size), size)
+            duplicate.instance_variable_get(:@msg).write_string_length(@msg.read_string_length(size), size)
             duplicate
           end
           alias clone dup
@@ -221,7 +220,7 @@ module Google
             size_one = ::FFI::MemoryPointer.new(:size_t, 1)
             encoding_one = Google::Protobuf::FFI.encode_message(@msg, mini_table, encoding_options, temporary_arena, size_one)
             size_two = ::FFI::MemoryPointer.new(:size_t, 1)
-            encoding_two = Google::Protobuf::FFI.encode_message(other.send(:msg), mini_table, encoding_options, temporary_arena, size_two)
+            encoding_two = Google::Protobuf::FFI.encode_message(other.instance_variable_get(:@msg), mini_table, encoding_options, temporary_arena, size_two)
             if encoding_one.null? or encoding_two.null?
               raise ParseError.new "Error comparing messages"
             end
@@ -304,7 +303,7 @@ module Google
 
             message = new
             mini_table_ptr = Google::Protobuf::FFI.get_mini_table(message.class.descriptor)
-            status = Google::Protobuf::FFI.decode_message(data, data.bytesize, message.send(:msg), mini_table_ptr, nil, decoding_options, message.send(:arena))
+            status = Google::Protobuf::FFI.decode_message(data, data.bytesize, message.instance_variable_get(:@msg), mini_table_ptr, nil, decoding_options, message.instance_variable_get(:@arena))
             raise ParseError.new "Error occurred during parsing" unless status == :Ok
             message
           end
@@ -328,7 +327,7 @@ module Google
               encoding_options |= Google::Protobuf::FFI.decode_max_depth(depth.to_i)
             end
 
-            encode_internal(message.send(:msg), encoding_options) do |encoding, size, _|
+            encode_internal(message.instance_variable_get(:@msg), encoding_options) do |encoding, size, _|
               if encoding.nil? or encoding.null?
                 raise RuntimeError.new "Exceeded maximum depth (possibly cycle)"
               else
@@ -368,7 +367,7 @@ module Google
             message = new
             pool_def = pool_def_from_message_definition(message.class.descriptor)
             status = Google::Protobuf::FFI::Status.new
-            unless Google::Protobuf::FFI.json_decode_message(data, data.bytesize, message.send(:msg), message.class.descriptor, pool_def, decoding_options, message.send(:arena), status)
+            unless Google::Protobuf::FFI.json_decode_message(data, data.bytesize, message.instance_variable_get(:@msg), message.class.descriptor, pool_def, decoding_options, message.instance_variable_get(:@arena), status)
               raise ParseError.new "Error occurred during parsing: #{Google::Protobuf::FFI.error_message(status)}"
             end
             message
@@ -395,7 +394,7 @@ module Google
             buffer_size = 1024
             buffer = ::FFI::MemoryPointer.new(:char, buffer_size)
             status = Google::Protobuf::FFI::Status.new
-            msg = message.send(:msg)
+            msg = message.instance_variable_get(:@msg)
             pool_def = pool_def_from_message_definition(message.class.descriptor)
             size = Google::Protobuf::FFI::json_encode_message(msg, message.class.descriptor, pool_def, encoding_options, buffer, buffer_size, status)
             unless status[:ok]
@@ -436,7 +435,7 @@ module Google
                 return true if mode == :respond_to_missing?
                 if mode == :method_missing
                   oneof_descriptor = OneofDescriptor.from_native oneof_def_ptr.get_pointer(0)
-                  field_descriptor = Google::Protobuf::FFI.get_message_which_oneof(msg, oneof_descriptor)
+                  field_descriptor = Google::Protobuf::FFI.get_message_which_oneof(@msg, oneof_descriptor)
                   if field_descriptor.nil?
                     return
                   else
@@ -475,7 +474,7 @@ module Google
                   return true if mode == :respond_to_missing?
                   if mode == :method_missing
                     oneof_descriptor = OneofDescriptor.from_native oneof_def_ptr.get_pointer(0)
-                    field_descriptor = Google::Protobuf::FFI.get_message_which_oneof(msg, oneof_descriptor)
+                    field_descriptor = Google::Protobuf::FFI.get_message_which_oneof(@msg, oneof_descriptor)
                     if field_descriptor.nil?
                       return
                     else
@@ -492,7 +491,7 @@ module Google
                   return true if mode == :respond_to_missing?
                   if mode == :method_missing
                     oneof_def = OneofDescriptor.from_native oneof_def_ptr.get_pointer(0)
-                    return !Google::Protobuf::FFI.get_message_which_oneof(msg, oneof_def).nil?
+                    return !Google::Protobuf::FFI.get_message_which_oneof(@msg, oneof_def).nil?
                   end
                 end
 
@@ -505,7 +504,7 @@ module Google
                       return original_method_missing(method_name, *args) if mode == :method_missing
                     else
                       return true if mode == :respond_to_missing?
-                      return Google::Protobuf::FFI.get_message_has(msg, field_descriptor) if mode == :method_missing
+                      return Google::Protobuf::FFI.get_message_has(@msg, field_descriptor) if mode == :method_missing
                     end
                   end
                 end
@@ -516,7 +515,7 @@ module Google
               field_name = method_name[0..-7]
               field_descriptor = self.class.descriptor.lookup(field_name)
               if !field_descriptor.nil? and field_descriptor.type == :enum
-                message_value = Google::Protobuf::FFI.get_message_value msg, field_descriptor
+                message_value = Google::Protobuf::FFI.get_message_value @msg, field_descriptor
                 if field_descriptor.repeated?
                   return true if mode == :respond_to_missing?
                   if mode == :method_missing
@@ -665,8 +664,8 @@ module Google
             descriptor.each do |field_descriptor|
               next if field_descriptor.has_presence? && !Google::Protobuf::FFI.get_message_has(msg, field_descriptor)
               if field_descriptor.map?
-                # TODO(jatl) Adapted - from map#each_msg_val and map#inspect- can this be refactored to reduce echo without intrducing a arena allocation?
-                message_descriptor = field_descriptor.send(:subtype)
+                # TODO(jatl) Adapted - from map#each_msg_val and map#inspect- can this be refactored to reduce echo without introducing a arena allocation?
+                message_descriptor = field_descriptor.subtype
                 key_field_def = Google::Protobuf::FFI.get_field_by_number(message_descriptor, 1)
                 key_field_type = Google::Protobuf::FFI.get_type(key_field_def)
 
@@ -776,7 +775,7 @@ module Google
             arena ||= Google::Protobuf::FFI.create_arena
             encode_internal(msg) do |encoding, size, mini_table_ptr|
               message = private_constructor(arena)
-              if encoding.nil? or encoding.null? or Google::Protobuf::FFI.decode_message(encoding, size, message.send(:msg), mini_table_ptr, nil, 0, arena) != :Ok
+              if encoding.nil? or encoding.null? or Google::Protobuf::FFI.decode_message(encoding, size, message.instance_variable_get(:@msg), mini_table_ptr, nil, 0, arena) != :Ok
                 raise ParseError.new "Error occurred copying proto"
               end
               message

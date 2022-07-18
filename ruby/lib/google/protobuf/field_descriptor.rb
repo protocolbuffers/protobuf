@@ -178,7 +178,7 @@ module Google
           raise ArgumentError.new "does not track presence"
         end
 
-        Google::Protobuf::FFI.get_message_has msg.send(:msg), self
+        Google::Protobuf::FFI.get_message_has msg.instance_variable_get(:@msg), self
       end
 
       ##
@@ -194,7 +194,7 @@ module Google
         if msg.class.descriptor != Google::Protobuf::FFI.get_containing_message_def(self)
           raise TypeError.new "clear method called on wrong message type"
         end
-        Google::Protobuf::FFI.clear_message_field msg.send(:msg), self
+        Google::Protobuf::FFI.clear_message_field msg.instance_variable_get(:@msg), self
         nil
       end
 
@@ -212,7 +212,7 @@ module Google
         if msg.class.descriptor != Google::Protobuf::FFI.get_containing_message_def(self)
           raise TypeError.new "set method called on wrong message type"
         end
-        unless set_value_on_message value, msg.send(:msg), msg.send(:arena)
+        unless set_value_on_message value, msg.instance_variable_get(:@msg), msg.instance_variable_get(:@arena)
           raise RuntimeError.new "allocation failed"
         end
         nil

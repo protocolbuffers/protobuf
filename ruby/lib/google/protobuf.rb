@@ -75,7 +75,7 @@ module Google
       when Google::Protobuf::Map
         Google::Protobuf::Map.deep_copy(object)
       when Google::Protobuf::MessageExts
-        object.class.send(:deep_copy, object.send(:msg))
+        object.class.send(:deep_copy, object.instance_variable_get(:@msg))
       else
         raise NotImplementedError
       end
@@ -83,8 +83,8 @@ module Google
 
     def self.discard_unknown(message)
       raise FrozenError if message.frozen?
-      raise ArgumentError.new "Expected message, got #{message.class} instead." unless message.respond_to?(:msg, true)
-      unless Google::Protobuf::FFI.message_discard_unknown(message.send(:msg), message.class.descriptor, 128)
+      raise ArgumentError.new "Expected message, got #{message.class} instead." if message.instance_variable_get(:@msg).nil?
+      unless Google::Protobuf::FFI.message_discard_unknown(message.instance_variable_get(:@msg), message.class.descriptor, 128)
         raise RuntimeError.new "Messages nested too deeply."
       end
       nil
