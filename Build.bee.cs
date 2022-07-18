@@ -5,31 +5,40 @@ using NiceIO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Bee.Core.Stevedore;
+using Bee.Toolchain.VisualStudio;
+using Bee.Toolchain.VisualStudio.MsvcVersions;
+using Bee.Toolchain.Windows;
 
 class Build
 {
     static NativeProgram Setup(IEnumerable<ToolChain> toolchains)
     {
-        Backend.Current.ArtifactsPath = "bee/artifacts";
-
         var np = new NativeProgram("libprotobuf")
         {
             Sources = {
                 // Protobuff lite
                 "src/google/protobuf/any_lite.cc",
                 "src/google/protobuf/arena.cc",
+                "src/google/protobuf/arenastring.cc",
+                "src/google/protobuf/arenaz_sampler.cc",
                 "src/google/protobuf/extension_set.cc",
-                "src/google/protobuf/generated_message_table_driven_lite.cc",
+                "src/google/protobuf/generated_enum_util.cc",
+                "src/google/protobuf/generated_message_tctable_lite.cc",
                 "src/google/protobuf/generated_message_util.cc",
                 "src/google/protobuf/implicit_weak_message.cc",
+                "src/google/protobuf/inlined_string_field.cc",
                 "src/google/protobuf/io/coded_stream.cc",
-                "src/google/protobuf/io/strtod.cc",
                 "src/google/protobuf/io/io_win32.cc",
+                "src/google/protobuf/io/strtod.cc",
                 "src/google/protobuf/io/zero_copy_stream.cc",
+                "src/google/protobuf/io/zero_copy_stream_impl.cc",
                 "src/google/protobuf/io/zero_copy_stream_impl_lite.cc",
+                "src/google/protobuf/map.cc",
                 "src/google/protobuf/message_lite.cc",
                 "src/google/protobuf/parse_context.cc",
                 "src/google/protobuf/repeated_field.cc",
+                "src/google/protobuf/repeated_ptr_field.cc",
                 "src/google/protobuf/stubs/bytestream.cc",
                 "src/google/protobuf/stubs/common.cc",
                 "src/google/protobuf/stubs/int128.cc",
@@ -56,19 +65,18 @@ class Build
                 "src/google/protobuf/empty.pb.cc",
                 "src/google/protobuf/extension_set_heavy.cc",
                 "src/google/protobuf/field_mask.pb.cc",
+                "src/google/protobuf/generated_message_bases.cc",
                 "src/google/protobuf/generated_message_reflection.cc",
-                "src/google/protobuf/generated_message_table_driven.cc",
+                "src/google/protobuf/generated_message_tctable_full.cc",
                 "src/google/protobuf/io/gzip_stream.cc",
                 "src/google/protobuf/io/printer.cc",
                 "src/google/protobuf/io/tokenizer.cc",
-                "src/google/protobuf/io/zero_copy_stream_impl.cc",
                 "src/google/protobuf/map_field.cc",
                 "src/google/protobuf/message.cc",
                 "src/google/protobuf/reflection_ops.cc",
                 "src/google/protobuf/service.cc",
                 "src/google/protobuf/source_context.pb.cc",
                 "src/google/protobuf/struct.pb.cc",
-                "src/google/protobuf/stubs/mathlimits.cc",
                 "src/google/protobuf/stubs/substitute.cc",
                 "src/google/protobuf/text_format.cc",
                 "src/google/protobuf/timestamp.pb.cc",
@@ -79,7 +87,7 @@ class Build
                 "src/google/protobuf/util/field_mask_util.cc",
                 "src/google/protobuf/util/internal/datapiece.cc",
                 "src/google/protobuf/util/internal/default_value_objectwriter.cc",
-                //"src/google/protobuf/util/internal/error_listener.cc", // Empty file
+                "src/google/protobuf/util/internal/error_listener.cc",
                 "src/google/protobuf/util/internal/field_mask_utility.cc",
                 "src/google/protobuf/util/internal/json_escaping.cc",
                 "src/google/protobuf/util/internal/json_objectwriter.cc",
@@ -89,14 +97,13 @@ class Build
                 "src/google/protobuf/util/internal/protostream_objectsource.cc",
                 "src/google/protobuf/util/internal/protostream_objectwriter.cc",
                 "src/google/protobuf/util/internal/type_info.cc",
-                "src/google/protobuf/util/internal/type_info_test_helper.cc",
                 "src/google/protobuf/util/internal/utility.cc",
                 "src/google/protobuf/util/json_util.cc",
                 "src/google/protobuf/util/message_differencer.cc",
                 "src/google/protobuf/util/time_util.cc",
                 "src/google/protobuf/util/type_resolver_util.cc",
                 "src/google/protobuf/wire_format.cc",
-                "src/google/protobuf/wrappers.pb.cc",
+                "src/google/protobuf/wrappers.pb.cc"
             }
         };
 
@@ -130,6 +137,7 @@ class Build
             {"mac_x64", "macos/x64"},
             {"mac_arm64", "macos/arm64"},
             {"linux_x64_clang", "linux"},
+            {"win64_vs2015", "win64"},
         };
 
         var name = toolchain.ActionName.ToLowerInvariant();
@@ -142,6 +150,7 @@ class Build
     static IEnumerable<ToolChain> GetToolchains()
     {
         var toolchains = new ToolChain[] {
+            ToolChain.Store.Windows().VS2015().Sdk_17134().x64(),
             ToolChain.Store.Linux().Centos_7_7_1908().Clang_9_0_1().x64(),
             ToolChain.Store.Mac().Sdk_11_0().x64(),
             ToolChain.Store.Mac().Sdk_11_0().ARM64(),
@@ -165,6 +174,7 @@ class Build
 
     static void Main()
     {
+        using var _ = new BuildProgramContext();
         var toolchains = GetToolchains();
         Setup(toolchains);
     }

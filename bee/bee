@@ -1,0 +1,325 @@
+#!/bin/bash
+
+#Bee bootstrap script. You typically invoke this script directly. It's responsible for
+#downloading a dotnet runtime if required, and for downloading a bee distribution if required, and for starting the actual bee
+#driver executable.
+set -euo pipefail
+
+#these two values will be replaced by the buildprocess when this script is used in a bootstrap distribution. When not replaced
+#this script assumes it lives next to the standalone driver
+use_bee_from_steve="bee/e80dcb1774b6_8e9fe0d284c2dd42bde67664b6b9ca6d1100f60f27ce4839ab92e3df2b25716b.zip"
+use_bee_from_steve_repo="https://public-stevedore.unity3d.com/r/public"
+
+if [[ "$use_bee_from_steve_repo" =~ .*testing.* ]]; then
+  echo "Warning this bee bootstrap script is using a bee from the testing repository. This fine for testing, but not to use in production."
+fi
+
+if [[ "$OSTYPE" == "msys" ]]; then
+  echo "It looks like you're running the bee bash script on windows. This is not supported, run bee.bat or bee.ps1 instead"
+  exit 1
+fi
+
+#stevedore artifacts for the dotnet runtimes. these are produced by the yamato CI for our "netcorerun" repo. The zip file contains
+#an info file that describes from which git commit / yamato-id it was built.  They are plain upstream packages, just unzipped & rezipped
+#with this extra information added.
+dotnet_runtime_linux="dotnet-runtime-linux-x64/966cbdc_06ea0fd0c2b630692f01ac852886cb0c102f585e6202f31757721496e9cc07c9.zip" #net-runtime 6.0.3
+dotnet_runtime_osx_x64="dotnet-runtime-osx-x64/966cbdc_1040c0b7364ba17ab2d73815d549747e730c2ca235d8ff1ca9921dec4706271e.zip" #net-runtime 6.0.3
+dotnet_runtime_osx_arm64="dotnet-runtime-osx-arm64/966cbdc_8f43f199553806d77fcb453095b5ef6172f5814714729e0def392d27f1137f3c.zip" #net-runtime 6.0.3
+
+steve_artifact_return_value=""
+
+download_or_return_steve_artifact()
+{
+    local steve_name="$1"
+
+    #we could extend this to parse the Stevedore.conf, and to attempt downloads from multiple mirrors
+    local steve_repo_url="$2"
+    local unzip_dir_path="$HOME/.beebootstrap/$steve_name"
+
+    if [ ! -d "$unzip_dir_path" ]; then
+        if [ "$(which curl)" = /snap/bin/curl ]
+        then
+            echo "WARNING: apparmor can interfere with the curl snap package."
+            echo "If you get access denied errors, install curl normally:"
+            echo "  sudo apt-get install -y curl"
+            sleep 1
+        fi
+
+        echo "Downloading $3."
+
+        download_link="$steve_repo_url/$steve_name"
+        temporary_dir="$HOME/.beebootstrap/download_$RANDOM"
+        mkdir -p "$temporary_dir"
+        downloaded_file="$temporary_dir/download.zip"
+
+        #--fail means that if the http result is not OK, curl will actually fail. if not it will write a beautiful 404 page into $downloaded_file and exit with code 0
+        curl --fail  --location "$download_link" --output "$downloaded_file"
+
+        #after downloading into the temporary directory, we unzip it into the same temporary directory
+        unzip -q -d "$temporary_dir" "$downloaded_file"
+        #then we delete the zip file, so only its contents remain
+        rm -f "$downloaded_file"
+
+        #we ensure the directory we need to put the final result in's parent directory exist.
+        mkdir -p "$(dirname "$unzip_dir_path")"
+
+        #and we move the temporary directory to the final location. We use a move, so that it's atomic, and a failed download, or a failed unzp cannot
+        #result in a situation where the targetdirectory did get created, but did not get properly populated. This way we can use the presence of the directory
+        #as indication
+        mv "$temporary_dir" "$unzip_dir_path"
+    fi
+
+    #bash does not support return values, so we assign it to a global. yep.
+    steve_artifact_return_value="$unzip_dir_path"
+}
+
+dotnet_runtime_steve=""
+determine_dotnet_runtime_steve() {
+   type="$(uname)-$(uname -m)"
+   case "$type" in
+       Darwin-x86_64)
+           dotnet_runtime_steve="$dotnet_runtime_osx_x64"
+           ;;
+       Darwin-arm64)
+           dotnet_runtime_steve="$dotnet_runtime_osx_arm64"
+           ;;
+       Linux-x86_64)
+           dotnet_runtime_steve="$dotnet_runtime_linux"
+           ;;
+       *)
+           echo "Unsupported system: $type"
+           exit 1
+           ;;
+   esac
+}
+
+if [ "$use_bee_from_steve" == "no" ]; then
+    #this script supports running as part of a full bee distribution. In this case, use_bee_from_steve is not set,
+    #and we find the path to the distribution by looking at where the script itself is. It shuold be placed in Standalone/Release of the distribution
+    standalone_release="$(dirname "$0")"
+else
+    #we also support downloading the bee distribution from a stevedore server. In this case use_bee_from_steve should be set to a stevedore artifact name.
+    #we'll download it and run it. In this mode, the only thing a user needs to version in their repo is this script.
+    download_or_return_steve_artifact "$use_bee_from_steve" "$use_bee_from_steve_repo" "Bee distribution"
+    standalone_release="$steve_artifact_return_value/Standalone/Release"
+fi
+
+distribution_path="$(cd "${standalone_release}/../.." && pwd)"
+standalone_path="$standalone_release/Bee.StandaloneDriver.exe"
+if [ ! -e "$standalone_path" ]; then
+    standalone_path="$standalone_release/Bee.StandaloneDriver.dll"
+fi
+
+
+determine_dotnet_runtime_steve
+download_or_return_steve_artifact "$dotnet_runtime_steve" "https://public-stevedore.unity3d.com/r/public" "Dotnet runtime"
+dotnet_exe="$steve_artifact_return_value/dotnet"
+
+#we assign BEE_DOTNET_MUXER env var here, so that the bee that is running knows how it can use this dotnet runtime to start other net5 framework dependent apps.
+#it uses this to run the stevedore downloader program on net5.
+export BEE_DOTNET_MUXER="$dotnet_exe"
+export BEE_DISTRIBUTION_PATH="$distribution_path"
+
+"$dotnet_exe" "$standalone_path" "$@"
+# ReleaseNotes: 
+
+
+# Automatically generated by Yamato Job: https://unity-ci.cds.internal.unity3d.com/job/14001740
+
+# ### Bee 2021 release notes
+# 
+# ## Changes Requiring Changes To BuildCode
+# * The type used for GUIDs in all CSharpProgram and ProjectFile members that handle them (`CSharpProgram.ExpilcitGuid`, `CSharpProgramReference` constructor, `IProjectFile.Guid`) was changed from string to System.GUID, to avoid bugs where you accidentally put curly braces in the GUID when you shouldn't, or the other way around.
+# * Completely new Pram binding ([cross platform application deployment tooling](https://github.cds.internal.unity3d.com/unity/pram/#platform--runtime-application-manager-pram)) which is compatible with latest Pram version. The binding is located at `Bee.PramBinding.PramExecutable` and allows to set up application deploy and run actions. Note that Pram no longer handles application bundling and expects platform specific application formats.
+# * StandaloneBeeDriver.BuildProgramProjectFile has been replaced by BuildProgramProjectFileFor(BuildProgramContext bpc). You can create a buildprogram context by having the very first thing you do in your buildprogram be: var context = new BuildProgramContext()
+# * `EmscriptenExecutableFormat` extension defaults now to `html`
+# * Buildprograms will by default be compiled using CSharpProgram2, targetting net5, and ran on the net5 runtime. This means you can use C# 9 in your buildprograms. In order to conveniently edit your buildprogram with Rider or VisualStudio you need to have the dotnet5 sdk installed. There is no requirement for any install if you just want to build. Transition should be smooth and automatic. Use UseCSharpSupport2=0 and RunBeeOnNet5=0 in bee.config to revert to the old behaviour. Inform #devs-bee if you have to do this, as the old behaviour will soon be removed completely.
+# * The type `SerializableInvocation` is no longer nested inside StandaloneBeeDriver, but is now a standalone type in the `Bee` namespace.
+# * If you have a normal bee deployment, and your buildprogram uses ConfigureCSharpAction(), you can remove that code, as the BuildProgramContext() constructor sets up csharp actions
+#   by default for everyone now.
+# * `IDeployable.DeployTo` with (optional) `alreadyDeployed` is now deprecated, use new version with (optional) `destinationSubDirectory` parameter
+# * `DeployableFile` as well as `BuiltNativeProgram` and inheritors are now `record`, meaning any derived class needs to be a `record` as well
+# * Various deprecations in `BuiltNativeProgram` and inheritors, follow documentation provided by `Obsolete` attributes
+# * `IDeployable.Path` is "soft-deprecated" (i.e. not yet marked with `Obsolete`), prefer depending on `IDeployable.Files` instead of relying in a single "representative file"
+# * EmscriptenToolchain now only supports Emscripten2. You can get one using `ToolChain.Store.Emscripten().Sdk_2_0_19().Wasm()`.
+# * Several Emscripten compiler flags were removed as they no longer exist in Emscripten2. WithSeparateAsm, PRECISE_F32. WithExtraExportedRuntimeMethods was renamed to WithExportedRuntimeMethods.
+# * Fixed case 1378085 @zilys:
+#   Windows: when building generated IL2CPP C++ code with Visual Studio 2022, Unity will now correctly recognize it as "Visual Studio 2022" instead of "Visual Studio [Unknown]".
+# * UWP executable native program no longer deploys `ucrtbased.dll` as part of its debug build
+# * TinyProfiler2 ChromeTraceOptions external .traceevent files needs to be submitted as `Task<string>` instead of `Func<string>`
+# 
+# ## Improvements
+# * When a stevedore download fails due to a DNS failure, it will be attempted again.
+# * On mac, stevedore will do unpacks using `ditto` so that we can preserve metadata like osx signing information.
+# * Comparing `BagOfObjectFilesLibrary` instances is now faster.
+# * Reduced lock contention in the backend, resulting in improved performance, especially when there is almost nothing to be built.
+# * Make the backend flush its output buffers less frequently, for improved performance, especially when there is almost nothing to be built.
+# * Add `CSharpProgram2.RestoreLogFilePaths`. This allows build code to make a `CSharpProgram2`'s restore depend on another `CSharpProgram2`, we use this in the Bee build code to avoid nuget conflicts in CI.
+# * Increased the stevedore download timeout from 10s to 20s.
+# * All `CSharpProgram2` instances have `WarningsAsErrors` set to true by default
+# * If a node fails with non-zero exit code, its outputs (partial/incorrect results, logs, etc.) will not be deleted
+# * Added `DynamicLinkerSettingsForLd` and `DynamicLinkerSettingsForXcode` native program extension methods
+# * CSharpProgram2 exposes the .RollForward property to control the rollforward policy of netcore based runtimes
+# * CSharpProgram2 exposes the .UseAppHost property to avoid creation of a framework dependent executable.
+# * Preview feature: running bee and stevedore donwloader on an automatically downloaded .net5 runtime. opt in with `"RunBeeOnNet5" = true` in your bee.config file
+# * Preview feature: bee can be consumed as 3 scripts. (bash, ps1, bat). They will download the full bee on demand. This avoid versioning the full bee distribution in your repo.
+# * Bee executable supports newline seperated responsefiles
+# * TundraBackend now has .AddEnvironmentVariableSignature("YOUR_VAR") that will cause the dag to be invalidated when the value of that environment variable changes in the future.
+# * Add `CSharpProgram2.GenerateAssemblyInfo` to control whether an assemblyinfo file (containing attributes like AssemblyName, AssemblyVersion, etc) is automatically generated for the program or not.
+# * Add `CSharpProgram2.RuntimeIdentifer` to control target platform (mostly relevant for using some Nuget packages with platform specific binaries)
+# * Add `PackageReference.ReferenceSpecificPath` for situations where nuget chose a targetframework variation of a package and you're not happy with that choice.
+# * Make dotnet publish command used by CSharpProgram2 be less verbose on CI
+# * Custom buildprogram buildprograms have the ability to specify that their buildprogram supports providing help through `BuildProgramBuildProgramOutputData`.
+# * .Net3.1 sdk is now available through `DotNetSdk.Sdk31`
+# * Added infrastructure for cross platform application packaging
+# * All normal bee deployments support `Backend.Current.AddCSharpAction()` out of the box. Try it, it's nice!
+# * `CSharpProgram2` as well as the standalone driver will check for a user wide installed NuGet.Config that prevents any nuget operations from working. Choco unfortunately installs such a config. If one is found it's not changed or removed, but instead our dotnet restore commands use a local NuGet.Config that points to the default nuget package source. If a non-empty NuGet.Config is found system wide, we respect it and don't do anything.
+# * ProjectFiles generated by CSharpProgram2 will use shorter paths in the artifacts directory for msbuild/IDE's to put their temporary files in. This makes it more likely your bee buildprogram
+#   runs properly on machines configured without EnableLongPaths=1 on windows machines.
+# * Most `IDeployable`s (notably `BuiltNativeProgram` and `DeployableFile`) inherit now from a common base record class implementing a `DestinationSubDirectory`, allowing to specify subdirectories within `DeployTo`'s target
+# * When using dynamic targetdirectories, you always had to have special code to deal with the situation where the targetDirectory you're trying to get the file listing
+# from doesn't exist yet. There is a helper for this now: `mydir.FilesOrDummy("*.cs")`. It will return all cs files if the directory exists, and if it doesn't exist, will return a single cs file in that directory called `dummy.cs`. If you are using dynamic targetdirectories you probably have a helper function in your buildprogram that does exactly this that can now be removed.
+# * `Add CSharpProgram.DefaultCompiler` to globally set a default csharp compiler to use for configurations that do not specify a custom one.
+# * `Bee.Core.RunnableProgram` has a virtual `EnvironmentVariables` you can override for when your program needs to be run with specific env vars.
+# * You can add `"BuildProgramPackageReferences": [{"Name": "Spectre.Console", "Version": "0.14.0"}]` to your `bee.config` to have your buildprogram use one or more package references.
+# * BeeFiles in Bee.Config now supports wildcards
+# * Emscripten toolchain constructor overload that takes a static library extension to make the migration from .bc static libs to .a easier.
+# * Give a better error message when trying to run the ./bee bash script on windows. (Can happen when you use the Git Bash shell on windows)
+# * Performance improvement: When a buildthread has no work, it will no eager start statting files for their timestamp for files where we know we're going to need their timestamp
+#   later in the build. It will also already start doing this while the dag is still being verified.
+# * All bee libraries have adopted a new profiler implementation called TinyProfiler2. There are compatibility shims for the old `TinyProfiler.Section` calls that you might have in your
+#   buildprogram. This new implementation is much faster. It measures time based off the unix epoch, instead of from 0. If you are combining profile.json files with others, you might
+#   have to change the time basis of your other profiles in order for them to nicely line up.
+# * Fixed bug where bee wouldn't work properly on M1 macs.
+# * Added `Bee.NativeProgramSupport.CompilationDatabase` for generating LLVM-style JSON compilation databases, used by some code analysis tools.
+# * CSharpProgram2 based Csc invocations are faster now that we compile them with /shared
+# * `StevedoreArtifact.UnpackToUnusualLocation(NPath)` can now be used with any custom location, not just `artifacts` or `build`.
+# * bee shell scripts now set an environment variable `BEE_DISTRIBUTION_PATH` that can be used to resolve the distribution in build programs.
+# * Added new `Backend.AddDirectoriesToNeverScanByHash` to exclude directories from scanning input file contents by hash. This can be used a performance improvement for inputs which we don't expect to change.
+# * Added `ProjectFile.TargetFrameworkMonikersOverride` to be able to use a different list of framework monikers in generated csproj than when building a CSharpProgram (allows to add .net 5.0 as a target framework on test projects targetting .net standard so that the IDE can run the tests directly)
+# * Added ClangCompilerSettings.WithAbsoluteDiagnostics(bool) to allow buildprograms to choose when this should be used. Defaults to true for windows, otherwise false.
+# * Added support for keeping action output files pristine. Keeping a file pristine means that if a user or another process modifies an output file of an action that action will run again next time bee is invoked.
+# * TinyProfiler2 now accept .traceevents as `Task<string>` which allows start writing report before .tracevents are available. .traceevents will be consumed in the order they are ready.
+# * Dotnet that bee runs with is now available on the Backend, Bee no longer relies on DOTNET_ROOT env var outside of tests
+# 
+# ## Bug Fixes
+# * The backend will now correctly write stdout to the log for failures when failing with a signal on unix/mac systems.
+# * The backend will now correctly write process status codes to the log file, instead of always writing 1 for failures.
+# * The backend will no longer fail to write its database file if the folder it's supposed to write to does not exist yet.
+# * A `CSharpProgram` that has an `Identifier` set will now have its LogicalName set in the generated .csproj.
+# * Use 5 character temp dirs instead of 4 to avoid Windows reserved names (like COM0).
+# * Upgraded reapi-cache-client with a fix for downloaded files being created with the wrong permissions.
+# * `CSharpProgram2` will always emit portable pdb's, also when targetting net471
+# * `CSharpProgram2` SupportFiles now also works with MsBuild (i.e. when building/testing from Visual Studio/Rider)
+# * Clang Sanitizers are now disabled for EmbeddedLinux (tests regarding them failed previously)
+# * When using UseCSharpSupport2 feature, you can use StandaloneBeeDriver.BuildProgramProjectFileFor to create get a projectfile for the buildprogram.
+# * Fix bug where if you used different bee's from different places in the same repo, instead of overwriting your only bee, the dag would not be regenerated.
+# * Fix bug where when running on net5, bee.standalonedriver would try to download the cache client using mono instead of net5.
+# * Fix memoryleak in the backend that could trigger the heap validation code to trigger when a buildgraph uses targetdirectories.
+# * Many toolchains and the backend have seen fixes for environments where paths involved in the build contain unicode characters.
+# * Fixed bug where all JavaCompile nodes were missing a dependency on their responsefile.
+# * Fixed bug where bee.ps1 environment variable BEE_DOTNET_MUXER and BEE_DOTNET_NET5WRAPPER would persist in powershell sessions
+# * Fix a windows only bug where a failure during the initial bee download will create a situation where all subsequent builds fail.
+# * Fix bug where the --help system exposed to buildprograms didn't work when --help was passed as an early argument instead of a late one
+# * Some bee libraries recently started shipping with version number 1.0.0.0 embedded in their metadata. Reverted back to the original 0.0.0.0 for binary compatibility
+# * Fixed bug in Android platform ObjCopy function which caused it to use invalid path and fail
+# * Added a warning to the bee bootstrap bash script when it detects that a curl snap package is being used.
+# * Fixed bug where two CSharpPrograms being published into the same directory would give an error on the first build.
+# * Fixed bug in CSharpProgram2 when referencing pre-built .NET assemblies that are generated by another node in the graph, such as a Stevedore download
+# * Fix standalonedriver bug where bee library pdb's were not properly referenced, causing exceptions in buildprograms to not have linenumbers for stackframes inside bee libraries.
+# * Fixed bug in CSharpProgram2 where on the first run the app returned from .SetupPublish() would not have its .DotNetAssemblies populated.
+# * On Apple-M1 machines, BuildPrograms ran by the bee standalone were ran through a NET5 runtime which goes through rosetta.  Now they run using a NET6 runtime which is much faster as it is native arm64.
+# * On Apple-M1 machines, BuildPrograms reported X64 as the host platform, which can cause them to take incorrect decisions on what to build.
+# * Certain NewtonSoft.Json usage in buildprograms could cause runtime errors (ala System.Security.Permissions). Thanks @joejo for the report.
+# * EmscriptenSDK will use emcc.bat instead of invoking python manually to work around a bug in python's stdin handling that only shows up in unity player builds.
+# * Fix windows bug where in certain shells (including cmd.exe), we would no longer output colors in the buildoutput
+# * Fix Emscripten compilation failing on Linux due to relative EM_CONFIG variable
+# * Fix Emscripten static linker not removing object files from previous build
+# * Fix Emscripten dynamic linker not passing -shared for dynamic libraries
+# * Fix CSharpProgram2 embedded resources having different identifiers when built from Rider/Visual Studio versus when built from Bee
+# * Fix Stevedore manifest parsing failing on lines with spaces/tabs and trailing spaces/tabs
+# * Stevedore environment variable lookup is now case insensitive on Windows (fb case 1376500)
+# * `NPath.ResolveWithFileSystem()` will now return correct paths for Stevedore artifacts using `UnpackToUnusualLocation(NPath)`.
+# requirements)
+# * Attempt to force-disable color codes in build logs when building in Xcode, to avoid cases where Xcode can't parse the log for filenames.
+# * `UnpackToUnusualLocation(NPath)` now properly handles custom artifact directories as well as `StevedoreSettings.UnpackPathPrefix`. Previously version files were hardcoded to be stored in "artifacts" causing steve to unpack them again if "artifacts" didn't exist or was removed.
+# * Fix SDK Style project generation where CSharpProgram.CSProjBuildEvents were ignored
+# * Fix SDK Style project generation where StartInfo was ignored
+# * Remove output files before running static linkers, since many of them append to existing files.
+# * Stevedore manifests are now registered as inputs to the build program.
+# 
+# ## Other changes
+# * The c++ program that does the actual build is renamed from tundra2.exe to bee_backend.exe. On linux it is no longer compiled with gcc but with clang.
+# * Object files in a `BagOfObjectFilesLibrary` are now stored, and presented to the linker, in sorted order.
+# * Platforms accessed through `ToolChain.Store` have been moved from `Bee.Core` to their relevant toolchain assemblies, which will make it easier to realize that you're missing an assembly reference now that Bee isn't shipped as a single assembly anymore. If the platform you're looking for is missing (say `ToolChain.Store.Windows()`), make sure you're referencing the relevant assembly (in this case, `Bee.Toolchain.Windows.dll`).
+# * The "bee steve pack" command has been removed, since it no longer works with our infrastructure. See https://stevedore.unity3d.com/upload/ for alternative upload methods.
+# * When publishing a `CSharpProgram2` with debug codegen, the generated PDB will always contain the source files. This is a workaround until we decide on a method to conditionally set properties
+# * `CSharpProgram2.GenerateXmlDoc` has changed to a bool value, users can configure warnings via `WarningsAsErrors` and `IgnoredWarnings`
+# * Add a preview-internal scaffolding in preparation for running bee on dotnet5
+# * Clang Sanitizers if enabled are now always linked statically
+# * rebuilds (bee -l, jam -a) have been broken for a while. They are not fixed yet, but we print an error message now when you try this, instead of running endless loops of endless rebuilds.
+# * The build (and rebuild) commands for the generated native program project files were not working, they were replaced with an informative message instructing the user to build them on the command line instead.* NDA bits are now distributed as Stevedore artifacts, declared in `bee_manifest.stevedore` files.
+# * Relatedly, there is now a single bootstrap zip, which is the default way to consume Bee.
+# * UseCSharpSupport2 and RunBeeOnNet5 are no longer options in bee.config, they are always considered turned on now.
+# * TinyProfiler2 writes files without BOM
+
+
+# ### Bee 2022 release notes
+# 
+# ## Changes Requiring Changes To BuildCode
+# 
+# * AppPackage.NativeLibraries condition input for `CollectionWithConditions` is no longer `(AppPackageConfiguration, Architecture)>` but `AppPackageConfigurationWithSpecificArchitecture` instead
+# * Xcode toolchain classes for `Lipo` and `Dsymutil` now operate on `BuiltNativeProgram` instances, rather than `NPath` instances.
+# 
+# ## Improvements
+# 
+# * bee_backend on Windows now uses pipes instead of temp files for child process
+#   output. This might avoid problems due to antivirus software interfering with
+#   the build process.
+# * `DownstreamCustomer` class now uses `CollectionWithConditions` to build command lines for `ApplySteps` and `VerifySteps`. This allows to write shell scripts with commands shared
+#   or specific to Operating systems.
+# * WriteTextAction can now handle paths longer than 260 characters on Windows.
+# * Putting the "same" CSharpProgram2 multiple times in the build graph targeting different frameworks is now possible. Prior to this fix an error was raised that the csproj was already registered with different content.
+# * Added `bee steve download-manifest <manifest>` which can be used to download steve artifact files and place them next to the manifest.
+# * BeeDriver2 library now exposes responsefiles on nodes, and a buildResult.WriteSummary function
+# * DotNetSdk.Default is now has a public setter.
+# * CSharpProgram2 now has a new `InvariantGlobalization` property which lets you enable Globalization Invariant Mode (https://github.com/dotnet/runtime/blob/main/docs/design/features/globalization-invariant-mode.md) and defaults to true.
+# * Added `Backend.AddRPCAction` and related APIs to allow implementing actions in the process hosting the BeeDriver.
+# * `cachewhy` now supports a `--target` parameter that can be used to specify the 'main' target that the requested target is part of, in order to support MultiDAG scenarios.
+# * Updated to 13.0.1 of Newtonsoft.Json.dll
+# * Added support for specifying SourceLink metadata for MSVC-based toolchains.
+# * Text actions and response files can now have arbitrary text encodings
+# * Add `CSharpProgram2.SetupPublish()` intended to replace SetupPublishFrameworkDependent(). It is a very different implementation that no longer uses Espionage technique to recreate the msbuild graph inside the bee graph, but instead just invokes "dotnet publish". A bit worse for incremental builds, but much more performant for full builds, and much less brittle.
+# * CSharpProgram2 exposes now `WarningsNotAsErrors`
+# * BuildProgram compilation no longer treats warnings from `[Obsolete]` as errors
+# 
+# ## Bug Fixes
+# 
+# * Updated reapi-cache-client to a version that converts absolute output paths
+#   in ActionResult's (which are forbidden by the REAPI spec) to relative paths.
+# * BeeDriver2: Fix bug where profiler output task was never started, resulting in deadlocks when consuming apps would wait on it.
+# * Fix bug where in certain conditions where the build would get cancelled it would first finish
+#   its entire queued workstack.
+# * Fix bug where leaf input caching was broken.
+# * Fix popping up command line windows for bee_backend when running in with StdOutMode.Stream (i.e. Unity editor player builds)
+# * Fix Visual Studio Build Tools detection. Case 1414194 @martins
+# * Fix issues with Console.WriteLine throwing exceptions when stdout is piped to a CI process.
+# * Fixed bee.ps1 Move-Item flakiness by unpacking in place.
+# * Windows RC.EXE invocations will now locate their `#include`d files as implicit inputs.
+# * Fix BeeDriver2 bug where in some situations a scriptupdatable error did not get updated. fogbugz 1423317.
+# * Response files for MSVC linking and compiling now use a UTF8 BOM header in order to fix locale issues
+# * AppPackage setup now use much shorter paths.
+# * Setting up multiple app package formats for the same package in the build graph no longer creates conflicts.
+# 
+# ## Other changes
+# * NPath.Files() and NPath.Directories() when used in buildprograms will now always return their results sorted. This was done to protect build program authors against
+#   different machines returning file listings in different order, which can cause compilers to produce different outputs. better to make sure we always do this the same way.
+# * Change RunnableProgram API & Implementation in BeeDriver2 to be simpler and more robust
+# * Deprecated BeeDriver2's ProfilerOutputFile on the buildrequest. Instead use buildRequest.ProfilerMode to indicate if you want a full chrometrace or trace events, and use the buildResult.ProfileOutputWritingTask
+#   to learn where the file is written
+# * The bee standalone driver now runs on .NET6, which drops support to run the bee standalone driver on OSX 10.13.
+# * CSharpProgram2's can now be built using the .NET6 sdk. Set the .Sdk property to DotNetSdk.Sdk6
+# * Added support for the `privately-redistributable` Stevedore repository. You can now vendor non-public Bee packages by running `./bee steve vendor privately-redistributable`.
+# * Renamed AppPackageFormat.SetupManifest => AppPackageFormat.DefaultManifestSettingsFor and AppManifestSettings.Generate => AppManifestSettings.Setup.
+
+#MANIFEST public: bee/e80dcb1774b6_8e9fe0d284c2dd42bde67664b6b9ca6d1100f60f27ce4839ab92e3df2b25716b.zip
