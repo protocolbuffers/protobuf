@@ -25,4 +25,4 @@ create-build-zip:
     - choco install 7zip
     - mkdir builds\Google.Protobuf
     - move csharp\src\Google.Protobuf\bin builds\Google.Protobuf\
-    - 7z a builds.zip builds\*
+    - 7z a builds.zip .\builds\*
