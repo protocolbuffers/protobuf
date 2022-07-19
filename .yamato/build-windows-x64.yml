@@ -23,7 +23,7 @@ csharp-bindings:
     flavor: b1.medium
 
   artifacts:
-    build_win:
+    build_csharp:
       paths:
         - csharp/src/Google.Protobuf/bin/Debug/**
 
