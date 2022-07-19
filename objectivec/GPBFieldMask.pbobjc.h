@@ -247,7 +247,7 @@ GPB_FINAL @interface GPBFieldMask : GPBMessage
 
 /** The set of field mask paths. */
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<NSString*> *pathsArray;
-/** The number of items in @c pathsArray without causing the array to be created. */
+/** The number of items in @c pathsArray without causing the container to be created. */
 @property(nonatomic, readonly) NSUInteger pathsArray_Count;
 
 @end
