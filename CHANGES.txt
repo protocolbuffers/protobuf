@@ -1,3 +1,24 @@
+2022-07-19 version 21.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+  C++
+  * Add header search paths to Protobuf-C++.podspec (#10024)
+  * Fixed Visual Studio constinit errors (#10232)
+  * Fix #9947: make the ABI compatible between debug and non-debug builds (#10271)
+
+  UPB
+  * Allow empty package names (fixes behavior regression in 4.21.0)
+  * Fix a SEGV bug when comparing a non-materialized sub-message (#10208)
+  * Fix several bugs in descriptor mapping containers (eg. descriptor.services_by_name)
+    * for x in mapping now yields keys rather than values, to match Python conventions and the behavior of the old library.
+    * Lookup operations now correctly reject unhashable types as map keys.
+    * We implement repr() to use the same format as dict.
+  * Fix maps to use the ScalarMapContainer class when appropriate
+
+  PHP
+  * Add "readonly" as a keyword for PHP and add previous classnames to descriptor pool (#10041)
+
+  Python
+  * Make //:protobuf_python and //:well_known_types_py_pb2 public (#10118)
+
 2022-06-27 version 21.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
   C++
   * ArenaString improvements (fix alignment issue)
