@@ -277,7 +277,7 @@ class Build
         var destinationDir = "builds/include/google/protobuf".ToNPath();
 
         var allHeaders = from f in includeDir.Files(recurse: true)
-                         where f.Extension == "h" || f.Extension == "inc"
+                         where f.Extension == "h" || f.Extension == "inc" || f.Extension == "proto"
                          select CopyTool.Instance().Setup(destinationDir.Combine(f.RelativeTo(includeDir)), f);
 
         return allHeaders;
