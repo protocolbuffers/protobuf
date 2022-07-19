@@ -35,6 +35,7 @@ Pod::Spec.new do |s|
     # Do not let src/google/protobuf/stubs/time.h override system API
     'USE_HEADERMAP' => 'NO',
     'ALWAYS_SEARCH_USER_PATHS' => 'NO',
+    'HEADER_SEARCH_PATHS' => '"$(PODS_TARGET_SRCROOT)/src"'
   }
 
 end
