@@ -129,10 +129,10 @@ class Build
 
         return np;
     }
-
-    static NativeProgram SetupLibProtoc(IEnumerable<ToolChain> toolchains)
+    
+    static NativeProgram SetupProtoc(IEnumerable<ToolChain> toolchains, NativeProgram libProtobuf)
     {
-        var np = new NativeProgram("libprotoc")
+        var np = new NativeProgram("protoc")
         {
             Sources = {
                 "src/google/protobuf/compiler/code_generator.cc",
@@ -217,32 +217,7 @@ class Build
                 "src/google/protobuf/compiler/python/pyi_generator.cc",
                 "src/google/protobuf/compiler/ruby/ruby_generator.cc",
                 "src/google/protobuf/compiler/subprocess.cc",
-                "src/google/protobuf/compiler/zip_writer.cc"
-            }
-        };
-
-        np.IncludeDirectories.Add("src");
-        np.Defines.Add("HAVE_PTHREAD=1");
-        np.CompilerSettings().Add(s => s.WithRTTI(true));
-
-        foreach (var toolchain in toolchains)
-        {
-            var nativeProgramConfiguration = new NativeProgramConfiguration(CodeGen.Release, toolchain, lump: true);
-
-            var format = toolchain.StaticLibraryFormat;
-
-            var deployedProgram = np.SetupSpecificConfiguration(nativeProgramConfiguration, format).DeployTo(GetBuildTargetDir(toolchain));
-            Backend.Current.AddAliasDependency(toolchain.ActionName, deployedProgram.Path);
-        }
-
-        return np;
-    }
-    
-    static NativeProgram SetupProtoc(IEnumerable<ToolChain> toolchains, NativeProgram libProtobuf, NativeProgram libProtoc)
-    {
-        var np = new NativeProgram("protoc")
-        {
-            Sources = {
+                "src/google/protobuf/compiler/zip_writer.cc",
                 "src/google/protobuf/compiler/main.cc"
             }
         };
@@ -251,7 +226,6 @@ class Build
         np.Defines.Add("HAVE_PTHREAD=1");
         np.CompilerSettings().Add(s => s.WithRTTI(true));
         np.Libraries.Add(libProtobuf);
-        np.Libraries.Add(libProtoc);
 
         foreach (var toolchain in toolchains)
         {
@@ -314,7 +288,6 @@ class Build
         using var _ = new BuildProgramContext();
         var toolchains = GetToolchains();
         var libProtobuf = SetupLibProtobuf(toolchains);
-        var libProtoc = SetupLibProtoc(toolchains);
-        var protoc = SetupProtoc(toolchains, libProtobuf, libProtoc);
+        var protoc = SetupProtoc(toolchains, libProtobuf);
     }
 }
