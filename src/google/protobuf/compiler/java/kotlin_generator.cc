@@ -36,6 +36,7 @@
 #include <google/protobuf/compiler/java/helpers.h>
 #include <google/protobuf/compiler/java/options.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -156,3 +157,4 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

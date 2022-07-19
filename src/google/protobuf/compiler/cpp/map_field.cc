@@ -35,7 +35,7 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/compiler/cpp/helpers.h>
 
-
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -336,3 +336,4 @@ ArenaDtorNeeds MapFieldGenerator::NeedsArenaDestructor() const {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

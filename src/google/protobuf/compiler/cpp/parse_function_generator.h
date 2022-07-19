@@ -41,6 +41,7 @@
 #include <google/protobuf/compiler/cpp/helpers.h>
 #include <google/protobuf/compiler/cpp/options.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -176,5 +177,6 @@ class ParseFunctionGenerator {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_PARSE_FUNCTION_GENERATOR_H__

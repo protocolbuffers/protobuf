@@ -40,6 +40,7 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/descriptor.pb.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -442,3 +443,4 @@ void WriteMethodDocComment(io::Printer* printer,
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

@@ -476,5 +476,6 @@ void ImmutableServiceGenerator::GenerateBlockingMethodSignature(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #include <google/protobuf/port_undef.inc>

@@ -37,6 +37,7 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -129,3 +130,4 @@ template std::string NamePrefixedWithNestedTypes<EnumDescriptor>(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

@@ -40,6 +40,7 @@
 
 #include <google/protobuf/stubs/strutil.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -956,3 +957,4 @@ void RepeatedMessageFieldGenerator::GenerateIsInitialized(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

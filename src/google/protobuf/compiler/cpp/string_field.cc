@@ -40,6 +40,7 @@
 #include <google/protobuf/descriptor.pb.h>
 
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -955,3 +956,4 @@ void RepeatedStringFieldGenerator::GenerateByteSize(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity

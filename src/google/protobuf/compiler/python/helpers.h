@@ -35,6 +35,7 @@
 
 #include <google/protobuf/descriptor.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -58,5 +59,6 @@ std::string NamePrefixedWithNestedTypes(const DescriptorT& descriptor,
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_PYTHON_HELPERS_H__

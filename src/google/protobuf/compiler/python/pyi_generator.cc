@@ -39,6 +39,7 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 
+namespace unity {
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -634,3 +635,4 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+}  // namespace unity
