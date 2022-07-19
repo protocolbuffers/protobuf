@@ -9,7 +9,8 @@ build-all:
 create-build-zip:
   name: Create Build Zip
   dependencies:
-      - build-all
+      - .yamato/build-all.yml#build-all
+
   agent:
     type: Unity::VM
     image: platform-foundation/linux-bokken:latest
