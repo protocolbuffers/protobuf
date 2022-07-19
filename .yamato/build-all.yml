@@ -13,7 +13,7 @@ create-build-zip:
 
   agent:
     type: Unity::VM
-    image: platform-foundation/linux-bokken:latest
+    image: platform-foundation/windows-bokken:latest
     flavor: b1.small
 
   artifacts:
@@ -22,4 +22,5 @@ create-build-zip:
         - builds/builds.zip
 
   commands:
-    - 7za a builds/builds.zip builds/*
+    - choco install 7zip
+    - 7z a builds\builds.zip builds\*
