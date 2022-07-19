@@ -1,6 +1,24 @@
-name: Build protobuf - all
-dependencies:
-    - .yamato/build-linux-x64.yml
-    - .yamato/build-macos-all.yml
-    - .yamato/build-windows-x64.yml#windows-c-libraries
-    - .yamato/build-windows-x64.yml#csharp-bindings
+build-all:
+  name: Build protobuf - all
+  dependencies:
+      - .yamato/build-linux-x64.yml
+      - .yamato/build-macos-all.yml
+      - .yamato/build-windows-x64.yml#windows-c-libraries
+      - .yamato/build-windows-x64.yml#csharp-bindings
+
+create-build-zip:
+  name: Create Build Zip
+  dependencies:
+      - build-all
+  agent:
+    type: Unity::VM
+    image: platform-foundation/linux-bokken:latest
+    flavor: b1.small
+
+  artifacts:
+    builds:
+      paths:
+        - builds/builds.zip
+
+  commands:
+    - 7za a builds/builds.zip builds/*

@@ -16,5 +16,6 @@ Invoke-WebRequest -Uri $InstallScriptUrl -OutFile $InstallScriptPath
 
 # The SDK versions to install should be kept in sync with versions
 # installed by kokoro/linux/dockerfile/test/csharp/Dockerfile
+# Unity: Added install path so SDK's can be discovered on CI devices
 &$InstallScriptPath -Version 3.1.415 -InstallDir "C:\Program Files\dotnet"
 &$InstallScriptPath -Version 6.0.100 -InstallDir "C:\Program Files\dotnet"
