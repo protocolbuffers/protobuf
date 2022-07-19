@@ -379,15 +379,30 @@ std::string GetFieldConstantName(const FieldDescriptor* field) {
 }
 
 std::string GetPropertyName(const FieldDescriptor* descriptor) {
+  // Names of members declared or overridden in the message.
+  static const auto& reserved_member_names = *new std::unordered_set<std::string>({
+    "Types",
+    "Descriptor",
+    "Equals",
+    "ToString",
+    "GetHashCode",
+    "WriteTo",
+    "Clone",
+    "CalculateSize",
+    "MergeFrom",
+    "OnConstruction",
+    "Parser"
+    });
+
   // TODO(jtattermusch): consider introducing csharp_property_name field option
   std::string property_name = UnderscoresToPascalCase(GetFieldName(descriptor));
-  // Avoid either our own type name or reserved names. Note that not all names
-  // are reserved - a field called to_string, write_to etc would still cause a problem.
+  // Avoid either our own type name or reserved names.
   // There are various ways of ending up with naming collisions, but we try to avoid obvious
-  // ones.
+  // ones. In particular, we avoid the names of all the members we generate.
+  // Note that we *don't* add an underscore for MemberwiseClone or GetType. Those generate
+  // warnings, but not errors; changing the name now could be a breaking change.
   if (property_name == descriptor->containing_type()->name()
-      || property_name == "Types"
-      || property_name == "Descriptor") {
+      || reserved_member_names.find(property_name) != reserved_member_names.end()) {
     property_name += "_";
   }
   return property_name;
