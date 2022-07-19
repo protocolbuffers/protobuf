@@ -490,47 +490,8 @@ build_php_c() {
   test_php_c
 }
 
-build_php7.0_mac() {
+build_php_mac() {
   internal_build_cpp
-  # Install PHP
-  curl -s https://php-osx.liip.ch/install.sh | bash -s 7.0
-  PHP_FOLDER=`find /usr/local -type d -name "php5-7.0*"`  # The folder name may change upon time
-  test ! -z "$PHP_FOLDER"
-  export PATH="$PHP_FOLDER/bin:$PATH"
-
-  # Install Composer
-  wget https://getcomposer.org/download/2.0.13/composer.phar --progress=dot:mega -O /usr/local/bin/composer
-  chmod a+x /usr/local/bin/composer
-
-  # Install valgrind
-  echo "#! /bin/bash" > valgrind
-  chmod ug+x valgrind
-  sudo mv valgrind /usr/local/bin/valgrind
-
-  # Test
-  test_php_c
-}
-
-build_php7.3_mac() {
-  internal_build_cpp
-  # Install PHP
-  # We can't test PHP 7.4 with these binaries yet:
-  #   https://github.com/liip/php-osx/issues/276
-  curl -s https://php-osx.liip.ch/install.sh | bash -s 7.3
-  PHP_FOLDER=`find /usr/local -type d -name "php5-7.3*"`  # The folder name may change upon time
-  test ! -z "$PHP_FOLDER"
-  export PATH="$PHP_FOLDER/bin:$PATH"
-
-  # Install Composer
-  wget https://getcomposer.org/download/2.0.13/composer.phar --progress=dot:mega -O /usr/local/bin/composer
-  chmod a+x /usr/local/bin/composer
-
-  # Install valgrind
-  echo "#! /bin/bash" > valgrind
-  chmod ug+x valgrind
-  sudo mv valgrind /usr/local/bin/valgrind
-
-  # Test
   test_php_c
 }
 
