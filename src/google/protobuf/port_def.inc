@@ -685,14 +685,15 @@
 #  define PROTOBUF_CONSTEXPR constexpr
 # endif
 #else
-# if defined(__cpp_constinit)
+# if defined(__cpp_constinit) && !defined(__CYGWIN__)
 #  define PROTOBUF_CONSTINIT constinit
 #  define PROTOBUF_CONSTEXPR constexpr
 // Some older Clang versions incorrectly raise an error about
 // constant-initializing weak default instance pointers. Versions 12.0 and
 // higher seem to work, except that XCode 12.5.1 shows the error even though it
 // uses Clang 12.0.5.
-# elif __has_cpp_attribute(clang::require_constant_initialization) && \
+# elif !defined(__CYGWIN__) && \
+    __has_cpp_attribute(clang::require_constant_initialization) && \
     ((defined(__APPLE__) && PROTOBUF_CLANG_MIN(13, 0)) ||             \
      (!defined(__APPLE__) && PROTOBUF_CLANG_MIN(12, 0)))
 #  define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
