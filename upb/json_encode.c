@@ -188,27 +188,17 @@ static void jsonenc_duration(jsonenc* e, const upb_Message* msg,
   const upb_FieldDef* nanos_f = upb_MessageDef_FindFieldByNumber(m, 2);
   int64_t seconds = upb_Message_Get(msg, seconds_f).int64_val;
   int32_t nanos = upb_Message_Get(msg, nanos_f).int32_val;
-  bool negative = false;
 
   if (seconds > 315576000000 || seconds < -315576000000 ||
-      (seconds != 0 && nanos != 0 && (seconds < 0) != (nanos < 0))) {
+      (seconds < 0) != (nanos < 0)) {
     jsonenc_err(e, "bad duration");
   }
 
-  if (seconds < 0) {
-    negative = true;
-    seconds = -seconds;
-  }
   if (nanos < 0) {
-    negative = true;
     nanos = -nanos;
   }
 
-  jsonenc_putstr(e, "\"");
-  if (negative) {
-    jsonenc_putstr(e, "-");
-  }
-  jsonenc_printf(e, "%" PRId64, seconds);
+  jsonenc_printf(e, "\"%" PRId64, seconds);
   jsonenc_nanos(e, nanos);
   jsonenc_putstr(e, "s\"");
 }
