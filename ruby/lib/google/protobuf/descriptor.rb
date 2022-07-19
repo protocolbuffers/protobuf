@@ -183,6 +183,7 @@ module Google
           class << self
             attr_accessor :descriptor
             private
+            attr_accessor :oneof_field_names
             include ::Google::Protobuf::Internal::Convert
           end
 
@@ -417,155 +418,93 @@ module Google
             buffer.read_string_length(size).force_encoding("UTF-8").freeze
           end
 
+          @descriptor.each do |field_descriptor|
+            field_name = field_descriptor.name
+            unless instance_methods(true).include?(field_name.to_sym)
+              define_method(field_name) do
+                index_internal(nil, field_descriptor)
+              end
+              define_method("#{field_name}=") do |value|
+                index_assign_internal(value, field_descriptor: field_descriptor)
+              end
+              define_method("clear_#{field_name}") do
+                clear_internal(field_descriptor)
+              end
+              if field_descriptor.type == :enum
+                define_method("#{field_name}_const") do
+                  if field_descriptor.repeated?
+                    return_value = []
+                    get_field(field_descriptor).send(:each_msg_val) do |msg_val|
+                      return_value << msg_val[:int32_val]
+                    end
+                    return_value
+                  else
+                    message_value = Google::Protobuf::FFI.get_message_value @msg, field_descriptor
+                    message_value[:int32_val]
+                  end
+                end
+              end
+              if !field_descriptor.repeated? and field_descriptor.wrapper?
+                define_method("#{field_name}_as_value") do
+                  get_field(field_descriptor, unwrap: true)
+                end
+                define_method("#{field_name}_as_value=") do |value|
+                  if value.nil?
+                    clear_internal(field_descriptor)
+                  else
+                    index_assign_internal(value, field_descriptor: field_descriptor, wrap: true)
+                  end
+                end
+              end
+              if field_descriptor.has_presence?
+                if field_descriptor.sub_message? or field_descriptor.send(:real_containing_oneof).nil? or
+                  Google::Protobuf::FFI.message_def_syntax(Google::Protobuf::FFI.get_containing_message_def(field_descriptor)) == :Proto2
+                  define_method("has_#{field_name}?") do
+                    Google::Protobuf::FFI.get_message_has(@msg, field_descriptor)
+                  end
+                end
+              end
+            end
+          end
+
+          @oneof_field_names = []
+
+          @descriptor.each_oneof do |oneof_descriptor|
+            field_name = oneof_descriptor.name.to_sym
+            @oneof_field_names << field_name
+            unless instance_methods(true).include?(field_name)
+              define_method(field_name) do
+                field_descriptor = Google::Protobuf::FFI.get_message_which_oneof(@msg, oneof_descriptor)
+                if field_descriptor.nil?
+                  return
+                else
+                  return field_descriptor.name.to_sym
+                end
+              end
+              define_method("clear_#{field_name}") do
+                field_descriptor = Google::Protobuf::FFI.get_message_which_oneof(@msg, oneof_descriptor)
+                unless field_descriptor.nil?
+                  clear_internal(field_descriptor)
+                end
+              end
+              define_method("has_#{field_name}?") do
+                !Google::Protobuf::FFI.get_message_which_oneof(@msg, oneof_descriptor).nil?
+              end
+            end
+          end
+
           private
           # Implementation details below are subject to breaking changes without
           # warning and are intended for use only within the gem.
 
           def method_missing_internal(method_name, *args, mode: nil)
             raise ArgumentError.new "method_missing_internal called with invalid mode #{mode.inspect}" unless [:respond_to_missing?, :method_missing].include? mode
-            field_def_ptr = ::FFI::MemoryPointer.new :pointer
-            oneof_def_ptr = ::FFI::MemoryPointer.new :pointer
-            field_name = method_name.to_s
-            if Google::Protobuf::FFI.find_msg_def_by_name self.class.descriptor, field_name, field_name.size, field_def_ptr, oneof_def_ptr
-              unless field_def_ptr.null? or field_def_ptr.get_pointer(0).null?
-                return true if mode == :respond_to_missing?
-                return index_internal(field_name) if mode == :method_missing
-              end
-              unless oneof_def_ptr.null? or oneof_def_ptr.get_pointer(0).null?
-                return true if mode == :respond_to_missing?
-                if mode == :method_missing
-                  oneof_descriptor = OneofDescriptor.from_native oneof_def_ptr.get_pointer(0)
-                  field_descriptor = Google::Protobuf::FFI.get_message_which_oneof(@msg, oneof_descriptor)
-                  if field_descriptor.nil?
-                    return
-                  else
-                    return field_descriptor.name.to_sym
-                  end
-                end
-              end
-            end
-            if method_name =~ /=$/
-              field_name = method_name[0..-2]
-              if Google::Protobuf::FFI.find_msg_def_by_name self.class.descriptor, field_name, field_name.size, field_def_ptr, oneof_def_ptr
-                unless field_def_ptr.null? or field_def_ptr.get_pointer(0).null?
-                  return true if mode == :respond_to_missing?
-                  return index_assign_internal(*args, name: field_name) if mode == :method_missing
-                end
-                unless oneof_def_ptr.null? or oneof_def_ptr.get_pointer(0).null?
-                  #TODO(jatl) not being allowed is not the same thing as not responding, but this is needed to pass tests
-                  return false if mode == :respond_to_missing?
-                  if mode == :method_missing
-                    raise RuntimeError.new "Oneof accessors are read-only."
-                  end
-                end
-              end
-            end
-            if method_name =~ /^clear_/
-              field_name = method_name[6..-1]
-              if Google::Protobuf::FFI.find_msg_def_by_name self.class.descriptor, field_name, field_name.size, field_def_ptr, oneof_def_ptr
-                unless field_def_ptr.null? or field_def_ptr.get_pointer(0).null?
-                  return true if mode == :respond_to_missing?
-                  if mode == :method_missing
-                    field_descriptor = FieldDescriptor.from_native field_def_ptr.get_pointer(0)
-                    return clear_internal(field_descriptor)
-                  end
-                end
-                unless oneof_def_ptr.null? or oneof_def_ptr.get_pointer(0).null?
-                  return true if mode == :respond_to_missing?
-                  if mode == :method_missing
-                    oneof_descriptor = OneofDescriptor.from_native oneof_def_ptr.get_pointer(0)
-                    field_descriptor = Google::Protobuf::FFI.get_message_which_oneof(@msg, oneof_descriptor)
-                    if field_descriptor.nil?
-                      return
-                    else
-                      return clear_internal(field_descriptor)
-                    end
-                  end
-                end
-              end
-            end
-            if method_name =~ /^has_.+\?$/
-              field_name = method_name[4..-2]
-              if Google::Protobuf::FFI.find_msg_def_by_name self.class.descriptor, field_name, field_name.size, field_def_ptr, oneof_def_ptr
-                if !oneof_def_ptr.null? and !oneof_def_ptr.get_pointer(0).null?
-                  return true if mode == :respond_to_missing?
-                  if mode == :method_missing
-                    oneof_def = OneofDescriptor.from_native oneof_def_ptr.get_pointer(0)
-                    return !Google::Protobuf::FFI.get_message_which_oneof(@msg, oneof_def).nil?
-                  end
-                end
 
-                if !field_def_ptr.null? and !field_def_ptr.get_pointer(0).null?
-                  field_descriptor = FieldDescriptor.from_native field_def_ptr.get_pointer(0)
-                  if field_descriptor.has_presence?
-                    if !field_descriptor.sub_message? and !field_descriptor.send(:real_containing_oneof).nil? and
-                      Google::Protobuf::FFI.message_def_syntax(Google::Protobuf::FFI.get_containing_message_def(field_descriptor)) != :Proto2
-                      return false if mode == :respond_to_missing?
-                      return original_method_missing(method_name, *args) if mode == :method_missing
-                    else
-                      return true if mode == :respond_to_missing?
-                      return Google::Protobuf::FFI.get_message_has(@msg, field_descriptor) if mode == :method_missing
-                    end
-                  end
-                end
-              end
-            end
-
-            if method_name =~ /_const$/
-              field_name = method_name[0..-7]
-              field_descriptor = self.class.descriptor.lookup(field_name)
-              if !field_descriptor.nil? and field_descriptor.type == :enum
-                message_value = Google::Protobuf::FFI.get_message_value @msg, field_descriptor
-                if field_descriptor.repeated?
-                  return true if mode == :respond_to_missing?
-                  if mode == :method_missing
-                    return_value = []
-                    get_field(field_descriptor).send(:each_msg_val) do |msg_val|
-                      return_value << msg_val[:int32_val]
-                    end
-                    return return_value
-                  end
-                else
-                  return true if mode == :respond_to_missing?
-                  return message_value[:int32_val] if mode == :method_missing
-                end
-              end
-            end
-
-            if method_name =~ /_as_value$/
-              field_name = method_name[0..-10]
-              field_descriptor = self.class.descriptor.lookup(field_name)
-              if !field_descriptor.nil? and !field_descriptor.repeated? and field_descriptor.wrapper?
-                return true if mode == :respond_to_missing?
-                return get_field(field_descriptor, unwrap: true) if mode == :method_missing
-              end
-            end
-
-            if method_name =~ /_as_value=$/
-              field_name = method_name[0..-11]
-              field_descriptor = self.class.descriptor.lookup(field_name)
-              if !field_descriptor.nil? and !field_descriptor.repeated? and field_descriptor.wrapper?
-                if Google::Protobuf::FFI.find_msg_def_by_name self.class.descriptor, field_name, field_name.size, field_def_ptr, oneof_def_ptr
-                  raise ArgumentError.new "Expected 2 arguments, received #{args.size + 1}" if args.size != 1 if mode == :method_missing
-                  assignment_value = args[0]
-                  if assignment_value.nil?
-                    #TODO(jatl) can handling of the nil case be moved into FieldDescriptor#set_value_on_message?
-                    if field_def_ptr.null? or field_def_ptr.get_pointer(0).null?
-                      raise NotImplementedError
-                    else
-                      return true if mode == :respond_to_missing?
-                      if mode == :method_missing
-                        field_descriptor = FieldDescriptor.from_native field_def_ptr.get_pointer(0)
-                        return clear_internal(field_descriptor)
-                      end
-                    end
-                  else
-                    unless field_def_ptr.null? or field_def_ptr.get_pointer(0).null?
-                      return true if mode == :respond_to_missing?
-                      return index_assign_internal(assignment_value, field_descriptor: field_descriptor, wrap: true) if mode == :method_missing
-                    end
-                  end
-                end
+            #TODO(jatl) not being allowed is not the same thing as not responding, but this is needed to pass tests
+            if method_name.end_with? '='
+              if self.class.send(:oneof_field_names).include? method_name.to_s[0..-2].to_sym
+                return false if mode == :respond_to_missing?
+                raise RuntimeError.new "Oneof accessors are read-only."
               end
             end
 
@@ -583,8 +522,8 @@ module Google
             Google::Protobuf::FFI.clear_message_field(@msg, field_def)
           end
 
-          def index_internal(name)
-            field_descriptor = self.class.descriptor.lookup(name)
+          def index_internal(name, field_descriptor = nil)
+            field_descriptor ||= self.class.descriptor.lookup(name)
             get_field field_descriptor unless field_descriptor.nil?
           end
 
