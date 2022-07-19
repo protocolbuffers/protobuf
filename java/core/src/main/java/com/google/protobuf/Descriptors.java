@@ -1788,6 +1788,27 @@ public final class Descriptors {
       return Collections.unmodifiableList(Arrays.asList(values));
     }
 
+    /** Determines if the given field number is reserved. */
+    public boolean isReservedNumber(final int number) {
+      for (final EnumDescriptorProto.EnumReservedRange range : proto.getReservedRangeList()) {
+        if (range.getStart() <= number && number <= range.getEnd()) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    /** Determines if the given field name is reserved. */
+    public boolean isReservedName(final String name) {
+      checkNotNull(name);
+      for (final String reservedName : proto.getReservedNameList()) {
+        if (reservedName.equals(name)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     /**
      * Find an enum value by name.
      *
