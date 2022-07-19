@@ -82,7 +82,7 @@ TEST(CSharpIdentifiers, UnderscoresToCamelCase) {
 	EXPECT_EQ("Foo123", UnderscoresToCamelCase("_Foo_123", true));
 	// this one has slight unexpected output as it capitalises the first
 	// letter after consuming the underscores, but this was the existing
-	// behaviour so I have to changed it
+	// behaviour so I have not changed it
 	EXPECT_EQ("FooBar", UnderscoresToCamelCase("___fooBar", false));
 	// leave a leading underscore for identifiers that would otherwise
 	// be invalid because they would start with a digit
