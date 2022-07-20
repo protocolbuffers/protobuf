@@ -33,9 +33,6 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Google.Protobuf
 {
@@ -50,7 +47,7 @@ namespace Google.Protobuf
 
             if (addEmptySegmentDelimiters)
             {
-                segments.Add(new byte[0]);
+                segments.Add(Array.Empty<byte>());
             }
 
             var currentIndex = 0;
@@ -65,7 +62,7 @@ namespace Google.Protobuf
 
                 if (addEmptySegmentDelimiters)
                 {
-                    segments.Add(new byte[0]);
+                    segments.Add(Array.Empty<byte>());
                 }
             }
 

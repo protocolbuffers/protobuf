@@ -105,11 +105,11 @@ class GetDeallocator {
 };
 
 SerialArena::SerialArena(Block* b, void* owner, ThreadSafeArenaStats* stats)
-    : space_allocated_(b->size) {
+    : space_allocated_(b->size()) {
   owner_ = owner;
-  head_ = b;
-  ptr_ = b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize);
-  limit_ = b->Pointer(b->size & static_cast<size_t>(-8));
+  set_head(b);
+  set_ptr(b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize));
+  limit_ = b->Pointer(b->size() & static_cast<size_t>(-8));
   arena_stats_ = stats;
 }
 
@@ -124,22 +124,14 @@ SerialArena* SerialArena::New(Memory mem, void* owner,
 
 template <typename Deallocator>
 SerialArena::Memory SerialArena::Free(Deallocator deallocator) {
-  Block* b = head_;
-  Memory mem = {b, b->size};
+  Block* b = head();
+  Memory mem = {b, b->size()};
   while (b->next) {
     b = b->next;  // We must first advance before deleting this block
     deallocator(mem);
-    mem = {b, b->size};
+    mem = {b, b->size()};
   }
   return mem;
-}
-
-PROTOBUF_NOINLINE
-std::pair<void*, SerialArena::CleanupNode*>
-SerialArena::AllocateAlignedWithCleanupFallback(
-    size_t n, const AllocationPolicy* policy) {
-  AllocateNewBlock(n + kCleanupSize, policy);
-  return AllocateFromExistingWithCleanupFallback(n);
 }
 
 PROTOBUF_NOINLINE
@@ -149,56 +141,114 @@ void* SerialArena::AllocateAlignedFallback(size_t n,
   return AllocateFromExisting(n);
 }
 
+PROTOBUF_NOINLINE
+void* SerialArena::AllocateAlignedWithCleanupFallback(
+    size_t n, size_t align, void (*destructor)(void*),
+    const AllocationPolicy* policy) {
+  size_t required = AlignUpTo(n, align) + cleanup::Size(destructor);
+  AllocateNewBlock(required, policy);
+  return AllocateFromExistingWithCleanupFallback(n, align, destructor);
+}
+
+PROTOBUF_NOINLINE
+void SerialArena::AddCleanupFallback(void* elem, void (*destructor)(void*),
+                                     const AllocationPolicy* policy) {
+  size_t required = cleanup::Size(destructor);
+  AllocateNewBlock(required, policy);
+  AddCleanupFromExisting(elem, destructor);
+}
+
 void SerialArena::AllocateNewBlock(size_t n, const AllocationPolicy* policy) {
   // Sync limit to block
-  head_->start = reinterpret_cast<CleanupNode*>(limit_);
+  head()->cleanup_nodes = limit_;
 
   // Record how much used in this block.
-  size_t used = ptr_ - head_->Pointer(kBlockHeaderSize);
-  size_t wasted = head_->size - used;
-  space_used_ += used;
+  size_t used = static_cast<size_t>(ptr() - head()->Pointer(kBlockHeaderSize));
+  size_t wasted = head()->size() - used;
+  space_used_.store(space_used_.load(std::memory_order_relaxed) + used,
+                    std::memory_order_relaxed);
 
   // TODO(sbenza): Evaluate if pushing unused space into the cached blocks is a
   // win. In preliminary testing showed increased memory savings as expected,
   // but with a CPU regression. The regression might have been an artifact of
   // the microbenchmark.
 
-  auto mem = AllocateMemory(policy, head_->size, n);
+  auto mem = AllocateMemory(policy, head()->size(), n);
   // We don't want to emit an expensive RMW instruction that requires
   // exclusive access to a cacheline. Hence we write it in terms of a
   // regular add.
-  auto relaxed = std::memory_order_relaxed;
-  space_allocated_.store(space_allocated_.load(relaxed) + mem.size, relaxed);
-  ThreadSafeArenaStats::RecordAllocateStats(arena_stats_, /*requested=*/n,
+  space_allocated_.store(
+      space_allocated_.load(std::memory_order_relaxed) + mem.size,
+      std::memory_order_relaxed);
+  ThreadSafeArenaStats::RecordAllocateStats(arena_stats_, /*used=*/used,
                                             /*allocated=*/mem.size, wasted);
-  head_ = new (mem.ptr) Block{head_, mem.size};
-  ptr_ = head_->Pointer(kBlockHeaderSize);
-  limit_ = head_->Pointer(head_->size);
+  set_head(new (mem.ptr) Block{head(), mem.size});
+  set_ptr(head()->Pointer(kBlockHeaderSize));
+  limit_ = head()->Pointer(head()->size());
 
 #ifdef ADDRESS_SANITIZER
-  ASAN_POISON_MEMORY_REGION(ptr_, limit_ - ptr_);
+  ASAN_POISON_MEMORY_REGION(ptr(), limit_ - ptr());
 #endif  // ADDRESS_SANITIZER
 }
 
 uint64_t SerialArena::SpaceUsed() const {
-  uint64_t space_used = ptr_ - head_->Pointer(kBlockHeaderSize);
-  space_used += space_used_;
+  // Note: the calculation below technically causes a race with
+  // AllocateNewBlock when called from another thread (which happens in
+  // ThreadSafeArena::SpaceUsed).  However, worst-case space_used_ will have
+  // stale data and the calculation will incorrectly assume 100%
+  // usage of the *current* block.
+  // TODO(mkruskal) Consider eliminating this race in exchange for a possible
+  // performance hit on ARM (see cl/455186837).
+  const uint64_t current_block_size = head()->size();
+  uint64_t space_used = std::min(
+      static_cast<uint64_t>(
+          ptr() - const_cast<Block*>(head())->Pointer(kBlockHeaderSize)),
+      current_block_size);
+  space_used += space_used_.load(std::memory_order_relaxed);
   // Remove the overhead of the SerialArena itself.
   space_used -= ThreadSafeArena::kSerialArenaSize;
   return space_used;
 }
 
 void SerialArena::CleanupList() {
-  Block* b = head_;
-  b->start = reinterpret_cast<CleanupNode*>(limit_);
+  Block* b = head();
+  b->cleanup_nodes = limit_;
   do {
-    auto* limit = reinterpret_cast<CleanupNode*>(
-        b->Pointer(b->size & static_cast<size_t>(-8)));
-    auto it = b->start;
-    auto num = limit - it;
-    if (num > 0) {
-      for (; it < limit; it++) {
-        it->cleanup(it->elem);
+    char* limit = reinterpret_cast<char*>(
+        b->Pointer(b->size() & static_cast<size_t>(-8)));
+    char* it = reinterpret_cast<char*>(b->cleanup_nodes);
+    if (it < limit) {
+      // A prefetch distance of 8 here was chosen arbitrarily.  It makes the
+      // pending nodes fill a cacheline which seemed nice.
+      constexpr int kPrefetchDist = 8;
+      cleanup::Tag pending_type[kPrefetchDist];
+      char* pending_node[kPrefetchDist];
+
+      int pos = 0;
+      for (; pos < kPrefetchDist && it < limit; ++pos) {
+        pending_type[pos] = cleanup::Type(it);
+        pending_node[pos] = it;
+        it += cleanup::Size(pending_type[pos]);
+      }
+
+      if (pos < kPrefetchDist) {
+        for (int i = 0; i < pos; ++i) {
+          cleanup::DestroyNode(pending_type[i], pending_node[i]);
+        }
+      } else {
+        pos = 0;
+        while (it < limit) {
+          cleanup::PrefetchNode(it);
+          cleanup::DestroyNode(pending_type[pos], pending_node[pos]);
+          pending_type[pos] = cleanup::Type(it);
+          pending_node[pos] = it;
+          it += cleanup::Size(pending_type[pos]);
+          pos = (pos + 1) % kPrefetchDist;
+        }
+        for (int i = pos; i < pos + kPrefetchDist; ++i) {
+          cleanup::DestroyNode(pending_type[i % kPrefetchDist],
+                               pending_node[i % kPrefetchDist]);
+        }
       }
     }
     b = b->next;
@@ -298,12 +348,9 @@ void ThreadSafeArena::InitializeWithPolicy(void* mem, size_t size,
 #undef GOOGLE_DCHECK_POLICY_FLAGS_
 }
 
-void ThreadSafeArena::Init() {
-#ifndef NDEBUG
-  const bool was_message_owned = IsMessageOwned();
-#endif  // NDEBUG
+uint64_t ThreadSafeArena::GetNextLifeCycleId() {
   ThreadCache& tc = thread_cache();
-  auto id = tc.next_lifecycle_id;
+  uint64_t id = tc.next_lifecycle_id;
   // We increment lifecycle_id's by multiples of two so we can use bit 0 as
   // a tag.
   constexpr uint64_t kDelta = 2;
@@ -316,21 +363,26 @@ void ThreadSafeArena::Init() {
     id = lifecycle_id_generator_.id.fetch_add(1, relaxed) * kInc;
   }
   tc.next_lifecycle_id = id + kDelta;
-  // Message ownership is stored in tag_and_id_, and is set in the constructor.
-  // This flag bit must be preserved, even across calls to Reset().
-  tag_and_id_ = id | (tag_and_id_ & kMessageOwnedArena);
-  hint_.store(nullptr, std::memory_order_relaxed);
+  return id;
+}
+
+void ThreadSafeArena::Init() {
+  const bool message_owned = IsMessageOwned();
+  if (!message_owned) {
+    // Message-owned arenas bypass thread cache and do not need life cycle ID.
+    tag_and_id_ = GetNextLifeCycleId();
+  } else {
+    GOOGLE_DCHECK_EQ(tag_and_id_, kMessageOwnedArena);
+  }
   threads_.store(nullptr, std::memory_order_relaxed);
-#ifndef NDEBUG
-  GOOGLE_CHECK_EQ(was_message_owned, IsMessageOwned());
-#endif  // NDEBUG
+  GOOGLE_DCHECK_EQ(message_owned, IsMessageOwned());
   arena_stats_ = Sample();
 }
 
 void ThreadSafeArena::SetInitialBlock(void* mem, size_t size) {
   SerialArena* serial = SerialArena::New({mem, size}, &thread_cache(),
                                          arena_stats_.MutableStats());
-  serial->set_next(NULL);
+  serial->set_next(nullptr);
   threads_.store(serial, std::memory_order_relaxed);
   CacheSerialArena(serial);
 }
@@ -378,7 +430,6 @@ uint64_t ThreadSafeArena::Reset() {
   // Discard all blocks except the special block (if present).
   size_t space_allocated = 0;
   auto mem = Free(&space_allocated);
-  arena_stats_.RecordReset();
 
   AllocationPolicy* policy = alloc_policy_.get();
   if (policy) {
@@ -408,15 +459,16 @@ uint64_t ThreadSafeArena::Reset() {
   return space_allocated;
 }
 
-std::pair<void*, SerialArena::CleanupNode*>
-ThreadSafeArena::AllocateAlignedWithCleanup(size_t n,
-                                            const std::type_info* type) {
+void* ThreadSafeArena::AllocateAlignedWithCleanup(size_t n, size_t align,
+                                                  void (*destructor)(void*),
+                                                  const std::type_info* type) {
   SerialArena* arena;
   if (PROTOBUF_PREDICT_TRUE(!alloc_policy_.should_record_allocs() &&
                             GetSerialArenaFast(&arena))) {
-    return arena->AllocateAlignedWithCleanup(n, alloc_policy_.get());
+    return arena->AllocateAlignedWithCleanup(n, align, destructor,
+                                             alloc_policy_.get());
   } else {
-    return AllocateAlignedWithCleanupFallback(n, type);
+    return AllocateAlignedWithCleanupFallback(n, align, destructor, type);
   }
 }
 
@@ -443,18 +495,19 @@ void* ThreadSafeArena::AllocateAlignedFallback(size_t n,
 }
 
 PROTOBUF_NOINLINE
-std::pair<void*, SerialArena::CleanupNode*>
-ThreadSafeArena::AllocateAlignedWithCleanupFallback(
-    size_t n, const std::type_info* type) {
+void* ThreadSafeArena::AllocateAlignedWithCleanupFallback(
+    size_t n, size_t align, void (*destructor)(void*),
+    const std::type_info* type) {
   if (alloc_policy_.should_record_allocs()) {
-    alloc_policy_.RecordAlloc(type, n);
+    alloc_policy_.RecordAlloc(type, internal::AlignUpTo(n, align));
     SerialArena* arena;
     if (GetSerialArenaFast(&arena)) {
-      return arena->AllocateAlignedWithCleanup(n, alloc_policy_.get());
+      return arena->AllocateAlignedWithCleanup(n, align, destructor,
+                                               alloc_policy_.get());
     }
   }
   return GetSerialArenaFallback(&thread_cache())
-      ->AllocateAlignedWithCleanup(n, alloc_policy_.get());
+      ->AllocateAlignedWithCleanup(n, align, destructor, alloc_policy_.get());
 }
 
 uint64_t ThreadSafeArena::SpaceAllocated() const {
@@ -526,9 +579,10 @@ void* Arena::AllocateAlignedWithHookForArray(size_t n,
 }
 
 PROTOBUF_FUNC_ALIGN(32)
-std::pair<void*, internal::SerialArena::CleanupNode*>
-Arena::AllocateAlignedWithCleanup(size_t n, const std::type_info* type) {
-  return impl_.AllocateAlignedWithCleanup(n, type);
+void* Arena::AllocateAlignedWithCleanup(size_t n, size_t align,
+                                        void (*destructor)(void*),
+                                        const std::type_info* type) {
+  return impl_.AllocateAlignedWithCleanup(n, align, destructor, type);
 }
 
 }  // namespace protobuf

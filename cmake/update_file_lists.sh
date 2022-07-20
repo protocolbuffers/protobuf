@@ -1,6 +1,6 @@
 #!/bin/bash -u
 
-# This script generates file lists from Bazel, e.g., for cmake.
+# This script generates file lists from Bazel for CMake.
 
 set -e
 

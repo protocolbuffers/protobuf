@@ -77,43 +77,42 @@ namespace Google.Protobuf
         /// <param name="args"></param>
         /// <param name="workingDirectory"></param>
         private void RunOldCsharpCompilerAndCheckSuccess(string args, string workingDirectory)
-        {  
-            using (var process = new Process())
+        {
+            using var process = new Process();
+
+            // Get the path to the old C# 5 compiler from .NET framework. This approach is not 100% reliable, but works on most machines.
+            // Alternative way of getting the framework path is System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()
+            // but it only works with the net45 target.
+            var oldCsharpCompilerPath = Path.Combine(Environment.GetEnvironmentVariable("WINDIR"), "Microsoft.NET", "Framework", "v4.0.30319", "csc.exe");
+            process.StartInfo.FileName = oldCsharpCompilerPath;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.StartInfo.RedirectStandardError = true;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.Arguments = args;
+            process.StartInfo.WorkingDirectory = workingDirectory;
+
+            process.OutputDataReceived += (sender, e) =>
             {
-                // Get the path to the old C# 5 compiler from .NET framework. This approach is not 100% reliable, but works on most machines.
-                // Alternative way of getting the framework path is System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()
-                // but it only works with the net45 target.
-                var oldCsharpCompilerPath = Path.Combine(Environment.GetEnvironmentVariable("WINDIR"), "Microsoft.NET", "Framework", "v4.0.30319", "csc.exe");
-                process.StartInfo.FileName = oldCsharpCompilerPath;
-                process.StartInfo.RedirectStandardOutput = true;
-                process.StartInfo.RedirectStandardError = true;
-                process.StartInfo.UseShellExecute = false;
-                process.StartInfo.Arguments = args;
-                process.StartInfo.WorkingDirectory = workingDirectory;
-
-                process.OutputDataReceived += (sender, e) =>
+                if (e.Data != null)
                 {
-                    if (e.Data != null)
-                    {
-                        Console.WriteLine(e.Data);
-                    }
-                };
-                process.ErrorDataReceived += (sender, e) =>
+                    Console.WriteLine(e.Data);
+                }
+            };
+            process.ErrorDataReceived += (sender, e) =>
+            {
+                if (e.Data != null)
                 {
-                    if (e.Data != null)
-                    {
-                        Console.WriteLine(e.Data);
-                    }
-                };
+                    Console.WriteLine(e.Data);
+                }
+            };
 
-                process.Start();
+            process.Start();
 
-                process.BeginErrorReadLine();
-                process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            process.BeginOutputReadLine();
 
-                process.WaitForExit();
-                Assert.AreEqual(0, process.ExitCode);
-            }
+            process.WaitForExit();
+            Assert.AreEqual(0, process.ExitCode);
         }
     }
 }

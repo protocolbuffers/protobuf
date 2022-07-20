@@ -33,7 +33,7 @@ syntax = "proto3";
 
 package protobuf.kotlin.generator;
 
-option java_package = "com.google.protobuf.kotlin.generator";
+option java_package = "com.google.protobuf.kotlin.generator.in";
 
 message EvilNamesProto3 {
   bool initialized = 1;

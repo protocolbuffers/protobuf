@@ -45,6 +45,9 @@
 
 namespace google {
 namespace protobuf {
+
+class UnknownFieldSet;
+
 namespace internal {
 
 // This is the representation for messages that support arena allocation. It
@@ -74,15 +77,19 @@ class PROTOBUF_EXPORT InternalMetadata {
     GOOGLE_DCHECK(!is_message_owned || arena != nullptr);
   }
 
-#if defined(NDEBUG) || defined(_MSC_VER)
+  // To keep the ABI identical between debug and non-debug builds,
+  // the destructor is always defined here even though it may delegate
+  // to a non-inline private method.
+  // (see https://github.com/protocolbuffers/protobuf/issues/9947)
   ~InternalMetadata() {
+#if defined(NDEBUG) || defined(_MSC_VER)
     if (HasMessageOwnedArenaTag()) {
       delete reinterpret_cast<Arena*>(ptr_ - kMessageOwnedArenaTagMask);
     }
-  }
 #else
-  ~InternalMetadata();
+    CheckedDestruct();
 #endif
+  }
 
   template <typename T>
   void Delete() {
@@ -261,6 +268,9 @@ class PROTOBUF_EXPORT InternalMetadata {
   PROTOBUF_NOINLINE void DoSwap(T* other) {
     mutable_unknown_fields<T>()->Swap(other);
   }
+
+  // Private helper with debug checks for ~InternalMetadata()
+  void CheckedDestruct();
 };
 
 // String Template specializations.
@@ -272,6 +282,19 @@ PROTOBUF_EXPORT void InternalMetadata::DoMergeFrom<std::string>(
     const std::string& other);
 template <>
 PROTOBUF_EXPORT void InternalMetadata::DoSwap<std::string>(std::string* other);
+
+// Instantiated once in message.cc (where the definition of UnknownFieldSet is
+// known) to prevent much duplication across translation units of a large build.
+extern template PROTOBUF_EXPORT void
+InternalMetadata::DoClear<UnknownFieldSet>();
+extern template PROTOBUF_EXPORT void
+InternalMetadata::DoMergeFrom<UnknownFieldSet>(const UnknownFieldSet& other);
+extern template PROTOBUF_EXPORT void
+InternalMetadata::DoSwap<UnknownFieldSet>(UnknownFieldSet* other);
+extern template PROTOBUF_EXPORT Arena*
+InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
+extern template PROTOBUF_EXPORT UnknownFieldSet*
+InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
 
 // This helper RAII class is needed to efficiently parse unknown fields. We
 // should only call mutable_unknown_fields if there are actual unknown fields.

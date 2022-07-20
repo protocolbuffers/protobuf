@@ -46,6 +46,7 @@ option java_outer_classname = "JsonFormatProto3";
 enum EnumType {
   FOO = 0;
   BAR = 1;
+  TLSv1_2 = 2;
 }
 
 message MessageType {
@@ -177,6 +178,11 @@ message TestListValue {
 message TestBoolValue {
   bool bool_value = 1;
   map<bool, int32> bool_map = 2;
+}
+
+message TestNullValue {
+  google.protobuf.NullValue null_value = 20;
+  repeated google.protobuf.NullValue repeated_null_value = 21;
 }
 
 message TestCustomJsonName {

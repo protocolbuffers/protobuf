@@ -33,7 +33,6 @@
 using Google.Protobuf.Collections;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace Google.Protobuf.Reflection
 {
@@ -42,14 +41,11 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public sealed class ServiceDescriptor : DescriptorBase
     {
-        private readonly ServiceDescriptorProto proto;
-        private readonly IList<MethodDescriptor> methods;
-
         internal ServiceDescriptor(ServiceDescriptorProto proto, FileDescriptor file, int index)
             : base(file, file.ComputeFullName(null, proto.Name), index)
         {
-            this.proto = proto;
-            methods = DescriptorUtil.ConvertAndMakeReadOnly(proto.Method,
+            Proto = proto;
+            Methods = DescriptorUtil.ConvertAndMakeReadOnly(proto.Method,
                                                             (method, i) => new MethodDescriptor(method, file, this, i));
 
             file.DescriptorPool.AddSymbol(this);
@@ -58,20 +54,16 @@ namespace Google.Protobuf.Reflection
         /// <summary>
         /// The brief name of the descriptor's target.
         /// </summary>
-        public override string Name { get { return proto.Name; } }
+        public override string Name => Proto.Name;
 
-        internal override IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber)
-        {
-            switch (fieldNumber)
+        internal override IReadOnlyList<DescriptorBase> GetNestedDescriptorListForField(int fieldNumber) =>
+            fieldNumber switch
             {
-                case ServiceDescriptorProto.MethodFieldNumber:
-                    return (IReadOnlyList<DescriptorBase>) methods;
-                default:
-                    return null;
-            }
-        }
+                ServiceDescriptorProto.MethodFieldNumber => (IReadOnlyList<DescriptorBase>)Methods,
+                _ => null,
+            };
 
-        internal ServiceDescriptorProto Proto { get { return proto; } }
+        internal ServiceDescriptorProto Proto { get; }
 
         /// <summary>
         /// Returns a clone of the underlying <see cref="ServiceDescriptorProto"/> describing this service.
@@ -84,20 +76,15 @@ namespace Google.Protobuf.Reflection
         /// <value>
         /// An unmodifiable list of methods in this service.
         /// </value>
-        public IList<MethodDescriptor> Methods
-        {
-            get { return methods; }
-        }
+        public IList<MethodDescriptor> Methods { get; }
 
         /// <summary>
         /// Finds a method by name.
         /// </summary>
         /// <param name="name">The unqualified name of the method (e.g. "Foo").</param>
         /// <returns>The method's descriptor, or null if not found.</returns>
-        public MethodDescriptor FindMethodByName(String name)
-        {
-            return File.DescriptorPool.FindSymbol<MethodDescriptor>(FullName + "." + name);
-        }
+        public MethodDescriptor FindMethodByName(string name) =>
+            File.DescriptorPool.FindSymbol<MethodDescriptor>(FullName + "." + name);
 
         /// <summary>
         /// The (possibly empty) set of custom options for this service.
@@ -134,7 +121,7 @@ namespace Google.Protobuf.Reflection
 
         internal void CrossLink()
         {
-            foreach (MethodDescriptor method in methods)
+            foreach (MethodDescriptor method in Methods)
             {
                 method.CrossLink();
             }

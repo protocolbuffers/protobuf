@@ -136,5 +136,5 @@ namespace Google.Protobuf
         {
             return new InvalidProtocolBufferException("Message was missing required fields");
         }
-}
+    }
 }
