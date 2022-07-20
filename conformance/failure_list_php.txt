@@ -8,6 +8,8 @@ Recommended.Proto3.JsonInput.FieldMaskInvalidCharacter
 Recommended.Proto3.ProtobufInput.ValidDataOneofBinary.MESSAGE.Merge.ProtobufOutput
 Required.Proto2.JsonInput.StoresDefaultPrimitive.Validator
 Required.Proto3.JsonInput.DoubleFieldTooSmall
+Required.Proto3.JsonInput.DurationNegativeNanos.JsonOutput
+Required.Proto3.JsonInput.DurationNegativeNanos.ProtobufOutput
 Required.Proto3.JsonInput.FloatFieldTooLarge
 Required.Proto3.JsonInput.FloatFieldTooSmall
 Required.Proto3.JsonInput.Int32FieldNotInteger

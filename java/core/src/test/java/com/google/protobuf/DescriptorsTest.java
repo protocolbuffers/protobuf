@@ -61,6 +61,7 @@ import protobuf_unittest.UnittestProto.TestExtremeDefaultValues;
 import protobuf_unittest.UnittestProto.TestJsonName;
 import protobuf_unittest.UnittestProto.TestMultipleExtensionRanges;
 import protobuf_unittest.UnittestProto.TestRequired;
+import protobuf_unittest.UnittestProto.TestReservedEnumFields;
 import protobuf_unittest.UnittestProto.TestReservedFields;
 import protobuf_unittest.UnittestProto.TestService;
 import java.util.Collections;
@@ -785,6 +786,20 @@ public class DescriptorsTest {
   @Test
   public void testReservedFields() {
     Descriptor d = TestReservedFields.getDescriptor();
+    assertThat(d.isReservedNumber(2)).isTrue();
+    assertThat(d.isReservedNumber(8)).isFalse();
+    assertThat(d.isReservedNumber(9)).isTrue();
+    assertThat(d.isReservedNumber(10)).isTrue();
+    assertThat(d.isReservedNumber(11)).isTrue();
+    assertThat(d.isReservedNumber(12)).isFalse();
+    assertThat(d.isReservedName("foo")).isFalse();
+    assertThat(d.isReservedName("bar")).isTrue();
+    assertThat(d.isReservedName("baz")).isTrue();
+  }
+
+  @Test
+  public void testReservedEnumFields() {
+    EnumDescriptor d = TestReservedEnumFields.getDescriptor();
     assertThat(d.isReservedNumber(2)).isTrue();
     assertThat(d.isReservedNumber(8)).isFalse();
     assertThat(d.isReservedNumber(9)).isTrue();
