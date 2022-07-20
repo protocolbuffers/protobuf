@@ -631,7 +631,8 @@ static const char* jsondec_buftouint64(jsondec* d, const char* ptr,
 }
 
 static const char* jsondec_buftoint64(jsondec* d, const char* ptr,
-                                      const char* end, int64_t* val) {
+                                      const char* end, int64_t* val,
+                                      bool* is_neg) {
   bool neg = false;
   uint64_t u64;
 
@@ -646,6 +647,9 @@ static const char* jsondec_buftoint64(jsondec* d, const char* ptr,
   }
 
   *val = neg ? -u64 : u64;
+  if (is_neg) {
+    *is_neg = neg;
+  }
   return ptr;
 }
 
@@ -661,7 +665,7 @@ static uint64_t jsondec_strtouint64(jsondec* d, upb_StringView str) {
 static int64_t jsondec_strtoint64(jsondec* d, upb_StringView str) {
   const char* end = str.data + str.size;
   int64_t ret;
-  if (jsondec_buftoint64(d, str.data, end, &ret) != end) {
+  if (jsondec_buftoint64(d, str.data, end, &ret, NULL) != end) {
     jsondec_err(d, "Non-number characters in quoted integer");
   }
   return ret;
@@ -1130,9 +1134,10 @@ static void jsondec_duration(jsondec* d, upb_Message* msg,
   const char* ptr = str.data;
   const char* end = ptr + str.size;
   const int64_t max = (uint64_t)3652500 * 86400;
+  bool neg = false;
 
   /* "3.000000001s", "3s", etc. */
-  ptr = jsondec_buftoint64(d, ptr, end, &seconds.int64_val);
+  ptr = jsondec_buftoint64(d, ptr, end, &seconds.int64_val, &neg);
   nanos.int32_val = jsondec_nanos(d, &ptr, end);
 
   if (end - ptr != 1 || *ptr != 's') {
@@ -1143,7 +1148,7 @@ static void jsondec_duration(jsondec* d, upb_Message* msg,
     jsondec_err(d, "Duration out of range");
   }
 
-  if (seconds.int64_val < 0) {
+  if (neg) {
     nanos.int32_val = -nanos.int32_val;
   }
 
