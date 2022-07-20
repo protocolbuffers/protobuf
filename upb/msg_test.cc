@@ -515,7 +515,7 @@ TEST(MessageTest, MapField) {
 // }
 // FUZZ_TEST(FuzzTest, DecodeEncodeArbitrarySchemaAndPayload);
 //
-// TEST(FuzzTest, DecodeEncodeArbitrarySchemaAndPayloadRegression) {
+// TEST(FuzzTest, DecodeUnknownProto2EnumExtension) {
 //   DecodeEncodeArbitrarySchemaAndPayload(
 //       {{"\256\354Rt\216\3271\234", "\243\243\267\207\336gV\366w"},
 //        {"z"},
@@ -523,6 +523,15 @@ TEST(MessageTest, MapField) {
 //        "\321\363\255;",
 //        {}},
 //       "\010", -724543908, -591643538);
+// }
+//
+// TEST(FuzzTest, DecodeExtensionEnsurePresenceInitialized) {
+//   DecodeEncodeArbitrarySchemaAndPayload(
+//       {{"\031", "S", "\364", "", "", "j", "\303", "", "\224", "\277"},
+//        {},
+//        "_C-\236$*)C0C>",
+//        {4041515984, 2147483647, 1929379871, 0, 3715937258, 4294967295}},
+//       "\010\002", 342248070, -806315555);
 // }
 //
 // end:google_only

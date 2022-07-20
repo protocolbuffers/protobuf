@@ -1119,6 +1119,7 @@ const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
       upb_MtDecoder_Parse(&decoder, data, len, ext, sizeof(*ext), &count, NULL);
   ext->field.mode |= kUpb_LabelFlags_IsExtension;
   ext->field.offset = 0;
+  ext->field.presence = 0;
   return ret;
 }
 
