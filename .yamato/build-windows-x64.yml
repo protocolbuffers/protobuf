@@ -12,7 +12,7 @@ windows-c-libraries:
         - builds/**
 
   commands:
-    - .\bee\bee win64_vs2015
+    - .\bee\bee win64_vs2017
 
 csharp-bindings:
   name: Build C# Bindings
