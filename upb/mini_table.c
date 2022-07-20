@@ -963,7 +963,7 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
   decoder.table->field_count = 0;
   decoder.table->ext = kUpb_ExtMode_NonExtendable;
   decoder.table->dense_below = 0;
-  decoder.table->table_mask = 0;
+  decoder.table->table_mask = -1;
   decoder.table->required_count = 0;
 
   upb_MtDecoder_ParseMessage(&decoder, data, len);
@@ -986,7 +986,7 @@ upb_MiniTable* upb_MiniTable_BuildMessageSet(upb_MiniTablePlatform platform,
   ret->field_count = 0;
   ret->ext = kUpb_ExtMode_IsMessageSet;
   ret->dense_below = 0;
-  ret->table_mask = 0;
+  ret->table_mask = -1;
   ret->required_count = 0;
   return ret;
 }
@@ -1027,7 +1027,7 @@ upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
   ret->field_count = 2;
   ret->ext = kUpb_ExtMode_NonExtendable | kUpb_ExtMode_IsMapEntry;
   ret->dense_below = 2;
-  ret->table_mask = 0;
+  ret->table_mask = -1;
   ret->required_count = 0;
   ret->subs = subs;
   ret->fields = fields;

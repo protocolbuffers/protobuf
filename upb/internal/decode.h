@@ -46,8 +46,8 @@
 typedef struct upb_Decoder {
   const char* end;          /* Can read up to 16 bytes slop beyond this. */
   const char* limit_ptr;    /* = end + UPB_MIN(limit, 0) */
-  upb_Message* unknown_msg; /* If non-NULL, add unknown data at buffer flip. */
-  const char* unknown;      /* Start of unknown data. */
+  upb_Message* unknown_msg; /* Used for preserving unknown data. */
+  const char* unknown; /* Start of unknown data, preserve at buffer flip. */
   const upb_ExtensionRegistry*
       extreg;         /* For looking up extensions during the parse. */
   int limit;          /* Submessage limit relative to end. */
@@ -120,7 +120,7 @@ const char* decode_isdonefallback_inl(upb_Decoder* d, const char* ptr,
   if (overrun < d->limit) {
     /* Need to copy remaining data into patch buffer. */
     UPB_ASSERT(overrun < 16);
-    if (d->unknown_msg) {
+    if (d->unknown) {
       if (!_upb_Message_AddUnknown(d->unknown_msg, d->unknown, ptr - d->unknown,
                                    &d->arena)) {
         *status = kUpb_DecodeStatus_OutOfMemory;

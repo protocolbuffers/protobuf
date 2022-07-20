@@ -421,7 +421,9 @@ static bool decode_checkenum_slow(upb_Decoder* d, const char* ptr,
   // For packed fields the tag could be arbitrarily far in the past, so we
   // just re-encode the tag and value here.
   uint32_t tag = ((uint32_t)field->number << 3) | kUpb_WireType_Varint;
-  upb_Decode_AddUnknownVarints(d, msg, tag, v);
+  upb_Message* unknown_msg =
+      field->mode & kUpb_LabelFlags_IsExtension ? d->unknown_msg : msg;
+  upb_Decode_AddUnknownVarints(d, unknown_msg, tag, v);
   return false;
 }
 
@@ -1008,6 +1010,7 @@ static const char* decode_known(upb_Decoder* d, const char* ptr,
     upb_Message_Extension* ext =
         _upb_Message_GetOrCreateExtension(msg, ext_layout, &d->arena);
     if (UPB_UNLIKELY(!ext)) return decode_err(d, kUpb_DecodeStatus_OutOfMemory);
+    d->unknown_msg = msg;
     msg = &ext->data;
     subs = &ext->ext->sub;
   }
@@ -1073,7 +1076,6 @@ static const char* decode_unknown(upb_Decoder* d, const char* ptr,
       d->unknown_msg = msg;
       ptr = decode_group(d, ptr, NULL, NULL, field_number);
       start = d->unknown;
-      d->unknown_msg = NULL;
       d->unknown = NULL;
     }
     if (!_upb_Message_AddUnknown(msg, start, ptr - start, &d->arena)) {
@@ -1189,7 +1191,7 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
 
   state.extreg = extreg;
   state.limit_ptr = state.end;
-  state.unknown_msg = NULL;
+  state.unknown = NULL;
   state.depth = depth ? depth : 64;
   state.end_group = DECODE_NOGROUP;
   state.options = (uint16_t)options;

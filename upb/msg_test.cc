@@ -515,4 +515,14 @@ TEST(MessageTest, MapField) {
 // }
 // FUZZ_TEST(FuzzTest, DecodeEncodeArbitrarySchemaAndPayload);
 //
+// TEST(FuzzTest, DecodeEncodeArbitrarySchemaAndPayloadRegression) {
+//   DecodeEncodeArbitrarySchemaAndPayload(
+//       {{"\256\354Rt\216\3271\234", "\243\243\267\207\336gV\366w"},
+//        {"z"},
+//        "}\212\304d\371\363\341\2329\325B\264\377?\215\223\201\201\226y\201%"
+//        "\321\363\255;",
+//        {}},
+//       "\010", -724543908, -591643538);
+// }
+//
 // end:google_only
