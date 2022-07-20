@@ -227,7 +227,7 @@ class FooMessage {
 ```
 
 One downside of MiniTables is that they cannot support parsing or serializing
-to JSON or TextFormat, because they do now know the field names.  It should be
+to JSON or TextFormat, because they do not know the field names.  It should be
 possible to generate reflection data "on the side", into separate generated
 code files, so that reflection is only pulled in if it is being used.  However
 APIs to do this do not exist yet.
