@@ -39,6 +39,7 @@
 
 VALUE cParseError;
 VALUE cTypeError;
+ID pinned_objs_ivar;
 
 const upb_FieldDef *map_field_key(const upb_FieldDef *field) {
   const upb_MessageDef *entry = upb_FieldDef_MessageSubDef(field);
@@ -169,27 +170,15 @@ void StringBuilder_PrintMsgval(StringBuilder *b, upb_MessageValue val,
 // Arena
 // -----------------------------------------------------------------------------
 
-typedef struct {
-  upb_Arena *arena;
-  VALUE pinned_objs;
-} Arena;
-
-static void Arena_mark(void *data) {
-  Arena *arena = data;
-  rb_gc_mark(arena->pinned_objs);
-}
+static VALUE cArena;
 
 static void Arena_free(void *data) {
-  Arena *arena = data;
-  upb_Arena_Free(arena->arena);
-  xfree(arena);
+  upb_Arena_Free((upb_Arena *)data);
 }
-
-static VALUE cArena;
 
 const rb_data_type_t Arena_type = {
     "Google::Protobuf::Internal::Arena",
-    {Arena_mark, Arena_free, NULL},
+    {NULL, Arena_free, NULL},
     .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
 
@@ -205,22 +194,19 @@ static void* ruby_upb_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize, siz
 upb_alloc ruby_upb_alloc = {&ruby_upb_allocfunc};
 
 static VALUE Arena_alloc(VALUE klass) {
-  Arena *arena = ALLOC(Arena);
-  arena->arena = upb_Arena_Init(NULL, 0, &ruby_upb_alloc);
-  arena->pinned_objs = Qnil;
-  return TypedData_Wrap_Struct(klass, &Arena_type, arena);
+  return TypedData_Wrap_Struct(klass, &Arena_type, upb_Arena_Init(NULL, 0, &ruby_upb_alloc));
 }
 
-upb_Arena *Arena_get(VALUE _arena) {
-  Arena *arena;
-  TypedData_Get_Struct(_arena, Arena, &Arena_type, arena);
-  return arena->arena;
+upb_Arena *Arena_get(VALUE self) {
+  upb_Arena *arena;
+  TypedData_Get_Struct(self, upb_Arena, &Arena_type, arena);
+  return arena;
 }
 
-void Arena_fuse(VALUE _arena, upb_Arena *other) {
-  Arena *arena;
-  TypedData_Get_Struct(_arena, Arena, &Arena_type, arena);
-  if (!upb_Arena_Fuse(arena->arena, other)) {
+void Arena_fuse(VALUE self, upb_Arena *other) {
+  upb_Arena *arena;
+  TypedData_Get_Struct(self, upb_Arena, &Arena_type, arena);
+  if (!upb_Arena_Fuse(arena, other)) {
     rb_raise(rb_eRuntimeError,
              "Unable to fuse arenas. This should never happen since Ruby does "
              "not use initial blocks");
@@ -229,13 +215,13 @@ void Arena_fuse(VALUE _arena, upb_Arena *other) {
 
 VALUE Arena_new() { return Arena_alloc(cArena); }
 
-void Arena_Pin(VALUE _arena, VALUE obj) {
-  Arena *arena;
-  TypedData_Get_Struct(_arena, Arena, &Arena_type, arena);
-  if (arena->pinned_objs == Qnil) {
-    arena->pinned_objs = rb_ary_new();
+void Arena_Pin(VALUE arena, VALUE obj) {
+  VALUE pinned_objs = rb_ivar_get(arena, pinned_objs_ivar);
+  if (NIL_P(pinned_objs)) {
+    pinned_objs = rb_ary_new();
+    rb_ivar_set(arena, pinned_objs_ivar, pinned_objs);
   }
-  rb_ary_push(arena->pinned_objs, obj);
+  rb_ary_push(pinned_objs, obj);
 }
 
 void Arena_register(VALUE module) {
@@ -461,6 +447,7 @@ __attribute__((visibility("default"))) void Init_protobuf_c() {
 
   VALUE google = rb_define_module("Google");
   VALUE protobuf = rb_define_module_under(google, "Protobuf");
+  pinned_objs_ivar = rb_intern("@_internal_pinned_objs");
 
   Arena_register(protobuf);
   Defs_register(protobuf);

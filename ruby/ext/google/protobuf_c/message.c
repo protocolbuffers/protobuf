@@ -37,14 +37,15 @@
 #include "repeated_field.h"
 
 static VALUE cParseError = Qnil;
-static ID descriptor_instancevar_interned;
+static ID descriptor_ivar;
+static ID arena_ivar;
 
 static VALUE initialize_rb_class_with_no_args(VALUE klass) {
   return rb_funcall(klass, rb_intern("new"), 0);
 }
 
 VALUE MessageOrEnum_GetDescriptor(VALUE klass) {
-  return rb_ivar_get(klass, descriptor_instancevar_interned);
+  return rb_ivar_get(klass, descriptor_ivar);
 }
 
 // -----------------------------------------------------------------------------
@@ -52,20 +53,14 @@ VALUE MessageOrEnum_GetDescriptor(VALUE klass) {
 // -----------------------------------------------------------------------------
 
 typedef struct {
-  VALUE arena;
   const upb_Message* msg;  // Can get as mutable when non-frozen.
   const upb_MessageDef*
       msgdef;  // kept alive by self.class.descriptor reference.
 } Message;
 
-static void Message_mark(void* _self) {
-  Message* self = (Message*)_self;
-  rb_gc_mark(self->arena);
-}
-
 static rb_data_type_t Message_type = {
     "Message",
-    {Message_mark, RUBY_DEFAULT_FREE, NULL},
+    {NULL, RUBY_DEFAULT_FREE, NULL},
     .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
 
@@ -76,16 +71,15 @@ static Message* ruby_to_Message(VALUE msg_rb) {
 }
 
 static VALUE Message_alloc(VALUE klass) {
-  VALUE descriptor = rb_ivar_get(klass, descriptor_instancevar_interned);
+  VALUE descriptor = rb_ivar_get(klass, descriptor_ivar);
   Message* msg = ALLOC(Message);
   VALUE ret;
 
   msg->msgdef = Descriptor_GetMsgDef(descriptor);
-  msg->arena = Qnil;
   msg->msg = NULL;
 
   ret = TypedData_Wrap_Struct(klass, &Message_type, msg);
-  rb_ivar_set(ret, descriptor_instancevar_interned, descriptor);
+  rb_ivar_set(ret, descriptor_ivar, descriptor);
 
   return ret;
 }
@@ -104,13 +98,12 @@ upb_Message* Message_GetMutable(VALUE msg_rb, const upb_MessageDef** m) {
 void Message_InitPtr(VALUE self_, upb_Message* msg, VALUE arena) {
   Message* self = ruby_to_Message(self_);
   self->msg = msg;
-  self->arena = arena;
+  rb_ivar_set(self_, arena_ivar, arena);
   ObjectCache_Add(msg, self_);
 }
 
 VALUE Message_GetArena(VALUE msg_rb) {
-  Message* msg = ruby_to_Message(msg_rb);
-  return msg->arena;
+  return rb_ivar_get(msg_rb, arena_ivar);
 }
 
 void Message_CheckClass(VALUE klass) {
@@ -312,36 +305,38 @@ static void Message_setfield(upb_Message* msg, const upb_FieldDef* f, VALUE val,
 
 VALUE Message_getfield(VALUE _self, const upb_FieldDef* f) {
   Message* self = ruby_to_Message(_self);
+  VALUE arena_rb = Message_GetArena(_self);
   // This is a special-case: upb_Message_Mutable() for map & array are logically
   // const (they will not change what is serialized) but physically
   // non-const, as they do allocate a repeated field or map. The logical
   // constness means it's ok to do even if the message is frozen.
   upb_Message* msg = (upb_Message*)self->msg;
-  upb_Arena* arena = Arena_get(self->arena);
+  upb_Arena* arena = Arena_get(arena_rb);
   if (upb_FieldDef_IsMap(f)) {
     upb_Map* map = upb_Message_Mutable(msg, f, arena).map;
     const upb_FieldDef* key_f = map_field_key(f);
     const upb_FieldDef* val_f = map_field_value(f);
     upb_CType key_type = upb_FieldDef_CType(key_f);
     TypeInfo value_type_info = TypeInfo_get(val_f);
-    return Map_GetRubyWrapper(map, key_type, value_type_info, self->arena);
+    return Map_GetRubyWrapper(map, key_type, value_type_info, arena_rb);
   } else if (upb_FieldDef_IsRepeated(f)) {
     upb_Array* arr = upb_Message_Mutable(msg, f, arena).array;
-    return RepeatedField_GetRubyWrapper(arr, TypeInfo_get(f), self->arena);
+    return RepeatedField_GetRubyWrapper(arr, TypeInfo_get(f), arena_rb);
   } else if (upb_FieldDef_IsSubMessage(f)) {
     if (!upb_Message_Has(self->msg, f)) return Qnil;
     upb_Message* submsg = upb_Message_Mutable(msg, f, arena).msg;
     const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
-    return Message_GetRubyWrapper(submsg, m, self->arena);
+    return Message_GetRubyWrapper(submsg, m, arena_rb);
   } else {
     upb_MessageValue msgval = upb_Message_Get(self->msg, f);
-    return Convert_UpbToRuby(msgval, TypeInfo_get(f), self->arena);
+    return Convert_UpbToRuby(msgval, TypeInfo_get(f), arena_rb);
   }
 }
 
 static VALUE Message_field_accessor(VALUE _self, const upb_FieldDef* f,
                                     int accessor_type, int argc, VALUE* argv) {
-  upb_Arena* arena = Arena_get(Message_GetArena(_self));
+  VALUE arena_rb = Message_GetArena(_self);
+  upb_Arena* arena = Arena_get(arena_rb);
 
   switch (accessor_type) {
     case METHOD_SETTER:
@@ -365,7 +360,7 @@ static VALUE Message_field_accessor(VALUE _self, const upb_FieldDef* f,
         const upb_FieldDef* value_f =
             upb_MessageDef_FindFieldByNumber(wrapper_m, 1);
         upb_MessageValue value = upb_Message_Get(wrapper.msg_val, value_f);
-        return Convert_UpbToRuby(value, TypeInfo_get(value_f), self->arena);
+        return Convert_UpbToRuby(value, TypeInfo_get(value_f), arena_rb);
       } else {
         return Qnil;
       }
@@ -679,13 +674,14 @@ static VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
 static VALUE Message_dup(VALUE _self) {
   Message* self = ruby_to_Message(_self);
   VALUE new_msg = rb_class_new_instance(0, NULL, CLASS_OF(_self));
+  VALUE arena_rb = Message_GetArena(new_msg);
   Message* new_msg_self = ruby_to_Message(new_msg);
   size_t size = upb_MessageDef_MiniTable(self->msgdef)->size;
 
   // TODO(copy unknown fields?)
   // TODO(use official upb msg copy function)
   memcpy((upb_Message*)new_msg_self->msg, self->msg, size);
-  Arena_fuse(self->arena, Arena_get(new_msg_self->arena));
+  Arena_fuse(Message_GetArena(_self), Arena_get(arena_rb));
   return new_msg;
 }
 
@@ -892,7 +888,7 @@ static VALUE Message_to_h(VALUE _self) {
 static VALUE Message_freeze(VALUE _self) {
   Message* self = ruby_to_Message(_self);
   if (!RB_OBJ_FROZEN(_self)) {
-    Arena_Pin(self->arena, _self);
+    Arena_Pin(Message_GetArena(_self), _self);
     RB_OBJ_FREEZE(_self);
   }
   return _self;
@@ -930,7 +926,7 @@ static VALUE Message_index_set(VALUE _self, VALUE field_name, VALUE value) {
   Message* self = ruby_to_Message(_self);
   const upb_FieldDef* f;
   upb_MessageValue val;
-  upb_Arena* arena = Arena_get(self->arena);
+  upb_Arena* arena = Arena_get(Message_GetArena(_self));
 
   Check_Type(field_name, T_STRING);
   f = upb_MessageDef_FindFieldByName(self->msgdef, RSTRING_PTR(field_name));
@@ -981,11 +977,12 @@ static VALUE Message_decode(int argc, VALUE* argv, VALUE klass) {
   }
 
   VALUE msg_rb = initialize_rb_class_with_no_args(klass);
+  VALUE arena_rb = Message_GetArena(msg_rb);
   Message* msg = ruby_to_Message(msg_rb);
 
   upb_DecodeStatus status = upb_Decode(
       RSTRING_PTR(data), RSTRING_LEN(data), (upb_Message*)msg->msg,
-      upb_MessageDef_MiniTable(msg->msgdef), NULL, options, Arena_get(msg->arena));
+      upb_MessageDef_MiniTable(msg->msgdef), NULL, options, Arena_get(arena_rb));
 
   if (status != kUpb_DecodeStatus_Ok) {
     rb_raise(cParseError, "Error occurred during parsing");
@@ -1039,6 +1036,7 @@ static VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
   // fields.
 
   VALUE msg_rb = initialize_rb_class_with_no_args(klass);
+  VALUE arena_rb = Message_GetArena(msg_rb);
   Message* msg = ruby_to_Message(msg_rb);
 
   // We don't allow users to decode a wrapper type directly.
@@ -1049,7 +1047,7 @@ static VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
   upb_Status_Clear(&status);
   if (!upb_JsonDecode(RSTRING_PTR(data), RSTRING_LEN(data),
                       (upb_Message*)msg->msg, msg->msgdef, symtab, options,
-                      Arena_get(msg->arena), &status)) {
+                      Arena_get(arena_rb), &status)) {
     rb_raise(cParseError, "Error occurred during parsing: %s",
              upb_Status_ErrorMessage(&status));
   }
@@ -1186,7 +1184,7 @@ static VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
  * message class's type.
  */
 static VALUE Message_descriptor(VALUE klass) {
-  return rb_ivar_get(klass, descriptor_instancevar_interned);
+  return rb_ivar_get(klass, descriptor_ivar);
 }
 
 VALUE build_class_from_descriptor(VALUE descriptor) {
@@ -1202,7 +1200,7 @@ VALUE build_class_from_descriptor(VALUE descriptor) {
       // Docs say this parameter is ignored. User will assign return value to
       // their own toplevel constant class name.
       rb_intern("Message"), rb_cObject);
-  rb_ivar_set(klass, descriptor_instancevar_interned, descriptor);
+  rb_ivar_set(klass, descriptor_ivar, descriptor);
   rb_define_alloc_func(klass, Message_alloc);
   rb_require("google/protobuf/message_exts");
   rb_include_module(klass, rb_eval_string("::Google::Protobuf::MessageExts"));
@@ -1243,7 +1241,7 @@ VALUE build_class_from_descriptor(VALUE descriptor) {
  */
 static VALUE enum_lookup(VALUE self, VALUE number) {
   int32_t num = NUM2INT(number);
-  VALUE desc = rb_ivar_get(self, descriptor_instancevar_interned);
+  VALUE desc = rb_ivar_get(self, descriptor_ivar);
   const upb_EnumDef* e = EnumDescriptor_GetEnumDef(desc);
   const upb_EnumValueDef* ev = upb_EnumDef_FindValueByNumber(e, num);
   if (ev) {
@@ -1262,7 +1260,7 @@ static VALUE enum_lookup(VALUE self, VALUE number) {
  */
 static VALUE enum_resolve(VALUE self, VALUE sym) {
   const char* name = rb_id2name(SYM2ID(sym));
-  VALUE desc = rb_ivar_get(self, descriptor_instancevar_interned);
+  VALUE desc = rb_ivar_get(self, descriptor_ivar);
   const upb_EnumDef* e = EnumDescriptor_GetEnumDef(desc);
   const upb_EnumValueDef* ev = upb_EnumDef_FindValueByName(e, name);
   if (ev) {
@@ -1280,7 +1278,7 @@ static VALUE enum_resolve(VALUE self, VALUE sym) {
  * EnumDescriptor corresponding to this enum type.
  */
 static VALUE enum_descriptor(VALUE self) {
-  return rb_ivar_get(self, descriptor_instancevar_interned);
+  return rb_ivar_get(self, descriptor_ivar);
 }
 
 VALUE build_module_from_enumdesc(VALUE _enumdesc) {
@@ -1304,7 +1302,7 @@ VALUE build_module_from_enumdesc(VALUE _enumdesc) {
   rb_define_singleton_method(mod, "lookup", enum_lookup, 1);
   rb_define_singleton_method(mod, "resolve", enum_resolve, 1);
   rb_define_singleton_method(mod, "descriptor", enum_descriptor, 0);
-  rb_ivar_set(mod, descriptor_instancevar_interned, _enumdesc);
+  rb_ivar_set(mod, descriptor_ivar, _enumdesc);
 
   return mod;
 }
@@ -1337,7 +1335,7 @@ const upb_Message* Message_GetUpbMessage(VALUE value, const upb_MessageDef* m,
   }
 
   VALUE klass = CLASS_OF(value);
-  VALUE desc_rb = rb_ivar_get(klass, descriptor_instancevar_interned);
+  VALUE desc_rb = rb_ivar_get(klass, descriptor_ivar);
   const upb_MessageDef* val_m =
       desc_rb == Qnil ? NULL : Descriptor_GetMsgDef(desc_rb);
 
@@ -1387,7 +1385,7 @@ const upb_Message* Message_GetUpbMessage(VALUE value, const upb_MessageDef* m,
   }
 
   Message* self = ruby_to_Message(value);
-  Arena_fuse(self->arena, arena);
+  Arena_fuse(Message_GetArena(value), arena);
 
   return self->msg;
 }
@@ -1398,5 +1396,6 @@ void Message_register(VALUE protobuf) {
   // Ruby-interned string: "descriptor". We use this identifier to store an
   // instance variable on message classes we create in order to link them back
   // to their descriptors.
-  descriptor_instancevar_interned = rb_intern("@descriptor");
+  descriptor_ivar = rb_intern("@_internal_descriptor");
+  arena_ivar = rb_intern("@_internal_arena");
 }
