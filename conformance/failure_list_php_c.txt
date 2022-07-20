@@ -1,2 +1,5 @@
 Recommended.Proto2.JsonInput.FieldNameExtension.Validator
 Required.Proto2.JsonInput.StoresDefaultPrimitive.Validator
+Required.Proto3.JsonInput.DurationNegativeNanos.JsonOutput
+Required.Proto3.JsonInput.DurationNegativeNanos.ProtobufOutput
+Required.Proto3.JsonInput.DurationNegativeSeconds.JsonOutput

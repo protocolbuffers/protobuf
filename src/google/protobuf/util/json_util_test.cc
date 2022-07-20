@@ -470,8 +470,10 @@ TEST_P(JsonTest, ParseMap) {
 
 TEST_P(JsonTest, RepeatedMapKey) {
   EXPECT_THAT(ToProto<TestMap>(R"json({
-    "twiceKey": 0,
-    "twiceKey": 1
+    "string_map": {
+      "twiceKey": 0,
+      "twiceKey": 1
+    }
   })json"), StatusIs(util::StatusCode::kInvalidArgument));
 }
 
@@ -700,6 +702,37 @@ TEST_P(JsonTest, TestParsingNestedAnys) {
           R"("int32Value":5,"stringValue":"expected_value","messageValue":{"value":1}}}})"));
 }
 
+TEST_P(JsonTest, TestParsingBrokenAny) {
+  auto m = ToProto<TestAny>(R"json(
+    {
+      "value": {}
+    }
+  )json");
+  ASSERT_OK(m);
+  EXPECT_EQ(m->value().type_url(), "");
+  EXPECT_EQ(m->value().value(), "");
+
+  EXPECT_THAT(ToProto<TestAny>(R"json(
+    {
+      "value": {
+        "type_url": "garbage",
+        "value": "bW9yZSBnYXJiYWdl"
+      }
+    }
+  )json"),
+              StatusIs(util::StatusCode::kInvalidArgument));
+}
+
+TEST_P(JsonTest, TestFlatList) {
+  auto m = ToProto<TestMessage>(R"json(
+    {
+      "repeatedInt32Value": [[[5]], [6]]
+    }
+  )json");
+  ASSERT_OK(m);
+  EXPECT_THAT(m->repeated_int32_value(), ElementsAre(5, 6));
+}
+
 TEST_P(JsonTest, ParseWrappers) {
   auto m = ToProto<TestWrapper>(R"json(
     {
@@ -755,6 +788,14 @@ TEST_P(JsonTest, TestParsingUnknownAnyFields) {
   TestMessage t;
   ASSERT_TRUE(m->value().UnpackTo(&t));
   EXPECT_EQ(t.string_value(), "expected_value");
+}
+
+TEST_P(JsonTest, TestHugeBareString) {
+  auto m = ToProto<TestMessage>(R"json({
+    "int64Value": 6009652459062546621
+  })json");
+  ASSERT_OK(m);
+  EXPECT_EQ(m->int64_value(), 6009652459062546621);
 }
 
 TEST_P(JsonTest, TestParsingUnknownEnumsProto2) {
@@ -895,6 +936,39 @@ TEST_P(JsonTest, TestDuration) {
 
   EXPECT_EQ(m2->value().seconds(), 4);
   EXPECT_EQ(m2->value().nanos(), 5);
+
+  // Negative duration with zero seconds.
+  auto m3 = ToProto<proto3::TestDuration>(R"json(
+    {
+      "value": {"nanos": -5},
+    }
+  )json");
+  ASSERT_OK(m3);
+  EXPECT_EQ(m3->value().seconds(), 0);
+  EXPECT_EQ(m3->value().nanos(), -5);
+  EXPECT_THAT(ToJson(m3->value()), IsOkAndHolds("\"-0.000000005s\""));
+
+  // Negative duration with zero nanos.
+  auto m4 = ToProto<proto3::TestDuration>(R"json(
+    {
+      "value": {"seconds": -5},
+    }
+  )json");
+  ASSERT_OK(m4);
+  EXPECT_EQ(m4->value().seconds(), -5);
+  EXPECT_EQ(m4->value().nanos(), 0);
+  EXPECT_THAT(ToJson(m4->value()), IsOkAndHolds("\"-5s\""));
+
+  // Parse "0.5s" as a JSON string.
+  auto m5 = ToProto<proto3::TestDuration>(R"json(
+    {
+      "value": "0.5s",
+    }
+  )json");
+  ASSERT_OK(m5);
+  EXPECT_EQ(m5->value().seconds(), 0);
+  EXPECT_EQ(m5->value().nanos(), 500000000);
+  EXPECT_THAT(ToJson(m5->value()), IsOkAndHolds("\"0.500s\""));
 }
 
 // These tests are not exhaustive; tests in //third_party/protobuf/conformance

@@ -136,6 +136,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/JsonTokenizerTest.cs                       \
   csharp/src/Google.Protobuf.Test/LegacyGeneratedCodeTest.cs                 \
   csharp/src/Google.Protobuf.Test/MessageParsingHelpers.cs                   \
+  csharp/src/Google.Protobuf.Test/ParsingPrimitivesTest.cs                   \
   csharp/src/Google.Protobuf.Test/Proto3OptionalTest.cs                      \
   csharp/src/Google.Protobuf.Test/ReadOnlySequenceFactory.cs                 \
   csharp/src/Google.Protobuf.Test/RefStructCompatibilityTest.cs              \
@@ -174,6 +175,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/FieldMaskTest.cs            \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/TimestampTest.cs            \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/WrappersTest.cs             \
+  csharp/src/Google.Protobuf.Test/WritingPrimitivesTest.cs                   \
   csharp/src/Google.Protobuf.Test/UnknownFieldSetTest.cs                     \
   csharp/src/Google.Protobuf.Test/testprotos.pb                              \
   csharp/src/Google.Protobuf.sln                                             \
