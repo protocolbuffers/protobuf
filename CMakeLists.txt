@@ -242,12 +242,12 @@ endif (protobuf_BUILD_SHARED_LIBS)
 if (MSVC)
   if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # Build with multiple processes
-    add_definitions(/MP)
+    add_compile_options(/MP)
   endif()
   # Set source file and execution character sets to UTF-8
-  add_definitions(/utf-8)
+  add_compile_options(/utf-8)
   # MSVC warning suppressions
-  add_definitions(
+  add_compile_options(
     /wd4065 # switch statement contains 'default' but no 'case' labels
     /wd4244 # 'conversion' conversion from 'type1' to 'type2', possible loss of data
     /wd4251 # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
@@ -262,23 +262,17 @@ if (MSVC)
     /wd4996 # The compiler encountered a deprecated declaration.
   )
   # Allow big object
-  add_definitions(/bigobj)
+  add_compile_options(/bigobj)
   string(REPLACE "/" "\\" PROTOBUF_SOURCE_WIN32_PATH ${protobuf_SOURCE_DIR})
   string(REPLACE "/" "\\" PROTOBUF_BINARY_WIN32_PATH ${protobuf_BINARY_DIR})
   string(REPLACE "." ","  protobuf_RC_FILEVERSION "${protobuf_VERSION}")
   configure_file(${protobuf_SOURCE_DIR}/cmake/extract_includes.bat.in extract_includes.bat)
 
   # Suppress linker warnings about files with no symbols defined.
-  set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4221")
+  string(APPEND CMAKE_STATIC_LINKER_FLAGS " /ignore:4221")
 
-  if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    # Configure Resource Compiler
-    enable_language(RC)
-    # use English language (0x409) in resource compiler
-    set(rc_flags "/l0x409")
-    # fix rc.exe invocations because of usage of add_definitions()
-    set(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> ${rc_flags} <DEFINES> /fo<OBJECT> <SOURCE>")
-  endif()
+  # use English language (0x409) in resource compiler
+  string(APPEND CMAKE_RC_FLAGS " -l0x409")
 
   # Generate the version.rc file used elsewhere.
   configure_file(${protobuf_SOURCE_DIR}/cmake/version.rc.in ${CMAKE_CURRENT_BINARY_DIR}/version.rc @ONLY)
