@@ -3,7 +3,6 @@
 set -ex
 
 # Build protoc
-use_bazel.sh 5.1.1
 bazel build //:protoc
 export PROTOC=$PWD/bazel-bin/protoc
 

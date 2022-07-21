@@ -74,12 +74,12 @@ GPB_FINAL @interface GPBApi : GPBMessage
 
 /** The methods of this interface, in unspecified order. */
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBMethod*> *methodsArray;
-/** The number of items in @c methodsArray without causing the array to be created. */
+/** The number of items in @c methodsArray without causing the container to be created. */
 @property(nonatomic, readonly) NSUInteger methodsArray_Count;
 
 /** Any metadata attached to the interface. */
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBOption*> *optionsArray;
-/** The number of items in @c optionsArray without causing the array to be created. */
+/** The number of items in @c optionsArray without causing the container to be created. */
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
 /**
@@ -115,7 +115,7 @@ GPB_FINAL @interface GPBApi : GPBMessage
 
 /** Included interfaces. See [Mixin][]. */
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBMixin*> *mixinsArray;
-/** The number of items in @c mixinsArray without causing the array to be created. */
+/** The number of items in @c mixinsArray without causing the container to be created. */
 @property(nonatomic, readonly) NSUInteger mixinsArray_Count;
 
 /** The source syntax of the service. */
@@ -169,7 +169,7 @@ GPB_FINAL @interface GPBMethod : GPBMessage
 
 /** Any metadata attached to the method. */
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBOption*> *optionsArray;
-/** The number of items in @c optionsArray without causing the array to be created. */
+/** The number of items in @c optionsArray without causing the container to be created. */
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
 /** The source syntax of this method. */
