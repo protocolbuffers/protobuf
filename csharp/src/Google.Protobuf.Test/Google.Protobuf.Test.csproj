@@ -6,6 +6,7 @@
     <SignAssembly>true</SignAssembly>
     <IsPackable>False</IsPackable>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

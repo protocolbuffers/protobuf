@@ -28,6 +28,7 @@ filegroup(
     visibility = [
         "//benchmarks:__subpackages__",
         "//conformance:__subpackages__",
+        "//csharp:__pkg__",
     ],
 )
 
