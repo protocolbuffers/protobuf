@@ -3,47 +3,143 @@
 # See also code generation logic under /src/google/protobuf/compiler/ruby.
 
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("//build_defs:internal_shell.bzl", "inline_sh_test")
 load("//conformance:defs.bzl", "conformance_test")
-load("//build_defs:internal_shell.bzl", "inline_sh_binary")
+load("//:protobuf.bzl", "ruby_proto_library")
+
+################################################################################
+# Ruby Runtime
+################################################################################
+
+config_setting(
+    name = "java_ruby",
+    values = {"define": "ruby_platform=java"},
+)
+
+config_setting(
+    name = "c_ruby",
+    values = {"define": "ruby_platform=c"},
+)
 
 filegroup(
     name = "srcs",
-    srcs = glob(["**/*"]),
-    visibility = ["//conformance:__subpackages__"],
-)
-
-inline_sh_binary(
-    name = "build_protobuf_c",
-    srcs = ["Rakefile"],
-    cmd = """
-        pushd ruby;
-        BAZEL=true rake -f Rakefile
-        popd
-    """,
-    visibility = ["//ruby:__subpackages__"],
+    srcs = glob([
+        "ext/google/protobuf_c/*",
+        "lib/**/*.rb",
+        "src/**/*.proto",
+    ]) + [
+        "Gemfile",
+        "Rakefile",
+        "google-protobuf.gemspec",
+        "pom.xml",
+    ],
 )
 
 genrule(
     name = "protobuf_c",
     srcs = [
+        "Rakefile",
+        ":srcs",
+        ":test_ruby_protos",
+        ":tests",
+        "//third_party/utf8_range:all_files",
+    ],
+    tags = ["manual"],
+    outs = ["lib/google/protobuf_c.so"],
+    cmd = "pushd `dirname $(location Rakefile)`\n" +
+          "BAZEL=true rake\n" +
+          "popd\n" +
+          "cp `dirname $(location Rakefile)`/lib/google/protobuf_c.so $(OUTS)\n",
+)
+
+genrule(
+    name = "protobuf_java",
+    srcs = glob(["src/**/*.java"]) + [
+        "Rakefile",
+        ":srcs",
+        ":test_ruby_protos",
+        ":tests",
+        "//third_party/utf8_range:all_files",
+    ],
+    tags = ["manual"],
+    outs = ["lib/google/protobuf_java.jar"],
+    cmd = "pushd `dirname $(location Rakefile)`\n" +
+          "BAZEL=true rake\n" +
+          "popd\n" +
+          "cp `dirname $(location Rakefile)`/lib/google/protobuf_java.jar $(OUTS)\n",
+)
+
+filegroup(
+    name = "protobuf",
+    srcs = [
         ":srcs",
         "//third_party/utf8_range:all_files",
-        "//ruby/tests",
-        "//ruby/tests:test_protos",
-    ],
-    tools = [":build_protobuf_c"],
-    outs = ["lib/google/protobuf_c.so"],
-    cmd = "./$(location :build_protobuf_c)\n" +
-          "cp ruby/lib/google/protobuf_c.so $(OUTS)\n",
+    ] + select({
+        ":java_ruby": [":protobuf_java"],
+        "//conditions:default": [":protobuf_c"],
+    }),
     visibility = [
         "//conformance:__subpackages__",
-        "//ruby:__subpackages__"
+        "//ruby:__subpackages__",
     ],
 )
 
 ################################################################################
 # Tests
 ################################################################################
+
+filegroup(
+  name = "tests",
+  srcs = glob(["tests/*.rb"]),
+)
+
+filegroup(
+  name = "test_protos",
+  srcs = glob(["tests/*.proto"]),
+)
+
+ruby_proto_library(
+    name = "test_ruby_protos",
+    srcs = [":test_protos"],
+    proto_deps = ["//:well_known_protos"],
+    includes = [".", "src", "ruby/tests"],
+)
+
+inline_sh_test(
+    name = "test",
+    srcs = [
+        "Rakefile",
+    ],
+    deps = [
+        ":protobuf",
+        ":test_ruby_protos",
+        ":tests",
+        "//:well_known_ruby_protos",
+    ],
+    cmd = """
+        pushd `dirname $(location Rakefile)`
+        RUBYLIB=../src:tests:. BAZEL=true rake test
+        popd
+    """,
+)
+
+inline_sh_test(
+    name = "gc_test",
+    srcs = [
+        "Rakefile",
+    ],
+    deps = [
+        ":protobuf",
+        ":test_ruby_protos",
+        ":tests",
+        "//:well_known_ruby_protos",
+    ],
+    cmd = """
+        pushd `dirname $(location Rakefile)`
+        RUBYLIB=../src:tests:. BAZEL=true rake gc_test
+        popd
+    """,
+)
 
 conformance_test(
     name = "conformance_test",

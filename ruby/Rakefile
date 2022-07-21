@@ -39,8 +39,8 @@ proto2_protos = %w[
 
 if !ENV['PROTOC'].nil?
   protoc_command = ENV['PROTOC']
-elsif system('../src/protoc --version')
-  protoc_command = '../src/protoc'
+elsif system('../bazel-bin/protoc --version')
+  protoc_command = '../bazel-bin/protoc'
 else
   protoc_command = 'protoc'
 end
@@ -153,13 +153,15 @@ end
 Gem::PackageTask.new(spec) do |pkg|
 end
 
-Rake::TestTask.new(:test => [:build, :genproto]) do |t|
+# Skip build/genproto in Bazel builds, where we expect this to
+# be done already.
+Rake::TestTask.new(:test => ENV['BAZEL'] == 'true' ? [] : [:build, :genproto]) do |t|
   t.test_files = FileList["tests/*.rb"].exclude("tests/gc_test.rb", "tests/common_tests.rb")
 end
 
 # gc_test needs to be split out to ensure the generated file hasn't been
 # imported by other tests.
-Rake::TestTask.new(:gc_test => :build) do |t|
+Rake::TestTask.new(:gc_test => ENV['BAZEL'] == 'true' ? [] : :build) do |t|
   t.test_files = FileList["tests/gc_test.rb"]
 end
 
