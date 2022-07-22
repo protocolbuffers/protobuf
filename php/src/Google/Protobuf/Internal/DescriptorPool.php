@@ -96,6 +96,7 @@ class DescriptorPool
             $descriptor->getClass();
         $this->class_to_desc[$descriptor->getClass()] = $descriptor;
         $this->class_to_desc[$descriptor->getLegacyClass()] = $descriptor;
+        $this->class_to_desc[$descriptor->getPreviouslyUnreservedClass()] = $descriptor;
         foreach ($descriptor->getNestedType() as $nested_type) {
             $this->addDescriptor($nested_type);
         }

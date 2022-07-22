@@ -57,6 +57,7 @@ message print {}
 message private {}
 message protected {}
 message public {}
+message readonly {}
 message require {}
 message require_once {}
 message return {}

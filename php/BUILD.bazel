@@ -12,7 +12,9 @@ pkg_files(
         "src/Google/Protobuf/**/*.php",
         "tests/*.php",
         "tests/*.sh",
+        "tests/generated_previous/**/*.php",
         "tests/proto/**/*.proto",
+        "tests/proto_previous/*.proto",
     ]) + [
         "BUILD.bazel",
         "README.md",
