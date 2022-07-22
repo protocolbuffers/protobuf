@@ -289,8 +289,8 @@ if __name__ == '__main__':
       libraries = None
       library_dirs = None
       if not HasStaticLibprotobufOpt():
-        extra_objects = ['../src/.libs/libprotobuf.a',
-                         '../src/.libs/libprotobuf-lite.a']
+        extra_objects = ['../bazel-bin/src/google/protobuf/libprotobuf.a',
+                         '../bazel-bin/src/google/protobuf/libprotobuf_lite.a']
     else:
       libraries = ['protobuf']
       if HasLibraryDirsOpt():
@@ -361,6 +361,11 @@ if __name__ == '__main__':
       sys.argv.remove(warnings_as_errors)
 
     # C++ implementation extension
+    print(libraries)
+    print(extra_objects)
+    print(message_extra_link_args)
+    print(library_dirs)
+    print(extra_compile_args)
     ext_module_list.extend([
         Extension(
             'google.protobuf.pyext._message',

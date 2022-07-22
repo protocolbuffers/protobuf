@@ -14,10 +14,16 @@ filegroup(
         "//php:__pkg__",
     ],
     srcs = glob([
+        "ext/google/protobuf/*.h",
+        "ext/google/protobuf/*.c",
         "src/GPBMetadata/Google/Protobuf/**/*.php",
         "src/Google/Protobuf/**/*.php",
-        "src/Protobuf_test_messages/**/*.php",
-    ])
+    ]) + [
+        "composer.json",
+        "ext/google/protobuf/wkt.inc",
+        "ext/google/protobuf/config.m4",
+        "ext/google/protobuf/package.xml",
+    ],
 )
 
 ################################################################################
@@ -40,8 +46,9 @@ inline_sh_binary(
 
 genrule(
     name = "extension",
-    srcs = glob(["**/*"]) + [
-        "//third_party/utf8_range:all_files"
+    srcs = [
+        ":source_files",
+        "//third_party/utf8_range:all_files",
     ],
     tools = [":build_extension"],
     outs = ["protobuf.so"],

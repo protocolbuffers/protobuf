@@ -6,6 +6,7 @@ load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:internal_shell.bzl", "inline_sh_test")
 load("//conformance:defs.bzl", "conformance_test")
 load("//:protobuf.bzl", "ruby_proto_library")
+load(":internal.bzl", "internal_ruby_extension")
 
 ################################################################################
 # Ruby Runtime
@@ -35,38 +36,19 @@ filegroup(
     ],
 )
 
-genrule(
-    name = "protobuf_c",
-    srcs = [
-        "Rakefile",
-        ":srcs",
-        ":test_ruby_protos",
-        ":tests",
-        "//third_party/utf8_range:all_files",
-    ],
-    tags = ["manual"],
-    outs = ["lib/google/protobuf_c.so"],
-    cmd = "pushd `dirname $(location Rakefile)`\n" +
-          "BAZEL=true rake\n" +
-          "popd\n" +
-          "cp `dirname $(location Rakefile)`/lib/google/protobuf_c.so $(OUTS)\n",
+internal_ruby_extension(
+    name = "protobuf_c_mac",
+    extension = "lib/google/protobuf_c.bundle",
 )
 
-genrule(
+internal_ruby_extension(
+    name = "protobuf_c",
+    extension = "lib/google/protobuf_c.so",
+)
+
+internal_ruby_extension(
     name = "protobuf_java",
-    srcs = glob(["src/**/*.java"]) + [
-        "Rakefile",
-        ":srcs",
-        ":test_ruby_protos",
-        ":tests",
-        "//third_party/utf8_range:all_files",
-    ],
-    tags = ["manual"],
-    outs = ["lib/google/protobuf_java.jar"],
-    cmd = "pushd `dirname $(location Rakefile)`\n" +
-          "BAZEL=true rake\n" +
-          "popd\n" +
-          "cp `dirname $(location Rakefile)`/lib/google/protobuf_java.jar $(OUTS)\n",
+    extension = "lib/google/protobuf_java.jar",
 )
 
 filegroup(
@@ -76,6 +58,7 @@ filegroup(
         "//third_party/utf8_range:all_files",
     ] + select({
         ":java_ruby": [":protobuf_java"],
+        "@bazel_tools//src/conditions:darwin": [":protobuf_c_mac"],
         "//conditions:default": [":protobuf_c"],
     }),
     visibility = [
@@ -170,6 +153,7 @@ pkg_files(
     ]) + [
         ".gitignore",
         "BUILD.bazel",
+        "internal.bzl",
         "Gemfile",
         "README.md",
         "Rakefile",

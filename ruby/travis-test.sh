@@ -5,6 +5,12 @@ set -ex
 
 test_version() {
   version=$1
+  bazel_args=" \
+    -k --test_output=streamed \
+    --action_env=PATH \
+    --action_env=GEM_PATH \
+    --action_env=GEM_HOME \
+    --test_env=KOKORO_RUBY_VERSION=$version"
 
   RUBY_CONFORMANCE=test_ruby
 
@@ -14,21 +20,14 @@ test_version() {
        which ruby && \
        git clean -f && \
        gem install --no-document bundler && bundle && \
-       rake test && \
-       rake gc_test && \
-       cd ../conformance && make test_jruby && \
-       cd ../ruby/compatibility_tests/v3.0.0 && ./test.sh"
+       bazel test //ruby/... //conformance:jruby $bazel_args --define=ruby_platform=java"
   else
     bash --login -c \
       "rvm install $version && rvm use $version && \
        which ruby && \
        git clean -f && \
        gem install --no-document bundler -v 1.17.3 && bundle && \
-       rake test && \
-       rake gc_test && \
-       cd ../conformance && make ${RUBY_CONFORMANCE} && \
-       cd ../ruby/compatibility_tests/v3.0.0 && \
-       cp -R ../../lib lib && ./test.sh"
+       bazel test //ruby/... //conformance:ruby $bazel_args --define=ruby_platform=c"
   fi
 }
 

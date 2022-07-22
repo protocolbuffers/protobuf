@@ -237,7 +237,7 @@ py_binary(
         "//python:test_messages_proto2_py_proto",
         "//python:test_messages_proto3_py_proto",
     ],
-    imports = [".", "python"],
+    imports = [".", "../python"],
     srcs_version = "PY2AND3",
     testonly = 1,
     visibility = ["//python:__subpackages__"],

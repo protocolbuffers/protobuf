@@ -13,17 +13,16 @@ __EOF__
   exit 1
 fi
 
-pushd src
-./protoc --php_out=internal:../php/src google/protobuf/descriptor.proto
-./protoc --php_out=internal_generate_c_wkt:../php/src \
-  google/protobuf/any.proto \
-  google/protobuf/api.proto \
-  google/protobuf/duration.proto \
-  google/protobuf/empty.proto \
-  google/protobuf/field_mask.proto \
-  google/protobuf/source_context.proto \
-  google/protobuf/struct.proto \
-  google/protobuf/type.proto \
-  google/protobuf/timestamp.proto \
-  google/protobuf/wrappers.proto
+bazel-bin/protoc --php_out=internal:php/src google/protobuf/descriptor.proto
+bazel-bin/protoc --php_out=internal_generate_c_wkt:php/src \
+  src/google/protobuf/any.proto \
+  src/google/protobuf/api.proto \
+  src/google/protobuf/duration.proto \
+  src/google/protobuf/empty.proto \
+  src/google/protobuf/field_mask.proto \
+  src/google/protobuf/source_context.proto \
+  src/google/protobuf/struct.proto \
+  src/google/protobuf/type.proto \
+  src/google/protobuf/timestamp.proto \
+  src/google/protobuf/wrappers.proto
 popd
