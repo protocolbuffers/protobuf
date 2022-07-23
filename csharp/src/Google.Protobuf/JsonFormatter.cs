@@ -178,7 +178,7 @@ namespace Google.Protobuf
         public void Format(IMessage message, TextWriter writer) => Format(message, writer, indentationLevel: 0);
 
         /// <summary>
-        /// Forms the specified message as JSON. When <see cref="Settings.Indentation"/> is not null, start indenting at the specified <see cref="indentationLevel"/>.
+        /// Formats the specified message as JSON. When <see cref="Settings.Indentation"/> is not null, start indenting at the specified <see cref="indentationLevel"/>.
         /// </summary>
         /// <param name="message">The message to format.</param>
         /// <param name="writer">The TextWriter to write the formatted message to.</param>
@@ -278,7 +278,8 @@ namespace Google.Protobuf
 
         private void MaybeWriteValueSeparator(TextWriter writer, bool first)
         {
-            if (first) {
+            if (first)
+            {
                 return;
             }
 
@@ -971,7 +972,11 @@ namespace Google.Protobuf
             /// Creates a new <see cref="Settings"/> object with the specified indentation and the current settings.
             /// </summary>
             /// <param name="indentation">The string to output for each level of indentation (nesting). The default is two spaces per level. Use null to disable indentation entirely.</param>
-            /// <remarks>A non-null value for <see cref="Indentation"/> will insert additional line-breaks to the JSON output. Each line will contain either a single value, or braces. The default line-break is determined by <see cref="Environment.NewLine"/>, which is <c>"\n"</c> on Unix platforms, and <c>"\r\n"</c> on Windows. If <see cref="JsonFormatter"/> seems to produce empty lines, you need to pass a <see cref="TextWriter"/> that uses a <c>"\n"</c> newline. See <see cref="JsonFormatter.Format(Google.Protobuf.IMessage, TextWriter)"/>.</remarks>
+            /// <remarks>A non-null value for <see cref="Indentation"/> will insert additional line-breaks to the JSON output.
+            /// Each line will contain either a single value, or braces. The default line-break is determined by <see cref="Environment.NewLine"/>,
+            /// which is <c>"\n"</c> on Unix platforms, and <c>"\r\n"</c> on Windows. If <see cref="JsonFormatter"/> seems to produce empty lines,
+            /// you need to pass a <see cref="TextWriter"/> that uses a <c>"\n"</c> newline. See <see cref="JsonFormatter.Format(Google.Protobuf.IMessage, TextWriter)"/>.
+            /// </remarks>
             public Settings WithIndentation(string indentation = "  ") => new Settings(FormatDefaultValues, TypeRegistry, FormatEnumsAsIntegers, PreserveProtoFieldNames, indentation);
         }
 
