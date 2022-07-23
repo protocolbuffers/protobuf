@@ -6,55 +6,17 @@ set -eux
 
 # Change to repo root
 cd $(dirname $0)/../../..
+GIT_REPO_ROOT=`pwd`
 
-#
+CONTAINER_IMAGE=cmake-linux
+#gcr.io/protobuf-build/bazel/linux@sha256:2bfd061284eff8234f2fcca16d71d43c69ccf3a22206628b54c204a6a9aac277
+
 # Update git submodules
-#
 git submodule update --init --recursive
 
-#
-# Build distribution archive
-#
-# TODO: this should use Bazel-built dist archives.
-date ; ./autogen.sh
-date ; ./configure
-date ; make dist
-date
-
-DIST_ARCHIVE=( $(ls protobuf-*.tar.gz) )
-if (( ${#DIST_ARCHIVE[@]} != 1 )); then
-  echo >&2 "Distribution archive not found. ${#DIST_ARCHIVE[@]} matches:"
-  echo >&2 "${DIST_ARCHIVE[@]}"
-  exit 1
-fi
-
-#
-# Check for all expected files
-#
-kokoro/common/check_missing_dist_files.sh ${DIST_ARCHIVE}
-
-#
-# Extract to a temporary directory
-#
-if [[ -z ${DIST_WORK_ROOT:-} ]]; then
-  # If you want to preserve the extracted sources, set the DIST_WORK_ROOT
-  # environment variable to an existing directory that should be used.
-  DIST_WORK_ROOT=$(mktemp -d)
-  function cleanup_work_root() {
-    echo "Cleaning up temporary directory ${DIST_WORK_ROOT}..."
-    rm -rf ${DIST_WORK_ROOT}
-  }
-  trap cleanup_work_root EXIT
-fi
-
-tar -C ${DIST_WORK_ROOT} --strip-components=1 -axf ${DIST_ARCHIVE}
-
-#
-# Run tests using extracted sources
-#
-SOURCE_DIR=${DIST_WORK_ROOT} \
-CMAKE_GENERATOR=Ninja \
-CTEST_PARALLEL_LEVEL=$(nproc) \
-kokoro/common/cmake.sh
-
-echo "PASS"
+docker run \
+  --name $CONTAINER_NAME \
+  -e CMAKE_FLAGS="-Dprotobuf_BUILD_CONFORMANCE=ON"
+  -v $GIT_REPO_ROOT:/workspace \
+  $CONTAINER_IMAGE \
+  check conformance_cpp_test
