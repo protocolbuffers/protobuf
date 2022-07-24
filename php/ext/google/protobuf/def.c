@@ -162,7 +162,7 @@ static void EnumDescriptor_FromEnumDef(zval *val, const upb_EnumDef *m) {
     ZVAL_NULL(val);
   } else {
     char *classname =
-        GetPhpClassname(upb_EnumDef_File(m), upb_EnumDef_FullName(m));
+        GetPhpClassname(upb_EnumDef_File(m), upb_EnumDef_FullName(m), false);
     zend_string *str = zend_string_init(classname, strlen(classname), 0);
     zend_class_entry *ce = zend_lookup_class(str);  // May autoload the class.
 
@@ -499,19 +499,23 @@ static void Descriptor_destructor(zend_object* obj) {
 }
 
 static zend_class_entry *Descriptor_GetGeneratedClass(const upb_MessageDef *m) {
-  char *classname =
-      GetPhpClassname(upb_MessageDef_File(m), upb_MessageDef_FullName(m));
-  zend_string *str = zend_string_init(classname, strlen(classname), 0);
-  zend_class_entry *ce = zend_lookup_class(str);  // May autoload the class.
+  for (int i = 0; i < 2; ++i) {
+    char *classname =
+        GetPhpClassname(upb_MessageDef_File(m), upb_MessageDef_FullName(m), (bool)i);
+    zend_string *str = zend_string_init(classname, strlen(classname), 0);
+    zend_class_entry *ce = zend_lookup_class(str);  // May autoload the class.
 
-  zend_string_release (str);
+    zend_string_release (str);
+    free(classname);
 
-  if (!ce) {
-    zend_error(E_ERROR, "Couldn't load generated class %s", classname);
+    if (ce) {
+      return ce;
+    }
   }
 
-  free(classname);
-  return ce;
+  char *classname =
+    GetPhpClassname(upb_MessageDef_File(m), upb_MessageDef_FullName(m), false);
+  zend_error(E_ERROR, "Couldn't load generated class %s", classname);
 }
 
 void Descriptor_FromMessageDef(zval *val, const upb_MessageDef *m) {
