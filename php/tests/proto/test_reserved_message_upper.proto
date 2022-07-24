@@ -57,6 +57,7 @@ message PRINT {}
 message PRIVATE {}
 message PROTECTED {}
 message PUBLIC {}
+message READONLY {}
 message REQUIRE {}
 message REQUIRE_ONCE {}
 message RETURN {}

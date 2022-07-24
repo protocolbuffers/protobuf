@@ -45,6 +45,7 @@ class Descriptor
     private $enum_type = [];
     private $klass;
     private $legacy_klass;
+    private $previous_klass;
     private $options;
     private $oneof_decl = [];
 
@@ -162,6 +163,16 @@ class Descriptor
         return $this->legacy_klass;
     }
 
+    public function setPreviouslyUnreservedClass($klass)
+    {
+        $this->previous_klass = $klass;
+    }
+
+    public function getPreviouslyUnreservedClass()
+    {
+        return $this->previous_klass;
+    }
+
     public function setOptions($options)
     {
         $this->options = $options;
@@ -179,6 +190,7 @@ class Descriptor
         $message_name_without_package  = "";
         $classname = "";
         $legacy_classname = "";
+        $previous_classname = "";
         $fullname = "";
         GPBUtil::getFullClassName(
             $proto,
@@ -187,10 +199,12 @@ class Descriptor
             $message_name_without_package,
             $classname,
             $legacy_classname,
-            $fullname);
+            $fullname,
+            $previous_classname);
         $desc->setFullName($fullname);
         $desc->setClass($classname);
         $desc->setLegacyClass($legacy_classname);
+        $desc->setPreviouslyUnreservedClass($previous_classname);
         $desc->setOptions($proto->getOptions());
 
         foreach ($proto->getField() as $field_proto) {
