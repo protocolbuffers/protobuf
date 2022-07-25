@@ -495,10 +495,12 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx,
     generator->GenerateInitDefaultSplitInstance(printer);
     format(
         "} {}\n"
+        "  ~$1$() {}\n"
         "  union {\n"
-        "    $1$ _instance;\n"
+        "    $2$ _instance;\n"
         "  };\n"
         "};\n",
+        DefaultInstanceType(generator->descriptor_, options_, /*split=*/true),
         StrCat(generator->classname_, "::Impl_::Split"));
     // NO_DESTROY is not necessary for correctness. The empty destructor is
     // enough. However, the empty destructor fails to be elided in some
@@ -506,7 +508,7 @@ void FileGenerator::GenerateSourceDefaultInstance(int idx,
     // there just to improve performance and binary size in these builds.
     format(
         "PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT "
-        "PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const $1$ $2$;\n",
+        "PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $1$ $2$;\n",
         DefaultInstanceType(generator->descriptor_, options_, /*split=*/true),
         DefaultInstanceName(generator->descriptor_, options_, /*split=*/true));
   }
@@ -997,7 +999,7 @@ class FileGenerator::ForwardDeclarations {
       const Descriptor* class_desc = p.second;
       format(
           "struct $1$;\n"
-          "$dllexport_decl $extern const $1$ $2$;\n",
+          "$dllexport_decl $extern $1$ $2$;\n",
           DefaultInstanceType(class_desc, options, /*split=*/true),
           DefaultInstanceName(class_desc, options, /*split=*/true));
     }
