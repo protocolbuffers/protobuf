@@ -72,7 +72,7 @@ void ThreadSafeArenaStats::PrepareForSampling(int64_t stride) {
   bytes_used.store(0, std::memory_order_relaxed);
   bytes_allocated.store(0, std::memory_order_relaxed);
   bytes_wasted.store(0, std::memory_order_relaxed);
-  max_bytes_allocated.store(0, std::memory_order_relaxed);
+  max_block_size.store(0, std::memory_order_relaxed);
   thread_ids.store(0, std::memory_order_relaxed);
   weight = stride;
   // The inliner makes hardcoded skip_count difficult (especially when combined
@@ -87,6 +87,9 @@ void RecordAllocateSlow(ThreadSafeArenaStats* info, size_t used,
   info->bytes_used.fetch_add(used, std::memory_order_relaxed);
   info->bytes_allocated.fetch_add(allocated, std::memory_order_relaxed);
   info->bytes_wasted.fetch_add(wasted, std::memory_order_relaxed);
+  if (info->max_block_size.load(std::memory_order_relaxed) < allocated) {
+    info->max_block_size.store(allocated, std::memory_order_relaxed);
+  }
   const uint64_t tid = 1ULL << (GetCachedTID() % 63);
   info->thread_ids.fetch_or(tid, std::memory_order_relaxed);
 }

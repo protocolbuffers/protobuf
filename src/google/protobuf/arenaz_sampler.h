@@ -69,8 +69,8 @@ struct ThreadSafeArenaStats
   std::atomic<size_t> bytes_used;
   std::atomic<size_t> bytes_allocated;
   std::atomic<size_t> bytes_wasted;
-  // Records the largest size an arena ever had.
-  std::atomic<size_t> max_bytes_allocated;
+  // Records the largest block allocated for the arena.
+  std::atomic<size_t> max_block_size;
   // Bit `i` is set to 1 indicates that a thread with `tid % 63 = i` accessed
   // the underlying arena.  We use `% 63` as a rudimentary hash to ensure some
   // bit mixing for thread-ids; `% 64` would only grab the low bits and might

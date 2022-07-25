@@ -774,6 +774,7 @@ protobuf_test_SOURCES =                                        \
   google/protobuf/compiler/csharp/csharp_generator_unittest.cc \
   google/protobuf/compiler/importer_unittest.cc                \
   google/protobuf/compiler/java/doc_comment_unittest.cc        \
+  google/protobuf/compiler/java/message_serialization_unittest.cc \
   google/protobuf/compiler/java/plugin_unittest.cc             \
   google/protobuf/compiler/mock_code_generator.cc              \
   google/protobuf/compiler/mock_code_generator.h               \

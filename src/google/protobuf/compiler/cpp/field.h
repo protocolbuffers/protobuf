@@ -208,7 +208,6 @@ class FieldGenerator {
 
   virtual bool IsInlined() const { return false; }
 
-
   virtual ArenaDtorNeeds NeedsArenaDestructor() const {
     return ArenaDtorNeeds::kNone;
   }

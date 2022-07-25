@@ -771,6 +771,7 @@ set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_generator_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/importer_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/doc_comment_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_serialization_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/plugin_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_helpers_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/parser_unittest.cc

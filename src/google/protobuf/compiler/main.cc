@@ -66,6 +66,10 @@ int ProtobufMain(int argc, char* argv[]) {
   cli.RegisterGenerator("--java_out", "--java_opt", &java_generator,
                         "Generate Java source file.");
 
+#ifdef GOOGLE_PROTOBUF_RUNTIME_INCLUDE_BASE
+  java_generator.set_opensource_runtime(true);
+#endif
+
   // Proto2 Kotlin
   java::KotlinGenerator kt_generator;
   cli.RegisterGenerator("--kotlin_out", "--kotlin_opt", &kt_generator,
@@ -76,6 +80,11 @@ int ProtobufMain(int argc, char* argv[]) {
   python::Generator py_generator;
   cli.RegisterGenerator("--python_out", "--python_opt", &py_generator,
                         "Generate Python source file.");
+
+#ifdef GOOGLE_PROTOBUF_RUNTIME_INCLUDE_BASE
+  py_generator.set_opensource_runtime(true);
+#endif
+
   // Python pyi
   python::PyiGenerator pyi_generator;
   cli.RegisterGenerator("--pyi_out", &pyi_generator,

@@ -66,6 +66,11 @@ class Proto3Test {
       assertThat(optionalNestedMessage).isEqualTo(TestAllTypesKt.nestedMessage { bb = 118 })
       optionalNestedEnum = NestedEnum.BAZ
       assertThat(optionalNestedEnum).isEqualTo(NestedEnum.BAZ)
+      assertThat(optionalNestedEnumValue).isEqualTo(3)
+      optionalNestedEnumValue = 1
+      assertThat(optionalNestedEnumValue).isEqualTo(1)
+      assertThat(optionalNestedEnum).isEqualTo(NestedEnum.FOO)
+
       oneofUint32 = 601
       assertThat(oneofUint32).isEqualTo(601)
     }

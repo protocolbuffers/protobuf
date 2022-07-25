@@ -53,7 +53,6 @@
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
 
-// Do UTF-8 validation on string type in Debug build only
 #ifndef NDEBUG
 #define GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
 #endif

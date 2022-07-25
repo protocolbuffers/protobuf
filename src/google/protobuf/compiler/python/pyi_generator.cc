@@ -64,19 +64,17 @@ void PyiGenerator::PrintItemMap(
 }
 
 template <typename DescriptorT>
-std::string PyiGenerator::ModuleLevelName(
-    const DescriptorT& descriptor,
-    const std::map<std::string, std::string>& import_map) const {
+std::string PyiGenerator::ModuleLevelName(const DescriptorT& descriptor) const {
   std::string name = NamePrefixedWithNestedTypes(descriptor, ".");
   if (descriptor.file() != file_) {
     std::string module_alias;
     std::string filename = descriptor.file()->name();
-    if (import_map.find(filename) == import_map.end()) {
+    if (import_map_.find(filename) == import_map_.end()) {
       std::string module_name = ModuleName(descriptor.file()->name());
       std::vector<std::string> tokens = Split(module_name, ".");
       module_alias = "_" + tokens.back();
     } else {
-      module_alias = import_map.at(filename);
+      module_alias = import_map_.at(filename);
     }
     name = module_alias + "." + name;
   }
@@ -156,7 +154,6 @@ void CheckImportModules(const Descriptor* descriptor,
 
 void PyiGenerator::PrintImportForDescriptor(
     const FileDescriptor& desc,
-    std::map<std::string, std::string>* import_map,
     std::set<std::string>* seen_aliases) const {
   const std::string& filename = desc.name();
   std::string module_name = StrippedModuleName(filename);
@@ -176,21 +173,20 @@ void PyiGenerator::PrintImportForDescriptor(
   }
   printer_->Print("$statement$ as $alias$\n", "statement",
                   import_statement, "alias", alias);
-  (*import_map)[filename] = alias;
+  import_map_[filename] = alias;
   seen_aliases->insert(alias);
 }
 
 void PyiGenerator::PrintImports(
-    std::map<std::string, std::string>* item_map,
-    std::map<std::string, std::string>* import_map) const {
+    std::map<std::string, std::string>* item_map) const {
   // Prints imported dependent _pb2 files.
   std::set<std::string> seen_aliases;
   for (int i = 0; i < file_->dependency_count(); ++i) {
     const FileDescriptor* dep = file_->dependency(i);
-    PrintImportForDescriptor(*dep, import_map, &seen_aliases);
+    PrintImportForDescriptor(*dep, &seen_aliases);
     for (int j = 0; j < dep->public_dependency_count(); ++j) {
       PrintImportForDescriptor(
-          *dep->public_dependency(j), import_map, &seen_aliases);
+          *dep->public_dependency(j), &seen_aliases);
     }
   }
 
@@ -277,7 +273,7 @@ void PyiGenerator::PrintImports(
       const EnumDescriptor* enum_descriptor = public_dep->enum_type(i);
       for (int j = 0; j < enum_descriptor->value_count(); ++j) {
         (*item_map)[enum_descriptor->value(j)->name()] =
-            ModuleLevelName(*enum_descriptor, *import_map);
+            ModuleLevelName(*enum_descriptor);
       }
     }
     // Top level extensions for public imports
@@ -296,10 +292,9 @@ void PyiGenerator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
 // Adds enum value to item map which will be ordered and printed later.
 void PyiGenerator::AddEnumValue(
     const EnumDescriptor& enum_descriptor,
-    std::map<std::string, std::string>* item_map,
-    const std::map<std::string, std::string>& import_map) const {
+    std::map<std::string, std::string>* item_map) const {
   // enum values
-  std::string module_enum_name = ModuleLevelName(enum_descriptor, import_map);
+  std::string module_enum_name = ModuleLevelName(enum_descriptor);
   for (int j = 0; j < enum_descriptor.value_count(); ++j) {
     const EnumValueDescriptor* value_descriptor = enum_descriptor.value(j);
     (*item_map)[value_descriptor->name()] = module_enum_name;
@@ -331,8 +326,7 @@ void PyiGenerator::AddExtensions(
 
 // Returns the string format of a field's cpp_type
 std::string PyiGenerator::GetFieldType(
-    const FieldDescriptor& field_des, const Descriptor& containing_des,
-    const std::map<std::string, std::string>& import_map) const {
+    const FieldDescriptor& field_des, const Descriptor& containing_des) const {
   switch (field_des.cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
     case FieldDescriptor::CPPTYPE_UINT32:
@@ -345,7 +339,7 @@ std::string PyiGenerator::GetFieldType(
     case FieldDescriptor::CPPTYPE_BOOL:
       return "bool";
     case FieldDescriptor::CPPTYPE_ENUM:
-      return ModuleLevelName(*field_des.enum_type(), import_map);
+      return ModuleLevelName(*field_des.enum_type());
     case FieldDescriptor::CPPTYPE_STRING:
       if (field_des.type() == FieldDescriptor::TYPE_STRING) {
         return "str";
@@ -356,7 +350,7 @@ std::string PyiGenerator::GetFieldType(
       // If the field is inside a nested message and the nested message has the
       // same name as a top-level message, then we need to prefix the field type
       // with the module name for disambiguation.
-      std::string name = ModuleLevelName(*field_des.message_type(), import_map);
+      std::string name = ModuleLevelName(*field_des.message_type());
       if ((containing_des.containing_type() != nullptr &&
            name == containing_des.name())) {
         std::string module = ModuleName(field_des.file()->name());
@@ -371,8 +365,7 @@ std::string PyiGenerator::GetFieldType(
 }
 
 void PyiGenerator::PrintMessage(
-    const Descriptor& message_descriptor, bool is_nested,
-    const std::map<std::string, std::string>& import_map) const {
+    const Descriptor& message_descriptor, bool is_nested) const {
   if (!is_nested) {
     printer_->Print("\n");
   }
@@ -431,7 +424,7 @@ void PyiGenerator::PrintMessage(
   for (const auto& entry : nested_enums) {
     PrintEnum(*entry);
     // Adds enum value to item_map which will be ordered and printed later
-    AddEnumValue(*entry, &item_map, import_map);
+    AddEnumValue(*entry, &item_map);
   }
 
   // Prints nested messages
@@ -444,7 +437,7 @@ void PyiGenerator::PrintMessage(
             SortByName<Descriptor>());
 
   for (const auto& entry : nested_messages) {
-    PrintMessage(*entry, true, import_map);
+    PrintMessage(*entry, true);
   }
 
   // Adds extensions to item_map which will be ordered and printed later
@@ -465,16 +458,16 @@ void PyiGenerator::PrintMessage(
       field_type = (value_des->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE
                         ? "_containers.MessageMap["
                         : "_containers.ScalarMap[");
-      field_type += GetFieldType(*key_des, message_descriptor, import_map);
+      field_type += GetFieldType(*key_des, message_descriptor);
       field_type += ", ";
-      field_type += GetFieldType(*value_des, message_descriptor, import_map);
+      field_type += GetFieldType(*value_des, message_descriptor);
     } else {
       if (field_des.is_repeated()) {
         field_type = (field_des.cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE
                           ? "_containers.RepeatedCompositeFieldContainer["
                           : "_containers.RepeatedScalarFieldContainer[");
       }
-      field_type += GetFieldType(field_des, message_descriptor, import_map);
+      field_type += GetFieldType(field_des, message_descriptor);
     }
 
     if (field_des.is_repeated()) {
@@ -513,9 +506,9 @@ void PyiGenerator::PrintMessage(
       const Descriptor* map_entry = field_des->message_type();
       printer_->Print(
           "_Mapping[$key_type$, $value_type$]", "key_type",
-          GetFieldType(*map_entry->field(0), message_descriptor, import_map),
+          GetFieldType(*map_entry->field(0), message_descriptor),
           "value_type",
-          GetFieldType(*map_entry->field(1), message_descriptor, import_map));
+          GetFieldType(*map_entry->field(1), message_descriptor));
     } else {
       if (field_des->is_repeated()) {
         printer_->Print("_Iterable[");
@@ -523,15 +516,15 @@ void PyiGenerator::PrintMessage(
       if (field_des->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
         printer_->Print(
             "_Union[$type_name$, _Mapping]", "type_name",
-            GetFieldType(*field_des, message_descriptor, import_map));
+            GetFieldType(*field_des, message_descriptor));
       } else {
         if (field_des->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
           printer_->Print("_Union[$type_name$, str]", "type_name",
-                          ModuleLevelName(*field_des->enum_type(), import_map));
+                          ModuleLevelName(*field_des->enum_type()));
         } else {
           printer_->Print(
               "$type_name$", "type_name",
-              GetFieldType(*field_des, message_descriptor, import_map));
+              GetFieldType(*field_des, message_descriptor));
         }
       }
       if (field_des->is_repeated()) {
@@ -553,8 +546,7 @@ void PyiGenerator::PrintMessage(
   printer_->Outdent();
 }
 
-void PyiGenerator::PrintMessages(
-    const std::map<std::string, std::string>& import_map) const {
+void PyiGenerator::PrintMessages() const {
   // Deterministically order the descriptors.
   std::vector<const Descriptor*> messages;
   messages.reserve(file_->message_type_count());
@@ -564,7 +556,7 @@ void PyiGenerator::PrintMessages(
   std::sort(messages.begin(), messages.end(), SortByName<Descriptor>());
 
   for (const auto& entry : messages) {
-    PrintMessage(*entry, false, import_map);
+    PrintMessage(*entry, false);
   }
 }
 
@@ -591,6 +583,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
                             GeneratorContext* context,
                             std::string* error) const {
   MutexLock lock(&mutex_);
+  import_map_.clear();
   // Calculate file name.
   file_ = file;
   std::string filename =
@@ -608,21 +601,17 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
   // Adds "DESCRIPTOR" into item_map.
   item_map["DESCRIPTOR"] = "_descriptor.FileDescriptor";
 
-  // import_map will be a mapping from filename to module alias, e.g.
-  // "google3/foo/bar.py" -> "_bar"
-  std::map<std::string, std::string> import_map;
-
-  PrintImports(&item_map, &import_map);
+  PrintImports(&item_map);
   // Adds top level enum values to item_map.
   for (int i = 0; i < file_->enum_type_count(); ++i) {
-    AddEnumValue(*file_->enum_type(i), &item_map, import_map);
+    AddEnumValue(*file_->enum_type(i), &item_map);
   }
   // Adds top level extensions to item_map.
   AddExtensions(*file_, &item_map);
   // Prints item map
   PrintItemMap(item_map);
 
-  PrintMessages(import_map);
+  PrintMessages();
   PrintTopLevelEnums();
   if (HasGenericServices(file)) {
     PrintServices();

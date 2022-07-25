@@ -242,17 +242,17 @@ class PROTOBUF_EXPORT MessageDifferencer {
 
     // Reports that a field has been added into Message2.
     virtual void ReportAdded(const Message& message1, const Message& message2,
-                             const std::vector<SpecificField>& field_path) = 0;
+                             const std::vector<SpecificField>& field_path) {}
 
     // Reports that a field has been deleted from Message1.
     virtual void ReportDeleted(
         const Message& message1, const Message& message2,
-        const std::vector<SpecificField>& field_path) = 0;
+        const std::vector<SpecificField>& field_path) {}
 
     // Reports that the value of a field has been modified.
     virtual void ReportModified(
         const Message& message1, const Message& message2,
-        const std::vector<SpecificField>& field_path) = 0;
+        const std::vector<SpecificField>& field_path) {}
 
     // Reports that a repeated field has been moved to another location.  This
     // only applies when using TreatAsSet or TreatAsMap()  -- see below. Also

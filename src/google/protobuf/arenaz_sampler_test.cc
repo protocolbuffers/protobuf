@@ -89,21 +89,21 @@ TEST(ThreadSafeArenaStatsTest, PrepareForSampling) {
   EXPECT_EQ(info.bytes_used.load(), 0);
   EXPECT_EQ(info.bytes_allocated.load(), 0);
   EXPECT_EQ(info.bytes_wasted.load(), 0);
-  EXPECT_EQ(info.max_bytes_allocated.load(), 0);
+  EXPECT_EQ(info.max_block_size.load(), 0);
   EXPECT_EQ(info.weight, kTestStride);
 
   info.num_allocations.store(1, std::memory_order_relaxed);
   info.bytes_used.store(1, std::memory_order_relaxed);
   info.bytes_allocated.store(1, std::memory_order_relaxed);
   info.bytes_wasted.store(1, std::memory_order_relaxed);
-  info.max_bytes_allocated.store(1, std::memory_order_relaxed);
+  info.max_block_size.store(1, std::memory_order_relaxed);
 
   info.PrepareForSampling(2 * kTestStride);
   EXPECT_EQ(info.num_allocations.load(), 0);
   EXPECT_EQ(info.bytes_used.load(), 0);
   EXPECT_EQ(info.bytes_allocated.load(), 0);
   EXPECT_EQ(info.bytes_wasted.load(), 0);
-  EXPECT_EQ(info.max_bytes_allocated.load(), 0);
+  EXPECT_EQ(info.max_block_size.load(), 0);
   EXPECT_EQ(info.weight, 2 * kTestStride);
 }
 
@@ -117,14 +117,29 @@ TEST(ThreadSafeArenaStatsTest, RecordAllocateSlow) {
   EXPECT_EQ(info.bytes_used.load(), 100);
   EXPECT_EQ(info.bytes_allocated.load(), 128);
   EXPECT_EQ(info.bytes_wasted.load(), 0);
-  EXPECT_EQ(info.max_bytes_allocated.load(), 0);
+  EXPECT_EQ(info.max_block_size.load(), 128);
   RecordAllocateSlow(&info, /*requested=*/100, /*allocated=*/256,
                      /*wasted=*/28);
   EXPECT_EQ(info.num_allocations.load(), 2);
   EXPECT_EQ(info.bytes_used.load(), 200);
   EXPECT_EQ(info.bytes_allocated.load(), 384);
   EXPECT_EQ(info.bytes_wasted.load(), 28);
-  EXPECT_EQ(info.max_bytes_allocated.load(), 0);
+  EXPECT_EQ(info.max_block_size.load(), 256);
+}
+
+TEST(ThreadSafeArenaStatsTest, RecordAllocateSlowMaxBlockSizeTest) {
+  ThreadSafeArenaStats info;
+  constexpr int64_t kTestStride = 458;
+  MutexLock l(&info.init_mu);
+  info.PrepareForSampling(kTestStride);
+  RecordAllocateSlow(&info, /*requested=*/100, /*allocated=*/128, /*wasted=*/0);
+  EXPECT_EQ(info.max_block_size.load(), 128);
+  RecordAllocateSlow(&info, /*requested=*/100, /*allocated=*/256,
+                     /*wasted=*/28);
+  EXPECT_EQ(info.max_block_size.load(), 256);
+  RecordAllocateSlow(&info, /*requested=*/100, /*allocated=*/128,
+                     /*wasted=*/28);
+  EXPECT_EQ(info.max_block_size.load(), 256);
 }
 
 TEST(ThreadSafeArenazSamplerTest, SamplingCorrectness) {

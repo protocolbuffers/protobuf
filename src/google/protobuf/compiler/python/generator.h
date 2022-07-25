@@ -76,6 +76,10 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
 
   uint64_t GetSupportedFeatures() const override;
 
+  void set_opensource_runtime(bool opensource) {
+    opensource_runtime_ = opensource;
+  }
+
  private:
   void PrintImports() const;
   void PrintFileDescriptor() const;
@@ -171,6 +175,8 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   mutable std::string file_descriptor_serialized_;
   mutable io::Printer* printer_;  // Set in Generate().  Under mutex_.
   mutable bool pure_python_workable_;
+
+  bool opensource_runtime_ = true;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Generator);
 };
