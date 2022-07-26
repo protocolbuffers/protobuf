@@ -1,5 +1,5 @@
+<<<<<<< HEAD
 2022-07-01 Unreleased version
-
   C++
   * Reduced .pb.o object file size slightly by explicitly instantiating
     InternalMetadata templates in the runtime.
@@ -7,11 +7,20 @@
   * Fixed crash in ThreadLocalStorage for pre-C++17 compilers on 32-bit ARM.
   * Clarified that JSON API non-OK statuses are not a stable API.
 
+  Kotlin
+  * Kotlin generated code comments now use kdoc format instead of javadoc.
+  * Escape keywords in package names in proto generated code
+
+  Java
+  * Performance improvement for repeated use of FieldMaskUtil#merge by caching
+    constructed FieldMaskTrees.
+=======
 2022-07-25 version 21.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
 
   C++
   * Reduce the required alignment of ArenaString from 8 to 4 (#10298)
 
+>>>>>>> upstream/21.x
 
 2022-07-19 version 21.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
   C++
@@ -143,6 +152,7 @@
   Java
   * Update protobuf_version.bzl to separate protoc and per-language java … (#9900)
   * 6x speedup in ArrayEncoder.writeUInt32NotTag
+  * Java generated code is no longer compatible with runtimes 2.6.1 and earlier
 
   Python
   * Increment python major version to 4 in version.json for python upb (#9926)
@@ -154,6 +164,7 @@
   * Due to the breaking changes for Python, the major version number for Python
     has been incremented.
   * The binary wheel for macOS now supports Apple silicon.
+  * In TextFormat, transform UnicodeDecodeError into ParseError.
 
 
   PHP
