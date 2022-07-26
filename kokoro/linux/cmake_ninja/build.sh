@@ -19,7 +19,7 @@ docker run \
   --cidfile $tmpfile \
   -v $GIT_REPO_ROOT:/workspace \
   $CONTAINER_IMAGE \
-  /test.sh -Dprotobuf_BUILD_CONFORMANCE=ON
+  /test.sh -G Ninja -Dprotobuf_BUILD_CONFORMANCE=ON
 
 # Save logs for Kokoro
 docker cp \
