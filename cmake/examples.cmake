@@ -30,7 +30,7 @@ endfunction()
 # Add examples as an external project.
 # sub_directory cannot be used because the find_package(protobuf) call would cause failures with redefined targets.
 add_examples_build(examples "-Dprotobuf_DIR:PATH=${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}")
-add_dependencies(examples libprotobuf protoc)
+add_dependencies(examples ${protobuf_LIB_PROTOBUF} ${protobuf_PROTOC_EXE})
 
 option(protobuf_BUILD_EXAMPLES_MULTITEST "Build Examples in multiple configurations. Useful for testing." OFF)
 mark_as_advanced(protobuf_BUILD_EXAMPLES_MULTITEST)
@@ -42,7 +42,7 @@ if(protobuf_BUILD_EXAMPLES_MULTITEST)
     "-Dprotobuf_DIR:PATH=${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_CMAKEDIR}"
     "-Dprotobuf_MODULE_COMPATIBLE:BOOL=TRUE"
   )
-  add_dependencies(examples-legacy libprotobuf protoc)
+  add_dependencies(examples-legacy ${protobuf_LIB_PROTOBUF} ${protobuf_PROTOC_EXE})
 
   #Build using the installed library.
   add_examples_build(examples-installed

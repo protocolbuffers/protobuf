@@ -43,25 +43,23 @@ endif (protobuf_BUILD_PROTOC_BINARIES)
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/protobuf.pc ${CMAKE_CURRENT_BINARY_DIR}/protobuf-lite.pc DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
-file(STRINGS ${protobuf_SOURCE_DIR}/cmake/extract_includes.bat.in _extract_strings
-  REGEX "^copy")
-foreach(_extract_string ${_extract_strings})
-  string(REGEX REPLACE "^.* .+ include\\\\(.+)$" "\\1"
-    _header ${_extract_string})
-  string(REPLACE "\\" "/" _header ${_header})
+include(${protobuf_SOURCE_DIR}/src/file_lists.cmake)
+set(protobuf_HEADERS
+  ${libprotobuf_hdrs}
+  ${libprotoc_hdrs}
+  ${wkt_protos_files}
+  ${descriptor_proto_proto_srcs}
+  ${plugin_proto_proto_srcs}
+)
+foreach(_header ${protobuf_HEADERS})
+  string(REPLACE "${protobuf_SOURCE_DIR}/src" "" _header ${_header})
   get_filename_component(_extract_from "${protobuf_SOURCE_DIR}/src/${_header}" ABSOLUTE)
   get_filename_component(_extract_name ${_header} NAME)
   get_filename_component(_extract_to "${CMAKE_INSTALL_INCLUDEDIR}/${_header}" DIRECTORY)
-  if(EXISTS "${_extract_from}")
-    install(FILES "${_extract_from}"
-      DESTINATION "${_extract_to}"
-      COMPONENT protobuf-headers
-      RENAME "${_extract_name}")
-  else()
-    message(AUTHOR_WARNING "The file \"${_extract_from}\" is listed in "
-      "\"${protobuf_SOURCE_DIR}/cmake/extract_includes.bat.in\" "
-      "but there not exists. The file will not be installed.")
-  endif()
+  install(FILES "${_extract_from}"
+    DESTINATION "${_extract_to}"
+    COMPONENT protobuf-headers
+    RENAME "${_extract_name}")
 endforeach()
 
 # Internal function for parsing auto tools scripts
