@@ -1,4 +1,5 @@
 2022-07-01 Unreleased version
+
   C++
   * Reduced .pb.o object file size slightly by explicitly instantiating
     InternalMetadata templates in the runtime.
@@ -13,6 +14,12 @@
   Java
   * Performance improvement for repeated use of FieldMaskUtil#merge by caching
     constructed FieldMaskTrees.
+
+2022-07-25 version 21.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+  C++
+  * Reduce the required alignment of ArenaString from 8 to 4 (#10298)
+
 
 2022-07-19 version 21.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
   C++
