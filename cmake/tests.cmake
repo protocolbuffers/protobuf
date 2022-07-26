@@ -81,7 +81,6 @@ add_library(protobuf-lite-test-common STATIC
 target_link_libraries(protobuf-lite-test-common ${protobuf_LIB_PROTOBUF_LITE} GTest::gmock)
 
 set(common_test_files
-  ${lite_test_util_srcs}
   ${test_util_hdrs}
   ${test_util_srcs}
   ${mock_code_generator_srcs}
@@ -150,13 +149,11 @@ add_test(NAME lite-test
 
 add_custom_target(check
   COMMAND tests
-  COMMAND lite-test
   DEPENDS tests lite-test test_plugin
   WORKING_DIRECTORY ${protobuf_SOURCE_DIR})
 
 add_test(NAME check
-  COMMAND tests ${protobuf_GTEST_ARGS}
-  WORKING_DIRECTORY "${protobuf_SOURCE_DIR}")
+  COMMAND tests ${protobuf_GTEST_ARGS})
 
 # For test purposes, remove headers that should already be installed.  This
 # prevents accidental conflicts and also version skew (since local headers take
