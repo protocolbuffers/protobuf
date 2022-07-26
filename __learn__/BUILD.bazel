@@ -172,3 +172,43 @@ cc_library(
     "//src/google/protobuf/util:type_resolver_util",
   ],
 )
+
+# Provide just header files for projects that need to create shared libraries for dynamic loading
+# Stopgap measure until Bazel supports this use case natively
+# @TODO: Remove when Bazel supports this out of the box
+alias(
+  name = "protobuf_headers",
+  actual = "//src/google/protobuf:protobuf_headers",
+  visibility = ["//visibility:public"],
+)
+
+# Java
+alias(
+  name = "protobuf_java",
+  actual = "//java/core",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "protobuf_javalite",
+  actual = "//java/lite",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "protobuf_java_util",
+  actual = "//java/util",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "java_toolchain",
+  actual = "//java/core:toolchain",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "javalite_toolchain",
+  actual = "//java/lite:toolchain",
+  visibility = ["//visibility:public"],
+)
