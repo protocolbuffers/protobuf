@@ -77,18 +77,15 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
  private:
   void PrintImportForDescriptor(const FileDescriptor& desc,
                                 std::set<std::string>* seen_aliases) const;
-  void PrintImports(std::map<std::string, std::string>* item_map) const;
-  void PrintEnum(const EnumDescriptor& enum_descriptor) const;
-  void AddEnumValue(const EnumDescriptor& enum_descriptor,
-                    std::map<std::string, std::string>* item_map) const;
+  void PrintImports() const;
   void PrintTopLevelEnums() const;
+  void PrintEnum(const EnumDescriptor& enum_descriptor) const;
+  void PrintEnumValues(const EnumDescriptor& enum_descriptor) const;
   template <typename DescriptorT>
-  void AddExtensions(const DescriptorT& descriptor,
-                     std::map<std::string, std::string>* item_map) const;
+  void PrintExtensions(const DescriptorT& descriptor) const;
   void PrintMessages() const;
   void PrintMessage(const Descriptor& message_descriptor, bool is_nested) const;
   void PrintServices() const;
-  void PrintItemMap(const std::map<std::string, std::string>& item_map) const;
   std::string GetFieldType(
       const FieldDescriptor& field_des, const Descriptor& containing_des) const;
   template <typename DescriptorT>

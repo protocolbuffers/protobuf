@@ -181,11 +181,15 @@
 // Future versions of protobuf will include breaking changes to some APIs.
 // This macro can be set to enable these API changes ahead of time, so that
 // user code can be updated before upgrading versions of protobuf.
-// PROTOBUF_FUTURE_FINAL is used on classes that are historically not marked as
-// final, but that may be marked final in future (breaking) releases.
 
 #ifdef PROTOBUF_FUTURE_BREAKING_CHANGES
-// Used on classes that are historically not marked as final.
+
+// Used to upgrade google::protobuf::MapPair<K, V> to std::pair<const K, V>.
+// Owner: mordberg@
+#define PROTOBUF_FUTURE_MAP_PAIR_UPGRADE 1
+
+// Used on classes that are historically not marked as final, but that may be
+// marked final in future (breaking) releases.
 // Owner: kfm@
 #define PROTOBUF_FUTURE_FINAL final
 

@@ -339,9 +339,12 @@ class CommandLineInterface::ErrorPrinter
   void AddErrorOrWarning(const std::string& filename, int line, int column,
                          const std::string& message, const std::string& type,
                          std::ostream& out) {
-    // Print full path when running under MSVS
     std::string dfile;
-    if (format_ == CommandLineInterface::ERROR_FORMAT_MSVS &&
+    if (
+#ifndef PROTOBUF_OPENSOURCE
+        // Print full path when running under MSVS
+        format_ == CommandLineInterface::ERROR_FORMAT_MSVS &&
+#endif  // !PROTOBUF_OPENSOURCE
         tree_ != nullptr && tree_->VirtualFileToDiskFile(filename, &dfile)) {
       out << dfile;
     } else {

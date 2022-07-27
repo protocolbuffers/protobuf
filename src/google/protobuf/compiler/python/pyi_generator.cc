@@ -44,24 +44,9 @@ namespace protobuf {
 namespace compiler {
 namespace python {
 
-template <typename DescriptorT>
-struct SortByName {
-  bool operator()(const DescriptorT* l, const DescriptorT* r) const {
-    return l->name() < r->name();
-  }
-};
-
 PyiGenerator::PyiGenerator() : file_(nullptr) {}
 
 PyiGenerator::~PyiGenerator() {}
-
-void PyiGenerator::PrintItemMap(
-    const std::map<std::string, std::string>& item_map) const {
-  for (const auto& entry : item_map) {
-    printer_->Print("$key$: $value$\n", "key", entry.first, "value",
-                    entry.second);
-  }
-}
 
 template <typename DescriptorT>
 std::string PyiGenerator::ModuleLevelName(const DescriptorT& descriptor) const {
@@ -177,8 +162,7 @@ void PyiGenerator::PrintImportForDescriptor(
   seen_aliases->insert(alias);
 }
 
-void PyiGenerator::PrintImports(
-    std::map<std::string, std::string>* item_map) const {
+void PyiGenerator::PrintImports() const {
   // Prints imported dependent _pb2 files.
   std::set<std::string> seen_aliases;
   for (int i = 0; i < file_->dependency_count(); ++i) {
@@ -250,7 +234,7 @@ void PyiGenerator::PrintImports(
   if (import_modules.has_union) {
     printer_->Print(", Union as _Union");
   }
-  printer_->Print("\n\n");
+  printer_->Print("\n");
 
   // Public imports
   for (int i = 0; i < file_->public_dependency_count(); ++i) {
@@ -268,17 +252,8 @@ void PyiGenerator::PrintImports(
                       module_name, "enum_class",
                       public_dep->enum_type(i)->name());
     }
-    // Enum values for public imports
-    for (int i = 0; i < public_dep->enum_type_count(); ++i) {
-      const EnumDescriptor* enum_descriptor = public_dep->enum_type(i);
-      for (int j = 0; j < enum_descriptor->value_count(); ++j) {
-        (*item_map)[enum_descriptor->value(j)->name()] =
-            ModuleLevelName(*enum_descriptor);
-      }
-    }
-    // Top level extensions for public imports
-    AddExtensions(*public_dep, item_map);
   }
+printer_->Print("\n");
 }
 
 void PyiGenerator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
@@ -289,19 +264,18 @@ void PyiGenerator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
       "enum_name", enum_name);
 }
 
-// Adds enum value to item map which will be ordered and printed later.
-void PyiGenerator::AddEnumValue(
-    const EnumDescriptor& enum_descriptor,
-    std::map<std::string, std::string>* item_map) const {
+void PyiGenerator::PrintEnumValues(
+    const EnumDescriptor& enum_descriptor) const {
   // enum values
   std::string module_enum_name = ModuleLevelName(enum_descriptor);
   for (int j = 0; j < enum_descriptor.value_count(); ++j) {
     const EnumValueDescriptor* value_descriptor = enum_descriptor.value(j);
-    (*item_map)[value_descriptor->name()] = module_enum_name;
+    printer_->Print("$name$: $module_enum_name$\n",
+                    "name", value_descriptor->name(),
+                    "module_enum_name", module_enum_name);
   }
 }
 
-// Prints top level enums
 void PyiGenerator::PrintTopLevelEnums() const {
   for (int i = 0; i < file_->enum_type_count(); ++i) {
     printer_->Print("\n");
@@ -309,18 +283,16 @@ void PyiGenerator::PrintTopLevelEnums() const {
   }
 }
 
-// Add top level extensions to item_map which will be ordered and
-// printed later.
 template <typename DescriptorT>
-void PyiGenerator::AddExtensions(
-    const DescriptorT& descriptor,
-    std::map<std::string, std::string>* item_map) const {
+void PyiGenerator::PrintExtensions(const DescriptorT& descriptor) const {
   for (int i = 0; i < descriptor.extension_count(); ++i) {
     const FieldDescriptor* extension_field = descriptor.extension(i);
     std::string constant_name = extension_field->name() + "_FIELD_NUMBER";
     ToUpper(&constant_name);
-    (*item_map)[constant_name] = "_ClassVar[int]";
-    (*item_map)[extension_field->name()] = "_descriptor.FieldDescriptor";
+    printer_->Print("$constant_name$: _ClassVar[int]\n",
+                    "constant_name", constant_name);
+    printer_->Print("$name$: _descriptor.FieldDescriptor\n",
+                    "name", extension_field->name());
   }
 }
 
@@ -383,17 +355,11 @@ void PyiGenerator::PrintMessage(
   printer_->Indent();
   printer_->Indent();
 
-  std::vector<const FieldDescriptor*> fields;
-  fields.reserve(message_descriptor.field_count());
-  for (int i = 0; i < message_descriptor.field_count(); ++i) {
-    fields.push_back(message_descriptor.field(i));
-  }
-  std::sort(fields.begin(), fields.end(), SortByName<FieldDescriptor>());
-
   // Prints slots
   printer_->Print("__slots__ = [", "class_name", class_name);
   bool first_item = true;
-  for (const auto& field_des : fields) {
+  for (int i = 0; i < message_descriptor.field_count(); ++i) {
+    const FieldDescriptor* field_des = message_descriptor.field(i);
     if (IsPythonKeyword(field_des->name())) {
       continue;
     }
@@ -406,48 +372,34 @@ void PyiGenerator::PrintMessage(
   }
   printer_->Print("]\n");
 
-  std::map<std::string, std::string> item_map;
   // Prints Extensions for extendable messages
   if (message_descriptor.extension_range_count() > 0) {
-    item_map["Extensions"] = "_python_message._ExtensionDict";
+    printer_->Print("Extensions: _python_message._ExtensionDict\n");
   }
 
   // Prints nested enums
-  std::vector<const EnumDescriptor*> nested_enums;
-  nested_enums.reserve(message_descriptor.enum_type_count());
   for (int i = 0; i < message_descriptor.enum_type_count(); ++i) {
-    nested_enums.push_back(message_descriptor.enum_type(i));
-  }
-  std::sort(nested_enums.begin(), nested_enums.end(),
-            SortByName<EnumDescriptor>());
-
-  for (const auto& entry : nested_enums) {
-    PrintEnum(*entry);
-    // Adds enum value to item_map which will be ordered and printed later
-    AddEnumValue(*entry, &item_map);
+    PrintEnum(*message_descriptor.enum_type(i));
+    PrintEnumValues(*message_descriptor.enum_type(i));
   }
 
   // Prints nested messages
-  std::vector<const Descriptor*> nested_messages;
-  nested_messages.reserve(message_descriptor.nested_type_count());
   for (int i = 0; i < message_descriptor.nested_type_count(); ++i) {
-    nested_messages.push_back(message_descriptor.nested_type(i));
-  }
-  std::sort(nested_messages.begin(), nested_messages.end(),
-            SortByName<Descriptor>());
-
-  for (const auto& entry : nested_messages) {
-    PrintMessage(*entry, true);
+    PrintMessage(*message_descriptor.nested_type(i), true);
   }
 
-  // Adds extensions to item_map which will be ordered and printed later
-  AddExtensions(message_descriptor, &item_map);
+  PrintExtensions(message_descriptor);
 
-  // Adds field number and field descriptor to item_map
+  // Prints field number
   for (int i = 0; i < message_descriptor.field_count(); ++i) {
     const FieldDescriptor& field_des = *message_descriptor.field(i);
-    item_map[ToUpper(field_des.name()) + "_FIELD_NUMBER"] =
-        "_ClassVar[int]";
+    printer_->Print(
+      "$field_number_name$: _ClassVar[int]\n", "field_number_name",
+      ToUpper(field_des.name()) + "_FIELD_NUMBER");
+  }
+  // Prints field name and type
+  for (int i = 0; i < message_descriptor.field_count(); ++i) {
+    const FieldDescriptor& field_des = *message_descriptor.field(i);
     if (IsPythonKeyword(field_des.name())) {
       continue;
     }
@@ -473,11 +425,9 @@ void PyiGenerator::PrintMessage(
     if (field_des.is_repeated()) {
       field_type += "]";
     }
-    item_map[field_des.name()] = field_type;
+    printer_->Print("$name$: $type$\n",
+                    "name", field_des.name(), "type", field_type);
   }
-
-  // Prints all items in item_map
-  PrintItemMap(item_map);
 
   // Prints __init__
   printer_->Print("def __init__(self");
@@ -548,33 +498,19 @@ void PyiGenerator::PrintMessage(
 
 void PyiGenerator::PrintMessages() const {
   // Deterministically order the descriptors.
-  std::vector<const Descriptor*> messages;
-  messages.reserve(file_->message_type_count());
   for (int i = 0; i < file_->message_type_count(); ++i) {
-    messages.push_back(file_->message_type(i));
-  }
-  std::sort(messages.begin(), messages.end(), SortByName<Descriptor>());
-
-  for (const auto& entry : messages) {
-    PrintMessage(*entry, false);
+    PrintMessage(*file_->message_type(i), false);
   }
 }
 
 void PyiGenerator::PrintServices() const {
-  std::vector<const ServiceDescriptor*> services;
-  services.reserve(file_->service_count());
-  for (int i = 0; i < file_->service_count(); ++i) {
-    services.push_back(file_->service(i));
-  }
-  std::sort(services.begin(), services.end(), SortByName<ServiceDescriptor>());
-
   // Prints $Service$ and $Service$_Stub classes
-  for (const auto& entry : services) {
+  for (int i = 0; i < file_->service_count(); ++i) {
     printer_->Print("\n");
     printer_->Print(
         "class $service_name$(_service.service): ...\n\n"
         "class $service_name$_Stub($service_name$): ...\n",
-        "service_name", entry->name());
+        "service_name", file_->service(i)->name());
   }
 }
 
@@ -594,25 +530,28 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
   io::Printer printer(output.get(), '$');
   printer_ = &printer;
 
-  // item map will store "DESCRIPTOR", top level extensions, top level enum
-  // values. The items will be sorted and printed later.
-  std::map<std::string, std::string> item_map;
+  PrintImports();
+  printer_->Print("DESCRIPTOR: _descriptor.FileDescriptor\n");
 
-  // Adds "DESCRIPTOR" into item_map.
-  item_map["DESCRIPTOR"] = "_descriptor.FileDescriptor";
-
-  PrintImports(&item_map);
-  // Adds top level enum values to item_map.
-  for (int i = 0; i < file_->enum_type_count(); ++i) {
-    AddEnumValue(*file_->enum_type(i), &item_map);
+  // Prints extensions and enums from imports.
+  for (int i = 0; i < file_->public_dependency_count(); ++i) {
+    const FileDescriptor* public_dep = file_->public_dependency(i);
+    PrintExtensions(*public_dep);
+    for (int i = 0; i < public_dep->enum_type_count(); ++i) {
+      const EnumDescriptor* enum_descriptor = public_dep->enum_type(i);
+      PrintEnumValues(*enum_descriptor);
+    }
   }
-  // Adds top level extensions to item_map.
-  AddExtensions(*file_, &item_map);
-  // Prints item map
-  PrintItemMap(item_map);
 
-  PrintMessages();
   PrintTopLevelEnums();
+  // Prints top level enum values
+  for (int i = 0; i < file_->enum_type_count(); ++i) {
+    PrintEnumValues(*file_->enum_type(i));
+  }
+  // Prints top level Extensions
+  PrintExtensions(*file_);
+  PrintMessages();
+
   if (HasGenericServices(file)) {
     PrintServices();
   }

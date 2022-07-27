@@ -38,8 +38,6 @@
 #include <google/protobuf/port.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/generated_message_tctable_decl.h>
-#include <google/protobuf/generated_message_tctable_impl.h>
-#include <google/protobuf/message_lite.h>
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/parse_context.h>
 #include <google/protobuf/wire_format_lite.h>

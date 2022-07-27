@@ -233,12 +233,6 @@ class RepeatedField final {
   // copies data between each other.
   void Swap(RepeatedField* other);
 
-  // Swaps entire contents with "other". Should be called only if the caller can
-  // guarantee that both repeated fields are on the same arena or are on the
-  // heap. Swapping between different arenas is disallowed and caught by a
-  // GOOGLE_DCHECK (see API docs for details).
-  void UnsafeArenaSwap(RepeatedField* other);
-
   // Swaps two elements.
   void SwapElements(int index1, int index2);
 
@@ -320,6 +314,12 @@ class RepeatedField final {
     return (total_size_ == 0) ? static_cast<Arena*>(arena_or_elements_)
                               : rep()->arena;
   }
+
+  // Swaps entire contents with "other". Should be called only if the caller can
+  // guarantee that both repeated fields are on the same arena or are on the
+  // heap. Swapping between different arenas is disallowed and caught by a
+  // GOOGLE_DCHECK (see API docs for details).
+  void UnsafeArenaSwap(RepeatedField* other);
 
   static constexpr int kInitialSize = 0;
   // A note on the representation here (see also comment below for
