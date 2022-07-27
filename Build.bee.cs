@@ -113,17 +113,19 @@ class Build
 
         foreach (var toolchain in toolchains)
         {
-            var nativeProgramConfiguration = new NativeProgramConfiguration(CodeGen.Release, toolchain, lump: true);
-
-            var format = toolchain.StaticLibraryFormat;
-
-            var deployedProgram = np.SetupSpecificConfiguration(nativeProgramConfiguration, format).DeployTo(GetBuildTargetDir(toolchain));
-            Backend.Current.AddAliasDependency(toolchain.ActionName, deployedProgram.Path);
-
-            if (toolchain.Platform is LinuxPlatform)
+            foreach (var codegen in new [] { CodeGen.Debug, CodeGen.Release})
             {
-                var toCopy = GetHeaderFilePaths(toolchains);
-                Backend.Current.AddDependency(deployedProgram.Path, toCopy);
+                np.Name = $"libprotobuf{ (codegen == CodeGen.Debug ? "d" : "") }";
+                var nativeProgramConfiguration = new NativeProgramConfiguration(codegen, toolchain, lump: true);
+                var format = toolchain.StaticLibraryFormat;
+                var deployedProgram = np.SetupSpecificConfiguration(nativeProgramConfiguration, format).DeployTo(GetBuildTargetDir(toolchain));
+                Backend.Current.AddAliasDependency(toolchain.ActionName, deployedProgram.Path);
+
+                if (toolchain.Platform is LinuxPlatform)
+                {
+                    var toCopy = GetHeaderFilePaths(toolchains);
+                    Backend.Current.AddDependency(deployedProgram.Path, toCopy);
+                }
             }
         }
 
