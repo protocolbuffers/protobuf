@@ -505,7 +505,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // have fallback function calls in tail position. This substantially improves
   // code for the happy path.
   PROTOBUF_NDEBUG_INLINE bool MaybeAllocateAligned(size_t n, void** out) {
-    SerialArena* arena;
+    SerialArena* arena = nullptr;
     if (PROTOBUF_PREDICT_TRUE(!alloc_policy_.should_record_allocs() &&
                               GetSerialArenaFromThreadCache(&arena))) {
       return arena->MaybeAllocateAligned(n, out);
