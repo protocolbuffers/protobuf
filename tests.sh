@@ -45,44 +45,6 @@ build_cpp_tcmalloc() {
   PPROF_PATH=/usr/bin/google-pprof HEAPCHECK=strict ./protobuf-test
 }
 
-build_cpp_distcheck() {
-  grep -q -- "-Og" src/Makefile.am &&
-    echo "The -Og flag is incompatible with Clang versions older than 4.0." &&
-    exit 1
-
-  # Initialize any submodules.
-  git submodule update --init --recursive
-  ./autogen.sh
-  ./configure
-  make dist
-
-  # List all files that should be included in the distribution package.
-  git ls-files | grep "^\(java\|python\|objectivec\|csharp\|ruby\|php\|cmake\|examples\|src/google/protobuf/.*\.proto\)" |\
-    grep -v ".gitignore" | grep -v "java/lite/proguard.pgcfg" |\
-    grep -v "python/compatibility_tests" | grep -v "python/docs" | grep -v "python/.repo-metadata.json" |\
-    grep -v "python/protobuf_distutils" | grep -v "csharp/compatibility_tests" > dist.lst
-  # Unzip the dist tar file.
-  DIST=`ls *.tar.gz`
-  tar -xf $DIST
-  cd ${DIST//.tar.gz}
-  # Check if every file exists in the dist tar file.
-  FILES_MISSING=""
-  for FILE in $(<../dist.lst); do
-    [ -f "$FILE" ] || {
-      echo "$FILE is not found!"
-      FILES_MISSING="$FILE $FILES_MISSING"
-    }
-  done
-  cd ..
-  if [ ! -z "$FILES_MISSING" ]; then
-    echo "Missing files in EXTRA_DIST: $FILES_MISSING"
-    exit 1
-  fi
-
-  # Do the regular dist-check for C++.
-  make distcheck -j$(nproc)
-}
-
 build_dist_install() {
   # Create a symlink pointing to python2 and put it at the beginning of $PATH.
   # This is necessary because the googletest build system involves a Python
@@ -539,7 +501,6 @@ build_benchmark() {
 if [ "$#" -ne 1 ]; then
   echo "
 Usage: $0 { cpp |
-            cpp_distcheck |
             csharp |
             java_jdk7 |
             java_oracle7 |
