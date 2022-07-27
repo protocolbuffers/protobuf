@@ -28,55 +28,29 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: kenton@google.com (Kenton Varda)
-//  Based on original Protocol Buffers design by
-//  Sanjay Ghemawat, Jeff Dean, and others.
-//
-// Generates Java code for a given .proto file.
+syntax = "proto2";
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_GENERATOR_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVA_GENERATOR_H__
+package protobuf_unittest;
 
-#include <string>
-#include <google/protobuf/compiler/code_generator.h>
+option java_multiple_files = true;
+option java_package = "";
 
-// Must be included last.
-#include <google/protobuf/port_def.inc>
+// Each batch of extension ranges not separated by a non-extension field should
+// be serialized using a single ExtensionWriter#writeUntil call.
+message TestMessageWithManyExtensionRanges {
+  // First extension range: ends at field number 3 (exclusive)
+  extensions 1 to 2;
 
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace java {
+  optional int32 foo = 3;
+  optional int32 bar = 5;
 
-// CodeGenerator implementation which generates Java code.  If you create your
-// own protocol compiler binary and you want it to support Java output, you
-// can do so by registering an instance of this CodeGenerator with the
-// CommandLineInterface in your main() function.
-class PROTOC_EXPORT JavaGenerator : public CodeGenerator {
- public:
-  JavaGenerator();
-  ~JavaGenerator() override;
+  // Second extension range: ends at field number 13 (exclusive)
+  extensions 6;
+  extensions 8;
+  extensions 10 to 12;
 
-  // implements CodeGenerator ----------------------------------------
-  bool Generate(const FileDescriptor* file, const std::string& parameter,
-                GeneratorContext* context, std::string* error) const override;
+  optional int32 baz = 23;
 
-  uint64_t GetSupportedFeatures() const override;
-
-  void set_opensource_runtime(bool opensource) {
-    opensource_runtime_ = opensource;
-  }
-
- private:
-  bool opensource_runtime_ = true;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(JavaGenerator);
-};
-
-}  // namespace java
-}  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
-
-#include <google/protobuf/port_undef.inc>
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_GENERATOR_H__
+  // Third extension range: ends at field number 43 (exclusive)
+  extensions 42;
+}

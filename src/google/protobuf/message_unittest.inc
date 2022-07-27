@@ -1174,11 +1174,12 @@ TEST(MESSAGE_TEST_NAME, PreservesFloatingPointNegative0) {
             std::signbit(out_message.optional_double()));
 }
 
-std::string EncodeEnumValue(int number, int value, int non_canonical_bytes) {
-  uint8_t buf[100];
-  uint8_t* p = buf;
-
-  p = internal::WireFormatLite::WriteEnumToArray(number, value, p);
+// Adds `non_canonical_bytes` bytes to the varint representation at the tail of
+// the buffer.
+// `buf` points to the start of the buffer, `p` points to one-past-the-end.
+// Returns the new one-past-the-end pointer.
+uint8_t* AddNonCanonicalBytes(const uint8_t* buf, uint8_t* p,
+                              int non_canonical_bytes) {
   // varint can have a max of 10 bytes.
   while (non_canonical_bytes-- > 0 && p - buf < 10) {
     // Add a dummy byte at the end.
@@ -1186,7 +1187,15 @@ std::string EncodeEnumValue(int number, int value, int non_canonical_bytes) {
     p[0] = 0;
     ++p;
   }
+  return p;
+}
 
+std::string EncodeEnumValue(int number, int value, int non_canonical_bytes) {
+  uint8_t buf[100];
+  uint8_t* p = buf;
+
+  p = internal::WireFormatLite::WriteEnumToArray(number, value, p);
+  p = AddNonCanonicalBytes(buf, p, non_canonical_bytes);
   return std::string(buf, p);
 }
 
@@ -1200,6 +1209,16 @@ TEST(MESSAGE_TEST_NAME, TestEnumParsers) {
   UNITTEST::EnumParseTester obj;
 
   const auto other_field = EncodeOtherField();
+
+  // Encode a boolean field for many different cases and verify that it can be
+  // parsed as expected.
+  // There are:
+  //  - optional/repeated/packed fields
+  //  - field tags that encode in 1/2/3 bytes
+  //  - canonical and non-canonical encodings of the varint
+  //  - last vs not last field
+  //  - label combinations to trigger different parsers: sequential, small
+  //  sequential, non-validated.
 
   constexpr int kInvalidValue = 0x900913;
   auto* ref = obj.GetReflection();
@@ -1226,6 +1245,8 @@ TEST(MESSAGE_TEST_NAME, TestEnumParsers) {
           auto encoded = EncodeEnumValue(field->number(), value_desc->number(),
                                          non_canonical_bytes);
           if (use_tail_field) {
+            // Make sure that fields after this one can be parsed too. ie test
+            // that the "next" jump is correct too.
             encoded += other_field;
           }
 
@@ -1258,6 +1279,65 @@ TEST(MESSAGE_TEST_NAME, TestEnumParsers) {
         EXPECT_EQ(unknown.field(0).number(), field->number());
         EXPECT_EQ(unknown.field(0).type(), unknown.field(0).TYPE_VARINT);
         EXPECT_EQ(unknown.field(0).varint(), kInvalidValue);
+      }
+    }
+  }
+}
+
+std::string EncodeBoolValue(int number, bool value, int non_canonical_bytes) {
+  uint8_t buf[100];
+  uint8_t* p = buf;
+
+  p = internal::WireFormatLite::WriteBoolToArray(number, value, p);
+  p = AddNonCanonicalBytes(buf, p, non_canonical_bytes);
+  return std::string(buf, p);
+}
+
+TEST(MESSAGE_TEST_NAME, TestBoolParsers) {
+  UNITTEST::BoolParseTester obj;
+
+  const auto other_field = EncodeOtherField();
+
+  // Encode a boolean field for many different cases and verify that it can be
+  // parsed as expected.
+  // There are:
+  //  - optional/repeated/packed fields
+  //  - field tags that encode in 1/2/3 bytes
+  //  - canonical and non-canonical encodings of the varint
+  //  - last vs not last field
+
+  auto* ref = obj.GetReflection();
+  auto* descriptor = obj.descriptor();
+  for (bool use_tail_field : {false, true}) {
+    SCOPED_TRACE(use_tail_field);
+    for (int non_canonical_bytes = 0; non_canonical_bytes < 10;
+         ++non_canonical_bytes) {
+      SCOPED_TRACE(non_canonical_bytes);
+      for (int i = 0; i < descriptor->field_count(); ++i) {
+        const auto* field = descriptor->field(i);
+        if (field->name() == "other_field") continue;
+        SCOPED_TRACE(field->full_name());
+        for (bool value : {false, true}) {
+          SCOPED_TRACE(value);
+          auto encoded =
+              EncodeBoolValue(field->number(), value, non_canonical_bytes);
+          if (use_tail_field) {
+            // Make sure that fields after this one can be parsed too. ie test
+            // that the "next" jump is correct too.
+            encoded += other_field;
+          }
+
+          EXPECT_TRUE(obj.ParseFromString(encoded));
+          if (field->is_repeated()) {
+            ASSERT_EQ(ref->FieldSize(obj, field), 1);
+            EXPECT_EQ(ref->GetRepeatedBool(obj, field, 0), value);
+          } else {
+            EXPECT_TRUE(ref->HasField(obj, field));
+            EXPECT_EQ(ref->GetBool(obj, field), value);
+          }
+          auto& unknown = ref->GetUnknownFields(obj);
+          ASSERT_EQ(unknown.field_count(), 0);
+        }
       }
     }
   }
