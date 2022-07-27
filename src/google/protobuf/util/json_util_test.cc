@@ -773,7 +773,7 @@ TEST_P(JsonTest, TestFlatList) {
   ASSERT_OK(m);
   EXPECT_THAT(m->repeated_int32_value(), ElementsAre(5, 6));
 
-  // The above flatteing behavior is supressed for google::protobuf::ListValue.
+  // The above flatteing behavior is suppressed for google::protobuf::ListValue.
   auto m2 = ToProto<google::protobuf::Value>(R"json(
     {
       "repeatedInt32Value": [[[5]], [6]]
