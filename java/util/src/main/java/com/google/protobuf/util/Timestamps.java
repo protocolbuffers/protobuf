@@ -344,7 +344,7 @@ public final class Timestamps {
     if (date instanceof java.sql.Timestamp) {
       java.sql.Timestamp sqlTimestamp = (java.sql.Timestamp) date;
       long time = sqlTimestamp.getTime();
-      long integralSeconds = (time < 0) ? time / 1000L - 1 : time / 1000L ; // truncate the fractional seconds
+      long integralSeconds = (time < 0 && time % 1000 != 0) ? time / 1000L - 1 : time / 1000L ; // truncate the fractional seconds
       return Timestamp.newBuilder()
           .setSeconds(integralSeconds)
           .setNanos(sqlTimestamp.getNanos())
