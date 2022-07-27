@@ -6,14 +6,27 @@
   * Add C++20 keywords guarded by PROTOBUF_FUTURE_CPP20_KEYWORDS
   * Fixed crash in ThreadLocalStorage for pre-C++17 compilers on 32-bit ARM.
   * Clarified that JSON API non-OK statuses are not a stable API.
+  * Added a default implementation of MessageDifferencer::Reporter methods.
+  * proto2::MapPair is now an alias to std::pair.
+  * Hide C++ RepeatedField::UnsafeArenaSwap
+  * Fix an unchecked error return from PushLimit()
 
   Kotlin
   * Kotlin generated code comments now use kdoc format instead of javadoc.
   * Escape keywords in package names in proto generated code
+  * Add Kotlin enum int value getters and setters
 
   Java
   * Performance improvement for repeated use of FieldMaskUtil#merge by caching
     constructed FieldMaskTrees.
+  * Optimized Java proto serialization gencode for protos having many extension ranges with few fields in between.
+
+  Python
+  * Changes ordering of printed fields in .pyi files from lexicographic to the same ordering found in the proto descriptor.
+
+  Compiler
+  * Print full path name of source .proto file on error
+
 
 2022-07-25 version 21.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
 
