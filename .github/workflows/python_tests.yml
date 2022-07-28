@@ -51,7 +51,7 @@ jobs:
           # As a result we can just test the oldest and newest supported Python versions and assume
           # this gives us sufficient test coverage.
           - { os: ubuntu-18.04, python-version: "3.7", architecture: x64 }
-          - { os: macos-10.15, python-version: "3.7", architecture: x64 }
+          - { os: macos-11, python-version: "3.7", architecture: x64 }
           - { os: ubuntu-20.04, python-version: "3.10", architecture: x64 }
           - { os: macos-12, python-version: "3.10", architecture: x64 }
           # Windows uses the full API up until Python 3.10, so each of these
