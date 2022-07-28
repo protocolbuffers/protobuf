@@ -214,7 +214,7 @@ uint64_t Message::GetInvariantPerBuild(uint64_t salt) {
 }
 
 namespace internal {
-void* CreateSplitMessageGeneric(Arena* arena, void* default_split,
+void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
                                 size_t size) {
   void* split =
       (arena == nullptr) ? ::operator new(size) : arena->AllocateAligned(size);

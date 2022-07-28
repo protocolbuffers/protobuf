@@ -339,9 +339,12 @@ class CommandLineInterface::ErrorPrinter
   void AddErrorOrWarning(const std::string& filename, int line, int column,
                          const std::string& message, const std::string& type,
                          std::ostream& out) {
-    // Print full path when running under MSVS
     std::string dfile;
-    if (format_ == CommandLineInterface::ERROR_FORMAT_MSVS &&
+    if (
+#ifndef PROTOBUF_OPENSOURCE
+        // Print full path when running under MSVS
+        format_ == CommandLineInterface::ERROR_FORMAT_MSVS &&
+#endif  // !PROTOBUF_OPENSOURCE
         tree_ != nullptr && tree_->VirtualFileToDiskFile(filename, &dfile)) {
       out << dfile;
     } else {
@@ -398,7 +401,6 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
 
   // Get name of all output files.
   void GetOutputFilenames(std::vector<std::string>* output_filenames);
-
   // implements GeneratorContext --------------------------------------
   io::ZeroCopyOutputStream* Open(const std::string& filename) override;
   io::ZeroCopyOutputStream* OpenForAppend(const std::string& filename) override;
@@ -963,6 +965,7 @@ PopulateSingleSimpleDescriptorDatabase(const std::string& descriptor_set_name);
 
 int CommandLineInterface::Run(int argc, const char* const argv[]) {
   Clear();
+
   switch (ParseArguments(argc, argv)) {
     case PARSE_ARGUMENT_DONE_AND_EXIT:
       return 0;
@@ -1076,7 +1079,6 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
     }
   }
 
-  // Write all output to disk.
   for (const auto& pair : output_directories) {
     const std::string& location = pair.first;
     GeneratorContextImpl* directory = pair.second.get();
@@ -1151,7 +1153,6 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
         // Do not add a default case.
     }
   }
-
   return 0;
 }
 

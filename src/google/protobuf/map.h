@@ -333,6 +333,11 @@ inline size_t SpaceUsedInValues(const void*) { return 0; }
 
 }  // namespace internal
 
+#ifdef PROTOBUF_FUTURE_MAP_PAIR_UPGRADE
+// This is the class for Map's internal value_type.
+template <typename Key, typename T>
+using MapPair = std::pair<const Key, T>;
+#else
 // This is the class for Map's internal value_type. Instead of using
 // std::pair as value_type, we use this class which provides us more control of
 // its process of construction and destruction.
@@ -363,6 +368,7 @@ struct PROTOBUF_ATTRIBUTE_STANDALONE_DEBUG MapPair {
   friend class Arena;
   friend class Map<Key, T>;
 };
+#endif
 
 // Map is an associative container type used to store protobuf map
 // fields.  Each Map instance may or may not use a different hash function, a
