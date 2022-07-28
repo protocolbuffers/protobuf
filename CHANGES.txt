@@ -9,7 +9,6 @@
   * Added a default implementation of MessageDifferencer::Reporter methods.
   * proto2::MapPair is now an alias to std::pair.
   * Hide C++ RepeatedField::UnsafeArenaSwap
-  * Fix an unchecked error return from PushLimit()
 
   Kotlin
   * Kotlin generated code comments now use kdoc format instead of javadoc.
