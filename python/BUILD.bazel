@@ -121,7 +121,7 @@ py_library(
     name = "python_srcs",
     srcs = glob(
         [
-            "google/protobuf/**/*.py",
+            "google/**/*.py",
         ],
         exclude = [
             "google/protobuf/internal/*_test.py",
