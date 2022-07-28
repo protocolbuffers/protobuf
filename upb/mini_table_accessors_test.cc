@@ -376,6 +376,38 @@ TEST(GeneratedCode, GetMutableMessage) {
   upb_Arena_Free(arena);
 }
 
+TEST(GeneratedCode, FindUnknown) {
+  upb_Arena* arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* msg = upb_test_ModelWithExtensions_new(arena);
+  upb_test_ModelWithExtensions_set_random_int32(msg, 10);
+  upb_test_ModelWithExtensions_set_random_name(
+      msg, upb_StringView_FromString("Hello"));
+
+  upb_test_ModelExtension1* extension1 = upb_test_ModelExtension1_new(arena);
+  upb_test_ModelExtension1_set_str(extension1,
+                                   upb_StringView_FromString("World"));
+
+  upb_test_ModelExtension1_set_model_ext(msg, extension1, arena);
+
+  size_t serialized_size;
+  char* serialized =
+      upb_test_ModelWithExtensions_serialize(msg, arena, &serialized_size);
+
+  upb_test_EmptyMessageWithExtensions* base_msg =
+      upb_test_EmptyMessageWithExtensions_parse(serialized, serialized_size,
+                                                arena);
+
+  upb_FindUnknownRet result = upb_MiniTable_FindUnknown(
+      base_msg, upb_test_ModelExtension1_model_ext_ext.field.number);
+  EXPECT_EQ(kUpb_FindUnknown_Ok, result.status);
+
+  result = upb_MiniTable_FindUnknown(
+      base_msg, upb_test_ModelExtension2_model_ext_ext.field.number);
+  EXPECT_EQ(kUpb_FindUnknown_NotPresent, result.status);
+
+  upb_Arena_Free(arena);
+}
+
 TEST(GeneratedCode, Extensions) {
   upb_Arena* arena = upb_Arena_New();
   upb_test_ModelWithExtensions* msg = upb_test_ModelWithExtensions_new(arena);

@@ -262,6 +262,23 @@ upb_GetExtensionAsBytes_Status upb_MiniTable_GetExtensionAsBytes(
     int encode_options, upb_Arena* arena, const char** extension_data,
     size_t* len);
 
+typedef enum {
+  kUpb_FindUnknown_Ok,
+  kUpb_FindUnknown_NotPresent,
+  kUpb_FindUnknown_ParseError,
+} upb_FindUnknown_Status;
+
+typedef struct {
+  upb_FindUnknown_Status status;
+  // Start of unknown field data in message arena.
+  const char* ptr;
+  // Size of unknown field data.
+  size_t len;
+} upb_FindUnknownRet;
+
+upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
+                                             uint32_t field_number);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

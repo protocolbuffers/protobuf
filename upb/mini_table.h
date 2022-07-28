@@ -45,6 +45,7 @@ UPB_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
   return mini_table->subs[field->submsg_index].submsg;
 }
 
+// Validates enum value against range defined by enum mini table.
 UPB_INLINE bool upb_MiniTable_Enum_CheckValue(const upb_MiniTable_Enum* e,
                                               int32_t val) {
   uint32_t uval = (uint32_t)val;

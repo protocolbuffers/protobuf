@@ -172,21 +172,6 @@ static const char* decode_tag(const char* ptr, uint32_t* val) {
   }
 }
 
-typedef enum {
-  kUpb_FindUnknown_Ok,
-  kUpb_FindUnknown_NotPresent,
-  kUpb_FindUnknown_ParseError,
-} upb_FindUnknown_Status;
-
-typedef struct {
-  upb_FindUnknown_Status status;
-  const char* ptr;
-  size_t len;
-} find_unknown_ret;
-
-static find_unknown_ret UnknownFieldSet_FindField(const upb_Message* msg,
-                                                  int field_number);
-
 upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTable_Extension* ext_table,
     int decode_options, upb_Arena* arena,
@@ -199,7 +184,7 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
 
   // Check unknown fields, if available promote.
   int field_number = ext_table->field.number;
-  find_unknown_ret result = UnknownFieldSet_FindField(msg, field_number);
+  upb_FindUnknownRet result = upb_MiniTable_FindUnknown(msg, field_number);
   if (result.status != kUpb_FindUnknown_Ok) {
     UPB_ASSERT(result.status != kUpb_GetExtension_ParseError);
     return kUpb_GetExtension_NotPresent;
@@ -258,7 +243,7 @@ upb_GetExtensionAsBytes_Status upb_MiniTable_GetExtensionAsBytes(
     return kUpb_GetExtensionAsBytes_Ok;
   }
   int field_number = ext_table->field.number;
-  find_unknown_ret result = UnknownFieldSet_FindField(msg, field_number);
+  upb_FindUnknownRet result = upb_MiniTable_FindUnknown(msg, field_number);
   if (result.status != kUpb_FindUnknown_Ok) {
     UPB_ASSERT(result.status != kUpb_GetExtension_ParseError);
     return kUpb_GetExtensionAsBytes_NotPresent;
@@ -329,10 +314,10 @@ enum {
   kUpb_MessageSet_MessageTag = (3 << 3) | kUpb_WireType_Delimited,
 };
 
-static find_unknown_ret UnknownFieldSet_FindField(const upb_Message* msg,
-                                                  int field_number) {
+upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
+                                             uint32_t field_number) {
   size_t size;
-  find_unknown_ret ret;
+  upb_FindUnknownRet ret;
 
   const char* ptr = upb_Message_GetUnknown(msg, &size);
   if (size == 0) {
