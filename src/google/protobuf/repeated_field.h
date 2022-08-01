@@ -265,12 +265,6 @@ class RepeatedField final {
   // copies data between each other.
   void Swap(RepeatedField* other);
 
-  // Swaps entire contents with "other". Should be called only if the caller can
-  // guarantee that both repeated fields are on the same arena or are on the
-  // heap. Swapping between different arenas is disallowed and caught by a
-  // GOOGLE_DCHECK (see API docs for details).
-  void UnsafeArenaSwap(RepeatedField* other);
-
   // Swaps two elements.
   void SwapElements(int index1, int index2);
 
@@ -343,6 +337,7 @@ class RepeatedField final {
   // This is public due to it being called by generated code.
   inline void InternalSwap(RepeatedField* other);
 
+
  private:
   template <typename T> friend class Arena::InternalHelper;
 
@@ -351,6 +346,12 @@ class RepeatedField final {
     return (total_size_ == 0) ? static_cast<Arena*>(arena_or_elements_)
                               : rep()->arena;
   }
+
+  // Swaps entire contents with "other". Should be called only if the caller can
+  // guarantee that both repeated fields are on the same arena or are on the
+  // heap. Swapping between different arenas is disallowed and caught by a
+  // GOOGLE_DCHECK (see API docs for details).
+  void UnsafeArenaSwap(RepeatedField* other);
 
   static constexpr int kInitialSize = 0;
   // A note on the representation here (see also comment below for
@@ -370,7 +371,7 @@ class RepeatedField final {
   // current_size_. This function is intended to be the only place where
   // current_size_ is modified.
   inline int ExchangeCurrentSize(int new_size) {
-    int prev_size = current_size_;
+    const int prev_size = current_size_;
     current_size_ = new_size;
     return prev_size;
   }
@@ -386,6 +387,7 @@ class RepeatedField final {
                                         kRepHeaderSize);
     }
   };
+
 
   // If total_size_ == 0 this points to an Arena otherwise it points to the
   // elements member of a Rep struct. Using this invariant allows the storage of
@@ -503,7 +505,7 @@ class RepeatedField final {
 
     void Add(Element val) {
       if (index_ == capacity_) {
-        repeated_field_->ExchangeCurrentSize(index_);
+        repeated_field_->current_size_ = index_;
         repeated_field_->Reserve(index_ + 1);
         capacity_ = repeated_field_->total_size_;
         buffer_ = repeated_field_->unsafe_elements();

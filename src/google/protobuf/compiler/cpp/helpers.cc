@@ -34,6 +34,7 @@
 
 #include <google/protobuf/compiler/cpp/helpers.h>
 
+#include <algorithm>
 #include <cstdint>
 #include <functional>
 #include <limits>
@@ -174,7 +175,6 @@ static const char* const kKeywordList[] = {
     "requires",
 #endif  // !PROTOBUF_FUTURE_BREAKING_CHANGES
 };
-
 
 static std::unordered_set<std::string>* MakeKeywordsMap() {
   auto* result = new std::unordered_set<std::string>();
@@ -524,7 +524,6 @@ std::string FieldName(const FieldDescriptor* field) {
   return result;
 }
 
-
 std::string FieldMemberName(const FieldDescriptor* field, bool split) {
   StringPiece prefix =
       IsMapEntryMessage(field->containing_type()) ? "" : "_impl_.";
@@ -872,7 +871,9 @@ std::string SafeFunctionName(const Descriptor* descriptor,
   return function_name;
 }
 
-
+bool IsProfileDriven(const Options& options) {
+  return options.access_info_map != nullptr;
+}
 bool IsStringInlined(const FieldDescriptor* descriptor,
                      const Options& options) {
   (void)descriptor;
@@ -919,6 +920,13 @@ bool HasLazyFields(const FileDescriptor* file, const Options& options,
 
 bool ShouldSplit(const Descriptor*, const Options&) { return false; }
 bool ShouldSplit(const FieldDescriptor*, const Options&) { return false; }
+
+bool ShouldForceAllocationOnConstruction(const Descriptor* desc,
+                                         const Options& options) {
+  (void)desc;
+  (void)options;
+  return false;
+}
 
 static bool HasRepeatedFields(const Descriptor* descriptor) {
   for (int i = 0; i < descriptor->field_count(); ++i) {

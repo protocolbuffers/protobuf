@@ -35,6 +35,8 @@
 #include <google/protobuf/generated_message_reflection.h>
 
 #include <algorithm>
+#include <atomic>
+#include <cstdint>
 #include <cstring>
 #include <set>
 
@@ -107,6 +109,53 @@ bool ParseNamedEnum(const EnumDescriptor* descriptor, ConstStringParam name,
 const std::string& NameOfEnum(const EnumDescriptor* descriptor, int value) {
   const EnumValueDescriptor* d = descriptor->FindValueByNumber(value);
   return (d == nullptr ? GetEmptyString() : d->name());
+}
+
+// Internal helper routine for NameOfDenseEnum in the header file.
+// Allocates and fills a simple array of string pointers, based on
+// reflection information about the names of the enums.  This routine
+// allocates max_val + 1 entries, under the assumption that all the enums
+// fall in the range [min_val .. max_val].
+const std::string** MakeDenseEnumCache(const EnumDescriptor* desc, int min_val,
+                                       int max_val) {
+  auto* str_ptrs =
+      new const std::string*[static_cast<size_t>(max_val - min_val + 1)]();
+  const int count = desc->value_count();
+  for (int i = 0; i < count; ++i) {
+    const int num = desc->value(i)->number();
+    if (str_ptrs[num - min_val] == nullptr) {
+      // Don't over-write an existing entry, because in case of duplication, the
+      // first one wins.
+      str_ptrs[num - min_val] = &desc->value(i)->name();
+    }
+  }
+  // Change any unfilled entries to point to the empty string.
+  for (int i = 0; i < max_val - min_val + 1; ++i) {
+    if (str_ptrs[i] == nullptr) str_ptrs[i] = &GetEmptyStringAlreadyInited();
+  }
+  return str_ptrs;
+}
+
+const std::string& NameOfDenseEnumSlow(int v, DenseEnumCacheInfo* deci) {
+  if (v < deci->min_val || v > deci->max_val)
+    return GetEmptyStringAlreadyInited();
+
+  const std::string** new_cache =
+      MakeDenseEnumCache(deci->descriptor_fn(), deci->min_val, deci->max_val);
+  const std::string** old_cache = nullptr;
+
+  if (deci->cache.compare_exchange_strong(old_cache, new_cache,
+                                          std::memory_order_release,
+                                          std::memory_order_acquire)) {
+    // We successfully stored our new cache, and the old value was nullptr.
+    return *new_cache[v - deci->min_val];
+  } else {
+    // In the time it took to create our enum cache, another thread also
+    //  created one, and put it into deci->cache.  So delete ours, and
+    // use theirs instead.
+    delete[] new_cache;
+    return *old_cache[v - deci->min_val];
+  }
 }
 
 }  // namespace internal

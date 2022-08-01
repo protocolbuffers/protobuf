@@ -232,7 +232,7 @@ util::StatusOr<bool> Harness::ServeConformanceRequest() {
 
   std::string serialized_input;
   serialized_input.resize(in_len);
-  RETURN_IF_ERROR(ReadFd(STDIN_FILENO, serialized_input.data(), in_len));
+  RETURN_IF_ERROR(ReadFd(STDIN_FILENO, &serialized_input[0], in_len));
 
   ConformanceRequest request;
   GOOGLE_CHECK(request.ParseFromString(serialized_input));

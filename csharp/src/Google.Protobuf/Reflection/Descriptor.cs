@@ -152,14 +152,17 @@ namespace Google.Protobuf.Reflection {
             "bGUucHJvdG9idWYuU291cmNlQ29kZUluZm8uTG9jYXRpb24ahgEKCExvY2F0",
             "aW9uEhAKBHBhdGgYASADKAVCAhABEhAKBHNwYW4YAiADKAVCAhABEhgKEGxl",
             "YWRpbmdfY29tbWVudHMYAyABKAkSGQoRdHJhaWxpbmdfY29tbWVudHMYBCAB",
-            "KAkSIQoZbGVhZGluZ19kZXRhY2hlZF9jb21tZW50cxgGIAMoCSKnAQoRR2Vu",
+            "KAkSIQoZbGVhZGluZ19kZXRhY2hlZF9jb21tZW50cxgGIAMoCSKcAgoRR2Vu",
             "ZXJhdGVkQ29kZUluZm8SQQoKYW5ub3RhdGlvbhgBIAMoCzItLmdvb2dsZS5w",
-            "cm90b2J1Zi5HZW5lcmF0ZWRDb2RlSW5mby5Bbm5vdGF0aW9uGk8KCkFubm90",
-            "YXRpb24SEAoEcGF0aBgBIAMoBUICEAESEwoLc291cmNlX2ZpbGUYAiABKAkS",
-            "DQoFYmVnaW4YAyABKAUSCwoDZW5kGAQgASgFQn4KE2NvbS5nb29nbGUucHJv",
-            "dG9idWZCEERlc2NyaXB0b3JQcm90b3NIAVotZ29vZ2xlLmdvbGFuZy5vcmcv",
-            "cHJvdG9idWYvdHlwZXMvZGVzY3JpcHRvcnBi+AEBogIDR1BCqgIaR29vZ2xl",
-            "LlByb3RvYnVmLlJlZmxlY3Rpb24="));
+            "cm90b2J1Zi5HZW5lcmF0ZWRDb2RlSW5mby5Bbm5vdGF0aW9uGsMBCgpBbm5v",
+            "dGF0aW9uEhAKBHBhdGgYASADKAVCAhABEhMKC3NvdXJjZV9maWxlGAIgASgJ",
+            "Eg0KBWJlZ2luGAMgASgFEgsKA2VuZBgEIAEoBRJICghzZW1hbnRpYxgFIAEo",
+            "DjI2Lmdvb2dsZS5wcm90b2J1Zi5HZW5lcmF0ZWRDb2RlSW5mby5Bbm5vdGF0",
+            "aW9uLlNlbWFudGljIigKCFNlbWFudGljEggKBE5PTkUQABIHCgNTRVQQARIJ",
+            "CgVBTElBUxACQn4KE2NvbS5nb29nbGUucHJvdG9idWZCEERlc2NyaXB0b3JQ",
+            "cm90b3NIAVotZ29vZ2xlLmdvbGFuZy5vcmcvcHJvdG9idWYvdHlwZXMvZGVz",
+            "Y3JpcHRvcnBi+AEBogIDR1BCqgIaR29vZ2xlLlByb3RvYnVmLlJlZmxlY3Rp",
+            "b24="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -184,7 +187,7 @@ namespace Google.Protobuf.Reflection {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MethodOptions), global::Google.Protobuf.Reflection.MethodOptions.Parser, new[]{ "Deprecated", "IdempotencyLevel", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel) }, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.UninterpretedOption), global::Google.Protobuf.Reflection.UninterpretedOption.Parser, new[]{ "Name", "IdentifierValue", "PositiveIntValue", "NegativeIntValue", "DoubleValue", "StringValue", "AggregateValue" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart), global::Google.Protobuf.Reflection.UninterpretedOption.Types.NamePart.Parser, new[]{ "NamePart_", "IsExtension" }, null, null, null, null)}),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.SourceCodeInfo), global::Google.Protobuf.Reflection.SourceCodeInfo.Parser, new[]{ "Location" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location), global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location.Parser, new[]{ "Path", "Span", "LeadingComments", "TrailingComments", "LeadingDetachedComments" }, null, null, null, null)}),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.GeneratedCodeInfo), global::Google.Protobuf.Reflection.GeneratedCodeInfo.Parser, new[]{ "Annotation" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation), global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation.Parser, new[]{ "Path", "SourceFile", "Begin", "End" }, null, null, null, null)})
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.GeneratedCodeInfo), global::Google.Protobuf.Reflection.GeneratedCodeInfo.Parser, new[]{ "Annotation" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation), global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation.Parser, new[]{ "Path", "SourceFile", "Begin", "End", "Semantic" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation.Types.Semantic) }, null, null)})
           }));
     }
     #endregion
@@ -10811,6 +10814,7 @@ namespace Google.Protobuf.Reflection {
           sourceFile_ = other.sourceFile_;
           begin_ = other.begin_;
           end_ = other.end_;
+          semantic_ = other.semantic_;
           _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
         }
 
@@ -10902,7 +10906,7 @@ namespace Google.Protobuf.Reflection {
         private int end_;
         /// <summary>
         /// Identifies the ending offset in bytes in the generated code that
-        /// relates to the identified offset. The end offset should be one past
+        /// relates to the identified object. The end offset should be one past
         /// the last relevant byte (so the length of the text = end - begin).
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -10927,6 +10931,33 @@ namespace Google.Protobuf.Reflection {
           _hasBits0 &= ~2;
         }
 
+        /// <summary>Field number for the "semantic" field.</summary>
+        public const int SemanticFieldNumber = 5;
+        private readonly static global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation.Types.Semantic SemanticDefaultValue = global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation.Types.Semantic.None;
+
+        private global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation.Types.Semantic semantic_;
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation.Types.Semantic Semantic {
+          get { if ((_hasBits0 & 4) != 0) { return semantic_; } else { return SemanticDefaultValue; } }
+          set {
+            _hasBits0 |= 4;
+            semantic_ = value;
+          }
+        }
+        /// <summary>Gets whether the "semantic" field is set</summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public bool HasSemantic {
+          get { return (_hasBits0 & 4) != 0; }
+        }
+        /// <summary>Clears the value of the "semantic" field</summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public void ClearSemantic() {
+          _hasBits0 &= ~4;
+        }
+
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public override bool Equals(object other) {
@@ -10946,6 +10977,7 @@ namespace Google.Protobuf.Reflection {
           if (SourceFile != other.SourceFile) return false;
           if (Begin != other.Begin) return false;
           if (End != other.End) return false;
+          if (Semantic != other.Semantic) return false;
           return Equals(_unknownFields, other._unknownFields);
         }
 
@@ -10957,6 +10989,7 @@ namespace Google.Protobuf.Reflection {
           if (HasSourceFile) hash ^= SourceFile.GetHashCode();
           if (HasBegin) hash ^= Begin.GetHashCode();
           if (HasEnd) hash ^= End.GetHashCode();
+          if (HasSemantic) hash ^= Semantic.GetHashCode();
           if (_unknownFields != null) {
             hash ^= _unknownFields.GetHashCode();
           }
@@ -10988,6 +11021,10 @@ namespace Google.Protobuf.Reflection {
             output.WriteRawTag(32);
             output.WriteInt32(End);
           }
+          if (HasSemantic) {
+            output.WriteRawTag(40);
+            output.WriteEnum((int) Semantic);
+          }
           if (_unknownFields != null) {
             _unknownFields.WriteTo(output);
           }
@@ -11011,6 +11048,10 @@ namespace Google.Protobuf.Reflection {
             output.WriteRawTag(32);
             output.WriteInt32(End);
           }
+          if (HasSemantic) {
+            output.WriteRawTag(40);
+            output.WriteEnum((int) Semantic);
+          }
           if (_unknownFields != null) {
             _unknownFields.WriteTo(ref output);
           }
@@ -11030,6 +11071,9 @@ namespace Google.Protobuf.Reflection {
           }
           if (HasEnd) {
             size += 1 + pb::CodedOutputStream.ComputeInt32Size(End);
+          }
+          if (HasSemantic) {
+            size += 1 + pb::CodedOutputStream.ComputeEnumSize((int) Semantic);
           }
           if (_unknownFields != null) {
             size += _unknownFields.CalculateSize();
@@ -11052,6 +11096,9 @@ namespace Google.Protobuf.Reflection {
           }
           if (other.HasEnd) {
             End = other.End;
+          }
+          if (other.HasSemantic) {
+            Semantic = other.Semantic;
           }
           _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
         }
@@ -11083,6 +11130,10 @@ namespace Google.Protobuf.Reflection {
               }
               case 32: {
                 End = input.ReadInt32();
+                break;
+              }
+              case 40: {
+                Semantic = (global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation.Types.Semantic) input.ReadEnum();
                 break;
               }
             }
@@ -11117,10 +11168,41 @@ namespace Google.Protobuf.Reflection {
                 End = input.ReadInt32();
                 break;
               }
+              case 40: {
+                Semantic = (global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation.Types.Semantic) input.ReadEnum();
+                break;
+              }
             }
           }
         }
         #endif
+
+        #region Nested types
+        /// <summary>Container for nested types declared in the Annotation message type.</summary>
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        public static partial class Types {
+          /// <summary>
+          /// Represents the identified object's effect on the element in the original
+          /// .proto file.
+          /// </summary>
+          public enum Semantic {
+            /// <summary>
+            /// There is no effect or the effect is indescribable.
+            /// </summary>
+            [pbr::OriginalName("NONE")] None = 0,
+            /// <summary>
+            /// The element is set or otherwise mutated.
+            /// </summary>
+            [pbr::OriginalName("SET")] Set = 1,
+            /// <summary>
+            /// An alias to the element is returned.
+            /// </summary>
+            [pbr::OriginalName("ALIAS")] Alias = 2,
+          }
+
+        }
+        #endregion
 
       }
 

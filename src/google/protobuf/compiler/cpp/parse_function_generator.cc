@@ -37,6 +37,7 @@
 
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/compiler/cpp/helpers.h>
+#include <google/protobuf/generated_message_tctable_impl.h>
 
 namespace google {
 namespace protobuf {
@@ -82,7 +83,8 @@ int TagSize(uint32_t field_number) {
   return 2;
 }
 
-void PopulateFastFieldEntry(const TailCallTableInfo::FieldEntryInfo& entry,
+void PopulateFastFieldEntry(const Descriptor* descriptor,
+                            const TailCallTableInfo::FieldEntryInfo& entry,
                             const Options& options,
                             TailCallTableInfo::FastFieldInfo& info);
 
@@ -157,6 +159,7 @@ bool IsFieldEligibleForFastParsing(
 }
 
 std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
+    const Descriptor* descriptor,
     const std::vector<TailCallTableInfo::FieldEntryInfo>& field_entries,
     int table_size_log2, const Options& options,
     MessageSCCAnalyzer* scc_analyzer) {
@@ -199,7 +202,7 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
     GOOGLE_CHECK(info.func_name.empty()) << info.func_name;
     info.field = field;
     info.coded_tag = tag;
-    PopulateFastFieldEntry(entry, options, info);
+    PopulateFastFieldEntry(descriptor, entry, options, info);
     // If this field does not have presence, then it can set an out-of-bounds
     // bit (tailcall parsing uses a uint64_t for hasbits, but only stores 32).
     info.hasbit_idx = HasHasbit(field) ? entry.hasbit_idx : 63;
@@ -289,21 +292,32 @@ TailCallTableInfo::TailCallTableInfo(
     MessageSCCAnalyzer* scc_analyzer) {
   // If this message has any inlined string fields, store the donation state
   // offset in the second auxiliary entry.
+
+  const auto set_fixed_aux_entry = [&](int index, const std::string& value) {
+    if (index >= aux_entries.size()) {
+      aux_entries.resize(index + 1);  // pad if necessary
+    }
+    aux_entries[index] = value;
+  };
+
   if (!inlined_string_indices.empty()) {
-    aux_entries.resize(1);  // pad if necessary
-    aux_entries[0] =
+    set_fixed_aux_entry(
+        internal::kInlinedStringAuxIdx,
         StrCat("_fl::Offset{offsetof(", ClassName(descriptor),
-                     ", _impl_._inlined_string_donated_)}");
+                     ", _impl_._inlined_string_donated_)}"));
   }
 
   // If this message is split, store the split pointer offset in the third
   // auxiliary entry.
   if (ShouldSplit(descriptor, options)) {
-    aux_entries.resize(4);  // pad if necessary
-    aux_entries[2] = StrCat("_fl::Offset{offsetof(",
-                                  ClassName(descriptor), ", _impl_._split_)}");
-    aux_entries[3] = StrCat("_fl::Offset{sizeof(", ClassName(descriptor),
-                                  "::Impl_::Split)}");
+    set_fixed_aux_entry(
+        internal::kSplitOffsetAuxIdx,
+        StrCat("_fl::Offset{offsetof(", ClassName(descriptor),
+                     ", _impl_._split_)}"));
+    set_fixed_aux_entry(
+        internal::kSplitSizeAuxIdx,
+        StrCat("_fl::Offset{sizeof(", ClassName(descriptor),
+                     "::Impl_::Split)}"));
   }
 
   // Fill in mini table entries.
@@ -400,8 +414,8 @@ TailCallTableInfo::TailCallTableInfo(
   int num_fast_fields = -1;
   for (int try_size_log2 : {0, 1, 2, 3, 4, 5}) {
     size_t try_size = 1 << try_size_log2;
-    auto split_fields = SplitFastFieldsForSize(field_entries, try_size_log2,
-                                               options, scc_analyzer);
+    auto split_fields = SplitFastFieldsForSize(
+        descriptor, field_entries, try_size_log2, options, scc_analyzer);
     GOOGLE_CHECK_EQ(split_fields.size(), try_size);
     int try_num_fast_fields = 0;
     for (const auto& info : split_fields) {
@@ -1655,11 +1669,12 @@ void ParseFunctionGenerator::GenerateFieldSwitch(
 
 namespace {
 
-void PopulateFastFieldEntry(const TailCallTableInfo::FieldEntryInfo& entry,
+void PopulateFastFieldEntry(const Descriptor* descriptor,
+                            const TailCallTableInfo::FieldEntryInfo& entry,
                             const Options& options,
                             TailCallTableInfo::FastFieldInfo& info) {
   const FieldDescriptor* field = entry.field;
-  std::string name = "::_pbi::TcParser::Fast";
+  std::string name;
   uint8_t aux_idx = static_cast<uint8_t>(entry.aux_idx);
 
   switch (field->type()) {
@@ -1772,7 +1787,36 @@ void PopulateFastFieldEntry(const TailCallTableInfo::FieldEntryInfo& entry,
   // Append the tag length. Fast parsing only handles 1- or 2-byte tags.
   name.append(TagSize(field->number()) == 1 ? "1" : "2");
 
-  info.func_name = std::move(name);
+  if (name == "V8S1") {
+    info.func_name = StrCat(
+        "::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(",  //
+        ClassName(descriptor),                                     //
+        ", ",                                                      //
+        FieldMemberName(field, /*split=*/false),                   //
+        "), ",                                                     //
+        HasHasbit(field) ? entry.hasbit_idx : 63,                  //
+        ">()");
+  } else if (name == "V32S1") {
+    info.func_name = StrCat(
+        "::_pbi::TcParser::SingularVarintNoZag1<uint32_t, offsetof(",  //
+        ClassName(descriptor),                                         //
+        ", ",                                                          //
+        FieldMemberName(field, /*split=*/false),                       //
+        "), ",                                                         //
+        HasHasbit(field) ? entry.hasbit_idx : 63,                      //
+        ">()");
+  } else if (name == "V64S1") {
+    info.func_name = StrCat(
+        "::_pbi::TcParser::SingularVarintNoZag1<uint64_t, offsetof(",  //
+        ClassName(descriptor),                                         //
+        ", ",                                                          //
+        FieldMemberName(field, /*split=*/false),                       //
+        "), ",                                                         //
+        HasHasbit(field) ? entry.hasbit_idx : 63,                      //
+        ">()");
+  } else {
+    info.func_name = StrCat("::_pbi::TcParser::Fast", name);
+  }
   info.aux_idx = aux_idx;
 }
 

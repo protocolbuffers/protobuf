@@ -252,7 +252,7 @@ struct AllocationPolicy {
   ArenaMetricsCollector* metrics_collector = nullptr;
 
   bool IsDefault() const {
-    return start_block_size == kDefaultMaxBlockSize &&
+    return start_block_size == kDefaultStartBlockSize &&
            max_block_size == kDefaultMaxBlockSize && block_alloc == nullptr &&
            block_dealloc == nullptr && metrics_collector == nullptr;
   }
@@ -499,11 +499,11 @@ class PROTOBUF_EXPORT SerialArena {
                                                 void (*destructor)(void*)) {
     n = AlignUpTo(n, align);
 #ifdef ADDRESS_SANITIZER
-    ASAN_UNPOISON_MEMORY_REGION(ptr_, n);
+    ASAN_UNPOISON_MEMORY_REGION(ptr(), n);
 #endif  // ADDRESS_SANITIZER
-    void* ret = internal::AlignTo(ptr_, align);
-    ptr_ += n;
-    GOOGLE_DCHECK_GE(limit_, ptr_);
+    void* ret = internal::AlignTo(ptr(), align);
+    set_ptr(ptr() + n);
+    GOOGLE_DCHECK_GE(limit_, ptr());
     AddCleanupFromExisting(ret, destructor);
     return ret;
   }
@@ -517,7 +517,7 @@ class PROTOBUF_EXPORT SerialArena {
     ASAN_UNPOISON_MEMORY_REGION(limit_ - n, n);
 #endif  // ADDRESS_SANITIZER
     limit_ -= n;
-    GOOGLE_DCHECK_GE(limit_, ptr_);
+    GOOGLE_DCHECK_GE(limit_, ptr());
     cleanup::CreateNode(tag, limit_, elem, destructor);
   }
 

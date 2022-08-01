@@ -73,6 +73,7 @@ for PROTO_FILE in "${RUNTIME_PROTO_FILES[@]}"; do
     if ! diff "${ObjCDir}/GPB${OBJC_NAME}${EXT}" "${TMP_DIR}/${DIR}/${OBJC_NAME}${EXT}" > /dev/null 2>&1 ; then
       if [[ "${CHECK_ONLY}" == 1 ]] ; then
         echo "ERROR: The WKTs need to be regenerated! Run $0"
+        diff -u "${ObjCDir}/GPB${OBJC_NAME}${EXT}" "${TMP_DIR}/${DIR}/${OBJC_NAME}${EXT}"
         exit 1
       fi
 

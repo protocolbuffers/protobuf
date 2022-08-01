@@ -5,16 +5,16 @@
  <summary>Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data.</summary>
  <description>https://developers.google.com/protocol-buffers/</description>
  <lead>
-  <name>Bo Yang</name>
-  <user>stanleycheung</user>
-  <email>protobuf-opensource@google.com</email>
+  <name>Protobuf Team</name>
+  <user>protobufpackages</user>
+  <email>protobuf-packages@google.com</email>
   <active>yes</active>
  </lead>
- <date>2022-06-23</date>
- <time>12:12:44</time>
+ <date>2022-07-25</date>
+ <time>13:21:48</time>
  <version>
-  <release>3.21.2</release>
-  <api>3.21.2</api>
+  <release>3.21.4</release>
+  <api>3.21.4</api>
  </version>
  <stability>
   <release>stable</release>
@@ -1354,6 +1354,36 @@ G  A release.
    </stability>
    <date>2022-06-23</date>
    <time>12:12:44</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.21.3</release>
+    <api>3.21.3</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2022-07-21</date>
+   <time>10:19:47</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.21.4</release>
+    <api>3.21.4</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2022-07-25</date>
+   <time>13:21:48</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
    <notes>
    </notes>

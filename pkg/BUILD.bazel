@@ -400,6 +400,7 @@ cc_dist_library(
         "//src/google/protobuf/util:differencer",
         "//src/google/protobuf/util:field_mask_util",
         "//src/google/protobuf/util:json_util",
+        "//src/google/protobuf/util:zero_copy_sink",
         "//src/google/protobuf/util:time_util",
         "//src/google/protobuf/util:type_resolver_util",
         "//src/google/protobuf/util/internal:datapiece",

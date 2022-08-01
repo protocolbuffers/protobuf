@@ -2724,6 +2724,12 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForWrapperTypes() {
       "DurationNull", REQUIRED,
       R"({"optionalDuration": null})",
       "");
+  RunValidJsonTest("DurationNegativeSeconds", REQUIRED,
+                   R"({"optionalDuration": "-5s"})",
+                   "optional_duration: {seconds: -5 nanos: 0}");
+  RunValidJsonTest("DurationNegativeNanos", REQUIRED,
+                   R"({"optionalDuration": "-0.5s"})",
+                   "optional_duration: {seconds: 0 nanos: -500000000}");
 
   ExpectParseFailureForJson(
       "DurationMissingS", REQUIRED,

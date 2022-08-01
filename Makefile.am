@@ -62,6 +62,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/NuGet.Config                                                        \
   csharp/README.md                                                           \
   csharp/build_packages.bat                                                  \
+  csharp/build_release.sh                                                    \
   csharp/build_tools.sh                                                      \
   csharp/buildall.bat                                                        \
   csharp/buildall.sh                                                         \
@@ -130,11 +131,13 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/GeneratedMessageTest.Proto2.cs             \
   csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj                \
   csharp/src/Google.Protobuf.Test/IssuesTest.cs                              \
+  csharp/src/Google.Protobuf.Test/JsonFormatterSettingsTest.cs               \
   csharp/src/Google.Protobuf.Test/JsonFormatterTest.cs                       \
   csharp/src/Google.Protobuf.Test/JsonParserTest.cs                          \
   csharp/src/Google.Protobuf.Test/JsonTokenizerTest.cs                       \
   csharp/src/Google.Protobuf.Test/LegacyGeneratedCodeTest.cs                 \
   csharp/src/Google.Protobuf.Test/MessageParsingHelpers.cs                   \
+  csharp/src/Google.Protobuf.Test/ParsingPrimitivesTest.cs                   \
   csharp/src/Google.Protobuf.Test/Proto3OptionalTest.cs                      \
   csharp/src/Google.Protobuf.Test/ReadOnlySequenceFactory.cs                 \
   csharp/src/Google.Protobuf.Test/RefStructCompatibilityTest.cs              \
@@ -173,6 +176,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/FieldMaskTest.cs            \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/TimestampTest.cs            \
   csharp/src/Google.Protobuf.Test/WellKnownTypes/WrappersTest.cs             \
+  csharp/src/Google.Protobuf.Test/WritingPrimitivesTest.cs                   \
   csharp/src/Google.Protobuf.Test/UnknownFieldSetTest.cs                     \
   csharp/src/Google.Protobuf.Test/testprotos.pb                              \
   csharp/src/Google.Protobuf.sln                                             \
@@ -192,6 +196,7 @@ csharp_EXTRA_DIST=                                                           \
   csharp/src/Google.Protobuf/Compatibility/RequiresUnreferencedCodeAttribute.cs \
   csharp/src/Google.Protobuf/Compatibility/TypeExtensions.cs                 \
   csharp/src/Google.Protobuf/Compatibility/UnconditionalSuppressMessageAttribute.cs \
+  csharp/src/Google.Protobuf/Compiler/Plugin.cs                              \
   csharp/src/Google.Protobuf/Extension.cs                                    \
   csharp/src/Google.Protobuf/ExtensionRegistry.cs                            \
   csharp/src/Google.Protobuf/ExtensionSet.cs                                 \
@@ -956,6 +961,8 @@ php_EXTRA_DIST=                                                       \
   php/tests/EncodeDecodeTest.php                                      \
   php/tests/force_c_ext.php                                           \
   php/tests/gdb_test.sh                                               \
+  php/tests/generated_previous/GPBMetadata/ProtoPrevious/TestPreviouslyUnreservedMessage.php \
+  php/tests/generated_previous/Previous/readonly.php                  \
   php/tests/GeneratedClassTest.php                                    \
   php/tests/GeneratedPhpdocTest.php                                   \
   php/tests/GeneratedServiceTest.php                                  \
@@ -965,6 +972,7 @@ php_EXTRA_DIST=                                                       \
   php/tests/multirequest.php                                          \
   php/tests/multirequest.sh                                           \
   php/tests/PhpImplementationTest.php                                 \
+  php/tests/PreviouslyGeneratedClassTest.php                          \
   php/tests/proto/empty/echo.proto                                    \
   php/tests/proto/test.proto                                          \
   php/tests/proto/test_descriptors.proto                              \
@@ -983,6 +991,7 @@ php_EXTRA_DIST=                                                       \
   php/tests/proto/test_service.proto                                  \
   php/tests/proto/test_service_namespace.proto                        \
   php/tests/proto/test_wrapper_type_setters.proto                     \
+  php/tests/proto_previous/test_previously_unreserved_message.proto   \
   php/tests/test_base.php                                             \
   php/tests/test_util.php                                             \
   php/tests/valgrind.supp                                             \
@@ -1201,7 +1210,6 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   LICENSE                                           \
   CONTRIBUTORS.txt                                  \
   CHANGES.txt                                       \
-  update_file_lists.sh                              \
   BUILD.bazel                                       \
   WORKSPACE                                         \
   CMakeLists.txt                                    \
@@ -1209,12 +1217,10 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   build_defs/cc_proto_blacklist_test.bzl            \
   build_defs/compiler_config_setting.bzl            \
   build_defs/cpp_opts.bzl                           \
-  build_files_updated_unittest.sh                   \
   cmake/CMakeLists.txt                              \
   cmake/README.md                                   \
   cmake/conformance.cmake                           \
   cmake/examples.cmake                              \
-  cmake/extract_includes.bat.in                     \
   cmake/install.cmake                               \
   cmake/libprotobuf-lite.cmake                      \
   cmake/libprotobuf.cmake                           \
@@ -1226,6 +1232,7 @@ EXTRA_DIST = $(@DIST_LANG@_EXTRA_DIST)              \
   cmake/protobuf-options.cmake                      \
   cmake/protobuf.pc.cmake                           \
   cmake/protoc.cmake                                \
+  cmake/update_file_lists.sh                             \
   cmake/tests.cmake                                 \
   cmake/version.rc.in                               \
   csharp/BUILD.bazel                                \

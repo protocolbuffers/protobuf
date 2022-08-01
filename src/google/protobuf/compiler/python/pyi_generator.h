@@ -76,37 +76,29 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
 
  private:
   void PrintImportForDescriptor(const FileDescriptor& desc,
-                                std::map<std::string, std::string>* import_map,
                                 std::set<std::string>* seen_aliases) const;
-  void PrintImports(std::map<std::string, std::string>* item_map,
-                    std::map<std::string, std::string>* import_map) const;
-  void PrintEnum(const EnumDescriptor& enum_descriptor) const;
-  void AddEnumValue(const EnumDescriptor& enum_descriptor,
-                    std::map<std::string, std::string>* item_map,
-                    const std::map<std::string, std::string>& import_map) const;
+  void PrintImports() const;
   void PrintTopLevelEnums() const;
+  void PrintEnum(const EnumDescriptor& enum_descriptor) const;
+  void PrintEnumValues(const EnumDescriptor& enum_descriptor) const;
   template <typename DescriptorT>
-  void AddExtensions(const DescriptorT& descriptor,
-                     std::map<std::string, std::string>* item_map) const;
-  void PrintMessages(
-      const std::map<std::string, std::string>& import_map) const;
-  void PrintMessage(const Descriptor& message_descriptor, bool is_nested,
-                    const std::map<std::string, std::string>& import_map) const;
+  void PrintExtensions(const DescriptorT& descriptor) const;
+  void PrintMessages() const;
+  void PrintMessage(const Descriptor& message_descriptor, bool is_nested) const;
   void PrintServices() const;
-  void PrintItemMap(const std::map<std::string, std::string>& item_map) const;
   std::string GetFieldType(
-      const FieldDescriptor& field_des, const Descriptor& containing_des,
-      const std::map<std::string, std::string>& import_map) const;
+      const FieldDescriptor& field_des, const Descriptor& containing_des) const;
   template <typename DescriptorT>
-  std::string ModuleLevelName(
-      const DescriptorT& descriptor,
-      const std::map<std::string, std::string>& import_map) const;
+  std::string ModuleLevelName(const DescriptorT& descriptor) const;
 
   // Very coarse-grained lock to ensure that Generate() is reentrant.
-  // Guards file_ and printer_.
+  // Guards file_, printer_, and import_map_.
   mutable Mutex mutex_;
   mutable const FileDescriptor* file_;  // Set in Generate().  Under mutex_.
   mutable io::Printer* printer_;        // Set in Generate().  Under mutex_.
+  // import_map will be a mapping from filename to module alias, e.g.
+  // "google3/foo/bar.py" -> "_bar"
+  mutable std::map<std::string, std::string> import_map_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(PyiGenerator);
 };
 

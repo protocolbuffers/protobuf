@@ -183,11 +183,11 @@ void SerialArena::AllocateNewBlock(size_t n, const AllocationPolicy* policy) {
   ThreadSafeArenaStats::RecordAllocateStats(arena_stats_, /*used=*/used,
                                             /*allocated=*/mem.size, wasted);
   set_head(new (mem.ptr) Block{head(), mem.size});
-  ptr_.store(head()->Pointer(kBlockHeaderSize), std::memory_order_relaxed);
+  set_ptr(head()->Pointer(kBlockHeaderSize));
   limit_ = head()->Pointer(head()->size());
 
 #ifdef ADDRESS_SANITIZER
-  ASAN_POISON_MEMORY_REGION(ptr_, limit_ - ptr_);
+  ASAN_POISON_MEMORY_REGION(ptr(), limit_ - ptr());
 #endif  // ADDRESS_SANITIZER
 }
 
@@ -382,7 +382,7 @@ void ThreadSafeArena::Init() {
 void ThreadSafeArena::SetInitialBlock(void* mem, size_t size) {
   SerialArena* serial = SerialArena::New({mem, size}, &thread_cache(),
                                          arena_stats_.MutableStats());
-  serial->set_next(NULL);
+  serial->set_next(nullptr);
   threads_.store(serial, std::memory_order_relaxed);
   CacheSerialArena(serial);
 }
