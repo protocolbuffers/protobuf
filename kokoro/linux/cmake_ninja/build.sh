@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Build file to set up and run tests based on distribution archive
+# Build file to set up and run tests using CMake with the Ninja generator.
 
 set -eux
 

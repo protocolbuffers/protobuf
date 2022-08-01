@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Build file to set up and run tests based on distribution archive
+# Build file to build, install, and test using CMake.
 
 set -eux
 
