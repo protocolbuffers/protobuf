@@ -5,7 +5,7 @@
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:internal_shell.bzl", "inline_sh_test")
 load("//conformance:defs.bzl", "conformance_test")
-load("//:protobuf.bzl", "ruby_proto_library")
+load("//:protobuf.bzl", "internal_ruby_proto_library")
 load(":internal.bzl", "internal_ruby_extension")
 
 ################################################################################
@@ -39,18 +39,31 @@ internal_ruby_extension(
     name = "protobuf_c_mac",
     extension = "lib/google/protobuf_c.bundle",
     deps = glob(["ext/google/protobuf_c/*"]),
+    target_compatible_with = select({
+        ":java_ruby": ["@platforms//:incompatible"],
+        "//conditions:default": ["@platforms//os:osx"],
+    }),
 )
 
 internal_ruby_extension(
     name = "protobuf_c",
     extension = "lib/google/protobuf_c.so",
     deps = glob(["ext/google/protobuf_c/*"]),
+    target_compatible_with = select({
+        ":java_ruby": ["@platforms//:incompatible"],
+        "@platforms//os:osx": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
 )
 
 internal_ruby_extension(
     name = "protobuf_java",
     extension = "lib/google/protobuf_java.jar",
     deps = glob(["src/**/*.java"]),
+    target_compatible_with = select({
+        ":java_ruby": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
 )
 
 filegroup(
@@ -83,7 +96,7 @@ filegroup(
   srcs = glob(["tests/*.proto"]),
 )
 
-ruby_proto_library(
+internal_ruby_proto_library(
     name = "test_ruby_protos",
     srcs = [":test_protos"],
     proto_deps = ["//:well_known_protos"],
@@ -131,13 +144,21 @@ conformance_test(
     failure_list = "//conformance:failure_list_ruby.txt",
     testee = "//conformance:conformance_ruby",
     text_format_failure_list = "//conformance:text_format_failure_list_ruby.txt",
+    target_compatible_with = select({
+        ":java_ruby": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
 )
 
 conformance_test(
-    name = "jruby_conformance_test",
+    name = "conformance_test_jruby",
     failure_list = "//conformance:failure_list_jruby.txt",
     testee = "//conformance:conformance_ruby",
     text_format_failure_list = "//conformance:text_format_failure_list_jruby.txt",
+    target_compatible_with = select({
+        ":java_ruby": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
 )
 
 ################################################################################

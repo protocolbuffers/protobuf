@@ -38,25 +38,6 @@ def _SourceDir(ctx):
         return _GetPath(ctx, ctx.attr.includes[0])
     return _GetPath(ctx, ctx.label.package + "/" + ctx.attr.includes[0])
 
-def _CcHdrs(srcs, use_grpc_plugin = False):
-    ret = [s[:-len(".proto")] + ".pb.h" for s in srcs]
-    if use_grpc_plugin:
-        ret += [s[:-len(".proto")] + ".grpc.pb.h" for s in srcs]
-    return ret
-
-def _CcSrcs(srcs, use_grpc_plugin = False):
-    ret = [s[:-len(".proto")] + ".pb.cc" for s in srcs]
-    if use_grpc_plugin:
-        ret += [s[:-len(".proto")] + ".grpc.pb.cc" for s in srcs]
-    return ret
-
-def _CcOuts(srcs, out_type, use_grpc_plugin = False):
-    if out_type == "hdrs":
-        return _CcHdrs(srcs, use_grpc_plugin)
-    if out_type == "srcs":
-        return _CcSrcs(srcs, use_grpc_plugin)
-    return _CcHdrs(srcs, use_grpc_plugin) + _CcSrcs(srcs, use_grpc_plugin)
-
 def _ObjcBase(srcs):
     return [
         "".join([token.capitalize() for token in src[:-len(".proto")].split("_")])
@@ -161,9 +142,7 @@ def _proto_gen_impl(ctx):
 
         outs = []
         for lang in langs:
-            if lang == "cc":
-                outs.extend(_CcOuts([src.basename], out_type = out_type, use_grpc_plugin = use_grpc_plugin))
-            elif lang == "csharp":
+            if lang == "csharp":
                 outs.extend(_CsharpOuts([src.basename]))
             elif lang == "objc":
                 outs.extend(_ObjcOuts([src.basename], out_type = out_type))
@@ -240,7 +219,29 @@ def _proto_gen_impl(ctx):
         DefaultInfo(files = depset(generated_files)),
     ]
 
-proto_gen = rule(
+"""Generates codes from Protocol Buffers definitions.
+
+This rule helps you to implement Skylark macros specific to the target
+language. You should prefer more specific `cc_proto_library `,
+`py_proto_library` and others unless you are adding such wrapper macros.
+
+Args:
+  srcs: Protocol Buffers definition files (.proto) to run the protocol compiler
+    against.
+  deps: a list of dependency labels; must be other proto libraries.
+  includes: a list of include paths to .proto files.
+  protoc: the label of the protocol compiler to generate the sources.
+  plugin: the label of the protocol compiler plugin to be passed to the protocol
+    compiler.
+  plugin_language: the language of the generated sources
+  plugin_options: a list of options to be passed to the plugin
+  langs: generates sources in addition to the ones from the plugin for each
+    specified language.
+  outs: a list of labels of the expected outputs from the protocol compiler.
+  out_type: only generated a single type of source file for languages that have
+    split sources (e.g. *.h and *.cc in C++)
+"""
+_proto_gen = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = [ProtoGenInfo]),
@@ -267,119 +268,6 @@ proto_gen = rule(
     output_to_genfiles = True,
     implementation = _proto_gen_impl,
 )
-"""Generates codes from Protocol Buffers definitions.
-
-This rule helps you to implement Skylark macros specific to the target
-language. You should prefer more specific `cc_proto_library `,
-`py_proto_library` and others unless you are adding such wrapper macros.
-
-Args:
-  srcs: Protocol Buffers definition files (.proto) to run the protocol compiler
-    against.
-  deps: a list of dependency labels; must be other proto libraries.
-  includes: a list of include paths to .proto files.
-  protoc: the label of the protocol compiler to generate the sources.
-  plugin: the label of the protocol compiler plugin to be passed to the protocol
-    compiler.
-  plugin_language: the language of the generated sources
-  plugin_options: a list of options to be passed to the plugin
-  langs: generates sources in addition to the ones from the plugin for each
-    specified language.
-  outs: a list of labels of the expected outputs from the protocol compiler.
-  out_type: only generated a single type of source file for languages that have
-    split sources (e.g. *.h and *.cc in C++)
-"""
-
-def _adapt_proto_library_impl(ctx):
-    deps = [dep[ProtoInfo] for dep in ctx.attr.deps]
-
-    srcs = [src for dep in deps for src in dep.direct_sources]
-    return struct(
-        proto = struct(
-            srcs = srcs,
-            import_flags = ["-I{}".format(path) for dep in deps for path in dep.transitive_proto_path.to_list()],
-            deps = srcs,
-        ),
-    )
-
-adapt_proto_library = rule(
-    implementation = _adapt_proto_library_impl,
-    attrs = {
-        "deps": attr.label_list(
-            mandatory = True,
-            providers = [ProtoInfo],
-        ),
-    },
-    doc = "Adapts `proto_library` from `@rules_proto` to be used with `{cc,py}_proto_library` from this file.",
-)
-
-def cc_proto_library(
-        name,
-        srcs = [],
-        deps = [],
-        cc_libs = [],
-        include = None,
-        protoc = "@com_google_protobuf//:protoc",
-        use_grpc_plugin = False,
-        default_runtime = "@com_google_protobuf//:protobuf",
-        **kargs):
-    """Bazel rule to create a C++ protobuf library from proto source files
-
-    NOTE: the rule is only an internal workaround to generate protos. The
-    interface may change and the rule may be removed when bazel has introduced
-    the native rule.
-
-    Args:
-      name: the name of the cc_proto_library.
-      srcs: the .proto files of the cc_proto_library.
-      deps: a list of dependency labels; must be cc_proto_library.
-      cc_libs: a list of other cc_library targets depended by the generated
-          cc_library.
-      include: a string indicating the include path of the .proto files.
-      protoc: the label of the protocol compiler to generate the sources.
-      use_grpc_plugin: a flag to indicate whether to call the grpc C++ plugin
-          when processing the proto files.
-      default_runtime: the implicitly default runtime which will be depended on by
-          the generated cc_library target.
-      **kargs: other keyword arguments that are passed to cc_library.
-    """
-
-    includes = []
-    if include != None:
-        includes = [include]
-
-    grpc_cpp_plugin = None
-    if use_grpc_plugin:
-        grpc_cpp_plugin = "//external:grpc_cpp_plugin"
-
-    gen_srcs = _CcSrcs(srcs, use_grpc_plugin)
-    gen_hdrs = _CcHdrs(srcs, use_grpc_plugin)
-    outs = gen_srcs + gen_hdrs
-
-    proto_gen(
-        name = name + "_genproto",
-        srcs = srcs,
-        deps = [s + "_genproto" for s in deps],
-        includes = includes,
-        protoc = protoc,
-        plugin = grpc_cpp_plugin,
-        plugin_language = "grpc",
-        langs = ["cc"],
-        visibility = ["//visibility:public"],
-    )
-
-    if default_runtime and not default_runtime in cc_libs:
-        cc_libs = cc_libs + [default_runtime]
-    if use_grpc_plugin:
-        cc_libs = cc_libs + ["//external:grpc_lib"]
-    cc_library(
-        name = name,
-        srcs = gen_srcs,
-        hdrs = gen_hdrs,
-        deps = cc_libs + deps,
-        includes = includes,
-        **kargs
-    )
 
 def _internal_gen_well_known_protos_java_impl(ctx):
     args = ctx.actions.args()
@@ -505,7 +393,7 @@ internal_gen_kt_protos = rule(
     },
 )
 
-def objc_proto_library(
+def internal_objc_proto_library(
         name,
         srcs = [],
         deps = [],
@@ -543,7 +431,7 @@ def objc_proto_library(
     full_deps = [d for d in deps]
 
     if proto_deps:
-        proto_gen(
+        _proto_gen(
             name = name + "_deps_genproto",
             testonly = testonly,
             srcs = proto_deps,
@@ -554,7 +442,7 @@ def objc_proto_library(
 
     # Note: we need to run the protoc build twice to get separate targets for
     # the generated header and the source files.
-    proto_gen(
+    _proto_gen(
         name = name + "_genproto_hdrs",
         srcs = srcs,
         deps = [s + "_genproto" for s in full_deps],
@@ -567,7 +455,7 @@ def objc_proto_library(
         tags = ["manual"],
     )
 
-    proto_gen(
+    _proto_gen(
         name = name + "_genproto_srcs",
         srcs = srcs,
         deps = [s + "_genproto" for s in full_deps],
@@ -595,7 +483,7 @@ def objc_proto_library(
         **kwargs
     )
 
-def py_proto_library(
+def internal_py_proto_library(
         name,
         srcs = [],
         deps = [],
@@ -643,7 +531,7 @@ def py_proto_library(
         # is not explicitly listed in py_libs. Instead, host system is assumed to
         # have grpc installed.
 
-    proto_gen(
+    _proto_gen(
         name = name + "_genproto",
         testonly = testonly,
         srcs = srcs,
@@ -667,7 +555,7 @@ def py_proto_library(
         **kargs
     )
 
-def source_proto_library(
+def _source_proto_library(
         name,
         srcs = [],
         deps = [],
@@ -716,7 +604,7 @@ def source_proto_library(
     full_deps = [d for d in deps]
 
     if proto_deps:
-        proto_gen(
+        _proto_gen(
             name = name + "_deps_genproto",
             testonly = testonly,
             srcs = proto_deps,
@@ -725,7 +613,7 @@ def source_proto_library(
         )
         full_deps.append(":%s_deps" % name)
 
-    proto_gen(
+    _proto_gen(
         name = name + "_genproto",
         srcs = srcs,
         deps = [s + "_genproto" for s in full_deps],
@@ -745,7 +633,7 @@ def source_proto_library(
         **kwargs
     )
 
-def csharp_proto_library(**kwargs):
+def internal_csharp_proto_library(**kwargs):
     """Bazel rule to create a C# protobuf library from proto source files
 
     NOTE: the rule is only an internal workaround to generate protos. The
@@ -757,12 +645,12 @@ def csharp_proto_library(**kwargs):
 
     """
 
-    source_proto_library(
+    _source_proto_library(
         lang = "csharp",
         **kwargs
     )
 
-def php_proto_library(**kwargs):
+def internal_php_proto_library(**kwargs):
     """Bazel rule to create a PHP protobuf library from proto source files
 
     NOTE: the rule is only an internal workaround to generate protos. The
@@ -776,12 +664,12 @@ def php_proto_library(**kwargs):
     if not kwargs.get("outs"):
         fail("Unable to predict the outputs for php_proto_library.  Please specify them via `outs`.")
 
-    source_proto_library(
+    _source_proto_library(
         lang = "php",
         **kwargs
     )
 
-def ruby_proto_library(**kwargs):
+def internal_ruby_proto_library(**kwargs):
     """Bazel rule to create a Ruby protobuf library from proto source files
 
     NOTE: the rule is only an internal workaround to generate protos. The
@@ -793,7 +681,7 @@ def ruby_proto_library(**kwargs):
 
     """
 
-    source_proto_library(
+    _source_proto_library(
         lang = "ruby",
         **kwargs
     )

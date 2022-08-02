@@ -3,7 +3,7 @@
 PLEASE DO NOT DEPEND ON THE CONTENTS OF THIS FILE, IT IS UNSTABLE.
 """
 
-load("//:protobuf.bzl", "php_proto_library")
+load("//:protobuf.bzl", "internal_php_proto_library")
 
 def proto3_data(
     name,
@@ -95,7 +95,7 @@ def php_proto3_library(
         srcs = [src],
     )
 
-    php_proto_library(
+    internal_php_proto_library(
         name = name,
         srcs = [name + "_genrule"],
         outs = outs,

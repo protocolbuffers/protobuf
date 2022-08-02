@@ -6,7 +6,7 @@ load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
 load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS", "PROTOC_LINK_OPTS")
-load(":protobuf.bzl", "py_proto_library", "php_proto_library", "ruby_proto_library", "objc_proto_library")
+load(":protobuf.bzl", "internal_py_proto_library", "internal_php_proto_library", "internal_ruby_proto_library", "internal_objc_proto_library")
 
 licenses(["notice"])
 
@@ -145,7 +145,7 @@ filegroup(
     visibility = ["//visibility:public"],
 )
 
-ruby_proto_library(
+internal_ruby_proto_library(
     name = "well_known_ruby_protos",
     srcs = [":well_known_protos"],
     includes = ["src"],
@@ -369,7 +369,7 @@ proto_library(
     deps = ["//src/google/protobuf:generic_test_protos"],
 )
 
-py_proto_library(
+internal_py_proto_library(
     name = "generated_protos_py",
     testonly = 1,
     srcs = [":generated_protos"],
@@ -460,7 +460,7 @@ java_lite_proto_library(
     deps = [":test_messages_proto3_proto"],
 )
 
-objc_proto_library(
+internal_objc_proto_library(
     name = "test_messages_proto2_objc_proto",
     srcs = [":test_messages_proto2_proto_srcs"],
     includes = ["src/google/protobuf"],
@@ -471,7 +471,7 @@ objc_proto_library(
     ],
 )
 
-objc_proto_library(
+internal_objc_proto_library(
     name = "test_messages_proto3_objc_proto",
     srcs = [":test_messages_proto3_proto_srcs"],
     proto_deps = [":well_known_protos"],
@@ -483,7 +483,7 @@ objc_proto_library(
     ],
 )
 
-php_proto_library(
+internal_php_proto_library(
     name = "test_messages_proto3_php_proto",
     srcs = [":test_messages_proto3_proto_srcs"],
     proto_deps = [":well_known_protos"],
@@ -507,7 +507,7 @@ php_proto_library(
     ],
 )
 
-ruby_proto_library(
+internal_ruby_proto_library(
     name = "test_messages_proto2_ruby_proto",
     srcs = [":test_messages_proto2_proto_srcs"],
     includes = ["src/google/protobuf"],
@@ -518,7 +518,7 @@ ruby_proto_library(
     ],
 )
 
-ruby_proto_library(
+internal_ruby_proto_library(
     name = "test_messages_proto3_ruby_proto",
     srcs = [":test_messages_proto3_proto_srcs"],
     proto_deps = [":well_known_protos"],

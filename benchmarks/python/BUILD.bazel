@@ -29,13 +29,16 @@ py_binary(
         "//benchmarks:benchmarks_py_proto",
         "//benchmarks/datasets:py_protos",
     ],
+    env = select({
+        "//python:use_fast_cpp_protos": {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "cpp"},
+        "//conditions:default": {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "python"},
+    }),
 )
 
 benchmark_test(
     name = "python",
     binary = ":python_benchmark",
     datasets = ["//benchmarks/datasets"],
-    env_vars = ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python"],
 )
 
 # Note: this requires --define=use_fast_cpp_protos=true

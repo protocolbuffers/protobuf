@@ -1,7 +1,8 @@
 def internal_ruby_extension(
         name,
         extension,
-        deps = []):
+        deps = [],
+        **kwargs):
     """Bazel rule to wrap up a generated ruby extension.
 
     NOTE: the rule is only an internal workaround. The interface may change and
@@ -10,7 +11,8 @@ def internal_ruby_extension(
     Args:
       name: the name of the target.
       extension: the path of the extension file.
-      deps: extra dependencies to add
+      deps: extra dependencies to add.
+      **kwargs: extra arguments to forward to the genrule.
     """
 
 
@@ -29,4 +31,5 @@ def internal_ruby_extension(
               "BAZEL=true rake\n" +
               "popd\n" +
               "cp `dirname $(location Rakefile)`/%s $(OUTS)\n" % extension,
+        **kwargs,
     )

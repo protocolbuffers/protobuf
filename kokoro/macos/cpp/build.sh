@@ -14,4 +14,4 @@ source kokoro/macos/prepare_build_macos_rc
 #
 # Run build
 #
-bazel test //src/... //conformance:cpp -k --test_output=streamed
+bazel test //src/... -k --test_output=streamed

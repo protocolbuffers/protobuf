@@ -26,17 +26,14 @@ popd
 # build and run Python benchmark
 echo "[" > python_result.json
 echo "benchmarking pure python..."
-PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python \
 ${SCRIPT_ROOT}/kokoro/common/bazel_wrapper.sh run //benchmarks/python:python_benchmark -- \
 	--json --behavior_prefix="pure-python-benchmark" $datasets >> python_result.json
 echo "," >> "python_result.json"
 echo "benchmarking python cpp reflection..."
-PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp \
 ${SCRIPT_ROOT}/kokoro/common/bazel_wrapper.sh run //benchmarks/python:python_benchmark --define=use_fast_cpp_protos=true -- \
 	--json --behavior_prefix="cpp-reflection-benchmark" $datasets >> python_result.json
 echo "," >> "python_result.json"
 echo "benchmarking python cpp generated code..."
-PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp \
 ${SCRIPT_ROOT}/kokoro/common/bazel_wrapper.sh run //benchmarks/python:python_benchmark --define=use_fast_cpp_protos=true -- \
 	--json --cpp_generated --behavior_prefix="cpp-generated-code-benchmark" $datasets >> python_result.json
 echo "]" >> "python_result.json"

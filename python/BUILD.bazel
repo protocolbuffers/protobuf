@@ -9,7 +9,7 @@
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@rules_python//python:defs.bzl", "py_library")
-load("//:protobuf.bzl", "py_proto_library")
+load("//:protobuf.bzl", "internal_py_proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 load("//conformance:defs.bzl", "conformance_test")
 load(":internal.bzl", "internal_copy_files")
@@ -37,7 +37,7 @@ config_setting(
     },
 )
 
-py_proto_library(
+internal_py_proto_library(
     name = "well_known_types_py_pb2",
     srcs = [":copied_wkt_proto_files"],
     include = ".",
@@ -186,7 +186,7 @@ internal_copy_files(
     strip_prefix = "src",
 )
 
-py_proto_library(
+internal_py_proto_library(
     name = "python_common_test_protos",
     testonly = 1,
     srcs = [":copied_test_proto_files"],
@@ -198,7 +198,7 @@ py_proto_library(
     deps = [":well_known_types_py_pb2"],
 )
 
-py_proto_library(
+internal_py_proto_library(
     name = "python_specific_test_protos",
     testonly = 1,
     srcs = glob([
@@ -213,7 +213,7 @@ py_proto_library(
     deps = [":python_common_test_protos"],
 )
 
-py_proto_library(
+internal_py_proto_library(
     name = "test_messages_proto2_py_proto",
     testonly = 1,
     visibility = [
@@ -226,7 +226,7 @@ py_proto_library(
     protoc = "//:protoc",
 )
 
-py_proto_library(
+internal_py_proto_library(
     name = "test_messages_proto3_py_proto",
     testonly = 1,
     visibility = [
@@ -404,15 +404,23 @@ conformance_test(
     testee = "//conformance:conformance_python",
     text_format_failure_list = "//conformance:text_format_failure_list_python.txt",
     env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "python"},
+    target_compatible_with = select({
+        ":use_fast_cpp_protos": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
 )
 
 # Note: this requires --define=use_fast_cpp_protos=true
 conformance_test(
-    name = "conformance_cpp_test",
+    name = "conformance_test_cpp",
     failure_list = "//conformance:failure_list_python.txt",
     testee = "//conformance:conformance_python",
     text_format_failure_list = "//conformance:text_format_failure_list_python_cpp.txt",
     env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "cpp"},
+    target_compatible_with = select({
+        ":use_fast_cpp_protos": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
 )
 
 ################################################################################

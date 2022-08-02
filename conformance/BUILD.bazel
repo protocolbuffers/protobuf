@@ -2,7 +2,7 @@
 
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library", "objc_library")
 load("@rules_python//python:defs.bzl", "py_library")
-load("//:protobuf.bzl", "py_proto_library", "php_proto_library", "csharp_proto_library", "ruby_proto_library", "objc_proto_library")
+load("//:protobuf.bzl", "internal_py_proto_library", "internal_php_proto_library", "internal_csharp_proto_library", "internal_ruby_proto_library", "internal_objc_proto_library")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load(
     "@rules_pkg//:mappings.bzl",
@@ -58,7 +58,7 @@ cc_proto_library(
     deps = [":conformance_proto"],
 )
 
-csharp_proto_library(
+internal_csharp_proto_library(
     name = "conformance_csharp_proto",
     srcs = ["conformance.proto"],
     visibility = [
@@ -82,7 +82,7 @@ java_lite_proto_library(
     deps = [":conformance_proto"],
 )
 
-objc_proto_library(
+internal_objc_proto_library(
     name = "conformance_objc_proto",
     srcs = ["conformance.proto"],
     visibility = [
@@ -91,7 +91,7 @@ objc_proto_library(
     ],
 )
 
-py_proto_library(
+internal_py_proto_library(
     name = "conformance_py_proto",
     srcs = ["conformance.proto"],
     visibility = [
@@ -100,7 +100,7 @@ py_proto_library(
     srcs_version = "PY2AND3",
 )
 
-php_proto_library(
+internal_php_proto_library(
     name = "conformance_php_proto",
     srcs = ["conformance.proto"],
     outs = [
@@ -118,7 +118,7 @@ php_proto_library(
     ],
 )
 
-ruby_proto_library(
+internal_ruby_proto_library(
     name = "conformance_ruby_proto",
     srcs = ["conformance.proto"],
     visibility = [

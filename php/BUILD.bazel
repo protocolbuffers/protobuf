@@ -68,13 +68,21 @@ conformance_test(
     failure_list = "//conformance:failure_list_php.txt",
     testee = "//conformance:conformance_php",
     text_format_failure_list = "//conformance:text_format_failure_list_php.txt",
+    target_compatible_with = select({
+        "@platforms//os:osx": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
 )
 
 conformance_test(
-    name = "c_conformance_test",
+    name = "conformance_test_c",
     failure_list = "//conformance:failure_list_php_c.txt",
     testee = "//conformance:conformance_php_c",
     text_format_failure_list = "//conformance:text_format_failure_list_php.txt",
+    target_compatible_with = select({
+        "@platforms//os:osx": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
 )
 
 ################################################################################

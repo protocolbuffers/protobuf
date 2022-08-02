@@ -2,7 +2,7 @@ load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@rules_java//java:defs.bzl", "java_proto_library")
 load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
-load("//:protobuf.bzl", "py_proto_library", "php_proto_library")
+load("//:protobuf.bzl", "internal_py_proto_library", "internal_php_proto_library")
 
 ################################################################################
 # Benchmark Protos
@@ -39,7 +39,7 @@ java_proto_library(
     ],
 )
 
-php_proto_library(
+internal_php_proto_library(
     name = "benchmarks_php_proto",
     srcs = ["benchmarks.proto"],
     outs = [
@@ -51,7 +51,7 @@ php_proto_library(
     ],
 )
 
-py_proto_library(
+internal_py_proto_library(
     name = "benchmarks_py_proto",
     srcs = ["benchmarks.proto"],
     visibility = [

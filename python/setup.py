@@ -207,7 +207,7 @@ class BuildExtCmd(_build_ext):
 
 
 class TestConformanceCmd(_build_py):
-  target = '//conformance:python'
+  target = '//python:conformance_test'
 
   def run(self):
     # Python 2.6 dodges these extra failures.
@@ -306,7 +306,7 @@ if __name__ == '__main__':
       else:
         library_dirs = ['..']
 
-    TestConformanceCmd.target = '//conformance:python_cpp --define=use_fast_cpp_protos=true'
+    TestConformanceCmd.target = '//python:conformance_test_cpp --define=use_fast_cpp_protos=true'
 
     extra_compile_args = []
 

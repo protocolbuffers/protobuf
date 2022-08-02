@@ -11,4 +11,4 @@ composer test_c
 popd
 
 git clean -fXd
-bazel test //conformance:php_c --action_env=PATH --test_env=PATH --test_output=streamed
+bazel test //php:conformance_test_c --action_env=PATH --test_env=PATH --test_output=streamed

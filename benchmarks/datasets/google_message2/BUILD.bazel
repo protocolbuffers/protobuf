@@ -2,7 +2,7 @@ load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@rules_java//java:defs.bzl", "java_proto_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
-load("//:protobuf.bzl", "py_proto_library", "csharp_proto_library")
+load("//:protobuf.bzl", "internal_py_proto_library", "internal_csharp_proto_library")
 load("//benchmarks/util:compatibility.bzl", "proto3_data", "php_proto3_library")
 
 filegroup(
@@ -45,7 +45,7 @@ cc_proto_library(
     ],
 )
 
-csharp_proto_library(
+internal_csharp_proto_library(
     name = "benchmark_message2_csharp_proto",
     srcs = ["benchmark_message2.proto"],
     visibility = [
@@ -76,7 +76,7 @@ php_proto3_library(
     ],
 )
 
-py_proto_library(
+internal_py_proto_library(
     name = "benchmark_message2_py_proto",
     srcs = ["benchmark_message2.proto"],
     visibility = [
