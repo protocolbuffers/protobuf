@@ -1,5 +1,3 @@
-# This import depends on the automake rule protoc_middleman, please make sure
-# protoc_middleman has been built before run this file.
 import argparse
 import json
 import re
