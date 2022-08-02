@@ -56,13 +56,20 @@ namespace {
 
 PROTOBUF_CONSTINIT std::atomic<bool> g_arenaz_enabled{true};
 PROTOBUF_CONSTINIT std::atomic<int32_t> g_arenaz_sample_parameter{1 << 10};
+PROTOBUF_CONSTINIT std::atomic<ThreadSafeArenazConfigListener>
+    g_arenaz_config_listener{nullptr};
 PROTOBUF_THREAD_LOCAL absl::profiling_internal::ExponentialBiased
     g_exponential_biased_generator;
+
+void TriggerThreadSafeArenazConfigListener() {
+  auto* listener = g_arenaz_config_listener.load(std::memory_order_acquire);
+  if (listener != nullptr) listener();
+}
 
 }  // namespace
 
 PROTOBUF_THREAD_LOCAL SamplingState global_sampling_state = {
-    .next_sample = int64_t{1} << 10, .sample_stride = int64_t{1} << 10};
+    /*next_sample=*/0, /*sample_stride=*/0};
 
 ThreadSafeArenaStats::ThreadSafeArenaStats() { PrepareForSampling(0); }
 ThreadSafeArenaStats::~ThreadSafeArenaStats() = default;
@@ -118,11 +125,29 @@ ThreadSafeArenaStats* SampleSlow(SamplingState& sampling_state) {
   return GlobalThreadSafeArenazSampler().Register(old_stride);
 }
 
+void SetThreadSafeArenazConfigListener(ThreadSafeArenazConfigListener l) {
+  g_arenaz_config_listener.store(l, std::memory_order_release);
+}
+
+bool IsThreadSafeArenazEnabled() {
+  return g_arenaz_enabled.load(std::memory_order_acquire);
+}
+
 void SetThreadSafeArenazEnabled(bool enabled) {
+  SetThreadSafeArenazEnabledInternal(enabled);
+  TriggerThreadSafeArenazConfigListener();
+}
+
+void SetThreadSafeArenazEnabledInternal(bool enabled) {
   g_arenaz_enabled.store(enabled, std::memory_order_release);
 }
 
 void SetThreadSafeArenazSampleParameter(int32_t rate) {
+  SetThreadSafeArenazSampleParameterInternal(rate);
+  TriggerThreadSafeArenazConfigListener();
+}
+
+void SetThreadSafeArenazSampleParameterInternal(int32_t rate) {
   if (rate > 0) {
     g_arenaz_sample_parameter.store(rate, std::memory_order_release);
   } else {
@@ -136,12 +161,21 @@ int32_t ThreadSafeArenazSampleParameter() {
 }
 
 void SetThreadSafeArenazMaxSamples(int32_t max) {
+  SetThreadSafeArenazMaxSamplesInternal(max);
+  TriggerThreadSafeArenazConfigListener();
+}
+
+void SetThreadSafeArenazMaxSamplesInternal(int32_t max) {
   if (max > 0) {
     GlobalThreadSafeArenazSampler().SetMaxSamples(max);
   } else {
     ABSL_RAW_LOG(ERROR, "Invalid thread safe arenaz max samples: %lld",
                  static_cast<long long>(max));  // NOLINT(runtime/int)
   }
+}
+
+size_t ThreadSafeArenazMaxSamples() {
+  return GlobalThreadSafeArenazSampler().GetMaxSamples();
 }
 
 void SetThreadSafeArenazGlobalNextSample(int64_t next_sample) {
@@ -160,10 +194,16 @@ ThreadSafeArenaStats* SampleSlow(int64_t* next_sample) {
   return nullptr;
 }
 
+void SetThreadSafeArenazConfigListener(ThreadSafeArenazConfigListener) {}
 void SetThreadSafeArenazEnabled(bool enabled) {}
+void SetThreadSafeArenazEnabledInternal(bool enabled) {}
+bool IsThreadSafeArenazEnabled() { return false; }
 void SetThreadSafeArenazSampleParameter(int32_t rate) {}
+void SetThreadSafeArenazSampleParameterInternal(int32_t rate) {}
 int32_t ThreadSafeArenazSampleParameter() { return 0; }
 void SetThreadSafeArenazMaxSamples(int32_t max) {}
+void SetThreadSafeArenazMaxSamplesInternal(int32_t max) {}
+size_t ThreadSafeArenazMaxSamples() { return 0; }
 void SetThreadSafeArenazGlobalNextSample(int64_t next_sample) {}
 #endif  // defined(PROTOBUF_ARENAZ_SAMPLE)
 

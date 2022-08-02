@@ -2514,6 +2514,7 @@ const Type& Reflection::GetRawNonOneof(const Message& message,
 }
 
 void Reflection::PrepareSplitMessageForWrite(Message* message) const {
+  GOOGLE_DCHECK_NE(message, schema_.default_instance_);
   void** split = MutableSplitField(message);
   const void* default_split = GetSplitField(schema_.default_instance_);
   if (*split == default_split) {

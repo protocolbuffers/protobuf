@@ -375,6 +375,7 @@ TEST(ThreadSafeArenazSamplerTest, MultiThread) {
   SetThreadSafeArenazEnabled(true);
   // Setting 1 as the parameter value means one in every two arenas would be
   // sampled, on average.
+  int32_t oldparam = ThreadSafeArenazSampleParameter();
   SetThreadSafeArenazSampleParameter(1);
   SetThreadSafeArenazGlobalNextSample(0);
   auto& sampler = GlobalThreadSafeArenazSampler();
@@ -402,6 +403,95 @@ TEST(ThreadSafeArenazSamplerTest, MultiThread) {
     }
   }
   EXPECT_GT(count, 0);
+  SetThreadSafeArenazSampleParameter(oldparam);
+}
+
+class SampleFirstArenaThread : public Thread {
+ protected:
+  void Run() override {
+    google::protobuf::Arena arena;
+    google::protobuf::ArenaSafeUniquePtr<
+        protobuf_test_messages::proto2::TestAllTypesProto2>
+        message = google::protobuf::MakeArenaSafeUnique<
+            protobuf_test_messages::proto2::TestAllTypesProto2>(&arena);
+    GOOGLE_CHECK(message != nullptr);
+    arena_created_.Notify();
+    samples_counted_.WaitForNotification();
+  }
+
+ public:
+  explicit SampleFirstArenaThread(const thread::Options& options)
+      : Thread(options, "SampleFirstArenaThread") {}
+
+  absl::Notification arena_created_;
+  absl::Notification samples_counted_;
+};
+
+// Test that the first arena created on a thread may and may not be chosen for
+// sampling.
+TEST(ThreadSafeArenazSamplerTest, SampleFirstArena) {
+  SetThreadSafeArenazEnabled(true);
+  auto& sampler = GlobalThreadSafeArenazSampler();
+
+  enum class SampleResult {
+    kSampled,
+    kUnsampled,
+    kSpoiled,
+  };
+
+  auto count_samples = [&]() {
+    int count = 0;
+    sampler.Iterate([&](const ThreadSafeArenaStats& h) { ++count; });
+    return count;
+  };
+
+  auto run_sample_experiment = [&]() {
+    int before = count_samples();
+    thread::Options options;
+    options.set_joinable(true);
+    SampleFirstArenaThread t(options);
+    t.Start();
+    t.arena_created_.WaitForNotification();
+    int during = count_samples();
+    t.samples_counted_.Notify();
+    t.Join();
+    int after = count_samples();
+
+    // If we didn't get back where we were, some other thread may have
+    // created an arena and produced an invalid experiment run.
+    if (before != after) return SampleResult::kSpoiled;
+
+    switch (during - before) {
+      case 1:
+        return SampleResult::kSampled;
+      case 0:
+        return SampleResult::kUnsampled;
+      default:
+        return SampleResult::kSpoiled;
+    }
+  };
+
+  constexpr int kTrials = 10000;
+  bool sampled = false;
+  bool unsampled = false;
+  for (int i = 0; i < kTrials; ++i) {
+    switch (run_sample_experiment()) {
+      case SampleResult::kSampled:
+        sampled = true;
+        break;
+      case SampleResult::kUnsampled:
+        unsampled = true;
+        break;
+      default:
+        break;
+    }
+
+    // This is the success criteria for the entire test.  At some point
+    // we sampled the first arena and at some point we did not.
+    if (sampled && unsampled) return;
+  }
+  EXPECT_TRUE(sampled);
+  EXPECT_TRUE(unsampled);
 }
 #endif  // defined(PROTOBUF_ARENAZ_SAMPLE)
 

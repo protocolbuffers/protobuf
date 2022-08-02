@@ -1,6 +1,7 @@
 option(protobuf_USE_EXTERNAL_GTEST "Use external Google Test (i.e. not the one in third_party/googletest)" OFF)
 
-option(protobuf_TEST_XML_OUTDIR "Output directory for XML logs from tests." "")
+option(protobuf_REMOVE_INSTALLED_HEADERS
+  "Remove local headers so that installed ones are used instead" OFF)
 
 option(protobuf_ABSOLUTE_TEST_PLUGIN_PATH
   "Using absolute test_plugin path in tests" ON)
@@ -77,10 +78,9 @@ endforeach(proto_file)
 
 add_library(protobuf-lite-test-common STATIC
   ${lite_test_util_srcs} ${lite_test_proto_files})
-target_link_libraries(protobuf-lite-test-common libprotobuf-lite GTest::gmock)
+target_link_libraries(protobuf-lite-test-common ${protobuf_LIB_PROTOBUF_LITE} GTest::gmock)
 
 set(common_test_files
-  ${lite_test_util_srcs}
   ${test_util_hdrs}
   ${test_util_srcs}
   ${mock_code_generator_srcs}
@@ -89,7 +89,7 @@ set(common_test_files
 
 add_library(protobuf-test-common STATIC
   ${common_test_files} ${tests_proto_files})
-target_link_libraries(protobuf-test-common libprotobuf GTest::gmock)
+target_link_libraries(protobuf-test-common ${protobuf_LIB_PROTOBUF} GTest::gmock)
 
 set(tests_files
   ${protobuf_test_files}
@@ -130,7 +130,7 @@ if (MSVC)
     /wd4146 # unary minus operator applied to unsigned type, result still unsigned
   )
 endif()
-target_link_libraries(tests protobuf-lite-test-common protobuf-test-common libprotoc libprotobuf GTest::gmock_main)
+target_link_libraries(tests protobuf-lite-test-common protobuf-test-common ${protobuf_LIB_PROTOC} ${protobuf_LIB_PROTOBUF} GTest::gmock_main)
 
 set(test_plugin_files
   ${test_plugin_files}
@@ -139,19 +139,50 @@ set(test_plugin_files
 )
 
 add_executable(test_plugin ${test_plugin_files})
-target_link_libraries(test_plugin libprotoc libprotobuf GTest::gmock)
+target_link_libraries(test_plugin ${protobuf_LIB_PROTOC} ${protobuf_LIB_PROTOBUF} GTest::gmock)
 
 add_executable(lite-test ${protobuf_lite_test_files})
-target_link_libraries(lite-test protobuf-lite-test-common libprotobuf-lite GTest::gmock_main)
+target_link_libraries(lite-test protobuf-lite-test-common ${protobuf_LIB_PROTOBUF_LITE} GTest::gmock_main)
 
 add_test(NAME lite-test
   COMMAND lite-test ${protobuf_GTEST_ARGS})
 
 add_custom_target(check
   COMMAND tests
-  DEPENDS tests test_plugin
+  DEPENDS tests lite-test test_plugin
   WORKING_DIRECTORY ${protobuf_SOURCE_DIR})
 
 add_test(NAME check
-  COMMAND tests ${protobuf_GTEST_ARGS}
-  WORKING_DIRECTORY "${protobuf_SOURCE_DIR}")
+  COMMAND tests ${protobuf_GTEST_ARGS})
+
+# For test purposes, remove headers that should already be installed.  This
+# prevents accidental conflicts and also version skew (since local headers take
+# precedence over installed headers).
+add_custom_target(save-installed-headers)
+add_custom_target(remove-installed-headers)
+add_custom_target(restore-installed-headers)
+
+# Explicitly skip the bootstrapping headers as it's directly used in tests
+set(_installed_hdrs ${libprotobuf_hdrs} ${libprotoc_hdrs})
+list(REMOVE_ITEM _installed_hdrs
+  "${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.pb.h"
+  "${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h")
+
+foreach(_hdr ${_installed_hdrs})
+  string(REPLACE "${protobuf_SOURCE_DIR}/src" "" _file ${_hdr})
+  set(_tmp_file "${CMAKE_BINARY_DIR}/tmp-install-test/${_file}")
+  add_custom_command(TARGET remove-installed-headers PRE_BUILD
+                     COMMAND ${CMAKE_COMMAND} -E remove -f "${_hdr}")
+  add_custom_command(TARGET save-installed-headers PRE_BUILD
+                     COMMAND ${CMAKE_COMMAND} -E
+                        copy "${_hdr}" "${_tmp_file}" || true)
+  add_custom_command(TARGET restore-installed-headers PRE_BUILD
+                     COMMAND ${CMAKE_COMMAND} -E
+                        copy "${_tmp_file}" "${_hdr}")
+endforeach()
+
+add_dependencies(remove-installed-headers save-installed-headers)
+if(protobuf_REMOVE_INSTALLED_HEADERS)
+  add_dependencies(protobuf-lite-test-common remove-installed-headers)
+  add_dependencies(protobuf-test-common remove-installed-headers)
+endif()

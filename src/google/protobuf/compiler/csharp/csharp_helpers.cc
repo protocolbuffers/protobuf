@@ -144,6 +144,7 @@ std::string UnderscoresToCamelCase(const std::string& input,
                                    bool cap_next_letter,
                                    bool preserve_period) {
   std::string result;
+
   // Note:  I distrust ctype.h due to locales.
   for (int i = 0; i < input.size(); i++) {
     if ('a' <= input[i] && input[i] <= 'z') {
@@ -176,6 +177,23 @@ std::string UnderscoresToCamelCase(const std::string& input,
   // Add a trailing "_" if the name should be altered.
   if (input.size() > 0 && input[input.size() - 1] == '#') {
     result += '_';
+  }
+
+  // https://github.com/protocolbuffers/protobuf/issues/8101
+  // To avoid generating invalid identifiers - if the input string
+  // starts with _<digit> (or multiple underscores then digit) then
+  // we need to preserve the underscore as an identifier cannot start
+  // with a digit.
+  // This check is being done after the loop rather than before
+  // to handle the case where there are multiple underscores before the
+  // first digit. We let them all be consumed so we can see if we would
+  // start with a digit.
+  // Note: not preserving leading underscores for all otherwise valid identifiers
+  // so as to not break anything that relies on the existing behaviour
+  if (result.size() > 0 && ('0' <= result[0] && result[0] <= '9')
+      && input.size() > 0 && input[0] == '_')
+  {
+      result.insert(0, 1, '_');
   }
   return result;
 }
