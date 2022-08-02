@@ -383,12 +383,6 @@ py_proto_library(
 ################################################################################
 
 alias(
-    name = "conformance_test_runner",
-    actual = "//conformance:conformance_test_runner",
-    visibility = ["//visibility:public"],
-)
-
-alias(
     name = "test_messages_proto2_proto",
     actual = "//src/google/protobuf:test_messages_proto2_proto",  # proto_library
     visibility = ["//visibility:public"],

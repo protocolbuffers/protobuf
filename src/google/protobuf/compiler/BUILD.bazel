@@ -11,6 +11,7 @@ load(
     "strip_prefix",
 )
 load("@rules_proto//proto:defs.bzl", "proto_library")
+load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 proto_library(
@@ -113,6 +114,18 @@ alias(
     name = "protoc",
     actual = "//:protoc",
     visibility = ["//visibility:public"],
+)
+
+
+# Test that the protoc binary is built for the correct architecture.
+aarch64_test(
+    name = "protoc_aarch64_test",
+    bazel_binaries = ["//:protoc"],
+)
+
+x86_64_test(
+    name = "protoc_x86_64_test",
+    bazel_binaries = ["//:protoc"],
 )
 
 ################################################################################

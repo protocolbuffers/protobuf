@@ -564,6 +564,7 @@ def objc_proto_library(
         protoc = protoc,
         testonly = testonly,
         visibility = visibility,
+        tags = ["manual"],
     )
 
     proto_gen(
@@ -576,6 +577,7 @@ def objc_proto_library(
         protoc = protoc,
         testonly = testonly,
         visibility = visibility,
+        tags = ["manual"],
     )
 
     objc_library(
@@ -586,6 +588,10 @@ def objc_proto_library(
         includes = includes,
         testonly = testonly,
         visibility = visibility,
+        # Don't auto-expand these targets until target_compatible_with
+        # works.  See https://github.com/bazelbuild/bazel/issues/12897.
+        tags = ["manual"],
+        target_compatible_with = ["@platforms//os:osx"],
         **kwargs
     )
 

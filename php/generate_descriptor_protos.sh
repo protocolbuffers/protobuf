@@ -5,6 +5,12 @@
 
 set -e
 
+PROTOC=protoc
+if [ ! -f $PROTOC ]; then
+  bazel build -c opt //:protoc
+  PROTOC=bazel-bin/protoc
+fi
+
 if test ! -e src/google/protobuf/stubs/common.h; then
   cat >&2 << __EOF__
 Could not find source code.  Make sure you are running this script from the
@@ -13,8 +19,8 @@ __EOF__
   exit 1
 fi
 
-bazel-bin/protoc --php_out=internal:php/src google/protobuf/descriptor.proto
-bazel-bin/protoc --php_out=internal_generate_c_wkt:php/src \
+$PROTOC --php_out=internal:php/src google/protobuf/descriptor.proto
+$PROTOC --php_out=internal_generate_c_wkt:php/src \
   src/google/protobuf/any.proto \
   src/google/protobuf/api.proto \
   src/google/protobuf/duration.proto \

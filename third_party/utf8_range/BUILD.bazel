@@ -1,3 +1,4 @@
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 
 # Pulled from: https://github.com/cyb70289/utf8
 
@@ -14,10 +15,23 @@ cc_library(
 
 filegroup(
     name = "all_files",
-    srcs = glob(["*"]),
+    srcs = glob([
+        "*.h",
+        "*.c",
+    ]) + [
+        "BUILD.bazel",
+        "LICENSE",
+    ],
     visibility = [
         "//cmake:__pkg__",
         "//php:__pkg__",
         "//ruby:__pkg__",
     ],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = [":all_files"],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//pkg:__pkg__"],
 )

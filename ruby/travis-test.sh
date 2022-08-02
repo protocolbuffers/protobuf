@@ -12,8 +12,6 @@ test_version() {
     --action_env=GEM_HOME \
     --test_env=KOKORO_RUBY_VERSION=$version"
 
-  RUBY_CONFORMANCE=test_ruby
-
   if [[ $version == jruby-9* ]] ; then
     bash --login -c \
       "rvm install $version && rvm use $version && rvm get head && \

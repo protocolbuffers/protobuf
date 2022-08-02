@@ -1,4 +1,4 @@
-FROM i386/debian:jessie
+FROM i386/debian:stretch
 
 # Install dependencies.  We start with the basic ones require to build protoc
 # and the C++ build
@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
   autotools-dev \
   build-essential \
   bzip2 \
+  ca-certificates \
   ccache \
   curl \
   gcc \
@@ -16,6 +17,7 @@ RUN apt-get update && apt-get install -y \
   libc6-dev \
   libgtest-dev \
   libtool \
+  cmake \
   make \
   parallel \
   time \
@@ -28,7 +30,7 @@ RUN apt-get update && apt-get install -y \
 # Install php dependencies
 RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
   bison \
-  php5 \
+  php7.0 \
   libcurl4-openssl-dev \
   libssl-dev \
   libxml2-dev \
@@ -38,7 +40,7 @@ RUN apt-get clean && apt-get update && apt-get install -y --force-yes \
   && apt-get clean
 
 # Install other dependencies
-RUN wget http://ftp.gnu.org/gnu/bison/bison-2.6.4.tar.gz -O /var/local/bison-2.6.4.tar.gz
+RUN wget http://ftp.gnu.org/gnu/bison/bison-2.6.4.tar.gz -O /var/local/bison-2.6.4.tar.gz --no-check-certificate
 RUN cd /var/local \
   && tar -zxvf bison-2.6.4.tar.gz \
   && cd /var/local/bison-2.6.4 \
@@ -54,25 +56,6 @@ RUN php -r "unlink('composer-setup.php');"
 
 # Download php source code
 RUN git clone https://github.com/php/php-src
-
-# php 5.6
-RUN cd php-src \
-  && git checkout PHP-5.6.39 \
-  && ./buildconf --force
-RUN cd php-src \
-  && ./configure \
-  --enable-bcmath \
-  --enable-mbstring \
-  --with-openssl \
-  --with-zlib \
-  --prefix=/usr/local/php-5.6 \
-  && make \
-  && make install \
-  && make clean
-
-RUN wget -O phpunit https://phar.phpunit.de/phpunit-5.phar \
-  && chmod +x phpunit \
-  && mv phpunit /usr/local/php-5.6/bin
 
 # php 7.0
 RUN wget https://github.com/php/php-src/archive/php-7.0.33.tar.gz -O /var/local/php-7.0.33.tar.gz
@@ -211,7 +194,7 @@ RUN wget -O phpunit https://phar.phpunit.de/phpunit-7.5.0.phar \
   && mv phpunit /usr/local/php-7.3-zts/bin
 
 # php 7.4
-RUN wget https://ftp.gnu.org/gnu/bison/bison-3.0.1.tar.gz -O /var/local/bison-3.0.1.tar.gz
+RUN wget https://ftp.gnu.org/gnu/bison/bison-3.0.1.tar.gz -O /var/local/bison-3.0.1.tar.gz --no-check-certificate
 RUN cd /var/local \
   && tar -zxvf bison-3.0.1.tar.gz \
   && cd /var/local/bison-3.0.1 \

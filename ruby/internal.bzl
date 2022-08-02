@@ -1,6 +1,7 @@
 def internal_ruby_extension(
         name,
-        extension):
+        extension,
+        deps = []):
     """Bazel rule to wrap up a generated ruby extension.
 
     NOTE: the rule is only an internal workaround. The interface may change and
@@ -9,12 +10,13 @@ def internal_ruby_extension(
     Args:
       name: the name of the target.
       extension: the path of the extension file.
+      deps: extra dependencies to add
     """
 
 
     native.genrule(
         name = name,
-        srcs = [
+        srcs = deps + [
             "Rakefile",
             ":srcs",
             ":test_ruby_protos",

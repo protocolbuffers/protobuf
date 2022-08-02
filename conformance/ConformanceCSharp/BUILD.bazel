@@ -62,3 +62,19 @@ filegroup(
     data = [":package"],
     visibility = ["//visibility:public"],
 )
+
+################################################################################
+# Distribution files
+################################################################################
+
+pkg_files(
+    name = "dist_files",
+    srcs = [
+        "BUILD.bazel",
+        "ConformanceCSharp.csproj",
+        "Program.cs",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//conformance:__pkg__"],
+)
+

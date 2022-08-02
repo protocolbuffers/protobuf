@@ -117,11 +117,8 @@ inline_sh_test(
 
 pkg_files(
     name = "dist_files",
-    srcs = glob([
-        "keys/*",
-        "protos/*",
-        "src/**/*.cs*",  # .cs and .csproj
-    ]) + [
+    srcs = [
+        ":srcs",
         ".editorconfig",
         ".gitignore",
         "BUILD.bazel",
@@ -137,9 +134,6 @@ pkg_files(
         "buildall.sh",
         "generate_protos.sh",
         "install_dotnet_sdk.ps1",
-        "src/Google.Protobuf.Benchmarks/wrapper_benchmark_messages.proto",
-        "src/Google.Protobuf.Test/testprotos.pb",
-        "src/Google.Protobuf.sln",
     ],
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//pkg:__pkg__"],

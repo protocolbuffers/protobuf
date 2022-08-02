@@ -393,18 +393,26 @@ cc_library(
     ],
 )
 
+py_test(
+    name = "python_version",
+    srcs = ["python_version.py"],
+)
+
 conformance_test(
     name = "conformance_test",
     failure_list = "//conformance:failure_list_python.txt",
     testee = "//conformance:conformance_python",
     text_format_failure_list = "//conformance:text_format_failure_list_python.txt",
+    env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "python"},
 )
 
+# Note: this requires --define=use_fast_cpp_protos=true
 conformance_test(
     name = "conformance_cpp_test",
     failure_list = "//conformance:failure_list_python.txt",
     testee = "//conformance:conformance_python",
     text_format_failure_list = "//conformance:text_format_failure_list_python_cpp.txt",
+    env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "cpp"},
 )
 
 ################################################################################
@@ -428,6 +436,7 @@ pkg_files(
         "google/protobuf/python_protobuf.h",
         "internal.bzl",
         "mox.py",
+        "python_version.py",
         "release.sh",
         "setup.cfg",
         "setup.py",

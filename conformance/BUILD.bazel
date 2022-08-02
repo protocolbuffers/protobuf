@@ -302,12 +302,16 @@ objc_library(
         "//:test_messages_proto3_objc_proto",
     ],
     testonly = 1,
+    # See https://github.com/bazelbuild/bazel/issues/12897.
+    tags = ["manual"],
 )
 
 cc_binary(
     name = "conformance_objc",
     deps = [":conformance_objc_lib"],
     testonly = 1,
+    # See https://github.com/bazelbuild/bazel/issues/12897.
+    tags = ["manual"],
     visibility = ["//objectivec:__subpackages__"],
 )
 
@@ -325,6 +329,10 @@ inline_sh_binary(
     testonly = 1,
     visibility = ["//ruby:__subpackages__"],
 )
+
+################################################################################
+# Distribution files
+################################################################################
 
 filegroup(
     name = "all_files",
@@ -345,7 +353,7 @@ pkg_files(
             "failure_list_jruby.txt",
             "update_failure_list.py",
         ],
-    ),
+    ) + ["//conformance/ConformanceCSharp:dist_files"],
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//pkg:__pkg__"],
 )

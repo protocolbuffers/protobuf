@@ -4,8 +4,11 @@ set -ex
 
 cd `dirname $0`/..
 
-bazel build -c opt //:protoc
-PROTOC=bazel-bin/protoc
+PROTOC=$(pwd)/protoc
+if [ ! -f $PROTOC ]; then
+  bazel build -c opt //:protoc
+  PROTOC=$(pwd)/bazel-bin/protoc
+fi
 
 if [[ -d php/tmp && -z $(find php/tests/proto $PROTOC -newer php/tmp) ]]; then
   # Generated protos are already present and up to date, so we can skip protoc.

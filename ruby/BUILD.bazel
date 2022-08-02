@@ -25,7 +25,6 @@ config_setting(
 filegroup(
     name = "srcs",
     srcs = glob([
-        "ext/google/protobuf_c/*",
         "lib/**/*.rb",
         "src/**/*.proto",
     ]) + [
@@ -39,16 +38,19 @@ filegroup(
 internal_ruby_extension(
     name = "protobuf_c_mac",
     extension = "lib/google/protobuf_c.bundle",
+    deps = glob(["ext/google/protobuf_c/*"]),
 )
 
 internal_ruby_extension(
     name = "protobuf_c",
     extension = "lib/google/protobuf_c.so",
+    deps = glob(["ext/google/protobuf_c/*"]),
 )
 
 internal_ruby_extension(
     name = "protobuf_java",
     extension = "lib/google/protobuf_java.jar",
+    deps = glob(["src/**/*.java"]),
 )
 
 filegroup(
@@ -145,27 +147,15 @@ conformance_test(
 pkg_files(
     name = "dist_files",
     srcs = glob([
-        "compatibility_tests/v3.0.0/**/*",
-        "ext/google/protobuf_c/*",
-        "src/main/java/com/google/protobuf/jruby/*.java",
         "tests/*.proto",
         "tests/*.rb",
     ]) + [
+        ":srcs",
         ".gitignore",
         "BUILD.bazel",
         "internal.bzl",
         "Gemfile",
         "README.md",
-        "Rakefile",
-        "google-protobuf.gemspec",
-        "lib/google/protobuf.rb",
-        "lib/google/protobuf/descriptor_dsl.rb",
-        "lib/google/protobuf/message_exts.rb",
-        "lib/google/protobuf/repeated_field.rb",
-        "lib/google/protobuf/well_known_types.rb",
-        "pom.xml",
-        "src/main/java/google/ProtobufJavaService.java",
-        "src/main/sentinel.proto",
         "travis-test.sh",
     ],
     strip_prefix = strip_prefix.from_root(""),
