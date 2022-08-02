@@ -346,6 +346,16 @@ extend TestAllExtensions {
   optional bytes oneof_bytes_extension = 114;
 }
 
+message TestMixedFieldsAndExtensions {
+  optional int32 a = 1;
+  repeated fixed32 b = 3;
+  extensions 2, 4;
+  extend TestMixedFieldsAndExtensions {
+    optional int32 c = 2;
+    repeated fixed32 d = 4;
+  }
+}
+
 message TestGroup {
   optional group OptionalGroup = 16 {
     optional int32 a = 17;

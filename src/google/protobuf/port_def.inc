@@ -699,7 +699,7 @@
 // uses Clang 12.0.5.
 # elif !defined(__CYGWIN__) && \
     __has_cpp_attribute(clang::require_constant_initialization) && \
-    ((defined(__APPLE__) && PROTOBUF_CLANG_MIN(13, 0)) ||             \
+        ((defined(__APPLE__) && PROTOBUF_CLANG_MIN(13, 0)) ||             \
      (!defined(__APPLE__) && PROTOBUF_CLANG_MIN(12, 0)))
 #  define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
 #  define PROTOBUF_CONSTEXPR constexpr

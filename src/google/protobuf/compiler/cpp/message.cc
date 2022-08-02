@@ -2205,11 +2205,12 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
         "  if (IsSplitMessageDefault()) {\n"
         "    void* chunk = "
         "::PROTOBUF_NAMESPACE_ID::internal::CreateSplitMessageGeneric("
-        "GetArenaForAllocation(), &$1$, sizeof(Impl_::Split));\n"
+        "GetArenaForAllocation(), &$1$, sizeof(Impl_::Split), this, &$2$);\n"
         "    $split$ = reinterpret_cast<Impl_::Split*>(chunk);\n"
         "  }\n"
         "}\n",
-        DefaultInstanceName(descriptor_, options_, /*split=*/true));
+        DefaultInstanceName(descriptor_, options_, /*split=*/true),
+        DefaultInstanceName(descriptor_, options_, /*split=*/false));
   }
 
   GenerateVerify(printer);

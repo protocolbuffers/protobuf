@@ -199,17 +199,29 @@ inline ThreadSafeArenaStatsHandle Sample() {
 // Returns a global Sampler.
 ThreadSafeArenazSampler& GlobalThreadSafeArenazSampler();
 
+using ThreadSafeArenazConfigListener = void (*)();
+void SetThreadSafeArenazConfigListener(ThreadSafeArenazConfigListener l);
+
 // Enables or disables sampling for thread safe arenas.
 void SetThreadSafeArenazEnabled(bool enabled);
+void SetThreadSafeArenazEnabledInternal(bool enabled);
+
+// Returns true if sampling is on, false otherwise.
+bool IsThreadSafeArenazEnabled();
 
 // Sets the rate at which thread safe arena will be sampled.
 void SetThreadSafeArenazSampleParameter(int32_t rate);
+void SetThreadSafeArenazSampleParameterInternal(int32_t rate);
 
 // Returns the rate at which thread safe arena will be sampled.
 int32_t ThreadSafeArenazSampleParameter();
 
 // Sets a soft max for the number of samples that will be kept.
 void SetThreadSafeArenazMaxSamples(int32_t max);
+void SetThreadSafeArenazMaxSamplesInternal(int32_t max);
+
+// Returns the max number of samples that will be kept.
+size_t ThreadSafeArenazMaxSamples();
 
 // Sets the current value for when arenas should be next sampled.
 void SetThreadSafeArenazGlobalNextSample(int64_t next_sample);

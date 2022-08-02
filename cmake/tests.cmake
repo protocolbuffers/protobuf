@@ -130,7 +130,7 @@ if (MSVC)
     /wd4146 # unary minus operator applied to unsigned type, result still unsigned
   )
 endif()
-target_link_libraries(tests protobuf-lite-test-common protobuf-test-common ${protobuf_LIB_PROTOC} ${protobuf_LIB_PROTOBUF_LITE} GTest::gmock_main)
+target_link_libraries(tests protobuf-lite-test-common protobuf-test-common ${protobuf_LIB_PROTOC} ${protobuf_LIB_PROTOBUF} GTest::gmock_main)
 
 set(test_plugin_files
   ${test_plugin_files}
