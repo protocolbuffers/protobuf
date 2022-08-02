@@ -42,8 +42,7 @@ to use the github main version at HEAD, or you need to modify protobuf code,
 or you are using C++, it's recommended to build your own protoc binary from
 source.
 
-If you would like to build protoc binary from source, see the [C++ Installation
-Instructions](src/README.md).
+If you would like to build protoc binary from source, see the [C++ Installation Instructions](src/README.md).
 
 Protobuf Runtime Installation
 -----------------------------

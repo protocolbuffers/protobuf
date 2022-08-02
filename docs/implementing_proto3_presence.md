@@ -131,11 +131,11 @@ These options are demonstrated below:
 
 ```
 # One option:
-$ ./src/protoc test.proto --cpp_out=. --experimental_allow_proto3_optional
+$ protoc test.proto --cpp_out=. --experimental_allow_proto3_optional
 
 # Another option:
 $ cp test.proto test_proto3_optional.proto
-$ ./src/protoc test_proto3_optional.proto --cpp_out=.
+$ protoc test_proto3_optional.proto --cpp_out=.
 $
 ```
 
@@ -152,7 +152,7 @@ If you now try to invoke your own code generator with the test proto, you will
 run into a different error:
 
 ```
-$ ./src/protoc test_proto3_optional.proto --my_codegen_out=.
+$ protoc test_proto3_optional.proto --my_codegen_out=.
 test_proto3_optional.proto: is a proto3 file that contains optional fields, but
 code generator --my_codegen_out hasn't been updated to support optional fields in
 proto3. Please ask the owner of this code generator to support proto3 optional.
@@ -201,7 +201,7 @@ Once you have added this, you should now be able to successfully use your code
 generator to generate a file containing proto3 optional fields:
 
 ```
-$ ./src/protoc test_proto3_optional.proto --my_codegen_out=.
+$ protoc test_proto3_optional.proto --my_codegen_out=.
 ```
 
 ### Updating Your Code Generator
