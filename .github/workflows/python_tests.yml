@@ -89,6 +89,8 @@ jobs:
         run: pip install tzdata
         # Only needed on Windows, Linux ships with tzdata.
         if: ${{ contains(matrix.os, 'windows') }}
+      - name: Install numpy
+        run: pip install numpy
       - name: Install Protobuf Wheels
         run: pip install -vvv --no-index --find-links wheels protobuf protobuftests
       - name: Test that module is importable
