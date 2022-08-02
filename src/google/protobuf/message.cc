@@ -215,7 +215,9 @@ uint64_t Message::GetInvariantPerBuild(uint64_t salt) {
 
 namespace internal {
 void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
-                                size_t size) {
+                                size_t size, const void* message,
+                                const void* default_message) {
+  GOOGLE_DCHECK_NE(message, default_message);
   void* split =
       (arena == nullptr) ? ::operator new(size) : arena->AllocateAligned(size);
   memcpy(split, default_split, size);
