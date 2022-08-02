@@ -24112,7 +24112,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       if (other == null) {
         return;
       }
-      foo_.Add(other.foo_);
+      foo_.MergeFrom(other.foo_);
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
 
@@ -30708,7 +30708,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         }
         OptionalGroup.MergeFrom(other.OptionalGroup);
       }
-      stringStringMap_.Add(other.stringStringMap_);
+      stringStringMap_.MergeFrom(other.stringStringMap_);
       switch (other.OneofFieldCase) {
         case OneofFieldOneofCase.OneofUint32:
           OneofUint32 = other.OneofUint32;
