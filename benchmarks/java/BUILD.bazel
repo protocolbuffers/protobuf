@@ -1,7 +1,7 @@
 load("@rules_java//java:defs.bzl", "java_library", "java_binary")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
-load("//benchmarks:defs.bzl", "benchmark_test")
+load("//benchmarks:internal.bzl", "internal_benchmark_test")
 
 java_binary(
     name = "java_benchmark_jar",
@@ -38,7 +38,7 @@ inline_sh_binary(
     """
 )
 
-benchmark_test(
+internal_benchmark_test(
     name = "java",
     binary = ":java_benchmark",
     datasets = ["//benchmarks/datasets"],

@@ -27,10 +27,7 @@ function run_test() {
 
 set -ex
 
-PROTOC=${2:-../../../bazel-bin/protoc}
-pushd $(dirname $PROTOC)
-PROTOC=$(pwd)/protoc
-popd
+PROTOC=$(realpath ${2:-../../../bazel-bin/protoc})
 
 # Change to the script's directory.
 cd $(dirname $0)
@@ -50,8 +47,6 @@ OLD_VERSION_PROTOC=https://repo1.maven.org/maven2/com/google/protobuf/protoc/$OL
 echo "Running compatibility tests with $OLD_VERSION"
 
 # Check protoc
-pwd
-ls -l $PROTOC
 [ -f $PROTOC ] || {
   echo "[ERROR]: Please build protoc first."
   exit 1

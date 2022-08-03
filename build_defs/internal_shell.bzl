@@ -11,7 +11,7 @@ def inline_sh_binary(
     are likely to be non-hermetic, with implicit system dependencies.
 
     NOTE: the rule is only an internal workaround. The interface may change and
-    the rule may be removed when everything is properly "Bazelfied".
+    the rule may be removed when everything is properly "Bazelified".
 
     Args:
       name: the name of the inline_sh_binary.
@@ -55,7 +55,7 @@ def inline_sh_test(
     are likely to be non-hermetic, with implicit system dependencies.
 
     NOTE: the rule is only an internal workaround. The interface may change and
-    the rule may be removed when everything is properly "Bazelfied".
+    the rule may be removed when everything is properly "Bazelified".
 
     Args:
       name: the name of the inline_sh_binary.

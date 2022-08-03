@@ -2,7 +2,6 @@
 #
 # Install Bazel 4.0.0.
 use_bazel.sh 4.0.0
-bazel version
 
 # Change to repo root
 cd $(dirname $0)/../../..
@@ -24,19 +23,17 @@ echo $datasets
 popd
 
 # build and run Python benchmark
-echo "[" > python_result.json
 echo "benchmarking pure python..."
 ${SCRIPT_ROOT}/kokoro/common/bazel_wrapper.sh run //benchmarks/python:python_benchmark -- \
-	--json --behavior_prefix="pure-python-benchmark" $datasets >> python_result.json
-echo "," >> "python_result.json"
+	--json --behavior_prefix="pure-python-benchmark" $datasets > /tmp/python1.json
 echo "benchmarking python cpp reflection..."
 ${SCRIPT_ROOT}/kokoro/common/bazel_wrapper.sh run //benchmarks/python:python_benchmark --define=use_fast_cpp_protos=true -- \
-	--json --behavior_prefix="cpp-reflection-benchmark" $datasets >> python_result.json
-echo "," >> "python_result.json"
+	--json --behavior_prefix="cpp-reflection-benchmark" $datasets > /tmp/python2.json
 echo "benchmarking python cpp generated code..."
 ${SCRIPT_ROOT}/kokoro/common/bazel_wrapper.sh run //benchmarks/python:python_benchmark --define=use_fast_cpp_protos=true -- \
-	--json --cpp_generated --behavior_prefix="cpp-generated-code-benchmark" $datasets >> python_result.json
-echo "]" >> "python_result.json"
+	--json --cpp_generated --behavior_prefix="cpp-generated-code-benchmark" $datasets >> /tmp/python3.json
+
+jq -s . /tmp/python1.json /tmp/python2.json /tmp/python3.json > python_result.json
 
 # build and run C++ benchmark
 echo "benchmarking cpp..."

@@ -1,6 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("//benchmarks:defs.bzl", "benchmark_test")
+load("//benchmarks:internal.bzl", "internal_benchmark_test")
 
 cc_binary(
     name = "cpp_benchmark",
@@ -16,7 +16,7 @@ cc_binary(
     ],
 )
 
-benchmark_test(
+internal_benchmark_test(
     name = "cpp",
     binary = ":cpp_benchmark",
     datasets = [

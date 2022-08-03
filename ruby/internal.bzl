@@ -6,7 +6,7 @@ def internal_ruby_extension(
     """Bazel rule to wrap up a generated ruby extension.
 
     NOTE: the rule is only an internal workaround. The interface may change and
-    the rule may be removed when everything is properly "Bazelfied".
+    the rule may be removed when everything is properly "Bazelified".
 
     Args:
       name: the name of the target.

@@ -5,7 +5,7 @@ PLEASE DO NOT DEPEND ON THE CONTENTS OF THIS FILE, IT IS UNSTABLE.
 
 load("//:protobuf.bzl", "internal_php_proto_library")
 
-def proto3_data(
+def proto3_from_proto2_data(
     name,
     srcs,
     **kwargs):

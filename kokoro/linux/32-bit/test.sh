@@ -2,6 +2,9 @@
 
 set -eux
 
+# Change to repo root
+cd $(dirname $0)/../../..
+
 use_php() {
   VERSION=$1
   export PATH=/usr/local/php-${VERSION}/bin:$PATH
@@ -33,7 +36,6 @@ build_php_c() {
   test_php_c
 }
 
-git submodule update --init --recursive
 cmake .
 cmake --build . --target protoc -- -j20
 export PROTOC=$(pwd)/protoc

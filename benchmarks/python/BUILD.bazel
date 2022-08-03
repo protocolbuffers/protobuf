@@ -1,8 +1,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@rules_python//python:defs.bzl", "py_library", "py_binary")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("//:protobuf.bzl", "py_proto_library")
-load("//benchmarks:defs.bzl", "benchmark_test")
+load("//benchmarks:internal.bzl", "internal_benchmark_test")
 
 cc_binary(
     name = "libbenchmark_messages.so",
@@ -35,14 +34,14 @@ py_binary(
     }),
 )
 
-benchmark_test(
+internal_benchmark_test(
     name = "python",
     binary = ":python_benchmark",
     datasets = ["//benchmarks/datasets"],
 )
 
 # Note: this requires --define=use_fast_cpp_protos=true
-benchmark_test(
+internal_benchmark_test(
     name = "cpp_reflection",
     binary = ":python_benchmark",
     datasets = ["//benchmarks/datasets"],
@@ -50,7 +49,7 @@ benchmark_test(
 )
 
 # Note: this requires --define=use_fast_cpp_protos=true
-benchmark_test(
+internal_benchmark_test(
     name = "cpp_generated_code",
     binary = ":python_benchmark",
     datasets = ["//benchmarks/datasets"],

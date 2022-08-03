@@ -3,7 +3,7 @@ load("@rules_java//java:defs.bzl", "java_proto_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//:protobuf.bzl", "internal_py_proto_library", "internal_csharp_proto_library")
-load("//benchmarks/util:compatibility.bzl", "proto3_data", "php_proto3_library")
+load("//benchmarks/util:compatibility.bzl", "proto3_from_proto2_data", "php_proto3_library")
 
 filegroup(
     name = "datasets",
@@ -15,7 +15,7 @@ filegroup(
     ],
 )
 
-proto3_data(
+proto3_from_proto2_data(
     name = "proto3_datasets",
     srcs = [
         "dataset.google_message1_proto2.pb",

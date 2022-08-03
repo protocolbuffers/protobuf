@@ -369,11 +369,6 @@ if __name__ == '__main__':
       sys.argv.remove(warnings_as_errors)
 
     # C++ implementation extension
-    print(libraries)
-    print(extra_objects)
-    print(message_extra_link_args)
-    print(library_dirs)
-    print(extra_compile_args)
     ext_module_list.extend([
         Extension(
             'google.protobuf.pyext._message',

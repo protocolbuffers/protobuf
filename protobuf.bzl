@@ -428,7 +428,7 @@ def internal_objc_proto_library(
       **kwargs: other keyword arguments that are passed to py_library.
 
     """
-    full_deps = [d for d in deps]
+    full_deps = [d + "_genproto" for d in deps]
 
     if proto_deps:
         _proto_gen(
@@ -438,14 +438,14 @@ def internal_objc_proto_library(
             protoc = protoc,
             includes = includes,
         )
-        full_deps.append(":%s_deps" % name)
+        full_deps.append(":%s_deps_genproto" % name)
 
     # Note: we need to run the protoc build twice to get separate targets for
     # the generated header and the source files.
     _proto_gen(
         name = name + "_genproto_hdrs",
         srcs = srcs,
-        deps = [s + "_genproto" for s in full_deps],
+        deps = full_deps,
         langs = ["objc"],
         out_type = "hdrs",
         includes = includes,
@@ -456,9 +456,9 @@ def internal_objc_proto_library(
     )
 
     _proto_gen(
-        name = name + "_genproto_srcs",
+        name = name + "_genproto",
         srcs = srcs,
-        deps = [s + "_genproto" for s in full_deps],
+        deps = full_deps,
         langs = ["objc"],
         out_type = "srcs",
         includes = includes,
@@ -471,7 +471,7 @@ def internal_objc_proto_library(
     objc_library(
         name = name,
         hdrs = [name + "_genproto_hdrs"],
-        non_arc_srcs = [name + "_genproto_srcs"],
+        non_arc_srcs = [name + "_genproto"],
         deps = [default_runtime],
         includes = includes,
         testonly = testonly,
@@ -601,7 +601,7 @@ def _source_proto_library(
     if lang != None:
         langs = [lang]
 
-    full_deps = [d for d in deps]
+    full_deps = [d + "_genproto" for d in deps]
 
     if proto_deps:
         _proto_gen(
@@ -611,12 +611,12 @@ def _source_proto_library(
             protoc = protoc,
             includes = includes,
         )
-        full_deps.append(":%s_deps" % name)
+        full_deps.append(":%s_deps_genproto" % name)
 
     _proto_gen(
         name = name + "_genproto",
         srcs = srcs,
-        deps = [s + "_genproto" for s in full_deps],
+        deps = full_deps,
         langs = langs,
         outs = outs,
         includes = includes,

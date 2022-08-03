@@ -1,4 +1,4 @@
-load("//benchmarks:defs.bzl", "benchmark_test")
+load("//benchmarks:internal.bzl", "internal_benchmark_test")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 
@@ -21,7 +21,7 @@ inline_sh_binary(
     testonly = 1,
 )
 
-benchmark_test(
+internal_benchmark_test(
     name = "php",
     binary = ":php_benchmark",
     datasets = ["//benchmarks/datasets:proto3_datasets"],
@@ -47,7 +47,7 @@ inline_sh_binary(
     testonly = 1,
 )
 
-benchmark_test(
+internal_benchmark_test(
     name = "php_c",
     binary = ":php_c_benchmark",
     datasets = ["//benchmarks/datasets:proto3_datasets"],

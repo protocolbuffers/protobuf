@@ -60,42 +60,6 @@ filegroup(
     visibility = ["//src/google/protobuf/compiler/csharp:__pkg__"],
 )
 
-"""
-TODO(mkruskal) Get these hooked up to generate code instead of checking it in.
-csharp_proto_library(
-    name = "test_protos",
-    srcs = [
-        "protos/map_unittest_proto3.proto",
-        "protos/unittest_issues.proto",
-        "protos/unittest_custom_options_proto3.proto",
-        "protos/unittest_proto3.proto",
-        "protos/unittest_import_proto3.proto",
-        "protos/unittest_import_public_proto3.proto",
-        "protos/unittest.proto",
-        "protos/unittest_import.proto",
-        "protos/unittest_import_public.proto",
-        "protos/unittest_issue6936_a.proto",
-        "protos/unittest_issue6936_b.proto",
-        "protos/unittest_issue6936_c.proto",
-        "protos/unittest_selfreferential_options.proto",
-    ],
-    proto_deps = ["//:well_known_protos"],
-    includes = [".", "csharp/protos", "src"],
-    visibility = [
-        "//benchmarks/datasets:__pkg__",
-    ],
-)
-
-csharp_proto_library(
-    name = "benchmark_protos",
-    srcs = glob(["src/Google.Protobuf.Benchmarks/*.proto"]),
-    includes = [".", "csharp/src/Google.Protobuf.Benchmarks", "src"],
-    visibility = [
-        "//benchmarks/datasets:__pkg__",
-    ],
-)
-"""
-
 inline_sh_test(
     name = "tests",
     srcs = [
