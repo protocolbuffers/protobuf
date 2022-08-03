@@ -20,4 +20,4 @@ docker run \
   "$@" \
   -v $GIT_REPO_ROOT:/workspace \
   $CONTAINER_IMAGE \
-  bash -l "/workspace/kokoro/linux/32-bit/test.sh"
+  bash -l "/workspace/kokoro/linux/32-bit/test_php.sh"

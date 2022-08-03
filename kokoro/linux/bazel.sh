@@ -10,26 +10,14 @@ cd $(dirname $0)/../..
 GIT_REPO_ROOT=`pwd`
 rm -rf $GIT_REPO_ROOT/logs
 
-if [[ -z "${PLATFORM}" ]]; then
-  PLATFORM_CONFIG=""
-else
-  PLATFORM_CONFIG="--config=${PLATFORM}"
-fi
-
 ENVS=()
 
 # Check for specific versions pinned to the docker image.  In these cases we
 # want to forward the environment variable to tests, so that they can verify
 # that the correct version is being picked up by Bazel.
-if [ -n "${KOKORO_JAVA_VERSION}" ]; then
-  ENVS+="--test_env=KOKORO_JAVA_VERSION=${KOKORO_JAVA_VERSION}"
-fi
-if [ -n "${KOKORO_PYTHON_VERSION}" ]; then
-  ENVS+="--test_env=KOKORO_PYTHON_VERSION=${KOKORO_PYTHON_VERSION}"
-fi
-if [ -n "${KOKORO_RUBY_VERSION}" ]; then
-  ENVS+="--test_env=KOKORO_RUBY_VERSION=${KOKORO_RUBY_VERSION}"
-fi
+ENVS+=("--test_env=KOKORO_JAVA_VERSION")
+ENVS+=("--test_env=KOKORO_PYTHON_VERSION")
+ENVS+=("--test_env=KOKORO_RUBY_VERSION")
 
 if [ -n "$BAZEL_ENV" ]; then
   for env in $BAZEL_ENV; do

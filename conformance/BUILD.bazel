@@ -39,12 +39,12 @@ exports_files([
 
 cc_proto_library(
     name = "test_messages_proto2_proto_cc",
-    deps = ["//:test_messages_proto2_proto"],
+    deps = ["//src/google/protobuf:test_messages_proto2_proto"],
 )
 
 cc_proto_library(
     name = "test_messages_proto3_proto_cc",
-    deps = ["//:test_messages_proto3_proto"],
+    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
 
 proto_library(

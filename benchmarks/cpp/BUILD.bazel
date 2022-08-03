@@ -2,6 +2,7 @@ load("@rules_cc//cc:defs.bzl", "cc_binary")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("//benchmarks:internal.bzl", "internal_benchmark_test")
 
+# The benchmark binary which can be run over any dataset.
 cc_binary(
     name = "cpp_benchmark",
     srcs = [
@@ -16,6 +17,7 @@ cc_binary(
     ],
 )
 
+# A pre-configured binary using the checked in datasets.
 internal_benchmark_test(
     name = "cpp",
     binary = ":cpp_benchmark",

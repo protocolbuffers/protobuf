@@ -2,10 +2,10 @@ load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 
 inline_sh_binary(
-    name = "build",
+    name = "build_conformance_test",
     srcs = ["ConformanceCSharp.csproj"],
     cmd = "dotnet build -c Release $(SRCS)",
-    visibility = ["//php:__subpackages__"],
+    visibility = ["//visibility:private"],
 )
 
 CONFORMANCE_DEPS = [
@@ -43,10 +43,10 @@ genrule(
         "//csharp:srcs",
         "//benchmarks/datasets",
     ],
-    tools = [":build"],
+    tools = [":build_conformance_test"],
     outs = CONFORMANCE_DEPS + ["ConformanceCSharp.dll"],
     cmd = "cp $(location //conformance:conformance_csharp_proto) conformance/ConformanceCSharp\n"+
-          "DOTNET_CLI_HOME=/tmp ./$(location :build)\n" +
+          "DOTNET_CLI_HOME=/tmp ./$(location :build_conformance_test)\n" +
           "cp -r conformance/ConformanceCSharp/bin/Release/netcoreapp3.1/* $(RULEDIR)\n",
 )
 

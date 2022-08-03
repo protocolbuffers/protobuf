@@ -382,37 +382,13 @@ internal_py_proto_library(
 # Conformance tests
 ################################################################################
 
-alias(
-    name = "test_messages_proto2_proto",
-    actual = "//src/google/protobuf:test_messages_proto2_proto",  # proto_library
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "test_messages_proto2_proto_srcs",
-    actual = "//src/google/protobuf:test_messages_proto2.proto",
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "test_messages_proto3_proto",
-    actual = "//src/google/protobuf:test_messages_proto3_proto",  # proto_library
-    visibility = ["//visibility:public"],
-)
-
-alias(
-    name = "test_messages_proto3_proto_srcs",
-    actual = "//src/google/protobuf:test_messages_proto3.proto",
-    visibility = ["//visibility:public"],
-)
-
 cc_proto_library(
     name = "test_messages_proto2_cc_proto",
     visibility = [
         "//conformance:__pkg__",
         "//src:__subpackages__",
     ],
-    deps = [":test_messages_proto2_proto"],
+    deps = ["//src/google/protobuf:test_messages_proto2_proto"],
 )
 
 cc_proto_library(
@@ -421,7 +397,7 @@ cc_proto_library(
         "//conformance:__pkg__",
         "//src:__subpackages__",
     ],
-    deps = [":test_messages_proto3_proto"],
+    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
 
 java_proto_library(
@@ -430,7 +406,7 @@ java_proto_library(
         "//conformance:__pkg__",
         "//java:__subpackages__",
     ],
-    deps = [":test_messages_proto2_proto"],
+    deps = ["//src/google/protobuf:test_messages_proto2_proto"],
 )
 
 java_proto_library(
@@ -439,7 +415,7 @@ java_proto_library(
         "//conformance:__pkg__",
         "//java:__subpackages__",
     ],
-    deps = [":test_messages_proto3_proto"],
+    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
 
 java_lite_proto_library(
@@ -448,7 +424,7 @@ java_lite_proto_library(
         "//conformance:__pkg__",
         "//java:__subpackages__",
     ],
-    deps = [":test_messages_proto2_proto"],
+    deps = ["//src/google/protobuf:test_messages_proto2_proto"],
 )
 
 java_lite_proto_library(
@@ -457,12 +433,12 @@ java_lite_proto_library(
         "//conformance:__pkg__",
         "//java:__subpackages__",
     ],
-    deps = [":test_messages_proto3_proto"],
+    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
 
 internal_objc_proto_library(
     name = "test_messages_proto2_objc_proto",
-    srcs = [":test_messages_proto2_proto_srcs"],
+    srcs = ["//src/google/protobuf:test_messages_proto2.proto"],
     includes = ["src/google/protobuf"],
     testonly = 1,
     visibility = [
@@ -473,7 +449,7 @@ internal_objc_proto_library(
 
 internal_objc_proto_library(
     name = "test_messages_proto3_objc_proto",
-    srcs = [":test_messages_proto3_proto_srcs"],
+    srcs = ["//src/google/protobuf:test_messages_proto3.proto"],
     proto_deps = [":well_known_protos"],
     includes = ["src/google/protobuf", "src"],
     testonly = 1,
@@ -485,7 +461,7 @@ internal_objc_proto_library(
 
 internal_php_proto_library(
     name = "test_messages_proto3_php_proto",
-    srcs = [":test_messages_proto3_proto_srcs"],
+    srcs = ["//src/google/protobuf:test_messages_proto3.proto"],
     proto_deps = [":well_known_protos"],
     includes = ["src/google/protobuf", "src"],
     outs = [
@@ -509,7 +485,7 @@ internal_php_proto_library(
 
 internal_ruby_proto_library(
     name = "test_messages_proto2_ruby_proto",
-    srcs = [":test_messages_proto2_proto_srcs"],
+    srcs = ["//src/google/protobuf:test_messages_proto2.proto"],
     includes = ["src/google/protobuf"],
     testonly = 1,
     visibility = [
@@ -520,7 +496,7 @@ internal_ruby_proto_library(
 
 internal_ruby_proto_library(
     name = "test_messages_proto3_ruby_proto",
-    srcs = [":test_messages_proto3_proto_srcs"],
+    srcs = ["//src/google/protobuf:test_messages_proto3.proto"],
     proto_deps = [":well_known_protos"],
     includes = ["src/google/protobuf", "src"],
     testonly = 1,

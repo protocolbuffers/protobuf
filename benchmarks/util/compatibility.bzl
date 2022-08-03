@@ -13,7 +13,7 @@ def proto3_from_proto2_data(
 
     Args:
       name: the name of the target representing the generated proto files.
-      srcs: the source proto2 data files.
+      srcs: the source binary protobuf data files.
       **kwargs: standard arguments to forward on
     """
     outs = []
@@ -41,7 +41,7 @@ def proto3_from_proto2_data(
         **kwargs,
     )
 
-def proto3_library(
+def _proto3_from_proto2_library(
         name,
         srcs,
         **kwargs):
@@ -77,7 +77,7 @@ def proto3_library(
         **kwargs,
     )
 
-def php_proto3_library(
+def php_proto3_from_proto2_library(
         name,
         src,
         outs = [],
@@ -90,7 +90,7 @@ def php_proto3_library(
       outs: the expected php outputs.
       **kwargs: standard arguments to forward on
     """
-    proto3_library(
+    _proto3_from_proto2_library(
         name = name + "_genrule",
         srcs = [src],
     )

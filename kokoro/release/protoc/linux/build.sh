@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This is not the source of truth for release protoc executables, and will soon
+# be deprecated.
+
 set -ex
 
 # Change to repo root.

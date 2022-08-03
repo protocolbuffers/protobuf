@@ -1,4 +1,4 @@
-// Test that Kokoro is using the expected version of python
+// Test that Kokoro is using the expected version of Java.
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import org.junit.Test;

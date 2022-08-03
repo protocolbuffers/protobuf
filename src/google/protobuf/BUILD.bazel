@@ -461,12 +461,19 @@ proto_library(
 exports_files([
     "test_messages_proto2.proto",
     "test_messages_proto3.proto",
+], visibility = [
+    "//:__pkg__",
+    "//python:__pkg__",
 ])
 
 proto_library(
     name = "test_messages_proto2_proto",
     srcs = ["test_messages_proto2.proto"],
     strip_import_prefix = "/src",
+    visibility = [
+        "//:__pkg__",
+        "//conformance:__pkg__",
+    ],
 )
 
 proto_library(
@@ -480,6 +487,10 @@ proto_library(
         ":struct_proto",
         ":timestamp_proto",
         ":wrappers_proto",
+    ],
+    visibility = [
+        "//:__pkg__",
+        "//conformance:__pkg__",
     ],
 )
 
