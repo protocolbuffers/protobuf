@@ -33,6 +33,7 @@
 #include <atomic>
 #include <cstdint>
 #include <limits>
+#include <utility>
 
 
 // Must be included last.
@@ -74,11 +75,15 @@ PROTOBUF_THREAD_LOCAL SamplingState global_sampling_state = {
 ThreadSafeArenaStats::ThreadSafeArenaStats() { PrepareForSampling(0); }
 ThreadSafeArenaStats::~ThreadSafeArenaStats() = default;
 
-void ThreadSafeArenaStats::PrepareForSampling(int64_t stride) {
+void ThreadSafeArenaStats::BlockStats::PrepareForSampling() {
   num_allocations.store(0, std::memory_order_relaxed);
-  bytes_used.store(0, std::memory_order_relaxed);
   bytes_allocated.store(0, std::memory_order_relaxed);
+  bytes_used.store(0, std::memory_order_relaxed);
   bytes_wasted.store(0, std::memory_order_relaxed);
+}
+
+void ThreadSafeArenaStats::PrepareForSampling(int64_t stride) {
+  for (auto& blockstats : block_histogram) blockstats.PrepareForSampling();
   max_block_size.store(0, std::memory_order_relaxed);
   thread_ids.store(0, std::memory_order_relaxed);
   weight = stride;
@@ -88,12 +93,41 @@ void ThreadSafeArenaStats::PrepareForSampling(int64_t stride) {
   depth = absl::GetStackTrace(stack, kMaxStackDepth, /* skip_count= */ 0);
 }
 
+size_t ThreadSafeArenaStats::FindBin(size_t bytes) {
+  if (bytes <= kMaxSizeForBinZero) return 0;
+  if (bytes <= kMaxSizeForPenultimateBin) {
+    // absl::bit_width() returns one plus the base-2 logarithm of x, with any
+    // fractional part discarded.
+    return absl::bit_width(absl::bit_ceil(bytes)) - kLogMaxSizeForBinZero - 1;
+  }
+  return kBlockHistogramBins - 1;
+}
+
+std::pair<size_t, size_t> ThreadSafeArenaStats::MinMaxBlockSizeForBin(
+    size_t bin) {
+  ABSL_ASSERT(bin < kBlockHistogramBins);
+  if (bin == 0) return {1, kMaxSizeForBinZero};
+  if (bin < kBlockHistogramBins - 1) {
+    return {(1 << (kLogMaxSizeForBinZero + bin - 1)) + 1,
+            1 << (kLogMaxSizeForBinZero + bin)};
+  }
+  return {kMaxSizeForPenultimateBin + 1, std::numeric_limits<size_t>::max()};
+}
+
 void RecordAllocateSlow(ThreadSafeArenaStats* info, size_t used,
                         size_t allocated, size_t wasted) {
-  info->num_allocations.fetch_add(1, std::memory_order_relaxed);
-  info->bytes_used.fetch_add(used, std::memory_order_relaxed);
-  info->bytes_allocated.fetch_add(allocated, std::memory_order_relaxed);
-  info->bytes_wasted.fetch_add(wasted, std::memory_order_relaxed);
+  // Update the allocated bytes for the current block.
+  ThreadSafeArenaStats::BlockStats& curr =
+      info->block_histogram[ThreadSafeArenaStats::FindBin(allocated)];
+  curr.bytes_allocated.fetch_add(allocated, std::memory_order_relaxed);
+  curr.num_allocations.fetch_add(1, std::memory_order_relaxed);
+
+  // Update the used and wasted bytes for the previous block.
+  ThreadSafeArenaStats::BlockStats& prev =
+      info->block_histogram[ThreadSafeArenaStats::FindBin(used + wasted)];
+  prev.bytes_used.fetch_add(used, std::memory_order_relaxed);
+  prev.bytes_wasted.fetch_add(wasted, std::memory_order_relaxed);
+
   if (info->max_block_size.load(std::memory_order_relaxed) < allocated) {
     info->max_block_size.store(allocated, std::memory_order_relaxed);
   }

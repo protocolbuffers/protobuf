@@ -1343,5 +1343,13 @@ TEST(MESSAGE_TEST_NAME, TestBoolParsers) {
   }
 }
 
+TEST(MESSAGE_TEST_NAME, IsDefaultInstance) {
+  UNITTEST::TestAllTypes msg;
+  const auto& default_msg = UNITTEST::TestAllTypes::default_instance();
+  const auto* r = msg.GetReflection();
+  EXPECT_TRUE(r->IsDefaultInstance(default_msg));
+  EXPECT_FALSE(r->IsDefaultInstance(msg));
+}
+
 }  // namespace protobuf
 }  // namespace google

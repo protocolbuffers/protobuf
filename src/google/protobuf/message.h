@@ -485,6 +485,11 @@ class PROTOBUF_EXPORT Reflection final {
     return internal::ToIntSize(SpaceUsedLong(message));
   }
 
+  // Returns true if the given message is a default message instance.
+  bool IsDefaultInstance(const Message& message) const {
+    return schema_.IsDefaultInstance(message);
+  }
+
   // Check if the given non-repeated field is set.
   bool HasField(const Message& message, const FieldDescriptor* field) const;
 
