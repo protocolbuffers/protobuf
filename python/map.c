@@ -386,7 +386,6 @@ static PyType_Slot PyUpb_ScalarMapContainer_Slots[] = {
     {Py_tp_methods, PyUpb_ScalarMapContainer_Methods},
     {Py_tp_iter, PyUpb_MapIterator_New},
     {Py_tp_repr, PyUpb_MapContainer_Repr},
-    {Py_tp_hash, PyObject_HashNotImplemented},
     {0, NULL},
 };
 
@@ -432,7 +431,6 @@ static PyType_Slot PyUpb_MessageMapContainer_Slots[] = {
     {Py_tp_methods, PyUpb_MessageMapContainer_Methods},
     {Py_tp_iter, PyUpb_MapIterator_New},
     {Py_tp_repr, PyUpb_MapContainer_Repr},
-    {Py_tp_hash, PyObject_HashNotImplemented},
     {0, NULL}};
 
 static PyType_Spec PyUpb_MessageMapContainer_Spec = {
