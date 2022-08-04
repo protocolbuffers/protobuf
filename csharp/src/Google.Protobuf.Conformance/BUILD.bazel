@@ -3,16 +3,16 @@ load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 
 inline_sh_binary(
     name = "build_conformance_test",
-    srcs = ["ConformanceCSharp.csproj"],
+    srcs = ["Google.Protobuf.Conformance.csproj"],
     cmd = "dotnet build -c Release $(SRCS)",
     visibility = ["//visibility:private"],
 )
 
 CONFORMANCE_DEPS = [
-    "ConformanceCSharp.deps.json",
-    "ConformanceCSharp.pdb",
-    "ConformanceCSharp.runtimeconfig.json",
     "Google.Protobuf.dll",
+    "Google.Protobuf.Conformance.deps.json",
+    "Google.Protobuf.Conformance.pdb",
+    "Google.Protobuf.Conformance.runtimeconfig.json",
     "Google.Protobuf.Test.dll",
     "Google.Protobuf.Test.TestProtos.dll",
     "Microsoft.TestPlatform.CommunicationUtilities.dll",
@@ -34,34 +34,49 @@ CONFORMANCE_DEPS = [
     "testhost.dll",
 ]
 
+filegroup(
+    name = "srcs",
+    srcs = [
+        "Conformance.cs",
+        "Program.cs",
+        "Google.Protobuf.Conformance.csproj",
+    ],
+    visibility = [
+        "//csharp:__subpackages__",
+    ],
+)
+
 genrule(
-    name = "package",
+    name = "package_conformance_test",
     srcs = [
         "Program.cs",
-        "ConformanceCSharp.csproj",
+        "Google.Protobuf.Conformance.csproj",
         "//conformance:conformance_csharp_proto",
         "//csharp:srcs",
-        "//benchmarks/datasets",
     ],
+    visibility = ["//visibility:private"],
     tools = [":build_conformance_test"],
-    outs = CONFORMANCE_DEPS + ["ConformanceCSharp.dll"],
-    cmd = "cp $(location //conformance:conformance_csharp_proto) conformance/ConformanceCSharp\n"+
-          "DOTNET_CLI_HOME=/tmp ./$(location :build_conformance_test)\n" +
-          "cp -r conformance/ConformanceCSharp/bin/Release/netcoreapp3.1/* $(RULEDIR)\n",
+    outs = CONFORMANCE_DEPS + ["Google.Protobuf.Conformance.dll"],
+    cmd = """
+        SRCDIR=$$(dirname $(location :Program.cs))
+        cp $(location //conformance:conformance_csharp_proto) $$SRCDIR
+        DOTNET_CLI_HOME=/tmp ./$(location :build_conformance_test)
+        cp -r $$SRCDIR/bin/Release/netcoreapp3.1/* $(RULEDIR)
+    """,
 )
 
 filegroup(
     name = "conformance_dll",
-    srcs = ["ConformanceCSharp.dll"],
-    data = [":package"],
-    visibility = ["//visibility:public"],
+    srcs = ["Google.Protobuf.Conformance.dll"],
+    data = [":package_conformance_test"],
+    visibility = ["//conformance:__subpackages__"],
 )
 
 filegroup(
     name = "conformance_runfiles",
     srcs = CONFORMANCE_DEPS,
-    data = [":package"],
-    visibility = ["//visibility:public"],
+    data = [":package_conformance_test"],
+    visibility = ["//conformance:__subpackages__"],
 )
 
 ################################################################################
@@ -72,10 +87,11 @@ pkg_files(
     name = "dist_files",
     srcs = [
         "BUILD.bazel",
-        "ConformanceCSharp.csproj",
+        "Google.Protobuf.Conformance.csproj",
+        "Conformance.cs",
         "Program.cs",
     ],
     strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//conformance:__pkg__"],
+    visibility = ["//csharp:__pkg__"],
 )
 

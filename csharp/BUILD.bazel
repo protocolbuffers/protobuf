@@ -32,6 +32,7 @@ filegroup(
         # Exclude generated files.
         "src/*/obj/**/*"
     ]) + [
+        "src/Directory.Build.props",
         "src/Google.Protobuf.Benchmarks/wrapper_benchmark_messages.proto",
         "src/Google.Protobuf.Test/testprotos.pb",
         "src/Google.Protobuf.sln",
@@ -65,6 +66,7 @@ inline_sh_test(
     srcs = [
         ":srcs",
         "src/Google.Protobuf.sln",
+        "//csharp/src/Google.Protobuf.Conformance:srcs",
         "//benchmarks/datasets:proto3_datasets"
     ],
     cmd = """
@@ -99,6 +101,7 @@ pkg_files(
         "buildall.sh",
         "generate_protos.sh",
         "install_dotnet_sdk.ps1",
+        "//csharp/src/Google.Protobuf.Conformance:dist_files",
     ],
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//pkg:__pkg__"],

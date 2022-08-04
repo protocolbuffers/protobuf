@@ -62,7 +62,7 @@ internal_csharp_proto_library(
     name = "conformance_csharp_proto",
     srcs = ["conformance.proto"],
     visibility = [
-        "//conformance:__subpackages__",
+        "//csharp:__subpackages__",
     ],
 )
 
@@ -284,11 +284,11 @@ inline_sh_binary(
 
 inline_sh_binary(
     name = "conformance_csharp",
-    srcs = ["//conformance/ConformanceCSharp:conformance_dll"],
+    srcs = ["//csharp/src/Google.Protobuf.Conformance:conformance_dll"],
     deps = [
-        "//conformance/ConformanceCSharp:conformance_runfiles",
+        "//csharp/src/Google.Protobuf.Conformance:conformance_runfiles",
     ],
-    cmd = "dotnet $(rootpath //conformance/ConformanceCSharp:conformance_dll)",
+    cmd = "dotnet $(rootpath //csharp/src/Google.Protobuf.Conformance:conformance_dll)",
     testonly = 1,
     visibility = ["//csharp:__subpackages__"],
 )
@@ -353,7 +353,7 @@ pkg_files(
             "failure_list_jruby.txt",
             "update_failure_list.py",
         ],
-    ) + ["//conformance/ConformanceCSharp:dist_files"],
+    ),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//pkg:__pkg__"],
 )
