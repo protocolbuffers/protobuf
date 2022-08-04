@@ -2124,7 +2124,8 @@ bool CommandLineInterface::EnforceProto3OptionalSupport(
                   << codegen_name
                   << " hasn't been updated to support optional fields in "
                      "proto3. Please ask the owner of this code generator to "
-                     "support proto3 optional.";
+                     "support proto3 optional."
+                  << std::endl;
         return false;
       }
     }

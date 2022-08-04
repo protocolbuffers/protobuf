@@ -94,43 +94,30 @@ constexpr int RepeatedFieldLowerClampLimit() {
 constexpr int kRepeatedFieldUpperClampLimit =
     (std::numeric_limits<int>::max() / 2) + 1;
 
-// Swaps two blocks of memory of size sizeof(T).
-template <typename T>
-inline void SwapBlock(char* p, char* q) {
-  T tmp;
-  memcpy(&tmp, p, sizeof(T));
-  memcpy(p, q, sizeof(T));
-  memcpy(q, &tmp, sizeof(T));
-}
-
 // Swaps two blocks of memory of size kSize:
-//  template <int kSize> void memswap(char* p, char* q);
-template <int kSize>
-inline typename std::enable_if<(kSize == 0), void>::type memswap(char*, char*) {
-}
-
-#define PROTO_MEMSWAP_DEF_SIZE(reg_type, max_size)                           \
-  template <int kSize>                                                       \
-  typename std::enable_if<(kSize >= sizeof(reg_type) && kSize < (max_size)), \
-                          void>::type                                        \
-  memswap(char* p, char* q) {                                                \
-    SwapBlock<reg_type>(p, q);                                               \
-    memswap<kSize - sizeof(reg_type)>(p + sizeof(reg_type),                  \
-                                      q + sizeof(reg_type));                 \
-  }
-
-PROTO_MEMSWAP_DEF_SIZE(uint8_t, 2)
-PROTO_MEMSWAP_DEF_SIZE(uint16_t, 4)
-PROTO_MEMSWAP_DEF_SIZE(uint32_t, 8)
-
-#ifdef __SIZEOF_INT128__
-PROTO_MEMSWAP_DEF_SIZE(uint64_t, 16)
-PROTO_MEMSWAP_DEF_SIZE(__uint128_t, (1u << 31))
+template <size_t kSize>
+void memswap(char* a, char* b) {
+#if __SIZEOF_INT128__
+  using Buffer = __uint128_t;
 #else
-PROTO_MEMSWAP_DEF_SIZE(uint64_t, (1u << 31))
+  using Buffer = uint64_t;
 #endif
 
-#undef PROTO_MEMSWAP_DEF_SIZE
+  constexpr size_t kBlockSize = sizeof(Buffer);
+  Buffer buf;
+  for (size_t i = 0; i < kSize / kBlockSize; ++i) {
+    memcpy(&buf, a, kBlockSize);
+    memcpy(a, b, kBlockSize);
+    memcpy(b, &buf, kBlockSize);
+    a += kBlockSize;
+    b += kBlockSize;
+  }
+
+  // Swap the leftover bytes, could be zero.
+  memcpy(&buf, a, kSize % kBlockSize);
+  memcpy(a, b, kSize % kBlockSize);
+  memcpy(b, &buf, kSize % kBlockSize);
+}
 
 template <typename Element>
 class RepeatedIterator;

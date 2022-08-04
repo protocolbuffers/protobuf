@@ -1768,6 +1768,19 @@ class Proto3Test(unittest.TestCase):
     with self.assertRaises(TypeError):
       123 in msg.map_string_string
 
+  def testScalarMapComparison(self):
+    msg1 = map_unittest_pb2.TestMap()
+    msg2 = map_unittest_pb2.TestMap()
+
+    self.assertEqual(msg1.map_int32_int32, msg2.map_int32_int32)
+
+  def testMessageMapComparison(self):
+    msg1 = map_unittest_pb2.TestMap()
+    msg2 = map_unittest_pb2.TestMap()
+
+    self.assertEqual(msg1.map_int32_foreign_message,
+                     msg2.map_int32_foreign_message)
+
   def testMapGet(self):
     # Need to test that get() properly returns the default, even though the dict
     # has defaultdict-like semantics.

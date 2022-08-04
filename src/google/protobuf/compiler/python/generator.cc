@@ -217,15 +217,12 @@ bool Generator::Generate(const FileDescriptor* file,
                          GeneratorContext* context, std::string* error) const {
   // -----------------------------------------------------------------
   // parse generator options
-  bool cpp_generated_lib_linked = false;
 
   std::vector<std::pair<std::string, std::string> > options;
   ParseGeneratorParameter(parameter, &options);
 
   for (int i = 0; i < options.size(); i++) {
-    if (options[i].first == "cpp_generated_lib_linked") {
-      cpp_generated_lib_linked = true;
-    } else if (options[i].first == "pyi_out") {
+    if (options[i].first == "pyi_out") {
       python::PyiGenerator pyi_generator;
       if (!pyi_generator.Generate(file, "", context, error)) {
         return false;
@@ -247,10 +244,6 @@ bool Generator::Generate(const FileDescriptor* file,
   file_ = file;
 
   std::string filename = GetFileName(file, ".py");
-  pure_python_workable_ = !cpp_generated_lib_linked;
-  if (HasPrefixString(file->name(), "google/protobuf/")) {
-    pure_python_workable_ = true;
-  }
 
   FileDescriptorProto fdp;
   file_->CopyTo(&fdp);
@@ -263,55 +256,49 @@ bool Generator::Generate(const FileDescriptor* file,
   printer_ = &printer;
 
   PrintTopBoilerplate(printer_, file_, GeneratingDescriptorProto());
-  if (pure_python_workable_) {
-    PrintImports();
-  }
+  PrintImports();
   PrintFileDescriptor();
-  if (pure_python_workable_) {
-    if (GeneratingDescriptorProto()) {
-      printer_->Print("if _descriptor._USE_C_DESCRIPTORS == False:\n");
-      printer_->Indent();
-      // Create enums before message descriptors
-      PrintAllNestedEnumsInFile();
-      PrintMessageDescriptors();
-      FixForeignFieldsInDescriptors();
-      printer_->Outdent();
-      printer_->Print("else:\n");
-      printer_->Indent();
-    }
-    // Find the message descriptors first and then use the message
-    // descriptor to find enums.
-    printer_->Print(
-        "_builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())\n");
-    if (GeneratingDescriptorProto()) {
-      printer_->Outdent();
-    }
+  if (GeneratingDescriptorProto()) {
+    printer_->Print("if _descriptor._USE_C_DESCRIPTORS == False:\n");
+    printer_->Indent();
+    // Create enums before message descriptors
+    PrintAllNestedEnumsInFile();
+    PrintMessageDescriptors();
+    FixForeignFieldsInDescriptors();
+    printer_->Outdent();
+    printer_->Print("else:\n");
+    printer_->Indent();
+  }
+  // Find the message descriptors first and then use the message
+  // descriptor to find enums.
+  printer_->Print(
+      "_builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())\n");
+  if (GeneratingDescriptorProto()) {
+    printer_->Outdent();
   }
   std::string module_name = ModuleName(file->name());
   printer_->Print(
       "_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, '$module_name$', "
       "globals())\n",
       "module_name", module_name);
-  if (pure_python_workable_) {
-    printer.Print("if _descriptor._USE_C_DESCRIPTORS == False:\n");
-    printer_->Indent();
+  printer.Print("if _descriptor._USE_C_DESCRIPTORS == False:\n");
+  printer_->Indent();
 
-    // We have to fix up the extensions after the message classes themselves,
-    // since they need to call static RegisterExtension() methods on these
-    // classes.
-    FixForeignFieldsInExtensions();
-    // Descriptor options may have custom extensions. These custom options
-    // can only be successfully parsed after we register corresponding
-    // extensions. Therefore we parse all options again here to recognize
-    // custom options that may be unknown when we define the descriptors.
-    // This does not apply to services because they are not used by extensions.
-    FixAllDescriptorOptions();
+  // We have to fix up the extensions after the message classes themselves,
+  // since they need to call static RegisterExtension() methods on these
+  // classes.
+  FixForeignFieldsInExtensions();
+  // Descriptor options may have custom extensions. These custom options
+  // can only be successfully parsed after we register corresponding
+  // extensions. Therefore we parse all options again here to recognize
+  // custom options that may be unknown when we define the descriptors.
+  // This does not apply to services because they are not used by extensions.
+  FixAllDescriptorOptions();
 
-    // Set serialized_start and serialized_end.
-    SetSerializedPbInterval();
+  // Set serialized_start and serialized_end.
+  SetSerializedPbInterval();
 
-    printer_->Outdent();
-  }
+  printer_->Outdent();
   if (HasGenericServices(file)) {
     printer_->Print(
         "_builder.BuildServices(DESCRIPTOR, '$module_name$', globals())\n",
@@ -389,30 +376,26 @@ void Generator::PrintFileDescriptor() const {
         "  create_key=_descriptor._internal_create_key,\n";
     printer_->Print(m, file_descriptor_template);
     printer_->Indent();
-    if (pure_python_workable_) {
-      printer_->Print("serialized_pb=b'$value$'\n", "value",
-                      strings::CHexEscape(file_descriptor_serialized_));
-      if (file_->dependency_count() != 0) {
-        printer_->Print(",\ndependencies=[");
-        for (int i = 0; i < file_->dependency_count(); ++i) {
-          std::string module_alias = ModuleAlias(file_->dependency(i)->name());
-          printer_->Print("$module_alias$.DESCRIPTOR,", "module_alias",
-                          module_alias);
-        }
-        printer_->Print("]");
+    printer_->Print("serialized_pb=b'$value$'\n", "value",
+                    strings::CHexEscape(file_descriptor_serialized_));
+    if (file_->dependency_count() != 0) {
+      printer_->Print(",\ndependencies=[");
+      for (int i = 0; i < file_->dependency_count(); ++i) {
+        std::string module_alias = ModuleAlias(file_->dependency(i)->name());
+        printer_->Print("$module_alias$.DESCRIPTOR,", "module_alias",
+                        module_alias);
       }
-      if (file_->public_dependency_count() > 0) {
-        printer_->Print(",\npublic_dependencies=[");
-        for (int i = 0; i < file_->public_dependency_count(); ++i) {
-          std::string module_alias =
-              ModuleAlias(file_->public_dependency(i)->name());
-          printer_->Print("$module_alias$.DESCRIPTOR,", "module_alias",
-                          module_alias);
-        }
-        printer_->Print("]");
+      printer_->Print("]");
+    }
+    if (file_->public_dependency_count() > 0) {
+      printer_->Print(",\npublic_dependencies=[");
+      for (int i = 0; i < file_->public_dependency_count(); ++i) {
+        std::string module_alias =
+            ModuleAlias(file_->public_dependency(i)->name());
+        printer_->Print("$module_alias$.DESCRIPTOR,", "module_alias",
+                        module_alias);
       }
-    } else {
-      printer_->Print("serialized_pb=''\n");
+      printer_->Print("]");
     }
 
     // TODO(falk): Also print options and fix the message_type, enum_type,
@@ -467,11 +450,9 @@ void Generator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
   printer_->Indent();
   printer_->Indent();
 
-  if (pure_python_workable_) {
-    for (int i = 0; i < enum_descriptor.value_count(); ++i) {
-      PrintEnumValueDescriptor(*enum_descriptor.value(i));
-      printer_->Print(",\n");
-    }
+  for (int i = 0; i < enum_descriptor.value_count(); ++i) {
+    PrintEnumValueDescriptor(*enum_descriptor.value(i));
+    printer_->Print(",\n");
   }
 
   printer_->Outdent();
@@ -482,10 +463,8 @@ void Generator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
   EnumDescriptorProto edp;
   printer_->Outdent();
   printer_->Print(")\n");
-  if (pure_python_workable_) {
-    printer_->Print("_sym_db.RegisterEnumDescriptor($name$)\n", "name",
-                    module_level_descriptor_name);
-  }
+  printer_->Print("_sym_db.RegisterEnumDescriptor($name$)\n", "name",
+                  module_level_descriptor_name);
   printer_->Print("\n");
 }
 
@@ -535,10 +514,6 @@ void Generator::PrintServiceDescriptor(
 void Generator::PrintDescriptorKeyAndModuleName(
     const ServiceDescriptor& descriptor) const {
   std::string name = ModuleLevelServiceDescriptorName(descriptor);
-  if (!pure_python_workable_) {
-    name = "_descriptor.ServiceDescriptor(full_name='" +
-           descriptor.full_name() + "')";
-  }
   printer_->Print("$descriptor_key$ = $descriptor_name$,\n", "descriptor_key",
                   kDescriptorKey, "descriptor_name", name);
   std::string module_name = ModuleName(file_->name());
@@ -728,12 +703,7 @@ void Generator::PrintMessage(const Descriptor& message_descriptor,
   PrintNestedMessages(message_descriptor, qualified_name, to_register);
   std::map<std::string, std::string> m;
   m["descriptor_key"] = kDescriptorKey;
-  if (pure_python_workable_) {
-    m["descriptor_name"] = ModuleLevelDescriptorName(message_descriptor);
-  } else {
-    m["descriptor_name"] = "_descriptor.Descriptor(full_name='" +
-                           message_descriptor.full_name() + "')";
-  }
+  m["descriptor_name"] = ModuleLevelDescriptorName(message_descriptor);
   printer_->Print(m, "'$descriptor_key$' : $descriptor_name$,\n");
   std::string module_name = ModuleName(file_->name());
   printer_->Print("'__module__' : '$module_name$'\n", "module_name",
