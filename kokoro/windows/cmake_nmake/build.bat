@@ -1,6 +1,9 @@
 @rem enter repo root
 cd /d %~dp0\..\..\..
 
+@rem Select Visual Studio 2017.
+call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+
 @rem TODO(b/241475022) Use docker to guarantee better stability.
 @rem TODO(b/241484899) Run conformance tests in windows.
 
@@ -14,6 +17,8 @@ cd build
 
 cmake .. ^
 	-G "NMake Makefiles" ^
+	-DCMAKE_C_COMPILER=cl.exe ^
+	-DCMAKE_CXX_COMPILER=cl.exe ^
 	-Dprotobuf_BUILD_CONFORMANCE=ON ^
 	-Dprotobuf_WITH_ZLIB=OFF ^
 	-Dprotobuf_TEST_XML_OUTDIR=%KOKORO_ARTIFACTS_DIR%\logs\ || goto :error

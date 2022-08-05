@@ -853,7 +853,7 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
         message->GetRepeatedExtension(unittest::repeated_##type##_extension)   \
             .Capacity();                                                       \
     EXPECT_GE(old_capacity,                                                    \
-              (RepeatedFieldLowerClampLimit<cpptype, sizeof(void*)>()));       \
+              std::max(sizeof(cpptype), sizeof(void*)) / sizeof(void*));       \
     for (int i = 0; i < 16; ++i) {                                             \
       message->AddExtension(unittest::repeated_##type##_extension, value);     \
     }                                                                          \
