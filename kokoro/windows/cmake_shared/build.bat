@@ -12,7 +12,7 @@ md %KOKORO_ARTIFACTS_DIR%\logs -ea 0
 cd build
 
 cmake .. ^
-	-G "Visual Studio 15 2017" ^
+	-G "Visual Studio 15 2017" -A x64  ^
 	-Dprotobuf_BUILD_SHARED_LIBS=ON ^
 	-Dprotobuf_BUILD_CONFORMANCE=OFF ^
 	-Dprotobuf_WITH_ZLIB=OFF ^
