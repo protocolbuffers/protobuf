@@ -411,7 +411,9 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
 namespace internal {
 // Creates and returns an allocation for a split message.
-void* CreateSplitMessageGeneric(Arena* arena, void* default_split, size_t size);
+void* CreateSplitMessageGeneric(Arena* arena, const void* default_split,
+                                size_t size, const void* message,
+                                const void* default_message);
 
 // Forward-declare interfaces used to implement RepeatedFieldRef.
 // These are protobuf internals that users shouldn't care about.
@@ -481,6 +483,11 @@ class PROTOBUF_EXPORT Reflection final {
   PROTOBUF_DEPRECATED_MSG("Please use SpaceUsedLong() instead")
   int SpaceUsed(const Message& message) const {
     return internal::ToIntSize(SpaceUsedLong(message));
+  }
+
+  // Returns true if the given message is a default message instance.
+  bool IsDefaultInstance(const Message& message) const {
+    return schema_.IsDefaultInstance(message);
   }
 
   // Check if the given non-repeated field is set.

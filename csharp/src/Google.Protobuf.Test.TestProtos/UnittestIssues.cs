@@ -56,11 +56,17 @@ namespace UnitTest.Issues.TestProtos {
             "dWxhcl9maWVsZBgBIAEoCRIbCg5vcHRpb25hbF9maWVsZBgCIAEoCUgAiAEB",
             "QhEKD19vcHRpb25hbF9maWVsZCI5ChJPbmVvZldpdGhOb25lRmllbGQSCwoB",
             "eBgBIAEoCUgAEg4KBG5vbmUYAiABKAlIAEIGCgR0ZXN0IjUKEU9uZW9mV2l0",
-            "aE5vbmVOYW1lEgsKAXgYASABKAlIABILCgF5GAIgASgJSABCBgoEbm9uZSpV",
-            "CgxOZWdhdGl2ZUVudW0SFgoSTkVHQVRJVkVfRU5VTV9aRVJPEAASFgoJRml2",
-            "ZUJlbG93EPv//////////wESFQoITWludXNPbmUQ////////////ASouCg5E",
-            "ZXByZWNhdGVkRW51bRITCg9ERVBSRUNBVEVEX1pFUk8QABIHCgNvbmUQAUId",
-            "qgIaVW5pdFRlc3QuSXNzdWVzLlRlc3RQcm90b3NiBnByb3RvMw=="));
+            "aE5vbmVOYW1lEgsKAXgYASABKAlIABILCgF5GAIgASgJSABCBgoEbm9uZSKT",
+            "AgoZRGlzYW1iaWd1YXRlQ29tbW9uTWVtYmVycxIjChtkaXNhbWJpZ3VhdGVf",
+            "Y29tbW9uX21lbWJlcnMYASABKAUSDQoFdHlwZXMYAiABKAUSEgoKZGVzY3Jp",
+            "cHRvchgDIAEoBRIOCgZlcXVhbHMYBCABKAUSEQoJdG9fc3RyaW5nGAUgASgF",
+            "EhUKDWdldF9oYXNoX2NvZGUYBiABKAUSEAoId3JpdGVfdG8YByABKAUSDQoF",
+            "Y2xvbmUYCCABKAUSFgoOY2FsY3VsYXRlX3NpemUYCSABKAUSEgoKbWVyZ2Vf",
+            "ZnJvbRgKIAEoBRIXCg9vbl9jb25zdHJ1Y3Rpb24YCyABKAUSDgoGcGFyc2Vy",
+            "GAwgASgFKlUKDE5lZ2F0aXZlRW51bRIWChJORUdBVElWRV9FTlVNX1pFUk8Q",
+            "ABIWCglGaXZlQmVsb3cQ+///////////ARIVCghNaW51c09uZRD/////////",
+            "//8BKi4KDkRlcHJlY2F0ZWRFbnVtEhMKD0RFUFJFQ0FURURfWkVSTxAAEgcK",
+            "A29uZRABQh2qAhpVbml0VGVzdC5Jc3N1ZXMuVGVzdFByb3Rvc2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::UnitTest.Issues.TestProtos.NegativeEnum), typeof(global::UnitTest.Issues.TestProtos.DeprecatedEnum), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -77,7 +83,8 @@ namespace UnitTest.Issues.TestProtos {
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.NullValueNotInOneof), global::UnitTest.Issues.TestProtos.NullValueNotInOneof.Parser, new[]{ "NullValue" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.MixedRegularAndOptional), global::UnitTest.Issues.TestProtos.MixedRegularAndOptional.Parser, new[]{ "RegularField", "OptionalField" }, new[]{ "OptionalField" }, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.OneofWithNoneField), global::UnitTest.Issues.TestProtos.OneofWithNoneField.Parser, new[]{ "X", "None" }, new[]{ "Test" }, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.OneofWithNoneName), global::UnitTest.Issues.TestProtos.OneofWithNoneName.Parser, new[]{ "X", "Y" }, new[]{ "None" }, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.OneofWithNoneName), global::UnitTest.Issues.TestProtos.OneofWithNoneName.Parser, new[]{ "X", "Y" }, new[]{ "None" }, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.DisambiguateCommonMembers), global::UnitTest.Issues.TestProtos.DisambiguateCommonMembers.Parser, new[]{ "DisambiguateCommonMembers_", "Types_", "Descriptor_", "Equals_", "ToString_", "GetHashCode_", "WriteTo_", "Clone_", "CalculateSize_", "MergeFrom_", "OnConstruction_", "Parser_" }, null, null, null, null)
           }));
     }
     #endregion
@@ -4338,6 +4345,605 @@ namespace UnitTest.Issues.TestProtos {
           }
           case 18: {
             Y = input.ReadString();
+            break;
+          }
+        }
+      }
+    }
+    #endif
+
+  }
+
+  /// <summary>
+  /// Issue 8810
+  /// </summary>
+  public sealed partial class DisambiguateCommonMembers : pb::IMessage<DisambiguateCommonMembers>
+  #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      , pb::IBufferMessage
+  #endif
+  {
+    private static readonly pb::MessageParser<DisambiguateCommonMembers> _parser = new pb::MessageParser<DisambiguateCommonMembers>(() => new DisambiguateCommonMembers());
+    private pb::UnknownFieldSet _unknownFields;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pb::MessageParser<DisambiguateCommonMembers> Parser { get { return _parser; } }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public static pbr::MessageDescriptor Descriptor {
+      get { return global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.Descriptor.MessageTypes[14]; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    pbr::MessageDescriptor pb::IMessage.Descriptor {
+      get { return Descriptor; }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public DisambiguateCommonMembers() {
+      OnConstruction();
+    }
+
+    partial void OnConstruction();
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public DisambiguateCommonMembers(DisambiguateCommonMembers other) : this() {
+      disambiguateCommonMembers_ = other.disambiguateCommonMembers_;
+      types_ = other.types_;
+      descriptor_ = other.descriptor_;
+      equals_ = other.equals_;
+      toString_ = other.toString_;
+      getHashCode_ = other.getHashCode_;
+      writeTo_ = other.writeTo_;
+      clone_ = other.clone_;
+      calculateSize_ = other.calculateSize_;
+      mergeFrom_ = other.mergeFrom_;
+      onConstruction_ = other.onConstruction_;
+      parser_ = other.parser_;
+      _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public DisambiguateCommonMembers Clone() {
+      return new DisambiguateCommonMembers(this);
+    }
+
+    /// <summary>Field number for the "disambiguate_common_members" field.</summary>
+    public const int DisambiguateCommonMembers_FieldNumber = 1;
+    private int disambiguateCommonMembers_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int DisambiguateCommonMembers_ {
+      get { return disambiguateCommonMembers_; }
+      set {
+        disambiguateCommonMembers_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "types" field.</summary>
+    public const int Types_FieldNumber = 2;
+    private int types_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Types_ {
+      get { return types_; }
+      set {
+        types_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "descriptor" field.</summary>
+    public const int Descriptor_FieldNumber = 3;
+    private int descriptor_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Descriptor_ {
+      get { return descriptor_; }
+      set {
+        descriptor_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "equals" field.</summary>
+    public const int Equals_FieldNumber = 4;
+    private int equals_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Equals_ {
+      get { return equals_; }
+      set {
+        equals_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "to_string" field.</summary>
+    public const int ToString_FieldNumber = 5;
+    private int toString_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int ToString_ {
+      get { return toString_; }
+      set {
+        toString_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "get_hash_code" field.</summary>
+    public const int GetHashCode_FieldNumber = 6;
+    private int getHashCode_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int GetHashCode_ {
+      get { return getHashCode_; }
+      set {
+        getHashCode_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "write_to" field.</summary>
+    public const int WriteTo_FieldNumber = 7;
+    private int writeTo_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int WriteTo_ {
+      get { return writeTo_; }
+      set {
+        writeTo_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "clone" field.</summary>
+    public const int Clone_FieldNumber = 8;
+    private int clone_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Clone_ {
+      get { return clone_; }
+      set {
+        clone_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "calculate_size" field.</summary>
+    public const int CalculateSize_FieldNumber = 9;
+    private int calculateSize_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize_ {
+      get { return calculateSize_; }
+      set {
+        calculateSize_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "merge_from" field.</summary>
+    public const int MergeFrom_FieldNumber = 10;
+    private int mergeFrom_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int MergeFrom_ {
+      get { return mergeFrom_; }
+      set {
+        mergeFrom_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "on_construction" field.</summary>
+    public const int OnConstruction_FieldNumber = 11;
+    private int onConstruction_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int OnConstruction_ {
+      get { return onConstruction_; }
+      set {
+        onConstruction_ = value;
+      }
+    }
+
+    /// <summary>Field number for the "parser" field.</summary>
+    public const int Parser_FieldNumber = 12;
+    private int parser_;
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int Parser_ {
+      get { return parser_; }
+      set {
+        parser_ = value;
+      }
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override bool Equals(object other) {
+      return Equals(other as DisambiguateCommonMembers);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool Equals(DisambiguateCommonMembers other) {
+      if (ReferenceEquals(other, null)) {
+        return false;
+      }
+      if (ReferenceEquals(other, this)) {
+        return true;
+      }
+      if (DisambiguateCommonMembers_ != other.DisambiguateCommonMembers_) return false;
+      if (Types_ != other.Types_) return false;
+      if (Descriptor_ != other.Descriptor_) return false;
+      if (Equals_ != other.Equals_) return false;
+      if (ToString_ != other.ToString_) return false;
+      if (GetHashCode_ != other.GetHashCode_) return false;
+      if (WriteTo_ != other.WriteTo_) return false;
+      if (Clone_ != other.Clone_) return false;
+      if (CalculateSize_ != other.CalculateSize_) return false;
+      if (MergeFrom_ != other.MergeFrom_) return false;
+      if (OnConstruction_ != other.OnConstruction_) return false;
+      if (Parser_ != other.Parser_) return false;
+      return Equals(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override int GetHashCode() {
+      int hash = 1;
+      if (DisambiguateCommonMembers_ != 0) hash ^= DisambiguateCommonMembers_.GetHashCode();
+      if (Types_ != 0) hash ^= Types_.GetHashCode();
+      if (Descriptor_ != 0) hash ^= Descriptor_.GetHashCode();
+      if (Equals_ != 0) hash ^= Equals_.GetHashCode();
+      if (ToString_ != 0) hash ^= ToString_.GetHashCode();
+      if (GetHashCode_ != 0) hash ^= GetHashCode_.GetHashCode();
+      if (WriteTo_ != 0) hash ^= WriteTo_.GetHashCode();
+      if (Clone_ != 0) hash ^= Clone_.GetHashCode();
+      if (CalculateSize_ != 0) hash ^= CalculateSize_.GetHashCode();
+      if (MergeFrom_ != 0) hash ^= MergeFrom_.GetHashCode();
+      if (OnConstruction_ != 0) hash ^= OnConstruction_.GetHashCode();
+      if (Parser_ != 0) hash ^= Parser_.GetHashCode();
+      if (_unknownFields != null) {
+        hash ^= _unknownFields.GetHashCode();
+      }
+      return hash;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public override string ToString() {
+      return pb::JsonFormatter.ToDiagnosticString(this);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void WriteTo(pb::CodedOutputStream output) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      output.WriteRawMessage(this);
+    #else
+      if (DisambiguateCommonMembers_ != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(DisambiguateCommonMembers_);
+      }
+      if (Types_ != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Types_);
+      }
+      if (Descriptor_ != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Descriptor_);
+      }
+      if (Equals_ != 0) {
+        output.WriteRawTag(32);
+        output.WriteInt32(Equals_);
+      }
+      if (ToString_ != 0) {
+        output.WriteRawTag(40);
+        output.WriteInt32(ToString_);
+      }
+      if (GetHashCode_ != 0) {
+        output.WriteRawTag(48);
+        output.WriteInt32(GetHashCode_);
+      }
+      if (WriteTo_ != 0) {
+        output.WriteRawTag(56);
+        output.WriteInt32(WriteTo_);
+      }
+      if (Clone_ != 0) {
+        output.WriteRawTag(64);
+        output.WriteInt32(Clone_);
+      }
+      if (CalculateSize_ != 0) {
+        output.WriteRawTag(72);
+        output.WriteInt32(CalculateSize_);
+      }
+      if (MergeFrom_ != 0) {
+        output.WriteRawTag(80);
+        output.WriteInt32(MergeFrom_);
+      }
+      if (OnConstruction_ != 0) {
+        output.WriteRawTag(88);
+        output.WriteInt32(OnConstruction_);
+      }
+      if (Parser_ != 0) {
+        output.WriteRawTag(96);
+        output.WriteInt32(Parser_);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(output);
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
+      if (DisambiguateCommonMembers_ != 0) {
+        output.WriteRawTag(8);
+        output.WriteInt32(DisambiguateCommonMembers_);
+      }
+      if (Types_ != 0) {
+        output.WriteRawTag(16);
+        output.WriteInt32(Types_);
+      }
+      if (Descriptor_ != 0) {
+        output.WriteRawTag(24);
+        output.WriteInt32(Descriptor_);
+      }
+      if (Equals_ != 0) {
+        output.WriteRawTag(32);
+        output.WriteInt32(Equals_);
+      }
+      if (ToString_ != 0) {
+        output.WriteRawTag(40);
+        output.WriteInt32(ToString_);
+      }
+      if (GetHashCode_ != 0) {
+        output.WriteRawTag(48);
+        output.WriteInt32(GetHashCode_);
+      }
+      if (WriteTo_ != 0) {
+        output.WriteRawTag(56);
+        output.WriteInt32(WriteTo_);
+      }
+      if (Clone_ != 0) {
+        output.WriteRawTag(64);
+        output.WriteInt32(Clone_);
+      }
+      if (CalculateSize_ != 0) {
+        output.WriteRawTag(72);
+        output.WriteInt32(CalculateSize_);
+      }
+      if (MergeFrom_ != 0) {
+        output.WriteRawTag(80);
+        output.WriteInt32(MergeFrom_);
+      }
+      if (OnConstruction_ != 0) {
+        output.WriteRawTag(88);
+        output.WriteInt32(OnConstruction_);
+      }
+      if (Parser_ != 0) {
+        output.WriteRawTag(96);
+        output.WriteInt32(Parser_);
+      }
+      if (_unknownFields != null) {
+        _unknownFields.WriteTo(ref output);
+      }
+    }
+    #endif
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public int CalculateSize() {
+      int size = 0;
+      if (DisambiguateCommonMembers_ != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(DisambiguateCommonMembers_);
+      }
+      if (Types_ != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Types_);
+      }
+      if (Descriptor_ != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Descriptor_);
+      }
+      if (Equals_ != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Equals_);
+      }
+      if (ToString_ != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(ToString_);
+      }
+      if (GetHashCode_ != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(GetHashCode_);
+      }
+      if (WriteTo_ != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(WriteTo_);
+      }
+      if (Clone_ != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Clone_);
+      }
+      if (CalculateSize_ != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(CalculateSize_);
+      }
+      if (MergeFrom_ != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(MergeFrom_);
+      }
+      if (OnConstruction_ != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(OnConstruction_);
+      }
+      if (Parser_ != 0) {
+        size += 1 + pb::CodedOutputStream.ComputeInt32Size(Parser_);
+      }
+      if (_unknownFields != null) {
+        size += _unknownFields.CalculateSize();
+      }
+      return size;
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(DisambiguateCommonMembers other) {
+      if (other == null) {
+        return;
+      }
+      if (other.DisambiguateCommonMembers_ != 0) {
+        DisambiguateCommonMembers_ = other.DisambiguateCommonMembers_;
+      }
+      if (other.Types_ != 0) {
+        Types_ = other.Types_;
+      }
+      if (other.Descriptor_ != 0) {
+        Descriptor_ = other.Descriptor_;
+      }
+      if (other.Equals_ != 0) {
+        Equals_ = other.Equals_;
+      }
+      if (other.ToString_ != 0) {
+        ToString_ = other.ToString_;
+      }
+      if (other.GetHashCode_ != 0) {
+        GetHashCode_ = other.GetHashCode_;
+      }
+      if (other.WriteTo_ != 0) {
+        WriteTo_ = other.WriteTo_;
+      }
+      if (other.Clone_ != 0) {
+        Clone_ = other.Clone_;
+      }
+      if (other.CalculateSize_ != 0) {
+        CalculateSize_ = other.CalculateSize_;
+      }
+      if (other.MergeFrom_ != 0) {
+        MergeFrom_ = other.MergeFrom_;
+      }
+      if (other.OnConstruction_ != 0) {
+        OnConstruction_ = other.OnConstruction_;
+      }
+      if (other.Parser_ != 0) {
+        Parser_ = other.Parser_;
+      }
+      _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
+    }
+
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void MergeFrom(pb::CodedInputStream input) {
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+      input.ReadRawMessage(this);
+    #else
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
+            break;
+          case 8: {
+            DisambiguateCommonMembers_ = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Types_ = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            Descriptor_ = input.ReadInt32();
+            break;
+          }
+          case 32: {
+            Equals_ = input.ReadInt32();
+            break;
+          }
+          case 40: {
+            ToString_ = input.ReadInt32();
+            break;
+          }
+          case 48: {
+            GetHashCode_ = input.ReadInt32();
+            break;
+          }
+          case 56: {
+            WriteTo_ = input.ReadInt32();
+            break;
+          }
+          case 64: {
+            Clone_ = input.ReadInt32();
+            break;
+          }
+          case 72: {
+            CalculateSize_ = input.ReadInt32();
+            break;
+          }
+          case 80: {
+            MergeFrom_ = input.ReadInt32();
+            break;
+          }
+          case 88: {
+            OnConstruction_ = input.ReadInt32();
+            break;
+          }
+          case 96: {
+            Parser_ = input.ReadInt32();
+            break;
+          }
+        }
+      }
+    #endif
+    }
+
+    #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
+      uint tag;
+      while ((tag = input.ReadTag()) != 0) {
+        switch(tag) {
+          default:
+            _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
+            break;
+          case 8: {
+            DisambiguateCommonMembers_ = input.ReadInt32();
+            break;
+          }
+          case 16: {
+            Types_ = input.ReadInt32();
+            break;
+          }
+          case 24: {
+            Descriptor_ = input.ReadInt32();
+            break;
+          }
+          case 32: {
+            Equals_ = input.ReadInt32();
+            break;
+          }
+          case 40: {
+            ToString_ = input.ReadInt32();
+            break;
+          }
+          case 48: {
+            GetHashCode_ = input.ReadInt32();
+            break;
+          }
+          case 56: {
+            WriteTo_ = input.ReadInt32();
+            break;
+          }
+          case 64: {
+            Clone_ = input.ReadInt32();
+            break;
+          }
+          case 72: {
+            CalculateSize_ = input.ReadInt32();
+            break;
+          }
+          case 80: {
+            MergeFrom_ = input.ReadInt32();
+            break;
+          }
+          case 88: {
+            OnConstruction_ = input.ReadInt32();
+            break;
+          }
+          case 96: {
+            Parser_ = input.ReadInt32();
             break;
           }
         }

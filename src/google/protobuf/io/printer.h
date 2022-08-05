@@ -251,7 +251,8 @@ class PROTOBUF_EXPORT Printer {
   template <typename... Args>
   void Print(const char* text, const Args&... args) {
     std::map<std::string, std::string> vars;
-    PrintInternal(&vars, text, args...);
+    FillMap(&vars, args...);
+    Print(vars, text);
   }
 
   // Indent text by two spaces.  After calling Indent(), two spaces will be
@@ -299,18 +300,13 @@ class PROTOBUF_EXPORT Printer {
   void Annotate(const char* begin_varname, const char* end_varname,
                 const std::string& file_path, const std::vector<int>& path);
 
-  // Base case
-  void PrintInternal(std::map<std::string, std::string>* vars,
-                     const char* text) {
-    Print(*vars, text);
-  }
+  void FillMap(std::map<std::string, std::string>* vars) {}
 
   template <typename... Args>
-  void PrintInternal(std::map<std::string, std::string>* vars, const char* text,
-                     const char* key, const std::string& value,
-                     const Args&... args) {
+  void FillMap(std::map<std::string, std::string>* vars, const std::string& key,
+               const std::string& value, const Args&... args) {
     (*vars)[key] = value;
-    PrintInternal(vars, text, args...);
+    FillMap(vars, args...);
   }
 
   // Copy size worth of bytes from data to buffer_.

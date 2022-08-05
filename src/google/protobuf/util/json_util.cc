@@ -48,9 +48,11 @@
 #include <google/protobuf/util/zero_copy_sink.h>
 #include <google/protobuf/stubs/status_macros.h>
 
+
 // clang-format off
 #include <google/protobuf/port_def.inc>
 // clang-format on
+
 
 namespace google {
 namespace protobuf {
@@ -62,6 +64,7 @@ util::Status BinaryToJsonStream(TypeResolver* resolver,
                                 io::ZeroCopyInputStream* binary_input,
                                 io::ZeroCopyOutputStream* json_output,
                                 const JsonPrintOptions& options) {
+
   io::CodedInputStream in_stream(binary_input);
   google::protobuf::Type type;
   RETURN_IF_ERROR(resolver->ResolveMessageType(type_url, &type));
@@ -152,6 +155,7 @@ util::Status JsonToBinaryStream(TypeResolver* resolver,
                                 io::ZeroCopyInputStream* json_input,
                                 io::ZeroCopyOutputStream* binary_output,
                                 const JsonParseOptions& options) {
+
   google::protobuf::Type type;
   RETURN_IF_ERROR(resolver->ResolveMessageType(type_url, &type));
   ZeroCopyStreamByteSink sink(binary_output);
@@ -219,6 +223,7 @@ TypeResolver* GetGeneratedTypeResolver() {
 
 util::Status MessageToJsonString(const Message& message, std::string* output,
                                  const JsonOptions& options) {
+
   const DescriptorPool* pool = message.GetDescriptor()->file()->pool();
   TypeResolver* resolver =
       pool == DescriptorPool::generated_pool()
@@ -235,6 +240,7 @@ util::Status MessageToJsonString(const Message& message, std::string* output,
 
 util::Status JsonStringToMessage(StringPiece input, Message* message,
                                  const JsonParseOptions& options) {
+
   const DescriptorPool* pool = message->GetDescriptor()->file()->pool();
   TypeResolver* resolver =
       pool == DescriptorPool::generated_pool()

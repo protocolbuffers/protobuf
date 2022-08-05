@@ -621,9 +621,12 @@ void ImmutableMessageGenerator::GenerateMessageSerializationMethods(
           "ver", GeneratedCodeVersionSuffix());
     }
   }
+  std::map<std::string, std::string> variables;
+  variables["classname"] = name_resolver_->GetImmutableClassName(descriptor_);
+  variables["ver"] = GeneratedCodeVersionSuffix();
 
   GenerateSerializeFieldsAndExtensions(printer, field_generators_, descriptor_,
-                                       sorted_fields.get());
+                                       sorted_fields.get(), variables);
 
   if (descriptor_->options().message_set_wire_format()) {
     printer->Print("unknownFields.writeAsMessageSetTo(output);\n");
@@ -644,8 +647,17 @@ void ImmutableMessageGenerator::GenerateMessageSerializationMethods(
 
   printer->Print("size = 0;\n");
 
+  int fields_in_function = 0;
+  int method_num = 1;
+  std::map<std::string, std::string> variables_serialized_size;
   for (int i = 0; i < descriptor_->field_count(); i++) {
     field_generators_.get(sorted_fields[i]).GenerateSerializedSizeCode(printer);
+    variables_serialized_size["method_num"] = StrCat(method_num);
+    MaybeSplitJavaMethod(printer, &fields_in_function, &method_num,
+                         "return _getSerializedSize_autosplit_$method_num$(size);\n",
+                         "private int _getSerializedSize_autosplit_$method_num$(int size) {\n",
+                         variables_serialized_size);
+    fields_in_function++;
   }
 
   if (descriptor_->extension_range_count() > 0) {
@@ -982,7 +994,7 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
   printer->Print(
       "@java.lang.Override\n"
       "public boolean equals(");
-  printer->Print("final java.lang.Object obj) {\n");
+  printer->Print("java.lang.Object obj) {\n");
   printer->Indent();
   printer->Print(
       "if (obj == this) {\n"
@@ -997,6 +1009,10 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
       "\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
+  int fields_in_function = 0;
+  int method_num = 1;
+  std::map<std::string, std::string> variables;
+  variables["classname"] = name_resolver_->GetImmutableClassName(descriptor_);
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
     if (!IsRealOneof(field)) {
@@ -1014,6 +1030,11 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
         printer->Outdent();
         printer->Print("}\n");
       }
+      MaybeSplitJavaMethod(printer, &fields_in_function, &method_num,
+                           "return _equals_autosplit_$method_num$(other);\n",
+                           "private boolean _equals_autosplit_$method_num$($classname$ other) {\n",
+                           variables);
+      fields_in_function++;
     }
   }
 
@@ -1078,6 +1099,9 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
     printer->Print("hash = (19 * hash) + getDescriptor().hashCode();\n");
   }
 
+  int fields_in_function_hashcode = 0;
+  int method_num_hashcode = 1;
+  std::map<std::string, std::string> variables_hashcode;
   // hashCode non-oneofs.
   for (int i = 0; i < descriptor_->field_count(); i++) {
     const FieldDescriptor* field = descriptor_->field(i);
@@ -1094,6 +1118,12 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
         printer->Print("}\n");
       }
     }
+    variables_hashcode["method_num"] = StrCat(method_num_hashcode);
+    MaybeSplitJavaMethod(printer, &fields_in_function_hashcode, &method_num_hashcode,
+                         "return _hashCode_autosplit_$method_num$(hash);\n",
+                         "private int _hashCode_autosplit_$method_num$(int hash) {\n",
+                         variables_hashcode);
+    fields_in_function_hashcode++;
   }
 
   // hashCode oneofs.
@@ -1149,9 +1179,6 @@ void ImmutableMessageGenerator::GenerateExtensionRegistrationCode(
 // ===================================================================
 void ImmutableMessageGenerator::GenerateParsingConstructor(
     io::Printer* printer) {
-  std::unique_ptr<const FieldDescriptor*[]> sorted_fields(
-      SortFieldsByNumber(descriptor_));
-
   printer->Print(
       "private $classname$(\n"
       "    com.google.protobuf.CodedInputStream input,\n"
@@ -1191,67 +1218,86 @@ void ImmutableMessageGenerator::GenerateParsingConstructor(
       "boolean done = false;\n"
       "while (!done) {\n");
   printer->Indent();
+  printer->Print("int tag = input.readTag();\n");
 
-  printer->Print(
-      "int tag = input.readTag();\n"
-      "switch (tag) {\n");
-  printer->Indent();
+  if(descriptor_->field_count() <= kMaxFieldsInMethod) {  //small proto render all in one method
+    std::unique_ptr<const FieldDescriptor*[]> sorted_fields(
+            SortFieldsByNumber(descriptor_));
 
-  printer->Print(
-      "case 0:\n"  // zero signals EOF / limit reached
-      "  done = true;\n"
-      "  break;\n");
-
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    const FieldDescriptor* field = sorted_fields[i];
-    uint32_t tag = WireFormatLite::MakeTag(
-        field->number(), WireFormat::WireTypeForFieldType(field->type()));
-
-    printer->Print("case $tag$: {\n", "tag",
-                   StrCat(static_cast<int32_t>(tag)));
+    printer->Print("switch (tag) {\n");
     printer->Indent();
 
-    field_generators_.get(field).GenerateParsingCode(printer);
-
-    printer->Outdent();
     printer->Print(
-        "  break;\n"
-        "}\n");
+            "case 0:\n"  // zero signals EOF / limit reached
+            "  done = true;\n"
+            "  break;\n");
 
-    if (field->is_packable()) {
-      // To make packed = true wire compatible, we generate parsing code from a
-      // packed version of this field regardless of field->options().packed().
-      uint32_t packed_tag = WireFormatLite::MakeTag(
-          field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+    for (int i = 0; i < descriptor_->field_count(); i++) {
+      const FieldDescriptor* field = sorted_fields[i];
+      uint32_t tag = WireFormatLite::MakeTag(
+              field->number(), WireFormat::WireTypeForFieldType(field->type()));
+
       printer->Print("case $tag$: {\n", "tag",
-                     StrCat(static_cast<int32_t>(packed_tag)));
+                     StrCat(static_cast<int32_t>(tag)));
       printer->Indent();
 
-      field_generators_.get(field).GenerateParsingCodeFromPacked(printer);
+      field_generators_.get(field).GenerateParsingCode(printer);
 
       printer->Outdent();
       printer->Print(
-          "  break;\n"
-          "}\n");
+              "  break;\n"
+              "}\n");
+
+      if (field->is_packable()) {
+        // To make packed = true wire compatible, we generate parsing code from a
+        // packed version of this field regardless of field->options().packed().
+        uint32_t packed_tag = WireFormatLite::MakeTag(
+                field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+        printer->Print("case $tag$: {\n", "tag",
+                       StrCat(static_cast<int32_t>(packed_tag)));
+        printer->Indent();
+
+        field_generators_.get(field).GenerateParsingCodeFromPacked(printer);
+
+        printer->Outdent();
+        printer->Print(
+                "  break;\n"
+                "}\n");
+      }
     }
+
+    printer->Print(
+            "default: {\n"
+            "  if (!parseUnknownField(\n"
+            "      input, unknownFields, extensionRegistry, tag)) {\n"
+            "    done = true;\n"  // it's an endgroup tag
+            "  }\n"
+            "  break;\n"
+            "}\n");
+
+    printer->Outdent();
+    printer->Outdent();
+    printer->Print(
+            "  }\n");  // switch (tag)
+  } else { // big proto. split methods
+    //mutable fields processing
+    for (int i = 0; i < totalBuilderInts; i++) {
+      printer->Print(
+              "long parse_mutable_fields_$bit_field_name$result = parse_mutable_fields_$bit_field_num$(input, extensionRegistry, unknownFields, tag, mutable_$bit_field_name$);\n",
+              "bit_field_name", GetBitFieldName(i),
+              "bit_field_num", StrCat(i));
+      printer->Print("if (parse_mutable_fields_$bit_field_name$result != java.lang.Long.MAX_VALUE) {\n"
+                     "  mutable_$bit_field_name$ = (int) parse_mutable_fields_$bit_field_name$result;\n"
+                     "  continue;\n"
+                     "}\n",
+                     "bit_field_name", GetBitFieldName(i));
+    }
+
+    //immutable fields split inside
+    printer->Print("done = parse_immutable_fields_0(input, extensionRegistry, unknownFields, tag);\n");
   }
-
-  printer->Print(
-      "default: {\n"
-      "  if (!parseUnknownField(\n"
-      "      input, unknownFields, extensionRegistry, tag)) {\n"
-      "    done = true;\n"  // it's an endgroup tag
-      "  }\n"
-      "  break;\n"
-      "}\n");
-
   printer->Outdent();
-  printer->Outdent();
-  printer->Print(
-      "  }\n"  // switch (tag)
-      "}\n");  // while (!done)
-
-  printer->Outdent();
+  printer->Print("}\n"); // while (!done)
   printer->Print(
       "} catch (com.google.protobuf.InvalidProtocolBufferException e) {\n"
       "  throw e.setUnfinishedMessage(this);\n"
@@ -1266,7 +1312,7 @@ void ImmutableMessageGenerator::GenerateParsingConstructor(
 
   // Make repeated field list immutable.
   for (int i = 0; i < descriptor_->field_count(); i++) {
-    const FieldDescriptor* field = sorted_fields[i];
+    const FieldDescriptor* field = descriptor_->field(i);
     field_generators_.get(field).GenerateParsingDoneCode(printer);
   }
 
@@ -1280,7 +1326,179 @@ void ImmutableMessageGenerator::GenerateParsingConstructor(
   printer->Outdent();
   printer->Print(
       "  }\n"  // finally
-      "}\n");
+      "}\n"
+      "\n");
+
+  if(descriptor_->field_count() > kMaxFieldsInMethod) { //need to generate separate functions
+    //mutable functions generator
+    int current_mutable_byte_num = -1;
+    int total_mutable_bits = 0;
+    for (int i = 0; i < descriptor_->field_count(); i++) {
+      const ImmutableFieldGenerator &field_generator =
+              field_generators_.get(descriptor_->field(i));
+      if (field_generator.GetNumBitsForBuilder() == 0) {
+        continue;
+      }
+
+      total_mutable_bits += field_generator.GetNumBitsForBuilder();
+      if (((total_mutable_bits + 31) / 32) - 1 > current_mutable_byte_num) { //start other mutable byte. need to generate functions split
+
+        if (current_mutable_byte_num >= 0) { //end split function
+          printer->Print("}\n");
+          printer->Print("return java.lang.Long.MAX_VALUE;\n");
+          printer->Outdent();
+          printer->Print("}\n");
+        }
+        current_mutable_byte_num = ((total_mutable_bits + 31) / 32) - 1;
+
+        printer->Print("private long parse_mutable_fields_$bit_field_num$(com.google.protobuf.CodedInputStream input,\n"
+                       "    com.google.protobuf.ExtensionRegistryLite extensionRegistry,\n"
+                       "    com.google.protobuf.UnknownFieldSet.Builder unknownFields,\n"
+                       "    int tag,\n"
+                       "    int mutable_$bit_field_name$) throws java.io.IOException {\n",
+                       "bit_field_name", GetBitFieldName(current_mutable_byte_num),
+                       "bit_field_num", StrCat(current_mutable_byte_num));
+        printer->Indent();
+
+        printer->Print("switch (tag) {\n");
+        printer->Indent();
+      }
+
+      const FieldDescriptor *field = descriptor_->field(i);
+      uint32_t tag = WireFormatLite::MakeTag(
+              field->number(), WireFormat::WireTypeForFieldType(field->type()));
+
+      printer->Print("case $tag$: {\n", "tag",
+                     StrCat(static_cast<int32_t>(tag)));
+      printer->Indent();
+      field_generators_.get(field).GenerateParsingCode(printer);
+
+      printer->Print(
+              "  return mutable_$bit_field_name$;\n"
+              "}\n",
+              "bit_field_name", GetBitFieldName(current_mutable_byte_num));
+
+      if (field->is_packable()) {
+        // To make packed = true wire compatible, we generate parsing code from a
+        // packed version of this field regardless of field->options().packed().
+        uint32_t packed_tag = WireFormatLite::MakeTag(
+                field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+        printer->Print("case $tag$: {\n", "tag",
+                       StrCat(static_cast<int32_t>(packed_tag)));
+
+        field_generators_.get(field).GenerateParsingCodeFromPacked(printer);
+
+        printer->Print(
+                "  return mutable_$bit_field_name$;\n"
+                "}\n",
+                "bit_field_name", GetBitFieldName(current_mutable_byte_num));
+      }
+      printer->Outdent();
+    }
+
+    //all mutable code generated. need to close function
+    if (total_mutable_bits > 0) {
+      printer->Outdent();
+      printer->Print("}\n");
+      printer->Print("return java.lang.Long.MAX_VALUE;\n");
+      printer->Outdent();
+      printer->Print("}\n");
+    }
+
+    //immutable functions generate
+    int total_fields_in_function = 0;
+    int function_num = 0;
+
+    printer->Print("private boolean parse_immutable_fields_$func_num$(com.google.protobuf.CodedInputStream input,\n"
+                   "    com.google.protobuf.ExtensionRegistryLite extensionRegistry,\n"
+                   "    com.google.protobuf.UnknownFieldSet.Builder unknownFields,\n"
+                   "    int tag) throws java.io.IOException {\n",
+                   "func_num", StrCat(function_num));
+    ++function_num;
+
+    printer->Print("switch (tag) {\n");
+    printer->Indent();
+
+    printer->Print(
+            "case 0:\n"  // zero signals EOF / limit reached
+            "  return true;\n");
+
+    for (int i = 0; i < descriptor_->field_count(); ++i) {
+      const ImmutableFieldGenerator &field_generator =
+              field_generators_.get(descriptor_->field(i));
+      if (field_generator.GetNumBitsForBuilder() > 0) {
+        continue;
+      }
+
+      if (total_fields_in_function > kMaxFieldsInMethod) { //split functions
+        printer->Outdent();
+        printer->Print("}\n");
+        printer->Print("return parse_immutable_fields_$func_num$(input, extensionRegistry, unknownFields, tag);\n",
+                       "func_num", StrCat(function_num));
+
+        printer->Outdent();
+        printer->Print("}\n");
+
+        printer->Print("private boolean parse_immutable_fields_$func_num$(com.google.protobuf.CodedInputStream input,\n"
+                       "    com.google.protobuf.ExtensionRegistryLite extensionRegistry,\n"
+                       "    com.google.protobuf.UnknownFieldSet.Builder unknownFields,\n"
+                       "    int tag) throws java.io.IOException {\n",
+                       "func_num", StrCat(function_num));
+        ++function_num;
+        total_fields_in_function = 0;
+        printer->Indent();
+
+        printer->Print("switch (tag) {\n");
+        printer->Indent();
+      }
+
+      const FieldDescriptor *field = descriptor_->field(i);
+      uint32_t tag = WireFormatLite::MakeTag(
+              field->number(), WireFormat::WireTypeForFieldType(field->type()));
+
+      printer->Print("case $tag$: {\n", "tag",
+                     StrCat(static_cast<int32_t>(tag)));
+      printer->Indent();
+      field_generators_.get(field).GenerateParsingCode(printer);
+
+      printer->Print(
+              "  return false;\n"
+              "}\n",
+              "bit_field_name", GetBitFieldName(current_mutable_byte_num));
+
+      if (field->is_packable()) {
+        // To make packed = true wire compatible, we generate parsing code from a
+        // packed version of this field regardless of field->options().packed().
+        uint32_t packed_tag = WireFormatLite::MakeTag(
+                field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+        printer->Print("case $tag$: {\n", "tag",
+                       StrCat(static_cast<int32_t>(packed_tag)));
+
+        field_generators_.get(field).GenerateParsingCodeFromPacked(printer);
+
+        printer->Print(
+                "  return mutable_$bit_field_name$;\n"
+                "}\n",
+                "bit_field_name", GetBitFieldName(current_mutable_byte_num));
+      }
+      printer->Outdent();
+      ++total_fields_in_function;
+    }
+
+    printer->Print(
+            "default: {\n"
+            "  if (!parseUnknownField(\n"
+            "      input, unknownFields, extensionRegistry, tag)) {\n"
+            "    return true;\n"  // it's an endgroup tag
+            "  }\n"
+            "  return false;\n"
+            "}\n");
+
+    printer->Outdent();
+    printer->Print("}\n");
+    printer->Outdent();
+    printer->Print("}\n");
+  }
 }
 
 // ===================================================================
@@ -1343,10 +1561,19 @@ void ImmutableMessageGenerator::GenerateParser(io::Printer* printer) {
 
 // ===================================================================
 void ImmutableMessageGenerator::GenerateInitializers(io::Printer* printer) {
+  int fields_in_function = 0;
+  int method_num = 1;
+  std::map<std::string, std::string> variables;
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (!IsRealOneof(descriptor_->field(i))) {
       field_generators_.get(descriptor_->field(i))
           .GenerateInitializationCode(printer);
+
+      MaybeSplitJavaMethod(printer, &fields_in_function, &method_num,
+                           "_initializer_autosplit_$method_num$();\n",
+                           "private void _initializer_autosplit_$method_num$() {\n",
+                           variables);
+      fields_in_function++;
     }
   }
 }

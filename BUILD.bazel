@@ -266,7 +266,7 @@ alias(
 alias(
     name = "well_known_types_py_pb2",
     actual = "//python:well_known_types_py_pb2",
-    visibility = ["@upb//:__subpackages__"],
+    visibility = ["//visibility:public"],
 )
 
 alias(

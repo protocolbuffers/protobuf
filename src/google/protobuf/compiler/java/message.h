@@ -60,6 +60,8 @@ namespace compiler {
 namespace java {
 
 static const int kMaxStaticSize = 1 << 15;  // aka 32k
+static const int kMaxFieldsInMethod = 1 << 6;  // aka 64
+//static const int kMaxFieldsInMethod = 1 << 3;  // aka 4, for testing
 
 class MessageGenerator {
  public:

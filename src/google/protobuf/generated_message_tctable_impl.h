@@ -38,7 +38,6 @@
 #include <google/protobuf/port.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/generated_message_tctable_decl.h>
-#include <google/protobuf/message_lite.h>
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/parse_context.h>
 #include <google/protobuf/wire_format_lite.h>
@@ -257,16 +256,6 @@ enum FieldType : uint16_t {
 // clang-format on
 }  // namespace field_layout
 
-// PROTOBUF_TC_PARAM_DECL are the parameters for tailcall functions, it is
-// defined in port_def.inc.
-//
-// Note that this is performance sensitive: changing the parameters will change
-// the registers used by the ABI calling convention, which subsequently affects
-// register selection logic inside the function.
-
-// PROTOBUF_TC_PARAM_PASS passes values to match PROTOBUF_TC_PARAM_DECL.
-#define PROTOBUF_TC_PARAM_PASS msg, ptr, ctx, table, hasbits, data
-
 #ifndef NDEBUG
 template <size_t align>
 void AlignFail(uintptr_t address) {
@@ -348,6 +337,28 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* FastZ64R2(PROTOBUF_TC_PARAM_DECL);
   static const char* FastZ64P1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastZ64P2(PROTOBUF_TC_PARAM_DECL);
+
+  // Manually unrolled and specialized Varint parsing.
+  template <typename FieldType, int data_offset, int hasbit_idx>
+  static const char* SpecializedUnrolledVImpl1(PROTOBUF_TC_PARAM_DECL);
+
+  template <typename FieldType, int data_offset, int hasbit_idx>
+  static constexpr TailCallParseFunc SingularVarintNoZag1() {
+    if (data_offset < 100) {
+      return &SpecializedUnrolledVImpl1<FieldType, data_offset, hasbit_idx>;
+    } else if (sizeof(FieldType) == 1) {
+      return &FastV8S1;
+    } else if (sizeof(FieldType) == 4) {
+      return &FastV32S1;
+    } else if (sizeof(FieldType) == 8) {
+      return &FastV64S1;
+    } else {
+      static_assert(sizeof(FieldType) == 1 || sizeof(FieldType) == 4 ||
+                        sizeof(FieldType) == 8,
+                    "");
+      return nullptr;
+    }
+  }
 
   // Functions referenced by generated fast tables (closed enum):
   //   E: closed enum (N.B.: open enums use V32, above)
@@ -599,6 +610,135 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL);
   static const char* MpMap(PROTOBUF_TC_PARAM_DECL);
 };
+
+template <typename FieldType, int data_offset, int hasbit_idx>
+const char* TcParser::SpecializedUnrolledVImpl1(PROTOBUF_TC_PARAM_DECL) {
+  using TagType = uint8_t;
+  // super-early success test...
+  if (PROTOBUF_PREDICT_TRUE(((data.data) & 0x80FF) == 0)) {
+    ptr += sizeof(TagType);  // Consume tag
+    if (hasbit_idx < 32) {
+      hasbits |= (uint64_t{1} << hasbit_idx);
+    }
+    uint8_t value = data.data >> 8;
+    RefAt<FieldType>(msg, data_offset) = value;
+    ptr += 1;
+    PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
+  }
+  if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
+    PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
+  }
+  ptr += sizeof(TagType);  // Consume tag
+  if (hasbit_idx < 32) {
+    hasbits |= (uint64_t{1} << hasbit_idx);
+  }
+
+  // Few registers
+  auto* out = &RefAt<FieldType>(msg, data_offset);
+  uint64_t res = 0xFF & (data.data >> 8);
+  /* if (PROTOBUF_PREDICT_FALSE(res & 0x80)) */ {
+    res = RotRight7AndReplaceLowByte(res, ptr[1]);
+    if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+      res = RotRight7AndReplaceLowByte(res, ptr[2]);
+      if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+        res = RotRight7AndReplaceLowByte(res, ptr[3]);
+        if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+          res = RotRight7AndReplaceLowByte(res, ptr[4]);
+          if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+            res = RotRight7AndReplaceLowByte(res, ptr[5]);
+            if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+              res = RotRight7AndReplaceLowByte(res, ptr[6]);
+              if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+                res = RotRight7AndReplaceLowByte(res, ptr[7]);
+                if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+                  res = RotRight7AndReplaceLowByte(res, ptr[8]);
+                  if (PROTOBUF_PREDICT_FALSE(res & 0x80)) {
+                    if (ptr[9] & 0xFE) return nullptr;
+                    res = RotateLeft(res, -7) & ~1;
+                    res += ptr[9] & 1;
+                    *out = RotateLeft(res, 63);
+                    ptr += 10;
+                    PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
+                  }
+                  *out = RotateLeft(res, 56);
+                  ptr += 9;
+                  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
+                }
+                *out = RotateLeft(res, 49);
+                ptr += 8;
+                PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
+              }
+              *out = RotateLeft(res, 42);
+              ptr += 7;
+              PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
+            }
+            *out = RotateLeft(res, 35);
+            ptr += 6;
+            PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
+          }
+          *out = RotateLeft(res, 28);
+          ptr += 5;
+          PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
+        }
+        *out = RotateLeft(res, 21);
+        ptr += 4;
+        PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
+      }
+      *out = RotateLeft(res, 14);
+      ptr += 3;
+      PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
+    }
+    *out = RotateLeft(res, 7);
+    ptr += 2;
+    PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
+  }
+  *out = res;
+  ptr += 1;
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
+}
+
+// Dispatch to the designated parse function
+inline PROTOBUF_ALWAYS_INLINE const char* TcParser::TagDispatch(
+    PROTOBUF_TC_PARAM_DECL) {
+  const auto coded_tag = UnalignedLoad<uint16_t>(ptr);
+  const size_t idx = coded_tag & table->fast_idx_mask;
+  PROTOBUF_ASSUME((idx & 7) == 0);
+  auto* fast_entry = table->fast_entry(idx >> 3);
+  data = fast_entry->bits;
+  data.data ^= coded_tag;
+  PROTOBUF_MUSTTAIL return fast_entry->target(PROTOBUF_TC_PARAM_PASS);
+}
+
+// We can only safely call from field to next field if the call is optimized
+// to a proper tail call. Otherwise we blow through stack. Clang and gcc
+// reliably do this optimization in opt mode, but do not perform this in debug
+// mode. Luckily the structure of the algorithm is such that it's always
+// possible to just return and use the enclosing parse loop as a trampoline.
+inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToTagDispatch(
+    PROTOBUF_TC_PARAM_DECL) {
+  constexpr bool always_return = !PROTOBUF_TAILCALL;
+  if (always_return || !ctx->DataAvailable(ptr)) {
+    PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
+  }
+  PROTOBUF_MUSTTAIL return TagDispatch(PROTOBUF_TC_PARAM_PASS);
+}
+
+inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToParseLoop(
+    PROTOBUF_TC_PARAM_DECL) {
+  (void)data;
+  (void)ctx;
+  SyncHasbits(msg, hasbits, table);
+  return ptr;
+}
+
+inline PROTOBUF_ALWAYS_INLINE const char* TcParser::Error(
+    PROTOBUF_TC_PARAM_DECL) {
+  (void)data;
+  (void)ctx;
+  (void)ptr;
+  SyncHasbits(msg, hasbits, table);
+  return nullptr;
+}
 
 }  // namespace internal
 }  // namespace protobuf

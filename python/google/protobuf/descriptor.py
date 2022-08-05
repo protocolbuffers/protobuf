@@ -1021,13 +1021,7 @@ class FileDescriptor(DescriptorBase):
       # FileDescriptor() is called from various places, not only from generated
       # files, to register dynamic proto files and messages.
       # pylint: disable=g-explicit-bool-comparison
-      if serialized_pb == b'':
-        # Cpp generated code must be linked in if serialized_pb is ''
-        try:
-          return _message.default_pool.FindFileByName(name)
-        except KeyError:
-          raise RuntimeError('Please link in cpp generated lib for %s' % (name))
-      elif serialized_pb:
+      if serialized_pb:
         return _message.default_pool.AddSerializedFile(serialized_pb)
       else:
         return super(FileDescriptor, cls).__new__(cls)

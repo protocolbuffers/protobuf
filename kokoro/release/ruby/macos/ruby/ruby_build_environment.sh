@@ -4,13 +4,9 @@ set -ex
 
 set +ex  # rvm script is very verbose and exits with errorcode
 
-curl -sSL https://rvm.io/mpapis.asc | gpg --import -
-curl -sSL https://rvm.io/pkuczynski.asc | gpg --import -
-
-# Old OpenSSL versions cannot handle the SSL certificate used by
-# https://get.rvm.io, so as a workaround we download RVM directly from
-# GitHub. See this issue for details: https://github.com/rvm/rvm/issues/5133
-curl -sSL https://raw.githubusercontent.com/rvm/rvm/master/binscripts/rvm-installer | bash -s master --ruby
+# Fix permissions
+sudo chown -R $(whoami) $HOME/.rvm/
+sudo chown -R $(whoami) /Library/Ruby/
 
 source $HOME/.rvm/scripts/rvm
 set -e  # rvm commands are very verbose

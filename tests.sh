@@ -45,44 +45,6 @@ build_cpp_tcmalloc() {
   PPROF_PATH=/usr/bin/google-pprof HEAPCHECK=strict ./protobuf-test
 }
 
-build_cpp_distcheck() {
-  grep -q -- "-Og" src/Makefile.am &&
-    echo "The -Og flag is incompatible with Clang versions older than 4.0." &&
-    exit 1
-
-  # Initialize any submodules.
-  git submodule update --init --recursive
-  ./autogen.sh
-  ./configure
-  make dist
-
-  # List all files that should be included in the distribution package.
-  git ls-files | grep "^\(java\|python\|objectivec\|csharp\|ruby\|php\|cmake\|examples\|src/google/protobuf/.*\.proto\)" |\
-    grep -v ".gitignore" | grep -v "java/lite/proguard.pgcfg" |\
-    grep -v "python/compatibility_tests" | grep -v "python/docs" | grep -v "python/.repo-metadata.json" |\
-    grep -v "python/protobuf_distutils" | grep -v "csharp/compatibility_tests" > dist.lst
-  # Unzip the dist tar file.
-  DIST=`ls *.tar.gz`
-  tar -xf $DIST
-  cd ${DIST//.tar.gz}
-  # Check if every file exists in the dist tar file.
-  FILES_MISSING=""
-  for FILE in $(<../dist.lst); do
-    [ -f "$FILE" ] || {
-      echo "$FILE is not found!"
-      FILES_MISSING="$FILE $FILES_MISSING"
-    }
-  done
-  cd ..
-  if [ ! -z "$FILES_MISSING" ]; then
-    echo "Missing files in EXTRA_DIST: $FILES_MISSING"
-    exit 1
-  fi
-
-  # Do the regular dist-check for C++.
-  make distcheck -j$(nproc)
-}
-
 build_dist_install() {
   # Create a symlink pointing to python2 and put it at the beginning of $PATH.
   # This is necessary because the googletest build system involves a Python
@@ -490,47 +452,8 @@ build_php_c() {
   test_php_c
 }
 
-build_php7.0_mac() {
+build_php_mac() {
   internal_build_cpp
-  # Install PHP
-  curl -s https://php-osx.liip.ch/install.sh | bash -s 7.0
-  PHP_FOLDER=`find /usr/local -type d -name "php5-7.0*"`  # The folder name may change upon time
-  test ! -z "$PHP_FOLDER"
-  export PATH="$PHP_FOLDER/bin:$PATH"
-
-  # Install Composer
-  wget https://getcomposer.org/download/2.0.13/composer.phar --progress=dot:mega -O /usr/local/bin/composer
-  chmod a+x /usr/local/bin/composer
-
-  # Install valgrind
-  echo "#! /bin/bash" > valgrind
-  chmod ug+x valgrind
-  sudo mv valgrind /usr/local/bin/valgrind
-
-  # Test
-  test_php_c
-}
-
-build_php7.3_mac() {
-  internal_build_cpp
-  # Install PHP
-  # We can't test PHP 7.4 with these binaries yet:
-  #   https://github.com/liip/php-osx/issues/276
-  curl -s https://php-osx.liip.ch/install.sh | bash -s 7.3
-  PHP_FOLDER=`find /usr/local -type d -name "php5-7.3*"`  # The folder name may change upon time
-  test ! -z "$PHP_FOLDER"
-  export PATH="$PHP_FOLDER/bin:$PATH"
-
-  # Install Composer
-  wget https://getcomposer.org/download/2.0.13/composer.phar --progress=dot:mega -O /usr/local/bin/composer
-  chmod a+x /usr/local/bin/composer
-
-  # Install valgrind
-  echo "#! /bin/bash" > valgrind
-  chmod ug+x valgrind
-  sudo mv valgrind /usr/local/bin/valgrind
-
-  # Test
   test_php_c
 }
 
@@ -578,7 +501,6 @@ build_benchmark() {
 if [ "$#" -ne 1 ]; then
   echo "
 Usage: $0 { cpp |
-            cpp_distcheck |
             csharp |
             java_jdk7 |
             java_oracle7 |

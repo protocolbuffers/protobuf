@@ -87,7 +87,7 @@ GPB_FINAL @interface GPBStruct : GPBMessage
 
 /** Unordered map of dynamically typed values. */
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableDictionary<NSString*, GPBValue*> *fields;
-/** The number of items in @c fields without causing the array to be created. */
+/** The number of items in @c fields without causing the container to be created. */
 @property(nonatomic, readonly) NSUInteger fields_Count;
 
 @end
@@ -178,7 +178,7 @@ GPB_FINAL @interface GPBListValue : GPBMessage
 
 /** Repeated field of dynamically typed values. */
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBValue*> *valuesArray;
-/** The number of items in @c valuesArray without causing the array to be created. */
+/** The number of items in @c valuesArray without causing the container to be created. */
 @property(nonatomic, readonly) NSUInteger valuesArray_Count;
 
 @end

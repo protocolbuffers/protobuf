@@ -34,6 +34,8 @@
 
 #include <google/protobuf/compiler/java/helpers.h>
 
+#include "message.h"
+
 #include <algorithm>
 #include <cstdint>
 #include <limits>
@@ -1117,6 +1119,22 @@ void EscapeUtf16ToString(uint16_t code, std::string* output) {
     output->push_back(static_cast<char>(code));
   } else {
     output->append(StringPrintf("\\u%04x", code));
+  }
+}
+
+void MaybeSplitJavaMethod(io::Printer *printer, int* fields_in_function, int* method_num,
+                          const char *chain_statement, const char *method_decl,
+                          std::map<std::string, std::string>& variables) {
+
+  if ((*fields_in_function) > kMaxFieldsInMethod) {
+    variables["method_num"] = StrCat(*method_num);
+    printer->Print(variables, chain_statement);
+    printer->Outdent();
+    printer->Print("}\n");
+    printer->Print(variables, method_decl);
+    printer->Indent();
+    *fields_in_function = 0;
+    ++(*method_num);
   }
 }
 

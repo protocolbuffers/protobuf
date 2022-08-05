@@ -19,6 +19,23 @@ m4/ltversion.m4
 m4/lt~obsolete.m4
 autom4te.cache
 
+# CMake-generated files
+.ninja_deps
+.ninja_logs
+cmake/protobuf/*.cmake
+cmake_install.cmake
+CMakeCache.txt
+CTestTestfile.cmake
+CMakeFiles/*
+Testing/Temporary/*
+
+/core
+/protoc
+/test_plugin
+/tests
+/lite-test
+/protoc-*.*
+
 # downloaded files
 /gmock
 
@@ -41,6 +58,7 @@ stamp-h1
 *.la
 src/.libs
 *.so
+*.a
 
 .dirstamp
 

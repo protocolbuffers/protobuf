@@ -465,6 +465,13 @@ void EscapeUtf16ToString(uint16_t code, std::string* output);
 //    bits 4-7: unused
 int GetExperimentalJavaFieldType(const FieldDescriptor* field);
 
+// Split method if fields count > kMaxFields
+// JIT compile only 8k bytes of bytecode with default settings
+// variables - changes inside method
+void MaybeSplitJavaMethod(io::Printer *printer, int* fields_in_function, int* method_num,
+                          const char *chain_statement, const char *method_decl,
+                          std::map<std::string, std::string>& variables);
+
 // To get the total number of entries need to be built for experimental runtime
 // and the first field number that are not in the table part
 std::pair<int, int> GetTableDrivenNumberOfEntriesAndLookUpStartFieldNumber(

@@ -32,6 +32,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_SERIALIZATION_H__
 
 #include <algorithm>
+#include <cstddef>
 #include <vector>
 
 #include <google/protobuf/io/printer.h>
@@ -54,10 +55,10 @@ void GenerateSerializeExtensionRange(io::Printer* printer,
 //
 // Templatized to support different field generator implementations.
 template <typename FieldGenerator>
-void GenerateSerializeFieldsAndExtensions(
-    io::Printer* printer,
-    const FieldGeneratorMap<FieldGenerator>& field_generators,
-    const Descriptor* descriptor, const FieldDescriptor** sorted_fields) {
+  void
+  GenerateSerializeFieldsAndExtensions(io::Printer *printer, const FieldGeneratorMap <FieldGenerator> &field_generators,
+                                       const Descriptor *descriptor, const FieldDescriptor **sorted_fields,
+                                       std::map<std::string, std::string> variables) {
   std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
   sorted_extensions.reserve(descriptor->extension_range_count());
   for (int i = 0; i < descriptor->extension_range_count(); ++i) {
@@ -66,20 +67,50 @@ void GenerateSerializeFieldsAndExtensions(
   std::sort(sorted_extensions.begin(), sorted_extensions.end(),
             ExtensionRangeOrdering());
 
+  int fields_in_function = 0;
+  int method_num = 1;
+
+  std::size_t range_idx = 0;
+
   // Merge the fields and the extension ranges, both sorted by field number.
-  for (int i = 0, j = 0;
-       i < descriptor->field_count() || j < sorted_extensions.size();) {
-    if (i == descriptor->field_count()) {
-      GenerateSerializeExtensionRange(printer, sorted_extensions[j++]);
-    } else if (j == sorted_extensions.size()) {
-      field_generators.get(sorted_fields[i++])
-          .GenerateSerializationCode(printer);
-    } else if (sorted_fields[i]->number() < sorted_extensions[j]->start) {
-      field_generators.get(sorted_fields[i++])
-          .GenerateSerializationCode(printer);
-    } else {
-      GenerateSerializeExtensionRange(printer, sorted_extensions[j++]);
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    const FieldDescriptor* field = sorted_fields[i];
+
+    // Collapse all extension ranges up until the next field. This leads to
+    // shorter and more efficient codegen for messages containing a large
+    // number of extension ranges without fields in between them.
+    const Descriptor::ExtensionRange* range = nullptr;
+    while (range_idx < sorted_extensions.size() &&
+           sorted_extensions[range_idx]->end <= field->number()) {
+      range = sorted_extensions[range_idx++];
     }
+
+    if (range != nullptr) {
+      GenerateSerializeExtensionRange(printer, range);
+    }
+    field_generators.get(field).GenerateSerializationCode(printer);
+  }
+
+  // After serializing all fields, serialize any remaining extensions via a
+  // single writeUntil call.
+  if (range_idx < sorted_extensions.size()) {
+    GenerateSerializeExtensionRange(printer, sorted_extensions.back());
+
+    if (descriptor->extension_range_count() > 0) {
+      MaybeSplitJavaMethod(printer, &fields_in_function, &method_num,
+                           "_writeTo_autosplit_$method_num$(output, extensionWriter);\n",
+                           "private void _writeTo_autosplit_$method_num$(com.google.protobuf.CodedOutputStream output,"
+                           "com.google.protobuf.GeneratedMessage$ver$.ExtendableMessage<$classname$>.ExtensionWriter extensionWriter) \n"
+                           " throws java.io.IOException {\n",
+                           variables);
+    } else {
+      MaybeSplitJavaMethod(printer, &fields_in_function, &method_num,
+                           "_writeTo_autosplit_$method_num$(output);\n",
+                           "private void _writeTo_autosplit_$method_num$(com.google.protobuf.CodedOutputStream output) \n"
+                           " throws java.io.IOException {\n",
+                           variables);
+    }
+    fields_in_function++;
   }
 }
 

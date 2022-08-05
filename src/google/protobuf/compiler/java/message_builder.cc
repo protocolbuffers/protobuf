@@ -34,6 +34,8 @@
 
 #include <google/protobuf/compiler/java/message_builder.h>
 
+#include "message.h"
+
 #include <algorithm>
 #include <map>
 #include <memory>
@@ -333,10 +335,18 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
 
   printer->Indent();
 
+  int fields_in_function = 0;
+  int method_num = 1;
+  std::map<std::string, std::string> variables;
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (!IsRealOneof(descriptor_->field(i))) {
       field_generators_.get(descriptor_->field(i))
           .GenerateBuilderClearCode(printer);
+      MaybeSplitJavaMethod(printer, &fields_in_function, &method_num,
+                           "return _clear_autosplit_$method_num$();\n",
+                           "private Builder _clear_autosplit_$method_num$() {\n",
+                           variables);
+      fields_in_function++;
     }
   }
 
@@ -392,40 +402,92 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
 
   printer->Indent();
+  printer->Print("buildFields(result);\n"
+                 "onBuilt();\n");
+  printer->Outdent();
+
+  printer->Print(
+          "  return result;\n"
+          "}\n"
+          "\n",
+          "classname", name_resolver_->GetImmutableClassName(descriptor_));
+
+  printer->Print("private void buildFields($classname$ result) {\n",
+                 "classname", name_resolver_->GetImmutableClassName(descriptor_));
+  printer->Indent();
+
+  int function_num = -1;
+  int function_start_field = 0;
+
+  std::map<int,int> builderBitFields;
+  std::map<int,int> messageBitFields;
 
   int totalBuilderBits = 0;
   int totalMessageBits = 0;
   for (int i = 0; i < descriptor_->field_count(); i++) {
-    const ImmutableFieldGenerator& field =
-        field_generators_.get(descriptor_->field(i));
+    const ImmutableFieldGenerator &field =
+            field_generators_.get(descriptor_->field(i));
     totalBuilderBits += field.GetNumBitsForBuilder();
     totalMessageBits += field.GetNumBitsForMessage();
-  }
-  int totalBuilderInts = (totalBuilderBits + 31) / 32;
-  int totalMessageInts = (totalMessageBits + 31) / 32;
 
-  // Local vars for from and to bit fields to avoid accessing the builder and
-  // message over and over for these fields. Seems to provide a slight
-  // perforamance improvement in micro benchmark and this is also what proto1
-  // code does.
-  for (int i = 0; i < totalBuilderInts; i++) {
-    printer->Print("int from_$bit_field_name$ = $bit_field_name$;\n",
-                   "bit_field_name", GetBitFieldName(i));
-  }
-  for (int i = 0; i < totalMessageInts; i++) {
-    printer->Print("int to_$bit_field_name$ = 0;\n", "bit_field_name",
-                   GetBitFieldName(i));
+    builderBitFields[i] = (totalBuilderBits + 31) / 32 - 1;
+    messageBitFields[i] = (totalMessageBits + 31) / 32 - 1;
   }
 
-  // Output generation code for each field.
   for (int i = 0; i < descriptor_->field_count(); i++) {
+    if(i / kMaxFieldsInMethod > function_num) {
+      function_num = i / kMaxFieldsInMethod;
+
+      if(function_num > 0) {
+        std::set<int> writtenOut;
+        for (int j = function_start_field; j < std::min(function_start_field + kMaxFieldsInMethod, descriptor_->field_count()); j++) {
+          int messageBitToWrite = std::max(messageBitFields[j], 0);
+          if (totalMessageBits > 0 && writtenOut.find(messageBitToWrite) == writtenOut.end()) {
+            printer->Print("result.$bit_field_name$ = to_$bit_field_name$;\n",
+                           "bit_field_name", GetBitFieldName(messageBitToWrite));
+            writtenOut.insert(messageBitToWrite);
+          }
+        }
+        printer->Print("buildFields_$num$(result);\n",
+                       "num", StrCat(function_num));
+        printer->Outdent();
+        printer->Print("}\n");
+        printer->Print("private void buildFields_$num$($classname$ result) {\n",
+                       "classname", name_resolver_->GetImmutableClassName(descriptor_),
+                       "num", StrCat(function_num));
+        printer->Indent();
+      }
+      function_start_field = i;
+
+      std::set<int> writtenBuilder;
+      std::set<int> writtenMessage;
+      for (int j = function_start_field; j < std::min(function_start_field + kMaxFieldsInMethod, descriptor_->field_count()); j++) {
+        int builderBitToWrite = std::max(builderBitFields[j], 0);
+        if(totalBuilderBits> 0 && writtenBuilder.find(builderBitToWrite) == writtenBuilder.end()) {
+          printer->Print("int from_$bit_field_name$ = $bit_field_name$;\n",
+                         "bit_field_name", GetBitFieldName(builderBitToWrite));
+          writtenBuilder.insert(builderBitToWrite);
+        }
+
+        int messageBitToWrite = std::max(messageBitFields[j], 0);
+        if(totalMessageBits> 0 && writtenMessage.find(messageBitToWrite) == writtenMessage.end()) {
+          printer->Print("int to_$bit_field_name$ = result.$bit_field_name$;\n", "bit_field_name",
+                         GetBitFieldName(messageBitToWrite));
+          writtenMessage.insert(messageBitToWrite);
+        }
+      }
+    }
     field_generators_.get(descriptor_->field(i)).GenerateBuildingCode(printer);
   }
 
-  // Copy the bit field results to the generated message
-  for (int i = 0; i < totalMessageInts; i++) {
-    printer->Print("result.$bit_field_name$ = to_$bit_field_name$;\n",
-                   "bit_field_name", GetBitFieldName(i));
+  std::set<int> writtenOut;
+  for (int j = function_start_field; j < std::min(function_start_field + kMaxFieldsInMethod, descriptor_->field_count()); j++) {
+    int messageBitToWrite = std::max(messageBitFields[j], 0);
+    if (totalMessageBits > 0 && writtenOut.find(messageBitToWrite) == writtenOut.end()) {
+      printer->Print("result.$bit_field_name$ = to_$bit_field_name$;\n",
+                     "bit_field_name", GetBitFieldName(messageBitToWrite));
+      writtenOut.insert(messageBitToWrite);
+    }
   }
 
   for (auto oneof : oneofs_) {
@@ -434,14 +496,7 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
   }
 
   printer->Outdent();
-
-  printer->Print("  onBuilt();\n");
-
-  printer->Print(
-      "  return result;\n"
-      "}\n"
-      "\n",
-      "classname", name_resolver_->GetImmutableClassName(descriptor_));
+  printer->Print("}\n");
 
   // Override methods declared in GeneratedMessage to return the concrete
   // generated type so callsites won't depend on GeneratedMessage. This
@@ -538,10 +593,20 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
         "classname", name_resolver_->GetImmutableClassName(descriptor_));
     printer->Indent();
 
+    int fields_in_function = 0;
+    int method_num = 1;
+    std::map<std::string, std::string> variables;
+    variables["classname"] = name_resolver_->GetImmutableClassName(descriptor_);
     for (int i = 0; i < descriptor_->field_count(); i++) {
       if (!IsRealOneof(descriptor_->field(i))) {
         field_generators_.get(descriptor_->field(i))
             .GenerateMergingCode(printer);
+
+        MaybeSplitJavaMethod(printer, &fields_in_function, &method_num,
+                             "return _mergeFrom_autosplit_$method_num$(other);\n",
+                             "private Builder _mergeFrom_autosplit_$method_num$($classname$ other) {\n",
+                             variables);
+        fields_in_function++;
       }
     }
 
