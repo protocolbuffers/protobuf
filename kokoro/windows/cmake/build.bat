@@ -1,14 +1,10 @@
 @rem enter repo root
 cd /d %~dp0\..\..\..
 
-@rem Select Visual Studio 2017.
-call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+Powershell.exe -File kokoro\windows\prepare_build_win64.ps1 || goto :error
 
 @rem TODO(b/241475022) Use docker to guarantee better stability.
 @rem TODO(b/241484899) Run conformance tests in windows.
-
-@rem Update git submodules
-git submodule update --init --recursive
 
 md build -ea 0
 md %KOKORO_ARTIFACTS_DIR%\logs -ea 0
@@ -28,7 +24,7 @@ ctest --verbose -C Debug || goto :error
 goto :success
 
 :error
-cd ..
+cd /d %~dp0\..\..\..
 echo Failed!
 exit /b 1
 
