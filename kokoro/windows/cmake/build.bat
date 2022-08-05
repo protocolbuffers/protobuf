@@ -10,20 +10,24 @@ git submodule update --init --recursive
 md build -ea 0
 md %KOKORO_ARTIFACTS_DIR%\logs -ea 0
 
-cmake -S . -B build ^
-	-G "Visual Studio 16 2019" ^
+cd build
+
+cmake .. ^
+	-G "Visual Studio 15 2017" ^
 	-Dprotobuf_BUILD_CONFORMANCE=OFF ^
 	-Dprotobuf_WITH_ZLIB=OFF ^
 	-Dprotobuf_TEST_XML_OUTDIR=%KOKORO_ARTIFACTS_DIR%\logs\ || goto :error
 
-cmake --build build || goto :error
+cmake --build . || goto :error
 
-cd build
 ctest --verbose -C Debug || goto :error
-cd ..
 
-goto :EOF
+goto :success
 
 :error
+cd ..
 echo Failed!
 exit /b %errorlevel%
+
+:success
+cd ..
