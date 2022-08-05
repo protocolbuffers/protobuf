@@ -12,7 +12,7 @@ md %KOKORO_ARTIFACTS_DIR%\logs -ea 0
 cd build
 
 cmake .. ^
-	-G "NMake Makefiles" -A x64  ^
+	-G "NMake Makefiles" ^
 	-DCMAKE_C_COMPILER=cl.exe ^
 	-DCMAKE_CXX_COMPILER=cl.exe ^
 	-Dprotobuf_BUILD_CONFORMANCE=OFF ^
