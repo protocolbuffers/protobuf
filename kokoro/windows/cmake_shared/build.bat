@@ -28,7 +28,7 @@ goto :success
 :error
 cd ..
 echo Failed!
-exit /b %errorlevel%
+exit /b 1
 
 :success
 cd ..

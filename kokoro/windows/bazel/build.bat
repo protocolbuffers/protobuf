@@ -11,4 +11,4 @@ goto :EOF
 
 :error
 echo Failed!
-exit /b %errorlevel%
+exit /b 1
