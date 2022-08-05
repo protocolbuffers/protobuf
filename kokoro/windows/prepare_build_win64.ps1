@@ -8,6 +8,9 @@ Set-PSDebug -Trace 1
 # Enable long paths.
 Set-Itemproperty -path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -value '1'
 
+# Allow Bazel to create short paths.
+fsutil 8dot3name set 0
+
 # Select Visual Studio 2017.
 cmd.exe /c "\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
 
