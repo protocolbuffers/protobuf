@@ -2,7 +2,8 @@ $ErrorActionPreference = 'Stop'
 Set-PSDebug -Trace 1
 
 # Update Chocolatey
-#'choco' upgrade -y --no-progress chocolatey
+'choco' upgrade -y --no-progress chocolatey
+'choco' install -y --no-progress --pre cmake
 
 # Enable long paths.
 Set-Itemproperty -path 'HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem' -Name 'LongPathsEnabled' -value '1'
