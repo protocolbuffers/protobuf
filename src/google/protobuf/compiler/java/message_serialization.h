@@ -69,7 +69,6 @@ template <typename FieldGenerator>
 
   int fields_in_function = 0;
   int method_num = 1;
-
   std::size_t range_idx = 0;
 
   // Merge the fields and the extension ranges, both sorted by field number.
@@ -88,13 +87,8 @@ template <typename FieldGenerator>
     if (range != nullptr) {
       GenerateSerializeExtensionRange(printer, range);
     }
-    field_generators.get(field).GenerateSerializationCode(printer);
-  }
 
-  // After serializing all fields, serialize any remaining extensions via a
-  // single writeUntil call.
-  if (range_idx < sorted_extensions.size()) {
-    GenerateSerializeExtensionRange(printer, sorted_extensions.back());
+    field_generators.get(field).GenerateSerializationCode(printer);
 
     if (descriptor->extension_range_count() > 0) {
       MaybeSplitJavaMethod(printer, &fields_in_function, &method_num,
@@ -111,6 +105,12 @@ template <typename FieldGenerator>
                            variables);
     }
     fields_in_function++;
+  }
+
+  // After serializing all fields, serialize any remaining extensions via a
+  // single writeUntil call.
+  if (range_idx < sorted_extensions.size()) {
+    GenerateSerializeExtensionRange(printer, sorted_extensions.back());
   }
 }
 
