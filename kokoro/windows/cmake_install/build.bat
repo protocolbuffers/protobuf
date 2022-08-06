@@ -17,9 +17,7 @@ cmake .. ^
 	-Dprotobuf_BUILD_CONFORMANCE=OFF ^
 	-Dprotobuf_WITH_ZLIB=OFF || goto :error
 
-cmake --build . || goto :error
-
-cmake --install . || goto :error
+cmake --build . --config Release --target Install || goto :error
 
 @rem Next run tests forcing the use of our installation.
 
@@ -32,7 +30,7 @@ cmake .. ^
 	-Dprotobuf_BUILD_CONFORMANCE=OFF ^
 	-Dprotobuf_TEST_XML_OUTDIR=%KOKORO_ARTIFACTS_DIR%\logs\ || goto :error
 
-cmake --build . || goto :error
+cmake --build . --config Release || goto :error
 
 ctest --verbose -C Debug || goto :error
 
