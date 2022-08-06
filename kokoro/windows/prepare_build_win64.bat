@@ -8,8 +8,8 @@ Powershell.exe -Command "Set-Itemproperty -path 'HKLM:\SYSTEM\CurrentControlSet\
 @rem Allow Bazel to create short paths.
 fsutil 8dot3name set 0
 
-@rem Select Visual Studio 2017.
-call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
-
 @rem Update git submodules.
 git submodule update --init --recursive
+
+@rem Select Visual Studio 2017.
+::call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
