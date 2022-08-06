@@ -1,7 +1,7 @@
 @rem enter repo root
 cd /d %~dp0\..\..\..
 
-Powershell.exe -File kokoro\windows\prepare_build_win64.ps1 || goto :error
+call kokoro\windows\prepare_build_win64.bat || goto :error
 
 @rem TODO(b/241475022) Use docker to guarantee better stability.
 @rem TODO(b/241484899) Run conformance tests in windows.
