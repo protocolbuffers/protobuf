@@ -13,9 +13,14 @@ bazel version
 choco install bazel -y -i
 bazel version
 
-@rem Build and test.
-bazel --windows_enable_symlinks build --enable_runfiles //:protoc //:protobuf //:protobuf_lite || goto :error
-bazel --windows_enable_symlinks test --enable_runfiles //src/... --test_output=streamed || goto :error
+@rem Make paths as short as possible to avoid long path issues.
+echo --output_user_root=C:/tmp > .bazelrc
+
+@rem Build libraries first.
+bazel build //:protoc //:protobuf //:protobuf_lite || goto :error
+
+@rem Run C++ tests.
+bazel test //src/... --test_output=streamed || goto :error
 
 goto :EOF
 
