@@ -484,6 +484,13 @@ public class TimestampsTest {
   }
 
   @Test
+  public void testFromSqlTimestamp_beforeEpochWholeSecond() {
+    Date date = new java.sql.Timestamp(-2000);
+    Timestamp timestamp = Timestamps.fromDate(date);
+    assertThat(Timestamps.toString(timestamp)).isEqualTo("1969-12-31T23:59:58Z");
+  }
+
+  @Test
   public void testTimeOperations() throws Exception {
     Timestamp start = Timestamps.parse("0001-01-01T00:00:00Z");
     Timestamp end = Timestamps.parse("9999-12-31T23:59:59.999999999Z");
