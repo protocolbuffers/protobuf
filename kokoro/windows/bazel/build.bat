@@ -17,10 +17,10 @@ bazel version
 set BAZEL_STARTUP=--output_user_root=C:/tmp
 
 @rem Build libraries first.
-bazel %BAZEL_STARTUP% build //:protoc //:protobuf //:protobuf_lite || goto :error
+bazel %BAZEL_STARTUP% build //:protoc //:protobuf //:protobuf_lite -k || goto :error
 
 @rem Run C++ tests.
-bazel %BAZEL_STARTUP% test //src/... --test_output=streamed || goto :error
+bazel %BAZEL_STARTUP% test //src/... -k --test_output=streamed || goto :error
 
 goto :EOF
 
