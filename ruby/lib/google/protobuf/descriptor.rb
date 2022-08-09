@@ -522,8 +522,8 @@ module Google
             Google::Protobuf::FFI.clear_message_field(@msg, field_def)
           end
 
-          def index_internal(name, field_descriptor = nil)
-            field_descriptor ||= self.class.descriptor.lookup(name)
+          def index_internal(name)
+            field_descriptor = self.class.descriptor.lookup(name)
             get_field field_descriptor unless field_descriptor.nil?
           end
 
@@ -550,11 +550,12 @@ module Google
             @arena = arena || Google::Protobuf::FFI.create_arena
             @msg = msg || Google::Protobuf::FFI.new_message_from_def(self.class.descriptor, @arena)
 
-            field_def_ptr = ::FFI::MemoryPointer.new :pointer
-            oneof_def_ptr = ::FFI::MemoryPointer.new :pointer
-
             unless initial_value.nil?
               raise ArgumentError.new "Expected hash arguments or message, not #{initial_value.class}" unless initial_value.respond_to? :each
+
+              field_def_ptr = ::FFI::MemoryPointer.new :pointer
+              oneof_def_ptr = ::FFI::MemoryPointer.new :pointer
+
               initial_value.each do |key, value|
                 raise ArgumentError.new "Expected string or symbols as hash keys when initializing proto from hash." unless [String, Symbol].include? key.class
 

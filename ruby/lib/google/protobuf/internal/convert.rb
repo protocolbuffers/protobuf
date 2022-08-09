@@ -68,12 +68,14 @@ module Google
             # buffer = ::FFI::MemoryPointer.new(:char, string_value.bytesize)
             # buffer.put_bytes(0, string_value)
             # return_value[:str_val][:data] = buffer
+            raise NoMemoryError.new "Cannot allocate #{string_value.bytesize} bytes for string on Arena" if return_value[:str_val][:data].nil? || return_value[:str_val][:data].null?
             return_value[:str_val][:data].write_string(string_value)
           when :bytes
             raise TypeError.new "Invalid argument for bytes field '#{name}' (given #{value.class})." unless value.is_a? String
             string_value = value.encode("ASCII-8BIT")
             return_value[:str_val][:size] = string_value.bytesize
             return_value[:str_val][:data] = Google::Protobuf::FFI.arena_malloc(arena, string_value.bytesize)
+            raise NoMemoryError.new "Cannot allocate #{string_value.bytesize} bytes for bytes on Arena" if return_value[:str_val][:data].nil? || return_value[:str_val][:data].null?
             return_value[:str_val][:data].write_string_length(string_value, string_value.bytesize)
           when :message
             raise TypeError.new "nil message not allowed here." if value.nil?
@@ -325,6 +327,7 @@ module Google
             # TODO(jatl) - how important is it to still use arena malloc, versus using FFI MemoryPointers?
             new_message_value[:str_val][:size] = message_value[:str_val][:size]
             new_message_value[:str_val][:data] = Google::Protobuf::FFI.arena_malloc(arena, message_value[:str_val][:size])
+            raise NoMemoryError.new "Allocation failed" if  new_message_value[:str_val][:data].nil? or new_message_value[:str_val][:data].null?
             Google::Protobuf::FFI.memcpy(new_message_value[:str_val][:data], message_value[:str_val][:data], message_value[:str_val][:size])
           when :message
             new_message_value[:msg_val] = descriptor.msgclass.send(:deep_copy, message_value[:msg_val], arena).instance_variable_get(:@msg)

@@ -33,7 +33,7 @@ module Google
     class FileDescriptor
       attr :descriptor_pool, :file_def
 
-      def initialize file_def, descriptor_pool
+      def initialize(file_def, descriptor_pool)
         @descriptor_pool = descriptor_pool
         @file_def = file_def
       end

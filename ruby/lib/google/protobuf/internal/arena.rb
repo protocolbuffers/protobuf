@@ -62,6 +62,7 @@ module Google
         end
 
         def fuse(other_arena)
+          return if other_arena == self
           unless Google::Protobuf::FFI.fuse_arena(self, other_arena)
             raise RuntimeError.new "Unable to fuse arenas. This should never happen since Ruby does not use initial blocks"
           end

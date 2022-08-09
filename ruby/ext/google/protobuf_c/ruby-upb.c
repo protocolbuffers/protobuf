@@ -1,5 +1,6 @@
 /* Amalgamated source file */
 #include "ruby-upb.h"
+#include <stdio.h>
 /*
  * Copyright (c) 2009-2021, Google LLC
  * All rights reserved.
@@ -3298,6 +3299,7 @@ static void* upb_global_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
   UPB_UNUSED(alloc);
   UPB_UNUSED(oldsize);
   if (size == 0) {
+//    printf("JATL: about to call free on %p\n", ptr);
     free(ptr);
     return NULL;
   } else {
@@ -3375,6 +3377,7 @@ static bool upb_Arena_Allocblock(upb_Arena* a, size_t size) {
   mem_block* block = upb_malloc(root->block_alloc, block_size);
 
   if (!block) return false;
+//  printf("JATL: called malloc and got %p\n", block);
   upb_Arena_addblock(a, root, block, block_size);
   return true;
 }
@@ -3470,7 +3473,11 @@ static void arena_dofree(upb_Arena* a) {
         ptr->cleanup(ptr->ud);
       }
     }
-
+//if (!next) {
+//  printf("JATL - about to upb_free the last block\n");
+//} else {
+//  printf("JATL - about to call upb_free but next block is %p\n", next);
+//}
     upb_free(a->block_alloc, block);
     block = next;
   }
