@@ -357,9 +357,9 @@ void CommandLineInterfaceTest::RunWithArgs(std::vector<std::string> args) {
     }
 #endif
 
-    if (plugin_path.empty()) {
+    if (plugin_path.empty() || !FileExists(plugin_path)) {
       GOOGLE_LOG(ERROR)
-          << "Plugin executable not found.  Plugin tests are likely to fail.";
+          << "Plugin tests are likely to fail. Plugin executable not found at: " << plugin_path;
     } else {
       args.push_back("--plugin=prefix-gen-plug=" + plugin_path);
     }
@@ -367,8 +367,10 @@ void CommandLineInterfaceTest::RunWithArgs(std::vector<std::string> args) {
 
   std::unique_ptr<const char*[]> argv(new const char*[args.size()]);
 
+  GOOGLE_LOG(INFO) << "protoc ";
   for (int i = 0; i < args.size(); i++) {
     args[i] = StringReplace(args[i], "$tmpdir", temp_directory_, true);
+    GOOGLE_LOG(INFO) << "\t" << args[i];
     argv[i] = args[i].c_str();
   }
 
