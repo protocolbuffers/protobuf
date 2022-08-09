@@ -262,6 +262,11 @@ void PyiGenerator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
       "class $enum_name$(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):\n"
       "    __slots__ = []\n",
       "enum_name", enum_name);
+  printer_->Indent();
+  printer_->Indent();
+  PrintEnumValues(enum_descriptor);
+  printer_->Outdent();
+  printer_->Outdent();
 }
 
 void PyiGenerator::PrintEnumValues(
@@ -545,6 +550,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
 
   PrintTopLevelEnums();
   // Prints top level enum values
+  printer_->Print("\n");
   for (int i = 0; i < file_->enum_type_count(); ++i) {
     PrintEnumValues(*file_->enum_type(i));
   }
