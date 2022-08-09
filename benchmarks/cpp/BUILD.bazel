@@ -8,7 +8,6 @@ cc_binary(
     srcs = [
         "cpp_benchmark.cc",
     ],
-    tags = ["benchmark"],
     deps = [
         "//:protobuf",
         "//benchmarks:benchmarks_cc_proto",

@@ -38,6 +38,7 @@ def conformance_test(
         deps = [
             "@bazel_tools//tools/bash/runfiles",
         ],
+        tags = ["conformance"],
         **kwargs,
     )
 

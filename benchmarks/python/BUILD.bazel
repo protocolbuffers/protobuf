@@ -22,7 +22,6 @@ py_binary(
     name = "python_benchmark",
     srcs = ["py_benchmark.py"],
     main = "py_benchmark.py",
-    tags = ["benchmark"],
     data = ["libbenchmark_messages.so"],
     deps = [
         "//:protobuf_python",

@@ -32,5 +32,6 @@ def internal_benchmark_test(
             binary,
             " ".join(args),
             " ".join(dataset_labels)),
+        tags = ["benchmark"],
         testonly = 1,
     )

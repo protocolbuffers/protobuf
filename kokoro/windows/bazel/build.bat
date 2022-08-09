@@ -21,7 +21,10 @@ set BAZEL_FLAGS=--enable_runfiles --keep_going --test_output=streamed --verbose_
 bazel %BAZEL_STARTUP% build //:protoc //:protobuf //:protobuf_lite %BAZEL_FLAGS% || goto :error
 
 @rem Run C++ tests.
-bazel %BAZEL_STARTUP% test //src/... %BAZEL_FLAGS% || goto :error
+@rem TODO(b/241484899) Enable conformance tests on windows.
+bazel %BAZEL_STARTUP% test %BAZEL_FLAGS% ^
+  --test_tag_filters=-conformance
+  //src/...  || goto :error
 
 goto :EOF
 

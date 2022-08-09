@@ -9,7 +9,6 @@ java_binary(
         "src/main/java/com/google/protobuf/ProtoCaliperBenchmark.java",
     ],
     main_class = "com.google.caliper.runner.CaliperMain",
-    tags = ["benchmark"],
     deps = [
         "//:protobuf_java",
         "//benchmarks:benchmarks_java_proto",
