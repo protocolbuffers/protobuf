@@ -69,9 +69,12 @@ cc_test(
 cc_test(
     name = "message_differencer_unittest",
     srcs = ["message_differencer_unittest.cc"],
-    copts = COPTS + [
-        "-Wno-deprecated-declarations",
-    ],
+    copts = COPTS + select({
+        "//build_defs:config_msvc": [],
+        "//conditions:default": [
+            "-Wno-deprecated-declarations",
+        ],
+    }),
     deps = [
         ":differencer",
         ":message_differencer_unittest_cc_proto",
