@@ -367,10 +367,8 @@ void CommandLineInterfaceTest::RunWithArgs(std::vector<std::string> args) {
 
   std::unique_ptr<const char*[]> argv(new const char*[args.size()]);
 
-  GOOGLE_LOG(INFO) << "protoc ";
   for (int i = 0; i < args.size(); i++) {
     args[i] = StringReplace(args[i], "$tmpdir", temp_directory_, true);
-    GOOGLE_LOG(INFO) << "\t" << args[i];
     argv[i] = args[i].c_str();
   }
 

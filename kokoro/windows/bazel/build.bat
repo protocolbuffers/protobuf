@@ -14,13 +14,14 @@ choco install bazel -y -i
 bazel version
 
 @rem Make paths as short as possible to avoid long path issues.
-set BAZEL_STARTUP=--output_user_root=C:/tmp
+set BAZEL_STARTUP=--output_user_root=C:/tmp --windows_enable_symlinks
+set BAZEL_FLAGS=--enable_runfiles --keep_going --test_output=streamed --verbose_failures
 
 @rem Build libraries first.
-bazel %BAZEL_STARTUP% build //:protoc //:protobuf //:protobuf_lite -k || goto :error
+bazel %BAZEL_STARTUP% build //:protoc //:protobuf //:protobuf_lite %BAZEL_FLAGS% || goto :error
 
 @rem Run C++ tests.
-bazel %BAZEL_STARTUP% test //src/... -k --test_output=streamed || goto :error
+bazel %BAZEL_STARTUP% test //src/... %BAZEL_FLAGS% || goto :error
 
 goto :EOF
 

@@ -195,6 +195,7 @@ cc_test(
             "-Wno-deprecated-declarations",
         ],
     }) + [
+        # Note: This only works on Windows with symlinks and runfiles enabled.
         "-DGOOGLE_PROTOBUF_TEST_PLUGIN_PATH=\\\"$(rootpath :test_plugin)\\\"",
     ],
     data = [
