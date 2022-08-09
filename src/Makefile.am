@@ -18,7 +18,7 @@ else
 PTHREAD_DEF =
 endif
 
-PROTOBUF_VERSION = 3.21.4
+PROTOBUF_VERSION = 3.21.5
 
 if GCC
 # Turn on all warnings except for sign comparison (we ignore sign comparison
