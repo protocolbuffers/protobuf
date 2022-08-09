@@ -79,6 +79,11 @@ mark_as_advanced(protobuf_DEBUG_POSTFIX)
 # User options
 include(${protobuf_SOURCE_DIR}/cmake/protobuf-options.cmake)
 
+# Version metadata
+set(protobuf_VERSION_STRING "3.21.4")
+set(protobuf_DESCRIPTION "Protocol Buffers")
+set(protobuf_CONTACT "protobuf@googlegroups.com")
+
 # Overrides for option dependencies
 if (protobuf_BUILD_PROTOC_BINARIES OR protobuf_BUILD_TESTS)
   set(protobuf_BUILD_LIBPROTOC ON)
