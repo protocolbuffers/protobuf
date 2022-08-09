@@ -189,15 +189,14 @@ cc_test(
     name = "command_line_interface_unittest",
     srcs = ["command_line_interface_unittest.cc"],
     copts = COPTS + select({
-        "//build_defs:config_msvc": [
-            "-DGOOGLE_PROTOBUF_TEST_PLUGIN_PATH=\\\"src/google/protobuf/compiler/test_plugin.exe\\\"",
-        ],
+        "//build_defs:config_msvc": [],
         "//conditions:default": [
             "-Wno-deprecated",
             "-Wno-deprecated-declarations",
-            "-DGOOGLE_PROTOBUF_TEST_PLUGIN_PATH=\\\"src/google/protobuf/compiler/test_plugin\\\"",
         ],
-    }),
+    }) + [
+        "-DGOOGLE_PROTOBUF_TEST_PLUGIN_PATH=\\\"$(rootpath :test_plugin)\\\"",
+    ],
     data = [
         ":test_plugin",
         "//:test_proto_srcs",
