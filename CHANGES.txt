@@ -28,6 +28,14 @@
   Compiler
   * Print full path name of source .proto file on error
 
+2022-08-09 version 21.5 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+  PHP
+  * Added getContainingOneof and getRealContainingOneof to descriptor.
+  * fix PHP readonly legacy files for nested messages
+
+  Python
+  * Fixed comparison of maps in Python.
 
 2022-07-25 version 21.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
 
