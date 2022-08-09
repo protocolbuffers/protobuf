@@ -93,23 +93,23 @@ module Google
       end
 
       def name
-        Google::Protobuf::FFI.get_full_name(self)
+        @name ||= Google::Protobuf::FFI.get_full_name(self)
       end
 
       def json_name
-        Google::Protobuf::FFI.get_json_name(self)
+        @json_name ||= Google::Protobuf::FFI.get_json_name(self)
       end
 
       def number
-        Google::Protobuf::FFI.get_number(self)
+        @number ||= Google::Protobuf::FFI.get_number(self)
       end
 
       def type
-        Google::Protobuf::FFI.get_type(self)
+        @type ||= Google::Protobuf::FFI.get_type(self)
       end
 
       def label
-        Google::Protobuf::FFI::Label[Google::Protobuf::FFI.get_label(self)]
+        @label ||= Google::Protobuf::FFI::Label[Google::Protobuf::FFI.get_label(self)]
       end
 
       def default
@@ -128,13 +128,17 @@ module Google
       end
 
       def submsg_name
-        case c_type
-        when :enum
-          Google::Protobuf::FFI.get_enum_fullname Google::Protobuf::FFI.get_subtype_as_enum self
-        when :message
-          Google::Protobuf::FFI.get_message_fullname Google::Protobuf::FFI.get_subtype_as_message self
+        if defined? @submsg_name
+          @submsg_name
         else
-          nil
+          @submsg_name = case c_type
+            when :enum
+              Google::Protobuf::FFI.get_enum_fullname Google::Protobuf::FFI.get_subtype_as_enum self
+            when :message
+              Google::Protobuf::FFI.get_message_fullname Google::Protobuf::FFI.get_subtype_as_message self
+            else
+              nil
+            end
         end
       end
 
@@ -153,13 +157,17 @@ module Google
       end
 
       def subtype
-        case c_type
-        when :enum
-          Google::Protobuf::FFI.get_subtype_as_enum(self)
-        when :message
-          Google::Protobuf::FFI.get_subtype_as_message(self)
+        if defined? @subtype
+          @subtype
         else
-          nil
+          @subtype = case c_type
+            when :enum
+              Google::Protobuf::FFI.get_subtype_as_enum(self)
+            when :message
+              Google::Protobuf::FFI.get_subtype_as_message(self)
+            else
+              nil
+            end
         end
       end
 
@@ -186,7 +194,7 @@ module Google
       #
       # @return [Boolean] True iff this field tracks presence
       def has_presence?
-        Google::Protobuf::FFI.get_has_presence(self)
+        @has_presence ||= Google::Protobuf::FFI.get_has_presence(self)
       end
 
       # @param msg [Google::Protobuf::Message]
@@ -219,20 +227,24 @@ module Google
       end
 
       def map?
-        Google::Protobuf::FFI.is_map self
+        @map ||= Google::Protobuf::FFI.is_map self
       end
 
       def repeated?
-        Google::Protobuf::FFI.is_repeated self
+        @repeated ||= Google::Protobuf::FFI.is_repeated self
       end
 
       def sub_message?
-        Google::Protobuf::FFI.is_sub_message self
+        @sub_message ||= Google::Protobuf::FFI.is_sub_message self
       end
 
       def wrapper?
-        message_descriptor = Google::Protobuf::FFI.get_subtype_as_message(self)
-        message_descriptor.nil? ? false : message_descriptor.send(:wrapper?)
+        if defined? @wrapper
+          @wrapper
+        else
+          message_descriptor = Google::Protobuf::FFI.get_subtype_as_message(self)
+          @wrapper = message_descriptor.nil? ? false : message_descriptor.send(:wrapper?)
+        end
       end
 
       private
@@ -250,7 +262,7 @@ module Google
 
       # TODO(jatl) Can this be added to the public API?
       def real_containing_oneof
-        Google::Protobuf::FFI.real_containing_oneof self
+        @real_containing_oneof ||= Google::Protobuf::FFI.real_containing_oneof self
       end
 
       # Implementation details below are subject to breaking changes without
@@ -307,7 +319,7 @@ module Google
       end
 
       def c_type
-        Google::Protobuf::FFI.get_c_type(self)
+        @c_type ||= Google::Protobuf::FFI.get_c_type(self)
       end
     end
   end

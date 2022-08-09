@@ -100,7 +100,7 @@ module Google
       end
 
       def name
-        Google::Protobuf::FFI.get_message_fullname(self)
+        @name ||= Google::Protobuf::FFI.get_message_fullname(self)
       end
 
       def each_oneof &block
@@ -128,10 +128,7 @@ module Google
       end
 
       def msgclass
-        if @msg_class.nil?
-          @msg_class = build_message_class
-        end
-        @msg_class
+        @msg_class ||= build_message_class
       end
 
       private
@@ -151,11 +148,15 @@ module Google
       end
 
       def wrapper?
-        case Google::Protobuf::FFI.get_well_known_type self
-        when :DoubleValue, :FloatValue, :Int64Value, :UInt64Value, :Int32Value, :UInt32Value, :StringValue, :BytesValue, :BoolValue
-          true
+        if defined? @wrapper
+          @wrapper
         else
-          false
+          @wrapper = case Google::Protobuf::FFI.get_well_known_type self
+          when :DoubleValue, :FloatValue, :Int64Value, :UInt64Value, :Int32Value, :UInt32Value, :StringValue, :BytesValue, :BoolValue
+            true
+          else
+            false
+          end
         end
       end
 
@@ -421,8 +422,39 @@ module Google
           @descriptor.each do |field_descriptor|
             field_name = field_descriptor.name
             unless instance_methods(true).include?(field_name.to_sym)
-              define_method(field_name) do
-                index_internal(nil, field_descriptor)
+              #TODO(jatl) - at a high level, dispatching to either
+              # index_internal or get_field would be logically correct, but slightly slower.
+              if field_descriptor.map?
+                define_method(field_name) do
+                  mutable_message_value = Google::Protobuf::FFI.get_mutable_message @msg, field_descriptor, @arena
+                  get_map_field(mutable_message_value[:map], field_descriptor)
+                end
+              elsif field_descriptor.repeated?
+                define_method(field_name) do
+                  mutable_message_value = Google::Protobuf::FFI.get_mutable_message @msg, field_descriptor, @arena
+                  get_repeated_field(mutable_message_value[:array], field_descriptor)
+                end
+              elsif field_descriptor.sub_message?
+                define_method(field_name) do
+                  return nil unless Google::Protobuf::FFI.get_message_has @msg, field_descriptor
+                  mutable_message = Google::Protobuf::FFI.get_mutable_message @msg, field_descriptor, @arena
+                  sub_message = mutable_message[:msg]
+                  sub_message_def = Google::Protobuf::FFI.get_subtype_as_message(field_descriptor)
+                  Descriptor.send(:get_message, sub_message, sub_message_def, @arena)
+                end
+              else
+                c_type = field_descriptor.send(:c_type)
+                if c_type == :enum
+                  define_method(field_name) do
+                    message_value = Google::Protobuf::FFI.get_message_value @msg, field_descriptor
+                    convert_upb_to_ruby message_value, c_type, Google::Protobuf::FFI.get_subtype_as_enum(field_descriptor)
+                  end
+                else
+                  define_method(field_name) do
+                    message_value = Google::Protobuf::FFI.get_message_value @msg, field_descriptor
+                    convert_upb_to_ruby message_value, c_type
+                  end
+                end
               end
               define_method("#{field_name}=") do |value|
                 index_assign_internal(value, field_descriptor: field_descriptor)
