@@ -10,7 +10,3 @@ git submodule update --init --recursive
 
 @rem Select Visual Studio 2017.
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
-
-@rem Convert Windows line breaks to Unix line breaks
-@rem This allows text-matching tests to pass
-find . -type f -print0 | xargs -0 d2u
