@@ -106,7 +106,12 @@ void PROTOBUF_EXPORT VerifyVersion(int headerVersion, int minLibraryVersion,
                                    const char* filename);
 
 // Converts a numeric version number to a string.
-std::string PROTOBUF_EXPORT VersionString(int version);
+// If cppMajor is true the string will have the C++ major version, otherwise
+// the string will be the protoc version.
+std::string PROTOBUF_EXPORT VersionString(int version, bool cppMajor = true);
+
+// Prints the protoc compiler version (no major version)
+std::string PROTOBUF_EXPORT ProtocVersionString(int version);
 
 }  // namespace internal
 
