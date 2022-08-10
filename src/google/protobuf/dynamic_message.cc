@@ -105,22 +105,6 @@ namespace {
 
 bool IsMapFieldInApi(const FieldDescriptor* field) { return field->is_map(); }
 
-// Sync with helpers.h.
-inline bool HasHasbit(const FieldDescriptor* field) {
-  // This predicate includes proto3 message fields only if they have "optional".
-  //   Foo submsg1 = 1;           // HasHasbit() == false
-  //   optional Foo submsg2 = 2;  // HasHasbit() == true
-  // This is slightly odd, as adding "optional" to a singular proto3 field does
-  // not change the semantics or API. However whenever any field in a message
-  // has a hasbit, it forces reflection to include hasbit offsets for *all*
-  // fields, even if almost all of them are set to -1 (no hasbit). So to avoid
-  // causing a sudden size regression for ~all proto3 messages, we give proto3
-  // message fields a hasbit only if "optional" is present. If the user is
-  // explicitly writing "optional", it is likely they are writing it on
-  // primitive fields also.
-  return (field->has_optional_keyword() || field->is_required()) &&
-         !field->options().weak();
-}
 
 inline bool InRealOneof(const FieldDescriptor* field) {
   return field->containing_oneof() &&
@@ -705,7 +689,7 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
   type_info->has_bits_offset = -1;
   int max_hasbit = 0;
   for (int i = 0; i < type->field_count(); i++) {
-    if (HasHasbit(type->field(i))) {
+    if (internal::cpp::HasHasbit(type->field(i))) {
       if (type_info->has_bits_offset == -1) {
         // At least one field in the message requires a hasbit, so allocate
         // hasbits.

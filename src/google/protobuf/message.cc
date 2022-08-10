@@ -47,6 +47,7 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/generated_message_reflection.h>
+#include <google/protobuf/generated_message_tctable_impl.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/map_field.h>
 #include <google/protobuf/map_field_inl.h>
@@ -167,7 +168,15 @@ void Message::DiscardUnknownFields() {
 
 const char* Message::_InternalParse(const char* ptr,
                                     internal::ParseContext* ctx) {
+#if defined(PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION)
+  auto meta = GetMetadata();
+  ptr = internal::TcParser::ParseLoop(this, ptr, ctx,
+                                      meta.reflection->GetTcParseTable());
+
+  return ptr;
+#else
   return WireFormat::_InternalParse(this, ptr, ctx);
+#endif
 }
 
 uint8_t* Message::_InternalSerialize(uint8_t* target,

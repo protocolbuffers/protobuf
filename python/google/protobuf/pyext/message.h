@@ -329,7 +329,7 @@ PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg);
     return err;                         \
   }
 
-#define FULL_MODULE_NAME "google.protobuf.pyext._message"
+#define FULL_MODULE_NAME "google3.net.google.protobuf.python.internal.cpp._message"
 
 void FormatTypeError(PyObject* arg, const char* expected_types);
 template<class T>

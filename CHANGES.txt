@@ -1,6 +1,7 @@
 2022-07-01 Unreleased version
 
   C++
+  * cpp_generated_lib_linked support is removed in protoc
   * Reduced .pb.o object file size slightly by explicitly instantiating
     InternalMetadata templates in the runtime.
   * Add C++20 keywords guarded by PROTOBUF_FUTURE_CPP20_KEYWORDS
@@ -11,6 +12,7 @@
   * Hide C++ RepeatedField::UnsafeArenaSwap
 
   Kotlin
+  * Suppress deprecation warnings in Kotlin generated code.
   * Kotlin generated code comments now use kdoc format instead of javadoc.
   * Escape keywords in package names in proto generated code
   * Add Kotlin enum int value getters and setters
@@ -26,6 +28,14 @@
   Compiler
   * Print full path name of source .proto file on error
 
+2022-08-09 version 21.5 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+  PHP
+  * Added getContainingOneof and getRealContainingOneof to descriptor.
+  * fix PHP readonly legacy files for nested messages
+
+  Python
+  * Fixed comparison of maps in Python.
 
 2022-07-25 version 21.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
 

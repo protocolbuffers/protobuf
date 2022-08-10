@@ -1398,5 +1398,5 @@ void Message_register(VALUE protobuf) {
   // Ruby-interned string: "descriptor". We use this identifier to store an
   // instance variable on message classes we create in order to link them back
   // to their descriptors.
-  descriptor_instancevar_interned = rb_intern("descriptor");
+  descriptor_instancevar_interned = rb_intern("@descriptor");
 }

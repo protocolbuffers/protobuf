@@ -32,6 +32,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_enum_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_bases.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_reflection.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_gen.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_full.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_util.cc

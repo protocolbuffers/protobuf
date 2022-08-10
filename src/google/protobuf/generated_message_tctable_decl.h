@@ -183,11 +183,18 @@ struct alignas(uint64_t) TcParseTableBase {
   const FastFieldEntry* fast_entry(size_t idx) const {
     return reinterpret_cast<const FastFieldEntry*>(this + 1) + idx;
   }
+  FastFieldEntry* fast_entry(size_t idx) {
+    return reinterpret_cast<FastFieldEntry*>(this + 1) + idx;
+  }
 
   // Returns a begin iterator (pointer) to the start of the field lookup table.
   const uint16_t* field_lookup_begin() const {
     return reinterpret_cast<const uint16_t*>(reinterpret_cast<uintptr_t>(this) +
                                              lookup_table_offset);
+  }
+  uint16_t* field_lookup_begin() {
+    return reinterpret_cast<uint16_t*>(reinterpret_cast<uintptr_t>(this) +
+                                       lookup_table_offset);
   }
 
   // Field entry for all fields.
@@ -202,6 +209,10 @@ struct alignas(uint64_t) TcParseTableBase {
   const FieldEntry* field_entries_begin() const {
     return reinterpret_cast<const FieldEntry*>(
         reinterpret_cast<uintptr_t>(this) + field_entries_offset);
+  }
+  FieldEntry* field_entries_begin() {
+    return reinterpret_cast<FieldEntry*>(reinterpret_cast<uintptr_t>(this) +
+                                         field_entries_offset);
   }
 
   // Auxiliary entries for field types that need extra information.
@@ -234,6 +245,11 @@ struct alignas(uint64_t) TcParseTableBase {
                                              aux_offset) +
            idx;
   }
+  FieldAux* field_aux(uint32_t idx) {
+    return reinterpret_cast<FieldAux*>(reinterpret_cast<uintptr_t>(this) +
+                                       aux_offset) +
+           idx;
+  }
   const FieldAux* field_aux(const FieldEntry* entry) const {
     return field_aux(entry->aux_idx);
   }
@@ -243,6 +259,11 @@ struct alignas(uint64_t) TcParseTableBase {
     return reinterpret_cast<const char*>(reinterpret_cast<uintptr_t>(this) +
                                          aux_offset +
                                          num_aux_entries * sizeof(FieldAux));
+  }
+  char* name_data() {
+    return reinterpret_cast<char*>(reinterpret_cast<uintptr_t>(this) +
+                                   aux_offset +
+                                   num_aux_entries * sizeof(FieldAux));
   }
 };
 

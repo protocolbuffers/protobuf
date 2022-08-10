@@ -41,13 +41,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Indicates that the return value of the annotated method must be checked. An error is triggered
- * when one of these methods is called but the result is not used.
+ * Indicates that the return value of the annotated method must be used. An error is triggered when
+ * one of these methods is called but the result is not used.
  *
  * <p>{@code @CheckReturnValue} may be applied to a class or package to indicate that all methods in
- * that class or package must have their return values checked. For convenience, we provide an
- * annotation, {@link CanIgnoreReturnValue}, to exempt specific methods or classes from this
- * behavior.
+ * that class (including indirectly; that is, methods of inner classes within the annotated class)
+ * or package must have their return values used. For convenience, we provide an annotation, {@link
+ * CanIgnoreReturnValue}, to exempt specific methods or classes from this behavior.
  */
 @Documented
 @Target({METHOD, CONSTRUCTOR, TYPE, PACKAGE})
