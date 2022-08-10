@@ -92,7 +92,7 @@ void VerifyVersion(int headerVersion,
   }
 }
 
-std::string VersionString(int version) {
+std::string VersionString(int version, bool cppMajor) {
   int major = version / 1000000;
   int minor = (version / 1000) % 1000;
   int micro = version % 1000;
@@ -100,12 +100,20 @@ std::string VersionString(int version) {
   // 128 bytes should always be enough, but we use snprintf() anyway to be
   // safe.
   char buffer[128];
-  snprintf(buffer, sizeof(buffer), "%d.%d.%d", major, minor, micro);
+  if (cppMajor) {
+    snprintf(buffer, sizeof(buffer), "%d.%d.%d", major, minor, micro);
+  } else {
+    snprintf(buffer, sizeof(buffer), "%d.%d", minor, micro);
+  }
 
   // Guard against broken MSVC snprintf().
   buffer[sizeof(buffer)-1] = '\0';
 
   return buffer;
+}
+
+std::string ProtocVersionString(int version) {
+  return VersionString(version, false);
 }
 
 }  // namespace internal
