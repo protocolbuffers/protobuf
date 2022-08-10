@@ -10,6 +10,7 @@
   * Added a default implementation of MessageDifferencer::Reporter methods.
   * proto2::MapPair is now an alias to std::pair.
   * Hide C++ RepeatedField::UnsafeArenaSwap
+  * Use table-driven parser for reflection based objects.
 
   Kotlin
   * Suppress deprecation warnings in Kotlin generated code.
