@@ -115,6 +115,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/generated_message_bases.h                      \
   google/protobuf/generated_message_reflection.h                 \
   google/protobuf/generated_message_tctable_decl.h               \
+  google/protobuf/generated_message_tctable_gen.h                \
   google/protobuf/generated_message_tctable_impl.h               \
   google/protobuf/generated_message_util.h                       \
   google/protobuf/has_bits.h                                     \
