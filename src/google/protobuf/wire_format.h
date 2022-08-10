@@ -285,6 +285,7 @@ class PROTOBUF_EXPORT WireFormat {
 
  private:
   struct MessageSetParser;
+  friend class TcParser;
   // Skip a MessageSet field.
   static bool SkipMessageSetField(io::CodedInputStream* input,
                                   uint32_t field_number,

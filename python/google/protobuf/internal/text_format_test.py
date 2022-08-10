@@ -38,6 +38,7 @@ import string
 import textwrap
 
 import unittest
+import unittest.mock
 
 from google.protobuf import any_pb2
 from google.protobuf import struct_pb2
@@ -2484,5 +2485,3 @@ class OptionalColonMessageToStringTest(unittest.TestCase):
     self.assertEqual('repeated_int32: [1]\n', output)
 
 
-if __name__ == '__main__':
-  unittest.main()

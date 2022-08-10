@@ -37,8 +37,10 @@
 #include <algorithm>
 #include <cstdint>
 #include <functional>
+#include <limits>
 #include <map>
 #include <memory>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -73,6 +75,8 @@ namespace cpp {
 
 using internal::WireFormat;
 using internal::WireFormatLite;
+using internal::cpp::HasHasbit;
+using internal::cpp::Utf8CheckMode;
 
 namespace {
 
@@ -1315,7 +1319,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "  static const $classname$* internal_default_instance() { return "
         "reinterpret_cast<const "
         "$classname$*>(&_$classname$_default_instance_); }\n");
-    auto utf8_check = GetUtf8CheckMode(descriptor_->field(0), options_);
+    auto utf8_check = internal::cpp::GetUtf8CheckMode(
+        descriptor_->field(0), GetOptimizeFor(descriptor_->file(), options_) ==
+                                   FileOptions::LITE_RUNTIME);
     if (descriptor_->field(0)->type() == FieldDescriptor::TYPE_STRING &&
         utf8_check != Utf8CheckMode::kNone) {
       if (utf8_check == Utf8CheckMode::kStrict) {

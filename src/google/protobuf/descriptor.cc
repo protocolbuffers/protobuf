@@ -8335,6 +8335,48 @@ void LazyDescriptor::Once(const ServiceDescriptor* service) {
   }
 }
 
+namespace cpp {
+bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
+  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
+}
+
+bool HasHasbit(const FieldDescriptor* field) {
+  // This predicate includes proto3 message fields only if they have "optional".
+  //   Foo submsg1 = 1;           // HasHasbit() == false
+  //   optional Foo submsg2 = 2;  // HasHasbit() == true
+  // This is slightly odd, as adding "optional" to a singular proto3 field does
+  // not change the semantics or API. However whenever any field in a message
+  // has a hasbit, it forces reflection to include hasbit offsets for *all*
+  // fields, even if almost all of them are set to -1 (no hasbit). So to avoid
+  // causing a sudden size regression for ~all proto3 messages, we give proto3
+  // message fields a hasbit only if "optional" is present. If the user is
+  // explicitly writing "optional", it is likely they are writing it on
+  // primitive fields also.
+  return (field->has_optional_keyword() || field->is_required()) &&
+         !field->options().weak();
+}
+
+static bool FieldEnforceUtf8(const FieldDescriptor* field) {
+  return true;
+}
+
+static bool FileUtf8Verification(const FileDescriptor* file) {
+  return true;
+}
+
+// Which level of UTF-8 enforcemant is placed on this file.
+Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field, bool is_lite) {
+  if (field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 &&
+      FieldEnforceUtf8(field)) {
+    return Utf8CheckMode::kStrict;
+  } else if (!is_lite && FileUtf8Verification(field->file())) {
+    return Utf8CheckMode::kVerify;
+  } else {
+    return Utf8CheckMode::kNone;
+  }
+}
+
+}  // namespace cpp
 }  // namespace internal
 
 }  // namespace protobuf

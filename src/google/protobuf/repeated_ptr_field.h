@@ -41,6 +41,8 @@
 //
 // This header covers RepeatedPtrField.
 
+// IWYU pragma: private, include "net/proto2/public/repeated_field.h"
+
 #ifndef GOOGLE_PROTOBUF_REPEATED_PTR_FIELD_H__
 #define GOOGLE_PROTOBUF_REPEATED_PTR_FIELD_H__
 

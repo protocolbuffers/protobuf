@@ -104,7 +104,7 @@ void EnumFieldGenerator::GenerateInlineAccessorDefinitions(
       "  return _internal_$name$();\n"
       "}\n"
       "inline void $classname$::_internal_set_$name$($type$ value) {\n");
-  if (!HasPreservingUnknownEnumSemantics(descriptor_)) {
+  if (!internal::cpp::HasPreservingUnknownEnumSemantics(descriptor_)) {
     format("  assert($type$_IsValid(value));\n");
   }
   format(
@@ -204,7 +204,7 @@ void EnumOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "  return _internal_$name$();\n"
       "}\n"
       "inline void $classname$::_internal_set_$name$($type$ value) {\n");
-  if (!HasPreservingUnknownEnumSemantics(descriptor_)) {
+  if (!internal::cpp::HasPreservingUnknownEnumSemantics(descriptor_)) {
     format("  assert($type$_IsValid(value));\n");
   }
   format(
@@ -291,7 +291,7 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
       "  return _internal_$name$(index);\n"
       "}\n"
       "inline void $classname$::set_$name$(int index, $type$ value) {\n");
-  if (!HasPreservingUnknownEnumSemantics(descriptor_)) {
+  if (!internal::cpp::HasPreservingUnknownEnumSemantics(descriptor_)) {
     format("  assert($type$_IsValid(value));\n");
   }
   format(
@@ -300,7 +300,7 @@ void RepeatedEnumFieldGenerator::GenerateInlineAccessorDefinitions(
       "  // @@protoc_insertion_point(field_set:$full_name$)\n"
       "}\n"
       "inline void $classname$::_internal_add_$name$($type$ value) {\n");
-  if (!HasPreservingUnknownEnumSemantics(descriptor_)) {
+  if (!internal::cpp::HasPreservingUnknownEnumSemantics(descriptor_)) {
     format("  assert($type$_IsValid(value));\n");
   }
   format(

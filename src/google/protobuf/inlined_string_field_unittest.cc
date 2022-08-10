@@ -45,6 +45,7 @@
 #include <google/protobuf/arenastring.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/strutil.h>
+#include <google/protobuf/message.h>
 
 
 namespace google {

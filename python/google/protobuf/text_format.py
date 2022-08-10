@@ -67,6 +67,7 @@ _FLOAT_INFINITY = re.compile('-?inf(?:inity)?f?$', re.IGNORECASE)
 _FLOAT_NAN = re.compile('nanf?$', re.IGNORECASE)
 _QUOTES = frozenset(("'", '"'))
 _ANY_FULL_TYPE_NAME = 'google.protobuf.Any'
+_DEBUG_STRING_SILENT_MARKER = '\t '
 
 
 class Error(Exception):
@@ -880,6 +881,7 @@ class _Parser(object):
       type_url_prefix, packed_type_name = self._ConsumeAnyTypeUrl(tokenizer)
       tokenizer.Consume(']')
       tokenizer.TryConsume(':')
+      self._DetectSilentMarker(tokenizer)
       if tokenizer.TryConsume('<'):
         expanded_any_end_token = '>'
       else:
@@ -979,9 +981,11 @@ class _Parser(object):
 
       if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
         tokenizer.TryConsume(':')
+        self._DetectSilentMarker(tokenizer)
         merger = self._MergeMessageField
       else:
         tokenizer.Consume(':')
+        self._DetectSilentMarker(tokenizer)
         merger = self._MergeScalarField
 
       if (field.label == descriptor.FieldDescriptor.LABEL_REPEATED and
@@ -999,13 +1003,20 @@ class _Parser(object):
 
     else:  # Proto field is unknown.
       assert (self.allow_unknown_extension or self.allow_unknown_field)
-      _SkipFieldContents(tokenizer)
+      self._SkipFieldContents(tokenizer)
 
     # For historical reasons, fields may optionally be separated by commas or
     # semicolons.
     if not tokenizer.TryConsume(','):
       tokenizer.TryConsume(';')
 
+
+  def _LogSilentMarker(self):
+    pass
+
+  def _DetectSilentMarker(self, tokenizer):
+    if tokenizer.contains_silent_marker_before_current_token:
+      self._LogSilentMarker()
 
   def _ConsumeAnyTypeUrl(self, tokenizer):
     """Consumes a google.protobuf.Any type URL and returns the type name."""
@@ -1161,112 +1172,108 @@ class _Parser(object):
         else:
           setattr(message, field.name, value)
 
+  def _SkipFieldContents(self, tokenizer):
+    """Skips over contents (value or message) of a field.
 
-def _SkipFieldContents(tokenizer):
-  """Skips over contents (value or message) of a field.
-
-  Args:
-    tokenizer: A tokenizer to parse the field name and values.
-  """
-  # Try to guess the type of this field.
-  # If this field is not a message, there should be a ":" between the
-  # field name and the field value and also the field value should not
-  # start with "{" or "<" which indicates the beginning of a message body.
-  # If there is no ":" or there is a "{" or "<" after ":", this field has
-  # to be a message or the input is ill-formed.
-  if tokenizer.TryConsume(
-      ':') and not tokenizer.LookingAt('{') and not tokenizer.LookingAt('<'):
-    if tokenizer.LookingAt('['):
-      _SkipRepeatedFieldValue(tokenizer)
+    Args:
+      tokenizer: A tokenizer to parse the field name and values.
+    """
+    # Try to guess the type of this field.
+    # If this field is not a message, there should be a ":" between the
+    # field name and the field value and also the field value should not
+    # start with "{" or "<" which indicates the beginning of a message body.
+    # If there is no ":" or there is a "{" or "<" after ":", this field has
+    # to be a message or the input is ill-formed.
+    if tokenizer.TryConsume(
+        ':') and not tokenizer.LookingAt('{') and not tokenizer.LookingAt('<'):
+      self._DetectSilentMarker(tokenizer)
+      if tokenizer.LookingAt('['):
+        self._SkipRepeatedFieldValue(tokenizer)
+      else:
+        self._SkipFieldValue(tokenizer)
     else:
-      _SkipFieldValue(tokenizer)
-  else:
-    _SkipFieldMessage(tokenizer)
+      self._DetectSilentMarker(tokenizer)
+      self._SkipFieldMessage(tokenizer)
 
+  def _SkipField(self, tokenizer):
+    """Skips over a complete field (name and value/message).
 
-def _SkipField(tokenizer):
-  """Skips over a complete field (name and value/message).
-
-  Args:
-    tokenizer: A tokenizer to parse the field name and values.
-  """
-  if tokenizer.TryConsume('['):
-    # Consume extension or google.protobuf.Any type URL
-    tokenizer.ConsumeIdentifier()
-    num_identifiers = 1
-    while tokenizer.TryConsume('.'):
+    Args:
+      tokenizer: A tokenizer to parse the field name and values.
+    """
+    if tokenizer.TryConsume('['):
+      # Consume extension or google.protobuf.Any type URL
       tokenizer.ConsumeIdentifier()
-      num_identifiers += 1
-    # This is possibly a type URL for an Any message.
-    if num_identifiers == 3 and tokenizer.TryConsume('/'):
-      tokenizer.ConsumeIdentifier()
+      num_identifiers = 1
       while tokenizer.TryConsume('.'):
         tokenizer.ConsumeIdentifier()
+        num_identifiers += 1
+      # This is possibly a type URL for an Any message.
+      if num_identifiers == 3 and tokenizer.TryConsume('/'):
+        tokenizer.ConsumeIdentifier()
+        while tokenizer.TryConsume('.'):
+          tokenizer.ConsumeIdentifier()
+      tokenizer.Consume(']')
+    else:
+      tokenizer.ConsumeIdentifierOrNumber()
+
+    self._SkipFieldContents(tokenizer)
+
+    # For historical reasons, fields may optionally be separated by commas or
+    # semicolons.
+    if not tokenizer.TryConsume(','):
+      tokenizer.TryConsume(';')
+
+  def _SkipFieldMessage(self, tokenizer):
+    """Skips over a field message.
+
+    Args:
+      tokenizer: A tokenizer to parse the field name and values.
+    """
+    if tokenizer.TryConsume('<'):
+      delimiter = '>'
+    else:
+      tokenizer.Consume('{')
+      delimiter = '}'
+
+    while not tokenizer.LookingAt('>') and not tokenizer.LookingAt('}'):
+      self._SkipField(tokenizer)
+
+    tokenizer.Consume(delimiter)
+
+  def _SkipFieldValue(self, tokenizer):
+    """Skips over a field value.
+
+    Args:
+      tokenizer: A tokenizer to parse the field name and values.
+
+    Raises:
+      ParseError: In case an invalid field value is found.
+    """
+    # String/bytes tokens can come in multiple adjacent string literals.
+    # If we can consume one, consume as many as we can.
+    if tokenizer.TryConsumeByteString():
+      while tokenizer.TryConsumeByteString():
+        pass
+      return
+
+    if (not tokenizer.TryConsumeIdentifier() and
+        not _TryConsumeInt64(tokenizer) and not _TryConsumeUint64(tokenizer) and
+        not tokenizer.TryConsumeFloat()):
+      raise ParseError('Invalid field value: ' + tokenizer.token)
+
+  def _SkipRepeatedFieldValue(self, tokenizer):
+    """Skips over a repeated field value.
+
+    Args:
+      tokenizer: A tokenizer to parse the field value.
+    """
+    tokenizer.Consume('[')
+    if not tokenizer.LookingAt(']'):
+      self._SkipFieldValue(tokenizer)
+      while tokenizer.TryConsume(','):
+        self._SkipFieldValue(tokenizer)
     tokenizer.Consume(']')
-  else:
-    tokenizer.ConsumeIdentifierOrNumber()
-
-  _SkipFieldContents(tokenizer)
-
-  # For historical reasons, fields may optionally be separated by commas or
-  # semicolons.
-  if not tokenizer.TryConsume(','):
-    tokenizer.TryConsume(';')
-
-
-def _SkipFieldMessage(tokenizer):
-  """Skips over a field message.
-
-  Args:
-    tokenizer: A tokenizer to parse the field name and values.
-  """
-
-  if tokenizer.TryConsume('<'):
-    delimiter = '>'
-  else:
-    tokenizer.Consume('{')
-    delimiter = '}'
-
-  while not tokenizer.LookingAt('>') and not tokenizer.LookingAt('}'):
-    _SkipField(tokenizer)
-
-  tokenizer.Consume(delimiter)
-
-
-def _SkipFieldValue(tokenizer):
-  """Skips over a field value.
-
-  Args:
-    tokenizer: A tokenizer to parse the field name and values.
-
-  Raises:
-    ParseError: In case an invalid field value is found.
-  """
-  # String/bytes tokens can come in multiple adjacent string literals.
-  # If we can consume one, consume as many as we can.
-  if tokenizer.TryConsumeByteString():
-    while tokenizer.TryConsumeByteString():
-      pass
-    return
-
-  if (not tokenizer.TryConsumeIdentifier() and
-      not _TryConsumeInt64(tokenizer) and not _TryConsumeUint64(tokenizer) and
-      not tokenizer.TryConsumeFloat()):
-    raise ParseError('Invalid field value: ' + tokenizer.token)
-
-
-def _SkipRepeatedFieldValue(tokenizer):
-  """Skips over a repeated field value.
-
-  Args:
-    tokenizer: A tokenizer to parse the field value.
-  """
-  tokenizer.Consume('[')
-  if not tokenizer.LookingAt(']'):
-    _SkipFieldValue(tokenizer)
-    while tokenizer.TryConsume(','):
-      _SkipFieldValue(tokenizer)
-  tokenizer.Consume(']')
 
 
 class Tokenizer(object):
@@ -1307,6 +1314,8 @@ class Tokenizer(object):
     self._skip_comments = skip_comments
     self._whitespace_pattern = (skip_comments and self._WHITESPACE_OR_COMMENT
                                 or self._WHITESPACE)
+    self.contains_silent_marker_before_current_token = False
+
     self._SkipWhitespace()
     self.NextToken()
 
@@ -1339,6 +1348,8 @@ class Tokenizer(object):
       match = self._whitespace_pattern.match(self._current_line, self._column)
       if not match:
         break
+      self.contains_silent_marker_before_current_token = match.group(0) == (
+          ' ' + _DEBUG_STRING_SILENT_MARKER)
       length = len(match.group(0))
       self._column += length
 
@@ -1591,6 +1602,7 @@ class Tokenizer(object):
     """Reads the next meaningful token."""
     self._previous_line = self._line
     self._previous_column = self._column
+    self.contains_silent_marker_before_current_token = False
 
     self._column += len(self.token)
     self._SkipWhitespace()

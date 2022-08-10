@@ -247,7 +247,7 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
 
   if (WKT_classes == nullptr) {
     ScopedPyObjectPtr well_known_types(PyImport_ImportModule(
-        "google.protobuf.internal.well_known_types"));
+        "google3.net.google.protobuf.python.internal.well_known_types"));
     GOOGLE_DCHECK(well_known_types != nullptr);
 
     WKT_classes = PyObject_GetAttrString(well_known_types.get(), "WKTBASES");
@@ -2372,7 +2372,7 @@ PyObject* DeepCopy(CMessage* self, PyObject* arg) {
 PyObject* ToUnicode(CMessage* self) {
   // Lazy import to prevent circular dependencies
   ScopedPyObjectPtr text_format(
-      PyImport_ImportModule("google.protobuf.text_format"));
+      PyImport_ImportModule("google3.net.google.protobuf.python.public.text_format"));
   if (text_format == nullptr) {
     return nullptr;
   }
@@ -3035,7 +3035,7 @@ bool InitProto2MessageModule(PyObject *m) {
                      reinterpret_cast<PyObject*>(&PyMethodDescriptor_Type));
 
   PyObject* enum_type_wrapper = PyImport_ImportModule(
-      "google.protobuf.internal.enum_type_wrapper");
+      "google3.net.google.protobuf.python.internal.enum_type_wrapper");
   if (enum_type_wrapper == nullptr) {
     return false;
   }
@@ -3044,7 +3044,7 @@ bool InitProto2MessageModule(PyObject *m) {
   Py_DECREF(enum_type_wrapper);
 
   PyObject* message_module = PyImport_ImportModule(
-      "google.protobuf.message");
+      "google3.net.google.protobuf.python.public.message");
   if (message_module == nullptr) {
     return false;
   }

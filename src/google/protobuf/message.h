@@ -122,6 +122,7 @@
 #include <google/protobuf/port.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_reflection.h>
+#include <google/protobuf/generated_message_tctable_decl.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/map.h>  // TODO(b/211442718): cleanup
 #include <google/protobuf/message_lite.h>
@@ -157,6 +158,7 @@ struct DescriptorTable;
 class MapFieldBase;
 class SwapFieldHelper;
 class CachedSize;
+struct TailCallTableInfo;
 }  // namespace internal
 class UnknownFieldSet;  // unknown_field_set.h
 namespace io {
@@ -468,6 +470,8 @@ class MutableRepeatedFieldRef;
 // memory leaks.  So, instead we ended up with this flat interface.
 class PROTOBUF_EXPORT Reflection final {
  public:
+  ~Reflection();
+
   // Get the UnknownFieldSet for the message.  This contains fields which
   // were seen when the Message was parsed but were not recognized according
   // to the Message's definition.
@@ -1061,10 +1065,34 @@ class PROTOBUF_EXPORT Reflection final {
   // contain weak fields, then this field equals descriptor_->field_count().
   int last_non_weak_field_index_;
 
+  // The table-driven parser table.
+  // This table is generated on demand for Message types that did not override
+  // _InternalParse. It uses the reflection information to do so.
+  mutable internal::once_flag tcparse_table_once_;
+  using TcParseTableBase = internal::TcParseTableBase;
+  mutable const TcParseTableBase* tcparse_table_ = nullptr;
+
+  const TcParseTableBase* GetTcParseTable() const {
+    internal::call_once(tcparse_table_once_,
+                        [&] { tcparse_table_ = CreateTcParseTable(); });
+    return tcparse_table_;
+  }
+
+  const TcParseTableBase* CreateTcParseTable() const;
+  const TcParseTableBase* CreateTcParseTableForMessageSet() const;
+  void PopulateTcParseFastEntries(
+      const internal::TailCallTableInfo& table_info,
+      TcParseTableBase::FastFieldEntry* fast_entries) const;
+  void PopulateTcParseEntries(internal::TailCallTableInfo& table_info,
+                              TcParseTableBase::FieldEntry* entries) const;
+  void PopulateTcParseFieldAux(const internal::TailCallTableInfo& table_info,
+                               TcParseTableBase::FieldAux* field_aux) const;
+
   template <typename T, typename Enable>
   friend class RepeatedFieldRef;
   template <typename T, typename Enable>
   friend class MutableRepeatedFieldRef;
+  friend class Message;
   friend class ::PROTOBUF_NAMESPACE_ID::MessageLayoutInspector;
   friend class ::PROTOBUF_NAMESPACE_ID::AssignDescriptorsHelper;
   friend class DynamicMessageFactory;
