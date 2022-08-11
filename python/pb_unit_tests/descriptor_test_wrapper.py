@@ -26,15 +26,6 @@
 from google.protobuf.internal.descriptor_test import *
 import unittest
 
-# begin:github_only
-# Our behavior here matches pure-Python, which does not allow
-# foo.enum_values_by_name.get([]).  We reject it because we return a true
-# dict (like pure Python), which does not allow hashing by a list.
-GeneratedDescriptorTest.testDescriptor.__unittest_expecting_failure__ = True
-GeneratedDescriptorTest.testCppDescriptorContainer.__unittest_expecting_failure__ = True
-GeneratedDescriptorTest.testServiceDescriptor.__unittest_expecting_failure__ = True
-# end:github_only
-
 # These fail because they attempt to add fields with conflicting JSON names.
 # We don't want to support this going forward.
 MakeDescriptorTest.testCamelcaseName.__unittest_expecting_failure__ = True
