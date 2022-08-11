@@ -133,8 +133,7 @@ struct PyProto_API {
 };
 
 inline const char* PyProtoAPICapsuleName() {
-  static const char kCapsuleName[] =
-      "google3.net.google.protobuf.python.internal.cpp._message.proto_API";
+  static const char kCapsuleName[] = "google.protobuf.pyext._message.proto_API";
   return kCapsuleName;
 }
 
