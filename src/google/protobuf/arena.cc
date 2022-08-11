@@ -117,7 +117,7 @@ SerialArena* SerialArena::New(Memory mem, void* owner,
                               ThreadSafeArenaStats* stats) {
   GOOGLE_DCHECK_LE(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize, mem.size);
   ThreadSafeArenaStats::RecordAllocateStats(
-      stats, /*requested=*/mem.size, /*allocated=*/mem.size, /*wasted=*/0);
+      stats, /*used=*/0, /*allocated=*/mem.size, /*wasted=*/0);
   auto b = new (mem.ptr) Block{nullptr, mem.size};
   return new (b->Pointer(kBlockHeaderSize)) SerialArena(b, owner, stats);
 }

@@ -42,6 +42,7 @@
 #include <climits>
 #include <cmath>
 #include <limits>
+#include <string>
 #include <utility>
 #include <vector>
 

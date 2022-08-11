@@ -9,4 +9,5 @@ cd $(dirname $0)/../../..
 KOKORO_INSTALL_RVM=yes
 source kokoro/macos/prepare_build_macos_rc
 
-./tests.sh ruby25
+cd ruby
+./travis-test.sh ruby-2.5.1

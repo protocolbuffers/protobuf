@@ -2,19 +2,15 @@
 
 set -ex
 
-cd `dirname $0`
+cd `dirname $0`/..
 
-if ../src/protoc --help > /dev/null; then
-  PROTOC=src/protoc
-else
-  # Bazel seems to be creating a problematic symlink in
-  # _build/out/external/com_google_protobuf, so we remove the _build directory
-  # before building protoc.
-  (cd .. && bazel build -c opt :protoc)
-  PROTOC=bazel-bin/protoc
+PROTOC=$(pwd)/protoc
+if [ ! -f $PROTOC ]; then
+  bazel build -c opt //:protoc
+  PROTOC=$(pwd)/bazel-bin/protoc
 fi
 
-if [[ -d tmp && -z $(find tests/proto ../$PROTOC -newer tmp) ]]; then
+if [[ -d php/tmp && -z $(find php/tests/proto $PROTOC -newer php/tmp) ]]; then
   # Generated protos are already present and up to date, so we can skip protoc.
   #
   # Protoc is very fast, but sometimes it is not available (like if we haven't
@@ -23,10 +19,9 @@ if [[ -d tmp && -z $(find tests/proto ../$PROTOC -newer tmp) ]]; then
   exit 0
 fi
 
-rm -rf tmp
-mkdir -p tmp
+rm -rf php/tmp
+mkdir -p php/tmp
 
-cd ..
 find php/tests/proto -type f -name "*.proto"| xargs $PROTOC --php_out=php/tmp -Isrc -Iphp/tests
 
 if [ "$1" = "--aggregate_metadata" ]; then

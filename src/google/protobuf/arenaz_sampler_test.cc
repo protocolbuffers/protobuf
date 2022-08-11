@@ -411,6 +411,33 @@ TEST(ThreadSafeArenazSamplerTest, Callback) {
   sampler.Unregister(info2);
 }
 
+TEST(ThreadSafeArenazSamplerTest, InitialBlockReportsZeroUsedAndWasted) {
+  SetThreadSafeArenazEnabled(true);
+  // Setting 1 as the parameter value means one in every two arenas would be
+  // sampled, on average.
+  int32_t oldparam = ThreadSafeArenazSampleParameter();
+  SetThreadSafeArenazSampleParameter(1);
+  SetThreadSafeArenazGlobalNextSample(0);
+  constexpr int kSize = 571;
+  int count_found_allocation = 0;
+  auto& sampler = GlobalThreadSafeArenazSampler();
+  for (int i = 0; i < 10; ++i) {
+    char block[kSize];
+    google::protobuf::Arena arena(/*initial_block=*/block, /*initial_block_size=*/kSize);
+    sampler.Iterate([&](const ThreadSafeArenaStats& h) {
+      const auto& histbin =
+          h.block_histogram[ThreadSafeArenaStats::FindBin(kSize)];
+      if (histbin.bytes_allocated.load(std::memory_order_relaxed) == kSize) {
+        count_found_allocation++;
+        EXPECT_EQ(histbin.bytes_used, 0);
+        EXPECT_EQ(histbin.bytes_wasted, 0);
+      }
+    });
+  }
+  EXPECT_GT(count_found_allocation, 0);
+  SetThreadSafeArenazSampleParameter(oldparam);
+}
+
 class ThreadSafeArenazSamplerTestThread : public Thread {
  protected:
   void Run() override {

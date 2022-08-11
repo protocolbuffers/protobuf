@@ -8,6 +8,7 @@ set -eu
 # Some base locations.
 readonly ScriptDir=$(dirname "$(echo $0 | sed -e "s,^\([^/]\),$(pwd)/\1,")")
 readonly ProtoRootDir="${ScriptDir}/../.."
+readonly BazelFlags="-k --test_output=streamed --macos_minimum_os=10.9"
 
 printUsage() {
   NAME=$(basename "${0}")
@@ -24,8 +25,6 @@ OPTIONS:
          Show this message
    -c, --clean
          Issue a clean before the normal build.
-   -a, --autogen
-         Start by rerunning autogen & configure.
    -r, --regenerate-descriptors
          Run generate_descriptor_proto.sh to regenerate all the checked in
          proto sources.
@@ -60,25 +59,7 @@ header() {
   echo "========================================================================"
 }
 
-# Thanks to libtool, builds can fail in odd ways and since it eats some output
-# it can be hard to spot, so force error output if make exits with a non zero.
-wrapped_make() {
-  set +e  # Don't stop if the command fails.
-  make $*
-  MAKE_EXIT_STATUS=$?
-  if [ ${MAKE_EXIT_STATUS} -ne 0 ]; then
-    echo "Error: 'make $*' exited with status ${MAKE_EXIT_STATUS}"
-    exit ${MAKE_EXIT_STATUS}
-  fi
-  set -e
-}
-
-NUM_MAKE_JOBS=$(/usr/sbin/sysctl -n hw.ncpu)
-if [[ "${NUM_MAKE_JOBS}" -lt 2 ]] ; then
-  NUM_MAKE_JOBS=2
-fi
-
-DO_AUTOGEN=no
+NUM_JOBS=auto
 DO_CLEAN=no
 REGEN_DESCRIPTORS=no
 CORE_ONLY=no
@@ -98,15 +79,12 @@ while [[ $# != 0 ]]; do
     -c | --clean )
       DO_CLEAN=yes
       ;;
-    -a | --autogen )
-      DO_AUTOGEN=yes
-      ;;
     -r | --regenerate-descriptors )
       REGEN_DESCRIPTORS=yes
       ;;
     -j | --jobs )
       shift
-      NUM_MAKE_JOBS="${1}"
+      NUM_JOBS="${1}"
       ;;
     --core-only )
       CORE_ONLY=yes
@@ -154,21 +132,9 @@ done
 # Into the proto dir.
 cd "${ProtoRootDir}"
 
-# if no Makefile, force the autogen.
-if [[ ! -f Makefile ]] ; then
-  DO_AUTOGEN=yes
-fi
-
-if [[ "${DO_AUTOGEN}" == "yes" ]] ; then
-  header "Running autogen & configure"
-  ./autogen.sh
-  ./configure \
-    CPPFLAGS="-mmacosx-version-min=10.9 -Wunused-const-variable -Wunused-function"
-fi
-
 if [[ "${DO_CLEAN}" == "yes" ]] ; then
   header "Cleaning"
-  wrapped_make clean
+  bazel clean
   if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
     XCODEBUILD_CLEAN_BASE_IOS=(
       xcodebuild
@@ -212,26 +178,23 @@ fi
 
 if [[ "${REGEN_DESCRIPTORS}" == "yes" ]] ; then
   header "Regenerating the descriptor sources."
-  ./generate_descriptor_proto.sh -j "${NUM_MAKE_JOBS}"
+  ./generate_descriptor_proto.sh -j "${NUM_JOBS}"
 fi
 
 if [[ "${CORE_ONLY}" == "yes" ]] ; then
   header "Building core Only"
-  wrapped_make -j "${NUM_MAKE_JOBS}"
+  bazel build //:protoc //:protobuf //:protobuf_lite -j "${NUM_JOBS}" $BazelFlags
 else
   header "Building"
   # Can't issue these together, when fully parallel, something sometimes chokes
   # at random.
-  wrapped_make -j "${NUM_MAKE_JOBS}" all
-  wrapped_make -j "${NUM_MAKE_JOBS}" check
+  bazel test //src/... $BazelFlags
   # Fire off the conformance tests also.
-  cd conformance
-  wrapped_make -j "${NUM_MAKE_JOBS}" test_cpp
-  cd ..
+  bazel test //objectivec:conformance_test $BazelFlags
 fi
 
 # Ensure the WKT sources checked in are current.
-objectivec/generate_well_known_types.sh --check-only -j "${NUM_MAKE_JOBS}"
+objectivec/generate_well_known_types.sh --check-only -j "${NUM_JOBS}"
 
 header "Checking on the ObjC Runtime Code"
 # Some of the kokoro machines don't have python3 yet, so fall back to python if need be.
@@ -295,7 +258,7 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
           -disable-concurrent-destination-testing
       )
       ;;
-    11.* | 12.* | 13.*)
+    11.* | 12.* | 13.* | 14.*)
       # Dropped 32bit as Apple doesn't seem support the simulators either.
       XCODEBUILD_TEST_BASE_IOS+=(
           -destination "platform=iOS Simulator,name=iPhone 8,OS=latest" # 64bit
@@ -391,9 +354,7 @@ fi
 
 if [[ "${DO_OBJC_CONFORMANCE_TESTS}" == "yes" ]] ; then
   header "Running ObjC Conformance Tests"
-  cd conformance
-  wrapped_make -j "${NUM_MAKE_JOBS}" test_objc
-  cd ..
+  bazel test //objectivec:conformance_test $BazelFlags
 fi
 
 echo ""

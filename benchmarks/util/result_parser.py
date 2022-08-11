@@ -1,5 +1,3 @@
-# This import depends on the automake rule protoc_middleman, please make sure
-# protoc_middleman has been built before run this file.
 import argparse
 import json
 import re
@@ -8,7 +6,7 @@ import os.path
 import sys
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
 # END OPENSOURCE
-import tmp.benchmarks_pb2 as benchmarks_pb2
+from benchmarks import benchmarks_pb2
 
 __file_size_map = {}
 

@@ -6,8 +6,7 @@
 cd $(dirname $0)/../../..
 
 # Prepare worker environment to run tests
-KOKORO_INSTALL_TOX=yes
+KOKORO_INSTALL_VENV=yes
 source kokoro/macos/prepare_build_macos_rc
-g++ --version
 
-./tests.sh python_cpp
+bazel test //python/... -k --macos_minimum_os=10.9 --test_output=streamed --define=use_fast_cpp_protos=true
