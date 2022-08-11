@@ -4,15 +4,20 @@
 # running the "pull request 32" project:
 #
 # This script selects a specific Dockerfile (for building a Docker image) and
-# a script to run inside that image.  Then we delegate to the general
-# build_and_run_docker.sh script.
+# a script to run inside that image.
+
+set -ex
 
 # Change to repo root
 cd $(dirname $0)/../../..
+GIT_REPO_ROOT=$(pwd)
 
-export DOCKERHUB_ORGANIZATION=protobuftesting
-export DOCKERFILE_DIR=kokoro/linux/dockerfile/test/php_32bit
-export DOCKER_RUN_SCRIPT=kokoro/linux/pull_request_in_docker.sh
-export OUTPUT_DIR=testoutput
-export TEST_SET="php_all_32"
-./kokoro/linux/build_and_run_docker.sh
+CONTAINER_IMAGE=gcr.io/protobuf-build/php/32bit@sha256:824cbdff02ee543eb69ee4b02c8c58cc7887f70f49e41725a35765d92a898b4f
+
+git submodule update --init --recursive
+
+docker run \
+  "$@" \
+  -v $GIT_REPO_ROOT:/workspace \
+  $CONTAINER_IMAGE \
+  bash -l "/workspace/kokoro/linux/32-bit/test_php.sh"

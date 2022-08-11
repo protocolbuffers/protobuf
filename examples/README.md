@@ -44,7 +44,7 @@ build only the language you are interested in.
 ### C++
 
 You can follow instructions in [../src/README.md](../src/README.md) to install
-protoc and protobuf C++ runtime from source.
+protoc from source.
 
 Then run "make cpp" in this examples directory to build the C++ example. It
 will create two executables: add_person_cpp and list_people_cpp. These programs

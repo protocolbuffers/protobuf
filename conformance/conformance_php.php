@@ -14,7 +14,7 @@ require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedMessage.php
 require_once("Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedEnum.php");
 
 require_once("GPBMetadata/Conformance.php");
-require_once("GPBMetadata/Google/Protobuf/TestMessagesProto3.php");
+require_once("GPBMetadata/TestMessagesProto3.php");
 
 use  \Conformance\TestCategory;
 use  \Conformance\WireFormat;
@@ -113,7 +113,7 @@ function doTestIO()
 while(true){
   if (!doTestIO()) {
       fprintf(STDERR,
-             "conformance_php: received EOF from test runner " +
+             "conformance_php: received EOF from test runner " .
              "after %d tests, exiting\n", $test_count);
       exit;
   }

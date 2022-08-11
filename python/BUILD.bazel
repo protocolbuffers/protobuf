@@ -9,8 +9,9 @@
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@rules_python//python:defs.bzl", "py_library")
-load("//:protobuf.bzl", "py_proto_library")
+load("//:protobuf.bzl", "internal_py_proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
+load("//conformance:defs.bzl", "conformance_test")
 load(":internal.bzl", "internal_copy_files")
 
 py_library(
@@ -36,7 +37,7 @@ config_setting(
     },
 )
 
-py_proto_library(
+internal_py_proto_library(
     name = "well_known_types_py_pb2",
     srcs = [":copied_wkt_proto_files"],
     include = ".",
@@ -167,7 +168,25 @@ internal_copy_files(
     strip_prefix = "src",
 )
 
-py_proto_library(
+internal_copy_files(
+    name = "copied_test_messages_proto2_files",
+    testonly = 1,
+    srcs = [
+        "//src/google/protobuf:test_messages_proto2.proto",
+    ],
+    strip_prefix = "src",
+)
+
+internal_copy_files(
+    name = "copied_test_messages_proto3_files",
+    testonly = 1,
+    srcs = [
+        "//src/google/protobuf:test_messages_proto3.proto",
+    ],
+    strip_prefix = "src",
+)
+
+internal_py_proto_library(
     name = "python_common_test_protos",
     testonly = 1,
     srcs = [":copied_test_proto_files"],
@@ -179,7 +198,7 @@ py_proto_library(
     deps = [":well_known_types_py_pb2"],
 )
 
-py_proto_library(
+internal_py_proto_library(
     name = "python_specific_test_protos",
     testonly = 1,
     srcs = glob([
@@ -192,6 +211,33 @@ py_proto_library(
     srcs_version = "PY2AND3",
     visibility = ["//:__pkg__"],
     deps = [":python_common_test_protos"],
+)
+
+internal_py_proto_library(
+    name = "test_messages_proto2_py_proto",
+    testonly = 1,
+    visibility = [
+        "//conformance:__pkg__",
+        "//python:__subpackages__",
+    ],
+    srcs = [":copied_test_messages_proto2_files"],
+    include = ".",
+    default_runtime = "//:protobuf_python",
+    protoc = "//:protoc",
+)
+
+internal_py_proto_library(
+    name = "test_messages_proto3_py_proto",
+    testonly = 1,
+    visibility = [
+        "//conformance:__pkg__",
+        "//python:__subpackages__",
+    ],
+    srcs = [":copied_test_messages_proto3_files"],
+    deps = [":well_known_types_py_pb2"],
+    include = ".",
+    default_runtime = "//:protobuf_python",
+    protoc = "//:protoc",
 )
 
 py_library(
@@ -237,8 +283,22 @@ py_test(
 )
 
 py_test(
+    name = "import_test",
+    srcs = ["google/protobuf/internal/import_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
     name = "json_format_test",
     srcs = ["google/protobuf/internal/json_format_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
+    name = "keywords_test",
+    srcs = ["google/protobuf/internal/keywords_test.py"],
     imports = ["."],
     deps = [":python_test_lib"],
 )
@@ -311,6 +371,13 @@ py_test(
 )
 
 py_test(
+    name = "well_known_types_test",
+    srcs = ["google/protobuf/internal/well_known_types_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
     name = "wire_format_test",
     srcs = ["google/protobuf/internal/wire_format_test.py"],
     imports = ["."],
@@ -319,11 +386,41 @@ py_test(
 
 cc_library(
     name = "proto_api",
-    hdrs = ["python/google/protobuf/proto_api.h"],
+    hdrs = ["google/protobuf/proto_api.h"],
     visibility = ["//visibility:public"],
     deps = [
         "//external:python_headers",
     ],
+)
+
+py_test(
+    name = "python_version",
+    srcs = ["python_version.py"],
+)
+
+conformance_test(
+    name = "conformance_test",
+    failure_list = "//conformance:failure_list_python.txt",
+    testee = "//conformance:conformance_python",
+    text_format_failure_list = "//conformance:text_format_failure_list_python.txt",
+    env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "python"},
+    target_compatible_with = select({
+        ":use_fast_cpp_protos": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+)
+
+# Note: this requires --define=use_fast_cpp_protos=true
+conformance_test(
+    name = "conformance_test_cpp",
+    failure_list = "//conformance:failure_list_python.txt",
+    testee = "//conformance:conformance_python",
+    text_format_failure_list = "//conformance:text_format_failure_list_python_cpp.txt",
+    env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "cpp"},
+    target_compatible_with = select({
+        ":use_fast_cpp_protos": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
 )
 
 ################################################################################
@@ -347,6 +444,7 @@ pkg_files(
         "google/protobuf/python_protobuf.h",
         "internal.bzl",
         "mox.py",
+        "python_version.py",
         "release.sh",
         "setup.cfg",
         "setup.py",

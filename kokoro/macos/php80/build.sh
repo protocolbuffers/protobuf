@@ -17,4 +17,4 @@ test ! -z "$PHP_FOLDER"
 export PATH="$PHP_FOLDER/bin:$PATH"
 
 # Test
-./tests.sh php_mac
+kokoro/macos/test_php.sh

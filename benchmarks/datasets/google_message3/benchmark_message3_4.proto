@@ -34,10 +34,10 @@ syntax = "proto2";
 
 package benchmarks.google_message3;
 
-import "datasets/google_message3/benchmark_message3_5.proto";
-import "datasets/google_message3/benchmark_message3_6.proto";
-import "datasets/google_message3/benchmark_message3_7.proto";
-import "datasets/google_message3/benchmark_message3_8.proto";
+import "benchmarks/datasets/google_message3/benchmark_message3_5.proto";
+import "benchmarks/datasets/google_message3/benchmark_message3_6.proto";
+import "benchmarks/datasets/google_message3/benchmark_message3_7.proto";
+import "benchmarks/datasets/google_message3/benchmark_message3_8.proto";
 
 option cc_enable_arenas = true;
 option java_package = "com.google.protobuf.benchmarks";

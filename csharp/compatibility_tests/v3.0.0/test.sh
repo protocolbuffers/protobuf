@@ -27,6 +27,8 @@ function run_test() {
 
 set -ex
 
+PROTOC=$(realpath ${2:-../../../bazel-bin/protoc})
+
 # Change to the script's directory.
 cd $(dirname $0)
 
@@ -45,7 +47,7 @@ OLD_VERSION_PROTOC=https://repo1.maven.org/maven2/com/google/protobuf/protoc/$OL
 echo "Running compatibility tests with $OLD_VERSION"
 
 # Check protoc
-[ -f ../../../src/protoc ] || {
+[ -f $PROTOC ] || {
   echo "[ERROR]: Please build protoc first."
   exit 1
 }
@@ -68,12 +70,12 @@ run_test "./old_protoc" "./old_protoc"
 # Test A.2:
 #   proto set 1: use new version
 #   proto set 2 which may import protos in set 1: use old version
-run_test "../../../src/protoc" "./old_protoc"
+run_test "$PROTOC" "./old_protoc"
 
 # Test A.3:
 #   proto set 1: use old version
 #   proto set 2 which may import protos in set 1: use new version
-run_test "./old_protoc" "../../../src/protoc"
+run_test "./old_protoc" "$PROTOC"
 
 rm old_protoc
 rm keys -r

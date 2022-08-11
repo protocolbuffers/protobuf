@@ -6,8 +6,19 @@ pkg_files(
     name = "dist_files",
     srcs = [
         "BUILD.bazel",
+        "JavaVersionTest.java",
         "testing.bzl",
     ],
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//java:__pkg__"],
+)
+
+java_test(
+    name = "java_version",
+    test_class = "JavaVersionTest",
+    srcs = ["JavaVersionTest.java"],
+    deps = [
+        "@maven//:com_google_truth_truth",
+        "@maven//:junit_junit",
+    ],
 )
