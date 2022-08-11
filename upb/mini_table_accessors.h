@@ -30,6 +30,7 @@
 
 #include "upb/array.h"
 #include "upb/internal/mini_table_accessors.h"
+#include "upb/mini_table.h"
 #include "upb/msg_internal.h"
 
 // Must be last.
@@ -63,7 +64,8 @@ UPB_INLINE int32_t upb_MiniTable_GetInt32(const upb_Message* msg,
                                           const upb_MiniTable_Field* field) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Int32 ||
              field->descriptortype == kUpb_FieldType_SInt32 ||
-             field->descriptortype == kUpb_FieldType_SFixed32);
+             field->descriptortype == kUpb_FieldType_SFixed32 ||
+             field->descriptortype == kUpb_FieldType_Enum);
   return *UPB_PTR_AT(msg, field->offset, int32_t);
 }
 
@@ -93,16 +95,13 @@ UPB_INLINE void upb_MiniTable_SetUInt32(upb_Message* msg,
   *UPB_PTR_AT(msg, field->offset, uint32_t) = value;
 }
 
-UPB_INLINE int32_t upb_MiniTable_GetEnum(const upb_Message* msg,
-                                         const upb_MiniTable_Field* field) {
+UPB_INLINE void upb_MiniTable_SetEnumProto2(upb_Message* msg,
+                                            const upb_MiniTable* msg_mini_table,
+                                            const upb_MiniTable_Field* field,
+                                            int32_t value) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Enum);
-  return *UPB_PTR_AT(msg, field->offset, int32_t);
-}
-
-UPB_INLINE void upb_MiniTable_SetEnum(upb_Message* msg,
-                                      const upb_MiniTable_Field* field,
-                                      int32_t value) {
-  UPB_ASSERT(field->descriptortype == kUpb_FieldType_Enum);
+  UPB_ASSERT(upb_MiniTable_Enum_CheckValue(
+      upb_MiniTable_GetSubEnumTable(msg_mini_table, field), value));
   _upb_MiniTable_SetPresence(msg, field);
   *UPB_PTR_AT(msg, field->offset, int32_t) = value;
 }
