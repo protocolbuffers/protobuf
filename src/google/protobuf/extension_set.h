@@ -1262,6 +1262,8 @@ class EnumTypeTraits {
   template <typename ExtendeeT>
   static void Register(int number, FieldType type, bool is_packed,
                        LazyEagerVerifyFnType fn) {
+    // Avoid -Wunused-parameter
+    (void)fn;
     ExtensionSet::RegisterEnumExtension(&ExtendeeT::default_instance(), number,
                                         type, false, is_packed, IsValid);
   }
@@ -1328,6 +1330,8 @@ class RepeatedEnumTypeTraits {
   template <typename ExtendeeT>
   static void Register(int number, FieldType type, bool is_packed,
                        LazyEagerVerifyFnType fn) {
+    // Avoid -Wunused-parameter
+    (void)fn;
     ExtensionSet::RegisterEnumExtension(&ExtendeeT::default_instance(), number,
                                         type, true, is_packed, IsValid);
   }

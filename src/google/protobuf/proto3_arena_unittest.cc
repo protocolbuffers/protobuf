@@ -37,7 +37,6 @@
 #include <google/protobuf/unittest_proto3_optional.pb.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/text_format.h>
-#include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/test_util.h>

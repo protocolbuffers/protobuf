@@ -279,6 +279,8 @@ class PROTOBUF_EXPORT TcParser final {
 
   static const char* GenericFallback(PROTOBUF_TC_PARAM_DECL);
   static const char* GenericFallbackLite(PROTOBUF_TC_PARAM_DECL);
+  static const char* ReflectionFallback(PROTOBUF_TC_PARAM_DECL);
+  static const char* ReflectionParseLoop(PROTOBUF_TC_PARAM_DECL);
 
   static const char* ParseLoop(MessageLite* msg, const char* ptr,
                                ParseContext* ctx,

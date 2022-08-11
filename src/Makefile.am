@@ -115,6 +115,7 @@ nobase_include_HEADERS =                                         \
   google/protobuf/generated_message_bases.h                      \
   google/protobuf/generated_message_reflection.h                 \
   google/protobuf/generated_message_tctable_decl.h               \
+  google/protobuf/generated_message_tctable_gen.h                \
   google/protobuf/generated_message_tctable_impl.h               \
   google/protobuf/generated_message_util.h                       \
   google/protobuf/has_bits.h                                     \
@@ -258,6 +259,7 @@ libprotobuf_la_SOURCES =                                       \
   google/protobuf/field_mask.pb.cc                             \
   google/protobuf/generated_message_bases.cc                   \
   google/protobuf/generated_message_reflection.cc              \
+  google/protobuf/generated_message_tctable_gen.cc             \
   google/protobuf/generated_message_tctable_full.cc            \
   google/protobuf/io/gzip_stream.cc                            \
   google/protobuf/io/printer.cc                                \

@@ -267,7 +267,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
 }
 
 void FieldGenerator::SetHasBitIndex(int32_t has_bit_index) {
-  if (!HasHasbit(descriptor_)) {
+  if (!internal::cpp::HasHasbit(descriptor_)) {
     GOOGLE_CHECK_EQ(has_bit_index, -1);
     return;
   }
