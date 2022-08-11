@@ -24,4 +24,4 @@ kokoro/linux/aarch64/dockcross_helpers/run_dockcross_manylinux2014_aarch64.sh ko
 #   otherwise the UID would be homeless under the docker container and pip install wouldn't work. For simplicity,
 #   we just run map the user's home to a throwaway temporary directory
 
-docker run $DOCKER_TTY_ARGS --rm --user "$(id -u):$(id -g)" -e "HOME=/home/fake-user" -v "$(mktemp -d):/home/fake-user" -v "$(pwd)":/work -w /work arm64v8/ruby:2.7.3-buster kokoro/linux/aarch64/ruby_build_and_run_tests_with_qemu_aarch64.sh
+docker run $DOCKER_TTY_ARGS --rm --user "$(id -u):$(id -g)" -e "HOME=/home/fake-user" -e "IN_DOCKER=true" -v "$(mktemp -d):/home/fake-user" -v "$(pwd)":/work -w /work arm64v8/ruby:2.7.3-buster kokoro/linux/aarch64/ruby_build_and_run_tests_with_qemu_aarch64.sh
