@@ -189,11 +189,11 @@ class FieldScrubber {
 
 class ImportScrubber {
  public:
-  static std::string ScrubFilename(const std::string& filename) {
+  static std::string ScrubFilename(const std::string &filename) {
     return filename + "3";
   }
   static void ScrubFile(FileDescriptorProto *file) {
-    for(std::string& import: *file->mutable_dependency()) {
+    for (std::string &import : *file->mutable_dependency()) {
       import += "3";
     }
   }

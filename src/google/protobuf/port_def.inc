@@ -993,6 +993,8 @@
 #define PROTOBUF_DLOG(x) \
   for (bool b = PROTOBUF_DEBUG; b; b = false) GOOGLE_LOG(x)
 
+#define PROTO2_IS_OSS true
+
 // We don't want code outside port_def doing complex testing, so
 // remove our portable condition test macros to nudge folks away from
 // using it themselves.

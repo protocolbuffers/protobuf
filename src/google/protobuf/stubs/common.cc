@@ -118,10 +118,9 @@ std::string ProtocVersionString(int version) {
   snprintf(buffer, sizeof(buffer), "%d.%d", minor, micro);
 
   // Guard against broken MSVC snprintf().
-  buffer[sizeof(buffer)-1] = '\0';
+  buffer[sizeof(buffer) - 1] = '\0';
 
   return buffer;
-
 }
 
 }  // namespace internal

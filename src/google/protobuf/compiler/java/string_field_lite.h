@@ -83,6 +83,7 @@ class ImmutableStringFieldLiteGenerator : public ImmutableFieldLiteGenerator {
   std::map<std::string, std::string> variables_;
   const int messageBitIndex_;
   ClassNameResolver* name_resolver_;
+  Context* context_;
 
  private:
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableStringFieldLiteGenerator);
@@ -127,6 +128,7 @@ class RepeatedImmutableStringFieldLiteGenerator
   const FieldDescriptor* descriptor_;
   std::map<std::string, std::string> variables_;
   ClassNameResolver* name_resolver_;
+  Context* context_;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedImmutableStringFieldLiteGenerator);
 };

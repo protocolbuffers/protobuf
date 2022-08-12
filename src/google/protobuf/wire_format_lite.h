@@ -101,7 +101,11 @@ class PROTOBUF_EXPORT WireFormatLite {
   // identifies the encoding of this data, it is possible to skip
   // unrecognized fields for forwards compatibility.
 
-  enum WireType {
+  enum WireType
+#ifndef SWIG
+      : int
+#endif  // !SWIG
+  {
     WIRETYPE_VARINT = 0,
     WIRETYPE_FIXED64 = 1,
     WIRETYPE_LENGTH_DELIMITED = 2,

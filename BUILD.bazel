@@ -1,12 +1,11 @@
 # Bazel (https://bazel.build/) BUILD file for Protobuf.
 
-load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_lang_toolchain", "proto_library")
-load("@rules_java//java:defs.bzl", "java_binary", "java_lite_proto_library", "java_proto_library")
+load("@rules_java//java:defs.bzl", "java_lite_proto_library", "java_proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS", "PROTOC_LINK_OPTS")
-load(":protobuf.bzl", "internal_py_proto_library", "internal_php_proto_library", "internal_ruby_proto_library", "internal_objc_proto_library")
+load(":protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library", "internal_ruby_proto_library")
 
 licenses(["notice"])
 
@@ -438,9 +437,9 @@ java_lite_proto_library(
 
 internal_objc_proto_library(
     name = "test_messages_proto2_objc_proto",
+    testonly = 1,
     srcs = ["//src/google/protobuf:test_messages_proto2.proto"],
     includes = ["src/google/protobuf"],
-    testonly = 1,
     visibility = [
         "//conformance:__pkg__",
         "//objectivec:__subpackages__",
@@ -449,10 +448,14 @@ internal_objc_proto_library(
 
 internal_objc_proto_library(
     name = "test_messages_proto3_objc_proto",
-    srcs = ["//src/google/protobuf:test_messages_proto3.proto"],
-    proto_deps = [":well_known_protos"],
-    includes = ["src/google/protobuf", "src"],
     testonly = 1,
+    srcs = ["//src/google/protobuf:test_messages_proto3.proto"],
+    includes = [
+        "src/google/protobuf",
+        # The above must come first.
+        "src",
+    ],
+    proto_deps = [":well_known_protos"],
     visibility = [
         "//conformance:__pkg__",
         "//objectivec:__subpackages__",
@@ -461,10 +464,10 @@ internal_objc_proto_library(
 
 internal_php_proto_library(
     name = "test_messages_proto3_php_proto",
+    testonly = 1,
     srcs = ["//src/google/protobuf:test_messages_proto3.proto"],
-    proto_deps = [":well_known_protos"],
-    includes = ["src/google/protobuf", "src"],
     outs = [
+        "GPBMetadata/TestMessagesProto3.php",
         "Protobuf_test_messages/Proto3/EnumOnlyProto3.php",
         "Protobuf_test_messages/Proto3/EnumOnlyProto3/PBBool.php",
         "Protobuf_test_messages/Proto3/ForeignEnum.php",
@@ -474,9 +477,13 @@ internal_php_proto_library(
         "Protobuf_test_messages/Proto3/TestAllTypesProto3/AliasedEnum.php",
         "Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedEnum.php",
         "Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedMessage.php",
-        "GPBMetadata/TestMessagesProto3.php",
     ],
-    testonly = 1,
+    includes = [
+        "src/google/protobuf",
+        # The above must come first.
+        "src",
+    ],
+    proto_deps = [":well_known_protos"],
     visibility = [
         "//conformance:__pkg__",
         "//php:__subpackages__",
@@ -485,9 +492,9 @@ internal_php_proto_library(
 
 internal_ruby_proto_library(
     name = "test_messages_proto2_ruby_proto",
+    testonly = 1,
     srcs = ["//src/google/protobuf:test_messages_proto2.proto"],
     includes = ["src/google/protobuf"],
-    testonly = 1,
     visibility = [
         "//conformance:__pkg__",
         "//ruby:__subpackages__",
@@ -496,10 +503,14 @@ internal_ruby_proto_library(
 
 internal_ruby_proto_library(
     name = "test_messages_proto3_ruby_proto",
-    srcs = ["//src/google/protobuf:test_messages_proto3.proto"],
-    proto_deps = [":well_known_protos"],
-    includes = ["src/google/protobuf", "src"],
     testonly = 1,
+    srcs = ["//src/google/protobuf:test_messages_proto3.proto"],
+    includes = [
+        "src/google/protobuf",
+        # The above must come first.
+        "src",
+    ],
+    proto_deps = [":well_known_protos"],
     visibility = [
         "//conformance:__pkg__",
         "//ruby:__subpackages__",

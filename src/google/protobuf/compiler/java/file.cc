@@ -188,7 +188,7 @@ void MaybeRestartJavaMethod(io::Printer* printer, int* bytecode_estimate,
 FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options,
                              bool immutable_api)
     : file_(file),
-      java_package_(FileJavaPackage(file, immutable_api)),
+      java_package_(FileJavaPackage(file, immutable_api, options)),
       message_generators_(file->message_type_count()),
       extension_generators_(file->extension_count()),
       context_(new Context(file, options)),
@@ -196,7 +196,7 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options,
       options_(options),
       immutable_api_(immutable_api) {
   classname_ = name_resolver_->GetFileClassName(file, immutable_api);
-  generator_factory_.reset(new ImmutableGeneratorFactory(context_.get()));
+    generator_factory_.reset(new ImmutableGeneratorFactory(context_.get()));
   for (int i = 0; i < file_->message_type_count(); ++i) {
     message_generators_[i].reset(
         generator_factory_->NewMessageGenerator(file_->message_type(i)));
@@ -271,8 +271,12 @@ void FileGenerator::Generate(io::Printer* printer) {
         "package", java_package_);
   }
   PrintGeneratedAnnotation(
-      printer, '$', options_.annotate_code ? classname_ + ".java.pb.meta" : "");
+      printer, '$', options_.annotate_code ? classname_ + ".java.pb.meta" : "",
+      options_);
 
+  if (!options_.opensource_runtime) {
+    printer->Print("@com.google.protobuf.Internal.ProtoNonnullApi\n");
+  }
   printer->Print(
       "$deprecation$public final class $classname$ {\n"
       "  private $ctor$() {}\n",
@@ -401,11 +405,14 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
       "    descriptor;\n"
       "static {\n",
       // TODO(dweis): Mark this as final.
-      "final", "");
+      "final", options_.opensource_runtime ? "" : "final");
   printer->Indent();
 
-  SharedCodeGenerator shared_code_generator(file_, options_);
-  shared_code_generator.GenerateDescriptors(printer);
+  if (options_.opensource_runtime) {
+    SharedCodeGenerator shared_code_generator(file_, options_);
+    shared_code_generator.GenerateDescriptors(printer);
+  } else {
+  }
 
   int bytecode_estimate = 0;
   int method_num = 0;
@@ -499,8 +506,8 @@ void FileGenerator::GenerateDescriptorInitializationCodeForMutable(
 
   printer->Print(
       "descriptor = $immutable_package$.$descriptor_classname$.descriptor;\n",
-      "immutable_package", FileJavaPackage(file_, true), "descriptor_classname",
-      name_resolver_->GetDescriptorClassName(file_));
+      "immutable_package", FileJavaPackage(file_, true, options_),
+      "descriptor_classname", name_resolver_->GetDescriptorClassName(file_));
 
   for (int i = 0; i < file_->message_type_count(); i++) {
     message_generators_[i]->GenerateStaticVariableInitializers(printer);
@@ -547,7 +554,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForMutable(
         scope = name_resolver_->GetMutableClassName(field->extension_scope()) +
                 ".getDescriptor()";
       } else {
-        scope = FileJavaPackage(field->file(), true) + "." +
+        scope = FileJavaPackage(field->file(), true, options_) + "." +
                 name_resolver_->GetDescriptorClassName(field->file()) +
                 ".descriptor";
       }

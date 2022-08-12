@@ -90,27 +90,27 @@ py_library(
 
 filegroup(
     name = "php_protos",
-    visibility = [
-        "//benchmarks:__subpackages__",
-    ],
     srcs = [
         "//benchmarks/datasets/google_message1/proto2:benchmark_message1_proto2_php_proto",
         "//benchmarks/datasets/google_message1/proto3:benchmark_message1_proto3_php_proto",
         "//benchmarks/datasets/google_message2:benchmark_message2_php_proto",
     ],
+    visibility = [
+        "//benchmarks:__subpackages__",
+    ],
 )
 
 filegroup(
     name = "csharp_protos",
-    visibility = [
-        "//benchmarks:__subpackages__",
-    ],
     srcs = [
         "//benchmarks/datasets/google_message1/proto2:benchmark_message1_proto2_csharp_proto",
         "//benchmarks/datasets/google_message1/proto3:benchmark_message1_proto3_csharp_proto",
         "//benchmarks/datasets/google_message2:benchmark_message2_csharp_proto",
         "//benchmarks/datasets/google_message3:benchmark_message3_csharp_proto",
         "//benchmarks/datasets/google_message4:benchmark_message4_csharp_proto",
+    ],
+    visibility = [
+        "//benchmarks:__subpackages__",
     ],
 )
 

@@ -9,9 +9,7 @@ def _arch_test_impl(
         bazel_binaries = [],
         system_binaries = [],
         **kwargs):
-    """
-    Bazel rule to verify that a Bazel or system binary is built for the
-    aarch64 architecture.
+    """Bazel rule to verify that a Bazel or system binary is built for the aarch64 architecture.
 
     Args:
       name: the name of the test.
@@ -19,7 +17,7 @@ def _arch_test_impl(
       file_platform: the expected output of `file`.
       bazel_binaries: a set of binary targets to inspect.
       system_binaries: a set of paths to system executables to inspect.
-      **kargs: other keyword arguments that are passed to the test.
+      **kwargs: other keyword arguments that are passed to the test.
     """
 
     inline_sh_test(
@@ -30,27 +28,29 @@ def _arch_test_impl(
             (file -L $$binary | grep -q "%s") \
                 || (echo "Test binary is not an %s binary: "; file -L $$binary; exit 1)
           done
-        """ % (" ".join(bazel_binaries),
-               " ".join(system_binaries),
-               file_platform,
-               platform),
+        """ % (
+            " ".join(bazel_binaries),
+            " ".join(system_binaries),
+            file_platform,
+            platform,
+        ),
         target_compatible_with = select({
-          "//build_defs:"+platform: [],
-          "//conditions:default": ["@platforms//:incompatible"],
+            "//build_defs:" + platform: [],
+            "//conditions:default": ["@platforms//:incompatible"],
         }),
+        **kwargs
     )
 
-
 def aarch64_test(**kwargs):
-  _arch_test_impl(
-    platform = "aarch64",
-    file_platform = "ELF 64-bit LSB executable, ARM aarch64",
-    **kwargs,
-  )
+    _arch_test_impl(
+        platform = "aarch64",
+        file_platform = "ELF 64-bit LSB executable, ARM aarch64",
+        **kwargs
+    )
 
 def x86_64_test(**kwargs):
-  _arch_test_impl(
-    platform = "x86_64",
-    file_platform = "ELF 64-bit LSB executable, ARM x86_64",
-    **kwargs,
-  )
+    _arch_test_impl(
+        platform = "x86_64",
+        file_platform = "ELF 64-bit LSB executable, ARM x86_64",
+        **kwargs
+    )

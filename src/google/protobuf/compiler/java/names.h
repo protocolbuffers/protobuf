@@ -40,6 +40,8 @@
 
 #include <string>
 
+#include <google/protobuf/compiler/java/options.h>
+
 namespace google {
 namespace protobuf {
 
@@ -85,7 +87,8 @@ std::string ClassName(const ServiceDescriptor* descriptor);
 //
 // Returns:
 //   Java package name.
-std::string FileJavaPackage(const FileDescriptor* descriptor);
+std::string FileJavaPackage(const FileDescriptor* descriptor,
+                            Options options = {});
 
 // Requires:
 //   descriptor != NULL

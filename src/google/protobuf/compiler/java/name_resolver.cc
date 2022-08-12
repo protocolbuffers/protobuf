@@ -141,10 +141,6 @@ bool MessageHasConflictingClassName(const Descriptor* message,
 
 }  // namespace
 
-ClassNameResolver::ClassNameResolver() {}
-
-ClassNameResolver::~ClassNameResolver() {}
-
 std::string ClassNameResolver::GetFileDefaultImmutableClassName(
     const FileDescriptor* file) {
   std::string basename;
@@ -217,8 +213,12 @@ bool ClassNameResolver::HasConflictingClassName(const FileDescriptor* file,
 }
 
 std::string ClassNameResolver::GetDescriptorClassName(
-    const FileDescriptor* descriptor) {
-  return GetFileImmutableClassName(descriptor);
+    const FileDescriptor* file) {
+  if (options_.opensource_runtime) {
+    return GetFileImmutableClassName(file);
+  } else {
+    return GetFileImmutableClassName(file) + "InternalDescriptors";
+  }
 }
 
 std::string ClassNameResolver::GetClassName(const FileDescriptor* descriptor,
@@ -228,7 +228,7 @@ std::string ClassNameResolver::GetClassName(const FileDescriptor* descriptor,
 
 std::string ClassNameResolver::GetClassName(const FileDescriptor* descriptor,
                                             bool immutable, bool kotlin) {
-  std::string result = FileJavaPackage(descriptor, immutable);
+  std::string result = FileJavaPackage(descriptor, immutable, options_);
   if (!result.empty()) result += '.';
   result += GetFileClassName(descriptor, immutable, kotlin);
   return result;
@@ -248,7 +248,7 @@ std::string ClassNameResolver::GetClassFullName(
     bool immutable, bool is_own_file, bool kotlin) {
   std::string result;
   if (is_own_file) {
-    result = FileJavaPackage(file, immutable);
+    result = FileJavaPackage(file, immutable, options_);
   } else {
     result = GetClassName(file, immutable, kotlin);
   }
@@ -308,7 +308,7 @@ std::string ClassNameResolver::GetJavaClassFullName(
     bool immutable, bool kotlin) {
   std::string result;
   if (MultipleJavaFiles(file, immutable)) {
-    result = FileJavaPackage(file, immutable);
+    result = FileJavaPackage(file, immutable, options_);
     if (!result.empty()) result += '.';
   } else {
     result = GetClassName(file, immutable, kotlin);
@@ -372,7 +372,7 @@ std::string ClassNameResolver::GetDowngradedFileClassName(
 
 std::string ClassNameResolver::GetDowngradedClassName(
     const Descriptor* descriptor) {
-  return FileJavaPackage(descriptor->file()) + "." +
+  return FileJavaPackage(descriptor->file(), true, options_) + "." +
          GetDowngradedFileClassName(descriptor->file()) + "." +
          ClassNameWithoutPackage(descriptor, false);
 }

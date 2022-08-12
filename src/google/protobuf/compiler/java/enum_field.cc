@@ -60,7 +60,8 @@ namespace {
 void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
                       int builderBitIndex, const FieldGeneratorInfo* info,
                       ClassNameResolver* name_resolver,
-                      std::map<std::string, std::string>* variables) {
+                      std::map<std::string, std::string>* variables,
+                      Context* context) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["type"] =
@@ -68,7 +69,8 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   (*variables)["kt_type"] = EscapeKotlinKeywords((*variables)["type"]);
   (*variables)["mutable_type"] =
       name_resolver->GetMutableClassName(descriptor->enum_type());
-  (*variables)["default"] = ImmutableDefaultValue(descriptor, name_resolver);
+  (*variables)["default"] =
+      ImmutableDefaultValue(descriptor, name_resolver, context->options());
   (*variables)["default_number"] =
       StrCat(descriptor->default_value_enum()->number());
   (*variables)["tag"] = StrCat(
@@ -142,7 +144,7 @@ ImmutableEnumFieldGenerator::ImmutableEnumFieldGenerator(
     : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
   SetEnumVariables(descriptor, messageBitIndex, builderBitIndex,
                    context->GetFieldGeneratorInfo(descriptor), name_resolver_,
-                   &variables_);
+                   &variables_, context);
 }
 
 ImmutableEnumFieldGenerator::~ImmutableEnumFieldGenerator() {}
@@ -636,7 +638,7 @@ RepeatedImmutableEnumFieldGenerator::RepeatedImmutableEnumFieldGenerator(
     : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
   SetEnumVariables(descriptor, messageBitIndex, builderBitIndex,
                    context->GetFieldGeneratorInfo(descriptor), name_resolver_,
-                   &variables_);
+                   &variables_, context);
 }
 
 RepeatedImmutableEnumFieldGenerator::~RepeatedImmutableEnumFieldGenerator() {}

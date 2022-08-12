@@ -2,6 +2,7 @@
 
 PLEASE DO NOT DEPEND ON THE CONTENTS OF THIS FILE, IT IS UNSTABLE.
 """
+
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 
 def internal_benchmark_test(
@@ -31,7 +32,8 @@ def internal_benchmark_test(
             " ".join(env_vars),
             binary,
             " ".join(args),
-            " ".join(dataset_labels)),
+            " ".join(dataset_labels),
+        ),
         tags = ["benchmark"],
         testonly = 1,
     )

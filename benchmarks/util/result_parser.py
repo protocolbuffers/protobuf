@@ -1,12 +1,14 @@
+"""Parses benchmark results into a standardized json output."""
+
 import argparse
 import json
 import re
 import os.path
+from benchmarks import benchmarks_pb2
 # BEGIN OPENSOURCE
 import sys
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
 # END OPENSOURCE
-from benchmarks import benchmarks_pb2
 
 __file_size_map = {}
 
