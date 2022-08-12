@@ -48,8 +48,11 @@ target_include_directories(
   conformance_cpp
   PUBLIC ${protobuf_SOURCE_DIR})
 
+target_include_directories(conformance_cpp PRIVATE ${ABSL_ROOT_DIR})
+
 target_link_libraries(conformance_test_runner ${protobuf_LIB_PROTOBUF})
 target_link_libraries(conformance_cpp ${protobuf_LIB_PROTOBUF})
+target_link_libraries(conformance_cpp ${protobuf_ABSL_USED_TARGETS})
 
 add_test(NAME conformance_cpp_test
   COMMAND ${CMAKE_CURRENT_BINARY_DIR}/conformance_test_runner
