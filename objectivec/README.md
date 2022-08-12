@@ -25,7 +25,7 @@ to build the compiler and run the runtime tests, you can use:
 
      $ objectivec/DevTools/full_mac_build.sh
 
-This will generate the `src/protoc` binary.
+This will generate the `protoc` binary.
 
 Building
 --------

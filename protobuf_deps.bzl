@@ -3,6 +3,7 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 PROTOBUF_MAVEN_ARTIFACTS = [
+    "com.google.caliper:caliper:1.0-beta-3",
     "com.google.code.findbugs:jsr305:3.0.2",
     "com.google.code.gson:gson:2.8.9",
     "com.google.errorprone:error_prone_annotations:2.3.2",
@@ -114,6 +115,6 @@ def protobuf_deps():
         _github_archive(
             name = "upb",
             repo = "https://github.com/protocolbuffers/upb",
-            commit = "17b6451684ffcf6e77d10a5def9bf19af57eccd3",
-            sha256 = "655c30a01c8ab56680c154baded548c5df8f726305d3338d0885cbb1f700ec10",
+            commit = "63a4a7d74bcbc8c6b94e6b18e599ffc68c71b91c",
+            sha256 = "9c921e799c4a5446b7164368a6579e20121103646045cd93986ba5bb8b376b29",
         )

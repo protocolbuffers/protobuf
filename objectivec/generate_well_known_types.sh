@@ -4,7 +4,7 @@
 # the protocol compiler changes.
 
 # HINT:  Flags passed to generate_well_known_types.sh will be passed directly
-#   to make when building protoc.  This is particularly useful for passing
+#   to bazel when building protoc.  This is particularly useful for passing
 #   -j4 to run 4 jobs simultaneously.
 
 set -eu
@@ -30,18 +30,10 @@ __EOF__
   exit 1
 fi
 
-if [[ ! -e src/Makefile ]]; then
-  cat >&2 << __EOF__
-Could not find src/Makefile.  You must run ./configure (and perhaps
-./autogen.sh) first.
-__EOF__
-  exit 1
-fi
-
 # Make sure the compiler is current.
-cd src
-make $@ protoc
+bazel build $@ //:protoc
 
+cd src
 declare -a RUNTIME_PROTO_FILES=( \
   google/protobuf/any.proto \
   google/protobuf/api.proto \
@@ -59,7 +51,7 @@ declare -a OBJC_EXTENSIONS=( .pbobjc.h .pbobjc.m )
 # Generate to a temp directory to see if they match.
 TMP_DIR=$(mktemp -d)
 trap "rm -rf ${TMP_DIR}" EXIT
-./protoc --objc_out="${TMP_DIR}" ${RUNTIME_PROTO_FILES[@]}
+${ProtoRootDir}/bazel-bin/protoc --objc_out="${TMP_DIR}" ${RUNTIME_PROTO_FILES[@]}
 
 DID_COPY=0
 for PROTO_FILE in "${RUNTIME_PROTO_FILES[@]}"; do

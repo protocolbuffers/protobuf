@@ -12,12 +12,8 @@ PYTHON="/opt/python/cp38-cp38/bin/python"
 git submodule update --init --recursive
 
 # Build protoc and libprotobuf
-cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -Dprotobuf_WITH_ZLIB=0 .
+cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_BUILD_TESTS=OFF .
 make -j8
-
-# Copy lib files to the expected location.
-mkdir -p src/.libs
-ln -f *.a src/.libs/
 
 # create a simple shell wrapper that runs crosscompiled protoc under qemu
 echo '#!/bin/bash' >protoc_qemu_wrapper.sh

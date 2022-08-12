@@ -62,43 +62,6 @@ foreach(_header ${protobuf_HEADERS})
     RENAME "${_extract_name}")
 endforeach()
 
-# Internal function for parsing auto tools scripts
-function(_protobuf_auto_list FILE_NAME VARIABLE)
-  file(STRINGS ${FILE_NAME} _strings)
-  set(_list)
-  foreach(_string ${_strings})
-    set(_found)
-    string(REGEX MATCH "^[ \t]*${VARIABLE}[ \t]*=[ \t]*" _found "${_string}")
-    if(_found)
-      string(LENGTH "${_found}" _length)
-      string(SUBSTRING "${_string}" ${_length} -1 _draft_list)
-      foreach(_item ${_draft_list})
-        string(STRIP "${_item}" _item)
-        list(APPEND _list "${_item}")
-      endforeach()
-    endif()
-  endforeach()
-  set(${VARIABLE} ${_list} PARENT_SCOPE)
-endfunction()
-
-# Install well-known type proto files
-_protobuf_auto_list("${protobuf_SOURCE_DIR}/src/Makefile.am" nobase_dist_proto_DATA)
-foreach(_file ${nobase_dist_proto_DATA})
-  get_filename_component(_file_from "${protobuf_SOURCE_DIR}/src/${_file}" ABSOLUTE)
-  get_filename_component(_file_name ${_file} NAME)
-  get_filename_component(_dir ${_file} DIRECTORY)
-  if(EXISTS "${_file_from}")
-    install(FILES "${_file_from}"
-      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${_dir}"
-      COMPONENT protobuf-protos
-      RENAME "${_file_name}")
-  else()
-    message(AUTHOR_WARNING "The file \"${_file_from}\" is listed in "
-      "\"${protobuf_SOURCE_DIR}/src/Makefile.am\" as nobase_dist_proto_DATA "
-      "but there not exists. The file will not be installed.")
-  endif()
-endforeach()
-
 # Install configuration
 set(_install_cmakedir_desc "Directory relative to CMAKE_INSTALL to install the cmake configuration files")
 set(_build_cmakedir_desc "Directory relative to CMAKE_CURRENT_BINARY_DIR for cmake configuration files")

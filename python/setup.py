@@ -29,10 +29,14 @@ from distutils.spawn import find_executable
 # Find the Protocol Compiler.
 if 'PROTOC' in os.environ and os.path.exists(os.environ['PROTOC']):
   protoc = os.environ['PROTOC']
-elif os.path.exists('../src/protoc'):
-  protoc = '../src/protoc'
-elif os.path.exists('../src/protoc.exe'):
-  protoc = '../src/protoc.exe'
+elif os.path.exists('../bazel-bin/protoc'):
+  protoc = '../bazel-bin/protoc'
+elif os.path.exists('../bazel-bin/protoc.exe'):
+  protoc = '../bazel-bin/protoc.exe'
+elif os.path.exists('protoc'):
+  protoc = '../protoc'
+elif os.path.exists('protoc.exe'):
+  protoc = '../protoc.exe'
 elif os.path.exists('../vsprojects/Debug/protoc.exe'):
   protoc = '../vsprojects/Debug/protoc.exe'
 elif os.path.exists('../vsprojects/Release/protoc.exe'):
@@ -203,13 +207,13 @@ class BuildExtCmd(_build_ext):
 
 
 class TestConformanceCmd(_build_py):
-  target = 'test_python'
+  target = '//python:conformance_test'
 
   def run(self):
     # Python 2.6 dodges these extra failures.
     os.environ['CONFORMANCE_PYTHON_EXTRA_FAILURES'] = (
         '--failure_list failure_list_python-post26.txt')
-    cmd = 'cd ../conformance && make %s' % (TestConformanceCmd.target,)
+    cmd = 'bazel test %s' % (TestConformanceCmd.target,)
     subprocess.check_call(cmd, shell=True)
 
 
@@ -289,16 +293,21 @@ if __name__ == '__main__':
       libraries = None
       library_dirs = None
       if not HasStaticLibprotobufOpt():
-        extra_objects = ['../src/.libs/libprotobuf.a',
-                         '../src/.libs/libprotobuf-lite.a']
+        if os.path.exists('../bazel-bin/src/google/protobuf/libprotobuf.a'):
+          extra_objects = ['../bazel-bin/src/google/protobuf/libprotobuf.a']
+        else:
+          extra_objects = ['../libprotobuf.a']
     else:
       libraries = ['protobuf']
       if HasLibraryDirsOpt():
         library_dirs = None
+      elif os.path.exists('../bazel-bin/src/google/protobuf/libprotobuf.a'):
+        library_dirs = ['../bazel-bin/src/google/protobuf']
       else:
-        library_dirs = ['../src/.libs']
+        library_dirs = ['..']
 
-    TestConformanceCmd.target = 'test_python_cpp'
+    TestConformanceCmd.target = ('//python:conformance_test_cpp '
+                                 '--define=use_fast_cpp_protos=true')
 
     extra_compile_args = []
 

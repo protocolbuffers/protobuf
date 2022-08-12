@@ -1,0 +1,71 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("//benchmarks:internal.bzl", "internal_benchmark_test")
+
+cc_binary(
+    name = "libbenchmark_messages.so",
+    srcs = ["python_benchmark_messages.cc"],
+    linkshared = True,
+    linkstatic = True,
+    visibility = ["//visibility:private"],
+    deps = [
+        "//benchmarks:benchmarks_cc_proto",
+        "//benchmarks/datasets:cc_protos",
+        "//external:python_headers",
+        "@local_config_python//:python_headers",
+    ],
+)
+
+# The benchmark binary which can be run over any dataset.
+py_binary(
+    name = "python_benchmark",
+    srcs = ["py_benchmark.py"],
+    data = ["libbenchmark_messages.so"],
+    env = select({
+        "//python:use_fast_cpp_protos": {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "cpp"},
+        "//conditions:default": {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "python"},
+    }),
+    main = "py_benchmark.py",
+    deps = [
+        "//:protobuf_python",
+        "//benchmarks:benchmarks_py_proto",
+        "//benchmarks/datasets:py_protos",
+    ],
+)
+
+# Pre-configured binaries using the checked in datasets.
+
+internal_benchmark_test(
+    name = "python",
+    binary = ":python_benchmark",
+    datasets = ["//benchmarks/datasets"],
+    env_vars = ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python"],
+)
+
+# Note: this requires --define=use_fast_cpp_protos=true
+internal_benchmark_test(
+    name = "cpp_reflection",
+    binary = ":python_benchmark",
+    datasets = ["//benchmarks/datasets"],
+    env_vars = ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp"],
+)
+
+# Note: this requires --define=use_fast_cpp_protos=true
+internal_benchmark_test(
+    name = "cpp_generated_code",
+    args = ["--cpp_generated"],
+    binary = ":python_benchmark",
+    datasets = ["//benchmarks/datasets"],
+    env_vars = ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp"],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["*.py"]) + [
+        "BUILD.bazel",
+        "python_benchmark_messages.cc",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//benchmarks:__pkg__"],
+)

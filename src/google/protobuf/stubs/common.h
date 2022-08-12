@@ -82,7 +82,7 @@ namespace internal {
 
 // The current version, represented as a single integer to make comparison
 // easier:  major * 10^6 + minor * 10^3 + micro
-#define GOOGLE_PROTOBUF_VERSION 3021004
+#define GOOGLE_PROTOBUF_VERSION 3021005
 
 // A suffix string for alpha, beta or rc releases. Empty for stable releases.
 #define GOOGLE_PROTOBUF_VERSION_SUFFIX ""
@@ -106,7 +106,12 @@ void PROTOBUF_EXPORT VerifyVersion(int headerVersion, int minLibraryVersion,
                                    const char* filename);
 
 // Converts a numeric version number to a string.
-std::string PROTOBUF_EXPORT VersionString(int version);
+std::string PROTOBUF_EXPORT
+VersionString(int version);  // NOLINT(runtime/string)
+
+// Prints the protoc compiler version (no major version)
+std::string PROTOBUF_EXPORT
+ProtocVersionString(int version);  // NOLINT(runtime/string)
 
 }  // namespace internal
 

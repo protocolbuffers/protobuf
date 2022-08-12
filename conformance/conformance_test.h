@@ -45,7 +45,7 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/util/type_resolver.h>
-#include "conformance.pb.h"
+#include "conformance/conformance.pb.h"
 
 namespace conformance {
 class ConformanceRequest;

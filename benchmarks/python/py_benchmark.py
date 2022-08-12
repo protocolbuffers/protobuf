@@ -6,6 +6,12 @@ import math
 import argparse
 import fnmatch
 import json
+from benchmarks.datasets.google_message1.proto2 import benchmark_message1_proto2_pb2
+from benchmarks.datasets.google_message1.proto3 import benchmark_message1_proto3_pb2
+from benchmarks.datasets.google_message2 import benchmark_message2_pb2
+from benchmarks.datasets.google_message3 import benchmark_message3_pb2
+from benchmarks.datasets.google_message4 import benchmark_message4_pb2
+from benchmarks import benchmarks_pb2
 
 parser = argparse.ArgumentParser(description="Python protobuf benchmark")
 parser.add_argument("data_files", metavar="dataFile", nargs="+",
@@ -27,17 +33,9 @@ args = parser.parse_args()
 # for the descriptor can be found in the pool
 if args.cpp_generated != "no":
   sys.path.append( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) + "/.libs" )
-  import libbenchmark_messages
+  from benchmarks.python import libbenchmark_messages  # pylint: disable=unused-import,g-import-not-at-top
   sys.path.append( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) + "/tmp" )
 # END CPP GENERATED MESSAGE
-
-
-import datasets.google_message1.proto2.benchmark_message1_proto2_pb2 as benchmark_message1_proto2_pb2
-import datasets.google_message1.proto3.benchmark_message1_proto3_pb2 as benchmark_message1_proto3_pb2
-import datasets.google_message2.benchmark_message2_pb2 as benchmark_message2_pb2
-import datasets.google_message3.benchmark_message3_pb2 as benchmark_message3_pb2
-import datasets.google_message4.benchmark_message4_pb2 as benchmark_message4_pb2
-import benchmarks_pb2 as benchmarks_pb2
 
 
 def run_one_test(filename):
@@ -135,9 +133,9 @@ class Benchmark:
     if t < 3 :
       reps = int(math.ceil(3 / t)) * self.full_iteration
     if reps != self.full_iteration:
-        t = timeit.timeit(stmt="%s(%s)" % (self.test_method, test_method_args),
-                          setup=self.full_setup_code(setup_method_args),
-                          number=reps);
+      t = timeit.timeit(stmt="%s(%s)" % (self.test_method, test_method_args),
+                        setup=self.full_setup_code(setup_method_args),
+                        number=reps);
     return self.total_bytes * 1.0 / 2 ** 20 / (1.0 * t / reps * self.full_iteration)
 
 
