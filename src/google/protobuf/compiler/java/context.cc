@@ -43,7 +43,7 @@ namespace compiler {
 namespace java {
 
 Context::Context(const FileDescriptor* file, const Options& options)
-    : name_resolver_(new ClassNameResolver), options_(options) {
+    : name_resolver_(new ClassNameResolver(options)), options_(options) {
   InitializeFieldGeneratorInfo(file);
 }
 

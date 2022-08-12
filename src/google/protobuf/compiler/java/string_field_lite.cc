@@ -63,15 +63,18 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
                            int messageBitIndex, int builderBitIndex,
                            const FieldGeneratorInfo* info,
                            ClassNameResolver* name_resolver,
-                           std::map<std::string, std::string>* variables) {
+                           std::map<std::string, std::string>* variables,
+                           Context* context) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["empty_list"] =
       "com.google.protobuf.GeneratedMessageLite.emptyProtobufList()";
 
-  (*variables)["default"] = ImmutableDefaultValue(descriptor, name_resolver);
+  (*variables)["default"] =
+      ImmutableDefaultValue(descriptor, name_resolver, context->options());
   (*variables)["default_init"] =
-      "= " + ImmutableDefaultValue(descriptor, name_resolver);
+      "= " +
+      ImmutableDefaultValue(descriptor, name_resolver, context->options());
   (*variables)["capitalized_type"] = "java.lang.String";
   (*variables)["tag"] =
       StrCat(static_cast<int32_t>(WireFormat::MakeTag(descriptor)));
@@ -92,8 +95,17 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
                 " is deprecated\") "
           : "";
   (*variables)["required"] = descriptor->is_required() ? "true" : "false";
+  if (!context->options().opensource_runtime) {
+    (*variables)["enforce_utf8"] = CheckUtf8(descriptor) ? "true" : "false";
+  }
 
   if (HasHasbit(descriptor)) {
+    if (!context->options().opensource_runtime) {
+      (*variables)["bit_field_id"] = StrCat(messageBitIndex / 32);
+      (*variables)["bit_field_name"] = GetBitFieldNameForBit(messageBitIndex);
+      (*variables)["bit_field_mask"] =
+          StrCat(1 << (messageBitIndex % 32));
+    }
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
 
@@ -126,10 +138,11 @@ ImmutableStringFieldLiteGenerator::ImmutableStringFieldLiteGenerator(
     const FieldDescriptor* descriptor, int messageBitIndex, Context* context)
     : descriptor_(descriptor),
       messageBitIndex_(messageBitIndex),
-      name_resolver_(context->GetNameResolver()) {
+      name_resolver_(context->GetNameResolver()),
+      context_(context) {
   SetPrimitiveVariables(descriptor, messageBitIndex, 0,
                         context->GetFieldGeneratorInfo(descriptor),
-                        name_resolver_, &variables_);
+                        name_resolver_, &variables_, context);
 }
 
 ImmutableStringFieldLiteGenerator::~ImmutableStringFieldLiteGenerator() {}
@@ -181,6 +194,21 @@ void ImmutableStringFieldLiteGenerator::GenerateInterfaceMembers(
 
 void ImmutableStringFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
+  if (!context_->options().opensource_runtime) {
+    printer->Print(
+        variables_,
+        "@com.google.protobuf.ProtoField(\n"
+        "  fieldNumber=$number$,\n"
+        "  type=com.google.protobuf.FieldType.$annotation_field_type$,\n"
+        "  isRequired=$required$,\n"
+        "  isEnforceUtf8=$enforce_utf8$)\n");
+    if (HasHazzer(descriptor_)) {
+      printer->Print(variables_,
+                     "@com.google.protobuf.ProtoPresenceCheckedField(\n"
+                     "  presenceBitsId=$bit_field_id$,\n"
+                     "  mask=$bit_field_mask$)\n");
+    }
+  }
   printer->Print(variables_, "private java.lang.String $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
 
@@ -520,10 +548,12 @@ RepeatedImmutableStringFieldLiteGenerator::
     RepeatedImmutableStringFieldLiteGenerator(const FieldDescriptor* descriptor,
                                               int messageBitIndex,
                                               Context* context)
-    : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
+    : descriptor_(descriptor),
+      name_resolver_(context->GetNameResolver()),
+      context_(context) {
   SetPrimitiveVariables(descriptor, messageBitIndex, 0,
                         context->GetFieldGeneratorInfo(descriptor),
-                        name_resolver_, &variables_);
+                        name_resolver_, &variables_, context);
 }
 
 RepeatedImmutableStringFieldLiteGenerator::
@@ -554,6 +584,14 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateInterfaceMembers(
 
 void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
+  if (!context_->options().opensource_runtime) {
+    printer->Print(
+        variables_,
+        "@com.google.protobuf.ProtoField(\n"
+        "  fieldNumber=$number$,\n"
+        "  type=com.google.protobuf.FieldType.$annotation_field_type$,\n"
+        "  isEnforceUtf8=$enforce_utf8$)\n");
+  }
   printer->Print(
       variables_,
       "private com.google.protobuf.Internal.ProtobufList<java.lang.String> "
