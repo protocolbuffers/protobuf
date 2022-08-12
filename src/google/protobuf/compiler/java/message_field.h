@@ -91,6 +91,7 @@ class ImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
   const FieldDescriptor* descriptor_;
   std::map<std::string, std::string> variables_;
   ClassNameResolver* name_resolver_;
+  Context* context_;
 
   void PrintNestedBuilderCondition(io::Printer* printer,
                                    const char* regular_case,

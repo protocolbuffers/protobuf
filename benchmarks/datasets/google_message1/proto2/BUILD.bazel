@@ -2,8 +2,8 @@ load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@rules_java//java:defs.bzl", "java_proto_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
-load("//:protobuf.bzl", "internal_py_proto_library", "internal_csharp_proto_library")
-load("//benchmarks/util:compatibility.bzl", "proto3_from_proto2_data", "php_proto3_from_proto2_library")
+load("//:protobuf.bzl", "internal_csharp_proto_library", "internal_py_proto_library")
+load("//benchmarks/util:compatibility.bzl", "php_proto3_from_proto2_library", "proto3_from_proto2_data")
 
 filegroup(
     name = "datasets",

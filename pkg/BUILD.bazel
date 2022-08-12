@@ -381,9 +381,9 @@ cc_dist_library(
         "//src/google/protobuf/util:differencer",
         "//src/google/protobuf/util:field_mask_util",
         "//src/google/protobuf/util:json_util",
-        "//src/google/protobuf/util:zero_copy_sink",
         "//src/google/protobuf/util:time_util",
         "//src/google/protobuf/util:type_resolver_util",
+        "//src/google/protobuf/util:zero_copy_sink",
         "//src/google/protobuf/util/internal:datapiece",
         "//src/google/protobuf/util/internal:default_value",
         "//src/google/protobuf/util/internal:field_mask_utility",
@@ -427,23 +427,23 @@ cc_dist_library(
 
 cc_dist_library(
     name = "compiler_annotation_test_util",
-    deps = ["//src/google/protobuf/compiler:annotation_test_util"],
     testonly = 1,
     tags = ["manual"],
+    deps = ["//src/google/protobuf/compiler:annotation_test_util"],
 )
 
 cc_dist_library(
     name = "compiler_mock_code_generator",
-    deps = ["//src/google/protobuf/compiler:mock_code_generator"],
     testonly = 1,
     tags = ["manual"],
+    deps = ["//src/google/protobuf/compiler:mock_code_generator"],
 )
 
 cc_dist_library(
     name = "testinglib",
-    deps = ["//src/google/protobuf/testing"],
     testonly = 1,
     tags = ["manual"],
+    deps = ["//src/google/protobuf/testing"],
 )
 
 ################################################################################

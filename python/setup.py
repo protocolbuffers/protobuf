@@ -306,7 +306,8 @@ if __name__ == '__main__':
       else:
         library_dirs = ['..']
 
-    TestConformanceCmd.target = '//python:conformance_test_cpp --define=use_fast_cpp_protos=true'
+    TestConformanceCmd.target = ('//python:conformance_test_cpp '
+                                 '--define=use_fast_cpp_protos=true')
 
     extra_compile_args = []
 

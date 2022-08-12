@@ -1,3 +1,8 @@
+"""
+Internal tools to migrate shell commands to Bazel as an intermediate step
+to wider Bazelification.
+"""
+
 def inline_sh_binary(
         name,
         srcs = [],
@@ -6,9 +11,11 @@ def inline_sh_binary(
         cmd = "",
         testonly = None,
         **kwargs):
-    """Bazel rule to wrap up an inline bash script in a binary.  This is most
-    useful as a stop-gap solution for migrating off Autotools.  These binaries
-    are likely to be non-hermetic, with implicit system dependencies.
+    """Bazel rule to wrap up an inline bash script in a binary.
+
+    This is most useful as a stop-gap solution for migrating off Autotools.
+    These binaries are likely to be non-hermetic, with implicit system
+    dependencies.
 
     NOTE: the rule is only an internal workaround. The interface may change and
     the rule may be removed when everything is properly "Bazelified".
@@ -19,11 +26,11 @@ def inline_sh_binary(
       tools: the executable tools used directly by the script.  Any target used
         with rootpath/execpath/location must be declared here or in `srcs`.
       deps: a list of dependency labels that are required to run this binary.
-      **kargs: other keyword arguments that are passed to sh_binary.
+      cmd: the inline sh command to run.
+      **kwargs: other keyword arguments that are passed to sh_binary.
       testonly: common rule attribute (see:
           https://bazel.build/reference/be/common-definitions#common-attributes)
     """
-
 
     native.genrule(
         name = name + "_genrule",
@@ -50,9 +57,10 @@ def inline_sh_test(
         deps = [],
         cmd = "",
         **kwargs):
-    """Bazel rule to wrap up an inline bash script in a test.  This is most
-    useful as a stop-gap solution for migrating off Autotools.  These tests
-    are likely to be non-hermetic, with implicit system dependencies.
+    """Bazel rule to wrap up an inline bash script in a test.
+
+    This is most useful as a stop-gap solution for migrating off Autotools.
+    These tests are likely to be non-hermetic, with implicit system dependencies.
 
     NOTE: the rule is only an internal workaround. The interface may change and
     the rule may be removed when everything is properly "Bazelified".
@@ -63,10 +71,10 @@ def inline_sh_test(
       tools: the executable tools used directly by the script.  Any target used
         with rootpath/execpath/location must be declared here or in `srcs`.
       deps: a list of dependency labels that are required to run this binary.
-      **kargs: other keyword arguments that are passed to sh_binary.
+      cmd: the inline sh command to run.
+      **kwargs: other keyword arguments that are passed to sh_binary.
           https://bazel.build/reference/be/common-definitions#common-attributes)
     """
-
 
     native.genrule(
         name = name + "_genrule",

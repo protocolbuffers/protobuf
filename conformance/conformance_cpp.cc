@@ -45,6 +45,7 @@
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/statusor.h>
 #include "conformance/conformance.pb.h"
+#include "conformance/conformance.pb.h"
 #include <google/protobuf/test_messages_proto2.pb.h>
 #include <google/protobuf/test_messages_proto3.pb.h>
 #include <google/protobuf/test_messages_proto3.pb.h>

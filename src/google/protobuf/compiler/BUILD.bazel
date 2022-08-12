@@ -6,7 +6,6 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 load(
     "@rules_pkg//:mappings.bzl",
     "pkg_attributes",
-    "pkg_filegroup",
     "pkg_files",
     "strip_prefix",
 )
@@ -115,7 +114,6 @@ alias(
     actual = "//:protoc",
     visibility = ["//visibility:public"],
 )
-
 
 # Test that the protoc binary is built for the correct architecture.
 aarch64_test(
