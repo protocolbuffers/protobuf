@@ -332,7 +332,7 @@ if __name__ == '__main__':
       extra_compile_args.append('-Wno-invalid-offsetof')
       extra_compile_args.append('-Wno-sign-compare')
       extra_compile_args.append('-Wno-unused-variable')
-      extra_compile_args.append('-std=c++11')
+      extra_compile_args.append('-std=c++14')
 
     if sys.platform == 'darwin':
       extra_compile_args.append('-Wno-shorten-64-to-32')
