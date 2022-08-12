@@ -1073,16 +1073,6 @@ cc_test(
     ],
 )
 
-# Legacy target: all test sources used to be part of this rule. It is
-# still kept around for now.
-cc_test(
-    name = "protobuf_test",
-    srcs = [],
-    deps = [
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
 ################################################################################
 # Helper targets for Kotlin tests
 ################################################################################
