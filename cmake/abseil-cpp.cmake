@@ -1,3 +1,5 @@
+# Setup our dependency on Abseil.
+
 set(ABSL_PROPAGATE_CXX_STD ON)
 
 if(protobuf_ABSL_PROVIDER STREQUAL "module")
