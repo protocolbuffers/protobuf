@@ -155,6 +155,14 @@ file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/cmaketest.map)
 
 find_package(Threads REQUIRED)
 
+# We can install dependencies from submodules if we're running
+# CMake v3.13 or newer.
+if(CMAKE_VERSION VERSION_LESS 3.13)
+  set(_protobuf_INSTALL_SUPPORTED_FROM_MODULE OFF)
+else()
+  set(_protobuf_INSTALL_SUPPORTED_FROM_MODULE ON)
+endif()
+
 set(_protobuf_FIND_ZLIB)
 if (protobuf_WITH_ZLIB)
   find_package(ZLIB)
@@ -289,6 +297,11 @@ include_directories(
 if (protobuf_UNICODE)
   add_definitions(-DUNICODE -D_UNICODE)
 endif (protobuf_UNICODE)
+
+set(protobuf_ABSL_PROVIDER "module" CACHE STRING "Provider of absl library")
+set_property(CACHE protobuf_ABSL_PROVIDER PROPERTY STRINGS "module" "package")
+
+include(${protobuf_SOURCE_DIR}/cmake/abseil-cpp.cmake)
 
 if (protobuf_BUILD_PROTOBUF_BINARIES)
   include(${protobuf_SOURCE_DIR}/cmake/libprotobuf-lite.cmake)

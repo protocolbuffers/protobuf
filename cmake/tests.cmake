@@ -78,7 +78,9 @@ endforeach(proto_file)
 
 add_library(protobuf-lite-test-common STATIC
   ${lite_test_util_srcs} ${lite_test_proto_files})
-target_link_libraries(protobuf-lite-test-common ${protobuf_LIB_PROTOBUF_LITE} GTest::gmock)
+target_include_directories(protobuf-lite-test-common PRIVATE ${ABSL_ROOT_DIR})
+target_link_libraries(protobuf-lite-test-common
+  ${protobuf_LIB_PROTOBUF_LITE} ${protobuf_ABSL_USED_TARGETS} GTest::gmock)
 
 set(common_test_files
   ${test_util_hdrs}
@@ -89,7 +91,9 @@ set(common_test_files
 
 add_library(protobuf-test-common STATIC
   ${common_test_files} ${tests_proto_files})
-target_link_libraries(protobuf-test-common ${protobuf_LIB_PROTOBUF} GTest::gmock)
+target_include_directories(protobuf-test-common PRIVATE ${ABSL_ROOT_DIR})
+target_link_libraries(protobuf-test-common
+  ${protobuf_LIB_PROTOBUF} ${protobuf_ABSL_USED_TARGETS} GTest::gmock)
 
 set(tests_files
   ${protobuf_test_files}
