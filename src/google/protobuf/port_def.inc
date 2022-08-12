@@ -413,6 +413,20 @@
 #define PROTOBUF_ATTRIBUTE_REINITIALIZES
 #endif
 
+#ifdef PROTOBUF_NO_RETURN
+#error PROTOBUF_NO_RETURN was previously defined
+#endif
+#if __cpp_has_attribute(noreturn)
+#define PROTOBUF_NO_RETURN [[noreturn]]
+#elif PROTOBUF_GNUC_MIN(2,5) || defined(__clang__)
+#define PROTOBUF_NO_RETURN __attribute__((noreturn))
+#elif PROTOBUF_MSC_VER_MIN(1900)
+#define PROTOBUF_NO_RETURN __declspec(noreturn)
+#else
+#define PROTOBUF_NO_RETURN
+#endif
+
+
 // The minimum library version which works with the current version of the
 // headers.
 #define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 3021000
