@@ -22,6 +22,7 @@ py_binary(
     name = "python_benchmark",
     srcs = ["py_benchmark.py"],
     data = ["libbenchmark_messages.so"],
+    python_version = "PY3",
     env = select({
         "//python:use_fast_cpp_protos": {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "cpp"},
         "//conditions:default": {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "python"},
