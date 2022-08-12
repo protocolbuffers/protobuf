@@ -451,8 +451,9 @@ internal_objc_proto_library(
     testonly = 1,
     srcs = ["//src/google/protobuf:test_messages_proto3.proto"],
     includes = [
-        "src",
         "src/google/protobuf",
+        # The above must come first.
+        "src",
     ],
     proto_deps = [":well_known_protos"],
     visibility = [
@@ -478,8 +479,9 @@ internal_php_proto_library(
         "Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedMessage.php",
     ],
     includes = [
-        "src",
         "src/google/protobuf",
+        # The above must come first.
+        "src",
     ],
     proto_deps = [":well_known_protos"],
     visibility = [
@@ -504,8 +506,9 @@ internal_ruby_proto_library(
     testonly = 1,
     srcs = ["//src/google/protobuf:test_messages_proto3.proto"],
     includes = [
-        "src",
         "src/google/protobuf",
+        # The above must come first.
+        "src",
     ],
     proto_deps = [":well_known_protos"],
     visibility = [
