@@ -343,7 +343,7 @@ void MessageFieldGenerator::GenerateInternalAccessorDefinitions(
     format(
         "::$proto_ns$::MessageLite*\n"
         "$classname$::_Internal::mutable_$name$($classname$* msg) {\n");
-    if (HasHasbit(descriptor_)) {
+    if (internal::cpp::HasHasbit(descriptor_)) {
       format("  msg->$set_hasbit$\n");
     }
     if (descriptor_->real_containing_oneof() == nullptr) {
@@ -376,7 +376,7 @@ void MessageFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
-  if (!HasHasbit(descriptor_)) {
+  if (!internal::cpp::HasHasbit(descriptor_)) {
     // If we don't have has-bits, message presence is indicated only by ptr !=
     // nullptr. Thus on clear, we need to delete the object.
     format(
@@ -394,7 +394,7 @@ void MessageFieldGenerator::GenerateMessageClearingCode(
   GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
-  if (!HasHasbit(descriptor_)) {
+  if (!internal::cpp::HasHasbit(descriptor_)) {
     // If we don't have has-bits, message presence is indicated only by ptr !=
     // nullptr. Thus on clear, we need to delete the object.
     format(

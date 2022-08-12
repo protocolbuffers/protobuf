@@ -66,6 +66,16 @@ std::string PyiGenerator::ModuleLevelName(const DescriptorT& descriptor) const {
   return name;
 }
 
+std::string PyiGenerator::PublicPackage() const {
+  return opensource_runtime_ ? "google.protobuf"
+                             : "google3.net.google.protobuf.python.public";
+}
+
+std::string PyiGenerator::InternalPackage() const {
+  return opensource_runtime_ ? "google.protobuf.internal"
+                             : "google3.net.google.protobuf.python.internal";
+}
+
 struct ImportModules {
   bool has_repeated = false;    // _containers
   bool has_iterable = false;    // typing.Iterable
@@ -182,6 +192,10 @@ void PyiGenerator::PrintImports() const {
   if (file_->enum_type_count() > 0) {
     import_modules.has_enums = true;
   }
+  if (!opensource_runtime_ && file_->service_count() > 0) {
+    import_modules.has_optional = true;
+    import_modules.has_union = true;
+  }
   for (int i = 0; i < file_->message_type_count(); i++) {
     CheckImportModules(file_->message_type(i), &import_modules);
   }
@@ -190,37 +204,50 @@ void PyiGenerator::PrintImports() const {
   // required in the proto file.
   if (import_modules.has_repeated) {
     printer_->Print(
-        "from google.protobuf.internal import containers as "
-        "_containers\n");
+        "from $internal_package$ import containers as _containers\n",
+        "internal_package", InternalPackage());
   }
   if (import_modules.has_enums) {
     printer_->Print(
-        "from google.protobuf.internal import enum_type_wrapper"
-        " as _enum_type_wrapper\n");
+        "from $internal_package$ import enum_type_wrapper as "
+        "_enum_type_wrapper\n",
+        "internal_package", InternalPackage());
   }
   if (import_modules.has_extendable) {
     printer_->Print(
-        "from google.protobuf.internal import python_message"
-        " as _python_message\n");
+        "from $internal_package$ import python_message as _python_message\n",
+        "internal_package", InternalPackage());
   }
   if (import_modules.has_well_known_type) {
     printer_->Print(
-        "from google.protobuf.internal import well_known_types"
-        " as _well_known_types\n");
+        "from $internal_package$ import well_known_types as "
+        "_well_known_types\n",
+        "internal_package", InternalPackage());
   }
-  printer_->Print(
-      "from google.protobuf import"
-      " descriptor as _descriptor\n");
+  printer_->Print("from $public_package$ import descriptor as _descriptor\n",
+                  "public_package", PublicPackage());
   if (import_modules.has_messages) {
-    printer_->Print(
-        "from google.protobuf import message as _message\n");
+    printer_->Print("from $public_package$ import message as _message\n",
+                    "public_package", PublicPackage());
   }
-  if (HasGenericServices(file_)) {
-    printer_->Print(
-        "from google.protobuf import service as"
-        " _service\n");
+  if (opensource_runtime_) {
+    if (HasGenericServices(file_)) {
+      printer_->Print("from $public_package$ import service as _service\n",
+                      "public_package", PublicPackage());
+    }
+  } else {
+    if (file_->service_count() > 0) {
+      printer_->Print(
+          "from google3.net.rpc.python import proto_python_api_2_stub as "
+          "_proto_python_api_2_stub\n"
+          "from google3.net.rpc.python import pywraprpc as _pywraprpc\n"
+          "from google3.net.rpc.python import rpcserver as _rpcserver\n");
+    }
   }
   printer_->Print("from typing import ");
+  if (!opensource_runtime_ && file_->service_count() > 0) {
+    printer_->Print("Any as _Any, ");
+  }
   printer_->Print("ClassVar as _ClassVar");
   if (import_modules.has_iterable) {
     printer_->Print(", Iterable as _Iterable");
@@ -514,6 +541,7 @@ void PyiGenerator::PrintServices() const {
   }
 }
 
+
 bool PyiGenerator::Generate(const FileDescriptor* file,
                             const std::string& parameter,
                             GeneratorContext* context,
@@ -522,6 +550,8 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
   import_map_.clear();
   // Calculate file name.
   file_ = file;
+  // In google3, devtools/python/blaze/pytype/pytype_impl.bzl uses --pyi_out to
+  // directly set the output file name.
   std::string filename =
       parameter.empty() ? GetFileName(file, ".pyi") : parameter;
 
@@ -552,7 +582,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
   PrintExtensions(*file_);
   PrintMessages();
 
-  if (HasGenericServices(file)) {
+  if (opensource_runtime_ && HasGenericServices(file)) {
     PrintServices();
   }
   return true;

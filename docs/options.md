@@ -336,3 +336,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. Protoc-gen-referential-integrity
    * Website: https://github.com/ComponentCorp/protoc-gen-referential-integrity
    * Extension: 1149
+
+1. Oclea Service Layer RPC
+   * Website: https://oclea.com/
+   * Extension: 1150

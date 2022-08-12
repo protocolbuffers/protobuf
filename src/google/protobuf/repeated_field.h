@@ -113,10 +113,21 @@ void memswap(char* a, char* b) {
     b += kBlockSize;
   }
 
+#if defined(__GNUC__) && !defined(__clang__)
+  // Workaround GCC bug: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99578
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpragmas"
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif  // __GNUC__
+
   // Swap the leftover bytes, could be zero.
   memcpy(&buf, a, kSize % kBlockSize);
   memcpy(a, b, kSize % kBlockSize);
   memcpy(b, &buf, kSize % kBlockSize);
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif  // GCC
 }
 
 template <typename Element>

@@ -35,6 +35,7 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/parse_context.h>
 #include <google/protobuf/unknown_field_set.h>
+#include <google/protobuf/wire_format.h>
 
 // clang-format off
 #include <google/protobuf/port_def.inc>
@@ -46,6 +47,41 @@ namespace internal {
 
 const char* TcParser::GenericFallback(PROTOBUF_TC_PARAM_DECL) {
   return GenericFallbackImpl<Message, UnknownFieldSet>(PROTOBUF_TC_PARAM_PASS);
+}
+
+const char* TcParser::ReflectionFallback(PROTOBUF_TC_PARAM_DECL) {
+  SyncHasbits(msg, hasbits, table);
+  uint32_t tag = data.tag();
+  if (tag == 0 || (tag & 7) == WireFormatLite::WIRETYPE_END_GROUP) {
+    ctx->SetLastTag(tag);
+    return ptr;
+  }
+
+  auto* full_msg = down_cast<Message*>(msg);
+  auto* descriptor = full_msg->GetDescriptor();
+  auto* reflection = full_msg->GetReflection();
+  int field_number = WireFormatLite::GetTagFieldNumber(tag);
+  const FieldDescriptor* field = descriptor->FindFieldByNumber(field_number);
+
+  // If that failed, check if the field is an extension.
+  if (field == nullptr && descriptor->IsExtensionNumber(field_number)) {
+    if (ctx->data().pool == nullptr) {
+      field = reflection->FindKnownExtensionByNumber(field_number);
+    } else {
+      field = ctx->data().pool->FindExtensionByNumber(descriptor, field_number);
+    }
+  }
+
+  return WireFormat::_InternalParseAndMergeField(full_msg, ptr, ctx, tag,
+                                                 reflection, field);
+}
+
+const char* TcParser::ReflectionParseLoop(PROTOBUF_TC_PARAM_DECL) {
+  (void)data;
+  (void)table;
+  (void)hasbits;
+  // Call into the wire format reflective parse loop.
+  return WireFormat::_InternalParse(down_cast<Message*>(msg), ptr, ctx);
 }
 
 }  // namespace internal

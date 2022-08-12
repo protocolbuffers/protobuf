@@ -36,6 +36,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_CPP_MESSAGE_H__
 
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <set>
 #include <string>

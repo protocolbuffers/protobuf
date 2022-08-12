@@ -216,6 +216,7 @@ cc_library(
         "field_mask.pb.cc",
         "generated_message_bases.cc",
         "generated_message_reflection.cc",
+        "generated_message_tctable_gen.cc",
         "generated_message_tctable_full.cc",
         "map_field.cc",
         "message.cc",
@@ -244,6 +245,7 @@ cc_library(
         "generated_enum_reflection.h",
         "generated_message_bases.h",
         "generated_message_reflection.h",
+        "generated_message_tctable_gen.h",
         "map_entry.h",
         "map_field.h",
         "map_field_inl.h",
@@ -456,10 +458,22 @@ proto_library(
     ],
 )
 
+exports_files([
+    "test_messages_proto2.proto",
+    "test_messages_proto3.proto",
+], visibility = [
+    "//:__pkg__",
+    "//python:__pkg__",
+])
+
 proto_library(
     name = "test_messages_proto2_proto",
     srcs = ["test_messages_proto2.proto"],
     strip_import_prefix = "/src",
+    visibility = [
+        "//:__pkg__",
+        "//conformance:__pkg__",
+    ],
 )
 
 proto_library(
@@ -473,6 +487,10 @@ proto_library(
         ":struct_proto",
         ":timestamp_proto",
         ":wrappers_proto",
+    ],
+    visibility = [
+        "//:__pkg__",
+        "//conformance:__pkg__",
     ],
 )
 
@@ -1051,16 +1069,6 @@ cc_test(
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/testing",
         "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-# Legacy target: all test sources used to be part of this rule. It is
-# still kept around for now.
-cc_test(
-    name = "protobuf_test",
-    srcs = [],
-    deps = [
         "@com_google_googletest//:gtest_main",
     ],
 )

@@ -90,6 +90,10 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
       const FieldDescriptor& field_des, const Descriptor& containing_des) const;
   template <typename DescriptorT>
   std::string ModuleLevelName(const DescriptorT& descriptor) const;
+  std::string PublicPackage() const;
+  std::string InternalPackage() const;
+
+  bool opensource_runtime_ = true;
 
   // Very coarse-grained lock to ensure that Generate() is reentrant.
   // Guards file_, printer_, and import_map_.

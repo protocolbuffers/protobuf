@@ -32,11 +32,11 @@ if(protobuf_DEPRECATED_CMAKE_SUBDIRECTORY_USAGE)
   get_filename_component(protobuf_SOURCE_DIR ${protobuf_SOURCE_DIR} DIRECTORY)
 endif()
 
-# Add c++11 flags
+# Add c++14 flags
 if (CYGWIN)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14")
 else()
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 14)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
@@ -79,6 +79,11 @@ mark_as_advanced(protobuf_DEBUG_POSTFIX)
 # User options
 include(${protobuf_SOURCE_DIR}/cmake/protobuf-options.cmake)
 
+# Version metadata
+set(protobuf_VERSION_STRING "3.21.4")
+set(protobuf_DESCRIPTION "Protocol Buffers")
+set(protobuf_CONTACT "protobuf@googlegroups.com")
+
 # Overrides for option dependencies
 if (protobuf_BUILD_PROTOC_BINARIES OR protobuf_BUILD_TESTS)
   set(protobuf_BUILD_LIBPROTOC ON)
@@ -86,23 +91,6 @@ endif ()
 if (NOT protobuf_BUILD_PROTOBUF_BINARIES)
   set(protobuf_INSTALL OFF)
 endif()
-# Path to main configure script
-set(protobuf_CONFIGURE_SCRIPT "${protobuf_SOURCE_DIR}/configure.ac")
-
-# Parse configure script
-set(protobuf_AC_INIT_REGEX
-  "^AC_INIT\\(\\[([^]]+)\\],\\[([^]]+)\\],\\[([^]]+)\\],\\[([^]]+)\\]\\)$")
-file(STRINGS "${protobuf_CONFIGURE_SCRIPT}" protobuf_AC_INIT_LINE
-  LIMIT_COUNT 1 REGEX "^AC_INIT")
-# Description
-string(REGEX REPLACE        "${protobuf_AC_INIT_REGEX}" "\\1"
-    protobuf_DESCRIPTION    "${protobuf_AC_INIT_LINE}")
-# Version
-string(REGEX REPLACE        "${protobuf_AC_INIT_REGEX}" "\\2"
-    protobuf_VERSION_STRING "${protobuf_AC_INIT_LINE}")
-# Contact
-string(REGEX REPLACE        "${protobuf_AC_INIT_REGEX}" "\\3"
-    protobuf_CONTACT        "${protobuf_AC_INIT_LINE}")
 # Parse version tweaks
 set(protobuf_VERSION_REGEX "^([0-9]+)\\.([0-9]+)\\.([0-9]+)([-]rc[-]|\\.)?([0-9]*)$")
 string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\1"
@@ -199,7 +187,7 @@ set(protobuf_LINK_LIBATOMIC false)
 if (NOT MSVC)
   include(CheckCXXSourceCompiles)
   set(OLD_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
-  set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS} -std=c++11)
+  set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS} -std=c++14)
   check_cxx_source_compiles("
     #include <atomic>
     int main() {

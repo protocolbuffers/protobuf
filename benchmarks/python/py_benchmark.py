@@ -27,17 +27,17 @@ args = parser.parse_args()
 # for the descriptor can be found in the pool
 if args.cpp_generated != "no":
   sys.path.append( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) + "/.libs" )
-  import libbenchmark_messages
+  from benchmarks.python import libbenchmark_messages
   sys.path.append( os.path.dirname( os.path.dirname( os.path.abspath(__file__) ) ) + "/tmp" )
 # END CPP GENERATED MESSAGE
 
 
-import datasets.google_message1.proto2.benchmark_message1_proto2_pb2 as benchmark_message1_proto2_pb2
-import datasets.google_message1.proto3.benchmark_message1_proto3_pb2 as benchmark_message1_proto3_pb2
-import datasets.google_message2.benchmark_message2_pb2 as benchmark_message2_pb2
-import datasets.google_message3.benchmark_message3_pb2 as benchmark_message3_pb2
-import datasets.google_message4.benchmark_message4_pb2 as benchmark_message4_pb2
-import benchmarks_pb2 as benchmarks_pb2
+import benchmarks.datasets.google_message1.proto2.benchmark_message1_proto2_pb2 as benchmark_message1_proto2_pb2
+import benchmarks.datasets.google_message1.proto3.benchmark_message1_proto3_pb2 as benchmark_message1_proto3_pb2
+import benchmarks.datasets.google_message2.benchmark_message2_pb2 as benchmark_message2_pb2
+import benchmarks.datasets.google_message3.benchmark_message3_pb2 as benchmark_message3_pb2
+import benchmarks.datasets.google_message4.benchmark_message4_pb2 as benchmark_message4_pb2
+import benchmarks.benchmarks_pb2 as benchmarks_pb2
 
 
 def run_one_test(filename):

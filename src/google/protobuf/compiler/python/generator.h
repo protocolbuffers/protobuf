@@ -132,6 +132,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
       const FieldDescriptor& extension_field) const;
   void FixForeignFieldsInNestedExtensions(const Descriptor& descriptor) const;
 
+  void PrintTopBoilerplate() const;
   void PrintServices() const;
   void PrintServiceDescriptors() const;
   void PrintServiceDescriptor(const ServiceDescriptor& descriptor) const;
@@ -149,6 +150,8 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   std::string ModuleLevelMessageName(const Descriptor& descriptor) const;
   std::string ModuleLevelServiceDescriptorName(
       const ServiceDescriptor& descriptor) const;
+  std::string PublicPackage() const;
+  std::string InternalPackage() const;
 
   template <typename DescriptorT, typename DescriptorProtoT>
   void PrintSerializedPbInterval(const DescriptorT& descriptor,

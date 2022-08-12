@@ -2,9 +2,21 @@ load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@rules_java//java:defs.bzl", "java_proto_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
+load("//:protobuf.bzl", "internal_py_proto_library", "internal_csharp_proto_library")
+load("//benchmarks/util:compatibility.bzl", "proto3_from_proto2_data", "php_proto3_from_proto2_library")
 
 filegroup(
     name = "datasets",
+    srcs = [
+        "dataset.google_message2.pb",
+    ],
+    visibility = [
+        "//benchmarks/datasets:__pkg__",
+    ],
+)
+
+proto3_from_proto2_data(
+    name = "proto3_datasets",
     srcs = [
         "dataset.google_message2.pb",
     ],
@@ -18,7 +30,6 @@ proto_library(
     srcs = [
         "benchmark_message2.proto",
     ],
-    strip_import_prefix = "/benchmarks",
     visibility = [
         "//benchmarks/datasets:__pkg__",
     ],
@@ -34,6 +45,14 @@ cc_proto_library(
     ],
 )
 
+internal_csharp_proto_library(
+    name = "benchmark_message2_csharp_proto",
+    srcs = ["benchmark_message2.proto"],
+    visibility = [
+        "//benchmarks/datasets:__pkg__",
+    ],
+)
+
 java_proto_library(
     name = "benchmark_message2_java_proto",
     visibility = [
@@ -41,6 +60,27 @@ java_proto_library(
     ],
     deps = [
         "benchmark_message2_proto",
+    ],
+)
+
+php_proto3_from_proto2_library(
+    name = "benchmark_message2_php_proto",
+    src = "benchmark_message2.proto",
+    outs = [
+        "Benchmarks/Proto2/GoogleMessage2.php",
+        "Benchmarks/Proto2/GoogleMessage2GroupedMessage.php",
+        "GPBMetadata/BenchmarkMessage2.php",
+    ],
+    visibility = [
+        "//benchmarks/datasets:__pkg__",
+    ],
+)
+
+internal_py_proto_library(
+    name = "benchmark_message2_py_proto",
+    srcs = ["benchmark_message2.proto"],
+    visibility = [
+        "//benchmarks/datasets:__pkg__",
     ],
 )
 

@@ -8,4 +8,5 @@ cd $(dirname $0)/../../..
 # Prepare worker environment to run tests
 source kokoro/macos/prepare_build_macos_rc
 
-./tests.sh objectivec_ios_release
+objectivec/DevTools/full_mac_build.sh \
+  --core-only --skip-xcode-osx --skip-xcode-tvos --skip-objc-conformance --skip-xcode-debug

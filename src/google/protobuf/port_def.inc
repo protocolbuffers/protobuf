@@ -212,7 +212,7 @@
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 3021004
+#define PROTOBUF_VERSION 3021005
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
@@ -831,6 +831,15 @@
 #if defined(PROTOBUF_EXPERIMENTAL_USE_TAIL_CALL_TABLE_PARSER)
 #define PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED 1
 #endif
+
+#ifdef PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION
+#error PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION was previously defined
+#endif
+#if !defined(PROTOBUF_TEMPORARY_DISABLE_TABLE_PARSER_ON_REFLECTION) && \
+    (defined(PROTOBUF_EXPERIMENTAL_USE_TABLE_PARSER_ON_REFLECTION) ||  \
+     defined(PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED))
+#define PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION 1
+#endif  // PROTOBUF_ENABLE_FORCE_ALLOCATION_ON_CONSTRUCTION
 
 // Note that this is performance sensitive: changing the parameters will change
 // the registers used by the ABI calling convention, which subsequently affects

@@ -108,6 +108,22 @@ std::string VersionString(int version) {
   return buffer;
 }
 
+std::string ProtocVersionString(int version) {
+  int minor = (version / 1000) % 1000;
+  int micro = version % 1000;
+
+  // 128 bytes should always be enough, but we use snprintf() anyway to be
+  // safe.
+  char buffer[128];
+  snprintf(buffer, sizeof(buffer), "%d.%d", minor, micro);
+
+  // Guard against broken MSVC snprintf().
+  buffer[sizeof(buffer)-1] = '\0';
+
+  return buffer;
+
+}
+
 }  // namespace internal
 
 // ===================================================================

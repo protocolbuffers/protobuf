@@ -37,6 +37,7 @@
 #include "repeated_field.h"
 
 static VALUE cParseError = Qnil;
+static VALUE cAbstractMessage = Qnil;
 static ID descriptor_instancevar_interned;
 
 static VALUE initialize_rb_class_with_no_args(VALUE klass) {
@@ -1201,36 +1202,8 @@ VALUE build_class_from_descriptor(VALUE descriptor) {
   klass = rb_define_class_id(
       // Docs say this parameter is ignored. User will assign return value to
       // their own toplevel constant class name.
-      rb_intern("Message"), rb_cObject);
+      rb_intern("Message"), cAbstractMessage);
   rb_ivar_set(klass, descriptor_instancevar_interned, descriptor);
-  rb_define_alloc_func(klass, Message_alloc);
-  rb_require("google/protobuf/message_exts");
-  rb_include_module(klass, rb_eval_string("::Google::Protobuf::MessageExts"));
-  rb_extend_object(
-      klass, rb_eval_string("::Google::Protobuf::MessageExts::ClassMethods"));
-
-  rb_define_method(klass, "method_missing", Message_method_missing, -1);
-  rb_define_method(klass, "respond_to_missing?", Message_respond_to_missing,
-                   -1);
-  rb_define_method(klass, "initialize", Message_initialize, -1);
-  rb_define_method(klass, "dup", Message_dup, 0);
-  // Also define #clone so that we don't inherit Object#clone.
-  rb_define_method(klass, "clone", Message_dup, 0);
-  rb_define_method(klass, "==", Message_eq, 1);
-  rb_define_method(klass, "eql?", Message_eq, 1);
-  rb_define_method(klass, "freeze", Message_freeze, 0);
-  rb_define_method(klass, "hash", Message_hash, 0);
-  rb_define_method(klass, "to_h", Message_to_h, 0);
-  rb_define_method(klass, "inspect", Message_inspect, 0);
-  rb_define_method(klass, "to_s", Message_inspect, 0);
-  rb_define_method(klass, "[]", Message_index, 1);
-  rb_define_method(klass, "[]=", Message_index_set, 2);
-  rb_define_singleton_method(klass, "decode", Message_decode, -1);
-  rb_define_singleton_method(klass, "encode", Message_encode, -1);
-  rb_define_singleton_method(klass, "decode_json", Message_decode_json, -1);
-  rb_define_singleton_method(klass, "encode_json", Message_encode_json, -1);
-  rb_define_singleton_method(klass, "descriptor", Message_descriptor, 0);
-
   return klass;
 }
 
@@ -1392,11 +1365,41 @@ const upb_Message* Message_GetUpbMessage(VALUE value, const upb_MessageDef* m,
   return self->msg;
 }
 
+static void Message_define_class(VALUE klass) {
+  rb_define_alloc_func(klass, Message_alloc);
+
+  rb_require("google/protobuf/message_exts");
+  rb_define_method(klass, "method_missing", Message_method_missing, -1);
+  rb_define_method(klass, "respond_to_missing?", Message_respond_to_missing,
+                   -1);
+  rb_define_method(klass, "initialize", Message_initialize, -1);
+  rb_define_method(klass, "dup", Message_dup, 0);
+  // Also define #clone so that we don't inherit Object#clone.
+  rb_define_method(klass, "clone", Message_dup, 0);
+  rb_define_method(klass, "==", Message_eq, 1);
+  rb_define_method(klass, "eql?", Message_eq, 1);
+  rb_define_method(klass, "freeze", Message_freeze, 0);
+  rb_define_method(klass, "hash", Message_hash, 0);
+  rb_define_method(klass, "to_h", Message_to_h, 0);
+  rb_define_method(klass, "inspect", Message_inspect, 0);
+  rb_define_method(klass, "to_s", Message_inspect, 0);
+  rb_define_method(klass, "[]", Message_index, 1);
+  rb_define_method(klass, "[]=", Message_index_set, 2);
+  rb_define_singleton_method(klass, "decode", Message_decode, -1);
+  rb_define_singleton_method(klass, "encode", Message_encode, -1);
+  rb_define_singleton_method(klass, "decode_json", Message_decode_json, -1);
+  rb_define_singleton_method(klass, "encode_json", Message_encode_json, -1);
+  rb_define_singleton_method(klass, "descriptor", Message_descriptor, 0);
+}
+
 void Message_register(VALUE protobuf) {
   cParseError = rb_const_get(protobuf, rb_intern("ParseError"));
+  cAbstractMessage = rb_define_class_under(protobuf, "AbstractMessage", rb_cObject);
+  Message_define_class(cAbstractMessage);
+  rb_gc_register_address(&cAbstractMessage);
 
   // Ruby-interned string: "descriptor". We use this identifier to store an
   // instance variable on message classes we create in order to link them back
   // to their descriptors.
-  descriptor_instancevar_interned = rb_intern("descriptor");
+  descriptor_instancevar_interned = rb_intern("@descriptor");
 }

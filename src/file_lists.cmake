@@ -33,6 +33,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_bases.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_reflection.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_full.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_gen.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/implicit_weak_message.cc
@@ -126,6 +127,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_bases.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_reflection.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_decl.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_gen.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_tctable_impl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/has_bits.h
