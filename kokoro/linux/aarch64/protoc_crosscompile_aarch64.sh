@@ -4,5 +4,5 @@
 
 set -ex
 
-cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -Dprotobuf_WITH_ZLIB=0 .
+cmake -DCMAKE_POSITION_INDEPENDENT_CODE=ON -Dprotobuf_WITH_ZLIB=0 -Dprotobuf_BUILD_TESTS=OFF .
 make -j8
