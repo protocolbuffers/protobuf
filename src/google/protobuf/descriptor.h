@@ -199,7 +199,7 @@ namespace internal {
 //
 
 #if !defined(PROTOBUF_INTERNAL_CHECK_CLASS_SIZE)
-#define PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(t, expected)
+#define PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(t, expected) static_assert(true, "")
 #endif
 
 class FlatAllocator;
@@ -616,7 +616,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Descriptor);
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(Descriptor, 136)
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(Descriptor, 136);
 
 // Describes a single field of a message.  To get the descriptor for a given
 // field, first get the Descriptor for the message in which it is defined,
@@ -993,7 +993,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldDescriptor);
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 72)
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 72);
 
 // Describes a oneof defined in a message type.
 class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
@@ -1074,7 +1074,7 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(OneofDescriptor);
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(OneofDescriptor, 40)
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(OneofDescriptor, 40);
 
 // Describes an enum type defined in a .proto file.  To get the EnumDescriptor
 // for a generated enum type, call TypeName_descriptor().  Use DescriptorPool
@@ -1245,7 +1245,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumDescriptor);
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(EnumDescriptor, 72)
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(EnumDescriptor, 72);
 
 // Describes an individual enum constant of a particular type.  To get the
 // EnumValueDescriptor for a given enum value, first get the EnumDescriptor
@@ -1330,7 +1330,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumValueDescriptor);
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(EnumValueDescriptor, 32)
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(EnumValueDescriptor, 32);
 
 // Describes an RPC service. Use DescriptorPool to construct your own
 // descriptors.
@@ -1413,7 +1413,7 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ServiceDescriptor);
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(ServiceDescriptor, 48)
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(ServiceDescriptor, 48);
 
 // Describes an individual service method.  To obtain a MethodDescriptor given
 // a service, first get its ServiceDescriptor, then call
@@ -1502,7 +1502,7 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MethodDescriptor);
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(MethodDescriptor, 64)
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(MethodDescriptor, 64);
 
 // Describes a whole .proto file.  To get the FileDescriptor for a compiled-in
 // file, get the descriptor for something defined in that file and call
@@ -1710,7 +1710,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileDescriptor);
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FileDescriptor, 152)
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FileDescriptor, 152);
 
 // ===================================================================
 
