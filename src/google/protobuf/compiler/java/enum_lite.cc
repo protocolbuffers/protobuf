@@ -153,17 +153,26 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
   printer->Print(
       "  return value;\n"
       "}\n"
-      "\n"
-      "/**\n"
-      " * @param value The number of the enum to look for.\n"
-      " * @return The enum associated with the given number.\n"
-      " * @deprecated Use {@link #forNumber(int)} instead.\n"
-      " */\n"
-      "@java.lang.Deprecated\n"
-      "public static $classname$ valueOf(int value) {\n"
-      "  return forNumber(value);\n"
-      "}\n"
-      "\n"
+      "\n");
+  if (context_->options().opensource_runtime) {
+    printer->Print(
+        "/**\n"
+        " * @param value The number of the enum to look for.\n"
+        " * @return The enum associated with the given number.\n"
+        " * @deprecated Use {@link #forNumber(int)} instead.\n"
+        " */\n"
+        "@java.lang.Deprecated\n"
+        "public static $classname$ valueOf(int value) {\n"
+        "  return forNumber(value);\n"
+        "}\n"
+        "\n",
+        "classname", descriptor_->name());
+  }
+
+  if (!context_->options().opensource_runtime) {
+    printer->Print("@com.google.protobuf.Internal.ProtoMethodMayReturnNull\n");
+  }
+  printer->Print(
       "public static $classname$ forNumber(int value) {\n"
       "  switch (value) {\n",
       "classname", descriptor_->name());
@@ -212,6 +221,35 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
       "      };\n"
       "\n",
       "classname", descriptor_->name());
+  if (!context_->options().opensource_runtime) {
+    printer->Print(
+        "/**\n"
+        " * Override of toString that prints the number and name.\n"
+        " * This is primarily intended as a developer aid.\n"
+        " *\n"
+        " * <p>NOTE: This implementation is liable to change in the future,\n"
+        " * and should not be relied on in code.\n"
+        " */\n"
+        "@java.lang.Override\n"
+        "public java.lang.String toString() {\n"
+        "  StringBuilder result = new StringBuilder(\"<\");\n"
+        "  result.append(getClass().getName()).append('@')\n"
+        "      .append(java.lang.Integer.toHexString(\n"
+        "        java.lang.System.identityHashCode(this)));\n");
+    if (SupportUnknownEnumValue(descriptor_->file())) {
+      printer->Print(
+          "  if (this != UNRECOGNIZED) {\n"
+          "    result.append(\" number=\").append(getNumber());\n"
+          "  }\n");
+    } else {
+      printer->Print("  result.append(\" number=\").append(getNumber());\n");
+    }
+    printer->Print(
+        "  return result.append(\" name=\")\n"
+        "      .append(name()).append('>').toString();\n"
+        "}\n"
+        "\n");
+  }
 
   printer->Print(
       "private final int value;\n\n"

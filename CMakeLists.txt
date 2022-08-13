@@ -32,11 +32,11 @@ if(protobuf_DEPRECATED_CMAKE_SUBDIRECTORY_USAGE)
   get_filename_component(protobuf_SOURCE_DIR ${protobuf_SOURCE_DIR} DIRECTORY)
 endif()
 
-# Add c++11 flags
+# Add c++14 flags
 if (CYGWIN)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14")
 else()
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 14)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
@@ -79,6 +79,11 @@ mark_as_advanced(protobuf_DEBUG_POSTFIX)
 # User options
 include(${protobuf_SOURCE_DIR}/cmake/protobuf-options.cmake)
 
+# Version metadata
+set(protobuf_VERSION_STRING "3.21.4")
+set(protobuf_DESCRIPTION "Protocol Buffers")
+set(protobuf_CONTACT "protobuf@googlegroups.com")
+
 # Overrides for option dependencies
 if (protobuf_BUILD_PROTOC_BINARIES OR protobuf_BUILD_TESTS)
   set(protobuf_BUILD_LIBPROTOC ON)
@@ -86,23 +91,6 @@ endif ()
 if (NOT protobuf_BUILD_PROTOBUF_BINARIES)
   set(protobuf_INSTALL OFF)
 endif()
-# Path to main configure script
-set(protobuf_CONFIGURE_SCRIPT "${protobuf_SOURCE_DIR}/configure.ac")
-
-# Parse configure script
-set(protobuf_AC_INIT_REGEX
-  "^AC_INIT\\(\\[([^]]+)\\],\\[([^]]+)\\],\\[([^]]+)\\],\\[([^]]+)\\]\\)$")
-file(STRINGS "${protobuf_CONFIGURE_SCRIPT}" protobuf_AC_INIT_LINE
-  LIMIT_COUNT 1 REGEX "^AC_INIT")
-# Description
-string(REGEX REPLACE        "${protobuf_AC_INIT_REGEX}" "\\1"
-    protobuf_DESCRIPTION    "${protobuf_AC_INIT_LINE}")
-# Version
-string(REGEX REPLACE        "${protobuf_AC_INIT_REGEX}" "\\2"
-    protobuf_VERSION_STRING "${protobuf_AC_INIT_LINE}")
-# Contact
-string(REGEX REPLACE        "${protobuf_AC_INIT_REGEX}" "\\3"
-    protobuf_CONTACT        "${protobuf_AC_INIT_LINE}")
 # Parse version tweaks
 set(protobuf_VERSION_REGEX "^([0-9]+)\\.([0-9]+)\\.([0-9]+)([-]rc[-]|\\.)?([0-9]*)$")
 string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\1"
@@ -167,6 +155,14 @@ file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/cmaketest.map)
 
 find_package(Threads REQUIRED)
 
+# We can install dependencies from submodules if we're running
+# CMake v3.13 or newer.
+if(CMAKE_VERSION VERSION_LESS 3.13)
+  set(_protobuf_INSTALL_SUPPORTED_FROM_MODULE OFF)
+else()
+  set(_protobuf_INSTALL_SUPPORTED_FROM_MODULE ON)
+endif()
+
 set(_protobuf_FIND_ZLIB)
 if (protobuf_WITH_ZLIB)
   find_package(ZLIB)
@@ -199,7 +195,7 @@ set(protobuf_LINK_LIBATOMIC false)
 if (NOT MSVC)
   include(CheckCXXSourceCompiles)
   set(OLD_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
-  set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS} -std=c++11)
+  set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS} -std=c++14)
   check_cxx_source_compiles("
     #include <atomic>
     int main() {
@@ -247,12 +243,12 @@ endif (protobuf_BUILD_SHARED_LIBS)
 if (MSVC)
   if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     # Build with multiple processes
-    add_definitions(/MP)
+    add_compile_options(/MP)
   endif()
   # Set source file and execution character sets to UTF-8
-  add_definitions(/utf-8)
+  add_compile_options(/utf-8)
   # MSVC warning suppressions
-  add_definitions(
+  add_compile_options(
     /wd4065 # switch statement contains 'default' but no 'case' labels
     /wd4244 # 'conversion' conversion from 'type1' to 'type2', possible loss of data
     /wd4251 # 'identifier' : class 'type' needs to have dll-interface to be used by clients of class 'type2'
@@ -267,22 +263,16 @@ if (MSVC)
     /wd4996 # The compiler encountered a deprecated declaration.
   )
   # Allow big object
-  add_definitions(/bigobj)
+  add_compile_options(/bigobj)
   string(REPLACE "/" "\\" PROTOBUF_SOURCE_WIN32_PATH ${protobuf_SOURCE_DIR})
   string(REPLACE "/" "\\" PROTOBUF_BINARY_WIN32_PATH ${protobuf_BINARY_DIR})
   string(REPLACE "." ","  protobuf_RC_FILEVERSION "${protobuf_VERSION}")
 
   # Suppress linker warnings about files with no symbols defined.
-  set(CMAKE_STATIC_LINKER_FLAGS "${CMAKE_STATIC_LINKER_FLAGS} /ignore:4221")
+  string(APPEND CMAKE_STATIC_LINKER_FLAGS " /ignore:4221")
 
-  if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    # Configure Resource Compiler
-    enable_language(RC)
-    # use English language (0x409) in resource compiler
-    set(rc_flags "/l0x409")
-    # fix rc.exe invocations because of usage of add_definitions()
-    set(CMAKE_RC_COMPILE_OBJECT "<CMAKE_RC_COMPILER> ${rc_flags} <DEFINES> /fo<OBJECT> <SOURCE>")
-  endif()
+  # use English language (0x409) in resource compiler
+  string(APPEND CMAKE_RC_FLAGS " -l0x409")
 
   # Generate the version.rc file used elsewhere.
   configure_file(${protobuf_SOURCE_DIR}/cmake/version.rc.in ${CMAKE_CURRENT_BINARY_DIR}/version.rc @ONLY)
@@ -308,6 +298,11 @@ if (protobuf_UNICODE)
   add_definitions(-DUNICODE -D_UNICODE)
 endif (protobuf_UNICODE)
 
+set(protobuf_ABSL_PROVIDER "module" CACHE STRING "Provider of absl library")
+set_property(CACHE protobuf_ABSL_PROVIDER PROPERTY STRINGS "module" "package")
+
+include(${protobuf_SOURCE_DIR}/cmake/abseil-cpp.cmake)
+
 if (protobuf_BUILD_PROTOBUF_BINARIES)
   include(${protobuf_SOURCE_DIR}/cmake/libprotobuf-lite.cmake)
   if (NOT DEFINED protobuf_LIB_PROTOBUF_LITE)
@@ -330,8 +325,8 @@ if (protobuf_BUILD_PROTOBUF_BINARIES)
     endif ()
   endif ()
 else ()
-  find_package(protobuf)
-  if (protobuf_FOUND)
+  find_package(Protobuf NO_MODULE)
+  if (Protobuf_FOUND)
     set(protobuf_PROTOC_EXE protobuf::protoc)
     set(protobuf_LIB_PROTOC protobuf::libprotoc)
     set(protobuf_LIB_PROTOBUF protobuf::libprotobuf)

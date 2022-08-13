@@ -2,6 +2,11 @@ load("@rules_cc//cc:defs.bzl", "cc_proto_library")
 load("@rules_java//java:defs.bzl", "java_proto_library")
 load("@rules_pkg//:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
+load("//:protobuf.bzl", "internal_php_proto_library", "internal_py_proto_library")
+
+################################################################################
+# Benchmark Protos
+################################################################################
 
 proto_library(
     name = "benchmarks_proto",
@@ -31,6 +36,26 @@ java_proto_library(
     ],
     deps = [
         "benchmarks_proto",
+    ],
+)
+
+internal_php_proto_library(
+    name = "benchmarks_php_proto",
+    srcs = ["benchmarks.proto"],
+    outs = [
+        "Benchmarks/BenchmarkDataset.php",
+        "GPBMetadata/Benchmarks.php",
+    ],
+    visibility = [
+        "//benchmarks:__subpackages__",
+    ],
+)
+
+internal_py_proto_library(
+    name = "benchmarks_py_proto",
+    srcs = ["benchmarks.proto"],
+    visibility = [
+        "//benchmarks:__subpackages__",
     ],
 )
 
@@ -65,19 +90,13 @@ java_proto_library(
     ],
 )
 
+################################################################################
+# Distribution files
+################################################################################
+
 pkg_files(
     name = "dist_files",
-    srcs = glob(
-        [
-            "*",
-            "python/*.cc",
-            "util/*.cc",
-        ],
-        exclude = [
-            "__init__.py",  # not in autotools dist
-            "go/*",
-        ],
-    ),
+    srcs = glob(["*"]),
     strip_prefix = strip_prefix.from_root(""),
 )
 
@@ -93,6 +112,10 @@ pkg_filegroup(
         "//benchmarks/datasets/google_message2:dist_files",
         "//benchmarks/datasets/google_message3:dist_files",
         "//benchmarks/datasets/google_message4:dist_files",
+        "//benchmarks/java:dist_files",
+        "//benchmarks/php:dist_files",
+        "//benchmarks/python:dist_files",
+        "//benchmarks/util:dist_files",
     ],
     visibility = ["//pkg:__pkg__"],
 )

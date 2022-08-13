@@ -13,13 +13,14 @@ python: add_person_python list_people_python
 
 clean:
 	rm -f add_person_cpp list_people_cpp add_person_java list_people_java add_person_python list_people_python
-	rm -f javac_middleman AddPerson*.class ListPeople*.class com/example/tutorial/*.class
-	rm -f protoc_middleman addressbook.pb.cc addressbook.pb.h addressbook_pb2.py com/example/tutorial/AddressBookProtos.java
+	rm -f javac_middleman AddPerson*.class ListPeople*.class com/example/tutorial/protos/*.class
+	rm -f protoc_middleman addressbook.pb.cc addressbook.pb.h addressbook_pb2.py com/example/tutorial/protos/*.java
 	rm -f *.pyc
 	rm -f go/tutorialpb/*.pb.go add_person_go list_people_go
 	rm -f protoc_middleman_dart dart_tutorial/*.pb*.dart
 	rmdir dart_tutorial 2>/dev/null || true
 	rmdir tutorial 2>/dev/null || true
+	rmdir com/example/tutorial/protos 2>/dev/null || true
 	rmdir com/example/tutorial 2>/dev/null || true
 	rmdir com/example 2>/dev/null || true
 	rmdir com 2>/dev/null || true
@@ -40,11 +41,11 @@ protoc_middleman_dart: addressbook.proto
 
 add_person_cpp: add_person.cc protoc_middleman
 	pkg-config --cflags protobuf  # fails if protobuf is not installed
-	c++ -std=c++11 add_person.cc addressbook.pb.cc -o add_person_cpp `pkg-config --cflags --libs protobuf`
+	c++ -std=c++14 add_person.cc addressbook.pb.cc -o add_person_cpp `pkg-config --cflags --libs protobuf`
 
 list_people_cpp: list_people.cc protoc_middleman
 	pkg-config --cflags protobuf  # fails if protobuf is not installed
-	c++ -std=c++11 list_people.cc addressbook.pb.cc -o list_people_cpp `pkg-config --cflags --libs protobuf`
+	c++ -std=c++14 list_people.cc addressbook.pb.cc -o list_people_cpp `pkg-config --cflags --libs protobuf`
 
 add_person_dart: add_person.dart protoc_middleman_dart
 
@@ -63,7 +64,7 @@ list_people_gotest: go/tutorialpb/addressbook.pb.go
 	cd go && go test ./cmd/list_people
 
 javac_middleman: AddPerson.java ListPeople.java protoc_middleman
-	javac -cp $$CLASSPATH AddPerson.java ListPeople.java com/example/tutorial/AddressBookProtos.java
+	javac -cp $$CLASSPATH AddPerson.java ListPeople.java com/example/tutorial/protos/*.java
 	@touch javac_middleman
 
 add_person_java: javac_middleman

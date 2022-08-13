@@ -39,8 +39,8 @@ proto2_protos = %w[
 
 if !ENV['PROTOC'].nil?
   protoc_command = ENV['PROTOC']
-elsif system('../src/protoc --version')
-  protoc_command = '../src/protoc'
+elsif system('../bazel-bin/protoc --version')
+  protoc_command = '../bazel-bin/protoc'
 else
   protoc_command = 'protoc'
 end
@@ -49,7 +49,7 @@ genproto_output = []
 
 # We won't have access to .. from within docker, but the proto files
 # will be there, thanks to the :genproto rule dependency for gem:native.
-unless ENV['IN_DOCKER'] == 'true'
+unless ENV['IN_DOCKER'] == 'true' or ENV['BAZEL'] == 'true'
   well_known_protos.each do |proto_file|
     input_file = "../src/" + proto_file
     output_file = "lib/" + proto_file.sub(/\.proto$/, "_pb.rb")
@@ -153,13 +153,15 @@ end
 Gem::PackageTask.new(spec) do |pkg|
 end
 
-Rake::TestTask.new(:test => [:build, :genproto]) do |t|
+# Skip build/genproto in Bazel builds, where we expect this to
+# be done already.
+Rake::TestTask.new(:test => ENV['BAZEL'] == 'true' ? [] : [:build, :genproto]) do |t|
   t.test_files = FileList["tests/*.rb"].exclude("tests/gc_test.rb", "tests/common_tests.rb")
 end
 
 # gc_test needs to be split out to ensure the generated file hasn't been
 # imported by other tests.
-Rake::TestTask.new(:gc_test => :build) do |t|
+Rake::TestTask.new(:gc_test => ENV['BAZEL'] == 'true' ? [] : :build) do |t|
   t.test_files = FileList["tests/gc_test.rb"]
 end
 

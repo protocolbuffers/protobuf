@@ -19,9 +19,22 @@ function run_install_test() {
   chmod +x test-venv/bin/protoc
 
   source test-venv/bin/activate
-  pip install -i ${PYPI} protobuf==${VERSION} --no-cache-dir
+  (pip install -i ${PYPI} protobuf==${VERSION} --no-cache-dir) || (retry_pip_install ${PYPI} ${VERSION})
   deactivate
   rm -fr test-venv
+}
+
+function retry_pip_install() {
+  local PYPI=$1
+  local VERSION=$2
+  
+  read -p "pip install failed, possibly due to delay between upload and availability on pip. Retry? [y/n]" -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    exit 1
+  fi
+
+  (pip install -i ${PYPI} protobuf==${VERSION} --no-cache-dir) || (retry_pip_install ${PYPI} ${VERSION})
 }
 
 
@@ -86,13 +99,16 @@ python3 setup.py test
 python3 setup.py sdist
 twine upload --skip-existing -r testpypi -u protobuf-wheel-test dist/*
 
-# Test locally with different python versions.
+# Sleep to allow time for distribution to be available on pip.
+sleep 5m
+
+# Test locally.
 run_install_test ${TESTING_VERSION} python3 https://test.pypi.org/simple
 
 # Deploy egg/wheel packages to testing PyPI and test again.
 python3 setup.py clean build bdist_wheel
 twine upload --skip-existing -r testpypi -u protobuf-wheel-test dist/*
-
+sleep 5m
 run_install_test ${TESTING_VERSION} python3 https://test.pypi.org/simple
 
 echo "All install tests have passed using testing PyPI."

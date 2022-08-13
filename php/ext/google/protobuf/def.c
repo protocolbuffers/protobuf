@@ -457,6 +457,44 @@ PHP_METHOD(FieldDescriptor, getEnumType) {
 }
 
 /*
+ * FieldDescriptor::getContainingOneof()
+ *
+ * Returns the OneofDescriptor for this field, or null if it is not inside
+ * a oneof.
+ */
+PHP_METHOD(FieldDescriptor, getContainingOneof) {
+  FieldDescriptor *intern = (FieldDescriptor*)Z_OBJ_P(getThis());
+  const upb_OneofDef *o = upb_FieldDef_ContainingOneof(intern->fielddef);
+  zval ret;
+
+  if (!o) {
+    RETURN_NULL();
+  }
+
+  OneofDescriptor_FromOneofDef(&ret, o);
+  RETURN_COPY_VALUE(&ret);
+}
+
+/*
+ * FieldDescriptor::getRealContainingOneof()
+ *
+ * Returns the non-synthetic OneofDescriptor for this field, or null if it is
+ * not inside a oneof.
+ */
+PHP_METHOD(FieldDescriptor, getRealContainingOneof) {
+  FieldDescriptor *intern = (FieldDescriptor*)Z_OBJ_P(getThis());
+  const upb_OneofDef *o = upb_FieldDef_RealContainingOneof(intern->fielddef);
+  zval ret;
+
+  if (!o) {
+    RETURN_NULL();
+  }
+
+  OneofDescriptor_FromOneofDef(&ret, o);
+  RETURN_COPY_VALUE(&ret);
+}
+
+/*
  * FieldDescriptor::getMessageType()
  *
  * Returns the Descriptor for this field, which must be a message.
@@ -482,6 +520,8 @@ static zend_function_entry FieldDescriptor_methods[] = {
   PHP_ME(FieldDescriptor, getType,   arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(FieldDescriptor, isMap,     arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(FieldDescriptor, getEnumType, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(FieldDescriptor, getContainingOneof, arginfo_void, ZEND_ACC_PUBLIC)
+  PHP_ME(FieldDescriptor, getRealContainingOneof, arginfo_void, ZEND_ACC_PUBLIC)
   PHP_ME(FieldDescriptor, getMessageType, arginfo_void, ZEND_ACC_PUBLIC)
   ZEND_FE_END
 };
@@ -516,6 +556,7 @@ static zend_class_entry *Descriptor_GetGeneratedClass(const upb_MessageDef *m) {
   char *classname =
     GetPhpClassname(upb_MessageDef_File(m), upb_MessageDef_FullName(m), false);
   zend_error(E_ERROR, "Couldn't load generated class %s", classname);
+  return NULL;
 }
 
 void Descriptor_FromMessageDef(zval *val, const upb_MessageDef *m) {

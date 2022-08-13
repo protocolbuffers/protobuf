@@ -16,13 +16,6 @@ sudo xcode-select -s "${DEVELOPER_DIR}"
 pyenv global 2.7.18
 
 ##
-# Install Tox
-
-if [[ "${KOKORO_INSTALL_TOX:-}" == "yes" ]] ; then
-  sudo python3 -m pip install --upgrade pip tox
-fi
-
-##
 # Setup RVM
 if [[ "${KOKORO_INSTALL_RVM:-}" == "yes" ]] ; then
     git config --global --add safe.directory $HOMEBREW_PREFIX/Library/Taps/homebrew/homebrew-cask
@@ -37,4 +30,12 @@ if [ ! -x "$(command -v valgrind)" ]; then
     echo "#! /bin/bash" > valgrind
     chmod ug+x valgrind
     sudo mv valgrind /usr/local/bin/valgrind
+fi
+
+##
+# Install Virtual Python Environment
+
+if [[ "${KOKORO_INSTALL_VENV:-}" == "yes" ]] ; then
+    python3 -m venv venv
+    source venv/bin/activate
 fi

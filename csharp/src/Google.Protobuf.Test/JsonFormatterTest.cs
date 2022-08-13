@@ -675,6 +675,200 @@ namespace Google.Protobuf
         }
 
         [Test]
+        public void WriteValueWithIndentation_EmptyMessage()
+        {
+            var value = new TestEmptyMessage();
+
+            AssertWriteValue(value, "{}", JsonFormatter.Settings.Default.WithIndentation());
+        }
+
+        [Test]
+        public void WriteValueWithIndentation_NestedTestAllTypes()
+        {
+            var value = new NestedTestAllTypes
+            {
+                Payload = new TestAllTypes
+                {
+                    SingleBool = true,
+                    SingleInt32 = 100,
+                    SingleString = "multiple fields",
+                    RepeatedString = { "string1", "string2" },
+                },
+                Child = new NestedTestAllTypes
+                {
+                    Payload = new TestAllTypes
+                    {
+                        SingleString = "single field",
+                    },
+                },
+                RepeatedChild =
+                {
+                    new NestedTestAllTypes { Payload = new TestAllTypes { SingleString = "child 1", RepeatedString = { "string" } } },
+                    new NestedTestAllTypes { Payload = new TestAllTypes { SingleString = "child 2" } },
+                },
+            };
+
+            const string expectedJson = @"
+{
+  'child': {
+    'payload': {
+      'singleString': 'single field'
+    }
+  },
+  'payload': {
+    'singleInt32': 100,
+    'singleBool': true,
+    'singleString': 'multiple fields',
+    'repeatedString': [
+      'string1',
+      'string2'
+    ]
+  },
+  'repeatedChild': [
+    {
+      'payload': {
+        'singleString': 'child 1',
+        'repeatedString': [
+          'string'
+        ]
+      }
+    },
+    {
+      'payload': {
+        'singleString': 'child 2'
+      }
+    }
+  ]
+}";
+            AssertWriteValue(value, expectedJson, JsonFormatter.Settings.Default.WithIndentation());
+        }
+
+        [Test]
+        public void WriteValueWithIndentation_WellKnownTypes()
+        {
+            var value = new TestWellKnownTypes
+            {
+                StructField = new Struct
+                {
+                    Fields =
+                    {
+                        { "string", Value.ForString("foo") },
+                        { "numbers", Value.ForList(Value.ForNumber(1), Value.ForNumber(2), Value.ForNumber(3)) },
+                        { "emptyList", Value.ForList() },
+                        { "emptyStruct", Value.ForStruct(new Struct()) },
+                    },
+                },
+            };
+
+            const string expectedJson = @"
+{
+  'structField': {
+    'string': 'foo',
+    'numbers': [
+      1,
+      2,
+      3
+    ],
+    'emptyList': [],
+    'emptyStruct': {}
+  }
+}";
+            AssertWriteValue(value, expectedJson, JsonFormatter.Settings.Default.WithIndentation());
+        }
+
+        [Test]
+        public void WriteValueWithIndentation_StructSingleField()
+        {
+            var value = new Struct { Fields = { { "structField1", Value.ForString("structFieldValue1") } } };
+
+            const string expectedJson = @"
+{
+  'structField1': 'structFieldValue1'
+}";
+            AssertWriteValue(value, expectedJson, JsonFormatter.Settings.Default.WithIndentation());
+        }
+
+        [Test]
+        public void WriteValueWithIndentation_StructMultipleFields()
+        {
+            var value = new Struct
+            {
+                Fields =
+                {
+                    { "structField1", Value.ForString("structFieldValue1") },
+                    { "structField2", Value.ForString("structFieldValue2") },
+                    { "structField3", Value.ForString("structFieldValue3") },
+                },
+            };
+
+            const string expectedJson = @"
+{
+  'structField1': 'structFieldValue1',
+  'structField2': 'structFieldValue2',
+  'structField3': 'structFieldValue3'
+}";
+            AssertWriteValue(value, expectedJson, JsonFormatter.Settings.Default.WithIndentation());
+        }
+
+        [Test]
+        public void FormatWithIndentation_EmbeddedMessage()
+        {
+            var value = new TestAllTypes { SingleInt32 = 100, SingleInt64 = 3210987654321L };
+            var formatter = new JsonFormatter(JsonFormatter.Settings.Default.WithIndentation());
+            var valueJson = formatter.Format(value, indentationLevel: 1);
+
+            var actualJson = $@"
+{{
+  ""data"": {valueJson}
+}}";
+            const string expectedJson = @"
+{
+  'data': {
+    'singleInt32': 100,
+    'singleInt64': '3210987654321'
+  }
+}";
+            AssertJson(expectedJson, actualJson.Trim());
+        }
+
+        [Test]
+        public void WriteValueWithIndentation_Map()
+        {
+            var value = new TestMap
+            {
+                MapStringString =
+                {
+                    { "key1", "value1" },
+                    { "key2", "value2" },
+                },
+            };
+
+            const string expectedJson = @"
+{
+  'mapStringString': {
+    'key1': 'value1',
+    'key2': 'value2'
+  }
+}";
+
+            AssertWriteValue(value, expectedJson, JsonFormatter.Settings.Default.WithIndentation());
+        }
+
+        [Test]
+        public void WriteValueWithIndentation_List()
+        {
+            var value = new RepeatedField<int> { 1, 2, 3 };
+            AssertWriteValue(value, "[\n  1,\n  2,\n  3\n]", JsonFormatter.Settings.Default.WithIndentation());
+        }
+
+        [Test]
+        public void WriteValueWithIndentation_CustomIndentation()
+        {
+            var value = new RepeatedField<int> { 1, 2, 3 };
+            AssertWriteValue(value, "[\n\t1,\n\t2,\n\t3\n]", JsonFormatter.Settings.Default.WithIndentation("\t"));
+        }
+
+        [Test]
         public void Proto2_DefaultValuesWritten()
         {
             var value = new ProtobufTestMessages.Proto2.TestAllTypesProto2() { FieldName13 = 0 };
@@ -683,7 +877,7 @@ namespace Google.Protobuf
 
         private static void AssertWriteValue(object value, string expectedJson, JsonFormatter.Settings settings = null)
         {
-            var writer = new StringWriter();
+            var writer = new StringWriter { NewLine = "\n" };
             new JsonFormatter(settings ?? JsonFormatter.Settings.Default).WriteValue(writer, value);
             string actual = writer.ToString();
             AssertJson(expectedJson, actual);
@@ -691,13 +885,17 @@ namespace Google.Protobuf
 
         /// <summary>
         /// Checks that the actual JSON is the same as the expected JSON - but after replacing
-        /// all apostrophes in the expected JSON with double quotes. This basically makes the tests easier
-        /// to read.
+        /// all apostrophes in the expected JSON with double quotes, trimming leading whitespace and normalizing new lines.
+        /// This basically makes the tests easier to read.
         /// </summary>
+        /// <remarks>
+        /// Line endings are normalized because indented JSON strings are generated with system-specific line endings,
+        /// while line endings in the test cases are hard-coded, but may be converted during source checkout, depending
+        /// on git settings, causing unpredictability in the test results otherwise.</remarks>
         private static void AssertJson(string expectedJsonWithApostrophes, string actualJson)
         {
-            var expectedJson = expectedJsonWithApostrophes.Replace("'", "\"");
-            Assert.AreEqual(expectedJson, actualJson);
+            var expectedJson = expectedJsonWithApostrophes.Replace("'", "\"").Replace("\r\n", "\n").TrimStart();
+            Assert.AreEqual(expectedJson, actualJson.Replace("\r\n", "\n"));
         }
     }
 }

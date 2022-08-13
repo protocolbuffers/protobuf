@@ -16,7 +16,7 @@ sudo apt-get update
 sudo apt-get -y install unzip
 wget https://github.com/protocolbuffers/protobuf/releases/download/v21.1/protoc-21.1-linux-x86_64.zip
 unzip protoc-21.1-linux-x86_64.zip bin/protoc
-mv bin/protoc ../src/protoc
+mv bin/protoc ../protoc
 python3 -m venv venv
 source venv/bin/activate
 python setup.py install

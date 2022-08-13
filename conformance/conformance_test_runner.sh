@@ -44,13 +44,13 @@ conformance_test_runner=$(rlocation com_google_protobuf/conformance/conformance_
 conformance_testee=$(rlocation $TESTEE)
 args=(--enforce_recommended)
 
-failure_list=$(rlocation $FAILURE_LIST)
-if [ "$failure_list" != "1" ] ; then
+failure_list=$(rlocation $FAILURE_LIST) || unset
+if [ -n "$failure_list" ] ; then
   args+=(--failure_list $failure_list)
 fi
 
-text_format_failure_list=$(rlocation $TEXT_FORMAT_FAILURE_LIST)
-if [ "$text_format_failure_list" != "1" ]; then
+text_format_failure_list=$(rlocation $TEXT_FORMAT_FAILURE_LIST) || unset
+if [ -n "$text_format_failure_list" ]; then
   args+=(--text_format_failure_list $text_format_failure_list)
 fi
 

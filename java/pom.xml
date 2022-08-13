@@ -4,7 +4,7 @@
 
   <groupId>com.google.protobuf</groupId>
   <artifactId>protobuf-parent</artifactId>
-  <version>3.21.3</version>
+  <version>3.21.5</version>
   <packaging>pom</packaging>
 
   <name>Protocol Buffers [Parent]</name>
@@ -33,7 +33,7 @@
     <!-- These are relative to the submodules -->
     <protobuf.basedir>${project.basedir}/../..</protobuf.basedir>
     <protobuf.source.dir>${protobuf.basedir}/src</protobuf.source.dir>
-    <protoc>${protobuf.source.dir}/protoc</protoc>
+    <protoc>${protobuf.basedir}/protoc</protoc>
     <test.proto.dir>src/test/proto</test.proto.dir>
     <generated.sources.dir>${project.build.directory}/generated-sources</generated.sources.dir>
     <generated.testsources.dir>${project.build.directory}/generated-test-sources</generated.testsources.dir>

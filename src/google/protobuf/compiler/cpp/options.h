@@ -85,7 +85,7 @@ struct Options {
   bool profile_driven_inline_string = true;
   bool message_owned_arena_trial = false;
   bool force_split = false;
-  bool profile_driven_split = false;
+  bool profile_driven_split = true;
 #ifdef PROTOBUF_STABLE_EXPERIMENTS
   bool force_eagerly_verified_lazy = true;
   bool force_inline_string = true;

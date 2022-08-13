@@ -6,11 +6,11 @@ load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 load(
     "@rules_pkg//:mappings.bzl",
     "pkg_attributes",
-    "pkg_filegroup",
     "pkg_files",
     "strip_prefix",
 )
 load("@rules_proto//proto:defs.bzl", "proto_library")
+load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 proto_library(
@@ -115,6 +115,17 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+# Test that the protoc binary is built for the correct architecture.
+aarch64_test(
+    name = "protoc_aarch64_test",
+    bazel_binaries = ["//:protoc"],
+)
+
+x86_64_test(
+    name = "protoc_x86_64_test",
+    bazel_binaries = ["//:protoc"],
+)
+
 ################################################################################
 # Tests and support libraries
 ################################################################################
@@ -195,7 +206,8 @@ cc_test(
             "-Wno-deprecated-declarations",
         ],
     }) + [
-        "-DGOOGLE_PROTOBUF_TEST_PLUGIN_PATH=\\\"src/google/protobuf/compiler/test_plugin\\\"",
+        # Note: This only works on Windows with symlinks and runfiles enabled.
+        "-DGOOGLE_PROTOBUF_TEST_PLUGIN_PATH=\\\"$(rootpath :test_plugin)\\\"",
     ],
     data = [
         ":test_plugin",

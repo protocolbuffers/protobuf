@@ -23,6 +23,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
   target_link_libraries(libprotobuf-lite PRIVATE log)
 endif()
 target_include_directories(libprotobuf-lite PUBLIC ${protobuf_SOURCE_DIR}/src)
+target_include_directories(libprotobuf-lite PRIVATE ${ABSL_ROOT_DIR})
 if(protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotobuf-lite
     PUBLIC  PROTOBUF_USE_DLLS
@@ -30,7 +31,6 @@ if(protobuf_BUILD_SHARED_LIBS)
 endif()
 set_target_properties(libprotobuf-lite PROPERTIES
     VERSION ${protobuf_VERSION}
-    SOVERSION 32
     OUTPUT_NAME ${LIB_PREFIX}protobuf-lite
     DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")
 add_library(protobuf::libprotobuf-lite ALIAS libprotobuf-lite)

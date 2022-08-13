@@ -43,13 +43,13 @@ for how to set up the build environment.
 ## Building from a freshly checked-out source
 
 If you just checked out the Protobuf source from github, you need to
-generate the configure script.
+pull in any submodules.
 
 Under the protobuf project directory:
 
 
 ```
-$ ./autogen.sh
+git submodule update --init --recursive
 ```
 
 ### Build the artifact for each platform

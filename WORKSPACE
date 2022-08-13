@@ -9,11 +9,10 @@ local_repository(
 
 http_archive(
     name = "com_google_googletest",
-    sha256 = "9dc9157a9a1551ec7a7e43daea9a694a0bb5fb8bec81235d8a1e6ef64c716dcb",
-    strip_prefix = "googletest-release-1.10.0",
+    sha256 = "ea54c9845568cb31c03f2eddc7a40f7f83912d04ab977ff50ec33278119548dd",
+    strip_prefix = "googletest-4c9a3bb62bf3ba1f1010bf96f9c8ed767b363774",
     urls = [
-        "https://mirror.bazel.build/github.com/google/googletest/archive/release-1.10.0.tar.gz",
-        "https://github.com/google/googletest/archive/release-1.10.0.tar.gz",
+        "https://github.com/google/googletest/archive/4c9a3bb62bf3ba1f1010bf96f9c8ed767b363774.tar.gz",
     ],
 )
 
@@ -29,11 +28,6 @@ http_archive(
 # Load common dependencies.
 load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
 protobuf_deps()
-
-bind(
-    name = "python_headers",
-    actual = "//util/python:python_headers",
-)
 
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 
@@ -69,3 +63,11 @@ kt_register_toolchains()
 
 load("@upb//bazel:workspace_deps.bzl", "upb_deps")
 upb_deps()
+
+load("@upb//bazel:system_python.bzl", "system_python")
+system_python(name = "local_config_python")
+
+bind(
+    name = "python_headers",
+    actual = "@local_config_python//:python_headers",
+)

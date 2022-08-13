@@ -59,7 +59,8 @@ namespace {
 void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
                          int builderBitIndex, const FieldGeneratorInfo* info,
                          ClassNameResolver* name_resolver,
-                         std::map<std::string, std::string>* variables) {
+                         std::map<std::string, std::string>* variables,
+                         Context* context) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["type"] =
@@ -118,10 +119,11 @@ ImmutableMessageFieldLiteGenerator::ImmutableMessageFieldLiteGenerator(
     const FieldDescriptor* descriptor, int messageBitIndex, Context* context)
     : descriptor_(descriptor),
       messageBitIndex_(messageBitIndex),
-      name_resolver_(context->GetNameResolver()) {
+      name_resolver_(context->GetNameResolver()),
+      context_(context) {
   SetMessageVariables(descriptor, messageBitIndex, 0,
                       context->GetFieldGeneratorInfo(descriptor),
-                      name_resolver_, &variables_);
+                      name_resolver_, &variables_, context);
 }
 
 ImmutableMessageFieldLiteGenerator::~ImmutableMessageFieldLiteGenerator() {}
@@ -496,10 +498,12 @@ RepeatedImmutableMessageFieldLiteGenerator::
     RepeatedImmutableMessageFieldLiteGenerator(
         const FieldDescriptor* descriptor, int messageBitIndex,
         Context* context)
-    : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
+    : descriptor_(descriptor),
+      name_resolver_(context->GetNameResolver()),
+      context_(context) {
   SetMessageVariables(descriptor, messageBitIndex, 0,
                       context->GetFieldGeneratorInfo(descriptor),
-                      name_resolver_, &variables_);
+                      name_resolver_, &variables_, context);
 }
 
 RepeatedImmutableMessageFieldLiteGenerator::
@@ -529,6 +533,13 @@ void RepeatedImmutableMessageFieldLiteGenerator::GenerateInterfaceMembers(
 
 void RepeatedImmutableMessageFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
+  if (!context_->options().opensource_runtime) {
+    printer->Print(
+        variables_,
+        "@com.google.protobuf.ProtoField(\n"
+        "  fieldNumber=$number$,\n"
+        "  type=com.google.protobuf.FieldType.$annotation_field_type$)\n");
+  }
   printer->Print(
       variables_,
       "private com.google.protobuf.Internal.ProtobufList<$type$> $name$_;\n");

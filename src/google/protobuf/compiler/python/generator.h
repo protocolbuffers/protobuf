@@ -76,6 +76,10 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
 
   uint64_t GetSupportedFeatures() const override;
 
+  void set_opensource_runtime(bool opensource) {
+    opensource_runtime_ = opensource;
+  }
+
  private:
   void PrintImports() const;
   void PrintFileDescriptor() const;
@@ -128,6 +132,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
       const FieldDescriptor& extension_field) const;
   void FixForeignFieldsInNestedExtensions(const Descriptor& descriptor) const;
 
+  void PrintTopBoilerplate() const;
   void PrintServices() const;
   void PrintServiceDescriptors() const;
   void PrintServiceDescriptor(const ServiceDescriptor& descriptor) const;
@@ -145,6 +150,8 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   std::string ModuleLevelMessageName(const Descriptor& descriptor) const;
   std::string ModuleLevelServiceDescriptorName(
       const ServiceDescriptor& descriptor) const;
+  std::string PublicPackage() const;
+  std::string InternalPackage() const;
 
   template <typename DescriptorT, typename DescriptorProtoT>
   void PrintSerializedPbInterval(const DescriptorT& descriptor,
@@ -170,7 +177,8 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   mutable const FileDescriptor* file_;  // Set in Generate().  Under mutex_.
   mutable std::string file_descriptor_serialized_;
   mutable io::Printer* printer_;  // Set in Generate().  Under mutex_.
-  mutable bool pure_python_workable_;
+
+  bool opensource_runtime_ = true;
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Generator);
 };

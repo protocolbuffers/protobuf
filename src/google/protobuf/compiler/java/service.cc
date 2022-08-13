@@ -68,6 +68,10 @@ void ImmutableServiceGenerator::Generate(io::Printer* printer) {
   WriteServiceDocComment(printer, descriptor_);
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
                                 /* immutable = */ true);
+  if (!context_->options().opensource_runtime) {
+    printer->Print("@com.google.protobuf.Internal.ProtoNonnullApi\n");
+  }
+
   printer->Print(
       "public $static$ abstract class $classname$\n"
       "    implements com.google.protobuf.Service {\n",

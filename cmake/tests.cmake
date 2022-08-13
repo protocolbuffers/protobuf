@@ -78,10 +78,11 @@ endforeach(proto_file)
 
 add_library(protobuf-lite-test-common STATIC
   ${lite_test_util_srcs} ${lite_test_proto_files})
-target_link_libraries(protobuf-lite-test-common ${protobuf_LIB_PROTOBUF_LITE} GTest::gmock)
+target_include_directories(protobuf-lite-test-common PRIVATE ${ABSL_ROOT_DIR})
+target_link_libraries(protobuf-lite-test-common
+  ${protobuf_LIB_PROTOBUF_LITE} ${protobuf_ABSL_USED_TARGETS} GTest::gmock)
 
 set(common_test_files
-  ${lite_test_util_srcs}
   ${test_util_hdrs}
   ${test_util_srcs}
   ${mock_code_generator_srcs}
@@ -90,7 +91,9 @@ set(common_test_files
 
 add_library(protobuf-test-common STATIC
   ${common_test_files} ${tests_proto_files})
-target_link_libraries(protobuf-test-common ${protobuf_LIB_PROTOBUF} GTest::gmock)
+target_include_directories(protobuf-test-common PRIVATE ${ABSL_ROOT_DIR})
+target_link_libraries(protobuf-test-common
+  ${protobuf_LIB_PROTOBUF} ${protobuf_ABSL_USED_TARGETS} GTest::gmock)
 
 set(tests_files
   ${protobuf_test_files}
@@ -131,7 +134,7 @@ if (MSVC)
     /wd4146 # unary minus operator applied to unsigned type, result still unsigned
   )
 endif()
-target_link_libraries(tests protobuf-lite-test-common protobuf-test-common ${protobuf_LIB_PROTOC} ${protobuf_LIB_PROTOBUF_LITE} GTest::gmock_main)
+target_link_libraries(tests protobuf-lite-test-common protobuf-test-common ${protobuf_LIB_PROTOC} ${protobuf_LIB_PROTOBUF} GTest::gmock_main)
 
 set(test_plugin_files
   ${test_plugin_files}
@@ -150,13 +153,11 @@ add_test(NAME lite-test
 
 add_custom_target(check
   COMMAND tests
-  COMMAND lite-test
   DEPENDS tests lite-test test_plugin
   WORKING_DIRECTORY ${protobuf_SOURCE_DIR})
 
 add_test(NAME check
-  COMMAND tests ${protobuf_GTEST_ARGS}
-  WORKING_DIRECTORY "${protobuf_SOURCE_DIR}")
+  COMMAND tests ${protobuf_GTEST_ARGS})
 
 # For test purposes, remove headers that should already be installed.  This
 # prevents accidental conflicts and also version skew (since local headers take
