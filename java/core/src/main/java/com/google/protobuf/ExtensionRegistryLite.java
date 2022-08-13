@@ -123,16 +123,15 @@ public class ExtensionRegistryLite {
    * ExtensionRegistry} (if the full (non-Lite) proto libraries are available).
    */
   public static ExtensionRegistryLite getEmptyRegistry() {
+    if (!doFullRuntimeInheritanceCheck) {
+      return EMPTY_REGISTRY_LITE;
+    }
     ExtensionRegistryLite result = emptyRegistry;
     if (result == null) {
       synchronized (ExtensionRegistryLite.class) {
         result = emptyRegistry;
         if (result == null) {
-          result =
-              emptyRegistry =
-                  doFullRuntimeInheritanceCheck
-                      ? ExtensionRegistryFactory.createEmpty()
-                      : EMPTY_REGISTRY_LITE;
+          result = emptyRegistry = ExtensionRegistryFactory.createEmpty();
         }
       }
     }

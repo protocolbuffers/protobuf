@@ -30,6 +30,7 @@
 
 #include <cstdint>
 #include <numeric>
+#include <type_traits>
 
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/generated_message_tctable_decl.h>
@@ -84,54 +85,11 @@ PROTOBUF_NOINLINE const char* TcParser::ParseLoop(
     // TODO(b/64614992): remove this asm
     asm("" : "+r"(table));
 #endif
-    ptr = TagDispatch(msg, ptr, ctx, table - 1, 0, {});
+    ptr = TagDispatch(msg, ptr, ctx, {}, table - 1, 0);
     if (ptr == nullptr) break;
     if (ctx->LastTag() != 1) break;  // Ended on terminating tag
   }
   return ptr;
-}
-
-  // Dispatch to the designated parse function
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::TagDispatch(
-    PROTOBUF_TC_PARAM_DECL) {
-  const auto coded_tag = UnalignedLoad<uint16_t>(ptr);
-  const size_t idx = coded_tag & table->fast_idx_mask;
-  PROTOBUF_ASSUME((idx & 7) == 0);
-  auto* fast_entry = table->fast_entry(idx >> 3);
-  data = fast_entry->bits;
-  data.data ^= coded_tag;
-  PROTOBUF_MUSTTAIL return fast_entry->target(PROTOBUF_TC_PARAM_PASS);
-}
-
-// We can only safely call from field to next field if the call is optimized
-// to a proper tail call. Otherwise we blow through stack. Clang and gcc
-// reliably do this optimization in opt mode, but do not perform this in debug
-// mode. Luckily the structure of the algorithm is such that it's always
-// possible to just return and use the enclosing parse loop as a trampoline.
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToTagDispatch(
-    PROTOBUF_TC_PARAM_DECL) {
-  constexpr bool always_return = !PROTOBUF_TAILCALL;
-  if (always_return || !ctx->DataAvailable(ptr)) {
-    PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
-  }
-  PROTOBUF_MUSTTAIL return TagDispatch(PROTOBUF_TC_PARAM_PASS);
-}
-
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::ToParseLoop(
-    PROTOBUF_TC_PARAM_DECL) {
-  (void)data;
-  (void)ctx;
-  SyncHasbits(msg, hasbits, table);
-  return ptr;
-}
-
-inline PROTOBUF_ALWAYS_INLINE const char* TcParser::Error(
-    PROTOBUF_TC_PARAM_DECL) {
-  (void)data;
-  (void)ctx;
-  (void)ptr;
-  SyncHasbits(msg, hasbits, table);
-  return nullptr;
 }
 
 // On the fast path, a (matching) 1-byte tag already has the decoded value.
@@ -875,8 +833,31 @@ PROTOBUF_NOINLINE const char* TcParser::SingularVarBigint(
 }
 
 const char* TcParser::FastV8S1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularVarint<bool, uint8_t>(
-      PROTOBUF_TC_PARAM_PASS);
+  // Special case for a varint bool field with a tag of 1 byte:
+  // The coded_tag() field will actually contain the value too and we can check
+  // both at the same time.
+  auto coded_tag = data.coded_tag<uint16_t>();
+  if (PROTOBUF_PREDICT_TRUE(coded_tag == 0x0000 || coded_tag == 0x0100)) {
+    auto& field = RefAt<bool>(msg, data.offset());
+    // Note: we use `data.data` because Clang generates suboptimal code when
+    // using coded_tag.
+    // In x86_64 this uses the CH register to read the second byte out of
+    // `data`.
+    uint8_t value = data.data >> 8;
+    // The assume allows using a mov instead of test+setne.
+    PROTOBUF_ASSUME(value <= 1);
+    field = static_cast<bool>(value);
+
+    ptr += 2;  // Consume the tag and the value.
+    hasbits |= (uint64_t{1} << data.hasbit_idx());
+
+    PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
+  }
+
+  // If it didn't match above either the tag is wrong, or the value is encoded
+  // non-canonically.
+  // Jump to MiniParse as wrong tag is the most probable reason.
+  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
 }
 const char* TcParser::FastV8S2(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return SingularVarint<bool, uint16_t>(

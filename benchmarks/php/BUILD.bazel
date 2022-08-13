@@ -1,0 +1,69 @@
+load("//benchmarks:internal.bzl", "internal_benchmark_test")
+load("//build_defs:internal_shell.bzl", "inline_sh_binary")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+
+# The benchmark binary which can be run over any dataset.
+inline_sh_binary(
+    name = "php_benchmark",
+    testonly = 1,
+    srcs = [
+        "PhpBenchmark.php",
+        "autoload.php",
+    ],
+    cmd = """
+        php -d include_path=benchmarks:php/src \\
+            -d auto_prepend_file=$(rootpath autoload.php) \\
+            $(rootpath PhpBenchmark.php) $$@
+    """,
+    deps = [
+        "//benchmarks:benchmarks_php_proto",
+        "//benchmarks/datasets:php_protos",
+        "//php:source_files",
+    ],
+)
+
+# A pre-configured binary using the checked in datasets.
+internal_benchmark_test(
+    name = "php",
+    args = ["--behavior_prefix='php'"],
+    binary = ":php_benchmark",
+    datasets = ["//benchmarks/datasets:proto3_datasets"],
+    env_vars = ["PROTOBUF_PHP_SRCDIR=php/src"],
+)
+
+# The benchmark binary which can be run over any dataset.
+inline_sh_binary(
+    name = "php_c_benchmark",
+    testonly = 1,
+    srcs = [
+        "PhpBenchmark.php",
+        "//php:extension",
+    ],
+    cmd = """
+        php -d include_path=benchmarks:php/src \\
+            -dextension=$(rootpath //php:extension) \\
+            $(rootpath PhpBenchmark.php) $$@
+    """,
+    deps = [
+        "//benchmarks:benchmarks_php_proto",
+        "//benchmarks/datasets:php_protos",
+    ],
+)
+
+# A pre-configured binary using the checked in datasets.
+internal_benchmark_test(
+    name = "php_c",
+    args = ["--behavior_prefix='php_c'"],
+    binary = ":php_c_benchmark",
+    datasets = ["//benchmarks/datasets:proto3_datasets"],
+    env_vars = ["PROTOBUF_PHP_SRCDIR=php/src"],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["*.php"]) + [
+        "BUILD.bazel",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//benchmarks:__pkg__"],
+)

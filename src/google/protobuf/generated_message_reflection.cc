@@ -39,6 +39,8 @@
 #include <cstdint>
 #include <cstring>
 #include <set>
+#include <string>
+#include <unordered_map>
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
@@ -48,6 +50,8 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/extension_set.h>
+#include <google/protobuf/generated_message_tctable_gen.h>
+#include <google/protobuf/generated_message_tctable_impl.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/inlined_string_field.h>
 #include <google/protobuf/map_field.h>
@@ -287,6 +291,12 @@ Reflection::Reflection(const Descriptor* descriptor,
       message_factory_(factory),
       last_non_weak_field_index_(-1) {
   last_non_weak_field_index_ = descriptor_->field_count() - 1;
+}
+
+Reflection::~Reflection() {
+  // No need to use sized delete. This code path is uncommon and it would not be
+  // worth saving or recalculating the size.
+  ::operator delete(const_cast<internal::TcParseTableBase*>(tcparse_table_));
 }
 
 const UnknownFieldSet& Reflection::GetUnknownFields(
@@ -2514,6 +2524,7 @@ const Type& Reflection::GetRawNonOneof(const Message& message,
 }
 
 void Reflection::PrepareSplitMessageForWrite(Message* message) const {
+  GOOGLE_DCHECK_NE(message, schema_.default_instance_);
   void** split = MutableSplitField(message);
   const void* default_split = GetSplitField(schema_.default_instance_);
   if (*split == default_split) {
@@ -2959,6 +2970,355 @@ const MapFieldBase* Reflection::GetMapData(const Message& message,
   USAGE_CHECK(IsMapFieldInApi(field), "GetMapData",
               "Field is not a map field.");
   return &(GetRaw<MapFieldBase>(message, field));
+}
+
+template <typename T>
+static uint32_t AlignTo(uint32_t v) {
+  return (v + alignof(T) - 1) & ~(alignof(T) - 1);
+}
+
+static internal::TailCallParseFunc GetFastParseFunction(
+    const std::string& name) {
+  // This list must be synchronized with TcParser.
+  // Missing entries are replaced with MiniParse in opt mode to avoid runtime
+  // failures. It check-fails in debug mode.
+  static const auto* const map =
+      new std::unordered_map<std::string, internal::TailCallParseFunc>{
+          {"::_pbi::TcParser::FastF32S1", internal::TcParser::FastF32S1},
+          {"::_pbi::TcParser::FastF32S2", internal::TcParser::FastF32S2},
+          {"::_pbi::TcParser::FastF32R1", internal::TcParser::FastF32R1},
+          {"::_pbi::TcParser::FastF32R2", internal::TcParser::FastF32R2},
+          {"::_pbi::TcParser::FastF32P1", internal::TcParser::FastF32P1},
+          {"::_pbi::TcParser::FastF32P2", internal::TcParser::FastF32P2},
+          {"::_pbi::TcParser::FastF64S1", internal::TcParser::FastF64S1},
+          {"::_pbi::TcParser::FastF64S2", internal::TcParser::FastF64S2},
+          {"::_pbi::TcParser::FastF64R1", internal::TcParser::FastF64R1},
+          {"::_pbi::TcParser::FastF64R2", internal::TcParser::FastF64R2},
+          {"::_pbi::TcParser::FastF64P1", internal::TcParser::FastF64P1},
+          {"::_pbi::TcParser::FastF64P2", internal::TcParser::FastF64P2},
+          {"::_pbi::TcParser::FastV8S1", internal::TcParser::FastV8S1},
+          {"::_pbi::TcParser::FastV8S2", internal::TcParser::FastV8S2},
+          {"::_pbi::TcParser::FastV8R1", internal::TcParser::FastV8R1},
+          {"::_pbi::TcParser::FastV8R2", internal::TcParser::FastV8R2},
+          {"::_pbi::TcParser::FastV8P1", internal::TcParser::FastV8P1},
+          {"::_pbi::TcParser::FastV8P2", internal::TcParser::FastV8P2},
+          {"::_pbi::TcParser::FastV32S1", internal::TcParser::FastV32S1},
+          {"::_pbi::TcParser::FastV32S2", internal::TcParser::FastV32S2},
+          {"::_pbi::TcParser::FastV32R1", internal::TcParser::FastV32R1},
+          {"::_pbi::TcParser::FastV32R2", internal::TcParser::FastV32R2},
+          {"::_pbi::TcParser::FastV32P1", internal::TcParser::FastV32P1},
+          {"::_pbi::TcParser::FastV32P2", internal::TcParser::FastV32P2},
+          {"::_pbi::TcParser::FastV64S1", internal::TcParser::FastV64S1},
+          {"::_pbi::TcParser::FastV64S2", internal::TcParser::FastV64S2},
+          {"::_pbi::TcParser::FastV64R1", internal::TcParser::FastV64R1},
+          {"::_pbi::TcParser::FastV64R2", internal::TcParser::FastV64R2},
+          {"::_pbi::TcParser::FastV64P1", internal::TcParser::FastV64P1},
+          {"::_pbi::TcParser::FastV64P2", internal::TcParser::FastV64P2},
+          {"::_pbi::TcParser::FastZ32S1", internal::TcParser::FastZ32S1},
+          {"::_pbi::TcParser::FastZ32S2", internal::TcParser::FastZ32S2},
+          {"::_pbi::TcParser::FastZ32R1", internal::TcParser::FastZ32R1},
+          {"::_pbi::TcParser::FastZ32R2", internal::TcParser::FastZ32R2},
+          {"::_pbi::TcParser::FastZ32P1", internal::TcParser::FastZ32P1},
+          {"::_pbi::TcParser::FastZ32P2", internal::TcParser::FastZ32P2},
+          {"::_pbi::TcParser::FastZ64S1", internal::TcParser::FastZ64S1},
+          {"::_pbi::TcParser::FastZ64S2", internal::TcParser::FastZ64S2},
+          {"::_pbi::TcParser::FastZ64R1", internal::TcParser::FastZ64R1},
+          {"::_pbi::TcParser::FastZ64R2", internal::TcParser::FastZ64R2},
+          {"::_pbi::TcParser::FastZ64P1", internal::TcParser::FastZ64P1},
+          {"::_pbi::TcParser::FastZ64P2", internal::TcParser::FastZ64P2},
+          {"::_pbi::TcParser::FastErS1", internal::TcParser::FastErS1},
+          {"::_pbi::TcParser::FastErS2", internal::TcParser::FastErS2},
+          {"::_pbi::TcParser::FastErR1", internal::TcParser::FastErR1},
+          {"::_pbi::TcParser::FastErR2", internal::TcParser::FastErR2},
+          {"::_pbi::TcParser::FastEr0S1", internal::TcParser::FastEr0S1},
+          {"::_pbi::TcParser::FastEr0S2", internal::TcParser::FastEr0S2},
+          {"::_pbi::TcParser::FastEr0R1", internal::TcParser::FastEr0R1},
+          {"::_pbi::TcParser::FastEr0R2", internal::TcParser::FastEr0R2},
+          {"::_pbi::TcParser::FastEr1S1", internal::TcParser::FastEr1S1},
+          {"::_pbi::TcParser::FastEr1S2", internal::TcParser::FastEr1S2},
+          {"::_pbi::TcParser::FastEr1R1", internal::TcParser::FastEr1R1},
+          {"::_pbi::TcParser::FastEr1R2", internal::TcParser::FastEr1R2},
+          {"::_pbi::TcParser::FastEvS1", internal::TcParser::FastEvS1},
+          {"::_pbi::TcParser::FastEvS2", internal::TcParser::FastEvS2},
+          {"::_pbi::TcParser::FastEvR1", internal::TcParser::FastEvR1},
+          {"::_pbi::TcParser::FastEvR2", internal::TcParser::FastEvR2},
+          {"::_pbi::TcParser::FastBS1", internal::TcParser::FastBS1},
+          {"::_pbi::TcParser::FastBS2", internal::TcParser::FastBS2},
+          {"::_pbi::TcParser::FastBR1", internal::TcParser::FastBR1},
+          {"::_pbi::TcParser::FastBR2", internal::TcParser::FastBR2},
+          {"::_pbi::TcParser::FastSS1", internal::TcParser::FastSS1},
+          {"::_pbi::TcParser::FastSS2", internal::TcParser::FastSS2},
+          {"::_pbi::TcParser::FastSR1", internal::TcParser::FastSR1},
+          {"::_pbi::TcParser::FastSR2", internal::TcParser::FastSR2},
+          {"::_pbi::TcParser::FastUS1", internal::TcParser::FastUS1},
+          {"::_pbi::TcParser::FastUS2", internal::TcParser::FastUS2},
+          {"::_pbi::TcParser::FastUR1", internal::TcParser::FastUR1},
+          {"::_pbi::TcParser::FastUR2", internal::TcParser::FastUR2},
+          {"::_pbi::TcParser::FastBiS1", internal::TcParser::FastBiS1},
+          {"::_pbi::TcParser::FastBiS2", internal::TcParser::FastBiS2},
+          {"::_pbi::TcParser::FastSiS1", internal::TcParser::FastSiS1},
+          {"::_pbi::TcParser::FastSiS2", internal::TcParser::FastSiS2},
+          {"::_pbi::TcParser::FastUiS1", internal::TcParser::FastUiS1},
+          {"::_pbi::TcParser::FastUiS2", internal::TcParser::FastUiS2},
+          {"::_pbi::TcParser::FastMdS1", internal::TcParser::FastMdS1},
+          {"::_pbi::TcParser::FastMdS2", internal::TcParser::FastMdS2},
+          {"::_pbi::TcParser::FastGdS1", internal::TcParser::FastGdS1},
+          {"::_pbi::TcParser::FastGdS2", internal::TcParser::FastGdS2},
+          {"::_pbi::TcParser::FastMtS1", internal::TcParser::FastMtS1},
+          {"::_pbi::TcParser::FastMtS2", internal::TcParser::FastMtS2},
+          {"::_pbi::TcParser::FastGtS1", internal::TcParser::FastGtS1},
+          {"::_pbi::TcParser::FastGtS2", internal::TcParser::FastGtS2},
+          {"::_pbi::TcParser::FastMdR1", internal::TcParser::FastMdR1},
+          {"::_pbi::TcParser::FastMdR2", internal::TcParser::FastMdR2},
+          {"::_pbi::TcParser::FastGdR1", internal::TcParser::FastGdR1},
+          {"::_pbi::TcParser::FastGdR2", internal::TcParser::FastGdR2},
+          {"::_pbi::TcParser::FastMtR1", internal::TcParser::FastMtR1},
+          {"::_pbi::TcParser::FastMtR2", internal::TcParser::FastMtR2},
+          {"::_pbi::TcParser::FastGtR1", internal::TcParser::FastGtR1},
+          {"::_pbi::TcParser::FastGtR2", internal::TcParser::FastGtR2},
+      };
+  auto it = map->find(name);
+  if (it == map->end()) {
+    GOOGLE_LOG(DFATAL) << "Failed to find function: " << name;
+    // Let's not crash in opt, just in case.
+    // MiniParse is always a valid parser.
+    return &internal::TcParser::MiniParse;
+  }
+  return it->second;
+}
+
+const internal::TcParseTableBase* Reflection::CreateTcParseTableForMessageSet()
+    const {
+  // ParseLoop can't parse message set wire format.
+  // Create a dummy table that only exists to make TcParser::ParseLoop jump
+  // into the reflective parse loop.
+
+  using Table = internal::TcParseTable<0, 0, 0, 1, 1>;
+  // We use `operator new` here because the destruction will be done with
+  // `operator delete` unconditionally.
+  void* p = ::operator new(sizeof(Table));
+  auto* full_table = ::new (p) Table{
+      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, schema_.default_instance_, nullptr},
+      {{{&internal::TcParser::ReflectionParseLoop, {}}}}};
+  GOOGLE_DCHECK_EQ(static_cast<void*>(&full_table->header),
+            static_cast<void*>(full_table));
+  return &full_table->header;
+}
+
+void Reflection::PopulateTcParseFastEntries(
+    const internal::TailCallTableInfo& table_info,
+    TcParseTableBase::FastFieldEntry* fast_entries) const {
+  for (const auto& fast_field : table_info.fast_path_fields) {
+    if (fast_field.field == nullptr) {
+      // No fast entry here. Use mini parser.
+      *fast_entries++ = {internal::TcParser::MiniParse, {}};
+    } else if (fast_field.func_name.find("TcParser::FastEv") !=
+               fast_field.func_name.npos) {
+      // We can't use fast parsing for these entries because we can't specify
+      // the validator. Use the reflection based parser called from MiniParse.
+      // TODO(b/239592582): Implement a fast parser for these enums.
+      *fast_entries++ = {internal::TcParser::MiniParse, {}};
+    } else {
+      *fast_entries++ = {
+          GetFastParseFunction(fast_field.func_name),
+          {fast_field.coded_tag, fast_field.hasbit_idx, fast_field.aux_idx,
+           static_cast<uint16_t>(schema_.GetFieldOffset(fast_field.field))}};
+    }
+  }
+}
+
+static void PopulateTcParseLookupTable(
+    const internal::TailCallTableInfo& table_info, uint16_t* lookup_table) {
+  for (const auto& entry_block : table_info.num_to_entry_table.blocks) {
+    *lookup_table++ = entry_block.first_fnum & 0xFFFF;
+    *lookup_table++ = entry_block.first_fnum >> 16;
+    *lookup_table++ = entry_block.entries.size();
+    for (auto se16 : entry_block.entries) {
+      *lookup_table++ = se16.skipmap;
+      *lookup_table++ = se16.field_entry_offset;
+    }
+  }
+  *lookup_table++ = 0xFFFF;
+  *lookup_table++ = 0xFFFF;
+}
+
+void Reflection::PopulateTcParseEntries(
+    internal::TailCallTableInfo& table_info,
+    TcParseTableBase::FieldEntry* entries) const {
+  for (const auto& entry : table_info.field_entries) {
+    const FieldDescriptor* field = entry.field;
+    if (field->options().weak()) {
+      // Weak fields are handled by the generated fallback function.
+      // (These are handled by legacy Google-internal logic.)
+      *entries = {};
+    } else if (field->type() == field->TYPE_ENUM &&
+               table_info.aux_entries[entry.aux_idx].type ==
+                   internal::TailCallTableInfo::kEnumValidator) {
+      // Mini parse can't handle it. Fallback to reflection.
+      *entries = {};
+      table_info.aux_entries[entry.aux_idx] = {};
+    } else {
+      const OneofDescriptor* oneof = field->real_containing_oneof();
+      entries->offset = schema_.GetFieldOffset(field);
+      if (oneof != nullptr) {
+        entries->has_idx = schema_.oneof_case_offset_ + 4 * oneof->index();
+      } else if (schema_.HasHasbits()) {
+        entries->has_idx =
+            static_cast<int>(8 * schema_.HasBitsOffset() + entry.hasbit_idx);
+      } else {
+        entries->has_idx = 0;
+      }
+      entries->aux_idx = entry.aux_idx;
+      entries->type_card = entry.type_card;
+    }
+
+    ++entries;
+  }
+}
+
+void Reflection::PopulateTcParseFieldAux(
+    const internal::TailCallTableInfo& table_info,
+    TcParseTableBase::FieldAux* field_aux) const {
+  for (const auto& aux_entry : table_info.aux_entries) {
+    switch (aux_entry.type) {
+      case internal::TailCallTableInfo::kNothing:
+        *field_aux++ = {};
+        break;
+      case internal::TailCallTableInfo::kInlinedStringDonatedOffset:
+        field_aux++->offset =
+            static_cast<uint32_t>(schema_.inlined_string_donated_offset_);
+        break;
+      case internal::TailCallTableInfo::kSplitOffset:
+        field_aux++->offset = schema_.SplitOffset();
+        break;
+      case internal::TailCallTableInfo::kSplitSizeof:
+        field_aux++->offset = schema_.SizeofSplit();
+        break;
+      case internal::TailCallTableInfo::kSubTable:
+        GOOGLE_LOG(FATAL) << "Not supported";
+        break;
+      case internal::TailCallTableInfo::kSubMessage:
+        field_aux++->message_default_p =
+            GetDefaultMessageInstance(aux_entry.field);
+        break;
+      case internal::TailCallTableInfo::kEnumRange:
+        field_aux++->enum_range = {aux_entry.enum_range.start,
+                                   aux_entry.enum_range.size};
+        break;
+      case internal::TailCallTableInfo::kEnumValidator:
+        GOOGLE_LOG(FATAL) << "Not supported.";
+        break;
+      case internal::TailCallTableInfo::kNumericOffset:
+        field_aux++->offset = aux_entry.offset;
+        break;
+    }
+  }
+}
+
+const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
+  using TcParseTableBase = internal::TcParseTableBase;
+
+  if (descriptor_->options().message_set_wire_format()) {
+    return CreateTcParseTableForMessageSet();
+  }
+
+  std::vector<const FieldDescriptor*> fields;
+  constexpr int kNoHasbit = -1;
+  std::vector<int> has_bit_indices(
+      static_cast<size_t>(descriptor_->field_count()), kNoHasbit);
+  std::vector<int> inlined_string_indices = has_bit_indices;
+  for (int i = 0; i < descriptor_->field_count(); ++i) {
+    auto* field = descriptor_->field(i);
+    if (schema_.IsFieldStripped(field)) continue;
+
+    fields.push_back(field);
+    has_bit_indices[static_cast<size_t>(field->index())] =
+        static_cast<int>(schema_.HasBitIndex(field));
+
+    if (IsInlined(field)) {
+      inlined_string_indices[static_cast<size_t>(field->index())] =
+          schema_.InlinedStringIndex(field);
+    }
+  }
+  std::sort(fields.begin(), fields.end(),
+            [](const FieldDescriptor* a, const FieldDescriptor* b) {
+              return a->number() < b->number();
+            });
+
+  class ReflectionOptionProvider final
+      : public internal::TailCallTableInfo::OptionProvider {
+   public:
+    explicit ReflectionOptionProvider(const Reflection& ref) : ref_(ref) {}
+    internal::TailCallTableInfo::PerFieldOptions GetForField(
+        const FieldDescriptor* field) const final {
+      return {ref_.IsLazyField(field),  //
+              ref_.IsInlined(field),    //
+
+              // Only LITE can be implicitly weak.
+              /* is_implicitly_weak */ false,
+
+              // We could change this to use direct table.
+              // Might be easier to do when all messages support TDP.
+              /* use_direct_tcparser_table */ false,
+
+              /* is_lite */ false,  //
+              ref_.schema_.IsSplit(field)};
+    }
+
+   private:
+    const Reflection& ref_;
+  };
+  internal::TailCallTableInfo table_info(
+      descriptor_, fields, ReflectionOptionProvider(*this), has_bit_indices,
+      inlined_string_indices);
+
+  const size_t fast_entries_count = table_info.fast_path_fields.size();
+  GOOGLE_CHECK_EQ(fast_entries_count, 1 << table_info.table_size_log2);
+  const uint16_t lookup_table_offset = AlignTo<uint16_t>(
+      sizeof(TcParseTableBase) +
+      fast_entries_count * sizeof(TcParseTableBase::FastFieldEntry));
+  const uint32_t field_entry_offset = AlignTo<TcParseTableBase::FieldEntry>(
+      lookup_table_offset +
+      sizeof(uint16_t) * table_info.num_to_entry_table.size16());
+  const uint32_t aux_offset = AlignTo<TcParseTableBase::FieldAux>(
+      field_entry_offset +
+      sizeof(TcParseTableBase::FieldEntry) * fields.size());
+
+  int byte_size =
+      aux_offset +
+      sizeof(TcParseTableBase::FieldAux) * table_info.aux_entries.size() +
+      sizeof(char) * table_info.field_name_data.size();
+
+  void* p = ::operator new(byte_size);
+  auto* res = ::new (p) TcParseTableBase{
+      static_cast<uint16_t>(schema_.HasHasbits() ? schema_.HasBitsOffset() : 0),
+      // extensions handled through reflection.
+      0, 0, 0,
+      static_cast<uint32_t>(fields.empty() ? 0 : fields.back()->number()),
+      static_cast<uint8_t>((fast_entries_count - 1) << 3), lookup_table_offset,
+      table_info.num_to_entry_table.skipmap32, field_entry_offset,
+      static_cast<uint16_t>(fields.size()),
+      static_cast<uint16_t>(table_info.aux_entries.size()), aux_offset,
+      schema_.default_instance_, &internal::TcParser::ReflectionFallback};
+
+  // Now copy the rest of the payloads
+  PopulateTcParseFastEntries(table_info, res->fast_entry(0));
+
+  PopulateTcParseLookupTable(table_info, res->field_lookup_begin());
+
+  PopulateTcParseEntries(table_info, res->field_entries_begin());
+
+  PopulateTcParseFieldAux(table_info, res->field_aux(0u));
+
+  // Copy the name data.
+  memcpy(res->name_data(), table_info.field_name_data.data(),
+         table_info.field_name_data.size());
+  // Validation to make sure we used all the bytes correctly.
+  GOOGLE_CHECK_EQ(res->name_data() + table_info.field_name_data.size() -
+               reinterpret_cast<char*>(res),
+           byte_size);
+
+  return res;
 }
 
 namespace {

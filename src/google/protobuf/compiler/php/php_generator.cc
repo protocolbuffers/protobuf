@@ -421,12 +421,17 @@ std::string LegacyGeneratedClassFileName(const DescriptorType* desc,
 }
 
 template <typename DescriptorType>
-std::string LegacyReadOnlyGeneratedClassFileName(const DescriptorType* desc,
-                                                 const Options& options) {
-  std::string php_namespace = RootPhpNamespace(desc, options);
+std::string LegacyReadOnlyGeneratedClassFileName(std::string php_namespace,
+                                                 const DescriptorType* desc) {
   if (!php_namespace.empty()) {
+    for (int i = 0; i < php_namespace.size(); i++) {
+      if (php_namespace[i] == '\\') {
+        php_namespace[i] = '/';
+      }
+    }
     return php_namespace + "/" + desc->name() + ".php";
   }
+
   return desc->name() + ".php";
 }
 
@@ -1316,27 +1321,39 @@ template <typename DescriptorType>
 void LegacyReadOnlyGenerateClassFile(const FileDescriptor* file,
                              const DescriptorType* desc, const Options& options,
                              GeneratorContext* generator_context) {
-  std::string filename = LegacyReadOnlyGeneratedClassFileName(desc, options);
+  std::string fullname = FullClassName(desc, options);
+  std::string php_namespace;
+  std::string classname;
+  int lastindex = fullname.find_last_of("\\");
+
+  if (lastindex != std::string::npos) {
+    php_namespace = fullname.substr(0, lastindex);
+    classname = fullname.substr(lastindex + 1);
+  } else {
+    php_namespace = "";
+    classname = fullname;
+  }
+
+  std::string filename = LegacyReadOnlyGeneratedClassFileName(php_namespace, desc);
   std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
   io::Printer printer(output.get(), '^');
 
   GenerateHead(file, &printer);
 
-  std::string php_namespace = RootPhpNamespace(desc, options);
   if (!php_namespace.empty()) {
     printer.Print(
         "namespace ^name^;\n\n",
         "name", php_namespace);
   }
-  std::string newname = FullClassName(desc, options);
+
   printer.Print("class_exists(^new^::class); // autoload the new class, which "
       "will also create an alias to the deprecated class\n",
-      "new", GeneratedClassNameImpl(desc));
+      "new", classname);
   printer.Print("@trigger_error(__NAMESPACE__ . '\\^old^ is deprecated and will be removed in "
       "the next major release. Use ^fullname^ instead', E_USER_DEPRECATED);\n\n",
       "old", desc->name(),
-      "fullname", newname);
+      "fullname", classname);
 }
 
 void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,

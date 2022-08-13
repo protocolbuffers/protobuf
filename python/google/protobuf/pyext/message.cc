@@ -88,6 +88,9 @@
               : 0)                                               \
        : PyBytes_AsStringAndSize(ob, (charpp), (sizep)))
 
+#define PROTOBUF_PYTHON_PUBLIC "google.protobuf"
+#define PROTOBUF_PYTHON_INTERNAL "google.protobuf.internal"
+
 namespace google {
 namespace protobuf {
 namespace python {
@@ -246,8 +249,8 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   ScopedPyObjectPtr new_args;
 
   if (WKT_classes == nullptr) {
-    ScopedPyObjectPtr well_known_types(PyImport_ImportModule(
-        "google.protobuf.internal.well_known_types"));
+    ScopedPyObjectPtr well_known_types(
+        PyImport_ImportModule(PROTOBUF_PYTHON_INTERNAL ".well_known_types"));
     GOOGLE_DCHECK(well_known_types != nullptr);
 
     WKT_classes = PyObject_GetAttrString(well_known_types.get(), "WKTBASES");
@@ -2372,7 +2375,7 @@ PyObject* DeepCopy(CMessage* self, PyObject* arg) {
 PyObject* ToUnicode(CMessage* self) {
   // Lazy import to prevent circular dependencies
   ScopedPyObjectPtr text_format(
-      PyImport_ImportModule("google.protobuf.text_format"));
+      PyImport_ImportModule(PROTOBUF_PYTHON_PUBLIC ".text_format"));
   if (text_format == nullptr) {
     return nullptr;
   }
@@ -3034,8 +3037,8 @@ bool InitProto2MessageModule(PyObject *m) {
   PyModule_AddObject(m, "MethodDescriptor",
                      reinterpret_cast<PyObject*>(&PyMethodDescriptor_Type));
 
-  PyObject* enum_type_wrapper = PyImport_ImportModule(
-      "google.protobuf.internal.enum_type_wrapper");
+  PyObject* enum_type_wrapper =
+      PyImport_ImportModule(PROTOBUF_PYTHON_INTERNAL ".enum_type_wrapper");
   if (enum_type_wrapper == nullptr) {
     return false;
   }
@@ -3043,8 +3046,8 @@ bool InitProto2MessageModule(PyObject *m) {
       PyObject_GetAttrString(enum_type_wrapper, "EnumTypeWrapper");
   Py_DECREF(enum_type_wrapper);
 
-  PyObject* message_module = PyImport_ImportModule(
-      "google.protobuf.message");
+  PyObject* message_module =
+      PyImport_ImportModule(PROTOBUF_PYTHON_PUBLIC ".message");
   if (message_module == nullptr) {
     return false;
   }

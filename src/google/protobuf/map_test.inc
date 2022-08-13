@@ -810,6 +810,8 @@ TEST_F(MapImplTest, Emplace) {
       m, UnorderedElementsAre(Pair(1, "one"), Pair(2, "two"), Pair(42, "aaa")));
 }
 
+#ifndef PROTOBUF_FUTURE_MAP_PAIR_UPGRADE
+
 TEST_F(MapImplTest, EmplaceKeyOnly) {
   using ::testing::Pair;
   using ::testing::UnorderedElementsAre;
@@ -823,6 +825,43 @@ TEST_F(MapImplTest, EmplaceKeyOnly) {
   m.emplace(key);
   EXPECT_THAT(m, UnorderedElementsAre(Pair(1, ""), Pair(42, "")));
 }
+
+#else
+
+TEST_F(MapImplTest, ValueTypeNoImplicitConversion) {
+  using vt = typename Map<const char*, int>::value_type;
+
+  EXPECT_FALSE((std::is_convertible<
+                vt, std::pair<std::string, std::vector<std::string>>>::value));
+}
+
+enum class ConstructorType {
+  kDefault,
+  kCopy,
+  kMove,
+};
+
+struct ConstructorTag {
+  ConstructorTag() : invoked_constructor(ConstructorType::kDefault) {}
+  ConstructorTag(const ConstructorTag&)
+      : invoked_constructor(ConstructorType::kCopy) {}
+  ConstructorTag(ConstructorTag&&)
+      : invoked_constructor(ConstructorType::kMove) {}
+
+  ConstructorType invoked_constructor;
+};
+
+TEST_F(MapImplTest, ValueTypeHasMoveConstructor) {
+  using vt = typename Map<ConstructorTag, ConstructorTag>::value_type;
+  ConstructorTag l, r;
+
+  vt pair(l, std::move(r));
+
+  EXPECT_EQ(pair.first.invoked_constructor, ConstructorType::kCopy);
+  EXPECT_EQ(pair.second.invoked_constructor, ConstructorType::kMove);
+}
+
+#endif  // !PROTOBUF_FUTURE_MAP_PAIR_UPGRADE
 
 struct CountedInstance {
   CountedInstance() { ++num_created; }

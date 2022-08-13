@@ -261,6 +261,9 @@ int ImmutableMessageGenerator::GenerateFieldAccessorTableInitializer(
 void ImmutableMessageGenerator::GenerateInterface(io::Printer* printer) {
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
                                 /* immutable = */ true, "OrBuilder");
+  if (!context_->options().opensource_runtime) {
+    printer->Print("@com.google.protobuf.Internal.ProtoNonnullApi\n");
+  }
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
         "$deprecation$public interface ${$$classname$OrBuilder$}$ extends\n"
@@ -320,6 +323,10 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   WriteMessageDocComment(printer, descriptor_);
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
                                 /* immutable = */ true);
+  if (!context_->options().opensource_runtime) {
+    printer->Print("@com.google.protobuf.Internal.ProtoNonnullApi\n");
+  }
+
   // The builder_type stores the super type name of the nested Builder class.
   std::string builder_type;
   if (descriptor_->extension_range_count() > 0) {
@@ -458,18 +465,22 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
                    "private $oneof_capitalized_name$Case(int value) {\n"
                    "  this.value = value;\n"
                    "}\n");
+    if (context_->options().opensource_runtime) {
+      printer->Print(
+          vars,
+          "/**\n"
+          " * @param value The number of the enum to look for.\n"
+          " * @return The enum associated with the given number.\n"
+          " * @deprecated Use {@link #forNumber(int)} instead.\n"
+          " */\n"
+          "@java.lang.Deprecated\n"
+          "public static $oneof_capitalized_name$Case valueOf(int value) {\n"
+          "  return forNumber(value);\n"
+          "}\n"
+          "\n");
+    }
     printer->Print(
         vars,
-        "/**\n"
-        " * @param value The number of the enum to look for.\n"
-        " * @return The enum associated with the given number.\n"
-        " * @deprecated Use {@link #forNumber(int)} instead.\n"
-        " */\n"
-        "@java.lang.Deprecated\n"
-        "public static $oneof_capitalized_name$Case valueOf(int value) {\n"
-        "  return forNumber(value);\n"
-        "}\n"
-        "\n"
         "public static $oneof_capitalized_name$Case forNumber(int value) {\n"
         "  switch (value) {\n");
     for (int j = 0; j < (oneof)->field_count(); j++) {
@@ -982,6 +993,10 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
   printer->Print(
       "@java.lang.Override\n"
       "public boolean equals(");
+  if (!context_->options().opensource_runtime) {
+    printer->Print(
+        "@com.google.protobuf.Internal.ProtoMethodAcceptsNullParameter\n");
+  }
   printer->Print("final java.lang.Object obj) {\n");
   printer->Indent();
   printer->Print(
@@ -1440,8 +1455,15 @@ void ImmutableMessageGenerator::GenerateKotlinDsl(io::Printer* printer) const {
 
 void ImmutableMessageGenerator::GenerateKotlinMembers(
     io::Printer* printer) const {
+  printer->Print("@kotlin.jvm.JvmName(\"-initialize$camelcase_name$\")\n",
+                 "camelcase_name",
+                 name_resolver_->GetKotlinFactoryName(descriptor_));
+
+  if (!context_->options().opensource_runtime) {
+    printer->Print("@com.google.errorprone.annotations.CheckReturnValue\n");
+  }
+
   printer->Print(
-      "@kotlin.jvm.JvmName(\"-initialize$camelcase_name$\")\n"
       "inline fun $camelcase_name$(block: $message_kt$.Dsl.() -> "
       "kotlin.Unit): "
       "$message$ "
@@ -1470,8 +1492,13 @@ void ImmutableMessageGenerator::GenerateKotlinMembers(
 
 void ImmutableMessageGenerator::GenerateTopLevelKotlinMembers(
     io::Printer* printer) const {
+  printer->Print("@kotlin.jvm.JvmSynthetic\n");
+
+  if (context_->options().opensource_runtime) {
+    printer->Print("@com.google.errorprone.annotations.CheckReturnValue\n");
+  }
+
   printer->Print(
-      "@kotlin.jvm.JvmSynthetic\n"
       "inline fun $message$.copy(block: $message_kt$.Dsl.() -> "
       "kotlin.Unit): $message$ =\n"
       "  $message_kt$.Dsl._create(this.toBuilder()).apply { block() "
@@ -1716,7 +1743,8 @@ void ImmutableMessageGenerator::GenerateAnyMethods(io::Printer* printer) {
       "@java.lang.SuppressWarnings(\"unchecked\")\n"
       "public <T extends com.google.protobuf.Message> T unpack(\n"
       "    java.lang.Class<T> clazz)\n"
-      "    throws com.google.protobuf.InvalidProtocolBufferException {\n"
+      "    throws com.google.protobuf.InvalidProtocolBufferException {\n");
+  printer->Print(
       "  boolean invalidClazz = false;\n"
       "  if (cachedUnpackValue != null) {\n"
       "    if (cachedUnpackValue.getClass() == clazz) {\n"

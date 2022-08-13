@@ -63,7 +63,7 @@
 #include <vector>
 
 #include <google/protobuf/stubs/stringprintf.h>
-#include "conformance.pb.h"
+#include "conformance/conformance.pb.h"
 #include "conformance_test.h"
 
 using conformance::ConformanceResponse;

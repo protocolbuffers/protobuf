@@ -66,8 +66,9 @@ const char kThinSeparator[] =
     "// -------------------------------------------------------------------\n";
 
 namespace {
-
-const char* kDefaultPackage = "";
+const char* DefaultPackage(Options options) {
+  return options.opensource_runtime ? "" : "com.google.protos";
+}
 
 // Names that should be avoided (in UpperCamelCase format).
 // Using them will cause the compiler to generate accessors whose names
@@ -136,7 +137,8 @@ std::string FieldName(const FieldDescriptor* field) {
 }  // namespace
 
 void PrintGeneratedAnnotation(io::Printer* printer, char delimiter,
-                              const std::string& annotation_file) {
+                              const std::string& annotation_file,
+                              Options options) {
   if (annotation_file.empty()) {
     return;
   }
@@ -305,17 +307,17 @@ std::string CamelCaseFieldName(const FieldDescriptor* field) {
 }
 
 std::string FileClassName(const FileDescriptor* file, bool immutable) {
-  ClassNameResolver name_resolver;
-  return name_resolver.GetFileClassName(file, immutable);
+  return ClassNameResolver().GetFileClassName(file, immutable);
 }
 
-std::string FileJavaPackage(const FileDescriptor* file, bool immutable) {
+std::string FileJavaPackage(const FileDescriptor* file, bool immutable,
+                            Options options) {
   std::string result;
 
   if (file->options().has_java_package()) {
     result = file->options().java_package();
   } else {
-    result = kDefaultPackage;
+    result = DefaultPackage(options);
     if (!file->package().empty()) {
       if (!result.empty()) result += '.';
       result += file->package();
@@ -325,8 +327,8 @@ std::string FileJavaPackage(const FileDescriptor* file, bool immutable) {
   return result;
 }
 
-std::string FileJavaPackage(const FileDescriptor* file) {
-  return FileJavaPackage(file, true /* immutable */);
+std::string FileJavaPackage(const FileDescriptor* file, Options options) {
+  return FileJavaPackage(file, true /* immutable */, options);
 }
 
 std::string JavaPackageToDir(std::string package_name) {
@@ -532,7 +534,7 @@ std::string GetOneofStoredType(const FieldDescriptor* field) {
     case JAVATYPE_ENUM:
       return "java.lang.Integer";
     case JAVATYPE_MESSAGE:
-      return ClassName(field->message_type());
+      return ClassNameResolver().GetClassName(field->message_type(), true);
     default:
       return BoxedPrimitiveTypeName(javaType);
   }
@@ -595,7 +597,7 @@ bool AllAscii(const std::string& text) {
 }
 
 std::string DefaultValue(const FieldDescriptor* field, bool immutable,
-                         ClassNameResolver* name_resolver) {
+                         ClassNameResolver* name_resolver, Options options) {
   // Switch on CppType since we need to know which default_value_* method
   // of FieldDescriptor to call.
   switch (field->cpp_type()) {
@@ -819,7 +821,8 @@ bool IsReferenceType(JavaType type) {
   return false;
 }
 
-const char* GetCapitalizedType(const FieldDescriptor* field, bool immutable) {
+const char* GetCapitalizedType(const FieldDescriptor* field, bool immutable,
+                               Options options) {
   switch (GetType(field)) {
     case FieldDescriptor::TYPE_INT32:
       return "Int32";

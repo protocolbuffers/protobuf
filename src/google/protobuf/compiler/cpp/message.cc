@@ -37,8 +37,10 @@
 #include <algorithm>
 #include <cstdint>
 #include <functional>
+#include <limits>
 #include <map>
 #include <memory>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -73,6 +75,8 @@ namespace cpp {
 
 using internal::WireFormat;
 using internal::WireFormatLite;
+using internal::cpp::HasHasbit;
+using internal::cpp::Utf8CheckMode;
 
 namespace {
 
@@ -828,7 +832,6 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
 
     // Generate type-specific accessor declarations.
     field_generators_.get(field).GenerateAccessorDeclarations(printer);
-
     format("\n");
   }
 
@@ -1238,41 +1241,41 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
 
     Formatter::SaveState saver(&format);
     format.AddMap(vars);
-      // Generate has_$name$() or $name$_size().
-      if (field->is_repeated()) {
-        if (IsFieldStripped(field, options_)) {
-          format(
-              "inline int $classname$::$name$_size() const { "
-              "__builtin_trap(); }\n");
-        } else {
-          format(
-              "inline int $classname$::_internal_$name$_size() const {\n"
-              "  return $field$$1$.size();\n"
-              "}\n"
-              "inline int $classname$::$name$_size() const {\n"
-              "$annotate_size$"
-              "  return _internal_$name$_size();\n"
-              "}\n",
-              IsImplicitWeakField(field, options_, scc_analyzer_) &&
-                      field->message_type()
-                  ? ".weak"
-                  : "");
-        }
-      } else if (field->real_containing_oneof()) {
-        format.Set("field_name", UnderscoresToCamelCase(field->name(), true));
-        format.Set("oneof_name", field->containing_oneof()->name());
-        format.Set("oneof_index",
-                   StrCat(field->containing_oneof()->index()));
-        GenerateOneofMemberHasBits(field, format);
+
+    // Generate has_$name$() or $name$_size().
+    if (field->is_repeated()) {
+      if (IsFieldStripped(field, options_)) {
+        format(
+            "inline int $classname$::$name$_size() const { "
+            "__builtin_trap(); }\n");
       } else {
-        // Singular field.
-        GenerateSingularFieldHasBits(field, format);
+        format(
+            "inline int $classname$::_internal_$name$_size() const {\n"
+            "  return $field$$1$.size();\n"
+            "}\n"
+            "inline int $classname$::$name$_size() const {\n"
+            "$annotate_size$"
+            "  return _internal_$name$_size();\n"
+            "}\n",
+            IsImplicitWeakField(field, options_, scc_analyzer_) &&
+                    field->message_type()
+                ? ".weak"
+                : "");
       }
+    } else if (field->real_containing_oneof()) {
+      format.Set("field_name", UnderscoresToCamelCase(field->name(), true));
+      format.Set("oneof_name", field->containing_oneof()->name());
+      format.Set("oneof_index",
+                 StrCat(field->containing_oneof()->index()));
+      GenerateOneofMemberHasBits(field, format);
+    } else {
+      // Singular field.
+      GenerateSingularFieldHasBits(field, format);
+    }
 
       if (!IsCrossFileMaybeMap(field)) {
         GenerateFieldClear(field, true, format);
       }
-
     // Generate type-specific accessors.
     if (!IsFieldStripped(field, options_)) {
       field_generators_.get(field).GenerateInlineAccessorDefinitions(printer);
@@ -1316,7 +1319,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "  static const $classname$* internal_default_instance() { return "
         "reinterpret_cast<const "
         "$classname$*>(&_$classname$_default_instance_); }\n");
-    auto utf8_check = GetUtf8CheckMode(descriptor_->field(0), options_);
+    auto utf8_check = internal::cpp::GetUtf8CheckMode(
+        descriptor_->field(0), GetOptimizeFor(descriptor_->file(), options_) ==
+                                   FileOptions::LITE_RUNTIME);
     if (descriptor_->field(0)->type() == FieldDescriptor::TYPE_STRING &&
         utf8_check != Utf8CheckMode::kNone) {
       if (utf8_check == Utf8CheckMode::kStrict) {
@@ -1760,7 +1765,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
     format(
         "private:\n"
         "inline bool IsSplitMessageDefault() const {\n"
-        "  return $split$ == reinterpret_cast<Impl_::Split*>(&$1$);\n"
+        "  return $split$ == reinterpret_cast<const Impl_::Split*>(&$1$);\n"
         "}\n"
         "PROTOBUF_NOINLINE void PrepareSplitMessageForWrite();\n"
         "public:\n",
@@ -1928,6 +1933,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "  typedef void InternalArenaConstructable_;\n"
         "  typedef void DestructorSkippable_;\n"
         "};\n"
+        "static_assert(std::is_trivially_copy_constructible<Split>::value);\n"
+        "static_assert(std::is_trivially_destructible<Split>::value);\n"
         "Split* _split_;\n");
   }
 
@@ -2204,11 +2211,12 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
         "  if (IsSplitMessageDefault()) {\n"
         "    void* chunk = "
         "::PROTOBUF_NAMESPACE_ID::internal::CreateSplitMessageGeneric("
-        "GetArenaForAllocation(), &$1$, sizeof(Impl_::Split));\n"
+        "GetArenaForAllocation(), &$1$, sizeof(Impl_::Split), this, &$2$);\n"
         "    $split$ = reinterpret_cast<Impl_::Split*>(chunk);\n"
         "  }\n"
         "}\n",
-        DefaultInstanceName(descriptor_, options_, /*split=*/true));
+        DefaultInstanceName(descriptor_, options_, /*split=*/true),
+        DefaultInstanceName(descriptor_, options_, /*split=*/false));
   }
 
   GenerateVerify(printer);
@@ -2421,8 +2429,15 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* printer) {
   }
   if (ShouldSplit(descriptor_, options_)) {
     put_sep();
-    format("decltype($split$){reinterpret_cast<Impl_::Split*>(&$1$)}",
-           DefaultInstanceName(descriptor_, options_, /*split=*/true));
+    // We can't assign the default split to this->split without the const_cast
+    // because the former is a const. The const_cast is safe because we don't
+    // intend to modify the default split through this pointer, and we also
+    // expect the default split to be in the rodata section which is protected
+    // from mutation.
+    format(
+        "decltype($split$){const_cast<Impl_::Split*>"
+        "(reinterpret_cast<const Impl_::Split*>(&$1$))}",
+        DefaultInstanceName(descriptor_, options_, /*split=*/true));
   }
   for (auto oneof : OneOfRange(descriptor_)) {
     put_sep();
@@ -2681,7 +2696,7 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* printer) {
   }
   if (ShouldSplit(descriptor_, options_)) {
     put_sep();
-    format("/*decltype($split$)*/&$1$._instance",
+    format("/*decltype($split$)*/const_cast<Impl_::Split*>(&$1$._instance)",
            DefaultInstanceName(descriptor_, options_, /*split=*/true));
   }
 
@@ -2866,8 +2881,10 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
       }
       if (ShouldSplit(descriptor_, options_)) {
         put_sep();
-        format("decltype($split$){reinterpret_cast<Impl_::Split*>(&$1$)}",
-               DefaultInstanceName(descriptor_, options_, /*split=*/true));
+        format(
+            "decltype($split$){const_cast<Impl_::Split*>"
+            "(reinterpret_cast<const Impl_::Split*>(&$1$))}",
+            DefaultInstanceName(descriptor_, options_, /*split=*/true));
       }
       for (auto oneof : OneOfRange(descriptor_)) {
         put_sep();

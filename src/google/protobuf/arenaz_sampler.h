@@ -31,9 +31,11 @@
 #ifndef GOOGLE_PROTOBUF_SRC_GOOGLE_PROTOBUF_ARENAZ_SAMPLER_H__
 #define GOOGLE_PROTOBUF_SRC_GOOGLE_PROTOBUF_ARENAZ_SAMPLER_H__
 
+#include <array>
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <utility>
 
 
 // Must be included last.
@@ -65,12 +67,30 @@ struct ThreadSafeArenaStats
 
   // These fields are mutated by the various Record* APIs and need to be
   // thread-safe.
-  std::atomic<int> num_allocations;
-  std::atomic<size_t> bytes_used;
-  std::atomic<size_t> bytes_allocated;
-  std::atomic<size_t> bytes_wasted;
-  // Records the largest size an arena ever had.
-  std::atomic<size_t> max_bytes_allocated;
+  struct BlockStats {
+    std::atomic<int> num_allocations;
+    std::atomic<size_t> bytes_allocated;
+    std::atomic<size_t> bytes_used;
+    std::atomic<size_t> bytes_wasted;
+
+    void PrepareForSampling();
+  };
+
+  // block_histogram is a kBlockHistogramBins sized histogram.  The zeroth bin
+  // stores info about blocks of size \in [1, 1 << kLogMaxSizeForBinZero]. Bin
+  // i, where i > 0, stores info for blocks of size \in (max_size_bin (i-1),
+  // 1 << (kLogMaxSizeForBinZero + i)].  The final bin stores info about blocks
+  // of size \in [kMaxSizeForPenultimateBin + 1,
+  // std::numeric_limits<size_t>::max()].
+  static constexpr size_t kBlockHistogramBins = 15;
+  static constexpr size_t kLogMaxSizeForBinZero = 7;
+  static constexpr size_t kMaxSizeForBinZero = (1 << kLogMaxSizeForBinZero);
+  static constexpr size_t kMaxSizeForPenultimateBin =
+      1 << (kLogMaxSizeForBinZero + kBlockHistogramBins - 2);
+  std::array<BlockStats, kBlockHistogramBins> block_histogram;
+
+  // Records the largest block allocated for the arena.
+  std::atomic<size_t> max_block_size;
   // Bit `i` is set to 1 indicates that a thread with `tid % 63 = i` accessed
   // the underlying arena.  We use `% 63` as a rudimentary hash to ensure some
   // bit mixing for thread-ids; `% 64` would only grab the low bits and might
@@ -90,6 +110,13 @@ struct ThreadSafeArenaStats
     if (PROTOBUF_PREDICT_TRUE(info == nullptr)) return;
     RecordAllocateSlow(info, used, allocated, wasted);
   }
+
+  // Returns the bin for the provided size.
+  static size_t FindBin(size_t bytes);
+
+  // Returns the min and max bytes that can be stored in the histogram for
+  // blocks in the provided bin.
+  static std::pair<size_t, size_t> MinMaxBlockSizeForBin(size_t bin);
 };
 
 struct SamplingState {
@@ -199,17 +226,29 @@ inline ThreadSafeArenaStatsHandle Sample() {
 // Returns a global Sampler.
 ThreadSafeArenazSampler& GlobalThreadSafeArenazSampler();
 
+using ThreadSafeArenazConfigListener = void (*)();
+void SetThreadSafeArenazConfigListener(ThreadSafeArenazConfigListener l);
+
 // Enables or disables sampling for thread safe arenas.
 void SetThreadSafeArenazEnabled(bool enabled);
+void SetThreadSafeArenazEnabledInternal(bool enabled);
+
+// Returns true if sampling is on, false otherwise.
+bool IsThreadSafeArenazEnabled();
 
 // Sets the rate at which thread safe arena will be sampled.
 void SetThreadSafeArenazSampleParameter(int32_t rate);
+void SetThreadSafeArenazSampleParameterInternal(int32_t rate);
 
 // Returns the rate at which thread safe arena will be sampled.
 int32_t ThreadSafeArenazSampleParameter();
 
 // Sets a soft max for the number of samples that will be kept.
 void SetThreadSafeArenazMaxSamples(int32_t max);
+void SetThreadSafeArenazMaxSamplesInternal(int32_t max);
+
+// Returns the max number of samples that will be kept.
+size_t ThreadSafeArenazMaxSamples();
 
 // Sets the current value for when arenas should be next sampled.
 void SetThreadSafeArenazGlobalNextSample(int64_t next_sample);

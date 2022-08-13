@@ -176,7 +176,6 @@ static const char* const kKeywordList[] = {
 #endif  // !PROTOBUF_FUTURE_BREAKING_CHANGES
 };
 
-
 static std::unordered_set<std::string>* MakeKeywordsMap() {
   auto* result = new std::unordered_set<std::string>();
   for (const auto keyword : kKeywordList) {
@@ -524,7 +523,6 @@ std::string FieldName(const FieldDescriptor* field) {
   }
   return result;
 }
-
 
 std::string FieldMemberName(const FieldDescriptor* field, bool split) {
   StringPiece prefix =
@@ -876,8 +874,6 @@ std::string SafeFunctionName(const Descriptor* descriptor,
 bool IsProfileDriven(const Options& options) {
   return options.access_info_map != nullptr;
 }
-
-
 bool IsStringInlined(const FieldDescriptor* descriptor,
                      const Options& options) {
   (void)descriptor;
@@ -1137,39 +1133,16 @@ bool IsWellKnownMessage(const FileDescriptor* file) {
   return well_known_files.find(file->name()) != well_known_files.end();
 }
 
-static bool FieldEnforceUtf8(const FieldDescriptor* field,
-                             const Options& options) {
-  return true;
-}
-
-static bool FileUtf8Verification(const FileDescriptor* file,
-                                 const Options& options) {
-  return true;
-}
-
-// Which level of UTF-8 enforcemant is placed on this file.
-Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field,
-                               const Options& options) {
-  if (field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 &&
-      FieldEnforceUtf8(field, options)) {
-    return Utf8CheckMode::kStrict;
-  } else if (GetOptimizeFor(field->file(), options) !=
-                 FileOptions::LITE_RUNTIME &&
-             FileUtf8Verification(field->file(), options)) {
-    return Utf8CheckMode::kVerify;
-  } else {
-    return Utf8CheckMode::kNone;
-  }
-}
-
 static void GenerateUtf8CheckCode(const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
                                   const char* parameters,
                                   const char* strict_function,
                                   const char* verify_function,
                                   const Formatter& format) {
-  switch (GetUtf8CheckMode(field, options)) {
-    case Utf8CheckMode::kStrict: {
+  switch (internal::cpp::GetUtf8CheckMode(
+      field,
+      GetOptimizeFor(field->file(), options) == FileOptions::LITE_RUNTIME)) {
+    case internal::cpp::Utf8CheckMode::kStrict: {
       if (for_parse) {
         format("DO_(");
       }
@@ -1189,7 +1162,7 @@ static void GenerateUtf8CheckCode(const FieldDescriptor* field,
       format.Outdent();
       break;
     }
-    case Utf8CheckMode::kVerify: {
+    case internal::cpp::Utf8CheckMode::kVerify: {
       format("::$proto_ns$::internal::WireFormat::$1$(\n", verify_function);
       format.Indent();
       format(parameters);
@@ -1202,7 +1175,7 @@ static void GenerateUtf8CheckCode(const FieldDescriptor* field,
       format.Outdent();
       break;
     }
-    case Utf8CheckMode::kNone:
+    case internal::cpp::Utf8CheckMode::kNone:
       break;
   }
 }

@@ -60,7 +60,8 @@ namespace {
 void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
                       int builderBitIndex, const FieldGeneratorInfo* info,
                       ClassNameResolver* name_resolver,
-                      std::map<std::string, std::string>* variables) {
+                      std::map<std::string, std::string>* variables,
+                      Context* context) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["type"] =
@@ -68,7 +69,8 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   (*variables)["kt_type"] = EscapeKotlinKeywords((*variables)["type"]);
   (*variables)["mutable_type"] =
       name_resolver->GetMutableClassName(descriptor->enum_type());
-  (*variables)["default"] = ImmutableDefaultValue(descriptor, name_resolver);
+  (*variables)["default"] =
+      ImmutableDefaultValue(descriptor, name_resolver, context->options());
   (*variables)["default_number"] =
       StrCat(descriptor->default_value_enum()->number());
   (*variables)["tag"] = StrCat(
@@ -142,7 +144,7 @@ ImmutableEnumFieldGenerator::ImmutableEnumFieldGenerator(
     : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
   SetEnumVariables(descriptor, messageBitIndex, builderBitIndex,
                    context->GetFieldGeneratorInfo(descriptor), name_resolver_,
-                   &variables_);
+                   &variables_, context);
 }
 
 ImmutableEnumFieldGenerator::~ImmutableEnumFieldGenerator() {}
@@ -280,6 +282,18 @@ void ImmutableEnumFieldGenerator::GenerateKotlinDslMembers(
                  "  set(value) {\n"
                  "    $kt_dsl_builder$.${$set$capitalized_name$$}$(value)\n"
                  "  }\n");
+
+  if (SupportUnknownEnumValue(descriptor_->file())) {
+    printer->Print(
+        variables_,
+        "$kt_deprecation$ var $kt_name$Value: kotlin.Int\n"
+        "  @JvmName(\"${$get$kt_capitalized_name$Value$}$\")\n"
+        "  get() = $kt_dsl_builder$.${$get$capitalized_name$Value$}$()\n"
+        "  @JvmName(\"${$set$kt_capitalized_name$Value$}$\")\n"
+        "  set(value) {\n"
+        "    $kt_dsl_builder$.${$set$capitalized_name$Value$}$(value)\n"
+        "  }\n");
+  }
 
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ false, /* kdoc */ true);
@@ -624,7 +638,7 @@ RepeatedImmutableEnumFieldGenerator::RepeatedImmutableEnumFieldGenerator(
     : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
   SetEnumVariables(descriptor, messageBitIndex, builderBitIndex,
                    context->GetFieldGeneratorInfo(descriptor), name_resolver_,
-                   &variables_);
+                   &variables_, context);
 }
 
 RepeatedImmutableEnumFieldGenerator::~RepeatedImmutableEnumFieldGenerator() {}

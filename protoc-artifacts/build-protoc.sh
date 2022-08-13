@@ -19,28 +19,20 @@
 #   macos  osx     x86_64
 #   mingw  windows x86_32
 #   mingw  windows x86_64
-#
-# Before running this script, make sure you have generated the configure script
-# in the parent directory (i.e., run ./autogen.sh there).
 
 OS=$1
 ARCH=$2
-MAKE_TARGET=$3
+BAZEL_TARGET=$3
 
 if [[ $# < 3 ]]; then
   echo "Not enough arguments provided."
   exit 1
 fi
 
-case $MAKE_TARGET in
-  protoc-gen-javalite)
-    ;;
-  protoc)
-    ;;
-  *)
-    echo "Target ""$MAKE_TARGET"" invalid."
+if [[ $BAZEL_TARGET != protoc ]]; then
+    echo "Target ""$BAZEL_TARGET"" invalid."
     exit 1
-esac
+fi
 
 # Under Cygwin, bash doesn't have these in PATH when called from Maven which
 # runs in Windows version of Java.
@@ -146,22 +138,22 @@ checkDependencies ()
     host_machine="$(uname -m)";
     dump_cmd='ldd '"$1"
     if [[ "$ARCH" == x86_32 ]]; then
-      white_list="linux-gate\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|ld-linux\.so\.2"
+      white_list="linux-gate\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|libgcc_s\.so\.1\|libstdc++\.so\.6\|ld-linux\.so\.2"
     elif [[ "$ARCH" == x86_64 ]]; then
-      white_list="linux-vdso\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|ld-linux-x86-64\.so\.2"
+      white_list="linux-vdso\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|libgcc_s\.so\.1\|libstdc++\.so\.6\|ld-linux-x86-64\.so\.2"
     elif [[ "$ARCH" == s390_64 ]]; then
       if [[ $host_machine != s390x ]];then
         dump_cmd='objdump -p '"$1"' | grep NEEDED'
       fi
-      white_list="linux-vdso64\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|libz\.so\.1\|ld64\.so\.1"
+      white_list="linux-vdso64\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|libgcc_s\.so\.1\|libstdc++\.so\.6\|libz\.so\.1\|ld64\.so\.1"
     elif [[ "$ARCH" == ppcle_64 ]]; then
       if [[ $host_machine != ppc64le ]];then
         dump_cmd='objdump -p '"$1"' | grep NEEDED'
       fi
-      white_list="linux-vdso64\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|libz\.so\.1\|ld64\.so\.2"
+      white_list="linux-vdso64\.so\.1\|libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|libgcc_s\.so\.1\|libstdc++\.so\.6\|libz\.so\.1\|ld64\.so\.2"
     elif [[ "$ARCH" == aarch_64 ]]; then
       dump_cmd='objdump -p '"$1"' | grep NEEDED'
-      white_list="libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|ld-linux-aarch64\.so\.1"
+      white_list="libpthread\.so\.0\|libm\.so\.6\|libc\.so\.6\|libgcc_s\.so\.1\|libstdc++\.so\.6\|ld-linux-aarch64\.so\.1"
     fi
   elif [[ "$OS" == osx ]]; then
     dump_cmd='otool -L '"$1"' | fgrep dylib'
@@ -185,18 +177,13 @@ checkDependencies ()
 }
 ############################################################################
 
-echo "Building protoc, OS=$OS ARCH=$ARCH TARGET=$MAKE_TARGET"
+echo "Building protoc, OS=$OS ARCH=$ARCH TARGET=$BAZEL_TARGET"
 
-CONFIGURE_ARGS="--disable-shared"
+BAZEL_ARGS=("--dynamic_mode=off" "--compilation_mode=opt" "--copt=-g0" "--copt=-fpic")
 
 if [[ "$OS" == windows ]]; then
-  MAKE_TARGET="${MAKE_TARGET}.exe"
+  BAZEL_TARGET="${BAZEL_TARGET}.exe"
 fi
-
-# Override the default value set in configure.ac that has '-g' which produces
-# huge binary.
-CXXFLAGS="-DNDEBUG"
-LDFLAGS=""
 
 if [[ "$(uname)" == CYGWIN* ]]; then
   assertEq "$OS" windows $LINENO
@@ -217,28 +204,13 @@ elif [[ "$(uname)" == MINGW64* ]]; then
   assertEq "$ARCH" x86_64 $LINENO
 elif [[ "$(uname)" == Linux* ]]; then
   if [[ "$OS" == linux ]]; then
-    if [[ "$ARCH" == x86_64 ]]; then
-      CXXFLAGS="$CXXFLAGS -m64"
-    elif [[ "$ARCH" == x86_32 ]]; then
-      CXXFLAGS="$CXXFLAGS -m32"
-    elif [[ "$ARCH" == aarch_64 ]]; then
-      CONFIGURE_ARGS="$CONFIGURE_ARGS --host=aarch64-linux-gnu"
-    elif [[ "$ARCH" == ppcle_64 ]]; then
-      CXXFLAGS="$CXXFLAGS -m64"
-      CONFIGURE_ARGS="$CONFIGURE_ARGS --host=powerpc64le-linux-gnu"
-    elif [[ "$ARCH" == s390_64 ]]; then
-      CXXFLAGS="$CXXFLAGS -m64"
-      CONFIGURE_ARGS="$CONFIGURE_ARGS --host=s390x-linux-gnu"
-    else
-      fail "Unsupported arch: $ARCH"
-    fi
+    BAZEL_ARGS+=("--config=linux-$ARCH")
   elif [[ "$OS" == windows ]]; then
     # Cross-compilation for Windows
-    CONFIGURE_ARGS="$CONFIGURE_ARGS"
     if [[ "$ARCH" == x86_64 ]]; then
-      CONFIGURE_ARGS="$CONFIGURE_ARGS --host=x86_64-w64-mingw32"
+      BAZEL_ARGS+=("--config=win64")
     elif [[ "$ARCH" == x86_32 ]]; then
-      CONFIGURE_ARGS="$CONFIGURE_ARGS --host=i686-w64-mingw32"
+      BAZEL_ARGS+=("--config=win32")
     else
       fail "Unsupported arch: $ARCH"
     fi
@@ -248,43 +220,24 @@ elif [[ "$(uname)" == Linux* ]]; then
 elif [[ "$(uname)" == Darwin* ]]; then
   assertEq "$OS" osx $LINENO
   # Make the binary compatible with OSX 10.7 and later
-  CXXFLAGS="$CXXFLAGS -mmacosx-version-min=10.7"
-  if [[ "$ARCH" == x86_64 ]]; then
-    CXXFLAGS="$CXXFLAGS -m64"
-  elif [[ "$ARCH" == x86_32 ]]; then
-    CXXFLAGS="$CXXFLAGS -m32"
-  else
-    fail "Unsupported arch: $ARCH"
-  fi
+  BAZEL_ARGS+=("--config=osx-$ARCH" "--macos_minimum_os=10.7")
 else
   fail "Unsupported system: $(uname)"
 fi
-
-# Statically link libgcc and libstdc++.
-# -s to produce stripped binary.
-if [[ "$OS" == windows ]]; then
-  # Also static link libpthread required by mingw64
-  LDFLAGS="$LDFLAGS -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -s"
-elif [[ "$OS" != osx ]]; then
-  # And they don't work under Mac.
-  LDFLAGS="$LDFLAGS -static-libgcc -static-libstdc++ -s"
-fi
-
-export CXXFLAGS LDFLAGS
 
 # Nested double quotes are unintuitive, but it works.
 cd "$(dirname "$0")"
 
 WORKING_DIR="$(pwd)"
-BUILD_DIR="build/$OS/$ARCH"
-TARGET_FILE="target/$OS/$ARCH/$MAKE_TARGET.exe"
+TARGET_FILE="target/$OS/$ARCH/$BAZEL_TARGET.exe"
+DOCKER_IMAGE=gcr.io/protobuf-build/bazel/linux@sha256:2bfd061284eff8234f2fcca16d71d43c69ccf3a22206628b54c204a6a9aac277
 
-mkdir -p "$BUILD_DIR" && cd "$BUILD_DIR" &&
-  ../../../../configure $CONFIGURE_ARGS &&
-  cd src && make $MAKE_TARGET -j8 &&
-  cd "$WORKING_DIR" && mkdir -p $(dirname $TARGET_FILE) &&
-  cp $BUILD_DIR/src/$MAKE_TARGET $TARGET_FILE ||
-  exit 1
+tmpfile=$(mktemp -u) &&
+docker run --cidfile $tmpfile -v $WORKING_DIR/..:/workspace $DOCKER_IMAGE \
+    build //:$BAZEL_TARGET "${BAZEL_ARGS[@]}" &&
+mkdir -p $(dirname $TARGET_FILE) &&
+docker cp \
+  `cat $tmpfile`:/workspace/bazel-bin/$BAZEL_TARGET $TARGET_FILE || exit 1
 
 if [[ "$OS" == osx ]]; then
   # Since Mac linker doesn't accept "-s", we need to run strip
