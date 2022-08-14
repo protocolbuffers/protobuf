@@ -625,6 +625,30 @@ void Outdent(io::Printer* printer) {
   printer->Outdent();
 }
 
+std::string BinaryToPhpString(const std::string& src) {
+  std::string dest;
+  size_t i;
+  unsigned char symbol[16] = {
+    '0', '1', '2', '3',
+    '4', '5', '6', '7',
+    '8', '9', 'A', 'B',
+    'C', 'D', 'E', 'F',
+  };
+
+  dest.resize(src.size() * 4);
+  char* append_ptr = &dest[0];
+
+  for (i = 0; i < src.size(); i++) {
+    *append_ptr++ = '\\';
+    *append_ptr++ = 'x';
+    *append_ptr++ = symbol[(src[i] & 0xf0) >> 4];
+    *append_ptr++ = symbol[src[i] & 0x0f];
+  }
+
+  return dest;
+}
+
+
 void GenerateField(const FieldDescriptor* field, io::Printer* printer,
                    const Options& options) {
   if (field->is_repeated()) {
@@ -1037,23 +1061,7 @@ void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
 
       printer->Print("$pool->internalAddGeneratedFile(\n");
       Indent(printer);
-      printer->Print("'");
-
-      for (auto ch : files_data) {
-        switch (ch) {
-          case '\\':
-            printer->Print(R"(\\)");
-            break;
-          case '\'':
-            printer->Print(R"(\')");
-            break;
-          default:
-            printer->Print("^char^", "char", std::string(1, ch));
-            break;
-        }
-      }
-
-      printer->Print("'\n");
+      printer->Print("\"^data^\"\n", "data", BinaryToPhpString(files_data));
       Outdent(printer);
       printer->Print(
           ", true);\n\n");
@@ -1184,23 +1192,7 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
 
   printer->Print("$pool->internalAddGeneratedFile(\n");
   Indent(printer);
-  printer->Print("'");
-
-  for (auto ch : files_data) {
-    switch (ch) {
-      case '\\':
-        printer->Print(R"(\\)");
-        break;
-      case '\'':
-        printer->Print(R"(\')");
-        break;
-      default:
-        printer->Print("^char^", "char", std::string(1, ch));
-        break;
-    }
-  }
-
-  printer->Print("'\n");
+  printer->Print("\"^data^\"\n", "data", BinaryToPhpString(files_data));
   Outdent(printer);
   printer->Print(
       ", true);\n");
