@@ -12,7 +12,7 @@ load(
 )
 
 exports_files([
-    "conformance_test_runner.sh",
+    "bazel_conformance_test_runner.sh",
     "failure_list_cpp.txt",
     "failure_list_csharp.txt",
     "failure_list_java.txt",
@@ -348,7 +348,7 @@ pkg_files(
         ["**/*"],
         exclude = [
             # Handled by dist_scripts:
-            "conformance_test_runner.sh",
+            "bazel_conformance_test_runner.sh",
 
             # The following are not in autotools dist:
             "autoload.php",
