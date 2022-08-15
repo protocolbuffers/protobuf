@@ -36,7 +36,9 @@ Running the tests for other languages
 
 All of the languages in the Protobuf source tree are set up to run conformance
 tests using similar patterns.  You can either use Bazel to run the
-`conformance_test` target defined in the language's root `BUILD.bazel` file.
+`conformance_test` target defined in the language's root `BUILD.bazel` file,
+or create an executable for a custom test and pass it to
+`conformance_test_runner`.
 
 For example, to run the Ruby tests against MRI, you can call:
 
