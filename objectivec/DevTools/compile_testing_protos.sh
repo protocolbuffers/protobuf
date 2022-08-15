@@ -120,8 +120,7 @@ if [[ "${RUN_PROTOC}" != "yes" ]] ; then
   # under)
   readonly NewestInput=$(find \
      src/google/protobuf/*.proto \
-     objectivec/Tests/*.proto \
-     src/.libs src/*.la $PROTOC \
+     objectivec/Tests/*.proto $PROTOC \
      objectivec/DevTools/compile_testing_protos.sh \
         -type f -print0 \
         | xargs -0 stat -f "%m %N" \
