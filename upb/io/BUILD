@@ -1,15 +1,48 @@
 cc_library(
-    name = "zero_copy_stream",
-    hdrs = [
-        "zero_copy_input_stream.h",
-        "zero_copy_output_stream.h",
-    ],
-    visibility = ["//upb/io:__pkg__"],
+    name = "string",
+    hdrs = ["string.h"],
     deps = [
         "//:upb",
         "//:port",
     ],
 )
+
+cc_library(
+    name = "strtod",
+    srcs = ["strtod.c"],
+    hdrs = ["strtod.h"],
+    deps = [
+        "//:port",
+    ],
+)
+
+cc_library(
+    name = "tokenizer",
+    srcs = ["tokenizer.c"],
+    hdrs = ["tokenizer.h"],
+    deps = [
+        ":string",
+        ":strtod",
+        ":zero_copy_stream",
+        "//:upb",
+        "//:port",
+        "//:unicode_internal",
+    ],
+)
+
+cc_library(
+    name = "zero_copy_stream",
+    hdrs = [
+        "zero_copy_input_stream.h",
+        "zero_copy_output_stream.h",
+    ],
+    deps = [
+        "//:upb",
+        "//:port",
+    ],
+)
+
+# ====================================================================
 
 cc_library(
     name = "chunked_stream",
@@ -22,11 +55,39 @@ cc_library(
         "chunked_input_stream.h",
         "chunked_output_stream.h",
     ],
-    visibility = ["//upb/io:__pkg__"],
     deps = [
         ":zero_copy_stream",
         "//:upb",
         "//:port",
+    ],
+)
+
+cc_test(
+    name = "string_test",
+    size = "small",
+    srcs = ["string_test.cc"],
+    deps = [
+        ":string",
+        "//:upb",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "tokenizer_test",
+    size = "small",
+    srcs = ["tokenizer_test.cc"],
+    deps = [
+        ":chunked_stream",
+        ":string",
+        ":tokenizer",
+        ":zero_copy_stream",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "//:upb",
+        "//:port",
+        "//:unicode_internal",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
