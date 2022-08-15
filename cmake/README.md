@@ -1,7 +1,9 @@
 This directory contains *CMake* files that can be used to build protobuf.
 
 You need to have [CMake](http://www.cmake.org) and
-[Git](http://git-scm.com) installed on your computer before proceeding.
+[Git](http://git-scm.com) installed on your computer before proceeding.  We
+currently support CMake 3.5 and newer on both [Windows](#windows-builds) and
+[Linux](#linux-builds).
 
 Most of the instructions will be given using CMake's command-line interface, but
 the same actions can be performed using appropriate GUI tools.
