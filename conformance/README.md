@@ -44,6 +44,10 @@ For example, to run the Ruby tests against MRI, you can call:
 
     $ bazel test //ruby:conformance_test
 
+Note: CMake can be used to build the conformance test runner, but not any of
+the conformance test executables outside C++.  So if you aren't using Bazel
+you'll need to create the executable you pass to `conformance_test_runner` via
+some alternate build system.
 
 Testing other Protocol Buffer implementations
 ---------------------------------------------
