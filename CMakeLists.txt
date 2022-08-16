@@ -80,6 +80,7 @@ mark_as_advanced(protobuf_DEBUG_POSTFIX)
 include(${protobuf_SOURCE_DIR}/cmake/protobuf-options.cmake)
 
 if (protobuf_BUILD_SHARED_LIBS)
+  # This is necessary for linking in Abseil.
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif ()
 
