@@ -87,24 +87,16 @@ typedef enum {
   // interpreted as floats. For all other purposes, the 'f' is ignored.
   kUpb_TokenizerOption_AllowFAfterFloat = 1 << 0,
 
-  // If set, allow string literals to span multiple lines.
-  // Do not use this; for Google-internal cleanup only.
-  kUpb_TokenizerOption_AllowMultilineStrings = 1 << 1,
-
-  // If set, allow a field name to appear immediately after a number without
-  // requiring any intervening whitespace as a delimiter.
-  // Do not use this; for Google-internal cleanup only.
-  kUpb_TokenizerOption_AllowFieldImmediatelyAfterNumber = 1 << 2,
-
   // If set, whitespace tokens are reported by Next().
-  kUpb_TokenizerOption_ReportWhitespace = 1 << 3,
+  kUpb_TokenizerOption_ReportWhitespace = 1 << 1,
 
-  // If set, newline tokens are reported by Next(). Implies ReportWhitespace.
-  kUpb_TokenizerOption_ReportNewlines = 1 << 4,
+  // If set, newline tokens are reported by Next().
+  // This is a superset of ReportWhitespace.
+  kUpb_TokenizerOption_ReportNewlines = 1 << 2,
 
   // By default the tokenizer expects C-style (/* */) comments.
   // If set, it expects shell-style (#) comments instead.
-  kUpb_TokenizerOption_CommentStyleShell = 1 << 5,
+  kUpb_TokenizerOption_CommentStyleShell = 1 << 3,
 } upb_Tokenizer_Option;
 
 // Abstract interface for an object which collects the errors that occur

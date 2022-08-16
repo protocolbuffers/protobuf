@@ -213,29 +213,8 @@ struct upb_Tokenizer {
   upb_String* record_target;
   int record_start;
 
-  // Options.
-  bool allow_f_after_float;
-  bool allow_multiline_strings;
-  bool require_space_after_number;
-  bool report_whitespace;
-  bool report_newlines;
-  bool comment_style_cpp;
-  bool comment_style_sh;
+  int options;
 };
-
-static void upb_Tokenizer_Options(upb_Tokenizer* t, int options) {
-  t->allow_f_after_float =
-      (options & kUpb_TokenizerOption_AllowFAfterFloat) != 0;
-  t->allow_multiline_strings =
-      (options & kUpb_TokenizerOption_AllowMultilineStrings) != 0;
-  t->require_space_after_number =
-      (options & kUpb_TokenizerOption_AllowFieldImmediatelyAfterNumber) == 0;
-  t->report_whitespace = (options & (kUpb_TokenizerOption_ReportWhitespace |
-                                     kUpb_TokenizerOption_ReportNewlines)) != 0;
-  t->report_newlines = (options & kUpb_TokenizerOption_ReportNewlines) != 0;
-  t->comment_style_sh = (options & kUpb_TokenizerOption_CommentStyleShell) != 0;
-  t->comment_style_cpp = !t->comment_style_sh;
-}
 
 // -------------------------------------------------------------------
 // Internal helpers.
@@ -400,12 +379,8 @@ static void ConsumeString(upb_Tokenizer* t, char delimiter) {
         return;
 
       case '\n': {
-        if (!t->allow_multiline_strings) {
-          AddError(t, "String literals cannot cross line boundaries.");
-          return;
-        }
-        NextChar(t);
-        break;
+        AddError(t, "String literals cannot cross line boundaries.");
+        return;
       }
 
       case '\\': {
@@ -503,12 +478,12 @@ static upb_TokenType ConsumeNumber(upb_Tokenizer* t, bool started_with_zero,
                        "\"e\" must be followed by exponent.");
     }
 
-    if (t->allow_f_after_float && (TryConsume(t, 'f') || TryConsume(t, 'F'))) {
-      is_float = true;
+    if (t->options & kUpb_TokenizerOption_AllowFAfterFloat) {
+      if (TryConsume(t, 'f') || TryConsume(t, 'F')) is_float = true;
     }
   }
 
-  if (LookingAt(t, upb_Tokenizer_IsLetter) && t->require_space_after_number) {
+  if (LookingAt(t, upb_Tokenizer_IsLetter)) {
     AddError(t, "Need space between number and identifier.");
   } else if (t->current_char == '.') {
     if (is_float) {
@@ -586,7 +561,10 @@ static void ConsumeBlockComment(upb_Tokenizer* t, upb_String* content) {
 // If we're at the start of a new comment, consume it and return what kind
 // of comment it is.
 static upb_CommentType TryConsumeCommentStart(upb_Tokenizer* t) {
-  if (t->comment_style_cpp && TryConsume(t, '/')) {
+  const bool style_sh = t->options & kUpb_TokenizerOption_CommentStyleShell;
+  const bool style_cpp = !style_sh;
+
+  if (style_cpp && TryConsume(t, '/')) {
     if (TryConsume(t, '/')) {
       return kUpb_CommentType_Line;
     } else if (TryConsume(t, '*')) {
@@ -600,7 +578,7 @@ static upb_CommentType TryConsumeCommentStart(upb_Tokenizer* t) {
       t->current.end_column = t->column;
       return kUpb_CommentType_SlashNot;
     }
-  } else if (t->comment_style_sh && TryConsume(t, '#')) {
+  } else if (style_sh && TryConsume(t, '#')) {
     return kUpb_CommentType_Line;
   } else {
     return kUpb_CommentType_None;
@@ -610,7 +588,7 @@ static upb_CommentType TryConsumeCommentStart(upb_Tokenizer* t) {
 // If we're looking at a TYPE_WHITESPACE token and `report_whitespace` is true,
 // consume it and return true.
 static bool TryConsumeWhitespace(upb_Tokenizer* t) {
-  if (t->report_newlines) {
+  if (t->options & kUpb_TokenizerOption_ReportNewlines) {
     if (TryConsumeOne(t, upb_Tokenizer_IsWhitespaceNoNewline)) {
       ConsumeZeroOrMore(t, upb_Tokenizer_IsWhitespaceNoNewline);
       t->current.type = kUpb_TokenType_Whitespace;
@@ -621,7 +599,7 @@ static bool TryConsumeWhitespace(upb_Tokenizer* t) {
   if (TryConsumeOne(t, upb_Tokenizer_IsWhitespace)) {
     ConsumeZeroOrMore(t, upb_Tokenizer_IsWhitespace);
     t->current.type = kUpb_TokenType_Whitespace;
-    return t->report_whitespace;
+    return (t->options & kUpb_TokenizerOption_ReportWhitespace) != 0;
   }
   return false;
 }
@@ -629,12 +607,11 @@ static bool TryConsumeWhitespace(upb_Tokenizer* t) {
 // If we're looking at a TYPE_NEWLINE token and `report_newlines` is true,
 // consume it and return true.
 static bool TryConsumeNewline(upb_Tokenizer* t) {
-  if (!t->report_whitespace || !t->report_newlines) {
-    return false;
-  }
-  if (TryConsume(t, '\n')) {
-    t->current.type = kUpb_TokenType_Newline;
-    return true;
+  if (t->options & kUpb_TokenizerOption_ReportNewlines) {
+    if (TryConsume(t, '\n')) {
+      t->current.type = kUpb_TokenType_Newline;
+      return true;
+    }
   }
   return false;
 }
@@ -1055,12 +1032,16 @@ upb_Tokenizer* upb_Tokenizer_New(const void* data, size_t size,
   t->record_target = NULL;
   t->record_start = -1;
 
+  // ReportNewlines implies ReportWhitespace.
+  if (options & kUpb_TokenizerOption_ReportNewlines) {
+    options |= kUpb_TokenizerOption_ReportWhitespace;
+  }
+  t->options = options;
+
   t->previous_type = kUpb_TokenType_Start;
   t->previous_line = 0;
   t->previous_column = 0;
   t->previous_end_column = 0;
-
-  upb_Tokenizer_Options(t, options);
 
   upb_Token_Init(&t->current, arena);
 
