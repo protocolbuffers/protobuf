@@ -9,4 +9,4 @@
 [submodule "third_party/abseil-cpp"]
 	path = third_party/abseil-cpp
 	url = https://github.com/abseil/abseil-cpp
-	branch = lts_2021_11_02
+	branch = lts_2022_06_23
