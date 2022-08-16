@@ -1779,6 +1779,39 @@ TEST_F(CommandLineInterfaceTest,
                     "$tmpdir/bar.pb: "
                     "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
 }
+
+TEST_F(CommandLineInterfaceTest,
+       DependencyManifestFileIsOrderedByFilePath) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "import \"foo.proto\";\n"
+                 "message Bar {\n"
+                 "  optional Foo foo = 1;\n"
+                 "}\n");
+
+  Run("protocol_compiler --dependency_out=$tmpdir/manifest_a "
+      "--test_out=$tmpdir "
+      "--descriptor_set_out=$tmpdir/a.pb --proto_path=$tmpdir bar.proto");
+
+  ExpectNoErrors();
+
+  ExpectFileContent("manifest_a",
+                    "$tmpdir/a.pb \\\n$tmpdir/bar.proto.MockCodeGenerator.test_generator: "
+                    "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
+
+  Run("protocol_compiler --dependency_out=$tmpdir/manifest_z "
+      "--test_out=$tmpdir "
+      "--descriptor_set_out=$tmpdir/z.pb --proto_path=$tmpdir bar.proto");
+
+  ExpectNoErrors();
+
+  ExpectFileContent("manifest_z",
+                    "$tmpdir/bar.proto.MockCodeGenerator.test_generator \\\n$tmpdir/z.pb: "
+                    "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
+}
 #endif  // !_WIN32
 
 TEST_F(CommandLineInterfaceTest, TestArgumentFile) {
