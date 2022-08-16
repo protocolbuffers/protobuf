@@ -12,6 +12,12 @@ set -ex
 export OUTPUT_DIR=testoutput
 repo_root="$(pwd)"
 
+# Setup python virtual environment.
+apt-get update -y
+apt-get install -y --no-install-recommends python3 python3-venv
+python3 -m venv venv
+source venv/bin/activate
+
 # TODO(jtattermusch): Add back support for benchmarking with tcmalloc for C++ and python.
 # This feature was removed since it used to use tcmalloc from https://github.com/gperftools/gperftools.git
 # which is very outdated. See https://github.com/protocolbuffers/protobuf/issues/8725.
