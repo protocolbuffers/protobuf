@@ -41,9 +41,9 @@
 #include <map>
 #include <memory>
 #include <queue>
-#include <unordered_set>
 #include <vector>
 
+#include <absl/container/flat_hash_set.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/descriptor.h>
@@ -176,15 +176,15 @@ static const char* const kKeywordList[] = {
 #endif  // !PROTOBUF_FUTURE_BREAKING_CHANGES
 };
 
-static std::unordered_set<std::string>* MakeKeywordsMap() {
-  auto* result = new std::unordered_set<std::string>();
+static absl::flat_hash_set<std::string>* MakeKeywordsMap() {
+  auto* result = new absl::flat_hash_set<std::string>();
   for (const auto keyword : kKeywordList) {
     result->emplace(keyword);
   }
   return result;
 }
 
-static std::unordered_set<std::string>& kKeywords = *MakeKeywordsMap();
+static absl::flat_hash_set<std::string>& kKeywords = *MakeKeywordsMap();
 
 std::string IntTypeName(const Options& options, const std::string& type) {
   return type + "_t";
@@ -1116,7 +1116,7 @@ bool IsAnyMessage(const Descriptor* descriptor, const Options& options) {
 }
 
 bool IsWellKnownMessage(const FileDescriptor* file) {
-  static const std::unordered_set<std::string> well_known_files{
+  static const absl::flat_hash_set<std::string> well_known_files{
       "google/protobuf/any.proto",
       "google/protobuf/api.proto",
       "google/protobuf/compiler/plugin.proto",
