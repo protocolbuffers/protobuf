@@ -50,7 +50,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES Intel)
 endif()
 
 # Options
-option(protobuf_INSTALL "Install protobuf binaries and files" ON)
+option(protobuf_INSTALL "Install protobuf binaries and files" OFF)
 if(WITH_PROTOC)
   set(protobuf_PROTOC_EXE ${WITH_PROTOC} CACHE FILEPATH "Protocol Buffer Compiler executable" FORCE)
 endif()
