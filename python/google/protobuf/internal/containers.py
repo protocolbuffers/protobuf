@@ -346,7 +346,7 @@ class RepeatedCompositeFieldContainer(BaseContainer[_T], MutableSequence[_T]):
     # structurally compatible with typing.MutableSequence. It is
     # otherwise unsupported and will always raise an error.
     raise TypeError(
-        '%s object does not support item assignment' % self.__class__.__name__)
+        f'{self.__class__.__name__} object does not support item assignment')
 
   def __delitem__(self, key: Union[int, slice]) -> None:
     """Deletes the item at the specified position."""
