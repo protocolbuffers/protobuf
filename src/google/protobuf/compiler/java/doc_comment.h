@@ -96,6 +96,7 @@ void WriteMethodDocComment(io::Printer* printer,
                            const MethodDescriptor* method);
 
 // Exposed for testing only.
+// Also called by proto1-Java code generator.
 PROTOC_EXPORT std::string EscapeJavadoc(const std::string& input);
 
 }  // namespace java

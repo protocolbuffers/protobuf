@@ -6,9 +6,9 @@ PLEASE DO NOT DEPEND ON THE CONTENTS OF THIS FILE, IT IS UNSTABLE.
 load("//:protobuf.bzl", "internal_php_proto_library")
 
 def proto3_from_proto2_data(
-    name,
-    srcs,
-    **kwargs):
+        name,
+        srcs,
+        **kwargs):
     """Transforms proto2 binary data into a proto3-compatible format,
 
     Args:
@@ -22,7 +22,7 @@ def proto3_from_proto2_data(
     for src in srcs:
         outs.append("proto3/" + src)
         out_files.append("$(RULEDIR)/proto3/" + src)
-        src_files.append("$(rootpath %s)" % src);
+        src_files.append("$(rootpath %s)" % src)
 
     native.genrule(
         name = name + "_genrule",
@@ -32,13 +32,15 @@ def proto3_from_proto2_data(
         ],
         outs = outs,
         cmd = "$(execpath //benchmarks/util:proto3_data_stripper) %s %s" % (
-            " ".join(src_files), " ".join(out_files)),
+            " ".join(src_files),
+            " ".join(out_files),
+        ),
     )
 
     native.filegroup(
         name = name,
         srcs = outs,
-        **kwargs,
+        **kwargs
     )
 
 def _proto3_from_proto2_library(
@@ -56,7 +58,7 @@ def _proto3_from_proto2_library(
     src_files = []
     for src in srcs:
         outs.append(src + "3")
-        src_files.append("$(rootpath %s)" % src);
+        src_files.append("$(rootpath %s)" % src)
 
     native.genrule(
         name = name,
@@ -74,7 +76,7 @@ def _proto3_from_proto2_library(
                 --proto2_to_proto3_out=$(GENDIR) \
                 %s
         """ % (" ".join(src_files)),
-        **kwargs,
+        **kwargs
     )
 
 def php_proto3_from_proto2_library(
@@ -99,5 +101,5 @@ def php_proto3_from_proto2_library(
         name = name,
         srcs = [name + "_genrule"],
         outs = outs,
-        **kwargs,
+        **kwargs
     )

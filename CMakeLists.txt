@@ -32,11 +32,11 @@ if(protobuf_DEPRECATED_CMAKE_SUBDIRECTORY_USAGE)
   get_filename_component(protobuf_SOURCE_DIR ${protobuf_SOURCE_DIR} DIRECTORY)
 endif()
 
-# Add c++11 flags
+# Add c++14 flags
 if (CYGWIN)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14")
 else()
-  set(CMAKE_CXX_STANDARD 11)
+  set(CMAKE_CXX_STANDARD 14)
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
@@ -155,6 +155,14 @@ file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/cmaketest.map)
 
 find_package(Threads REQUIRED)
 
+# We can install dependencies from submodules if we're running
+# CMake v3.13 or newer.
+if(CMAKE_VERSION VERSION_LESS 3.13)
+  set(_protobuf_INSTALL_SUPPORTED_FROM_MODULE OFF)
+else()
+  set(_protobuf_INSTALL_SUPPORTED_FROM_MODULE ON)
+endif()
+
 set(_protobuf_FIND_ZLIB)
 if (protobuf_WITH_ZLIB)
   find_package(ZLIB)
@@ -187,7 +195,7 @@ set(protobuf_LINK_LIBATOMIC false)
 if (NOT MSVC)
   include(CheckCXXSourceCompiles)
   set(OLD_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
-  set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS} -std=c++11)
+  set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS} -std=c++14)
   check_cxx_source_compiles("
     #include <atomic>
     int main() {
@@ -289,6 +297,11 @@ include_directories(
 if (protobuf_UNICODE)
   add_definitions(-DUNICODE -D_UNICODE)
 endif (protobuf_UNICODE)
+
+set(protobuf_ABSL_PROVIDER "module" CACHE STRING "Provider of absl library")
+set_property(CACHE protobuf_ABSL_PROVIDER PROPERTY STRINGS "module" "package")
+
+include(${protobuf_SOURCE_DIR}/cmake/abseil-cpp.cmake)
 
 if (protobuf_BUILD_PROTOBUF_BINARIES)
   include(${protobuf_SOURCE_DIR}/cmake/libprotobuf-lite.cmake)

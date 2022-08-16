@@ -27,12 +27,12 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """Test that Kokoro is using the expected version of python."""
 
 import os
-import unittest
 import sys
+import unittest
+
 
 class PythonVersionTest(unittest.TestCase):
 
@@ -40,11 +40,12 @@ class PythonVersionTest(unittest.TestCase):
     """Test that we can import nested import public messages."""
 
     exp = os.getenv('KOKORO_PYTHON_VERSION', '')
-    if exp == '':
-      print("No kokoro python version found, skipping check", file=sys.stderr)
+    if not exp:
+      print('No kokoro python version found, skipping check', file=sys.stderr)
       return
-    self.assertTrue(sys.version.startswith(exp),
-      "Expected Python %s but found Python %s" % (exp, sys.version))
+    self.assertTrue(
+        sys.version.startswith(exp),
+        'Expected Python %s but found Python %s' % (exp, sys.version))
 
 
 if __name__ == '__main__':

@@ -39,7 +39,7 @@ def conformance_test(
             "@bazel_tools//tools/bash/runfiles",
         ],
         tags = ["conformance"],
-        **kwargs,
+        **kwargs
     )
 
 def _strip_bazel(testee):

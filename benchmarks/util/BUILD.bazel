@@ -7,15 +7,15 @@ package(default_visibility = ["//benchmarks:__subpackages__"])
 cc_binary(
     name = "protoc-gen-proto2_to_proto3",
     srcs = [
-        "schema_proto2_to_proto3_util.h",
         "protoc-gen-proto2_to_proto3.cc",
-    ],
-    deps = [
-        "//:protobuf",
-        "//src/google/protobuf/compiler:code_generator",
-        "//benchmarks:benchmarks_cc_proto",
+        "schema_proto2_to_proto3_util.h",
     ],
     visibility = ["//benchmarks:__subpackages__"],
+    deps = [
+        "//:protobuf",
+        "//benchmarks:benchmarks_cc_proto",
+        "//src/google/protobuf/compiler:code_generator",
+    ],
 )
 
 cc_binary(
@@ -26,8 +26,8 @@ cc_binary(
     ],
     deps = [
         "//:protobuf",
-        "//benchmarks/datasets:cc_protos",
         "//benchmarks:benchmarks_cc_proto",
+        "//benchmarks/datasets:cc_protos",
     ],
 )
 

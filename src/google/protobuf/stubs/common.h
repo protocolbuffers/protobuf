@@ -106,7 +106,12 @@ void PROTOBUF_EXPORT VerifyVersion(int headerVersion, int minLibraryVersion,
                                    const char* filename);
 
 // Converts a numeric version number to a string.
-std::string PROTOBUF_EXPORT VersionString(int version);
+std::string PROTOBUF_EXPORT
+VersionString(int version);  // NOLINT(runtime/string)
+
+// Prints the protoc compiler version (no major version)
+std::string PROTOBUF_EXPORT
+ProtocVersionString(int version);  // NOLINT(runtime/string)
 
 }  // namespace internal
 

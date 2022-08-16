@@ -1,6 +1,6 @@
-package(default_visibility = ["//java:__subpackages__"])
-
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+
+package(default_visibility = ["//java:__subpackages__"])
 
 pkg_files(
     name = "dist_files",
@@ -15,8 +15,8 @@ pkg_files(
 
 java_test(
     name = "java_version",
-    test_class = "JavaVersionTest",
     srcs = ["JavaVersionTest.java"],
+    test_class = "JavaVersionTest",
     deps = [
         "@maven//:com_google_truth_truth",
         "@maven//:junit_junit",

@@ -68,7 +68,7 @@ class PROTOC_EXPORT JavaGenerator : public CodeGenerator {
   }
 
  private:
-  bool opensource_runtime_ = true;
+  bool opensource_runtime_ = PROTO2_IS_OSS;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(JavaGenerator);
 };
 

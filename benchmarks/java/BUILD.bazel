@@ -1,4 +1,4 @@
-load("@rules_java//java:defs.bzl", "java_library", "java_binary")
+load("@rules_java//java:defs.bzl", "java_binary", "java_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load("//benchmarks:internal.bzl", "internal_benchmark_test")
@@ -22,7 +22,6 @@ java_binary(
 inline_sh_binary(
     name = "java_benchmark",
     srcs = ["//benchmarks/datasets"],
-    tools = [":java_benchmark_jar"],
     cmd = """
         data_files=""
         conf=()
@@ -35,7 +34,8 @@ inline_sh_binary(
         done
         $(rootpath :java_benchmark_jar) com.google.protobuf.ProtoCaliperBenchmark \
             -i runtime -DdataFile=$${data_files:0:-1} $${conf[*]}
-    """
+    """,
+    tools = [":java_benchmark_jar"],
 )
 
 # A pre-configured binary using the checked in datasets.

@@ -7,15 +7,15 @@
 
 #include "google/protobuf/compiler/plugin.h"
 
-using google::protobuf::FileDescriptorProto;
-using google::protobuf::FileDescriptor;
 using google::protobuf::DescriptorPool;
+using google::protobuf::FileDescriptor;
+using google::protobuf::FileDescriptorProto;
 using google::protobuf::io::Printer;
-using google::protobuf::util::SchemaGroupStripper;
 using google::protobuf::util::EnumScrubber;
 using google::protobuf::util::ExtensionStripper;
 using google::protobuf::util::FieldScrubber;
 using google::protobuf::util::ImportScrubber;
+using google::protobuf::util::SchemaGroupStripper;
 
 namespace google {
 namespace protobuf {
@@ -37,9 +37,8 @@ DescriptorPool* GetPool() {
 class Proto2ToProto3Generator final : public CodeGenerator {
  public:
   bool GenerateAll(const std::vector<const FileDescriptor*>& files,
-                           const std::string& parameter,
-                           GeneratorContext* context,
-                           std::string* error) const {
+                   const std::string& parameter, GeneratorContext* context,
+                   std::string* error) const {
     for (int i = 0; i < files.size(); i++) {
       for (auto file : files) {
         if (CanGenerate(file)) {
@@ -52,10 +51,8 @@ class Proto2ToProto3Generator final : public CodeGenerator {
     return true;
   }
 
-  bool Generate(const FileDescriptor* file,
-                        const std::string& parameter,
-                        GeneratorContext* context,
-                        std::string* error) const {
+  bool Generate(const FileDescriptor* file, const std::string& parameter,
+                GeneratorContext* context, std::string* error) const {
     FileDescriptorProto new_file;
     file->CopyTo(&new_file);
     new_file.set_name(ImportScrubber::ScrubFilename(file->name()));
@@ -71,7 +68,7 @@ class Proto2ToProto3Generator final : public CodeGenerator {
     std::string filename = file->name();
     std::string basename = StripProtoExt(filename);
 
-    std::vector<std::pair<std::string,std::string>> option_pairs;
+    std::vector<std::pair<std::string, std::string>> option_pairs;
     ParseGeneratorParameter(parameter, &option_pairs);
 
     std::unique_ptr<google::protobuf::io::ZeroCopyOutputStream> output(
@@ -82,14 +79,16 @@ class Proto2ToProto3Generator final : public CodeGenerator {
 
     return true;
   }
+
  private:
   bool CanGenerate(const FileDescriptor* file) const {
-    if (GetPool()->FindFileByName(ImportScrubber::ScrubFilename(file->name())) != nullptr) {
+    if (GetPool()->FindFileByName(
+            ImportScrubber::ScrubFilename(file->name())) != nullptr) {
       return false;
     }
     for (int j = 0; j < file->dependency_count(); j++) {
       if (GetPool()->FindFileByName(ImportScrubber::ScrubFilename(
-          file->dependency(j)->name())) == nullptr) {
+              file->dependency(j)->name())) == nullptr) {
         return false;
       }
     }

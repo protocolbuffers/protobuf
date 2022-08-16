@@ -306,7 +306,8 @@ if __name__ == '__main__':
       else:
         library_dirs = ['..']
 
-    TestConformanceCmd.target = '//python:conformance_test_cpp --define=use_fast_cpp_protos=true'
+    TestConformanceCmd.target = ('//python:conformance_test_cpp '
+                                 '--define=use_fast_cpp_protos=true')
 
     extra_compile_args = []
 
@@ -331,7 +332,7 @@ if __name__ == '__main__':
       extra_compile_args.append('-Wno-invalid-offsetof')
       extra_compile_args.append('-Wno-sign-compare')
       extra_compile_args.append('-Wno-unused-variable')
-      extra_compile_args.append('-std=c++11')
+      extra_compile_args.append('-std=c++14')
 
     if sys.platform == 'darwin':
       extra_compile_args.append('-Wno-shorten-64-to-32')
