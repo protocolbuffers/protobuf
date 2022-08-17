@@ -1799,7 +1799,8 @@ TEST_F(CommandLineInterfaceTest,
   ExpectNoErrors();
 
   ExpectFileContent("manifest_a",
-                    "$tmpdir/a.pb \\\n$tmpdir/bar.proto.MockCodeGenerator.test_generator: "
+                    "$tmpdir/a.pb \\\n"
+                    "$tmpdir/bar.proto.MockCodeGenerator.test_generator: "
                     "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
 
   Run("protocol_compiler --dependency_out=$tmpdir/manifest_z "
@@ -1809,7 +1810,8 @@ TEST_F(CommandLineInterfaceTest,
   ExpectNoErrors();
 
   ExpectFileContent("manifest_z",
-                    "$tmpdir/bar.proto.MockCodeGenerator.test_generator \\\n$tmpdir/z.pb: "
+                    "$tmpdir/bar.proto.MockCodeGenerator.test_generator \\\n"
+                    "$tmpdir/z.pb: "
                     "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
 }
 #endif  // !_WIN32
