@@ -212,7 +212,6 @@ PyObject* PyUpb_Descriptor_Get(const upb_MessageDef* m) {
 
 PyObject* PyUpb_Descriptor_GetClass(const upb_MessageDef* m) {
   PyObject* ret = PyUpb_ObjCache_Get(upb_MessageDef_MiniTable(m));
-  assert(ret);
   return ret;
 }
 
