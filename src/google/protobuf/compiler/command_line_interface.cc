@@ -2215,6 +2215,12 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
     output_filenames.push_back(descriptor_set_out_name_);
   }
 
+  // Some consumers consider first output as the "primary output" (ninja)
+  // If this doesn't match their primary output it ignores the manifest.
+  // The unordered map for output_directories means we can't guarantee the order of files.
+  // Sorting here makes the "primary output" can be whichever is first alphabetically
+  std::sort(output_filenames.begin(), output_filenames.end());
+
   int fd;
   do {
     fd = open(dependency_out_name_.c_str(),

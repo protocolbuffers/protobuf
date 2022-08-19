@@ -1,4 +1,7 @@
 #!/bin/bash
+# This is an internal file that should only be called from Bazel rules.  For
+# custom conformance tests outside of Bazel use CMAKE with
+# -Dprotobuf_BUILD_CONFORMANCE=ON to build the test runner.
 
 set -x
 echo $@

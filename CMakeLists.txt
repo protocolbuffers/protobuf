@@ -79,6 +79,11 @@ mark_as_advanced(protobuf_DEBUG_POSTFIX)
 # User options
 include(${protobuf_SOURCE_DIR}/cmake/protobuf-options.cmake)
 
+if (protobuf_BUILD_SHARED_LIBS)
+  # This is necessary for linking in Abseil.
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif ()
+
 # Version metadata
 set(protobuf_VERSION_STRING "3.21.4")
 set(protobuf_DESCRIPTION "Protocol Buffers")
