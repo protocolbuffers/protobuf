@@ -1,5 +1,4 @@
 2022-07-01 Unreleased version
-
   C++
   * cpp_generated_lib_linked support is removed in protoc
   * Reduced .pb.o object file size slightly by explicitly instantiating
@@ -11,6 +10,8 @@
   * proto2::MapPair is now an alias to std::pair.
   * Hide C++ RepeatedField::UnsafeArenaSwap
   * Use table-driven parser for reflection based objects.
+  * Update Map's InternalSwap() to take a pointer to the other Map.
+  * Add ARM-optimized Varint decoding functions.
 
   Kotlin
   * Suppress deprecation warnings in Kotlin generated code.
@@ -25,6 +26,8 @@
 
   Python
   * Changes ordering of printed fields in .pyi files from lexicographic to the same ordering found in the proto descriptor.
+  * Adds GeneratedCodeInfo annotations to python proto .pyi outputs as a base64 encoded docstring in the last line of the .pyi file for code analysis tools.
+  * Fix message factory's behavior in python cpp extension to return same message classes for same descriptor, even if the factories are different.
 
   Compiler
   * Print full path name of source .proto file on error

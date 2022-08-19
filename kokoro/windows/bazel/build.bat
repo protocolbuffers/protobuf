@@ -8,7 +8,7 @@ fsutil 8dot3name set 0
 
 @rem TODO(b/241475022) Use docker to guarantee better stability.
 
-@rem Reinstall Bazel due to corupt installation in kokoro.
+@rem Reinstall Bazel due to corrupt installation in kokoro.
 bazel version
 choco install bazel -y -i
 bazel version

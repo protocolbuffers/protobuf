@@ -602,7 +602,7 @@ const char* UnknownFieldParse(uint32_t tag, std::string* unknown,
 //                                      |
 //                                     CLS                                 cyc 3
 //                                      V
-//                Index of first cleared continuation bit minues one
+//                Index of first cleared continuation bit minus one
 //
 //
 // While this is implemented in C++ significant care has been taken to ensure

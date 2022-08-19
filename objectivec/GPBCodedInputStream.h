@@ -220,7 +220,7 @@ CF_EXTERN_C_END
 /**
  * Moves the limit to the given byte offset starting at the current location.
  *
- * @exception GPBCodedInputStreamException If the requested bytes exceeed the
+ * @exception GPBCodedInputStreamException If the requested bytes exceed the
  *            current limit.
  *
  * @param byteLimit The number of bytes to move the limit, offset to the current
