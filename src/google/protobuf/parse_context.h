@@ -561,58 +561,11 @@ inline const char* VarintParseSlow(const char* p, uint32_t res, uint64_t* out) {
   return tmp.first;
 }
 
-#ifdef __aarch64__
-const char* VarintParseSlowArm64(const char* p, uint64_t* out, uint64_t first8);
-const char* VarintParseSlowArm32(const char* p, uint32_t* out, uint64_t first8);
-
-inline const char* VarintParseSlowArm(const char* p, uint32_t* out,
-                                      uint64_t first8) {
-  return VarintParseSlowArm32(p, out, first8);
-}
-
-inline const char* VarintParseSlowArm(const char* p, uint64_t* out,
-                                      uint64_t first8) {
-  return VarintParseSlowArm64(p, out, first8);
-}
-
-// Moves data into a register and returns data.  This impacts the compiler's
-// scheduling and instruction selection decisions.
-static PROTOBUF_ALWAYS_INLINE uint64_t ForceToRegister(uint64_t data) {
-  asm("" : "+r"(data));
-  return data;
-}
-
-// Performs a 7 bit UBFX (Unsigned Bit Extract) starting at the indicated bit.
-static PROTOBUF_ALWAYS_INLINE uint64_t Ubfx7(uint64_t data, uint64_t start) {
-  return ForceToRegister((data >> start) & 0x7f);
-}
-
-#endif  // __aarch64__
-
 template <typename T>
 PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
-#if defined(__aarch64__) && defined(PROTOBUF_LITTLE_ENDIAN)
-  // This optimization not supported in big endian mode
-  uint64_t first8;
-  std::memcpy(&first8, p, sizeof(first8));
-  if (PROTOBUF_PREDICT_TRUE((first8 & 0x80) == 0)) {
-    *out = static_cast<uint8_t>(first8);
-    return p + 1;
-  }
-  if (PROTOBUF_PREDICT_TRUE((first8 & 0x8000) == 0)) {
-    uint64_t chunk1;
-    uint64_t chunk2;
-    // Extracting the two chunks this way gives a speedup for this path.
-    chunk1 = Ubfx7(first8, 0);
-    chunk2 = Ubfx7(first8, 8);
-    *out = chunk1 | (chunk2 << 7);
-    return p + 2;
-  }
-  return VarintParseSlowArm(p, out, first8);
-#else   // __aarch64__
   auto ptr = reinterpret_cast<const uint8_t*>(p);
   uint32_t res = ptr[0];
-  if ((res & 0x80) == 0) {
+  if (!(res & 0x80)) {
     *out = res;
     return p + 1;
   }
@@ -623,7 +576,6 @@ PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
     return p + 2;
   }
   return VarintParseSlow(p, res, out);
-#endif  // __aarch64__
 }
 
 // Used for tags, could read up to 5 bytes which must be available.
@@ -684,7 +636,7 @@ RotRight7AndReplaceLowByte(uint64_t res, const char& byte) {
   res |= 0xFF & byte;
 #endif
   return res;
-}
+};
 
 inline PROTOBUF_ALWAYS_INLINE
 const char* ReadTagInlined(const char* ptr, uint32_t* out) {
