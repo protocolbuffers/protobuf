@@ -227,7 +227,7 @@ int ForkPipeRunner::Run(
           UsageError();
         }
       } else {
-        program += argv[arg];
+        program += argv[arg++];
         while (arg < argc) {
           program_args.push_back(argv[arg]);
           arg++;
@@ -303,8 +303,10 @@ void ForkPipeRunner::SpawnTestProgram() {
 
     std::vector<const char *> argv;
     argv.push_back(executable.get());
+    GOOGLE_LOG(INFO) << argv[0];
     for (size_t i = 0; i < executable_args_.size(); ++i) {
       argv.push_back(executable_args_[i].c_str());
+      GOOGLE_LOG(INFO) << executable_args_[i];
     }
     argv.push_back(nullptr);
     // Never returns.

@@ -12,44 +12,42 @@ contains all of the tests themselves.  Then separate programs written
 in whatever language you want to test communicate with the tester
 program over a pipe.
 
-Before running any of these tests, make sure you run `make` in the base
-directory to build `protoc`, since all the tests depend on it.
+If you're not using Bazel to run these tests, make sure you build the C++
+tester code beforehand, e.g. from the base directory:
 
-    $ make
+    $ cmake . -Dprotobuf_BUILD_CONFORMANCE=ON && cmake --build .
+
+This will produce a `conformance_test_runner` binary that can be used to run
+conformance tests on any executable.  Pass it `--help` for more information.
 
 Running the tests for C++
 -------------------------
 
 To run the tests against the C++ implementation, run:
 
-    $ cd conformance && make test_cpp
+    $ bazel test //src:conformance_test
 
-Running the tests for JavaScript (Node.js)
-------------------------------------------
+Or alternatively with CMake:
 
-To run the JavaScript tests against Node.js, make sure you have "node"
-on your path and then run:
-
-    $ cd conformance && make test_nodejs
-
-Running the tests for Ruby (MRI)
---------------------------------
-
-To run the Ruby tests against MRI, first build the C extension:
-
-    $ cd ruby && rake
-
-Then run the tests like so:
-
-    $ cd conformance && make test_ruby
+    $ ctest -R conformance_cpp_test
 
 Running the tests for other languages
 -------------------------------------
 
-Most of the languages in the Protobuf source tree are set up to run
-conformance tests.  However some of them are more tricky to set up
-properly.  See `tests.sh` in the base of the repository to see how
-Kokoro runs the tests.
+All of the languages in the Protobuf source tree are set up to run conformance
+tests using similar patterns.  You can either use Bazel to run the
+`conformance_test` target defined in the language's root `BUILD.bazel` file,
+or create an executable for a custom test and pass it to
+`conformance_test_runner`.
+
+For example, to run the Ruby tests against MRI, you can call:
+
+    $ bazel test //ruby:conformance_test
+
+Note: CMake can be used to build the conformance test runner, but not any of
+the conformance test executables outside C++.  So if you aren't using Bazel
+you'll need to create the executable you pass to `conformance_test_runner` via
+some alternate build system.
 
 Testing other Protocol Buffer implementations
 ---------------------------------------------

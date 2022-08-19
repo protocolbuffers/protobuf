@@ -27,6 +27,24 @@ endif()
 set(_protobuf_FIND_ABSL "if(NOT TARGET absl::strings)\n  find_package(absl CONFIG)\nendif()")
 
 set(protobuf_ABSL_USED_TARGETS
+  absl::algorithm
+  absl::base
+  absl::bind_front
+  absl::cleanup
+  absl::debugging
+  absl::flags
+  absl::flat_hash_map
+  absl::flat_hash_set
+  absl::function_ref
+  absl::hash
+  absl::memory
+  absl::optional
+  absl::span
+  absl::status
+  absl::statusor
   absl::strings
-  absl::strings_internal
+  absl::synchronization
+  absl::time
+  absl::utility
+  absl::variant
 )
