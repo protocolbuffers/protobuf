@@ -3,15 +3,14 @@
 # Run this script to regenerate *.pbobjc.{h,m} for the well known types after
 # the protocol compiler changes.
 
-# HINT:  Flags passed to generate_well_known_types.sh will be passed directly
-#   to bazel when building protoc.  This is particularly useful for passing
-#   -j4 to run 4 jobs simultaneously.
-
 set -eu
 
 readonly ScriptDir=$(dirname "$(echo $0 | sed -e "s,^\([^/]\),$(pwd)/\1,")")
 readonly ObjCDir="${ScriptDir}"
 readonly ProtoRootDir="${ObjCDir}/.."
+
+# Invoke with BAZEL=bazelisk to use that instead.
+readonly BazelBin="${BAZEL:=bazel}"
 
 # Flag for continuous integration to check that everything is current.
 CHECK_ONLY=0
@@ -31,7 +30,7 @@ __EOF__
 fi
 
 # Make sure the compiler is current.
-bazel build $@ //:protoc
+"${BazelBin}" build $@ //:protoc
 
 cd src
 declare -a RUNTIME_PROTO_FILES=( \

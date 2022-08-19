@@ -30,7 +30,7 @@ def conformance_test(
 
     native.sh_test(
         name = name,
-        srcs = ["//conformance:conformance_test_runner.sh"],
+        srcs = ["//conformance:bazel_conformance_test_runner.sh"],
         data = [testee] + failure_lists + [
             "//conformance:conformance_test_runner",
         ],

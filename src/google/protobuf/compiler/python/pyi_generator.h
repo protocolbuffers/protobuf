@@ -39,7 +39,7 @@
 #include <set>
 #include <string>
 
-#include <google/protobuf/stubs/mutex.h>
+#include "absl/synchronization/mutex.h"
 #include <google/protobuf/compiler/code_generator.h>
 
 // Must be included last.
@@ -77,6 +77,8 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
  private:
   void PrintImportForDescriptor(const FileDescriptor& desc,
                                 std::set<std::string>* seen_aliases) const;
+  template <typename DescriptorT>
+  void Annotate(const std::string& label, const DescriptorT* descriptor) const;
   void PrintImports() const;
   void PrintTopLevelEnums() const;
   void PrintEnum(const EnumDescriptor& enum_descriptor) const;
@@ -97,7 +99,7 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
 
   // Very coarse-grained lock to ensure that Generate() is reentrant.
   // Guards file_, printer_, and import_map_.
-  mutable Mutex mutex_;
+  mutable absl::Mutex mutex_;
   mutable const FileDescriptor* file_;  // Set in Generate().  Under mutex_.
   mutable io::Printer* printer_;        // Set in Generate().  Under mutex_.
   // import_map will be a mapping from filename to module alias, e.g.

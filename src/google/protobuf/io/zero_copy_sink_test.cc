@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/zero_copy_sink.h>
+#include <google/protobuf/io/zero_copy_sink.h>
 
 #include <algorithm>
 #include <array>
@@ -43,7 +43,7 @@
 
 namespace google {
 namespace protobuf {
-namespace util {
+namespace io {
 namespace zc_sink_internal {
 namespace {
 
@@ -221,6 +221,6 @@ TEST_F(ZeroCopyStreamByteSinkTest, WriteLong) {
 }
 }  // namespace
 }  // namespace zc_sink_internal
-}  // namespace util
+}  // namespace io
 }  // namespace protobuf
 }  // namespace google

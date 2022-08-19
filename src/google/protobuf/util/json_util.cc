@@ -36,6 +36,7 @@
 #include <google/protobuf/stubs/bytestream.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_sink.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/util/internal/default_value_objectwriter.h>
 #include <google/protobuf/util/internal/error_listener.h>
@@ -45,7 +46,6 @@
 #include <google/protobuf/util/internal/protostream_objectwriter.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/util/type_resolver_util.h>
-#include <google/protobuf/util/zero_copy_sink.h>
 #include <google/protobuf/stubs/status_macros.h>
 
 
@@ -57,7 +57,7 @@
 namespace google {
 namespace protobuf {
 namespace util {
-using ::google::protobuf::util::zc_sink_internal::ZeroCopyStreamByteSink;
+using ::google::protobuf::io::zc_sink_internal::ZeroCopyStreamByteSink;
 
 util::Status BinaryToJsonStream(TypeResolver* resolver,
                                 const std::string& type_url,

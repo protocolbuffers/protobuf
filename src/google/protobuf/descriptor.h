@@ -54,11 +54,8 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_H__
 #define GOOGLE_PROTOBUF_DESCRIPTOR_H__
 
-#include <cstdint>
-
-#include <google/protobuf/stubs/strutil.h>
-
 #include <atomic>
+#include <cstdint>
 #include <iterator>
 #include <map>
 #include <memory>
@@ -68,17 +65,14 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/port.h>
+#include <google/protobuf/stubs/strutil.h>
+#include "absl/synchronization/mutex.h"
+
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
-
-// TYPE_BOOL is defined in the MacOS's ConditionalMacros.h.
-#ifdef TYPE_BOOL
-#undef TYPE_BOOL
-#endif  // TYPE_BOOL
 
 #ifdef SWIG
 #define PROTOBUF_EXPORT
@@ -2058,7 +2052,7 @@ class PROTOBUF_EXPORT DescriptorPool {
 
   // If fallback_database_ is nullptr, this is nullptr.  Otherwise, this is a
   // mutex which must be locked while accessing tables_.
-  internal::WrappedMutex* mutex_;
+  absl::Mutex* mutex_;
 
   // See constructor.
   DescriptorDatabase* fallback_database_;

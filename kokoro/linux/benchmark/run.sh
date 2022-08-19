@@ -12,6 +12,14 @@ set -ex
 export OUTPUT_DIR=testoutput
 repo_root="$(pwd)"
 
+# Setup python environment.
+pyenv install -v 3.9.5 -s
+pyenv global 3.9.5
+pyenv versions
+python --version
+python -m venv "venv"
+source "venv/bin/activate"
+
 # TODO(jtattermusch): Add back support for benchmarking with tcmalloc for C++ and python.
 # This feature was removed since it used to use tcmalloc from https://github.com/gperftools/gperftools.git
 # which is very outdated. See https://github.com/protocolbuffers/protobuf/issues/8725.

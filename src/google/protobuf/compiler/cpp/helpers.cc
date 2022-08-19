@@ -41,12 +41,15 @@
 #include <map>
 #include <memory>
 #include <queue>
-#include <unordered_set>
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/descriptor.h>
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+#include <google/protobuf/stubs/strutil.h>
+#include "absl/synchronization/mutex.h"
 #include <google/protobuf/compiler/cpp/names.h>
 #include <google/protobuf/compiler/cpp/options.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -56,7 +59,6 @@
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/stubs/hash.h>
 
@@ -176,15 +178,17 @@ static const char* const kKeywordList[] = {
 #endif  // !PROTOBUF_FUTURE_BREAKING_CHANGES
 };
 
-static std::unordered_set<std::string>* MakeKeywordsMap() {
-  auto* result = new std::unordered_set<std::string>();
-  for (const auto keyword : kKeywordList) {
-    result->emplace(keyword);
-  }
-  return result;
-}
+const absl::flat_hash_set<std::string>& Keywords() {
+  static const auto* keywords = [] {
+    auto* keywords = new absl::flat_hash_set<std::string>();
 
-static std::unordered_set<std::string>& kKeywords = *MakeKeywordsMap();
+    for (const auto keyword : kKeywordList) {
+      keywords->emplace(keyword);
+    }
+    return keywords;
+  }();
+  return *keywords;
+}
 
 std::string IntTypeName(const Options& options, const std::string& type) {
   return type + "_t";
@@ -509,7 +513,7 @@ std::string SuperClassName(const Descriptor* descriptor,
 }
 
 std::string ResolveKeyword(const std::string& name) {
-  if (kKeywords.count(name) > 0) {
+  if (Keywords().count(name) > 0) {
     return name + "_";
   }
   return name;
@@ -518,7 +522,7 @@ std::string ResolveKeyword(const std::string& name) {
 std::string FieldName(const FieldDescriptor* field) {
   std::string result = field->name();
   LowerString(&result);
-  if (kKeywords.count(result) > 0) {
+  if (Keywords().count(result) > 0) {
     result.append("_");
   }
   return result;
@@ -552,7 +556,7 @@ std::string QualifiedOneofCaseConstantName(const FieldDescriptor* field) {
 
 std::string EnumValueName(const EnumValueDescriptor* enum_value) {
   std::string result = enum_value->name();
-  if (kKeywords.count(result) > 0) {
+  if (Keywords().count(result) > 0) {
     result.append("_");
   }
   return result;
@@ -863,7 +867,7 @@ std::string SafeFunctionName(const Descriptor* descriptor,
     // Single underscore will also make it conflicting with the private data
     // member. We use double underscore to escape function names.
     function_name.append("__");
-  } else if (kKeywords.count(name) > 0) {
+  } else if (Keywords().count(name) > 0) {
     // If the field name is a keyword, we append the underscore back to keep it
     // consistent with other function names.
     function_name.append("_");
@@ -1066,7 +1070,7 @@ bool ShouldVerify(const FileDescriptor* file, const Options& options,
 
 bool IsUtf8String(const FieldDescriptor* field) {
   return IsProto3(field->file()) &&
-      field->type() == FieldDescriptor::TYPE_STRING;
+         field->type() == FieldDescriptor::TYPE_STRING;
 }
 
 VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor) {
@@ -1116,7 +1120,7 @@ bool IsAnyMessage(const Descriptor* descriptor, const Options& options) {
 }
 
 bool IsWellKnownMessage(const FileDescriptor* file) {
-  static const std::unordered_set<std::string> well_known_files{
+  static const auto* well_known_files = new absl::flat_hash_set<std::string>{
       "google/protobuf/any.proto",
       "google/protobuf/api.proto",
       "google/protobuf/compiler/plugin.proto",
@@ -1130,7 +1134,7 @@ bool IsWellKnownMessage(const FileDescriptor* file) {
       "google/protobuf/type.proto",
       "google/protobuf/wrappers.proto",
   };
-  return well_known_files.find(file->name()) != well_known_files.end();
+  return well_known_files->find(file->name()) != well_known_files->end();
 }
 
 static void GenerateUtf8CheckCode(const FieldDescriptor* field,
@@ -1345,16 +1349,19 @@ bool GetBootstrapBasename(const Options& options, const std::string& basename,
     return false;
   }
 
-  std::unordered_map<std::string, std::string> bootstrap_mapping{
-      {"net/proto2/proto/descriptor",
-       "third_party/protobuf/descriptor"},
-      {"net/proto2/compiler/proto/plugin",
-       "net/proto2/compiler/proto/plugin"},
-      {"net/proto2/compiler/proto/profile",
-       "net/proto2/compiler/proto/profile_bootstrap"},
-  };
-  auto iter = bootstrap_mapping.find(basename);
-  if (iter == bootstrap_mapping.end()) {
+  static const auto* bootstrap_mapping =
+      // TODO(b/242858704) Replace these with string_view once we remove
+      // StringPiece.
+      new absl::flat_hash_map<std::string, std::string>{
+          {"net/proto2/proto/descriptor",
+           "third_party/protobuf/descriptor"},
+          {"net/proto2/compiler/proto/plugin",
+           "net/proto2/compiler/proto/plugin"},
+          {"net/proto2/compiler/proto/profile",
+           "net/proto2/compiler/proto/profile_bootstrap"},
+      };
+  auto iter = bootstrap_mapping->find(basename);
+  if (iter == bootstrap_mapping->end()) {
     *bootstrap_basename = basename;
     return false;
   } else {
@@ -1490,9 +1497,18 @@ static bool HasExtensionFromFile(const Message& msg, const FileDescriptor* file,
 static bool HasBootstrapProblem(const FileDescriptor* file,
                                 const Options& options,
                                 bool* has_opt_codesize_extension) {
-  static auto& cache = *new std::unordered_map<const FileDescriptor*, bool>;
-  auto it = cache.find(file);
-  if (it != cache.end()) return it->second;
+  struct BoostrapGlobals {
+    absl::Mutex mutex;
+    absl::flat_hash_set<const FileDescriptor*> cached ABSL_GUARDED_BY(mutex);
+    absl::flat_hash_set<const FileDescriptor*> non_cached
+        ABSL_GUARDED_BY(mutex);
+  };
+  static auto& bootstrap_cache = *new BoostrapGlobals();
+
+  absl::MutexLock lock(&bootstrap_cache.mutex);
+  if (bootstrap_cache.cached.contains(file)) return true;
+  if (bootstrap_cache.non_cached.contains(file)) return false;
+
   // In order to build the data structures for the reflective parse, it needs
   // to parse the serialized descriptor describing all the messages defined in
   // this file. Obviously this presents a bootstrap problem for descriptor
@@ -1528,9 +1544,13 @@ static bool HasBootstrapProblem(const FileDescriptor* file,
   Message* fd_proto = factory.GetPrototype(fd_proto_descriptor)->New();
   fd_proto->ParseFromString(linkedin_fd_proto.SerializeAsString());
 
-  bool& res = cache[file];
-  res = HasExtensionFromFile(*fd_proto, file, options,
-                             has_opt_codesize_extension);
+  bool res = HasExtensionFromFile(*fd_proto, file, options,
+                                  has_opt_codesize_extension);
+  if (res) {
+    bootstrap_cache.cached.insert(file);
+  } else {
+    bootstrap_cache.non_cached.insert(file);
+  }
   delete fd_proto;
   return res;
 }

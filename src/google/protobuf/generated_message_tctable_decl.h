@@ -36,6 +36,7 @@
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_DECL_H__
 
 #include <array>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
@@ -175,9 +176,35 @@ struct alignas(uint64_t) TcParseTableBase {
   // Table entry for fast-path tailcall dispatch handling.
   struct FastFieldEntry {
     // Target function for dispatch:
-    TailCallParseFunc target;
+    mutable std::atomic<TailCallParseFunc> target_atomic;
+
     // Field data used during parse:
     TcFieldData bits;
+
+    // Default initializes this instance with undefined values.
+    FastFieldEntry() = default;
+
+    // Constant initializes this instance
+    constexpr FastFieldEntry(TailCallParseFunc func, TcFieldData bits)
+        : target_atomic(func), bits(bits) {}
+
+    // FastFieldEntry is copy-able and assignable, which is intended
+    // mainly for testing and debugging purposes.
+    FastFieldEntry(const FastFieldEntry& rhs) noexcept
+        : FastFieldEntry(rhs.target(), rhs.bits) {}
+    FastFieldEntry& operator=(const FastFieldEntry& rhs) noexcept {
+      SetTarget(rhs.target());
+      bits = rhs.bits;
+      return *this;
+    }
+
+    // Protocol buffer code should use these relaxed accessors.
+    TailCallParseFunc target() const {
+      return target_atomic.load(std::memory_order_relaxed);
+    }
+    void SetTarget(TailCallParseFunc func) const {
+      return target_atomic.store(func, std::memory_order_relaxed);
+    }
   };
   // There is always at least one table entry.
   const FastFieldEntry* fast_entry(size_t idx) const {

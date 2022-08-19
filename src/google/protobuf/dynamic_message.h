@@ -45,7 +45,7 @@
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/mutex.h>
+#include "absl/synchronization/mutex.h"
 #include <google/protobuf/message.h>
 #include <google/protobuf/reflection.h>
 #include <google/protobuf/repeated_field.h>
@@ -136,7 +136,7 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
 
   struct TypeInfo;
   std::unordered_map<const Descriptor*, const TypeInfo*> prototypes_;
-  mutable internal::WrappedMutex prototypes_mutex_;
+  mutable absl::Mutex prototypes_mutex_;
 
   friend class DynamicMessage;
   const Message* GetPrototypeNoLock(const Descriptor* type);

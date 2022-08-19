@@ -10,6 +10,9 @@ readonly ScriptDir=$(dirname "$(echo $0 | sed -e "s,^\([^/]\),$(pwd)/\1,")")
 readonly ProtoRootDir="${ScriptDir}/../.."
 readonly BazelFlags="-k --test_output=streamed --macos_minimum_os=10.9"
 
+# Invoke with BAZEL=bazelisk to use that instead.
+readonly BazelBin="${BAZEL:=bazel}"
+
 printUsage() {
   NAME=$(basename "${0}")
   cat << EOF
@@ -28,8 +31,6 @@ OPTIONS:
    -r, --regenerate-descriptors
          Run generate_descriptor_proto.sh to regenerate all the checked in
          proto sources.
-   -j #, --jobs #
-         Force the number of parallel jobs (useful for debugging build issues).
    --core-only
          Skip some of the core protobuf build/checks to shorten the build time.
    --skip-xcode
@@ -59,7 +60,7 @@ header() {
   echo "========================================================================"
 }
 
-NUM_JOBS=auto
+BAZEL=bazel
 DO_CLEAN=no
 REGEN_DESCRIPTORS=no
 CORE_ONLY=no
@@ -81,10 +82,6 @@ while [[ $# != 0 ]]; do
       ;;
     -r | --regenerate-descriptors )
       REGEN_DESCRIPTORS=yes
-      ;;
-    -j | --jobs )
-      shift
-      NUM_JOBS="${1}"
       ;;
     --core-only )
       CORE_ONLY=yes
@@ -134,7 +131,7 @@ cd "${ProtoRootDir}"
 
 if [[ "${DO_CLEAN}" == "yes" ]] ; then
   header "Cleaning"
-  bazel clean
+  "${BazelBin}" clean
   if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
     XCODEBUILD_CLEAN_BASE_IOS=(
       xcodebuild
@@ -178,23 +175,23 @@ fi
 
 if [[ "${REGEN_DESCRIPTORS}" == "yes" ]] ; then
   header "Regenerating the descriptor sources."
-  ./generate_descriptor_proto.sh -j "${NUM_JOBS}"
+  ./generate_descriptor_proto.sh
 fi
 
 if [[ "${CORE_ONLY}" == "yes" ]] ; then
   header "Building core Only"
-  bazel build //:protoc //:protobuf //:protobuf_lite -j "${NUM_JOBS}" $BazelFlags
+  "${BazelBin}" build //:protoc //:protobuf //:protobuf_lite $BazelFlags
 else
   header "Building"
   # Can't issue these together, when fully parallel, something sometimes chokes
   # at random.
-  bazel test //src/... $BazelFlags
+  "${BazelBin}" test //src/... $BazelFlags
   # Fire off the conformance tests also.
-  bazel test //objectivec:conformance_test $BazelFlags
+  "${BazelBin}" test //objectivec:conformance_test $BazelFlags
 fi
 
 # Ensure the WKT sources checked in are current.
-objectivec/generate_well_known_types.sh --check-only -j "${NUM_JOBS}"
+BAZEL="${BazelBin}" objectivec/generate_well_known_types.sh --check-only
 
 header "Checking on the ObjC Runtime Code"
 # Some of the kokoro machines don't have python3 yet, so fall back to python if need be.
@@ -354,7 +351,7 @@ fi
 
 if [[ "${DO_OBJC_CONFORMANCE_TESTS}" == "yes" ]] ; then
   header "Running ObjC Conformance Tests"
-  bazel test //objectivec:conformance_test $BazelFlags
+  "${BazelBin}" test //objectivec:conformance_test $BazelFlags
 fi
 
 echo ""

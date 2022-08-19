@@ -1102,10 +1102,13 @@ void ParseFunctionGenerator::GenerateFieldBody(
         format.Set("enum_type",
                    QualifiedClassName(field->enum_type(), options_));
         format(
-            "$uint64$ val = ::$proto_ns$::internal::ReadVarint64(&ptr);\n"
+            "$uint32$ val = ::$proto_ns$::internal::ReadVarint32(&ptr);\n"
             "CHK_(ptr);\n");
         if (!internal::cpp::HasPreservingUnknownEnumSemantics(field)) {
-          format("if (PROTOBUF_PREDICT_TRUE($enum_type$_IsValid(val))) {\n");
+          format(
+              "if "
+              "(PROTOBUF_PREDICT_TRUE($enum_type$_IsValid(static_cast<int>(val)"
+              "))) {\n");
           format.Indent();
         }
         format("$msg$_internal_$put_field$(static_cast<$enum_type$>(val));\n");
