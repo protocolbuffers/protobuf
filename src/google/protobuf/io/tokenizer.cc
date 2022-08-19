@@ -273,7 +273,15 @@ void Tokenizer::NextChar() {
     column_ = 0;
   } else if (current_char_ == '\t') {
     column_ += kTabWidth - column_ % kTabWidth;
-  } else {
+  } else if (!require_valid_utf8_) {
+    // if not requiring valid UTF8, treat every byte as a character
+    ++column_;
+  } else if (at_utf8_codepoint_end_) {
+    // this is the last byte in a multi-byte codepoint
+    ++column_;
+    at_utf8_codepoint_end_ = false;
+  } else if ((current_char_ & 0x80) == 0) {
+    // this is not part of a multi-byte codepoint
     ++column_;
   }
 
@@ -283,6 +291,100 @@ void Tokenizer::NextChar() {
     current_char_ = buffer_[buffer_pos_];
   } else {
     Refresh();
+  }
+  CheckUtf8();
+}
+
+void Tokenizer::CheckUtf8() {
+  if (!require_valid_utf8_) {
+    return;
+  }
+
+  // If we were in the middle of a multi-byte code point and realize
+  // that we abruply no longer are (due to malformed encoding), we will
+  // increment column_ to acknowledge the position of the malformed
+  // character.
+
+  if (read_error_) {
+    if (expect_utf8_follow_ > 0) {
+      // last code point in file is incomplete
+      AddError("malformed UTF8 input: incomplete code point");
+      column_++;
+      expect_utf8_follow_ = 0;
+      utf8_codepoint_ = 0;
+    }
+    return;
+  }
+
+  // Initial byte in multi-byte code point has two high bits set
+  // (11xxxxxx). The following bytes have high bit set but next-highest
+  // bit unset (10xxxxxx).
+  bool is_utf8_initial = (current_char_ & 0xC0) == 0xC0;
+  bool is_utf8_follow = (current_char_ & 0xC0) == 0x80;
+
+  if (expect_utf8_follow_ > 0 && !is_utf8_follow) {
+    // follow byte expected but not found
+    AddError("malformed UTF8 input: incomplete code point");
+    column_++;
+    expect_utf8_follow_ = 0;
+    utf8_codepoint_ = 0;
+  } else if (expect_utf8_follow_ == 0 && is_utf8_follow) {
+    // follow byte found but not expected
+    at_utf8_codepoint_end_ = true;
+    AddError("malformed UTF8 input: invalid character");
+  } else if (expect_utf8_follow_ > 0) {
+    utf8_codepoint_ <<= 6;
+    utf8_codepoint_ |= (current_char_ & 0x3F);
+    if (--expect_utf8_follow_ == 0) {
+      // code point is now complete, but we don't want to
+      // increment column for the BOM at the start of the file
+      if (utf8_codepoint_ != 0xFEFF || line_ != 0 || column_ != 0) {
+        at_utf8_codepoint_end_ = true;
+      }
+      if (utf8_codepoint_ > 0x10FFFF) {
+        // codepoint out of range
+        AddError("malformed UTF8 input: code point out of range");
+      }
+      utf8_codepoint_ = 0;
+    }
+  }
+
+  if (!is_utf8_initial) {
+    // no more book-keeping needed
+    return;
+  }
+
+  // First byte of a multi-byte character has highest
+  // two bits set (11xxxxxx). The total length of the
+  // code point is the number of leading bits set. All
+  // bits after the first zero are part of the code point.
+
+  // TODO: C++20 introduces std::countl_zero, which would be
+  //   the ideal way to do this via CPU instruction instead
+  //   of this switch. Must include <bit>.
+  //expect_utf8_follow_ = std::countl_zero((unsigned char)~current_char_) - 1;
+  //if (expect_utf8_follow_ > 3) {
+  //  // too many high bits set!
+  //  AddError("malformed UTF8 input: invalid character");
+  //  expect_utf8_follow_ = 0;
+  //} else {
+  //  int mask = 0xFF >> (expect_utf8_follow_ + 2);
+  //  utf8_codepoint_ = (current_char_ & mask);
+  //}
+
+  if ((current_char_ & 0xE0) == 0xC0) {
+    expect_utf8_follow_ = 1;
+    utf8_codepoint_ = current_char_ & 0x1F;
+  } else if ((current_char_ & 0xF0) == 0xE0) {
+    expect_utf8_follow_ = 2;
+    utf8_codepoint_ = current_char_ & 0x0F;
+  } else if ((current_char_ & 0xF8) == 0xF0) {
+    expect_utf8_follow_ = 3;
+    utf8_codepoint_ = current_char_ & 0x07;
+  } else {
+    // too many high bits set!
+    at_utf8_codepoint_end_ = true;
+    AddError("malformed UTF8 input: invalid character");
   }
 }
 

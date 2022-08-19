@@ -293,6 +293,7 @@ TEST_F(ParseMessageTest, BOMError) {
       "}\n";
   input[0] = (char)0xEF;
   ExpectHasErrors(input,
+                  "0:0: malformed UTF8 input: incomplete code point\n"
                   "0:1: Proto file starts with 0xEF but not UTF-8 BOM. "
                   "Only UTF-8 is accepted for proto file.\n"
                   "0:0: Expected top-level statement (e.g. \"message\").\n");

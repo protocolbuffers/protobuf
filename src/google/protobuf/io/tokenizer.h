@@ -237,6 +237,15 @@ class PROTOBUF_EXPORT Tokenizer {
   // ignored.
   void set_allow_f_after_float(bool value) { allow_f_after_float_ = value; }
 
+  // Set true to require that input be valid UTF8.
+  void set_require_valid_utf8(bool value) {
+    require_valid_utf8_ = value;
+    if (value) {
+      // initialize book-keeping flags from first char of input
+      CheckUtf8();
+    }
+  }
+
   // Valid values for set_comment_style().
   enum CommentStyle {
     // Line comments begin with "//", block comments are delimited by "/*" and
@@ -307,6 +316,12 @@ class PROTOBUF_EXPORT Tokenizer {
   bool report_whitespace_ = false;
   bool report_newlines_ = false;
 
+  bool require_valid_utf8_ = false;
+  // book-keeping to implement above requirement
+  int expect_utf8_follow_ = 0;
+  int utf8_codepoint_ = 0;
+  bool at_utf8_codepoint_end_ = false;
+
   // Since we count columns we need to interpret tabs somehow.  We'll take
   // the standard 8-character definition for lack of any way to do better.
   // This must match the documentation of ColumnNumber.
@@ -320,6 +335,10 @@ class PROTOBUF_EXPORT Tokenizer {
 
   // Read a new buffer from the input.
   void Refresh();
+
+  // Check the most recent character read to verify that the input
+  // is correctly encoded UTF8. Does nothing if !require_valid_utf8_.
+  void CheckUtf8();
 
   inline void RecordTo(std::string* target);
   inline void StopRecording();

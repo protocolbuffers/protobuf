@@ -116,6 +116,35 @@ namespace {
   void FIXTURE##_##NAME##_DD::DoSingleCase(const CaseType1& CASES1##_case,  \
                                            const CaseType2& CASES2##_case)
 
+// Same as TEST_2D but adds additional dimension for
+// whether to require valid UTF8 or not
+#define TEST_2D_WITH_UTF8_CASE(FIXTURE, NAME, CASES1, CASES2)                 \
+  class FIXTURE##_##NAME##_DD : public FIXTURE {                              \
+   protected:                                                                 \
+    template <typename CaseType1, typename CaseType2>                         \
+    void DoSingleCase(const CaseType1& CASES1##_case,                         \
+                      const CaseType2& CASES2##_case,                         \
+                      const bool requireValidUTF8_case);                      \
+  };                                                                          \
+                                                                              \
+  TEST_F(FIXTURE##_##NAME##_DD, NAME) {                                       \
+    for (int i = 0; i < GOOGLE_ARRAYSIZE(CASES1); i++) {                      \
+      for (int j = 0; j < GOOGLE_ARRAYSIZE(CASES2); j++) {                    \
+        for (int k = 0; k < 2; k++) {                                         \
+          SCOPED_TRACE(testing::Message()                                     \
+                       << #CASES1 " case #" << i << ": " << CASES1[i] << ", " \
+                       << #CASES2 " case #" << j << ": " << CASES2[j]);       \
+          DoSingleCase(CASES1[i], CASES2[j], (bool) k);                       \
+        }                                                                     \
+      }                                                                       \
+    }                                                                         \
+  }                                                                           \
+                                                                              \
+  template <typename CaseType1, typename CaseType2>                           \
+  void FIXTURE##_##NAME##_DD::DoSingleCase(const CaseType1& CASES1##_case,    \
+                                           const CaseType2& CASES2##_case,    \
+                                           const bool requireValidUTF8_case)  \
+
 // -------------------------------------------------------------------
 
 // An input stream that is basically like an ArrayInputStream but sometimes
@@ -246,12 +275,13 @@ SimpleTokenCase kSimpleTokenCases[] = {
     {".", Tokenizer::TYPE_SYMBOL},
 };
 
-TEST_2D(TokenizerTest, SimpleTokens, kSimpleTokenCases, kBlockSizes) {
+TEST_2D_WITH_UTF8_CASE(TokenizerTest, SimpleTokens, kSimpleTokenCases, kBlockSizes) {
   // Set up the tokenizer.
   TestInputStream input(kSimpleTokenCases_case.input.data(),
                         kSimpleTokenCases_case.input.size(), kBlockSizes_case);
   TestErrorCollector error_collector;
   Tokenizer tokenizer(&input, &error_collector);
+  tokenizer.set_require_valid_utf8(requireValidUTF8_case);
 
   // Before Next() is called, the initial token should always be TYPE_START.
   EXPECT_EQ(Tokenizer::TYPE_START, tokenizer.current().type);
@@ -330,13 +360,14 @@ SimpleTokenCase kWhitespaceTokenCases[] = {
     {"\n", Tokenizer::TYPE_NEWLINE},
 };
 
-TEST_2D(TokenizerTest, Whitespace, kWhitespaceTokenCases, kBlockSizes) {
+TEST_2D_WITH_UTF8_CASE(TokenizerTest, Whitespace, kWhitespaceTokenCases, kBlockSizes) {
   {
     TestInputStream input(kWhitespaceTokenCases_case.input.data(),
                           kWhitespaceTokenCases_case.input.size(),
                           kBlockSizes_case);
     TestErrorCollector error_collector;
     Tokenizer tokenizer(&input, &error_collector);
+    tokenizer.set_require_valid_utf8(requireValidUTF8_case);
 
     EXPECT_FALSE(tokenizer.Next());
   }
@@ -348,6 +379,7 @@ TEST_2D(TokenizerTest, Whitespace, kWhitespaceTokenCases, kBlockSizes) {
     Tokenizer tokenizer(&input, &error_collector);
     tokenizer.set_report_whitespace(true);
     tokenizer.set_report_newlines(true);
+    tokenizer.set_require_valid_utf8(requireValidUTF8_case);
 
     ASSERT_TRUE(tokenizer.Next());
     EXPECT_EQ(tokenizer.current().text, kWhitespaceTokenCases_case.input);
@@ -465,12 +497,13 @@ MultiTokenCase kMultiTokenCases[] = {
      }},
 };
 
-TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
+TEST_2D_WITH_UTF8_CASE(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
   // Set up the tokenizer.
   TestInputStream input(kMultiTokenCases_case.input.data(),
                         kMultiTokenCases_case.input.size(), kBlockSizes_case);
   TestErrorCollector error_collector;
   Tokenizer tokenizer(&input, &error_collector);
+  tokenizer.set_require_valid_utf8(requireValidUTF8_case);
 
   // Before Next() is called, the initial token should always be TYPE_START.
   EXPECT_EQ(Tokenizer::TYPE_START, tokenizer.current().type);
@@ -536,7 +569,7 @@ MultiTokenCase kMultiWhitespaceTokenCases[] = {
 
 };
 
-TEST_2D(TokenizerTest, MultipleWhitespaceTokens, kMultiWhitespaceTokenCases,
+TEST_2D_WITH_UTF8_CASE(TokenizerTest, MultipleWhitespaceTokens, kMultiWhitespaceTokenCases,
         kBlockSizes) {
   // Set up the tokenizer.
   TestInputStream input(kMultiWhitespaceTokenCases_case.input.data(),
@@ -544,6 +577,7 @@ TEST_2D(TokenizerTest, MultipleWhitespaceTokens, kMultiWhitespaceTokenCases,
                         kBlockSizes_case);
   TestErrorCollector error_collector;
   Tokenizer tokenizer(&input, &error_collector);
+  tokenizer.set_require_valid_utf8(requireValidUTF8_case);
   tokenizer.set_report_whitespace(true);
   tokenizer.set_report_newlines(true);
 
@@ -765,12 +799,13 @@ DocCommentCase kDocCommentCases[] = {
      " leading comment\n"},
 };
 
-TEST_2D(TokenizerTest, DocComments, kDocCommentCases, kBlockSizes) {
+TEST_2D_WITH_UTF8_CASE(TokenizerTest, DocComments, kDocCommentCases, kBlockSizes) {
   // Set up the tokenizer.
   TestInputStream input(kDocCommentCases_case.input.data(),
                         kDocCommentCases_case.input.size(), kBlockSizes_case);
   TestErrorCollector error_collector;
   Tokenizer tokenizer(&input, &error_collector);
+  tokenizer.set_require_valid_utf8(requireValidUTF8_case);
 
   // Set up a second tokenizer where we'll pass all NULLs to NextWithComments().
   TestInputStream input2(kDocCommentCases_case.input.data(),
@@ -1169,6 +1204,186 @@ TEST_1D(TokenizerTest, BackUpOnDestruction, kBlockSizes) {
   EXPECT_EQ(strlen("foo"), input.ByteCount());
 }
 
+// -------------------------------------------------------------------
+
+struct RequireValidUtf8Case {
+  std::string input;
+  std::string expected_error;
+
+  std::vector<Tokenizer::Token> output;
+  std::vector<std::string> comments;
+};
+
+inline std::ostream& operator<<(std::ostream& out,
+                                const RequireValidUtf8Case& test_case) {
+  return out << absl::CEscape(test_case.input);
+}
+
+RequireValidUtf8Case kRequireValidUtf8Cases[] = {
+    // Test empty input.
+    {"",
+     "",
+     {
+         {Tokenizer::TYPE_END, "", 0, 0, 0},
+     },
+     {}},
+
+    // Valid BOM.
+    {"\xEF\xBB\xBF""foo",
+     "",
+     {
+         {Tokenizer::TYPE_IDENTIFIER, "foo", 0, 0, 3},
+         {Tokenizer::TYPE_END, "", 0, 3, 3},
+     },
+     {}},
+
+    // Nothing but 7-bit ASCII
+    {"// foobar\n foo 1 1.2 + 'bar'",
+     "",
+     {
+         {Tokenizer::TYPE_IDENTIFIER, "foo", 1, 1, 4},
+         {Tokenizer::TYPE_INTEGER, "1", 1, 5, 6},
+         {Tokenizer::TYPE_FLOAT, "1.2", 1, 7, 10},
+         {Tokenizer::TYPE_SYMBOL, "+", 1, 11, 12},
+         {Tokenizer::TYPE_STRING, "'bar'", 1, 13, 18},
+         {Tokenizer::TYPE_END, "", 1, 18, 18},
+     },
+     {
+         " foobar\n",
+     }},
+
+    // Valid UTF8
+    {"/* Foo © bar 𝌆 baz ☃ qux */ 'Foo © bar 𝌆 baz ☃ qux' 𝌆",
+     // Since last code point is not in a comment or string literal, we also get
+     // errors about non-ascii symbols for each of the four bytes. In a real parser,
+     // this means it would stop at the first and complain about codepoint 240 (even
+     // though it's actually just the first byte of codepoint 0x1D307). 🤷
+     // Fixing that would likely require re-writing the entire tokenizer to be
+     // completely rune/codepoint-based instead of byte-based.
+     "0:52: Interpreting non ascii codepoint 240.\n"
+        "0:52: Interpreting non ascii codepoint 157.\n"
+        "0:52: Interpreting non ascii codepoint 140.\n"
+        "0:52: Interpreting non ascii codepoint 134.\n",
+     {
+         {Tokenizer::TYPE_STRING, "'Foo © bar 𝌆 baz ☃ qux'", 0, 28, 51},
+         // multi-byte code point NOT in comment or string gets interpreted
+         // as a symbol per byte, but all at the same source location
+         {Tokenizer::TYPE_SYMBOL, "\xF0", 0, 52, 52},
+         {Tokenizer::TYPE_SYMBOL, "\x9D", 0, 52, 52},
+         {Tokenizer::TYPE_SYMBOL, "\x8C", 0, 52, 52},
+         {Tokenizer::TYPE_SYMBOL, "\x86", 0, 52, 53},
+         {Tokenizer::TYPE_END, "", 0, 53, 53},
+     },
+     {
+       " Foo © bar 𝌆 baz ☃ qux ", // UTF8 symbols in comments are properly preserved
+     }},
+
+    // Unexpected EOF in middle of multi-byte character
+    {"\xF0\x9D",
+     // since this is not in a comment or string literal, we also get errors about non-ascii symbols
+     "0:0: Interpreting non ascii codepoint 240.\n"
+        "0:0: Interpreting non ascii codepoint 157.\n"
+        "0:0: malformed UTF8 input: incomplete code point\n",
+     {
+         {Tokenizer::TYPE_SYMBOL, "\xF0", 0, 0, 0},
+         {Tokenizer::TYPE_SYMBOL, "\x9D", 0, 0, 1},
+         {Tokenizer::TYPE_END, "", 0, 1, 1},
+     },
+     {}},
+
+    // Incomplete multi-byte character
+    {"'foo \xF0\x9D bar'",
+     "0:5: malformed UTF8 input: incomplete code point\n",
+     {},
+     {}},
+
+    // Maximum allowed codepoint \U0010FFFF
+    {"\" \xF4\x8F\xBF\xBF \"",
+     "",
+     {
+         {Tokenizer::TYPE_STRING, "\" \xF4\x8F\xBF\xBF \"", 0, 0, 5},
+         {Tokenizer::TYPE_END, "", 0, 5, 5},
+     },
+     {}},
+
+    // Out of range (\U00110000)
+    {"\" \xF4\x90\x80\x80 \"",
+     "0:2: malformed UTF8 input: code point out of range\n",
+     {},
+     {}},
+
+    // Impossibly long code point
+    {"\" \xFB\x80\x80\x80\x80 \"",
+     // we complain at the initial char and then every subsequent one is also bad
+     // (since it's an unexpected follow character)
+     "0:2: malformed UTF8 input: invalid character\n"
+        "0:3: malformed UTF8 input: invalid character\n"
+        "0:4: malformed UTF8 input: invalid character\n"
+        "0:5: malformed UTF8 input: invalid character\n"
+        "0:6: malformed UTF8 input: invalid character\n",
+     {},
+     {}},
+
+    // Unexpected follow byte
+    {"\" foo \x80 bar \"",
+     "0:6: malformed UTF8 input: invalid character\n",
+     {},
+     {}},
+};
+
+const int kBlockSizesTmp[] = {1};
+TEST_2D(TokenizerTest, RequireValidUtf8, kRequireValidUtf8Cases, kBlockSizesTmp) {
+    // Set up the tokenizer.
+  TestInputStream input(kRequireValidUtf8Cases_case.input.data(),
+                        kRequireValidUtf8Cases_case.input.size(), kBlockSizesTmp_case);
+  TestErrorCollector error_collector;
+  Tokenizer tokenizer(&input, &error_collector);
+  tokenizer.set_require_valid_utf8(true);
+
+  // Loop through all expected tokens.
+  int i = 0;
+  std::vector<std::string> all_comments;
+  for (auto & token : kRequireValidUtf8Cases_case.output) {
+    SCOPED_TRACE(testing::Message() << "Token #" << i++ << ": " << token.text);
+
+    std::string prev_trailing_comments;
+    std::vector<std::string> detached_comments;
+    std::string next_leading_comments;
+    bool next = tokenizer.NextWithComments(&prev_trailing_comments, &detached_comments,
+                             &next_leading_comments);
+    // NextWithComments() should only return false when it hits the end token.
+    if (token.type != Tokenizer::TYPE_END) {
+      ASSERT_TRUE(next);
+    } else {
+      ASSERT_FALSE(next);
+    }
+
+    // Check that the token matches the expected one.
+    EXPECT_EQ(token.type, tokenizer.current().type);
+    EXPECT_EQ(token.text, tokenizer.current().text);
+    EXPECT_EQ(token.line, tokenizer.current().line);
+    EXPECT_EQ(token.column, tokenizer.current().column);
+    EXPECT_EQ(token.end_column, tokenizer.current().end_column);
+
+    if (prev_trailing_comments != "") {
+      all_comments.push_back(prev_trailing_comments);
+    }
+    for (auto & comment : detached_comments) {
+      all_comments.push_back(comment);
+    }
+    if (next_leading_comments != "") {
+      all_comments.push_back(next_leading_comments);
+    }
+  }
+
+  if (kRequireValidUtf8Cases_case.expected_error != "") {
+    // call Next one more time to trigger the expected error
+    tokenizer.Next();
+    EXPECT_EQ(kRequireValidUtf8Cases_case.expected_error, error_collector.text_);
+  }
+
+  EXPECT_EQ(kRequireValidUtf8Cases_case.comments, all_comments);
+}
 
 }  // namespace
 }  // namespace io
