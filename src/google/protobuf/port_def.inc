@@ -945,6 +945,9 @@
 #undef UID_MAX
 #pragma push_macro("GID_MAX")
 #undef GID_MAX
+// TYPE_BOOL is defined in the MacOS's ConditionalMacros.h.
+#pragma push_macro("TYPE_BOOL")
+#undef TYPE_BOOL
 #endif  // __APPLE__
 
 #if defined(__clang__) || PROTOBUF_GNUC_MIN(3, 0) || defined(_MSC_VER)

@@ -37,7 +37,7 @@
 
 #include <string>
 
-#include <google/protobuf/stubs/mutex.h>
+#include "absl/synchronization/mutex.h"
 #include <google/protobuf/compiler/code_generator.h>
 
 // Must be included last.
@@ -64,6 +64,13 @@ namespace python {
 // If you create your own protocol compiler binary and you want it to support
 // Python output, you can do so by registering an instance of this
 // CodeGenerator with the CommandLineInterface in your main() function.
+
+struct GeneratorOptions {
+  bool generate_pyi = false;
+  bool annotate_pyi = false;
+  bool bootstrap = false;
+};
+
 class PROTOC_EXPORT Generator : public CodeGenerator {
  public:
   Generator();
@@ -81,6 +88,8 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   }
 
  private:
+  GeneratorOptions ParseParameter(const std::string& parameter,
+                                  std::string* error) const;
   void PrintImports() const;
   void PrintFileDescriptor() const;
   void PrintAllNestedEnumsInFile() const;
@@ -173,7 +182,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
 
   // Very coarse-grained lock to ensure that Generate() is reentrant.
   // Guards file_, printer_ and file_descriptor_serialized_.
-  mutable Mutex mutex_;
+  mutable absl::Mutex mutex_;
   mutable const FileDescriptor* file_;  // Set in Generate().  Under mutex_.
   mutable std::string file_descriptor_serialized_;
   mutable io::Printer* printer_;  // Set in Generate().  Under mutex_.

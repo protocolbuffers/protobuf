@@ -637,7 +637,7 @@ DynamicMessageFactory::~DynamicMessageFactory() {
 }
 
 const Message* DynamicMessageFactory::GetPrototype(const Descriptor* type) {
-  MutexLock lock(&prototypes_mutex_);
+  absl::MutexLock lock(&prototypes_mutex_);
   return GetPrototypeNoLock(type);
 }
 

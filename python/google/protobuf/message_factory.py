@@ -60,9 +60,6 @@ class MessageFactory(object):
     """Initializes a new factory."""
     self.pool = pool or descriptor_pool.DescriptorPool()
 
-    # local cache of all classes built from protobuf descriptors
-    self._classes = {}
-
   def GetPrototype(self, descriptor):
     """Obtains a proto2 message class based on the passed in descriptor.
 
@@ -75,14 +72,11 @@ class MessageFactory(object):
     Returns:
       A class describing the passed in descriptor.
     """
-    if descriptor not in self._classes:
-      result_class = self.CreatePrototype(descriptor)
-      # The assignment to _classes is redundant for the base implementation, but
-      # might avoid confusion in cases where CreatePrototype gets overridden and
-      # does not call the base implementation.
-      self._classes[descriptor] = result_class
-      return result_class
-    return self._classes[descriptor]
+    concrete_class = getattr(descriptor, '_concrete_class', None)
+    if concrete_class:
+      return concrete_class
+    result_class = self.CreatePrototype(descriptor)
+    return result_class
 
   def CreatePrototype(self, descriptor):
     """Builds a proto2 message class based on the passed in descriptor.
@@ -107,16 +101,11 @@ class MessageFactory(object):
             '__module__': None,
         })
     result_class._FACTORY = self  # pylint: disable=protected-access
-    # Assign in _classes before doing recursive calls to avoid infinite
-    # recursion.
-    self._classes[descriptor] = result_class
     for field in descriptor.fields:
       if field.message_type:
         self.GetPrototype(field.message_type)
     for extension in result_class.DESCRIPTOR.extensions:
-      if extension.containing_type not in self._classes:
-        self.GetPrototype(extension.containing_type)
-      extended_class = self._classes[extension.containing_type]
+      extended_class = self.GetPrototype(extension.containing_type)
       extended_class.RegisterExtension(extension)
       if extension.message_type:
         self.GetPrototype(extension.message_type)
@@ -152,9 +141,7 @@ class MessageFactory(object):
       # an error if they were different.
 
       for extension in file_desc.extensions_by_name.values():
-        if extension.containing_type not in self._classes:
-          self.GetPrototype(extension.containing_type)
-        extended_class = self._classes[extension.containing_type]
+        extended_class = self.GetPrototype(extension.containing_type)
         extended_class.RegisterExtension(extension)
         if extension.message_type:
           self.GetPrototype(extension.message_type)

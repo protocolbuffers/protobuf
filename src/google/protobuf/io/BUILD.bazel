@@ -32,6 +32,31 @@ cc_library(
 )
 
 cc_library(
+    name = "zero_copy_sink",
+    srcs = ["zero_copy_sink.cc"],
+    hdrs = ["zero_copy_sink.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":io",
+        "//src/google/protobuf",
+        "//src/google/protobuf/stubs",
+    ],
+)
+
+cc_test(
+    name = "zero_copy_sink_test",
+    srcs = ["zero_copy_sink_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":zero_copy_sink",
+        "//src/google/protobuf/stubs",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "printer",
     srcs = ["printer.cc"],
     hdrs = ["printer.h"],

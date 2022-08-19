@@ -118,6 +118,16 @@ class MessageFactoryTest(unittest.TestCase):
         'google.protobuf.python.internal.Factory2Message'))
     self.assertTrue(hasattr(cls, 'additional_field'))
 
+  def testGetExistingPrototype(self):
+    factory = message_factory.MessageFactory()
+    # Get Existing Prototype should not create a new class.
+    cls = factory.GetPrototype(
+        descriptor=factory_test2_pb2.Factory2Message.DESCRIPTOR)
+    msg = factory_test2_pb2.Factory2Message()
+    self.assertIsInstance(msg, cls)
+    self.assertIsInstance(msg.factory_1_message,
+                          factory_test1_pb2.Factory1Message)
+
   def testGetMessages(self):
     # performed twice because multiple calls with the same input must be allowed
     for _ in range(2):
