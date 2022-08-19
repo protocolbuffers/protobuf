@@ -374,7 +374,7 @@ if __name__ == '__main__':
         Extension(
             'google.protobuf.pyext._message',
             glob.glob('google/protobuf/pyext/*.cc'),
-            include_dirs=['.', '../src'],
+            include_dirs=['.', '../src', '../third_party/abseil-cpp'],
             libraries=libraries,
             extra_objects=extra_objects,
             extra_link_args=message_extra_link_args,
