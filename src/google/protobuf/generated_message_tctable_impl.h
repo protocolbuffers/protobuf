@@ -708,7 +708,7 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::TagDispatch(
   auto* fast_entry = table->fast_entry(idx >> 3);
   data = fast_entry->bits;
   data.data ^= coded_tag;
-  PROTOBUF_MUSTTAIL return fast_entry->target(PROTOBUF_TC_PARAM_PASS);
+  PROTOBUF_MUSTTAIL return fast_entry->target()(PROTOBUF_TC_PARAM_PASS);
 }
 
 // We can only safely call from field to next field if the call is optimized

@@ -44,9 +44,9 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/synchronization/mutex.h"
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/extension_set.h>
@@ -80,7 +80,6 @@ using google::protobuf::internal::OnShutdownDelete;
 using google::protobuf::internal::ReflectionSchema;
 using google::protobuf::internal::RepeatedPtrFieldBase;
 using google::protobuf::internal::StringSpaceUsedExcludingSelfLong;
-using google::protobuf::internal::WrappedMutex;
 
 namespace google {
 namespace protobuf {
@@ -3431,7 +3430,7 @@ struct MetadataOwner {
  private:
   MetadataOwner() = default;  // private because singleton
 
-  WrappedMutex mu_;
+  absl::Mutex mu_;
   std::vector<std::pair<const Metadata*, const Metadata*> > metadata_arrays_;
 };
 
@@ -3442,7 +3441,7 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
   {
     // This only happens once per proto file. So a global mutex to serialize
     // calls to AddDescriptors.
-    static WrappedMutex mu{GOOGLE_PROTOBUF_LINKER_INITIALIZED};
+    static absl::Mutex mu{absl::kConstInit};
     mu.Lock();
     AddDescriptors(table);
     mu.Unlock();

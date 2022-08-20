@@ -37,11 +37,12 @@
 #include <limits>
 #include <typeinfo>
 
+#include "absl/synchronization/mutex.h"
 #include <google/protobuf/arena_impl.h>
 #include <google/protobuf/arenaz_sampler.h>
 #include <google/protobuf/port.h>
 
-#include <google/protobuf/stubs/mutex.h>
+
 #ifdef ADDRESS_SANITIZER
 #include <sanitizer/asan_interface.h>
 #endif  // ADDRESS_SANITIZER

@@ -101,6 +101,12 @@ bool HasGenericServices(const FileDescriptor* file) {
   return file->service_count() > 0 && file->options().py_generic_services();
 }
 
+std::string GeneratedCodeToBase64(const GeneratedCodeInfo& annotations) {
+  std::string result;
+  Base64Escape(annotations.SerializeAsString(), &result);
+  return result;
+}
+
 template <typename DescriptorT>
 std::string NamePrefixedWithNestedTypes(const DescriptorT& descriptor,
                                         const std::string& separator) {

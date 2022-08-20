@@ -398,6 +398,14 @@ TEST_P(JsonTest, TestPrintProto2EnumAsIntWithDefaultValue) {
   EXPECT_EQ(parsed->enum_value(), protobuf_unittest::DEFAULT);
 }
 
+TEST_P(JsonTest, QuotedEnumValue) {
+  auto m = ToProto<TestEnumValue>(R"json(
+    {"enumValue1": "1"}
+  )json");
+  ASSERT_OK(m);
+  EXPECT_THAT(m->enum_value1(), proto3::BAR);
+}
+
 TEST_P(JsonTest, WebSafeBytes) {
   auto m = ToProto<TestMessage>(R"json({
       "bytesValue": "-_"
@@ -1176,6 +1184,17 @@ TEST_P(JsonTest, TestFieldMask) {
   EXPECT_THAT(m2->value().paths(), ElementsAre("yep.really"));
 }
 
+TEST_P(JsonTest, TestFieldMaskSnakeCase) {
+  auto m = ToProto<proto3::TestFieldMask>(R"json(
+    {
+      "value": "foo_bar"
+    }
+  )json");
+  ASSERT_OK(m);
+
+  EXPECT_THAT(m->value().paths(), ElementsAre("foo_bar"));
+}
+
 TEST_P(JsonTest, TestLegalNullsInArray) {
   auto m = ToProto<proto3::TestNullValue>(R"json({
     "repeatedNullValue": [null]
@@ -1194,11 +1213,24 @@ TEST_P(JsonTest, TestLegalNullsInArray) {
   EXPECT_TRUE(m2->repeated_value(0).has_null_value());
 
   m2->Clear();
-  m2->mutable_repeated_value();  // Materialize an empty singular Value.
+  m2->mutable_value();  // Materialize an empty singular Value.
   m2->add_repeated_value();
   m2->add_repeated_value()->set_string_value("solitude");
   m2->add_repeated_value();
   EXPECT_THAT(ToJson(*m2), IsOkAndHolds(R"({"repeatedValue":["solitude"]})"));
+}
+
+TEST_P(JsonTest, EmptyValue) {
+  EXPECT_THAT(ToJson(google::protobuf::Value()), IsOkAndHolds(""));
+
+  google::protobuf::Struct s;
+  s.mutable_fields()->emplace("empty", google::protobuf::Value());
+  EXPECT_THAT(ToJson(s), IsOkAndHolds("{}"));
+}
+
+TEST_P(JsonTest, TrailingGarbage) {
+  EXPECT_THAT(ToProto<TestMessage>("{}garbage"),
+              StatusIs(util::StatusCode::kInvalidArgument));
 }
 
 TEST_P(JsonTest, ListList) {

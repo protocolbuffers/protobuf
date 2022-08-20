@@ -44,6 +44,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/printer.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/strtod.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/tokenizer.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_sink.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream_impl.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream_impl_lite.cc
@@ -93,7 +94,6 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/message_differencer.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/time_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/type_resolver_util.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/zero_copy_sink.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.pb.cc
@@ -139,6 +139,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/printer.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/strtod.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/tokenizer.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_sink.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream_impl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream_impl_lite.h
@@ -173,7 +174,6 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/macros.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/map_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/mathutil.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/mutex.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/once.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/platform_macros.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/port.h
@@ -216,7 +216,6 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/time_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/type_resolver.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/type_resolver_util.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/zero_copy_sink.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.pb.h
@@ -300,7 +299,6 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/macros.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/map_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/mathutil.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/mutex.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/once.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/platform_macros.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/port.h
@@ -818,6 +816,7 @@ set(io_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/io_win32_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/printer_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/tokenizer_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_sink_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream_unittest.cc
 )
 
@@ -848,7 +847,6 @@ set(util_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/message_differencer_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/time_util_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/type_resolver_util_test.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/zero_copy_sink_test.cc
 )
 
 # //src/google/protobuf/util:test_proto_srcs
