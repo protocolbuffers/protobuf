@@ -277,6 +277,15 @@ def HasLibraryDirsOpt():
   return any(_GetFlagValues('library-dirs=', 'L'))
 
 
+abseil_libs = [
+  'base/libabsl_base.a',
+  'container/libabsl_raw_hash_set.a',
+  'status/libabsl_status.a',
+  'status/libabsl_statusor.a',
+  'strings/libabsl_strings.a',
+  'synchronization/libabsl_synchronization.a',
+]
+
 if __name__ == '__main__':
   ext_module_list = []
   warnings_as_errors = '--warnings_as_errors'
@@ -297,6 +306,8 @@ if __name__ == '__main__':
           extra_objects = ['../bazel-bin/src/google/protobuf/libprotobuf.a']
         else:
           extra_objects = ['../libprotobuf.a']
+          extra_objects += [
+            '../third_party/abseil-cpp/absl/' + lib for lib in abseil_libs]
     else:
       libraries = ['protobuf']
       if HasLibraryDirsOpt():
