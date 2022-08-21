@@ -10,7 +10,6 @@ cd $(dirname $0)/../../..
 
 docker run $(test -t 0 && echo "-it") -v$PWD:/workspace gcr.io/protobuf-build/php/linux:8.0.5-dbg-fd99596d4c4c9b78f984ee667a9b26b91a28eb8d "composer test_valgrind"
 
-docker run $(test -t 0 && echo "-it") -v$PWD:/workspace gcr.io/protobuf-build/php/linux:7.0.33-dbg-fd99596d4c4c9b78f984ee667a9b26b91a28eb8d "composer test && composer test_c"
 docker run $(test -t 0 && echo "-it") -v$PWD:/workspace gcr.io/protobuf-build/php/linux:7.3.28-dbg-fd99596d4c4c9b78f984ee667a9b26b91a28eb8d "composer test && composer test_c"
 docker run $(test -t 0 && echo "-it") -v$PWD:/workspace gcr.io/protobuf-build/php/linux:7.4.18-dbg-fd99596d4c4c9b78f984ee667a9b26b91a28eb8d "composer test && composer test_c"
 docker run $(test -t 0 && echo "-it") -v$PWD:/workspace gcr.io/protobuf-build/php/linux:8.0.5-dbg-fd99596d4c4c9b78f984ee667a9b26b91a28eb8d "composer test && composer test_c"
