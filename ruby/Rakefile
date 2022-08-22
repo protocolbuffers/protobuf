@@ -71,7 +71,7 @@ end
 
 task :copy_third_party do
   # We need utf8_range in-tree.
-  unless File.exists? 'ext/google/protobuf_c/third_party/utf8_range'
+  unless File.exist? 'ext/google/protobuf_c/third_party/utf8_range'
     FileUtils.mkdir_p("ext/google/protobuf_c/third_party/utf8_range")
     FileUtils.cp("../third_party/utf8_range/utf8_range.h", "ext/google/protobuf_c/third_party/utf8_range")
     FileUtils.cp("../third_party/utf8_range/naive.c", "ext/google/protobuf_c/third_party/utf8_range")
@@ -132,8 +132,7 @@ end
 # must be copied into place before the task is defined.
 ffi_compiler_config_block = Proc.new do |c|
   # c.cflags << "-std=gnu99 -O3 -DNDEBUG"
-  c.cflags << "-std=gnu99 -g -O0 -fsanitize=address -fno-omit-frame-pointer"
-  c.ldflags << "-fsanitize=address"
+  c.cflags << "-std=gnu99 -g -O0 -fno-omit-frame-pointer"
   if RbConfig::CONFIG['target_os'] =~ /darwin|linux/
     # c.cflags << "-fvisibility=hidden -Wall -Wsign-compare -Wno-declaration-after-statement"
     c.cflags << "-Wall -Wsign-compare -Wno-declaration-after-statement"
@@ -144,7 +143,7 @@ ffi_compiler_config_block = Proc.new do |c|
   end
 end
 
-if File.exists? 'ext/google/protobuf_c/third_party/utf8_range'
+if File.exist? 'ext/google/protobuf_c/third_party/utf8_range'
   desc "compiler tasks"
   namespace "ffi-compiler" do
     FFI::Compiler::CompileTask.new('ext/google/protobuf_c', &ffi_compiler_config_block)
