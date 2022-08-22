@@ -28,14 +28,14 @@ def upb_deps():
         patches = ["//bazel:protobuf.patch"],
     )
 
-    rules_python_version = "740825b7f74930c62f44af95c9a4c1bd428d2c53"  # Latest @ 2021-06-23
+    rules_python_version = "0.11.0"  # Latest @ August 15th, 2022
 
     maybe(
         http_archive,
         name = "rules_python",
         strip_prefix = "rules_python-{}".format(rules_python_version),
-        url = "https://github.com/bazelbuild/rules_python/archive/{}.zip".format(rules_python_version),
-        sha256 = "09a3c4791c61b62c2cbc5b2cbea4ccc32487b38c7a2cc8f87a794d7a659cc742",
+        url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/{}.tar.gz".format(rules_python_version),
+        sha256 = "c03246c11efd49266e8e41e12931090b613e12a59e6f55ba2efd29a7cb8b4258",
     )
 
     maybe(
