@@ -131,8 +131,7 @@ end
 # in order to create subtasks for each source file, so the files from third_party
 # must be copied into place before the task is defined.
 ffi_compiler_config_block = Proc.new do |c|
-  # c.cflags << "-std=gnu99 -O3 -DNDEBUG"
-  c.cflags << "-std=gnu99 -g -O0 -fno-omit-frame-pointer"
+  c.cflags << "-std=gnu99 -O3 -DNDEBUG"
   if RbConfig::CONFIG['target_os'] =~ /darwin|linux/
     # c.cflags << "-fvisibility=hidden -Wall -Wsign-compare -Wno-declaration-after-statement"
     c.cflags << "-Wall -Wsign-compare -Wno-declaration-after-statement"
