@@ -3377,7 +3377,6 @@ static bool upb_Arena_Allocblock(upb_Arena* a, size_t size) {
   mem_block* block = upb_malloc(root->block_alloc, block_size);
 
   if (!block) return false;
-//  printf("JATL: called malloc and got %p\n", block);
   upb_Arena_addblock(a, root, block, block_size);
   return true;
 }

@@ -227,12 +227,12 @@ module Google
       end
 
       # Arena
-      attach_function :create_arena, :Arena_create,    [], Arena
-      attach_function :fuse_arena,   :upb_Arena_Fuse,  [Arena, Arena], :bool
+      attach_function :create_arena, :Arena_create,         [], Arena
+      attach_function :fuse_arena,   :upb_Arena_Fuse,       [Arena, Arena], :bool
       # Argument takes a :pointer rather than a typed Arena here due to
       # implementation details of FFI::AutoPointer.
-      attach_function :free_arena,   :upb_Arena_Free,  [:pointer], :void
-      attach_function :arena_malloc, :_upb_Arena_SlowMalloc,[Arena, :size_t], :pointer
+      attach_function :free_arena,   :upb_Arena_Free,       [:pointer], :void
+      attach_function :arena_malloc, :upb_Arena_FastMalloc, [Arena, :size_t], :pointer
 
       # Array
       attach_function :append_array, :upb_Array_Append,        [:Array, MessageValue.by_value, Arena], :bool
