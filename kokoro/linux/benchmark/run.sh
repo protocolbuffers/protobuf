@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# Install Bazel 4.0.0.
-use_bazel.sh 4.0.0
+# Install Bazel 4.2.2.
+use_bazel.sh 4.2.2
 
 # Change to repo root
 cd $(dirname $0)/../../..
