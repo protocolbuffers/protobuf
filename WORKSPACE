@@ -25,6 +25,14 @@ http_archive(
     ],
 )
 
+# Bazel platform rules.
+http_archive(
+    name = "platforms",
+    sha256 = "a879ea428c6d56ab0ec18224f976515948822451473a80d06c2e50af0bbe5121",
+    strip_prefix = "platforms-da5541f26b7de1dc8e04c075c99df5351742a4a2",
+    urls = ["https://github.com/bazelbuild/platforms/archive/da5541f26b7de1dc8e04c075c99df5351742a4a2.zip"],  # 2022-05-27
+)
+
 # Load common dependencies.
 load("//:protobuf_deps.bzl", "PROTOBUF_MAVEN_ARTIFACTS", "protobuf_deps")
 protobuf_deps()
