@@ -132,17 +132,12 @@ bool upb_Tokenizer_Next(upb_Tokenizer* t);
 // Accessors for inspecting current/previous parse tokens,
 // which are opaque to the tokenizer (to reduce copying).
 
-upb_TokenType upb_Tokenizer_CurrentType(const upb_Tokenizer* t);
-int upb_Tokenizer_CurrentColumn(const upb_Tokenizer* t);
-int upb_Tokenizer_CurrentEndColumn(const upb_Tokenizer* t);
-int upb_Tokenizer_CurrentLine(const upb_Tokenizer* t);
-int upb_Tokenizer_CurrentTextSize(const upb_Tokenizer* t);
-const char* upb_Tokenizer_CurrentTextData(const upb_Tokenizer* t);
-
-upb_TokenType upb_Tokenizer_PreviousType(const upb_Tokenizer* t);
-int upb_Tokenizer_PreviousColumn(const upb_Tokenizer* t);
-int upb_Tokenizer_PreviousEndColumn(const upb_Tokenizer* t);
-int upb_Tokenizer_PreviousLine(const upb_Tokenizer* t);
+upb_TokenType upb_Tokenizer_Type(const upb_Tokenizer* t);
+int upb_Tokenizer_Column(const upb_Tokenizer* t);
+int upb_Tokenizer_EndColumn(const upb_Tokenizer* t);
+int upb_Tokenizer_Line(const upb_Tokenizer* t);
+int upb_Tokenizer_TextSize(const upb_Tokenizer* t);
+const char* upb_Tokenizer_TextData(const upb_Tokenizer* t);
 
 // Parses a TYPE_INTEGER token. Returns false if the result would be
 // greater than max_value. Otherwise, returns true and sets *output to the

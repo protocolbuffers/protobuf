@@ -150,35 +150,18 @@ static char TranslateEscape(char c) {
 
 // ===================================================================
 
-// Structure representing a token read from the token stream.
-typedef struct {
-  upb_TokenType type;
+struct upb_Tokenizer {
+  upb_TokenType token_type;  // The type of the current token.
+
+  // The exact text of the current token as it appeared in the input.
+  // e.g. tokens of TYPE_STRING will still be escaped and in quotes.
+  upb_String token_text;
 
   // "line" and "column" specify the position of the first character of
   // the token within the input stream. They are zero-based.
-  int line;
-  int column;
-  int end_column;
-
-  // The exact text of the token as it appeared in the input.
-  // e.g. tokens of TYPE_STRING will still be escaped and in quotes.
-  upb_String text;
-} upb_Token;
-
-static upb_Token* upb_Token_Init(upb_Token* t, upb_Arena* arena) {
-  upb_String_Init(&t->text, arena);
-
-  t->type = kUpb_TokenType_Start;
-  t->line = 0;
-  t->column = 0;
-  t->end_column = 0;
-  return t;
-}
-
-// ===================================================================
-
-struct upb_Tokenizer {
-  upb_Token current;
+  int token_line;
+  int token_column;
+  int token_end_column;
 
   upb_ZeroCopyInputStream* input;
   upb_ErrorCollector* error_collector;
@@ -296,11 +279,11 @@ static void StopRecording(upb_Tokenizer* t) {
 // Called when the current character is the first character of a new
 // token (not including whitespace or comments).
 static void StartToken(upb_Tokenizer* t) {
-  t->current.type = kUpb_TokenType_Start;
-  upb_String_Clear(&t->current.text);
-  t->current.line = t->line;
-  t->current.column = t->column;
-  RecordTo(t, &t->current.text);
+  t->token_type = kUpb_TokenType_Start;
+  upb_String_Clear(&t->token_text);
+  t->token_line = t->line;
+  t->token_column = t->column;
+  RecordTo(t, &t->token_text);
 }
 
 // Called when the current character is the first character after the
@@ -308,7 +291,7 @@ static void StartToken(upb_Tokenizer* t) {
 // contain all text consumed since StartToken() was called.
 static void EndToken(upb_Tokenizer* t) {
   StopRecording(t);
-  t->current.end_column = t->column;
+  t->token_end_column = t->column;
 }
 
 // -----------------------------------------------------------------
@@ -571,11 +554,11 @@ static upb_CommentType TryConsumeCommentStart(upb_Tokenizer* t) {
       return kUpb_CommentType_Block;
     } else {
       // Oops, it was just a slash.  Return it.
-      t->current.type = kUpb_TokenType_Symbol;
-      upb_String_Assign(&t->current.text, "/", 1);
-      t->current.line = t->line;
-      t->current.column = t->column - 1;
-      t->current.end_column = t->column;
+      t->token_type = kUpb_TokenType_Symbol;
+      upb_String_Assign(&t->token_text, "/", 1);
+      t->token_line = t->line;
+      t->token_column = t->column - 1;
+      t->token_end_column = t->column;
       return kUpb_CommentType_SlashNot;
     }
   } else if (style_sh && TryConsume(t, '#')) {
@@ -591,14 +574,14 @@ static bool TryConsumeWhitespace(upb_Tokenizer* t) {
   if (t->options & kUpb_TokenizerOption_ReportNewlines) {
     if (TryConsumeOne(t, upb_Tokenizer_IsWhitespaceNoNewline)) {
       ConsumeZeroOrMore(t, upb_Tokenizer_IsWhitespaceNoNewline);
-      t->current.type = kUpb_TokenType_Whitespace;
+      t->token_type = kUpb_TokenType_Whitespace;
       return true;
     }
     return false;
   }
   if (TryConsumeOne(t, upb_Tokenizer_IsWhitespace)) {
     ConsumeZeroOrMore(t, upb_Tokenizer_IsWhitespace);
-    t->current.type = kUpb_TokenType_Whitespace;
+    t->token_type = kUpb_TokenType_Whitespace;
     return (t->options & kUpb_TokenizerOption_ReportWhitespace) != 0;
   }
   return false;
@@ -609,7 +592,7 @@ static bool TryConsumeWhitespace(upb_Tokenizer* t) {
 static bool TryConsumeNewline(upb_Tokenizer* t) {
   if (t->options & kUpb_TokenizerOption_ReportNewlines) {
     if (TryConsume(t, '\n')) {
-      t->current.type = kUpb_TokenType_Newline;
+      t->token_type = kUpb_TokenType_Newline;
       return true;
     }
   }
@@ -618,51 +601,31 @@ static bool TryConsumeNewline(upb_Tokenizer* t) {
 
 // -------------------------------------------------------------------
 
-int upb_Tokenizer_CurrentColumn(const upb_Tokenizer* t) {
-  return t->current.column;
+int upb_Tokenizer_Column(const upb_Tokenizer* t) { return t->token_column; }
+
+int upb_Tokenizer_EndColumn(const upb_Tokenizer* t) {
+  return t->token_end_column;
 }
 
-int upb_Tokenizer_CurrentEndColumn(const upb_Tokenizer* t) {
-  return t->current.end_column;
+int upb_Tokenizer_Line(const upb_Tokenizer* t) { return t->token_line; }
+
+int upb_Tokenizer_TextSize(const upb_Tokenizer* t) {
+  return t->token_text.size_;
 }
 
-int upb_Tokenizer_CurrentLine(const upb_Tokenizer* t) {
-  return t->current.line;
+const char* upb_Tokenizer_TextData(const upb_Tokenizer* t) {
+  return t->token_text.data_;
 }
 
-int upb_Tokenizer_CurrentTextSize(const upb_Tokenizer* t) {
-  return t->current.text.size_;
-}
-
-const char* upb_Tokenizer_CurrentTextData(const upb_Tokenizer* t) {
-  return t->current.text.data_;
-}
-
-upb_TokenType upb_Tokenizer_CurrentType(const upb_Tokenizer* t) {
-  return t->current.type;
-}
-
-int upb_Tokenizer_PreviousColumn(const upb_Tokenizer* t) {
-  return t->previous_column;
-}
-
-int upb_Tokenizer_PreviousEndColumn(const upb_Tokenizer* t) {
-  return t->previous_end_column;
-}
-
-int upb_Tokenizer_PreviousLine(const upb_Tokenizer* t) {
-  return t->previous_line;
-}
-
-upb_TokenType upb_Tokenizer_PreviousType(const upb_Tokenizer* t) {
-  return t->previous_type;
+upb_TokenType upb_Tokenizer_Type(const upb_Tokenizer* t) {
+  return t->token_type;
 }
 
 bool upb_Tokenizer_Next(upb_Tokenizer* t) {
-  t->previous_type = t->current.type;
-  t->previous_line = t->current.line;
-  t->previous_column = t->current.column;
-  t->previous_end_column = t->current.end_column;
+  t->previous_type = t->token_type;
+  t->previous_line = t->token_line;
+  t->previous_column = t->token_column;
+  t->previous_end_column = t->token_end_column;
 
   while (!t->read_error) {
     StartToken(t);
@@ -707,9 +670,9 @@ bool upb_Tokenizer_Next(upb_Tokenizer* t) {
 
       if (TryConsumeOne(t, upb_Tokenizer_IsLetter)) {
         ConsumeZeroOrMore(t, upb_Tokenizer_IsAlphanumeric);
-        t->current.type = kUpb_TokenType_Identifier;
+        t->token_type = kUpb_TokenType_Identifier;
       } else if (TryConsume(t, '0')) {
-        t->current.type = ConsumeNumber(t, true, false);
+        t->token_type = ConsumeNumber(t, true, false);
       } else if (TryConsume(t, '.')) {
         // This could be the beginning of a floating-point number, or it could
         // just be a '.' symbol.
@@ -717,26 +680,26 @@ bool upb_Tokenizer_Next(upb_Tokenizer* t) {
         if (TryConsumeOne(t, upb_Tokenizer_IsDigit)) {
           // It's a floating-point number.
           if (t->previous_type == kUpb_TokenType_Identifier &&
-              t->current.line == t->previous_line &&
-              t->current.column == t->previous_end_column) {
+              t->token_line == t->previous_line &&
+              t->token_column == t->previous_end_column) {
             // We don't accept syntax like "blah.123".
             t->error_collector->AddError(
                 t->line, t->column - 2,
                 "Need space between identifier and decimal point.",
                 t->error_collector->context);
           }
-          t->current.type = ConsumeNumber(t, false, true);
+          t->token_type = ConsumeNumber(t, false, true);
         } else {
-          t->current.type = kUpb_TokenType_Symbol;
+          t->token_type = kUpb_TokenType_Symbol;
         }
       } else if (TryConsumeOne(t, upb_Tokenizer_IsDigit)) {
-        t->current.type = ConsumeNumber(t, false, false);
+        t->token_type = ConsumeNumber(t, false, false);
       } else if (TryConsume(t, '\"')) {
         ConsumeString(t, '\"');
-        t->current.type = kUpb_TokenType_String;
+        t->token_type = kUpb_TokenType_String;
       } else if (TryConsume(t, '\'')) {
         ConsumeString(t, '\'');
-        t->current.type = kUpb_TokenType_String;
+        t->token_type = kUpb_TokenType_String;
       } else {
         // Check if the high order bit is set.
         if (t->current_char & 0x80) {
@@ -747,7 +710,7 @@ bool upb_Tokenizer_Next(upb_Tokenizer* t) {
                                        t->error_collector->context);
         }
         NextChar(t);
-        t->current.type = kUpb_TokenType_Symbol;
+        t->token_type = kUpb_TokenType_Symbol;
       }
 
       EndToken(t);
@@ -756,11 +719,11 @@ bool upb_Tokenizer_Next(upb_Tokenizer* t) {
   }
 
   // EOF
-  t->current.type = kUpb_TokenType_End;
-  upb_String_Clear(&t->current.text);
-  t->current.line = t->line;
-  t->current.column = t->column;
-  t->current.end_column = t->column;
+  t->token_type = kUpb_TokenType_End;
+  upb_String_Clear(&t->token_text);
+  t->token_line = t->line;
+  t->token_column = t->column;
+  t->token_end_column = t->column;
   return false;
 }
 
@@ -1038,12 +1001,16 @@ upb_Tokenizer* upb_Tokenizer_New(const void* data, size_t size,
   }
   t->options = options;
 
+  upb_String_Init(&t->token_text, arena);
+  t->token_type = kUpb_TokenType_Start;
+  t->token_line = 0;
+  t->token_column = 0;
+  t->token_end_column = 0;
+
   t->previous_type = kUpb_TokenType_Start;
   t->previous_line = 0;
   t->previous_column = 0;
   t->previous_end_column = 0;
-
-  upb_Token_Init(&t->current, arena);
 
   if (size) {
     t->current_char = t->buffer[0];

@@ -244,37 +244,34 @@ TEST_2D(TokenizerTest, SimpleTokens, kSimpleTokenCases, kBlockSizes) {
   auto t = upb_Tokenizer_New(NULL, 0, input, error_collector, 0, arena.ptr());
 
   // Before Next() is called, the initial token should always be TYPE_START.
-  EXPECT_EQ(upb_Tokenizer_CurrentType(t), kUpb_TokenType_Start);
-  EXPECT_EQ(upb_Tokenizer_CurrentLine(t), 0);
-  EXPECT_EQ(upb_Tokenizer_CurrentColumn(t), 0);
-  EXPECT_EQ(upb_Tokenizer_CurrentEndColumn(t), 0);
-  EXPECT_TRUE(StringEquals(upb_Tokenizer_CurrentTextData(t), ""));
+  EXPECT_EQ(upb_Tokenizer_Type(t), kUpb_TokenType_Start);
+  EXPECT_EQ(upb_Tokenizer_Line(t), 0);
+  EXPECT_EQ(upb_Tokenizer_Column(t), 0);
+  EXPECT_EQ(upb_Tokenizer_EndColumn(t), 0);
+  EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t), ""));
 
   // Parse the token.
   EXPECT_TRUE(upb_Tokenizer_Next(t));
   // Check that it has the right type.
-  EXPECT_EQ(upb_Tokenizer_CurrentType(t), kSimpleTokenCases_case.type);
+  EXPECT_EQ(upb_Tokenizer_Type(t), kSimpleTokenCases_case.type);
   // Check that it contains the complete input text.
-  EXPECT_TRUE(StringEquals(upb_Tokenizer_CurrentTextData(t),
+  EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t),
                            kSimpleTokenCases_case.input.data()));
 
   // Check that it is located at the beginning of the input
-  EXPECT_EQ(upb_Tokenizer_CurrentLine(t), 0);
-  EXPECT_EQ(upb_Tokenizer_CurrentColumn(t), 0);
-  EXPECT_EQ(upb_Tokenizer_CurrentEndColumn(t),
-            kSimpleTokenCases_case.input.size());
+  EXPECT_EQ(upb_Tokenizer_Line(t), 0);
+  EXPECT_EQ(upb_Tokenizer_Column(t), 0);
+  EXPECT_EQ(upb_Tokenizer_EndColumn(t), kSimpleTokenCases_case.input.size());
 
   // There should be no more input.
   EXPECT_FALSE(upb_Tokenizer_Next(t));
 
   // After Next() returns false, the token should have type TYPE_END.
-  EXPECT_EQ(upb_Tokenizer_CurrentType(t), kUpb_TokenType_End);
-  EXPECT_EQ(upb_Tokenizer_CurrentLine(t), 0);
-  EXPECT_EQ(upb_Tokenizer_CurrentColumn(t),
-            kSimpleTokenCases_case.input.size());
-  EXPECT_EQ(upb_Tokenizer_CurrentEndColumn(t),
-            kSimpleTokenCases_case.input.size());
-  EXPECT_TRUE(StringEquals(upb_Tokenizer_CurrentTextData(t), ""));
+  EXPECT_EQ(upb_Tokenizer_Type(t), kUpb_TokenType_End);
+  EXPECT_EQ(upb_Tokenizer_Line(t), 0);
+  EXPECT_EQ(upb_Tokenizer_Column(t), kSimpleTokenCases_case.input.size());
+  EXPECT_EQ(upb_Tokenizer_EndColumn(t), kSimpleTokenCases_case.input.size());
+  EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t), ""));
 
   // There should be no errors.
   EXPECT_TRUE(upb_String_Empty(&((TestErrorCollector*)error_collector)->text));
@@ -296,20 +293,20 @@ TEST_1D(TokenizerTest, FloatSuffix, kBlockSizes) {
   // Advance through tokens and check that they are parsed as expected.
 
   EXPECT_TRUE(upb_Tokenizer_Next(t));
-  EXPECT_EQ(upb_Tokenizer_CurrentType(t), kUpb_TokenType_Float);
-  EXPECT_TRUE(StringEquals(upb_Tokenizer_CurrentTextData(t), "1f"));
+  EXPECT_EQ(upb_Tokenizer_Type(t), kUpb_TokenType_Float);
+  EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t), "1f"));
 
   EXPECT_TRUE(upb_Tokenizer_Next(t));
-  EXPECT_EQ(upb_Tokenizer_CurrentType(t), kUpb_TokenType_Float);
-  EXPECT_TRUE(StringEquals(upb_Tokenizer_CurrentTextData(t), "2.5f"));
+  EXPECT_EQ(upb_Tokenizer_Type(t), kUpb_TokenType_Float);
+  EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t), "2.5f"));
 
   EXPECT_TRUE(upb_Tokenizer_Next(t));
-  EXPECT_EQ(upb_Tokenizer_CurrentType(t), kUpb_TokenType_Float);
-  EXPECT_TRUE(StringEquals(upb_Tokenizer_CurrentTextData(t), "6e3f"));
+  EXPECT_EQ(upb_Tokenizer_Type(t), kUpb_TokenType_Float);
+  EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t), "6e3f"));
 
   EXPECT_TRUE(upb_Tokenizer_Next(t));
-  EXPECT_EQ(upb_Tokenizer_CurrentType(t), kUpb_TokenType_Float);
-  EXPECT_TRUE(StringEquals(upb_Tokenizer_CurrentTextData(t), "7F"));
+  EXPECT_EQ(upb_Tokenizer_Type(t), kUpb_TokenType_Float);
+  EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t), "7F"));
 
   // There should be no more input.
   EXPECT_FALSE(upb_Tokenizer_Next(t));
@@ -351,8 +348,8 @@ TEST_2D(TokenizerTest, Whitespace, kWhitespaceTokenCases, kBlockSizes) {
 
     EXPECT_TRUE(upb_Tokenizer_Next(t));
 
-    EXPECT_EQ(upb_Tokenizer_CurrentType(t), kWhitespaceTokenCases_case.type);
-    EXPECT_TRUE(StringEquals(upb_Tokenizer_CurrentTextData(t),
+    EXPECT_EQ(upb_Tokenizer_Type(t), kWhitespaceTokenCases_case.type);
+    EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t),
                              kWhitespaceTokenCases_case.input.data()));
     EXPECT_FALSE(upb_Tokenizer_Next(t));
   }
@@ -483,11 +480,11 @@ TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
   auto t = upb_Tokenizer_New(NULL, 0, input, error_collector, 0, arena.ptr());
 
   // Before Next() is called, the initial token should always be TYPE_START.
-  EXPECT_EQ(upb_Tokenizer_CurrentType(t), kUpb_TokenType_Start);
-  EXPECT_EQ(upb_Tokenizer_CurrentLine(t), 0);
-  EXPECT_EQ(upb_Tokenizer_CurrentColumn(t), 0);
-  EXPECT_EQ(upb_Tokenizer_CurrentEndColumn(t), 0);
-  EXPECT_TRUE(StringEquals(upb_Tokenizer_CurrentTextData(t), ""));
+  EXPECT_EQ(upb_Tokenizer_Type(t), kUpb_TokenType_Start);
+  EXPECT_EQ(upb_Tokenizer_Line(t), 0);
+  EXPECT_EQ(upb_Tokenizer_Column(t), 0);
+  EXPECT_EQ(upb_Tokenizer_EndColumn(t), 0);
+  EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t), ""));
 
   // Loop through all expected tokens.
   TokenFields token_fields;
@@ -498,11 +495,6 @@ TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
     SCOPED_TRACE(testing::Message()
                  << "Token #" << i << ": " << absl::CEscape(token_fields.text));
 
-    const upb_TokenType old_type = upb_Tokenizer_CurrentType(t);
-    const int old_line = upb_Tokenizer_CurrentLine(t);
-    const int old_column = upb_Tokenizer_CurrentColumn(t);
-    const int old_end_column = upb_Tokenizer_CurrentEndColumn(t);
-
     // Next() should only return false when it hits the end token.
     if (token_fields.type == kUpb_TokenType_End) {
       EXPECT_FALSE(upb_Tokenizer_Next(t));
@@ -510,20 +502,14 @@ TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
       EXPECT_TRUE(upb_Tokenizer_Next(t));
     }
 
-    // Check that the previous token is set correctly.
-    EXPECT_EQ(upb_Tokenizer_PreviousType(t), old_type);
-    EXPECT_EQ(upb_Tokenizer_PreviousLine(t), old_line);
-    EXPECT_EQ(upb_Tokenizer_PreviousColumn(t), old_column);
-    EXPECT_EQ(upb_Tokenizer_PreviousEndColumn(t), old_end_column);
-
     // Check that the token matches the expected one.
-    EXPECT_EQ(upb_Tokenizer_CurrentType(t), token_fields.type);
-    EXPECT_EQ(upb_Tokenizer_CurrentLine(t), token_fields.line);
-    EXPECT_EQ(upb_Tokenizer_CurrentColumn(t), token_fields.column);
-    EXPECT_EQ(upb_Tokenizer_CurrentEndColumn(t), token_fields.end_column);
-    EXPECT_EQ(upb_Tokenizer_CurrentTextSize(t), token_fields.text.size());
-    EXPECT_TRUE(StringEquals(upb_Tokenizer_CurrentTextData(t),
-                             token_fields.text.data()));
+    EXPECT_EQ(upb_Tokenizer_Type(t), token_fields.type);
+    EXPECT_EQ(upb_Tokenizer_Line(t), token_fields.line);
+    EXPECT_EQ(upb_Tokenizer_Column(t), token_fields.column);
+    EXPECT_EQ(upb_Tokenizer_EndColumn(t), token_fields.end_column);
+    EXPECT_EQ(upb_Tokenizer_TextSize(t), token_fields.text.size());
+    EXPECT_TRUE(
+        StringEquals(upb_Tokenizer_TextData(t), token_fields.text.data()));
   } while (token_fields.type != kUpb_TokenType_End);
 
   // There should be no errors.
@@ -563,11 +549,11 @@ TEST_2D(TokenizerTest, MultipleWhitespaceTokens, kMultiWhitespaceTokenCases,
       upb_Tokenizer_New(NULL, 0, input, error_collector, options, arena.ptr());
 
   // Before Next() is called, the initial token should always be TYPE_START.
-  EXPECT_EQ(upb_Tokenizer_CurrentType(t), kUpb_TokenType_Start);
-  EXPECT_EQ(upb_Tokenizer_CurrentLine(t), 0);
-  EXPECT_EQ(upb_Tokenizer_CurrentColumn(t), 0);
-  EXPECT_EQ(upb_Tokenizer_CurrentEndColumn(t), 0);
-  EXPECT_TRUE(StringEquals(upb_Tokenizer_CurrentTextData(t), ""));
+  EXPECT_EQ(upb_Tokenizer_Type(t), kUpb_TokenType_Start);
+  EXPECT_EQ(upb_Tokenizer_Line(t), 0);
+  EXPECT_EQ(upb_Tokenizer_Column(t), 0);
+  EXPECT_EQ(upb_Tokenizer_EndColumn(t), 0);
+  EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t), ""));
 
   // Loop through all expected tokens.
   TokenFields token_fields;
@@ -578,11 +564,6 @@ TEST_2D(TokenizerTest, MultipleWhitespaceTokens, kMultiWhitespaceTokenCases,
     SCOPED_TRACE(testing::Message()
                  << "Token #" << i << ": " << token_fields.text);
 
-    const upb_TokenType old_type = upb_Tokenizer_CurrentType(t);
-    const int old_line = upb_Tokenizer_CurrentLine(t);
-    const int old_column = upb_Tokenizer_CurrentColumn(t);
-    const int old_end_column = upb_Tokenizer_CurrentEndColumn(t);
-
     // Next() should only return false when it hits the end token.
     if (token_fields.type != kUpb_TokenType_End) {
       EXPECT_TRUE(upb_Tokenizer_Next(t));
@@ -590,19 +571,13 @@ TEST_2D(TokenizerTest, MultipleWhitespaceTokens, kMultiWhitespaceTokenCases,
       EXPECT_FALSE(upb_Tokenizer_Next(t));
     }
 
-    // Check that the previous token is set correctly.
-    EXPECT_EQ(upb_Tokenizer_PreviousType(t), old_type);
-    EXPECT_EQ(upb_Tokenizer_PreviousLine(t), old_line);
-    EXPECT_EQ(upb_Tokenizer_PreviousColumn(t), old_column);
-    EXPECT_EQ(upb_Tokenizer_PreviousEndColumn(t), old_end_column);
-
     // Check that the token matches the expected one.
-    EXPECT_EQ(upb_Tokenizer_CurrentType(t), token_fields.type);
-    EXPECT_EQ(upb_Tokenizer_CurrentLine(t), token_fields.line);
-    EXPECT_EQ(upb_Tokenizer_CurrentColumn(t), token_fields.column);
-    EXPECT_EQ(upb_Tokenizer_CurrentEndColumn(t), token_fields.end_column);
-    EXPECT_TRUE(StringEquals(upb_Tokenizer_CurrentTextData(t),
-                             token_fields.text.data()));
+    EXPECT_EQ(upb_Tokenizer_Type(t), token_fields.type);
+    EXPECT_EQ(upb_Tokenizer_Line(t), token_fields.line);
+    EXPECT_EQ(upb_Tokenizer_Column(t), token_fields.column);
+    EXPECT_EQ(upb_Tokenizer_EndColumn(t), token_fields.end_column);
+    EXPECT_TRUE(
+        StringEquals(upb_Tokenizer_TextData(t), token_fields.text.data()));
   } while (token_fields.type != kUpb_TokenType_End);
 
   // There should be no errors.
@@ -637,7 +612,7 @@ TEST_1D(TokenizerTest, ShCommentStyle, kBlockSizes) {
   // Advance through tokens and check that they are parsed as expected.
   for (int i = 0; i < arraysize(kTokens); i++) {
     EXPECT_TRUE(upb_Tokenizer_Next(t));
-    EXPECT_TRUE(StringEquals(upb_Tokenizer_CurrentTextData(t), kTokens[i]));
+    EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t), kTokens[i]));
   }
 
   // There should be no more input.
@@ -1189,7 +1164,7 @@ TEST_2D(TokenizerTest, Errors, kErrorCases, kBlockSizes) {
   // Ignore all input, except remember if the last token was "foo".
   bool last_was_foo = false;
   while (upb_Tokenizer_Next(t)) {
-    last_was_foo = StringEquals(upb_Tokenizer_CurrentTextData(t), "foo");
+    last_was_foo = StringEquals(upb_Tokenizer_TextData(t), "foo");
   }
 
   // Check that the errors match what was expected.
