@@ -47,6 +47,8 @@ namespace converter {
 // the location information for the purpose of error reporting.
 class PROTOBUF_EXPORT LocationTrackerInterface {
  public:
+  LocationTrackerInterface(const LocationTrackerInterface&) = delete;
+  LocationTrackerInterface& operator=(const LocationTrackerInterface&) = delete;
   virtual ~LocationTrackerInterface() {}
 
   // Returns the object location as human readable string.
@@ -57,7 +59,6 @@ class PROTOBUF_EXPORT LocationTrackerInterface {
 
  private:
   // Please do not add any data members to this class.
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(LocationTrackerInterface);
 };
 
 }  // namespace converter

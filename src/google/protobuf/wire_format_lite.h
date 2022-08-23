@@ -48,7 +48,7 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/port.h>
-#include <google/protobuf/stubs/casts.h>
+#include "absl/base/casts.h"
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
@@ -821,19 +821,19 @@ inline size_t WireFormatLite::TagSize(int field_number,
 }
 
 inline uint32_t WireFormatLite::EncodeFloat(float value) {
-  return bit_cast<uint32_t>(value);
+  return absl::bit_cast<uint32_t>(value);
 }
 
 inline float WireFormatLite::DecodeFloat(uint32_t value) {
-  return bit_cast<float>(value);
+  return absl::bit_cast<float>(value);
 }
 
 inline uint64_t WireFormatLite::EncodeDouble(double value) {
-  return bit_cast<uint64_t>(value);
+  return absl::bit_cast<uint64_t>(value);
 }
 
 inline double WireFormatLite::DecodeDouble(uint64_t value) {
-  return bit_cast<double>(value);
+  return absl::bit_cast<double>(value);
 }
 
 // ZigZag Transform:  Encodes signed integers so that they can be

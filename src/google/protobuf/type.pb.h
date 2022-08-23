@@ -115,7 +115,7 @@ inline const std::string& Field_Kind_Name(Field_Kind value) {
     <Field_Kind_descriptor, 0, 18>(static_cast<int>(value));
 }
 inline bool Field_Kind_Parse(
-    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, Field_Kind* value) {
+    ::absl::string_view name, Field_Kind* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<Field_Kind>(
     Field_Kind_descriptor(), name, value);
 }
@@ -146,7 +146,7 @@ inline const std::string& Field_Cardinality_Name(Field_Cardinality value) {
     <Field_Cardinality_descriptor, 0, 3>(static_cast<int>(value));
 }
 inline bool Field_Cardinality_Parse(
-    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, Field_Cardinality* value) {
+    ::absl::string_view name, Field_Cardinality* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<Field_Cardinality>(
     Field_Cardinality_descriptor(), name, value);
 }
@@ -175,7 +175,7 @@ inline const std::string& Syntax_Name(Syntax value) {
     <Syntax_descriptor, 0, 1>(static_cast<int>(value));
 }
 inline bool Syntax_Parse(
-    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, Syntax* value) {
+    ::absl::string_view name, Syntax* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<Syntax>(
     Syntax_descriptor(), name, value);
 }
@@ -284,7 +284,7 @@ class PROTOBUF_EXPORT Type final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.Type";
   }
   protected:
@@ -534,7 +534,7 @@ class PROTOBUF_EXPORT Field final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.Field";
   }
   protected:
@@ -608,7 +608,7 @@ class PROTOBUF_EXPORT Field final :
       "Incorrect type passed to function Kind_Name.");
     return Field_Kind_Name(enum_t_value);
   }
-  static inline bool Kind_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,
+  static inline bool Kind_Parse(::absl::string_view name,
       Kind* value) {
     return Field_Kind_Parse(name, value);
   }
@@ -642,7 +642,7 @@ class PROTOBUF_EXPORT Field final :
       "Incorrect type passed to function Cardinality_Name.");
     return Field_Cardinality_Name(enum_t_value);
   }
-  static inline bool Cardinality_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,
+  static inline bool Cardinality_Parse(::absl::string_view name,
       Cardinality* value) {
     return Field_Cardinality_Parse(name, value);
   }
@@ -908,7 +908,7 @@ class PROTOBUF_EXPORT Enum final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.Enum";
   }
   protected:
@@ -1132,7 +1132,7 @@ class PROTOBUF_EXPORT EnumValue final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.EnumValue";
   }
   protected:
@@ -1316,7 +1316,7 @@ class PROTOBUF_EXPORT Option final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.Option";
   }
   protected:

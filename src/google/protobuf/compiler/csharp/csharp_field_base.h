@@ -33,6 +33,8 @@
 
 #include <string>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
 
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/csharp/csharp_source_generator_base.h>
@@ -85,7 +87,6 @@ class FieldGeneratorBase : public SourceGeneratorBase {
       std::map<std::string, std::string>* variables);
 
   std::string oneof_property_name();
-  std::string oneof_case_name(); 
   std::string oneof_name();
   std::string property_name();
   std::string name();

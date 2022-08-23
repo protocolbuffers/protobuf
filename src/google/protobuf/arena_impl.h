@@ -249,12 +249,11 @@ struct AllocationPolicy {
   size_t max_block_size = kDefaultMaxBlockSize;
   void* (*block_alloc)(size_t) = nullptr;
   void (*block_dealloc)(void*, size_t) = nullptr;
-  ArenaMetricsCollector* metrics_collector = nullptr;
 
   bool IsDefault() const {
     return start_block_size == kDefaultStartBlockSize &&
            max_block_size == kDefaultMaxBlockSize && block_alloc == nullptr &&
-           block_dealloc == nullptr && metrics_collector == nullptr;
+           block_dealloc == nullptr;
   }
 };
 
@@ -291,22 +290,11 @@ class TaggedAllocationPolicyPtr {
     set_mask<kUserOwnedInitialBlock>(v);
   }
 
-  bool should_record_allocs() const {
-    return static_cast<bool>(get_mask<kRecordAllocs>());
-  }
-  void set_should_record_allocs(bool v) { set_mask<kRecordAllocs>(v); }
-
   uintptr_t get_raw() const { return policy_; }
-
-  inline void RecordAlloc(const std::type_info* allocated_type,
-                          size_t n) const {
-    get()->metrics_collector->OnAlloc(allocated_type, n);
-  }
 
  private:
   enum : uintptr_t {
     kUserOwnedInitialBlock = 1,
-    kRecordAllocs = 2,
   };
 
   static constexpr uintptr_t kTagsMask = 7;
@@ -662,13 +650,13 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   uint64_t SpaceUsed() const;
 
   template <AllocationClient alloc_client = AllocationClient::kDefault>
-  void* AllocateAligned(size_t n, const std::type_info* type) {
+  void* AllocateAligned(size_t n) {
     SerialArena* arena;
-    if (PROTOBUF_PREDICT_TRUE(!alloc_policy_.should_record_allocs() &&
-                              GetSerialArenaFast(&arena))) {
+    if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
       return arena->AllocateAligned<alloc_client>(n, AllocPolicy());
     } else {
-      return AllocateAlignedFallback(n, type);
+      return GetSerialArenaFallback(&thread_cache())
+          ->AllocateAligned(n, AllocPolicy());
     }
   }
 
@@ -686,16 +674,14 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // code for the happy path.
   PROTOBUF_NDEBUG_INLINE bool MaybeAllocateAligned(size_t n, void** out) {
     SerialArena* arena;
-    if (PROTOBUF_PREDICT_TRUE(!alloc_policy_.should_record_allocs() &&
-                              GetSerialArenaFast(&arena))) {
+    if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
       return arena->MaybeAllocateAligned(n, out);
     }
     return false;
   }
 
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
-                                   void (*destructor)(void*),
-                                   const std::type_info* type);
+                                   void (*destructor)(void*));
 
   // Add object pointer and cleanup function pointer to the list.
   void AddCleanup(void* elem, void (*cleanup)(void*));
@@ -723,10 +709,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   const AllocationPolicy* AllocPolicy() const { return alloc_policy_.get(); }
   void InitializeFrom(void* mem, size_t size);
   void InitializeWithPolicy(void* mem, size_t size, AllocationPolicy policy);
-  void* AllocateAlignedFallback(size_t n, const std::type_info* type);
   void* AllocateAlignedWithCleanupFallback(size_t n, size_t align,
-                                           void (*destructor)(void*),
-                                           const std::type_info* type);
+                                           void (*destructor)(void*));
 
   void Init();
   void SetInitialBlock(void* mem, size_t size);

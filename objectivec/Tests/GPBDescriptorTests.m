@@ -33,9 +33,9 @@
 #import <objc/runtime.h>
 
 #import "GPBDescriptor_PackagePrivate.h"
-#import "google/protobuf/Unittest.pbobjc.h"
-#import "google/protobuf/UnittestObjc.pbobjc.h"
-#import "google/protobuf/Descriptor.pbobjc.h"
+#import "Unittest.pbobjc.h"
+#import "UnittestObjc.pbobjc.h"
+#import "UnittestObjcOptions.pbobjc.h"
 
 @interface DescriptorTests : GPBTestCase
 @end
@@ -52,21 +52,21 @@
 
 - (void)testDescriptor_fullName {
   GPBDescriptor *testAllTypesDesc = [TestAllTypes descriptor];
-  XCTAssertEqualObjects(testAllTypesDesc.fullName, @"protobuf_unittest.TestAllTypes");
+  XCTAssertEqualObjects(testAllTypesDesc.fullName, @"objc.protobuf.tests.TestAllTypes");
   GPBDescriptor *nestedMessageDesc = [TestAllTypes_NestedMessage descriptor];
-  XCTAssertEqualObjects(nestedMessageDesc.fullName, @"protobuf_unittest.TestAllTypes.NestedMessage");
+  XCTAssertEqualObjects(nestedMessageDesc.fullName, @"objc.protobuf.tests.TestAllTypes.NestedMessage");
 
   // Prefixes removed.
-  GPBDescriptor *descDesc = [GPBDescriptorProto descriptor];
-  XCTAssertEqualObjects(descDesc.fullName, @"google.protobuf.DescriptorProto");
-  GPBDescriptor *descExtRngDesc = [GPBDescriptorProto_ExtensionRange descriptor];
-  XCTAssertEqualObjects(descExtRngDesc.fullName, @"google.protobuf.DescriptorProto.ExtensionRange");
+  GPBDescriptor *descDesc = [GPBTESTPrefixedParentMessage descriptor];
+  XCTAssertEqualObjects(descDesc.fullName, @"objc.protobuf.tests.options.PrefixedParentMessage");
+  GPBDescriptor *descExtRngDesc = [GPBTESTPrefixedParentMessage_Child descriptor];
+  XCTAssertEqualObjects(descExtRngDesc.fullName, @"objc.protobuf.tests.options.PrefixedParentMessage.Child");
 
   // Things that get "_Class" added.
   GPBDescriptor *pointDesc = [Point_Class descriptor];
-  XCTAssertEqualObjects(pointDesc.fullName, @"protobuf_unittest.Point");
+  XCTAssertEqualObjects(pointDesc.fullName, @"objc.protobuf.tests.Point");
   GPBDescriptor *pointRectDesc = [Point_Rect descriptor];
-  XCTAssertEqualObjects(pointRectDesc.fullName, @"protobuf_unittest.Point.Rect");
+  XCTAssertEqualObjects(pointRectDesc.fullName, @"objc.protobuf.tests.Point.Rect");
 }
 
 - (void)testFieldDescriptor {

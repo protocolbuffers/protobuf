@@ -74,7 +74,7 @@ std::string CommaSeparatedList(
   for (size_t i = 0; i < all_files.size(); i++) {
     names.push_back(all_files[i]->name());
   }
-  return Join(names, ",");
+  return absl::StrJoin(names, ",");
 }
 
 static const char* kFirstInsertionPointName = "first_mock_insertion_point";

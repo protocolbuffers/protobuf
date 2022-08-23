@@ -82,7 +82,6 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/text_format.h>
-#include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 
 
@@ -1946,12 +1945,11 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     print_mode_ = PRINT_FREE_FIELDS;
   } else {
     // Some other flag.  Look it up in the generators list.
-    const GeneratorInfo* generator_info =
-        FindOrNull(generators_by_flag_name_, name);
+    const GeneratorInfo* generator_info = FindGeneratorByFlag(name);
     if (generator_info == nullptr &&
         (plugin_prefix_.empty() || !HasSuffixString(name, "_out"))) {
       // Check if it's a generator option flag.
-      generator_info = FindOrNull(generators_by_option_name_, name);
+      generator_info = FindGeneratorByOption(name);
       if (generator_info != nullptr) {
         std::string* parameters =
             &generator_parameters_[generator_info->flag_name];
@@ -2083,16 +2081,15 @@ Parse PROTO_FILES and generate output based on the options given:
                               the executable's own name differs.)";
   }
 
-  for (GeneratorMap::iterator iter = generators_by_flag_name_.begin();
-       iter != generators_by_flag_name_.end(); ++iter) {
+  for (const auto& kv : generators_by_flag_name_) {
     // FIXME(kenton):  If the text is long enough it will wrap, which is ugly,
     //   but fixing this nicely (e.g. splitting on spaces) is probably more
     //   trouble than it's worth.
     std::cout << std::endl
-              << "  " << iter->first << "=OUT_DIR "
-              << std::string(19 - iter->first.size(),
+              << "  " << kv.first << "=OUT_DIR "
+              << std::string(19 - kv.first.size(),
                              ' ')  // Spaces for alignment.
-              << iter->second.help_text;
+              << kv.second.help_text;
   }
   std::cout << R"(
   @<filename>                 Read options and filenames from file. If a
@@ -2214,12 +2211,6 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
   if (!descriptor_set_out_name_.empty()) {
     output_filenames.push_back(descriptor_set_out_name_);
   }
-
-  // Some consumers consider first output as the "primary output" (ninja)
-  // If this doesn't match their primary output it ignores the manifest.
-  // The unordered map for output_directories means we can't guarantee the order of files.
-  // Sorting here makes the "primary output" can be whichever is first alphabetically
-  std::sort(output_filenames.begin(), output_filenames.end());
 
   int fd;
   do {
@@ -2512,6 +2503,20 @@ void CommandLineInterface::GetTransitiveDependencies(
   if (include_source_code_info) {
     file->CopySourceCodeInfoTo(new_descriptor);
   }
+}
+
+const CommandLineInterface::GeneratorInfo*
+CommandLineInterface::FindGeneratorByFlag(const std::string& name) const {
+  auto it = generators_by_flag_name_.find(name);
+  if (it == generators_by_flag_name_.end()) return nullptr;
+  return &it->second;
+}
+
+const CommandLineInterface::GeneratorInfo*
+CommandLineInterface::FindGeneratorByOption(const std::string& option) const {
+  auto it = generators_by_option_name_.find(option);
+  if (it == generators_by_option_name_.end()) return nullptr;
+  return &it->second;
 }
 
 namespace {

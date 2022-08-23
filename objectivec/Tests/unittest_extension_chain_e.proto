@@ -29,9 +29,9 @@
 
 syntax = "proto2";
 
-package protobuf_unittest;
+package objc.protobuf.tests;
 
-import "google/protobuf/unittest.proto";
+import "unittest.proto";
 
 // The Root for this file should end up just merging in unittest's Root.
 

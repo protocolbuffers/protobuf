@@ -36,6 +36,7 @@
 
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/compiler/cpp/helpers.h>
 #include <google/protobuf/descriptor.pb.h>
 
@@ -57,7 +58,7 @@ void SetStringVariables(const FieldDescriptor* descriptor,
 
   (*variables)["default"] = DefaultValue(options, descriptor);
   (*variables)["default_length"] =
-      StrCat(descriptor->default_value_string().length());
+      absl::StrCat(descriptor->default_value_string().length());
   (*variables)["default_variable_name"] = MakeDefaultName(descriptor);
   (*variables)["default_variable_field"] = MakeDefaultFieldName(descriptor);
 
@@ -67,7 +68,7 @@ void SetStringVariables(const FieldDescriptor* descriptor,
     (*variables)["lazy_variable_args"] = "";
   } else {
     (*variables)["lazy_variable"] =
-        StrCat(QualifiedClassName(descriptor->containing_type(), options),
+        absl::StrCat(QualifiedClassName(descriptor->containing_type(), options),
                      "::", MakeDefaultFieldName(descriptor));
 
     (*variables)["default_string"] = (*variables)["lazy_variable"] + ".get()";
@@ -89,7 +90,7 @@ void SetStringVariables(const FieldDescriptor* descriptor,
   if (options.opensource_runtime) {
     (*variables)["string_piece"] = "::std::string";
   } else {
-    (*variables)["string_piece"] = "::StringPiece";
+    (*variables)["string_piece"] = "::absl::string_view";
   }
 }
 
@@ -571,7 +572,7 @@ StringOneofFieldGenerator::StringOneofFieldGenerator(
   SetCommonOneofFieldVariables(descriptor, &variables_);
   variables_["field_name"] = UnderscoresToCamelCase(descriptor->name(), true);
   variables_["oneof_index"] =
-      StrCat(descriptor->containing_oneof()->index());
+      absl::StrCat(descriptor->containing_oneof()->index());
 }
 
 StringOneofFieldGenerator::~StringOneofFieldGenerator() {}
@@ -716,7 +717,7 @@ void RepeatedStringFieldGenerator::GenerateAccessorDeclarations(
   if (!options_.opensource_runtime) {
     format(
         "$deprecated_attr$void ${1$set_$name$$}$(int index, "
-        "StringPiece value);\n",
+        "absl::string_view value);\n",
         descriptor_);
   }
   format(
@@ -729,7 +730,7 @@ void RepeatedStringFieldGenerator::GenerateAccessorDeclarations(
       descriptor_);
   if (!options_.opensource_runtime) {
     format(
-        "$deprecated_attr$void ${1$add_$name$$}$(StringPiece value);\n",
+        "$deprecated_attr$void ${1$add_$name$$}$(absl::string_view value);\n",
         descriptor_);
   }
   format(
@@ -811,7 +812,7 @@ void RepeatedStringFieldGenerator::GenerateInlineAccessorDefinitions(
   if (!options_.opensource_runtime) {
     format(
         "inline void "
-        "$classname$::set_$name$(int index, StringPiece value) {\n"
+        "$classname$::set_$name$(int index, absl::string_view value) {\n"
         "  $field$.Mutable(index)->assign(value.data(), value.size());\n"
         "$annotate_set$"
         "  // @@protoc_insertion_point(field_set_string_piece:$full_name$)\n"
@@ -847,7 +848,7 @@ void RepeatedStringFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n");
   if (!options_.opensource_runtime) {
     format(
-        "inline void $classname$::add_$name$(StringPiece value) {\n"
+        "inline void $classname$::add_$name$(absl::string_view value) {\n"
         "  $field$.Add()->assign(value.data(), value.size());\n"
         "$annotate_add$"
         "  // @@protoc_insertion_point(field_add_string_piece:$full_name$)\n"

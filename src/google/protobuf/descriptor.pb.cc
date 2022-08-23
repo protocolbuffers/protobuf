@@ -1199,7 +1199,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] PR
   "s/descriptorpb\370\001\001\242\002\003GPB\252\002\032Google.Protobu"
   "f.Reflection"
   ;
-static ::_pbi::once_flag descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once;
+static ::absl::once_flag descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto = {
     false, false, 6212, descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto,
     "google/protobuf/descriptor.proto",

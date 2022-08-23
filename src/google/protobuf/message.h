@@ -116,16 +116,19 @@
 #include <type_traits>
 #include <vector>
 
-#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/port.h>
+#include "absl/base/call_once.h"
+#include "absl/base/casts.h"
+#include "absl/strings/string_view.h"
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/generated_message_tctable_decl.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/map.h>  // TODO(b/211442718): cleanup
 #include <google/protobuf/message_lite.h>
+#include <google/protobuf/port.h>
 
 
 // Must be included last.
@@ -1068,13 +1071,13 @@ class PROTOBUF_EXPORT Reflection final {
   // The table-driven parser table.
   // This table is generated on demand for Message types that did not override
   // _InternalParse. It uses the reflection information to do so.
-  mutable internal::once_flag tcparse_table_once_;
+  mutable absl::once_flag tcparse_table_once_;
   using TcParseTableBase = internal::TcParseTableBase;
   mutable const TcParseTableBase* tcparse_table_ = nullptr;
 
   const TcParseTableBase* GetTcParseTable() const {
-    internal::call_once(tcparse_table_once_,
-                        [&] { tcparse_table_ = CreateTcParseTable(); });
+    absl::call_once(tcparse_table_once_,
+                    [&] { tcparse_table_ = CreateTcParseTable(); });
     return tcparse_table_;
   }
 
@@ -1432,7 +1435,7 @@ const T* DynamicCastToGenerated(const Message* from) {
 #else
   bool ok = from != nullptr &&
             T::default_instance().GetReflection() == from->GetReflection();
-  return ok ? down_cast<const T*>(from) : nullptr;
+  return ok ? internal::DownCast<const T*>(from) : nullptr;
 #endif
 }
 

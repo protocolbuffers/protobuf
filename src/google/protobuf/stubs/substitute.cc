@@ -30,11 +30,13 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
+#include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/stubs/stl_util.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/substitute.h>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/stl_util.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
 
 namespace google {
 namespace protobuf {
@@ -78,25 +80,24 @@ void SubstituteAndAppend(std::string* output, const char* format,
   int size = 0;
   for (int i = 0; format[i] != '\0'; i++) {
     if (format[i] == '$') {
-      if (ascii_isdigit(format[i+1])) {
+      if (absl::ascii_isdigit(format[i + 1])) {
         int index = format[i+1] - '0';
         if (args_array[index]->size() == -1) {
           GOOGLE_LOG(DFATAL)
-            << "strings::Substitute format string invalid: asked for \"$"
-            << index << "\", but only " << CountSubstituteArgs(args_array)
-            << " args were given.  Full format string was: \""
-            << CEscape(format) << "\".";
+              << "strings::Substitute format string invalid: asked for \"$"
+              << index << "\", but only " << CountSubstituteArgs(args_array)
+              << " args were given.  Full format string was: \""
+              << absl::CEscape(format) << "\".";
           return;
         }
         size += args_array[index]->size();
         ++i;  // Skip next char.
-      } else if (format[i+1] == '$') {
+      } else if (format[i + 1] == '$') {
         ++size;
         ++i;  // Skip next char.
       } else {
-        GOOGLE_LOG(DFATAL)
-          << "Invalid strings::Substitute() format string: \""
-          << CEscape(format) << "\".";
+        GOOGLE_LOG(DFATAL) << "Invalid strings::Substitute() format string: \""
+                           << absl::CEscape(format) << "\".";
         return;
       }
     } else {
@@ -112,14 +113,14 @@ void SubstituteAndAppend(std::string* output, const char* format,
   char* target = string_as_array(output) + original_size;
   for (int i = 0; format[i] != '\0'; i++) {
     if (format[i] == '$') {
-      if (ascii_isdigit(format[i+1])) {
+      if (absl::ascii_isdigit(format[i + 1])) {
         unsigned int index = format[i+1] - '0';
         assert(index < 10);
         const SubstituteArg* src = args_array[index];
         memcpy(target, src->data(), src->size());
         target += src->size();
         ++i;  // Skip next char.
-      } else if (format[i+1] == '$') {
+      } else if (format[i + 1] == '$') {
         *target++ = '$';
         ++i;  // Skip next char.
       }

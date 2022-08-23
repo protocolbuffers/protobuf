@@ -34,12 +34,15 @@
 #define GOOGLE_PROTOBUF_STUBS_STRUTIL_H__
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/stringpiece.h>
 #include <stdlib.h>
 
 #include <cstring>
 #include <google/protobuf/port_def.inc>
 #include <vector>
+
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
+#include "absl/strings/string_view.h"
 
 namespace google {
 namespace protobuf {
@@ -52,49 +55,6 @@ namespace protobuf {
 #define strtoll strtol
 #define strtoull strtoul
 #endif
-
-// ----------------------------------------------------------------------
-// ascii_isalnum()
-//    Check if an ASCII character is alphanumeric.  We can't use ctype's
-//    isalnum() because it is affected by locale.  This function is applied
-//    to identifiers in the protocol buffer language, not to natural-language
-//    strings, so locale should not be taken into account.
-// ascii_isdigit()
-//    Like above, but only accepts digits.
-// ascii_isspace()
-//    Check if the character is a space character.
-// ----------------------------------------------------------------------
-
-inline bool ascii_isalnum(char c) {
-  return ('a' <= c && c <= 'z') ||
-         ('A' <= c && c <= 'Z') ||
-         ('0' <= c && c <= '9');
-}
-
-inline bool ascii_isdigit(char c) {
-  return ('0' <= c && c <= '9');
-}
-
-inline bool ascii_isspace(char c) {
-  return c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' ||
-      c == '\r';
-}
-
-inline bool ascii_isupper(char c) {
-  return c >= 'A' && c <= 'Z';
-}
-
-inline bool ascii_islower(char c) {
-  return c >= 'a' && c <= 'z';
-}
-
-inline char ascii_toupper(char c) {
-  return ascii_islower(c) ? c - ('a' - 'A') : c;
-}
-
-inline char ascii_tolower(char c) {
-  return ascii_isupper(c) ? c + ('a' - 'A') : c;
-}
 
 inline int hex_digit_to_int(char c) {
   /* Assume ASCII. */
@@ -113,7 +73,7 @@ inline int hex_digit_to_int(char c) {
 //    prefix string if the prefix matches, otherwise the original
 //    string.
 // ----------------------------------------------------------------------
-inline bool HasPrefixString(StringPiece str, StringPiece prefix) {
+inline bool HasPrefixString(absl::string_view str, absl::string_view prefix) {
   return str.size() >= prefix.size() &&
          memcmp(str.data(), prefix.data(), prefix.size()) == 0;
 }
@@ -135,7 +95,7 @@ inline std::string StripPrefixString(const std::string& str,
 //    suffix string if the suffix matches, otherwise the original
 //    string.
 // ----------------------------------------------------------------------
-inline bool HasSuffixString(StringPiece str, StringPiece suffix) {
+inline bool HasSuffixString(absl::string_view str, absl::string_view suffix) {
   return str.size() >= suffix.size() &&
          memcmp(str.data() + str.size() - suffix.size(), suffix.data(),
                 suffix.size()) == 0;
@@ -217,7 +177,7 @@ PROTOBUF_EXPORT std::string StringReplace(const std::string& s,
 //    to 'result'.  If there are consecutive delimiters, this function skips
 //    over all of them.
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT void SplitStringUsing(StringPiece full, const char* delim,
+PROTOBUF_EXPORT void SplitStringUsing(absl::string_view full, const char* delim,
                                       std::vector<std::string>* res);
 
 // Split a string using one or more byte delimiters, presented
@@ -228,14 +188,15 @@ PROTOBUF_EXPORT void SplitStringUsing(StringPiece full, const char* delim,
 //
 // If "full" is the empty string, yields an empty string as the only value.
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT void SplitStringAllowEmpty(StringPiece full, const char* delim,
+PROTOBUF_EXPORT void SplitStringAllowEmpty(absl::string_view full,
+                                           const char* delim,
                                            std::vector<std::string>* result);
 
 // ----------------------------------------------------------------------
 // Split()
 //    Split a string using a character delimiter.
 // ----------------------------------------------------------------------
-inline std::vector<std::string> Split(StringPiece full, const char* delim,
+inline std::vector<std::string> Split(absl::string_view full, const char* delim,
                                       bool skip_empty = true) {
   std::vector<std::string> result;
   if (skip_empty) {
@@ -245,105 +206,6 @@ inline std::vector<std::string> Split(StringPiece full, const char* delim,
   }
   return result;
 }
-
-// ----------------------------------------------------------------------
-// JoinStrings()
-//    These methods concatenate a vector of strings into a C++ string, using
-//    the C-string "delim" as a separator between components. There are two
-//    flavors of the function, one flavor returns the concatenated string,
-//    another takes a pointer to the target string. In the latter case the
-//    target string is cleared and overwritten.
-// ----------------------------------------------------------------------
-PROTOBUF_EXPORT void JoinStrings(const std::vector<std::string>& components,
-                                 const char* delim, std::string* result);
-
-inline std::string JoinStrings(const std::vector<std::string>& components,
-                               const char* delim) {
-  std::string result;
-  JoinStrings(components, delim, &result);
-  return result;
-}
-
-// ----------------------------------------------------------------------
-// UnescapeCEscapeSequences()
-//    Copies "source" to "dest", rewriting C-style escape sequences
-//    -- '\n', '\r', '\\', '\ooo', etc -- to their ASCII
-//    equivalents.  "dest" must be sufficiently large to hold all
-//    the characters in the rewritten string (i.e. at least as large
-//    as strlen(source) + 1 should be safe, since the replacements
-//    are always shorter than the original escaped sequences).  It's
-//    safe for source and dest to be the same.  RETURNS the length
-//    of dest.
-//
-//    It allows hex sequences \xhh, or generally \xhhhhh with an
-//    arbitrary number of hex digits, but all of them together must
-//    specify a value of a single byte (e.g. \x0045 is equivalent
-//    to \x45, and \x1234 is erroneous).
-//
-//    It also allows escape sequences of the form \uhhhh (exactly four
-//    hex digits, upper or lower case) or \Uhhhhhhhh (exactly eight
-//    hex digits, upper or lower case) to specify a Unicode code
-//    point. The dest array will contain the UTF8-encoded version of
-//    that code-point (e.g., if source contains \u2019, then dest will
-//    contain the three bytes 0xE2, 0x80, and 0x99).
-//
-//    Errors: In the first form of the call, errors are reported with
-//    LOG(ERROR). The same is true for the second form of the call if
-//    the pointer to the string std::vector is nullptr; otherwise, error
-//    messages are stored in the std::vector. In either case, the effect on
-//    the dest array is not defined, but rest of the source will be
-//    processed.
-//    ----------------------------------------------------------------------
-
-PROTOBUF_EXPORT int UnescapeCEscapeSequences(const char* source, char* dest);
-PROTOBUF_EXPORT int UnescapeCEscapeSequences(const char* source, char* dest,
-                                             std::vector<std::string>* errors);
-
-// ----------------------------------------------------------------------
-// UnescapeCEscapeString()
-//    This does the same thing as UnescapeCEscapeSequences, but creates
-//    a new string. The caller does not need to worry about allocating
-//    a dest buffer. This should be used for non performance critical
-//    tasks such as printing debug messages. It is safe for src and dest
-//    to be the same.
-//
-//    The second call stores its errors in a supplied string vector.
-//    If the string vector pointer is nullptr, it reports the errors with LOG().
-//
-//    In the first and second calls, the length of dest is returned. In the
-//    the third call, the new string is returned.
-// ----------------------------------------------------------------------
-
-PROTOBUF_EXPORT int UnescapeCEscapeString(const std::string& src,
-                                          std::string* dest);
-PROTOBUF_EXPORT int UnescapeCEscapeString(const std::string& src,
-                                          std::string* dest,
-                                          std::vector<std::string>* errors);
-PROTOBUF_EXPORT std::string UnescapeCEscapeString(const std::string& src);
-
-// ----------------------------------------------------------------------
-// CEscape()
-//    Escapes 'src' using C-style escape sequences and returns the resulting
-//    string.
-//
-//    Escaped chars: \n, \r, \t, ", ', \, and !isprint().
-// ----------------------------------------------------------------------
-PROTOBUF_EXPORT std::string CEscape(const std::string& src);
-
-// ----------------------------------------------------------------------
-// CEscapeAndAppend()
-//    Escapes 'src' using C-style escape sequences, and appends the escaped
-//    string to 'dest'.
-// ----------------------------------------------------------------------
-PROTOBUF_EXPORT void CEscapeAndAppend(StringPiece src, std::string* dest);
-
-namespace strings {
-// Like CEscape() but does not escape bytes with the upper bit set.
-PROTOBUF_EXPORT std::string Utf8SafeCEscape(const std::string& src);
-
-// Like CEscape() but uses hex (\x) escapes instead of octals.
-PROTOBUF_EXPORT std::string CHexEscape(const std::string& src);
-}  // namespace strings
 
 // ----------------------------------------------------------------------
 // strto32()
@@ -397,21 +259,21 @@ inline uint64_t strtou64(const char *nptr, char **endptr, int base) {
 // safe_strtof()
 // safe_strtod()
 // ----------------------------------------------------------------------
-PROTOBUF_EXPORT bool safe_strtob(StringPiece str, bool* value);
+PROTOBUF_EXPORT bool safe_strtob(absl::string_view str, bool* value);
 
 PROTOBUF_EXPORT bool safe_strto32(const std::string& str, int32_t* value);
 PROTOBUF_EXPORT bool safe_strtou32(const std::string& str, uint32_t* value);
 inline bool safe_strto32(const char* str, int32_t* value) {
   return safe_strto32(std::string(str), value);
 }
-inline bool safe_strto32(StringPiece str, int32_t* value) {
-  return safe_strto32(str.ToString(), value);
+inline bool safe_strto32(absl::string_view str, int32_t* value) {
+  return safe_strto32(std::string(str), value);
 }
 inline bool safe_strtou32(const char* str, uint32_t* value) {
   return safe_strtou32(std::string(str), value);
 }
-inline bool safe_strtou32(StringPiece str, uint32_t* value) {
-  return safe_strtou32(str.ToString(), value);
+inline bool safe_strtou32(absl::string_view str, uint32_t* value) {
+  return safe_strtou32(std::string(str), value);
 }
 
 PROTOBUF_EXPORT bool safe_strto64(const std::string& str, int64_t* value);
@@ -419,14 +281,14 @@ PROTOBUF_EXPORT bool safe_strtou64(const std::string& str, uint64_t* value);
 inline bool safe_strto64(const char* str, int64_t* value) {
   return safe_strto64(std::string(str), value);
 }
-inline bool safe_strto64(StringPiece str, int64_t* value) {
-  return safe_strto64(str.ToString(), value);
+inline bool safe_strto64(absl::string_view str, int64_t* value) {
+  return safe_strto64(std::string(str), value);
 }
 inline bool safe_strtou64(const char* str, uint64_t* value) {
   return safe_strtou64(std::string(str), value);
 }
-inline bool safe_strtou64(StringPiece str, uint64_t* value) {
-  return safe_strtou64(str.ToString(), value);
+inline bool safe_strtou64(absl::string_view str, uint64_t* value) {
+  return safe_strtou64(std::string(str), value);
 }
 
 PROTOBUF_EXPORT bool safe_strtof(const char* str, float* value);
@@ -437,11 +299,11 @@ inline bool safe_strtof(const std::string& str, float* value) {
 inline bool safe_strtod(const std::string& str, double* value) {
   return safe_strtod(str.c_str(), value);
 }
-inline bool safe_strtof(StringPiece str, float* value) {
-  return safe_strtof(str.ToString(), value);
+inline bool safe_strtof(absl::string_view str, float* value) {
+  return safe_strtof(std::string(str), value);
 }
-inline bool safe_strtod(StringPiece str, double* value) {
-  return safe_strtod(str.ToString(), value);
+inline bool safe_strtod(absl::string_view str, double* value) {
+  return safe_strtod(std::string(str), value);
 }
 
 // ----------------------------------------------------------------------
@@ -575,215 +437,9 @@ static const int kFloatToBufferSize = 24;
 
 namespace strings {
 
-enum PadSpec {
-  NO_PAD = 1,
-  ZERO_PAD_2,
-  ZERO_PAD_3,
-  ZERO_PAD_4,
-  ZERO_PAD_5,
-  ZERO_PAD_6,
-  ZERO_PAD_7,
-  ZERO_PAD_8,
-  ZERO_PAD_9,
-  ZERO_PAD_10,
-  ZERO_PAD_11,
-  ZERO_PAD_12,
-  ZERO_PAD_13,
-  ZERO_PAD_14,
-  ZERO_PAD_15,
-  ZERO_PAD_16,
-};
-
-struct Hex {
-  uint64_t value;
-  enum PadSpec spec;
-  template <class Int>
-  explicit Hex(Int v, PadSpec s = NO_PAD)
-      : spec(s) {
-    // Prevent sign-extension by casting integers to
-    // their unsigned counterparts.
-#ifdef LANG_CXX11
-    static_assert(
-        sizeof(v) == 1 || sizeof(v) == 2 || sizeof(v) == 4 || sizeof(v) == 8,
-        "Unknown integer type");
-#endif
-    value = sizeof(v) == 1 ? static_cast<uint8_t>(v)
-          : sizeof(v) == 2 ? static_cast<uint16_t>(v)
-          : sizeof(v) == 4 ? static_cast<uint32_t>(v)
-          : static_cast<uint64_t>(v);
-  }
-};
-
-struct PROTOBUF_EXPORT AlphaNum {
-  const char *piece_data_;  // move these to string_ref eventually
-  size_t piece_size_;       // move these to string_ref eventually
-
-  char digits[kFastToBufferSize];
-
-  // No bool ctor -- bools convert to an integral type.
-  // A bool ctor would also convert incoming pointers (bletch).
-
-  AlphaNum(int i32)
-      : piece_data_(digits),
-        piece_size_(FastInt32ToBufferLeft(i32, digits) - &digits[0]) {}
-  AlphaNum(unsigned int u32)
-      : piece_data_(digits),
-        piece_size_(FastUInt32ToBufferLeft(u32, digits) - &digits[0]) {}
-  AlphaNum(long long i64)
-      : piece_data_(digits),
-        piece_size_(FastInt64ToBufferLeft(i64, digits) - &digits[0]) {}
-  AlphaNum(unsigned long long u64)
-      : piece_data_(digits),
-        piece_size_(FastUInt64ToBufferLeft(u64, digits) - &digits[0]) {}
-
-  // Note: on some architectures, "long" is only 32 bits, not 64, but the
-  // performance hit of using FastInt64ToBufferLeft to handle 32-bit values
-  // is quite minor.
-  AlphaNum(long i64)
-      : piece_data_(digits),
-        piece_size_(FastInt64ToBufferLeft(i64, digits) - &digits[0]) {}
-  AlphaNum(unsigned long u64)
-      : piece_data_(digits),
-        piece_size_(FastUInt64ToBufferLeft(u64, digits) - &digits[0]) {}
-
-  AlphaNum(float f)
-    : piece_data_(digits), piece_size_(strlen(FloatToBuffer(f, digits))) {}
-  AlphaNum(double f)
-    : piece_data_(digits), piece_size_(strlen(DoubleToBuffer(f, digits))) {}
-
-  AlphaNum(Hex hex);
-
-  AlphaNum(const char* c_str)
-      : piece_data_(c_str), piece_size_(strlen(c_str)) {}
-  // TODO: Add a string_ref constructor, eventually
-  // AlphaNum(const StringPiece &pc) : piece(pc) {}
-
-  AlphaNum(const std::string& str)
-      : piece_data_(str.data()), piece_size_(str.size()) {}
-
-  AlphaNum(StringPiece str)
-      : piece_data_(str.data()), piece_size_(str.size()) {}
-
-  size_t size() const { return piece_size_; }
-  const char *data() const { return piece_data_; }
-
- private:
-  // Use ":" not ':'
-  AlphaNum(char c);  // NOLINT(runtime/explicit)
-
-  // Disallow copy and assign.
-  AlphaNum(const AlphaNum&);
-  void operator=(const AlphaNum&);
-};
+using Hex = absl::Hex;
 
 }  // namespace strings
-
-using strings::AlphaNum;
-
-// ----------------------------------------------------------------------
-// StrCat()
-//    This merges the given strings or numbers, with no delimiter.  This
-//    is designed to be the fastest possible way to construct a string out
-//    of a mix of raw C strings, strings, bool values,
-//    and numeric values.
-//
-//    Don't use this for user-visible strings.  The localization process
-//    works poorly on strings built up out of fragments.
-//
-//    For clarity and performance, don't use StrCat when appending to a
-//    string.  In particular, avoid using any of these (anti-)patterns:
-//      str.append(StrCat(...)
-//      str += StrCat(...)
-//      str = StrCat(str, ...)
-//    where the last is the worse, with the potential to change a loop
-//    from a linear time operation with O(1) dynamic allocations into a
-//    quadratic time operation with O(n) dynamic allocations.  StrAppend
-//    is a better choice than any of the above, subject to the restriction
-//    of StrAppend(&str, a, b, c, ...) that none of the a, b, c, ... may
-//    be a reference into str.
-// ----------------------------------------------------------------------
-
-PROTOBUF_EXPORT std::string StrCat(const AlphaNum& a, const AlphaNum& b);
-PROTOBUF_EXPORT std::string StrCat(const AlphaNum& a, const AlphaNum& b,
-                                   const AlphaNum& c);
-PROTOBUF_EXPORT std::string StrCat(const AlphaNum& a, const AlphaNum& b,
-                                   const AlphaNum& c, const AlphaNum& d);
-PROTOBUF_EXPORT std::string StrCat(const AlphaNum& a, const AlphaNum& b,
-                                   const AlphaNum& c, const AlphaNum& d,
-                                   const AlphaNum& e);
-PROTOBUF_EXPORT std::string StrCat(const AlphaNum& a, const AlphaNum& b,
-                                   const AlphaNum& c, const AlphaNum& d,
-                                   const AlphaNum& e, const AlphaNum& f);
-PROTOBUF_EXPORT std::string StrCat(const AlphaNum& a, const AlphaNum& b,
-                                   const AlphaNum& c, const AlphaNum& d,
-                                   const AlphaNum& e, const AlphaNum& f,
-                                   const AlphaNum& g);
-PROTOBUF_EXPORT std::string StrCat(const AlphaNum& a, const AlphaNum& b,
-                                   const AlphaNum& c, const AlphaNum& d,
-                                   const AlphaNum& e, const AlphaNum& f,
-                                   const AlphaNum& g, const AlphaNum& h);
-PROTOBUF_EXPORT std::string StrCat(const AlphaNum& a, const AlphaNum& b,
-                                   const AlphaNum& c, const AlphaNum& d,
-                                   const AlphaNum& e, const AlphaNum& f,
-                                   const AlphaNum& g, const AlphaNum& h,
-                                   const AlphaNum& i);
-
-inline std::string StrCat(const AlphaNum& a) {
-  return std::string(a.data(), a.size());
-}
-
-// ----------------------------------------------------------------------
-// StrAppend()
-//    Same as above, but adds the output to the given string.
-//    WARNING: For speed, StrAppend does not try to check each of its input
-//    arguments to be sure that they are not a subset of the string being
-//    appended to.  That is, while this will work:
-//
-//    string s = "foo";
-//    s += s;
-//
-//    This will not (necessarily) work:
-//
-//    string s = "foo";
-//    StrAppend(&s, s);
-//
-//    Note: while StrCat supports appending up to 9 arguments, StrAppend
-//    is currently limited to 4.  That's rarely an issue except when
-//    automatically transforming StrCat to StrAppend, and can easily be
-//    worked around as consecutive calls to StrAppend are quite efficient.
-// ----------------------------------------------------------------------
-
-PROTOBUF_EXPORT void StrAppend(std::string* dest, const AlphaNum& a);
-PROTOBUF_EXPORT void StrAppend(std::string* dest, const AlphaNum& a,
-                               const AlphaNum& b);
-PROTOBUF_EXPORT void StrAppend(std::string* dest, const AlphaNum& a,
-                               const AlphaNum& b, const AlphaNum& c);
-PROTOBUF_EXPORT void StrAppend(std::string* dest, const AlphaNum& a,
-                               const AlphaNum& b, const AlphaNum& c,
-                               const AlphaNum& d);
-
-// ----------------------------------------------------------------------
-// Join()
-//    These methods concatenate a range of components into a C++ string, using
-//    the C-string "delim" as a separator between components.
-// ----------------------------------------------------------------------
-template <typename Iterator>
-void Join(Iterator start, Iterator end, const char* delim,
-          std::string* result) {
-  for (Iterator it = start; it != end; ++it) {
-    if (it != start) {
-      result->append(delim);
-    }
-    StrAppend(result, *it);
-  }
-}
-
-template <typename Range>
-std::string Join(const Range& components, const char* delim) {
-  std::string result;
-  Join(components.begin(), components.end(), delim, &result);
-  return result;
-}
 
 // ----------------------------------------------------------------------
 // ToHex()
@@ -802,66 +458,13 @@ PROTOBUF_EXPORT int GlobalReplaceSubstring(const std::string& substring,
                                            const std::string& replacement,
                                            std::string* s);
 
-// ----------------------------------------------------------------------
-// Base64Unescape()
-//    Converts "src" which is encoded in Base64 to its binary equivalent and
-//    writes it to "dest". If src contains invalid characters, dest is cleared
-//    and the function returns false. Returns true on success.
-// ----------------------------------------------------------------------
-PROTOBUF_EXPORT bool Base64Unescape(StringPiece src, std::string* dest);
-
-// ----------------------------------------------------------------------
-// WebSafeBase64Unescape()
-//    This is a variation of Base64Unescape which uses '-' instead of '+', and
-//    '_' instead of '/'. src is not null terminated, instead specify len. I
-//    recommend that slen<szdest, but we honor szdest anyway.
-//    RETURNS the length of dest, or -1 if src contains invalid chars.
-
-//    The variation that stores into a string clears the string first, and
-//    returns false (with dest empty) if src contains invalid chars; for
-//    this version src and dest must be different strings.
-// ----------------------------------------------------------------------
-PROTOBUF_EXPORT int WebSafeBase64Unescape(const char* src, int slen, char* dest,
-                                          int szdest);
-PROTOBUF_EXPORT bool WebSafeBase64Unescape(StringPiece src, std::string* dest);
-
-// Return the length to use for the output buffer given to the base64 escape
-// routines. Make sure to use the same value for do_padding in both.
-// This function may return incorrect results if given input_len values that
-// are extremely high, which should happen rarely.
-PROTOBUF_EXPORT int CalculateBase64EscapedLen(int input_len, bool do_padding);
-// Use this version when calling Base64Escape without a do_padding arg.
-PROTOBUF_EXPORT int CalculateBase64EscapedLen(int input_len);
-
-// ----------------------------------------------------------------------
-// Base64Escape()
-// WebSafeBase64Escape()
-//    Encode "src" to "dest" using base64 encoding.
-//    src is not null terminated, instead specify len.
-//    'dest' should have at least CalculateBase64EscapedLen() length.
-//    RETURNS the length of dest.
-//    The WebSafe variation use '-' instead of '+' and '_' instead of '/'
-//    so that we can place the out in the URL or cookies without having
-//    to escape them.  It also has an extra parameter "do_padding",
-//    which when set to false will prevent padding with "=".
-// ----------------------------------------------------------------------
-PROTOBUF_EXPORT int Base64Escape(const unsigned char* src, int slen, char* dest,
-                                 int szdest);
-PROTOBUF_EXPORT int WebSafeBase64Escape(const unsigned char* src, int slen,
-                                        char* dest, int szdest,
-                                        bool do_padding);
-// Encode src into dest with padding.
-PROTOBUF_EXPORT void Base64Escape(StringPiece src, std::string* dest);
-// Encode src into dest web-safely without padding.
-PROTOBUF_EXPORT void WebSafeBase64Escape(StringPiece src, std::string* dest);
+namespace strings {
 // Encode src into dest web-safely with padding.
-PROTOBUF_EXPORT void WebSafeBase64EscapeWithPadding(StringPiece src,
+PROTOBUF_EXPORT void WebSafeBase64EscapeWithPadding(absl::string_view src,
                                                     std::string* dest);
-
-PROTOBUF_EXPORT void Base64Escape(const unsigned char* src, int szsrc,
-                                  std::string* dest, bool do_padding);
-PROTOBUF_EXPORT void WebSafeBase64Escape(const unsigned char* src, int szsrc,
-                                         std::string* dest, bool do_padding);
+PROTOBUF_EXPORT void LegacyBase64EscapeWithoutPadding(absl::string_view src,
+                                                      std::string* dest);
+}  // namespace strings
 
 inline bool IsValidCodePoint(uint32_t code_point) {
   return code_point < 0xD800 ||
@@ -883,50 +486,8 @@ PROTOBUF_EXPORT int EncodeAsUTF8Char(uint32_t code_point, char* output);
 // ----------------------------------------------------------------------
 PROTOBUF_EXPORT int UTF8FirstLetterNumBytes(const char* src, int len);
 
-// From google3/third_party/absl/strings/escaping.h
-
-// ----------------------------------------------------------------------
-// CleanStringLineEndings()
-//   Clean up a multi-line string to conform to Unix line endings.
-//   Reads from src and appends to dst, so usually dst should be empty.
-//
-//   If there is no line ending at the end of a non-empty string, it can
-//   be added automatically.
-//
-//   Four different types of input are correctly handled:
-//
-//     - Unix/Linux files: line ending is LF: pass through unchanged
-//
-//     - DOS/Windows files: line ending is CRLF: convert to LF
-//
-//     - Legacy Mac files: line ending is CR: convert to LF
-//
-//     - Garbled files: random line endings: convert gracefully
-//                      lonely CR, lonely LF, CRLF: convert to LF
-//
-//   @param src The multi-line string to convert
-//   @param dst The converted string is appended to this string
-//   @param auto_end_last_line Automatically terminate the last line
-//
-//   Limitations:
-//
-//     This does not do the right thing for CRCRLF files created by
-//     broken programs that do another Unix->DOS conversion on files
-//     that are already in CRLF format.  For this, a two-pass approach
-//     brute-force would be needed that
-//
-//       (1) determines the presence of LF (first one is ok)
-//       (2) if yes, removes any CR, else convert every CR to LF
-PROTOBUF_EXPORT void CleanStringLineEndings(const std::string& src,
-                                            std::string* dst,
-                                            bool auto_end_last_line);
-
-// Same as above, but transforms the argument in place.
-PROTOBUF_EXPORT void CleanStringLineEndings(std::string* str,
-                                            bool auto_end_last_line);
-
 namespace strings {
-inline bool EndsWith(StringPiece text, StringPiece suffix) {
+inline bool EndsWith(absl::string_view text, absl::string_view suffix) {
   return suffix.empty() ||
       (text.size() >= suffix.size() &&
        memcmp(text.data() + (text.size() - suffix.size()), suffix.data(),

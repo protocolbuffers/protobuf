@@ -43,6 +43,7 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/compiler/java/context.h>
 #include <google/protobuf/compiler/java/doc_comment.h>
@@ -100,7 +101,7 @@ void MessageBuilderLiteGenerator::Generate(io::Printer* printer) {
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
     vars["oneof_capitalized_name"] =
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
-    vars["oneof_index"] = StrCat(oneof->index());
+    vars["oneof_index"] = absl::StrCat(oneof->index());
 
     // oneofCase() and clearOneof()
     printer->Print(vars,

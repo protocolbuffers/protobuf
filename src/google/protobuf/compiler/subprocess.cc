@@ -45,6 +45,7 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include "absl/strings/escaping.h"
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/io/io_win32.h>
 #include <google/protobuf/message.h>
@@ -278,7 +279,7 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   }
 
   if (!output->ParseFromString(output_data)) {
-    *error = "Plugin output is unparseable: " + CEscape(output_data);
+    *error = "Plugin output is unparseable: " + absl::CEscape(output_data);
     return false;
   }
 
@@ -484,7 +485,7 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   }
 
   if (!output->ParseFromString(output_data)) {
-    *error = "Plugin output is unparseable: " + CEscape(output_data);
+    *error = "Plugin output is unparseable: " + absl::CEscape(output_data);
     return false;
   }
 

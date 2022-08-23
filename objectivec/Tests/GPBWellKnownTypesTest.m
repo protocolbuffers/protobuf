@@ -33,7 +33,7 @@
 #import <XCTest/XCTest.h>
 
 #import "GPBTestUtilities.h"
-#import "google/protobuf/AnyTest.pbobjc.h"
+#import "AnyTest.pbobjc.h"
 
 // Nanosecond time accuracy
 static const NSTimeInterval kTimeAccuracy = 1e-9;

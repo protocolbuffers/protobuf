@@ -129,7 +129,7 @@ string ConformanceTestSuite::ConformanceRequestSetting::
       prototype_message_.GetDescriptor()->file()->syntax() ==
         FileDescriptor::SYNTAX_PROTO3 ? "Proto3" : "Proto2";
 
-  return StrCat(ConformanceLevelToString(level_), ".", rname, ".",
+  return absl::StrCat(ConformanceLevelToString(level_), ".", rname, ".",
                       InputFormatString(input_format_), ".", test_name_, ".",
                       OutputFormatString(output_format_));
 }
@@ -290,7 +290,7 @@ void ConformanceTestSuite::VerifyResponse(
     GOOGLE_DCHECK_EQ(response.result_case(), ConformanceResponse::kProtobufPayload);
     const string& protobuf_payload = response.protobuf_payload();
     check = equivalent_wire_format == protobuf_payload;
-    differences = StrCat("Expect: ", ToOctString(equivalent_wire_format),
+    differences = absl::StrCat("Expect: ", ToOctString(equivalent_wire_format),
                                ", but got: ", ToOctString(protobuf_payload));
   } else {
     check = differencer.Compare(*reference_message, *test_message);

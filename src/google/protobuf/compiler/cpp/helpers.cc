@@ -45,22 +45,26 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
+#include <google/protobuf/compiler/scc.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/wire_format.h>
+#include <google/protobuf/wire_format_lite.h>
+#include <google/protobuf/stubs/strutil.h>
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
+#include <google/protobuf/stubs/substitute.h>
 #include "absl/synchronization/mutex.h"
 #include <google/protobuf/compiler/cpp/names.h>
 #include <google/protobuf/compiler/cpp/options.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/compiler/scc.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/stubs/substitute.h>
-#include <google/protobuf/stubs/hash.h>
+
 
 // Must be last.
 #include <google/protobuf/port_def.inc>
@@ -418,7 +422,7 @@ std::string QualifiedClassName(const EnumDescriptor* d) {
 
 std::string ExtensionName(const FieldDescriptor* d) {
   if (const Descriptor* scope = d->extension_scope())
-    return StrCat(ClassName(scope), "::", ResolveKeyword(d->name()));
+    return absl::StrCat(ClassName(scope), "::", ResolveKeyword(d->name()));
   return ResolveKeyword(d->name());
 }
 
@@ -529,15 +533,15 @@ std::string FieldName(const FieldDescriptor* field) {
 }
 
 std::string FieldMemberName(const FieldDescriptor* field, bool split) {
-  StringPiece prefix =
+  absl::string_view prefix =
       IsMapEntryMessage(field->containing_type()) ? "" : "_impl_.";
-  StringPiece split_prefix = split ? "_split_->" : "";
+  absl::string_view split_prefix = split ? "_split_->" : "";
   if (field->real_containing_oneof() == nullptr) {
-    return StrCat(prefix, split_prefix, FieldName(field), "_");
+    return absl::StrCat(prefix, split_prefix, FieldName(field), "_");
   }
   // Oneof fields are never split.
   GOOGLE_CHECK(!split);
-  return StrCat(prefix, field->containing_oneof()->name(), "_.",
+  return absl::StrCat(prefix, field->containing_oneof()->name(), "_.",
                       FieldName(field), "_");
 }
 
@@ -551,7 +555,7 @@ std::string QualifiedOneofCaseConstantName(const FieldDescriptor* field) {
   GOOGLE_DCHECK(field->containing_oneof());
   const std::string qualification =
       QualifiedClassName(field->containing_type());
-  return StrCat(qualification, "::", OneofCaseConstantName(field));
+  return absl::StrCat(qualification, "::", OneofCaseConstantName(field));
 }
 
 std::string EnumValueName(const EnumValueDescriptor* enum_value) {
@@ -596,7 +600,7 @@ std::string FieldConstantName(const FieldDescriptor* field) {
     // This field's camelcase name is not unique.  As a hack, add the field
     // number to the constant name.  This makes the constant rather useless,
     // but what can we do?
-    result += "_" + StrCat(field->number());
+    result += "_" + absl::StrCat(field->number());
   }
 
   return result;
@@ -732,9 +736,9 @@ std::string Int32ToString(int number) {
   if (number == std::numeric_limits<int32_t>::min()) {
     // This needs to be special-cased, see explanation here:
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52661
-    return StrCat(number + 1, " - 1");
+    return absl::StrCat(number + 1, " - 1");
   } else {
-    return StrCat(number);
+    return absl::StrCat(number);
   }
 }
 
@@ -742,13 +746,13 @@ static std::string Int64ToString(int64_t number) {
   if (number == std::numeric_limits<int64_t>::min()) {
     // This needs to be special-cased, see explanation here:
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52661
-    return StrCat("int64_t{", number + 1, "} - 1");
+    return absl::StrCat("int64_t{", number + 1, "} - 1");
   }
-  return StrCat("int64_t{", number, "}");
+  return absl::StrCat("int64_t{", number, "}");
 }
 
 static std::string UInt64ToString(uint64_t number) {
-  return StrCat("uint64_t{", number, "u}");
+  return absl::StrCat("uint64_t{", number, "u}");
 }
 
 std::string DefaultValue(const FieldDescriptor* field) {
@@ -760,7 +764,7 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_INT32:
       return Int32ToString(field->default_value_int32());
     case FieldDescriptor::CPPTYPE_UINT32:
-      return StrCat(field->default_value_uint32()) + "u";
+      return absl::StrCat(field->default_value_uint32()) + "u";
     case FieldDescriptor::CPPTYPE_INT64:
       return Int64ToString(field->default_value_int64());
     case FieldDescriptor::CPPTYPE_UINT64:
@@ -806,7 +810,7 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
           Int32ToString(field->default_value_enum()->number()));
     case FieldDescriptor::CPPTYPE_STRING:
       return "\"" +
-             EscapeTrigraphs(CEscape(field->default_value_string())) +
+             EscapeTrigraphs(absl::CEscape(field->default_value_string())) +
              "\"";
     case FieldDescriptor::CPPTYPE_MESSAGE:
       return "*" + FieldMessageTypeName(field, options) +
@@ -823,13 +827,13 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
 std::string FilenameIdentifier(const std::string& filename) {
   std::string result;
   for (int i = 0; i < filename.size(); i++) {
-    if (ascii_isalnum(filename[i])) {
+    if (absl::ascii_isalnum(filename[i])) {
       result.push_back(filename[i]);
     } else {
       // Not alphanumeric.  To avoid any possibility of name conflicts we
       // use the hex code for the character.
-      StrAppend(&result, "_",
-                      strings::Hex(static_cast<uint8_t>(filename[i])));
+      absl::StrAppend(&result, "_",
+                      absl::Hex(static_cast<uint8_t>(filename[i])));
     }
   }
   return result;
@@ -845,9 +849,9 @@ std::string QualifiedFileLevelSymbol(const FileDescriptor* file,
                                      const std::string& name,
                                      const Options& options) {
   if (file->package().empty()) {
-    return StrCat("::", name);
+    return absl::StrCat("::", name);
   }
-  return StrCat(Namespace(file, options), "::", name);
+  return absl::StrCat(Namespace(file, options), "::", name);
 }
 
 // Escape C++ trigraphs by escaping question marks to \?

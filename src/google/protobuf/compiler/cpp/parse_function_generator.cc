@@ -36,6 +36,7 @@
 #include <utility>
 
 #include <google/protobuf/wire_format.h>
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/compiler/cpp/helpers.h>
 #include <google/protobuf/generated_message_tctable_gen.h>
 #include <google/protobuf/generated_message_tctable_impl.h>
@@ -634,7 +635,7 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
                                      ? "uint32_t"
                                      : "uint64_t";
         func_name =
-            StrCat("::_pbi::TcParser::SingularVarintNoZag1<", field_type,
+            absl::StrCat("::_pbi::TcParser::SingularVarintNoZag1<", field_type,
                          ", offsetof(",                                 //
                          ClassName(info.field->containing_type()),      //
                          ", ",                                          //
@@ -929,7 +930,7 @@ void ParseFunctionGenerator::GenerateStrings(Formatter& format,
   std::string field_name;
   field_name = "nullptr";
   if (HasDescriptorMethods(field->file(), options_)) {
-    field_name = StrCat("\"", field->full_name(), "\"");
+    field_name = absl::StrCat("\"", field->full_name(), "\"");
   }
   format("::_pbi::VerifyUTF8(str, $1$)", field_name);
   switch (level) {
@@ -998,7 +999,7 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
             format(
                 "ctx->set_lazy_eager_verify_func($1$);\n",
                 eager_verify
-                    ? StrCat("&", ClassName(field->message_type(), true),
+                    ? absl::StrCat("&", ClassName(field->message_type(), true),
                                    "::InternalVerify")
                     : "nullptr");
           }
@@ -1087,12 +1088,12 @@ void ParseFunctionGenerator::GenerateFieldBody(
       {{"name", FieldName(field)},
        {"primitive_type", PrimitiveTypeName(options_, field->cpp_type())}});
   if (field->is_repeated()) {
-    format.AddMap({{"put_field", StrCat("add_", FieldName(field))},
-                   {"mutable_field", StrCat("add_", FieldName(field))}});
+    format.AddMap({{"put_field", absl::StrCat("add_", FieldName(field))},
+                   {"mutable_field", absl::StrCat("add_", FieldName(field))}});
   } else {
     format.AddMap(
-        {{"put_field", StrCat("set_", FieldName(field))},
-         {"mutable_field", StrCat("mutable_", FieldName(field))}});
+        {{"put_field", absl::StrCat("set_", FieldName(field))},
+         {"mutable_field", absl::StrCat("mutable_", FieldName(field))}});
   }
   uint32_t tag = WireFormatLite::MakeTag(field->number(), wiretype);
   switch (wiretype) {
@@ -1353,7 +1354,7 @@ void PopulateFastFieldEntry(const Descriptor* descriptor,
                             TailCallTableInfo::FastFieldInfo& info) {
                             .....
   if (name == "V8S1") {
-    info.func_name = StrCat(
+    info.func_name = absl::StrCat(
         "::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(",  //
         ClassName(descriptor),                                     //
         ", ",                                                      //
@@ -1362,7 +1363,7 @@ void PopulateFastFieldEntry(const Descriptor* descriptor,
         HasHasbit(field) ? entry.hasbit_idx : 63,                  //
         ">()");
   } else if (name == "V32S1") {
-    info.func_name = StrCat(
+    info.func_name = absl::StrCat(
         "::_pbi::TcParser::SingularVarintNoZag1<uint32_t, offsetof(",  //
         ClassName(descriptor),                                         //
         ", ",                                                          //
@@ -1371,7 +1372,7 @@ void PopulateFastFieldEntry(const Descriptor* descriptor,
         HasHasbit(field) ? entry.hasbit_idx : 63,                      //
         ">()");
   } else if (name == "V64S1") {
-    info.func_name = StrCat(
+    info.func_name = absl::StrCat(
         "::_pbi::TcParser::SingularVarintNoZag1<uint64_t, offsetof(",  //
         ClassName(descriptor),                                         //
         ", ",                                                          //
@@ -1380,7 +1381,7 @@ void PopulateFastFieldEntry(const Descriptor* descriptor,
         HasHasbit(field) ? entry.hasbit_idx : 63,                      //
         ">()");
   } else {
-    info.func_name = StrCat("::_pbi::TcParser::Fast", name);
+    info.func_name = absl::StrCat("::_pbi::TcParser::Fast", name);
   }
   info.aux_idx = aux_idx;
 }

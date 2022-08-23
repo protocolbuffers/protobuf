@@ -66,7 +66,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2ffield_5fmask_2eproto[] 
   "n/fieldmaskpb\370\001\001\242\002\003GPB\252\002\036Google.Protobuf"
   ".WellKnownTypesb\006proto3"
   ;
-static ::_pbi::once_flag descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_once;
+static ::absl::once_flag descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto = {
     false, false, 223, descriptor_table_protodef_google_2fprotobuf_2ffield_5fmask_2eproto,
     "google/protobuf/field_mask.proto",

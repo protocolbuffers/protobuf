@@ -176,6 +176,10 @@ class PROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
   // Adds the FileDescriptorProto to the database and takes ownership of it.
   bool AddAndOwn(const FileDescriptorProto* file);
 
+  // Adds the FileDescriptorProto to the database and not take ownership of it.
+  // The owner must ensure file outlives the SimpleDescriptorDatabase.
+  bool AddUnowned(const FileDescriptorProto* file);
+
   // implements DescriptorDatabase -----------------------------------
   bool FindFileByName(const std::string& filename,
                       FileDescriptorProto* output) override;
