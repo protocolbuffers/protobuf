@@ -143,6 +143,7 @@ set(test_plugin_files
 )
 
 add_executable(test_plugin ${test_plugin_files})
+target_include_directories(test_plugin PRIVATE ${ABSL_ROOT_DIR})
 target_link_libraries(test_plugin ${protobuf_LIB_PROTOC} ${protobuf_LIB_PROTOBUF} GTest::gmock)
 
 add_executable(lite-test ${protobuf_lite_test_files})

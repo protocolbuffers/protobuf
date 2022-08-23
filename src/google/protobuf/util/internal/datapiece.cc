@@ -221,9 +221,10 @@ util::StatusOr<bool> DataPiece::ToBool() const {
     case TYPE_STRING:
       return StringToNumber<bool>(safe_strtob);
     default:
-      return util::InvalidArgumentError(
-          ValueAsStringOrDefault("Wrong type. Cannot convert to Bool."));
+      break;
   }
+  return util::InvalidArgumentError(
+      ValueAsStringOrDefault("Wrong type. Cannot convert to Bool."));
 }
 
 util::StatusOr<std::string> DataPiece::ToString() const {

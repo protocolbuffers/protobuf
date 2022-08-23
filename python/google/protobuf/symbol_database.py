@@ -66,6 +66,9 @@ from google.protobuf import message_factory
 class SymbolDatabase(message_factory.MessageFactory):
   """A database of Python generated symbols."""
 
+  # local cache of registered classes.
+  _classes = {}
+
   def RegisterMessage(self, message):
     """Registers the given message type in the local database.
 

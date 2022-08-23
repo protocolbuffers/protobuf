@@ -262,7 +262,7 @@ class GeneratedMessageFactory final : public MessageFactory {
            STR_HASH_FXN>
       file_map_;
 
-  internal::WrappedMutex mutex_;
+  absl::Mutex mutex_;
   // Initialized lazily, so requires locking.
   std::unordered_map<const Descriptor*, const Message*> type_map_;
 };
@@ -298,7 +298,7 @@ void GeneratedMessageFactory::RegisterType(const Descriptor* descriptor,
 
 const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
   {
-    ReaderMutexLock lock(&mutex_);
+    absl::ReaderMutexLock lock(&mutex_);
     const Message* result = FindPtrOrNull(type_map_, type);
     if (result != nullptr) return result;
   }
@@ -317,7 +317,7 @@ const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
     return nullptr;
   }
 
-  WriterMutexLock lock(&mutex_);
+  absl::WriterMutexLock lock(&mutex_);
 
   // Check if another thread preempted us.
   const Message* result = FindPtrOrNull(type_map_, type);

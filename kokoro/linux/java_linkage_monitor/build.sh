@@ -6,7 +6,7 @@
 # This script selects a specific Dockerfile (for building a Docker image) and
 # a script to run inside that image.
 
-use_bazel.sh 5.1.1
+use_bazel.sh 4.2.2
 
 # Change to repo root
 cd $(dirname $0)/../../..

@@ -405,7 +405,7 @@ def internal_objc_proto_library(
         testonly = None,
         visibility = ["//visibility:public"],
         **kwargs):
-    """Bazel rule to create a Objective-C protobuf library from proto sourc
+    """Bazel rule to create a Objective-C protobuf library from proto source
     files
 
     NOTE: the rule is only an internal workaround to generate protos. The

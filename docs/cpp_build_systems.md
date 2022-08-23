@@ -111,7 +111,7 @@ cc_dist_library(
         ":a",
         ":b",
     ],
-    visbility = ["//visibility:public"],
+    visibility = ["//visibility:public"],
 )
 
 # Note: the output below has been formatted for clarity:

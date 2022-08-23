@@ -190,29 +190,42 @@ uint64_t Generator::GetSupportedFeatures() const {
   return CodeGenerator::Feature::FEATURE_PROTO3_OPTIONAL;
 }
 
+GeneratorOptions Generator::ParseParameter(const std::string& parameter,
+                                           std::string* error) const {
+  GeneratorOptions options;
+
+  std::vector<std::pair<std::string, std::string> > option_pairs;
+  ParseGeneratorParameter(parameter, &option_pairs);
+
+  for (const std::pair<std::string, std::string>& option : option_pairs) {
+    if (!opensource_runtime_ &&
+        option.first == "no_enforce_api_compatibility") {
+      // TODO(b/241584880): remove this legacy option, it has no effect.
+    } else if (!opensource_runtime_ && option.first == "bootstrap") {
+      options.bootstrap = true;
+    } else if (option.first == "pyi_out") {
+      options.generate_pyi = true;
+    } else if (option.first == "annotate_code") {
+      options.annotate_pyi = true;
+    } else {
+      *error = "Unknown generator option: " + option.first;
+    }
+  }
+  return options;
+}
+
 bool Generator::Generate(const FileDescriptor* file,
                          const std::string& parameter,
                          GeneratorContext* context, std::string* error) const {
   // -----------------------------------------------------------------
-  // parse generator options
-  bool bootstrap = false;
+  GeneratorOptions options = ParseParameter(parameter, error);
+  if (!error->empty()) return false;
 
-  std::vector<std::pair<std::string, std::string> > options;
-  ParseGeneratorParameter(parameter, &options);
-
-  for (int i = 0; i < options.size(); i++) {
-    if (!opensource_runtime_ &&
-        options[i].first == "no_enforce_api_compatibility") {
-      // TODO(b/241584880): remove this legacy option, it has no effect.
-    } else if (!opensource_runtime_ && options[i].first == "bootstrap") {
-      bootstrap = true;
-    } else if (options[i].first == "pyi_out") {
-      python::PyiGenerator pyi_generator;
-      if (!pyi_generator.Generate(file, "", context, error)) {
-        return false;
-      }
-    } else {
-      *error = "Unknown generator option: " + options[i].first;
+  // Generate pyi typing information
+  if (options.generate_pyi) {
+    python::PyiGenerator pyi_generator;
+    std::string pyi_options = options.annotate_pyi ? "annotate_code" : "";
+    if (!pyi_generator.Generate(file, pyi_options, context, error)) {
       return false;
     }
   }
@@ -224,7 +237,7 @@ bool Generator::Generate(const FileDescriptor* file,
   // TODO(kenton):  The proper thing to do would be to allocate any state on
   //   the stack and use that, so that the Generator class itself does not need
   //   to have any mutable members.  Then it is implicitly thread-safe.
-  MutexLock lock(&mutex_);
+  absl::MutexLock lock(&mutex_);
   file_ = file;
 
   std::string filename = GetFileName(file, ".py");
@@ -236,7 +249,7 @@ bool Generator::Generate(const FileDescriptor* file,
   if (!opensource_runtime_ && GeneratingDescriptorProto()) {
     std::string bootstrap_filename =
         "net/proto2/python/internal/descriptor_pb2.py";
-    if (bootstrap) {
+    if (options.bootstrap) {
       filename = bootstrap_filename;
     } else {
       std::unique_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));

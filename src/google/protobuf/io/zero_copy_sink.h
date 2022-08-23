@@ -28,33 +28,47 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/zero_copy_sink.h>
+#ifndef GOOGLE_PROTOBUF_UTIL_ZERO_COPY_SINK_H__
+#define GOOGLE_PROTOBUF_UTIL_ZERO_COPY_SINK_H__
+
+#include <cstddef>
+
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/bytestream.h>
+#include <google/protobuf/io/zero_copy_stream.h>
+
+// Must be included last.
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
-namespace util {
+namespace io {
 namespace zc_sink_internal {
-void ZeroCopyStreamByteSink::Append(const char* bytes, size_t len) {
-  while (true) {
-    if (len <= buffer_size_) {  // NOLINT
-      memcpy(buffer_, bytes, len);
-      buffer_ = static_cast<char*>(buffer_) + len;
-      buffer_size_ -= len;
-      return;
-    }
+// Internal helper class, for turning a ZeroCopyOutputStream into a sink.
+class PROTOBUF_EXPORT ZeroCopyStreamByteSink : public strings::ByteSink {
+ public:
+  explicit ZeroCopyStreamByteSink(io::ZeroCopyOutputStream* stream)
+      : stream_(stream) {}
+
+  ~ZeroCopyStreamByteSink() override {
     if (buffer_size_ > 0) {
-      memcpy(buffer_, bytes, buffer_size_);
-      bytes += buffer_size_;
-      len -= buffer_size_;
-    }
-    if (!stream_->Next(&buffer_, &buffer_size_)) {
-      // There isn't a way for ByteSink to report errors.
-      buffer_size_ = 0;
-      return;
+      stream_->BackUp(buffer_size_);
     }
   }
-}
+
+  void Append(const char* bytes, size_t len) override;
+
+ private:
+  io::ZeroCopyOutputStream* stream_;
+  void* buffer_ = nullptr;
+  int buffer_size_ = 0;
+
+  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ZeroCopyStreamByteSink);
+};
 }  // namespace zc_sink_internal
-}  // namespace util
+}  // namespace io
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>
+#endif  // GOOGLE_PROTOBUF_UTIL_ZERO_COPY_SINK_H__

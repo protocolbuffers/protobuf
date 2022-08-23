@@ -490,6 +490,12 @@ static PyObject* GetConcreteClass(PyBaseDescriptor* self, void *closure) {
       GetDescriptorPool_FromPool(
           _GetDescriptor(self)->file()->pool())->py_message_factory,
       _GetDescriptor(self)));
+
+  if (concrete_class == nullptr) {
+    PyErr_Clear();
+    return nullptr;
+  }
+
   Py_XINCREF(concrete_class);
   return concrete_class->AsPyObject();
 }

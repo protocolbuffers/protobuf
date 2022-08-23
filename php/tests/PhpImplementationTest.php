@@ -275,13 +275,13 @@ class PhpImplementationTest extends TestBase
             $this->assertSame(0x7FFFFFFE, GPBWire::zigZagEncode64(0x3FFFFFFF));
             $this->assertSame(
                 0x7FFFFFFF,
-                GPBWire::zigZagEncode64(0xFFFFFFFFC0000000));
+                GPBWire::zigZagEncode64(-1073741824));  // 0xFFFFFFFFC0000000
             $this->assertSame(
                 0xFFFFFFFE,
                 GPBWire::zigZagEncode64(0x7FFFFFFF));
             $this->assertSame(
                 0xFFFFFFFF,
-                GPBWire::zigZagEncode64(0xFFFFFFFF80000000));
+                GPBWire::zigZagEncode64(-2147483648));  // 0xFFFFFFFF80000000
             $this->assertSame(
                 -2,  // 0xFFFFFFFFFFFFFFFE
                 GPBWire::zigZagEncode64(0x7FFFFFFFFFFFFFFF));

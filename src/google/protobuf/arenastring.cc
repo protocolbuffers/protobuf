@@ -31,11 +31,12 @@
 #include <google/protobuf/arenastring.h>
 
 #include <cstddef>
+
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/synchronization/mutex.h"
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/parse_context.h>
 #include <google/protobuf/stubs/stl_util.h>
@@ -71,7 +72,7 @@ static_assert(alignof(ExplicitlyConstructedArenaString) >= 4, "");
 }  // namespace
 
 const std::string& LazyString::Init() const {
-  static WrappedMutex mu{GOOGLE_PROTOBUF_LINKER_INITIALIZED};
+  static absl::Mutex mu{absl::kConstInit};
   mu.Lock();
   const std::string* res = inited_.load(std::memory_order_acquire);
   if (res == nullptr) {
