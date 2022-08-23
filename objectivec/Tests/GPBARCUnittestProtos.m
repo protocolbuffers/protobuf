@@ -34,11 +34,6 @@
 
 // Makes sure all the generated headers compile with ARC on.
 
-// The unittest_custom_options.proto extends the messages in descriptor.proto
-// so we build it in to test extending in general. The library doesn't provide
-// a descriptor as it doesn't use the classes/enums.
-#import "google/protobuf/Descriptor.pbobjc.h"
-
 #import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestCycle.pbobjc.h"
 #import "google/protobuf/UnittestDeprecated.pbobjc.h"
@@ -48,6 +43,7 @@
 #import "google/protobuf/UnittestImportPublicLite.pbobjc.h"
 #import "google/protobuf/UnittestMset.pbobjc.h"
 #import "google/protobuf/UnittestObjc.pbobjc.h"
+#import "google/protobuf/UnittestObjcOptions.pbobjc.h"
 #import "google/protobuf/UnittestObjcStartup.pbobjc.h"
 #import "google/protobuf/UnittestPreserveUnknownEnum.pbobjc.h"
 #import "google/protobuf/UnittestRuntimeProto2.pbobjc.h"
