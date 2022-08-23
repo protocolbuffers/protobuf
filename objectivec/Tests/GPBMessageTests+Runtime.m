@@ -34,12 +34,12 @@
 
 #import "GPBMessage.h"
 
-#import "google/protobuf/MapUnittest.pbobjc.h"
-#import "google/protobuf/Unittest.pbobjc.h"
-#import "google/protobuf/UnittestCycle.pbobjc.h"
-#import "google/protobuf/UnittestObjcStartup.pbobjc.h"
-#import "google/protobuf/UnittestRuntimeProto2.pbobjc.h"
-#import "google/protobuf/UnittestRuntimeProto3.pbobjc.h"
+#import "MapUnittest.pbobjc.h"
+#import "Unittest.pbobjc.h"
+#import "UnittestCycle.pbobjc.h"
+#import "UnittestObjcStartup.pbobjc.h"
+#import "UnittestRuntimeProto2.pbobjc.h"
+#import "UnittestRuntimeProto3.pbobjc.h"
 
 @interface MessageRuntimeTests : GPBTestCase
 @end
