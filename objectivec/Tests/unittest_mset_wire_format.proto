@@ -35,7 +35,7 @@
 // This file contains messages for testing message_set_wire_format.
 
 syntax = "proto2";
-package proto2_wireformat_unittest;
+package objc.protobuf.tests.wireformat;
 
 option cc_enable_arenas = true;
 option optimize_for = SPEED;

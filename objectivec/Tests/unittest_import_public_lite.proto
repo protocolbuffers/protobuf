@@ -32,7 +32,7 @@
 
 syntax = "proto2";
 
-package protobuf_unittest_import;
+package objc.protobuf.tests.import;
 
 option optimize_for = LITE_RUNTIME;
 

@@ -128,13 +128,8 @@ find "${OUTPUT_DIR}" \
 # -----------------------------------------------------------------------------
 # Generate the Objective C specific testing protos.
 
-# Note: there is overlap in package.Message names between some of the test
-# files, so they can't be generated all at once. This works because the overlap
-# isn't linked into a single binary.
-for a_proto in "${OBJC_TEST_PROTO_FILES[@]}" ; do
-  "${PROTOC}"                                  \
-    --objc_out="${OUTPUT_DIR}"                 \
-    --proto_path=src                           \
-    --proto_path="objectivec/Tests"            \
-    "${a_proto}"
-done
+"${PROTOC}"                                  \
+  --objc_out="${OUTPUT_DIR}"                 \
+  --proto_path=src                           \
+  --proto_path="objectivec/Tests"            \
+  "${OBJC_TEST_PROTO_FILES[@]}"
