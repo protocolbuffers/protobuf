@@ -1,5 +1,6 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2016 Google Inc.  All rights reserved.
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -27,21 +28,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-syntax = "proto2";
+syntax = "proto3";
 
 package protobuf_unittest;
 
-import "unittest.proto";
+import "google/protobuf/any.proto";
 
-import "unittest_extension_chain_c.proto";
+option java_outer_classname = "TestAnyProto";
 
-// The Root for this file should end up adding the local extension and merging
-// in the extensions from C's Root (unittest will come via C's).
-
-message ChainBMessage {
-  optional ChainCMessage c = 1;
-}
-
-extend TestAllExtensions {
-  optional int32 chain_b_extension = 10002;
+message TestAny {
+  int32 int32_value = 1;
+  google.protobuf.Any any_value = 2;
+  repeated google.protobuf.Any repeated_any_value = 3;
+  string text = 4;
 }

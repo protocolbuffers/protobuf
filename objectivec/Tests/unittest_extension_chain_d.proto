@@ -31,7 +31,7 @@ syntax = "proto2";
 
 package protobuf_unittest;
 
-import "google/protobuf/unittest.proto";
+import "unittest.proto";
 
 import "unittest_extension_chain_b.proto";
 import "unittest_extension_chain_c.proto";
