@@ -3,7 +3,7 @@ tasks:
   ubuntu:
     platform: ubuntu1804
     shell_commands:
-    - "sudo apt -y update && sudo apt -y install libreadline-dev cmake"
+    - "sudo apt -y update && sudo apt -y install libreadline-dev cmake rsync"
     test_targets:
     - //...
   macos:
