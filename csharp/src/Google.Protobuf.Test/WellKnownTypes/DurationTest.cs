@@ -128,5 +128,38 @@ namespace Google.Protobuf.WellKnownTypes
             var duration = new Duration { Seconds = 1, Nanos = -1 };
             Assert.AreEqual("{ \"@warning\": \"Invalid Duration\", \"seconds\": \"1\", \"nanos\": -1 }", duration.ToString());
         }
+
+        [Test]
+        public void Comparability()
+        {
+            Duration[] durationsInExpectedSortOrder =
+            {
+                null,
+                new Duration { Seconds = -10, Nanos = -10 },
+                new Duration { Seconds = -10, Nanos = -1 },
+                new Duration { Seconds = -1, Nanos = -10 },
+                new Duration { Seconds = -1, Nanos = -1 },
+                new Duration(),
+                new Duration { Seconds = 1, Nanos = 1 },
+                new Duration { Seconds = 1, Nanos = 10 },
+                new Duration { Seconds = 10, Nanos = 1 },
+                new Duration { Seconds = 10, Nanos = 10 }
+            };
+
+            for (int i = 0; i < durationsInExpectedSortOrder.Length; i++)
+            {
+                var target = durationsInExpectedSortOrder[i];
+                if (target is null)
+                {
+                    continue;
+                }
+                for (int j = 0; j < durationsInExpectedSortOrder.Length; j++)
+                {
+                    var expectedResult = Math.Sign(i - j);
+                    var actualResult = target.CompareTo(durationsInExpectedSortOrder[j]);
+                    Assert.AreEqual(expectedResult, actualResult);
+                }
+            }
+        }
     }
 }
