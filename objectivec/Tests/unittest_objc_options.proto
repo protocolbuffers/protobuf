@@ -59,3 +59,10 @@ message GPBTESTshouldGetAPrefixMessage {
 // Verify that classes named the same as prefixes are prefixed.
 message GPBTEST {
 }
+
+// Gets that lookup deals with prefix.
+
+message PrefixedParentMessage {
+  message Child {
+  }
+}

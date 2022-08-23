@@ -41,10 +41,6 @@ CORE_PROTO_FILES=(
   src/google/protobuf/unittest_preserve_unknown_enum.proto
   src/google/protobuf/map_proto2_unittest.proto
   src/google/protobuf/map_unittest.proto
-  # The unittest_custom_options.proto extends the messages in descriptor.proto
-  # so we build it in to test extending in general. The library doesn't provide
-  # a descriptor as it doesn't use the classes/enums.
-  src/google/protobuf/descriptor.proto
 )
 
 # -----------------------------------------------------------------------------

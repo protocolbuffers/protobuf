@@ -35,7 +35,7 @@
 #import "GPBDescriptor_PackagePrivate.h"
 #import "google/protobuf/Unittest.pbobjc.h"
 #import "google/protobuf/UnittestObjc.pbobjc.h"
-#import "google/protobuf/Descriptor.pbobjc.h"
+#import "google/protobuf/UnittestObjcOptions.pbobjc.h"
 
 @interface DescriptorTests : GPBTestCase
 @end
@@ -57,10 +57,10 @@
   XCTAssertEqualObjects(nestedMessageDesc.fullName, @"protobuf_unittest.TestAllTypes.NestedMessage");
 
   // Prefixes removed.
-  GPBDescriptor *descDesc = [GPBDescriptorProto descriptor];
-  XCTAssertEqualObjects(descDesc.fullName, @"google.protobuf.DescriptorProto");
-  GPBDescriptor *descExtRngDesc = [GPBDescriptorProto_ExtensionRange descriptor];
-  XCTAssertEqualObjects(descExtRngDesc.fullName, @"google.protobuf.DescriptorProto.ExtensionRange");
+  GPBDescriptor *descDesc = [GPBTESTPrefixedParentMessage descriptor];
+  XCTAssertEqualObjects(descDesc.fullName, @"protobuf_objc_unittest.PrefixedParentMessage");
+  GPBDescriptor *descExtRngDesc = [GPBTESTPrefixedParentMessage_Child descriptor];
+  XCTAssertEqualObjects(descExtRngDesc.fullName, @"protobuf_objc_unittest.PrefixedParentMessage.Child");
 
   // Things that get "_Class" added.
   GPBDescriptor *pointDesc = [Point_Class descriptor];

@@ -61,7 +61,6 @@
 		F40EE4BF206BF8B90071091A /* GPBCompileTest21.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE486206BF8AF0071091A /* GPBCompileTest21.m */; };
 		F40EE4C0206BF8B90071091A /* GPBCompileTest22.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE48A206BF8B00071091A /* GPBCompileTest22.m */; };
 		F40EE4C1206BF8B90071091A /* GPBCompileTest23.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE487206BF8B00071091A /* GPBCompileTest23.m */; };
-		F40EE50B206C06640071091A /* GPBCompileTest24.m in Sources */ = {isa = PBXBuildFile; fileRef = F40EE508206C06440071091A /* GPBCompileTest24.m */; };
 		F41C175D1833D3310064ED4D /* GPBPerfTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F41C175C1833D3310064ED4D /* GPBPerfTests.m */; };
 		F4353D1D1AB8822D005A6198 /* GPBDescriptorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = F4353D1C1AB8822D005A6198 /* GPBDescriptorTests.m */; };
 		F4353D231ABB1537005A6198 /* GPBDictionary.m in Sources */ = {isa = PBXBuildFile; fileRef = F4353D211ABB1537005A6198 /* GPBDictionary.m */; };
@@ -204,7 +203,6 @@
 		F40EE491206BF8B10071091A /* GPBCompileTest03.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest03.m; sourceTree = "<group>"; };
 		F40EE492206BF8B10071091A /* GPBCompileTest06.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest06.m; sourceTree = "<group>"; };
 		F40EE493206BF8B20071091A /* GPBCompileTest11.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest11.m; sourceTree = "<group>"; };
-		F40EE508206C06440071091A /* GPBCompileTest24.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBCompileTest24.m; sourceTree = "<group>"; };
 		F41C175C1833D3310064ED4D /* GPBPerfTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBPerfTests.m; sourceTree = "<group>"; };
 		F4353D1C1AB8822D005A6198 /* GPBDescriptorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GPBDescriptorTests.m; sourceTree = "<group>"; };
 		F4353D201ABB1537005A6198 /* GPBDictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPBDictionary.h; sourceTree = "<group>"; };
@@ -469,7 +467,6 @@
 				F40EE486206BF8AF0071091A /* GPBCompileTest21.m */,
 				F40EE48A206BF8B00071091A /* GPBCompileTest22.m */,
 				F40EE487206BF8B00071091A /* GPBCompileTest23.m */,
-				F40EE508206C06440071091A /* GPBCompileTest24.m */,
 				5102DABB1891A052002037B6 /* GPBConcurrencyTests.m */,
 				F4353D1C1AB8822D005A6198 /* GPBDescriptorTests.m */,
 				F4C4B9E21E1D974F00D3B61D /* GPBDictionaryTests.m */,
@@ -741,7 +738,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8BBEA4A9147C727D00C4ADB7 /* GPBCodedInputStreamTests.m in Sources */,
-				F40EE50B206C06640071091A /* GPBCompileTest24.m in Sources */,
 				F40EE4BE206BF8B90071091A /* GPBCompileTest20.m in Sources */,
 				F401DC331A8E5C0200FCC765 /* GPBArrayTests.m in Sources */,
 				F40EE4B4206BF8B90071091A /* GPBCompileTest10.m in Sources */,
