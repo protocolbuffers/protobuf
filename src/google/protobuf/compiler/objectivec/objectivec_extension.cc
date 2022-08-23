@@ -34,6 +34,8 @@
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
 #include <google/protobuf/io/printer.h>
 
 namespace google {
@@ -86,7 +88,7 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
   vars["root_class_and_method_name"] = root_class_and_method_name_;
   const std::string containing_type = ClassName(descriptor_->containing_type());
   vars["extended_type"] = ObjCClass(containing_type);
-  vars["number"] = StrCat(descriptor_->number());
+  vars["number"] = absl::StrCat(descriptor_->number());
 
   std::vector<std::string> options;
   if (descriptor_->is_repeated()) options.push_back("GPBExtensionRepeated");

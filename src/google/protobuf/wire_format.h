@@ -42,7 +42,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/stubs/casts.h>
+#include "absl/base/casts.h"
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/message.h>
@@ -338,7 +338,7 @@ inline WireFormatLite::WireType WireFormat::WireTypeForFieldType(
   // Some compilers don't like enum -> enum casts, so we implicit_cast to
   // int first.
   return WireFormatLite::WireTypeForFieldType(
-      static_cast<WireFormatLite::FieldType>(implicit_cast<int>(type)));
+      static_cast<WireFormatLite::FieldType>(absl::implicit_cast<int>(type)));
 }
 
 inline uint32_t WireFormat::MakeTag(const FieldDescriptor* field) {
@@ -351,7 +351,7 @@ inline size_t WireFormat::TagSize(int field_number,
   // int first.
   return WireFormatLite::TagSize(
       field_number,
-      static_cast<WireFormatLite::FieldType>(implicit_cast<int>(type)));
+      static_cast<WireFormatLite::FieldType>(absl::implicit_cast<int>(type)));
 }
 
 inline void WireFormat::VerifyUTF8String(const char* data, int size,

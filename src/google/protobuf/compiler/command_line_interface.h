@@ -39,6 +39,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_COMMAND_LINE_INTERFACE_H__
 
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <memory>
 #include <set>
@@ -49,6 +50,7 @@
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
+#include "absl/strings/string_view.h"
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -352,7 +354,11 @@ class PROTOC_EXPORT CommandLineInterface {
     CodeGenerator* generator;
     std::string help_text;
   };
-  typedef std::map<std::string, GeneratorInfo> GeneratorMap;
+
+  const GeneratorInfo* FindGeneratorByFlag(const std::string& name) const;
+  const GeneratorInfo* FindGeneratorByOption(const std::string& option) const;
+
+  using GeneratorMap = std::map<std::string, GeneratorInfo>;
   GeneratorMap generators_by_flag_name_;
   GeneratorMap generators_by_option_name_;
   // A map from generator names to the parameters specified using the option

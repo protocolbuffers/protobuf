@@ -45,15 +45,17 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/casts.h>
+#include "absl/base/casts.h"
+#include <google/protobuf/stubs/logging.h>
+#include "absl/strings/string_view.h"
+#include <google/protobuf/io/zero_copy_stream_impl.h>
+
+#include <google/protobuf/testing/googletest.h>
+
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
-
 
 namespace google {
 namespace protobuf {

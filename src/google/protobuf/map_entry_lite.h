@@ -37,19 +37,20 @@
 #include <string>
 #include <utility>
 
-#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
-#include <google/protobuf/port.h>
+#include "absl/base/casts.h"
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/map.h>
 #include <google/protobuf/map_type_handler.h>
 #include <google/protobuf/parse_context.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/wire_format_lite.h>
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
+
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
 #endif

@@ -126,8 +126,6 @@
 namespace google {
 namespace protobuf {
 
-using ConstStringParam = const std::string &;
-
 typedef unsigned int uint;
 
 typedef int8_t int8;

@@ -32,7 +32,7 @@
 
 #include <google/protobuf/stubs/common.h>
 
-#include <google/protobuf/stubs/stringpiece.h>
+#include "absl/strings/string_view.h"
 
 namespace google {
 namespace protobuf {
@@ -563,7 +563,7 @@ bool IsStructurallyValidUTF8(const char* buf, int len) {
   return (bytes_consumed == len);
 }
 
-int UTF8SpnStructurallyValid(StringPiece str) {
+int UTF8SpnStructurallyValid(absl::string_view str) {
   if (!module_initialized_) return str.size();
 
   int bytes_consumed = 0;
@@ -584,7 +584,7 @@ int UTF8SpnStructurallyValid(StringPiece str) {
 //
 // Fast case: all is structurally valid and no byte copying is done.
 //
-char* UTF8CoerceToStructurallyValid(StringPiece src_str, char* idst,
+char* UTF8CoerceToStructurallyValid(absl::string_view src_str, char* idst,
                                     const char replace_char) {
   const char* isrc = src_str.data();
   const int len = src_str.length();
@@ -602,7 +602,7 @@ char* UTF8CoerceToStructurallyValid(StringPiece src_str, char* idst,
       dst[0] = replace_char;                    // replace one bad byte
       src++;
       dst++;
-      StringPiece str2(src, srclimit - src);
+      absl::string_view str2(src, srclimit - src);
       n = UTF8SpnStructurallyValid(str2);       // scan the remainder
       memmove(dst, src, n);                     // copy next good chunk
       src += n;

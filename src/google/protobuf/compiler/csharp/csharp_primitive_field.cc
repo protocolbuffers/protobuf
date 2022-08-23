@@ -28,19 +28,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <google/protobuf/compiler/csharp/csharp_primitive_field.h>
+
 #include <sstream>
 
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
-
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
 #include <google/protobuf/compiler/csharp/csharp_doc_comment.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/compiler/csharp/csharp_options.h>
-#include <google/protobuf/compiler/csharp/csharp_primitive_field.h>
+#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/printer.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 
 namespace google {
 namespace protobuf {
@@ -215,7 +217,7 @@ void PrimitiveFieldGenerator::GenerateSerializedSizeCode(io::Printer* printer) {
   } else {
     printer->Print(
       "size += $tag_size$ + $fixed_size$;\n",
-      "fixed_size", StrCat(fixedSize),
+      "fixed_size", absl::StrCat(fixedSize),
       "tag_size", variables_["tag_size"]);
   }
   printer->Outdent();
@@ -296,7 +298,7 @@ void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
   }
   printer->Print(
     variables_,
-    "    $oneof_name$Case_ = $oneof_property_name$OneofCase.$oneof_case_name$;\n"
+    "    $oneof_name$Case_ = $oneof_property_name$OneofCase.$property_name$;\n"
     "  }\n"
     "}\n");
   if (SupportsPresenceApi(descriptor_)) {
@@ -307,7 +309,7 @@ void PrimitiveOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     printer->Print(
       variables_,
       "$access_level$ bool Has$property_name$ {\n"
-      "  get { return $oneof_name$Case_ == $oneof_property_name$OneofCase.$oneof_case_name$; }\n"
+      "  get { return $oneof_name$Case_ == $oneof_property_name$OneofCase.$property_name$; }\n"
       "}\n");
     printer->Print(
       variables_,

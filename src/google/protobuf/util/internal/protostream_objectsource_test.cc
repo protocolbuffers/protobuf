@@ -40,8 +40,9 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/util/internal/expecting_objectwriter.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/casts.h>
-#include <google/protobuf/stubs/status.h>
+#include "absl/base/casts.h"
+#include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/testdata/anys.pb.h>
 #include <google/protobuf/util/internal/testdata/books.pb.h>
@@ -106,11 +107,11 @@ class ProtostreamObjectSourceTest
   ~ProtostreamObjectSourceTest() override {}
 
   void DoTest(const Message& msg, const Descriptor* descriptor) {
-    util::Status status = ExecuteTest(msg, descriptor);
-    EXPECT_EQ(util::Status(), status);
+    absl::Status status = ExecuteTest(msg, descriptor);
+    EXPECT_EQ(absl::Status(), status);
   }
 
-  util::Status ExecuteTest(const Message& msg, const Descriptor* descriptor) {
+  absl::Status ExecuteTest(const Message& msg, const Descriptor* descriptor) {
     std::ostringstream oss;
     msg.SerializePartialToOstream(&oss);
     std::string proto = oss.str();
@@ -130,13 +131,13 @@ class ProtostreamObjectSourceTest
   void PrepareExpectingObjectWriterForRepeatedPrimitive() {
     ow_.StartObject("")
         ->StartList("repFix32")
-        ->RenderUint32("", bit_cast<uint32_t>(3201))
-        ->RenderUint32("", bit_cast<uint32_t>(0))
-        ->RenderUint32("", bit_cast<uint32_t>(3202))
+        ->RenderUint32("", absl::bit_cast<uint32_t>(3201))
+        ->RenderUint32("", absl::bit_cast<uint32_t>(0))
+        ->RenderUint32("", absl::bit_cast<uint32_t>(3202))
         ->EndList()
         ->StartList("repU32")
-        ->RenderUint32("", bit_cast<uint32_t>(3203))
-        ->RenderUint32("", bit_cast<uint32_t>(0))
+        ->RenderUint32("", absl::bit_cast<uint32_t>(3203))
+        ->RenderUint32("", absl::bit_cast<uint32_t>(0))
         ->EndList()
         ->StartList("repI32")
         ->RenderInt32("", 0)
@@ -153,13 +154,13 @@ class ProtostreamObjectSourceTest
         ->RenderInt32("", 3208)
         ->EndList()
         ->StartList("repFix64")
-        ->RenderUint64("", bit_cast<uint64_t>(int64_t{6401}))
-        ->RenderUint64("", bit_cast<uint64_t>(int64_t{0}))
+        ->RenderUint64("", absl::bit_cast<uint64_t>(int64_t{6401}))
+        ->RenderUint64("", absl::bit_cast<uint64_t>(int64_t{0}))
         ->EndList()
         ->StartList("repU64")
-        ->RenderUint64("", bit_cast<uint64_t>(int64_t{0}))
-        ->RenderUint64("", bit_cast<uint64_t>(int64_t{6402}))
-        ->RenderUint64("", bit_cast<uint64_t>(int64_t{6403}))
+        ->RenderUint64("", absl::bit_cast<uint64_t>(int64_t{0}))
+        ->RenderUint64("", absl::bit_cast<uint64_t>(int64_t{6402}))
+        ->RenderUint64("", absl::bit_cast<uint64_t>(int64_t{6403}))
         ->EndList()
         ->StartList("repI64")
         ->RenderInt64("", 6404L)
@@ -321,13 +322,13 @@ TEST_P(ProtostreamObjectSourceTest, Primitives) {
   primitive.set_bool_(true);
 
   ow_.StartObject("")
-      ->RenderUint32("fix32", bit_cast<uint32_t>(3201))
-      ->RenderUint32("u32", bit_cast<uint32_t>(3202))
+      ->RenderUint32("fix32", absl::bit_cast<uint32_t>(3201))
+      ->RenderUint32("u32", absl::bit_cast<uint32_t>(3202))
       ->RenderInt32("i32", 3203)
       ->RenderInt32("sf32", 3204)
       ->RenderInt32("s32", 3205)
-      ->RenderUint64("fix64", bit_cast<uint64_t>(int64_t{6401}))
-      ->RenderUint64("u64", bit_cast<uint64_t>(int64_t{6402}))
+      ->RenderUint64("fix64", absl::bit_cast<uint64_t>(int64_t{6401}))
+      ->RenderUint64("u64", absl::bit_cast<uint64_t>(int64_t{6402}))
       ->RenderInt64("i64", 6403L)
       ->RenderInt64("sf64", 6404L)
       ->RenderInt64("s64", 6405L)
@@ -478,8 +479,8 @@ TEST_P(ProtostreamObjectSourceTest,
   int repeat = 10000;
   for (int i = 0; i < repeat; ++i) {
     Book_Label* label = book.add_labels();
-    label->set_key(StrCat("i", i));
-    label->set_value(StrCat("v", i));
+    label->set_key(absl::StrCat("i", i));
+    label->set_value(absl::StrCat("v", i));
   }
 
   // Make sure StartList and EndList are called exactly once (see b/18227499 for
@@ -584,7 +585,7 @@ TEST_P(ProtostreamObjectSourceTest, CyclicMessageDepthTest) {
   for (int i = 0; i < 63; ++i) {
     Author* next = current_author->add_friend_();
     next->set_id(i);
-    next->set_name(StrCat("author_name_", i));
+    next->set_name(absl::StrCat("author_name_", i));
     next->set_alive(true);
     current_author = next;
   }
@@ -592,12 +593,12 @@ TEST_P(ProtostreamObjectSourceTest, CyclicMessageDepthTest) {
   // Recursive message with depth (65) > max (max is 64).
   for (int i = 0; i < 64; ++i) {
     Cyclic* next = current->mutable_m_cyclic();
-    next->set_m_str(StrCat("count_", i));
+    next->set_m_str(absl::StrCat("count_", i));
     current = next;
   }
 
-  util::Status status = ExecuteTest(cyclic, Cyclic::descriptor());
-  EXPECT_TRUE(util::IsInvalidArgument(status));
+  absl::Status status = ExecuteTest(cyclic, Cyclic::descriptor());
+  EXPECT_TRUE(absl::IsInvalidArgument(status));
 }
 
 class ProtostreamObjectSourceMapsTest : public ProtostreamObjectSourceTest {
@@ -942,8 +943,8 @@ TEST_P(ProtostreamObjectSourceAnysTest, MissingTypeUrlError) {
   // We start the "AnyOut" part and then fail when we hit the Any object.
   ow_.StartObject("");
 
-  util::Status status = ExecuteTest(out, AnyOut::descriptor());
-  EXPECT_TRUE(util::IsInternal(status));
+  absl::Status status = ExecuteTest(out, AnyOut::descriptor());
+  EXPECT_TRUE(absl::IsInternal(status));
 }
 
 TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeServiceError) {
@@ -958,8 +959,8 @@ TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeServiceError) {
   // We start the "AnyOut" part and then fail when we hit the Any object.
   ow_.StartObject("");
 
-  util::Status status = ExecuteTest(out, AnyOut::descriptor());
-  EXPECT_TRUE(util::IsInternal(status));
+  absl::Status status = ExecuteTest(out, AnyOut::descriptor());
+  EXPECT_TRUE(absl::IsInternal(status));
 }
 
 TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeError) {
@@ -974,8 +975,8 @@ TEST_P(ProtostreamObjectSourceAnysTest, UnknownTypeError) {
   // We start the "AnyOut" part and then fail when we hit the Any object.
   ow_.StartObject("");
 
-  util::Status status = ExecuteTest(out, AnyOut::descriptor());
-  EXPECT_TRUE(util::IsInternal(status));
+  absl::Status status = ExecuteTest(out, AnyOut::descriptor());
+  EXPECT_TRUE(absl::IsInternal(status));
 }
 
 class ProtostreamObjectSourceStructTest : public ProtostreamObjectSourceTest {
@@ -1107,8 +1108,8 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampBelowMinTest) {
   ts->set_seconds(kTimestampMinSeconds - 1);
   ow_.StartObject("");
 
-  util::Status status = ExecuteTest(out, TimestampDuration::descriptor());
-  EXPECT_TRUE(util::IsInternal(status));
+  absl::Status status = ExecuteTest(out, TimestampDuration::descriptor());
+  EXPECT_TRUE(absl::IsInternal(status));
 }
 
 TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampAboveMaxTest) {
@@ -1118,8 +1119,8 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidTimestampAboveMaxTest) {
   ts->set_seconds(kTimestampMaxSeconds + 1);
   ow_.StartObject("");
 
-  util::Status status = ExecuteTest(out, TimestampDuration::descriptor());
-  EXPECT_TRUE(util::IsInternal(status));
+  absl::Status status = ExecuteTest(out, TimestampDuration::descriptor());
+  EXPECT_TRUE(absl::IsInternal(status));
 }
 
 TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationBelowMinTest) {
@@ -1129,8 +1130,8 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationBelowMinTest) {
   dur->set_seconds(kDurationMinSeconds - 1);
   ow_.StartObject("");
 
-  util::Status status = ExecuteTest(out, TimestampDuration::descriptor());
-  EXPECT_TRUE(util::IsInternal(status));
+  absl::Status status = ExecuteTest(out, TimestampDuration::descriptor());
+  EXPECT_TRUE(absl::IsInternal(status));
 }
 
 TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationAboveMaxTest) {
@@ -1140,8 +1141,8 @@ TEST_P(ProtostreamObjectSourceTimestampTest, InvalidDurationAboveMaxTest) {
   dur->set_seconds(kDurationMaxSeconds + 1);
   ow_.StartObject("");
 
-  util::Status status = ExecuteTest(out, TimestampDuration::descriptor());
-  EXPECT_TRUE(util::IsInternal(status));
+  absl::Status status = ExecuteTest(out, TimestampDuration::descriptor());
+  EXPECT_TRUE(absl::IsInternal(status));
 }
 
 TEST_P(ProtostreamObjectSourceTimestampTest, TimestampDurationDefaultValue) {

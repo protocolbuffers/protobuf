@@ -38,7 +38,7 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/escaping.h"
 #include <google/protobuf/compiler/java/helpers.h>
 #include <google/protobuf/compiler/java/name_resolver.h>
 #include <google/protobuf/compiler/java/names.h>
@@ -159,7 +159,7 @@ void SharedCodeGenerator::GenerateDescriptors(io::Printer* printer) {
       }
     }
     printer->Print("\"$data$\"", "data",
-                   CEscape(file_data.substr(i, kBytesPerLine)));
+                   absl::CEscape(file_data.substr(i, kBytesPerLine)));
   }
 
   printer->Outdent();

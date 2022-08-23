@@ -48,7 +48,8 @@
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/arena.h>
 #include "absl/base/dynamic_annotations.h"
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/parse_context.h>
@@ -68,7 +69,7 @@ std::string MessageLite::InitializationErrorString() const {
 
 std::string MessageLite::DebugString() const {
   std::uintptr_t address = reinterpret_cast<std::uintptr_t>(this);
-  return StrCat("MessageLite at 0x", strings::Hex(address));
+  return absl::StrCat("MessageLite at 0x", absl::Hex(address));
 }
 
 namespace {
@@ -115,8 +116,8 @@ std::string InitializationErrorMessage(const char* action,
   return result;
 }
 
-inline StringPiece as_string_view(const void* data, int size) {
-  return StringPiece(static_cast<const char*>(data), size);
+inline absl::string_view as_string_view(const void* data, int size) {
+  return absl::string_view(static_cast<const char*>(data), size);
 }
 
 // Returns true of all required fields are present / have values.
@@ -139,7 +140,7 @@ void MessageLite::LogInitializationErrorMessage() const {
 namespace internal {
 
 template <bool aliasing>
-bool MergeFromImpl(StringPiece input, MessageLite* msg,
+bool MergeFromImpl(absl::string_view input, MessageLite* msg,
                    MessageLite::ParseFlags parse_flags) {
   const char* ptr;
   internal::ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
@@ -181,9 +182,9 @@ bool MergeFromImpl(BoundedZCIS input, MessageLite* msg,
   return false;
 }
 
-template bool MergeFromImpl<false>(StringPiece input, MessageLite* msg,
+template bool MergeFromImpl<false>(absl::string_view input, MessageLite* msg,
                                    MessageLite::ParseFlags parse_flags);
-template bool MergeFromImpl<true>(StringPiece input, MessageLite* msg,
+template bool MergeFromImpl<true>(absl::string_view input, MessageLite* msg,
                                   MessageLite::ParseFlags parse_flags);
 template bool MergeFromImpl<false>(io::ZeroCopyInputStream* input,
                                    MessageLite* msg,
@@ -308,11 +309,11 @@ bool MessageLite::ParsePartialFromBoundedZeroCopyStream(
   return ParseFrom<kParsePartial>(internal::BoundedZCIS{input, size});
 }
 
-bool MessageLite::ParseFromString(ConstStringParam data) {
+bool MessageLite::ParseFromString(absl::string_view data) {
   return ParseFrom<kParse>(data);
 }
 
-bool MessageLite::ParsePartialFromString(ConstStringParam data) {
+bool MessageLite::ParsePartialFromString(absl::string_view data) {
   return ParseFrom<kParsePartial>(data);
 }
 
@@ -324,7 +325,7 @@ bool MessageLite::ParsePartialFromArray(const void* data, int size) {
   return ParseFrom<kParsePartial>(as_string_view(data, size));
 }
 
-bool MessageLite::MergeFromString(ConstStringParam data) {
+bool MessageLite::MergeFromString(absl::string_view data) {
   return ParseFrom<kMerge>(data);
 }
 

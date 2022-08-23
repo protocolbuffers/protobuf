@@ -73,7 +73,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fany_2eproto[] PROTOBUF_
   "anypb\242\002\003GPB\252\002\036Google.Protobuf.WellKnownT"
   "ypesb\006proto3"
   ;
-static ::_pbi::once_flag descriptor_table_google_2fprotobuf_2fany_2eproto_once;
+static ::absl::once_flag descriptor_table_google_2fprotobuf_2fany_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fany_2eproto = {
     false, false, 212, descriptor_table_protodef_google_2fprotobuf_2fany_2eproto,
     "google/protobuf/any.proto",
@@ -100,7 +100,7 @@ bool Any::GetAnyFieldDescriptors(
       message, type_url_field, value_field);
 }
 bool Any::ParseAnyTypeUrl(
-    ::PROTOBUF_NAMESPACE_ID::ConstStringParam type_url,
+    ::absl::string_view type_url,
     std::string* full_type_name) {
   return ::_pbi::ParseAnyTypeUrl(type_url, full_type_name);
 }

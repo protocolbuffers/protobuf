@@ -56,7 +56,7 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/string_view.h"
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/command_line_interface.h>
@@ -67,6 +67,7 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 
+#include <google/protobuf/stubs/strutil.h>
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -1779,41 +1780,6 @@ TEST_F(CommandLineInterfaceTest,
                     "$tmpdir/bar.pb: "
                     "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
 }
-
-TEST_F(CommandLineInterfaceTest,
-       DependencyManifestFileIsOrderedByFilePath) {
-  CreateTempFile("foo.proto",
-                 "syntax = \"proto2\";\n"
-                 "message Foo {}\n");
-  CreateTempFile("bar.proto",
-                 "syntax = \"proto2\";\n"
-                 "import \"foo.proto\";\n"
-                 "message Bar {\n"
-                 "  optional Foo foo = 1;\n"
-                 "}\n");
-
-  Run("protocol_compiler --dependency_out=$tmpdir/manifest_a "
-      "--test_out=$tmpdir "
-      "--descriptor_set_out=$tmpdir/a.pb --proto_path=$tmpdir bar.proto");
-
-  ExpectNoErrors();
-
-  ExpectFileContent("manifest_a",
-                    "$tmpdir/a.pb \\\n"
-                    "$tmpdir/bar.proto.MockCodeGenerator.test_generator: "
-                    "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
-
-  Run("protocol_compiler --dependency_out=$tmpdir/manifest_z "
-      "--test_out=$tmpdir "
-      "--descriptor_set_out=$tmpdir/z.pb --proto_path=$tmpdir bar.proto");
-
-  ExpectNoErrors();
-
-  ExpectFileContent("manifest_z",
-                    "$tmpdir/bar.proto.MockCodeGenerator.test_generator \\\n"
-                    "$tmpdir/z.pb: "
-                    "$tmpdir/foo.proto\\\n $tmpdir/bar.proto");
-}
 #endif  // !_WIN32
 
 TEST_F(CommandLineInterfaceTest, TestArgumentFile) {
@@ -2622,7 +2588,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
   bool Run(const std::string& command, bool specify_proto_files = true) {
     std::vector<std::string> args;
     args.push_back("protoc");
-    for (StringPiece split_piece :
+    for (absl::string_view split_piece :
          Split(command, " ", true)) {
       args.push_back(std::string(split_piece));
     }
@@ -2632,7 +2598,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
           args.push_back("--proto_path=" + TestUtil::TestSourceDir());
           break;
         case DESCRIPTOR_SET_IN:
-          args.push_back(StrCat("--descriptor_set_in=",
+          args.push_back(absl::StrCat("--descriptor_set_in=",
                                       unittest_proto_descriptor_set_filename_));
           break;
         default:

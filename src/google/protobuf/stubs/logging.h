@@ -33,10 +33,12 @@
 
 #include <google/protobuf/stubs/macros.h>
 #include <google/protobuf/stubs/port.h>
-#include <google/protobuf/stubs/status.h>
-#include <google/protobuf/stubs/stringpiece.h>
 
-#include <google/protobuf/port_def.inc>
+#include "absl/status/status.h"
+#include "absl/strings/string_view.h"
+
+// Must be last.
+#include <google/protobuf/port_def.inc>  // NOLINT
 
 // ===================================================================
 // emulates google3/base/logging.h
@@ -86,8 +88,8 @@ class PROTOBUF_EXPORT LogMessage {
   LogMessage& operator<<(unsigned long long value);
   LogMessage& operator<<(double value);
   LogMessage& operator<<(void* value);
-  LogMessage& operator<<(const StringPiece& value);
-  LogMessage& operator<<(const util::Status& status);
+  LogMessage& operator<<(absl::string_view value);
+  LogMessage& operator<<(const absl::Status& status);
   LogMessage& operator<<(const uint128& value);
 
  private:
@@ -234,6 +236,6 @@ class PROTOBUF_EXPORT LogSilencer {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include <google/protobuf/port_undef.inc>  // NOLINT
 
 #endif  // GOOGLE_PROTOBUF_STUBS_LOGGING_H_

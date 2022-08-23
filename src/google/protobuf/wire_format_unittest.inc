@@ -43,7 +43,7 @@
 #include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/casts.h>
+#include "absl/base/casts.h"
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/dynamic_message.h>
@@ -63,15 +63,15 @@ TEST(WireFormatTest, EnumsInSync) {
   // Verify that WireFormatLite::FieldType and WireFormatLite::CppType match
   // FieldDescriptor::Type and FieldDescriptor::CppType.
 
-  EXPECT_EQ(implicit_cast<int>(FieldDescriptor::MAX_TYPE),
-            implicit_cast<int>(WireFormatLite::MAX_FIELD_TYPE));
-  EXPECT_EQ(implicit_cast<int>(FieldDescriptor::MAX_CPPTYPE),
-            implicit_cast<int>(WireFormatLite::MAX_CPPTYPE));
+  EXPECT_EQ(absl::implicit_cast<int>(FieldDescriptor::MAX_TYPE),
+            absl::implicit_cast<int>(WireFormatLite::MAX_FIELD_TYPE));
+  EXPECT_EQ(absl::implicit_cast<int>(FieldDescriptor::MAX_CPPTYPE),
+            absl::implicit_cast<int>(WireFormatLite::MAX_CPPTYPE));
 
   for (int i = 1; i <= WireFormatLite::MAX_FIELD_TYPE; i++) {
-    EXPECT_EQ(implicit_cast<int>(FieldDescriptor::TypeToCppType(
+    EXPECT_EQ(absl::implicit_cast<int>(FieldDescriptor::TypeToCppType(
                   static_cast<FieldDescriptor::Type>(i))),
-              implicit_cast<int>(WireFormatLite::FieldTypeToCppType(
+              absl::implicit_cast<int>(WireFormatLite::FieldTypeToCppType(
                   static_cast<WireFormatLite::FieldType>(i))));
   }
 }

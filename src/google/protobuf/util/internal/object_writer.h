@@ -34,7 +34,7 @@
 #include <cstdint>
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/string_view.h"
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -63,56 +63,59 @@ class DataPiece;
 // and get rid the need to call EndXXX().
 class PROTOBUF_EXPORT ObjectWriter {
  public:
+  ObjectWriter(const ObjectWriter&) = delete;
+  ObjectWriter& operator=(const ObjectWriter&) = delete;
   virtual ~ObjectWriter() {}
 
   // Starts an object. If the name is empty, the object will not be named.
-  virtual ObjectWriter* StartObject(StringPiece name) = 0;
+  virtual ObjectWriter* StartObject(absl::string_view name) = 0;
 
   // Ends an object.
   virtual ObjectWriter* EndObject() = 0;
 
   // Starts a list. If the name is empty, the list will not be named.
-  virtual ObjectWriter* StartList(StringPiece name) = 0;
+  virtual ObjectWriter* StartList(absl::string_view name) = 0;
 
   // Ends a list.
   virtual ObjectWriter* EndList() = 0;
 
   // Renders a boolean value.
-  virtual ObjectWriter* RenderBool(StringPiece name, bool value) = 0;
+  virtual ObjectWriter* RenderBool(absl::string_view name, bool value) = 0;
 
   // Renders an 32-bit integer value.
-  virtual ObjectWriter* RenderInt32(StringPiece name, int32_t value) = 0;
+  virtual ObjectWriter* RenderInt32(absl::string_view name, int32_t value) = 0;
 
   // Renders an 32-bit unsigned integer value.
-  virtual ObjectWriter* RenderUint32(StringPiece name,
+  virtual ObjectWriter* RenderUint32(absl::string_view name,
                                      uint32_t value) = 0;
 
   // Renders a 64-bit integer value.
-  virtual ObjectWriter* RenderInt64(StringPiece name, int64_t value) = 0;
+  virtual ObjectWriter* RenderInt64(absl::string_view name, int64_t value) = 0;
 
   // Renders an 64-bit unsigned integer value.
-  virtual ObjectWriter* RenderUint64(StringPiece name,
+  virtual ObjectWriter* RenderUint64(absl::string_view name,
                                      uint64_t value) = 0;
 
 
   // Renders a double value.
-  virtual ObjectWriter* RenderDouble(StringPiece name, double value) = 0;
+  virtual ObjectWriter* RenderDouble(absl::string_view name, double value) = 0;
   // Renders a float value.
-  virtual ObjectWriter* RenderFloat(StringPiece name, float value) = 0;
+  virtual ObjectWriter* RenderFloat(absl::string_view name, float value) = 0;
 
-  // Renders a StringPiece value. This is for rendering strings.
-  virtual ObjectWriter* RenderString(StringPiece name,
-                                     StringPiece value) = 0;
+  // Renders a string value.
+  virtual ObjectWriter* RenderString(absl::string_view name,
+                                     absl::string_view value) = 0;
 
   // Renders a bytes value.
-  virtual ObjectWriter* RenderBytes(StringPiece name, StringPiece value) = 0;
+  virtual ObjectWriter* RenderBytes(absl::string_view name,
+                                    absl::string_view value) = 0;
 
   // Renders a Null value.
-  virtual ObjectWriter* RenderNull(StringPiece name) = 0;
+  virtual ObjectWriter* RenderNull(absl::string_view name) = 0;
 
 
   // Renders a DataPiece object to a ObjectWriter.
-  static void RenderDataPieceTo(const DataPiece& data, StringPiece name,
+  static void RenderDataPieceTo(const DataPiece& data, absl::string_view name,
                                 ObjectWriter* ow);
 
 
@@ -136,9 +139,6 @@ class PROTOBUF_EXPORT ObjectWriter {
   // If set to true, we use the stricter version of base64 decoding for byte
   // fields by making sure decoded version encodes back to the original string.
   bool use_strict_base64_decoding_;
-
-  // Do not add any data members to this class.
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ObjectWriter);
 };
 
 }  // namespace converter
