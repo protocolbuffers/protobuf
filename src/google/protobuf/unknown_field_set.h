@@ -217,7 +217,7 @@ namespace internal {
 inline void WriteVarint(uint32_t num, uint64_t val, UnknownFieldSet* unknown) {
   unknown->AddVarint(num, val);
 }
-inline void WriteLengthDelimited(uint32_t num, StringPiece val,
+inline void WriteLengthDelimited(uint32_t num, absl::string_view val,
                                  UnknownFieldSet* unknown) {
   unknown->AddLengthDelimited(num)->assign(val.data(), val.size());
 }

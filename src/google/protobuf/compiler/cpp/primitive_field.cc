@@ -37,6 +37,7 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/compiler/cpp/helpers.h>
 
 namespace google {
@@ -108,10 +109,10 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   bool cold = ShouldSplit(descriptor, options);
   (*variables)["cached_byte_size_field"] =
       MakeVarintCachedSizeFieldName(descriptor, cold);
-  (*variables)["tag"] = StrCat(internal::WireFormat::MakeTag(descriptor));
+  (*variables)["tag"] = absl::StrCat(internal::WireFormat::MakeTag(descriptor));
   int fixed_size = FixedSize(descriptor->type());
   if (fixed_size != -1) {
-    (*variables)["fixed_size"] = StrCat(fixed_size);
+    (*variables)["fixed_size"] = absl::StrCat(fixed_size);
   }
   (*variables)["wire_format_field_type"] = FieldDescriptorProto_Type_Name(
       static_cast<FieldDescriptorProto_Type>(descriptor->type()));

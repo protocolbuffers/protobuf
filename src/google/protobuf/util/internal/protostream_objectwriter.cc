@@ -36,12 +36,14 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/status.h>
-#include <google/protobuf/stubs/statusor.h>
-#include <google/protobuf/stubs/time.h>
+#include "absl/base/call_once.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/strip.h"
+#include "absl/time/time.h"
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/field_mask_utility.h>
 #include <google/protobuf/util/internal/object_location_tracker.h>
@@ -57,7 +59,7 @@ namespace protobuf {
 namespace util {
 namespace converter {
 
-using util::Status;
+using ::absl::Status;
 using ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite;
 using std::placeholders::_1;
 
@@ -115,19 +117,19 @@ ProtoStreamObjectWriter::~ProtoStreamObjectWriter() {
 namespace {
 // Utility method to split a string representation of Timestamp or Duration and
 // return the parts.
-void SplitSecondsAndNanos(StringPiece input, StringPiece* seconds,
-                          StringPiece* nanos) {
+void SplitSecondsAndNanos(absl::string_view input, absl::string_view* seconds,
+                          absl::string_view* nanos) {
   size_t idx = input.rfind('.');
   if (idx != std::string::npos) {
     *seconds = input.substr(0, idx);
     *nanos = input.substr(idx + 1);
   } else {
     *seconds = input;
-    *nanos = StringPiece();
+    *nanos = absl::string_view();
   }
 }
 
-Status GetNanosFromStringPiece(StringPiece s_nanos,
+Status GetNanosFromStringPiece(absl::string_view s_nanos,
                                const char* parse_failure_message,
                                const char* exceeded_limit_message,
                                int32_t* nanos) {
@@ -135,7 +137,7 @@ Status GetNanosFromStringPiece(StringPiece s_nanos,
 
   // Count the number of leading 0s and consume them.
   int num_leading_zeros = 0;
-  while (s_nanos.Consume("0")) {
+  while (absl::ConsumePrefix(&s_nanos, "0")) {
     num_leading_zeros++;
   }
   int32_t i_nanos = 0;
@@ -144,14 +146,14 @@ Status GetNanosFromStringPiece(StringPiece s_nanos,
   // conversion to 'nanos', rather than a double, so that there is no
   // loss of precision.
   if (!s_nanos.empty() && !safe_strto32(s_nanos, &i_nanos)) {
-    return util::InvalidArgumentError(parse_failure_message);
+    return absl::InvalidArgumentError(parse_failure_message);
   }
   if (i_nanos > kNanosPerSecond || i_nanos < 0) {
-    return util::InvalidArgumentError(exceeded_limit_message);
+    return absl::InvalidArgumentError(exceeded_limit_message);
   }
   // s_nanos should only have digits. No whitespace.
-  if (s_nanos.find_first_not_of("0123456789") != StringPiece::npos) {
-    return util::InvalidArgumentError(parse_failure_message);
+  if (s_nanos.find_first_not_of("0123456789") != absl::string_view::npos) {
+    return absl::InvalidArgumentError(parse_failure_message);
   }
 
   if (i_nanos > 0) {
@@ -191,7 +193,7 @@ Status GetNanosFromStringPiece(StringPiece s_nanos,
         conversion = 1;
         break;
       default:
-        return util::InvalidArgumentError(exceeded_limit_message);
+        return absl::InvalidArgumentError(exceeded_limit_message);
     }
     *nanos = i_nanos * conversion;
   }
@@ -199,6 +201,26 @@ Status GetNanosFromStringPiece(StringPiece s_nanos,
   return Status();
 }
 
+// If successful, stores the offset in seconds in "value" and returns true.
+// Caller must ensure the first character of "offset" is "+" or "-".
+bool ParseTimezoneOffset(absl::string_view offset, int* value) {
+  GOOGLE_DCHECK(offset[0] == '+' || offset[0] == '-');
+  // Format of the offset: +DD:DD or -DD:DD. E.g., +08:00.
+  if (offset.length() != 6 || offset[3] != ':') {
+    return false;
+  }
+  int hours = 0, minutes = 0;
+  if (!safe_strto32(offset.substr(1, 2), &hours) ||
+      !safe_strto32(offset.substr(4, 2), &minutes) || hours < 0 ||
+      hours >= 24 || minutes < 0 || minutes >= 60) {
+    return false;
+  }
+  *value = (hours * 60 + minutes) * 60;
+  if (offset[0] == '-') {
+    *value = -*value;
+  }
+  return true;
+}
 }  // namespace
 
 ProtoStreamObjectWriter::AnyWriter::AnyWriter(ProtoStreamObjectWriter* parent)
@@ -213,7 +235,7 @@ ProtoStreamObjectWriter::AnyWriter::AnyWriter(ProtoStreamObjectWriter* parent)
 
 ProtoStreamObjectWriter::AnyWriter::~AnyWriter() {}
 
-void ProtoStreamObjectWriter::AnyWriter::StartObject(StringPiece name) {
+void ProtoStreamObjectWriter::AnyWriter::StartObject(absl::string_view name) {
   ++depth_;
   // If an object writer is absent, that means we have not called StartAny()
   // before reaching here, which happens when we have data before the "@type"
@@ -260,7 +282,7 @@ bool ProtoStreamObjectWriter::AnyWriter::EndObject() {
   return true;
 }
 
-void ProtoStreamObjectWriter::AnyWriter::StartList(StringPiece name) {
+void ProtoStreamObjectWriter::AnyWriter::StartList(absl::string_view name) {
   ++depth_;
   if (ow_ == nullptr) {
     // Save data before the "@type" field for later replay.
@@ -292,7 +314,7 @@ void ProtoStreamObjectWriter::AnyWriter::EndList() {
 }
 
 void ProtoStreamObjectWriter::AnyWriter::RenderDataPiece(
-    StringPiece name, const DataPiece& value) {
+    absl::string_view name, const DataPiece& value) {
   // Start an Any only at depth_ 0. Other RenderDataPiece calls with "@type"
   // should go to the contained ow_ as they indicate nested Anys.
   if (depth_ == 0 && ow_ == nullptr && name == "@type") {
@@ -330,7 +352,7 @@ void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
   if (value.type() == DataPiece::TYPE_STRING) {
     type_url_ = std::string(value.str());
   } else {
-    util::StatusOr<std::string> s = value.ToString();
+    absl::StatusOr<std::string> s = value.ToString();
     if (!s.ok()) {
       parent_->InvalidValue("String", s.status().message());
       invalid_ = true;
@@ -339,7 +361,7 @@ void ProtoStreamObjectWriter::AnyWriter::StartAny(const DataPiece& value) {
     type_url_ = s.value();
   }
   // Resolve the type url, and report an error if we failed to resolve it.
-  util::StatusOr<const google::protobuf::Type*> resolved_type =
+  absl::StatusOr<const google::protobuf::Type*> resolved_type =
       parent_->typeinfo()->ResolveTypeUrl(type_url_);
   if (!resolved_type.ok()) {
     parent_->InvalidValue("Any", resolved_type.status().message());
@@ -393,7 +415,7 @@ void ProtoStreamObjectWriter::AnyWriter::WriteAny() {
       // There are uninterpreted data, but we never got a "@type" field.
       if (!invalid_) {
         parent_->InvalidValue("Any",
-                              StrCat("Missing @type for any field in ",
+                              absl::StrCat("Missing @type for any field in ",
                                            parent_->master_type_.name()));
         invalid_ = true;
       }
@@ -434,7 +456,7 @@ void ProtoStreamObjectWriter::AnyWriter::Event::DeepCopy() {
   // string value stays valid, we make a copy of the string value and update
   // DataPiece to reference our own copy.
   if (value_.type() == DataPiece::TYPE_STRING) {
-    StrAppend(&value_storage_, value_.str());
+    absl::StrAppend(&value_storage_, value_.str());
     value_ = DataPiece(value_storage_, value_.use_strict_base64_decoding());
   } else if (value_.type() == DataPiece::TYPE_BYTES) {
     value_storage_ = value_.ToBytes().value();
@@ -478,13 +500,13 @@ ProtoStreamObjectWriter::Item::Item(ProtoStreamObjectWriter::Item* parent,
 }
 
 bool ProtoStreamObjectWriter::Item::InsertMapKeyIfNotPresent(
-    StringPiece map_key) {
+    absl::string_view map_key) {
   return InsertIfNotPresent(map_keys_.get(), std::string(map_key));
 }
 
 
 ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartObject(
-    StringPiece name) {
+    absl::string_view name) {
   if (invalid_depth() > 0) {
     IncrementInvalidDepth();
     return this;
@@ -680,7 +702,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::EndObject() {
 
 
 ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(
-    StringPiece name) {
+    absl::string_view name) {
   if (invalid_depth() > 0) {
     IncrementInvalidDepth();
     return this;
@@ -788,7 +810,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(
     }
 
     // Report an error.
-    InvalidValue("Map", StrCat("Cannot have repeated items ('", name,
+    InvalidValue("Map", absl::StrCat("Cannot have repeated items ('", name,
                                      "') within a map."));
     return this;
   }
@@ -885,7 +907,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::StartList(
       Push(name, Item::MESSAGE, false, true);
       return this;
     }
-    InvalidValue("Map", StrCat("Cannot bind a list to map for field '",
+    InvalidValue("Map", absl::StrCat("Cannot bind a list to map for field '",
                                      name, "'."));
     IncrementInvalidDepth();
     return this;
@@ -921,7 +943,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
   switch (data.type()) {
     case DataPiece::TYPE_INT32: {
       if (ow->options_.struct_integers_as_strings) {
-        util::StatusOr<int32_t> int_value = data.ToInt32();
+        absl::StatusOr<int32_t> int_value = data.ToInt32();
         if (int_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
               "string_value",
@@ -934,7 +956,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
     }
     case DataPiece::TYPE_UINT32: {
       if (ow->options_.struct_integers_as_strings) {
-        util::StatusOr<uint32_t> int_value = data.ToUint32();
+        absl::StatusOr<uint32_t> int_value = data.ToUint32();
         if (int_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
               "string_value",
@@ -949,10 +971,10 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
       // If the option to treat integers as strings is set, then render them as
       // strings. Otherwise, fallback to rendering them as double.
       if (ow->options_.struct_integers_as_strings) {
-        util::StatusOr<int64_t> int_value = data.ToInt64();
+        absl::StatusOr<int64_t> int_value = data.ToInt64();
         if (int_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
-              "string_value", DataPiece(StrCat(int_value.value()), true));
+              "string_value", DataPiece(absl::StrCat(int_value.value()), true));
           return Status();
         }
       }
@@ -963,10 +985,10 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
       // If the option to treat integers as strings is set, then render them as
       // strings. Otherwise, fallback to rendering them as double.
       if (ow->options_.struct_integers_as_strings) {
-        util::StatusOr<uint64_t> int_value = data.ToUint64();
+        absl::StatusOr<uint64_t> int_value = data.ToUint64();
         if (int_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
-              "string_value", DataPiece(StrCat(int_value.value()), true));
+              "string_value", DataPiece(absl::StrCat(int_value.value()), true));
           return Status();
         }
       }
@@ -975,7 +997,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
     }
     case DataPiece::TYPE_FLOAT: {
       if (ow->options_.struct_integers_as_strings) {
-        util::StatusOr<float> float_value = data.ToFloat();
+        absl::StatusOr<float> float_value = data.ToFloat();
         if (float_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
               "string_value",
@@ -988,7 +1010,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
     }
     case DataPiece::TYPE_DOUBLE: {
       if (ow->options_.struct_integers_as_strings) {
-        util::StatusOr<double> double_value = data.ToDouble();
+        absl::StatusOr<double> double_value = data.ToDouble();
         if (double_value.ok()) {
           ow->ProtoWriter::RenderDataPiece(
               "string_value",
@@ -1012,7 +1034,7 @@ Status ProtoStreamObjectWriter::RenderStructValue(ProtoStreamObjectWriter* ow,
       break;
     }
     default: {
-      return util::InvalidArgumentError(
+      return absl::InvalidArgumentError(
           "Invalid struct data type. Only number, string, boolean or  null "
           "values are supported.");
     }
@@ -1025,28 +1047,57 @@ Status ProtoStreamObjectWriter::RenderTimestamp(ProtoStreamObjectWriter* ow,
                                                 const DataPiece& data) {
   if (data.type() == DataPiece::TYPE_NULL) return Status();
   if (data.type() != DataPiece::TYPE_STRING) {
-    return util::InvalidArgumentError(
-        StrCat("Invalid data type for timestamp, value is ",
+    return absl::InvalidArgumentError(
+        absl::StrCat("Invalid data type for timestamp, value is ",
                      data.ValueAsStringOrDefault("")));
   }
 
-  StringPiece value(data.str());
+  absl::string_view value(data.str());
 
-  int64_t seconds;
-  int32_t nanos;
-  if (!::google::protobuf::internal::ParseTime(value.ToString(), &seconds,
-                                               &nanos)) {
-    return util::InvalidArgumentError(StrCat("Invalid time format: ", value));
+  int timezone_offset_seconds = 0;
+  if (HasSuffixString(value, "Z")) {
+    value = value.substr(0, value.size() - 1);
+  } else {
+    size_t pos = value.find_last_of("+-");
+    if (pos == std::string::npos ||
+        !ParseTimezoneOffset(value.substr(pos), &timezone_offset_seconds)) {
+      return Status(absl::StatusCode::kInvalidArgument,
+                    "Illegal timestamp format; timestamps must end with 'Z' "
+                    "or have a valid timezone offset.");
+    }
+    value = value.substr(0, pos);
   }
 
+  absl::string_view s_secs, s_nanos;
+  SplitSecondsAndNanos(value, &s_secs, &s_nanos);
+  absl::Time tm;
+  std::string err;
+  if (!absl::ParseTime(kRfc3339TimeFormatNoPadding, s_secs, &tm, &err)) {
+    return Status(absl::StatusCode::kInvalidArgument,
+                  absl::StrCat("Invalid time format: ", err));
+  }
+
+  int32_t nanos = 0;
+  Status nanos_status = GetNanosFromStringPiece(
+      s_nanos, "Invalid time format, failed to parse nano seconds",
+      "Timestamp value exceeds limits", &nanos);
+  if (!nanos_status.ok()) {
+    return nanos_status;
+  }
+
+  int64_t seconds = absl::ToUnixSeconds(tm) - timezone_offset_seconds;
+  if (seconds > kTimestampMaxSeconds || seconds < kTimestampMinSeconds) {
+    return Status(absl::StatusCode::kInvalidArgument,
+                  "Timestamp value exceeds limits");
+  }
 
   ow->ProtoWriter::RenderDataPiece("seconds", DataPiece(seconds));
   ow->ProtoWriter::RenderDataPiece("nanos", DataPiece(nanos));
   return Status();
 }
 
-static inline util::Status RenderOneFieldPath(ProtoStreamObjectWriter* ow,
-                                              StringPiece path) {
+static inline absl::Status RenderOneFieldPath(ProtoStreamObjectWriter* ow,
+                                              absl::string_view path) {
   ow->ProtoWriter::RenderDataPiece(
       "paths", DataPiece(ConvertFieldMaskPath(path, &ToSnakeCase), true));
   return Status();
@@ -1056,8 +1107,8 @@ Status ProtoStreamObjectWriter::RenderFieldMask(ProtoStreamObjectWriter* ow,
                                                 const DataPiece& data) {
   if (data.type() == DataPiece::TYPE_NULL) return Status();
   if (data.type() != DataPiece::TYPE_STRING) {
-    return util::InvalidArgumentError(
-        StrCat("Invalid data type for field mask, value is ",
+    return absl::InvalidArgumentError(
+        absl::StrCat("Invalid data type for field mask, value is ",
                      data.ValueAsStringOrDefault("")));
   }
 
@@ -1072,15 +1123,15 @@ Status ProtoStreamObjectWriter::RenderDuration(ProtoStreamObjectWriter* ow,
                                                const DataPiece& data) {
   if (data.type() == DataPiece::TYPE_NULL) return Status();
   if (data.type() != DataPiece::TYPE_STRING) {
-    return util::InvalidArgumentError(
-        StrCat("Invalid data type for duration, value is ",
+    return absl::InvalidArgumentError(
+        absl::StrCat("Invalid data type for duration, value is ",
                      data.ValueAsStringOrDefault("")));
   }
 
-  StringPiece value(data.str());
+  absl::string_view value(data.str());
 
   if (!HasSuffixString(value, "s")) {
-    return util::InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "Illegal duration format; duration must end with 's'");
   }
   value = value.substr(0, value.size() - 1);
@@ -1090,11 +1141,11 @@ Status ProtoStreamObjectWriter::RenderDuration(ProtoStreamObjectWriter* ow,
     value = value.substr(1);
   }
 
-  StringPiece s_secs, s_nanos;
+  absl::string_view s_secs, s_nanos;
   SplitSecondsAndNanos(value, &s_secs, &s_nanos);
   uint64_t unsigned_seconds;
   if (!safe_strtou64(s_secs, &unsigned_seconds)) {
-    return util::InvalidArgumentError(
+    return absl::InvalidArgumentError(
         "Invalid duration format, failed to parse seconds");
   }
 
@@ -1110,7 +1161,7 @@ Status ProtoStreamObjectWriter::RenderDuration(ProtoStreamObjectWriter* ow,
   int64_t seconds = sign * unsigned_seconds;
   if (seconds > kDurationMaxSeconds || seconds < kDurationMinSeconds ||
       nanos <= -kNanosPerSecond || nanos >= kNanosPerSecond) {
-    return util::InvalidArgumentError("Duration value exceeds limits");
+    return absl::InvalidArgumentError("Duration value exceeds limits");
   }
 
   ow->ProtoWriter::RenderDataPiece("seconds", DataPiece(seconds));
@@ -1126,7 +1177,7 @@ Status ProtoStreamObjectWriter::RenderWrapperType(ProtoStreamObjectWriter* ow,
 }
 
 ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
-    StringPiece name, const DataPiece& data) {
+    absl::string_view name, const DataPiece& data) {
   Status status;
   if (invalid_depth() > 0) return this;
 
@@ -1145,7 +1196,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
     status = (*type_renderer)(this, data);
     if (!status.ok()) {
       InvalidValue(master_type_.name(),
-                   StrCat("Field '", name, "', ", status.message()));
+                   absl::StrCat("Field '", name, "', ", status.message()));
     }
     ProtoWriter::EndObject();
     return this;
@@ -1191,7 +1242,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
       status = (*type_renderer)(this, data);
       if (!status.ok()) {
         InvalidValue(field->type_url(),
-                     StrCat("Field '", name, "', ", status.message()));
+                     absl::StrCat("Field '", name, "', ", status.message()));
       }
       Pop();
       return this;
@@ -1225,7 +1276,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
       status = (*type_renderer)(this, data);
       if (!status.ok()) {
         InvalidValue(field->type_url(),
-                     StrCat("Field '", name, "', ", status.message()));
+                     absl::StrCat("Field '", name, "', ", status.message()));
       }
       Pop();
     }
@@ -1260,7 +1311,7 @@ ProtoStreamObjectWriter* ProtoStreamObjectWriter::RenderDataPiece(
 // represented by the key.
 std::unordered_map<std::string, ProtoStreamObjectWriter::TypeRenderer>*
     ProtoStreamObjectWriter::renderers_ = nullptr;
-PROTOBUF_NAMESPACE_ID::internal::once_flag writer_renderers_init_;
+absl::once_flag writer_renderers_init_;
 
 void ProtoStreamObjectWriter::InitRendererMap() {
   renderers_ = new std::unordered_map<std::string,
@@ -1319,18 +1370,17 @@ void ProtoStreamObjectWriter::DeleteRendererMap() {
 
 ProtoStreamObjectWriter::TypeRenderer*
 ProtoStreamObjectWriter::FindTypeRenderer(const std::string& type_url) {
-  PROTOBUF_NAMESPACE_ID::internal::call_once(writer_renderers_init_,
-                                             InitRendererMap);
+  absl::call_once(writer_renderers_init_, InitRendererMap);
   return FindOrNull(*renderers_, type_url);
 }
 
-bool ProtoStreamObjectWriter::ValidMapKey(StringPiece unnormalized_name) {
+bool ProtoStreamObjectWriter::ValidMapKey(absl::string_view unnormalized_name) {
   if (current_ == nullptr) return true;
 
   if (!current_->InsertMapKeyIfNotPresent(unnormalized_name)) {
     listener()->InvalidName(
         location(), unnormalized_name,
-        StrCat("Repeated map key: '", unnormalized_name,
+        absl::StrCat("Repeated map key: '", unnormalized_name,
                      "' is already set."));
     return false;
   }
@@ -1339,7 +1389,7 @@ bool ProtoStreamObjectWriter::ValidMapKey(StringPiece unnormalized_name) {
 }
 
 void ProtoStreamObjectWriter::Push(
-    StringPiece name, Item::ItemType item_type, bool is_placeholder,
+    absl::string_view name, Item::ItemType item_type, bool is_placeholder,
     bool is_list) {
   is_list ? ProtoWriter::StartList(name) : ProtoWriter::StartObject(name);
 

@@ -42,12 +42,14 @@
 
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/compiler/java/name_resolver.h>
 #include <google/protobuf/compiler/java/names.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/stubs/hash.h>  // for hash<T *>
 
 // Must be last.
 #include <google/protobuf/port_def.inc>
@@ -157,8 +159,8 @@ void PrintEnumVerifierLogic(io::Printer* printer,
                             const char* var_name,
                             const char* terminating_string, bool enforce_lite) {
   std::string enum_verifier_string =
-      enforce_lite ? StrCat(var_name, ".internalGetVerifier()")
-                   : StrCat(
+      enforce_lite ? absl::StrCat(var_name, ".internalGetVerifier()")
+                   : absl::StrCat(
                          "new com.google.protobuf.Internal.EnumVerifier() {\n"
                          "        @java.lang.Override\n"
                          "        public boolean isInRange(int number) {\n"
@@ -169,7 +171,7 @@ void PrintEnumVerifierLogic(io::Printer* printer,
                          "      }");
   printer->Print(
       variables,
-      StrCat(enum_verifier_string, terminating_string).c_str());
+      absl::StrCat(enum_verifier_string, terminating_string).c_str());
 }
 
 std::string UnderscoresToCamelCase(const std::string& input,
@@ -291,7 +293,7 @@ std::string EscapeKotlinKeywords(std::string name) {
       escaped_packages.push_back(package);
     }
   }
-  return Join(escaped_packages, ".");
+  return absl::StrJoin(escaped_packages, ".");
 }
 
 std::string UniqueFileScopeIdentifier(const Descriptor* descriptor) {
@@ -602,14 +604,14 @@ std::string DefaultValue(const FieldDescriptor* field, bool immutable,
   // of FieldDescriptor to call.
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
-      return StrCat(field->default_value_int32());
+      return absl::StrCat(field->default_value_int32());
     case FieldDescriptor::CPPTYPE_UINT32:
       // Need to print as a signed int since Java has no unsigned.
-      return StrCat(static_cast<int32_t>(field->default_value_uint32()));
+      return absl::StrCat(static_cast<int32_t>(field->default_value_uint32()));
     case FieldDescriptor::CPPTYPE_INT64:
-      return StrCat(field->default_value_int64()) + "L";
+      return absl::StrCat(field->default_value_int64()) + "L";
     case FieldDescriptor::CPPTYPE_UINT64:
-      return StrCat(static_cast<int64_t>(field->default_value_uint64())) +
+      return absl::StrCat(static_cast<int64_t>(field->default_value_uint64())) +
              "L";
     case FieldDescriptor::CPPTYPE_DOUBLE: {
       double value = field->default_value_double();
@@ -643,19 +645,19 @@ std::string DefaultValue(const FieldDescriptor* field, bool immutable,
           // See comments in Internal.java for gory details.
           return strings::Substitute(
               "com.google.protobuf.Internal.bytesDefaultValue(\"$0\")",
-              CEscape(field->default_value_string()));
+              absl::CEscape(field->default_value_string()));
         } else {
           return "com.google.protobuf.ByteString.EMPTY";
         }
       } else {
         if (AllAscii(field->default_value_string())) {
           // All chars are ASCII.  In this case CEscape() works fine.
-          return "\"" + CEscape(field->default_value_string()) + "\"";
+          return "\"" + absl::CEscape(field->default_value_string()) + "\"";
         } else {
           // See comments in Internal.java for gory details.
           return strings::Substitute(
               "com.google.protobuf.Internal.stringDefaultValue(\"$0\")",
-              CEscape(field->default_value_string()));
+              absl::CEscape(field->default_value_string()));
         }
       }
 
@@ -728,7 +730,7 @@ const char* bit_masks[] = {
 
 std::string GetBitFieldName(int index) {
   std::string varName = "bitField";
-  varName += StrCat(index);
+  varName += absl::StrCat(index);
   varName += "_";
   return varName;
 }

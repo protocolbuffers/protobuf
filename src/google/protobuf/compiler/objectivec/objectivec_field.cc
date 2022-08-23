@@ -38,6 +38,8 @@
 #include <google/protobuf/compiler/objectivec/objectivec_primitive_field.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
 
 namespace google {
 namespace protobuf {
@@ -74,7 +76,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["raw_field_name"] = raw_field_name;
   (*variables)["field_number_name"] =
       classname + "_FieldNumber_" + capitalized_name;
-  (*variables)["field_number"] = StrCat(descriptor->number());
+  (*variables)["field_number"] = absl::StrCat(descriptor->number());
   (*variables)["field_type"] = GetCapitalizedType(descriptor);
   (*variables)["deprecated_attribute"] = GetOptionalDeprecatedAttribute(descriptor);
   std::vector<std::string> field_flags;
@@ -224,7 +226,7 @@ void FieldGenerator::GenerateFieldDescription(
 }
 
 void FieldGenerator::SetRuntimeHasBit(int has_index) {
-  variables_["has_index"] = StrCat(has_index);
+  variables_["has_index"] = absl::StrCat(has_index);
 }
 
 void FieldGenerator::SetNoHasBit(void) {
@@ -248,7 +250,7 @@ void FieldGenerator::SetOneofIndexBase(int index_base) {
   if (oneof != NULL) {
     int index = oneof->index() + index_base;
     // Flip the sign to mark it as a oneof.
-    variables_["has_index"] = StrCat(-index);
+    variables_["has_index"] = absl::StrCat(-index);
   }
 }
 
@@ -388,7 +390,7 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
       "$comments$"
       "$array_comment$"
       "@property(nonatomic, readwrite, strong, null_resettable) $array_property_type$ *$name$$storage_attribute$$deprecated_attribute$;\n"
-      "/** The number of items in @c $name$ without causing the container to be created. */\n"
+      "/** The number of items in @c $name$ without causing the array to be created. */\n"
       "@property(nonatomic, readonly) NSUInteger $name$_Count$deprecated_attribute$;\n");
   if (IsInitName(variables_.find("name")->second)) {
     // If property name starts with init we need to annotate it to get past ARC.

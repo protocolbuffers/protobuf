@@ -8,7 +8,7 @@ set -eu
 # Some base locations.
 readonly ScriptDir=$(dirname "$(echo $0 | sed -e "s,^\([^/]\),$(pwd)/\1,")")
 readonly ProtoRootDir="${ScriptDir}/../.."
-readonly BazelFlags="-k --test_output=streamed --macos_minimum_os=10.9"
+readonly BazelFlags="-k --announce_rc --test_output=errors --macos_minimum_os=10.9"
 
 # Invoke with BAZEL=bazelisk to use that instead.
 readonly BazelBin="${BAZEL:=bazel}"
@@ -191,7 +191,7 @@ else
 fi
 
 # Ensure the WKT sources checked in are current.
-BAZEL="${BazelBin}" objectivec/generate_well_known_types.sh --check-only
+BAZEL="${BazelBin}" objectivec/generate_well_known_types.sh --check-only $BazelFlags
 
 header "Checking on the ObjC Runtime Code"
 # Some of the kokoro machines don't have python3 yet, so fall back to python if need be.

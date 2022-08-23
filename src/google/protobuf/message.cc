@@ -38,12 +38,15 @@
 #include <stack>
 #include <unordered_map>
 
-#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/base/casts.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/strings/str_join.h"
+#include "absl/strings/string_view.h"
+#include "absl/synchronization/mutex.h"
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/generated_message_reflection.h>
@@ -59,14 +62,13 @@
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
-#include <google/protobuf/stubs/hash.h>
+
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
-
 namespace internal {
 
 // TODO(gerbens) make this factorized better. This should not have to hop
@@ -76,6 +78,7 @@ void RegisterFileLevelMetadata(const DescriptorTable* descriptor_table);
 
 }  // namespace internal
 
+using internal::DownCast;
 using internal::ReflectionOps;
 using internal::WireFormat;
 using internal::WireFormatLite;
@@ -93,7 +96,7 @@ void Message::MergeFrom(const Message& from) {
 }
 
 void Message::CheckTypeAndMergeFrom(const MessageLite& other) {
-  MergeFrom(*down_cast<const Message*>(&other));
+  MergeFrom(*DownCast<const Message*>(&other));
 }
 
 void Message::CopyFrom(const Message& from) {
@@ -153,7 +156,7 @@ void Message::FindInitializationErrors(std::vector<std::string>* errors) const {
 std::string Message::InitializationErrorString() const {
   std::vector<std::string> errors;
   FindInitializationErrors(&errors);
-  return Join(errors, ", ");
+  return absl::StrJoin(errors, ", ");
 }
 
 void Message::CheckInitialized() const {
@@ -241,11 +244,6 @@ MessageFactory::~MessageFactory() {}
 
 namespace {
 
-
-#define HASH_MAP std::unordered_map
-#define STR_HASH_FXN hash<::google::protobuf::StringPiece>
-
-
 class GeneratedMessageFactory final : public MessageFactory {
  public:
   static GeneratedMessageFactory* singleton();
@@ -258,13 +256,13 @@ class GeneratedMessageFactory final : public MessageFactory {
 
  private:
   // Only written at static init time, so does not require locking.
-  HASH_MAP<StringPiece, const google::protobuf::internal::DescriptorTable*,
-           STR_HASH_FXN>
+  absl::flat_hash_map<absl::string_view,
+                      const google::protobuf::internal::DescriptorTable*>
       file_map_;
 
   absl::Mutex mutex_;
-  // Initialized lazily, so requires locking.
-  std::unordered_map<const Descriptor*, const Message*> type_map_;
+  absl::flat_hash_map<const Descriptor*, const Message*> type_map_
+      ABSL_GUARDED_BY(mutex_);
 };
 
 GeneratedMessageFactory* GeneratedMessageFactory::singleton() {
@@ -309,7 +307,7 @@ const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
 
   // Apparently the file hasn't been registered yet.  Let's do that now.
   const internal::DescriptorTable* registration_data =
-      FindPtrOrNull(file_map_, type->file()->name().c_str());
+      FindPtrOrNull(file_map_, type->file()->name());
   if (registration_data == nullptr) {
     GOOGLE_LOG(DFATAL) << "File appears to be in generated pool but wasn't "
                    "registered: "

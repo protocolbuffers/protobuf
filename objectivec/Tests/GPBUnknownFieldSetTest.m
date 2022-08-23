@@ -32,7 +32,7 @@
 
 #import "GPBUnknownField_PackagePrivate.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
-#import "google/protobuf/Unittest.pbobjc.h"
+#import "Unittest.pbobjc.h"
 
 @interface GPBUnknownFieldSet (GPBUnknownFieldSetTest)
 - (void)getTags:(int32_t*)tags;

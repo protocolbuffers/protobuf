@@ -36,8 +36,10 @@
 #include <google/protobuf/duration.pb.h>
 #include <google/protobuf/timestamp.pb.h>
 #include <google/protobuf/stubs/int128.h>
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/stubs/time.h>
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 
 // Must go after other includes.
 #include <google/protobuf/port_def.inc>
@@ -134,15 +136,40 @@ std::string FormatNanos(int32_t nanos) {
 }
 
 std::string FormatTime(int64_t seconds, int32_t nanos) {
-  return ::google::protobuf::internal::FormatTime(seconds, nanos);
+  static const char kTimestampFormat[] = "%E4Y-%m-%dT%H:%M:%S";
+
+  timespec spec;
+  spec.tv_sec = seconds;
+  // We only use absl::FormatTime to format the seconds part because we need
+  // finer control over the precision of nanoseconds.
+  spec.tv_nsec = 0;
+  std::string result = absl::FormatTime(
+      kTimestampFormat, absl::TimeFromTimespec(spec), absl::UTCTimeZone());
+  // We format the nanoseconds part separately to meet the precision
+  // requirement.
+  if (nanos != 0) {
+    result += "." + FormatNanos(nanos);
+  }
+  result += "Z";
+  return result;
 }
 
 bool ParseTime(const std::string& value, int64_t* seconds, int32_t* nanos) {
-  return ::google::protobuf::internal::ParseTime(value, seconds, nanos);
+  absl::Time result;
+  if (!absl::ParseTime(absl::RFC3339_full, value, &result, nullptr)) {
+    return false;
+  }
+  timespec spec = absl::ToTimespec(result);
+  *seconds = spec.tv_sec;
+  *nanos = spec.tv_nsec;
+  return true;
 }
 
 void CurrentTime(int64_t* seconds, int32_t* nanos) {
-  return ::google::protobuf::internal::GetCurrentTime(seconds, nanos);
+  absl::Time now = absl::Now();
+  timespec spec = absl::ToTimespec(now);
+  *seconds = spec.tv_sec;
+  *nanos = spec.tv_nsec;
 }
 
 // Truncates the remainder part after division.
@@ -207,7 +234,7 @@ std::string TimeUtil::ToString(const Duration& duration) {
     seconds = -seconds;
     nanos = -nanos;
   }
-  result += StrCat(seconds);
+  result += absl::StrCat(seconds);
   if (nanos != 0) {
     result += "." + FormatNanos(nanos);
   }

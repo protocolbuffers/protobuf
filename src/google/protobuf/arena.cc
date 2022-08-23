@@ -317,12 +317,6 @@ void ThreadSafeArena::InitializeWithPolicy(void* mem, size_t size,
   // first block.
   constexpr size_t kAPSize = internal::AlignUpTo8(sizeof(AllocationPolicy));
   constexpr size_t kMinimumSize = kBlockHeaderSize + kSerialArenaSize + kAPSize;
-
-  // The value for alloc_policy_ stores whether or not allocations should be
-  // recorded.
-  alloc_policy_.set_should_record_allocs(
-      policy.metrics_collector != nullptr &&
-      policy.metrics_collector->RecordAllocs());
   // Make sure we have an initial block to store the AllocationPolicy.
   if (mem != nullptr && size >= kMinimumSize) {
     alloc_policy_.set_is_user_owned_initial_block(true);
@@ -395,11 +389,6 @@ ThreadSafeArena::~ThreadSafeArena() {
 
   size_t space_allocated = 0;
   auto mem = Free(&space_allocated);
-
-  // Policy is about to get deleted.
-  auto* p = alloc_policy_.get();
-  ArenaMetricsCollector* collector = p ? p->metrics_collector : nullptr;
-
   if (alloc_policy_.is_user_owned_initial_block()) {
 #ifdef ADDRESS_SANITIZER
     // Unpoison the initial block, now that it's going back to the user.
@@ -409,8 +398,6 @@ ThreadSafeArena::~ThreadSafeArena() {
   } else {
     GetDeallocator(alloc_policy_.get(), &space_allocated)(mem);
   }
-
-  if (collector) collector->OnDestroy(space_allocated);
 }
 
 SerialArena::Memory ThreadSafeArena::Free(size_t* space_allocated) {
@@ -442,11 +429,8 @@ uint64_t ThreadSafeArena::Reset() {
       mem.ptr = nullptr;
       mem.size = 0;
     }
-    ArenaMetricsCollector* collector = saved_policy.metrics_collector;
-    if (collector) collector->OnReset(space_allocated);
     InitializeWithPolicy(mem.ptr, mem.size, saved_policy);
   } else {
-    GOOGLE_DCHECK(!alloc_policy_.should_record_allocs());
     // Nullptr policy
     if (alloc_policy_.is_user_owned_initial_block()) {
       space_allocated += mem.size;
@@ -461,15 +445,13 @@ uint64_t ThreadSafeArena::Reset() {
 }
 
 void* ThreadSafeArena::AllocateAlignedWithCleanup(size_t n, size_t align,
-                                                  void (*destructor)(void*),
-                                                  const std::type_info* type) {
+                                                  void (*destructor)(void*)) {
   SerialArena* arena;
-  if (PROTOBUF_PREDICT_TRUE(!alloc_policy_.should_record_allocs() &&
-                            GetSerialArenaFast(&arena))) {
+  if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
     return arena->AllocateAlignedWithCleanup(n, align, destructor,
                                              alloc_policy_.get());
   } else {
-    return AllocateAlignedWithCleanupFallback(n, align, destructor, type);
+    return AllocateAlignedWithCleanupFallback(n, align, destructor);
   }
 }
 
@@ -482,31 +464,8 @@ void ThreadSafeArena::AddCleanup(void* elem, void (*cleanup)(void*)) {
 }
 
 PROTOBUF_NOINLINE
-void* ThreadSafeArena::AllocateAlignedFallback(size_t n,
-                                               const std::type_info* type) {
-  if (alloc_policy_.should_record_allocs()) {
-    alloc_policy_.RecordAlloc(type, n);
-    SerialArena* arena;
-    if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
-      return arena->AllocateAligned(n, alloc_policy_.get());
-    }
-  }
-  return GetSerialArenaFallback(&thread_cache())
-      ->AllocateAligned(n, alloc_policy_.get());
-}
-
-PROTOBUF_NOINLINE
 void* ThreadSafeArena::AllocateAlignedWithCleanupFallback(
-    size_t n, size_t align, void (*destructor)(void*),
-    const std::type_info* type) {
-  if (alloc_policy_.should_record_allocs()) {
-    alloc_policy_.RecordAlloc(type, internal::AlignUpTo(n, align));
-    SerialArena* arena;
-    if (GetSerialArenaFast(&arena)) {
-      return arena->AllocateAlignedWithCleanup(n, align, destructor,
-                                               alloc_policy_.get());
-    }
-  }
+    size_t n, size_t align, void (*destructor)(void*)) {
   return GetSerialArenaFallback(&thread_cache())
       ->AllocateAlignedWithCleanup(n, align, destructor, alloc_policy_.get());
 }
@@ -563,27 +522,15 @@ SerialArena* ThreadSafeArena::GetSerialArenaFallback(void* me) {
 
 }  // namespace internal
 
-PROTOBUF_FUNC_ALIGN(32)
-void* Arena::AllocateAlignedNoHook(size_t n) {
-  return impl_.AllocateAligned(n, nullptr);
+void* Arena::Allocate(size_t n) { return impl_.AllocateAligned(n); }
+
+void* Arena::AllocateForArray(size_t n) {
+  return impl_.AllocateAligned<internal::AllocationClient::kArray>(n);
 }
 
-PROTOBUF_FUNC_ALIGN(32)
-void* Arena::AllocateAlignedWithHook(size_t n, const std::type_info* type) {
-  return impl_.AllocateAligned(n, type);
-}
-
-PROTOBUF_FUNC_ALIGN(32)
-void* Arena::AllocateAlignedWithHookForArray(size_t n,
-                                             const std::type_info* type) {
-  return impl_.AllocateAligned<internal::AllocationClient::kArray>(n, type);
-}
-
-PROTOBUF_FUNC_ALIGN(32)
 void* Arena::AllocateAlignedWithCleanup(size_t n, size_t align,
-                                        void (*destructor)(void*),
-                                        const std::type_info* type) {
-  return impl_.AllocateAlignedWithCleanup(n, align, destructor, type);
+                                        void (*destructor)(void*)) {
+  return impl_.AllocateAlignedWithCleanup(n, align, destructor);
 }
 
 }  // namespace protobuf

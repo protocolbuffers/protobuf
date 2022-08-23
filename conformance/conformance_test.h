@@ -124,7 +124,7 @@ class ForkPipeRunner : public ConformanceTestRunner {
 //    class MyConformanceTestSuite : public ConformanceTestSuite {
 //     public:
 //      void RunSuiteImpl() {
-//        // INSERT ACTUAL TESTS.
+//        // INSERT ACTURAL TESTS.
 //      }
 //    };
 //

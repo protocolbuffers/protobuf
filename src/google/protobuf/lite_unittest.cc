@@ -40,6 +40,7 @@
 #include <google/protobuf/unittest_lite.pb.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/string_view.h"
 #include <google/protobuf/arena_test_util.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>

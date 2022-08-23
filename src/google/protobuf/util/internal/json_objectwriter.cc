@@ -34,18 +34,20 @@
 #include <cstdint>
 #include <limits>
 
-#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/util/internal/utility.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/base/casts.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/util/internal/json_escaping.h>
+#include <google/protobuf/util/internal/utility.h>
+
 
 namespace google {
 namespace protobuf {
 namespace util {
 namespace converter {
-
 
 JsonObjectWriter::~JsonObjectWriter() {
   if (element_ && !element_->is_root()) {
@@ -53,7 +55,7 @@ JsonObjectWriter::~JsonObjectWriter() {
   }
 }
 
-JsonObjectWriter* JsonObjectWriter::StartObject(StringPiece name) {
+JsonObjectWriter* JsonObjectWriter::StartObject(absl::string_view name) {
   WritePrefix(name);
   WriteChar('{');
   PushObject();
@@ -67,7 +69,7 @@ JsonObjectWriter* JsonObjectWriter::EndObject() {
   return this;
 }
 
-JsonObjectWriter* JsonObjectWriter::StartList(StringPiece name) {
+JsonObjectWriter* JsonObjectWriter::StartList(absl::string_view name) {
   WritePrefix(name);
   WriteChar('[');
   PushArray();
@@ -81,40 +83,40 @@ JsonObjectWriter* JsonObjectWriter::EndList() {
   return this;
 }
 
-JsonObjectWriter* JsonObjectWriter::RenderBool(StringPiece name,
+JsonObjectWriter* JsonObjectWriter::RenderBool(absl::string_view name,
                                                bool value) {
   return RenderSimple(name, value ? "true" : "false");
 }
 
-JsonObjectWriter* JsonObjectWriter::RenderInt32(StringPiece name,
+JsonObjectWriter* JsonObjectWriter::RenderInt32(absl::string_view name,
                                                 int32_t value) {
-  return RenderSimple(name, StrCat(value));
+  return RenderSimple(name, absl::StrCat(value));
 }
 
-JsonObjectWriter* JsonObjectWriter::RenderUint32(StringPiece name,
+JsonObjectWriter* JsonObjectWriter::RenderUint32(absl::string_view name,
                                                  uint32_t value) {
-  return RenderSimple(name, StrCat(value));
+  return RenderSimple(name, absl::StrCat(value));
 }
 
-JsonObjectWriter* JsonObjectWriter::RenderInt64(StringPiece name,
+JsonObjectWriter* JsonObjectWriter::RenderInt64(absl::string_view name,
                                                 int64_t value) {
   WritePrefix(name);
   WriteChar('"');
-  WriteRawString(StrCat(value));
+  WriteRawString(absl::StrCat(value));
   WriteChar('"');
   return this;
 }
 
-JsonObjectWriter* JsonObjectWriter::RenderUint64(StringPiece name,
+JsonObjectWriter* JsonObjectWriter::RenderUint64(absl::string_view name,
                                                  uint64_t value) {
   WritePrefix(name);
   WriteChar('"');
-  WriteRawString(StrCat(value));
+  WriteRawString(absl::StrCat(value));
   WriteChar('"');
   return this;
 }
 
-JsonObjectWriter* JsonObjectWriter::RenderDouble(StringPiece name,
+JsonObjectWriter* JsonObjectWriter::RenderDouble(absl::string_view name,
                                                  double value) {
   if (std::isfinite(value)) {
     return RenderSimple(name, SimpleDtoa(value));
@@ -124,7 +126,7 @@ JsonObjectWriter* JsonObjectWriter::RenderDouble(StringPiece name,
   return RenderString(name, DoubleAsString(value));
 }
 
-JsonObjectWriter* JsonObjectWriter::RenderFloat(StringPiece name,
+JsonObjectWriter* JsonObjectWriter::RenderFloat(absl::string_view name,
                                                 float value) {
   if (std::isfinite(value)) {
     return RenderSimple(name, SimpleFtoa(value));
@@ -134,8 +136,8 @@ JsonObjectWriter* JsonObjectWriter::RenderFloat(StringPiece name,
   return RenderString(name, FloatAsString(value));
 }
 
-JsonObjectWriter* JsonObjectWriter::RenderString(StringPiece name,
-                                                 StringPiece value) {
+JsonObjectWriter* JsonObjectWriter::RenderString(absl::string_view name,
+                                                 absl::string_view value) {
   WritePrefix(name);
   WriteChar('"');
   JsonEscaping::Escape(value, &sink_);
@@ -143,15 +145,15 @@ JsonObjectWriter* JsonObjectWriter::RenderString(StringPiece name,
   return this;
 }
 
-JsonObjectWriter* JsonObjectWriter::RenderBytes(StringPiece name,
-                                                StringPiece value) {
+JsonObjectWriter* JsonObjectWriter::RenderBytes(absl::string_view name,
+                                                absl::string_view value) {
   WritePrefix(name);
   std::string base64;
 
   if (use_websafe_base64_for_bytes_)
-    WebSafeBase64EscapeWithPadding(std::string(value), &base64);
+    strings::WebSafeBase64EscapeWithPadding(value, &base64);
   else
-    Base64Escape(value, &base64);
+    absl::Base64Escape(value, &base64);
 
   WriteChar('"');
   // TODO(wpoon): Consider a ByteSink solution that writes the base64 bytes
@@ -162,15 +164,15 @@ JsonObjectWriter* JsonObjectWriter::RenderBytes(StringPiece name,
   return this;
 }
 
-JsonObjectWriter* JsonObjectWriter::RenderNull(StringPiece name) {
+JsonObjectWriter* JsonObjectWriter::RenderNull(absl::string_view name) {
   return RenderSimple(name, "null");
 }
 
-JsonObjectWriter* JsonObjectWriter::RenderNullAsEmpty(StringPiece name) {
+JsonObjectWriter* JsonObjectWriter::RenderNullAsEmpty(absl::string_view name) {
   return RenderSimple(name, "");
 }
 
-void JsonObjectWriter::WritePrefix(StringPiece name) {
+void JsonObjectWriter::WritePrefix(absl::string_view name) {
   bool not_first = !element()->is_first();
   if (not_first) WriteChar(',');
   if (not_first || !element()->is_root()) NewLine();

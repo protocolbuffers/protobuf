@@ -33,9 +33,9 @@
 #import "GPBCodedInputStream.h"
 #import "GPBMessage_PackagePrivate.h"
 #import "GPBUnknownField_PackagePrivate.h"
-#import "google/protobuf/Unittest.pbobjc.h"
-#import "google/protobuf/UnittestMset.pbobjc.h"
-#import "google/protobuf/UnittestMsetWireFormat.pbobjc.h"
+#import "Unittest.pbobjc.h"
+#import "UnittestMset.pbobjc.h"
+#import "UnittestMsetWireFormat.pbobjc.h"
 
 @interface WireFormatTests : GPBTestCase
 @end

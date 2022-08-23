@@ -30,7 +30,7 @@
 
 syntax = "proto2";
 
-package protobuf_objc_unittest;
+package objc.protobuf.tests.startup;
 
 message TestObjCStartupMessage {
   extensions 1 to max;

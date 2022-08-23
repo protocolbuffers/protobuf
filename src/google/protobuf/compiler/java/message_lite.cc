@@ -44,6 +44,8 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/compiler/java/context.h>
 #include <google/protobuf/compiler/java/doc_comment.h>
@@ -239,7 +241,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
     vars["oneof_capitalized_name"] =
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
-    vars["oneof_index"] = StrCat((oneof)->index());
+    vars["oneof_index"] = absl::StrCat((oneof)->index());
     if (context_->options().opensource_runtime) {
       // oneofCase_ and oneof_
       printer->Print(vars,
@@ -253,7 +255,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
       const FieldDescriptor* field = (oneof)->field(j);
       printer->Print("$field_name$($field_number$),\n", "field_name",
                      ToUpper(field->name()), "field_number",
-                     StrCat(field->number()));
+                     absl::StrCat(field->number()));
     }
     printer->Print("$cap_oneof_name$_NOT_SET(0);\n", "cap_oneof_name",
                    ToUpper(vars["oneof_name"]));
@@ -281,7 +283,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
     for (int j = 0; j < (oneof)->field_count(); j++) {
       const FieldDescriptor* field = (oneof)->field(j);
       printer->Print("    case $field_number$: return $field_name$;\n",
-                     "field_number", StrCat(field->number()),
+                     "field_number", absl::StrCat(field->number()),
                      "field_name", ToUpper(field->name()));
     }
     printer->Print(
@@ -317,7 +319,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     printer->Print("public static final int $constant_name$ = $number$;\n",
                    "constant_name", FieldConstantName(descriptor_->field(i)),
-                   "number", StrCat(descriptor_->field(i)->number()));
+                   "number", absl::StrCat(descriptor_->field(i)->number()));
     field_generators_.get(descriptor_->field(i)).GenerateMembers(printer);
     printer->Print("\n");
   }

@@ -70,6 +70,8 @@ class FileGenerator {
  public:
   // See generator.cc for the meaning of dllexport_decl.
   FileGenerator(const FileDescriptor* file, const Options& options);
+  FileGenerator(const FileGenerator&) = delete;
+  FileGenerator& operator=(const FileGenerator&) = delete;
   ~FileGenerator();
 
   // Shared code between the two header generators below.
@@ -197,8 +199,6 @@ class FileGenerator {
   std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;
   std::vector<std::unique_ptr<ServiceGenerator>> service_generators_;
   std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileGenerator);
 };
 
 }  // namespace cpp

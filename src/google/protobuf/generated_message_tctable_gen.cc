@@ -394,7 +394,7 @@ std::vector<uint8_t> GenerateFieldNames(
   std::string message_name = descriptor->full_name();
   if (message_name.size() > kMaxNameLength) {
     static constexpr int kNameHalfLength = (kMaxNameLength - 3) / 2;
-    message_name = StrCat(
+    message_name = absl::StrCat(
         message_name.substr(0, kNameHalfLength), "...",
         message_name.substr(message_name.size() - kNameHalfLength));
   }

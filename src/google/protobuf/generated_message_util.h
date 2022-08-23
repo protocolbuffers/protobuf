@@ -43,19 +43,21 @@
 #include <atomic>
 #include <climits>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/once.h>  // Add direct dep on port for pb.cc
-#include <google/protobuf/port.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/base/call_once.h"
+#include "absl/base/casts.h"
+#include "absl/strings/string_view.h"
 #include <google/protobuf/any.h>
 #include <google/protobuf/has_bits.h>
 #include <google/protobuf/implicit_weak_message.h>
 #include <google/protobuf/message_lite.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/stubs/casts.h>
+
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -75,15 +77,6 @@ class CodedInputStream;
 }
 
 namespace internal {
-
-template <typename To, typename From>
-inline To DownCast(From* f) {
-  return PROTOBUF_NAMESPACE_ID::internal::down_cast<To>(f);
-}
-template <typename To, typename From>
-inline To DownCast(From& f) {
-  return PROTOBUF_NAMESPACE_ID::internal::down_cast<To>(f);
-}
 
 
 // This fastpath inlines a single branch instead of having to make the

@@ -53,7 +53,7 @@
 #include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/casts.h>
+#include "absl/base/casts.h"
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/arena_test_util.h>
 #include <google/protobuf/descriptor.h>
@@ -92,6 +92,7 @@ void MapTestForceDeterministic() {
 }
 
 namespace {
+using internal::DownCast;
 
 // Map API Test =====================================================
 
@@ -1487,7 +1488,7 @@ TEST_F(MapImplTest, ConstInit) {
 
 static int Func(int i, int j) { return i * j; }
 
-static std::string StrFunc(int i, int j) { return StrCat(Func(i, j)); }
+static std::string StrFunc(int i, int j) { return absl::StrCat(Func(i, j)); }
 
 static int Int(const std::string& value) {
   int result = 0;
@@ -1610,7 +1611,7 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
           message_int32_message.GetReflection()->GetInt32(
               message_int32_message, fd_map_int32_foreign_message_key);
       const ForeignMessage& value_int32_message =
-          down_cast<const ForeignMessage&>(
+          DownCast<const ForeignMessage&>(
               message_int32_message.GetReflection()->GetMessage(
                   message_int32_message, fd_map_int32_foreign_message_value));
       EXPECT_EQ(value_int32_message.c(), Func(key_int32_message, 6));
@@ -1647,7 +1648,7 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
           message_int32_message.GetReflection()->GetInt32(
               message_int32_message, fd_map_int32_foreign_message_key);
       const ForeignMessage& value_int32_message =
-          down_cast<const ForeignMessage&>(
+          DownCast<const ForeignMessage&>(
               message_int32_message.GetReflection()->GetMessage(
                   message_int32_message, fd_map_int32_foreign_message_value));
       EXPECT_EQ(value_int32_message.c(), Func(key_int32_message, 6));
@@ -1684,7 +1685,7 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
       int32_t key_int32_message =
           message_int32_message->GetReflection()->GetInt32(
               *message_int32_message, fd_map_int32_foreign_message_key);
-      ForeignMessage* value_int32_message = down_cast<ForeignMessage*>(
+      ForeignMessage* value_int32_message = DownCast<ForeignMessage*>(
           message_int32_message->GetReflection()->MutableMessage(
               message_int32_message, fd_map_int32_foreign_message_value));
       value_int32_message->set_c(Func(key_int32_message, -6));
@@ -1840,7 +1841,7 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
           message_int32_message.GetReflection()->GetInt32(
               message_int32_message, fd_map_int32_foreign_message_key);
       const ForeignMessage& value_int32_message =
-          down_cast<const ForeignMessage&>(
+          DownCast<const ForeignMessage&>(
               message_int32_message.GetReflection()->GetMessage(
                   message_int32_message, fd_map_int32_foreign_message_value));
       EXPECT_EQ(value_int32_message.c(), Func(key_int32_message, 6));
@@ -1881,7 +1882,7 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
           message_int32_message.GetReflection()->GetInt32(
               message_int32_message, fd_map_int32_foreign_message_key);
       const ForeignMessage& value_int32_message =
-          down_cast<const ForeignMessage&>(
+          DownCast<const ForeignMessage&>(
               message_int32_message.GetReflection()->GetMessage(
                   message_int32_message, fd_map_int32_foreign_message_value));
       EXPECT_EQ(value_int32_message.c(), Func(key_int32_message, 6));
@@ -2011,7 +2012,7 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
       int32_t key = message.GetReflection()->GetInt32(
           message, fd_map_int32_foreign_message_key);
       const ForeignMessage& sub_message =
-          down_cast<const ForeignMessage&>(message.GetReflection()->GetMessage(
+          DownCast<const ForeignMessage&>(message.GetReflection()->GetMessage(
               message, fd_map_int32_foreign_message_value));
       result[key].MergeFrom(sub_message);
       ++index;
@@ -2166,13 +2167,13 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
     const Message& message0a =
         mmf_int32_foreign_message.Get(0, entry_int32_foreign_message.get());
     const ForeignMessage& sub_message0a =
-        down_cast<const ForeignMessage&>(message0a.GetReflection()->GetMessage(
+        DownCast<const ForeignMessage&>(message0a.GetReflection()->GetMessage(
             message0a, fd_map_int32_foreign_message_value));
     int32_t int32_value0a = sub_message0a.c();
     const Message& message9a =
         mmf_int32_foreign_message.Get(9, entry_int32_foreign_message.get());
     const ForeignMessage& sub_message9a =
-        down_cast<const ForeignMessage&>(message9a.GetReflection()->GetMessage(
+        DownCast<const ForeignMessage&>(message9a.GetReflection()->GetMessage(
             message9a, fd_map_int32_foreign_message_value));
     int32_t int32_value9a = sub_message9a.c();
 
@@ -2181,13 +2182,13 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
     const Message& message0b =
         mmf_int32_foreign_message.Get(0, entry_int32_foreign_message.get());
     const ForeignMessage& sub_message0b =
-        down_cast<const ForeignMessage&>(message0b.GetReflection()->GetMessage(
+        DownCast<const ForeignMessage&>(message0b.GetReflection()->GetMessage(
             message0b, fd_map_int32_foreign_message_value));
     int32_t int32_value0b = sub_message0b.c();
     const Message& message9b =
         mmf_int32_foreign_message.Get(9, entry_int32_foreign_message.get());
     const ForeignMessage& sub_message9b =
-        down_cast<const ForeignMessage&>(message9b.GetReflection()->GetMessage(
+        DownCast<const ForeignMessage&>(message9b.GetReflection()->GetMessage(
             message9b, fd_map_int32_foreign_message_value));
     int32_t int32_value9b = sub_message9b.c();
 
@@ -2525,7 +2526,7 @@ TEST(GeneratedMapFieldTest, UpcastCopyFrom) {
 
   MapTestUtil::SetMapFields(&message1);
 
-  const Message* source = implicit_cast<const Message*>(&message1);
+  const Message* source = absl::implicit_cast<const Message*>(&message1);
   message2.CopyFrom(*source);
 
   MapTestUtil::ExpectMapFieldsSet(message2);
@@ -3032,7 +3033,7 @@ TEST(GeneratedMapFieldTest, MessagesMustMerge) {
   *p++ = 0;
   *p++ = WireFormatLite::MakeTag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
   *p++ = payload_size;
-  StrAppend(&s, dummy4_s, dummy5_s);
+  absl::StrAppend(&s, dummy4_s, dummy5_s);
 
   // Test key then value then value.
   int key = 0;
@@ -3783,7 +3784,7 @@ static std::string DeterministicSerialization(const T& t) {
 static std::string ConstructKey(uint64_t n) {
   std::string s(n % static_cast<uint64_t>(9), '\0');
   if (s.empty()) {
-    return StrCat(n);
+    return absl::StrCat(n);
   } else {
     while (n != 0) {
       s[n % s.size()] = (n >> 10) & 0x7f;
@@ -3889,7 +3890,6 @@ TEST(TextFormatMapTest, DynamicMessage) {
                                                   "testdata/map_test_data.txt"),
                         &expected_text, true));
 
-  CleanStringLineEndings(&expected_text, false);
   std::string actual_text;
   TextFormat::PrintToString(*message, &actual_text);
   EXPECT_EQ(actual_text, expected_text);
@@ -3906,7 +3906,6 @@ TEST(TextFormatMapTest, Sorted) {
                                                   "testdata/map_test_data.txt"),
                         &expected_text, true));
 
-  CleanStringLineEndings(&expected_text, false);
   TextFormat::Printer printer;
   std::string actual_text;
   printer.PrintToString(message, &actual_text);
