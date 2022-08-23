@@ -154,6 +154,13 @@
 #  define PROTOBUF_GNUC_MIN(x, y) 0
 #endif
 
+#if defined(__clang__) && defined(__clang_major__) && defined(__clang_minor__)
+#define PROTOBUF_CLANG_MIN(x, y) \
+  (__clang_major__ > (x) || __clang_major__ == (x) && __clang_minor__ >= (y))
+#else
+#define PROTOBUF_CLANG_MIN(x, y) 0
+#endif
+
 // Portable check for MSVC minimum version:
 // https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
 #if defined(_MSC_VER)
@@ -174,11 +181,15 @@
 // Future versions of protobuf will include breaking changes to some APIs.
 // This macro can be set to enable these API changes ahead of time, so that
 // user code can be updated before upgrading versions of protobuf.
-// PROTOBUF_FUTURE_FINAL is used on classes that are historically not marked as
-// final, but that may be marked final in future (breaking) releases.
 
 #ifdef PROTOBUF_FUTURE_BREAKING_CHANGES
-// Used on classes that are historically not marked as final.
+
+// Used to upgrade google::protobuf::MapPair<K, V> to std::pair<const K, V>.
+// Owner: mordberg@
+#define PROTOBUF_FUTURE_MAP_PAIR_UPGRADE 1
+
+// Used on classes that are historically not marked as final, but that may be
+// marked final in future (breaking) releases.
 // Owner: kfm@
 #define PROTOBUF_FUTURE_FINAL final
 
@@ -189,13 +200,11 @@
 // Used to remove the manipulation of cleared elements in RepeatedPtrField.
 // Owner: mkruskal@
 #define PROTOBUF_FUTURE_REMOVE_CLEARED_API 1
-<<<<<<< HEAD
-=======
 
 // Used to escape C++20 keywords.
+// TODO(mkruskal): ping b/238664698 when this lands in opensource.
 // Owner: mkruskal@
 #define PROTOBUF_FUTURE_CPP20_KEYWORDS 1
->>>>>>> 87d285c785cd1a4334e3e21e5d468a9bc3e85f62
 #else
 #define PROTOBUF_FUTURE_FINAL
 #endif
@@ -203,7 +212,7 @@
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 3021002
+#define PROTOBUF_VERSION 3021005
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
@@ -562,6 +571,10 @@
 #error PROTOBUF_FORCE_COPY_DEFAULT_STRING was previously defined
 #endif
 
+#ifdef PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION
+#error PROTOBUF_FORCE_ALLOCATION_ON_CONSTRUCTION was previously defined
+#endif
+
 #ifdef PROTOBUF_FALLTHROUGH_INTENDED
 #error PROTOBUF_FALLTHROUGH_INTENDED was previously defined
 #endif
@@ -664,30 +677,39 @@
 // This experiment is purely for the purpose of gathering data. All code guarded
 // by this flag is supposed to be removed after this experiment.
 #define PROTOBUF_MESSAGE_OWNED_ARENA_EXPERIMENT
+
 #ifdef PROTOBUF_CONSTINIT
 #error PROTOBUF_CONSTINIT was previously defined
 #endif
-#if defined(__cpp_constinit) && !defined(_MSC_VER)
-#define PROTOBUF_CONSTINIT constinit
-#define PROTOBUF_CONSTEXPR constexpr
+
+// Lexan sets both MSV_VER and clang, so handle it with the clang path.
+#if defined(_MSC_VER) && !defined(__clang__)
+// MSVC 17 currently seems to raise an error about constant-initialized pointers.
+# if PROTOBUF_MSC_VER_MIN(1930)
+#  define PROTOBUF_CONSTINIT
+#  define PROTOBUF_CONSTEXPR constexpr
+# endif
+#else
+# if defined(__cpp_constinit) && !defined(__CYGWIN__)
+#  define PROTOBUF_CONSTINIT constinit
+#  define PROTOBUF_CONSTEXPR constexpr
 // Some older Clang versions incorrectly raise an error about
 // constant-initializing weak default instance pointers. Versions 12.0 and
 // higher seem to work, except that XCode 12.5.1 shows the error even though it
 // uses Clang 12.0.5.
-// Clang-cl on Windows raises error also.
-#elif !defined(_MSC_VER) && __has_cpp_attribute(clang::require_constant_initialization) && \
-    ((defined(__APPLE__) && __clang_major__ >= 13) ||                \
-     (!defined(__APPLE__) && __clang_major__ >= 12))
-#define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
-#define PROTOBUF_CONSTEXPR constexpr
-#elif PROTOBUF_GNUC_MIN(12, 2)
-#define PROTOBUF_CONSTINIT __constinit
-#define PROTOBUF_CONSTEXPR constexpr
-// MSVC 17 currently seems to raise an error about constant-initialized pointers.
-#elif defined(_MSC_VER) && _MSC_VER >= 1930
-#define PROTOBUF_CONSTINIT
-#define PROTOBUF_CONSTEXPR constexpr
-#else
+# elif !defined(__CYGWIN__) && \
+    __has_cpp_attribute(clang::require_constant_initialization) && \
+        ((defined(__APPLE__) && PROTOBUF_CLANG_MIN(13, 0)) ||             \
+     (!defined(__APPLE__) && PROTOBUF_CLANG_MIN(12, 0)))
+#  define PROTOBUF_CONSTINIT [[clang::require_constant_initialization]]
+#  define PROTOBUF_CONSTEXPR constexpr
+# elif PROTOBUF_GNUC_MIN(12, 2)
+#  define PROTOBUF_CONSTINIT __constinit
+#  define PROTOBUF_CONSTEXPR constexpr
+# endif
+#endif
+
+#ifndef PROTOBUF_CONSTINIT
 #define PROTOBUF_CONSTINIT
 #define PROTOBUF_CONSTEXPR
 #endif
@@ -810,11 +832,31 @@
 #define PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED 1
 #endif
 
-#define PROTOBUF_TC_PARAM_DECL                                 \
-  ::google::protobuf::MessageLite *msg, const char *ptr,                 \
-      ::google::protobuf::internal::ParseContext *ctx,                   \
-      const ::google::protobuf::internal::TcParseTableBase *table,       \
-      uint64_t hasbits, ::google::protobuf::internal::TcFieldData data
+#ifdef PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION
+#error PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION was previously defined
+#endif
+#if !defined(PROTOBUF_TEMPORARY_DISABLE_TABLE_PARSER_ON_REFLECTION) && \
+    (defined(PROTOBUF_EXPERIMENTAL_USE_TABLE_PARSER_ON_REFLECTION) ||  \
+     defined(PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED))
+#define PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION 1
+#endif  // PROTOBUF_ENABLE_FORCE_ALLOCATION_ON_CONSTRUCTION
+
+// Note that this is performance sensitive: changing the parameters will change
+// the registers used by the ABI calling convention, which subsequently affects
+// register selection logic inside the function.
+// Arguments `msg`, `ptr` and `ctx` are the 1st/2nd/3rd argument to match the
+// signature of ParseLoop.
+//
+// Note for x86_64: `data` must be the third or fourth argument for performance
+// reasons. In order to efficiently read the second byte of `data` we need it to
+// be passed in RDX or RCX.
+#define PROTOBUF_TC_PARAM_DECL                 \
+  ::google::protobuf::MessageLite *msg, const char *ptr, \
+      ::google::protobuf::internal::ParseContext *ctx,   \
+      ::google::protobuf::internal::TcFieldData data,    \
+      const ::google::protobuf::internal::TcParseTableBase *table, uint64_t hasbits
+// PROTOBUF_TC_PARAM_PASS passes values to match PROTOBUF_TC_PARAM_DECL.
+#define PROTOBUF_TC_PARAM_PASS msg, ptr, ctx, data, table, hasbits
 
 #ifdef PROTOBUF_UNUSED
 #error PROTOBUF_UNUSED was previously defined
@@ -837,6 +879,8 @@
 #undef CREATE_NEW
 #pragma push_macro("DELETE")
 #undef DELETE
+#pragma push_macro("DOMAIN")
+#undef DOMAIN
 #pragma push_macro("DOUBLE_CLICK")
 #undef DOUBLE_CLICK
 #pragma push_macro("ERROR")
@@ -901,6 +945,9 @@
 #undef UID_MAX
 #pragma push_macro("GID_MAX")
 #undef GID_MAX
+// TYPE_BOOL is defined in the MacOS's ConditionalMacros.h.
+#pragma push_macro("TYPE_BOOL")
+#undef TYPE_BOOL
 #endif  // __APPLE__
 
 #if defined(__clang__) || PROTOBUF_GNUC_MIN(3, 0) || defined(_MSC_VER)
@@ -933,6 +980,23 @@
 // decimal digit terminates octal escape sequence
 #pragma warning(disable: 4125)
 #endif
+
+#if PROTOBUF_ENABLE_DEBUG_LOGGING_MAY_LEAK_PII
+#define PROTOBUF_DEBUG true
+#else
+#define PROTOBUF_DEBUG false
+#endif
+
+// This `for` allows us to condition the `GOOGLE_LOG` on the define above, so that
+// code can write `PROTOBUF_DLOG(INFO) << ...;` and have it turned off when
+// debug logging is off.
+//
+// This is a `for`, not and `if`, to avoid it accidentally chaining with an
+// `else` below it.
+#define PROTOBUF_DLOG(x) \
+  for (bool b = PROTOBUF_DEBUG; b; b = false) GOOGLE_LOG(x)
+
+#define PROTO2_IS_OSS true
 
 // We don't want code outside port_def doing complex testing, so
 // remove our portable condition test macros to nudge folks away from

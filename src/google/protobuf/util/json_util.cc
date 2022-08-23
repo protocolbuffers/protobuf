@@ -36,6 +36,7 @@
 #include <google/protobuf/stubs/bytestream.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/io/zero_copy_sink.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/util/internal/default_value_objectwriter.h>
 #include <google/protobuf/util/internal/error_listener.h>
@@ -45,23 +46,25 @@
 #include <google/protobuf/util/internal/protostream_objectwriter.h>
 #include <google/protobuf/util/type_resolver.h>
 #include <google/protobuf/util/type_resolver_util.h>
-#include <google/protobuf/util/zero_copy_sink.h>
 #include <google/protobuf/stubs/status_macros.h>
+
 
 // clang-format off
 #include <google/protobuf/port_def.inc>
 // clang-format on
 
+
 namespace google {
 namespace protobuf {
 namespace util {
-using ::google::protobuf::util::zc_sink_internal::ZeroCopyStreamByteSink;
+using ::google::protobuf::io::zc_sink_internal::ZeroCopyStreamByteSink;
 
 util::Status BinaryToJsonStream(TypeResolver* resolver,
                                 const std::string& type_url,
                                 io::ZeroCopyInputStream* binary_input,
                                 io::ZeroCopyOutputStream* json_output,
                                 const JsonPrintOptions& options) {
+
   io::CodedInputStream in_stream(binary_input);
   google::protobuf::Type type;
   RETURN_IF_ERROR(resolver->ResolveMessageType(type_url, &type));
@@ -152,6 +155,7 @@ util::Status JsonToBinaryStream(TypeResolver* resolver,
                                 io::ZeroCopyInputStream* json_input,
                                 io::ZeroCopyOutputStream* binary_output,
                                 const JsonParseOptions& options) {
+
   google::protobuf::Type type;
   RETURN_IF_ERROR(resolver->ResolveMessageType(type_url, &type));
   ZeroCopyStreamByteSink sink(binary_output);
@@ -164,6 +168,7 @@ util::Status JsonToBinaryStream(TypeResolver* resolver,
       options.case_insensitive_enum_parsing;
   converter::ProtoStreamObjectWriter proto_writer(
       resolver, type, &sink, &listener, proto_writer_options);
+  proto_writer.set_use_strict_base64_decoding(false);
 
   converter::JsonStreamParser parser(&proto_writer);
   const void* buffer;
@@ -218,6 +223,7 @@ TypeResolver* GetGeneratedTypeResolver() {
 
 util::Status MessageToJsonString(const Message& message, std::string* output,
                                  const JsonOptions& options) {
+
   const DescriptorPool* pool = message.GetDescriptor()->file()->pool();
   TypeResolver* resolver =
       pool == DescriptorPool::generated_pool()
@@ -234,6 +240,7 @@ util::Status MessageToJsonString(const Message& message, std::string* output,
 
 util::Status JsonStringToMessage(StringPiece input, Message* message,
                                  const JsonParseOptions& options) {
+
   const DescriptorPool* pool = message->GetDescriptor()->file()->pool();
   TypeResolver* resolver =
       pool == DescriptorPool::generated_pool()

@@ -617,6 +617,7 @@ PROTOBUF_NODISCARD PROTOBUF_ALWAYS_INLINE constexpr T RotateLeft(
 
 PROTOBUF_NODISCARD inline PROTOBUF_ALWAYS_INLINE uint64_t
 RotRight7AndReplaceLowByte(uint64_t res, const char& byte) {
+  // TODO(b/239808098): remove the inline assembly
 #if defined(__x86_64__) && defined(__GNUC__)
   // This will only use one register for `res`.
   // `byte` comes as a reference to allow the compiler to generate code like:

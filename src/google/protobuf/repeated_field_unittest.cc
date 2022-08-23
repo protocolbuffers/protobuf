@@ -52,7 +52,6 @@
 #include <google/protobuf/unittest.pb.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <gmock/gmock.h>
-#include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/stl_util.h>
 
@@ -303,6 +302,60 @@ TEST(RepeatedField, SwapLargeLarge) {
   for (int i = 2; i < 18; i++) {
     EXPECT_EQ(field2.Get(i), i - 2);
   }
+}
+
+template <int kSize>
+void TestMemswap() {
+  SCOPED_TRACE(kSize);
+
+  const auto a_char = [](int i) -> char { return (i % ('z' - 'a')) + 'a'; };
+  const auto b_char = [](int i) -> char { return (i % ('Z' - 'A')) + 'A'; };
+  std::string a, b;
+  for (int i = 0; i < kSize; ++i) {
+    a += a_char(i);
+    b += b_char(i);
+  }
+  // We will not swap these.
+  a += "+";
+  b += "-";
+
+  std::string expected_a = b, expected_b = a;
+  expected_a.back() = '+';
+  expected_b.back() = '-';
+
+  internal::memswap<kSize>(&a[0], &b[0]);
+
+  // ODR use the functions in a way that forces the linker to keep them. That
+  // way we can see their generated code.
+  volatile auto odr_use_for_asm_dump = &internal::memswap<kSize>;
+  (void)odr_use_for_asm_dump;
+
+  EXPECT_EQ(expected_a, a);
+  EXPECT_EQ(expected_b, b);
+}
+
+TEST(Memswap, VerifyWithSmallAndLargeSizes) {
+  // Arbitrary sizes
+  TestMemswap<0>();
+  TestMemswap<1>();
+  TestMemswap<10>();
+  TestMemswap<100>();
+  TestMemswap<1000>();
+  TestMemswap<10000>();
+  TestMemswap<100000>();
+  TestMemswap<1000000>();
+
+  // Pointer aligned sizes
+  TestMemswap<sizeof(void*) * 1>();
+  TestMemswap<sizeof(void*) * 7>();
+  TestMemswap<sizeof(void*) * 17>();
+  TestMemswap<sizeof(void*) * 27>();
+
+  // Test also just the block size and no leftover.
+  TestMemswap<64 * 1>();
+  TestMemswap<64 * 2>();
+  TestMemswap<64 * 3>();
+  TestMemswap<64 * 4>();
 }
 
 // Determines how much space was reserved by the given field by adding elements

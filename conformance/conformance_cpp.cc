@@ -44,8 +44,8 @@
 #include <google/protobuf/util/type_resolver_util.h>
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/statusor.h>
-#include "conformance.pb.h"
-#include "conformance.pb.h"
+#include "conformance/conformance.pb.h"
+#include "conformance/conformance.pb.h"
 #include <google/protobuf/test_messages_proto2.pb.h>
 #include <google/protobuf/test_messages_proto3.pb.h>
 #include <google/protobuf/test_messages_proto3.pb.h>
@@ -232,7 +232,7 @@ util::StatusOr<bool> Harness::ServeConformanceRequest() {
 
   std::string serialized_input;
   serialized_input.resize(in_len);
-  RETURN_IF_ERROR(ReadFd(STDIN_FILENO, serialized_input.data(), in_len));
+  RETURN_IF_ERROR(ReadFd(STDIN_FILENO, &serialized_input[0], in_len));
 
   ConformanceRequest request;
   GOOGLE_CHECK(request.ParseFromString(serialized_input));

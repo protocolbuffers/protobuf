@@ -63,7 +63,12 @@ class PROTOC_EXPORT JavaGenerator : public CodeGenerator {
 
   uint64_t GetSupportedFeatures() const override;
 
+  void set_opensource_runtime(bool opensource) {
+    opensource_runtime_ = opensource;
+  }
+
  private:
+  bool opensource_runtime_ = PROTO2_IS_OSS;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(JavaGenerator);
 };
 

@@ -60,6 +60,7 @@
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/substitute.h>
+#include "absl/synchronization/mutex.h"
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/generated_message_util.h>
@@ -1221,7 +1222,7 @@ class FileDescriptorTables {
 
   // Mutex to protect the unknown-enum-value map due to dynamic
   // EnumValueDescriptor creation on unknown values.
-  mutable internal::WrappedMutex unknown_enum_values_mu_;
+  mutable absl::Mutex unknown_enum_values_mu_;
 };
 
 namespace internal {
@@ -1523,13 +1524,13 @@ Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
                                                 StringPiece name) {
   if (pool->mutex_ != nullptr) {
     // Fast path: the Symbol is already cached.  This is just a hash lookup.
-    ReaderMutexLock lock(pool->mutex_);
+    absl::ReaderMutexLock lock(pool->mutex_);
     if (known_bad_symbols_.empty() && known_bad_files_.empty()) {
       Symbol result = FindSymbol(name);
       if (!result.IsNull()) return result;
     }
   }
-  MutexLockMaybe lock(pool->mutex_);
+  absl::MutexLockMaybe lock(pool->mutex_);
   if (pool->fallback_database_ != nullptr) {
     known_bad_symbols_.clear();
     known_bad_files_.clear();
@@ -1674,7 +1675,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
 
   // Second try, with reader lock held on unknown enum values: common case.
   {
-    ReaderMutexLock l(&unknown_enum_values_mu_);
+    absl::ReaderMutexLock l(&unknown_enum_values_mu_);
     auto it = unknown_enum_values_by_number_.find(query);
     if (it != unknown_enum_values_by_number_.end() &&
         it->enum_value_descriptor() != nullptr) {
@@ -1684,7 +1685,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
   // If not found, try again with writer lock held, and create new descriptor if
   // necessary.
   {
-    WriterMutexLock l(&unknown_enum_values_mu_);
+    absl::WriterMutexLock l(&unknown_enum_values_mu_);
     auto it = unknown_enum_values_by_number_.find(query);
     if (it != unknown_enum_values_by_number_.end() &&
         it->enum_value_descriptor() != nullptr) {
@@ -1705,7 +1706,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
 
     {
       // Must lock the pool because we will do allocations in the shared arena.
-      MutexLockMaybe l2(pool->mutex_);
+      absl::MutexLockMaybe l2(pool->mutex_);
       alloc.FinalizePlanning(tables);
     }
     EnumValueDescriptor* result = alloc.AllocateArray<EnumValueDescriptor>(1);
@@ -1874,7 +1875,7 @@ DescriptorPool::DescriptorPool()
 
 DescriptorPool::DescriptorPool(DescriptorDatabase* fallback_database,
                                ErrorCollector* error_collector)
-    : mutex_(new internal::WrappedMutex),
+    : mutex_(new absl::Mutex),
       fallback_database_(fallback_database),
       default_error_collector_(error_collector),
       underlay_(nullptr),
@@ -1918,7 +1919,7 @@ void DescriptorPool::ClearUnusedImportTrackFiles() {
 }
 
 bool DescriptorPool::InternalIsFileLoaded(ConstStringParam filename) const {
-  MutexLockMaybe lock(mutex_);
+  absl::MutexLockMaybe lock(mutex_);
   return tables_->FindFile(filename) != nullptr;
 }
 
@@ -1995,7 +1996,7 @@ void DescriptorPool::InternalAddGeneratedFile(
 
 const FileDescriptor* DescriptorPool::FindFileByName(
     ConstStringParam name) const {
-  MutexLockMaybe lock(mutex_);
+  absl::MutexLockMaybe lock(mutex_);
   if (fallback_database_ != nullptr) {
     tables_->known_bad_symbols_.clear();
     tables_->known_bad_files_.clear();
@@ -2015,7 +2016,7 @@ const FileDescriptor* DescriptorPool::FindFileByName(
 
 const FileDescriptor* DescriptorPool::FindFileContainingSymbol(
     ConstStringParam symbol_name) const {
-  MutexLockMaybe lock(mutex_);
+  absl::MutexLockMaybe lock(mutex_);
   if (fallback_database_ != nullptr) {
     tables_->known_bad_symbols_.clear();
     tables_->known_bad_files_.clear();
@@ -2092,13 +2093,13 @@ const FieldDescriptor* DescriptorPool::FindExtensionByNumber(
   // A faster path to reduce lock contention in finding extensions, assuming
   // most extensions will be cache hit.
   if (mutex_ != nullptr) {
-    ReaderMutexLock lock(mutex_);
+    absl::ReaderMutexLock lock(mutex_);
     const FieldDescriptor* result = tables_->FindExtension(extendee, number);
     if (result != nullptr) {
       return result;
     }
   }
-  MutexLockMaybe lock(mutex_);
+  absl::MutexLockMaybe lock(mutex_);
   if (fallback_database_ != nullptr) {
     tables_->known_bad_symbols_.clear();
     tables_->known_bad_files_.clear();
@@ -2167,7 +2168,7 @@ const FieldDescriptor* DescriptorPool::FindExtensionByPrintableName(
 void DescriptorPool::FindAllExtensions(
     const Descriptor* extendee,
     std::vector<const FieldDescriptor*>* out) const {
-  MutexLockMaybe lock(mutex_);
+  absl::MutexLockMaybe lock(mutex_);
   if (fallback_database_ != nullptr) {
     tables_->known_bad_symbols_.clear();
     tables_->known_bad_files_.clear();
@@ -4277,7 +4278,7 @@ Symbol DescriptorBuilder::FindSymbolNotEnforcingDepsHelper(
     const DescriptorPool* pool, const std::string& name, bool build_it) {
   // If we are looking at an underlay, we must lock its mutex_, since we are
   // accessing the underlay's tables_ directly.
-  MutexLockMaybe lock((pool == pool_) ? nullptr : pool->mutex_);
+  absl::MutexLockMaybe lock((pool == pool_) ? nullptr : pool->mutex_);
 
   Symbol result = pool->tables_->FindSymbol(name);
   if (result.IsNull() && pool->underlay_ != nullptr) {
@@ -4463,7 +4464,7 @@ static bool ValidateQualifiedName(StringPiece name) {
 
 Symbol DescriptorPool::NewPlaceholder(StringPiece name,
                                       PlaceholderType placeholder_type) const {
-  MutexLockMaybe lock(mutex_);
+  absl::MutexLockMaybe lock(mutex_);
   return NewPlaceholderWithMutexHeld(name, placeholder_type);
 }
 
@@ -4584,7 +4585,7 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
 
 FileDescriptor* DescriptorPool::NewPlaceholderFile(
     StringPiece name) const {
-  MutexLockMaybe lock(mutex_);
+  absl::MutexLockMaybe lock(mutex_);
   internal::FlatAllocator alloc;
   alloc.PlanArray<FileDescriptor>(1);
   alloc.PlanArray<std::string>(1);
@@ -8335,6 +8336,48 @@ void LazyDescriptor::Once(const ServiceDescriptor* service) {
   }
 }
 
+namespace cpp {
+bool HasPreservingUnknownEnumSemantics(const FieldDescriptor* field) {
+  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
+}
+
+bool HasHasbit(const FieldDescriptor* field) {
+  // This predicate includes proto3 message fields only if they have "optional".
+  //   Foo submsg1 = 1;           // HasHasbit() == false
+  //   optional Foo submsg2 = 2;  // HasHasbit() == true
+  // This is slightly odd, as adding "optional" to a singular proto3 field does
+  // not change the semantics or API. However whenever any field in a message
+  // has a hasbit, it forces reflection to include hasbit offsets for *all*
+  // fields, even if almost all of them are set to -1 (no hasbit). So to avoid
+  // causing a sudden size regression for ~all proto3 messages, we give proto3
+  // message fields a hasbit only if "optional" is present. If the user is
+  // explicitly writing "optional", it is likely they are writing it on
+  // primitive fields also.
+  return (field->has_optional_keyword() || field->is_required()) &&
+         !field->options().weak();
+}
+
+static bool FieldEnforceUtf8(const FieldDescriptor* field) {
+  return true;
+}
+
+static bool FileUtf8Verification(const FileDescriptor* file) {
+  return true;
+}
+
+// Which level of UTF-8 enforcemant is placed on this file.
+Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field, bool is_lite) {
+  if (field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3 &&
+      FieldEnforceUtf8(field)) {
+    return Utf8CheckMode::kStrict;
+  } else if (!is_lite && FileUtf8Verification(field->file())) {
+    return Utf8CheckMode::kVerify;
+  } else {
+    return Utf8CheckMode::kNone;
+  }
+}
+
+}  // namespace cpp
 }  // namespace internal
 
 }  // namespace protobuf

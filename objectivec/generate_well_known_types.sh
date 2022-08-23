@@ -3,15 +3,14 @@
 # Run this script to regenerate *.pbobjc.{h,m} for the well known types after
 # the protocol compiler changes.
 
-# HINT:  Flags passed to generate_well_known_types.sh will be passed directly
-#   to make when building protoc.  This is particularly useful for passing
-#   -j4 to run 4 jobs simultaneously.
-
 set -eu
 
 readonly ScriptDir=$(dirname "$(echo $0 | sed -e "s,^\([^/]\),$(pwd)/\1,")")
 readonly ObjCDir="${ScriptDir}"
 readonly ProtoRootDir="${ObjCDir}/.."
+
+# Invoke with BAZEL=bazelisk to use that instead.
+readonly BazelBin="${BAZEL:=bazel}"
 
 # Flag for continuous integration to check that everything is current.
 CHECK_ONLY=0
@@ -30,18 +29,10 @@ __EOF__
   exit 1
 fi
 
-if [[ ! -e src/Makefile ]]; then
-  cat >&2 << __EOF__
-Could not find src/Makefile.  You must run ./configure (and perhaps
-./autogen.sh) first.
-__EOF__
-  exit 1
-fi
-
 # Make sure the compiler is current.
-cd src
-make $@ protoc
+"${BazelBin}" build $@ //:protoc
 
+cd src
 declare -a RUNTIME_PROTO_FILES=( \
   google/protobuf/any.proto \
   google/protobuf/api.proto \
@@ -59,7 +50,7 @@ declare -a OBJC_EXTENSIONS=( .pbobjc.h .pbobjc.m )
 # Generate to a temp directory to see if they match.
 TMP_DIR=$(mktemp -d)
 trap "rm -rf ${TMP_DIR}" EXIT
-./protoc --objc_out="${TMP_DIR}" ${RUNTIME_PROTO_FILES[@]}
+${ProtoRootDir}/bazel-bin/protoc --objc_out="${TMP_DIR}" ${RUNTIME_PROTO_FILES[@]}
 
 DID_COPY=0
 for PROTO_FILE in "${RUNTIME_PROTO_FILES[@]}"; do
@@ -73,6 +64,7 @@ for PROTO_FILE in "${RUNTIME_PROTO_FILES[@]}"; do
     if ! diff "${ObjCDir}/GPB${OBJC_NAME}${EXT}" "${TMP_DIR}/${DIR}/${OBJC_NAME}${EXT}" > /dev/null 2>&1 ; then
       if [[ "${CHECK_ONLY}" == 1 ]] ; then
         echo "ERROR: The WKTs need to be regenerated! Run $0"
+        diff -u "${ObjCDir}/GPB${OBJC_NAME}${EXT}" "${TMP_DIR}/${DIR}/${OBJC_NAME}${EXT}"
         exit 1
       fi
 

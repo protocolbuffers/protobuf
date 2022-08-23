@@ -1,19 +1,76 @@
 2022-07-01 Unreleased version
-  * Add TransferAllMessages() util function
-  * Break ZeroCopyOutputByteSink into its own file.
-  * Explicitly instantiate InternalMetadata members at UnknownFieldSet.
-  * Support kdoc for Kotlin
-  * Delete unused function: IsProto3Field.
+  C++
+  * cpp_generated_lib_linked support is removed in protoc
+  * Reduced .pb.o object file size slightly by explicitly instantiating
+    InternalMetadata templates in the runtime.
   * Add C++20 keywords guarded by PROTOBUF_FUTURE_CPP20_KEYWORDS
-  * Escape Kotlin keywords in package names in proto generated code
-  * Fix StrAppend crashing on empty strings.
+  * Fixed crash in ThreadLocalStorage for pre-C++17 compilers on 32-bit ARM.
+  * Clarified that JSON API non-OK statuses are not a stable API.
+  * Added a default implementation of MessageDifferencer::Reporter methods.
+  * proto2::MapPair is now an alias to std::pair.
+  * Hide C++ RepeatedField::UnsafeArenaSwap
+  * Use table-driven parser for reflection based objects.
+  * Update Map's InternalSwap() to take a pointer to the other Map.
+  * Add ARM-optimized Varint decoding functions.
 
-2022-06-27 Unreleased version
-  * Handle reflection for message splitting.
-  * make metadata fields lazy.
-  * Extend visibility of plugin library to upb
-  * Modernize conformance_cpp.cc.
-  * Don't request 64-byte alignment unless the toolchain supports it.
+  Kotlin
+  * Suppress deprecation warnings in Kotlin generated code.
+  * Kotlin generated code comments now use kdoc format instead of javadoc.
+  * Escape keywords in package names in proto generated code
+  * Add Kotlin enum int value getters and setters
+
+  Java
+  * Performance improvement for repeated use of FieldMaskUtil#merge by caching
+    constructed FieldMaskTrees.
+  * Optimized Java proto serialization gencode for protos having many extension ranges with few fields in between.
+
+  Python
+  * Changes ordering of printed fields in .pyi files from lexicographic to the same ordering found in the proto descriptor.
+  * Adds GeneratedCodeInfo annotations to python proto .pyi outputs as a base64 encoded docstring in the last line of the .pyi file for code analysis tools.
+  * Fix message factory's behavior in python cpp extension to return same message classes for same descriptor, even if the factories are different.
+
+  Compiler
+  * Print full path name of source .proto file on error
+
+2022-08-09 version 21.5 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+  PHP
+  * Added getContainingOneof and getRealContainingOneof to descriptor.
+  * fix PHP readonly legacy files for nested messages
+
+  Python
+  * Fixed comparison of maps in Python.
+
+2022-07-25 version 21.4 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+  C++
+  * Reduce the required alignment of ArenaString from 8 to 4 (#10298)
+
+
+2022-07-19 version 21.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+  C++
+  * Add header search paths to Protobuf-C++.podspec (#10024)
+  * Fixed Visual Studio constinit errors (#10232)
+  * Fix #9947: make the ABI compatible between debug and non-debug builds (#10271)
+
+  UPB
+  * Allow empty package names (fixes behavior regression in 4.21.0)
+  * Fix a SEGV bug when comparing a non-materialized sub-message (#10208)
+  * Fix several bugs in descriptor mapping containers (eg. descriptor.services_by_name)
+    * for x in mapping now yields keys rather than values, to match Python conventions and the behavior of the old library.
+    * Lookup operations now correctly reject unhashable types as map keys.
+    * We implement repr() to use the same format as dict.
+  * Fix maps to use the ScalarMapContainer class when appropriate
+  * Fix bug when parsing an unknown value in a proto2 enum extension (protocolbuffers/upb#717)
+
+  PHP
+  * Add "readonly" as a keyword for PHP and add previous classnames to descriptor pool (#10041)
+
+  Python
+  * Make //:protobuf_python and //:well_known_types_py_pb2 public (#10118)
+
+  Bazel
+  * Add back a filegroup for :well_known_protos (#10061)
 
 2022-06-27 version 21.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
   C++

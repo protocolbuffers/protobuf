@@ -33,6 +33,7 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_JSON_UTIL_H__
 #define GOOGLE_PROTOBUF_UTIL_JSON_UTIL_H__
 
+
 #include <google/protobuf/stubs/bytestream.h>
 #include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -93,6 +94,9 @@ typedef JsonPrintOptions JsonOptions;
 // Converts from protobuf message to JSON and appends it to |output|. This is a
 // simple wrapper of BinaryToJsonString(). It will use the DescriptorPool of the
 // passed-in message to resolve Any types.
+//
+// Please note that non-OK statuses are not a stable output of this API and
+// subject to change without notice.
 PROTOBUF_EXPORT util::Status MessageToJsonString(const Message& message,
                                                  std::string* output,
                                                  const JsonOptions& options);
@@ -105,6 +109,9 @@ inline util::Status MessageToJsonString(const Message& message,
 // Converts from JSON to protobuf message. This is a simple wrapper of
 // JsonStringToBinary(). It will use the DescriptorPool of the passed-in
 // message to resolve Any types.
+//
+// Please note that non-OK statuses are not a stable output of this API and
+// subject to change without notice.
 PROTOBUF_EXPORT util::Status JsonStringToMessage(
     StringPiece input, Message* message, const JsonParseOptions& options);
 
@@ -119,6 +126,9 @@ inline util::Status JsonStringToMessage(StringPiece input,
 //   2. input is not valid protobuf wire format, or conflicts with the type
 //      information returned by TypeResolver.
 // Note that unknown fields will be discarded silently.
+//
+// Please note that non-OK statuses are not a stable output of this API and
+// subject to change without notice.
 PROTOBUF_EXPORT util::Status BinaryToJsonStream(
     TypeResolver* resolver, const std::string& type_url,
     io::ZeroCopyInputStream* binary_input,
@@ -150,6 +160,9 @@ inline util::Status BinaryToJsonString(TypeResolver* resolver,
 //   1. TypeResolver fails to resolve a type.
 //   2. input is not valid JSON format, or conflicts with the type
 //      information returned by TypeResolver.
+//
+// Please note that non-OK statuses are not a stable output of this API and
+// subject to change without notice.
 PROTOBUF_EXPORT util::Status JsonToBinaryStream(
     TypeResolver* resolver, const std::string& type_url,
     io::ZeroCopyInputStream* json_input,

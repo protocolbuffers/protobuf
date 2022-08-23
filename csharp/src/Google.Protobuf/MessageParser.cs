@@ -171,6 +171,10 @@ namespace Google.Protobuf
         /// <summary>
         /// Parses a message from the given JSON.
         /// </summary>
+        /// <remarks>This method always uses the default JSON parser; it is not affected by <see cref="WithDiscardUnknownFields(bool)"/>.
+        /// To ignore unknown fields when parsing JSON, create a <see cref="JsonParser"/> using a <see cref="JsonParser.Settings"/>
+        /// with <see cref="JsonParser.Settings.IgnoreUnknownFields"/> set to true and call <see cref="JsonParser.Parse{T}(string)"/> directly.
+        /// </remarks>
         /// <param name="json">The JSON to parse.</param>
         /// <returns>The parsed message.</returns>
         /// <exception cref="InvalidJsonException">The JSON does not comply with RFC 7159</exception>
@@ -203,6 +207,9 @@ namespace Google.Protobuf
         /// <summary>
         /// Creates a new message parser which optionally discards unknown fields when parsing.
         /// </summary>
+        /// <remarks>Note that this does not affect the behavior of <see cref="ParseJson(string)"/>
+        /// at all. To ignore unknown fields when parsing JSON, create a <see cref="JsonParser"/> using a <see cref="JsonParser.Settings"/>
+        /// with <see cref="JsonParser.Settings.IgnoreUnknownFields"/> set to true and call <see cref="JsonParser.Parse{T}(string)"/> directly.</remarks>
         /// <param name="discardUnknownFields">Whether or not to discard unknown fields when parsing.</param>
         /// <returns>A newly configured message parser.</returns>
         public MessageParser WithDiscardUnknownFields(bool discardUnknownFields) =>

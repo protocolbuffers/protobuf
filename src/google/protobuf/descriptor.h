@@ -54,11 +54,9 @@
 #ifndef GOOGLE_PROTOBUF_DESCRIPTOR_H__
 #define GOOGLE_PROTOBUF_DESCRIPTOR_H__
 
-#include <cstdint>
-
-#include <google/protobuf/stubs/strutil.h>
-
 #include <atomic>
+#include <cstdint>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <set>
@@ -67,17 +65,14 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/once.h>
 #include <google/protobuf/port.h>
+#include <google/protobuf/stubs/strutil.h>
+#include "absl/synchronization/mutex.h"
+
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
-
-// TYPE_BOOL is defined in the MacOS's ConditionalMacros.h.
-#ifdef TYPE_BOOL
-#undef TYPE_BOOL
-#endif  // TYPE_BOOL
 
 #ifdef SWIG
 #define PROTOBUF_EXPORT
@@ -198,7 +193,7 @@ namespace internal {
 //
 
 #if !defined(PROTOBUF_INTERNAL_CHECK_CLASS_SIZE)
-#define PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(t, expected)
+#define PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(t, expected) static_assert(true, "")
 #endif
 
 class FlatAllocator;
@@ -899,7 +894,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
 
   // formats the default value appropriately and returns it as a string.
   // Must have a default value to call this. If quote_string_type is true, then
-  // types of CPPTYPE_STRING whill be surrounded by quotes and CEscaped.
+  // types of CPPTYPE_STRING will be surrounded by quotes and CEscaped.
   std::string DefaultValueAsString(bool quote_string_type) const;
 
   // Helper function that returns the field type name for DebugString.
@@ -1577,7 +1572,11 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   const FileOptions& options() const;
 
   // Syntax of this file.
-  enum Syntax {
+  enum Syntax
+#ifndef SWIG
+      : int
+#endif  // !SWIG
+  {
     SYNTAX_UNKNOWN = 0,
     SYNTAX_PROTO2 = 2,
     SYNTAX_PROTO3 = 3,
@@ -2053,7 +2052,7 @@ class PROTOBUF_EXPORT DescriptorPool {
 
   // If fallback_database_ is nullptr, this is nullptr.  Otherwise, this is a
   // mutex which must be locked while accessing tables_.
-  internal::WrappedMutex* mutex_;
+  absl::Mutex* mutex_;
 
   // See constructor.
   DescriptorDatabase* fallback_database_;
@@ -2433,6 +2432,75 @@ inline const FileDescriptor* FileDescriptor::weak_dependency(int index) const {
 inline FileDescriptor::Syntax FileDescriptor::syntax() const {
   return static_cast<Syntax>(syntax_);
 }
+
+namespace internal {
+
+// FieldRange(desc) provides an iterable range for the fields of a
+// descriptor type, appropriate for range-for loops.
+
+template <typename T>
+struct FieldRangeImpl;
+
+template <typename T>
+FieldRangeImpl<T> FieldRange(const T* desc) {
+  return {desc};
+}
+
+template <typename T>
+struct FieldRangeImpl {
+  struct Iterator {
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = const FieldDescriptor*;
+    using difference_type = int;
+
+    value_type operator*() { return descriptor->field(idx); }
+
+    friend bool operator==(const Iterator& a, const Iterator& b) {
+      GOOGLE_DCHECK(a.descriptor == b.descriptor);
+      return a.idx == b.idx;
+    }
+    friend bool operator!=(const Iterator& a, const Iterator& b) {
+      return !(a == b);
+    }
+
+    Iterator& operator++() {
+      idx++;
+      return *this;
+    }
+
+    int idx;
+    const T* descriptor;
+  };
+
+  Iterator begin() const { return {0, descriptor}; }
+  Iterator end() const { return {descriptor->field_count(), descriptor}; }
+
+  const T* descriptor;
+};
+
+// The context for these functions under `cpp` is "for the C++ implementation".
+// In particular, questions like "does this field have a has bit?" have a
+// different answer depending on the language.
+namespace cpp {
+// Returns true if 'enum' semantics are such that unknown values are preserved
+// in the enum field itself, rather than going to the UnknownFieldSet.
+PROTOBUF_EXPORT bool HasPreservingUnknownEnumSemantics(
+    const FieldDescriptor* field);
+
+PROTOBUF_EXPORT bool HasHasbit(const FieldDescriptor* field);
+
+#ifndef SWIG
+enum class Utf8CheckMode {
+  kStrict = 0,  // Parsing will fail if non UTF-8 data is in string fields.
+  kVerify = 1,  // Only log an error but parsing will succeed.
+  kNone = 2,    // No UTF-8 check.
+};
+PROTOBUF_EXPORT Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field,
+                                               bool is_lite);
+#endif  // !SWIG
+
+}  // namespace cpp
+}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google

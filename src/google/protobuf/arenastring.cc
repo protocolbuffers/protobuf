@@ -31,11 +31,12 @@
 #include <google/protobuf/arenastring.h>
 
 #include <cstddef>
+
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/synchronization/mutex.h"
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/parse_context.h>
 #include <google/protobuf/stubs/stl_util.h>
@@ -50,7 +51,8 @@ namespace internal {
 
 namespace  {
 
-// Enforce that allocated data aligns to at least 8 bytes, and that
+// TaggedStringPtr::Flags uses the lower 2 bits as tags.
+// Enforce that allocated data aligns to at least 4 bytes, and that
 // the alignment of the global const string value does as well.
 // The alignment guaranteed by `new std::string` depends on both:
 // - new align = __STDCPP_DEFAULT_NEW_ALIGNMENT__ / max_align_t
@@ -64,13 +66,13 @@ constexpr size_t kNewAlign = alignof(std::max_align_t);
 #endif
 constexpr size_t kStringAlign = alignof(std::string);
 
-static_assert((kStringAlign > kNewAlign ? kStringAlign : kNewAlign) >= 8, "");
-static_assert(alignof(ExplicitlyConstructedArenaString) >= 8, "");
+static_assert((kStringAlign > kNewAlign ? kStringAlign : kNewAlign) >= 4, "");
+static_assert(alignof(ExplicitlyConstructedArenaString) >= 4, "");
 
 }  // namespace
 
 const std::string& LazyString::Init() const {
-  static WrappedMutex mu{GOOGLE_PROTOBUF_LINKER_INITIALIZED};
+  static absl::Mutex mu{absl::kConstInit};
   mu.Lock();
   const std::string* res = inited_.load(std::memory_order_acquire);
   if (res == nullptr) {

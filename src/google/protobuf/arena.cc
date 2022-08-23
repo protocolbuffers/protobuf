@@ -37,11 +37,12 @@
 #include <limits>
 #include <typeinfo>
 
+#include "absl/synchronization/mutex.h"
 #include <google/protobuf/arena_impl.h>
 #include <google/protobuf/arenaz_sampler.h>
 #include <google/protobuf/port.h>
 
-#include <google/protobuf/stubs/mutex.h>
+
 #ifdef ADDRESS_SANITIZER
 #include <sanitizer/asan_interface.h>
 #endif  // ADDRESS_SANITIZER
@@ -117,7 +118,7 @@ SerialArena* SerialArena::New(Memory mem, void* owner,
                               ThreadSafeArenaStats* stats) {
   GOOGLE_DCHECK_LE(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize, mem.size);
   ThreadSafeArenaStats::RecordAllocateStats(
-      stats, /*requested=*/mem.size, /*allocated=*/mem.size, /*wasted=*/0);
+      stats, /*used=*/0, /*allocated=*/mem.size, /*wasted=*/0);
   auto b = new (mem.ptr) Block{nullptr, mem.size};
   return new (b->Pointer(kBlockHeaderSize)) SerialArena(b, owner, stats);
 }
@@ -183,11 +184,11 @@ void SerialArena::AllocateNewBlock(size_t n, const AllocationPolicy* policy) {
   ThreadSafeArenaStats::RecordAllocateStats(arena_stats_, /*used=*/used,
                                             /*allocated=*/mem.size, wasted);
   set_head(new (mem.ptr) Block{head(), mem.size});
-  ptr_.store(head()->Pointer(kBlockHeaderSize), std::memory_order_relaxed);
+  set_ptr(head()->Pointer(kBlockHeaderSize));
   limit_ = head()->Pointer(head()->size());
 
 #ifdef ADDRESS_SANITIZER
-  ASAN_POISON_MEMORY_REGION(ptr_, limit_ - ptr_);
+  ASAN_POISON_MEMORY_REGION(ptr(), limit_ - ptr());
 #endif  // ADDRESS_SANITIZER
 }
 
@@ -382,7 +383,7 @@ void ThreadSafeArena::Init() {
 void ThreadSafeArena::SetInitialBlock(void* mem, size_t size) {
   SerialArena* serial = SerialArena::New({mem, size}, &thread_cache(),
                                          arena_stats_.MutableStats());
-  serial->set_next(NULL);
+  serial->set_next(nullptr);
   threads_.store(serial, std::memory_order_relaxed);
   CacheSerialArena(serial);
 }

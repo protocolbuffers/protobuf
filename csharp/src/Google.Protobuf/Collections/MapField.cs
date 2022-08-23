@@ -238,6 +238,21 @@ namespace Google.Protobuf.Collections
         }
 
         /// <summary>
+        /// Adds the specified entries to the map, replacing any existing entries with the same keys.
+        /// The keys and values are not automatically cloned.
+        /// </summary>
+        /// <remarks>This method primarily exists to be called from MergeFrom methods in generated classes for messages.</remarks>
+        /// <param name="entries">The entries to add to the map.</param>
+        public void MergeFrom(IDictionary<TKey, TValue> entries)
+        {
+            ProtoPreconditions.CheckNotNull(entries, nameof(entries));
+            foreach (var pair in entries)
+            {
+                this[pair.Key] = pair.Value;
+            }
+        }
+
+        /// <summary>
         /// Returns an enumerator that iterates through the collection.
         /// </summary>
         /// <returns>

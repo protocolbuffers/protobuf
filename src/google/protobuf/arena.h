@@ -120,7 +120,7 @@ struct ArenaOptions {
   // here.
   size_t max_block_size;
 
-  // An initial block of memory for the arena to use, or NULL for none. If
+  // An initial block of memory for the arena to use, or nullptr for none. If
   // provided, the block must live at least as long as the arena itself. The
   // creator of the Arena retains ownership of the block after the Arena is
   // destroyed.
@@ -143,7 +143,7 @@ struct ArenaOptions {
   ArenaOptions()
       : start_block_size(internal::AllocationPolicy::kDefaultStartBlockSize),
         max_block_size(internal::AllocationPolicy::kDefaultMaxBlockSize),
-        initial_block(NULL),
+        initial_block(nullptr),
         initial_block_size(0),
         block_alloc(nullptr),
         block_dealloc(nullptr),
@@ -180,7 +180,7 @@ struct ArenaOptions {
 #if PROTOBUF_RTTI
 #define RTTI_TYPE_ID(type) (&typeid(type))
 #else
-#define RTTI_TYPE_ID(type) (NULL)
+#define RTTI_TYPE_ID(type) (nullptr)
 #endif
 
 // Arena allocator. Arena allocation replaces ordinary (heap-based) allocation
@@ -210,7 +210,7 @@ struct ArenaOptions {
 //   with `args` (without `arena`), called when a T is allocated on the heap;
 //   and a constructor callable with `Arena* arena, Args&&... args`, called when
 //   a T is allocated on an arena. If the second constructor is called with a
-//   NULL arena pointer, it must be equivalent to invoking the first
+//   null arena pointer, it must be equivalent to invoking the first
 //   (`args`-only) constructor.
 //
 // - The type T must have a particular type trait: a nested type
@@ -220,7 +220,7 @@ struct ArenaOptions {
 //
 // - The type T *may* have the type trait |DestructorSkippable_|. If this type
 //   trait is present in the type, then its destructor will not be called if and
-//   only if it was passed a non-NULL arena pointer. If this type trait is not
+//   only if it was passed a non-null arena pointer. If this type trait is not
 //   present on the type, then its destructor is always called when the
 //   containing arena is destroyed.
 //
@@ -263,9 +263,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   void Init(const ArenaOptions&) {}
 
   // API to create proto2 message objects on the arena. If the arena passed in
-  // is NULL, then a heap allocated object is returned. Type T must be a message
-  // defined in a .proto file with cc_enable_arenas set to true, otherwise a
-  // compilation error will occur.
+  // is nullptr, then a heap allocated object is returned. Type T must be a
+  // message defined in a .proto file with cc_enable_arenas set to true,
+  // otherwise a compilation error will occur.
   //
   // RepeatedField and RepeatedPtrField may also be instantiated directly on an
   // arena with this method.
@@ -342,7 +342,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                   "CreateArray requires a trivially destructible type");
     GOOGLE_CHECK_LE(num_elements, std::numeric_limits<size_t>::max() / sizeof(T))
         << "Requested size is too large to fit into size_t.";
-    if (arena == NULL) {
+    if (arena == nullptr) {
       return static_cast<T*>(::operator new[](num_elements * sizeof(T)));
     } else {
       return arena->CreateInternalRawArray<T>(num_elements);
@@ -386,7 +386,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // arena-allocated memory.
   template <typename T>
   PROTOBUF_ALWAYS_INLINE void OwnDestructor(T* object) {
-    if (object != NULL) {
+    if (object != nullptr) {
       impl_.AddCleanup(object, &internal::cleanup::arena_destruct_object<T>);
     }
   }
@@ -401,9 +401,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   }
 
   // Retrieves the arena associated with |value| if |value| is an arena-capable
-  // message, or NULL otherwise. If possible, the call resolves at compile time.
-  // Note that we can often devirtualize calls to `value->GetArena()` so usually
-  // calling this method is unnecessary.
+  // message, or nullptr otherwise. If possible, the call resolves at compile
+  // time. Note that we can often devirtualize calls to `value->GetArena()` so
+  // usually calling this method is unnecessary.
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static Arena* GetArena(const T* value) {
     return GetArenaInternal(value);
@@ -438,6 +438,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
     template <typename U>
     static Arena* GetOwningArena(Rank1, const U* p) {
+      (void) p;
       return nullptr;
     }
 
@@ -468,6 +469,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
     template <typename U>
     static Arena* GetArenaForAllocation(Rank2, const U* p) {
+      (void) p;
       return nullptr;
     }
 
@@ -568,7 +570,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     static_assert(
         InternalHelper<T>::is_arena_constructable::value,
         "CreateMessage can only construct types that are ArenaConstructable");
-    if (arena == NULL) {
+    if (arena == nullptr) {
       return new T(nullptr, static_cast<Args&&>(args)...);
     } else {
       return arena->DoCreateMessage<T>(static_cast<Args&&>(args)...);
@@ -583,7 +585,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     static_assert(
         InternalHelper<T>::is_arena_constructable::value,
         "CreateMessage can only construct types that are ArenaConstructable");
-    if (arena == NULL) {
+    if (arena == nullptr) {
       // Generated arena constructor T(Arena*) is protected. Call via
       // InternalHelper.
       return InternalHelper<T>::New();
@@ -730,13 +732,13 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // using the virtual destructor instead.
   template <typename T>
   PROTOBUF_ALWAYS_INLINE void OwnInternal(T* object, std::true_type) {
-    if (object != NULL) {
+    if (object != nullptr) {
       impl_.AddCleanup(object, &internal::arena_delete_object<MessageLite>);
     }
   }
   template <typename T>
   PROTOBUF_ALWAYS_INLINE void OwnInternal(T* object, std::false_type) {
-    if (object != NULL) {
+    if (object != nullptr) {
       impl_.AddCleanup(object, &internal::arena_delete_object<T>);
     }
   }

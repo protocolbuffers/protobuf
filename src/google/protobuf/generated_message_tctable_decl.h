@@ -36,6 +36,7 @@
 #define GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_DECL_H__
 
 #include <array>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
@@ -175,19 +176,52 @@ struct alignas(uint64_t) TcParseTableBase {
   // Table entry for fast-path tailcall dispatch handling.
   struct FastFieldEntry {
     // Target function for dispatch:
-    TailCallParseFunc target;
+    mutable std::atomic<TailCallParseFunc> target_atomic;
+
     // Field data used during parse:
     TcFieldData bits;
+
+    // Default initializes this instance with undefined values.
+    FastFieldEntry() = default;
+
+    // Constant initializes this instance
+    constexpr FastFieldEntry(TailCallParseFunc func, TcFieldData bits)
+        : target_atomic(func), bits(bits) {}
+
+    // FastFieldEntry is copy-able and assignable, which is intended
+    // mainly for testing and debugging purposes.
+    FastFieldEntry(const FastFieldEntry& rhs) noexcept
+        : FastFieldEntry(rhs.target(), rhs.bits) {}
+    FastFieldEntry& operator=(const FastFieldEntry& rhs) noexcept {
+      SetTarget(rhs.target());
+      bits = rhs.bits;
+      return *this;
+    }
+
+    // Protocol buffer code should use these relaxed accessors.
+    TailCallParseFunc target() const {
+      return target_atomic.load(std::memory_order_relaxed);
+    }
+    void SetTarget(TailCallParseFunc func) const {
+      return target_atomic.store(func, std::memory_order_relaxed);
+    }
   };
   // There is always at least one table entry.
   const FastFieldEntry* fast_entry(size_t idx) const {
     return reinterpret_cast<const FastFieldEntry*>(this + 1) + idx;
+  }
+  FastFieldEntry* fast_entry(size_t idx) {
+    return reinterpret_cast<FastFieldEntry*>(this + 1) + idx;
   }
 
   // Returns a begin iterator (pointer) to the start of the field lookup table.
   const uint16_t* field_lookup_begin() const {
     return reinterpret_cast<const uint16_t*>(reinterpret_cast<uintptr_t>(this) +
                                              lookup_table_offset);
+  }
+  uint16_t* field_lookup_begin() {
+    return reinterpret_cast<uint16_t*>(reinterpret_cast<uintptr_t>(this) +
+                                       lookup_table_offset);
   }
 
   // Field entry for all fields.
@@ -202,6 +236,10 @@ struct alignas(uint64_t) TcParseTableBase {
   const FieldEntry* field_entries_begin() const {
     return reinterpret_cast<const FieldEntry*>(
         reinterpret_cast<uintptr_t>(this) + field_entries_offset);
+  }
+  FieldEntry* field_entries_begin() {
+    return reinterpret_cast<FieldEntry*>(reinterpret_cast<uintptr_t>(this) +
+                                         field_entries_offset);
   }
 
   // Auxiliary entries for field types that need extra information.
@@ -234,6 +272,11 @@ struct alignas(uint64_t) TcParseTableBase {
                                              aux_offset) +
            idx;
   }
+  FieldAux* field_aux(uint32_t idx) {
+    return reinterpret_cast<FieldAux*>(reinterpret_cast<uintptr_t>(this) +
+                                       aux_offset) +
+           idx;
+  }
   const FieldAux* field_aux(const FieldEntry* entry) const {
     return field_aux(entry->aux_idx);
   }
@@ -243,6 +286,11 @@ struct alignas(uint64_t) TcParseTableBase {
     return reinterpret_cast<const char*>(reinterpret_cast<uintptr_t>(this) +
                                          aux_offset +
                                          num_aux_entries * sizeof(FieldAux));
+  }
+  char* name_data() {
+    return reinterpret_cast<char*>(reinterpret_cast<uintptr_t>(this) +
+                                   aux_offset +
+                                   num_aux_entries * sizeof(FieldAux));
   }
 };
 

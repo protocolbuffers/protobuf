@@ -7,7 +7,7 @@ load(
     "strip_prefix",
 )
 load("//:protobuf_release.bzl", "package_naming")
-load(":build_systems.bzl", "gen_automake_file_lists", "gen_file_lists")
+load(":build_systems.bzl", "gen_file_lists")
 load(":cc_dist_library.bzl", "cc_dist_library")
 
 package_naming(
@@ -92,6 +92,7 @@ pkg_filegroup(
         "//build_defs:dist_files",
         "//conformance:all_dist_files",
         "//src:all_dist_files",
+        "//third_party/utf8_range:dist_files",
         "@com_google_protobuf_examples//:dist_files",
     ],
 )
@@ -334,26 +335,6 @@ gen_file_lists(
     },
 )
 
-gen_automake_file_lists(
-    name = "gen_automake_extra_dist_lists",
-    testonly = 1,
-    out = "extra_dist_file_lists.am",
-    src_libs = {
-        # source rule: name in generated file
-        "//:common_dist_files": "dist_common",
-        "//conformance:dist_files": "dist_conformance",
-        "//benchmarks:all_dist_files": "dist_benchmark",
-        "@com_google_protobuf_examples//:dist_files": "dist_example",
-        "//:csharp_dist_files": "dist_csharp",
-        "//csharp:dist_files": "dist_csharp2",
-        "//:objectivec_dist_files": "dist_objectivec",
-        "//objectivec:dist_files": "dist_objectivec2",
-        "//php:dist_files": "dist_php",
-        "//python:dist_files": "dist_python",
-        "//ruby:dist_files": "dist_ruby",
-    },
-)
-
 ################################################################################
 # Protobuf runtime libraries.
 ################################################################################
@@ -394,6 +375,7 @@ cc_dist_library(
         "//src/google/protobuf/io:io_win32",
         "//src/google/protobuf/io:printer",
         "//src/google/protobuf/io:tokenizer",
+        "//src/google/protobuf/io:zero_copy_sink",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/stubs:lite",
         "//src/google/protobuf/util:delimited_message_util",
@@ -445,23 +427,23 @@ cc_dist_library(
 
 cc_dist_library(
     name = "compiler_annotation_test_util",
-    deps = ["//src/google/protobuf/compiler:annotation_test_util"],
     testonly = 1,
     tags = ["manual"],
+    deps = ["//src/google/protobuf/compiler:annotation_test_util"],
 )
 
 cc_dist_library(
     name = "compiler_mock_code_generator",
-    deps = ["//src/google/protobuf/compiler:mock_code_generator"],
     testonly = 1,
     tags = ["manual"],
+    deps = ["//src/google/protobuf/compiler:mock_code_generator"],
 )
 
 cc_dist_library(
     name = "testinglib",
-    deps = ["//src/google/protobuf/testing"],
     testonly = 1,
     tags = ["manual"],
+    deps = ["//src/google/protobuf/testing"],
 )
 
 ################################################################################

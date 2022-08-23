@@ -36,6 +36,7 @@ using Google.Protobuf.TestProtos;
 using NUnit.Framework;
 using System.Linq;
 using Google.Protobuf.WellKnownTypes;
+using Google.Protobuf.Collections;
 
 namespace Google.Protobuf
 {
@@ -794,6 +795,45 @@ namespace Google.Protobuf
 
             EqualityTester.AssertInequality(message1, message2);
             EqualityTester.AssertEquality(message1, message3);
+        }
+
+        [Test]
+        [TestCase(false)]
+        [TestCase(true)]
+        public void MapFieldMerging(bool direct)
+        {
+            var message1 = new TestMap
+            {
+                MapStringString =
+                {
+                    { "x1", "y1" },
+                    { "common", "message1" }
+                }
+            };
+            var message2 = new TestMap
+            {
+                MapStringString =
+                {
+                    { "x2", "y2" },
+                    { "common", "message2" }
+                }
+            };
+            if (direct)
+            {
+                message1.MergeFrom(message2);
+            }
+            else
+            {
+                message1.MergeFrom(message2.ToByteArray());
+            }
+
+            var expected = new MapField<string, string>
+            {
+                { "x1", "y1" },
+                { "x2", "y2" },
+                { "common", "message2" }
+            };
+            Assert.AreEqual(expected, message1.MapStringString);
         }
     }
 }

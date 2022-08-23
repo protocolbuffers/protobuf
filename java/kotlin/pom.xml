@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.google.protobuf</groupId>
     <artifactId>protobuf-parent</artifactId>
-    <version>3.21.2</version>
+    <version>3.21.5</version>
   </parent>
 
   <artifactId>protobuf-kotlin</artifactId>
@@ -33,6 +33,11 @@
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.errorprone</groupId>
+      <artifactId>error_prone_annotations</artifactId>
+      <version>2.5.1</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>

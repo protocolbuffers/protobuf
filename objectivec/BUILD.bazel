@@ -1,5 +1,6 @@
 load("@rules_cc//cc:defs.bzl", "objc_library")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("//conformance:defs.bzl", "conformance_test")
 
 objc_library(
     name = "objectivec",
@@ -89,6 +90,20 @@ objc_library(
     ],
     visibility = ["//visibility:public"],
 )
+
+################################################################################
+# Tests
+################################################################################
+
+conformance_test(
+    name = "conformance_test",
+    failure_list = "//conformance:failure_list_objc.txt",
+    testee = "//conformance:conformance_objc",
+)
+
+################################################################################
+# Distribution files
+################################################################################
 
 pkg_files(
     name = "dist_files",

@@ -46,6 +46,7 @@ option java_outer_classname = "JsonFormatProto3";
 enum EnumType {
   FOO = 0;
   BAR = 1;
+  TLSv1_2 = 2;
 }
 
 message MessageType {
@@ -179,8 +180,21 @@ message TestBoolValue {
   map<bool, int32> bool_map = 2;
 }
 
+message TestNullValue {
+  google.protobuf.NullValue null_value = 20;
+  repeated google.protobuf.NullValue repeated_null_value = 21;
+}
+
 message TestCustomJsonName {
   int32 value = 1 [json_name = "@value"];
+}
+
+message TestEvilJson {
+  int32 regular_value = 1 [json_name = "regular_name"];
+  int32 script = 2 [json_name = "</script>"];
+  int32 quotes = 3 [json_name = "unbalanced\"quotes"];
+  int32 script_and_quotes = 4
+      [json_name = "\"<script>alert('hello!);</script>"];
 }
 
 message TestExtensions {

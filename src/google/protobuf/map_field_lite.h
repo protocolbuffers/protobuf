@@ -83,7 +83,7 @@ class MapFieldLite {
     // data in it, as would happen if a vector was resize'd to zero.
     // Map::Swap with an empty map accomplishes that.
     decltype(map_) swapped_map(map_.arena());
-    map_.InternalSwap(swapped_map);
+    map_.InternalSwap(&swapped_map);
   }
   ~MapFieldLite() {
     if (map_.arena() == nullptr && !map_.empty()) {
@@ -105,7 +105,7 @@ class MapFieldLite {
     }
   }
   void Swap(MapFieldLite* other) { map_.swap(other->map_); }
-  void InternalSwap(MapFieldLite* other) { map_.InternalSwap(other->map_); }
+  void InternalSwap(MapFieldLite* other) { map_.InternalSwap(&other->map_); }
 
   // Used in the implementation of parsing. Caller should take the ownership iff
   // arena_ is nullptr.

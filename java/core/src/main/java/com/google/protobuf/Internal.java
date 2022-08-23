@@ -600,6 +600,7 @@ public final class Internal {
     void addInt(int element);
 
     /** Like {@link #set(int, Object)} but more efficient in that it doesn't box the element. */
+    @CanIgnoreReturnValue
     int setInt(int index, int element);
 
     /** Returns a mutable clone of this list with the specified capacity. */
@@ -620,6 +621,7 @@ public final class Internal {
     void addBoolean(boolean element);
 
     /** Like {@link #set(int, Object)} but more efficient in that it doesn't box the element. */
+    @CanIgnoreReturnValue
     boolean setBoolean(int index, boolean element);
 
     /** Returns a mutable clone of this list with the specified capacity. */
@@ -640,6 +642,7 @@ public final class Internal {
     void addLong(long element);
 
     /** Like {@link #set(int, Object)} but more efficient in that it doesn't box the element. */
+    @CanIgnoreReturnValue
     long setLong(int index, long element);
 
     /** Returns a mutable clone of this list with the specified capacity. */
@@ -660,6 +663,7 @@ public final class Internal {
     void addDouble(double element);
 
     /** Like {@link #set(int, Object)} but more efficient in that it doesn't box the element. */
+    @CanIgnoreReturnValue
     double setDouble(int index, double element);
 
     /** Returns a mutable clone of this list with the specified capacity. */
@@ -680,6 +684,7 @@ public final class Internal {
     void addFloat(float element);
 
     /** Like {@link #set(int, Object)} but more efficient in that it doesn't box the element. */
+    @CanIgnoreReturnValue
     float setFloat(int index, float element);
 
     /** Returns a mutable clone of this list with the specified capacity. */

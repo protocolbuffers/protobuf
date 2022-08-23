@@ -6,6 +6,7 @@ add_executable(protoc ${protoc_files} ${protobuf_version_rc_file})
 target_link_libraries(protoc
   libprotoc
   libprotobuf
+  ${protobuf_ABSL_USED_TARGETS}
 )
 add_executable(protobuf::protoc ALIAS protoc)
 

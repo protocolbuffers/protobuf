@@ -4,11 +4,11 @@
   <parent>
     <groupId>com.google</groupId>
     <artifactId>google</artifactId>
-    <version>1</version>
+    <version>5</version>
   </parent>
   <groupId>com.google.protobuf</groupId>
   <artifactId>protoc</artifactId>
-  <version>3.21.2</version>
+  <version>3.21.5</version>
   <packaging>pom</packaging>
   <name>Protobuf Compiler</name>
   <description>

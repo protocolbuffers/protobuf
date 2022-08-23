@@ -37,6 +37,8 @@
 #include <cstdint>
 #include <limits>
 #include <map>
+#include <unordered_set>
+#include <utility>
 
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
@@ -65,11 +67,42 @@ bool ShouldGenerateArraySize(const EnumDescriptor* descriptor) {
 // Returns the number of unique numeric enum values. This is less than
 // descriptor->value_count() when there are aliased values.
 int CountUniqueValues(const EnumDescriptor* descriptor) {
-  std::set<int> values;
+  std::unordered_set<int> values;
   for (int i = 0; i < descriptor->value_count(); ++i) {
     values.insert(descriptor->value(i)->number());
   }
   return values.size();
+}
+
+struct MinMaxEnumDescriptors {
+  const EnumValueDescriptor* min;
+  const EnumValueDescriptor* max;
+};
+MinMaxEnumDescriptors EnumLimits(const EnumDescriptor* descriptor) {
+  const EnumValueDescriptor* min_desc = descriptor->value(0);
+  const EnumValueDescriptor* max_desc = descriptor->value(0);
+
+  for (int i = 1; i < descriptor->value_count(); ++i) {
+    if (descriptor->value(i)->number() < min_desc->number()) {
+      min_desc = descriptor->value(i);
+    }
+    if (descriptor->value(i)->number() > max_desc->number()) {
+      max_desc = descriptor->value(i);
+    }
+  }
+  return {min_desc, max_desc};
+}
+
+// Assumes that HasDescriptorMethods is true.
+bool ShouldCacheDenseEnum(const EnumDescriptor* descriptor,
+                          MinMaxEnumDescriptors limits) {
+  // The conditions here for what is "sparse" are not rigorously
+  // chosen.  We use unsigned values in case the subtraction of min from max
+  // exceeds the bounds of int.
+  const unsigned values_range = static_cast<unsigned>(limits.max->number()) -
+                                static_cast<unsigned>(limits.min->number());
+  return (values_range < 16u ||
+          values_range < static_cast<unsigned>(descriptor->value_count()) * 2u);
 }
 
 }  // namespace
@@ -98,9 +131,6 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
   format("enum ${1$$classname$$}$ : int {\n", descriptor_);
   format.Indent();
 
-  const EnumValueDescriptor* min_value = descriptor_->value(0);
-  const EnumValueDescriptor* max_value = descriptor_->value(0);
-
   for (int i = 0; i < descriptor_->value_count(); i++) {
     auto format_value = format;
     format_value.Set("name", EnumValueName(descriptor_->value(i)));
@@ -114,13 +144,6 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
     if (i > 0) format_value(",\n");
     format_value("${1$$prefix$$name$$}$ $deprecation$= $number$",
                  descriptor_->value(i));
-
-    if (descriptor_->value(i)->number() < min_value->number()) {
-      min_value = descriptor_->value(i);
-    }
-    if (descriptor_->value(i)->number() > max_value->number()) {
-      max_value = descriptor_->value(i);
-    }
   }
 
   if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
@@ -137,13 +160,15 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
   format.Outdent();
   format("\n};\n");
 
+  MinMaxEnumDescriptors enum_limits = EnumLimits(descriptor_);
   format(
       "$dllexport_decl $bool $classname$_IsValid(int value);\n"
       "constexpr $classname$ ${1$$prefix$$short_name$_MIN$}$ = "
       "$prefix$$2$;\n"
       "constexpr $classname$ ${1$$prefix$$short_name$_MAX$}$ = "
       "$prefix$$3$;\n",
-      descriptor_, EnumValueName(min_value), EnumValueName(max_value));
+      descriptor_, EnumValueName(enum_limits.min),
+      EnumValueName(enum_limits.max));
 
   if (generate_array_size_) {
     format(
@@ -172,9 +197,19 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
       "    ::std::is_integral<T>::value,\n"
       "    \"Incorrect type passed to function $classname$_Name.\");\n");
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    format(
-        "  return ::$proto_ns$::internal::NameOfEnum(\n"
-        "    $classname$_descriptor(), enum_t_value);\n");
+    if (ShouldCacheDenseEnum(descriptor_, enum_limits)) {
+      // Using the NameOfEnum routine can be slow, so we create a small
+      // cache of pointers to the std::string objects that reflection
+      // stores internally.  This cache is a simple contiguous array of
+      // pointers, so if the enum values are sparse, it's not worth it.
+      format(
+          "  return "
+          "$classname$_Name(static_cast<$classname$>(enum_t_value));\n");
+    } else {
+      format(
+          "  return ::$proto_ns$::internal::NameOfEnum(\n"
+          "    $classname$_descriptor(), enum_t_value);\n");
+    }
   } else {
     format(
         "  return $classname$_Name(static_cast<$classname$>(enum_t_value));\n");
@@ -182,6 +217,15 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
   format("}\n");
 
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
+    if (ShouldCacheDenseEnum(descriptor_, enum_limits)) {
+      format(
+          "template<>\n"
+          "inline const std::string& $classname$_Name($classname$ value) {\n"
+          "  return ::$proto_ns$::internal::NameOfDenseEnum\n"
+          "    <$classname$_descriptor, $1$, $2$>(static_cast<int>(value));\n"
+          "}\n",
+          enum_limits.min->number(), enum_limits.max->number());
+    }
     format(
         "inline bool $classname$_Parse(\n"
         "    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, $classname$* "

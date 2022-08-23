@@ -27,5 +27,7 @@ message TestNamespace {
     enum NestedEnum {
       ZERO = 0;
     };
+    // Test previously unreserved name
+    message ReadOnly {}
   }
 }

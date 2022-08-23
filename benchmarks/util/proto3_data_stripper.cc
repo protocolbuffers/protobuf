@@ -1,12 +1,12 @@
-#include "benchmarks.pb.h"
-#include "datasets/google_message1/proto2/benchmark_message1_proto2.pb.h"
-#include "datasets/google_message1/proto3/benchmark_message1_proto3.pb.h"
-#include "datasets/google_message2/benchmark_message2.pb.h"
-#include "datasets/google_message3/benchmark_message3.pb.h"
-#include "datasets/google_message4/benchmark_message4.pb.h"
-#include "data_proto2_to_proto3_util.h"
-
 #include <fstream>
+
+#include "benchmarks.pb.h"
+#include "benchmarks/datasets/google_message1/proto2/benchmark_message1_proto2.pb.h"
+#include "benchmarks/datasets/google_message1/proto3/benchmark_message1_proto3.pb.h"
+#include "benchmarks/datasets/google_message2/benchmark_message2.pb.h"
+#include "benchmarks/datasets/google_message3/benchmark_message3.pb.h"
+#include "benchmarks/datasets/google_message4/benchmark_message4.pb.h"
+#include "data_proto2_to_proto3_util.h"
 
 using google::protobuf::util::Proto3DataStripper;
 

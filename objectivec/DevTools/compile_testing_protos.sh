@@ -89,7 +89,8 @@ mkdir -p "${OUTPUT_DIR}/google/protobuf"
 # Move to the top of the protobuf directories and ensure there is a protoc
 # binary to use.
 cd "${SRCROOT}/.."
-[[ -x src/protoc ]] || \
+readonly PROTOC="bazel-bin/protoc"
+[[ -x $PROTOC ]] || \
   die "Could not find the protoc binary; make sure you have built it (objectivec/DevTools/full_mac_build.sh -h)."
 
 # -----------------------------------------------------------------------------
@@ -119,8 +120,7 @@ if [[ "${RUN_PROTOC}" != "yes" ]] ; then
   # under)
   readonly NewestInput=$(find \
      src/google/protobuf/*.proto \
-     objectivec/Tests/*.proto \
-     src/.libs src/*.la src/protoc \
+     objectivec/Tests/*.proto $PROTOC \
      objectivec/DevTools/compile_testing_protos.sh \
         -type f -print0 \
         | xargs -0 stat -f "%m %N" \
@@ -152,7 +152,7 @@ find "${OUTPUT_DIR}" \
 # -----------------------------------------------------------------------------
 # Helper to invoke protoc
 compile_protos() {
-  src/protoc                                   \
+  $PROTOC                                  \
     --objc_out="${OUTPUT_DIR}/google/protobuf" \
     --proto_path=src/google/protobuf/          \
     --proto_path=src                           \

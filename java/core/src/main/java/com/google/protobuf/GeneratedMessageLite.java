@@ -137,7 +137,7 @@ public abstract class GeneratedMessageLite<
   // any unnecessary intermediary allocations while reducing the generated code size.
 
   /** Lazily initializes unknown fields. */
-  private final void ensureUnknownFieldsInitialized() {
+  private void ensureUnknownFieldsInitialized() {
     if (unknownFields == UnknownFieldSetLite.getDefaultInstance()) {
       unknownFields = UnknownFieldSetLite.newInstance();
     }

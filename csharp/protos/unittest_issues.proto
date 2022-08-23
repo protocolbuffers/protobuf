@@ -170,3 +170,19 @@ message OneofWithNoneName {
     string y = 2;
   }
 }
+
+// Issue 8810
+message DisambiguateCommonMembers {
+  int32 disambiguate_common_members = 1;
+  int32 types = 2;
+  int32 descriptor = 3;
+  int32 equals = 4;
+  int32 to_string = 5;
+  int32 get_hash_code = 6;
+  int32 write_to = 7;
+  int32 clone = 8;
+  int32 calculate_size = 9;
+  int32 merge_from = 10;
+  int32 on_construction = 11;
+  int32 parser = 12;
+}

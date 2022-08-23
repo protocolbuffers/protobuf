@@ -11,17 +11,19 @@ pushd $(dirname $0)/..
 # Protocol buffer compiler to use. If the PROTOC variable is set,
 # use that. Otherwise, probe for expected locations under both
 # Windows and Unix.
+PROTOC_LOCATIONS=(
+  "bazel-bin/protoc"
+  "solution/Debug/protoc.exe"
+  "cmake/build/Debug/protoc.exe"
+  "cmake/build/Release/protoc.exe"
+)
 if [ -z "$PROTOC" ]; then
-  # TODO(jonskeet): Use an array and a for loop instead?
-  if [ -x solution/Debug/protoc.exe ]; then
-    PROTOC=solution/Debug/protoc.exe
-  elif [ -x cmake/build/Debug/protoc.exe ]; then
-    PROTOC=cmake/build/Debug/protoc.exe
-  elif [ -x cmake/build/Release/protoc.exe ]; then
-    PROTOC=cmake/build/Release/protoc.exe
-  elif [ -x src/protoc ]; then
-    PROTOC=src/protoc
-  else
+  for protoc in "${PROTOC_LOCATIONS[@]}"; do
+    if [ -x "$protoc" ]; then
+      PROTOC="$protoc"
+    fi
+  done
+  if [ -z "$PROTOC" ]; then
     echo "Unable to find protocol buffer compiler."
     exit 1
   fi
@@ -40,7 +42,8 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
     src/google/protobuf/struct.proto \
     src/google/protobuf/timestamp.proto \
     src/google/protobuf/type.proto \
-    src/google/protobuf/wrappers.proto
+    src/google/protobuf/wrappers.proto \
+    src/google/protobuf/compiler/plugin.proto
 
 # Test protos
 # Note that this deliberately does *not* include old_extensions1.proto
@@ -73,9 +76,6 @@ $PROTOC -Isrc -Icsharp/protos \
 # AddressBook sample protos
 $PROTOC -Iexamples -Isrc --csharp_out=csharp/src/AddressBook \
     examples/addressbook.proto
-
-$PROTOC -Iconformance -Isrc --csharp_out=csharp/src/Google.Protobuf.Conformance \
-    conformance/conformance.proto
 
 # Benchmark protos
 $PROTOC -Ibenchmarks \

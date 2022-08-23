@@ -24,6 +24,9 @@ add_executable(conformance_test_runner
   ${protobuf_SOURCE_DIR}/conformance/conformance.pb.cc
   ${protobuf_SOURCE_DIR}/conformance/conformance_test.cc
   ${protobuf_SOURCE_DIR}/conformance/conformance_test_runner.cc
+  ${protobuf_SOURCE_DIR}/conformance/conformance_test_main.cc
+  ${protobuf_SOURCE_DIR}/conformance/text_format_conformance_suite.cc
+  ${protobuf_SOURCE_DIR}/conformance/text_format_conformance_suite.h
   ${protobuf_SOURCE_DIR}/conformance/third_party/jsoncpp/json.h
   ${protobuf_SOURCE_DIR}/conformance/third_party/jsoncpp/jsoncpp.cpp
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
@@ -39,11 +42,24 @@ add_executable(conformance_cpp
 
 target_include_directories(
   conformance_test_runner
-  PUBLIC ${protobuf_SOURCE_DIR}/conformance)
+  PUBLIC ${protobuf_SOURCE_DIR} ${protobuf_SOURCE_DIR}/conformance)
 
 target_include_directories(
   conformance_cpp
-  PUBLIC ${protobuf_SOURCE_DIR}/conformance)
+  PUBLIC ${protobuf_SOURCE_DIR})
 
-target_link_libraries(conformance_test_runner libprotobuf)
-target_link_libraries(conformance_cpp libprotobuf)
+target_include_directories(conformance_test_runner PRIVATE ${ABSL_ROOT_DIR})
+target_include_directories(conformance_cpp PRIVATE ${ABSL_ROOT_DIR})
+
+target_link_libraries(conformance_test_runner ${protobuf_LIB_PROTOBUF})
+target_link_libraries(conformance_test_runner ${protobuf_ABSL_USED_TARGETS})
+target_link_libraries(conformance_cpp ${protobuf_LIB_PROTOBUF})
+target_link_libraries(conformance_cpp ${protobuf_ABSL_USED_TARGETS})
+
+add_test(NAME conformance_cpp_test
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/conformance_test_runner
+    --failure_list ${protobuf_SOURCE_DIR}/conformance/failure_list_cpp.txt
+    --text_format_failure_list ${protobuf_SOURCE_DIR}/conformance/text_format_failure_list_cpp.txt
+    --output_dir ${protobuf_TEST_XML_OUTDIR}
+    ${CMAKE_CURRENT_BINARY_DIR}/conformance_cpp
+  DEPENDS conformance_test_runner conformance_cpp)

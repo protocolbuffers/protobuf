@@ -42,17 +42,19 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/parse_context.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/arena.h>
+#include "absl/base/dynamic_annotations.h"
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/synchronization/mutex.h"
 #include <google/protobuf/generated_message_util.h>
+#include <google/protobuf/parse_context.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/stubs/stl_util.h>
-#include <google/protobuf/stubs/mutex.h>
+
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -521,18 +523,14 @@ void GenericTypeHandler<std::string>::Merge(const std::string& from,
   *to = from;
 }
 
-// Non-inline implementations of InternalMetadata routines
-#if defined(NDEBUG) || defined(_MSC_VER)
-// for opt and MSVC builds, the destructor is defined in the header.
-#else
+// Non-inline implementations of InternalMetadata destructor
 // This is moved out of the header because the GOOGLE_DCHECK produces a lot of code.
-InternalMetadata::~InternalMetadata() {
+void InternalMetadata::CheckedDestruct() {
   if (HasMessageOwnedArenaTag()) {
     GOOGLE_DCHECK(!HasUnknownFieldsTag());
     delete reinterpret_cast<Arena*>(ptr_ - kMessageOwnedArenaTagMask);
   }
 }
-#endif
 
 // Non-inline variants of std::string specializations for
 // various InternalMetadata routines.
@@ -571,7 +569,7 @@ struct ShutdownData {
   }
 
   std::vector<std::pair<void (*)(const void*), const void*>> functions;
-  Mutex mutex;
+  absl::Mutex mutex;
 };
 
 static void RunZeroArgFunc(const void* arg) {
@@ -585,7 +583,7 @@ void OnShutdown(void (*func)()) {
 
 void OnShutdownRun(void (*f)(const void*), const void* arg) {
   auto shutdown_data = ShutdownData::get();
-  MutexLock lock(&shutdown_data->mutex);
+  absl::MutexLock lock(&shutdown_data->mutex);
   shutdown_data->functions.push_back(std::make_pair(f, arg));
 }
 

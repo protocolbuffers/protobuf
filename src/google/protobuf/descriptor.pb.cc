@@ -483,7 +483,8 @@ PROTOBUF_CONSTEXPR GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(
   , /*decltype(_impl_._path_cached_byte_size_)*/{0}
   , /*decltype(_impl_.source_file_)*/{&::_pbi::fixed_address_empty_string, ::_pbi::ConstantInitialized{}}
   , /*decltype(_impl_.begin_)*/0
-  , /*decltype(_impl_.end_)*/0} {}
+  , /*decltype(_impl_.end_)*/0
+  , /*decltype(_impl_.semantic_)*/0} {}
 struct GeneratedCodeInfo_AnnotationDefaultTypeInternal {
   PROTOBUF_CONSTEXPR GeneratedCodeInfo_AnnotationDefaultTypeInternal()
       : _instance(::_pbi::ConstantInitialized{}) {}
@@ -508,7 +509,7 @@ struct GeneratedCodeInfoDefaultTypeInternal {
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfoDefaultTypeInternal _GeneratedCodeInfo_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
 static ::_pb::Metadata file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[27];
-static const ::_pb::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[6];
+static const ::_pb::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[7];
 static constexpr ::_pb::ServiceDescriptor const** file_level_service_descriptors_google_2fprotobuf_2fdescriptor_2eproto = nullptr;
 
 const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
@@ -964,10 +965,12 @@ const uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PRO
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation, _impl_.source_file_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation, _impl_.begin_),
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation, _impl_.end_),
+  PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation, _impl_.semantic_),
   ~0u,
   0,
   1,
   2,
+  3,
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -1004,8 +1007,8 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 391, 406, -1, sizeof(::PROTOBUF_NAMESPACE_ID::UninterpretedOption)},
   { 413, 426, -1, sizeof(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location)},
   { 431, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::SourceCodeInfo)},
-  { 440, 452, -1, sizeof(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation)},
-  { 456, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo)},
+  { 440, 453, -1, sizeof(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation)},
+  { 458, -1, -1, sizeof(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -1183,19 +1186,22 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] PR
   "rceCodeInfo.Location\032\206\001\n\010Location\022\020\n\004pat"
   "h\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002\020\001\022\030\n\020leading"
   "_comments\030\003 \001(\t\022\031\n\021trailing_comments\030\004 \001"
-  "(\t\022!\n\031leading_detached_comments\030\006 \003(\t\"\247\001"
+  "(\t\022!\n\031leading_detached_comments\030\006 \003(\t\"\234\002"
   "\n\021GeneratedCodeInfo\022A\n\nannotation\030\001 \003(\0132"
   "-.google.protobuf.GeneratedCodeInfo.Anno"
-  "tation\032O\n\nAnnotation\022\020\n\004path\030\001 \003(\005B\002\020\001\022\023"
-  "\n\013source_file\030\002 \001(\t\022\r\n\005begin\030\003 \001(\005\022\013\n\003en"
-  "d\030\004 \001(\005B~\n\023com.google.protobufB\020Descript"
-  "orProtosH\001Z-google.golang.org/protobuf/t"
-  "ypes/descriptorpb\370\001\001\242\002\003GPB\252\002\032Google.Prot"
-  "obuf.Reflection"
+  "tation\032\303\001\n\nAnnotation\022\020\n\004path\030\001 \003(\005B\002\020\001\022"
+  "\023\n\013source_file\030\002 \001(\t\022\r\n\005begin\030\003 \001(\005\022\013\n\003e"
+  "nd\030\004 \001(\005\022H\n\010semantic\030\005 \001(\01626.google.prot"
+  "obuf.GeneratedCodeInfo.Annotation.Semant"
+  "ic\"(\n\010Semantic\022\010\n\004NONE\020\000\022\007\n\003SET\020\001\022\t\n\005ALI"
+  "AS\020\002B~\n\023com.google.protobufB\020DescriptorP"
+  "rotosH\001Z-google.golang.org/protobuf/type"
+  "s/descriptorpb\370\001\001\242\002\003GPB\252\002\032Google.Protobu"
+  "f.Reflection"
   ;
 static ::_pbi::once_flag descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto = {
-    false, false, 6095, descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto,
+    false, false, 6212, descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto,
     "google/protobuf/descriptor.proto",
     &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once, nullptr, 0, 27,
     schemas, file_default_instances, TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets,
@@ -1376,6 +1382,29 @@ constexpr MethodOptions_IdempotencyLevel MethodOptions::IDEMPOTENT;
 constexpr MethodOptions_IdempotencyLevel MethodOptions::IdempotencyLevel_MIN;
 constexpr MethodOptions_IdempotencyLevel MethodOptions::IdempotencyLevel_MAX;
 constexpr int MethodOptions::IdempotencyLevel_ARRAYSIZE;
+#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* GeneratedCodeInfo_Annotation_Semantic_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
+  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[6];
+}
+bool GeneratedCodeInfo_Annotation_Semantic_IsValid(int value) {
+  switch (value) {
+    case 0:
+    case 1:
+    case 2:
+      return true;
+    default:
+      return false;
+  }
+}
+
+#if (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
+constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::NONE;
+constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::SET;
+constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::ALIAS;
+constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::Semantic_MIN;
+constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::Semantic_MAX;
+constexpr int GeneratedCodeInfo_Annotation::Semantic_ARRAYSIZE;
 #endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 
 // ===================================================================
@@ -3893,9 +3922,9 @@ const char* FieldDescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseC
       // optional .google.protobuf.FieldDescriptorProto.Label label = 4;
       case 4:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 32)) {
-          uint64_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          uint32_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
-          if (PROTOBUF_PREDICT_TRUE(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label_IsValid(val))) {
+          if (PROTOBUF_PREDICT_TRUE(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label_IsValid(static_cast<int>(val)))) {
             _internal_set_label(static_cast<::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label>(val));
           } else {
             ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(4, val, mutable_unknown_fields());
@@ -3906,9 +3935,9 @@ const char* FieldDescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseC
       // optional .google.protobuf.FieldDescriptorProto.Type type = 5;
       case 5:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 40)) {
-          uint64_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          uint32_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
-          if (PROTOBUF_PREDICT_TRUE(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type_IsValid(val))) {
+          if (PROTOBUF_PREDICT_TRUE(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type_IsValid(static_cast<int>(val)))) {
             _internal_set_type(static_cast<::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type>(val));
           } else {
             ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(5, val, mutable_unknown_fields());
@@ -6681,9 +6710,9 @@ const char* FileOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* c
       // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
       case 9:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 72)) {
-          uint64_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          uint32_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
-          if (PROTOBUF_PREDICT_TRUE(::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode_IsValid(val))) {
+          if (PROTOBUF_PREDICT_TRUE(::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode_IsValid(static_cast<int>(val)))) {
             _internal_set_optimize_for(static_cast<::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode>(val));
           } else {
             ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(9, val, mutable_unknown_fields());
@@ -7892,9 +7921,9 @@ const char* FieldOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* 
       // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
       case 1:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 8)) {
-          uint64_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          uint32_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
-          if (PROTOBUF_PREDICT_TRUE(::PROTOBUF_NAMESPACE_ID::FieldOptions_CType_IsValid(val))) {
+          if (PROTOBUF_PREDICT_TRUE(::PROTOBUF_NAMESPACE_ID::FieldOptions_CType_IsValid(static_cast<int>(val)))) {
             _internal_set_ctype(static_cast<::PROTOBUF_NAMESPACE_ID::FieldOptions_CType>(val));
           } else {
             ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(1, val, mutable_unknown_fields());
@@ -7932,9 +7961,9 @@ const char* FieldOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* 
       // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
       case 6:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 48)) {
-          uint64_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          uint32_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
-          if (PROTOBUF_PREDICT_TRUE(::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType_IsValid(val))) {
+          if (PROTOBUF_PREDICT_TRUE(::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType_IsValid(static_cast<int>(val)))) {
             _internal_set_jstype(static_cast<::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType>(val));
           } else {
             ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(6, val, mutable_unknown_fields());
@@ -9330,9 +9359,9 @@ const char* MethodOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext*
       // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
       case 34:
         if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 16)) {
-          uint64_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          uint32_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
-          if (PROTOBUF_PREDICT_TRUE(::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel_IsValid(val))) {
+          if (PROTOBUF_PREDICT_TRUE(::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel_IsValid(static_cast<int>(val)))) {
             _internal_set_idempotency_level(static_cast<::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel>(val));
           } else {
             ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(34, val, mutable_unknown_fields());
@@ -10882,6 +10911,9 @@ class GeneratedCodeInfo_Annotation::_Internal {
   static void set_has_end(HasBits* has_bits) {
     (*has_bits)[0] |= 4u;
   }
+  static void set_has_semantic(HasBits* has_bits) {
+    (*has_bits)[0] |= 8u;
+  }
 };
 
 GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::PROTOBUF_NAMESPACE_ID::Arena* arena,
@@ -10900,7 +10932,8 @@ GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(const GeneratedCodeIn
     , /*decltype(_impl_._path_cached_byte_size_)*/{0}
     , decltype(_impl_.source_file_){}
     , decltype(_impl_.begin_){}
-    , decltype(_impl_.end_){}};
+    , decltype(_impl_.end_){}
+    , decltype(_impl_.semantic_){}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
   _impl_.source_file_.InitDefault();
@@ -10912,8 +10945,8 @@ GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(const GeneratedCodeIn
       _this->GetArenaForAllocation());
   }
   ::memcpy(&_impl_.begin_, &from._impl_.begin_,
-    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.end_) -
-    reinterpret_cast<char*>(&_impl_.begin_)) + sizeof(_impl_.end_));
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.semantic_) -
+    reinterpret_cast<char*>(&_impl_.begin_)) + sizeof(_impl_.semantic_));
   // @@protoc_insertion_point(copy_constructor:google.protobuf.GeneratedCodeInfo.Annotation)
 }
 
@@ -10929,6 +10962,7 @@ inline void GeneratedCodeInfo_Annotation::SharedCtor(
     , decltype(_impl_.source_file_){}
     , decltype(_impl_.begin_){0}
     , decltype(_impl_.end_){0}
+    , decltype(_impl_.semantic_){0}
   };
   _impl_.source_file_.InitDefault();
   #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
@@ -10966,10 +11000,10 @@ void GeneratedCodeInfo_Annotation::Clear() {
   if (cached_has_bits & 0x00000001u) {
     _impl_.source_file_.ClearNonDefaultToEmpty();
   }
-  if (cached_has_bits & 0x00000006u) {
+  if (cached_has_bits & 0x0000000eu) {
     ::memset(&_impl_.begin_, 0, static_cast<size_t>(
-        reinterpret_cast<char*>(&_impl_.end_) -
-        reinterpret_cast<char*>(&_impl_.begin_)) + sizeof(_impl_.end_));
+        reinterpret_cast<char*>(&_impl_.semantic_) -
+        reinterpret_cast<char*>(&_impl_.begin_)) + sizeof(_impl_.semantic_));
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
@@ -11020,6 +11054,19 @@ const char* GeneratedCodeInfo_Annotation::_InternalParse(const char* ptr, ::_pbi
           _Internal::set_has_end(&has_bits);
           _impl_.end_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
+        } else
+          goto handle_unusual;
+        continue;
+      // optional .google.protobuf.GeneratedCodeInfo.Annotation.Semantic semantic = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 40)) {
+          uint32_t val = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+          if (PROTOBUF_PREDICT_TRUE(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic_IsValid(static_cast<int>(val)))) {
+            _internal_set_semantic(static_cast<::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic>(val));
+          } else {
+            ::PROTOBUF_NAMESPACE_ID::internal::WriteVarint(5, val, mutable_unknown_fields());
+          }
         } else
           goto handle_unusual;
         continue;
@@ -11085,6 +11132,13 @@ uint8_t* GeneratedCodeInfo_Annotation::_InternalSerialize(
     target = ::_pbi::WireFormatLite::WriteInt32ToArray(4, this->_internal_end(), target);
   }
 
+  // optional .google.protobuf.GeneratedCodeInfo.Annotation.Semantic semantic = 5;
+  if (cached_has_bits & 0x00000008u) {
+    target = stream->EnsureSpace(target);
+    target = ::_pbi::WireFormatLite::WriteEnumToArray(
+      5, this->_internal_semantic(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -11115,7 +11169,7 @@ size_t GeneratedCodeInfo_Annotation::ByteSizeLong() const {
   }
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  if (cached_has_bits & 0x0000000fu) {
     // optional string source_file = 2;
     if (cached_has_bits & 0x00000001u) {
       total_size += 1 +
@@ -11131,6 +11185,12 @@ size_t GeneratedCodeInfo_Annotation::ByteSizeLong() const {
     // optional int32 end = 4;
     if (cached_has_bits & 0x00000004u) {
       total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(this->_internal_end());
+    }
+
+    // optional .google.protobuf.GeneratedCodeInfo.Annotation.Semantic semantic = 5;
+    if (cached_has_bits & 0x00000008u) {
+      total_size += 1 +
+        ::_pbi::WireFormatLite::EnumSize(this->_internal_semantic());
     }
 
   }
@@ -11154,7 +11214,7 @@ void GeneratedCodeInfo_Annotation::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& t
 
   _this->_impl_.path_.MergeFrom(from._impl_.path_);
   cached_has_bits = from._impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000007u) {
+  if (cached_has_bits & 0x0000000fu) {
     if (cached_has_bits & 0x00000001u) {
       _this->_internal_set_source_file(from._internal_source_file());
     }
@@ -11163,6 +11223,9 @@ void GeneratedCodeInfo_Annotation::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& t
     }
     if (cached_has_bits & 0x00000004u) {
       _this->_impl_.end_ = from._impl_.end_;
+    }
+    if (cached_has_bits & 0x00000008u) {
+      _this->_impl_.semantic_ = from._impl_.semantic_;
     }
     _this->_impl_._has_bits_[0] |= cached_has_bits;
   }
@@ -11192,8 +11255,8 @@ void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* ot
       &other->_impl_.source_file_, rhs_arena
   );
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_.end_)
-      + sizeof(GeneratedCodeInfo_Annotation::_impl_.end_)
+      PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_.semantic_)
+      + sizeof(GeneratedCodeInfo_Annotation::_impl_.semantic_)
       - PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_.begin_)>(
           reinterpret_cast<char*>(&_impl_.begin_),
           reinterpret_cast<char*>(&other->_impl_.begin_));

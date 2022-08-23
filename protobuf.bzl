@@ -1,5 +1,6 @@
 load("@bazel_skylib//lib:versions.bzl", "versions")
-load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@bazel_skylib//lib:collections.bzl", "collections")
+load("@rules_cc//cc:defs.bzl", "cc_library", "objc_library")
 load("@rules_proto//proto:defs.bzl", "ProtoInfo")
 load("@rules_python//python:defs.bzl", "py_library", "py_test")
 
@@ -37,26 +38,37 @@ def _SourceDir(ctx):
         return _GetPath(ctx, ctx.attr.includes[0])
     return _GetPath(ctx, ctx.label.package + "/" + ctx.attr.includes[0])
 
-def _CcHdrs(srcs, use_grpc_plugin = False):
-    ret = [s[:-len(".proto")] + ".pb.h" for s in srcs]
-    if use_grpc_plugin:
-        ret += [s[:-len(".proto")] + ".grpc.pb.h" for s in srcs]
-    return ret
+def _ObjcBase(srcs):
+    return [
+        "".join([token.capitalize() for token in src[:-len(".proto")].split("_")])
+    for src in srcs]
 
-def _CcSrcs(srcs, use_grpc_plugin = False):
-    ret = [s[:-len(".proto")] + ".pb.cc" for s in srcs]
-    if use_grpc_plugin:
-        ret += [s[:-len(".proto")] + ".grpc.pb.cc" for s in srcs]
-    return ret
+def _ObjcHdrs(srcs):
+    return[src + ".pbobjc.h" for src in _ObjcBase(srcs)]
 
-def _CcOuts(srcs, use_grpc_plugin = False):
-    return _CcHdrs(srcs, use_grpc_plugin) + _CcSrcs(srcs, use_grpc_plugin)
+def _ObjcSrcs(srcs):
+    return[src + ".pbobjc.m" for src in _ObjcBase(srcs)]
+
+def _ObjcOuts(srcs, out_type):
+    if out_type == "hdrs":
+        return _ObjcHdrs(srcs)
+    if out_type == "srcs":
+        return _ObjcSrcs(srcs)
+    return _ObjcHdrs(srcs) + _ObjcSrcs(srcs)
 
 def _PyOuts(srcs, use_grpc_plugin = False):
     ret = [s[:-len(".proto")] + "_pb2.py" for s in srcs]
     if use_grpc_plugin:
         ret += [s[:-len(".proto")] + "_pb2_grpc.py" for s in srcs]
     return ret
+
+def _RubyOuts(srcs):
+    return [s[:-len(".proto")] + "_pb.rb" for s in srcs]
+
+def _CsharpOuts(srcs):
+    return [
+        "".join([token.capitalize() for token in src[:-len(".proto")].split("_")]) + ".cs"
+    for src in srcs]
 
 ProtoGenInfo = provider(
     fields = ["srcs", "import_flags", "deps"],
@@ -65,6 +77,8 @@ ProtoGenInfo = provider(
 def _proto_gen_impl(ctx):
     """General implementation for generating protos"""
     srcs = ctx.files.srcs
+    langs = ctx.attr.langs or []
+    out_type = ctx.attr.out_type
     deps = depset(direct = ctx.files.srcs)
     source_dir = _SourceDir(ctx)
     gen_dir = _GenDir(ctx).rstrip("/")
@@ -80,6 +94,10 @@ def _proto_gen_impl(ctx):
     has_generated = any([not src.is_source for src in srcs])
     if has_generated:
         import_flags += ["-I" + gen_dir]
+
+    if ctx.attr.includes:
+        for include in ctx.attr.includes:
+            import_flags += ["-I"+_GetPath(ctx,include)]
 
     import_flags = depset(direct = import_flags)
 
@@ -99,7 +117,7 @@ def _proto_gen_impl(ctx):
         else:
             deps = depset(transitive = [deps, dep_proto.deps])
 
-    if not ctx.attr.gen_cc and not ctx.attr.gen_py and not ctx.executable.plugin:
+    if not langs and not ctx.executable.plugin:
         return [
             ProtoGenInfo(
                 srcs = srcs,
@@ -119,16 +137,24 @@ def _proto_gen_impl(ctx):
                 path = f.replace("-I", "")
                 import_flags_real.append("-I$(realpath -s %s)" % path)
 
-        outs = []
         use_grpc_plugin = (ctx.attr.plugin_language == "grpc" and ctx.attr.plugin)
         path_tpl = "$(realpath %s)" if in_gen_dir else "%s"
-        if ctx.attr.gen_cc:
-            args += [("--cpp_out=" + path_tpl) % gen_dir]
-            outs.extend(_CcOuts([src.basename], use_grpc_plugin = use_grpc_plugin))
-        if ctx.attr.gen_py:
-            args += [("--python_out=" + path_tpl) % gen_dir]
-            outs.extend(_PyOuts([src.basename], use_grpc_plugin = use_grpc_plugin))
 
+        outs = []
+        for lang in langs:
+            if lang == "csharp":
+                outs.extend(_CsharpOuts([src.basename]))
+            elif lang == "objc":
+                outs.extend(_ObjcOuts([src.basename], out_type = out_type))
+            elif lang == "python":
+                outs.extend(_PyOuts([src.basename], use_grpc_plugin = use_grpc_plugin))
+            elif lang == "ruby":
+                outs.extend(_RubyOuts([src.basename]))
+            # Otherwise, rely on user-supplied outs.
+            args += [("--%s_out=" + path_tpl) % (lang, gen_dir)]
+
+        if ctx.attr.outs:
+            outs.extend(ctx.attr.outs)
         outs = [ctx.actions.declare_file(out, sibling = src) for out in outs]
         generated_files.extend(outs)
 
@@ -193,7 +219,29 @@ def _proto_gen_impl(ctx):
         DefaultInfo(files = depset(generated_files)),
     ]
 
-proto_gen = rule(
+"""Generates codes from Protocol Buffers definitions.
+
+This rule helps you to implement Skylark macros specific to the target
+language. You should prefer more specific `cc_proto_library `,
+`py_proto_library` and others unless you are adding such wrapper macros.
+
+Args:
+  srcs: Protocol Buffers definition files (.proto) to run the protocol compiler
+    against.
+  deps: a list of dependency labels; must be other proto libraries.
+  includes: a list of include paths to .proto files.
+  protoc: the label of the protocol compiler to generate the sources.
+  plugin: the label of the protocol compiler plugin to be passed to the protocol
+    compiler.
+  plugin_language: the language of the generated sources
+  plugin_options: a list of options to be passed to the plugin
+  langs: generates sources in addition to the ones from the plugin for each
+    specified language.
+  outs: a list of labels of the expected outputs from the protocol compiler.
+  out_type: only generated a single type of source file for languages that have
+    split sources (e.g. *.h and *.cc in C++)
+"""
+_proto_gen = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = [ProtoGenInfo]),
@@ -211,124 +259,15 @@ proto_gen = rule(
         ),
         "plugin_language": attr.string(),
         "plugin_options": attr.string_list(),
-        "gen_cc": attr.bool(),
-        "gen_py": attr.bool(),
-        "outs": attr.label_list(),
+        "langs": attr.string_list(),
+        "outs": attr.string_list(),
+        "out_type": attr.string(
+            default = "all"
+        ),
     },
     output_to_genfiles = True,
     implementation = _proto_gen_impl,
 )
-"""Generates codes from Protocol Buffers definitions.
-
-This rule helps you to implement Skylark macros specific to the target
-language. You should prefer more specific `cc_proto_library `,
-`py_proto_library` and others unless you are adding such wrapper macros.
-
-Args:
-  srcs: Protocol Buffers definition files (.proto) to run the protocol compiler
-    against.
-  deps: a list of dependency labels; must be other proto libraries.
-  includes: a list of include paths to .proto files.
-  protoc: the label of the protocol compiler to generate the sources.
-  plugin: the label of the protocol compiler plugin to be passed to the protocol
-    compiler.
-  plugin_language: the language of the generated sources
-  plugin_options: a list of options to be passed to the plugin
-  gen_cc: generates C++ sources in addition to the ones from the plugin.
-  gen_py: generates Python sources in addition to the ones from the plugin.
-  outs: a list of labels of the expected outputs from the protocol compiler.
-"""
-
-def _adapt_proto_library_impl(ctx):
-    deps = [dep[ProtoInfo] for dep in ctx.attr.deps]
-
-    srcs = [src for dep in deps for src in dep.direct_sources]
-    return struct(
-        proto = struct(
-            srcs = srcs,
-            import_flags = ["-I{}".format(path) for dep in deps for path in dep.transitive_proto_path.to_list()],
-            deps = srcs,
-        ),
-    )
-
-adapt_proto_library = rule(
-    implementation = _adapt_proto_library_impl,
-    attrs = {
-        "deps": attr.label_list(
-            mandatory = True,
-            providers = [ProtoInfo],
-        ),
-    },
-    doc = "Adapts `proto_library` from `@rules_proto` to be used with `{cc,py}_proto_library` from this file.",
-)
-
-def cc_proto_library(
-        name,
-        srcs = [],
-        deps = [],
-        cc_libs = [],
-        include = None,
-        protoc = "@com_google_protobuf//:protoc",
-        use_grpc_plugin = False,
-        default_runtime = "@com_google_protobuf//:protobuf",
-        **kargs):
-    """Bazel rule to create a C++ protobuf library from proto source files
-
-    NOTE: the rule is only an internal workaround to generate protos. The
-    interface may change and the rule may be removed when bazel has introduced
-    the native rule.
-
-    Args:
-      name: the name of the cc_proto_library.
-      srcs: the .proto files of the cc_proto_library.
-      deps: a list of dependency labels; must be cc_proto_library.
-      cc_libs: a list of other cc_library targets depended by the generated
-          cc_library.
-      include: a string indicating the include path of the .proto files.
-      protoc: the label of the protocol compiler to generate the sources.
-      use_grpc_plugin: a flag to indicate whether to call the grpc C++ plugin
-          when processing the proto files.
-      default_runtime: the implicitly default runtime which will be depended on by
-          the generated cc_library target.
-      **kargs: other keyword arguments that are passed to cc_library.
-    """
-
-    includes = []
-    if include != None:
-        includes = [include]
-
-    grpc_cpp_plugin = None
-    if use_grpc_plugin:
-        grpc_cpp_plugin = "//external:grpc_cpp_plugin"
-
-    gen_srcs = _CcSrcs(srcs, use_grpc_plugin)
-    gen_hdrs = _CcHdrs(srcs, use_grpc_plugin)
-    outs = gen_srcs + gen_hdrs
-
-    proto_gen(
-        name = name + "_genproto",
-        srcs = srcs,
-        deps = [s + "_genproto" for s in deps],
-        includes = includes,
-        protoc = protoc,
-        plugin = grpc_cpp_plugin,
-        plugin_language = "grpc",
-        gen_cc = 1,
-        visibility = ["//visibility:public"],
-    )
-
-    if default_runtime and not default_runtime in cc_libs:
-        cc_libs = cc_libs + [default_runtime]
-    if use_grpc_plugin:
-        cc_libs = cc_libs + ["//external:grpc_lib"]
-    cc_library(
-        name = name,
-        srcs = gen_srcs,
-        hdrs = gen_hdrs,
-        deps = cc_libs + deps,
-        includes = includes,
-        **kargs
-    )
 
 def _internal_gen_well_known_protos_java_impl(ctx):
     args = ctx.actions.args()
@@ -454,7 +393,97 @@ internal_gen_kt_protos = rule(
     },
 )
 
-def py_proto_library(
+def internal_objc_proto_library(
+        name,
+        srcs = [],
+        deps = [],
+        outs = [],
+        proto_deps = [],
+        includes = ["."],
+        default_runtime = "@com_google_protobuf//:protobuf_objc",
+        protoc = "@com_google_protobuf//:protoc",
+        testonly = None,
+        visibility = ["//visibility:public"],
+        **kwargs):
+    """Bazel rule to create a Objective-C protobuf library from proto source
+    files
+
+    NOTE: the rule is only an internal workaround to generate protos. The
+    interface may change and the rule may be removed when bazel has introduced
+    the native rule.
+
+    Args:
+      name: the name of the objc_proto_library.
+      srcs: the .proto files to compile.
+      deps: a list of dependency labels; must be objc_proto_library.
+      outs: a list of expected output files.
+      proto_deps: a list of proto file dependencies that don't have a
+        objc_proto_library rule.
+      include: a string indicating the include path of the .proto files.
+      default_runtime: the Objective-C Protobuf runtime
+      protoc: the label of the protocol compiler to generate the sources.
+      testonly: common rule attribute (see:
+          https://bazel.build/reference/be/common-definitions#common-attributes)
+      visibility: the visibility of the generated files.
+      **kwargs: other keyword arguments that are passed to py_library.
+
+    """
+    full_deps = [d + "_genproto" for d in deps]
+
+    if proto_deps:
+        _proto_gen(
+            name = name + "_deps_genproto",
+            testonly = testonly,
+            srcs = proto_deps,
+            protoc = protoc,
+            includes = includes,
+        )
+        full_deps.append(":%s_deps_genproto" % name)
+
+    # Note: we need to run the protoc build twice to get separate targets for
+    # the generated header and the source files.
+    _proto_gen(
+        name = name + "_genproto_hdrs",
+        srcs = srcs,
+        deps = full_deps,
+        langs = ["objc"],
+        out_type = "hdrs",
+        includes = includes,
+        protoc = protoc,
+        testonly = testonly,
+        visibility = visibility,
+        tags = ["manual"],
+    )
+
+    _proto_gen(
+        name = name + "_genproto",
+        srcs = srcs,
+        deps = full_deps,
+        langs = ["objc"],
+        out_type = "srcs",
+        includes = includes,
+        protoc = protoc,
+        testonly = testonly,
+        visibility = visibility,
+        tags = ["manual"],
+    )
+
+    objc_library(
+        name = name,
+        hdrs = [name + "_genproto_hdrs"],
+        non_arc_srcs = [name + "_genproto"],
+        deps = [default_runtime],
+        includes = includes,
+        testonly = testonly,
+        visibility = visibility,
+        # Don't auto-expand these targets until target_compatible_with
+        # works.  See https://github.com/bazelbuild/bazel/issues/12897.
+        tags = ["manual"],
+        target_compatible_with = ["@platforms//os:osx"],
+        **kwargs
+    )
+
+def internal_py_proto_library(
         name,
         srcs = [],
         deps = [],
@@ -502,14 +531,14 @@ def py_proto_library(
         # is not explicitly listed in py_libs. Instead, host system is assumed to
         # have grpc installed.
 
-    proto_gen(
+    _proto_gen(
         name = name + "_genproto",
         testonly = testonly,
         srcs = srcs,
         deps = [s + "_genproto" for s in deps],
         includes = includes,
         protoc = protoc,
-        gen_py = 1,
+        langs = ["python"],
         visibility = ["//visibility:public"],
         plugin = grpc_python_plugin,
         plugin_language = "grpc",
@@ -524,6 +553,137 @@ def py_proto_library(
         deps = py_libs + deps,
         imports = includes,
         **kargs
+    )
+
+def _source_proto_library(
+        name,
+        srcs = [],
+        deps = [],
+        proto_deps = [],
+        outs = [],
+        lang = None,
+        includes = ["."],
+        protoc = "@com_google_protobuf//:protoc",
+        testonly = None,
+        visibility = ["//visibility:public"],
+        **kwargs):
+    """Bazel rule to create generated protobuf code from proto source files for
+    languages not well supported by Bazel yet.  This will output the generated
+    code as-is without any compilation.  This is most useful for interpreted
+    languages that don't require it.
+
+    NOTE: the rule is only an internal workaround to generate protos. The
+    interface may change and the rule may be removed when bazel has introduced
+    the native rule.
+
+    Args:
+      name: the name of the unsupported_proto_library.
+      srcs: the .proto files to compile.  Note, that for languages where out
+        needs to be provided, only a single source file is allowed.
+      deps: a list of dependency labels; must be unsupported_proto_library.
+      proto_deps: a list of proto file dependencies that don't have a
+        unsupported_proto_library rule.
+      lang: the language to (optionally) generate code for.
+      outs: a list of expected output files.  This is only required for
+        languages where we can't predict the outputs.
+      includes: strings indicating the include path of the .proto files.
+      protoc: the label of the protocol compiler to generate the sources.
+      testonly: common rule attribute (see:
+          https://bazel.build/reference/be/common-definitions#common-attributes)
+      visibility: the visibility of the generated files.
+      **kwargs: other keyword arguments that are passed to py_library.
+
+    """
+    if outs and len(srcs) != 1:
+        fail("Custom outputs only allowed for single proto targets.")
+
+    langs = []
+    if lang != None:
+        langs = [lang]
+
+    full_deps = [d + "_genproto" for d in deps]
+
+    if proto_deps:
+        _proto_gen(
+            name = name + "_deps_genproto",
+            testonly = testonly,
+            srcs = proto_deps,
+            protoc = protoc,
+            includes = includes,
+        )
+        full_deps.append(":%s_deps_genproto" % name)
+
+    _proto_gen(
+        name = name + "_genproto",
+        srcs = srcs,
+        deps = full_deps,
+        langs = langs,
+        outs = outs,
+        includes = includes,
+        protoc = protoc,
+        testonly = testonly,
+        visibility = visibility,
+    )
+
+    native.filegroup(
+        name = name,
+        srcs = [":%s_genproto"%name],
+        testonly = testonly,
+        visibility = visibility,
+        **kwargs
+    )
+
+def internal_csharp_proto_library(**kwargs):
+    """Bazel rule to create a C# protobuf library from proto source files
+
+    NOTE: the rule is only an internal workaround to generate protos. The
+    interface may change and the rule may be removed when bazel has introduced
+    the native rule.
+
+    Args:
+      **kwargs: arguments that are passed to unsupported_proto_library.
+
+    """
+
+    _source_proto_library(
+        lang = "csharp",
+        **kwargs
+    )
+
+def internal_php_proto_library(**kwargs):
+    """Bazel rule to create a PHP protobuf library from proto source files
+
+    NOTE: the rule is only an internal workaround to generate protos. The
+    interface may change and the rule may be removed when bazel has introduced
+    the native rule.
+
+    Args:
+      **kwargs: arguments that are passed to unsupported_proto_library.
+
+    """
+    if not kwargs.get("outs"):
+        fail("Unable to predict the outputs for php_proto_library.  Please specify them via `outs`.")
+
+    _source_proto_library(
+        lang = "php",
+        **kwargs
+    )
+
+def internal_ruby_proto_library(**kwargs):
+    """Bazel rule to create a Ruby protobuf library from proto source files
+
+    NOTE: the rule is only an internal workaround to generate protos. The
+    interface may change and the rule may be removed when bazel has introduced
+    the native rule.
+
+    Args:
+      **kwargs: arguments that are passed to unsupported_proto_library.
+
+    """
+
+    _source_proto_library(
+        lang = "ruby",
+        **kwargs
     )
 
 def check_protobuf_required_bazel_version():

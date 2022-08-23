@@ -209,7 +209,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeInt32List_Internal(int fieldNumber, List<Integer> list, boolean packed)
+  private void writeInt32List_Internal(int fieldNumber, List<Integer> list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + (list.size() * MAX_VARINT64_SIZE));
@@ -227,7 +227,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeInt32List_Internal(int fieldNumber, IntArrayList list, boolean packed)
+  private void writeInt32List_Internal(int fieldNumber, IntArrayList list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + (list.size() * MAX_VARINT64_SIZE));
@@ -255,7 +255,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeFixed32List_Internal(int fieldNumber, List<Integer> list, boolean packed)
+  private void writeFixed32List_Internal(int fieldNumber, List<Integer> list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + (list.size() * FIXED32_SIZE));
@@ -273,7 +273,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeFixed32List_Internal(int fieldNumber, IntArrayList list, boolean packed)
+  private void writeFixed32List_Internal(int fieldNumber, IntArrayList list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + (list.size() * FIXED32_SIZE));
@@ -307,7 +307,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeUInt64List_Internal(int fieldNumber, List<Long> list, boolean packed)
+  private void writeUInt64List_Internal(int fieldNumber, List<Long> list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + (list.size() * MAX_VARINT64_SIZE));
@@ -325,7 +325,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeUInt64List_Internal(int fieldNumber, LongArrayList list, boolean packed)
+  private void writeUInt64List_Internal(int fieldNumber, LongArrayList list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + (list.size() * MAX_VARINT64_SIZE));
@@ -353,7 +353,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeFixed64List_Internal(int fieldNumber, List<Long> list, boolean packed)
+  private void writeFixed64List_Internal(int fieldNumber, List<Long> list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + (list.size() * FIXED64_SIZE));
@@ -371,7 +371,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeFixed64List_Internal(int fieldNumber, LongArrayList list, boolean packed)
+  private void writeFixed64List_Internal(int fieldNumber, LongArrayList list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + (list.size() * FIXED64_SIZE));
@@ -399,7 +399,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeFloatList_Internal(int fieldNumber, List<Float> list, boolean packed)
+  private void writeFloatList_Internal(int fieldNumber, List<Float> list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + (list.size() * FIXED32_SIZE));
@@ -417,7 +417,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeFloatList_Internal(int fieldNumber, FloatArrayList list, boolean packed)
+  private void writeFloatList_Internal(int fieldNumber, FloatArrayList list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + (list.size() * FIXED32_SIZE));
@@ -445,7 +445,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeDoubleList_Internal(int fieldNumber, List<Double> list, boolean packed)
+  private void writeDoubleList_Internal(int fieldNumber, List<Double> list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + (list.size() * FIXED64_SIZE));
@@ -463,7 +463,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeDoubleList_Internal(int fieldNumber, DoubleArrayList list, boolean packed)
+  private void writeDoubleList_Internal(int fieldNumber, DoubleArrayList list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + (list.size() * FIXED64_SIZE));
@@ -497,7 +497,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeBoolList_Internal(int fieldNumber, List<Boolean> list, boolean packed)
+  private void writeBoolList_Internal(int fieldNumber, List<Boolean> list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + list.size());
@@ -515,7 +515,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeBoolList_Internal(int fieldNumber, BooleanArrayList list, boolean packed)
+  private void writeBoolList_Internal(int fieldNumber, BooleanArrayList list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + list.size());
@@ -572,7 +572,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeUInt32List_Internal(int fieldNumber, List<Integer> list, boolean packed)
+  private void writeUInt32List_Internal(int fieldNumber, List<Integer> list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + (list.size() * MAX_VARINT32_SIZE));
@@ -590,7 +590,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeUInt32List_Internal(int fieldNumber, IntArrayList list, boolean packed)
+  private void writeUInt32List_Internal(int fieldNumber, IntArrayList list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + (list.size() * MAX_VARINT32_SIZE));
@@ -630,7 +630,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeSInt32List_Internal(int fieldNumber, List<Integer> list, boolean packed)
+  private void writeSInt32List_Internal(int fieldNumber, List<Integer> list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + (list.size() * MAX_VARINT32_SIZE));
@@ -648,7 +648,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeSInt32List_Internal(int fieldNumber, IntArrayList list, boolean packed)
+  private void writeSInt32List_Internal(int fieldNumber, IntArrayList list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + (list.size() * MAX_VARINT32_SIZE));
@@ -759,7 +759,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeSInt64List_Internal(int fieldNumber, List<Long> list, boolean packed)
+  private void writeSInt64List_Internal(int fieldNumber, List<Long> list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + (list.size() * MAX_VARINT64_SIZE));
@@ -777,7 +777,7 @@ abstract class BinaryWriter extends ByteOutput implements Writer {
     }
   }
 
-  private final void writeSInt64List_Internal(int fieldNumber, LongArrayList list, boolean packed)
+  private void writeSInt64List_Internal(int fieldNumber, LongArrayList list, boolean packed)
       throws IOException {
     if (packed) {
       requireSpace((MAX_VARINT32_SIZE * 2) + (list.size() * MAX_VARINT64_SIZE));

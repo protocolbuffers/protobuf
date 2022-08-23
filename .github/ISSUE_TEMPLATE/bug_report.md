@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a report to help us improve
 title: ''
-labels: ''
+labels: 'untriaged'
 assignees: ''
 
 ---
@@ -16,7 +16,7 @@ Stack Overflow is also a useful if unofficial resource https://stackoverflow.com
 -->
 
 **What version of protobuf and what language are you using?**
-Version: main/v3.6.0/v3.5.0 etc.
+Version: main/v3.6.0/v3.5.0 etc. (NOTE: please try updating to the latest version of protoc/runtime possible beforehand to attempt to resolve your problem)
 Language: C++/Java/Python/C#/Ruby/PHP/Objective-C/Javascript
 
 **What operating system (Linux, Windows, ...) and version?**

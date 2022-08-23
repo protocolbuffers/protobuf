@@ -53,7 +53,6 @@
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
 
-// Do UTF-8 validation on string type in Debug build only
 #ifndef NDEBUG
 #define GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
 #endif
@@ -102,7 +101,11 @@ class PROTOBUF_EXPORT WireFormatLite {
   // identifies the encoding of this data, it is possible to skip
   // unrecognized fields for forwards compatibility.
 
-  enum WireType {
+  enum WireType
+#ifndef SWIG
+      : int
+#endif  // !SWIG
+  {
     WIRETYPE_VARINT = 0,
     WIRETYPE_FIXED64 = 1,
     WIRETYPE_LENGTH_DELIMITED = 2,

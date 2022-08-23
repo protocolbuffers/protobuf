@@ -1,15 +1,21 @@
-This directory contains *CMake* files that can be used to build protobuf
-with *MSVC* on *Windows*. You can build the project from *Command Prompt*
-and using an *Visual Studio* IDE.
+This directory contains *CMake* files that can be used to build protobuf.
 
-You need to have [CMake](http://www.cmake.org), [Visual Studio](https://www.visualstudio.com)
-and optionally [Git](http://git-scm.com) installed on your computer before proceeding.
+You need to have [CMake](http://www.cmake.org) and
+[Git](http://git-scm.com) installed on your computer before proceeding.  We
+currently support CMake 3.5 and newer on both [Windows](#windows-builds) and
+[Linux](#linux-builds).
 
-Most of the instructions will be given to the *Сommand Prompt*, but the same
-actions can be performed using appropriate GUI tools.
+Most of the instructions will be given using CMake's command-line interface, but
+the same actions can be performed using appropriate GUI tools.
 
-Environment Setup
-=================
+# Windows Builds
+
+On Windows, you can build the project from *Command Prompt* and using an
+*Visual Studio* IDE.  You will also need to have
+[Visual Studio](https://www.visualstudio.com) installed on your computer before
+proceeding.
+
+## Environment Setup
 
 Open the appropriate *Command Prompt* from the *Start* menu.
 
@@ -42,8 +48,7 @@ Optionally, you will want to download [ninja](https://ninja-build.org/) and add 
 
 Good. Now you are ready to continue.
 
-Getting Sources
-===============
+## Getting Sources
 
 You can get the latest stable source packages from the release page:
 
@@ -76,8 +81,7 @@ C:\Path\to\src\protobuf> git submodule update --init --recursive
 
 Good. Now you are ready for *CMake* configuration.
 
-CMake Configuration
-===================
+## CMake Configuration
 
 *CMake* supports a lot of different
 [generators](http://www.cmake.org/cmake/help/latest/manual/cmake-generators.7.html)
@@ -137,8 +141,7 @@ The *Visual Studio* generator is multi-configuration: it will generate a single 
 
 It will generate *Visual Studio* solution file *protobuf.sln* in current directory.
 
-Unit Tests
-----------
+### Unit Tests
 
 Unit tests are being built along with the rest of protobuf. The unit tests require Google Mock (now a part of Google Test).
 
@@ -178,8 +181,7 @@ For example:
      -Dprotobuf_BUILD_TESTS=OFF ^
      C:\Path\to\src\protobuf
 
-Compiling
-=========
+## Compiling
 
 The standard way to compile a *CMake* project is `cmake --build <directory>`.
 
@@ -206,8 +208,7 @@ If you prefer to use the IDE:
 
 And wait for the compilation to finish.
 
-Testing
-=======
+## Testing
 
 To run unit-tests, first you must compile protobuf as described above.
 Then run:
@@ -259,8 +260,7 @@ Note that the tests must be run from the source folder.
 
 If all tests are passed, safely continue.
 
-Installing
-==========
+## Installing
 
 To install protobuf to the *install* folder you've specified in the configuration step, you need to build the `install` target:
 
@@ -292,8 +292,7 @@ compiling a debug build of your application, you may need to link against a
 debug build of libprotobufd.lib with "d" postfix.  Similarly, release builds should link against
 release libprotobuf.lib library.
 
-DLLs vs. static linking
-=======================
+## DLLs vs. static linking
 
 Static linking is now the default for the Protocol Buffer libraries.  Due to
 issues with Win32's use of a separate heap for each DLL, as well as binary
@@ -318,8 +317,7 @@ recommend that you do NOT expose protocol buffer objects in your library's
 public interface, and that you statically link protocol buffers into your
 library.
 
-ZLib support
-============
+## ZLib support
 
 If you want to include GzipInputStream and GzipOutputStream
 (google/protobuf/io/gzip_stream.h) in libprotobuf, you will need to do a few
@@ -369,8 +367,7 @@ If you already have ZLIB library and headers at some other location on your syst
 
 Build and testing protobuf as usual.
 
-Notes on Compiler Warnings
-==========================
+## Notes on Compiler Warnings
 
 The following warnings have been disabled while building the protobuf libraries
 and compiler.  You may have to disable some of them in your own project as
@@ -397,3 +394,23 @@ unique, so there should be no problem with this, but MSVC prints warning
 nevertheless.  So, we disable it.  Unfortunately, this warning will also be
 produced when compiling code which merely uses protocol buffers, meaning you
 may have to disable it in your code too.
+
+# Linux Builds
+
+Building with CMake works very similarly on Linux.  Instead of Visual Studio,
+you will need to have gcc or clang installed to handle the C++ builds.  CMake
+will generate Makefiles by default, but can also be configured to use Ninja.  To
+build Protobuf, you will need to run (from the source directory):
+
+     cmake .
+     cmake --build . --parallel 10
+
+Protobuf can be tested and installed with CMake:
+
+     ctest --verbose
+     sudo cmake --install .
+
+or directly with the generated Makefiles:
+
+     make VERBOSE=1 test
+     sudo make install

@@ -80,6 +80,10 @@ EnumGenerator::~EnumGenerator() {}
 void EnumGenerator::Generate(io::Printer* printer) {
   WriteEnumDocComment(printer, descriptor_);
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_, immutable_api_);
+
+  if (!context_->options().opensource_runtime) {
+    printer->Print("@com.google.protobuf.Internal.ProtoNonnullApi\n");
+  }
   printer->Print(
       "$deprecation$public enum $classname$\n"
       "    implements com.google.protobuf.ProtocolMessageEnum {\n",
@@ -181,23 +185,32 @@ void EnumGenerator::Generate(io::Printer* printer) {
   printer->Print(
       "  return value;\n"
       "}\n"
-      "\n"
+      "\n");
+  if (context_->options().opensource_runtime) {
+    printer->Print(
+        "/**\n"
+        " * @param value The numeric wire value of the corresponding enum "
+        "entry.\n"
+        " * @return The enum associated with the given numeric wire value.\n"
+        " * @deprecated Use {@link #forNumber(int)} instead.\n"
+        " */\n"
+        "@java.lang.Deprecated\n"
+        "public static $classname$ valueOf(int value) {\n"
+        "  return forNumber(value);\n"
+        "}\n"
+        "\n",
+        "classname", descriptor_->name());
+  }
+  printer->Print(
       "/**\n"
       " * @param value The numeric wire value of the corresponding enum "
       "entry.\n"
       " * @return The enum associated with the given numeric wire value.\n"
-      " * @deprecated Use {@link #forNumber(int)} instead.\n"
-      " */\n"
-      "@java.lang.Deprecated\n"
-      "public static $classname$ valueOf(int value) {\n"
-      "  return forNumber(value);\n"
-      "}\n"
-      "\n"
-      "/**\n"
-      " * @param value The numeric wire value of the corresponding enum "
-      "entry.\n"
-      " * @return The enum associated with the given numeric wire value.\n"
-      " */\n"
+      " */\n");
+  if (!context_->options().opensource_runtime) {
+    printer->Print("@com.google.protobuf.Internal.ProtoMethodMayReturnNull\n");
+  }
+  printer->Print(
       "public static $classname$ forNumber(int value) {\n"
       "  switch (value) {\n",
       "classname", descriptor_->name());

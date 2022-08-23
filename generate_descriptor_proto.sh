@@ -7,7 +7,7 @@
 # generate.
 #
 # HINT:  Flags passed to generate_descriptor_proto.sh will be passed directly
-#   to make when building protoc.  This is particularly useful for passing
+#   to bazel when building protoc.  This is particularly useful for passing
 #   -j4 to run 4 jobs simultaneously.
 
 if test ! -e src/google/protobuf/stubs/common.h; then
@@ -62,12 +62,12 @@ do
     PROTOC=$BOOTSTRAP_PROTOC
     BOOTSTRAP_PROTOC=""
   else
-    make -j$(nproc) $@ protoc
+    bazel build $@ //:protoc
     if test $? -ne 0; then
       echo "Failed to build protoc."
       exit 1
     fi
-    PROTOC="./protoc"
+    PROTOC="../bazel-bin/protoc"
   fi
 
   $PROTOC --cpp_out=dllexport_decl=PROTOBUF_EXPORT:$TMP ${RUNTIME_PROTO_FILES[@]} && \

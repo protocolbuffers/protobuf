@@ -1,6 +1,8 @@
 # Conformance testing for Protobuf.
 
-load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_proto_library", "objc_library")
+load("//:protobuf.bzl", "internal_csharp_proto_library", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library", "internal_ruby_proto_library")
+load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load(
     "@rules_pkg//:mappings.bzl",
     "pkg_attributes",
@@ -10,21 +12,38 @@ load(
 )
 
 exports_files([
-    "conformance_test_runner.sh",
+    "bazel_conformance_test_runner.sh",
+    "failure_list_cpp.txt",
+    "failure_list_csharp.txt",
     "failure_list_java.txt",
     "failure_list_java_lite.txt",
+    "failure_list_objc.txt",
+    "failure_list_php.txt",
+    "failure_list_php_c.txt",
+    "failure_list_python.txt",
+    "failure_list_python_cpp.txt",
+    "failure_list_ruby.txt",
+    "failure_list_jruby.txt",
+    "text_format_failure_list_cpp.txt",
+    "text_format_failure_list_csharp.txt",
     "text_format_failure_list_java.txt",
     "text_format_failure_list_java_lite.txt",
+    "text_format_failure_list_php.txt",
+    "text_format_failure_list_php_c.txt",
+    "text_format_failure_list_python.txt",
+    "text_format_failure_list_python_cpp.txt",
+    "text_format_failure_list_ruby.txt",
+    "text_format_failure_list_jruby.txt",
 ])
 
 cc_proto_library(
     name = "test_messages_proto2_proto_cc",
-    deps = ["//:test_messages_proto2_proto"],
+    deps = ["//src/google/protobuf:test_messages_proto2_proto"],
 )
 
 cc_proto_library(
     name = "test_messages_proto3_proto_cc",
-    deps = ["//:test_messages_proto3_proto"],
+    deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
 
 proto_library(
@@ -34,8 +53,16 @@ proto_library(
 )
 
 cc_proto_library(
-    name = "conformance_proto_cc",
+    name = "conformance_cc_proto",
     deps = [":conformance_proto"],
+)
+
+internal_csharp_proto_library(
+    name = "conformance_csharp_proto",
+    srcs = ["conformance.proto"],
+    visibility = [
+        "//csharp:__subpackages__",
+    ],
 )
 
 java_proto_library(
@@ -52,6 +79,51 @@ java_lite_proto_library(
         "//java:__subpackages__",
     ],
     deps = [":conformance_proto"],
+)
+
+internal_objc_proto_library(
+    name = "conformance_objc_proto",
+    srcs = ["conformance.proto"],
+    visibility = [
+        "//conformance:__pkg__",
+        "//objc:__pkg__",
+    ],
+)
+
+internal_py_proto_library(
+    name = "conformance_py_proto",
+    srcs = ["conformance.proto"],
+    srcs_version = "PY2AND3",
+    visibility = [
+        "//python:__subpackages__",
+    ],
+)
+
+internal_php_proto_library(
+    name = "conformance_php_proto",
+    srcs = ["conformance.proto"],
+    outs = [
+        "Conformance/ConformanceRequest.php",
+        "Conformance/ConformanceResponse.php",
+        "Conformance/FailureSet.php",
+        "Conformance/JspbEncodingConfig.php",
+        "Conformance/TestCategory.php",
+        "Conformance/WireFormat.php",
+        "GPBMetadata/Conformance.php",
+    ],
+    visibility = [
+        "//conformance:__pkg__",
+        "//php:__pkg__",
+    ],
+)
+
+internal_ruby_proto_library(
+    name = "conformance_ruby_proto",
+    srcs = ["conformance.proto"],
+    visibility = [
+        "//conformance:__pkg__",
+        "//ruby:__pkg__",
+    ],
 )
 
 cc_library(
@@ -71,7 +143,7 @@ cc_library(
         "conformance_test.h",
     ],
     includes = ["."],
-    deps = [":conformance_proto_cc"],
+    deps = [":conformance_cc_proto"],
 )
 
 cc_library(
@@ -108,8 +180,22 @@ cc_binary(
     ],
 )
 
+cc_binary(
+    name = "conformance_cpp",
+    testonly = 1,
+    srcs = ["conformance_cpp.cc"],
+    visibility = ["//src:__subpackages__"],
+    deps = [
+        ":conformance_cc_proto",
+        "//:protobuf",
+        "//:test_messages_proto2_cc_proto",
+        "//:test_messages_proto3_cc_proto",
+    ],
+)
+
 java_binary(
     name = "conformance_java",
+    testonly = 1,
     srcs = ["ConformanceJava.java"],
     main_class = "ConformanceJava",
     visibility = [
@@ -126,6 +212,7 @@ java_binary(
 
 java_binary(
     name = "conformance_java_lite",
+    testonly = 1,
     srcs = ["ConformanceJavaLite.java"],
     main_class = "ConformanceJavaLite",
     visibility = [
@@ -140,6 +227,115 @@ java_binary(
     ],
 )
 
+py_binary(
+    name = "conformance_python",
+    testonly = 1,
+    srcs = ["conformance_python.py"],
+    imports = [
+        "..",
+        "../python",
+    ],
+    srcs_version = "PY2AND3",
+    visibility = ["//python:__subpackages__"],
+    deps = [
+        ":conformance_py_proto",
+        "//:protobuf_python",
+        "//python:test_messages_proto2_py_proto",
+        "//python:test_messages_proto3_py_proto",
+    ],
+)
+
+inline_sh_binary(
+    name = "conformance_php",
+    testonly = 1,
+    srcs = [
+        "autoload.php",
+        "conformance_php.php",
+    ],
+    cmd = """
+        php -d include_path=conformance:src/google/protobuf \\
+            -d auto_prepend_file=$(rootpath autoload.php) \\
+            $(rootpath conformance_php.php)
+    """,
+    visibility = ["//php:__subpackages__"],
+    deps = [
+        ":conformance_php_proto",
+        "//:test_messages_proto3_php_proto",
+        "//php:source_files",
+    ],
+)
+
+inline_sh_binary(
+    name = "conformance_php_c",
+    testonly = 1,
+    srcs = [
+        "conformance_php.php",
+        "//php:extension",
+    ],
+    cmd = """
+        php -dextension=$(rootpath //php:extension) \\
+            -d include_path=conformance:src/google/protobuf \\
+            $(rootpath conformance_php.php)
+    """,
+    visibility = ["//php:__subpackages__"],
+    deps = [
+        ":conformance_php_proto",
+        "//:test_messages_proto3_php_proto",
+    ],
+)
+
+inline_sh_binary(
+    name = "conformance_csharp",
+    testonly = 1,
+    srcs = ["//csharp/src/Google.Protobuf.Conformance:conformance_dll"],
+    cmd = "dotnet $(rootpath //csharp/src/Google.Protobuf.Conformance:conformance_dll)",
+    visibility = ["//csharp:__subpackages__"],
+    deps = [
+        "//csharp/src/Google.Protobuf.Conformance:conformance_runfiles",
+    ],
+)
+
+objc_library(
+    name = "conformance_objc_lib",
+    testonly = 1,
+    non_arc_srcs = ["conformance_objc.m"],
+    # See https://github.com/bazelbuild/bazel/issues/12897.
+    tags = ["manual"],
+    deps = [
+        ":conformance_objc_proto",
+        "//:test_messages_proto2_objc_proto",
+        "//:test_messages_proto3_objc_proto",
+    ],
+)
+
+cc_binary(
+    name = "conformance_objc",
+    testonly = 1,
+    # See https://github.com/bazelbuild/bazel/issues/12897.
+    tags = ["manual"],
+    visibility = ["//objectivec:__subpackages__"],
+    deps = [":conformance_objc_lib"],
+)
+
+inline_sh_binary(
+    name = "conformance_ruby",
+    testonly = 1,
+    srcs = ["conformance_ruby.rb"],
+    cmd = "RUBYLIB=ruby/lib:conformance:src $(rootpath conformance_ruby.rb)",
+    visibility = ["//ruby:__subpackages__"],
+    deps = [
+        ":conformance_ruby_proto",
+        "//:test_messages_proto2_ruby_proto",
+        "//:test_messages_proto3_ruby_proto",
+        "//:well_known_ruby_protos",
+        "//ruby:protobuf",
+    ],
+)
+
+################################################################################
+# Distribution files
+################################################################################
+
 filegroup(
     name = "all_files",
     srcs = glob(["**/*"]),
@@ -152,11 +348,10 @@ pkg_files(
         ["**/*"],
         exclude = [
             # Handled by dist_scripts:
-            "conformance_test_runner.sh",
+            "bazel_conformance_test_runner.sh",
 
             # The following are not in autotools dist:
             "autoload.php",
-            "conformance_nodejs.js",
             "failure_list_jruby.txt",
             "update_failure_list.py",
         ],

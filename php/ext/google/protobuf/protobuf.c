@@ -242,13 +242,19 @@ bool ObjCache_Get(const void *upb_obj, zval *val) {
 // -----------------------------------------------------------------------------
 
 void NameMap_AddMessage(const upb_MessageDef *m) {
-  char *k = GetPhpClassname(upb_MessageDef_File(m), upb_MessageDef_FullName(m));
-  zend_hash_str_add_ptr(&PROTOBUF_G(name_msg_cache), k, strlen(k), (void*)m);
-  free(k);
+  for (int i = 0; i < 2; ++i) {
+    char *k = GetPhpClassname(upb_MessageDef_File(m), upb_MessageDef_FullName(m), (bool)i);
+    zend_hash_str_add_ptr(&PROTOBUF_G(name_msg_cache), k, strlen(k), (void*)m);
+    if (!IsPreviouslyUnreservedClassName(k)) {
+      free(k);
+      return;
+    }
+    free(k);
+  }
 }
 
 void NameMap_AddEnum(const upb_EnumDef *e) {
-  char *k = GetPhpClassname(upb_EnumDef_File(e), upb_EnumDef_FullName(e));
+  char *k = GetPhpClassname(upb_EnumDef_File(e), upb_EnumDef_FullName(e), false);
   zend_hash_str_add_ptr(&PROTOBUF_G(name_enum_cache), k, strlen(k), (void*)e);
   free(k);
 }

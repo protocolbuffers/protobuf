@@ -30,33 +30,33 @@ Installation
 
        $ python -V
 
-2) If you do not have setuptools installed, note that it will be
+2) Make sure you have Bazel 0.5.4 or later (or CMake 3.5 or later).
+
+3) If you do not have setuptools installed, note that it will be
    downloaded and installed automatically as soon as you run `setup.py`.
    If you would rather install it manually, you may do so by following
    the instructions on [this page](https://packaging.python.org/en/latest/tutorials/installing-packages/).
 
-3) Build the C++ code, or install a binary distribution of `protoc`.  If
+4) Build the C++ code, or install a binary distribution of `protoc`.  If
    you install a binary distribution, make sure that it is the same
    version as this package.  If in doubt, run:
 
        $ protoc --version
 
-4) Build and run the tests:
+5) Build and run the tests:
 
        $ python setup.py build
        $ python setup.py test
 
    To build, test, and use the C++ implementation, you must first compile
-   `libprotobuf.so`:
-
-       $ (cd .. && make)
+   `libprotobuf.so` using either [Bazel](../README.md) or [CMake](../src/README.md):
 
    On OS X:
 
    If you are running a Homebrew-provided Python, you must make sure another
    version of protobuf is not already installed, as Homebrew's Python will
-   search `/usr/local/lib` for `libprotobuf.so` before it searches
-   `../src/.libs`.
+   search `/usr/local/lib` for `libprotobuf.so` before it searches the compiled
+   binaries.
 
    You can either unlink Homebrew's protobuf or install the `libprotobuf` you
    built earlier:
@@ -65,18 +65,18 @@ Installation
 
    or
 
-       $ (cd .. && make install)
+       $ (cd .. && cmake . && make install)
 
     On other *nix:
 
     You must make `libprotobuf.so` dynamically available. You can either
     install libprotobuf you built earlier, or set `LD_LIBRARY_PATH`:
 
-       $ export LD_LIBRARY_PATH=../src/.libs
+       $ (cd .. && cmake . && make -j20 install)
 
     or
 
-       $ (cd .. && make install)
+       $ export LD_LIBRARY_PATH=../bazel-bin
 
    To build the C++ implementation run:
 
@@ -98,7 +98,7 @@ Installation
    We do not know if or when it might be fixed.  We also do not know
    how likely it is that this bug will affect users in practice.
 
-5) Install:
+6) Install:
 
        $ python setup.py install
 

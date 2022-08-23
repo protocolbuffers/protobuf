@@ -286,7 +286,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
       "$maybe_prepare_split_message$"
       "  // @@protoc_insertion_point(field_release:$full_name$)\n");
 
-  if (HasHasbit(descriptor_)) {
+  if (internal::cpp::HasHasbit(descriptor_)) {
     format(
         "  if (!_internal_has_$name$()) {\n"
         "    return nullptr;\n"
@@ -375,7 +375,7 @@ void StringFieldGenerator::GenerateMessageClearingCode(
   // If we have a hasbit, then the Clear() method of the protocol buffer
   // will have checked that this field is set.  If so, we can avoid redundant
   // checks against the default variable.
-  const bool must_be_present = HasHasbit(descriptor_);
+  const bool must_be_present = internal::cpp::HasHasbit(descriptor_);
 
   if (inlined_ && must_be_present) {
     // Calling mutable_$name$() gives us a string reference and sets the has bit
@@ -451,7 +451,7 @@ void StringFieldGenerator::GenerateCopyConstructorCode(
     format("new (&_this->$field$) ::_pbi::InlinedStringField();\n");
   }
 
-  if (HasHasbit(descriptor_)) {
+  if (internal::cpp::HasHasbit(descriptor_)) {
     format("if (from._internal_has_$name$()) {\n");
   } else {
     format("if (!from._internal_$name$().empty()) {\n");

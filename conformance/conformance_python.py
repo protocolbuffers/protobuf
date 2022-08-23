@@ -42,7 +42,7 @@ from google.protobuf import message
 from google.protobuf import test_messages_proto3_pb2
 from google.protobuf import test_messages_proto2_pb2
 from google.protobuf import text_format
-import conformance_pb2
+from conformance import conformance_pb2
 
 sys.stdout = os.fdopen(sys.stdout.fileno(), 'wb', 0)
 sys.stdin = os.fdopen(sys.stdin.fileno(), 'rb', 0)
