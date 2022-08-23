@@ -36,6 +36,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/string_view.h"
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/zero_copy_stream.h>
@@ -81,8 +82,8 @@ struct Options {
 // Escape C++ trigraphs by escaping question marks to "\?".
 std::string PROTOC_EXPORT EscapeTrigraphs(const std::string& to_escape);
 
-// Remove white space from either end of a StringPiece.
-void PROTOC_EXPORT TrimWhitespace(StringPiece* input);
+// Remove white space from either end of an absl::string_view.
+void PROTOC_EXPORT TrimWhitespace(absl::string_view* input);
 
 // Returns true if the name requires a ns_returns_not_retained attribute applied
 // to it.
@@ -291,7 +292,7 @@ class PROTOC_EXPORT LineConsumer {
  public:
   LineConsumer();
   virtual ~LineConsumer();
-  virtual bool ConsumeLine(const StringPiece& line, std::string* out_error) = 0;
+  virtual bool ConsumeLine(absl::string_view line, std::string* out_error) = 0;
 };
 
 bool PROTOC_EXPORT ParseSimpleFile(const std::string& path,
@@ -327,7 +328,7 @@ class PROTOC_EXPORT ImportWriter {
     ProtoFrameworkCollector(std::map<std::string, std::string>* inout_proto_file_to_framework_name)
         : map_(inout_proto_file_to_framework_name) {}
 
-    virtual bool ConsumeLine(const StringPiece& line, std::string* out_error) override;
+    virtual bool ConsumeLine(absl::string_view line, std::string* out_error) override;
 
    private:
     std::map<std::string, std::string>* map_;

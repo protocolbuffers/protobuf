@@ -29,6 +29,8 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
+
+#include "absl/strings/string_view.h"
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <gtest/gtest.h>
 
@@ -249,7 +251,7 @@ class TestLineCollector : public LineConsumer {
                     bool skip_msg = false)
     : lines_(inout_lines), reject_(reject_line), skip_msg_(skip_msg) {}
 
-  bool ConsumeLine(const StringPiece& line, std::string* out_error) override {
+  bool ConsumeLine(absl::string_view line, std::string* out_error) override {
     if (reject_ && *reject_ == line) {
       if (!skip_msg_) {
         *out_error = std::string("Rejected '") + *reject_ + "'";

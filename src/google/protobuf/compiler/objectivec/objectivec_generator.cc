@@ -32,6 +32,8 @@
 #include <iostream>
 #include <string>
 #include <unordered_set>
+
+#include "absl/strings/string_view.h"
 #include <google/protobuf/compiler/objectivec/objectivec_generator.h>
 #include <google/protobuf/compiler/objectivec/objectivec_file.h>
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
@@ -122,7 +124,7 @@ bool ObjectiveCGenerator::GenerateAll(
       // A semicolon delimited string that lists the paths of .proto files to
       // exclude from the package prefix validations (expected_prefixes_path).
       // This is provided as an "out", to skip some files being checked.
-      for (StringPiece split_piece : Split(
+      for (absl::string_view split_piece : Split(
                options[i].second, ";", true)) {
         validation_options.expected_prefixes_suppressions.push_back(
             std::string(split_piece));
