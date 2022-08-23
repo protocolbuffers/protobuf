@@ -37,7 +37,6 @@
 #import "google/protobuf/MapProto2Unittest.pbobjc.h"
 #import "google/protobuf/MapUnittest.pbobjc.h"
 #import "google/protobuf/Unittest.pbobjc.h"
-#import "google/protobuf/UnittestDropUnknownFields.pbobjc.h"
 #import "google/protobuf/UnittestPreserveUnknownEnum.pbobjc.h"
 #import "google/protobuf/UnittestRuntimeProto2.pbobjc.h"
 #import "google/protobuf/UnittestRuntimeProto3.pbobjc.h"
