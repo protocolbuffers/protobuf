@@ -30,8 +30,6 @@
 
 syntax = "proto3";
 
-option cc_enable_arenas = true;
-
 import "unittest.proto";
 
 // We don't put this in a package within proto2 because we need to make sure

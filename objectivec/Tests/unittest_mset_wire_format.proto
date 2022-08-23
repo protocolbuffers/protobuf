@@ -37,10 +37,6 @@
 syntax = "proto2";
 package objc.protobuf.tests.wireformat;
 
-option cc_enable_arenas = true;
-option optimize_for = SPEED;
-option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
-
 // A message with message_set_wire_format.
 message TestMessageSet {
   option message_set_wire_format = true;

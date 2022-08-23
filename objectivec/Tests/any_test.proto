@@ -34,8 +34,6 @@ package objc.protobuf.tests;
 
 import "google/protobuf/any.proto";
 
-option java_outer_classname = "TestAnyProto";
-
 message TestAny {
   int32 int32_value = 1;
   google.protobuf.Any any_value = 2;

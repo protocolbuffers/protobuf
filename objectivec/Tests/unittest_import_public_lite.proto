@@ -36,8 +36,6 @@ package objc.protobuf.tests.import;
 
 option optimize_for = LITE_RUNTIME;
 
-option java_package = "com.google.protobuf";
-
 message PublicImportMessageLite {
   optional int32 e = 1;
 }
