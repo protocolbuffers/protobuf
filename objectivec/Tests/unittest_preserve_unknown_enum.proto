@@ -30,7 +30,7 @@
 
 syntax = "proto3";
 
-package proto3_preserve_unknown_enum_unittest;
+package objc.protobuf.tests.proto3_preserve_unknown_enum;
 option objc_class_prefix = "UnknownEnums";
 
 option csharp_namespace = "Google.Protobuf.TestProtos";

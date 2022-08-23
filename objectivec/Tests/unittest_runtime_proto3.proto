@@ -29,7 +29,7 @@
 
 syntax = "proto3";
 
-package protobuf_unittest;
+package objc.protobuf.tests;
 
 message Message3 {
   enum Enum {

@@ -30,7 +30,7 @@
 
 syntax = "proto3";
 
-package protobuf_unittest;
+package objc.protobuf.tests;
 
 import "google/protobuf/any.proto";
 

@@ -39,13 +39,13 @@ syntax = "proto2";
 
 import "unittest_mset_wire_format.proto";
 
-package protobuf_unittest;
+package objc.protobuf.tests;
 
 option cc_enable_arenas = true;
 option optimize_for = SPEED;
 
 message TestMessageSetContainer {
-  optional proto2_wireformat_unittest.TestMessageSet message_set = 1;
+  optional objc.protobuf.tests.wireformat.TestMessageSet message_set = 1;
 }
 
 message NestedTestMessageSetContainer {
@@ -60,23 +60,23 @@ message NestedTestInt {
 }
 
 message TestMessageSetExtension1 {
-  extend proto2_wireformat_unittest.TestMessageSet {
+  extend objc.protobuf.tests.wireformat.TestMessageSet {
     optional TestMessageSetExtension1 message_set_extension = 1545008;
   }
   optional int32 i = 15;
-  optional proto2_wireformat_unittest.TestMessageSet recursive = 16;
+  optional objc.protobuf.tests.wireformat.TestMessageSet recursive = 16;
   optional string test_aliasing = 17 [ctype = STRING_PIECE];
 }
 
 message TestMessageSetExtension2 {
-  extend proto2_wireformat_unittest.TestMessageSet {
+  extend objc.protobuf.tests.wireformat.TestMessageSet {
     optional TestMessageSetExtension2 message_set_extension = 1547769;
   }
   optional string str = 25;
 }
 
 message TestMessageSetExtension3 {
-  extend proto2_wireformat_unittest.TestMessageSet {
+  extend objc.protobuf.tests.wireformat.TestMessageSet {
     optional TestMessageSetExtension3 message_set_extension = 195273129;
   }
   optional NestedTestInt msg = 35;

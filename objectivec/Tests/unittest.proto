@@ -49,8 +49,8 @@ import "unittest_import.proto";
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
-// In test_util.h we do "using namespace unittest = protobuf_unittest".
-package protobuf_unittest;
+// In test_util.h we do "using namespace unittest = objc.protobuf.tests".
+package objc.protobuf.tests;
 
 // Protos optimized for SPEED use a strict superset of the generated code
 // of equivalent ones optimized for CODE_SIZE, so we should optimize all our
@@ -99,17 +99,17 @@ message TestAllTypes {
 
   optional NestedMessage                        optional_nested_message  = 18;
   optional ForeignMessage                       optional_foreign_message = 19;
-  optional protobuf_unittest_import.ImportMessage optional_import_message  = 20;
+  optional objc.protobuf.tests.import.ImportMessage optional_import_message  = 20;
 
   optional NestedEnum                           optional_nested_enum     = 21;
   optional ForeignEnum                          optional_foreign_enum    = 22;
-  optional protobuf_unittest_import.ImportEnum    optional_import_enum     = 23;
+  optional objc.protobuf.tests.import.ImportEnum    optional_import_enum     = 23;
 
   optional string optional_string_piece = 24 [ctype=STRING_PIECE];
   optional string optional_cord = 25 [ctype=CORD];
 
   // Defined in unittest_import_public.proto
-  optional protobuf_unittest_import.PublicImportMessage
+  optional objc.protobuf.tests.import.PublicImportMessage
       optional_public_import_message = 26;
 
   optional NestedMessage optional_lazy_message = 27 [lazy=true];
@@ -138,11 +138,11 @@ message TestAllTypes {
 
   repeated NestedMessage                        repeated_nested_message  = 48;
   repeated ForeignMessage                       repeated_foreign_message = 49;
-  repeated protobuf_unittest_import.ImportMessage repeated_import_message  = 50;
+  repeated objc.protobuf.tests.import.ImportMessage repeated_import_message  = 50;
 
   repeated NestedEnum                           repeated_nested_enum     = 51;
   repeated ForeignEnum                          repeated_foreign_enum    = 52;
-  repeated protobuf_unittest_import.ImportEnum    repeated_import_enum     = 53;
+  repeated objc.protobuf.tests.import.ImportEnum    repeated_import_enum     = 53;
 
   repeated string repeated_string_piece = 54 [ctype=STRING_PIECE];
   repeated string repeated_cord = 55 [ctype=CORD];
@@ -168,7 +168,7 @@ message TestAllTypes {
 
   optional NestedEnum  default_nested_enum  = 81 [default = BAR        ];
   optional ForeignEnum default_foreign_enum = 82 [default = FOREIGN_BAR];
-  optional protobuf_unittest_import.ImportEnum
+  optional objc.protobuf.tests.import.ImportEnum
       default_import_enum = 83 [default = IMPORT_BAR];
 
   optional string default_string_piece = 84 [ctype=STRING_PIECE,default="abc"];
@@ -255,18 +255,18 @@ extend TestAllExtensions {
 
   optional TestAllTypes.NestedMessage optional_nested_message_extension = 18;
   optional ForeignMessage optional_foreign_message_extension = 19;
-  optional protobuf_unittest_import.ImportMessage
+  optional objc.protobuf.tests.import.ImportMessage
     optional_import_message_extension = 20;
 
   optional TestAllTypes.NestedEnum optional_nested_enum_extension = 21;
   optional ForeignEnum optional_foreign_enum_extension = 22;
-  optional protobuf_unittest_import.ImportEnum
+  optional objc.protobuf.tests.import.ImportEnum
     optional_import_enum_extension = 23;
 
   optional string optional_string_piece_extension = 24 [ctype=STRING_PIECE];
   optional string optional_cord_extension = 25 [ctype=CORD];
 
-  optional protobuf_unittest_import.PublicImportMessage
+  optional objc.protobuf.tests.import.PublicImportMessage
     optional_public_import_message_extension = 26;
 
   optional TestAllTypes.NestedMessage
@@ -297,12 +297,12 @@ extend TestAllExtensions {
 
   repeated TestAllTypes.NestedMessage repeated_nested_message_extension = 48;
   repeated ForeignMessage repeated_foreign_message_extension = 49;
-  repeated protobuf_unittest_import.ImportMessage
+  repeated objc.protobuf.tests.import.ImportMessage
     repeated_import_message_extension = 50;
 
   repeated TestAllTypes.NestedEnum repeated_nested_enum_extension = 51;
   repeated ForeignEnum repeated_foreign_enum_extension = 52;
-  repeated protobuf_unittest_import.ImportEnum
+  repeated objc.protobuf.tests.import.ImportEnum
     repeated_import_enum_extension = 53;
 
   repeated string repeated_string_piece_extension = 54 [ctype=STRING_PIECE];
@@ -332,7 +332,7 @@ extend TestAllExtensions {
     default_nested_enum_extension = 81 [default = BAR];
   optional ForeignEnum
     default_foreign_enum_extension = 82 [default = FOREIGN_BAR];
-  optional protobuf_unittest_import.ImportEnum
+  optional objc.protobuf.tests.import.ImportEnum
     default_import_enum_extension = 83 [default = IMPORT_BAR];
 
   optional string default_string_piece_extension = 84 [ctype=STRING_PIECE,
@@ -565,7 +565,7 @@ message TestIsInitialized {
 // Test that groups have disjoint field numbers from their siblings and
 // parents.  This is NOT possible in proto1; only google.protobuf.  When attempting
 // to compile with proto1, this will emit an error; so we only include it
-// in protobuf_unittest_proto.
+// in objc.protobuf.tests_proto.
 message TestDupFieldNumber {                        // NO_PROTO1
   optional int32 a = 1;                             // NO_PROTO1
   optional group Foo = 2 { optional int32 a = 1; }  // NO_PROTO1
@@ -1153,7 +1153,7 @@ message TestNestedGroupExtensionOuter {
         //[metadata = {
         // NOTE: can't write type there due to some clever build gen code at
         // http://google3/net/proto2/internal/BUILD;l=1247;rcl=411090862
-        // type: "protobuf_unittest.TestNestedGroupExtensionInnerExtension",
+        // type: "objc.protobuf.tests.TestNestedGroupExtensionInnerExtension",
         // name: "inner",
         // }]
         ;
