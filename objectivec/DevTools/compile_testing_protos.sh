@@ -32,24 +32,13 @@ esac
 
 CORE_PROTO_FILES=(
   src/google/protobuf/any_test.proto
-  src/google/protobuf/unittest_arena.proto
-  src/google/protobuf/unittest_custom_options.proto
-  src/google/protobuf/unittest_enormous_descriptor.proto
-  src/google/protobuf/unittest_embed_optimize_for.proto
-  src/google/protobuf/unittest_empty.proto
   src/google/protobuf/unittest_import.proto
-  src/google/protobuf/unittest_import_lite.proto
-  src/google/protobuf/unittest_lite.proto
   src/google/protobuf/unittest_mset.proto
   src/google/protobuf/unittest_mset_wire_format.proto
-  src/google/protobuf/unittest_no_generic_services.proto
-  src/google/protobuf/unittest_optimize_for.proto
   src/google/protobuf/unittest.proto
   src/google/protobuf/unittest_import_public.proto
   src/google/protobuf/unittest_import_public_lite.proto
-  src/google/protobuf/unittest_drop_unknown_fields.proto
   src/google/protobuf/unittest_preserve_unknown_enum.proto
-  src/google/protobuf/map_lite_unittest.proto
   src/google/protobuf/map_proto2_unittest.proto
   src/google/protobuf/map_unittest.proto
   # The unittest_custom_options.proto extends the messages in descriptor.proto
