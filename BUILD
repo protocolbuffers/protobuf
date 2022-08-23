@@ -432,6 +432,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":atoi_internal",
         ":encode_internal",
         ":port",
         ":reflection",
@@ -587,6 +588,17 @@ upb_proto_library(
 upb_proto_reflection_library(
     name = "timestamp_upb_proto_reflection",
     deps = ["@com_google_protobuf//:timestamp_proto"],
+)
+
+cc_test(
+    name = "atoi_test",
+    srcs = ["upb/internal/atoi_test.cc"],
+    copts = UPB_DEFAULT_CPPOPTS,
+    deps = [
+        ":atoi_internal",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest_main",
+    ],
 )
 
 cc_test(
@@ -769,6 +781,15 @@ cc_library(
 )
 
 cc_library(
+    name = "atoi_internal",
+    srcs = ["upb/internal/atoi.c"],
+    hdrs = ["upb/internal/atoi.h"],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//:__subpackages__"],
+    deps = [":port"],
+)
+
+cc_library(
     name = "decode_internal",
     srcs = [
         "upb/decode.h",
@@ -839,6 +860,7 @@ upb_amalgamation(
     libs = [
         ":arena_internal",
         ":array_internal",
+        ":atoi_internal",
         ":collections",
         ":decode_internal",
         ":descriptor_upb_proto",
@@ -870,6 +892,7 @@ upb_amalgamation(
     libs = [
         ":arena_internal",
         ":array_internal",
+        ":atoi_internal",
         ":collections",
         ":decode_internal",
         ":descriptor_upb_proto",
@@ -904,6 +927,7 @@ upb_amalgamation(
     libs = [
         ":arena_internal",
         ":array_internal",
+        ":atoi_internal",
         ":collections",
         ":decode_internal",
         ":descriptor_upb_proto",

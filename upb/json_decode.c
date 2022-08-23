@@ -36,6 +36,7 @@
 #include <string.h>
 
 #include "upb/encode.h"
+#include "upb/internal/atoi.h"
 #include "upb/internal/unicode.h"
 #include "upb/reflection.h"
 
@@ -609,48 +610,19 @@ static size_t jsondec_base64(jsondec* d, upb_StringView str) {
 
 /* Low-level integer parsing **************************************************/
 
-/* We use these hand-written routines instead of strto[u]l() because the "long
- * long" variants aren't in c89. Also our version allows setting a ptr limit. */
-
 static const char* jsondec_buftouint64(jsondec* d, const char* ptr,
                                        const char* end, uint64_t* val) {
-  uint64_t u64 = 0;
-  while (ptr < end) {
-    unsigned ch = *ptr - '0';
-    if (ch >= 10) break;
-    if (u64 > UINT64_MAX / 10 || u64 * 10 > UINT64_MAX - ch) {
-      jsondec_err(d, "Integer overflow");
-    }
-    u64 *= 10;
-    u64 += ch;
-    ptr++;
-  }
-
-  *val = u64;
-  return ptr;
+  const char* out = upb_BufToUint64(ptr, end, val);
+  if (!out) jsondec_err(d, "Integer overflow");
+  return out;
 }
 
 static const char* jsondec_buftoint64(jsondec* d, const char* ptr,
                                       const char* end, int64_t* val,
                                       bool* is_neg) {
-  bool neg = false;
-  uint64_t u64;
-
-  if (ptr != end && *ptr == '-') {
-    ptr++;
-    neg = true;
-  }
-
-  ptr = jsondec_buftouint64(d, ptr, end, &u64);
-  if (u64 > (uint64_t)INT64_MAX + neg) {
-    jsondec_err(d, "Integer overflow");
-  }
-
-  *val = neg ? -u64 : u64;
-  if (is_neg) {
-    *is_neg = neg;
-  }
-  return ptr;
+  const char* out = upb_BufToInt64(ptr, end, val, is_neg);
+  if (!out) jsondec_err(d, "Integer overflow");
+  return out;
 }
 
 static uint64_t jsondec_strtouint64(jsondec* d, upb_StringView str) {
