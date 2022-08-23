@@ -34,8 +34,6 @@ syntax = "proto2";
 
 package objc.protobuf.tests.import;
 
-option java_package = "com.google.protobuf.test";
-
 message PublicImportMessage {
   optional int32 e = 1;
 }

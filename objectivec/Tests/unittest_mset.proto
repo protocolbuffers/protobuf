@@ -41,9 +41,6 @@ import "unittest_mset_wire_format.proto";
 
 package objc.protobuf.tests;
 
-option cc_enable_arenas = true;
-option optimize_for = SPEED;
-
 message TestMessageSetContainer {
   optional objc.protobuf.tests.wireformat.TestMessageSet message_set = 1;
 }
