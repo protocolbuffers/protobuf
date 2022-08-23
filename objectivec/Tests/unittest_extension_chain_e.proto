@@ -31,7 +31,7 @@ syntax = "proto2";
 
 package objc.protobuf.tests;
 
-import "unittest.proto";
+import "objectivec/Tests/unittest.proto";
 
 // The Root for this file should end up just merging in unittest's Root.
 

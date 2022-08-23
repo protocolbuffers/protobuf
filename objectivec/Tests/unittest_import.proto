@@ -39,7 +39,7 @@ syntax = "proto2";
 package objc.protobuf.tests.import;
 
 // Test public import
-import public "unittest_import_public.proto";
+import public "objectivec/Tests/unittest_import_public.proto";
 
 message ImportMessage {
   optional int32 d = 1;

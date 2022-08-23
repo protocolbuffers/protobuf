@@ -83,7 +83,7 @@ for PROTO_FILE in "${OBJC_TEST_PROTO_FILES[@]}"; do
   OBJC_NAME=$(echo "${BASE_NAME}" | awk -F _ '{for(i=1; i<=NF; i++) printf "%s", toupper(substr($i,1,1)) substr($i,2);}')
 
   for EXT in "${OBJC_EXTENSIONS[@]}"; do
-    if [[ ! -f "${OUTPUT_DIR}/${OBJC_NAME}${EXT}" ]]; then
+    if [[ ! -f "${OUTPUT_DIR}/${DIR}/${OBJC_NAME}${EXT}" ]]; then
       RUN_PROTOC=yes
     fi
   done
@@ -130,6 +130,6 @@ find "${OUTPUT_DIR}" \
 
 "${PROTOC}"                                  \
   --objc_out="${OUTPUT_DIR}"                 \
+  --proto_path=.                             \
   --proto_path=src                           \
-  --proto_path="objectivec/Tests"            \
   "${OBJC_TEST_PROTO_FILES[@]}"

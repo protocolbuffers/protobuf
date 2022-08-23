@@ -31,10 +31,10 @@ syntax = "proto2";
 
 package objc.protobuf.tests;
 
-import "unittest.proto";
+import "objectivec/Tests/unittest.proto";
 
-import "unittest_extension_chain_b.proto";
-import "unittest_extension_chain_c.proto";
+import "objectivec/Tests/unittest_extension_chain_b.proto";
+import "objectivec/Tests/unittest_extension_chain_c.proto";
 
 // The root should end up needing to merge B (C will be merged into B, so it
 // doesn't need to be directly merged).

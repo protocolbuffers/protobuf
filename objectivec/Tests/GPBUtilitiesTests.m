@@ -41,9 +41,9 @@
 #import "GPBMessage.h"
 #import "GPBUnknownField_PackagePrivate.h"
 
-#import "MapUnittest.pbobjc.h"
-#import "Unittest.pbobjc.h"
-#import "UnittestObjc.pbobjc.h"
+#import "objectivec/Tests/MapUnittest.pbobjc.h"
+#import "objectivec/Tests/Unittest.pbobjc.h"
+#import "objectivec/Tests/UnittestObjc.pbobjc.h"
 
 @interface UtilitiesTests : GPBTestCase
 @end

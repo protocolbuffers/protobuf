@@ -34,12 +34,12 @@
 
 #import "GPBMessage.h"
 
-#import "MapProto2Unittest.pbobjc.h"
-#import "MapUnittest.pbobjc.h"
-#import "Unittest.pbobjc.h"
-#import "UnittestPreserveUnknownEnum.pbobjc.h"
-#import "UnittestRuntimeProto2.pbobjc.h"
-#import "UnittestRuntimeProto3.pbobjc.h"
+#import "objectivec/Tests/MapProto2Unittest.pbobjc.h"
+#import "objectivec/Tests/MapUnittest.pbobjc.h"
+#import "objectivec/Tests/Unittest.pbobjc.h"
+#import "objectivec/Tests/UnittestPreserveUnknownEnum.pbobjc.h"
+#import "objectivec/Tests/UnittestRuntimeProto2.pbobjc.h"
+#import "objectivec/Tests/UnittestRuntimeProto3.pbobjc.h"
 
 @interface MessageSerializationTests : GPBTestCase
 @end

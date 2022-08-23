@@ -30,7 +30,7 @@
 
 syntax = "proto2";
 
-import "unittest_import.proto";
+import "objectivec/Tests/unittest_import.proto";
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
