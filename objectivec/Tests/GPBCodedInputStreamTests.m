@@ -34,7 +34,7 @@
 #import "GPBCodedOutputStream.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"
-#import "google/protobuf/Unittest.pbobjc.h"
+#import "Unittest.pbobjc.h"
 
 @interface CodedInputStreamTests : GPBTestCase
 @end

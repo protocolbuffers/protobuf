@@ -33,9 +33,9 @@
 #import <objc/runtime.h>
 
 #import "GPBDescriptor_PackagePrivate.h"
-#import "google/protobuf/Unittest.pbobjc.h"
-#import "google/protobuf/UnittestObjc.pbobjc.h"
-#import "google/protobuf/UnittestObjcOptions.pbobjc.h"
+#import "Unittest.pbobjc.h"
+#import "UnittestObjc.pbobjc.h"
+#import "UnittestObjcOptions.pbobjc.h"
 
 @interface DescriptorTests : GPBTestCase
 @end

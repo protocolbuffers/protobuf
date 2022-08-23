@@ -60,14 +60,14 @@ OBJC_EXTENSIONS=( .pbobjc.h .pbobjc.m )
 
 # -----------------------------------------------------------------------------
 # Ensure the output dir exists
-mkdir -p "${OUTPUT_DIR}/google/protobuf"
+mkdir -p "${OUTPUT_DIR}"
 
 # -----------------------------------------------------------------------------
 # Move to the top of the protobuf directories and ensure there is a protoc
 # binary to use.
 cd "${SRCROOT}/.."
 readonly PROTOC="bazel-bin/protoc"
-[[ -x $PROTOC ]] || \
+[[ -x "${PROTOC}" ]] || \
   die "Could not find the protoc binary; make sure you have built it (objectivec/DevTools/full_mac_build.sh -h)."
 
 # -----------------------------------------------------------------------------
@@ -83,7 +83,7 @@ for PROTO_FILE in "${OBJC_TEST_PROTO_FILES[@]}"; do
   OBJC_NAME=$(echo "${BASE_NAME}" | awk -F _ '{for(i=1; i<=NF; i++) printf "%s", toupper(substr($i,1,1)) substr($i,2);}')
 
   for EXT in "${OBJC_EXTENSIONS[@]}"; do
-    if [[ ! -f "${OUTPUT_DIR}/google/protobuf/${OBJC_NAME}${EXT}" ]]; then
+    if [[ ! -f "${OUTPUT_DIR}/${OBJC_NAME}${EXT}" ]]; then
       RUN_PROTOC=yes
     fi
   done
@@ -96,7 +96,7 @@ if [[ "${RUN_PROTOC}" != "yes" ]] ; then
   # (these patterns catch some extra stuff, but better to over sample than
   # under)
   readonly NewestInput=$(find \
-     objectivec/Tests/*.proto $PROTOC \
+     objectivec/Tests/*.proto "${PROTOC}" \
      objectivec/DevTools/compile_testing_protos.sh \
         -type f -print0 \
         | xargs -0 stat -f "%m %N" \
@@ -126,21 +126,15 @@ find "${OUTPUT_DIR}" \
     | xargs -0 rm -rf
 
 # -----------------------------------------------------------------------------
-# Helper to invoke protoc
-compile_protos() {
-  $PROTOC                                      \
-    --objc_out="${OUTPUT_DIR}/google/protobuf" \
-    --proto_path=src                           \
-    --experimental_allow_proto3_optional       \
-    "$@"
-}
-
-# -----------------------------------------------------------------------------
 # Generate the Objective C specific testing protos.
 
 # Note: there is overlap in package.Message names between some of the test
 # files, so they can't be generated all at once. This works because the overlap
 # isn't linked into a single binary.
 for a_proto in "${OBJC_TEST_PROTO_FILES[@]}" ; do
-  compile_protos --proto_path="objectivec/Tests" "${a_proto}"
+  "${PROTOC}"                                  \
+    --objc_out="${OUTPUT_DIR}"                 \
+    --proto_path=src                           \
+    --proto_path="objectivec/Tests"            \
+    "${a_proto}"
 done
