@@ -296,7 +296,7 @@ void ImmutableMessageGenerator::GenerateInterface(io::Printer* printer) {
   for (auto oneof : oneofs_) {
     printer->Print(
         "\n"
-        "public $classname$.$oneof_capitalized_name$Case "
+        "$classname$.$oneof_capitalized_name$Case "
         "get$oneof_capitalized_name$Case();\n",
         "oneof_capitalized_name",
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name, "classname",

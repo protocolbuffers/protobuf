@@ -31,6 +31,7 @@
 #include <google/protobuf/compiler/python/pyi_generator.h>
 
 #include <string>
+#include <utility>
 
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/compiler/python/helpers.h>
@@ -283,12 +284,21 @@ void PyiGenerator::PrintImports() const {
 printer_->Print("\n");
 }
 
+// Annotate wrapper for debugging purposes
+// Print a message after Annotate to see what is annotated.
+template <typename DescriptorT>
+void PyiGenerator::Annotate(const std::string& label,
+                            const DescriptorT* descriptor) const {
+printer_->Annotate(label.c_str(), descriptor);
+}
+
 void PyiGenerator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
   std::string enum_name = enum_descriptor.name();
   printer_->Print(
       "class $enum_name$(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):\n"
       "    __slots__ = []\n",
       "enum_name", enum_name);
+  Annotate("enum_name", &enum_descriptor);
 }
 
 void PyiGenerator::PrintEnumValues(
@@ -300,6 +310,7 @@ void PyiGenerator::PrintEnumValues(
     printer_->Print("$name$: $module_enum_name$\n",
                     "name", value_descriptor->name(),
                     "module_enum_name", module_enum_name);
+    Annotate("name", value_descriptor);
   }
 }
 
@@ -320,6 +331,7 @@ void PyiGenerator::PrintExtensions(const DescriptorT& descriptor) const {
                     "constant_name", constant_name);
     printer_->Print("$name$: _descriptor.FieldDescriptor\n",
                     "name", extension_field->name());
+    Annotate("name", extension_field);
   }
 }
 
@@ -379,6 +391,7 @@ void PyiGenerator::PrintMessage(
   }
   printer_->Print("class $class_name$(_message.Message$extra_base$):\n",
                   "class_name", class_name, "extra_base", extra_base);
+  Annotate("class_name", &message_descriptor);
   printer_->Indent();
   printer_->Indent();
 
@@ -454,6 +467,7 @@ void PyiGenerator::PrintMessage(
     }
     printer_->Print("$name$: $type$\n",
                     "name", field_des.name(), "type", field_type);
+    Annotate("name", &field_des);
   }
 
   // Prints __init__
@@ -546,18 +560,39 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
                             const std::string& parameter,
                             GeneratorContext* context,
                             std::string* error) const {
-  MutexLock lock(&mutex_);
+  absl::MutexLock lock(&mutex_);
   import_map_.clear();
   // Calculate file name.
   file_ = file;
   // In google3, devtools/python/blaze/pytype/pytype_impl.bzl uses --pyi_out to
   // directly set the output file name.
-  std::string filename =
-      parameter.empty() ? GetFileName(file, ".pyi") : parameter;
+  std::vector<std::pair<std::string, std::string> > options;
+  ParseGeneratorParameter(parameter, &options);
+
+  std::string filename;
+  bool annotate_code = false;
+  for (const std::pair<std::string, std::string>& option : options) {
+    if (option.first == "annotate_code") {
+      annotate_code = true;
+    } else if (HasSuffixString(option.first, ".pyi")) {
+      filename = option.first;
+    } else {
+      *error = "Unknown generator option: " + option.first;
+      return false;
+    }
+  }
+
+  if (filename.empty()) {
+    filename = GetFileName(file, ".pyi");
+  }
 
   std::unique_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
   GOOGLE_CHECK(output.get());
-  io::Printer printer(output.get(), '$');
+  GeneratedCodeInfo annotations;
+  io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
+      &annotations);
+  io::Printer printer(output.get(), '$',
+                      annotate_code ? &annotation_collector : nullptr);
   printer_ = &printer;
 
   PrintImports();

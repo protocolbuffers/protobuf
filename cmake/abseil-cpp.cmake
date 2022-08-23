@@ -2,7 +2,10 @@
 
 set(ABSL_PROPAGATE_CXX_STD ON)
 
-if(protobuf_ABSL_PROVIDER STREQUAL "module")
+if(TARGET absl::strings)
+  # If Abseil is included already, skip including it.
+  # (https://github.com/protocolbuffers/protobuf/issues/10435)
+elseif(protobuf_ABSL_PROVIDER STREQUAL "module")
   if(NOT ABSL_ROOT_DIR)
     set(ABSL_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/abseil-cpp)
   endif()

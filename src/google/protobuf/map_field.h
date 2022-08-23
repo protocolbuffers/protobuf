@@ -35,8 +35,8 @@
 #include <functional>
 
 #include <google/protobuf/arena.h>
-#include <google/protobuf/stubs/mutex.h>
 #include <google/protobuf/port.h>
+#include "absl/synchronization/mutex.h"
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/generated_message_util.h>
@@ -342,7 +342,7 @@ class PROTOBUF_EXPORT MapFieldBase {
   constexpr MapFieldBase(ConstantInitialized)
       : arena_(nullptr),
         repeated_field_(nullptr),
-        mutex_(GOOGLE_PROTOBUF_LINKER_INITIALIZED),
+        mutex_(absl::kConstInit),
         state_(STATE_MODIFIED_MAP) {}
   explicit MapFieldBase(Arena* arena)
       : arena_(arena), repeated_field_(nullptr), state_(STATE_MODIFIED_MAP) {}
@@ -449,9 +449,8 @@ class PROTOBUF_EXPORT MapFieldBase {
   Arena* arena_;
   mutable RepeatedPtrField<Message>* repeated_field_;
 
-  mutable internal::WrappedMutex
-      mutex_;  // The thread to synchronize map and repeated field
-               // needs to get lock first;
+  mutable absl::Mutex mutex_;  // The thread to synchronize map and repeated
+                               // field needs to get lock first;
   mutable std::atomic<State> state_;
 
  private:
