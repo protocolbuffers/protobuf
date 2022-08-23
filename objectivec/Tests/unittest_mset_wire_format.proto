@@ -1,5 +1,6 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2016 Google Inc.  All rights reserved.
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -27,21 +28,25 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Author: kenton@google.com (Kenton Varda)
+//  Based on original Protocol Buffers design by
+//  Sanjay Ghemawat, Jeff Dean, and others.
+//
+// This file contains messages for testing message_set_wire_format.
+
 syntax = "proto2";
+package proto2_wireformat_unittest;
 
-package protobuf_unittest;
+option cc_enable_arenas = true;
+option optimize_for = SPEED;
+option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
 
-import "unittest.proto";
-
-import "unittest_extension_chain_c.proto";
-
-// The Root for this file should end up adding the local extension and merging
-// in the extensions from C's Root (unittest will come via C's).
-
-message ChainBMessage {
-  optional ChainCMessage c = 1;
+// A message with message_set_wire_format.
+message TestMessageSet {
+  option message_set_wire_format = true;
+  extensions 4 to max;
 }
 
-extend TestAllExtensions {
-  optional int32 chain_b_extension = 10002;
+message TestMessageSetWireFormatContainer {
+  optional TestMessageSet message_set = 1;
 }

@@ -31,7 +31,7 @@ syntax = "proto2";
 
 package protobuf_unittest;
 
-import "google/protobuf/unittest.proto";
+import "unittest.proto";
 
 // The Root for this file should end up adding the local extension and merging
 // in the extensions from unittest.proto's Root.
