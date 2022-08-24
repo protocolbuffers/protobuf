@@ -99,35 +99,19 @@ typedef enum {
   kUpb_TokenizerOption_CommentStyleShell = 1 << 3,
 } upb_Tokenizer_Option;
 
-// Abstract interface for an object which collects the errors that occur
-// during parsing.  A typical implementation might simply print the errors
-// to stdout.
-typedef struct {
-  // Indicates that there was an error in the input at the given line and
-  // column numbers.  The numbers are zero-based, so you may want to add
-  // 1 to each before printing them.
-  void (*AddError)(int line, int column, const char* message, void* context);
-
-  // Indicates that there was a warning in the input at the given line and
-  // column numbers.  The numbers are zero-based, so you may want to add
-  // 1 to each before printing them.
-  void (*AddWarning)(int line, int column, const char* message, void* context);
-
-  // Opaque pointer, passed an as argument to the above functions.
-  void* context;
-} upb_ErrorCollector;
-
 typedef struct upb_Tokenizer upb_Tokenizer;
 
 // Can be passed a flat array and/or a ZCIS as input.
 // The array will be read first (if non-NULL), then the stream (if non-NULL).
 upb_Tokenizer* upb_Tokenizer_New(const void* data, size_t size,
-                                 upb_ZeroCopyInputStream* input,
-                                 upb_ErrorCollector* error_collector,
-                                 int options, upb_Arena* arena);
+                                 upb_ZeroCopyInputStream* input, int options,
+                                 upb_Arena* arena);
 
 void upb_Tokenizer_Fini(upb_Tokenizer* t);
-bool upb_Tokenizer_Next(upb_Tokenizer* t);
+
+// Advance the tokenizer to the next input token. Returns True on success.
+// Returns False and (clears *status on EOF, sets *status on error).
+bool upb_Tokenizer_Next(upb_Tokenizer* t, upb_Status* status);
 
 // Accessors for inspecting current/previous parse tokens,
 // which are opaque to the tokenizer (to reduce copying).

@@ -164,9 +164,8 @@ struct upb_Tokenizer {
   int token_end_column;
 
   upb_ZeroCopyInputStream* input;
-  upb_ErrorCollector* error_collector;
-
   upb_Arena* arena;
+  upb_Status* status;
 
   char current_char;   // == buffer_[buffer_pos_], updated by NextChar().
   const char* buffer;  // Current buffer returned from input_.
@@ -195,17 +194,25 @@ struct upb_Tokenizer {
   // position within the current buffer where recording started.
   upb_String* record_target;
   int record_start;
-
   int options;
+  jmp_buf err;
 };
 
-// -------------------------------------------------------------------
-// Internal helpers.
+// Convenience methods to return an error at the current line and column.
 
-// Convenience method to add an error at the current line and column.
-static void AddError(upb_Tokenizer* t, const char* message) {
-  t->error_collector->AddError(t->line, t->column, message,
-                               t->error_collector->context);
+UPB_NORETURN static void ReportError(upb_Tokenizer* t, const char* msg) {
+  upb_Status_SetErrorFormat(t->status, "%d:%d: %s", t->line, t->column, msg);
+  UPB_LONGJMP(t->err, 1);
+}
+
+UPB_NORETURN UPB_PRINTF(2, 3) static void ReportErrorFormat(upb_Tokenizer* t,
+                                                            const char* fmt,
+                                                            ...) {
+  va_list args;
+  va_start(args, fmt);
+  char msg[128];
+  vsnprintf(msg, sizeof(msg), fmt, args);
+  ReportError(t, msg);
 }
 
 // Read a new buffer from the input.
@@ -339,12 +346,12 @@ static void ConsumeZeroOrMore(upb_Tokenizer* t, bool (*f)(char)) {
 static void ConsumeOneOrMore(upb_Tokenizer* t, bool (*f)(char),
                              const char* err_msg) {
   if (!f(t->current_char)) {
-    AddError(t, err_msg);
-  } else {
-    do {
-      NextChar(t);
-    } while (f(t->current_char));
+    ReportError(t, err_msg);
   }
+
+  do {
+    NextChar(t);
+  } while (f(t->current_char));
 }
 
 // -----------------------------------------------------------------
@@ -358,13 +365,10 @@ static void ConsumeString(upb_Tokenizer* t, char delimiter) {
   while (true) {
     switch (t->current_char) {
       case '\0':
-        AddError(t, "Unexpected end of string.");
-        return;
+        ReportError(t, "Unexpected end of string.");
 
-      case '\n': {
-        AddError(t, "String literals cannot cross line boundaries.");
-        return;
-      }
+      case '\n':
+        ReportError(t, "String literals cannot cross line boundaries.");
 
       case '\\': {
         // An escape sequence.
@@ -377,7 +381,7 @@ static void ConsumeString(upb_Tokenizer* t, char delimiter) {
           // to do so explicitly here.
         } else if (TryConsume(t, 'x')) {
           if (!TryConsumeOne(t, upb_Tokenizer_IsHexDigit)) {
-            AddError(t, "Expected hex digits for escape sequence.");
+            ReportError(t, "Expected hex digits for escape sequence.");
           }
           // Possibly followed by another hex digit, but again we don't care.
         } else if (TryConsume(t, 'u')) {
@@ -385,7 +389,7 @@ static void ConsumeString(upb_Tokenizer* t, char delimiter) {
               !TryConsumeOne(t, upb_Tokenizer_IsHexDigit) ||
               !TryConsumeOne(t, upb_Tokenizer_IsHexDigit) ||
               !TryConsumeOne(t, upb_Tokenizer_IsHexDigit)) {
-            AddError(t, "Expected four hex digits for \\u escape sequence.");
+            ReportError(t, "Expected four hex digits for \\u escape sequence.");
           }
         } else if (TryConsume(t, 'U')) {
           // We expect 8 hex digits; but only the range up to 0x10ffff is
@@ -397,12 +401,12 @@ static void ConsumeString(upb_Tokenizer* t, char delimiter) {
               !TryConsumeOne(t, upb_Tokenizer_IsHexDigit) ||
               !TryConsumeOne(t, upb_Tokenizer_IsHexDigit) ||
               !TryConsumeOne(t, upb_Tokenizer_IsHexDigit)) {
-            AddError(t,
-                     "Expected eight hex digits up to 10ffff for \\U escape "
-                     "sequence");
+            ReportError(t,
+                        "Expected eight hex digits up to 10ffff for \\U escape "
+                        "sequence");
           }
         } else {
-          AddError(t, "Invalid escape sequence in string literal.");
+          ReportError(t, "Invalid escape sequence in string literal.");
         }
         break;
       }
@@ -436,8 +440,7 @@ static upb_TokenType ConsumeNumber(upb_Tokenizer* t, bool started_with_zero,
     // An octal number (had a leading zero).
     ConsumeZeroOrMore(t, upb_Tokenizer_IsOctalDigit);
     if (LookingAt(t, upb_Tokenizer_IsDigit)) {
-      AddError(t, "Numbers starting with leading zero must be in octal.");
-      ConsumeZeroOrMore(t, upb_Tokenizer_IsDigit);
+      ReportError(t, "Numbers starting with leading zero must be in octal.");
     }
 
   } else {
@@ -467,13 +470,15 @@ static upb_TokenType ConsumeNumber(upb_Tokenizer* t, bool started_with_zero,
   }
 
   if (LookingAt(t, upb_Tokenizer_IsLetter)) {
-    AddError(t, "Need space between number and identifier.");
-  } else if (t->current_char == '.') {
+    ReportError(t, "Need space between number and identifier.");
+  }
+
+  if (t->current_char == '.') {
     if (is_float) {
-      AddError(
+      ReportError(
           t, "Already saw decimal point or exponent; can't have another one.");
     } else {
-      AddError(t, "Hex and octal numbers must be integers.");
+      ReportError(t, "Hex and octal numbers must be integers.");
     }
   }
 
@@ -528,15 +533,12 @@ static void ConsumeBlockComment(upb_Tokenizer* t, upb_String* content) {
     } else if (TryConsume(t, '/') && t->current_char == '*') {
       // Note:  We didn't consume the '*' because if there is a '/' after it
       //   we want to interpret that as the end of the comment.
-      AddError(
+      ReportError(
           t, "\"/*\" inside block comment.  Block comments cannot be nested.");
     } else if (t->current_char == '\0') {
-      AddError(t, "End-of-file inside block comment.");
-      t->error_collector->AddError(start_line, start_column,
-                                   "  Comment started here.",
-                                   t->error_collector->context);
-      if (content != NULL) StopRecording(t);
-      break;
+      ReportErrorFormat(
+          t, "End-of-file inside block comment.\n%d:%d: Comment started here.",
+          start_line, start_column);
     }
   }
 }
@@ -621,19 +623,20 @@ upb_TokenType upb_Tokenizer_Type(const upb_Tokenizer* t) {
   return t->token_type;
 }
 
-bool upb_Tokenizer_Next(upb_Tokenizer* t) {
+bool upb_Tokenizer_Next(upb_Tokenizer* t, upb_Status* status) {
+  t->status = status;
   t->previous_type = t->token_type;
   t->previous_line = t->token_line;
   t->previous_column = t->token_column;
   t->previous_end_column = t->token_end_column;
 
+  if (UPB_SETJMP(t->err)) return false;
+
   while (!t->read_error) {
     StartToken(t);
     bool report_token = TryConsumeWhitespace(t) || TryConsumeNewline(t);
     EndToken(t);
-    if (report_token) {
-      return true;
-    }
+    if (report_token) return true;
 
     switch (TryConsumeCommentStart(t)) {
       case kUpb_CommentType_Line:
@@ -652,70 +655,54 @@ bool upb_Tokenizer_Next(upb_Tokenizer* t) {
     if (t->read_error) break;
 
     if (LookingAt(t, upb_Tokenizer_IsUnprintable) || t->current_char == '\0') {
-      AddError(t, "Invalid control characters encountered in text.");
-      NextChar(t);
-      // Skip more unprintable characters, too.  But, remember that '\0' is
-      // also what current_char_ is set to after EOF / read error.  We have
-      // to be careful not to go into an infinite loop of trying to consume
-      // it, so make sure to check read_error_ explicitly before consuming
-      // '\0'.
-      while (TryConsumeOne(t, upb_Tokenizer_IsUnprintable) ||
-             (!t->read_error && TryConsume(t, '\0'))) {
-        // Ignore.
-      }
+      ReportError(t, "Invalid control characters encountered in text.");
+    }
 
-    } else {
-      // Reading some sort of token.
-      StartToken(t);
+    // Reading some sort of token.
+    StartToken(t);
 
-      if (TryConsumeOne(t, upb_Tokenizer_IsLetter)) {
-        ConsumeZeroOrMore(t, upb_Tokenizer_IsAlphanumeric);
-        t->token_type = kUpb_TokenType_Identifier;
-      } else if (TryConsume(t, '0')) {
-        t->token_type = ConsumeNumber(t, true, false);
-      } else if (TryConsume(t, '.')) {
-        // This could be the beginning of a floating-point number, or it could
-        // just be a '.' symbol.
+    if (TryConsumeOne(t, upb_Tokenizer_IsLetter)) {
+      ConsumeZeroOrMore(t, upb_Tokenizer_IsAlphanumeric);
+      t->token_type = kUpb_TokenType_Identifier;
+    } else if (TryConsume(t, '0')) {
+      t->token_type = ConsumeNumber(t, true, false);
+    } else if (TryConsume(t, '.')) {
+      // This could be the beginning of a floating-point number, or it could
+      // just be a '.' symbol.
 
-        if (TryConsumeOne(t, upb_Tokenizer_IsDigit)) {
-          // It's a floating-point number.
-          if (t->previous_type == kUpb_TokenType_Identifier &&
-              t->token_line == t->previous_line &&
-              t->token_column == t->previous_end_column) {
-            // We don't accept syntax like "blah.123".
-            t->error_collector->AddError(
-                t->line, t->column - 2,
-                "Need space between identifier and decimal point.",
-                t->error_collector->context);
-          }
-          t->token_type = ConsumeNumber(t, false, true);
-        } else {
-          t->token_type = kUpb_TokenType_Symbol;
+      if (TryConsumeOne(t, upb_Tokenizer_IsDigit)) {
+        // It's a floating-point number.
+        if (t->previous_type == kUpb_TokenType_Identifier &&
+            t->token_line == t->previous_line &&
+            t->token_column == t->previous_end_column) {
+          // We don't accept syntax like "blah.123".
+          t->column -= 2;
+          ReportError(t, "Need space between identifier and decimal point.");
         }
-      } else if (TryConsumeOne(t, upb_Tokenizer_IsDigit)) {
-        t->token_type = ConsumeNumber(t, false, false);
-      } else if (TryConsume(t, '\"')) {
-        ConsumeString(t, '\"');
-        t->token_type = kUpb_TokenType_String;
-      } else if (TryConsume(t, '\'')) {
-        ConsumeString(t, '\'');
-        t->token_type = kUpb_TokenType_String;
+        t->token_type = ConsumeNumber(t, false, true);
       } else {
-        // Check if the high order bit is set.
-        if (t->current_char & 0x80) {
-          char temp[80];
-          snprintf(temp, sizeof temp, "Interpreting non ascii codepoint %d.",
-                   (uint8_t)t->current_char);
-          t->error_collector->AddError(t->line, t->column, temp,
-                                       t->error_collector->context);
-        }
-        NextChar(t);
         t->token_type = kUpb_TokenType_Symbol;
       }
-
-      EndToken(t);
-      return true;
+    } else if (TryConsumeOne(t, upb_Tokenizer_IsDigit)) {
+      t->token_type = ConsumeNumber(t, false, false);
+    } else if (TryConsume(t, '\"')) {
+      ConsumeString(t, '\"');
+      t->token_type = kUpb_TokenType_String;
+    } else if (TryConsume(t, '\'')) {
+      ConsumeString(t, '\'');
+      t->token_type = kUpb_TokenType_String;
+    } else {
+      // Check if the high order bit is set.
+      if (t->current_char & 0x80) {
+        ReportErrorFormat(t, "Interpreting non ascii codepoint %d.",
+                          (uint8_t)t->current_char);
+      }
+      NextChar(t);
+      t->token_type = kUpb_TokenType_Symbol;
     }
+
+    EndToken(t);
+    return true;
   }
 
   // EOF
@@ -724,6 +711,7 @@ bool upb_Tokenizer_Next(upb_Tokenizer* t) {
   t->token_line = t->line;
   t->token_column = t->column;
   t->token_end_column = t->column;
+  upb_Status_Clear(status);
   return false;
 }
 
@@ -977,14 +965,12 @@ bool upb_Tokenizer_IsIdentifier(const char* text, int size) {
 }
 
 upb_Tokenizer* upb_Tokenizer_New(const void* data, size_t size,
-                                 upb_ZeroCopyInputStream* input,
-                                 upb_ErrorCollector* error_collector,
-                                 int options, upb_Arena* arena) {
+                                 upb_ZeroCopyInputStream* input, int options,
+                                 upb_Arena* arena) {
   upb_Tokenizer* t = upb_Arena_Malloc(arena, sizeof(upb_Tokenizer));
   if (!t) return NULL;
 
   t->input = input;
-  t->error_collector = error_collector;
   t->arena = arena;
   t->buffer = data;
   t->buffer_size = size;

@@ -124,38 +124,6 @@ upb_ZeroCopyInputStream* TestInputStream(const void* data, size_t size,
 
 // -------------------------------------------------------------------
 
-typedef struct {
-  upb_ErrorCollector base;
-
-  upb_String text;
-} TestErrorCollector;
-
-static void TestErrorCollector_AddError(int line, int column,
-                                        const char* message, void* context) {
-  TestErrorCollector* t = (TestErrorCollector*)context;
-
-  char temp[800];
-  int len = snprintf(temp, sizeof(temp), "%d:%d: %s\n", line, column, message);
-  upb_String_Append(&t->text, temp, len);
-}
-
-static void TestErrorCollector_AddWarning(int line, int column,
-                                          const char* message, void* context) {}
-
-static upb_ErrorCollector* TestErrorCollector_New(upb_Arena* arena) {
-  TestErrorCollector* out =
-      (TestErrorCollector*)upb_Arena_Malloc(arena, sizeof(*out));
-
-  out->base.AddError = TestErrorCollector_AddError;
-  out->base.AddWarning = TestErrorCollector_AddWarning;
-  out->base.context = out;
-
-  upb_String_Init(&out->text, arena);
-  return (upb_ErrorCollector*)out;
-}
-
-// -------------------------------------------------------------------
-
 // We test each operation over a variety of block sizes to insure that
 // we test cases where reads cross buffer boundaries as well as cases
 // where they don't.  This is sort of a brute-force approach to this,
@@ -240,8 +208,7 @@ TEST_2D(TokenizerTest, SimpleTokens, kSimpleTokenCases, kBlockSizes) {
   auto input = TestInputStream(kSimpleTokenCases_case.input.data(),
                                kSimpleTokenCases_case.input.size(),
                                kBlockSizes_case, arena.ptr());
-  auto error_collector = TestErrorCollector_New(arena.ptr());
-  auto t = upb_Tokenizer_New(NULL, 0, input, error_collector, 0, arena.ptr());
+  auto t = upb_Tokenizer_New(NULL, 0, input, 0, arena.ptr());
 
   // Before Next() is called, the initial token should always be TYPE_START.
   EXPECT_EQ(upb_Tokenizer_Type(t), kUpb_TokenType_Start);
@@ -251,7 +218,7 @@ TEST_2D(TokenizerTest, SimpleTokens, kSimpleTokenCases, kBlockSizes) {
   EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t), ""));
 
   // Parse the token.
-  EXPECT_TRUE(upb_Tokenizer_Next(t));
+  EXPECT_TRUE(upb_Tokenizer_Next(t, NULL));
   // Check that it has the right type.
   EXPECT_EQ(upb_Tokenizer_Type(t), kSimpleTokenCases_case.type);
   // Check that it contains the complete input text.
@@ -263,8 +230,12 @@ TEST_2D(TokenizerTest, SimpleTokens, kSimpleTokenCases, kBlockSizes) {
   EXPECT_EQ(upb_Tokenizer_Column(t), 0);
   EXPECT_EQ(upb_Tokenizer_EndColumn(t), kSimpleTokenCases_case.input.size());
 
-  // There should be no more input.
-  EXPECT_FALSE(upb_Tokenizer_Next(t));
+  upb_Status status;
+  upb_Status_Clear(&status);
+
+  // There should be no more input and no errors..
+  EXPECT_FALSE(upb_Tokenizer_Next(t, &status));
+  EXPECT_TRUE(upb_Status_IsOk(&status));
 
   // After Next() returns false, the token should have type TYPE_END.
   EXPECT_EQ(upb_Tokenizer_Type(t), kUpb_TokenType_End);
@@ -272,9 +243,6 @@ TEST_2D(TokenizerTest, SimpleTokens, kSimpleTokenCases, kBlockSizes) {
   EXPECT_EQ(upb_Tokenizer_Column(t), kSimpleTokenCases_case.input.size());
   EXPECT_EQ(upb_Tokenizer_EndColumn(t), kSimpleTokenCases_case.input.size());
   EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t), ""));
-
-  // There should be no errors.
-  EXPECT_TRUE(upb_String_Empty(&((TestErrorCollector*)error_collector)->text));
 }
 
 TEST_1D(TokenizerTest, FloatSuffix, kBlockSizes) {
@@ -285,33 +253,33 @@ TEST_1D(TokenizerTest, FloatSuffix, kBlockSizes) {
   const char* text = "1f 2.5f 6e3f 7F";
   auto input =
       TestInputStream(text, strlen(text), kBlockSizes_case, arena.ptr());
-  auto error_collector = TestErrorCollector_New(arena.ptr());
   const int options = kUpb_TokenizerOption_AllowFAfterFloat;
-  auto t =
-      upb_Tokenizer_New(NULL, 0, input, error_collector, options, arena.ptr());
+  auto t = upb_Tokenizer_New(NULL, 0, input, options, arena.ptr());
 
   // Advance through tokens and check that they are parsed as expected.
 
-  EXPECT_TRUE(upb_Tokenizer_Next(t));
+  EXPECT_TRUE(upb_Tokenizer_Next(t, NULL));
   EXPECT_EQ(upb_Tokenizer_Type(t), kUpb_TokenType_Float);
   EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t), "1f"));
 
-  EXPECT_TRUE(upb_Tokenizer_Next(t));
+  EXPECT_TRUE(upb_Tokenizer_Next(t, NULL));
   EXPECT_EQ(upb_Tokenizer_Type(t), kUpb_TokenType_Float);
   EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t), "2.5f"));
 
-  EXPECT_TRUE(upb_Tokenizer_Next(t));
+  EXPECT_TRUE(upb_Tokenizer_Next(t, NULL));
   EXPECT_EQ(upb_Tokenizer_Type(t), kUpb_TokenType_Float);
   EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t), "6e3f"));
 
-  EXPECT_TRUE(upb_Tokenizer_Next(t));
+  EXPECT_TRUE(upb_Tokenizer_Next(t, NULL));
   EXPECT_EQ(upb_Tokenizer_Type(t), kUpb_TokenType_Float);
   EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t), "7F"));
 
-  // There should be no more input.
-  EXPECT_FALSE(upb_Tokenizer_Next(t));
-  // There should be no errors.
-  EXPECT_TRUE(upb_String_Empty(&((TestErrorCollector*)error_collector)->text));
+  upb_Status status;
+  upb_Status_Clear(&status);
+
+  // There should be no more input and no errors..
+  EXPECT_FALSE(upb_Tokenizer_Next(t, &status));
+  EXPECT_TRUE(upb_Status_IsOk(&status));
 }
 
 SimpleTokenCase kWhitespaceTokenCases[] = {
@@ -332,26 +300,23 @@ TEST_2D(TokenizerTest, Whitespace, kWhitespaceTokenCases, kBlockSizes) {
     auto input = TestInputStream(kWhitespaceTokenCases_case.input.data(),
                                  kWhitespaceTokenCases_case.input.size(),
                                  kBlockSizes_case, arena.ptr());
-    auto error_collector = TestErrorCollector_New(arena.ptr());
-    auto t = upb_Tokenizer_New(NULL, 0, input, error_collector, 0, arena.ptr());
+    auto t = upb_Tokenizer_New(NULL, 0, input, 0, arena.ptr());
 
-    EXPECT_FALSE(upb_Tokenizer_Next(t));
+    EXPECT_FALSE(upb_Tokenizer_Next(t, NULL));
   }
   {
     auto input = TestInputStream(kWhitespaceTokenCases_case.input.data(),
                                  kWhitespaceTokenCases_case.input.size(),
                                  kBlockSizes_case, arena.ptr());
-    auto error_collector = TestErrorCollector_New(arena.ptr());
     const int options = kUpb_TokenizerOption_ReportNewlines;
-    auto t = upb_Tokenizer_New(NULL, 0, input, error_collector, options,
-                               arena.ptr());
+    auto t = upb_Tokenizer_New(NULL, 0, input, options, arena.ptr());
 
-    EXPECT_TRUE(upb_Tokenizer_Next(t));
+    EXPECT_TRUE(upb_Tokenizer_Next(t, NULL));
 
     EXPECT_EQ(upb_Tokenizer_Type(t), kWhitespaceTokenCases_case.type);
     EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t),
                              kWhitespaceTokenCases_case.input.data()));
-    EXPECT_FALSE(upb_Tokenizer_Next(t));
+    EXPECT_FALSE(upb_Tokenizer_Next(t, NULL));
   }
 }
 
@@ -476,8 +441,7 @@ TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
   auto input = TestInputStream(kMultiTokenCases_case.input.data(),
                                kMultiTokenCases_case.input.size(),
                                kBlockSizes_case, arena.ptr());
-  auto error_collector = TestErrorCollector_New(arena.ptr());
-  auto t = upb_Tokenizer_New(NULL, 0, input, error_collector, 0, arena.ptr());
+  auto t = upb_Tokenizer_New(NULL, 0, input, 0, arena.ptr());
 
   // Before Next() is called, the initial token should always be TYPE_START.
   EXPECT_EQ(upb_Tokenizer_Type(t), kUpb_TokenType_Start);
@@ -488,6 +452,8 @@ TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
 
   // Loop through all expected tokens.
   TokenFields token_fields;
+  upb_Status status;
+  upb_Status_Clear(&status);
   int i = 0;
   do {
     token_fields = kMultiTokenCases_case.output[i++];
@@ -497,9 +463,10 @@ TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
 
     // Next() should only return false when it hits the end token.
     if (token_fields.type == kUpb_TokenType_End) {
-      EXPECT_FALSE(upb_Tokenizer_Next(t));
+      EXPECT_FALSE(upb_Tokenizer_Next(t, &status));
+      EXPECT_TRUE(upb_Status_IsOk(&status));
     } else {
-      EXPECT_TRUE(upb_Tokenizer_Next(t));
+      EXPECT_TRUE(upb_Tokenizer_Next(t, NULL));
     }
 
     // Check that the token matches the expected one.
@@ -511,9 +478,6 @@ TEST_2D(TokenizerTest, MultipleTokens, kMultiTokenCases, kBlockSizes) {
     EXPECT_TRUE(
         StringEquals(upb_Tokenizer_TextData(t), token_fields.text.data()));
   } while (token_fields.type != kUpb_TokenType_End);
-
-  // There should be no errors.
-  EXPECT_TRUE(upb_String_Empty(&((TestErrorCollector*)error_collector)->text));
 }
 
 MultiTokenCase kMultiWhitespaceTokenCases[] = {
@@ -543,10 +507,8 @@ TEST_2D(TokenizerTest, MultipleWhitespaceTokens, kMultiWhitespaceTokenCases,
   auto input = TestInputStream(kMultiWhitespaceTokenCases_case.input.data(),
                                kMultiWhitespaceTokenCases_case.input.size(),
                                kBlockSizes_case, arena.ptr());
-  auto error_collector = TestErrorCollector_New(arena.ptr());
   const int options = kUpb_TokenizerOption_ReportNewlines;
-  auto t =
-      upb_Tokenizer_New(NULL, 0, input, error_collector, options, arena.ptr());
+  auto t = upb_Tokenizer_New(NULL, 0, input, options, arena.ptr());
 
   // Before Next() is called, the initial token should always be TYPE_START.
   EXPECT_EQ(upb_Tokenizer_Type(t), kUpb_TokenType_Start);
@@ -557,6 +519,8 @@ TEST_2D(TokenizerTest, MultipleWhitespaceTokens, kMultiWhitespaceTokenCases,
 
   // Loop through all expected tokens.
   TokenFields token_fields;
+  upb_Status status;
+  upb_Status_Clear(&status);
   int i = 0;
   do {
     token_fields = kMultiWhitespaceTokenCases_case.output[i++];
@@ -565,10 +529,11 @@ TEST_2D(TokenizerTest, MultipleWhitespaceTokens, kMultiWhitespaceTokenCases,
                  << "Token #" << i << ": " << token_fields.text);
 
     // Next() should only return false when it hits the end token.
-    if (token_fields.type != kUpb_TokenType_End) {
-      EXPECT_TRUE(upb_Tokenizer_Next(t));
+    if (token_fields.type == kUpb_TokenType_End) {
+      EXPECT_FALSE(upb_Tokenizer_Next(t, &status));
+      EXPECT_TRUE(upb_Status_IsOk(&status));
     } else {
-      EXPECT_FALSE(upb_Tokenizer_Next(t));
+      EXPECT_TRUE(upb_Tokenizer_Next(t, NULL));
     }
 
     // Check that the token matches the expected one.
@@ -579,9 +544,6 @@ TEST_2D(TokenizerTest, MultipleWhitespaceTokens, kMultiWhitespaceTokenCases,
     EXPECT_TRUE(
         StringEquals(upb_Tokenizer_TextData(t), token_fields.text.data()));
   } while (token_fields.type != kUpb_TokenType_End);
-
-  // There should be no errors.
-  EXPECT_TRUE(upb_String_Empty(&((TestErrorCollector*)error_collector)->text));
 }
 
 // This test causes gcc 3.3.5 (and earlier?) to give the cryptic error:
@@ -604,21 +566,20 @@ TEST_1D(TokenizerTest, ShCommentStyle, kBlockSizes) {
   upb::Arena arena;
   auto input =
       TestInputStream(text, strlen(text), kBlockSizes_case, arena.ptr());
-  auto error_collector = TestErrorCollector_New(arena.ptr());
   const int options = kUpb_TokenizerOption_CommentStyleShell;
-  auto t =
-      upb_Tokenizer_New(NULL, 0, input, error_collector, options, arena.ptr());
+  auto t = upb_Tokenizer_New(NULL, 0, input, options, arena.ptr());
 
   // Advance through tokens and check that they are parsed as expected.
   for (int i = 0; i < arraysize(kTokens); i++) {
-    EXPECT_TRUE(upb_Tokenizer_Next(t));
+    EXPECT_TRUE(upb_Tokenizer_Next(t, NULL));
     EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t), kTokens[i]));
   }
 
-  // There should be no more input.
-  EXPECT_FALSE(upb_Tokenizer_Next(t));
-  // There should be no errors.
-  EXPECT_TRUE(upb_String_Empty(&((TestErrorCollector*)error_collector)->text));
+  // There should be no more input and no errors.
+  upb_Status status;
+  upb_Status_Clear(&status);
+  EXPECT_FALSE(upb_Tokenizer_Next(t, &status));
+  EXPECT_TRUE(upb_Status_IsOk(&status));
 }
 
 #endif
@@ -1074,10 +1035,6 @@ TEST_F(TokenizerTest, ParseStringAppend) {
 // checks that the error output matches what is expected.
 struct ErrorCase {
   std::string input;
-  bool recoverable;  // True if the tokenizer should be able to recover and
-                     // parse more tokens after seeing this error.  Cases
-                     // for which this is true must end with "foo" as
-                     // the last token, which the test will check for.
   const char* errors;
 };
 
@@ -1087,69 +1044,61 @@ inline std::ostream& operator<<(std::ostream& out, const ErrorCase& test_case) {
 
 ErrorCase kErrorCases[] = {
     // String errors.
-    {"'\\l' foo", true, "0:2: Invalid escape sequence in string literal.\n"},
-    {"'\\X' foo", true, "0:2: Invalid escape sequence in string literal.\n"},
-    {"'\\x' foo", true, "0:3: Expected hex digits for escape sequence.\n"},
-    {"'foo", false, "0:4: Unexpected end of string.\n"},
-    {"'bar\nfoo", true, "0:4: String literals cannot cross line boundaries.\n"},
-    {"'\\u01' foo", true,
-     "0:5: Expected four hex digits for \\u escape sequence.\n"},
-    {"'\\u01' foo", true,
-     "0:5: Expected four hex digits for \\u escape sequence.\n"},
-    {"'\\uXYZ' foo", true,
-     "0:3: Expected four hex digits for \\u escape sequence.\n"},
+    {"'\\l'", "0:2: Invalid escape sequence in string literal."},
+    {"'\\X'", "0:2: Invalid escape sequence in string literal."},
+    {"'\\x'", "0:3: Expected hex digits for escape sequence."},
+    {"'foo", "0:4: Unexpected end of string."},
+    {"'bar\nfoo", "0:4: String literals cannot cross line boundaries."},
+    {"'\\u01'", "0:5: Expected four hex digits for \\u escape sequence."},
+    {"'\\uXYZ'", "0:3: Expected four hex digits for \\u escape sequence."},
 
     // Integer errors.
-    {"123foo", true, "0:3: Need space between number and identifier.\n"},
+    {"123foo", "0:3: Need space between number and identifier."},
 
     // Hex/octal errors.
-    {"0x foo", true, "0:2: \"0x\" must be followed by hex digits.\n"},
-    {"0541823 foo", true,
-     "0:4: Numbers starting with leading zero must be in octal.\n"},
-    {"0x123z foo", true, "0:5: Need space between number and identifier.\n"},
-    {"0x123.4 foo", true, "0:5: Hex and octal numbers must be integers.\n"},
-    {"0123.4 foo", true, "0:4: Hex and octal numbers must be integers.\n"},
+    {"0x foo", "0:2: \"0x\" must be followed by hex digits."},
+    {"0541823", "0:4: Numbers starting with leading zero must be in octal."},
+    {"0x123z", "0:5: Need space between number and identifier."},
+    {"0x123.4", "0:5: Hex and octal numbers must be integers."},
+    {"0123.4", "0:4: Hex and octal numbers must be integers."},
 
     // Float errors.
-    {"1e foo", true, "0:2: \"e\" must be followed by exponent.\n"},
-    {"1e- foo", true, "0:3: \"e\" must be followed by exponent.\n"},
-    {"1.2.3 foo", true,
-     "0:3: Already saw decimal point or exponent; can't have another one.\n"},
-    {"1e2.3 foo", true,
-     "0:3: Already saw decimal point or exponent; can't have another one.\n"},
-    {"a.1 foo", true,
-     "0:1: Need space between identifier and decimal point.\n"},
+    {"1e foo", "0:2: \"e\" must be followed by exponent."},
+    {"1e- foo", "0:3: \"e\" must be followed by exponent."},
+    {"1.2.3",
+     "0:3: Already saw decimal point or exponent; can't have another one."},
+    {"1e2.3",
+     "0:3: Already saw decimal point or exponent; can't have another one."},
+    {"a.1", "0:1: Need space between identifier and decimal point."},
     // allow_f_after_float not enabled, so this should be an error.
-    {"1.0f foo", true, "0:3: Need space between number and identifier.\n"},
+    {"1.0f", "0:3: Need space between number and identifier."},
 
     // Block comment errors.
-    {"/*", false,
-     "0:2: End-of-file inside block comment.\n"
-     "0:0:   Comment started here.\n"},
-    {"/*/*/ foo", true,
-     "0:3: \"/*\" inside block comment.  Block comments cannot be nested.\n"},
+    {"/*",
+     "0:2: End-of-file inside block comment.\n0:0: Comment started here."},
+    {"/*/*/ foo",
+     "0:3: \"/*\" inside block comment.  Block comments cannot be nested."},
 
     // Control characters.  Multiple consecutive control characters should only
     // produce one error.
-    {"\b foo", true, "0:0: Invalid control characters encountered in text.\n"},
-    {"\b\b foo", true,
-     "0:0: Invalid control characters encountered in text.\n"},
+    {"\b foo", "0:0: Invalid control characters encountered in text."},
+    {"\b\b foo", "0:0: Invalid control characters encountered in text."},
 
     // Check that control characters at end of input don't result in an
     // infinite loop.
-    {"\b", false, "0:0: Invalid control characters encountered in text.\n"},
+    {"\b", "0:0: Invalid control characters encountered in text."},
 
     // Check recovery from '\0'.  We have to explicitly specify the length of
     // these strings because otherwise the string constructor will just call
     // strlen() which will see the first '\0' and think that is the end of the
     // string.
-    {std::string("\0foo", 4), true,
-     "0:0: Invalid control characters encountered in text.\n"},
-    {std::string("\0\0foo", 5), true,
-     "0:0: Invalid control characters encountered in text.\n"},
+    {std::string("\0foo", 4),
+     "0:0: Invalid control characters encountered in text."},
+    {std::string("\0\0foo", 5),
+     "0:0: Invalid control characters encountered in text."},
 
     // Check error from high order bits set
-    {"\300foo", true, "0:0: Interpreting non ascii codepoint 192.\n"},
+    {"\300", "0:0: Interpreting non ascii codepoint 192."},
 };
 
 TEST_2D(TokenizerTest, Errors, kErrorCases, kBlockSizes) {
@@ -1158,24 +1107,15 @@ TEST_2D(TokenizerTest, Errors, kErrorCases, kBlockSizes) {
   auto input = TestInputStream(kErrorCases_case.input.data(),
                                kErrorCases_case.input.size(), kBlockSizes_case,
                                arena.ptr());
-  auto error_collector = TestErrorCollector_New(arena.ptr());
-  auto t = upb_Tokenizer_New(NULL, 0, input, error_collector, 0, arena.ptr());
+  auto t = upb_Tokenizer_New(NULL, 0, input, 0, arena.ptr());
 
-  // Ignore all input, except remember if the last token was "foo".
-  bool last_was_foo = false;
-  while (upb_Tokenizer_Next(t)) {
-    last_was_foo = StringEquals(upb_Tokenizer_TextData(t), "foo");
-  }
+  upb_Status status;
+  upb_Status_Clear(&status);
 
-  // Check that the errors match what was expected.
-  EXPECT_TRUE(StringEquals(
-      upb_String_Data(&((TestErrorCollector*)error_collector)->text),
-      kErrorCases_case.errors));
-
-  // If the error was recoverable, make sure we saw "foo" after it.
-  if (kErrorCases_case.recoverable) {
-    EXPECT_TRUE(last_was_foo);
-  }
+  while (upb_Tokenizer_Next(t, &status))
+    ;  // just keep looping
+  EXPECT_TRUE(
+      StringEquals(upb_Status_ErrorMessage(&status), kErrorCases_case.errors));
 }
 
 // -------------------------------------------------------------------
@@ -1187,9 +1127,8 @@ TEST_1D(TokenizerTest, BackUpOnDestruction, kBlockSizes) {
       TestInputStream(text.data(), text.size(), kBlockSizes_case, arena.ptr());
 
   // Create a tokenizer, read one token, then destroy it.
-  auto error_collector = TestErrorCollector_New(arena.ptr());
-  auto t = upb_Tokenizer_New(NULL, 0, input, error_collector, 0, arena.ptr());
-  upb_Tokenizer_Next(t);
+  auto t = upb_Tokenizer_New(NULL, 0, input, 0, arena.ptr());
+  upb_Tokenizer_Next(t, NULL);
   upb_Tokenizer_Fini(t);
 
   // Only "foo" should have been read.
