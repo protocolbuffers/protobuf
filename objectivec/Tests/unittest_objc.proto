@@ -30,7 +30,7 @@
 syntax = "proto2";
 
 import "google/protobuf/any.proto";
-import "unittest.proto";
+import "objectivec/Tests/unittest.proto";
 
 package objc.protobuf.tests;
 

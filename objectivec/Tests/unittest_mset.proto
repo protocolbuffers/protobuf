@@ -37,7 +37,7 @@
 
 syntax = "proto2";
 
-import "unittest_mset_wire_format.proto";
+import "objectivec/Tests/unittest_mset_wire_format.proto";
 
 package objc.protobuf.tests;
 

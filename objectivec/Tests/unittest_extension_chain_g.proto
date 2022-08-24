@@ -31,7 +31,7 @@ syntax = "proto2";
 
 package objc.protobuf.tests;
 
-import "unittest_extension_chain_c.proto";
+import "objectivec/Tests/unittest_extension_chain_c.proto";
 
 // The Root for this file should just be merging in the extensions from C's
 // Root.

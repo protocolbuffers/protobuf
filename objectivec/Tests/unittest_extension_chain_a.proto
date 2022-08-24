@@ -31,11 +31,11 @@ syntax = "proto2";
 
 package objc.protobuf.tests;
 
-import "unittest.proto";
+import "objectivec/Tests/unittest.proto";
 
-import "unittest_extension_chain_b.proto";
-import "unittest_extension_chain_c.proto";
-import "unittest_extension_chain_d.proto";
+import "objectivec/Tests/unittest_extension_chain_b.proto";
+import "objectivec/Tests/unittest_extension_chain_c.proto";
+import "objectivec/Tests/unittest_extension_chain_d.proto";
 
 // The Root for this file should end up adding the local extension and merging
 // in the extensions from D's Root (unittest and C will come via D's).

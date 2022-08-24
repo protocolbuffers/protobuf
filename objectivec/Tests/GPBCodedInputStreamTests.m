@@ -34,7 +34,7 @@
 #import "GPBCodedOutputStream.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
 #import "GPBUtilities_PackagePrivate.h"
-#import "Unittest.pbobjc.h"
+#import "objectivec/Tests/Unittest.pbobjc.h"
 
 @interface CodedInputStreamTests : GPBTestCase
 @end
