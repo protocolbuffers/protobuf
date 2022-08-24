@@ -1263,7 +1263,7 @@ VALUE build_module_from_enumdesc(VALUE _enumdesc) {
   int n = upb_EnumDef_ValueCount(e);
   for (int i = 0; i < n; i++) {
     const upb_EnumValueDef* ev = upb_EnumDef_Value(e, i);
-    char* name = upb_EnumValueDef_Name(ev);
+    char* name = strdup(upb_EnumValueDef_Name(ev));
     int32_t value = upb_EnumValueDef_Number(ev);
     if (name[0] < 'A' || name[0] > 'Z') {
       if (name[0] >= 'a' && name[0] <= 'z') {
