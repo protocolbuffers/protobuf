@@ -43,7 +43,7 @@ std::string StripExtension(absl::string_view fname) {
 }
 
 std::string ToCIdent(absl::string_view str) {
-  return absl::StrReplaceAll(str, {{".", "_"}, {"/", "_"}});
+  return absl::StrReplaceAll(str, {{".", "_"}, {"/", "_"}, {"-", "_"}});
 }
 
 std::string ToPreproc(absl::string_view str) {
