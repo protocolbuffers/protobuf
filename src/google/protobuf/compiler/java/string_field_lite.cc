@@ -44,6 +44,7 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/compiler/java/context.h>
 #include <google/protobuf/compiler/java/doc_comment.h>
 #include <google/protobuf/compiler/java/helpers.h>
@@ -77,8 +78,8 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       ImmutableDefaultValue(descriptor, name_resolver, context->options());
   (*variables)["capitalized_type"] = "java.lang.String";
   (*variables)["tag"] =
-      StrCat(static_cast<int32_t>(WireFormat::MakeTag(descriptor)));
-  (*variables)["tag_size"] = StrCat(
+      absl::StrCat(static_cast<int32_t>(WireFormat::MakeTag(descriptor)));
+  (*variables)["tag_size"] = absl::StrCat(
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   // We use `x.getClass()` as a null check because it generates less bytecode
   // than an `if (x == null) { throw ... }` statement.
@@ -101,10 +102,10 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
 
   if (HasHasbit(descriptor)) {
     if (!context->options().opensource_runtime) {
-      (*variables)["bit_field_id"] = StrCat(messageBitIndex / 32);
+      (*variables)["bit_field_id"] = absl::StrCat(messageBitIndex / 32);
       (*variables)["bit_field_name"] = GetBitFieldNameForBit(messageBitIndex);
       (*variables)["bit_field_mask"] =
-          StrCat(1 << (messageBitIndex % 32));
+          absl::StrCat(1 << (messageBitIndex % 32));
     }
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);

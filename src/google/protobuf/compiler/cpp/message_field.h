@@ -51,6 +51,8 @@ class MessageFieldGenerator : public FieldGenerator {
   MessageFieldGenerator(const FieldDescriptor* descriptor,
                         const Options& options,
                         MessageSCCAnalyzer* scc_analyzer);
+  MessageFieldGenerator(const MessageFieldGenerator&) = delete;
+  MessageFieldGenerator& operator=(const MessageFieldGenerator&) = delete;
   ~MessageFieldGenerator() override;
 
   // implements FieldGenerator ---------------------------------------
@@ -81,9 +83,6 @@ class MessageFieldGenerator : public FieldGenerator {
  protected:
   const bool implicit_weak_field_;
   const bool has_required_fields_;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageFieldGenerator);
 };
 
 class MessageOneofFieldGenerator : public MessageFieldGenerator {
@@ -91,6 +90,9 @@ class MessageOneofFieldGenerator : public MessageFieldGenerator {
   MessageOneofFieldGenerator(const FieldDescriptor* descriptor,
                              const Options& options,
                              MessageSCCAnalyzer* scc_analyzer);
+  MessageOneofFieldGenerator(const MessageOneofFieldGenerator&) = delete;
+  MessageOneofFieldGenerator& operator=(const MessageOneofFieldGenerator&) =
+      delete;
   ~MessageOneofFieldGenerator() override;
 
   // implements FieldGenerator ---------------------------------------
@@ -106,9 +108,6 @@ class MessageOneofFieldGenerator : public MessageFieldGenerator {
   void GenerateDestructorCode(io::Printer* printer) const override;
   void GenerateConstructorCode(io::Printer* printer) const override;
   void GenerateIsInitialized(io::Printer* printer) const override;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageOneofFieldGenerator);
 };
 
 class RepeatedMessageFieldGenerator : public FieldGenerator {
@@ -116,6 +115,9 @@ class RepeatedMessageFieldGenerator : public FieldGenerator {
   RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor,
                                 const Options& options,
                                 MessageSCCAnalyzer* scc_analyzer);
+  RepeatedMessageFieldGenerator(const RepeatedMessageFieldGenerator&) = delete;
+  RepeatedMessageFieldGenerator& operator=(
+      const RepeatedMessageFieldGenerator&) = delete;
   ~RepeatedMessageFieldGenerator() override;
 
   // implements FieldGenerator ---------------------------------------
@@ -136,8 +138,6 @@ class RepeatedMessageFieldGenerator : public FieldGenerator {
  private:
   const bool implicit_weak_field_;
   const bool has_required_fields_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedMessageFieldGenerator);
 };
 
 }  // namespace cpp

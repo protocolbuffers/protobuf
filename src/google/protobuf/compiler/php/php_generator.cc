@@ -914,7 +914,7 @@ void GenerateMessageToPool(const std::string& name_prefix,
           "field", field->name(),
           "key", ToUpper(key->type_name()),
           "value", ToUpper(val->type_name()),
-          "number", StrCat(field->number()),
+          "number", absl::StrCat(field->number()),
           "other", EnumOrMessageSuffix(val, true));
     } else if (!field->real_containing_oneof()) {
       printer->Print(
@@ -923,7 +923,7 @@ void GenerateMessageToPool(const std::string& name_prefix,
           "field", field->name(),
           "label", LabelForField(field),
           "type", ToUpper(field->type_name()),
-          "number", StrCat(field->number()),
+          "number", absl::StrCat(field->number()),
           "other", EnumOrMessageSuffix(field, true));
     }
   }
@@ -941,7 +941,7 @@ void GenerateMessageToPool(const std::string& name_prefix,
           "\\Google\\Protobuf\\Internal\\GPBType::^type^, ^number^^other^)\n",
           "field", field->name(),
           "type", ToUpper(field->type_name()),
-          "number", StrCat(field->number()),
+          "number", absl::StrCat(field->number()),
           "other", EnumOrMessageSuffix(field, true));
     }
     printer->Print("->finish()\n");

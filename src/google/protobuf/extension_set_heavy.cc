@@ -35,9 +35,9 @@
 // Contains methods defined in extension_set.h which cannot be part of the
 // lite library because they use descriptors or reflection.
 
-#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
+#include "absl/base/casts.h"
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/extension_set.h>
@@ -45,6 +45,7 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/parse_context.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format.h>
@@ -413,7 +414,7 @@ size_t ExtensionSet::Extension::SpaceUsedExcludingSelfLong() const {
         if (is_lazy) {
           total_size += lazymessage_value->SpaceUsedLong();
         } else {
-          total_size += down_cast<Message*>(message_value)->SpaceUsedLong();
+          total_size += DownCast<Message*>(message_value)->SpaceUsedLong();
         }
         break;
       default:

@@ -45,7 +45,7 @@
 #include <google/protobuf/unittest_arena.pb.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/string_view.h"
 #include <google/protobuf/arena_test_util.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/extension_set.h>

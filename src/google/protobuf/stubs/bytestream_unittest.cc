@@ -47,22 +47,20 @@ namespace {
 // one fragment.
 class MockByteSource : public ByteSource {
  public:
-  MockByteSource(StringPiece data, int block_size)
-    : data_(data), block_size_(block_size) {}
+  MockByteSource(absl::string_view data, int block_size)
+      : data_(data), block_size_(block_size) {}
 
   size_t Available() const { return data_.size(); }
-  StringPiece Peek() {
-    return data_.substr(0, block_size_);
-  }
+  absl::string_view Peek() { return data_.substr(0, block_size_); }
   void Skip(size_t n) { data_.remove_prefix(n); }
 
  private:
-  StringPiece data_;
+  absl::string_view data_;
   int block_size_;
 };
 
 TEST(ByteSourceTest, CopyTo) {
-  StringPiece data("Hello world!");
+  absl::string_view data("Hello world!");
   MockByteSource source(data, 3);
   std::string str;
   StringByteSink sink(&str);
@@ -72,7 +70,7 @@ TEST(ByteSourceTest, CopyTo) {
 }
 
 TEST(ByteSourceTest, CopySubstringTo) {
-  StringPiece data("Hello world!");
+  absl::string_view data("Hello world!");
   MockByteSource source(data, 3);
   source.Skip(1);
   std::string str;
@@ -84,7 +82,7 @@ TEST(ByteSourceTest, CopySubstringTo) {
 }
 
 TEST(ByteSourceTest, LimitByteSource) {
-  StringPiece data("Hello world!");
+  absl::string_view data("Hello world!");
   MockByteSource source(data, 3);
   LimitByteSource limit_source(&source, 6);
   EXPECT_EQ(6, limit_source.Available());
@@ -110,7 +108,7 @@ TEST(ByteSourceTest, LimitByteSource) {
 }
 
 TEST(ByteSourceTest, CopyToStringByteSink) {
-  StringPiece data("Hello world!");
+  absl::string_view data("Hello world!");
   MockByteSource source(data, 3);
   std::string str;
   StringByteSink sink(&str);

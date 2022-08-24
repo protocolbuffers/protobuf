@@ -39,7 +39,7 @@
 #include <google/protobuf/stubs/callback.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/string_view.h"
 #include <google/protobuf/util/internal/location_tracker.h>
 
 // Must be included last.
@@ -53,49 +53,46 @@ namespace converter {
 // Interface for error listener.
 class PROTOBUF_EXPORT ErrorListener {
  public:
+  ErrorListener(const ErrorListener&) = delete;
+  ErrorListener& operator=(const ErrorListener&) = delete;
   virtual ~ErrorListener() {}
 
   // Reports an invalid name at the given location.
   virtual void InvalidName(const LocationTrackerInterface& loc,
-                           StringPiece invalid_name,
-                           StringPiece message) = 0;
+                           absl::string_view invalid_name,
+                           absl::string_view message) = 0;
 
   // Reports an invalid value for a field.
   virtual void InvalidValue(const LocationTrackerInterface& loc,
-                            StringPiece type_name,
-                            StringPiece value) = 0;
+                            absl::string_view type_name,
+                            absl::string_view value) = 0;
 
   // Reports a missing required field.
   virtual void MissingField(const LocationTrackerInterface& loc,
-                            StringPiece missing_name) = 0;
+                            absl::string_view missing_name) = 0;
 
  protected:
   ErrorListener() {}
-
- private:
-  // Do not add any data members to this class.
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ErrorListener);
 };
 
 // An error listener that ignores all errors.
 class PROTOBUF_EXPORT NoopErrorListener : public ErrorListener {
  public:
   NoopErrorListener() {}
+  NoopErrorListener(const NoopErrorListener&) = delete;
+  NoopErrorListener& operator=(const NoopErrorListener&) = delete;
   ~NoopErrorListener() override {}
 
   void InvalidName(const LocationTrackerInterface& /*loc*/,
-                   StringPiece /* invalid_name */,
-                   StringPiece /* message */) override {}
+                   absl::string_view /* invalid_name */,
+                   absl::string_view /* message */) override {}
 
   void InvalidValue(const LocationTrackerInterface& /*loc*/,
-                    StringPiece /* type_name */,
-                    StringPiece /* value */) override {}
+                    absl::string_view /* type_name */,
+                    absl::string_view /* value */) override {}
 
   void MissingField(const LocationTrackerInterface& /* loc */,
-                    StringPiece /* missing_name */) override {}
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(NoopErrorListener);
+                    absl::string_view /* missing_name */) override {}
 };
 
 

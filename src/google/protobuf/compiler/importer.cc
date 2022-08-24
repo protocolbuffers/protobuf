@@ -50,6 +50,7 @@
 #include <google/protobuf/io/tokenizer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/str_join.h"
 #include <google/protobuf/io/io_win32.h>
 
 #ifdef _WIN32
@@ -297,7 +298,7 @@ static std::string CanonicalizePath(std::string path) {
       canonical_parts.push_back(part);
     }
   }
-  std::string result = Join(canonical_parts, "/");
+  std::string result = absl::StrJoin(canonical_parts, "/");
   if (!path.empty() && path[0] == '/') {
     // Restore leading slash.
     result = '/' + result;

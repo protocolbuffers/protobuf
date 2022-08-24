@@ -169,7 +169,7 @@ class PROTOBUF_EXPORT Api final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.Api";
   }
   protected:
@@ -429,7 +429,7 @@ class PROTOBUF_EXPORT Method final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.Method";
   }
   protected:
@@ -667,7 +667,7 @@ class PROTOBUF_EXPORT Mixin final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.Mixin";
   }
   protected:

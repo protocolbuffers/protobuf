@@ -207,7 +207,7 @@ void EnumGenerator::GenerateSource(io::Printer* printer) {
   for (int i = 0; i < text_blob.size(); i += kBytesPerLine) {
     printer->Print(
         "\n        \"$data$\"",
-        "data", EscapeTrigraphs(CEscape(text_blob.substr(i, kBytesPerLine))));
+        "data", EscapeTrigraphs(absl::CEscape(text_blob.substr(i, kBytesPerLine))));
   }
   printer->Print(
       ";\n"
@@ -237,7 +237,7 @@ void EnumGenerator::GenerateSource(io::Printer* printer) {
         "                                     enumVerifier:$name$_IsValidValue\n"
         "                              extraTextFormatInfo:extraTextFormatInfo];\n",
         "name", name_,
-        "extraTextFormatInfo", CEscape(text_format_decode_data.Data()));
+        "extraTextFormatInfo", absl::CEscape(text_format_decode_data.Data()));
     }
     printer->Print(
       "    GPBEnumDescriptor *expected = nil;\n"

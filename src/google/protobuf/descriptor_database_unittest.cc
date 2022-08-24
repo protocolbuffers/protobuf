@@ -572,6 +572,29 @@ TEST(SimpleDescriptorDatabaseExtraTest, FindAllMessageNames) {
   EXPECT_THAT(messages, ::testing::UnorderedElementsAre("foo.Foo", "Bar"));
 }
 
+TEST(SimpleDescriptorDatabaseExtraTest, AddUnowned) {
+  FileDescriptorProto f;
+  f.set_name("foo.proto");
+  f.set_package("foo");
+  f.add_message_type()->set_name("Foo");
+
+  FileDescriptorProto b;
+  b.set_name("bar.proto");
+  b.set_package("");
+  b.add_message_type()->set_name("Bar");
+
+  SimpleDescriptorDatabase db;
+  db.AddUnowned(&f);
+  db.AddUnowned(&b);
+
+  std::vector<std::string> packages;
+  EXPECT_TRUE(db.FindAllPackageNames(&packages));
+  EXPECT_THAT(packages, ::testing::UnorderedElementsAre("foo", ""));
+  std::vector<std::string> messages;
+  EXPECT_TRUE(db.FindAllMessageNames(&messages));
+  EXPECT_THAT(messages, ::testing::UnorderedElementsAre("foo.Foo", "Bar"));
+}
+
 // ===================================================================
 
 class MergedDescriptorDatabaseTest : public testing::Test {

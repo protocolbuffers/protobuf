@@ -55,6 +55,8 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/util/field_comparator.h>
 
@@ -2000,14 +2002,14 @@ void MessageDifferencer::StreamReporter::PrintPath(
         continue;
       }
     } else {
-      printer_->PrintRaw(StrCat(specific_field.unknown_field_number));
+      printer_->PrintRaw(absl::StrCat(specific_field.unknown_field_number));
     }
     if (left_side && specific_field.index >= 0) {
-      printer_->Print("[$name$]", "name", StrCat(specific_field.index));
+      printer_->Print("[$name$]", "name", absl::StrCat(specific_field.index));
     }
     if (!left_side && specific_field.new_index >= 0) {
       printer_->Print("[$name$]", "name",
-                      StrCat(specific_field.new_index));
+                      absl::StrCat(specific_field.new_index));
     }
   }
 }
@@ -2072,19 +2074,19 @@ void MessageDifferencer::StreamReporter::PrintUnknownFieldValue(
   std::string output;
   switch (unknown_field->type()) {
     case UnknownField::TYPE_VARINT:
-      output = StrCat(unknown_field->varint());
+      output = absl::StrCat(unknown_field->varint());
       break;
     case UnknownField::TYPE_FIXED32:
-      output = StrCat(
-          "0x", strings::Hex(unknown_field->fixed32(), strings::ZERO_PAD_8));
+      output = absl::StrCat(
+          "0x", absl::Hex(unknown_field->fixed32(), absl::kZeroPad8));
       break;
     case UnknownField::TYPE_FIXED64:
-      output = StrCat(
-          "0x", strings::Hex(unknown_field->fixed64(), strings::ZERO_PAD_16));
+      output = absl::StrCat(
+          "0x", absl::Hex(unknown_field->fixed64(), absl::kZeroPad16));
       break;
     case UnknownField::TYPE_LENGTH_DELIMITED:
       output = StringPrintf(
-          "\"%s\"", CEscape(unknown_field->length_delimited()).c_str());
+          "\"%s\"", absl::CEscape(unknown_field->length_delimited()).c_str());
       break;
     case UnknownField::TYPE_GROUP:
       // TODO(kenton):  Print the contents of the group like we do for
@@ -2126,7 +2128,7 @@ void MessageDifferencer::StreamReporter::PrintMapKey(
     if (key_string.empty()) {
       key_string = "''";
     }
-    printer_->PrintRaw(StrCat("[", key_string, "]"));
+    printer_->PrintRaw(absl::StrCat("[", key_string, "]"));
   }
 }
 

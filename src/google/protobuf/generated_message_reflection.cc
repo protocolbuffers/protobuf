@@ -44,8 +44,8 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/casts.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/base/casts.h"
+#include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -101,7 +101,7 @@ Message* MaybeForceCopy(Arena* arena, Message* msg) {
 
 namespace internal {
 
-bool ParseNamedEnum(const EnumDescriptor* descriptor, ConstStringParam name,
+bool ParseNamedEnum(const EnumDescriptor* descriptor, absl::string_view name,
                     int* value) {
   const EnumValueDescriptor* d = descriptor->FindValueByName(name);
   if (d == nullptr) return false;
@@ -3536,9 +3536,8 @@ void RegisterAllTypesInternal(const Metadata* file_level_metadata, int size) {
 namespace internal {
 
 Metadata AssignDescriptors(const DescriptorTable* (*table)(),
-                           internal::once_flag* once,
-                           const Metadata& metadata) {
-  call_once(*once, [=] {
+                           absl::once_flag* once, const Metadata& metadata) {
+  absl::call_once(*once, [=] {
     auto* t = table();
     AssignDescriptorsImpl(t, t->is_eager);
   });
@@ -3548,7 +3547,7 @@ Metadata AssignDescriptors(const DescriptorTable* (*table)(),
 
 void AssignDescriptors(const DescriptorTable* table, bool eager) {
   if (!eager) eager = table->is_eager;
-  call_once(*table->once, AssignDescriptorsImpl, table, eager);
+  absl::call_once(*table->once, AssignDescriptorsImpl, table, eager);
 }
 
 AddDescriptorsRunner::AddDescriptorsRunner(const DescriptorTable* table) {

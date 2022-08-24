@@ -1773,6 +1773,7 @@ public class TextFormatTest {
     }
   }
 
+  @SuppressWarnings("LenientFormatStringValidation")
   private void assertLocation(
       TextFormatParseInfoTree tree,
       final Descriptor descriptor,
@@ -1786,6 +1787,7 @@ public class TextFormatTest {
       TextFormatParseLocation expected = TextFormatParseLocation.create(line, column);
       assertThat(location).isEqualTo(expected);
     } else if (line != -1 && column != -1) {
+      // Expected 0 args, but got 3.
       assertWithMessage(
               "Tree/descriptor/fieldname did not contain index %d, line %d column %d expected",
               index, line, column)

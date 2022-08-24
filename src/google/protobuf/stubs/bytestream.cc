@@ -41,7 +41,7 @@ namespace strings {
 
 void ByteSource::CopyTo(ByteSink* sink, size_t n) {
   while (n > 0) {
-    StringPiece fragment = Peek();
+    absl::string_view fragment = Peek();
     if (fragment.empty()) {
       GOOGLE_LOG(DFATAL) << "ByteSource::CopyTo() overran input.";
       break;
@@ -149,9 +149,7 @@ size_t ArrayByteSource::Available() const {
   return input_.size();
 }
 
-StringPiece ArrayByteSource::Peek() {
-  return input_;
-}
+absl::string_view ArrayByteSource::Peek() { return input_; }
 
 void ArrayByteSource::Skip(size_t n) {
   GOOGLE_DCHECK_LE(n, input_.size());
@@ -172,9 +170,9 @@ size_t LimitByteSource::Available() const {
   return available;
 }
 
-StringPiece LimitByteSource::Peek() {
-  StringPiece piece = source_->Peek();
-  return StringPiece(piece.data(), std::min(piece.size(), limit_));
+absl::string_view LimitByteSource::Peek() {
+  absl::string_view piece = source_->Peek();
+  return absl::string_view(piece.data(), std::min(piece.size(), limit_));
 }
 
 void LimitByteSource::Skip(size_t n) {

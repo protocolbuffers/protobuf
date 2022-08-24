@@ -50,8 +50,8 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include "absl/strings/str_join.h"
 #include <google/protobuf/stubs/substitute.h>
-#include <google/protobuf/stubs/map_util.h>
 
 namespace google {
 namespace protobuf {
@@ -2678,8 +2678,8 @@ class SourceInfoTest : public ParserTest {
         return true;
       }
     } else {
-      std::pair<int, int> start_pos = FindOrDie(markers_, start_marker);
-      std::pair<int, int> end_pos = FindOrDie(markers_, end_marker);
+      std::pair<int, int> start_pos = markers_.at(start_marker);
+      std::pair<int, int> end_pos = markers_.at(end_marker);
 
       RepeatedField<int> expected_span;
       expected_span.Add(start_pos.first);
@@ -2710,7 +2710,7 @@ class SourceInfoTest : public ParserTest {
           } else {
             EXPECT_EQ(
                 expected_leading_detached_comments,
-                Join(iter->second->leading_detached_comments(), "\n"));
+                absl::StrJoin(iter->second->leading_detached_comments(), "\n"));
           }
 
           spans_.erase(iter);

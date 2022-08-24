@@ -84,6 +84,8 @@ void ServiceGenerator::GenerateInterface(io::Printer* printer) {
       "  // This class should be treated as an abstract interface.\n"
       "  inline $classname$() {};\n"
       " public:\n"
+      "  $classname$(const $classname$&) = delete;\n"
+      "  $classname$& operator=(const $classname$&) = delete;\n"
       "  virtual ~$classname$();\n");
   printer->Indent();
 
@@ -114,8 +116,6 @@ void ServiceGenerator::GenerateInterface(io::Printer* printer) {
   printer->Outdent();
   format(
       "\n"
-      " private:\n"
-      "  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS($classname$);\n"
       "};\n"
       "\n");
 }
@@ -132,6 +132,8 @@ void ServiceGenerator::GenerateStubDefinition(io::Printer* printer) {
       "$classname$_Stub(::$proto_ns$::RpcChannel* channel);\n"
       "$classname$_Stub(::$proto_ns$::RpcChannel* channel,\n"
       "                 ::$proto_ns$::Service::ChannelOwnership ownership);\n"
+      "$classname$_Stub(const $classname$_Stub&) = delete;\n"
+      "$classname$_Stub& operator=(const $classname$_Stub&) = delete;\n"
       "~$classname$_Stub();\n"
       "\n"
       "inline ::$proto_ns$::RpcChannel* channel() { return channel_; }\n"
@@ -146,7 +148,6 @@ void ServiceGenerator::GenerateStubDefinition(io::Printer* printer) {
       " private:\n"
       "  ::$proto_ns$::RpcChannel* channel_;\n"
       "  bool owns_channel_;\n"
-      "  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS($classname$_Stub);\n"
       "};\n"
       "\n");
 }
@@ -244,9 +245,6 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
     const MethodDescriptor* method = descriptor_->method(i);
     Formatter format_method(printer, vars_);
     InitMethodVariables(method, options_, &format_method);
-
-    // Note:  down_cast does not work here because it only works on pointers,
-    //   not references.
     format_method(
         "    case $1$:\n"
         "      $name$(controller,\n"

@@ -191,7 +191,7 @@ class PROTOBUF_EXPORT DoubleValue final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.DoubleValue";
   }
   protected:
@@ -339,7 +339,7 @@ class PROTOBUF_EXPORT FloatValue final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.FloatValue";
   }
   protected:
@@ -487,7 +487,7 @@ class PROTOBUF_EXPORT Int64Value final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.Int64Value";
   }
   protected:
@@ -635,7 +635,7 @@ class PROTOBUF_EXPORT UInt64Value final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.UInt64Value";
   }
   protected:
@@ -783,7 +783,7 @@ class PROTOBUF_EXPORT Int32Value final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.Int32Value";
   }
   protected:
@@ -931,7 +931,7 @@ class PROTOBUF_EXPORT UInt32Value final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.UInt32Value";
   }
   protected:
@@ -1079,7 +1079,7 @@ class PROTOBUF_EXPORT BoolValue final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.BoolValue";
   }
   protected:
@@ -1227,7 +1227,7 @@ class PROTOBUF_EXPORT StringValue final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.StringValue";
   }
   protected:
@@ -1380,7 +1380,7 @@ class PROTOBUF_EXPORT BytesValue final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.BytesValue";
   }
   protected:

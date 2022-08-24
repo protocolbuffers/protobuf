@@ -35,6 +35,7 @@ set(protobuf_ABSL_USED_TARGETS
   absl::bind_front
   absl::cleanup
   absl::debugging
+  absl::dynamic_annotations
   absl::flags
   absl::flat_hash_map
   absl::flat_hash_set

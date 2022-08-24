@@ -75,7 +75,6 @@
 #include <google/protobuf/generated_message_reflection.h>
 #include <google/protobuf/generated_message_util.h>
 #include <google/protobuf/unknown_field_set.h>
-#include <google/protobuf/stubs/hash.h>
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/extension_set.h>
 #include <google/protobuf/map_field.h>
@@ -84,6 +83,7 @@
 #include <google/protobuf/reflection_ops.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/wire_format.h>
+
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -297,7 +297,21 @@ struct DynamicMessageFactory::TypeInfo {
 
   TypeInfo() : prototype(nullptr) {}
 
-  ~TypeInfo() { delete prototype; }
+  ~TypeInfo() {
+    delete prototype;
+
+    // Scribble the payload to prevent unsanitized opt builds from silently
+    // allowing use-after-free bugs where the factory is destroyed but the
+    // DynamicMessage instances are still used.
+    // This is a common bug with DynamicMessageFactory.
+    // NOTE: This must happen after deleting the prototype.
+    if (offsets != nullptr) {
+      std::fill_n(offsets.get(), type->field_count(), 0xCDCDCDCDu);
+    }
+    if (has_bits_indices != nullptr) {
+      std::fill_n(has_bits_indices.get(), type->field_count(), 0xCDCDCDCDu);
+    }
+  }
 };
 
 DynamicMessage::DynamicMessage(const DynamicMessageFactory::TypeInfo* type_info)

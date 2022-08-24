@@ -113,7 +113,7 @@ class PROTOBUF_EXPORT Any final :
     return _impl_._any_metadata_.PackFrom(GetArena(), message);
   }
   bool PackFrom(const ::PROTOBUF_NAMESPACE_ID::Message& message,
-                ::PROTOBUF_NAMESPACE_ID::ConstStringParam type_url_prefix) {
+                ::absl::string_view type_url_prefix) {
     GOOGLE_DCHECK_NE(&message, this);
     return _impl_._any_metadata_.PackFrom(GetArena(), message, type_url_prefix);
   }
@@ -130,7 +130,7 @@ class PROTOBUF_EXPORT Any final :
   }
   template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::PROTOBUF_NAMESPACE_ID::Message&>::value>::type>
   bool PackFrom(const T& message,
-                ::PROTOBUF_NAMESPACE_ID::ConstStringParam type_url_prefix) {
+                ::absl::string_view type_url_prefix) {
     return _impl_._any_metadata_.PackFrom<T>(GetArena(), message, type_url_prefix);}
   template <typename T, class = typename std::enable_if<!std::is_convertible<T, const ::PROTOBUF_NAMESPACE_ID::Message&>::value>::type>
   bool UnpackTo(T* message) const {
@@ -139,7 +139,7 @@ class PROTOBUF_EXPORT Any final :
   template<typename T> bool Is() const {
     return _impl_._any_metadata_.Is<T>();
   }
-  static bool ParseAnyTypeUrl(::PROTOBUF_NAMESPACE_ID::ConstStringParam type_url,
+  static bool ParseAnyTypeUrl(::absl::string_view type_url,
                               std::string* full_type_name);
   friend void swap(Any& a, Any& b) {
     a.Swap(&b);
@@ -194,7 +194,7 @@ class PROTOBUF_EXPORT Any final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.Any";
   }
   protected:
