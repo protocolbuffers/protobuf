@@ -30,6 +30,7 @@
 #include <stdio.h>
 
 #include "upb/internal/unicode.h"
+#include "upb/io/string.h"
 #include "upb/io/strtod.h"
 
 // Must be included last.
@@ -871,23 +872,25 @@ static const char* FetchUnicodePoint(const char* ptr, uint32_t* code_point) {
 }
 
 // The text string must begin and end with single or double quote characters.
-void upb_Parse_StringAppend(const char* text, upb_String* output) {
+upb_StringView upb_Parse_String(const char* text, upb_Arena* arena) {
   const size_t size = strlen(text);
 
-  // Reminder: text[0] is always a quote character.  (If text is
-  // empty, it's invalid, so we'll just return).
+  upb_String output;
+  upb_String_Init(&output, arena);
+
+  // Reminder: text[0] is always a quote character.
+  // (If text is empty, it's invalid, so we'll just return).
   if (size == 0) {
     fprintf(stderr,
             "Tokenizer::ParseStringAppend() passed text that could not"
             " have been tokenized as a string: %s",
             text);
     UPB_ASSERT(0);
-    return;
   }
 
   // Reserve room for new string.
-  const size_t new_len = size + upb_String_Size(output);
-  upb_String_Reserve(output, new_len);
+  const size_t new_len = size + upb_String_Size(&output);
+  upb_String_Reserve(&output, new_len);
 
   // Loop through the string copying characters to "output" and
   // interpreting escape sequences.  Note that any invalid escape
@@ -909,7 +912,7 @@ void upb_Parse_StringAppend(const char* text, upb_String* output) {
           ++ptr;
           code = code * 8 + DigitValue(*ptr);
         }
-        upb_String_PushBack(output, (char)code);
+        upb_String_PushBack(&output, (char)code);
 
       } else if (*ptr == 'x') {
         // A hex escape.  May zero, one, or two digits.  (The zero case
@@ -923,29 +926,32 @@ void upb_Parse_StringAppend(const char* text, upb_String* output) {
           ++ptr;
           code = code * 16 + DigitValue(*ptr);
         }
-        upb_String_PushBack(output, (char)code);
+        upb_String_PushBack(&output, (char)code);
 
       } else if (*ptr == 'u' || *ptr == 'U') {
         uint32_t unicode;
         const char* end = FetchUnicodePoint(ptr, &unicode);
         if (end == ptr) {
           // Failure: Just dump out what we saw, don't try to parse it.
-          upb_String_PushBack(output, *ptr);
+          upb_String_PushBack(&output, *ptr);
         } else {
-          AppendUTF8(unicode, output);
+          AppendUTF8(unicode, &output);
           ptr = end - 1;  // Because we're about to ++ptr.
         }
       } else {
         // Some other escape code.
-        upb_String_PushBack(output, TranslateEscape(*ptr));
+        upb_String_PushBack(&output, TranslateEscape(*ptr));
       }
 
     } else if (*ptr == text[0] && ptr[1] == '\0') {
       // Ignore final quote matching the starting quote.
     } else {
-      upb_String_PushBack(output, *ptr);
+      upb_String_PushBack(&output, *ptr);
     }
   }
+
+  return upb_StringView_FromDataAndSize(upb_String_Data(&output),
+                                        upb_String_Size(&output));
 }
 
 static bool AllInClass(bool (*f)(char), const char* text, int size) {
@@ -955,11 +961,11 @@ static bool AllInClass(bool (*f)(char), const char* text, int size) {
   return true;
 }
 
-bool upb_Tokenizer_IsIdentifier(const char* text, int size) {
+bool upb_Tokenizer_IsIdentifier(const char* data, int size) {
   // Mirrors IDENTIFIER definition in Tokenizer::Next() above.
   if (size == 0) return false;
-  if (!upb_Tokenizer_IsLetter(text[0])) return false;
-  if (!AllInClass(upb_Tokenizer_IsAlphanumeric, text + 1, size - 1))
+  if (!upb_Tokenizer_IsLetter(data[0])) return false;
+  if (!AllInClass(upb_Tokenizer_IsAlphanumeric, data + 1, size - 1))
     return false;
   return true;
 }

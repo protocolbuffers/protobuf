@@ -32,6 +32,7 @@
 #include "absl/strings/str_format.h"
 #include "upb/internal/unicode.h"
 #include "upb/io/chunked_input_stream.h"
+#include "upb/io/string.h"
 #include "upb/upb.hpp"
 
 // Must be last.
@@ -998,35 +999,30 @@ TEST_F(TokenizerTest, ParseString) {
   };
 
   upb::Arena arena;
-  upb_String result;
-  upb_String_Init(&result, arena.ptr());
 
   for (int i = 0; i < sizeof(inputs) / sizeof(inputs[0]); i++) {
-    upb_Parse_String(inputs[i].data(), &result);
-    EXPECT_TRUE(StringEquals(upb_String_Data(&result), outputs[i].data()));
+    auto sv = upb_Parse_String(inputs[i].data(), arena.ptr());
+    EXPECT_TRUE(StringEquals(sv.data, outputs[i].data()));
   }
 
   // Test invalid strings that will never be tokenized as strings.
 #ifdef GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet
   EXPECT_DEBUG_DEATH(
-      upb_Parse_String("", &result),
+      upb_Parse_String("", arena.ptr()),
       "passed text that could not have been tokenized as a string");
 #endif  // GTEST_HAS_DEATH_TEST
 }
 
 TEST_F(TokenizerTest, ParseStringAppend) {
-  // Check that ParseString and ParseStringAppend differ.
   upb::Arena arena;
   upb_String output;
   upb_String_Init(&output, arena.ptr());
 
   upb_String_Assign(&output, "stuff+", 6);
-
-  upb_Parse_StringAppend("'hello'", &output);
+  auto sv = upb_Parse_String("'hello'", arena.ptr());
+  EXPECT_TRUE(StringEquals(sv.data, "hello"));
+  upb_String_Append(&output, sv.data, sv.size);
   EXPECT_TRUE(StringEquals(upb_String_Data(&output), "stuff+hello"));
-
-  upb_Parse_String("'hello'", &output);
-  EXPECT_TRUE(StringEquals(upb_String_Data(&output), "hello"));
 }
 
 // -------------------------------------------------------------------
@@ -1172,14 +1168,11 @@ static const char* kParseBenchmark[] = {
 
 TEST(Benchmark, ParseStringAppendAccumulate) {
   upb::Arena arena;
-  upb_String output;
-  upb_String_Init(&output, arena.ptr());
   size_t outsize = 0;
   int benchmark_len = arraysize(kParseBenchmark);
   for (int i = 0; i < benchmark_len; i++) {
-    upb_Parse_StringAppend(kParseBenchmark[i], &output);
-    outsize += upb_String_Size(&output);
-    upb_String_Clear(&output);
+    auto sv = upb_Parse_String(kParseBenchmark[i], arena.ptr());
+    outsize += sv.size;
   }
   EXPECT_NE(0, outsize);
 }
@@ -1190,7 +1183,8 @@ TEST(Benchmark, ParseStringAppend) {
   upb_String_Init(&output, arena.ptr());
   int benchmark_len = arraysize(kParseBenchmark);
   for (int i = 0; i < benchmark_len; i++) {
-    upb_Parse_StringAppend(kParseBenchmark[i], &output);
+    auto sv = upb_Parse_String(kParseBenchmark[i], arena.ptr());
+    upb_String_Append(&output, sv.data, sv.size);
   }
   EXPECT_NE(0, upb_String_Size(&output));
 }
@@ -1217,12 +1211,10 @@ static std::string DisplayHex(const std::string& data) {
 static void ExpectFormat(const std::string& expectation,
                          const std::string& formatted) {
   upb::Arena arena;
-  upb_String output;
-  upb_String_Init(&output, arena.ptr());
-  upb_Parse_String(formatted.data(), &output);
-  EXPECT_EQ(strcmp(upb_String_Data(&output), expectation.data()), 0)
+  auto sv = upb_Parse_String(formatted.data(), arena.ptr());
+  EXPECT_EQ(strcmp(sv.data, expectation.data()), 0)
       << ": Incorrectly parsed " << formatted << ":\nGot      "
-      << DisplayHex(output.data_) << "\nExpected " << DisplayHex(expectation);
+      << DisplayHex(sv.data) << "\nExpected " << DisplayHex(expectation);
 }
 
 TEST(TokenizerHandlesUnicode, BMPCodes) {
