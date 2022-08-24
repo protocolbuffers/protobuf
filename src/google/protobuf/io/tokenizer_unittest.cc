@@ -41,7 +41,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/escaping.h"
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/testing/googletest.h>
@@ -201,7 +201,7 @@ struct SimpleTokenCase {
 
 inline std::ostream& operator<<(std::ostream& out,
                                 const SimpleTokenCase& test_case) {
-  return out << CEscape(test_case.input);
+  return out << absl::CEscape(test_case.input);
 }
 
 SimpleTokenCase kSimpleTokenCases[] = {
@@ -370,7 +370,7 @@ struct MultiTokenCase {
 
 inline std::ostream& operator<<(std::ostream& out,
                                 const MultiTokenCase& test_case) {
-  return out << CEscape(test_case.input);
+  return out << absl::CEscape(test_case.input);
 }
 
 MultiTokenCase kMultiTokenCases[] = {
@@ -641,7 +641,7 @@ struct DocCommentCase {
 
 inline std::ostream& operator<<(std::ostream& out,
                                 const DocCommentCase& test_case) {
-  return out << CEscape(test_case.input);
+  return out << absl::CEscape(test_case.input);
 }
 
 DocCommentCase kDocCommentCases[] = {
@@ -1058,7 +1058,7 @@ struct ErrorCase {
 };
 
 inline std::ostream& operator<<(std::ostream& out, const ErrorCase& test_case) {
-  return out << CEscape(test_case.input);
+  return out << absl::CEscape(test_case.input);
 }
 
 ErrorCase kErrorCases[] = {

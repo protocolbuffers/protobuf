@@ -38,6 +38,8 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
 
+#include "absl/strings/escaping.h"
+
 #include <sstream>
 
 const std::string kDescriptorFile = "google/protobuf/descriptor.proto";
@@ -914,7 +916,7 @@ void GenerateMessageToPool(const std::string& name_prefix,
           "field", field->name(),
           "key", ToUpper(key->type_name()),
           "value", ToUpper(val->type_name()),
-          "number", StrCat(field->number()),
+          "number", absl::StrCat(field->number()),
           "other", EnumOrMessageSuffix(val, true));
     } else if (!field->real_containing_oneof()) {
       printer->Print(
@@ -923,7 +925,7 @@ void GenerateMessageToPool(const std::string& name_prefix,
           "field", field->name(),
           "label", LabelForField(field),
           "type", ToUpper(field->type_name()),
-          "number", StrCat(field->number()),
+          "number", absl::StrCat(field->number()),
           "other", EnumOrMessageSuffix(field, true));
     }
   }
@@ -941,7 +943,7 @@ void GenerateMessageToPool(const std::string& name_prefix,
           "\\Google\\Protobuf\\Internal\\GPBType::^type^, ^number^^other^)\n",
           "field", field->name(),
           "type", ToUpper(field->type_name()),
-          "number", StrCat(field->number()),
+          "number", absl::StrCat(field->number()),
           "other", EnumOrMessageSuffix(field, true));
     }
     printer->Print("->finish()\n");
@@ -2265,7 +2267,7 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
 
     for (size_t i = 0; i < serialized.size();) {
       for (size_t j = 0; j < 25 && i < serialized.size(); ++i, ++j) {
-        printer.Print("'$ch$', ", "ch", CEscape(serialized.substr(i, 1)));
+        printer.Print("'$ch$', ", "ch", absl::CEscape(serialized.substr(i, 1)));
       }
       printer.Print("\n");
     }

@@ -31,16 +31,18 @@
 // Author: kenton@google.com (Kenton Varda)
 // from google3/strings/substitute.h
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/stringpiece.h>
-#include <google/protobuf/stubs/strutil.h>
-
-#include <string>
-
 #ifndef GOOGLE_PROTOBUF_STUBS_SUBSTITUTE_H_
 #define GOOGLE_PROTOBUF_STUBS_SUBSTITUTE_H_
 
-#include <google/protobuf/port_def.inc>
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/stubs/strutil.h>
+
+#include <string>  // NOLINT
+
+#include "absl/strings/string_view.h"
+
+// Must be last.
+#include <google/protobuf/port_def.inc>  // NOLINT
 
 namespace google {
 namespace protobuf {
@@ -94,7 +96,7 @@ class SubstituteArg {
     : text_(value), size_(strlen(text_)) {}
   inline SubstituteArg(const std::string& value)
       : text_(value.data()), size_(value.size()) {}
-  inline SubstituteArg(const StringPiece value)
+  inline SubstituteArg(const absl::string_view value)
       : text_(value.data()), size_(value.size()) {}
 
   // Indicates that no argument was given.
@@ -173,6 +175,6 @@ PROTOBUF_EXPORT void SubstituteAndAppend(
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include <google/protobuf/port_undef.inc>  // NOLINT
 
 #endif // GOOGLE_PROTOBUF_STUBS_SUBSTITUTE_H_

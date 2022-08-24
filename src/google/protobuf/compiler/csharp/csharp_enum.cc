@@ -80,12 +80,12 @@ void EnumGenerator::Generate(io::Printer* printer) {
           printer->Print("[pbr::OriginalName(\"$original_name$\", PreferredAlias = false)] $name$ = $number$,\n",
              "original_name", original_name,
              "name", name,
-             "number", StrCat(number));
+             "number", absl::StrCat(number));
       } else {
           printer->Print("[pbr::OriginalName(\"$original_name$\")] $name$ = $number$,\n",
              "original_name", original_name,
              "name", name,
-             "number", StrCat(number));
+             "number", absl::StrCat(number));
       }
   }
   printer->Outdent();

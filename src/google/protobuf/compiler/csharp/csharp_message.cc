@@ -49,6 +49,9 @@
 #include <google/protobuf/compiler/csharp/csharp_message.h>
 #include <google/protobuf/compiler/csharp/csharp_names.h>
 
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -161,7 +164,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   for (int i = 0; i < has_bit_field_count_; i++) {
     // don't use arrays since all arrays are heap allocated, saving allocations
     // use ints instead of bytes since bytes lack bitwise operators, saving casts
-    printer->Print("private int _hasBits$i$;\n", "i", StrCat(i));
+    printer->Print("private int _hasBits$i$;\n", "i", absl::StrCat(i));
   }
 
   WriteGeneratedCodeAttributes(printer);
@@ -173,10 +176,10 @@ void MessageGenerator::Generate(io::Printer* printer) {
   // Access the message descriptor via the relevant file descriptor or containing message descriptor.
   if (!descriptor_->containing_type()) {
     vars["descriptor_accessor"] = GetReflectionClassName(descriptor_->file())
-        + ".Descriptor.MessageTypes[" + StrCat(descriptor_->index()) + "]";
+        + ".Descriptor.MessageTypes[" + absl::StrCat(descriptor_->index()) + "]";
   } else {
     vars["descriptor_accessor"] = GetClassName(descriptor_->containing_type())
-        + ".Descriptor.NestedTypes[" + StrCat(descriptor_->index()) + "]";
+        + ".Descriptor.NestedTypes[" + absl::StrCat(descriptor_->index()) + "]";
   }
 
   WriteGeneratedCodeAttributes(printer);
@@ -216,7 +219,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "public const int $field_constant_name$ = $index$;\n",
       "field_name", fieldDescriptor->name(),
       "field_constant_name", GetFieldConstantName(fieldDescriptor),
-      "index", StrCat(fieldDescriptor->number()));
+      "index", absl::StrCat(fieldDescriptor->number()));
     std::unique_ptr<FieldGeneratorBase> generator(
         CreateFieldGeneratorInternal(fieldDescriptor));
     generator->GenerateMembers(printer);
@@ -240,7 +243,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
       const FieldDescriptor* field = oneof->field(j);
       printer->Print("$oneof_case_name$ = $index$,\n",
                      "oneof_case_name", GetOneofCaseName(field),
-                     "index", StrCat(field->number()));
+                     "index", absl::StrCat(field->number()));
     }
     printer->Outdent();
     printer->Print("}\n");
@@ -382,7 +385,7 @@ void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
     "public $class_name$($class_name$ other) : this() {\n");
   printer->Indent();
   for (int i = 0; i < has_bit_field_count_; i++) {
-    printer->Print("_hasBits$i$ = other._hasBits$i$;\n", "i", StrCat(i));
+    printer->Print("_hasBits$i$ = other._hasBits$i$;\n", "i", absl::StrCat(i));
   }
   // Clone non-oneof fields first (treating optional proto3 fields as non-oneof)
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -698,7 +701,7 @@ void MessageGenerator::GenerateMainParseLoop(io::Printer* printer, bool use_pars
     printer->Print(
         "case $end_tag$:\n"
         "  return;\n",
-        "end_tag", StrCat(end_tag_));
+        "end_tag", absl::StrCat(end_tag_));
   }
   if (has_extension_ranges_) {
     printer->Print(vars,
@@ -727,13 +730,13 @@ void MessageGenerator::GenerateMainParseLoop(io::Printer* printer, bool use_pars
       printer->Print(
         "case $packed_tag$:\n",
         "packed_tag",
-        StrCat(
+        absl::StrCat(
             internal::WireFormatLite::MakeTag(
                 field->number(),
                 internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED)));
     }
 
-    printer->Print("case $tag$: {\n", "tag", StrCat(tag));
+    printer->Print("case $tag$: {\n", "tag", absl::StrCat(tag));
     printer->Indent();
     std::unique_ptr<FieldGeneratorBase> generator(
         CreateFieldGeneratorInternal(field));

@@ -32,6 +32,7 @@
 
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.h>
+#include "absl/strings/str_cat.h"
 
 namespace google {
 namespace protobuf {
@@ -41,7 +42,7 @@ namespace java {
 void GenerateSerializeExtensionRange(io::Printer* printer,
                                      const Descriptor::ExtensionRange* range) {
   printer->Print("extensionWriter.writeUntil($end$, output);\n", "end",
-                 StrCat(range->end));
+                 absl::StrCat(range->end));
 }
 
 }  // namespace java

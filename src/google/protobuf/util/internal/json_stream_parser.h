@@ -36,9 +36,9 @@
 #include <string>
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/status.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/status.h>
+#include "absl/status/status.h"
+#include "absl/strings/string_view.h"
+
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -75,20 +75,23 @@ class PROTOBUF_EXPORT JsonStreamParser {
  public:
   // Creates a JsonStreamParser that will write to the given ObjectWriter.
   explicit JsonStreamParser(ObjectWriter* ow);
+  JsonStreamParser() = delete;
+  JsonStreamParser(const JsonStreamParser&) = delete;
+  JsonStreamParser& operator=(const JsonStreamParser&) = delete;
   virtual ~JsonStreamParser();
 
-  // Parses a UTF-8 encoded JSON string from a StringPiece. If the returned
-  // status is non-ok, the status might contain a payload ParseErrorType with
-  // type_url kParseErrorTypeUrl and a payload containing string snippet of the
-  // error with type_url kParseErrorSnippetUrl.
-  util::Status Parse(StringPiece json);
+  // Parses a UTF-8 encoded JSON string from an absl::string_view. If the
+  // returned status is non-ok, the status might contain a payload
+  // ParseErrorType with type_url kParseErrorTypeUrl and a payload containing
+  // string snippet of the error with type_url kParseErrorSnippetUrl.
+  absl::Status Parse(absl::string_view json);
 
 
   // Finish parsing the JSON string. If the returned status is non-ok, the
   // status might contain a payload ParseErrorType with type_url
   // kParseErrorTypeUrl and a payload containing string snippet of the error
   // with type_url kParseErrorSnippetUrl.
-  util::Status FinishParse();
+  absl::Status FinishParse();
 
 
   // Sets the max recursion depth of JSON message to be deserialized. JSON
@@ -164,69 +167,69 @@ class PROTOBUF_EXPORT JsonStreamParser {
   };
 
   // Parses a single chunk of JSON, returning an error if the JSON was invalid.
-  util::Status ParseChunk(StringPiece chunk);
+  absl::Status ParseChunk(absl::string_view chunk);
 
   // Runs the parser based on stack_ and p_, until the stack is empty or p_ runs
   // out of data. If we unexpectedly run out of p_ we push the latest back onto
   // the stack and return.
-  util::Status RunParser();
+  absl::Status RunParser();
 
   // Parses a value from p_ and writes it to ow_.
   // A value may be an object, array, true, false, null, string or number.
-  util::Status ParseValue(TokenType type);
+  absl::Status ParseValue(TokenType type);
 
   // Parses a string and writes it out to the ow_.
-  util::Status ParseString();
+  absl::Status ParseString();
 
   // Parses a string, storing the result in parsed_.
-  util::Status ParseStringHelper();
+  absl::Status ParseStringHelper();
 
   // This function parses unicode escape sequences in strings. It returns an
   // error when there's a parsing error, either the size is not the expected
   // size or a character is not a hex digit.  When it returns str will contain
   // what has been successfully parsed so far.
-  util::Status ParseUnicodeEscape();
+  absl::Status ParseUnicodeEscape();
 
   // Expects p_ to point to a JSON number, writes the number to the writer using
   // the appropriate Render method based on the type of number.
-  util::Status ParseNumber();
+  absl::Status ParseNumber();
 
   // Parse a number into a NumberResult, reporting an error if no number could
   // be parsed. This method will try to parse into a uint64, int64, or double
   // based on whether the number was positive or negative or had a decimal
   // component.
-  util::Status ParseNumberHelper(NumberResult* result);
+  absl::Status ParseNumberHelper(NumberResult* result);
 
   // Parse a number as double into a NumberResult.
-  util::Status ParseDoubleHelper(const std::string& number,
+  absl::Status ParseDoubleHelper(const std::string& number,
                                  NumberResult* result);
 
   // Handles a { during parsing of a value.
-  util::Status HandleBeginObject();
+  absl::Status HandleBeginObject();
 
   // Parses from the ENTRY state.
-  util::Status ParseEntry(TokenType type);
+  absl::Status ParseEntry(TokenType type);
 
   // Parses from the ENTRY_MID state.
-  util::Status ParseEntryMid(TokenType type);
+  absl::Status ParseEntryMid(TokenType type);
 
   // Parses from the OBJ_MID state.
-  util::Status ParseObjectMid(TokenType type);
+  absl::Status ParseObjectMid(TokenType type);
 
   // Handles a [ during parsing of a value.
-  util::Status HandleBeginArray();
+  absl::Status HandleBeginArray();
 
   // Parses from the ARRAY_VALUE state.
-  util::Status ParseArrayValue(TokenType type);
+  absl::Status ParseArrayValue(TokenType type);
 
   // Parses from the ARRAY_MID state.
-  util::Status ParseArrayMid(TokenType type);
+  absl::Status ParseArrayMid(TokenType type);
 
   // Expects p_ to point to an unquoted literal
-  util::Status ParseTrue();
-  util::Status ParseFalse();
-  util::Status ParseNull();
-  util::Status ParseEmptyNull();
+  absl::Status ParseTrue();
+  absl::Status ParseFalse();
+  absl::Status ParseNull();
+  absl::Status ParseEmptyNull();
 
   // Whether an empty-null is allowed in the current state.
   bool IsEmptyNullAllowed(TokenType type);
@@ -235,19 +238,19 @@ class PROTOBUF_EXPORT JsonStreamParser {
   bool IsInputAllWhiteSpaces(TokenType type);
 
   // Report a failure as a util::Status.
-  util::Status ReportFailure(StringPiece message,
+  absl::Status ReportFailure(absl::string_view message,
                              ParseErrorType parse_code);
 
   // Report a failure due to an UNKNOWN token type. We check if we hit the
   // end of the stream and if we're finishing or not to detect what type of
   // status to return in this case.
-  util::Status ReportUnknown(StringPiece message,
+  absl::Status ReportUnknown(absl::string_view message,
                              ParseErrorType parse_code);
 
   // Helper function to check recursion depth and increment it. It will return
   // OkStatus() if the current depth is allowed. Otherwise an error is returned.
   // key is used for error reporting.
-  util::Status IncrementRecursionDepth(StringPiece key) const;
+  absl::Status IncrementRecursionDepth(absl::string_view key) const;
 
   // Advance p_ past all whitespace or until the end of the string.
   void SkipWhitespace();
@@ -256,7 +259,7 @@ class PROTOBUF_EXPORT JsonStreamParser {
   void Advance();
 
   // Expects p_ to point to the beginning of a key.
-  util::Status ParseKey();
+  absl::Status ParseKey();
 
   // Return the type of the next token at p_.
   TokenType GetNextTokenType();
@@ -274,13 +277,13 @@ class PROTOBUF_EXPORT JsonStreamParser {
 
   // The current chunk of JSON being parsed. Primarily used for providing
   // context during error reporting.
-  StringPiece json_;
+  absl::string_view json_;
 
   // A pointer within the current JSON being parsed, used to track location.
-  StringPiece p_;
+  absl::string_view p_;
 
   // Stores the last key read, as we separate parsing of keys and values.
-  StringPiece key_;
+  absl::string_view key_;
 
   // Storage for key_ if we need to keep ownership, for example between chunks
   // or if the key was unescaped from a JSON string.
@@ -301,7 +304,7 @@ class PROTOBUF_EXPORT JsonStreamParser {
   bool allow_no_root_element_;
 
   // String we parsed during a call to ParseStringHelper().
-  StringPiece parsed_;
+  absl::string_view parsed_;
 
   // Storage for the string we parsed. This may be empty if the string was able
   // to be parsed directly from the input.
@@ -336,8 +339,6 @@ class PROTOBUF_EXPORT JsonStreamParser {
 
   // Maximum allowed recursion depth.
   int max_recursion_depth_;
-
-  GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(JsonStreamParser);
 };
 
 }  // namespace converter

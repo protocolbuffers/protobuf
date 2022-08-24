@@ -42,6 +42,7 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/dynamic_message.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/compiler/java/context.h>
 #include <google/protobuf/compiler/java/enum.h>
 #include <google/protobuf/compiler/java/enum_lite.h>
@@ -175,10 +176,10 @@ void MaybeRestartJavaMethod(io::Printer* printer, int* bytecode_estimate,
 
   if ((*bytecode_estimate) > bytesPerMethod) {
     ++(*method_num);
-    printer->Print(chain_statement, "method_num", StrCat(*method_num));
+    printer->Print(chain_statement, "method_num", absl::StrCat(*method_num));
     printer->Outdent();
     printer->Print("}\n");
-    printer->Print(method_decl, "method_num", StrCat(*method_num));
+    printer->Print(method_decl, "method_num", absl::StrCat(*method_num));
     printer->Indent();
     *bytecode_estimate = 0;
   }
@@ -567,11 +568,11 @@ void FileGenerator::GenerateDescriptorInitializationCodeForMutable(
             "      $scope$.getExtensions().get($index$),\n"
             "      (com.google.protobuf.Message) defaultExtensionInstance);\n"
             "}\n",
-            "scope", scope, "index", StrCat(field->index()), "class",
+            "scope", scope, "index", absl::StrCat(field->index()), "class",
             name_resolver_->GetImmutableClassName(field->message_type()));
       } else {
         printer->Print("registry.add($scope$.getExtensions().get($index$));\n",
-                       "scope", scope, "index", StrCat(field->index()));
+                       "scope", scope, "index", absl::StrCat(field->index()));
       }
     }
     printer->Print(

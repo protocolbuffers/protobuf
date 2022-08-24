@@ -50,6 +50,7 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/port.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/str_cat.h"
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -468,7 +469,7 @@ inline bool IsCrossFileMessage(const FieldDescriptor* field) {
 }
 
 inline std::string MakeDefaultName(const FieldDescriptor* field) {
-  return StrCat("_i_give_permission_to_break_this_code_default_",
+  return absl::StrCat("_i_give_permission_to_break_this_code_default_",
                       FieldName(field), "_");
 }
 
@@ -483,11 +484,11 @@ inline std::string MakeDefaultName(const FieldDescriptor* field) {
 // exists at some nested level like:
 //   internal_container_._i_give_permission_to_break_this_code_default_field_;
 inline std::string MakeDefaultFieldName(const FieldDescriptor* field) {
-  return StrCat("Impl_::", MakeDefaultName(field));
+  return absl::StrCat("Impl_::", MakeDefaultName(field));
 }
 
 inline std::string MakeVarintCachedSizeName(const FieldDescriptor* field) {
-  return StrCat("_", FieldName(field), "_cached_byte_size_");
+  return absl::StrCat("_", FieldName(field), "_cached_byte_size_");
 }
 
 // Semantically distinct from MakeVarintCachedSizeName in that it gives the C++
@@ -503,7 +504,7 @@ inline std::string MakeVarintCachedSizeName(const FieldDescriptor* field) {
 //   internal_container_._field_cached_byte_size_;
 inline std::string MakeVarintCachedSizeFieldName(const FieldDescriptor* field,
                                                  bool split) {
-  return StrCat("_impl_.", split ? "_split_->" : "", "_",
+  return absl::StrCat("_impl_.", split ? "_split_->" : "", "_",
                       FieldName(field), "_cached_byte_size_");
 }
 
@@ -835,9 +836,9 @@ class PROTOC_EXPORT Formatter {
   template <typename I, typename = typename std::enable_if<
                             std::is_integral<I>::value>::type>
   static std::string ToString(I x) {
-    return StrCat(x);
+    return absl::StrCat(x);
   }
-  static std::string ToString(strings::Hex x) { return StrCat(x); }
+  static std::string ToString(absl::Hex x) { return absl::StrCat(x); }
   static std::string ToString(const FieldDescriptor* d) { return Payload(d); }
   static std::string ToString(const Descriptor* d) { return Payload(d); }
   static std::string ToString(const EnumDescriptor* d) { return Payload(d); }

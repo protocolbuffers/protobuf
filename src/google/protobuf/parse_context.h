@@ -40,7 +40,7 @@
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/arena.h>
 #include <google/protobuf/port.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/string_view.h"
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/endian.h>
 #include <google/protobuf/implicit_weak_message.h>
@@ -64,11 +64,11 @@ namespace internal {
 
 // Template code below needs to know about the existence of these functions.
 PROTOBUF_EXPORT void WriteVarint(uint32_t num, uint64_t val, std::string* s);
-PROTOBUF_EXPORT void WriteLengthDelimited(uint32_t num, StringPiece val,
+PROTOBUF_EXPORT void WriteLengthDelimited(uint32_t num, absl::string_view val,
                                           std::string* s);
 // Inline because it is just forwarding to s->WriteVarint
 inline void WriteVarint(uint32_t num, uint64_t val, UnknownFieldSet* s);
-inline void WriteLengthDelimited(uint32_t num, StringPiece val,
+inline void WriteLengthDelimited(uint32_t num, absl::string_view val,
                                  UnknownFieldSet* s);
 
 
@@ -229,7 +229,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return res.second;
   }
 
-  const char* InitFrom(StringPiece flat) {
+  const char* InitFrom(absl::string_view flat) {
     overall_limit_ = 0;
     if (flat.size() > kSlopBytes) {
       limit_ = kSlopBytes;
@@ -909,7 +909,7 @@ const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add) {
 
 // Helper for verification of utf8
 PROTOBUF_EXPORT
-bool VerifyUTF8(StringPiece s, const char* field_name);
+bool VerifyUTF8(absl::string_view s, const char* field_name);
 
 inline bool VerifyUTF8(const std::string* s, const char* field_name) {
   return VerifyUTF8(*s, field_name);

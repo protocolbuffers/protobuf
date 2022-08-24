@@ -43,6 +43,8 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.pb.h>
 
+#include "absl/strings/escaping.h"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -449,7 +451,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
         "typedef struct $classname$__storage_ {\n"
         "  uint32_t _has_storage_[$sizeof_has_storage$];\n",
         "classname", class_name_,
-        "sizeof_has_storage", StrCat(sizeof_has_storage));
+        "sizeof_has_storage", absl::StrCat(sizeof_has_storage));
     printer->Indent();
 
     for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -558,7 +560,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
         printer->Print(
             "\n        \"$data$\"",
             "data", EscapeTrigraphs(
-                CEscape(text_format_data_str.substr(i, kBytesPerLine))));
+                absl::CEscape(text_format_data_str.substr(i, kBytesPerLine))));
       }
       printer->Print(
           ";\n"
@@ -570,8 +572,8 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
           "    static const GPBExtensionRange ranges[] = {\n");
       for (int i = 0; i < sorted_extensions.size(); i++) {
         printer->Print("      { .start = $start$, .end = $end$ },\n",
-                       "start", StrCat(sorted_extensions[i]->start),
-                       "end", StrCat(sorted_extensions[i]->end));
+                       "start", absl::StrCat(sorted_extensions[i]->start),
+                       "end", absl::StrCat(sorted_extensions[i]->end));
       }
       printer->Print(
           "    };\n"
