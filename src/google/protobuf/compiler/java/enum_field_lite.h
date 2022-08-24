@@ -62,6 +62,10 @@ class ImmutableEnumFieldLiteGenerator : public ImmutableFieldLiteGenerator {
   explicit ImmutableEnumFieldLiteGenerator(const FieldDescriptor* descriptor,
                                            int messageBitIndex,
                                            Context* context);
+  ImmutableEnumFieldLiteGenerator(const ImmutableEnumFieldLiteGenerator&) =
+      delete;
+  ImmutableEnumFieldLiteGenerator& operator=(
+      const ImmutableEnumFieldLiteGenerator&) = delete;
   ~ImmutableEnumFieldLiteGenerator() override;
 
   // implements ImmutableFieldLiteGenerator
@@ -83,9 +87,6 @@ class ImmutableEnumFieldLiteGenerator : public ImmutableFieldLiteGenerator {
   const int messageBitIndex_;
   Context* context_;
   ClassNameResolver* name_resolver_;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableEnumFieldLiteGenerator);
 };
 
 class ImmutableEnumOneofFieldLiteGenerator
@@ -93,15 +94,16 @@ class ImmutableEnumOneofFieldLiteGenerator
  public:
   ImmutableEnumOneofFieldLiteGenerator(const FieldDescriptor* descriptor,
                                        int messageBitIndex, Context* context);
+  ImmutableEnumOneofFieldLiteGenerator(
+      const ImmutableEnumOneofFieldLiteGenerator&) = delete;
+  ImmutableEnumOneofFieldLiteGenerator& operator=(
+      const ImmutableEnumOneofFieldLiteGenerator&) = delete;
   ~ImmutableEnumOneofFieldLiteGenerator() override;
 
   void GenerateMembers(io::Printer* printer) const override;
   void GenerateBuilderMembers(io::Printer* printer) const override;
   void GenerateFieldInfo(io::Printer* printer,
                          std::vector<uint16_t>* output) const override;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableEnumOneofFieldLiteGenerator);
 };
 
 class RepeatedImmutableEnumFieldLiteGenerator
@@ -109,6 +111,10 @@ class RepeatedImmutableEnumFieldLiteGenerator
  public:
   explicit RepeatedImmutableEnumFieldLiteGenerator(
       const FieldDescriptor* descriptor, int messageBitIndex, Context* context);
+  RepeatedImmutableEnumFieldLiteGenerator(
+      const RepeatedImmutableEnumFieldLiteGenerator&) = delete;
+  RepeatedImmutableEnumFieldLiteGenerator& operator=(
+      const RepeatedImmutableEnumFieldLiteGenerator&) = delete;
   ~RepeatedImmutableEnumFieldLiteGenerator() override;
 
   // implements ImmutableFieldLiteGenerator ------------------------------------
@@ -128,8 +134,6 @@ class RepeatedImmutableEnumFieldLiteGenerator
   std::map<std::string, std::string> variables_;
   Context* context_;
   ClassNameResolver* name_resolver_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedImmutableEnumFieldLiteGenerator);
 };
 
 }  // namespace java

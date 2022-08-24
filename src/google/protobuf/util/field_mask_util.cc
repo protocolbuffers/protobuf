@@ -35,7 +35,6 @@
 #include <google/protobuf/stubs/strutil.h>
 #include "absl/strings/str_join.h"
 #include <google/protobuf/message.h>
-#include <google/protobuf/stubs/map_util.h>
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -251,9 +250,8 @@ class FieldMaskTree {
     ~Node() { ClearChildren(); }
 
     void ClearChildren() {
-      for (std::map<std::string, Node*>::iterator it = children.begin();
-           it != children.end(); ++it) {
-        delete it->second;
+      for (auto& p : children) {
+        delete p.second;
       }
       children.clear();
     }
@@ -390,14 +388,11 @@ void FieldMaskTree::RemovePath(const std::string& path,
         node->children[current_descriptor->field(j)->name()] = new Node();
       }
     }
-    if (ContainsKey(node->children, parts[i])) {
-      node = node->children[parts[i]];
-      if (field_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-        current_descriptor = field_descriptor->message_type();
-      }
-    } else {
-      // Path does not exist.
-      return;
+    auto it = node->children.find(parts[i]);
+    if (it == node->children.end()) return;
+    node = it->second;
+    if (field_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      current_descriptor = field_descriptor->message_type();
     }
   }
   // Remove path.
@@ -423,12 +418,12 @@ void FieldMaskTree::IntersectPath(const std::string& path, FieldMaskTree* out) {
       }
       return;
     }
-    const Node* result = FindPtrOrNull(node->children, node_name);
-    if (result == nullptr) {
+    auto it = node->children.find(node_name);
+    if (it == node->children.end()) {
       // No intersection found.
       return;
     }
-    node = result;
+    node = it->second;
   }
   // Now we found a matching node with the given path. Add all leaf nodes
   // to out.

@@ -109,7 +109,7 @@ const std::unordered_set<std::string>* kReservedNames =
     });
 
 bool IsForbidden(const std::string& field_name) {
-  for (int i = 0; i < GOOGLE_ARRAYSIZE(kForbiddenWordList); ++i) {
+  for (size_t i = 0; i < ABSL_ARRAYSIZE(kForbiddenWordList); ++i) {
     if (UnderscoresToCamelCase(field_name, true) == kForbiddenWordList[i]) {
       return true;
     }

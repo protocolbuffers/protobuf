@@ -73,8 +73,7 @@ int CompileJavaProto(std::string proto_file_name) {
       proto_file_name.c_str(),
   };
 
-  // Open-source codebase does not support ABSL_ARRAYSIZE.
-  return cli.Run(sizeof(argv) / sizeof(*argv), argv);
+  return cli.Run(4, argv);
 }
 
 TEST(MessageSerializationTest, CollapseAdjacentExtensionRanges) {

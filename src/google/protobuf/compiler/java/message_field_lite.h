@@ -62,6 +62,10 @@ class ImmutableMessageFieldLiteGenerator : public ImmutableFieldLiteGenerator {
   explicit ImmutableMessageFieldLiteGenerator(const FieldDescriptor* descriptor,
                                               int messageBitIndex,
                                               Context* context);
+  ImmutableMessageFieldLiteGenerator(
+      const ImmutableMessageFieldLiteGenerator&) = delete;
+  ImmutableMessageFieldLiteGenerator& operator=(
+      const ImmutableMessageFieldLiteGenerator&) = delete;
   ~ImmutableMessageFieldLiteGenerator() override;
 
   // implements ImmutableFieldLiteGenerator
@@ -85,7 +89,6 @@ class ImmutableMessageFieldLiteGenerator : public ImmutableFieldLiteGenerator {
   Context* context_;
 
  private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableMessageFieldLiteGenerator);
   void GenerateKotlinOrNull(io::Printer* printer) const;
 };
 
@@ -95,6 +98,10 @@ class ImmutableMessageOneofFieldLiteGenerator
   ImmutableMessageOneofFieldLiteGenerator(const FieldDescriptor* descriptor,
                                           int messageBitIndex,
                                           Context* context);
+  ImmutableMessageOneofFieldLiteGenerator(
+      const ImmutableMessageOneofFieldLiteGenerator&) = delete;
+  ImmutableMessageOneofFieldLiteGenerator& operator=(
+      const ImmutableMessageOneofFieldLiteGenerator&) = delete;
   ~ImmutableMessageOneofFieldLiteGenerator() override;
 
   void GenerateMembers(io::Printer* printer) const override;
@@ -102,8 +109,6 @@ class ImmutableMessageOneofFieldLiteGenerator
   void GenerateFieldInfo(io::Printer* printer,
                          std::vector<uint16_t>* output) const override;
 
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableMessageOneofFieldLiteGenerator);
 };
 
 class RepeatedImmutableMessageFieldLiteGenerator
@@ -111,6 +116,10 @@ class RepeatedImmutableMessageFieldLiteGenerator
  public:
   explicit RepeatedImmutableMessageFieldLiteGenerator(
       const FieldDescriptor* descriptor, int messageBitIndex, Context* context);
+  RepeatedImmutableMessageFieldLiteGenerator(
+      const RepeatedImmutableMessageFieldLiteGenerator&) = delete;
+  RepeatedImmutableMessageFieldLiteGenerator& operator=(
+      const RepeatedImmutableMessageFieldLiteGenerator&) = delete;
   ~RepeatedImmutableMessageFieldLiteGenerator() override;
 
   // implements ImmutableFieldLiteGenerator ------------------------------------
@@ -130,9 +139,6 @@ class RepeatedImmutableMessageFieldLiteGenerator
   std::map<std::string, std::string> variables_;
   ClassNameResolver* name_resolver_;
   Context* context_;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedImmutableMessageFieldLiteGenerator);
 };
 
 }  // namespace java

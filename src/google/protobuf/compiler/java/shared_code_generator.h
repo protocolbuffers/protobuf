@@ -67,6 +67,8 @@ namespace java {
 class SharedCodeGenerator {
  public:
   SharedCodeGenerator(const FileDescriptor* file, const Options& options);
+  SharedCodeGenerator(const SharedCodeGenerator&) = delete;
+  SharedCodeGenerator& operator=(const SharedCodeGenerator&) = delete;
   ~SharedCodeGenerator();
 
   void Generate(GeneratorContext* generator_context,
@@ -79,7 +81,6 @@ class SharedCodeGenerator {
   std::unique_ptr<ClassNameResolver> name_resolver_;
   const FileDescriptor* file_;
   const Options options_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SharedCodeGenerator);
 };
 
 }  // namespace java
