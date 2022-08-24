@@ -35,6 +35,8 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
 
 namespace google {
 namespace protobuf {

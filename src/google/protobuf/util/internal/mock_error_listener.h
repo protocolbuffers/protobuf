@@ -32,7 +32,7 @@
 #define GOOGLE_PROTOBUF_UTIL_INTERNAL_MOCK_ERROR_LISTENER_H__
 
 #include <gmock/gmock.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/string_view.h"
 #include <google/protobuf/util/internal/error_listener.h>
 #include <google/protobuf/util/internal/location_tracker.h>
 
@@ -48,15 +48,15 @@ class MockErrorListener : public ErrorListener {
 
   MOCK_METHOD(void, InvalidName,
               (const LocationTrackerInterface& loc,
-               StringPiece unknown_name, StringPiece message),
+               absl::string_view unknown_name, absl::string_view message),
               (override));
   MOCK_METHOD(void, InvalidValue,
-              (const LocationTrackerInterface& loc, StringPiece type_name,
-               StringPiece value),
+              (const LocationTrackerInterface& loc, absl::string_view type_name,
+               absl::string_view value),
               (override));
   MOCK_METHOD(void, MissingField,
               (const LocationTrackerInterface& loc,
-               StringPiece missing_name),
+               absl::string_view missing_name),
               (override));
 };
 

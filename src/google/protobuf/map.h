@@ -60,7 +60,7 @@
 #include <google/protobuf/generated_enum_util.h>
 #include <google/protobuf/map_type_handler.h>
 #include <google/protobuf/port.h>
-#include <google/protobuf/stubs/hash.h>
+
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"

@@ -55,7 +55,8 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include "absl/synchronization/mutex.h"
-#include <google/protobuf/stubs/time.h>
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 

@@ -38,10 +38,10 @@
 #import "GPBMessage_PackagePrivate.h"
 #import "GPBUnknownField_PackagePrivate.h"
 #import "GPBUnknownFieldSet_PackagePrivate.h"
-#import "google/protobuf/Unittest.pbobjc.h"
-#import "google/protobuf/UnittestObjc.pbobjc.h"
-#import "google/protobuf/UnittestObjcOptions.pbobjc.h"
-#import "google/protobuf/UnittestImport.pbobjc.h"
+#import "Unittest.pbobjc.h"
+#import "UnittestObjc.pbobjc.h"
+#import "UnittestObjcOptions.pbobjc.h"
+#import "UnittestImport.pbobjc.h"
 
 // Helper class to test KVO.
 @interface GPBKVOTestObserver : NSObject {

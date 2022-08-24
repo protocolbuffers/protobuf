@@ -33,6 +33,7 @@
 #include <algorithm>
 
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/escaping.h"
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -103,7 +104,7 @@ bool HasGenericServices(const FileDescriptor* file) {
 
 std::string GeneratedCodeToBase64(const GeneratedCodeInfo& annotations) {
   std::string result;
-  Base64Escape(annotations.SerializeAsString(), &result);
+  absl::Base64Escape(annotations.SerializeAsString(), &result);
   return result;
 }
 

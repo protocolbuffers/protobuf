@@ -47,12 +47,12 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/arena.h>
-#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/port.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/base/call_once.h"
+#include "absl/strings/string_view.h"
 #include <google/protobuf/explicitly_constructed.h>
 #include <google/protobuf/metadata_lite.h>
-#include <google/protobuf/stubs/hash.h>  // TODO(b/211442718): cleanup
+
 
 // clang-format off
 #include <google/protobuf/port_def.inc>
@@ -277,11 +277,11 @@ class PROTOBUF_EXPORT MessageLite {
   // format, matching the encoding output by MessageLite::SerializeToString().
   // If you'd like to convert a human-readable string into a protocol buffer
   // object, see google::protobuf::TextFormat::ParseFromString().
-  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromString(ConstStringParam data);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromString(absl::string_view data);
   // Like ParseFromString(), but accepts messages that are missing
   // required fields.
   PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParsePartialFromString(
-      ConstStringParam data);
+      absl::string_view data);
   // Parse a protocol buffer contained in an array of bytes.
   PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromArray(const void* data,
                                                        int size);
@@ -312,7 +312,7 @@ class PROTOBUF_EXPORT MessageLite {
   bool MergePartialFromCodedStream(io::CodedInputStream* input);
 
   // Merge a protocol buffer contained in a string.
-  bool MergeFromString(ConstStringParam data);
+  bool MergeFromString(absl::string_view data);
 
 
   // Serialization ---------------------------------------------------
@@ -499,12 +499,12 @@ class PROTOBUF_EXPORT MessageLite {
 namespace internal {
 
 template <bool alias>
-bool MergeFromImpl(StringPiece input, MessageLite* msg,
+bool MergeFromImpl(absl::string_view input, MessageLite* msg,
                    MessageLite::ParseFlags parse_flags);
-extern template bool MergeFromImpl<false>(StringPiece input,
+extern template bool MergeFromImpl<false>(absl::string_view input,
                                           MessageLite* msg,
                                           MessageLite::ParseFlags parse_flags);
-extern template bool MergeFromImpl<true>(StringPiece input,
+extern template bool MergeFromImpl<true>(absl::string_view input,
                                          MessageLite* msg,
                                          MessageLite::ParseFlags parse_flags);
 

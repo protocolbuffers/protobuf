@@ -40,6 +40,7 @@
 #include <gmock/gmock.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/compiler/java/generator.h>
 #include <google/protobuf/test_util2.h>
@@ -60,10 +61,10 @@ int CompileJavaProto(std::string proto_file_name) {
   CommandLineInterface cli;
   cli.RegisterGenerator("--java_out", &java_generator, /*help_text=*/"");
 
-  std::string proto_path = StrCat(
+  std::string proto_path = absl::StrCat(
       "--proto_path=",
       TestUtil::GetTestDataPath("third_party/protobuf/compiler/java"));
-  std::string java_out = StrCat("--java_out=", TestTempDir());
+  std::string java_out = absl::StrCat("--java_out=", TestTempDir());
 
   const char* argv[] = {
       "protoc",
@@ -83,11 +84,11 @@ TEST(MessageSerializationTest, CollapseAdjacentExtensionRanges) {
   GOOGLE_CHECK_OK(File::GetContents(
       // Open-source codebase does not support file::JoinPath, so we manually
       // concatenate instead.
-      StrCat(TestTempDir(),
+      absl::StrCat(TestTempDir(),
                    "/TestMessageWithManyExtensionRanges.java"),
       &java_source, true));
 
-  // Open-source codebase does not support constexpr StringPiece.
+  // Open-source codebase does not support constexpr absl::string_view.
   static constexpr const char kWriteUntilCall[] = "extensionWriter.writeUntil(";
 
   std::vector<std::string> range_ends;

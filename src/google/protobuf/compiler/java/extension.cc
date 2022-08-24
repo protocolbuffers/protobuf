@@ -36,6 +36,7 @@
 
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/compiler/java/context.h>
 #include <google/protobuf/compiler/java/doc_comment.h>
 #include <google/protobuf/compiler/java/helpers.h>
@@ -74,9 +75,9 @@ void ExtensionGenerator::InitTemplateVars(
   vars["name"] = UnderscoresToCamelCaseCheckReserved(descriptor);
   vars["containing_type"] =
       name_resolver->GetClassName(descriptor->containing_type(), immutable);
-  vars["number"] = StrCat(descriptor->number());
+  vars["number"] = absl::StrCat(descriptor->number());
   vars["constant_name"] = FieldConstantName(descriptor);
-  vars["index"] = StrCat(descriptor->index());
+  vars["index"] = absl::StrCat(descriptor->index());
   vars["default"] = descriptor->is_repeated()
                         ? ""
                         : DefaultValue(descriptor, immutable, name_resolver,
@@ -159,7 +160,7 @@ int ImmutableExtensionGenerator::GenerateNonNestedInitializationCode(
     printer->Print(
         "$name$.internalInit(descriptor.getExtensions().get($index$));\n",
         "name", UnderscoresToCamelCaseCheckReserved(descriptor_), "index",
-        StrCat(descriptor_->index()));
+        absl::StrCat(descriptor_->index()));
     bytecode_estimate += 21;
   }
   return bytecode_estimate;

@@ -28,22 +28,27 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <google/protobuf/compiler/csharp/csharp_field_base.h>
+
 #include <cmath>
 #include <limits>
 #include <sstream>
 
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/wire_format.h>
+#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
+#include <google/protobuf/compiler/csharp/csharp_helpers.h>
+#include <google/protobuf/compiler/csharp/csharp_names.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/wire_format.h>
 
-#include <google/protobuf/compiler/csharp/csharp_field_base.h>
-#include <google/protobuf/compiler/csharp/csharp_helpers.h>
-#include <google/protobuf/compiler/csharp/csharp_names.h>
+// Must be last.
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -63,13 +68,13 @@ void FieldGeneratorBase::SetCommonFieldVariables(
   uint tag = internal::WireFormat::MakeTag(descriptor_);
   uint8_t tag_array[5];
   io::CodedOutputStream::WriteTagToArray(tag, tag_array);
-  std::string tag_bytes = StrCat(tag_array[0]);
+  std::string tag_bytes = absl::StrCat(tag_array[0]);
   for (int i = 1; i < part_tag_size; i++) {
-    tag_bytes += ", " + StrCat(tag_array[i]);
+    tag_bytes += ", " + absl::StrCat(tag_array[i]);
   }
 
-  (*variables)["tag"] = StrCat(tag);
-  (*variables)["tag_size"] = StrCat(tag_size);
+  (*variables)["tag"] = absl::StrCat(tag);
+  (*variables)["tag_size"] = absl::StrCat(tag_size);
   (*variables)["tag_bytes"] = tag_bytes;
 
   if (descriptor_->type() == FieldDescriptor::Type::TYPE_GROUP) {
@@ -77,12 +82,12 @@ void FieldGeneratorBase::SetCommonFieldVariables(
         descriptor_->number(),
         internal::WireFormatLite::WIRETYPE_END_GROUP);
     io::CodedOutputStream::WriteTagToArray(tag, tag_array);
-    tag_bytes = StrCat(tag_array[0]);
+    tag_bytes = absl::StrCat(tag_array[0]);
     for (int i = 1; i < part_tag_size; i++) {
-        tag_bytes += ", " + StrCat(tag_array[i]);
+        tag_bytes += ", " + absl::StrCat(tag_array[i]);
     }
 
-    variables_["end_tag"] = StrCat(tag);
+    variables_["end_tag"] = absl::StrCat(tag);
     variables_["end_tag_bytes"] = tag_bytes;
   }
 
@@ -108,8 +113,8 @@ void FieldGeneratorBase::SetCommonFieldVariables(
     (*variables)["has_not_property_check"] = "!" + (*variables)["has_property_check"];
     (*variables)["other_has_not_property_check"] = "!" + (*variables)["other_has_property_check"];
     if (presenceIndex_ != -1) {
-      std::string hasBitsNumber = StrCat(presenceIndex_ / 32);
-      std::string hasBitsMask = StrCat(1 << (presenceIndex_ % 32));
+      std::string hasBitsNumber = absl::StrCat(presenceIndex_ / 32);
+      std::string hasBitsMask = absl::StrCat(1 << (presenceIndex_ % 32));
       (*variables)["has_field_check"] = "(_hasBits" + hasBitsNumber + " & " + hasBitsMask + ") != 0";
       (*variables)["set_has_field"] = "_hasBits" + hasBitsNumber + " |= " + hasBitsMask;
       (*variables)["clear_has_field"] = "_hasBits" + hasBitsNumber + " &= ~" + hasBitsMask;
@@ -130,9 +135,8 @@ void FieldGeneratorBase::SetCommonOneofFieldVariables(
   } else {
     (*variables)["has_property_check"] =
       oneof_name() + "Case_ == " + oneof_property_name() +
-      "OneofCase." + oneof_case_name();
+      "OneofCase." + property_name();
   }
-  (*variables)["oneof_case_name"] = oneof_case_name();
   (*variables)["oneof_property_name"] = oneof_property_name();
 }
 
@@ -158,7 +162,7 @@ void FieldGeneratorBase::GenerateCodecCode(io::Printer* printer) {
 }
 
 void FieldGeneratorBase::GenerateExtensionCode(io::Printer* printer) {
-  // No-op: only message fields, enum fields, primitives, 
+  // No-op: only message fields, enum fields, primitives,
   // and repeated fields need this default is to not generate any code
 }
 
@@ -186,10 +190,6 @@ void FieldGeneratorBase::AddDeprecatedFlag(io::Printer* printer) {
 void FieldGeneratorBase::AddPublicMemberAttributes(io::Printer* printer) {
   AddDeprecatedFlag(printer);
   WriteGeneratedCodeAttributes(printer);
-}
-
-std::string FieldGeneratorBase::oneof_case_name() {
-  return GetOneofCaseName(descriptor_);
 }
 
 std::string FieldGeneratorBase::oneof_property_name() {
@@ -325,7 +325,7 @@ std::string FieldGeneratorBase::GetStringDefaultValueInternal(const FieldDescrip
     else
       return "global::System.Text.Encoding.UTF8.GetString(global::System."
              "Convert.FromBase64String(\"" +
-             StringToBase64(descriptor->default_value_string()) + "\"), 0, " + StrCat(descriptor->default_value_string().length()) + ")";
+             StringToBase64(descriptor->default_value_string()) + "\"), 0, " + absl::StrCat(descriptor->default_value_string().length()) + ")";
 }
 
 std::string FieldGeneratorBase::GetBytesDefaultValueInternal(const FieldDescriptor* descriptor) {
@@ -361,7 +361,7 @@ std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor)
       } else if (std::isnan(value)) {
         return "double.NaN";
       }
-      return StrCat(value) + "D";
+      return absl::StrCat(value) + "D";
     }
     case FieldDescriptor::TYPE_FLOAT: {
       float value = descriptor->default_value_float();
@@ -372,18 +372,18 @@ std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor)
       } else if (std::isnan(value)) {
         return "float.NaN";
       }
-      return StrCat(value) + "F";
+      return absl::StrCat(value) + "F";
     }
     case FieldDescriptor::TYPE_INT64:
-      return StrCat(descriptor->default_value_int64()) + "L";
+      return absl::StrCat(descriptor->default_value_int64()) + "L";
     case FieldDescriptor::TYPE_UINT64:
-      return StrCat(descriptor->default_value_uint64()) + "UL";
+      return absl::StrCat(descriptor->default_value_uint64()) + "UL";
     case FieldDescriptor::TYPE_INT32:
-      return StrCat(descriptor->default_value_int32());
+      return absl::StrCat(descriptor->default_value_int32());
     case FieldDescriptor::TYPE_FIXED64:
-      return StrCat(descriptor->default_value_uint64()) + "UL";
+      return absl::StrCat(descriptor->default_value_uint64()) + "UL";
     case FieldDescriptor::TYPE_FIXED32:
-      return StrCat(descriptor->default_value_uint32());
+      return absl::StrCat(descriptor->default_value_uint32());
     case FieldDescriptor::TYPE_BOOL:
       if (descriptor->default_value_bool()) {
         return "true";
@@ -395,15 +395,15 @@ std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor)
     case FieldDescriptor::TYPE_BYTES:
       return GetBytesDefaultValueInternal(descriptor);
     case FieldDescriptor::TYPE_UINT32:
-      return StrCat(descriptor->default_value_uint32());
+      return absl::StrCat(descriptor->default_value_uint32());
     case FieldDescriptor::TYPE_SFIXED32:
-      return StrCat(descriptor->default_value_int32());
+      return absl::StrCat(descriptor->default_value_int32());
     case FieldDescriptor::TYPE_SFIXED64:
-      return StrCat(descriptor->default_value_int64()) + "L";
+      return absl::StrCat(descriptor->default_value_int64()) + "L";
     case FieldDescriptor::TYPE_SINT32:
-      return StrCat(descriptor->default_value_int32());
+      return absl::StrCat(descriptor->default_value_int32());
     case FieldDescriptor::TYPE_SINT64:
-      return StrCat(descriptor->default_value_int64()) + "L";
+      return absl::StrCat(descriptor->default_value_int64()) + "L";
     default:
       GOOGLE_LOG(FATAL)<< "Unknown field type.";
       return "";
@@ -411,7 +411,7 @@ std::string FieldGeneratorBase::default_value(const FieldDescriptor* descriptor)
 }
 
 std::string FieldGeneratorBase::number() {
-  return StrCat(descriptor_->number());
+  return absl::StrCat(descriptor_->number());
 }
 
 std::string FieldGeneratorBase::capitalized_type_name() {
@@ -462,3 +462,5 @@ std::string FieldGeneratorBase::capitalized_type_name() {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

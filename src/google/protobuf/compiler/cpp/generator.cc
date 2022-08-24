@@ -42,6 +42,7 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/compiler/cpp/file.h>
 #include <google/protobuf/compiler/cpp/helpers.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -56,7 +57,7 @@ CppGenerator::~CppGenerator() {}
 
 namespace {
 std::string NumberedCcFileName(const std::string& basename, int number) {
-  return StrCat(basename, ".out/", number, ".cc");
+  return absl::StrCat(basename, ".out/", number, ".cc");
 }
 }  // namespace
 

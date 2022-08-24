@@ -32,12 +32,11 @@
 
 #include <google/protobuf/any.pb.h>
 #include <google/protobuf/compiler/command_line_interface.h>
+#include <gtest/gtest.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/printer.h>
-
-#include <gtest/gtest.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 
 namespace google {
 namespace protobuf {
@@ -72,22 +71,6 @@ TEST(DescriptorProtoHelpers, IsDescriptorOptionMessage) {
   EXPECT_TRUE(IsDescriptorOptionMessage(FileOptions::descriptor()));
   EXPECT_FALSE(IsDescriptorOptionMessage(google::protobuf::Any::descriptor()));
   EXPECT_FALSE(IsDescriptorOptionMessage(DescriptorProto::descriptor()));
-}
-
-TEST(CSharpIdentifiers, UnderscoresToCamelCase) {
-	EXPECT_EQ("FooBar", UnderscoresToCamelCase("Foo_Bar", true));
-	EXPECT_EQ("fooBar", UnderscoresToCamelCase("FooBar", false));
-	EXPECT_EQ("foo123", UnderscoresToCamelCase("foo_123", false));
-	// remove leading underscores
-	EXPECT_EQ("Foo123", UnderscoresToCamelCase("_Foo_123", true));
-	// this one has slight unexpected output as it capitalises the first
-	// letter after consuming the underscores, but this was the existing
-	// behaviour so I have not changed it
-	EXPECT_EQ("FooBar", UnderscoresToCamelCase("___fooBar", false));
-	// leave a leading underscore for identifiers that would otherwise
-	// be invalid because they would start with a digit
-	EXPECT_EQ("_123Foo", UnderscoresToCamelCase("_123_foo", true));
-	EXPECT_EQ("_123Foo", UnderscoresToCamelCase("___123_foo", true));
 }
 
 }  // namespace

@@ -46,6 +46,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/port.h>
+#include "absl/strings/string_view.h"
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/message_lite.h>
@@ -476,13 +477,13 @@ class PROTOBUF_EXPORT TextFormat {
   // google::protobuf::MessageLite::ParseFromString().
   static bool Parse(io::ZeroCopyInputStream* input, Message* output);
   // Like Parse(), but reads directly from a string.
-  static bool ParseFromString(ConstStringParam input, Message* output);
+  static bool ParseFromString(absl::string_view input, Message* output);
 
   // Like Parse(), but the data is merged into the given message, as if
   // using Message::MergeFrom().
   static bool Merge(io::ZeroCopyInputStream* input, Message* output);
   // Like Merge(), but reads directly from a string.
-  static bool MergeFromString(ConstStringParam input, Message* output);
+  static bool MergeFromString(absl::string_view input, Message* output);
 
   // Parse the given text as a single field value and store it into the
   // given field of the given message. If the field is a repeated field,
@@ -571,11 +572,11 @@ class PROTOBUF_EXPORT TextFormat {
     // Like TextFormat::Parse().
     bool Parse(io::ZeroCopyInputStream* input, Message* output);
     // Like TextFormat::ParseFromString().
-    bool ParseFromString(ConstStringParam input, Message* output);
+    bool ParseFromString(absl::string_view input, Message* output);
     // Like TextFormat::Merge().
     bool Merge(io::ZeroCopyInputStream* input, Message* output);
     // Like TextFormat::MergeFromString().
-    bool MergeFromString(ConstStringParam input, Message* output);
+    bool MergeFromString(absl::string_view input, Message* output);
 
     // Set where to report parse errors.  If nullptr (the default), errors will
     // be printed to stderr.

@@ -68,7 +68,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto[] PRO
   "tobuf/types/known/timestamppb\370\001\001\242\002\003GPB\252\002"
   "\036Google.Protobuf.WellKnownTypesb\006proto3"
   ;
-static ::_pbi::once_flag descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_once;
+static ::absl::once_flag descriptor_table_google_2fprotobuf_2ftimestamp_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2ftimestamp_2eproto = {
     false, false, 239, descriptor_table_protodef_google_2fprotobuf_2ftimestamp_2eproto,
     "google/protobuf/timestamp.proto",

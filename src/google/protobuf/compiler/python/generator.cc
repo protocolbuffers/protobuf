@@ -55,6 +55,9 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/compiler/python/helpers.h>
@@ -109,13 +112,13 @@ std::string StringifyDefaultValue(const FieldDescriptor& field) {
 
   switch (field.cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
-      return StrCat(field.default_value_int32());
+      return absl::StrCat(field.default_value_int32());
     case FieldDescriptor::CPPTYPE_UINT32:
-      return StrCat(field.default_value_uint32());
+      return absl::StrCat(field.default_value_uint32());
     case FieldDescriptor::CPPTYPE_INT64:
-      return StrCat(field.default_value_int64());
+      return absl::StrCat(field.default_value_int64());
     case FieldDescriptor::CPPTYPE_UINT64:
-      return StrCat(field.default_value_uint64());
+      return absl::StrCat(field.default_value_uint64());
     case FieldDescriptor::CPPTYPE_DOUBLE: {
       double value = field.default_value_double();
       if (value == std::numeric_limits<double>::infinity()) {
@@ -151,9 +154,9 @@ std::string StringifyDefaultValue(const FieldDescriptor& field) {
     case FieldDescriptor::CPPTYPE_BOOL:
       return field.default_value_bool() ? "True" : "False";
     case FieldDescriptor::CPPTYPE_ENUM:
-      return StrCat(field.default_value_enum()->number());
+      return absl::StrCat(field.default_value_enum()->number());
     case FieldDescriptor::CPPTYPE_STRING:
-      return "b\"" + CEscape(field.default_value_string()) +
+      return "b\"" + absl::CEscape(field.default_value_string()) +
              (field.type() != FieldDescriptor::TYPE_STRING
                   ? "\""
                   : "\".decode('utf-8')");
@@ -431,7 +434,7 @@ void Generator::PrintFileDescriptor() const {
   m["package"] = file_->package();
   m["syntax"] = StringifySyntax(file_->syntax());
   m["options"] = OptionsValue(file_->options().SerializeAsString());
-  m["serialized_descriptor"] = strings::CHexEscape(file_descriptor_serialized_);
+  m["serialized_descriptor"] = absl::CHexEscape(file_descriptor_serialized_);
   if (GeneratingDescriptorProto()) {
     printer_->Print("if _descriptor._USE_C_DESCRIPTORS == False:\n");
     printer_->Indent();
@@ -448,7 +451,7 @@ void Generator::PrintFileDescriptor() const {
     printer_->Print(m, file_descriptor_template);
     printer_->Indent();
     printer_->Print("serialized_pb=b'$value$'\n", "value",
-                    strings::CHexEscape(file_descriptor_serialized_));
+                    absl::CHexEscape(file_descriptor_serialized_));
     if (file_->dependency_count() != 0) {
       printer_->Print(",\ndependencies=[");
       for (int i = 0; i < file_->dependency_count(); ++i) {
@@ -683,8 +686,8 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
   for (int i = 0; i < message_descriptor.extension_range_count(); ++i) {
     const Descriptor::ExtensionRange* range =
         message_descriptor.extension_range(i);
-    printer_->Print("($start$, $end$), ", "start", StrCat(range->start),
-                    "end", StrCat(range->end));
+    printer_->Print("($start$, $end$), ", "start", absl::StrCat(range->start),
+                    "end", absl::StrCat(range->end));
   }
   printer_->Print("],\n");
   printer_->Print("oneofs=[\n");
@@ -694,7 +697,7 @@ void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
     m.clear();
     m["name"] = desc->name();
     m["full_name"] = desc->full_name();
-    m["index"] = StrCat(desc->index());
+    m["index"] = absl::StrCat(desc->index());
     options_string = OptionsValue(desc->options().SerializeAsString());
     if (options_string == "None") {
       m["serialized_options"] = "";
@@ -1038,8 +1041,8 @@ void Generator::PrintEnumValueDescriptor(
   descriptor.options().SerializeToString(&options_string);
   std::map<std::string, std::string> m;
   m["name"] = descriptor.name();
-  m["index"] = StrCat(descriptor.index());
-  m["number"] = StrCat(descriptor.number());
+  m["index"] = absl::StrCat(descriptor.index());
+  m["number"] = absl::StrCat(descriptor.number());
   m["options"] = OptionsValue(options_string);
   printer_->Print(m,
                   "_descriptor.EnumValueDescriptor(\n"
@@ -1055,7 +1058,7 @@ std::string Generator::OptionsValue(
   if (serialized_options.length() == 0 || GeneratingDescriptorProto()) {
     return "None";
   } else {
-    return "b'" + CEscape(serialized_options) + "'";
+    return "b'" + absl::CEscape(serialized_options) + "'";
   }
 }
 
@@ -1067,11 +1070,11 @@ void Generator::PrintFieldDescriptor(const FieldDescriptor& field,
   std::map<std::string, std::string> m;
   m["name"] = field.name();
   m["full_name"] = field.full_name();
-  m["index"] = StrCat(field.index());
-  m["number"] = StrCat(field.number());
-  m["type"] = StrCat(field.type());
-  m["cpp_type"] = StrCat(field.cpp_type());
-  m["label"] = StrCat(field.label());
+  m["index"] = absl::StrCat(field.index());
+  m["number"] = absl::StrCat(field.number());
+  m["type"] = absl::StrCat(field.type());
+  m["cpp_type"] = absl::StrCat(field.cpp_type());
+  m["label"] = absl::StrCat(field.label());
   m["has_default_value"] = field.has_default_value() ? "True" : "False";
   m["default_value"] = StringifyDefaultValue(field);
   m["is_extension"] = is_extension ? "True" : "False";
@@ -1222,8 +1225,8 @@ void Generator::PrintSerializedPbInterval(const DescriptorT& descriptor,
   printer_->Print(
       "$name$._serialized_start=$serialized_start$\n"
       "$name$._serialized_end=$serialized_end$\n",
-      "name", name, "serialized_start", StrCat(offset), "serialized_end",
-      StrCat(offset + sp.size()));
+      "name", name, "serialized_start", absl::StrCat(offset), "serialized_end",
+      absl::StrCat(offset + sp.size()));
 }
 
 namespace {

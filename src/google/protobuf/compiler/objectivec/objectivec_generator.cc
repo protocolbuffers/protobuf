@@ -38,6 +38,8 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
 
 namespace google {
 namespace protobuf {
@@ -51,7 +53,7 @@ namespace {
 // invalid, `result` is unchanged.
 bool StringToBool(const std::string& value, bool* result) {
   std::string upper_value(value);
-  UpperString(&upper_value);
+  ToUpper(&upper_value);
   if (upper_value == "NO") {
     *result = false;
     return true;
@@ -122,7 +124,7 @@ bool ObjectiveCGenerator::GenerateAll(
       // A semicolon delimited string that lists the paths of .proto files to
       // exclude from the package prefix validations (expected_prefixes_path).
       // This is provided as an "out", to skip some files being checked.
-      for (StringPiece split_piece : Split(
+      for (absl::string_view split_piece : Split(
                options[i].second, ";", true)) {
         validation_options.expected_prefixes_suppressions.push_back(
             std::string(split_piece));

@@ -297,10 +297,6 @@ if __name__ == '__main__':
           extra_objects = ['../bazel-bin/src/google/protobuf/libprotobuf.a']
         else:
           extra_objects = ['../libprotobuf.a']
-          extra_objects += ['../third_party/abseil-cpp/absl/synchronization/libabsl_synchronization.a']
-          # Include all of these twice to eliminate order-dependence.
-          extra_objects += list(glob.iglob('../third_party/abseil-cpp/absl/**/*.a'))
-          extra_objects += list(glob.iglob('../third_party/abseil-cpp/absl/**/*.a'))
     else:
       libraries = ['protobuf']
       if HasLibraryDirsOpt():
@@ -378,7 +374,7 @@ if __name__ == '__main__':
         Extension(
             'google.protobuf.pyext._message',
             glob.glob('google/protobuf/pyext/*.cc'),
-            include_dirs=['.', '../src', '../third_party/abseil-cpp'],
+            include_dirs=['.', '../src'],
             libraries=libraries,
             extra_objects=extra_objects,
             extra_link_args=message_extra_link_args,

@@ -459,7 +459,7 @@ TEST(ReflectionOpsTest, OneofIsInitialized) {
 static std::string FindInitializationErrors(const Message& message) {
   std::vector<std::string> errors;
   ReflectionOps::FindInitializationErrors(message, "", &errors);
-  return Join(errors, ",");
+  return absl::StrJoin(errors, ",");
 }
 
 TEST(ReflectionOpsTest, FindInitializationErrors) {

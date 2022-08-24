@@ -42,6 +42,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/compiler/java/context.h>
 #include <google/protobuf/compiler/java/doc_comment.h>
 #include <google/protobuf/compiler/java/helpers.h>
@@ -72,10 +73,10 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   (*variables)["default"] =
       ImmutableDefaultValue(descriptor, name_resolver, context->options());
   (*variables)["default_number"] =
-      StrCat(descriptor->default_value_enum()->number());
-  (*variables)["tag"] = StrCat(
+      absl::StrCat(descriptor->default_value_enum()->number());
+  (*variables)["tag"] = absl::StrCat(
       static_cast<int32_t>(internal::WireFormat::MakeTag(descriptor)));
-  (*variables)["tag_size"] = StrCat(
+  (*variables)["tag_size"] = absl::StrCat(
       internal::WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler

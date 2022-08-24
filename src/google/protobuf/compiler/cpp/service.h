@@ -60,6 +60,8 @@ class ServiceGenerator {
   explicit ServiceGenerator(const ServiceDescriptor* descriptor,
                             const std::map<std::string, std::string>& vars,
                             const Options& options);
+  ServiceGenerator(const ServiceGenerator&) = delete;
+  ServiceGenerator& operator=(const ServiceGenerator&) = delete;
   ~ServiceGenerator();
 
   // Header stuff.
@@ -112,7 +114,6 @@ class ServiceGenerator {
   int index_in_metadata_;
 
   friend class FileGenerator;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ServiceGenerator);
 };
 
 }  // namespace cpp

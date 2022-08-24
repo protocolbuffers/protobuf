@@ -31,11 +31,11 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_CONTEXT_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_CONTEXT_H__
 
-#include <map>
 #include <memory>
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
+#include "absl/container/flat_hash_map.h"
 #include <google/protobuf/compiler/java/options.h>
 
 namespace google {
@@ -97,9 +97,9 @@ class Context {
       const std::vector<const FieldDescriptor*>& fields);
 
   std::unique_ptr<ClassNameResolver> name_resolver_;
-  std::map<const FieldDescriptor*, FieldGeneratorInfo>
+  absl::flat_hash_map<const FieldDescriptor*, FieldGeneratorInfo>
       field_generator_info_map_;
-  std::map<const OneofDescriptor*, OneofGeneratorInfo>
+  absl::flat_hash_map<const OneofDescriptor*, OneofGeneratorInfo>
       oneof_generator_info_map_;
   Options options_;
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Context);
