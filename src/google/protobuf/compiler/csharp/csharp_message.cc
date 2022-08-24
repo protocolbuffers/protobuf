@@ -49,6 +49,9 @@
 #include <google/protobuf/compiler/csharp/csharp_message.h>
 #include <google/protobuf/compiler/csharp/csharp_names.h>
 
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -240,7 +243,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
       const FieldDescriptor* field = oneof->field(j);
       printer->Print("$oneof_case_name$ = $index$,\n",
                      "oneof_case_name", GetOneofCaseName(field),
-                     "index", StrCat(field->number()));
+                     "index", absl::StrCat(field->number()));
     }
     printer->Outdent();
     printer->Print("}\n");

@@ -38,6 +38,8 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
 
+#include "absl/strings/escaping.h"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -47,9 +49,9 @@ std::string SafelyPrintIntToCode(int v) {
   if (v == std::numeric_limits<int>::min()) {
     // Some compilers try to parse -2147483648 as two tokens and then get spicy
     // about the fact that +2147483648 cannot be represented as an int.
-    return StrCat(v + 1, " - 1");
+    return absl::StrCat(v + 1, " - 1");
   } else {
-    return StrCat(v);
+    return absl::StrCat(v);
   }
 }
 }  // namespace

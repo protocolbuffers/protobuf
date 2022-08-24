@@ -55,6 +55,10 @@
 #include <google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h>
 #include <google/protobuf/compiler/csharp/csharp_wrapper_field.h>
 
+#include "absl/container/flat_hash_set.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/ascii.h"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -398,7 +402,7 @@ std::string GetFieldConstantName(const FieldDescriptor* field) {
 
 std::string GetPropertyName(const FieldDescriptor* descriptor) {
   // Names of members declared or overridden in the message.
-  static const auto& reserved_member_names = *new std::unordered_set<std::string>({
+  static const auto& reserved_member_names = *new absl::flat_hash_set<absl::string_view>({
     "Types",
     "Descriptor",
     "Equals",

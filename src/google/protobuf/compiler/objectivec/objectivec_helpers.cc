@@ -53,6 +53,9 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/strutil.h>
 
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
+
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
 // error cases, so it seems to be ok to use as a back door for errors.
 

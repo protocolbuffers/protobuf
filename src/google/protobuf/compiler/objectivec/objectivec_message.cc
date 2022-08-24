@@ -43,6 +43,8 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.pb.h>
 
+#include "absl/strings/escaping.h"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
