@@ -195,17 +195,17 @@ GPB_FINAL @interface GPBType : GPBMessage
 
 /** The list of fields. */
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBField*> *fieldsArray;
-/** The number of items in @c fieldsArray without causing the container to be created. */
+/** The number of items in @c fieldsArray without causing the array to be created. */
 @property(nonatomic, readonly) NSUInteger fieldsArray_Count;
 
 /** The list of types appearing in `oneof` definitions in this type. */
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<NSString*> *oneofsArray;
-/** The number of items in @c oneofsArray without causing the container to be created. */
+/** The number of items in @c oneofsArray without causing the array to be created. */
 @property(nonatomic, readonly) NSUInteger oneofsArray_Count;
 
 /** The protocol buffer options. */
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBOption*> *optionsArray;
-/** The number of items in @c optionsArray without causing the container to be created. */
+/** The number of items in @c optionsArray without causing the array to be created. */
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
 /** The source context. */
@@ -279,7 +279,7 @@ GPB_FINAL @interface GPBField : GPBMessage
 
 /** The protocol buffer options. */
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBOption*> *optionsArray;
-/** The number of items in @c optionsArray without causing the container to be created. */
+/** The number of items in @c optionsArray without causing the array to be created. */
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
 /** The field JSON name. */
@@ -334,12 +334,12 @@ GPB_FINAL @interface GPBEnum : GPBMessage
 
 /** Enum value definitions. */
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBEnumValue*> *enumvalueArray;
-/** The number of items in @c enumvalueArray without causing the container to be created. */
+/** The number of items in @c enumvalueArray without causing the array to be created. */
 @property(nonatomic, readonly) NSUInteger enumvalueArray_Count;
 
 /** Protocol buffer options. */
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBOption*> *optionsArray;
-/** The number of items in @c optionsArray without causing the container to be created. */
+/** The number of items in @c optionsArray without causing the array to be created. */
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
 /** The source context. */
@@ -385,7 +385,7 @@ GPB_FINAL @interface GPBEnumValue : GPBMessage
 
 /** Protocol buffer options. */
 @property(nonatomic, readwrite, strong, null_resettable) NSMutableArray<GPBOption*> *optionsArray;
-/** The number of items in @c optionsArray without causing the container to be created. */
+/** The number of items in @c optionsArray without causing the array to be created. */
 @property(nonatomic, readonly) NSUInteger optionsArray_Count;
 
 @end
