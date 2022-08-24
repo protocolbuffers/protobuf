@@ -49,7 +49,6 @@
 #include <google/protobuf/pyext/scoped_pyobject_ptr.h>
 #include "absl/strings/string_view.h"
 #include <google/protobuf/io/coded_stream.h>
-#include "util/hash/hash.h"
 
 #define PyString_AsStringAndSize(ob, charpp, sizep)              \
   (PyUnicode_Check(ob)                                           \
