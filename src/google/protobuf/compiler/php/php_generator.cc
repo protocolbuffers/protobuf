@@ -50,28 +50,29 @@ const std::string kDescriptorMetadataFile =
 const std::string kDescriptorDirName = "Google/Protobuf/Internal";
 const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
 const char* const kReservedNames[] = {
-    "abstract",     "and",        "array",      "as",         "break",
-    "callable",     "case",       "catch",      "class",      "clone",
-    "const",        "continue",   "declare",    "default",    "die",
-    "do",           "echo",       "else",       "elseif",     "empty",
-    "enddeclare",   "endfor",     "endforeach", "endif",      "endswitch",
-    "endwhile",     "eval",       "exit",       "extends",    "final",
-    "finally",      "fn",         "for",        "foreach",    "function",
-    "global",       "goto",       "if",         "implements", "include",
-    "include_once", "instanceof", "insteadof",  "interface",  "isset",
-    "list",         "match",      "namespace",  "new",        "or",
-    "print",        "private",    "protected",  "public",     "require",
-    "require_once", "return",     "static",     "switch",     "throw",
-    "trait",        "try",        "unset",      "use",        "var",
-    "while",        "xor",        "yield",      "int",        "float",
-    "bool",         "string",     "true",       "false",      "null",
-    "void",         "iterable"};
+    "abstract",     "and",        "array",        "as",         "break",
+    "callable",     "case",       "catch",        "class",      "clone",
+    "const",        "continue",   "declare",      "default",    "die",
+    "do",           "echo",       "else",         "elseif",     "empty",
+    "enddeclare",   "endfor",     "endforeach",   "endif",      "endswitch",
+    "endwhile",     "eval",       "exit",         "extends",    "final",
+    "finally",      "fn",         "for",          "foreach",    "function",
+    "global",       "goto",       "if",           "implements", "include",
+    "include_once", "instanceof", "insteadof",    "interface",  "isset",
+    "list",         "match",      "namespace",    "new",        "or",
+    "parent",       "print",      "private",      "protected",  "public",
+    "readonly",     "require",    "require_once", "return",     "self",
+    "static",       "switch",     "throw",        "trait",      "try",
+    "unset",        "use",        "var",          "while",      "xor",
+    "yield",        "int",        "float",        "bool",       "string",
+    "true",         "false",      "null",         "void",       "iterable"};
 const char* const kValidConstantNames[] = {
     "int",   "float", "bool", "string",   "true",
-    "false", "null",  "void", "iterable",
+    "false", "null",  "void", "iterable", "parent",
+    "self", "readonly"
 };
-const int kReservedNamesSize = 77;
-const int kValidConstantNamesSize = 9;
+const int kReservedNamesSize = 80;
+const int kValidConstantNamesSize = 12;
 const int kFieldSetter = 1;
 const int kFieldGetter = 2;
 const int kFieldProperty = 3;
@@ -335,7 +336,7 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
                                       const Options& options) {
   const std::string& proto_file = file->name();
   int start_index = 0;
-  int first_index = proto_file.find_first_of("/", start_index);
+  int first_index = proto_file.find_first_of('/', start_index);
   std::string result = "";
   std::string segment = "";
 
@@ -348,7 +349,7 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
 
   // Append directory name.
   std::string file_no_suffix;
-  int lastindex = proto_file.find_last_of(".");
+  int lastindex = proto_file.find_last_of('.');
   if (proto_file == kEmptyFile) {
     return kEmptyMetadataFile;
   } else {
@@ -372,12 +373,12 @@ std::string GeneratedMetadataFileName(const FileDescriptor* file,
           file_no_suffix.substr(start_index, first_index - start_index), true);
       result += ReservedNamePrefix(segment, file) + segment + "/";
       start_index = first_index + 1;
-      first_index = file_no_suffix.find_first_of("/", start_index);
+      first_index = file_no_suffix.find_first_of('/', start_index);
     }
   }
 
   // Append file name.
-  int file_name_start = file_no_suffix.find_last_of("/");
+  int file_name_start = file_no_suffix.find_last_of('/');
   if (file_name_start == std::string::npos) {
     file_name_start = 0;
   } else {
@@ -419,6 +420,21 @@ std::string LegacyGeneratedClassFileName(const DescriptorType* desc,
     }
   }
   return result + ".php";
+}
+
+template <typename DescriptorType>
+std::string LegacyReadOnlyGeneratedClassFileName(std::string php_namespace,
+                                                 const DescriptorType* desc) {
+  if (!php_namespace.empty()) {
+    for (int i = 0; i < php_namespace.size(); i++) {
+      if (php_namespace[i] == '\\') {
+        php_namespace[i] = '/';
+      }
+    }
+    return php_namespace + "/" + desc->name() + ".php";
+  }
+
+  return desc->name() + ".php";
 }
 
 std::string GeneratedServiceFileName(const ServiceDescriptor* service,
@@ -489,11 +505,11 @@ std::string PhpSetterTypeName(const FieldDescriptor* field,
   }
   if (field->is_repeated()) {
     // accommodate for edge case with multiple types.
-    size_t start_pos = type.find("|");
+    size_t start_pos = type.find('|');
     if (start_pos != std::string::npos) {
-      type.replace(start_pos, 1, "[]|");
+      type.replace(start_pos, 1, ">|array<");
     }
-    type += "[]|\\Google\\Protobuf\\Internal\\RepeatedField";
+    type = "array<" + type + ">|\\Google\\Protobuf\\Internal\\RepeatedField";
   }
   return type;
 }
@@ -1116,7 +1132,7 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
   std::map<const FileDescriptor*, int> dependency_count;
   std::set<const FileDescriptor*> nodes_without_dependency;
   FileDescriptorSet sorted_file_set;
-  
+
   AnalyzeDependencyForFile(
       file, &nodes_without_dependency, &deps, &dependency_count);
 
@@ -1221,7 +1237,7 @@ void GenerateHead(const FileDescriptor* file, io::Printer* printer) {
 }
 
 std::string FilenameToClassname(const std::string& filename) {
-  int lastindex = filename.find_last_of(".");
+  int lastindex = filename.find_last_of('.');
   std::string result = filename.substr(0, lastindex);
   for (int i = 0; i < result.size(); i++) {
     if (result[i] == '/') {
@@ -1241,7 +1257,7 @@ void GenerateMetadataFile(const FileDescriptor* file, const Options& options,
   GenerateHead(file, &printer);
 
   std::string fullname = FilenameToClassname(filename);
-  int lastindex = fullname.find_last_of("\\");
+  int lastindex = fullname.find_last_of('\\');
 
   if (lastindex != std::string::npos) {
     printer.Print(
@@ -1303,6 +1319,45 @@ void LegacyGenerateClassFile(const FileDescriptor* file,
       "fullname", newname);
 }
 
+template <typename DescriptorType>
+void LegacyReadOnlyGenerateClassFile(const FileDescriptor* file,
+                             const DescriptorType* desc, const Options& options,
+                             GeneratorContext* generator_context) {
+  std::string fullname = FullClassName(desc, options);
+  std::string php_namespace;
+  std::string classname;
+  int lastindex = fullname.find_last_of("\\");
+
+  if (lastindex != std::string::npos) {
+    php_namespace = fullname.substr(0, lastindex);
+    classname = fullname.substr(lastindex + 1);
+  } else {
+    php_namespace = "";
+    classname = fullname;
+  }
+
+  std::string filename = LegacyReadOnlyGeneratedClassFileName(php_namespace, desc);
+  std::unique_ptr<io::ZeroCopyOutputStream> output(
+      generator_context->Open(filename));
+  io::Printer printer(output.get(), '^');
+
+  GenerateHead(file, &printer);
+
+  if (!php_namespace.empty()) {
+    printer.Print(
+        "namespace ^name^;\n\n",
+        "name", php_namespace);
+  }
+
+  printer.Print("class_exists(^new^::class); // autoload the new class, which "
+      "will also create an alias to the deprecated class\n",
+      "new", classname);
+  printer.Print("@trigger_error(__NAMESPACE__ . '\\^old^ is deprecated and will be removed in "
+      "the next major release. Use ^fullname^ instead', E_USER_DEPRECATED);\n\n",
+      "old", desc->name(),
+      "fullname", classname);
+}
+
 void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
                       const Options& options,
                       GeneratorContext* generator_context) {
@@ -1314,7 +1369,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   GenerateHead(file, &printer);
 
   std::string fullname = FilenameToClassname(filename);
-  int lastindex = fullname.find_last_of("\\");
+  int lastindex = fullname.find_last_of('\\');
 
   if (lastindex != std::string::npos) {
     printer.Print(
@@ -1338,11 +1393,18 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
       "name", fullname);
   Indent(&printer);
 
+  bool hasReserved = false;
   for (int i = 0; i < en->value_count(); i++) {
     const EnumValueDescriptor* value = en->value(i);
     GenerateEnumValueDocComment(&printer, value);
+
+    std::string prefix = ConstantNamePrefix(value->name());
+    if (!prefix.empty()) {
+      hasReserved = true;
+    }
+
     printer.Print("const ^name^ = ^number^;\n",
-                  "name", ConstantNamePrefix(value->name()) + value->name(),
+                  "name", prefix + value->name(),
                   "number", IntToString(value->number()));
   }
 
@@ -1350,8 +1412,9 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   Indent(&printer);
   for (int i = 0; i < en->value_count(); i++) {
     const EnumValueDescriptor* value = en->value(i);
-    printer.Print("self::^name^ => '^name^',\n",
-                  "name", ConstantNamePrefix(value->name()) + value->name());
+    printer.Print("self::^constant^ => '^name^',\n",
+                  "constant", ConstantNamePrefix(value->name()) + value->name(),
+                  "name", value->name());
   }
   Outdent(&printer);
   printer.Print("];\n");
@@ -1381,12 +1444,22 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   printer.Print("$const = __CLASS__ . '::' . strtoupper($name);\n"
                 "if (!defined($const)) {\n");
   Indent(&printer);
+  if (hasReserved) {
+    printer.Print("$pbconst =  __CLASS__. '::PB' . strtoupper($name);\n"
+                "if (!defined($pbconst)) {\n");
+    Indent(&printer);
+  }
   printer.Print("throw new UnexpectedValueException(sprintf(\n");
   Indent(&printer);
   Indent(&printer);
   printer.Print("'Enum %s has no value defined for name %s', __CLASS__, $name));\n");
   Outdent(&printer);
   Outdent(&printer);
+  if (hasReserved) {
+    Outdent(&printer);
+    printer.Print("}\n"
+                  "return constant($pbconst);\n");
+  }
   Outdent(&printer);
   printer.Print("}\n"
                 "return constant($const);\n");
@@ -1396,7 +1469,7 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
   Outdent(&printer);
   printer.Print("}\n\n");
 
-  // write legacy file for backwards compatibility with nested messages and enums
+  // write legacy alias for backwards compatibility with nested messages and enums
   if (en->containing_type() != NULL) {
     printer.Print(
         "// Adding a class alias for backwards compatibility with the previous class name.\n");
@@ -1404,7 +1477,19 @@ void GenerateEnumFile(const FileDescriptor* file, const EnumDescriptor* en,
         "class_alias(^new^::class, \\^old^::class);\n\n",
         "new", fullname,
         "old", LegacyFullClassName(en, options));
-    LegacyGenerateClassFile(file, en, options, generator_context);
+  }
+
+  // Write legacy file for backwards compatibility with "readonly" keywword
+  std::string lower = en->name();
+  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+  if (lower == "readonly") {
+    printer.Print(
+        "// Adding a class alias for backwards compatibility with the \"readonly\" keyword.\n");
+    printer.Print(
+        "class_alias(^new^::class, __NAMESPACE__ . '\\^old^');\n\n",
+        "new", fullname,
+        "old", en->name());
+    LegacyReadOnlyGenerateClassFile(file, en, options, generator_context);
   }
 }
 
@@ -1425,7 +1510,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   GenerateHead(file, &printer);
 
   std::string fullname = FilenameToClassname(filename);
-  int lastindex = fullname.find_last_of("\\");
+  int lastindex = fullname.find_last_of('\\');
 
   if (lastindex != std::string::npos) {
     printer.Print(
@@ -1511,7 +1596,7 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
   Outdent(&printer);
   printer.Print("}\n\n");
 
-  // write legacy file for backwards compatibility with nested messages and enums
+  // write legacy alias for backwards compatibility with nested messages and enums
   if (message->containing_type() != NULL) {
     printer.Print(
         "// Adding a class alias for backwards compatibility with the previous class name.\n");
@@ -1519,7 +1604,19 @@ void GenerateMessageFile(const FileDescriptor* file, const Descriptor* message,
         "class_alias(^new^::class, \\^old^::class);\n\n",
         "new", fullname,
         "old", LegacyFullClassName(message, options));
-    LegacyGenerateClassFile(file, message, options, generator_context);
+  }
+
+  // Write legacy file for backwards compatibility with "readonly" keywword
+  std::string lower = message->name();
+  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+  if (lower == "readonly") {
+    printer.Print(
+        "// Adding a class alias for backwards compatibility with the \"readonly\" keyword.\n");
+    printer.Print(
+        "class_alias(^new^::class, __NAMESPACE__ . '\\^old^');\n\n",
+        "new", fullname,
+        "old", message->name());
+    LegacyReadOnlyGenerateClassFile(file, message, options, generator_context);
   }
 
   // Nested messages and enums.
@@ -1543,7 +1640,7 @@ void GenerateServiceFile(
   GenerateHead(file, &printer);
 
   std::string fullname = FilenameToClassname(filename);
-  int lastindex = fullname.find_last_of("\\");
+  int lastindex = fullname.find_last_of('\\');
 
   if (!file->options().php_namespace().empty() ||
       (!file->options().has_php_namespace() && !file->package().empty()) ||
@@ -1871,44 +1968,45 @@ void GenerateCEnum(const EnumDescriptor* desc, io::Printer* printer) {
       "\n"
       "PHP_METHOD($c_name$, name) {\n"
       "  $file_c_name$_AddDescriptor();\n"
-      "  const upb_symtab *symtab = DescriptorPool_GetSymbolTable();\n"
-      "  const upb_enumdef *e = upb_symtab_lookupenum(symtab, \"$name$\");\n"
-      "  const char *name;\n"
+      "  const upb_DefPool *symtab = DescriptorPool_GetSymbolTable();\n"
+      "  const upb_EnumDef *e = upb_DefPool_FindEnumByName(symtab, \"$name$\");\n"
       "  zend_long value;\n"
       "  if (zend_parse_parameters(ZEND_NUM_ARGS(), \"l\", &value) ==\n"
       "      FAILURE) {\n"
       "    return;\n"
       "  }\n"
-      "  name = upb_enumdef_iton(e, value);\n"
-      "  if (!name) {\n"
+      "  const upb_EnumValueDef* ev =\n"
+      "      upb_EnumDef_FindValueByNumber(e, value);\n"
+      "  if (!ev) {\n"
       "    zend_throw_exception_ex(NULL, 0,\n"
       "                            \"$php_name$ has no name \"\n"
       "                            \"defined for value \" ZEND_LONG_FMT \".\",\n"
       "                            value);\n"
       "    return;\n"
       "  }\n"
-      "  RETURN_STRING(name);\n"
+      "  RETURN_STRING(upb_EnumValueDef_Name(ev));\n"
       "}\n"
       "\n"
       "PHP_METHOD($c_name$, value) {\n"
       "  $file_c_name$_AddDescriptor();\n"
-      "  const upb_symtab *symtab = DescriptorPool_GetSymbolTable();\n"
-      "  const upb_enumdef *e = upb_symtab_lookupenum(symtab, \"$name$\");\n"
+      "  const upb_DefPool *symtab = DescriptorPool_GetSymbolTable();\n"
+      "  const upb_EnumDef *e = upb_DefPool_FindEnumByName(symtab, \"$name$\");\n"
       "  char *name = NULL;\n"
       "  size_t name_len;\n"
-      "  int32_t num;\n"
       "  if (zend_parse_parameters(ZEND_NUM_ARGS(), \"s\", &name,\n"
       "                            &name_len) == FAILURE) {\n"
       "    return;\n"
       "  }\n"
-      "  if (!upb_enumdef_ntoi(e, name, name_len, &num)) {\n"
+      "  const upb_EnumValueDef* ev = upb_EnumDef_FindValueByNameWithSize(\n"
+      "      e, name, name_len);\n"
+      "  if (!ev) {\n"
       "    zend_throw_exception_ex(NULL, 0,\n"
       "                            \"$php_name$ has no value \"\n"
       "                            \"defined for name %s.\",\n"
       "                            name);\n"
       "    return;\n"
       "  }\n"
-      "  RETURN_LONG(num);\n"
+      "  RETURN_LONG(upb_EnumValueDef_Number(ev));\n"
       "}\n"
       "\n"
       "static zend_function_entry $c_name$_phpmethods[] = {\n"
@@ -1967,8 +2065,8 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
     printer->Print(
       "static PHP_METHOD($c_name$, get$camel_name$) {\n"
       "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
-      "  const upb_fielddef *f = upb_msgdef_ntofz(intern->desc->msgdef,\n"
-      "                                           \"$name$\");\n"
+      "  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(\n"
+      "      intern->desc->msgdef, \"$name$\");\n"
       "  zval ret;\n"
       "  Message_get(intern, f, &ret);\n"
       "  RETURN_COPY_VALUE(&ret);\n"
@@ -1976,8 +2074,8 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
       "\n"
       "static PHP_METHOD($c_name$, set$camel_name$) {\n"
       "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
-      "  const upb_fielddef *f = upb_msgdef_ntofz(intern->desc->msgdef,\n"
-      "                                           \"$name$\");\n"
+      "  const upb_FieldDef *f = upb_MessageDef_FindFieldByName(\n"
+      "      intern->desc->msgdef, \"$name$\");\n"
       "  zval *val;\n"
       "  if (zend_parse_parameters(ZEND_NUM_ARGS(), \"z\", &val)\n"
       "      == FAILURE) {\n"
@@ -1997,10 +2095,11 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
     printer->Print(
       "static PHP_METHOD($c_name$, get$camel_name$) {\n"
       "  Message* intern = (Message*)Z_OBJ_P(getThis());\n"
-      "  const upb_oneofdef *oneof = upb_msgdef_ntooz(intern->desc->msgdef,\n"
-      "                                              \"$name$\");\n"
-      "  const upb_fielddef *field = upb_msg_whichoneof(intern->msg, oneof);\n"
-      "  RETURN_STRING(field ? upb_fielddef_name(field) : \"\");\n"
+      "  const upb_OneofDef *oneof = upb_MessageDef_FindOneofByName(\n"
+      "      intern->desc->msgdef, \"$name$\");\n"
+      "  const upb_FieldDef *field = \n"
+      "      upb_Message_WhichOneof(intern->msg, oneof);\n"
+      "  RETURN_STRING(field ? upb_FieldDef_Name(field) : \"\");\n"
       "}\n",
       "c_name", c_name,
       "name", oneof->name(),
@@ -2067,7 +2166,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
       break;
     default:
       break;
-  } 
+  }
 
   printer->Print(
       "  ZEND_FE_END\n"
