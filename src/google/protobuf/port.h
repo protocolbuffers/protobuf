@@ -47,8 +47,6 @@
 
 namespace google {
 namespace protobuf {
-
-
 namespace internal {
 
 

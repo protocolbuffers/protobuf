@@ -65,6 +65,8 @@ struct OneofGeneratorInfo;
 class Context {
  public:
   Context(const FileDescriptor* file, const Options& options);
+  Context(const Context&) = delete;
+  Context& operator=(const Context&) = delete;
   ~Context();
 
   // Get the name resolver associated with this context. The resolver
@@ -102,7 +104,6 @@ class Context {
   absl::flat_hash_map<const OneofDescriptor*, OneofGeneratorInfo>
       oneof_generator_info_map_;
   Options options_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Context);
 };
 
 }  // namespace java
