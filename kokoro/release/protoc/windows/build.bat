@@ -1,9 +1,12 @@
-set PATH=C:\Program Files (x86)\MSBuild\14.0\bin\;%PATH%
 set generator32=Visual Studio 15
 set generator64=Visual Studio 15 Win64
 set vcplatform32=win32
 set vcplatform64=x64
 set configuration=Release
+
+:: VS2017 is installed, but will not be selected by default. This command sets
+:: up the environment so that CMake will find and use it:
+call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
 
 echo Building protoc
 cd github\protobuf
