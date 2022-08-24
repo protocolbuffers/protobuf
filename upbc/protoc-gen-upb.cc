@@ -57,12 +57,12 @@ inline std::vector<const google::protobuf::FieldDescriptor*> FieldHotnessOrder(
   for (int i = 0; i < message->field_count(); i++) {
     fields.push_back(message->field(i));
   }
-  std::sort(fields.begin(), fields.end(),
-            [](const google::protobuf::FieldDescriptor* a,
-               const google::protobuf::FieldDescriptor* b) {
-              return std::make_pair(!a->is_required(), a->number()) <
-                     std::make_pair(!b->is_required(), b->number());
-            });
+  std::sort(
+      fields.begin(), fields.end(),
+      [](const google::protobuf::FieldDescriptor* a, const google::protobuf::FieldDescriptor* b) {
+        return std::make_pair(!a->is_required(), a->number()) <
+               std::make_pair(!b->is_required(), b->number());
+      });
   return fields;
 }
 
@@ -190,6 +190,26 @@ bool HasNonZeroDefault(const protobuf::FieldDescriptor* field) {
   return false;
 }
 
+std::string FloatToCLiteral(float value) {
+  if (value == std::numeric_limits<float>::infinity()) {
+    return "kUpb_FltInfinity";
+  } else if (value == -std::numeric_limits<float>::infinity()) {
+    return "-kUpb_FltInfinity";
+  } else {
+    return absl::StrCat(value);
+  }
+}
+
+std::string DoubleToCLiteral(double value) {
+  if (value == std::numeric_limits<double>::infinity()) {
+    return "kUpb_Infinity";
+  } else if (value == -std::numeric_limits<double>::infinity()) {
+    return "-kUpb_Infinity";
+  } else {
+    return absl::StrCat(value);
+  }
+}
+
 std::string FieldDefault(const protobuf::FieldDescriptor* field) {
   switch (field->cpp_type()) {
     case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
@@ -210,9 +230,9 @@ std::string FieldDefault(const protobuf::FieldDescriptor* field) {
       return absl::Substitute("_upb_UInt64_FromULL($0ull)",
                               field->default_value_uint64());
     case protobuf::FieldDescriptor::CPPTYPE_FLOAT:
-      return absl::StrCat(field->default_value_float());
+      return FloatToCLiteral(field->default_value_float());
     case protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
-      return absl::StrCat(field->default_value_double());
+      return DoubleToCLiteral(field->default_value_double());
     case protobuf::FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool() ? "true" : "false";
     case protobuf::FieldDescriptor::CPPTYPE_ENUM:

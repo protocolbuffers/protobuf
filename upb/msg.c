@@ -27,6 +27,8 @@
 
 #include "upb/msg.h"
 
+#include <math.h>
+
 #include "upb/msg_internal.h"
 
 // Must be last.
@@ -309,3 +311,6 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
   qsort(&s->entries[sorted->start], map_size, sizeof(*s->entries), compar);
   return true;
 }
+
+const float kUpb_FltInfinity = INFINITY;
+const double kUpb_Infinity = INFINITY;
