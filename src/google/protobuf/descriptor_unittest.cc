@@ -60,7 +60,7 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/substitute.h"
 
 
 // Must be included last.
@@ -247,7 +247,7 @@ class MockErrorCollector : public DescriptorPool::ErrorCollector {
         break;
     }
 
-    strings::SubstituteAndAppend(&text_, "$0: $1: $2: $3\n", filename,
+    absl::SubstituteAndAppend(&text_, "$0: $1: $2: $3\n", filename,
                               element_name, location_name, message);
   }
 
@@ -292,7 +292,7 @@ class MockErrorCollector : public DescriptorPool::ErrorCollector {
         break;
     }
 
-    strings::SubstituteAndAppend(&warning_text_, "$0: $1: $2: $3\n", filename,
+    absl::SubstituteAndAppend(&warning_text_, "$0: $1: $2: $3\n", filename,
                               element_name, location_name, message);
   }
 };
@@ -4244,7 +4244,7 @@ TEST_F(ValidationErrorTest, ReservedFieldsDebugString) {
 }
 
 TEST_F(ValidationErrorTest, DebugStringReservedRangeMax) {
-  const FileDescriptor* file = BuildFile(strings::Substitute(
+  const FileDescriptor* file = BuildFile(absl::Substitute(
       "name: \"foo.proto\" "
       "enum_type { "
       "  name: \"Bar\""
@@ -5844,7 +5844,7 @@ TEST_F(ValidationErrorTest, DuplicateExtensionFieldNumber) {
 // errors.  The "value" argument is embedded inside the
 // "uninterpreted_option" portion of the result.
 static std::string EmbedAggregateValue(const char* value) {
-  return strings::Substitute(
+  return absl::Substitute(
       "name: \"foo.proto\" "
       "dependency: \"google/protobuf/descriptor.proto\" "
       "message_type { name: \"Foo\" } "
@@ -7338,19 +7338,19 @@ class ExponentialErrorDatabase : public DescriptorDatabase {
   bool PopulateFile(int file_num, FileDescriptorProto* output) {
     GOOGLE_CHECK_GE(file_num, 0);
     output->Clear();
-    output->set_name(strings::Substitute("file$0.proto", file_num));
+    output->set_name(absl::Substitute("file$0.proto", file_num));
     // file0.proto doesn't define Message0
     if (file_num > 0) {
       DescriptorProto* message = output->add_message_type();
-      message->set_name(strings::Substitute("Message$0", file_num));
+      message->set_name(absl::Substitute("Message$0", file_num));
       for (int i = 0; i < file_num; ++i) {
-        output->add_dependency(strings::Substitute("file$0.proto", i));
+        output->add_dependency(absl::Substitute("file$0.proto", i));
         FieldDescriptorProto* field = message->add_field();
-        field->set_name(strings::Substitute("field$0", i));
+        field->set_name(absl::Substitute("field$0", i));
         field->set_number(i);
         field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
         field->set_type(FieldDescriptorProto::TYPE_MESSAGE);
-        field->set_type_name(strings::Substitute("Message$0", i));
+        field->set_type_name(absl::Substitute("Message$0", i));
       }
     }
     return true;
@@ -7400,6 +7400,8 @@ TEST_F(DatabaseBackedPoolTest, DoesntFallbackOnWrongType) {
 class AbortingErrorCollector : public DescriptorPool::ErrorCollector {
  public:
   AbortingErrorCollector() {}
+  AbortingErrorCollector(const AbortingErrorCollector&) = delete;
+  AbortingErrorCollector& operator=(const AbortingErrorCollector&) = delete;
 
   void AddError(const std::string& filename, const std::string& element_name,
                 const Message* message, ErrorLocation location,
@@ -7407,9 +7409,6 @@ class AbortingErrorCollector : public DescriptorPool::ErrorCollector {
     GOOGLE_LOG(FATAL) << "AddError() called unexpectedly: " << filename << " ["
                << element_name << "]: " << error_message;
   }
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(AbortingErrorCollector);
 };
 
 // A source tree containing only one file.
@@ -7417,6 +7416,8 @@ class SingletonSourceTree : public compiler::SourceTree {
  public:
   SingletonSourceTree(const std::string& filename, const std::string& contents)
       : filename_(filename), contents_(contents) {}
+  SingletonSourceTree(const SingletonSourceTree&) = delete;
+  SingletonSourceTree& operator=(const SingletonSourceTree&) = delete;
 
   io::ZeroCopyInputStream* Open(const std::string& filename) override {
     return filename == filename_
@@ -7427,8 +7428,6 @@ class SingletonSourceTree : public compiler::SourceTree {
  private:
   const std::string filename_;
   const std::string contents_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SingletonSourceTree);
 };
 
 const char* const kSourceLocationTestInput =
@@ -7523,7 +7522,7 @@ class SourceLocationTest : public testing::Test {
   }
 
   static std::string PrintSourceLocation(const SourceLocation& loc) {
-    return strings::Substitute("$0:$1-$2:$3", 1 + loc.start_line,
+    return absl::Substitute("$0:$1-$2:$3", 1 + loc.start_line,
                             1 + loc.start_column, 1 + loc.end_line,
                             1 + loc.end_column);
   }

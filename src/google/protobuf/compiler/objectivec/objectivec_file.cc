@@ -38,6 +38,10 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/stl_util.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_split.h"
+#include "absl/strings/str_replace.h"
 #include <algorithm> // std::find()
 #include <iostream>
 #include <sstream>

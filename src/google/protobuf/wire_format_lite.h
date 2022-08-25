@@ -86,6 +86,7 @@ namespace internal {
 // This class is really a namespace that contains only static methods.
 class PROTOBUF_EXPORT WireFormatLite {
  public:
+  WireFormatLite() = delete;
   // -----------------------------------------------------------------
   // Helper constants and functions related to the format.  These are
   // mostly meant for internal and generated code to use.
@@ -745,8 +746,6 @@ class PROTOBUF_EXPORT WireFormatLite {
   static const WireFormatLite::WireType kWireTypeForFieldType[];
   static void WriteSubMessageMaybeToArray(int size, const MessageLite& value,
                                           io::CodedOutputStream* output);
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(WireFormatLite);
 };
 
 // A class which deals with unknown values.  The default implementation just

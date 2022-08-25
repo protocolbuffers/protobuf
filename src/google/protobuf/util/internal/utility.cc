@@ -43,15 +43,14 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include <google/protobuf/util/internal/constants.h>
-#include <google/protobuf/stubs/map_util.h>
 
-// clang-format off
+// must be last
 #include <google/protobuf/port_def.inc>
-// clang-format on
 
 namespace google {
 namespace protobuf {
@@ -249,10 +248,7 @@ const google::protobuf::EnumValue* FindEnumValueByNameWithoutUnderscoreOrNull(
 }
 
 std::string EnumValueNameToLowerCamelCase(absl::string_view input) {
-  std::string input_string(input);
-  std::transform(input_string.begin(), input_string.end(), input_string.begin(),
-                 ::tolower);
-  return ToCamelCase(input_string);
+  return ToCamelCase(absl::AsciiStrToLower(input));
 }
 
 std::string ToCamelCase(absl::string_view input) {
@@ -335,7 +331,7 @@ std::string ToSnakeCase(absl::string_view input) {
   return result;
 }
 
-std::set<std::string>* well_known_types_ = nullptr;
+absl::flat_hash_set<absl::string_view>* well_known_types_ = nullptr;
 absl::once_flag well_known_types_init_;
 const char* well_known_types_name_array_[] = {
     "google.protobuf.Timestamp",   "google.protobuf.Duration",
@@ -348,15 +344,15 @@ const char* well_known_types_name_array_[] = {
 void DeleteWellKnownTypes() { delete well_known_types_; }
 
 void InitWellKnownTypes() {
-  well_known_types_ =
-      new std::set<std::string>(std::begin(well_known_types_name_array_),
-                                std::end(well_known_types_name_array_));
+  well_known_types_ = new absl::flat_hash_set<absl::string_view>(
+      std::begin(well_known_types_name_array_),
+      std::end(well_known_types_name_array_));
   google::protobuf::internal::OnShutdown(&DeleteWellKnownTypes);
 }
 
 bool IsWellKnownType(const std::string& type_name) {
   absl::call_once(well_known_types_init_, InitWellKnownTypes);
-  return ContainsKey(*well_known_types_, type_name);
+  return well_known_types_->contains(type_name);
 }
 
 bool IsValidBoolString(absl::string_view bool_string) {

@@ -60,7 +60,8 @@
 #include "absl/strings/str_cat.h"
 #include <google/protobuf/stubs/stringprintf.h>
 #include "absl/strings/str_join.h"
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/str_split.h"
+#include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
 #include <google/protobuf/any.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -423,7 +424,7 @@ class FlatAllocatorImpl {
     }
 
     std::string lowercase_name = name;
-    LowerString(&lowercase_name);
+    absl::AsciiStrToLower(&lowercase_name);
 
     std::string camelcase_name = ToCamelCase(name, /* lower_first = */ true);
     std::string json_name =
@@ -487,7 +488,7 @@ class FlatAllocatorImpl {
     FieldNamesResult result{nullptr, 0, 0, 0};
 
     std::string lowercase_name = name;
-    LowerString(&lowercase_name);
+    absl::AsciiStrToLower(&lowercase_name);
     result.lowercase_index = push_name(std::move(lowercase_name));
     result.camelcase_index =
         push_name(ToCamelCase(name, /* lower_first = */ true));
@@ -2848,7 +2849,7 @@ bool FormatLineOptions(int depth, const Message& options,
   std::vector<std::string> all_options;
   if (RetrieveOptions(depth, options, pool, &all_options)) {
     for (const std::string& option : all_options) {
-      strings::SubstituteAndAppend(output, "$0option $1;\n", prefix, option);
+      absl::SubstituteAndAppend(output, "$0option $1;\n", prefix, option);
     }
   }
   return !all_options.empty();
@@ -2900,10 +2901,10 @@ class SourceLocationCommentPrinter {
   std::string FormatComment(const std::string& comment_text) {
     std::string stripped_comment = comment_text;
     StripWhitespace(&stripped_comment);
-    std::vector<std::string> lines = Split(stripped_comment, "\n");
+    std::vector<std::string> lines = absl::StrSplit(stripped_comment, "\n");
     std::string output;
     for (const std::string& line : lines) {
-      strings::SubstituteAndAppend(&output, "$0// $1\n", prefix_, line);
+      absl::SubstituteAndAppend(&output, "$0// $1\n", prefix_, line);
     }
     return output;
   }
@@ -2932,7 +2933,7 @@ std::string FileDescriptor::DebugStringWithOptions(
     SourceLocationCommentPrinter syntax_comment(this, path, "",
                                                 debug_string_options);
     syntax_comment.AddPreComment(&contents);
-    strings::SubstituteAndAppend(&contents, "syntax = \"$0\";\n\n",
+    absl::SubstituteAndAppend(&contents, "syntax = \"$0\";\n\n",
                               SyntaxName(syntax()));
     syntax_comment.AddPostComment(&contents);
   }
@@ -2947,13 +2948,13 @@ std::string FileDescriptor::DebugStringWithOptions(
 
   for (int i = 0; i < dependency_count(); i++) {
     if (public_dependencies.contains(i)) {
-      strings::SubstituteAndAppend(&contents, "import public \"$0\";\n",
+      absl::SubstituteAndAppend(&contents, "import public \"$0\";\n",
                                 dependency(i)->name());
     } else if (weak_dependencies.contains(i)) {
-      strings::SubstituteAndAppend(&contents, "import weak \"$0\";\n",
+      absl::SubstituteAndAppend(&contents, "import weak \"$0\";\n",
                                 dependency(i)->name());
     } else {
-      strings::SubstituteAndAppend(&contents, "import \"$0\";\n",
+      absl::SubstituteAndAppend(&contents, "import \"$0\";\n",
                                 dependency(i)->name());
     }
   }
@@ -2964,7 +2965,7 @@ std::string FileDescriptor::DebugStringWithOptions(
     SourceLocationCommentPrinter package_comment(this, path, "",
                                                  debug_string_options);
     package_comment.AddPreComment(&contents);
-    strings::SubstituteAndAppend(&contents, "package $0;\n\n", package());
+    absl::SubstituteAndAppend(&contents, "package $0;\n\n", package());
     package_comment.AddPostComment(&contents);
   }
 
@@ -3004,7 +3005,7 @@ std::string FileDescriptor::DebugStringWithOptions(
     if (extension(i)->containing_type() != containing_type) {
       if (i > 0) contents.append("}\n\n");
       containing_type = extension(i)->containing_type();
-      strings::SubstituteAndAppend(&contents, "extend .$0 {\n",
+      absl::SubstituteAndAppend(&contents, "extend .$0 {\n",
                                 containing_type->full_name());
     }
     extension(i)->DebugString(1, &contents, debug_string_options);
@@ -3043,7 +3044,7 @@ void Descriptor::DebugString(int depth, std::string* contents,
   comment_printer.AddPreComment(contents);
 
   if (include_opening_clause) {
-    strings::SubstituteAndAppend(contents, "$0message $1", prefix, name());
+    absl::SubstituteAndAppend(contents, "$0message $1", prefix, name());
   }
   contents->append(" {\n");
 
@@ -3084,7 +3085,7 @@ void Descriptor::DebugString(int depth, std::string* contents,
   }
 
   for (int i = 0; i < extension_range_count(); i++) {
-    strings::SubstituteAndAppend(contents, "$0  extensions $1 to $2;\n", prefix,
+    absl::SubstituteAndAppend(contents, "$0  extensions $1 to $2;\n", prefix,
                               extension_range(i)->start,
                               extension_range(i)->end - 1);
   }
@@ -3093,26 +3094,26 @@ void Descriptor::DebugString(int depth, std::string* contents,
   const Descriptor* containing_type = nullptr;
   for (int i = 0; i < extension_count(); i++) {
     if (extension(i)->containing_type() != containing_type) {
-      if (i > 0) strings::SubstituteAndAppend(contents, "$0  }\n", prefix);
+      if (i > 0) absl::SubstituteAndAppend(contents, "$0  }\n", prefix);
       containing_type = extension(i)->containing_type();
-      strings::SubstituteAndAppend(contents, "$0  extend .$1 {\n", prefix,
+      absl::SubstituteAndAppend(contents, "$0  extend .$1 {\n", prefix,
                                 containing_type->full_name());
     }
     extension(i)->DebugString(depth + 1, contents, debug_string_options);
   }
   if (extension_count() > 0)
-    strings::SubstituteAndAppend(contents, "$0  }\n", prefix);
+    absl::SubstituteAndAppend(contents, "$0  }\n", prefix);
 
   if (reserved_range_count() > 0) {
-    strings::SubstituteAndAppend(contents, "$0  reserved ", prefix);
+    absl::SubstituteAndAppend(contents, "$0  reserved ", prefix);
     for (int i = 0; i < reserved_range_count(); i++) {
       const Descriptor::ReservedRange* range = reserved_range(i);
       if (range->end == range->start + 1) {
-        strings::SubstituteAndAppend(contents, "$0, ", range->start);
+        absl::SubstituteAndAppend(contents, "$0, ", range->start);
       } else if (range->end > FieldDescriptor::kMaxNumber) {
-        strings::SubstituteAndAppend(contents, "$0 to max, ", range->start);
+        absl::SubstituteAndAppend(contents, "$0 to max, ", range->start);
       } else {
-        strings::SubstituteAndAppend(contents, "$0 to $1, ", range->start,
+        absl::SubstituteAndAppend(contents, "$0 to $1, ", range->start,
                                   range->end - 1);
       }
     }
@@ -3120,15 +3121,15 @@ void Descriptor::DebugString(int depth, std::string* contents,
   }
 
   if (reserved_name_count() > 0) {
-    strings::SubstituteAndAppend(contents, "$0  reserved ", prefix);
+    absl::SubstituteAndAppend(contents, "$0  reserved ", prefix);
     for (int i = 0; i < reserved_name_count(); i++) {
-      strings::SubstituteAndAppend(contents, "\"$0\", ",
+      absl::SubstituteAndAppend(contents, "\"$0\", ",
                                 absl::CEscape(reserved_name(i)));
     }
     contents->replace(contents->size() - 2, 2, ";\n");
   }
 
-  strings::SubstituteAndAppend(contents, "$0}\n", prefix);
+  absl::SubstituteAndAppend(contents, "$0}\n", prefix);
   comment_printer.AddPostComment(contents);
 }
 
@@ -3142,7 +3143,7 @@ std::string FieldDescriptor::DebugStringWithOptions(
   std::string contents;
   int depth = 0;
   if (is_extension()) {
-    strings::SubstituteAndAppend(&contents, "extend .$0 {\n",
+    absl::SubstituteAndAppend(&contents, "extend .$0 {\n",
                               containing_type()->full_name());
     depth = 1;
   }
@@ -3173,7 +3174,7 @@ void FieldDescriptor::DebugString(
 
   // Special case map fields.
   if (is_map()) {
-    strings::SubstituteAndAppend(
+    absl::SubstituteAndAppend(
         &field_type, "map<$0, $1>",
         message_type()->field(0)->FieldTypeNameDebugString(),
         message_type()->field(1)->FieldTypeNameDebugString());
@@ -3193,14 +3194,14 @@ void FieldDescriptor::DebugString(
                                                debug_string_options);
   comment_printer.AddPreComment(contents);
 
-  strings::SubstituteAndAppend(
+  absl::SubstituteAndAppend(
       contents, "$0$1$2 $3 = $4", prefix, label, field_type,
       type() == TYPE_GROUP ? message_type()->name() : name(), number());
 
   bool bracketed = false;
   if (has_default_value()) {
     bracketed = true;
-    strings::SubstituteAndAppend(contents, " [default = $0",
+    absl::SubstituteAndAppend(contents, " [default = $0",
                               DefaultValueAsString(true));
   }
   if (has_json_name_) {
@@ -3261,7 +3262,7 @@ void OneofDescriptor::DebugString(
   SourceLocationCommentPrinter comment_printer(this, prefix,
                                                debug_string_options);
   comment_printer.AddPreComment(contents);
-  strings::SubstituteAndAppend(contents, "$0oneof $1 {", prefix, name());
+  absl::SubstituteAndAppend(contents, "$0oneof $1 {", prefix, name());
 
   FormatLineOptions(depth, options(), containing_type()->file()->pool(),
                     contents);
@@ -3273,7 +3274,7 @@ void OneofDescriptor::DebugString(
     for (int i = 0; i < field_count(); i++) {
       field(i)->DebugString(depth, contents, debug_string_options);
     }
-    strings::SubstituteAndAppend(contents, "$0}\n", prefix);
+    absl::SubstituteAndAppend(contents, "$0}\n", prefix);
   }
   comment_printer.AddPostComment(contents);
 }
@@ -3300,7 +3301,7 @@ void EnumDescriptor::DebugString(
                                                debug_string_options);
   comment_printer.AddPreComment(contents);
 
-  strings::SubstituteAndAppend(contents, "$0enum $1 {\n", prefix, name());
+  absl::SubstituteAndAppend(contents, "$0enum $1 {\n", prefix, name());
 
   FormatLineOptions(depth, options(), file()->pool(), contents);
 
@@ -3309,15 +3310,15 @@ void EnumDescriptor::DebugString(
   }
 
   if (reserved_range_count() > 0) {
-    strings::SubstituteAndAppend(contents, "$0  reserved ", prefix);
+    absl::SubstituteAndAppend(contents, "$0  reserved ", prefix);
     for (int i = 0; i < reserved_range_count(); i++) {
       const EnumDescriptor::ReservedRange* range = reserved_range(i);
       if (range->end == range->start) {
-        strings::SubstituteAndAppend(contents, "$0, ", range->start);
+        absl::SubstituteAndAppend(contents, "$0, ", range->start);
       } else if (range->end == INT_MAX) {
-        strings::SubstituteAndAppend(contents, "$0 to max, ", range->start);
+        absl::SubstituteAndAppend(contents, "$0 to max, ", range->start);
       } else {
-        strings::SubstituteAndAppend(contents, "$0 to $1, ", range->start,
+        absl::SubstituteAndAppend(contents, "$0 to $1, ", range->start,
                                   range->end);
       }
     }
@@ -3325,15 +3326,15 @@ void EnumDescriptor::DebugString(
   }
 
   if (reserved_name_count() > 0) {
-    strings::SubstituteAndAppend(contents, "$0  reserved ", prefix);
+    absl::SubstituteAndAppend(contents, "$0  reserved ", prefix);
     for (int i = 0; i < reserved_name_count(); i++) {
-      strings::SubstituteAndAppend(contents, "\"$0\", ",
+      absl::SubstituteAndAppend(contents, "\"$0\", ",
                                 absl::CEscape(reserved_name(i)));
     }
     contents->replace(contents->size() - 2, 2, ";\n");
   }
 
-  strings::SubstituteAndAppend(contents, "$0}\n", prefix);
+  absl::SubstituteAndAppend(contents, "$0}\n", prefix);
 
   comment_printer.AddPostComment(contents);
 }
@@ -3359,12 +3360,12 @@ void EnumValueDescriptor::DebugString(
                                                debug_string_options);
   comment_printer.AddPreComment(contents);
 
-  strings::SubstituteAndAppend(contents, "$0$1 = $2", prefix, name(), number());
+  absl::SubstituteAndAppend(contents, "$0$1 = $2", prefix, name(), number());
 
   std::string formatted_options;
   if (FormatBracketedOptions(depth, options(), type()->file()->pool(),
                              &formatted_options)) {
-    strings::SubstituteAndAppend(contents, " [$0]", formatted_options);
+    absl::SubstituteAndAppend(contents, " [$0]", formatted_options);
   }
   contents->append(";\n");
 
@@ -3390,7 +3391,7 @@ void ServiceDescriptor::DebugString(
                                                debug_string_options);
   comment_printer.AddPreComment(contents);
 
-  strings::SubstituteAndAppend(contents, "service $0 {\n", name());
+  absl::SubstituteAndAppend(contents, "service $0 {\n", name());
 
   FormatLineOptions(1, options(), file()->pool(), contents);
 
@@ -3425,7 +3426,7 @@ void MethodDescriptor::DebugString(
                                                debug_string_options);
   comment_printer.AddPreComment(contents);
 
-  strings::SubstituteAndAppend(
+  absl::SubstituteAndAppend(
       contents, "$0rpc $1($4.$2) returns ($5.$3)", prefix, name(),
       input_type()->full_name(), output_type()->full_name(),
       client_streaming() ? "stream " : "", server_streaming() ? "stream " : "");
@@ -3433,7 +3434,7 @@ void MethodDescriptor::DebugString(
   std::string formatted_options;
   if (FormatLineOptions(depth, options(), service()->file()->pool(),
                         &formatted_options)) {
-    strings::SubstituteAndAppend(contents, " {\n$0$1}\n", formatted_options,
+    absl::SubstituteAndAppend(contents, " {\n$0$1}\n", formatted_options,
                               prefix);
   } else {
     contents->append(";\n");
@@ -3894,6 +3895,8 @@ class DescriptorBuilder {
     // specified builder, which must not be nullptr. We don't take ownership of
     // the builder.
     explicit OptionInterpreter(DescriptorBuilder* builder);
+    OptionInterpreter(const OptionInterpreter&) = delete;
+    OptionInterpreter& operator=(const OptionInterpreter&) = delete;
 
     ~OptionInterpreter();
 
@@ -4010,8 +4013,6 @@ class DescriptorBuilder {
     // Factory used to create the dynamic messages we need to parse
     // any aggregate option values we encounter.
     DynamicMessageFactory dynamic_factory_;
-
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(OptionInterpreter);
   };
 
   // Work-around for broken compilers:  According to the C++ standard,
@@ -5396,7 +5397,7 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
       if (range1.end() > range2.start() && range2.end() > range1.start()) {
         AddError(result->full_name(), proto.reserved_range(i),
                  DescriptorPool::ErrorCollector::NUMBER,
-                 strings::Substitute("Reserved range $0 to $1 overlaps with "
+                 absl::Substitute("Reserved range $0 to $1 overlaps with "
                                   "already-defined range $2 to $3.",
                                   range2.start(), range2.end() - 1,
                                   range1.start(), range1.end() - 1));
@@ -5409,7 +5410,7 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
     const std::string& name = proto.reserved_name(i);
     if (!reserved_name_set.insert(name).second) {
       AddError(name, proto, DescriptorPool::ErrorCollector::NAME,
-               strings::Substitute("Field name \"$0\" is reserved multiple times.",
+               absl::Substitute("Field name \"$0\" is reserved multiple times.",
                                 name));
     }
   }
@@ -5425,7 +5426,7 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
         AddError(
             field->full_name(), proto.extension_range(j),
             DescriptorPool::ErrorCollector::NUMBER,
-            strings::Substitute(
+            absl::Substitute(
                 "Extension range $0 to $1 includes field \"$2\" ($3).",
                 range->start, range->end - 1, field->name(), field->number()));
       }
@@ -5437,7 +5438,7 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
             proto.reserved_range(j), DescriptorPool::ErrorCollector::NUMBER);
         AddError(field->full_name(), proto.reserved_range(j),
                  DescriptorPool::ErrorCollector::NUMBER,
-                 strings::Substitute("Field \"$0\" uses reserved number $1.",
+                 absl::Substitute("Field \"$0\" uses reserved number $1.",
                                   field->name(), field->number()));
       }
     }
@@ -5445,7 +5446,7 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
       AddError(
           field->full_name(), proto.field(i),
           DescriptorPool::ErrorCollector::NAME,
-          strings::Substitute("Field name \"$0\" is reserved.", field->name()));
+          absl::Substitute("Field name \"$0\" is reserved.", field->name()));
     }
 
   }
@@ -5459,7 +5460,7 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
       if (range1->end > range2->start && range2->end > range1->start) {
         AddError(result->full_name(), proto.extension_range(i),
                  DescriptorPool::ErrorCollector::NUMBER,
-                 strings::Substitute("Extension range $0 to $1 overlaps with "
+                 absl::Substitute("Extension range $0 to $1 overlaps with "
                                   "reserved range $2 to $3.",
                                   range1->start, range1->end - 1, range2->start,
                                   range2->end - 1));
@@ -5470,7 +5471,7 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
       if (range1->end > range2->start && range2->end > range1->start) {
         AddError(result->full_name(), proto.extension_range(i),
                  DescriptorPool::ErrorCollector::NUMBER,
-                 strings::Substitute("Extension range $0 to $1 overlaps with "
+                 absl::Substitute("Extension range $0 to $1 overlaps with "
                                   "already-defined range $2 to $3.",
                                   range2->start, range2->end - 1, range1->start,
                                   range1->end - 1));
@@ -5698,14 +5699,14 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
     message_hints_[parent].RequestHintOnFieldNumbers(
         proto, DescriptorPool::ErrorCollector::NUMBER);
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
-             strings::Substitute("Field numbers cannot be greater than $0.",
+             absl::Substitute("Field numbers cannot be greater than $0.",
                               FieldDescriptor::kMaxNumber));
   } else if (result->number() >= FieldDescriptor::kFirstReservedNumber &&
              result->number() <= FieldDescriptor::kLastReservedNumber) {
     message_hints_[parent].RequestHintOnFieldNumbers(
         proto, DescriptorPool::ErrorCollector::NUMBER);
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
-             strings::Substitute(
+             absl::Substitute(
                  "Field numbers $0 through $1 are reserved for the protocol "
                  "buffer library implementation.",
                  FieldDescriptor::kFirstReservedNumber,
@@ -5740,7 +5741,7 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
           proto.oneof_index() >= parent->oneof_decl_count()) {
         AddError(result->full_name(), proto,
                  DescriptorPool::ErrorCollector::TYPE,
-                 strings::Substitute("FieldDescriptorProto.oneof_index $0 is "
+                 absl::Substitute("FieldDescriptorProto.oneof_index $0 is "
                                   "out of range for type \"$1\".",
                                   proto.oneof_index(), parent->name()));
       } else {
@@ -5989,7 +5990,7 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
       if (range1.end() >= range2.start() && range2.end() >= range1.start()) {
         AddError(result->full_name(), proto.reserved_range(i),
                  DescriptorPool::ErrorCollector::NUMBER,
-                 strings::Substitute("Reserved range $0 to $1 overlaps with "
+                 absl::Substitute("Reserved range $0 to $1 overlaps with "
                                   "already-defined range $2 to $3.",
                                   range2.start(), range2.end(), range1.start(),
                                   range1.end()));
@@ -6004,7 +6005,7 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
       reserved_name_set.insert(name);
     } else {
       AddError(name, proto, DescriptorPool::ErrorCollector::NAME,
-               strings::Substitute("Enum value \"$0\" is reserved multiple times.",
+               absl::Substitute("Enum value \"$0\" is reserved multiple times.",
                                 name));
     }
   }
@@ -6016,7 +6017,7 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
       if (range->start <= value->number() && value->number() <= range->end) {
         AddError(value->full_name(), proto.reserved_range(j),
                  DescriptorPool::ErrorCollector::NUMBER,
-                 strings::Substitute("Enum value \"$0\" uses reserved number $1.",
+                 absl::Substitute("Enum value \"$0\" uses reserved number $1.",
                                   value->name(), value->number()));
       }
     }
@@ -6024,7 +6025,7 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
       AddError(
           value->full_name(), proto.value(i),
           DescriptorPool::ErrorCollector::NAME,
-          strings::Substitute("Enum value \"$0\" is reserved.", value->name()));
+          absl::Substitute("Enum value \"$0\" is reserved.", value->name()));
     }
   }
 }
@@ -6222,7 +6223,7 @@ void DescriptorBuilder::CrossLinkMessage(Descriptor* message,
           message->field(i - 1)->containing_oneof() != oneof_decl) {
         AddError(message->full_name() + "." + message->field(i - 1)->name(),
                  proto.field(i - 1), DescriptorPool::ErrorCollector::TYPE,
-                 strings::Substitute(
+                 absl::Substitute(
                      "Fields in the same oneof must be defined consecutively. "
                      "\"$0\" cannot be defined before the completion of the "
                      "\"$1\" oneof definition.",
@@ -6342,7 +6343,7 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
       if (!skip_check) {
         AddError(field->full_name(), proto,
                  DescriptorPool::ErrorCollector::NUMBER,
-                 strings::Substitute("\"$0\" does not declare $1 as an "
+                 absl::Substitute("\"$0\" does not declare $1 as an "
                                   "extension number.",
                                   field->containing_type()->full_name(),
                                   field->number()));
@@ -6533,14 +6534,14 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
     if (field->is_extension()) {
       AddError(field->full_name(), proto,
                DescriptorPool::ErrorCollector::NUMBER,
-               strings::Substitute("Extension number $0 has already been used "
+               absl::Substitute("Extension number $0 has already been used "
                                 "in \"$1\" by extension \"$2\".",
                                 field->number(), containing_type_name,
                                 conflicting_field->full_name()));
     } else {
       AddError(field->full_name(), proto,
                DescriptorPool::ErrorCollector::NUMBER,
-               strings::Substitute("Field number $0 has already been used in "
+               absl::Substitute("Field number $0 has already been used in "
                                 "\"$1\" by field \"$2\".",
                                 field->number(), containing_type_name,
                                 conflicting_field->name()));
@@ -6554,7 +6555,7 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
             field->containing_type() == nullptr
                 ? "unknown"
                 : field->containing_type()->full_name();
-        std::string error_msg = strings::Substitute(
+        std::string error_msg = absl::Substitute(
             "Extension number $0 has already been used in \"$1\" by extension "
             "\"$2\" defined in $3.",
             field->number(), containing_type_name,
@@ -6896,7 +6897,7 @@ void DescriptorBuilder::ValidateMessageOptions(Descriptor* message,
     if (message->extension_range(i)->end > max_extension_range + 1) {
       AddError(message->full_name(), proto.extension_range(i),
                DescriptorPool::ErrorCollector::NUMBER,
-               strings::Substitute("Extension numbers cannot be greater than $0.",
+               absl::Substitute("Extension numbers cannot be greater than $0.",
                                 max_extension_range));
     }
 

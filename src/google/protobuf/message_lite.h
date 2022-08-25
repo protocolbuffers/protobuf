@@ -168,6 +168,8 @@ PROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const std::string& str);
 class PROTOBUF_EXPORT MessageLite {
  public:
   constexpr MessageLite() {}
+  MessageLite(const MessageLite&) = delete;
+  MessageLite& operator=(const MessageLite&) = delete;
   virtual ~MessageLite() = default;
 
   // Basic Operations ------------------------------------------------
@@ -492,8 +494,6 @@ class PROTOBUF_EXPORT MessageLite {
   void LogInitializationErrorMessage() const;
 
   bool MergeFromImpl(io::CodedInputStream* input, ParseFlags parse_flags);
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageLite);
 };
 
 namespace internal {

@@ -38,6 +38,10 @@
 #include <google/protobuf/compiler/objectivec/objectivec_primitive_field.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_split.h"
+#include "absl/strings/str_replace.h"
 
 namespace google {
 namespace protobuf {
@@ -388,7 +392,7 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
       "$comments$"
       "$array_comment$"
       "@property(nonatomic, readwrite, strong, null_resettable) $array_property_type$ *$name$$storage_attribute$$deprecated_attribute$;\n"
-      "/** The number of items in @c $name$ without causing the container to be created. */\n"
+      "/** The number of items in @c $name$ without causing the array to be created. */\n"
       "@property(nonatomic, readonly) NSUInteger $name$_Count$deprecated_attribute$;\n");
   if (IsInitName(variables_.find("name")->second)) {
     // If property name starts with init we need to annotate it to get past ARC.

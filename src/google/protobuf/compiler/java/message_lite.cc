@@ -46,7 +46,7 @@
 #include <google/protobuf/stubs/strutil.h>
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/substitute.h"
 #include <google/protobuf/compiler/java/context.h>
 #include <google/protobuf/compiler/java/doc_comment.h>
 #include <google/protobuf/compiler/java/enum_lite.h>
@@ -190,7 +190,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
         "      $classname$, $classname$.Builder> implements\n"
         "    $extra_interfaces$\n"
         "    $classname$OrBuilder {\n");
-    builder_type = strings::Substitute(
+    builder_type = absl::Substitute(
         "com.google.protobuf.GeneratedMessageLite.ExtendableBuilder<$0, ?>",
         name_resolver_->GetImmutableClassName(descriptor_));
   } else {
@@ -254,11 +254,11 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
     for (int j = 0; j < (oneof)->field_count(); j++) {
       const FieldDescriptor* field = (oneof)->field(j);
       printer->Print("$field_name$($field_number$),\n", "field_name",
-                     ToUpper(field->name()), "field_number",
+                     absl::AsciiStrToUpper(field->name()), "field_number",
                      absl::StrCat(field->number()));
     }
     printer->Print("$cap_oneof_name$_NOT_SET(0);\n", "cap_oneof_name",
-                   ToUpper(vars["oneof_name"]));
+                   absl::AsciiStrToUpper(vars["oneof_name"]));
     printer->Print(vars,
                    "private final int value;\n"
                    "private $oneof_capitalized_name$Case(int value) {\n"
@@ -284,7 +284,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
       const FieldDescriptor* field = (oneof)->field(j);
       printer->Print("    case $field_number$: return $field_name$;\n",
                      "field_number", absl::StrCat(field->number()),
-                     "field_name", ToUpper(field->name()));
+                     "field_name", absl::AsciiStrToUpper(field->name()));
     }
     printer->Print(
         "    case 0: return $cap_oneof_name$_NOT_SET;\n"
@@ -296,7 +296,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
         "public int getNumber() {\n"
         "  return this.value;\n"
         "}\n",
-        "cap_oneof_name", ToUpper(vars["oneof_name"]));
+        "cap_oneof_name", absl::AsciiStrToUpper(vars["oneof_name"]));
     printer->Outdent();
     printer->Print("};\n\n");
     // oneofCase()

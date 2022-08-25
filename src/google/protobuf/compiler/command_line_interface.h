@@ -117,6 +117,8 @@ class PROTOC_EXPORT CommandLineInterface {
   static const char* const kPathSeparator;
 
   CommandLineInterface();
+  CommandLineInterface(const CommandLineInterface&) = delete;
+  CommandLineInterface& operator=(const CommandLineInterface&) = delete;
   ~CommandLineInterface();
 
   // Register a code generator for a language.
@@ -457,8 +459,6 @@ class PROTOC_EXPORT CommandLineInterface {
 
   // When using --encode, this will be passed to SetSerializationDeterministic.
   bool deterministic_output_ = false;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CommandLineInterface);
 };
 
 }  // namespace compiler

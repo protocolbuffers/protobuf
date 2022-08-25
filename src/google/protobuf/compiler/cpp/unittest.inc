@@ -65,7 +65,7 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/substitute.h"
 #include <google/protobuf/arena.h>
 #include <google/protobuf/compiler/cpp/test_bad_identifiers.pb.h>
 #include <google/protobuf/compiler/importer.h>
@@ -101,7 +101,7 @@ class MockErrorCollector : public MultiFileErrorCollector {
   // implements ErrorCollector ---------------------------------------
   void AddError(const std::string& filename, int line, int column,
                 const std::string& message) override {
-    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
+    absl::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
                               message);
   }
 };

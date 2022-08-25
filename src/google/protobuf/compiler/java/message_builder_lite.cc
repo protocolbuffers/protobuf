@@ -44,7 +44,7 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/substitute.h"
 #include <google/protobuf/compiler/java/context.h>
 #include <google/protobuf/compiler/java/doc_comment.h>
 #include <google/protobuf/compiler/java/enum.h>

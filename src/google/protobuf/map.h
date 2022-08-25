@@ -489,6 +489,9 @@ class Map {
           table_(const_cast<void**>(internal::kGlobalEmptyTable)),
           alloc_(arena) {}
 
+    InnerMap(const InnerMap&) = delete;
+    InnerMap& operator=(const InnerMap&) = delete;
+
     ~InnerMap() {
       if (alloc_.arena() == nullptr &&
           num_buckets_ != internal::kGlobalEmptyTableSize) {
@@ -1204,7 +1207,6 @@ class Map {
     size_type index_of_first_non_null_;
     void** table_;  // an array with num_buckets_ entries
     Allocator alloc_;
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(InnerMap);
   };  // end of class InnerMap
 
   template <typename LookupKey>

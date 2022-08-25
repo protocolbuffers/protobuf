@@ -32,6 +32,8 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/compiler/importer.h>
+
 #ifdef _MSC_VER
 #include <direct.h>
 #else
@@ -44,14 +46,16 @@
 
 #include <algorithm>
 #include <memory>
+#include <vector>
 
-#include <google/protobuf/compiler/importer.h>
-#include <google/protobuf/compiler/parser.h>
-#include <google/protobuf/io/tokenizer.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/stubs/strutil.h>
 #include "absl/strings/str_join.h"
+#include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
+#include <google/protobuf/compiler/parser.h>
 #include <google/protobuf/io/io_win32.h>
+#include <google/protobuf/io/tokenizer.h>
+#include <google/protobuf/io/zero_copy_stream_impl.h>
 
 #ifdef _WIN32
 #include <ctype.h>
@@ -288,27 +292,18 @@ static std::string CanonicalizePath(std::string path) {
   }
 #endif
 
-  std::vector<std::string> canonical_parts;
-  std::vector<std::string> parts = Split(
-      path, "/", true);  // Note:  Removes empty parts.
-  for (const std::string& part : parts) {
+  std::vector<absl::string_view> canonical_parts;
+  if (!path.empty() && path.front() == '/') canonical_parts.push_back("");
+  for (absl::string_view part : absl::StrSplit(path, '/', absl::SkipEmpty())) {
     if (part == ".") {
       // Ignore.
     } else {
       canonical_parts.push_back(part);
     }
   }
-  std::string result = absl::StrJoin(canonical_parts, "/");
-  if (!path.empty() && path[0] == '/') {
-    // Restore leading slash.
-    result = '/' + result;
-  }
-  if (!path.empty() && LastChar(path) == '/' && !result.empty() &&
-      LastChar(result) != '/') {
-    // Restore trailing slash.
-    result += '/';
-  }
-  return result;
+  if (!path.empty() && path.back() == '/') canonical_parts.push_back("");
+
+  return absl::StrJoin(canonical_parts, "/");
 }
 
 static inline bool ContainsParentReference(const std::string& path) {

@@ -60,7 +60,8 @@
 #include <google/protobuf/stubs/logging.h>
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/str_replace.h"
+#include "absl/strings/substitute.h"
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/test_util2.h>
 
@@ -590,7 +591,7 @@ class CustomMessageContentFieldValuePrinter
       TextFormat::BaseTextGenerator* generator) const override {
     if (message.ByteSizeLong() > 0) {
       generator->PrintString(
-          strings::Substitute("# REDACTED, $0 bytes\n", message.ByteSizeLong()));
+          absl::Substitute("# REDACTED, $0 bytes\n", message.ByteSizeLong()));
     }
     return true;
   }
@@ -817,7 +818,7 @@ TEST_F(TextFormatExtensionsTest, ParseExtensions) {
 TEST_F(TextFormatTest, ParseEnumFieldFromNumber) {
   // Create a parse string with a numerical value for an enum field.
   std::string parse_string =
-      strings::Substitute("optional_nested_enum: $0", unittest::TestAllTypes::BAZ);
+      absl::Substitute("optional_nested_enum: $0", unittest::TestAllTypes::BAZ);
   EXPECT_TRUE(TextFormat::ParseFromString(parse_string, &proto_));
   EXPECT_TRUE(proto_.has_optional_nested_enum());
   EXPECT_EQ(unittest::TestAllTypes::BAZ, proto_.optional_nested_enum());
@@ -826,7 +827,7 @@ TEST_F(TextFormatTest, ParseEnumFieldFromNumber) {
 TEST_F(TextFormatTest, ParseEnumFieldFromNegativeNumber) {
   ASSERT_LT(unittest::SPARSE_E, 0);
   std::string parse_string =
-      strings::Substitute("sparse_enum: $0", unittest::SPARSE_E);
+      absl::Substitute("sparse_enum: $0", unittest::SPARSE_E);
   unittest::SparseEnumMessage proto;
   EXPECT_TRUE(TextFormat::ParseFromString(parse_string, &proto));
   EXPECT_TRUE(proto.has_sparse_enum());
@@ -1455,7 +1456,7 @@ class TextFormatParserTest : public testing::Test {
 
     // implements ErrorCollector -------------------------------------
     void AddError(int line, int column, const std::string& message) override {
-      strings::SubstituteAndAppend(&text_, "$0:$1: $2\n", line + 1, column + 1,
+      absl::SubstituteAndAppend(&text_, "$0:$1: $2\n", line + 1, column + 1,
                                 message);
     }
 
@@ -1917,12 +1918,12 @@ TEST_F(TextFormatParserTest, ParseDeprecatedField) {
 TEST_F(TextFormatParserTest, SetRecursionLimit) {
   const char* format = "child: { $0 }";
   std::string input;
-  for (int i = 0; i < 100; ++i) input = strings::Substitute(format, input);
+  for (int i = 0; i < 100; ++i) input = absl::Substitute(format, input);
 
   unittest::NestedTestAllTypes message;
   ExpectSuccessAndTree(input, &message, nullptr);
 
-  input = strings::Substitute(format, input);
+  input = absl::Substitute(format, input);
   parser_.SetRecursionLimit(100);
   ExpectMessage(input,
                 "Message is too deep, the parser exceeded the configured "
@@ -1936,7 +1937,7 @@ TEST_F(TextFormatParserTest, SetRecursionLimit) {
 TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldValue) {
   const char* format = "[$0]";
   std::string input = "\"test_value\"";
-  for (int i = 0; i < 99; ++i) input = strings::Substitute(format, input);
+  for (int i = 0; i < 99; ++i) input = absl::Substitute(format, input);
   std::string not_deep_input = absl::StrCat("unknown_nested_array: ", input);
 
   parser_.AllowUnknownField(true);
@@ -1945,7 +1946,7 @@ TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldValue) {
   unittest::NestedTestAllTypes message;
   ExpectSuccessAndTree(not_deep_input, &message, nullptr);
 
-  input = strings::Substitute(format, input);
+  input = absl::Substitute(format, input);
   std::string deep_input = absl::StrCat("unknown_nested_array: ", input);
   ExpectMessage(
       deep_input,
@@ -1961,7 +1962,7 @@ TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldValue) {
 TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldMessage) {
   const char* format = "unknown_child: { $0 }";
   std::string input;
-  for (int i = 0; i < 100; ++i) input = strings::Substitute(format, input);
+  for (int i = 0; i < 100; ++i) input = absl::Substitute(format, input);
 
   parser_.AllowUnknownField(true);
   parser_.SetRecursionLimit(100);
@@ -1969,7 +1970,7 @@ TEST_F(TextFormatParserTest, SetRecursionLimitUnknownFieldMessage) {
   unittest::NestedTestAllTypes message;
   ExpectSuccessAndTree(input, &message, nullptr);
 
-  input = strings::Substitute(format, input);
+  input = absl::Substitute(format, input);
   ExpectMessage(
       input,
       "WARNING:Message type \"protobuf_unittest.NestedTestAllTypes\" has no "

@@ -56,8 +56,11 @@
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include "absl/status/status.h"
+#include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/substitute.h"
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/compiler/mock_code_generator.h>
@@ -320,7 +323,7 @@ void CommandLineInterfaceTest::TearDown() {
 }
 
 void CommandLineInterfaceTest::Run(const std::string& command) {
-  RunWithArgs(Split(command, " ", true));
+  RunWithArgs(absl::StrSplit(command, " ", absl::SkipEmpty()));
 }
 
 void CommandLineInterfaceTest::RunWithArgs(std::vector<std::string> args) {
@@ -350,7 +353,7 @@ void CommandLineInterfaceTest::RunWithArgs(std::vector<std::string> args) {
         "test_plugin.exe",        // Other Win32 (MSVC)
         "test_plugin",            // Unix
     };
-    for (int i = 0; i < GOOGLE_ARRAYSIZE(possible_paths); i++) {
+    for (int i = 0; i < ABSL_ARRAYSIZE(possible_paths); i++) {
       if (access(possible_paths[i], F_OK) == 0) {
         plugin_path = possible_paths[i];
         break;
@@ -827,7 +830,7 @@ TEST_F(CommandLineInterfaceTest, MultipleInputsWithImport_DescriptorSetIn) {
   field->set_number(1);
 
   WriteDescriptorSet("baz_and_bat.bin", &file_descriptor_set);
-  Run(strings::Substitute(
+  Run(absl::Substitute(
       "protocol_compiler --test_out=$$tmpdir --plug_out=$$tmpdir "
       "--descriptor_set_in=$0 foo.proto bar.proto",
       std::string("$tmpdir/foo_and_bar.bin") +
@@ -843,7 +846,7 @@ TEST_F(CommandLineInterfaceTest, MultipleInputsWithImport_DescriptorSetIn) {
   ExpectGeneratedWithMultipleInputs("test_plugin", "foo.proto,bar.proto",
                                     "bar.proto", "Bar");
 
-  Run(strings::Substitute(
+  Run(absl::Substitute(
       "protocol_compiler --test_out=$$tmpdir --plug_out=$$tmpdir "
       "--descriptor_set_in=$0 baz.proto bat.proto",
       std::string("$tmpdir/foo_and_bar.bin") +
@@ -901,7 +904,7 @@ TEST_F(CommandLineInterfaceTest,
   field->set_number(1);
   WriteDescriptorSet("foo_and_baz.bin", &file_descriptor_set);
 
-  Run(strings::Substitute(
+  Run(absl::Substitute(
       "protocol_compiler --test_out=$$tmpdir --plug_out=$$tmpdir "
       "--descriptor_set_in=$0 bar.proto",
       std::string("$tmpdir/foo_and_bar.bin") +
@@ -1307,7 +1310,7 @@ TEST_F(CommandLineInterfaceTest, ColonDelimitedPath) {
                  "}\n");
   CreateTempFile("b/foo.proto", "this should not be parsed\n");
 
-  Run(strings::Substitute(
+  Run(absl::Substitute(
       "protocol_compiler --test_out=$$tmpdir --proto_path=$0 foo.proto",
       std::string("$tmpdir/a") + CommandLineInterface::kPathSeparator +
           "$tmpdir/b"));
@@ -2589,7 +2592,7 @@ class EncodeDecodeTest : public testing::TestWithParam<EncodeDecodeTestMode> {
     std::vector<std::string> args;
     args.push_back("protoc");
     for (absl::string_view split_piece :
-         Split(command, " ", true)) {
+         absl::StrSplit(command, " ", absl::SkipEmpty())) {
       args.push_back(std::string(split_piece));
     }
     if (specify_proto_files) {

@@ -40,6 +40,7 @@
 
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/descriptor.h>
+#include "absl/strings/string_view.h"
 #include <google/protobuf/compiler/java/context.h>
 #include <google/protobuf/compiler/java/options.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -57,7 +58,7 @@ namespace java {
 extern const char kThickSeparator[];
 extern const char kThinSeparator[];
 
-bool IsForbiddenKotlin(const std::string& field_name);
+bool IsForbiddenKotlin(absl::string_view field_name);
 
 // If annotation_file is non-empty, prints a javax.annotation.Generated
 // annotation to the given Printer. annotation_file will be referenced in the

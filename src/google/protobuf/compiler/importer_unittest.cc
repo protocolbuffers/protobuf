@@ -46,7 +46,7 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/substitute.h"
 
 #include <google/protobuf/stubs/strutil.h>
 
@@ -74,13 +74,13 @@ class MockErrorCollector : public MultiFileErrorCollector {
   // implements ErrorCollector ---------------------------------------
   void AddError(const std::string& filename, int line, int column,
                 const std::string& message) override {
-    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
+    absl::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
                               message);
   }
 
   void AddWarning(const std::string& filename, int line, int column,
                   const std::string& message) override {
-    strings::SubstituteAndAppend(&warning_text_, "$0:$1:$2: $3\n", filename, line,
+    absl::SubstituteAndAppend(&warning_text_, "$0:$1:$2: $3\n", filename, line,
                               column, message);
   }
 };

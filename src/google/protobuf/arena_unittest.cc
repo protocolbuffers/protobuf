@@ -102,12 +102,13 @@ class SimpleDataType {
 class PleaseDontCopyMe {
  public:
   explicit PleaseDontCopyMe(int value) : value_(value) {}
+  PleaseDontCopyMe(const PleaseDontCopyMe&) = delete;
+  PleaseDontCopyMe& operator=(const PleaseDontCopyMe&) = delete;
 
   int value() const { return value_; }
 
  private:
   int value_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(PleaseDontCopyMe);
 };
 
 // A class that takes four different types as constructor arguments.
@@ -117,14 +118,15 @@ class MustBeConstructedWithOneThroughFour {
                                       const std::string& three,
                                       const PleaseDontCopyMe* four)
       : one_(one), two_(two), three_(three), four_(four) {}
+  MustBeConstructedWithOneThroughFour(
+      const MustBeConstructedWithOneThroughFour&) = delete;
+  MustBeConstructedWithOneThroughFour& operator=(
+      const MustBeConstructedWithOneThroughFour&) = delete;
 
   int one_;
   const char* const two_;
   std::string three_;
   const PleaseDontCopyMe* four_;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MustBeConstructedWithOneThroughFour);
 };
 
 // A class that takes eight different types as constructor arguments.
@@ -144,6 +146,10 @@ class MustBeConstructedWithOneThroughEight {
         six_(six),
         seven_(seven),
         eight_(eight) {}
+  MustBeConstructedWithOneThroughEight(
+      const MustBeConstructedWithOneThroughEight&) = delete;
+  MustBeConstructedWithOneThroughEight& operator=(
+      const MustBeConstructedWithOneThroughEight&) = delete;
 
   int one_;
   const char* const two_;
@@ -153,9 +159,6 @@ class MustBeConstructedWithOneThroughEight {
   const char* const six_;
   std::string seven_;
   std::string eight_;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MustBeConstructedWithOneThroughEight);
 };
 
 TEST(ArenaTest, ArenaConstructable) {

@@ -58,7 +58,7 @@
 #include <google/protobuf/stubs/stringprintf.h>
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/substitute.h"
 #include <google/protobuf/compiler/cpp/enum.h>
 #include <google/protobuf/compiler/cpp/extension.h>
 #include <google/protobuf/compiler/cpp/field.h>
@@ -297,9 +297,9 @@ void CollectMapInfo(const Options& options, const Descriptor* descriptor,
       vars["val_cpp"] = PrimitiveTypeName(options, val->cpp_type());
   }
   vars["key_wire_type"] =
-      "TYPE_" + ToUpper(DeclaredTypeMethodName(key->type()));
+      "TYPE_" + absl::AsciiStrToUpper(DeclaredTypeMethodName(key->type()));
   vars["val_wire_type"] =
-      "TYPE_" + ToUpper(DeclaredTypeMethodName(val->type()));
+      "TYPE_" + absl::AsciiStrToUpper(DeclaredTypeMethodName(val->type()));
 }
 
 // Does the given field have a private (internal helper only) has_$name$()
@@ -308,14 +308,6 @@ bool HasPrivateHasMethod(const FieldDescriptor* field) {
   // Only for oneofs in message types with no field presence. has_$name$(),
   // based on the oneof case, is still useful internally for generated code.
   return IsProto3(field->file()) && field->real_containing_oneof();
-}
-
-// TODO(ckennelly):  Cull these exclusions if/when these protos do not have
-// their methods overridden by subclasses.
-
-bool ShouldMarkClassAsFinal(const Descriptor* descriptor,
-                            const Options& options) {
-  return true;
 }
 
 
@@ -528,7 +520,7 @@ void MaySetAnnotationVariable(const Options& options,
   if (options.field_listener_options.forbidden_field_listener_events.count(
           std::string(annotation_name)))
     return;
-  (*variables)[absl::StrCat("annotate_", annotation_name)] = strings::Substitute(
+  (*variables)[absl::StrCat("annotate_", annotation_name)] = absl::Substitute(
       absl::StrCat(injector_template_prefix, injector_template_suffix),
       (*variables)["classtype"]);
 }
@@ -1130,7 +1122,7 @@ void MessageGenerator::GenerateOneofHasBits(io::Printer* printer) {
   for (auto oneof : OneOfRange(descriptor_)) {
     format.Set("oneof_name", oneof->name());
     format.Set("oneof_index", oneof->index());
-    format.Set("cap_oneof_name", ToUpper(oneof->name()));
+    format.Set("cap_oneof_name", absl::AsciiStrToUpper(oneof->name()));
     format(
         "inline bool $classname$::has_$oneof_name$() const {\n"
         "  return $oneof_name$_case() != $cap_oneof_name$_NOT_SET;\n"
@@ -1293,8 +1285,6 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
 
 void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   Formatter format(printer, variables_);
-  format.Set("class_final",
-             ShouldMarkClassAsFinal(descriptor_, options_) ? "final" : "");
 
   if (IsMapEntryMessage(descriptor_)) {
     std::map<std::string, std::string> vars;
@@ -1396,7 +1386,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   }
 
   format(
-      "class $dllexport_decl $${1$$classname$$}$$ class_final$ :\n"
+      "class $dllexport_decl $${1$$classname$$}$ final :\n"
       "    public $superclass$ /* @@protoc_insertion_point("
       "class_definition:$full_name$) */ {\n",
       descriptor_);
@@ -1499,7 +1489,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       format("$1$ = $2$,\n", OneofCaseConstantName(field),  // 1
              field->number());                              // 2
     }
-    format("$1$_NOT_SET = 0,\n", ToUpper(oneof->name()));
+    format("$1$_NOT_SET = 0,\n", absl::AsciiStrToUpper(oneof->name()));
     format.Outdent();
     format(
         "};\n"
@@ -2943,7 +2933,7 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
           "case $1$_NOT_SET: {\n"
           "  break;\n"
           "}\n",
-          ToUpper(oneof->name()));
+          absl::AsciiStrToUpper(oneof->name()));
       format.Outdent();
       format("}\n");
     }
@@ -3240,12 +3230,12 @@ void MessageGenerator::GenerateOneofClear(io::Printer* printer) {
         "case $1$_NOT_SET: {\n"
         "  break;\n"
         "}\n",
-        ToUpper(oneof->name()));
+        absl::AsciiStrToUpper(oneof->name()));
     format.Outdent();
     format(
         "}\n"
         "$oneof_case$[$1$] = $2$_NOT_SET;\n",
-        i, ToUpper(oneof->name()));
+        i, absl::AsciiStrToUpper(oneof->name()));
     format.Outdent();
     format(
         "}\n"
@@ -3572,7 +3562,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* printer) {
         "case $1$_NOT_SET: {\n"
         "  break;\n"
         "}\n",
-        ToUpper(oneof->name()));
+        absl::AsciiStrToUpper(oneof->name()));
     format.Outdent();
     format("}\n");
   }
@@ -4345,7 +4335,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
         "case $1$_NOT_SET: {\n"
         "  break;\n"
         "}\n",
-        ToUpper(oneof->name()));
+        absl::AsciiStrToUpper(oneof->name()));
     format.Outdent();
     format("}\n");
   }
@@ -4444,7 +4434,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
         "case $1$_NOT_SET: {\n"
         "  break;\n"
         "}\n",
-        ToUpper(oneof->name()));
+        absl::AsciiStrToUpper(oneof->name()));
     format.Outdent();
     format("}\n");
   }

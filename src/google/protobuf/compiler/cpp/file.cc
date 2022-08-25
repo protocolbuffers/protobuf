@@ -43,13 +43,11 @@
 #include <vector>
 
 #include <google/protobuf/compiler/scc.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/stubs/strutil.h>
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_replace.h"
 #include <google/protobuf/compiler/cpp/enum.h>
 #include <google/protobuf/compiler/cpp/extension.h>
-#include <google/protobuf/compiler/cpp/field.h>
 #include <google/protobuf/compiler/cpp/helpers.h>
 #include <google/protobuf/compiler/cpp/message.h>
 #include <google/protobuf/compiler/cpp/service.h>

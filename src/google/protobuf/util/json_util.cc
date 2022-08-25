@@ -106,6 +106,8 @@ namespace {
 class StatusErrorListener : public converter::ErrorListener {
  public:
   StatusErrorListener() {}
+  StatusErrorListener(const StatusErrorListener&) = delete;
+  StatusErrorListener& operator=(const StatusErrorListener&) = delete;
   ~StatusErrorListener() override {}
 
   absl::Status GetStatus() { return status_; }
@@ -146,8 +148,6 @@ class StatusErrorListener : public converter::ErrorListener {
     }
     return loc_string;
   }
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StatusErrorListener);
 };
 }  // namespace
 

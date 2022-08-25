@@ -36,14 +36,14 @@
 #define GOOGLE_PROTOBUF_COMPILER_CSHARP_HELPERS_H__
 
 #include <string>
-#include <google/protobuf/port.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/io/printer.h>
 
+#include <google/protobuf/compiler/code_generator.h>
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/port.h>
+#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/printer.h>
 #include <google/protobuf/port_def.inc>
+#include <google/protobuf/stubs/common.h>
 
 namespace google {
 namespace protobuf {
@@ -87,13 +87,9 @@ std::string GetFieldConstantName(const FieldDescriptor* field);
 
 std::string GetPropertyName(const FieldDescriptor* descriptor);
 
-std::string GetOneofCaseName(const FieldDescriptor* descriptor);
-
 int GetFixedSize(FieldDescriptor::Type type);
 
-// Note that we wouldn't normally want to export this (we're not expecting
-// it to be used outside libprotoc itself) but this exposes it for testing.
-std::string PROTOC_EXPORT UnderscoresToCamelCase(const std::string& input,
+std::string UnderscoresToCamelCase(const std::string& input,
                                    bool cap_next_letter,
                                    bool preserve_period);
 

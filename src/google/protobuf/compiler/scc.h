@@ -64,6 +64,8 @@ template <class DepsGenerator>
 class PROTOC_EXPORT SCCAnalyzer {
  public:
   explicit SCCAnalyzer() : index_(0) {}
+  SCCAnalyzer(const SCCAnalyzer&) = delete;
+  SCCAnalyzer& operator=(const SCCAnalyzer&) = delete;
 
   const SCC* GetSCC(const Descriptor* descriptor) {
     if (cache_.count(descriptor)) return cache_[descriptor].scc;
@@ -151,9 +153,6 @@ class PROTOC_EXPORT SCCAnalyzer {
       }
     }
   }
-
-  // This is necessary for compiler bug in msvc2015.
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SCCAnalyzer);
 };
 
 }  // namespace compiler

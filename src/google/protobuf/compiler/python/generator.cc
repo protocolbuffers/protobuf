@@ -59,7 +59,7 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/substitute.h"
 #include <google/protobuf/compiler/python/helpers.h>
 #include <google/protobuf/compiler/python/pyi_generator.h>
 #include <google/protobuf/descriptor.h>
@@ -944,7 +944,7 @@ std::string Generator::FieldReferencingExpression(
   if (!containing_type) {
     return ResolveKeyword(field.name());
   }
-  return strings::Substitute("$0.$1['$2']",
+  return absl::Substitute("$0.$1['$2']",
                           ModuleLevelDescriptorName(*containing_type),
                           python_dict_name, field.name());
 }
@@ -1156,7 +1156,7 @@ std::string Generator::ModuleLevelDescriptorName(
   // The C++ implementation doesn't guard against this either.  Leaving
   // it for now...
   std::string name = NamePrefixedWithNestedTypes(descriptor, "_");
-  ToUpper(&name);
+  absl::AsciiStrToUpper(&name);
   // Module-private for now.  Easy to make public later; almost impossible
   // to make private later.
   name = "_" + name;
@@ -1186,7 +1186,7 @@ std::string Generator::ModuleLevelMessageName(
 std::string Generator::ModuleLevelServiceDescriptorName(
     const ServiceDescriptor& descriptor) const {
   std::string name = descriptor.name();
-  ToUpper(&name);
+  absl::AsciiStrToUpper(&name);
   name = "_" + name;
   if (descriptor.file() != file_) {
     name = ModuleAlias(descriptor.file()->name()) + "." + name;
@@ -1316,7 +1316,7 @@ void Generator::FixAllDescriptorOptions() const {
 void Generator::FixOptionsForOneof(const OneofDescriptor& oneof) const {
   std::string oneof_options = OptionsValue(oneof.options().SerializeAsString());
   if (oneof_options != "None") {
-    std::string oneof_name = strings::Substitute(
+    std::string oneof_name = absl::Substitute(
         "$0.$1['$2']", ModuleLevelDescriptorName(*oneof.containing_type()),
         "oneofs_by_name", oneof.name());
     PrintDescriptorOptionsFixingCode(oneof_name, oneof_options, printer_);

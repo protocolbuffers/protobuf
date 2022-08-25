@@ -46,7 +46,7 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include "absl/strings/escaping.h"
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/substitute.h"
 #include <google/protobuf/io/io_win32.h>
 #include <google/protobuf/message.h>
 
@@ -274,7 +274,7 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   child_handle_ = nullptr;
 
   if (exit_code != 0) {
-    *error = strings::Substitute("Plugin failed with status code $0.", exit_code);
+    *error = absl::Substitute("Plugin failed with status code $0.", exit_code);
     return false;
   }
 
@@ -472,12 +472,12 @@ bool Subprocess::Communicate(const Message& input, Message* output,
     if (WEXITSTATUS(status) != 0) {
       int error_code = WEXITSTATUS(status);
       *error =
-          strings::Substitute("Plugin failed with status code $0.", error_code);
+          absl::Substitute("Plugin failed with status code $0.", error_code);
       return false;
     }
   } else if (WIFSIGNALED(status)) {
     int signal = WTERMSIG(status);
-    *error = strings::Substitute("Plugin killed by signal $0.", signal);
+    *error = absl::Substitute("Plugin killed by signal $0.", signal);
     return false;
   } else {
     *error = "Neither WEXITSTATUS nor WTERMSIG is true?";

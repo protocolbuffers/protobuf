@@ -63,6 +63,8 @@ class ReflectionTester {
   // the latter case, ReflectionTester searches for extension fields in
   // its file.
   explicit ReflectionTester(const Descriptor* base_descriptor);
+  ReflectionTester(const ReflectionTester&) = delete;
+  ReflectionTester& operator=(const ReflectionTester&) = delete;
 
   void SetAllFieldsViaReflection(Message* message);
   void ModifyRepeatedFieldsViaReflection(Message* message);
@@ -120,8 +122,6 @@ class ReflectionTester {
   void ExpectAllFieldsSetViaReflection1(const Message& message);
   void ExpectAllFieldsSetViaReflection2(const Message& message);
   void ExpectAllFieldsSetViaReflection3(const Message& message);
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ReflectionTester);
 };
 
 inline TestUtil::ReflectionTester::ReflectionTester(
@@ -1223,7 +1223,7 @@ inline void TestUtil::ReflectionTester::ExpectMessagesReleasedViaReflection(
       "optional_foreign_message",
       "optional_import_message",
   };
-  for (int i = 0; i < GOOGLE_ARRAYSIZE(fields); i++) {
+  for (int i = 0; i < ABSL_ARRAYSIZE(fields); i++) {
     Message* released = reflection->ReleaseMessage(message, F(fields[i]));
     switch (expected_release_state) {
       case IS_NULL:

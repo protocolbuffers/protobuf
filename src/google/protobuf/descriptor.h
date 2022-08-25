@@ -259,6 +259,10 @@ class PROTOBUF_EXPORT SymbolBaseN : public SymbolBase {};
 class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
  public:
   typedef DescriptorProto Proto;
+#ifndef SWIG
+  Descriptor(const Descriptor&) = delete;
+  Descriptor& operator=(const Descriptor&) = delete;
+#endif
 
   // The name of the message type, not including its scope.
   const std::string& name() const;
@@ -607,7 +611,6 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   friend class OneofDescriptor;
   friend class MethodDescriptor;
   friend class FileDescriptor;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Descriptor);
 };
 
 PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(Descriptor, 136);
@@ -625,6 +628,11 @@ PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(Descriptor, 136);
 class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
  public:
   typedef FieldDescriptorProto Proto;
+
+#ifndef SWIG
+  FieldDescriptor(const FieldDescriptor&) = delete;
+  FieldDescriptor& operator=(const FieldDescriptor&) = delete;
+#endif
 
   // Identifies a field type.  0 is reserved for errors.  The order is weird
   // for historical reasons.  Types 12 and up are new in proto2.
@@ -984,7 +992,6 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   friend class FileDescriptor;
   friend class Descriptor;
   friend class OneofDescriptor;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldDescriptor);
 };
 
 PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 72);
@@ -993,6 +1000,11 @@ PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FieldDescriptor, 72);
 class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
  public:
   typedef OneofDescriptorProto Proto;
+
+#ifndef SWIG
+  OneofDescriptor(const OneofDescriptor&) = delete;
+  OneofDescriptor& operator=(const OneofDescriptor&) = delete;
+#endif
 
   const std::string& name() const;       // Name of this oneof.
   const std::string& full_name() const;  // Fully-qualified name of the oneof.
@@ -1065,7 +1077,6 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
   OneofDescriptor() {}
   friend class DescriptorBuilder;
   friend class Descriptor;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(OneofDescriptor);
 };
 
 PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(OneofDescriptor, 40);
@@ -1076,6 +1087,11 @@ PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(OneofDescriptor, 40);
 class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
  public:
   typedef EnumDescriptorProto Proto;
+
+#ifndef SWIG
+  EnumDescriptor(const EnumDescriptor&) = delete;
+  EnumDescriptor& operator=(const EnumDescriptor&) = delete;
+#endif
 
   // The name of this enum type in the containing scope.
   const std::string& name() const;
@@ -1236,7 +1252,6 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   friend class FileDescriptor;
   friend class DescriptorPool;
   friend class Reflection;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumDescriptor);
 };
 
 PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(EnumDescriptor, 72);
@@ -1250,6 +1265,11 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
                                             private internal::SymbolBaseN<1> {
  public:
   typedef EnumValueDescriptorProto Proto;
+
+#ifndef SWIG
+  EnumValueDescriptor(const EnumValueDescriptor&) = delete;
+  EnumValueDescriptor& operator=(const EnumValueDescriptor&) = delete;
+#endif
 
   const std::string& name() const;  // Name of this enum constant.
   int index() const;                // Index within the enums's Descriptor.
@@ -1321,7 +1341,6 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   friend class DescriptorPool;
   friend class FileDescriptorTables;
   friend class Reflection;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumValueDescriptor);
 };
 
 PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(EnumValueDescriptor, 32);
@@ -1331,6 +1350,11 @@ PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(EnumValueDescriptor, 32);
 class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
  public:
   typedef ServiceDescriptorProto Proto;
+
+#ifndef SWIG
+  ServiceDescriptor(const ServiceDescriptor&) = delete;
+  ServiceDescriptor& operator=(const ServiceDescriptor&) = delete;
+#endif
 
   // The name of the service, not including its containing scope.
   const std::string& name() const;
@@ -1404,7 +1428,6 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
   friend class DescriptorBuilder;
   friend class FileDescriptor;
   friend class MethodDescriptor;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ServiceDescriptor);
 };
 
 PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(ServiceDescriptor, 48);
@@ -1416,6 +1439,11 @@ PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(ServiceDescriptor, 48);
 class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
  public:
   typedef MethodDescriptorProto Proto;
+
+#ifndef SWIG
+  MethodDescriptor(const MethodDescriptor&) = delete;
+  MethodDescriptor& operator=(const MethodDescriptor&) = delete;
+#endif
 
   // Name of this method, not including containing scope.
   const std::string& name() const;
@@ -1493,7 +1521,6 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
   MethodDescriptor() {}
   friend class DescriptorBuilder;
   friend class ServiceDescriptor;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MethodDescriptor);
 };
 
 PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(MethodDescriptor, 64);
@@ -1504,6 +1531,11 @@ PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(MethodDescriptor, 64);
 class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
  public:
   typedef FileDescriptorProto Proto;
+
+#ifndef SWIG
+  FileDescriptor(const FileDescriptor&) = delete;
+  FileDescriptor& operator=(const FileDescriptor&) = delete;
+#endif
 
   // The filename, relative to the source tree.
   // e.g. "foo/bar/baz.proto"
@@ -1701,7 +1733,6 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   friend class EnumValueDescriptor;
   friend class MethodDescriptor;
   friend class ServiceDescriptor;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileDescriptor);
 };
 
 PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FileDescriptor, 152);
@@ -1764,6 +1795,10 @@ class PROTOBUF_EXPORT DescriptorPool {
   explicit DescriptorPool(DescriptorDatabase* fallback_database,
                           ErrorCollector* error_collector = nullptr);
 
+#ifndef SWIG
+  DescriptorPool(const DescriptorPool&) = delete;
+  DescriptorPool& operator=(const DescriptorPool&) = delete;
+#endif
   ~DescriptorPool();
 
   // Get a pointer to the generated pool.  Generated protocol message classes
@@ -1826,6 +1861,10 @@ class PROTOBUF_EXPORT DescriptorPool {
   class PROTOBUF_EXPORT ErrorCollector {
    public:
     inline ErrorCollector() {}
+#ifndef SWIG
+    ErrorCollector(const ErrorCollector&) = delete;
+    ErrorCollector& operator=(const ErrorCollector&) = delete;
+#endif
     virtual ~ErrorCollector();
 
     // These constants specify what exact part of the construct is broken.
@@ -1866,9 +1905,6 @@ class PROTOBUF_EXPORT DescriptorPool {
         ErrorLocation /*location*/,     // One of the location constants, above.
         const std::string& /*message*/  // Human-readable error message.
     ) {}
-
-   private:
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ErrorCollector);
   };
 
   // Convert the FileDescriptorProto to real descriptors and place them in
@@ -2073,8 +2109,6 @@ class PROTOBUF_EXPORT DescriptorPool {
   // Set of files to track for unused imports. The bool value when true means
   // unused imports are treated as errors (and as warnings when false).
   std::map<std::string, bool> unused_import_track_files_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DescriptorPool);
 };
 
 

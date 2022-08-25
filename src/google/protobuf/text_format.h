@@ -77,6 +77,9 @@ class ErrorCollector;  // tokenizer.h
 // This class is really a namespace that contains only static methods.
 class PROTOBUF_EXPORT TextFormat {
  public:
+  TextFormat(const TextFormat&) = delete;
+  TextFormat& operator=(const TextFormat&) = delete;
+
   // Outputs a textual representation of the given message to the given
   // output stream. Returns false if printing fails.
   static bool Print(const Message& message, io::ZeroCopyOutputStream* output);
@@ -132,6 +135,8 @@ class PROTOBUF_EXPORT TextFormat {
   class PROTOBUF_EXPORT FastFieldValuePrinter {
    public:
     FastFieldValuePrinter();
+    FastFieldValuePrinter(const FastFieldValuePrinter&) = delete;
+    FastFieldValuePrinter& operator=(const FastFieldValuePrinter&) = delete;
     virtual ~FastFieldValuePrinter();
     virtual void PrintBool(bool val, BaseTextGenerator* generator) const;
     virtual void PrintInt32(int32_t val, BaseTextGenerator* generator) const;
@@ -168,15 +173,14 @@ class PROTOBUF_EXPORT TextFormat {
     virtual void PrintMessageEnd(const Message& message, int field_index,
                                  int field_count, bool single_line_mode,
                                  BaseTextGenerator* generator) const;
-
-   private:
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FastFieldValuePrinter);
   };
 
   // Deprecated: please use FastFieldValuePrinter instead.
   class PROTOBUF_EXPORT FieldValuePrinter {
    public:
     FieldValuePrinter();
+    FieldValuePrinter(const FieldValuePrinter&) = delete;
+    FieldValuePrinter& operator=(const FieldValuePrinter&) = delete;
     virtual ~FieldValuePrinter();
     virtual std::string PrintBool(bool val) const;
     virtual std::string PrintInt32(int32_t val) const;
@@ -200,18 +204,16 @@ class PROTOBUF_EXPORT TextFormat {
 
    private:
     FastFieldValuePrinter delegate_;
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldValuePrinter);
   };
 
   class PROTOBUF_EXPORT MessagePrinter {
    public:
     MessagePrinter() {}
+    MessagePrinter(const MessagePrinter&) = delete;
+    MessagePrinter& operator=(const MessagePrinter&) = delete;
     virtual ~MessagePrinter() {}
     virtual void Print(const Message& message, bool single_line_mode,
                        BaseTextGenerator* generator) const = 0;
-
-   private:
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessagePrinter);
   };
 
   // Interface that Printers or Parsers can use to find extensions, or types
@@ -671,8 +673,6 @@ class PROTOBUF_EXPORT TextFormat {
                                     ParseLocationRange location);
   static inline ParseInfoTree* CreateNested(ParseInfoTree* info_tree,
                                             const FieldDescriptor* field);
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TextFormat);
 };
 
 inline void TextFormat::RecordLocation(ParseInfoTree* info_tree,

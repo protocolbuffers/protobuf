@@ -63,6 +63,8 @@ namespace internal {
 // This class is really a namespace that contains only static methods.
 class PROTOBUF_EXPORT ReflectionOps {
  public:
+  ReflectionOps() = delete;
+
   static void Copy(const Message& from, Message* to);
   static void Merge(const Message& from, Message* to);
   static void Clear(Message* message);
@@ -77,10 +79,6 @@ class PROTOBUF_EXPORT ReflectionOps {
   static void FindInitializationErrors(const Message& message,
                                        const std::string& prefix,
                                        std::vector<std::string>* errors);
-
- private:
-  // All methods are static.  No need to construct.
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ReflectionOps);
 };
 
 }  // namespace internal

@@ -48,7 +48,6 @@
 #include <google/protobuf/util/internal/field_mask_utility.h>
 #include <google/protobuf/util/internal/object_location_tracker.h>
 #include <google/protobuf/util/internal/utility.h>
-#include <google/protobuf/stubs/map_util.h>
 
 
 // Must be included last.
@@ -477,9 +476,6 @@ ProtoStreamObjectWriter::Item::Item(ProtoStreamObjectWriter* enclosing,
   if (item_type_ == ANY) {
     any_.reset(new AnyWriter(ow_));
   }
-  if (item_type == MAP) {
-    map_keys_.reset(new std::unordered_set<std::string>);
-  }
 }
 
 ProtoStreamObjectWriter::Item::Item(ProtoStreamObjectWriter::Item* parent,
@@ -494,14 +490,11 @@ ProtoStreamObjectWriter::Item::Item(ProtoStreamObjectWriter::Item* parent,
   if (item_type == ANY) {
     any_.reset(new AnyWriter(ow_));
   }
-  if (item_type == MAP) {
-    map_keys_.reset(new std::unordered_set<std::string>);
-  }
 }
 
 bool ProtoStreamObjectWriter::Item::InsertMapKeyIfNotPresent(
     absl::string_view map_key) {
-  return InsertIfNotPresent(map_keys_.get(), std::string(map_key));
+  return map_keys_.insert(std::string(map_key)).second;
 }
 
 
@@ -1371,7 +1364,9 @@ void ProtoStreamObjectWriter::DeleteRendererMap() {
 ProtoStreamObjectWriter::TypeRenderer*
 ProtoStreamObjectWriter::FindTypeRenderer(const std::string& type_url) {
   absl::call_once(writer_renderers_init_, InitRendererMap);
-  return FindOrNull(*renderers_, type_url);
+  auto it = renderers_->find(type_url);
+  if (it == renderers_->end()) return nullptr;
+  return &it->second;
 }
 
 bool ProtoStreamObjectWriter::ValidMapKey(absl::string_view unnormalized_name) {

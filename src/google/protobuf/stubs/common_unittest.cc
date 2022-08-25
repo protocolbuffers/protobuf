@@ -34,13 +34,13 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 
 #include <vector>
 
 #include "absl/strings/ascii.h"
+#include "absl/strings/substitute.h"
 
 namespace google {
 namespace protobuf {
@@ -82,7 +82,7 @@ std::vector<std::string> captured_messages_;
 
 void CaptureLog(LogLevel level, const char* filename, int line,
                 const std::string& message) {
-  captured_messages_.push_back(strings::Substitute(
+  captured_messages_.push_back(absl::Substitute(
       "$0 $1:$2: $3", static_cast<int>(level), filename, line, message));
 }
 
