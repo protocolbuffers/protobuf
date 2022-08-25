@@ -233,7 +233,7 @@ void WrapperOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     "  get { return $has_property_check$ ? ($type_name$) $oneof_name$_ : ($type_name$) null; }\n"
     "  set {\n"
     "    $oneof_name$_ = value;\n"
-    "    $oneof_name$Case_ = value == null ? $oneof_property_name$OneofCase.None : $oneof_property_name$OneofCase.$property_name$;\n"
+    "    $oneof_name$Case_ = value == null ? $oneof_property_name$OneofCase.None : $oneof_property_name$OneofCase.$oneof_case_name$;\n"
     "  }\n"
     "}\n");
   if (SupportsPresenceApi(descriptor_)) {
@@ -244,7 +244,7 @@ void WrapperOneofFieldGenerator::GenerateMembers(io::Printer* printer) {
     printer->Print(
       variables_,
       "$access_level$ bool Has$property_name$ {\n"
-      "  get { return $oneof_name$Case_ == $oneof_property_name$OneofCase.$property_name$; }\n"
+      "  get { return $oneof_name$Case_ == $oneof_property_name$OneofCase.$oneof_case_name$; }\n"
       "}\n");
     printer->Print(
       variables_,
