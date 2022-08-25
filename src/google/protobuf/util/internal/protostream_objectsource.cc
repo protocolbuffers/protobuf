@@ -53,7 +53,6 @@
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/field_mask_utility.h>
 #include <google/protobuf/util/internal/utility.h>
-#include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/status_macros.h>
 
 
@@ -728,7 +727,9 @@ void ProtoStreamObjectSource::DeleteRendererMap() {
 ProtoStreamObjectSource::TypeRenderer*
 ProtoStreamObjectSource::FindTypeRenderer(const std::string& type_url) {
   absl::call_once(source_renderers_init_, InitRendererMap);
-  return FindOrNull(*renderers_, type_url);
+  auto it = renderers_->find(type_url);
+  if (it == renderers_->end()) return nullptr;
+  return &it->second;
 }
 
 absl::Status ProtoStreamObjectSource::RenderField(

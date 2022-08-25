@@ -39,7 +39,6 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include <google/protobuf/util/internal/utility.h>
-#include <google/protobuf/stubs/map_util.h>
 
 namespace google {
 namespace protobuf {
@@ -60,8 +59,7 @@ class TypeInfoForTypeResolver : public TypeInfo {
 
   absl::StatusOr<const google::protobuf::Type*> ResolveTypeUrl(
       absl::string_view type_url) const override {
-    std::map<absl::string_view, StatusOrType>::iterator it =
-        cached_types_.find(type_url);
+    auto it = cached_types_.find(type_url);
     if (it != cached_types_.end()) {
       return it->second;
     }
@@ -108,17 +106,16 @@ class TypeInfoForTypeResolver : public TypeInfo {
   const google::protobuf::Field* FindField(
       const google::protobuf::Type* type,
       absl::string_view camel_case_name) const override {
-    std::map<const google::protobuf::Type*, CamelCaseNameTable>::const_iterator
-        it = indexed_types_.find(type);
+    auto it = indexed_types_.find(type);
     const CamelCaseNameTable& camel_case_name_table =
-        (it == indexed_types_.end())
+        it == indexed_types_.end()
             ? PopulateNameLookupTable(type, &indexed_types_[type])
             : it->second;
-    absl::string_view name = FindWithDefault(
-        camel_case_name_table, camel_case_name, absl::string_view());
-    if (name.empty()) {
-      // Didn't find a mapping. Use whatever provided.
-      name = camel_case_name;
+
+    absl::string_view name = camel_case_name;
+    auto cc_it = camel_case_name_table.find(name);
+    if (cc_it != camel_case_name_table.end()) {
+      name = cc_it->second;
     }
     return FindFieldInTypeOrNull(type, name);
   }
@@ -144,14 +141,13 @@ class TypeInfoForTypeResolver : public TypeInfo {
       CamelCaseNameTable* camel_case_name_table) const {
     for (int i = 0; i < type->fields_size(); ++i) {
       const google::protobuf::Field& field = type->fields(i);
-      absl::string_view name = field.name();
-      absl::string_view camel_case_name = field.json_name();
-      const absl::string_view* existing = InsertOrReturnExisting(
-          camel_case_name_table, camel_case_name, name);
-      if (existing && *existing != name) {
-        GOOGLE_LOG(WARNING) << "Field '" << name << "' and '" << *existing
-                     << "' map to the same camel case name '" << camel_case_name
-                     << "'.";
+      absl::string_view existing =
+          camel_case_name_table->insert({field.json_name(), field.name()})
+              .first->second;
+      if (existing != field.name()) {
+        GOOGLE_LOG(WARNING) << "Field '" << field.name() << "' and '" << existing
+                     << "' map to the same camel case name '"
+                     << field.json_name() << "'.";
       }
     }
     return *camel_case_name_table;

@@ -41,6 +41,7 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_split.h"
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/compiler/java/generator.h>
 #include <google/protobuf/test_util2.h>
@@ -92,11 +93,11 @@ TEST(MessageSerializationTest, CollapseAdjacentExtensionRanges) {
 
   std::vector<std::string> range_ends;
 
-  // Open-source codebase does not have Split overload taking a single
+  // Open-source codebase does not have absl::StrSplit overload taking a single
   // char delimiter.
   //
   // NOLINTNEXTLINE(abseil-faster-strsplit-delimiter)
-  for (const auto& line : Split(java_source, "\n")) {
+  for (const auto& line : absl::StrSplit(java_source, "\n")) {
     // Extract end position from writeUntil call. (Open-source codebase does not
     // support RE2.)
     std::size_t write_until_pos = line.find(kWriteUntilCall);

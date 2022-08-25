@@ -245,6 +245,8 @@ PROTOBUF_EXPORT bool IsDescendant(Message& root, const Message& message);
 class PROTOBUF_EXPORT Message : public MessageLite {
  public:
   constexpr Message() {}
+  Message(const Message&) = delete;
+  Message& operator=(const Message&) = delete;
 
   // Basic Operations ------------------------------------------------
 
@@ -409,9 +411,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
  protected:
   static uint64_t GetInvariantPerBuild(uint64_t salt);
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Message);
 };
 
 namespace internal {
@@ -473,6 +472,8 @@ class MutableRepeatedFieldRef;
 // memory leaks.  So, instead we ended up with this flat interface.
 class PROTOBUF_EXPORT Reflection final {
  public:
+  Reflection(const Reflection&) = delete;
+  Reflection& operator=(const Reflection&) = delete;
   ~Reflection();
 
   // Get the UnknownFieldSet for the message.  This contains fields which
@@ -1320,8 +1321,6 @@ class PROTOBUF_EXPORT Reflection final {
                                              const Reflection* reflection,
                                              const char* ptr,
                                              internal::ParseContext* ctx);
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Reflection);
 };
 
 // Abstract interface for a factory for message objects.
@@ -1331,6 +1330,8 @@ class PROTOBUF_EXPORT Reflection final {
 class PROTOBUF_EXPORT MessageFactory {
  public:
   inline MessageFactory() {}
+  MessageFactory(const MessageFactory&) = delete;
+  MessageFactory& operator=(const MessageFactory&) = delete;
   virtual ~MessageFactory();
 
   // Given a Descriptor, gets or constructs the default (prototype) Message
@@ -1386,9 +1387,6 @@ class PROTOBUF_EXPORT MessageFactory {
   static void InternalRegisterGeneratedMessage(const Descriptor* descriptor,
                                                const Message* prototype);
 
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageFactory);
 };
 
 #define DECLARE_GET_REPEATED_FIELD(TYPE)                           \

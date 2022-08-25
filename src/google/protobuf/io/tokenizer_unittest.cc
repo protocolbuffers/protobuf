@@ -42,7 +42,7 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include "absl/strings/escaping.h"
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/substitute.h"
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
@@ -63,7 +63,7 @@ namespace {
 // run multiple times, once for each item in some input array.  TEST_1D
 // tests all cases in a single input array.  TEST_2D tests all
 // combinations of cases from two arrays.  The arrays must be statically
-// defined such that the GOOGLE_ARRAYSIZE() macro works on them.  Example:
+// defined such that the ABSL_ARRAYSIZE() macro works on them.  Example:
 //
 // int kCases[] = {1, 2, 3, 4}
 // TEST_1D(MyFixture, MyTest, kCases) {
@@ -83,7 +83,7 @@ namespace {
   };                                                              \
                                                                   \
   TEST_F(FIXTURE##_##NAME##_DD, NAME) {                           \
-    for (int i = 0; i < GOOGLE_ARRAYSIZE(CASES); i++) {                  \
+    for (int i = 0; i < ABSL_ARRAYSIZE(CASES); i++) {             \
       SCOPED_TRACE(testing::Message()                             \
                    << #CASES " case #" << i << ": " << CASES[i]); \
       DoSingleCase(CASES[i]);                                     \
@@ -102,8 +102,8 @@ namespace {
   };                                                                        \
                                                                             \
   TEST_F(FIXTURE##_##NAME##_DD, NAME) {                                     \
-    for (int i = 0; i < GOOGLE_ARRAYSIZE(CASES1); i++) {                           \
-      for (int j = 0; j < GOOGLE_ARRAYSIZE(CASES2); j++) {                         \
+    for (int i = 0; i < ABSL_ARRAYSIZE(CASES1); i++) {                      \
+      for (int j = 0; j < ABSL_ARRAYSIZE(CASES2); j++) {                    \
         SCOPED_TRACE(testing::Message()                                     \
                      << #CASES1 " case #" << i << ": " << CASES1[i] << ", " \
                      << #CASES2 " case #" << j << ": " << CASES2[j]);       \
@@ -163,7 +163,7 @@ class TestErrorCollector : public ErrorCollector {
 
   // implements ErrorCollector ---------------------------------------
   void AddError(int line, int column, const std::string& message) {
-    strings::SubstituteAndAppend(&text_, "$0:$1: $2\n", line, column, message);
+    absl::SubstituteAndAppend(&text_, "$0:$1: $2\n", line, column, message);
   }
 };
 
@@ -614,7 +614,7 @@ TEST_1D(TokenizerTest, ShCommentStyle, kBlockSizes) {
   tokenizer.set_comment_style(Tokenizer::SH_COMMENT_STYLE);
 
   // Advance through tokens and check that they are parsed as expected.
-  for (int i = 0; i < GOOGLE_ARRAYSIZE(kTokens); i++) {
+  for (int i = 0; i < ABSL_ARRAYSIZE(kTokens); i++) {
     EXPECT_TRUE(tokenizer.Next());
     EXPECT_EQ(tokenizer.current().text, kTokens[i]);
   }
@@ -796,7 +796,7 @@ TEST_2D(TokenizerTest, DocComments, kDocCommentCases, kBlockSizes) {
             prev_trailing_comments);
 
   for (int i = 0; i < detached_comments.size(); i++) {
-    ASSERT_LT(i, GOOGLE_ARRAYSIZE(kDocCommentCases));
+    ASSERT_LT(i, ABSL_ARRAYSIZE(kDocCommentCases));
     ASSERT_TRUE(kDocCommentCases_case.detached_comments[i] != NULL);
     EXPECT_EQ(kDocCommentCases_case.detached_comments[i], detached_comments[i]);
   }

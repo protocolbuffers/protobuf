@@ -298,9 +298,12 @@ if __name__ == '__main__':
         else:
           extra_objects = ['../libprotobuf.a']
           # Repeat all of these enough times to eliminate order-dependence.
-          extra_objects += list(glob.iglob('../third_party/abseil-cpp/absl/**/*.a'))
-          extra_objects += list(glob.iglob('../third_party/abseil-cpp/absl/**/*.a'))
-          extra_objects += list(glob.iglob('../third_party/abseil-cpp/absl/**/*.a'))
+          extra_objects += list(
+              glob.iglob('../third_party/abseil-cpp/absl/**/*.a'))
+          extra_objects += list(
+              glob.iglob('../third_party/abseil-cpp/absl/**/*.a'))
+          extra_objects += list(
+              glob.iglob('../third_party/abseil-cpp/absl/**/*.a'))
     else:
       libraries = ['protobuf']
       if HasLibraryDirsOpt():

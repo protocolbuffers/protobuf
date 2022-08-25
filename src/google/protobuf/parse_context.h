@@ -204,6 +204,10 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   int BytesUntilLimit(const char* ptr) const {
     return limit_ + static_cast<int>(buffer_end_ - ptr);
   }
+  // Maximum number of sequential bytes that can be read starting from `ptr`.
+  int MaximumReadSize(const char* ptr) const {
+    return static_cast<int>(limit_end_ - ptr) + kSlopBytes;
+  }
   // Returns true if more data is available, if false is returned one has to
   // call Done for further checks.
   bool DataAvailable(const char* ptr) { return ptr < limit_end_; }

@@ -172,42 +172,6 @@ PROTOBUF_EXPORT std::string StringReplace(const std::string& s,
                                           bool replace_all);
 
 // ----------------------------------------------------------------------
-// SplitStringUsing()
-//    Split a string using a character delimiter. Append the components
-//    to 'result'.  If there are consecutive delimiters, this function skips
-//    over all of them.
-// ----------------------------------------------------------------------
-PROTOBUF_EXPORT void SplitStringUsing(absl::string_view full, const char* delim,
-                                      std::vector<std::string>* res);
-
-// Split a string using one or more byte delimiters, presented
-// as a nul-terminated c string. Append the components to 'result'.
-// If there are consecutive delimiters, this function will return
-// corresponding empty strings.  If you want to drop the empty
-// strings, try SplitStringUsing().
-//
-// If "full" is the empty string, yields an empty string as the only value.
-// ----------------------------------------------------------------------
-PROTOBUF_EXPORT void SplitStringAllowEmpty(absl::string_view full,
-                                           const char* delim,
-                                           std::vector<std::string>* result);
-
-// ----------------------------------------------------------------------
-// Split()
-//    Split a string using a character delimiter.
-// ----------------------------------------------------------------------
-inline std::vector<std::string> Split(absl::string_view full, const char* delim,
-                                      bool skip_empty = true) {
-  std::vector<std::string> result;
-  if (skip_empty) {
-    SplitStringUsing(full, delim, &result);
-  } else {
-    SplitStringAllowEmpty(full, delim, &result);
-  }
-  return result;
-}
-
-// ----------------------------------------------------------------------
 // strto32()
 // strtou32()
 // strto64()

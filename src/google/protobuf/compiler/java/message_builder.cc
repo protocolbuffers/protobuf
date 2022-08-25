@@ -45,7 +45,7 @@
 #include <google/protobuf/stubs/strutil.h>
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/substitute.h"
 #include <google/protobuf/compiler/java/context.h>
 #include <google/protobuf/compiler/java/doc_comment.h>
 #include <google/protobuf/compiler/java/enum.h>
@@ -560,7 +560,7 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
       for (int j = 0; j < oneof->field_count(); j++) {
         const FieldDescriptor* field = oneof->field(j);
         printer->Print("case $field_name$: {\n", "field_name",
-                       ToUpper(field->name()));
+                       absl::AsciiStrToUpper(field->name()));
         printer->Indent();
         field_generators_.get(field).GenerateMergingCode(printer);
         printer->Print("break;\n");
@@ -572,7 +572,7 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
           "  break;\n"
           "}\n",
           "cap_oneof_name",
-          ToUpper(context_->GetOneofGeneratorInfo(oneof)->name));
+          absl::AsciiStrToUpper(context_->GetOneofGeneratorInfo(oneof)->name));
       printer->Outdent();
       printer->Print("}\n");
     }

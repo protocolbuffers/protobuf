@@ -208,6 +208,8 @@ class DynamicMessage : public Message {
 
   // This should only be used by GetPrototypeNoLock() to avoid dead lock.
   DynamicMessage(DynamicMessageFactory::TypeInfo* type_info, bool lock_factory);
+  DynamicMessage(const DynamicMessage&) = delete;
+  DynamicMessage& operator=(const DynamicMessage&) = delete;
 
   ~DynamicMessage() override;
 
@@ -269,7 +271,6 @@ class DynamicMessage : public Message {
 
   const DynamicMessageFactory::TypeInfo* type_info_;
   mutable std::atomic<int> cached_byte_size_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DynamicMessage);
 };
 
 struct DynamicMessageFactory::TypeInfo {

@@ -1089,7 +1089,7 @@ bool Parser::ParseMessageFieldNoLabel(
       AddError(name_token.line, name_token.column,
                "Group names must start with a capital letter.");
     }
-    LowerString(field->mutable_name());
+    absl::AsciiStrToLower(field->mutable_name());
 
     field->set_type_name(group->name());
     if (LookingAt("{")) {

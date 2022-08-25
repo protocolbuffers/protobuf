@@ -32,8 +32,8 @@
 
 #include <cstdint>
 
-#include <google/protobuf/stubs/strutil.h>
 #include "absl/strings/str_join.h"
+#include "absl/strings/str_split.h"
 #include <google/protobuf/message.h>
 
 // Must be included last.
@@ -51,7 +51,7 @@ std::string FieldMaskUtil::ToString(const FieldMask& mask) {
 
 void FieldMaskUtil::FromString(absl::string_view str, FieldMask* out) {
   out->Clear();
-  std::vector<std::string> paths = Split(str, ",");
+  std::vector<std::string> paths = absl::StrSplit(str, ",");
   for (const std::string& path : paths) {
     if (path.empty()) continue;
     out->add_paths(path);
@@ -124,7 +124,7 @@ bool FieldMaskUtil::ToJsonString(const FieldMask& mask, std::string* out) {
 
 bool FieldMaskUtil::FromJsonString(absl::string_view str, FieldMask* out) {
   out->Clear();
-  std::vector<std::string> paths = Split(str, ",");
+  std::vector<std::string> paths = absl::StrSplit(str, ",");
   for (const std::string& path : paths) {
     if (path.empty()) continue;
     std::string snakecase_path;
@@ -142,7 +142,7 @@ bool FieldMaskUtil::GetFieldDescriptors(
   if (field_descriptors != nullptr) {
     field_descriptors->clear();
   }
-  std::vector<std::string> parts = Split(path, ".");
+  std::vector<std::string> parts = absl::StrSplit(path, ".");
   for (const std::string& field_name : parts) {
     if (descriptor == nullptr) {
       return false;
@@ -185,6 +185,8 @@ namespace {
 class FieldMaskTree {
  public:
   FieldMaskTree();
+  FieldMaskTree(const FieldMaskTree&) = delete;
+  FieldMaskTree& operator=(const FieldMaskTree&) = delete;
   ~FieldMaskTree();
 
   void MergeFromFieldMask(const FieldMask& mask);
@@ -246,6 +248,8 @@ class FieldMaskTree {
  private:
   struct Node {
     Node() {}
+    Node(const Node&) = delete;
+    Node& operator=(const Node&) = delete;
 
     ~Node() { ClearChildren(); }
 
@@ -257,9 +261,6 @@ class FieldMaskTree {
     }
 
     std::map<std::string, Node*> children;
-
-   private:
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Node);
   };
 
   // Merge a sub-tree to mask. This method adds the field paths represented
@@ -287,8 +288,6 @@ class FieldMaskTree {
   bool TrimMessage(const Node* node, Message* message);
 
   Node root_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldMaskTree);
 };
 
 FieldMaskTree::FieldMaskTree() {}
@@ -324,7 +323,7 @@ void FieldMaskTree::MergeToFieldMask(const std::string& prefix,
 }
 
 void FieldMaskTree::AddPath(const std::string& path) {
-  std::vector<std::string> parts = Split(path, ".");
+  std::vector<std::string> parts = absl::StrSplit(path, ".");
   if (parts.empty()) {
     return;
   }
@@ -357,7 +356,7 @@ void FieldMaskTree::RemovePath(const std::string& path,
     // code below.
     return;
   }
-  std::vector<std::string> parts = Split(path, ".");
+  std::vector<std::string> parts = absl::StrSplit(path, ".");
   if (parts.empty()) {
     return;
   }
@@ -406,7 +405,7 @@ void FieldMaskTree::RemovePath(const std::string& path,
 }
 
 void FieldMaskTree::IntersectPath(const std::string& path, FieldMaskTree* out) {
-  std::vector<std::string> parts = Split(path, ".");
+  std::vector<std::string> parts = absl::StrSplit(path, ".");
   if (parts.empty()) {
     return;
   }

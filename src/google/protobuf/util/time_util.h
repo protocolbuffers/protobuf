@@ -90,7 +90,9 @@ class PROTOBUF_EXPORT TimeUtil {
     return duration.seconds() <= kDurationMaxSeconds &&
            duration.seconds() >= kDurationMinSeconds &&
            duration.nanos() <= kDurationMaxNanoseconds &&
-           duration.nanos() >= kDurationMinNanoseconds;
+           duration.nanos() >= kDurationMinNanoseconds &&
+           !(duration.seconds() >= 1 && duration.nanos() < 0) &&
+           !(duration.seconds() <= -1 && duration.nanos() > 0);
   }
 
   // Converts Timestamp to/from RFC 3339 date string format.

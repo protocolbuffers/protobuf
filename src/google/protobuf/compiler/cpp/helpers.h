@@ -43,6 +43,7 @@
 
 #include <google/protobuf/compiler/scc.h>
 #include <google/protobuf/compiler/code_generator.h>
+#include "absl/strings/str_split.h"
 #include <google/protobuf/compiler/cpp/names.h>
 #include <google/protobuf/compiler/cpp/options.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -884,7 +885,7 @@ class PROTOC_EXPORT NamespaceOpener {
 
   void ChangeTo(const std::string& name) {
     std::vector<std::string> new_stack_ =
-        Split(name, "::", true);
+        absl::StrSplit(name, "::", absl::SkipEmpty());
     size_t len = std::min(name_stack_.size(), new_stack_.size());
     size_t common_idx = 0;
     while (common_idx < len) {

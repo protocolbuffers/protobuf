@@ -68,6 +68,8 @@ typedef int ColumnNumber;
 class PROTOBUF_EXPORT ErrorCollector {
  public:
   inline ErrorCollector() {}
+  ErrorCollector(const ErrorCollector&) = delete;
+  ErrorCollector& operator=(const ErrorCollector&) = delete;
   virtual ~ErrorCollector();
 
   // Indicates that there was an error in the input at the given line and
@@ -81,9 +83,6 @@ class PROTOBUF_EXPORT ErrorCollector {
   // 1 to each before printing them.
   virtual void AddWarning(int /* line */, ColumnNumber /* column */,
                           const std::string& /* message */) {}
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ErrorCollector);
 };
 
 // This class converts a stream of raw text into a stream of tokens for
@@ -98,6 +97,8 @@ class PROTOBUF_EXPORT Tokenizer {
   // input stream and writes errors to the given error_collector.
   // The caller keeps ownership of input and error_collector.
   Tokenizer(ZeroCopyInputStream* input, ErrorCollector* error_collector);
+  Tokenizer(const Tokenizer&) = delete;
+  Tokenizer& operator=(const Tokenizer&) = delete;
   ~Tokenizer();
 
   enum TokenType {
@@ -275,8 +276,6 @@ class PROTOBUF_EXPORT Tokenizer {
 
   // -----------------------------------------------------------------
  private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Tokenizer);
-
   Token current_;   // Returned by current().
   Token previous_;  // Returned by previous().
 

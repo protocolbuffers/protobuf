@@ -49,12 +49,13 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/io/io_win32.h>
-#include <google/protobuf/port.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/stubs/strutil.h>
-
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/str_split.h"
+#include "absl/strings/str_replace.h"
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
 // error cases, so it seems to be ok to use as a back door for errors.
@@ -68,18 +69,18 @@ namespace objectivec {
 // in this port namespace to avoid ambiguous definition.
 namespace posix {
 #ifdef _WIN32
-using ::google::protobuf::io::win32::open;
-#else
+using google::protobuf::io::win32::open;
+#else  // !_WIN32
 using ::open;
-#endif
-}  // namespace port
+#endif  // _WIN32
+}  // namespace posix
 
 namespace {
 
 bool BoolFromEnvVar(const char* env_var, bool default_value) {
   const char* value = getenv(env_var);
   if (value) {
-    return std::string("YES") == ToUpper(value);
+    return std::string("YES") == absl::AsciiStrToUpper(value);
   }
   return default_value;
 }
@@ -275,7 +276,7 @@ Options::Options() {
   const char* suppressions = getenv("GPB_OBJC_EXPECTED_PACKAGE_PREFIXES_SUPPRESSIONS");
   if (suppressions) {
     expected_prefixes_suppressions =
-        Split(suppressions, ";", true);
+        absl::StrSplit(suppressions, ";", absl::SkipEmpty());
   }
   prefixes_must_be_registered =
       BoolFromEnvVar("GPB_OBJC_PREFIXES_MUST_BE_REGISTERED", false);
@@ -296,7 +297,7 @@ std::unordered_set<std::string> MakeWordsMap(const char* const words[],
 const char* const kUpperSegmentsList[] = {"url", "http", "https"};
 
 std::unordered_set<std::string> kUpperSegments =
-    MakeWordsMap(kUpperSegmentsList, GOOGLE_ARRAYSIZE(kUpperSegmentsList));
+    MakeWordsMap(kUpperSegmentsList, ABSL_ARRAYSIZE(kUpperSegmentsList));
 
 bool ascii_isnewline(char c) {
   return c == '\n' || c == '\r';
@@ -456,9 +457,9 @@ std::string SanitizeNameForObjC(const std::string& prefix,
                                 const std::string& extension,
                                 std::string* out_suffix_added) {
   static const std::unordered_set<std::string> kReservedWords =
-      MakeWordsMap(kReservedWordList, GOOGLE_ARRAYSIZE(kReservedWordList));
+      MakeWordsMap(kReservedWordList, ABSL_ARRAYSIZE(kReservedWordList));
   static const std::unordered_set<std::string> kNSObjectMethods =
-      MakeWordsMap(kNSObjectMethodsList, GOOGLE_ARRAYSIZE(kNSObjectMethodsList));
+      MakeWordsMap(kNSObjectMethodsList, ABSL_ARRAYSIZE(kNSObjectMethodsList));
   std::string sanitized;
   // We add the prefix in the cases where the string is missing a prefix.
   // We define "missing a prefix" as where 'input':
@@ -630,7 +631,7 @@ std::string FileClassPrefix(const FileDescriptor* file) {
   // camelcase each one and then join them with underscores, and add an
   // underscore at the end.
   std::string result;
-  const std::vector<std::string> segments = Split(file->package(), ".", true);
+  const std::vector<std::string> segments = absl::StrSplit(file->package(), ".", absl::SkipEmpty());
   for (const auto& segment : segments) {
     const std::string part = UnderscoresToCamelCase(segment, true);
     if (part.empty()) {
@@ -1189,7 +1190,7 @@ std::string BuildCommentsString(const SourceLocation& location,
                                ? location.trailing_comments
                                : location.leading_comments;
   std::vector<std::string> lines;
-  lines = Split(comments, "\n", false);
+  lines = absl::StrSplit(comments, "\n", absl::AllowEmpty());
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
   }
@@ -1244,7 +1245,7 @@ const char* const ProtobufLibraryFrameworkName = "Protobuf";
 std::string ProtobufFrameworkImportSymbol(const std::string& framework_name) {
   // GPB_USE_[framework_name]_FRAMEWORK_IMPORTS
   std::string result = std::string("GPB_USE_");
-  result += ToUpper(framework_name);
+  result += absl::AsciiStrToUpper(framework_name);
   result += "_FRAMEWORK_IMPORTS";
   return result;
 }

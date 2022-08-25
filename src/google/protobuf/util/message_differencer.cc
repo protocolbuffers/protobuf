@@ -154,6 +154,10 @@ class MessageDifferencer::MultipleFieldsMapKeyComparator
     key_field_path.push_back(key);
     key_field_paths_.push_back(key_field_path);
   }
+  MultipleFieldsMapKeyComparator(const MultipleFieldsMapKeyComparator&) =
+      delete;
+  MultipleFieldsMapKeyComparator& operator=(
+      const MultipleFieldsMapKeyComparator&) = delete;
   bool IsMatch(const Message& message1, const Message& message2,
                const std::vector<SpecificField>& parent_fields) const override {
     for (const auto& path : key_field_paths_) {
@@ -205,7 +209,6 @@ class MessageDifferencer::MultipleFieldsMapKeyComparator
   }
   MessageDifferencer* message_differencer_;
   std::vector<std::vector<const FieldDescriptor*> > key_field_paths_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MultipleFieldsMapKeyComparator);
 };
 
 // Preserve the order when treating repeated field as SMART_LIST. The current
@@ -1690,6 +1693,8 @@ class MaximumMatcher {
   // match_list1[i] == -1 means the node is not matched. Same with match_list2.
   MaximumMatcher(int count1, int count2, NodeMatchCallback callback,
                  std::vector<int>* match_list1, std::vector<int>* match_list2);
+  MaximumMatcher(const MaximumMatcher&) = delete;
+  MaximumMatcher& operator=(const MaximumMatcher&) = delete;
   // Find a maximum match and return the number of matched node pairs.
   // If early_return is true, this method will return 0 immediately when it
   // finds that not all nodes on the left side can be matched.
@@ -1710,7 +1715,6 @@ class MaximumMatcher {
   std::map<std::pair<int, int>, bool> cached_match_results_;
   std::vector<int>* match_list1_;
   std::vector<int>* match_list2_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MaximumMatcher);
 };
 
 MaximumMatcher::MaximumMatcher(int count1, int count2,

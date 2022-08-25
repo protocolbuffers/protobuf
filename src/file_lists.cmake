@@ -65,7 +65,6 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/stringprintf.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/structurally_valid.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/substitute.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/timestamp.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/type.pb.cc
@@ -174,7 +173,6 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/stl_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/stringprintf.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/substitute.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/timestamp.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/type.pb.h

@@ -49,6 +49,8 @@ class PROTOBUF_EXPORT ZeroCopyStreamByteSink : public strings::ByteSink {
  public:
   explicit ZeroCopyStreamByteSink(io::ZeroCopyOutputStream* stream)
       : stream_(stream) {}
+  ZeroCopyStreamByteSink(const ZeroCopyStreamByteSink&) = delete;
+  ZeroCopyStreamByteSink& operator=(const ZeroCopyStreamByteSink&) = delete;
 
   ~ZeroCopyStreamByteSink() override {
     if (buffer_size_ > 0) {
@@ -62,8 +64,6 @@ class PROTOBUF_EXPORT ZeroCopyStreamByteSink : public strings::ByteSink {
   io::ZeroCopyOutputStream* stream_;
   void* buffer_ = nullptr;
   int buffer_size_ = 0;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ZeroCopyStreamByteSink);
 };
 }  // namespace zc_sink_internal
 }  // namespace io

@@ -71,7 +71,9 @@
 #include <google/protobuf/compiler/plugin.pb.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
+#include "absl/strings/substitute.h"
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/importer.h>
 #include <google/protobuf/compiler/zip_writer.h>
@@ -173,7 +175,7 @@ bool TryCreateParentDirectory(const std::string& prefix,
   // Recursively create parent directories to the output file.
   // On Windows, both '/' and '\' are valid path separators.
   std::vector<std::string> parts =
-      Split(filename, "/\\", true);
+      absl::StrSplit(filename, absl::ByAnyChar("/\\"), absl::SkipEmpty());
   std::string path_so_far = prefix;
   for (int i = 0; i < parts.size() - 1; i++) {
     path_so_far += parts[i];
@@ -816,7 +818,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
 
     // Find the insertion point.
     std::string magic_string =
-        strings::Substitute("@@protoc_insertion_point($0)", insertion_point_);
+        absl::Substitute("@@protoc_insertion_point($0)", insertion_point_);
     std::string::size_type pos = target->find(magic_string);
 
     if (pos == std::string::npos) {
@@ -1701,9 +1703,9 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     // Java's -classpath (and some other languages) delimits path components
     // with colons.  Let's accept that syntax too just to make things more
     // intuitive.
-    std::vector<std::string> parts = Split(
-        value, CommandLineInterface::kPathSeparator,
-        true);
+    std::vector<std::string> parts = absl::StrSplit(
+        value, absl::ByAnyChar(CommandLineInterface::kPathSeparator),
+        absl::SkipEmpty());
 
     for (int i = 0; i < parts.size(); i++) {
       std::string virtual_path;
@@ -1757,7 +1759,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 
     direct_dependencies_explicitly_set_ = true;
     std::vector<std::string> direct =
-        Split(value, ":", true);
+        absl::StrSplit(value, ":", absl::SkipEmpty());
     GOOGLE_DCHECK(direct_dependencies_.empty());
     direct_dependencies_.insert(direct.begin(), direct.end());
 
@@ -1783,9 +1785,9 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       return PARSE_ARGUMENT_FAIL;
     }
 
-    descriptor_set_in_names_ = Split(
-        value, CommandLineInterface::kPathSeparator,
-        true);
+    descriptor_set_in_names_ = absl::StrSplit(
+        value, absl::ByAnyChar(CommandLineInterface::kPathSeparator),
+        absl::SkipEmpty());
 
   } else if (name == "-o" || name == "--descriptor_set_out") {
     if (!descriptor_set_out_name_.empty()) {
@@ -2295,7 +2297,7 @@ bool CommandLineInterface::GeneratePluginOutput(
 
   std::string communicate_error;
   if (!subprocess.Communicate(request, &response, &communicate_error)) {
-    *error = strings::Substitute("$0: $1", plugin_name, communicate_error);
+    *error = absl::Substitute("$0: $1", plugin_name, communicate_error);
     return false;
   }
 
@@ -2322,7 +2324,7 @@ bool CommandLineInterface::GeneratePluginOutput(
       current_output.reset();
       current_output.reset(generator_context->Open(output_file.name()));
     } else if (current_output == nullptr) {
-      *error = strings::Substitute(
+      *error = absl::Substitute(
           "$0: First file chunk returned by plugin did not specify a file "
           "name.",
           plugin_name);

@@ -31,11 +31,10 @@
 #include <google/protobuf/util/internal/default_value_objectwriter.h>
 
 #include <cstdint>
-#include <unordered_map>
 
+#include "absl/container/flat_hash_map.h"
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/utility.h>
-#include <google/protobuf/stubs/map_util.h>
 
 namespace google {
 namespace protobuf {
@@ -309,11 +308,11 @@ void DefaultValueObjectWriter::Node::PopulateChildren(
     return;
   }
   std::vector<Node*> new_children;
-  std::unordered_map<std::string, int> orig_children_map;
+  absl::flat_hash_map<absl::string_view, int> orig_children_map;
 
   // Creates a map of child nodes to speed up lookup.
   for (int i = 0; i < children_.size(); ++i) {
-    InsertIfNotPresent(&orig_children_map, children_[i]->name_, i);
+    orig_children_map.try_emplace(children_[i]->name_, i);
   }
 
   for (int i = 0; i < type_->fields_size(); ++i) {
@@ -330,8 +329,7 @@ void DefaultValueObjectWriter::Node::PopulateChildren(
       continue;
     }
 
-    std::unordered_map<std::string, int>::iterator found =
-        orig_children_map.find(field.name());
+    auto found = orig_children_map.find(field.name());
     // If the child field has already been set, we just add it to the new list
     // of children.
     if (found != orig_children_map.end()) {

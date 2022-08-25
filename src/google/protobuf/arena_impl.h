@@ -462,6 +462,27 @@ class PROTOBUF_EXPORT SerialArena {
     return true;
   }
 
+  // If there is enough space in the current block, allocate space for one `T`
+  // object and register for destruction. The object has not been constructed
+  // and the memory returned is uninitialized.
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE void* MaybeAllocateWithCleanup() {
+    GOOGLE_DCHECK_GE(limit_, ptr());
+    static_assert(!std::is_trivially_destructible<T>::value,
+                  "This function is only for non-trivial types.");
+
+    constexpr int aligned_size = AlignUpTo8(sizeof(T));
+    constexpr auto destructor = cleanup::arena_destruct_object<T>;
+    size_t required = aligned_size + cleanup::Size(destructor);
+    if (PROTOBUF_PREDICT_FALSE(!HasSpace(required))) {
+      return nullptr;
+    }
+    void* ptr = AllocateFromExistingWithCleanupFallback(aligned_size,
+                                                        alignof(T), destructor);
+    PROTOBUF_ASSUME(ptr != nullptr);
+    return ptr;
+  }
+
   PROTOBUF_ALWAYS_INLINE
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
                                    void (*destructor)(void*),
@@ -697,6 +718,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   }
 
  private:
+  friend class TcParser;
   static uint64_t GetNextLifeCycleId();
 
   // Unique for each arena. Changes on Reset().

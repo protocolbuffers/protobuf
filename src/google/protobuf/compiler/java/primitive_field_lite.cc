@@ -127,7 +127,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
 
   if (javaType == JAVATYPE_BYTES) {
     (*variables)["bytes_default"] =
-        ToUpper((*variables)["name"]) + "_DEFAULT_VALUE";
+        absl::AsciiStrToUpper((*variables)["name"]) + "_DEFAULT_VALUE";
   }
 
   if (IsReferenceType(javaType)) {

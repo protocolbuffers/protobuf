@@ -537,7 +537,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedFixed(
   auto elem = field.Add();
   int space = field.Capacity() - idx;
   idx = 0;
-  auto expected_tag = UnalignedLoad<TagType>(ptr);
+  const auto expected_tag = UnalignedLoad<TagType>(ptr);
   do {
     ptr += sizeof(TagType);
     elem[idx++] = UnalignedLoad<LayoutType>(ptr);
@@ -910,7 +910,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
     }
   }
   auto& field = RefAt<RepeatedField<FieldType>>(msg, data.offset());
-  auto expected_tag = UnalignedLoad<TagType>(ptr);
+  const auto expected_tag = UnalignedLoad<TagType>(ptr);
   do {
     ptr += sizeof(TagType);
     uint64_t tmp;
@@ -1111,7 +1111,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedEnum(
     }
   }
   auto& field = RefAt<RepeatedField<int32_t>>(msg, data.offset());
-  auto expected_tag = UnalignedLoad<TagType>(ptr);
+  const auto expected_tag = UnalignedLoad<TagType>(ptr);
   const TcParseTableBase::FieldAux aux = *table->field_aux(data.aux_idx());
   do {
     const char* ptr2 = ptr;  // save for unknown enum case
@@ -1352,31 +1352,52 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
   if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
   }
-  auto expected_tag = UnalignedLoad<TagType>(ptr);
+  const auto expected_tag = UnalignedLoad<TagType>(ptr);
   auto& field = RefAt<RepeatedPtrField<std::string>>(msg, data.offset());
-  do {
-    ptr += sizeof(TagType);
-    std::string* str = field.Add();
-    ptr = InlineGreedyStringParser(str, ptr, ctx);
-    if (ptr == nullptr) {
-      return Error(PROTOBUF_TC_PARAM_PASS);
-    }
+
+  const auto validate_last_string = [expected_tag, table, &field] {
     switch (utf8) {
       case kNoUtf8:
 #ifdef NDEBUG
       case kUtf8ValidateOnly:
 #endif
-        break;
+        return true;
       default:
-        if (PROTOBUF_PREDICT_TRUE(IsStructurallyValidUTF8(*str))) {
-          break;
+        if (PROTOBUF_PREDICT_TRUE(
+                IsStructurallyValidUTF8(field[field.size() - 1]))) {
+          return true;
         }
         ReportFastUtf8Error(FastDecodeTag(expected_tag), table);
-        if (utf8 == kUtf8) return Error(PROTOBUF_TC_PARAM_PASS);
-        break;
+        if (utf8 == kUtf8) return false;
+        return true;
     }
-    if (!ctx->DataAvailable(ptr)) break;
-  } while (UnalignedLoad<TagType>(ptr) == expected_tag);
+  };
+
+  auto* arena = field.GetOwningArena();
+  SerialArena* serial_arena;
+  if (PROTOBUF_PREDICT_TRUE(arena != nullptr &&
+                            arena->impl_.GetSerialArenaFast(&serial_arena) &&
+                            field.PrepareForParse())) {
+    do {
+      ptr += sizeof(TagType);
+      ptr = ParseRepeatedStringOnce(ptr, arena, serial_arena, ctx, field);
+
+      if (PROTOBUF_PREDICT_FALSE(ptr == nullptr || !validate_last_string())) {
+        return Error(PROTOBUF_TC_PARAM_PASS);
+      }
+      if (!ctx->DataAvailable(ptr)) break;
+    } while (UnalignedLoad<TagType>(ptr) == expected_tag);
+  } else {
+    do {
+      ptr += sizeof(TagType);
+      std::string* str = field.Add();
+      ptr = InlineGreedyStringParser(str, ptr, ctx);
+      if (PROTOBUF_PREDICT_FALSE(ptr == nullptr || !validate_last_string())) {
+        return Error(PROTOBUF_TC_PARAM_PASS);
+      }
+      if (!ctx->DataAvailable(ptr)) break;
+    } while (UnalignedLoad<TagType>(ptr) == expected_tag);
+  }
   return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
 }
 
@@ -1887,6 +1908,19 @@ const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
 }
 
+PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseRepeatedStringOnce(
+    const char* ptr, Arena* arena, SerialArena* serial_arena, ParseContext* ctx,
+    RepeatedPtrField<std::string>& field) {
+  int size = ReadSize(&ptr);
+  if (PROTOBUF_PREDICT_FALSE(!ptr)) return {};
+  auto* str = Arena::Create<std::string>(arena);
+  field.AddAllocatedForParse(str);
+  ptr = ctx->ReadString(ptr, size, str);
+  if (PROTOBUF_PREDICT_FALSE(!ptr)) return {};
+  PROTOBUF_ASSUME(ptr != nullptr);
+  return ptr;
+}
+
 const char* TcParser::MpRepeatedString(PROTOBUF_TC_PARAM_DECL) {
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   const uint16_t type_card = entry.type_card;
@@ -1904,18 +1938,39 @@ const char* TcParser::MpRepeatedString(PROTOBUF_TC_PARAM_DECL) {
       auto& field = RefAt<RepeatedPtrField<std::string>>(msg, entry.offset);
       const char* ptr2 = ptr;
       uint32_t next_tag;
-      do {
-        ptr = ptr2;
-        std::string* str = field.Add();
-        ptr = InlineGreedyStringParser(str, ptr, ctx);
-        if (PROTOBUF_PREDICT_FALSE(
-                ptr == nullptr ||
-                !MpVerifyUtf8(*str, table, entry, xform_val))) {
-          return Error(PROTOBUF_TC_PARAM_PASS);
-        }
-        if (!ctx->DataAvailable(ptr)) break;
-        ptr2 = ReadTag(ptr, &next_tag);
-      } while (next_tag == decoded_tag);
+
+      auto* arena = field.GetOwningArena();
+      SerialArena* serial_arena;
+      if (PROTOBUF_PREDICT_TRUE(
+              arena != nullptr &&
+              arena->impl_.GetSerialArenaFast(&serial_arena) &&
+              field.PrepareForParse())) {
+        do {
+          ptr = ptr2;
+          ptr = ParseRepeatedStringOnce(ptr, arena, serial_arena, ctx, field);
+          if (PROTOBUF_PREDICT_FALSE(ptr == nullptr ||
+                                     !MpVerifyUtf8(field[field.size() - 1],
+                                                   table, entry, xform_val))) {
+            return Error(PROTOBUF_TC_PARAM_PASS);
+          }
+          if (!ctx->DataAvailable(ptr)) break;
+          ptr2 = ReadTag(ptr, &next_tag);
+        } while (next_tag == decoded_tag);
+      } else {
+        do {
+          ptr = ptr2;
+          std::string* str = field.Add();
+          ptr = InlineGreedyStringParser(str, ptr, ctx);
+          if (PROTOBUF_PREDICT_FALSE(
+                  ptr == nullptr ||
+                  !MpVerifyUtf8(*str, table, entry, xform_val))) {
+            return Error(PROTOBUF_TC_PARAM_PASS);
+          }
+          if (!ctx->DataAvailable(ptr)) break;
+          ptr2 = ReadTag(ptr, &next_tag);
+        } while (next_tag == decoded_tag);
+      }
+
       break;
     }
 

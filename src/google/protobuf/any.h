@@ -63,6 +63,8 @@ class PROTOBUF_EXPORT AnyMetadata {
   // AnyMetadata does not take ownership of "type_url" and "value".
   constexpr AnyMetadata(UrlType* type_url, ValueType* value)
       : type_url_(type_url), value_(value) {}
+  AnyMetadata(const AnyMetadata&) = delete;
+  AnyMetadata& operator=(const AnyMetadata&) = delete;
 
   // Packs a message using the default type URL prefix: "type.googleapis.com".
   // The resulted type URL will be "type.googleapis.com/<message_full_name>".
@@ -121,8 +123,6 @@ class PROTOBUF_EXPORT AnyMetadata {
 
   UrlType* type_url_;
   ValueType* value_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(AnyMetadata);
 };
 
 // Get the proto type name from Any::type_url value. For example, passing

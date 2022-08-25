@@ -54,7 +54,7 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/substitute.h"
 #include <google/protobuf/arena_test_util.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor_database.h>

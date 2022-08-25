@@ -40,7 +40,7 @@
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/substitute.h"
 #include <google/protobuf/compiler/cpp/helpers.h>
 #include <google/protobuf/compiler/cpp/primitive_field.h>
 #include <google/protobuf/compiler/cpp/string_field.h>
@@ -72,7 +72,7 @@ void MaySetAnnotationVariable(const Options& options,
   if (options.field_listener_options.forbidden_field_listener_events.count(
           std::string(annotation_name)))
     return;
-  (*variables)[absl::StrCat("annotate_", annotation_name)] = strings::Substitute(
+  (*variables)[absl::StrCat("annotate_", annotation_name)] = absl::Substitute(
       absl::StrCat(substitute_template_prefix, prepared_template, ");\n"),
       field_index, access_type);
 }
@@ -87,13 +87,13 @@ std::string GenerateTemplateForOneofString(const FieldDescriptor* descriptor,
           : "$0";
 
   if (descriptor->default_value_string().empty()) {
-    return strings::Substitute(absl::StrCat("_internal_has_", field_name, "() ? ",
+    return absl::Substitute(absl::StrCat("_internal_has_", field_name, "() ? ",
                                          field_pointer, ": nullptr"),
                             field_member);
   }
 
   if (descriptor->options().ctype() == google::protobuf::FieldOptions::STRING_PIECE) {
-    return strings::Substitute(absl::StrCat("_internal_has_", field_name, "() ? ",
+    return absl::Substitute(absl::StrCat("_internal_has_", field_name, "() ? ",
                                          field_pointer, ": nullptr"),
                             field_member);
   }
@@ -102,7 +102,7 @@ std::string GenerateTemplateForOneofString(const FieldDescriptor* descriptor,
       descriptor->options().ctype() == google::protobuf::FieldOptions::STRING
           ? "&$1.get()"
           : "&$1";
-  return strings::Substitute(
+  return absl::Substitute(
       absl::StrCat("_internal_has_", field_name, "() ? ", field_pointer, " : ",
                    default_value_pointer),
       field_member, MakeDefaultFieldName(descriptor));
@@ -115,7 +115,7 @@ std::string GenerateTemplateForSingleString(const FieldDescriptor* descriptor,
   }
 
   if (descriptor->options().ctype() == google::protobuf::FieldOptions::STRING) {
-    return strings::Substitute(
+    return absl::Substitute(
         "$0.IsDefault() ? &$1.get() : $0.UnsafeGetPointer()", field_member,
         MakeDefaultFieldName(descriptor));
   }
@@ -168,9 +168,9 @@ void AddAccessorAnnotations(const FieldDescriptor* descriptor,
   if (descriptor->is_repeated() && !descriptor->is_map()) {
     if (descriptor->type() != FieldDescriptor::TYPE_MESSAGE &&
         descriptor->type() != FieldDescriptor::TYPE_GROUP) {
-      prepared_template = strings::Substitute("&$0.Get(index)", field_member);
+      prepared_template = absl::Substitute("&$0.Get(index)", field_member);
       prepared_add_template =
-          strings::Substitute("&$0.Get($0.size() - 1)", field_member);
+          absl::Substitute("&$0.Get($0.size() - 1)", field_member);
     } else {
       prepared_template = "nullptr";
       prepared_add_template = "nullptr";

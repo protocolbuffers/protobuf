@@ -269,7 +269,7 @@ class TestLineCollector : public LineConsumer {
 };
 
 const int kBlockSizes[] = {-1, 1, 2, 5, 64};
-const int kBlockSizeCount = GOOGLE_ARRAYSIZE(kBlockSizes);
+const int kBlockSizeCount = ABSL_ARRAYSIZE(kBlockSizes);
 
 TEST(ObjCHelper, ParseSimple_BasicsSuccess) {
   const std::vector<std::pair<std::string, std::vector<std::string>>> tests = {

@@ -79,6 +79,8 @@ namespace internal {
 // This class is really a namespace that contains only static methods
 class PROTOBUF_EXPORT WireFormat {
  public:
+  WireFormat() = delete;
+
   // Given a field return its WireType
   static inline WireFormatLite::WireType WireTypeForField(
       const FieldDescriptor* field);
@@ -302,8 +304,6 @@ class PROTOBUF_EXPORT WireFormat {
                                                  uint64_t tag,
                                                  const Reflection* reflection,
                                                  const FieldDescriptor* field);
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(WireFormat);
 };
 
 // Subclass of FieldSkipper which saves skipped fields to an UnknownFieldSet.

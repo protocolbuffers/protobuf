@@ -33,7 +33,9 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <string>
 #include <type_traits>
+#include <utility>
 
 #include <google/protobuf/port.h>
 #include <google/protobuf/extension_set.h>
@@ -571,6 +573,10 @@ class PROTOBUF_EXPORT TcParser final {
   static inline const char* SingularString(PROTOBUF_TC_PARAM_DECL);
   template <typename TagType, Utf8Type utf8>
   static inline const char* RepeatedString(PROTOBUF_TC_PARAM_DECL);
+
+  static inline const char* ParseRepeatedStringOnce(
+      const char* ptr, Arena* arena, SerialArena* serial_arena,
+      ParseContext* ctx, RepeatedPtrField<std::string>& field);
 
   // Mini field lookup:
   static const TcParseTableBase::FieldEntry* FindFieldEntry(

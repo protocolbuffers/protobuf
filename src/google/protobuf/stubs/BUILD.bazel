@@ -48,10 +48,8 @@ cc_library(
 cc_library(
     name = "stubs",
     srcs = [
-        "substitute.cc",
     ],
     hdrs = [
-        "substitute.h",
     ],
     copts = COPTS,
     include_prefix = "google/protobuf/stubs",

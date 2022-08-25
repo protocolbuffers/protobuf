@@ -870,6 +870,13 @@
 #undef PACKAGE
 #endif
 
+// autoheader defines this in some circumstances
+#ifdef PACKAGE
+#define PROTOBUF_DID_UNDEF_PACKAGE
+#pragma push_macro("PACKAGE")
+#undef PACKAGE
+#endif
+
 // Windows declares several inconvenient macro names.  We #undef them and then
 // restore them in port_undef.inc.
 #ifdef _WIN32

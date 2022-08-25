@@ -62,9 +62,9 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
       (*variables)["val_cpp"] = PrimitiveTypeName(options, val->cpp_type());
   }
   (*variables)["key_wire_type"] =
-      "TYPE_" + ToUpper(DeclaredTypeMethodName(key->type()));
+      "TYPE_" + absl::AsciiStrToUpper(DeclaredTypeMethodName(key->type()));
   (*variables)["val_wire_type"] =
-      "TYPE_" + ToUpper(DeclaredTypeMethodName(val->type()));
+      "TYPE_" + absl::AsciiStrToUpper(DeclaredTypeMethodName(val->type()));
   (*variables)["map_classname"] = ClassName(descriptor->message_type(), false);
   (*variables)["number"] = absl::StrCat(descriptor->number());
   (*variables)["tag"] = absl::StrCat(internal::WireFormat::MakeTag(descriptor));

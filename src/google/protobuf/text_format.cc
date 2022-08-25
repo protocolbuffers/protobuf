@@ -298,6 +298,8 @@ class TextFormat::Parser::ParserImpl {
     // Consume the starting token.
     tokenizer_.Next();
   }
+  ParserImpl(const ParserImpl&) = delete;
+  ParserImpl& operator=(const ParserImpl&) = delete;
   ~ParserImpl() {}
 
   // Parses the ASCII representation specified in input and saves the
@@ -371,8 +373,6 @@ class TextFormat::Parser::ParserImpl {
   static constexpr int64_t kint64min = std::numeric_limits<int64_t>::min();
   static constexpr int64_t kint64max = std::numeric_limits<int64_t>::max();
   static constexpr uint64_t kuint64max = std::numeric_limits<uint64_t>::max();
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ParserImpl);
 
   // Reports an error with the given message with information indicating
   // the position (as derived from the current token).
@@ -511,7 +511,7 @@ class TextFormat::Parser::ParserImpl {
         // field names.
         if (field == nullptr) {
           std::string lower_field_name = field_name;
-          LowerString(&lower_field_name);
+          absl::AsciiStrToLower(&lower_field_name);
           field = descriptor->FindFieldByName(lower_field_name);
           // If the case-insensitive match worked but the field is NOT a group,
           if (field != nullptr &&
@@ -527,7 +527,7 @@ class TextFormat::Parser::ParserImpl {
 
         if (field == nullptr && allow_case_insensitive_field_) {
           std::string lower_field_name = field_name;
-          LowerString(&lower_field_name);
+          absl::AsciiStrToLower(&lower_field_name);
           field = descriptor->FindFieldByLowercaseName(lower_field_name);
         }
 
@@ -963,7 +963,7 @@ class TextFormat::Parser::ParserImpl {
     //   inf, inff, infinity, nan
     if (has_minus && LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
       std::string text = tokenizer_.current().text;
-      LowerString(&text);
+      absl::AsciiStrToLower(&text);
       if (text != "inf" &&
           text != "infinity" && text != "nan") {
         ReportError("Invalid float number: " + text);
@@ -1168,7 +1168,7 @@ class TextFormat::Parser::ParserImpl {
       tokenizer_.Next();
     } else if (LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
       std::string text = tokenizer_.current().text;
-      LowerString(&text);
+      absl::AsciiStrToLower(&text);
       if (text == "inf" ||
           text == "infinity") {
         *value = std::numeric_limits<double>::infinity();
@@ -1306,6 +1306,8 @@ class TextFormat::Parser::ParserImpl {
     explicit ParserErrorCollector(TextFormat::Parser::ParserImpl* parser)
         : parser_(parser) {}
 
+    ParserErrorCollector(const ParserErrorCollector&) = delete;
+    ParserErrorCollector& operator=(const ParserErrorCollector&) = delete;
     ~ParserErrorCollector() override {}
 
     void AddError(int line, int column, const std::string& message) override {
@@ -1317,7 +1319,6 @@ class TextFormat::Parser::ParserImpl {
     }
 
    private:
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ParserErrorCollector);
     TextFormat::Parser::ParserImpl* parser_;
   };
 
@@ -1368,6 +1369,8 @@ class TextFormat::Printer::TextGenerator
         indent_level_(initial_indent_level),
         initial_indent_level_(initial_indent_level) {}
 
+  TextGenerator(const TextGenerator&) = delete;
+  TextGenerator& operator=(const TextGenerator&) = delete;
   ~TextGenerator() override {
     // Only BackUp() if we're sure we've successfully called Next() at least
     // once.
@@ -1444,8 +1447,6 @@ class TextFormat::Printer::TextGenerator
   }
 
  private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TextGenerator);
-
   void Write(const char* data, size_t size) {
     if (failed_) return;
     if (size == 0) return;

@@ -58,8 +58,9 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
 #include <google/protobuf/compiler/cpp/names.h>
 #include <google/protobuf/compiler/cpp/options.h>
@@ -525,7 +526,7 @@ std::string ResolveKeyword(const std::string& name) {
 
 std::string FieldName(const FieldDescriptor* field) {
   std::string result = field->name();
-  LowerString(&result);
+  absl::AsciiStrToLower(&result);
   if (Keywords().count(result) > 0) {
     result.append("_");
   }
@@ -805,7 +806,7 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
     case FieldDescriptor::CPPTYPE_ENUM:
       // Lazy:  Generate a static_cast because we don't have a helper function
       //   that constructs the full name of an enum value.
-      return strings::Substitute(
+      return absl::Substitute(
           "static_cast< $0 >($1)", ClassName(field->enum_type(), true),
           Int32ToString(field->default_value_enum()->number()));
     case FieldDescriptor::CPPTYPE_STRING:
@@ -865,7 +866,7 @@ std::string SafeFunctionName(const Descriptor* descriptor,
                              const std::string& prefix) {
   // Do not use FieldName() since it will escape keywords.
   std::string name = field->name();
-  LowerString(&name);
+  absl::AsciiStrToLower(&name);
   std::string function_name = prefix + name;
   if (descriptor->FindFieldByName(function_name)) {
     // Single underscore will also make it conflicting with the private data

@@ -37,16 +37,19 @@
 #include <algorithm>
 #include <cstdint>
 #include <limits>
-#include <unordered_set>
 #include <vector>
 
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/substitute.h"
 #include <google/protobuf/compiler/java/name_resolver.h>
 #include <google/protobuf/compiler/java/names.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -72,49 +75,47 @@ const char* DefaultPackage(Options options) {
   return options.opensource_runtime ? "" : "com.google.protos";
 }
 
-// Names that should be avoided (in UpperCamelCase format).
-// Using them will cause the compiler to generate accessors whose names
-// collide with methods defined in base classes.
-// Keep this list in sync with specialFieldNames in
-// java/core/src/main/java/com/google/protobuf/DescriptorMessageInfoFactory.java
-const char* kForbiddenWordList[] = {
-    // java.lang.Object:
-    "Class",
-    // com.google.protobuf.MessageLiteOrBuilder:
-    "DefaultInstanceForType",
-    // com.google.protobuf.MessageLite:
-    "ParserForType",
-    "SerializedSize",
-    // com.google.protobuf.MessageOrBuilder:
-    "AllFields",
-    "DescriptorForType",
-    "InitializationErrorString",
-    "UnknownFields",
-    // obsolete. kept for backwards compatibility of generated code
-    "CachedSize",
-};
-
-const std::unordered_set<std::string>* kReservedNames =
-    new std::unordered_set<std::string>({
-        "abstract",   "assert",       "boolean",   "break",      "byte",
-        "case",       "catch",        "char",      "class",      "const",
-        "continue",   "default",      "do",        "double",     "else",
-        "enum",       "extends",      "final",     "finally",    "float",
-        "for",        "goto",         "if",        "implements", "import",
-        "instanceof", "int",          "interface", "long",       "native",
-        "new",        "package",      "private",   "protected",  "public",
-        "return",     "short",        "static",    "strictfp",   "super",
-        "switch",     "synchronized", "this",      "throw",      "throws",
-        "transient",  "try",          "void",      "volatile",   "while",
-    });
+bool IsReservedName(absl::string_view name) {
+  static const auto& kReservedNames =
+      *new absl::flat_hash_set<absl::string_view>({
+          "abstract",   "assert",       "boolean",   "break",      "byte",
+          "case",       "catch",        "char",      "class",      "const",
+          "continue",   "default",      "do",        "double",     "else",
+          "enum",       "extends",      "final",     "finally",    "float",
+          "for",        "goto",         "if",        "implements", "import",
+          "instanceof", "int",          "interface", "long",       "native",
+          "new",        "package",      "private",   "protected",  "public",
+          "return",     "short",        "static",    "strictfp",   "super",
+          "switch",     "synchronized", "this",      "throw",      "throws",
+          "transient",  "try",          "void",      "volatile",   "while",
+      });
+  return kReservedNames.contains(name);
+}
 
 bool IsForbidden(const std::string& field_name) {
-  for (size_t i = 0; i < ABSL_ARRAYSIZE(kForbiddenWordList); ++i) {
-    if (UnderscoresToCamelCase(field_name, true) == kForbiddenWordList[i]) {
-      return true;
-    }
-  }
-  return false;
+  // Names that should be avoided (in UpperCamelCase format).
+  // Using them will cause the compiler to generate accessors whose names
+  // collide with methods defined in base classes.
+  // Keep this list in sync with specialFieldNames in
+  // java/core/src/main/java/com/google/protobuf/DescriptorMessageInfoFactory.java
+  static const auto& kForbiddenNames =
+      *new absl::flat_hash_set<absl::string_view>({
+        // java.lang.Object:
+          "Class",
+          // com.google.protobuf.MessageLiteOrBuilder:
+          "DefaultInstanceForType",
+          // com.google.protobuf.MessageLite:
+          "ParserForType",
+          "SerializedSize",
+          // com.google.protobuf.MessageOrBuilder:
+          "AllFields",
+          "DescriptorForType",
+          "InitializationErrorString",
+          "UnknownFields",
+          // obsolete. kept for backwards compatibility of generated code
+          "CachedSize",
+      });
+  return kForbiddenNames.contains(UnderscoresToCamelCase(field_name, true));
 }
 
 std::string FieldName(const FieldDescriptor* field) {
@@ -261,7 +262,7 @@ std::string UnderscoresToCamelCase(const MethodDescriptor* method) {
 
 std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field) {
   std::string name = UnderscoresToCamelCase(field);
-  if (kReservedNames->find(name) != kReservedNames->end()) {
+  if (IsReservedName(name)) {
     return name + "_";
   }
   return name;
@@ -269,23 +270,23 @@ std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field) {
 
 // Names that should be avoided as field names in Kotlin.
 // All Kotlin hard keywords are in this list.
-const std::unordered_set<std::string>* kKotlinForbiddenNames =
-    new std::unordered_set<std::string>({
-        "as",    "as?",   "break", "class",  "continue",  "do",     "else",
-        "false", "for",   "fun",   "if",     "in",        "!in",    "interface",
-        "is",    "!is",   "null",  "object", "package",   "return", "super",
-        "this",  "throw", "true",  "try",    "typealias", "typeof", "val",
-        "var",   "when",  "while",
-    });
+bool IsForbiddenKotlin(absl::string_view field_name) {
+  static const auto& kKotlinForbiddenNames =
+      *new absl::flat_hash_set<absl::string_view>({
+          "as",      "as?",       "break",  "class", "continue", "do",
+          "else",    "false",     "for",    "fun",   "if",       "in",
+          "!in",     "interface", "is",     "!is",   "null",     "object",
+          "package", "return",    "super",  "this",  "throw",    "true",
+          "try",     "typealias", "typeof", "val",   "var",      "when",
+          "while",
+      });
 
-bool IsForbiddenKotlin(const std::string& field_name) {
-  return kKotlinForbiddenNames->find(field_name) !=
-         kKotlinForbiddenNames->end();
+  return kKotlinForbiddenNames.contains(field_name);
 }
 
 std::string EscapeKotlinKeywords(std::string name) {
   std::vector<std::string> escaped_packages;
-  std::vector<std::string> packages = Split(name, "."); // NOLINT
+  std::vector<std::string> packages = absl::StrSplit(name, "."); // NOLINT
   for (const std::string& package : packages) {
     if (IsForbiddenKotlin(package)) {
       escaped_packages.push_back("`" + package + "`");
@@ -381,7 +382,7 @@ std::string ExtraMessageOrBuilderInterfaces(const Descriptor* descriptor) {
 
 std::string FieldConstantName(const FieldDescriptor* field) {
   std::string name = field->name() + "_FIELD_NUMBER";
-  ToUpper(&name);
+  absl::AsciiStrToUpper(&name);
   return name;
 }
 
@@ -643,7 +644,7 @@ std::string DefaultValue(const FieldDescriptor* field, bool immutable,
       if (GetType(field) == FieldDescriptor::TYPE_BYTES) {
         if (field->has_default_value()) {
           // See comments in Internal.java for gory details.
-          return strings::Substitute(
+          return absl::Substitute(
               "com.google.protobuf.Internal.bytesDefaultValue(\"$0\")",
               absl::CEscape(field->default_value_string()));
         } else {
@@ -655,7 +656,7 @@ std::string DefaultValue(const FieldDescriptor* field, bool immutable,
           return "\"" + absl::CEscape(field->default_value_string()) + "\"";
         } else {
           // See comments in Internal.java for gory details.
-          return strings::Substitute(
+          return absl::Substitute(
               "com.google.protobuf.Internal.stringDefaultValue(\"$0\")",
               absl::CEscape(field->default_value_string()));
         }
@@ -941,7 +942,7 @@ const FieldDescriptor** SortFieldsByNumber(const Descriptor* descriptor) {
 // already_seen is used to avoid checking the same type multiple times
 // (and also to protect against recursion).
 bool HasRequiredFields(const Descriptor* type,
-                       std::unordered_set<const Descriptor*>* already_seen) {
+                       absl::flat_hash_set<const Descriptor*>* already_seen) {
   if (already_seen->count(type) > 0) {
     // The type is already in cache.  This means that either:
     // a. The type has no required fields.
@@ -976,7 +977,7 @@ bool HasRequiredFields(const Descriptor* type,
 }
 
 bool HasRequiredFields(const Descriptor* type) {
-  std::unordered_set<const Descriptor*> already_seen;
+  absl::flat_hash_set<const Descriptor*> already_seen;
   return HasRequiredFields(type, &already_seen);
 }
 
