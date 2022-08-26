@@ -15,7 +15,6 @@ def internal_ruby_extension(
       **kwargs: extra arguments to forward to the genrule.
     """
 
-
     native.genrule(
         name = name,
         srcs = deps + [
@@ -28,8 +27,9 @@ def internal_ruby_extension(
         tags = ["manual"],
         outs = [extension],
         cmd = "pushd `dirname $(location Rakefile)`\n" +
+              "bundle install\n" +
               "BAZEL=true rake\n" +
               "popd\n" +
               "cp `dirname $(location Rakefile)`/%s $(OUTS)\n" % extension,
-        **kwargs,
+        **kwargs
     )
