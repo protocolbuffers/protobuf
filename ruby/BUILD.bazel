@@ -26,43 +26,31 @@ filegroup(
     name = "srcs",
     srcs = glob([
         "lib/**/*.rb",
-        "src/**/*.proto",
+        "ext/**/*.{c,h}}",
     ]) + [
         "Gemfile",
         "Rakefile",
         "google-protobuf.gemspec",
-        "pom.xml",
     ],
 )
 
 internal_ruby_extension(
     name = "protobuf_c_mac",
-    extension = "lib/google/protobuf_c.bundle",
+    extension = "ext/google/x86_64-darwin/libprotobuf_c.bundle",
     deps = glob(["ext/google/protobuf_c/*"]),
     target_compatible_with = select({
-        ":java_ruby": ["@platforms//:incompatible"],
+        "@platforms//os:linux": ["@platforms//:incompatible"],
         "//conditions:default": ["@platforms//os:osx"],
     }),
 )
 
 internal_ruby_extension(
     name = "protobuf_c",
-    extension = "lib/google/protobuf_c.so",
+    extension = "ext/google/x86_64-linux/libprotobuf_c.so",
     deps = glob(["ext/google/protobuf_c/*"]),
     target_compatible_with = select({
-        ":java_ruby": ["@platforms//:incompatible"],
         "@platforms//os:osx": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
-)
-
-internal_ruby_extension(
-    name = "protobuf_java",
-    extension = "lib/google/protobuf_java.jar",
-    deps = glob(["src/**/*.java"]),
-    target_compatible_with = select({
-        ":java_ruby": [],
-        "//conditions:default": ["@platforms//:incompatible"],
+        "//conditions:default": ["@platforms//os:linux"],
     }),
 )
 
@@ -144,10 +132,6 @@ conformance_test(
     failure_list = "//conformance:failure_list_ruby.txt",
     testee = "//conformance:conformance_ruby",
     text_format_failure_list = "//conformance:text_format_failure_list_ruby.txt",
-    target_compatible_with = select({
-        ":java_ruby": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
 )
 
 conformance_test(
@@ -155,10 +139,6 @@ conformance_test(
     failure_list = "//conformance:failure_list_jruby.txt",
     testee = "//conformance:conformance_ruby",
     text_format_failure_list = "//conformance:text_format_failure_list_jruby.txt",
-    target_compatible_with = select({
-        ":java_ruby": [],
-        "//conditions:default": ["@platforms//:incompatible"],
-    }),
 )
 
 ################################################################################
