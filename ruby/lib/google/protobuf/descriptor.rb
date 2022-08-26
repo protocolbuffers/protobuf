@@ -175,7 +175,7 @@ module Google
 
       def build_message_class
         descriptor = self
-        Class.new(Google::Protobuf::MessageExts::AbstractMessage) do
+        Class.new(Google::Protobuf::const_get(:AbstractMessage)) do
           @descriptor = descriptor
           class << self
             attr_accessor :descriptor
