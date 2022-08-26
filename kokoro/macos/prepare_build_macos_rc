@@ -21,6 +21,14 @@ export CC=gcc
 export CXX=g++
 
 ##
+# Install Virtual Python Environment
+
+if [[ "${KOKORO_INSTALL_VENV:-}" == "yes" ]] ; then
+    python3 -m venv venv
+    source venv/bin/activate
+fi
+
+##
 # Install Tox
 
 if [[ "${KOKORO_INSTALL_TOX:-}" == "yes" ]] ; then
@@ -34,14 +42,6 @@ if [[ "${KOKORO_INSTALL_RVM:-}" == "yes" ]] ; then
     git config --global --add safe.directory $HOMEBREW_PREFIX/Library/Taps/homebrew/homebrew-core
     git config --global --add safe.directory $HOMEBREW_PREFIX/Library/Taps/homebrew/homebrew-services
     sudo chown -R $(whoami) $HOME/.rvm/
-fi
-
-##
-# Install Virtual Python Environment
-
-if [[ "${KOKORO_INSTALL_VENV:-}" == "yes" ]] ; then
-    python3 -m venv venv
-    source venv/bin/activate
 fi
 
 ##
