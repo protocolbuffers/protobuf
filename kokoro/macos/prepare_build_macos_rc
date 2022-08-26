@@ -4,6 +4,8 @@
 
 set -eux
 
+export HOMEBREW_PREFIX=$(brew --prefix)
+
 ##
 # Select Xcode version
 
