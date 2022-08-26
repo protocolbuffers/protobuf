@@ -529,7 +529,7 @@ module Google
             raise ArgumentError.new "method_missing_internal called with invalid mode #{mode.inspect}" unless [:respond_to_missing?, :method_missing].include? mode
 
             #TODO(jatl) not being allowed is not the same thing as not responding, but this is needed to pass tests
-            if method_name.end_with? '='
+            if method_name.to_s.end_with? '='
               if self.class.send(:oneof_field_names).include? method_name.to_s[0..-2].to_sym
                 return false if mode == :respond_to_missing?
                 raise RuntimeError.new "Oneof accessors are read-only."
