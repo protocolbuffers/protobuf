@@ -114,6 +114,24 @@ cc_library(
     visibility = ["//third_party/upb/protos_generator:__pkg__"],
 )
 
+cc_library(
+    name = "names",
+    srcs = [
+        "names.cc",
+    ],
+    hdrs = [
+        "names.h",
+    ],
+    copts = UPB_DEFAULT_CPPOPTS,
+    visibility = ["//third_party/upb/protos_generator:__pkg__"],
+    deps = [
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/strings",
+        "@com_google_protobuf//:protobuf",
+        "@com_google_protobuf//src/google/protobuf/compiler:code_generator",
+    ],
+)
+
 cc_binary(
     name = "protoc-gen-upb",
     srcs = ["protoc-gen-upb.cc"],
@@ -122,6 +140,7 @@ cc_binary(
     deps = [
         ":common",
         ":file_layout",
+        ":names",
         "//:mini_table",
         "//:port",
         "//:upb",
