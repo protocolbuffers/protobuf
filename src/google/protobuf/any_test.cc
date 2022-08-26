@@ -65,7 +65,7 @@ TEST(AnyTest, TestPackFromSerializationExceedsSizeLimit) {
   protobuf_unittest::TestAny submessage;
   submessage.mutable_text()->resize(INT_MAX, 'a');
   protobuf_unittest::TestAny message;
-  EXPECT_TRUE(message.mutable_any_value()->PackFrom(submessage));
+  EXPECT_FALSE(message.mutable_any_value()->PackFrom(submessage));
 }
 
 TEST(AnyTest, TestUnpackWithTypeMismatch) {
