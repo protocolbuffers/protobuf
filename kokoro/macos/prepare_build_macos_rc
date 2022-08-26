@@ -38,3 +38,7 @@ if [[ "${KOKORO_INSTALL_RVM:-}" == "yes" ]] ; then
   # GitHub. See this issue for details: https://github.com/rvm/rvm/issues/5133
   curl -sSL https://raw.githubusercontent.com/rvm/rvm/master/binscripts/rvm-installer | bash -s master --ruby
 fi
+
+##
+# Install external dependencies
+brew install m4
