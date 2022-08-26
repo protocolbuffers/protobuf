@@ -76,10 +76,10 @@ module Google
       typedef :pointer, :OneofDefPointer
       typedef :pointer, :binary_string
       if ::FFI::Platform::ARCH == "aarch64"
-        typdef :uint8_t, :u_int8_t
-        typdef :uint16_t, :u_int16_t
-        typdef :uint32_t, :u_int32_t
-        typdef :uint64_t, :u_int64_t
+        typedef :uint8_t, :u_int8_t
+        typedef :uint16_t, :u_int16_t
+        typedef :uint32_t, :u_int32_t
+        typedef :uint64_t, :u_int64_t
       end
 
       FieldType = enum(
