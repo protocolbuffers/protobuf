@@ -1,1 +1,2 @@
 build --cxxopt=-std=c++14
+build --action_env=GEM_HOME
