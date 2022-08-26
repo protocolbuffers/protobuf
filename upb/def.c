@@ -323,11 +323,9 @@ uint32_t field_rank(const upb_FieldDef* f) {
 }
 
 static int cmp_values(const void* a, const void* b) {
-  const upb_EnumValueDef* A = *(const upb_EnumValueDef**)a;
-  const upb_EnumValueDef* B = *(const upb_EnumValueDef**)b;
-  if ((uint32_t)A->number < (uint32_t)B->number) return -1;
-  if ((uint32_t)A->number > (uint32_t)B->number) return 1;
-  return 0;
+  const uint32_t A = upb_EnumValueDef_Number(*(const upb_EnumValueDef**)a);
+  const uint32_t B = upb_EnumValueDef_Number(*(const upb_EnumValueDef**)b);
+  return (A < B) ? -1 : (A > B);
 }
 
 static void upb_Status_setoom(upb_Status* status) {
@@ -686,7 +684,8 @@ const upb_MiniTable_Field* upb_FieldDef_MiniTable(const upb_FieldDef* f) {
 const upb_MiniTable_Extension* _upb_FieldDef_ExtensionMiniTable(
     const upb_FieldDef* f) {
   UPB_ASSERT(upb_FieldDef_IsExtension(f));
-  return f->file->ext_layouts[f->layout_index];
+  const upb_FileDef* file = upb_FieldDef_File(f);
+  return file->ext_layouts[f->layout_index];
 }
 
 bool _upb_FieldDef_IsProto3Optional(const upb_FieldDef* f) {
@@ -732,8 +731,9 @@ bool upb_FieldDef_HasSubDef(const upb_FieldDef* f) {
 
 bool upb_FieldDef_HasPresence(const upb_FieldDef* f) {
   if (upb_FieldDef_IsRepeated(f)) return false;
+  const upb_FileDef* file = upb_FieldDef_File(f);
   return upb_FieldDef_IsSubMessage(f) || upb_FieldDef_ContainingOneof(f) ||
-         f->file->syntax == kUpb_Syntax_Proto2;
+         upb_FileDef_Syntax(file) == kUpb_Syntax_Proto2;
 }
 
 static bool between(int32_t x, int32_t low, int32_t high) {
@@ -781,7 +781,7 @@ const char* upb_MessageDef_Name(const upb_MessageDef* m) {
 }
 
 upb_Syntax upb_MessageDef_Syntax(const upb_MessageDef* m) {
-  return m->file->syntax;
+  return upb_FileDef_Syntax(m->file);
 }
 
 const upb_FieldDef* upb_MessageDef_FindFieldByNumber(const upb_MessageDef* m,
@@ -1467,16 +1467,22 @@ static uint8_t map_descriptortype(const upb_FieldDef* f) {
   uint8_t type = upb_FieldDef_Type(f);
   /* See TableDescriptorType() in upbc/generator.cc for details and
    * rationale of these exceptions. */
-  if (type == kUpb_FieldType_String && f->file->syntax == kUpb_Syntax_Proto2) {
-    return kUpb_FieldType_Bytes;
-  } else if (type == kUpb_FieldType_Enum &&
-             (f->sub.enumdef->file->syntax == kUpb_Syntax_Proto3 ||
-              UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 ||
-              // TODO(https://github.com/protocolbuffers/upb/issues/541):
-              // fix map enum values to check for unknown enum values and put
-              // them in the unknown field set.
-              upb_MessageDef_IsMapEntry(upb_FieldDef_ContainingType(f)))) {
-    return kUpb_FieldType_Int32;
+  if (type == kUpb_FieldType_String) {
+    const upb_FileDef* file = upb_FieldDef_File(f);
+    const upb_Syntax syntax = upb_FileDef_Syntax(file);
+
+    if (syntax == kUpb_Syntax_Proto2) return kUpb_FieldType_Bytes;
+  } else if (type == kUpb_FieldType_Enum) {
+    const upb_FileDef* file = upb_EnumDef_File(f->sub.enumdef);
+    const upb_Syntax syntax = upb_FileDef_Syntax(file);
+
+    if (syntax == kUpb_Syntax_Proto3 || UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3 ||
+        // TODO(https://github.com/protocolbuffers/upb/issues/541):
+        // fix map enum values to check for unknown enum values and put
+        // them in the unknown field set.
+        upb_MessageDef_IsMapEntry(upb_FieldDef_ContainingType(f))) {
+      return kUpb_FieldType_Int32;
+    }
   }
   return type;
 }
@@ -1541,12 +1547,12 @@ static void make_layout(symtab_addctx* ctx, const upb_MessageDef* m) {
 
   /* Count sub-messages. */
   for (size_t i = 0; i < field_count; i++) {
-    const upb_FieldDef* f = &m->fields[i];
+    const upb_FieldDef* f = upb_MessageDef_Field(m, i);
     if (upb_FieldDef_IsSubMessage(f)) {
       sublayout_count++;
     }
     if (upb_FieldDef_CType(f) == kUpb_CType_Enum &&
-        f->sub.enumdef->file->syntax == kUpb_Syntax_Proto2) {
+        upb_FileDef_Syntax(f->sub.enumdef->file) == kUpb_Syntax_Proto2) {
       sublayout_count++;
     }
   }
@@ -2235,8 +2241,10 @@ static void set_default_default(symtab_addctx* ctx, upb_FieldDef* f) {
     case kUpb_CType_Bool:
       f->defaultval.boolean = false;
       break;
-    case kUpb_CType_Enum:
-      f->defaultval.sint = f->sub.enumdef->values[0].number;
+    case kUpb_CType_Enum: {
+      const upb_EnumValueDef* v = upb_EnumDef_Value(f->sub.enumdef, 0);
+      f->defaultval.sint = upb_EnumValueDef_Number(v);
+    }
     case kUpb_CType_Message:
       break;
   }
@@ -2558,7 +2566,8 @@ static upb_EnumValueDef* _upb_EnumValueDefs_New(
   }
   e->is_sorted = is_sorted;
 
-  if (ctx->file->syntax == kUpb_Syntax_Proto3 && n > 0 && v[0].number != 0) {
+  if (upb_FileDef_Syntax(ctx->file) == kUpb_Syntax_Proto3 && n > 0 &&
+      v[0].number != 0) {
     symtab_errf(ctx, "for proto3, the first enum value must be zero (%s)",
                 e->full_name);
   }
@@ -2598,7 +2607,7 @@ static void create_enumdef(symtab_addctx* ctx, const char* prefix,
 
   upb_inttable_compact(&e->iton, ctx->arena);
 
-  if (e->file->syntax == kUpb_Syntax_Proto2) {
+  if (upb_FileDef_Syntax(e->file) == kUpb_Syntax_Proto2) {
     if (ctx->layout) {
       UPB_ASSERT(ctx->enum_count < ctx->layout->enum_count);
       e->layout = ctx->layout->enums[ctx->enum_count++];
@@ -2850,7 +2859,7 @@ static void resolve_default(
     upb_StringView defaultval =
         google_protobuf_FieldDescriptorProto_default_value(field_proto);
 
-    if (f->file->syntax == kUpb_Syntax_Proto3) {
+    if (upb_FileDef_Syntax(f->file) == kUpb_Syntax_Proto3) {
       symtab_errf(ctx, "proto3 fields cannot have explicit defaults (%s)",
                   f->full_name);
     }
