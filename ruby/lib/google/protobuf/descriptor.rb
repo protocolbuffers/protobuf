@@ -175,11 +175,7 @@ module Google
 
       def build_message_class
         descriptor = self
-        Class.new do
-          require "google/protobuf/message_exts"
-          include ::Google::Protobuf::MessageExts
-          extend ::Google::Protobuf::MessageExts::ClassMethods
-
+        Class.new(Google::Protobuf::MessageExts::AbstractMessage) do
           @descriptor = descriptor
           class << self
             attr_accessor :descriptor
