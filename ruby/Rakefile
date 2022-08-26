@@ -1,6 +1,5 @@
 require "rubygems"
 require "rubygems/package_task"
-require "rake/extensiontask" unless RUBY_PLATFORM == "java"
 require "rake/testtask"
 require "ffi-compiler/compile_task"
 
