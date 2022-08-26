@@ -40,7 +40,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/casts.h>
+#include "absl/base/casts.h"
 #include <google/protobuf/stubs/stl_util.h>
 
 // Must be included last
@@ -187,7 +187,7 @@ int CopyingInputStream::Skip(int count) {
   int skipped = 0;
   while (skipped < count) {
     int bytes = Read(junk, std::min(count - skipped,
-                                    implicit_cast<int>(sizeof(junk))));
+                                    absl::implicit_cast<int>(sizeof(junk))));
     if (bytes <= 0) {
       // EOF or read error.
       return skipped;

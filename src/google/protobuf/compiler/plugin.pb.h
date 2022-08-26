@@ -100,7 +100,7 @@ inline const std::string& CodeGeneratorResponse_Feature_Name(CodeGeneratorRespon
     <CodeGeneratorResponse_Feature_descriptor, 0, 1>(static_cast<int>(value));
 }
 inline bool CodeGeneratorResponse_Feature_Parse(
-    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, CodeGeneratorResponse_Feature* value) {
+    ::absl::string_view name, CodeGeneratorResponse_Feature* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<CodeGeneratorResponse_Feature>(
     CodeGeneratorResponse_Feature_descriptor(), name, value);
 }
@@ -216,7 +216,7 @@ class PROTOC_EXPORT Version final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.compiler.Version";
   }
   protected:
@@ -426,7 +426,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.compiler.CodeGeneratorRequest";
   }
   protected:
@@ -657,7 +657,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.compiler.CodeGeneratorResponse.File";
   }
   protected:
@@ -882,7 +882,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.compiler.CodeGeneratorResponse";
   }
   protected:
@@ -924,7 +924,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
       "Incorrect type passed to function Feature_Name.");
     return CodeGeneratorResponse_Feature_Name(enum_t_value);
   }
-  static inline bool Feature_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,
+  static inline bool Feature_Parse(::absl::string_view name,
       Feature* value) {
     return CodeGeneratorResponse_Feature_Parse(name, value);
   }

@@ -29,9 +29,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #import "GPBTestUtilities.h"
-#import "google/protobuf/Unittest.pbobjc.h"
-#import "google/protobuf/UnittestImport.pbobjc.h"
-#import "google/protobuf/UnittestObjc.pbobjc.h"
+#import "objectivec/Tests/Unittest.pbobjc.h"
+#import "objectivec/Tests/UnittestImport.pbobjc.h"
+#import "objectivec/Tests/UnittestObjc.pbobjc.h"
 
 //
 // This file really just uses the unittests framework as a testbed to

@@ -388,12 +388,20 @@ TEST(TimeUtilTest, IsDurationValid) {
   overflow_nanos.set_nanos(TimeUtil::kDurationMaxNanoseconds + 1);
   Duration underflow_nanos;
   underflow_nanos.set_nanos(TimeUtil::kDurationMinNanoseconds - 1);
+  Duration positive_seconds_negative_nanos;
+  positive_seconds_negative_nanos.set_seconds(1);
+  positive_seconds_negative_nanos.set_nanos(-1);
+  Duration negative_seconds_positive_nanos;
+  negative_seconds_positive_nanos.set_seconds(-1);
+  negative_seconds_positive_nanos.set_nanos(1);
 
   EXPECT_TRUE(TimeUtil::IsDurationValid(valid));
   EXPECT_FALSE(TimeUtil::IsDurationValid(overflow));
   EXPECT_FALSE(TimeUtil::IsDurationValid(underflow));
   EXPECT_FALSE(TimeUtil::IsDurationValid(overflow_nanos));
   EXPECT_FALSE(TimeUtil::IsDurationValid(underflow_nanos));
+  EXPECT_FALSE(TimeUtil::IsDurationValid(positive_seconds_negative_nanos));
+  EXPECT_FALSE(TimeUtil::IsDurationValid(negative_seconds_positive_nanos));
 }
 
 TEST(TimeUtilTest, IsTimestampValid) {

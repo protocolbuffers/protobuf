@@ -30,9 +30,9 @@
 syntax = "proto2";
 
 import "google/protobuf/any.proto";
-import "google/protobuf/unittest.proto";
+import "objectivec/Tests/unittest.proto";
 
-package protobuf_unittest;
+package objc.protobuf.tests;
 
 // Used to check that Headerdocs and appledoc work correctly. If these comments
 // are not handled correctly, Xcode will fail to build the tests.

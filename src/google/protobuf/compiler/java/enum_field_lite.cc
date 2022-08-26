@@ -43,6 +43,7 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/compiler/java/context.h>
 #include <google/protobuf/compiler/java/doc_comment.h>
 #include <google/protobuf/compiler/java/helpers.h>
@@ -80,10 +81,10 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   (*variables)["default"] =
       ImmutableDefaultValue(descriptor, name_resolver, context->options());
   (*variables)["default_number"] =
-      StrCat(descriptor->default_value_enum()->number());
-  (*variables)["tag"] = StrCat(
+      absl::StrCat(descriptor->default_value_enum()->number());
+  (*variables)["tag"] = absl::StrCat(
       static_cast<int32_t>(internal::WireFormat::MakeTag(descriptor)));
-  (*variables)["tag_size"] = StrCat(
+  (*variables)["tag_size"] = absl::StrCat(
       internal::WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
@@ -98,10 +99,10 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
 
   if (HasHasbit(descriptor)) {
     if (!context->options().opensource_runtime) {
-      (*variables)["bit_field_id"] = StrCat(messageBitIndex / 32);
+      (*variables)["bit_field_id"] = absl::StrCat(messageBitIndex / 32);
       (*variables)["bit_field_name"] = GetBitFieldNameForBit(messageBitIndex);
       (*variables)["bit_field_mask"] =
-          StrCat(1 << (messageBitIndex % 32));
+          absl::StrCat(1 << (messageBitIndex % 32));
     }
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);

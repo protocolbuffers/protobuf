@@ -238,6 +238,8 @@ class PROTOBUF_EXPORT MessageDifferencer {
   class PROTOBUF_EXPORT Reporter {
    public:
     Reporter();
+    Reporter(const Reporter&) = delete;
+    Reporter& operator=(const Reporter&) = delete;
     virtual ~Reporter();
 
     // Reports that a field has been added into Message2.
@@ -300,9 +302,6 @@ class PROTOBUF_EXPORT MessageDifferencer {
     virtual void ReportUnknownFieldIgnored(
         const Message& /* message1 */, const Message& /* message2 */,
         const std::vector<SpecificField>& /* field_path */) {}
-
-   private:
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Reporter);
   };
 
   // MapKeyComparator is used to determine if two elements have the same key
@@ -310,6 +309,8 @@ class PROTOBUF_EXPORT MessageDifferencer {
   class PROTOBUF_EXPORT MapKeyComparator {
    public:
     MapKeyComparator();
+    MapKeyComparator(const MapKeyComparator&) = delete;
+    MapKeyComparator& operator=(const MapKeyComparator&) = delete;
     virtual ~MapKeyComparator();
 
     virtual bool IsMatch(
@@ -318,9 +319,6 @@ class PROTOBUF_EXPORT MessageDifferencer {
       GOOGLE_CHECK(false) << "IsMatch() is not implemented.";
       return false;
     }
-
-   private:
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapKeyComparator);
   };
 
   // Abstract base class from which all IgnoreCriteria derive.
@@ -354,6 +352,8 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // To add a Reporter, construct default here, then use ReportDifferencesTo or
   // ReportDifferencesToString.
   explicit MessageDifferencer();
+  MessageDifferencer(const MessageDifferencer&) = delete;
+  MessageDifferencer& operator=(const MessageDifferencer&) = delete;
 
   ~MessageDifferencer();
 
@@ -648,6 +648,8 @@ class PROTOBUF_EXPORT MessageDifferencer {
    public:
     explicit StreamReporter(io::ZeroCopyOutputStream* output);
     explicit StreamReporter(io::Printer* printer);  // delimiter '$'
+    StreamReporter(const StreamReporter&) = delete;
+    StreamReporter& operator=(const StreamReporter&) = delete;
     ~StreamReporter() override;
 
     // When set to true, the stream reporter will also output aggregates nodes
@@ -715,7 +717,6 @@ class PROTOBUF_EXPORT MessageDifferencer {
     const Message* message1_;
     const Message* message2_;
     MessageDifferencer::UnpackAnyField unpack_any_field_;
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StreamReporter);
   };
 
  private:
@@ -952,7 +953,6 @@ class PROTOBUF_EXPORT MessageDifferencer {
       match_indices_for_smart_list_callback_;
 
   MessageDifferencer::UnpackAnyField unpack_any_field_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageDifferencer);
 };
 
 // This class provides extra information to the FieldComparator::Compare

@@ -30,8 +30,8 @@
 
 #import "GPBTestUtilities.h"
 
-#import "google/protobuf/Unittest.pbobjc.h"
-#import "google/protobuf/UnittestObjc.pbobjc.h"
+#import "objectivec/Tests/Unittest.pbobjc.h"
+#import "objectivec/Tests/UnittestObjc.pbobjc.h"
 
 static const int kNumThreads = 100;
 static const int kNumMessages = 100;

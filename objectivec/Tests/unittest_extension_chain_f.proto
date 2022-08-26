@@ -29,9 +29,9 @@
 
 syntax = "proto2";
 
-package protobuf_unittest;
+package objc.protobuf.tests;
 
-import "unittest_extension_chain_g.proto";
+import "objectivec/Tests/unittest_extension_chain_g.proto";
 
 // The Root for this file should just be merging in the extensions from C's
 // Root (because G doesn't define anything itself).

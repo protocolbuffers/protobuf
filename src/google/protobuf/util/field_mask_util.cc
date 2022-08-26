@@ -32,9 +32,9 @@
 
 #include <cstdint>
 
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/str_join.h"
+#include "absl/strings/str_split.h"
 #include <google/protobuf/message.h>
-#include <google/protobuf/stubs/map_util.h>
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -46,19 +46,19 @@ namespace util {
 using google::protobuf::FieldMask;
 
 std::string FieldMaskUtil::ToString(const FieldMask& mask) {
-  return Join(mask.paths(), ",");
+  return absl::StrJoin(mask.paths(), ",");
 }
 
-void FieldMaskUtil::FromString(StringPiece str, FieldMask* out) {
+void FieldMaskUtil::FromString(absl::string_view str, FieldMask* out) {
   out->Clear();
-  std::vector<std::string> paths = Split(str, ",");
+  std::vector<std::string> paths = absl::StrSplit(str, ",");
   for (const std::string& path : paths) {
     if (path.empty()) continue;
     out->add_paths(path);
   }
 }
 
-bool FieldMaskUtil::SnakeCaseToCamelCase(StringPiece input,
+bool FieldMaskUtil::SnakeCaseToCamelCase(absl::string_view input,
                                          std::string* output) {
   output->clear();
   bool after_underscore = false;
@@ -88,7 +88,7 @@ bool FieldMaskUtil::SnakeCaseToCamelCase(StringPiece input,
   return true;
 }
 
-bool FieldMaskUtil::CamelCaseToSnakeCase(StringPiece input,
+bool FieldMaskUtil::CamelCaseToSnakeCase(absl::string_view input,
                                          std::string* output) {
   output->clear();
   for (const char c : input) {
@@ -122,9 +122,9 @@ bool FieldMaskUtil::ToJsonString(const FieldMask& mask, std::string* out) {
   return true;
 }
 
-bool FieldMaskUtil::FromJsonString(StringPiece str, FieldMask* out) {
+bool FieldMaskUtil::FromJsonString(absl::string_view str, FieldMask* out) {
   out->Clear();
-  std::vector<std::string> paths = Split(str, ",");
+  std::vector<std::string> paths = absl::StrSplit(str, ",");
   for (const std::string& path : paths) {
     if (path.empty()) continue;
     std::string snakecase_path;
@@ -137,12 +137,12 @@ bool FieldMaskUtil::FromJsonString(StringPiece str, FieldMask* out) {
 }
 
 bool FieldMaskUtil::GetFieldDescriptors(
-    const Descriptor* descriptor, StringPiece path,
+    const Descriptor* descriptor, absl::string_view path,
     std::vector<const FieldDescriptor*>* field_descriptors) {
   if (field_descriptors != nullptr) {
     field_descriptors->clear();
   }
-  std::vector<std::string> parts = Split(path, ".");
+  std::vector<std::string> parts = absl::StrSplit(path, ".");
   for (const std::string& field_name : parts) {
     if (descriptor == nullptr) {
       return false;
@@ -185,6 +185,8 @@ namespace {
 class FieldMaskTree {
  public:
   FieldMaskTree();
+  FieldMaskTree(const FieldMaskTree&) = delete;
+  FieldMaskTree& operator=(const FieldMaskTree&) = delete;
   ~FieldMaskTree();
 
   void MergeFromFieldMask(const FieldMask& mask);
@@ -246,21 +248,19 @@ class FieldMaskTree {
  private:
   struct Node {
     Node() {}
+    Node(const Node&) = delete;
+    Node& operator=(const Node&) = delete;
 
     ~Node() { ClearChildren(); }
 
     void ClearChildren() {
-      for (std::map<std::string, Node*>::iterator it = children.begin();
-           it != children.end(); ++it) {
-        delete it->second;
+      for (auto& p : children) {
+        delete p.second;
       }
       children.clear();
     }
 
     std::map<std::string, Node*> children;
-
-   private:
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Node);
   };
 
   // Merge a sub-tree to mask. This method adds the field paths represented
@@ -288,8 +288,6 @@ class FieldMaskTree {
   bool TrimMessage(const Node* node, Message* message);
 
   Node root_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldMaskTree);
 };
 
 FieldMaskTree::FieldMaskTree() {}
@@ -325,7 +323,7 @@ void FieldMaskTree::MergeToFieldMask(const std::string& prefix,
 }
 
 void FieldMaskTree::AddPath(const std::string& path) {
-  std::vector<std::string> parts = Split(path, ".");
+  std::vector<std::string> parts = absl::StrSplit(path, ".");
   if (parts.empty()) {
     return;
   }
@@ -358,7 +356,7 @@ void FieldMaskTree::RemovePath(const std::string& path,
     // code below.
     return;
   }
-  std::vector<std::string> parts = Split(path, ".");
+  std::vector<std::string> parts = absl::StrSplit(path, ".");
   if (parts.empty()) {
     return;
   }
@@ -389,14 +387,11 @@ void FieldMaskTree::RemovePath(const std::string& path,
         node->children[current_descriptor->field(j)->name()] = new Node();
       }
     }
-    if (ContainsKey(node->children, parts[i])) {
-      node = node->children[parts[i]];
-      if (field_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-        current_descriptor = field_descriptor->message_type();
-      }
-    } else {
-      // Path does not exist.
-      return;
+    auto it = node->children.find(parts[i]);
+    if (it == node->children.end()) return;
+    node = it->second;
+    if (field_descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+      current_descriptor = field_descriptor->message_type();
     }
   }
   // Remove path.
@@ -410,7 +405,7 @@ void FieldMaskTree::RemovePath(const std::string& path,
 }
 
 void FieldMaskTree::IntersectPath(const std::string& path, FieldMaskTree* out) {
-  std::vector<std::string> parts = Split(path, ".");
+  std::vector<std::string> parts = absl::StrSplit(path, ".");
   if (parts.empty()) {
     return;
   }
@@ -422,12 +417,12 @@ void FieldMaskTree::IntersectPath(const std::string& path, FieldMaskTree* out) {
       }
       return;
     }
-    const Node* result = FindPtrOrNull(node->children, node_name);
-    if (result == nullptr) {
+    auto it = node->children.find(node_name);
+    if (it == node->children.end()) {
       // No intersection found.
       return;
     }
-    node = result;
+    node = it->second;
   }
   // Now we found a matching node with the given path. Add all leaf nodes
   // to out.
@@ -665,7 +660,7 @@ void FieldMaskUtil::Subtract(const Descriptor* descriptor,
   tree.MergeToFieldMask(out);
 }
 
-bool FieldMaskUtil::IsPathInFieldMask(StringPiece path,
+bool FieldMaskUtil::IsPathInFieldMask(absl::string_view path,
                                       const FieldMask& mask) {
   for (int i = 0; i < mask.paths_size(); ++i) {
     const std::string& mask_path = mask.paths(i);

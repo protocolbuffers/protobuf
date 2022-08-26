@@ -62,6 +62,8 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
       : data_(nullptr) {}
   explicit ImplicitWeakMessage(Arena* arena)
       : MessageLite(arena), data_(new std::string) {}
+  ImplicitWeakMessage(const ImplicitWeakMessage&) = delete;
+  ImplicitWeakMessage& operator=(const ImplicitWeakMessage&) = delete;
 
   ~ImplicitWeakMessage() override {
     // data_ will be null in the default instance, but we can safely call delete
@@ -115,7 +117,6 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
   // the default instance can be constant-initialized. In the const methods, we
   // have to handle the possibility of data_ being null.
   std::string* data_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImplicitWeakMessage);
 };
 
 struct ImplicitWeakMessageDefaultType;

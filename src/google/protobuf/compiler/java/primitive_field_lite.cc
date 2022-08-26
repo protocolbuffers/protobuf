@@ -43,6 +43,8 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/compiler/java/context.h>
 #include <google/protobuf/compiler/java/doc_comment.h>
 #include <google/protobuf/compiler/java/helpers.h>
@@ -82,8 +84,8 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   (*variables)["capitalized_type"] = GetCapitalizedType(
       descriptor, /* immutable = */ true, context->options());
   (*variables)["tag"] =
-      StrCat(static_cast<int32_t>(WireFormat::MakeTag(descriptor)));
-  (*variables)["tag_size"] = StrCat(
+      absl::StrCat(static_cast<int32_t>(WireFormat::MakeTag(descriptor)));
+  (*variables)["tag_size"] = absl::StrCat(
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   (*variables)["required"] = descriptor->is_required() ? "true" : "false";
 
@@ -125,7 +127,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
 
   if (javaType == JAVATYPE_BYTES) {
     (*variables)["bytes_default"] =
-        ToUpper((*variables)["name"]) + "_DEFAULT_VALUE";
+        absl::AsciiStrToUpper((*variables)["name"]) + "_DEFAULT_VALUE";
   }
 
   if (IsReferenceType(javaType)) {
@@ -147,7 +149,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
           : "";
   int fixed_size = FixedSize(GetType(descriptor));
   if (fixed_size != -1) {
-    (*variables)["fixed_size"] = StrCat(fixed_size);
+    (*variables)["fixed_size"] = absl::StrCat(fixed_size);
   }
 
   if (HasHasbit(descriptor)) {

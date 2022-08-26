@@ -55,7 +55,6 @@
 #undef PROTOBUF_DEPRECATED
 #undef PROTOBUF_DEPRECATED_ENUM
 #undef PROTOBUF_DEPRECATED_MSG
-#undef PROTOBUF_FUNC_ALIGN
 #undef PROTOBUF_RETURNS_NONNULL
 #undef PROTOBUF_ATTRIBUTE_REINITIALIZES
 #undef PROTOBUF_RTTI
@@ -122,6 +121,11 @@
 
 #undef PROTOBUF_FUTURE_FINAL
 
+#ifdef PROTOBUF_DID_UNDEF_PACKAGE
+#pragma pop_macro("PACKAGE")
+#undef PROTOBUF_DID_UNDEF_PACKAGE
+#endif
+
 // Restore macro that may have been #undef'd in port_def.inc.
 #ifdef _WIN32
 #pragma pop_macro("CREATE_NEW")
@@ -133,6 +137,7 @@
 #pragma pop_macro("ERROR_INSTALL_FAILED")
 #pragma pop_macro("ERROR_NOT_FOUND")
 #pragma pop_macro("GetClassName")
+#pragma pop_macro("GetCurrentTime")
 #pragma pop_macro("GetMessage")
 #pragma pop_macro("GetObject")
 #pragma pop_macro("IGNORE")

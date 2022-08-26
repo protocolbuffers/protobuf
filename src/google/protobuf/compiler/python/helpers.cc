@@ -33,6 +33,8 @@
 #include <algorithm>
 
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_split.h"
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
@@ -68,7 +70,7 @@ const char* const* kKeywordsEnd =
     kKeywords + (sizeof(kKeywords) / sizeof(kKeywords[0]));
 
 bool ContainsPythonKeyword(const std::string& module_name) {
-  std::vector<std::string> tokens = Split(module_name, ".");
+  std::vector<std::string> tokens = absl::StrSplit(module_name, ".");
   for (int i = 0; i < static_cast<int>(tokens.size()); ++i) {
     if (std::find(kKeywords, kKeywordsEnd, tokens[i]) != kKeywordsEnd) {
       return true;
@@ -103,7 +105,7 @@ bool HasGenericServices(const FileDescriptor* file) {
 
 std::string GeneratedCodeToBase64(const GeneratedCodeInfo& annotations) {
   std::string result;
-  Base64Escape(annotations.SerializeAsString(), &result);
+  absl::Base64Escape(annotations.SerializeAsString(), &result);
   return result;
 }
 

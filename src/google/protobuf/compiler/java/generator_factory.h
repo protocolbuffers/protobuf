@@ -59,6 +59,8 @@ namespace java {
 class GeneratorFactory {
  public:
   GeneratorFactory();
+  GeneratorFactory(const GeneratorFactory&) = delete;
+  GeneratorFactory& operator=(const GeneratorFactory&) = delete;
   virtual ~GeneratorFactory();
 
   virtual MessageGenerator* NewMessageGenerator(
@@ -69,15 +71,15 @@ class GeneratorFactory {
 
   virtual ServiceGenerator* NewServiceGenerator(
       const ServiceDescriptor* descriptor) const = 0;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(GeneratorFactory);
 };
 
 // Factory that creates generators for immutable-default messages.
 class ImmutableGeneratorFactory : public GeneratorFactory {
  public:
   ImmutableGeneratorFactory(Context* context);
+  ImmutableGeneratorFactory(const ImmutableGeneratorFactory&) = delete;
+  ImmutableGeneratorFactory& operator=(const ImmutableGeneratorFactory&) =
+      delete;
   ~ImmutableGeneratorFactory() override;
 
   MessageGenerator* NewMessageGenerator(
@@ -91,7 +93,6 @@ class ImmutableGeneratorFactory : public GeneratorFactory {
 
  private:
   Context* context_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableGeneratorFactory);
 };
 
 

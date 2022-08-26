@@ -320,6 +320,34 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     std::tie(arena_, current_size_, total_size_, rep_) = temp;
   }
 
+  // Prepares the container for adding elements via `AddAllocatedForParse`.
+  // It ensures some invariants to avoid checking then in the Add loop:
+  //  - rep_ is not null.
+  //  - there are no preallocated elements.
+  //  Returns true if the invariants hold and `AddAllocatedForParse` can be
+  //  used.
+  bool PrepareForParse() {
+    if (current_size_ == total_size_) {
+      InternalExtend(1);
+    }
+    return rep_->allocated_size == current_size_;
+  }
+
+  // Similar to `AddAllocated` but faster.
+  // Can only be invoked after a call to `PrepareForParse` that returned `true`,
+  // or other calls to `AddAllocatedForParse`.
+  template <typename TypeHandler>
+  void AddAllocatedForParse(typename TypeHandler::Type* value) {
+    PROTOBUF_ASSUME(rep_ != nullptr);
+    PROTOBUF_ASSUME(current_size_ == rep_->allocated_size);
+    if (current_size_ == total_size_) {
+      // The array is completely full with no cleared objects, so grow it.
+      InternalExtend(1);
+    }
+    rep_->elements[current_size_++] = value;
+    ++rep_->allocated_size;
+  }
+
  protected:
   template <typename TypeHandler>
   void RemoveLast() {
@@ -1164,7 +1192,12 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   void ExtractSubrangeInternal(int start, int num, Element** elements,
                                std::false_type);
 
+  void AddAllocatedForParse(Element* p) {
+    return RepeatedPtrFieldBase::AddAllocatedForParse<TypeHandler>(p);
+  }
+
   friend class Arena;
+  friend class internal::TcParser;
 
   template <typename T>
   friend struct WeakRepeatedPtrField;

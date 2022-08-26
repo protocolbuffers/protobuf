@@ -83,6 +83,8 @@ cc_library(
     deps = [
         "//:protobuf",
         "//src/google/protobuf/compiler:code_generator",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -111,6 +113,7 @@ cc_test(
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs:lite",
         "//src/google/protobuf/testing",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],

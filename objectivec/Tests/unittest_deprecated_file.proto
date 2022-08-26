@@ -29,7 +29,7 @@
 
 syntax = "proto2";
 
-package protobuf_deprecated_file;
+package objc.protobuf.tests.deprecated_file;
 option objc_class_prefix = "FileDep";
 
 //

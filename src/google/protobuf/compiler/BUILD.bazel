@@ -36,7 +36,10 @@ cc_library(
     copts = COPTS,
     include_prefix = "google/protobuf/compiler",
     visibility = ["//visibility:public"],
-    deps = ["//src/google/protobuf"],
+    deps = [
+        "//src/google/protobuf",
+        "@com_google_absl//absl/strings",
+    ],
 )
 
 cc_library(
@@ -57,6 +60,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//:protobuf",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -79,6 +83,7 @@ cc_library(
         ":code_generator",
         ":importer",
         "//:protobuf",
+        "@com_google_absl//absl/strings",
     ],
 )
 

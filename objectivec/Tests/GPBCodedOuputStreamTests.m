@@ -33,7 +33,7 @@
 #import "GPBCodedOutputStream_PackagePrivate.h"
 #import "GPBCodedInputStream.h"
 #import "GPBUtilities_PackagePrivate.h"
-#import "google/protobuf/Unittest.pbobjc.h"
+#import "objectivec/Tests/Unittest.pbobjc.h"
 
 @interface GPBCodedOutputStream (InternalMethods)
 // Declared in the .m file, expose for testing.

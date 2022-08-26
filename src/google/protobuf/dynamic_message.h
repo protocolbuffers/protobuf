@@ -98,6 +98,8 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
   //   this is almost never what you want to do.  Almost all users should use
   //   the zero-arg constructor.
   DynamicMessageFactory(const DescriptorPool* pool);
+  DynamicMessageFactory(const DynamicMessageFactory&) = delete;
+  DynamicMessageFactory& operator=(const DynamicMessageFactory&) = delete;
 
   ~DynamicMessageFactory() override;
 
@@ -140,8 +142,6 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
 
   friend class DynamicMessage;
   const Message* GetPrototypeNoLock(const Descriptor* type);
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DynamicMessageFactory);
 };
 
 // Helper for computing a sorted list of map entries via reflection.

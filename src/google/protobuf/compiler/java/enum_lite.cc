@@ -39,12 +39,12 @@
 
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/compiler/java/context.h>
 #include <google/protobuf/compiler/java/doc_comment.h>
 #include <google/protobuf/compiler/java/helpers.h>
 #include <google/protobuf/compiler/java/name_resolver.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/stubs/map_util.h>
 
 namespace google {
 namespace protobuf {
@@ -89,7 +89,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
   for (int i = 0; i < canonical_values_.size(); i++) {
     std::map<std::string, std::string> vars;
     vars["name"] = canonical_values_[i]->name();
-    vars["number"] = StrCat(canonical_values_[i]->number());
+    vars["number"] = absl::StrCat(canonical_values_[i]->number());
     WriteEnumValueDocComment(printer, canonical_values_[i]);
     if (canonical_values_[i]->options().deprecated()) {
       printer->Print("@java.lang.Deprecated\n");
@@ -123,7 +123,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
   for (int i = 0; i < descriptor_->value_count(); i++) {
     std::map<std::string, std::string> vars;
     vars["name"] = descriptor_->value(i)->name();
-    vars["number"] = StrCat(descriptor_->value(i)->number());
+    vars["number"] = absl::StrCat(descriptor_->value(i)->number());
     vars["{"] = "";
     vars["}"] = "";
     vars["deprecation"] = descriptor_->value(i)->options().deprecated()
@@ -182,7 +182,7 @@ void EnumLiteGenerator::Generate(io::Printer* printer) {
   for (int i = 0; i < canonical_values_.size(); i++) {
     printer->Print("case $number$: return $name$;\n", "name",
                    canonical_values_[i]->name(), "number",
-                   StrCat(canonical_values_[i]->number()));
+                   absl::StrCat(canonical_values_[i]->number()));
   }
 
   printer->Outdent();

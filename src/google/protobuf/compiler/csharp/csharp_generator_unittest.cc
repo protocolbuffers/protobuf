@@ -32,12 +32,11 @@
 
 #include <google/protobuf/any.pb.h>
 #include <google/protobuf/compiler/command_line_interface.h>
+#include <gtest/gtest.h>
 #include <google/protobuf/compiler/csharp/csharp_helpers.h>
 #include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/zero_copy_stream.h>
 #include <google/protobuf/io/printer.h>
-
-#include <gtest/gtest.h>
+#include <google/protobuf/io/zero_copy_stream.h>
 
 namespace google {
 namespace protobuf {

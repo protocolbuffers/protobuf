@@ -35,16 +35,18 @@
 #include <stack>
 #include <unordered_set>
 
-#include <google/protobuf/stubs/once.h>
 #include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/statusor.h>
-#include <google/protobuf/stubs/time.h>
+#include "absl/base/call_once.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include <google/protobuf/util/internal/constants.h>
 #include <google/protobuf/util/internal/field_mask_utility.h>
 #include <google/protobuf/util/internal/object_location_tracker.h>
 #include <google/protobuf/util/internal/utility.h>
-#include <google/protobuf/stubs/map_util.h>
 
 
 // Must be included last.
@@ -119,9 +121,9 @@ ProtoWriter::~ProtoWriter() {
 namespace {
 
 // Writes an INT32 field, including tag to the stream.
-inline util::Status WriteInt32(int field_number, const DataPiece& data,
+inline absl::Status WriteInt32(int field_number, const DataPiece& data,
                                CodedOutputStream* stream) {
-  util::StatusOr<int32_t> i32 = data.ToInt32();
+  absl::StatusOr<int32_t> i32 = data.ToInt32();
   if (i32.ok()) {
     WireFormatLite::WriteInt32(field_number, i32.value(), stream);
   }
@@ -129,9 +131,9 @@ inline util::Status WriteInt32(int field_number, const DataPiece& data,
 }
 
 // writes an SFIXED32 field, including tag, to the stream.
-inline util::Status WriteSFixed32(int field_number, const DataPiece& data,
+inline absl::Status WriteSFixed32(int field_number, const DataPiece& data,
                                   CodedOutputStream* stream) {
-  util::StatusOr<int32_t> i32 = data.ToInt32();
+  absl::StatusOr<int32_t> i32 = data.ToInt32();
   if (i32.ok()) {
     WireFormatLite::WriteSFixed32(field_number, i32.value(), stream);
   }
@@ -139,9 +141,9 @@ inline util::Status WriteSFixed32(int field_number, const DataPiece& data,
 }
 
 // Writes an SINT32 field, including tag, to the stream.
-inline util::Status WriteSInt32(int field_number, const DataPiece& data,
+inline absl::Status WriteSInt32(int field_number, const DataPiece& data,
                                 CodedOutputStream* stream) {
-  util::StatusOr<int32_t> i32 = data.ToInt32();
+  absl::StatusOr<int32_t> i32 = data.ToInt32();
   if (i32.ok()) {
     WireFormatLite::WriteSInt32(field_number, i32.value(), stream);
   }
@@ -149,9 +151,9 @@ inline util::Status WriteSInt32(int field_number, const DataPiece& data,
 }
 
 // Writes a FIXED32 field, including tag, to the stream.
-inline util::Status WriteFixed32(int field_number, const DataPiece& data,
+inline absl::Status WriteFixed32(int field_number, const DataPiece& data,
                                  CodedOutputStream* stream) {
-  util::StatusOr<uint32_t> u32 = data.ToUint32();
+  absl::StatusOr<uint32_t> u32 = data.ToUint32();
   if (u32.ok()) {
     WireFormatLite::WriteFixed32(field_number, u32.value(), stream);
   }
@@ -159,9 +161,9 @@ inline util::Status WriteFixed32(int field_number, const DataPiece& data,
 }
 
 // Writes a UINT32 field, including tag, to the stream.
-inline util::Status WriteUInt32(int field_number, const DataPiece& data,
+inline absl::Status WriteUInt32(int field_number, const DataPiece& data,
                                 CodedOutputStream* stream) {
-  util::StatusOr<uint32_t> u32 = data.ToUint32();
+  absl::StatusOr<uint32_t> u32 = data.ToUint32();
   if (u32.ok()) {
     WireFormatLite::WriteUInt32(field_number, u32.value(), stream);
   }
@@ -169,9 +171,9 @@ inline util::Status WriteUInt32(int field_number, const DataPiece& data,
 }
 
 // Writes an INT64 field, including tag, to the stream.
-inline util::Status WriteInt64(int field_number, const DataPiece& data,
+inline absl::Status WriteInt64(int field_number, const DataPiece& data,
                                CodedOutputStream* stream) {
-  util::StatusOr<int64_t> i64 = data.ToInt64();
+  absl::StatusOr<int64_t> i64 = data.ToInt64();
   if (i64.ok()) {
     WireFormatLite::WriteInt64(field_number, i64.value(), stream);
   }
@@ -179,9 +181,9 @@ inline util::Status WriteInt64(int field_number, const DataPiece& data,
 }
 
 // Writes an SFIXED64 field, including tag, to the stream.
-inline util::Status WriteSFixed64(int field_number, const DataPiece& data,
+inline absl::Status WriteSFixed64(int field_number, const DataPiece& data,
                                   CodedOutputStream* stream) {
-  util::StatusOr<int64_t> i64 = data.ToInt64();
+  absl::StatusOr<int64_t> i64 = data.ToInt64();
   if (i64.ok()) {
     WireFormatLite::WriteSFixed64(field_number, i64.value(), stream);
   }
@@ -189,9 +191,9 @@ inline util::Status WriteSFixed64(int field_number, const DataPiece& data,
 }
 
 // Writes an SINT64 field, including tag, to the stream.
-inline util::Status WriteSInt64(int field_number, const DataPiece& data,
+inline absl::Status WriteSInt64(int field_number, const DataPiece& data,
                                 CodedOutputStream* stream) {
-  util::StatusOr<int64_t> i64 = data.ToInt64();
+  absl::StatusOr<int64_t> i64 = data.ToInt64();
   if (i64.ok()) {
     WireFormatLite::WriteSInt64(field_number, i64.value(), stream);
   }
@@ -199,9 +201,9 @@ inline util::Status WriteSInt64(int field_number, const DataPiece& data,
 }
 
 // Writes a FIXED64 field, including tag, to the stream.
-inline util::Status WriteFixed64(int field_number, const DataPiece& data,
+inline absl::Status WriteFixed64(int field_number, const DataPiece& data,
                                  CodedOutputStream* stream) {
-  util::StatusOr<uint64_t> u64 = data.ToUint64();
+  absl::StatusOr<uint64_t> u64 = data.ToUint64();
   if (u64.ok()) {
     WireFormatLite::WriteFixed64(field_number, u64.value(), stream);
   }
@@ -209,9 +211,9 @@ inline util::Status WriteFixed64(int field_number, const DataPiece& data,
 }
 
 // Writes a UINT64 field, including tag, to the stream.
-inline util::Status WriteUInt64(int field_number, const DataPiece& data,
+inline absl::Status WriteUInt64(int field_number, const DataPiece& data,
                                 CodedOutputStream* stream) {
-  util::StatusOr<uint64_t> u64 = data.ToUint64();
+  absl::StatusOr<uint64_t> u64 = data.ToUint64();
   if (u64.ok()) {
     WireFormatLite::WriteUInt64(field_number, u64.value(), stream);
   }
@@ -219,9 +221,9 @@ inline util::Status WriteUInt64(int field_number, const DataPiece& data,
 }
 
 // Writes a DOUBLE field, including tag, to the stream.
-inline util::Status WriteDouble(int field_number, const DataPiece& data,
+inline absl::Status WriteDouble(int field_number, const DataPiece& data,
                                 CodedOutputStream* stream) {
-  util::StatusOr<double> d = data.ToDouble();
+  absl::StatusOr<double> d = data.ToDouble();
   if (d.ok()) {
     WireFormatLite::WriteDouble(field_number, d.value(), stream);
   }
@@ -229,9 +231,9 @@ inline util::Status WriteDouble(int field_number, const DataPiece& data,
 }
 
 // Writes a FLOAT field, including tag, to the stream.
-inline util::Status WriteFloat(int field_number, const DataPiece& data,
+inline absl::Status WriteFloat(int field_number, const DataPiece& data,
                                CodedOutputStream* stream) {
-  util::StatusOr<float> f = data.ToFloat();
+  absl::StatusOr<float> f = data.ToFloat();
   if (f.ok()) {
     WireFormatLite::WriteFloat(field_number, f.value(), stream);
   }
@@ -239,9 +241,9 @@ inline util::Status WriteFloat(int field_number, const DataPiece& data,
 }
 
 // Writes a BOOL field, including tag, to the stream.
-inline util::Status WriteBool(int field_number, const DataPiece& data,
+inline absl::Status WriteBool(int field_number, const DataPiece& data,
                               CodedOutputStream* stream) {
-  util::StatusOr<bool> b = data.ToBool();
+  absl::StatusOr<bool> b = data.ToBool();
   if (b.ok()) {
     WireFormatLite::WriteBool(field_number, b.value(), stream);
   }
@@ -249,9 +251,9 @@ inline util::Status WriteBool(int field_number, const DataPiece& data,
 }
 
 // Writes a BYTES field, including tag, to the stream.
-inline util::Status WriteBytes(int field_number, const DataPiece& data,
+inline absl::Status WriteBytes(int field_number, const DataPiece& data,
                                CodedOutputStream* stream) {
-  util::StatusOr<std::string> c = data.ToBytes();
+  absl::StatusOr<std::string> c = data.ToBytes();
   if (c.ok()) {
     WireFormatLite::WriteBytes(field_number, c.value(), stream);
   }
@@ -259,9 +261,9 @@ inline util::Status WriteBytes(int field_number, const DataPiece& data,
 }
 
 // Writes a STRING field, including tag, to the stream.
-inline util::Status WriteString(int field_number, const DataPiece& data,
+inline absl::Status WriteString(int field_number, const DataPiece& data,
                                 CodedOutputStream* stream) {
-  util::StatusOr<std::string> s = data.ToString();
+  absl::StatusOr<std::string> s = data.ToString();
   if (s.ok()) {
     WireFormatLite::WriteString(field_number, s.value(), stream);
   }
@@ -408,22 +410,22 @@ std::string ProtoWriter::ProtoElement::ToString() const {
       std::string name = now->parent_field_->name();
       int i = 0;
       while (i < name.size() &&
-             (ascii_isalnum(name[i]) || name[i] == '_'))
+             (absl::ascii_isalnum(name[i]) || name[i] == '_'))
         ++i;
       if (i > 0 && i == name.size()) {  // safe field name
         if (loc.empty()) {
           loc = name;
         } else {
-          StrAppend(&loc, ".", name);
+          absl::StrAppend(&loc, ".", name);
         }
       } else {
-        StrAppend(&loc, "[\"", CEscape(name), "\"]");
+        absl::StrAppend(&loc, "[\"", absl::CEscape(name), "\"]");
       }
     }
 
     int array_index_now = now->array_index_;
     if (ow_->IsRepeated(*(now->parent_field_)) && array_index_now > 0) {
-      StrAppend(&loc, "[", array_index_now - 1, "]");
+      absl::StrAppend(&loc, "[", array_index_now - 1, "]");
     }
   }
 
@@ -438,22 +440,22 @@ void ProtoWriter::ProtoElement::TakeOneofIndex(int32_t index) {
   oneof_indices_[index] = true;
 }
 
-void ProtoWriter::InvalidName(StringPiece unknown_name,
-                              StringPiece message) {
+void ProtoWriter::InvalidName(absl::string_view unknown_name,
+                              absl::string_view message) {
   listener_->InvalidName(location(), unknown_name, message);
 }
 
-void ProtoWriter::InvalidValue(StringPiece type_name,
-                               StringPiece value) {
+void ProtoWriter::InvalidValue(absl::string_view type_name,
+                               absl::string_view value) {
   listener_->InvalidValue(location(), type_name, value);
 }
 
-void ProtoWriter::MissingField(StringPiece missing_name) {
+void ProtoWriter::MissingField(absl::string_view missing_name) {
   listener_->MissingField(location(), missing_name);
 }
 
 ProtoWriter* ProtoWriter::StartObject(
-    StringPiece name) {
+    absl::string_view name) {
   // Starting the root message. Create the root ProtoElement and return.
   if (element_ == nullptr) {
     if (!name.empty()) {
@@ -477,7 +479,7 @@ ProtoWriter* ProtoWriter::StartObject(
   const google::protobuf::Type* type = LookupType(field);
   if (type == nullptr) {
     ++invalid_depth_;
-    InvalidName(name, StrCat("Missing descriptor for field: ",
+    InvalidName(name, absl::StrCat("Missing descriptor for field: ",
                                    field->type_url()));
     return this;
   }
@@ -506,7 +508,7 @@ ProtoWriter* ProtoWriter::EndObject() {
 }
 
 ProtoWriter* ProtoWriter::StartList(
-    StringPiece name) {
+    absl::string_view name) {
 
   const google::protobuf::Field* field = BeginNamed(name, true);
 
@@ -520,7 +522,7 @@ ProtoWriter* ProtoWriter::StartList(
   const google::protobuf::Type* type = LookupType(field);
   if (type == nullptr) {
     ++invalid_depth_;
-    InvalidName(name, StrCat("Missing descriptor for field: ",
+    InvalidName(name, absl::StrCat("Missing descriptor for field: ",
                                    field->type_url()));
     return this;
   }
@@ -539,8 +541,8 @@ ProtoWriter* ProtoWriter::EndList() {
 }
 
 ProtoWriter* ProtoWriter::RenderDataPiece(
-    StringPiece name, const DataPiece& data) {
-  util::Status status;
+    absl::string_view name, const DataPiece& data) {
+  absl::Status status;
   if (invalid_depth_ > 0) return this;
 
   const google::protobuf::Field* field = Lookup(name);
@@ -551,7 +553,7 @@ ProtoWriter* ProtoWriter::RenderDataPiece(
 
   const google::protobuf::Type* type = LookupType(field);
   if (type == nullptr) {
-    InvalidName(name, StrCat("Missing descriptor for field: ",
+    InvalidName(name, absl::StrCat("Missing descriptor for field: ",
                                    field->type_url()));
     return this;
   }
@@ -560,14 +562,14 @@ ProtoWriter* ProtoWriter::RenderDataPiece(
 }
 
 bool ProtoWriter::ValidOneof(const google::protobuf::Field& field,
-                             StringPiece unnormalized_name) {
+                             absl::string_view unnormalized_name) {
   if (element_ == nullptr) return true;
 
   if (field.oneof_index() > 0) {
     if (element_->IsOneofIndexTaken(field.oneof_index())) {
       InvalidValue(
           "oneof",
-          StrCat(
+          absl::StrCat(
               "oneof field '", element_->type().oneofs(field.oneof_index() - 1),
               "' is already set. Cannot set '", unnormalized_name, "'"));
       return false;
@@ -594,14 +596,14 @@ ProtoWriter* ProtoWriter::StartListField(const google::protobuf::Field& field,
   return this;
 }
 
-util::Status ProtoWriter::WriteEnum(int field_number, const DataPiece& data,
+absl::Status ProtoWriter::WriteEnum(int field_number, const DataPiece& data,
                                     const google::protobuf::Enum* enum_type,
                                     CodedOutputStream* stream,
                                     bool use_lower_camel_for_enums,
                                     bool case_insensitive_enum_parsing,
                                     bool ignore_unknown_values) {
   bool is_unknown_enum_value = false;
-  util::StatusOr<int> e = data.ToEnum(
+  absl::StatusOr<int> e = data.ToEnum(
       enum_type, use_lower_camel_for_enums, case_insensitive_enum_parsing,
       ignore_unknown_values, &is_unknown_enum_value);
   if (e.ok() && !is_unknown_enum_value) {
@@ -613,7 +615,7 @@ util::Status ProtoWriter::WriteEnum(int field_number, const DataPiece& data,
 ProtoWriter* ProtoWriter::RenderPrimitiveField(
     const google::protobuf::Field& field, const google::protobuf::Type& type,
     const DataPiece& data) {
-  util::Status status;
+  absl::Status status;
 
   // Pushing a ProtoElement and then pop it off at the end for 2 purposes:
   // error location reporting and required field accounting.
@@ -693,7 +695,7 @@ ProtoWriter* ProtoWriter::RenderPrimitiveField(
       break;
     }
     default:  // TYPE_GROUP, TYPE_MESSAGE, TYPE_UNKNOWN.
-      status = util::InvalidArgumentError(data.ValueAsStringOrDefault(""));
+      status = absl::InvalidArgumentError(data.ValueAsStringOrDefault(""));
   }
 
   if (!status.ok()) {
@@ -714,7 +716,7 @@ ProtoWriter* ProtoWriter::RenderPrimitiveField(
   return this;
 }
 
-const google::protobuf::Field* ProtoWriter::BeginNamed(StringPiece name,
+const google::protobuf::Field* ProtoWriter::BeginNamed(absl::string_view name,
                                                        bool is_list) {
   if (invalid_depth_ > 0) {
     ++invalid_depth_;
@@ -735,7 +737,7 @@ const google::protobuf::Field* ProtoWriter::BeginNamed(StringPiece name,
 }
 
 const google::protobuf::Field* ProtoWriter::Lookup(
-    StringPiece unnormalized_name) {
+    absl::string_view unnormalized_name) {
   ProtoElement* e = element();
   if (e == nullptr) {
     InvalidName(unnormalized_name, "Root element must be a message.");

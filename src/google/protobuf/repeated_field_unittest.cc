@@ -53,6 +53,7 @@
 #include <google/protobuf/stubs/strutil.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/stubs/stl_util.h>
 
 // Must be included last.
@@ -2330,11 +2331,11 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
   TestAllTypes goldenproto;
   for (int i = 0; i < 10; ++i) {
     std::string* new_data = new std::string;
-    *new_data = "name-" + StrCat(i);
+    *new_data = "name-" + absl::StrCat(i);
     data.push_back(new_data);
 
     new_data = goldenproto.add_repeated_string();
-    *new_data = "name-" + StrCat(i);
+    *new_data = "name-" + absl::StrCat(i);
   }
   TestAllTypes testproto;
   std::copy(data.begin(), data.end(),
@@ -2367,7 +2368,7 @@ TEST_F(RepeatedFieldInsertionIteratorsTest,
   auto* goldenproto = Arena::CreateMessage<TestAllTypes>(&arena);
   for (int i = 0; i < 10; ++i) {
     auto* new_data = goldenproto->add_repeated_string();
-    *new_data = "name-" + StrCat(i);
+    *new_data = "name-" + absl::StrCat(i);
     data.push_back(new_data);
   }
   auto* testproto = Arena::CreateMessage<TestAllTypes>(&arena);

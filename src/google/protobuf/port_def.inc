@@ -390,15 +390,6 @@
 # define PROTOBUF_DEPRECATED_ENUM
 #endif
 
-#ifdef PROTOBUF_FUNC_ALIGN
-#error PROTOBUF_FUNC_ALIGN was previously defined
-#endif
-#if __has_attribute(aligned) || PROTOBUF_GNUC_MIN(4, 3)
-#define PROTOBUF_FUNC_ALIGN(bytes) __attribute__((aligned(bytes)))
-#else
-#define PROTOBUF_FUNC_ALIGN(bytes)
-#endif
-
 #ifdef PROTOBUF_RETURNS_NONNULL
 #error PROTOBUF_RETURNS_NONNULL was previously defined
 #endif
@@ -872,6 +863,20 @@
 
 // ThreadSafeArenaz is turned off completely in opensource builds.
 
+// autoheader defines this in some circumstances
+#ifdef PACKAGE
+#define PROTOBUF_DID_UNDEF_PACKAGE
+#pragma push_macro("PACKAGE")
+#undef PACKAGE
+#endif
+
+// autoheader defines this in some circumstances
+#ifdef PACKAGE
+#define PROTOBUF_DID_UNDEF_PACKAGE
+#pragma push_macro("PACKAGE")
+#undef PACKAGE
+#endif
+
 // Windows declares several inconvenient macro names.  We #undef them and then
 // restore them in port_undef.inc.
 #ifdef _WIN32
@@ -893,6 +898,8 @@
 #undef ERROR_NOT_FOUND
 #pragma push_macro("GetClassName")
 #undef GetClassName
+#pragma push_macro("GetCurrentTime")
+#undef GetCurrentTime
 #pragma push_macro("GetMessage")
 #undef GetMessage
 #pragma push_macro("GetObject")

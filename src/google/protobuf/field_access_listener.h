@@ -57,7 +57,7 @@ struct NoOpAccessListener {
   // to differentiate the protos during the runtime before the start of the
   // program, use this functor to get its name. We either way need it for
   // LITE_RUNTIME protos as they don't have descriptors at all.
-  explicit NoOpAccessListener(StringPiece (*name_extractor)()) {}
+  explicit NoOpAccessListener(absl::string_view (*name_extractor)()) {}
   // called repeatedly during serialization/deserialization/ByteSize of
   // Reflection as:
   //   AccessListener<MessageT>::OnSerialize(this);

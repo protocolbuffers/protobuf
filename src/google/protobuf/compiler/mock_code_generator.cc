@@ -49,7 +49,10 @@
 #include <google/protobuf/compiler/plugin.pb.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/str_join.h"
+#include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
+#include "absl/strings/substitute.h"
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
@@ -74,7 +77,7 @@ std::string CommaSeparatedList(
   for (size_t i = 0; i < all_files.size(); i++) {
     names.push_back(all_files[i]->name());
   }
-  return Join(names, ",");
+  return absl::StrJoin(names, ",");
 }
 
 static const char* kFirstInsertionPointName = "first_mock_insertion_point";
@@ -109,7 +112,7 @@ void MockCodeGenerator::ExpectGenerated(
                         &content, true));
 
   std::vector<std::string> lines =
-      Split(content, "\n", true);
+      absl::StrSplit(content, "\n", absl::SkipEmpty());
 
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
@@ -120,7 +123,7 @@ void MockCodeGenerator::ExpectGenerated(
 
   std::vector<std::string> insertion_list;
   if (!insertions.empty()) {
-    insertion_list = Split(insertions, ",", true);
+    insertion_list = absl::StrSplit(insertions, ",", absl::SkipEmpty());
   }
 
   EXPECT_EQ(lines.size(), 3 + insertion_list.size() * 2);
@@ -251,10 +254,10 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
 
   bool insert_endlines = HasPrefixString(parameter, "insert_endlines=");
   if (insert_endlines || HasPrefixString(parameter, "insert=")) {
-    std::vector<std::string> insert_into = Split(
+    std::vector<std::string> insert_into = absl::StrSplit(
         StripPrefixString(
             parameter, insert_endlines ? "insert_endlines=" : "insert="),
-        ",", true);
+        ",", absl::SkipEmpty());
 
     for (size_t i = 0; i < insert_into.size(); i++) {
       {
@@ -375,7 +378,7 @@ std::string MockCodeGenerator::GetOutputFileContent(
     const std::string& generator_name, const std::string& parameter,
     const std::string& file, const std::string& parsed_file_list,
     const std::string& first_message_name) {
-  return strings::Substitute("$0: $1, $2, $3, $4\n", generator_name, parameter,
+  return absl::Substitute("$0: $1, $2, $3, $4\n", generator_name, parameter,
                           file, first_message_name, parsed_file_list);
 }
 

@@ -35,6 +35,10 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_split.h"
+#include "absl/strings/str_replace.h"
 
 namespace google {
 namespace protobuf {
@@ -57,7 +61,7 @@ void WriteDocCommentBodyImpl(io::Printer* printer, SourceLocation location) {
     comments = StringReplace(comments, "&", "&amp;", true);
     comments = StringReplace(comments, "<", "&lt;", true);
     std::vector<std::string> lines;
-    lines = Split(comments, "\n", false);
+    lines = absl::StrSplit(comments, "\n", absl::AllowEmpty());
     // TODO: We really should work out which part to put in the summary and which to put in the remarks...
     // but that needs to be part of a bigger effort to understand the markdown better anyway.
     printer->Print("/// <summary>\n");
