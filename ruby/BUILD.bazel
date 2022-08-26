@@ -131,6 +131,10 @@ conformance_test(
     failure_list = "//conformance:failure_list_ruby.txt",
     testee = "//conformance:conformance_ruby",
     text_format_failure_list = "//conformance:text_format_failure_list_ruby.txt",
+    target_compatible_with = select({
+        ":java_ruby": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
 )
 
 conformance_test(
@@ -138,6 +142,10 @@ conformance_test(
     failure_list = "//conformance:failure_list_jruby.txt",
     testee = "//conformance:conformance_ruby",
     text_format_failure_list = "//conformance:text_format_failure_list_jruby.txt",
+    target_compatible_with = select({
+        ":java_ruby": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
 )
 
 ################################################################################
