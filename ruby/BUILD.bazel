@@ -123,13 +123,13 @@ inline_sh_test(
         pushd `dirname $(location Rakefile)`
         RUBYLIB=../src:tests:. BAZEL=true rake gc_test
         popd
+    """,
     timeout = "long",
     # Under JRuby, GC.stress is a no-op, so skip running this test.
     target_compatible_with = select({
         ":java_ruby": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
-    """,
 )
 
 conformance_test(
