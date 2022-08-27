@@ -57,7 +57,3 @@ if [[ "${KOKORO_INSTALL_RVM:-}" == "yes" ]] ; then
     git config --global --add safe.directory $HOMEBREW_PREFIX/Library/Taps/homebrew/homebrew-services
     sudo chown -R $(whoami) $HOME/.rvm/
 fi
-
-##
-# Install external dependencies
-brew install m4
