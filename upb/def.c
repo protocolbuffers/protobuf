@@ -678,7 +678,8 @@ const upb_EnumDef* upb_FieldDef_EnumSubDef(const upb_FieldDef* f) {
 
 const upb_MiniTable_Field* upb_FieldDef_MiniTable(const upb_FieldDef* f) {
   UPB_ASSERT(!upb_FieldDef_IsExtension(f));
-  return &f->msgdef->layout->fields[f->layout_index];
+  const upb_MiniTable* layout = upb_MessageDef_MiniTable(f->msgdef);
+  return &layout->fields[f->layout_index];
 }
 
 const upb_MiniTable_Extension* _upb_FieldDef_ExtensionMiniTable(
@@ -1149,7 +1150,7 @@ int upb_ServiceDef_MethodCount(const upb_ServiceDef* s) {
 }
 
 const upb_MethodDef* upb_ServiceDef_Method(const upb_ServiceDef* s, int i) {
-  return i < 0 || i >= s->method_count ? NULL : &s->methods[i];
+  return (i < 0 || i >= s->method_count) ? NULL : &s->methods[i];
 }
 
 const upb_MethodDef* upb_ServiceDef_FindMethodByName(const upb_ServiceDef* s,
@@ -1176,22 +1177,18 @@ void upb_DefPool_Free(upb_DefPool* s) {
 
 upb_DefPool* upb_DefPool_New(void) {
   upb_DefPool* s = upb_gmalloc(sizeof(*s));
-
-  if (!s) {
-    return NULL;
-  }
+  if (!s) return NULL;
 
   s->arena = upb_Arena_New();
   s->bytes_loaded = 0;
 
-  if (!upb_strtable_init(&s->syms, 32, s->arena) ||
-      !upb_strtable_init(&s->files, 4, s->arena) ||
-      !upb_inttable_init(&s->exts, s->arena)) {
-    goto err;
-  }
+  if (!upb_strtable_init(&s->syms, 32, s->arena)) goto err;
+  if (!upb_strtable_init(&s->files, 4, s->arena)) goto err;
+  if (!upb_inttable_init(&s->exts, s->arena)) goto err;
 
   s->extreg = upb_ExtensionRegistry_New(s->arena);
   if (!s->extreg) goto err;
+
   return s;
 
 err:
@@ -1537,7 +1534,7 @@ static void fill_fieldlayout(upb_MiniTable_Field* field,
 /* This function is the dynamic equivalent of message_layout.{cc,h} in upbc.
  * It computes a dynamic layout for all of the fields in |m|. */
 static void make_layout(symtab_addctx* ctx, const upb_MessageDef* m) {
-  upb_MiniTable* l = (upb_MiniTable*)m->layout;
+  upb_MiniTable* l = (upb_MiniTable*)upb_MessageDef_MiniTable(m);
   size_t field_count = upb_MessageDef_numfields(m);
   size_t sublayout_count = 0;
   upb_MiniTable_Sub* subs;
@@ -2261,7 +2258,7 @@ static void create_fielddef(
   const char* shortname;
   int32_t field_number;
 
-  f->file = ctx->file; /* Must happen prior to symtab_add(). */
+  f->file = ctx->file;  // Must happen prior to symtab_add()
 
   if (!google_protobuf_FieldDescriptorProto_has_name(field_proto)) {
     symtab_errf(ctx, "field has no name");
@@ -2359,8 +2356,9 @@ static void create_fielddef(
     CHK_OOM(upb_inttable_insert(&m->itof, field_number, v, ctx->arena));
 
     if (ctx->layout) {
-      const upb_MiniTable_Field* fields = m->layout->fields;
-      int count = m->layout->field_count;
+      const upb_MiniTable* mt = upb_MessageDef_MiniTable(m);
+      const upb_MiniTable_Field* fields = mt->fields;
+      const int count = mt->field_count;
       bool found = false;
       for (int i = 0; i < count; i++) {
         if (fields[i].number == field_number) {
@@ -2378,7 +2376,7 @@ static void create_fielddef(
     symtab_add(ctx, full_name, pack_def(f, UPB_DEFTYPE_EXT));
     f->layout_index = ctx->ext_count++;
     if (ctx->layout) {
-      UPB_ASSERT(ctx->file->ext_layouts[f->layout_index]->field.number ==
+      UPB_ASSERT(_upb_FieldDef_ExtensionMiniTable(f)->field.number ==
                  field_number);
     }
   }
@@ -2446,7 +2444,7 @@ static void create_fielddef(
     /* Repeated fields default to packed for proto3 only. */
     f->packed_ = upb_FieldDef_IsPrimitive(f) &&
                  f->label_ == kUpb_Label_Repeated &&
-                 f->file->syntax == kUpb_Syntax_Proto3;
+                 upb_FileDef_Syntax(f->file) == kUpb_Syntax_Proto3;
   }
 }
 
@@ -2458,7 +2456,7 @@ static void create_service(
   const google_protobuf_MethodDescriptorProto* const* methods;
   size_t i, n;
 
-  s->file = ctx->file; /* Must happen prior to symtab_add. */
+  s->file = ctx->file;  // Must happen prior to symtab_add()
 
   name = google_protobuf_ServiceDescriptorProto_name(svc_proto);
   check_ident(ctx, name, false);
@@ -2654,7 +2652,7 @@ static void create_msgdef(symtab_addctx* ctx, const char* prefix,
   size_t i, n_oneof, n_field, n_ext_range;
   upb_StringView name;
 
-  m->file = ctx->file; /* Must happen prior to symtab_add(). */
+  m->file = ctx->file;  // Must happen prior to symtab_add()
   m->containing_type = containing_type;
 
   name = google_protobuf_DescriptorProto_name(msg_proto);
@@ -2833,7 +2831,7 @@ static void resolve_extension(
                 (unsigned)f->number_, f->full_name, f->msgdef->full_name);
   }
 
-  const upb_MiniTable_Extension* ext = ctx->file->ext_layouts[f->layout_index];
+  const upb_MiniTable_Extension* ext = _upb_FieldDef_ExtensionMiniTable(f);
   if (ctx->layout) {
     UPB_ASSERT(upb_FieldDef_Number(f) == ext->field.number);
   } else {
