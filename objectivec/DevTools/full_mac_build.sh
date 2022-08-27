@@ -235,7 +235,6 @@ objectivec/generate_well_known_types.sh --check-only -j "${NUM_MAKE_JOBS}"
 
 header "Checking on the ObjC Runtime Code"
 LOCAL_PYTHON=python
-fi
 "${LOCAL_PYTHON}" objectivec/DevTools/pddm_tests.py
 if ! "${LOCAL_PYTHON}" objectivec/DevTools/pddm.py --dry-run objectivec/*.[hm] objectivec/Tests/*.[hm] ; then
   echo ""
