@@ -21,13 +21,10 @@ export CC=gcc
 export CXX=g++
 
 ##
-# Install Python 2
+# Install Python 2 by default
 
-if [[ "${KOKORO_INSTALL_PYTHON2:-}" == "yes" ]] ; then
-    # Use python 2.
-    eval "$(pyenv init -)"
-    pyenv install -v -s 2.7.18 && pyenv global 2.7.18
-fi
+eval "$(pyenv init -)"
+pyenv install -v -s 2.7.18 && pyenv global 2.7.18
 
 ##
 # Install Virtual Python Environment
