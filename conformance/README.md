@@ -74,13 +74,13 @@ Objective-c (Mac only):
 
 Ruby:
 
-    $ [[ $(ruby --version) == "ruby"* ]] || echo "Select a c ruby!"
+    $ [[ $(ruby --version) == "ruby"* ]] || echo "Select a C Ruby!"
     $ bazel test //ruby:conformance_test --define=ruby_platform=c \
         --action_env=PATH --action_env=GEM_PATH --action_env=GEM_HOME
 
 JRuby:
 
-    $ [[ $(ruby --version) == "jruby"* ]] || echo "Switch to java ruby!"
+    $ [[ $(ruby --version) == "jruby"* ]] || echo "Switch to Java Ruby!"
     $ bazel test //ruby:conformance_test --define=ruby_platform=java \
         --action_env=PATH --action_env=GEM_PATH --action_env=GEM_HOME
 
