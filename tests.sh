@@ -326,7 +326,7 @@ build_python() {
   if [ $(uname -s) == "Linux" ]; then
     envlist=py\{35,36\}-python
   else
-    envlist=py\{36\}-python
+    envlist=py\{37\}-python
   fi
   python -m tox -e $envlist
   cd ..
