@@ -41,7 +41,12 @@ fi
 # Install Tox
 
 if [[ "${KOKORO_INSTALL_TOX:-}" == "yes" ]] ; then
-  sudo python3 -m pip install --upgrade pip tox
+  sudo python3 -m pip install --upgrade pip tox tox-pyenv
+  pyenv install -v -s 3.5.10
+  pyenv install -v -s 3.6.15
+  pyenv install -v -s 3.7.13
+  pyenv install -v -s 3.8.13
+  pyenv install -v -s 3.9.13
 fi
 
 ##
