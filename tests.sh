@@ -27,17 +27,6 @@ build_cpp() {
   internal_build_cpp
   make check -j$(nproc) || (cat src/test-suite.log; false)
   cd conformance && make test_cpp && cd ..
-
-  # The benchmark code depends on cmake, so test if it is installed before
-  # trying to do the build.
-  if [[ $(type cmake 2>/dev/null) ]]; then
-    # Verify benchmarking code can build successfully.
-    cd benchmarks && make cpp-benchmark && cd ..
-  else
-    echo ""
-    echo "WARNING: Skipping validation of the bench marking code, cmake isn't installed."
-    echo ""
-  fi
 }
 
 build_cpp_tcmalloc() {
