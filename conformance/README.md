@@ -51,38 +51,38 @@ today some of them are a bit tricky to run.  Below is a list of the commands
 
 Java:
 
-    $ `bazel test //java/core:conformance_test //java/lite:conformance_test`
+    $ bazel test //java/core:conformance_test //java/lite:conformance_test
 
 Python:
 
-    $ `bazel test //python:conformance_test`
+    $ bazel test //python:conformance_test
 
 Python C++:
 
-    $ `bazel test //python:conformance_test_cpp --define=use_fast_cpp_protos=true`
+    $ bazel test //python:conformance_test_cpp --define=use_fast_cpp_protos=true
 
 C#:
 
-    $ `which dotnet || echo "You must have dotnet installed!"`
+    $ `which dotnet || echo "You must have dotnet installed!"
     $ `bazel test //csharp:conformance_test \
-    $   --action_env=DOTNET_CLI_TELEMETRY_OPTOUT=1 --test_env=DOTNET_CLI_HOME=~ \
-    $   --action_env=DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1`
+        --action_env=DOTNET_CLI_TELEMETRY_OPTOUT=1 --test_env=DOTNET_CLI_HOME=~ \
+        --action_env=DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1
 
 Objective-c (Mac only):
 
-    $ `bazel test //objectivec:conformance_test --macos_minimum_os=10.9`
+    $ `bazel test //objectivec:conformance_test --macos_minimum_os=10.9
 
 Ruby:
 
-    $ `[[ $(ruby --version) == "ruby"* ]] || echo "Select a c ruby!"`
-    $ `bazel test //ruby:conformance_test --define=ruby_platform=c \
-    $   --action_env=PATH --action_env=GEM_PATH --action_env=GEM_HOME`
+    $ [[ $(ruby --version) == "ruby"* ]] || echo "Select a c ruby!"
+    $ bazel test //ruby:conformance_test --define=ruby_platform=c \
+        --action_env=PATH --action_env=GEM_PATH --action_env=GEM_HOME
 
 JRuby:
 
-    $ `[[ $(ruby --version) == "jruby"* ]] || echo "Switch to java ruby!"`
-    $ `bazel test //ruby:conformance_test --define=ruby_platform=java \
-    $   --action_env=PATH --action_env=GEM_PATH --action_env=GEM_HOME`
+    $ [[ $(ruby --version) == "jruby"* ]] || echo "Switch to java ruby!"
+    $ bazel test //ruby:conformance_test --define=ruby_platform=java \
+        --action_env=PATH --action_env=GEM_PATH --action_env=GEM_HOME
 
 Testing other Protocol Buffer implementations
 ---------------------------------------------
