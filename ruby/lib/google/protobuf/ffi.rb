@@ -35,7 +35,14 @@ module Google
   module Protobuf
     class FFI
       extend ::FFI::Library
-      ffi_lib ::FFI::Compiler::Loader.find 'protobuf_c'
+      # Workaround for Bazel's use of symlinks + JRuby's __FILE__ and `caller`
+      # that resolves them.
+      if ENV['BAZEL'] == 'true'
+        ffi_lib ::FFI::Compiler::Loader.find 'protobuf_c', ENV['PWD']
+      else
+        ffi_lib ::FFI::Compiler::Loader.find 'protobuf_c'
+      end
+
 
       Arena = Google::Protobuf::Internal::Arena
 
