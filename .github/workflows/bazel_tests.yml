@@ -36,13 +36,13 @@ jobs:
         with:
           credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
           export_environment_variables: true
-        if: ${{ github.repository_owner == 'protocolbuffers' }}
+        if: ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/upb' }}
       - name: Set up Bazel read/write caching
         run: echo "BAZEL_CACHE_AUTH=--google_default_credentials" >> $GITHUB_ENV
-        if: ${{ github.repository_owner == 'protocolbuffers' }}
+        if: ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/upb' }}
       - name: Set up Bazel read-only caching
         run: echo "BAZEL_CACHE_AUTH=--remote_upload_local_results=false" >> $GITHUB_ENV
-        if: ${{ github.repository_owner != 'protocolbuffers' }}
+        if: ${{ github.event.pull_request.head.repo.full_name != 'protocolbuffers/upb' }}
       - name: Setup Python venv
         run: rm -rf /tmp/venv && python3 -m venv /tmp/venv
       - name: Install dependencies
