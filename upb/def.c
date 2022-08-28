@@ -923,11 +923,6 @@ upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m) {
   return m->well_known_type;
 }
 
-// Allocate sufficient storage to contain an array of |n| message defs.
-static upb_MessageDef* _upb_MessageDef_Alloc(symtab_addctx* ctx, int n) {
-  return symtab_alloc(ctx, sizeof(upb_MessageDef) * n);
-}
-
 /* upb_OneofDef ***************************************************************/
 
 const google_protobuf_OneofOptions* upb_OneofDef_Options(
@@ -977,11 +972,6 @@ const upb_FieldDef* upb_OneofDef_LookupNumber(const upb_OneofDef* o,
   upb_value val;
   return upb_inttable_lookup(&o->itof, num, &val) ? upb_value_getptr(val)
                                                   : NULL;
-}
-
-// Allocate sufficient storage to contain an array of |n| oneof defs.
-static upb_OneofDef* _upb_OneofDef_Alloc(symtab_addctx* ctx, int n) {
-  return symtab_alloc(ctx, sizeof(upb_OneofDef) * n);
 }
 
 /* upb_FileDef ****************************************************************/
@@ -1071,11 +1061,6 @@ const upb_ServiceDef* upb_FileDef_Service(const upb_FileDef* f, int i) {
 
 const upb_DefPool* upb_FileDef_Pool(const upb_FileDef* f) { return f->symtab; }
 
-// Allocate sufficient storage to contain one file def.
-static upb_FileDef* _upb_FileDef_Alloc(symtab_addctx* ctx) {
-  return symtab_alloc(ctx, sizeof(upb_FileDef));
-}
-
 /* upb_MethodDef **************************************************************/
 
 const google_protobuf_MethodOptions* upb_MethodDef_Options(const upb_MethodDef* m) {
@@ -1114,11 +1099,6 @@ bool upb_MethodDef_ClientStreaming(const upb_MethodDef* m) {
 
 bool upb_MethodDef_ServerStreaming(const upb_MethodDef* m) {
   return m->server_streaming;
-}
-
-// Allocate sufficient storage to contain an array of |n| method defs.
-static upb_MethodDef* _upb_MethodDef_Alloc(symtab_addctx* ctx, int n) {
-  return symtab_alloc(ctx, sizeof(upb_MethodDef) * n);
 }
 
 /* upb_ServiceDef *************************************************************/
@@ -1161,11 +1141,6 @@ const upb_MethodDef* upb_ServiceDef_FindMethodByName(const upb_ServiceDef* s,
     }
   }
   return NULL;
-}
-
-// Allocate sufficient storage to contain an array of |n| service defs.
-static upb_ServiceDef* _upb_ServiceDef_Alloc(symtab_addctx* ctx, int n) {
-  return symtab_alloc(ctx, sizeof(upb_ServiceDef) * n);
 }
 
 /* upb_DefPool ****************************************************************/
@@ -1957,6 +1932,17 @@ static void create_oneofdef(
   CHK_OOM(upb_strtable_init(&o->ntof, 4, ctx->arena));
 }
 
+// Allocate and initialize an array of |n| oneof defs.
+static upb_OneofDef* _upb_OneofDefs_New(
+    symtab_addctx* ctx, int n, const google_protobuf_OneofDescriptorProto* const* protos,
+    upb_MessageDef* m) {
+  upb_OneofDef* o = symtab_alloc(ctx, sizeof(upb_OneofDef) * n);
+  for (int i = 0; i < n; i++) {
+    create_oneofdef(ctx, m, protos[i], &o[i]);
+  }
+  return o;
+}
+
 static str_t* newstr(symtab_addctx* ctx, const char* data, size_t len) {
   str_t* ret = symtab_alloc(ctx, sizeof(*ret) + len);
   CHK_OOM(ret);
@@ -2448,13 +2434,44 @@ static void create_fielddef(
   }
 }
 
-static void create_service(
-    symtab_addctx* ctx, const google_protobuf_ServiceDescriptorProto* svc_proto,
-    const upb_ServiceDef* _s) {
-  upb_ServiceDef* s = (upb_ServiceDef*)_s;
+static void create_method(symtab_addctx* ctx,
+                          const google_protobuf_MethodDescriptorProto* method_proto,
+                          upb_ServiceDef* s, upb_MethodDef* m) {
+  upb_StringView name = google_protobuf_MethodDescriptorProto_name(method_proto);
+
+  m->service = s;
+  m->full_name = makefullname(ctx, s->full_name, name);
+  m->client_streaming =
+      google_protobuf_MethodDescriptorProto_client_streaming(method_proto);
+  m->server_streaming =
+      google_protobuf_MethodDescriptorProto_server_streaming(method_proto);
+  m->input_type = symtab_resolve(
+      ctx, m->full_name, m->full_name,
+      google_protobuf_MethodDescriptorProto_input_type(method_proto), UPB_DEFTYPE_MSG);
+  m->output_type = symtab_resolve(
+      ctx, m->full_name, m->full_name,
+      google_protobuf_MethodDescriptorProto_output_type(method_proto), UPB_DEFTYPE_MSG);
+
+  SET_OPTIONS(m->opts, MethodDescriptorProto, MethodOptions, method_proto);
+}
+
+// Allocate and initialize an array of |n| method defs.
+static upb_MethodDef* _upb_MethodDefs_New(
+    symtab_addctx* ctx, int n,
+    const google_protobuf_MethodDescriptorProto* const* protos, upb_ServiceDef* s) {
+  upb_MethodDef* m = symtab_alloc(ctx, sizeof(upb_MethodDef) * n);
+  for (int i = 0; i < n; i++) {
+    create_method(ctx, protos[i], s, &m[i]);
+    m[i].index = i;
+  }
+  return m;
+}
+
+static void create_service(symtab_addctx* ctx,
+                           const google_protobuf_ServiceDescriptorProto* svc_proto,
+                           upb_ServiceDef* s) {
   upb_StringView name;
-  const google_protobuf_MethodDescriptorProto* const* methods;
-  size_t i, n;
+  size_t n;
 
   s->file = ctx->file;  // Must happen prior to symtab_add()
 
@@ -2463,37 +2480,24 @@ static void create_service(
   s->full_name = makefullname(ctx, ctx->file->package, name);
   symtab_add(ctx, s->full_name, pack_def(s, UPB_DEFTYPE_SERVICE));
 
-  methods = google_protobuf_ServiceDescriptorProto_method(svc_proto, &n);
-
+  const google_protobuf_MethodDescriptorProto* const* methods =
+      google_protobuf_ServiceDescriptorProto_method(svc_proto, &n);
   s->method_count = n;
-  s->methods = _upb_MethodDef_Alloc(ctx, n);
+  s->methods = _upb_MethodDefs_New(ctx, n, methods, s);
 
   SET_OPTIONS(s->opts, ServiceDescriptorProto, ServiceOptions, svc_proto);
+}
 
-  for (i = 0; i < n; i++) {
-    const google_protobuf_MethodDescriptorProto* method_proto = methods[i];
-    upb_MethodDef* m = (upb_MethodDef*)&s->methods[i];
-    upb_StringView name =
-        google_protobuf_MethodDescriptorProto_name(method_proto);
-
-    m->service = s;
-    m->full_name = makefullname(ctx, s->full_name, name);
-    m->index = i;
-    m->client_streaming =
-        google_protobuf_MethodDescriptorProto_client_streaming(method_proto);
-    m->server_streaming =
-        google_protobuf_MethodDescriptorProto_server_streaming(method_proto);
-    m->input_type = symtab_resolve(
-        ctx, m->full_name, m->full_name,
-        google_protobuf_MethodDescriptorProto_input_type(method_proto),
-        UPB_DEFTYPE_MSG);
-    m->output_type = symtab_resolve(
-        ctx, m->full_name, m->full_name,
-        google_protobuf_MethodDescriptorProto_output_type(method_proto),
-        UPB_DEFTYPE_MSG);
-
-    SET_OPTIONS(m->opts, MethodDescriptorProto, MethodOptions, method_proto);
+// Allocate and initialize an array of |n| service defs.
+static upb_ServiceDef* _upb_ServiceDefs_New(
+    symtab_addctx* ctx, int n,
+    const google_protobuf_ServiceDescriptorProto* const* protos) {
+  upb_ServiceDef* s = symtab_alloc(ctx, sizeof(upb_ServiceDef) * n);
+  for (int i = 0; i < n; i++) {
+    create_service(ctx, protos[i], &s[i]);
+    s[i].index = i;
   }
+  return s;
 }
 
 static int count_bits_debug(uint64_t x) {
@@ -2683,10 +2687,7 @@ static void create_msgdef(symtab_addctx* ctx, const char* prefix,
   SET_OPTIONS(m->opts, DescriptorProto, MessageOptions, msg_proto);
 
   m->oneof_count = n_oneof;
-  m->oneofs = _upb_OneofDef_Alloc(ctx, n_oneof);
-  for (i = 0; i < n_oneof; i++) {
-    create_oneofdef(ctx, m, oneofs[i], &m->oneofs[i]);
-  }
+  m->oneofs = _upb_OneofDefs_New(ctx, n_oneof, oneofs, m);
 
   m->field_count = n_field;
   m->fields = _upb_FieldDef_Alloc(ctx, n_field);
@@ -2727,6 +2728,19 @@ static void create_msgdef(symtab_addctx* ctx, const char* prefix,
   msgdef_create_nested(ctx, msg_proto, m);
 }
 
+// Allocate and initialize an array of |n| message defs.
+static upb_MessageDef* _upb_MessageDefs_New(
+    symtab_addctx* ctx, int n, const google_protobuf_DescriptorProto* const* protos,
+    const upb_MessageDef* containing_type) {
+  const char* name =
+      containing_type ? containing_type->full_name : ctx->file->package;
+  upb_MessageDef* m = symtab_alloc(ctx, sizeof(upb_MessageDef) * n);
+  for (int i = 0; i < n; i++) {
+    create_msgdef(ctx, name, protos[i], containing_type, &m[i]);
+  }
+  return m;
+}
+
 static void msgdef_create_nested(
     symtab_addctx* ctx, const google_protobuf_DescriptorProto* msg_proto,
     upb_MessageDef* m) {
@@ -2750,10 +2764,7 @@ static void msgdef_create_nested(
   const google_protobuf_DescriptorProto* const* msgs =
       google_protobuf_DescriptorProto_nested_type(msg_proto, &n);
   m->nested_msg_count = n;
-  m->nested_msgs = _upb_MessageDef_Alloc(ctx, n);
-  for (size_t i = 0; i < n; i++) {
-    create_msgdef(ctx, m->full_name, msgs[i], m, &m->nested_msgs[i]);
-  }
+  m->nested_msgs = _upb_MessageDefs_New(ctx, n, msgs, m);
 }
 
 static void resolve_subdef(symtab_addctx* ctx, const char* prefix,
@@ -2926,9 +2937,12 @@ static int count_exts_in_msg(const google_protobuf_DescriptorProto* msg_proto) {
   return ext_count;
 }
 
-static void build_filedef(
-    symtab_addctx* ctx, upb_FileDef* file,
-    const google_protobuf_FileDescriptorProto* file_proto) {
+// Allocate and initialize one file def, and add it to the context object.
+static void _upb_FileDef_Create(symtab_addctx* ctx,
+                                const google_protobuf_FileDescriptorProto* file_proto) {
+  upb_FileDef* file = symtab_alloc(ctx, sizeof(upb_FileDef));
+  ctx->file = file;
+
   const google_protobuf_DescriptorProto* const* msgs;
   const google_protobuf_EnumDescriptorProto* const* enums;
   const google_protobuf_FieldDescriptorProto* const* exts;
@@ -3053,22 +3067,15 @@ static void build_filedef(
     ((upb_FieldDef*)&file->top_lvl_exts[i])->index_ = i;
   }
 
-  /* Create messages. */
+  // Create messages.
   msgs = google_protobuf_FileDescriptorProto_message_type(file_proto, &n);
   file->top_lvl_msg_count = n;
-  file->top_lvl_msgs = _upb_MessageDef_Alloc(ctx, n);
-  for (i = 0; i < n; i++) {
-    create_msgdef(ctx, file->package, msgs[i], NULL, &file->top_lvl_msgs[i]);
-  }
+  file->top_lvl_msgs = _upb_MessageDefs_New(ctx, n, msgs, NULL);
 
-  /* Create services. */
+  // Create services.
   services = google_protobuf_FileDescriptorProto_service(file_proto, &n);
   file->service_count = n;
-  file->services = _upb_ServiceDef_Alloc(ctx, n);
-  for (i = 0; i < n; i++) {
-    create_service(ctx, services[i], &file->services[i]);
-    ((upb_ServiceDef*)&file->services[i])->index = i;
-  }
+  file->services = _upb_ServiceDefs_New(ctx, n, services);
 
   /* Now that all names are in the table, build layouts and resolve refs. */
   for (i = 0; i < (size_t)file->top_lvl_ext_count; i++) {
@@ -3164,8 +3171,7 @@ static const upb_FileDef* _upb_DefPool_AddFile(
       ctx.file = NULL;
     }
   } else {
-    ctx.file = _upb_FileDef_Alloc(&ctx);
-    build_filedef(&ctx, ctx.file, file_proto);
+    _upb_FileDef_Create(&ctx, file_proto);
     upb_strtable_insert(&s->files, name.data, name.size,
                         pack_def(ctx.file, UPB_DEFTYPE_FILE), ctx.arena);
     UPB_ASSERT(upb_Status_IsOk(status));
