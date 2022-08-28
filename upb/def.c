@@ -239,7 +239,6 @@ typedef enum {
 
   /* Only inside file table. */
   UPB_DEFTYPE_FILE = 0,
-  UPB_DEFTYPE_LAYOUT = 1
 } upb_deftype_t;
 
 #define FIELD_TYPE_UNSPECIFIED 0
@@ -1208,9 +1207,8 @@ const upb_EnumValueDef* upb_DefPool_FindEnumByNameval(const upb_DefPool* s,
 const upb_FileDef* upb_DefPool_FindFileByName(const upb_DefPool* s,
                                               const char* name) {
   upb_value v;
-  return upb_strtable_lookup(&s->files, name, &v)
-             ? unpack_def(v, UPB_DEFTYPE_FILE)
-             : NULL;
+  return upb_strtable_lookup(&s->files, name, &v) ? upb_value_getconstptr(v)
+                                                  : NULL;
 }
 
 const upb_FileDef* upb_DefPool_FindFileByNameWithSize(const upb_DefPool* s,
@@ -1218,7 +1216,7 @@ const upb_FileDef* upb_DefPool_FindFileByNameWithSize(const upb_DefPool* s,
                                                       size_t len) {
   upb_value v;
   return upb_strtable_lookup2(&s->files, name, len, &v)
-             ? unpack_def(v, UPB_DEFTYPE_FILE)
+             ? upb_value_getconstptr(v)
              : NULL;
 }
 
@@ -3131,20 +3129,9 @@ static const upb_FileDef* _upb_DefPool_AddFile(
   upb_value v;
 
   if (upb_strtable_lookup2(&s->files, name.data, name.size, &v)) {
-    if (unpack_def(v, UPB_DEFTYPE_FILE)) {
-      upb_Status_SetErrorFormat(status, "duplicate file name (%.*s)",
-                                UPB_STRINGVIEW_ARGS(name));
-      return NULL;
-    }
-    const upb_MiniTable_File* registered = unpack_def(v, UPB_DEFTYPE_LAYOUT);
-    UPB_ASSERT(registered);
-    if (layout && layout != registered) {
-      upb_Status_SetErrorFormat(
-          status, "tried to build with a different layout (filename=%.*s)",
-          UPB_STRINGVIEW_ARGS(name));
-      return NULL;
-    }
-    layout = registered;
+    upb_Status_SetErrorFormat(status, "duplicate file name (%.*s)",
+                              UPB_STRINGVIEW_ARGS(name));
+    return NULL;
   }
 
   ctx.symtab = s;
@@ -3173,7 +3160,7 @@ static const upb_FileDef* _upb_DefPool_AddFile(
   } else {
     _upb_FileDef_Create(&ctx, file_proto);
     upb_strtable_insert(&s->files, name.data, name.size,
-                        pack_def(ctx.file, UPB_DEFTYPE_FILE), ctx.arena);
+                        upb_value_constptr(ctx.file), ctx.arena);
     UPB_ASSERT(upb_Status_IsOk(status));
     upb_Arena_Fuse(s->arena, ctx.arena);
   }
@@ -3264,14 +3251,6 @@ const upb_FieldDef* upb_DefPool_FindExtensionByNumber(const upb_DefPool* s,
   const upb_MiniTable* l = upb_MessageDef_MiniTable(m);
   const upb_MiniTable_Extension* ext = _upb_extreg_get(s->extreg, l, fieldnum);
   return ext ? _upb_DefPool_FindExtensionByMiniTable(s, ext) : NULL;
-}
-
-bool _upb_DefPool_registerlayout(upb_DefPool* s, const char* filename,
-                                 const upb_MiniTable_File* file) {
-  if (upb_DefPool_FindFileByName(s, filename)) return false;
-  upb_value v = pack_def(file, UPB_DEFTYPE_LAYOUT);
-  return upb_strtable_insert(&s->files, filename, strlen(filename), v,
-                             s->arena);
 }
 
 const upb_ExtensionRegistry* upb_DefPool_ExtensionRegistry(
