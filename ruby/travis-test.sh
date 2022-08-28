@@ -22,7 +22,7 @@ test_version() {
      which ruby && \
      git clean -f && \
      gem install --no-document bundler && bundle && \
-     bazel test //ruby/... $bazel_args --define=ruby_platform=$RUBY_PLATFORM"
+     bazel test //ruby/... $bazel_args --define=ruby_platform=$RUBY_PLATFORM ----test_env=BAZEL=true"
 }
 
 test_version $1
