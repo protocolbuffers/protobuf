@@ -31,7 +31,7 @@ inline_sh_test(
     ],
     cmd = """
         pushd `dirname $(location Rakefile)`
-        RUBYLIB=.:tests:../../lib:../../../src BAZEL=true rake test
+        RUBYLIB=.:tests:../../lib:../../../src rake test
         popd
     """,
 )

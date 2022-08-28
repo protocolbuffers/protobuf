@@ -103,7 +103,7 @@ inline_sh_test(
     ],
     cmd = """
         pushd `dirname $(location Rakefile)`
-        RUBYLIB=../src:tests:. BAZEL=true rake test
+        RUBYLIB=../src:tests:. rake test
         popd
     """,
 )
@@ -121,7 +121,7 @@ inline_sh_test(
     ],
     cmd = """
         pushd `dirname $(location Rakefile)`
-        RUBYLIB=../src:tests:. BAZEL=true rake gc_test
+        RUBYLIB=../src:tests:. rake gc_test
         popd
     """,
     timeout = "long",

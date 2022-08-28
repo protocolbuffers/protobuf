@@ -27,7 +27,7 @@ def internal_ruby_extension(
         tags = ["manual"],
         outs = [extension],
         cmd = "pushd `dirname $(location Rakefile)`\n" +
-              "BAZEL=true rake\n" +
+              "rake\n" +
               "popd\n" +
               "cp `dirname $(location Rakefile)`/%s $(OUTS)\n" % extension,
         **kwargs
