@@ -30,8 +30,8 @@
 #ifndef UPB_IO_TOKENIZER_H_
 #define UPB_IO_TOKENIZER_H_
 
-#include "upb/io/string.h"
 #include "upb/io/zero_copy_input_stream.h"
+#include "upb/string_view.h"
 #include "upb/upb.h"
 
 // Must be included last.
@@ -123,6 +123,9 @@ int upb_Tokenizer_Line(const upb_Tokenizer* t);
 int upb_Tokenizer_TextSize(const upb_Tokenizer* t);
 const char* upb_Tokenizer_TextData(const upb_Tokenizer* t);
 
+// External helper: validate an identifier.
+bool upb_Tokenizer_IsIdentifier(const char* data, int size);
+
 // Parses a TYPE_INTEGER token. Returns false if the result would be
 // greater than max_value. Otherwise, returns true and sets *output to the
 // result. If the text is not from a Token of type TYPE_INTEGER originally
@@ -135,19 +138,10 @@ bool upb_Parse_Integer(const char* text, uint64_t max_value, uint64_t* output);
 // result is undefined (possibly an assert failure).
 double upb_Parse_Float(const char* text);
 
-// Identical to ParseString (below), but appends to output.
-void upb_Parse_StringAppend(const char* text, upb_String* output);
-
 // Parses a TYPE_STRING token. This never fails, so long as the text actually
 // comes from a TYPE_STRING token parsed by Tokenizer. If it doesn't, the
 // result is undefined (possibly an assert failure).
-UPB_INLINE void upb_Parse_String(const char* text, upb_String* output) {
-  upb_String_Clear(output);
-  upb_Parse_StringAppend(text, output);
-}
-
-// External helper: validate an identifier.
-bool upb_Tokenizer_IsIdentifier(const char* text, int size);
+upb_StringView upb_Parse_String(const char* text, upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */

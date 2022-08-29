@@ -193,3 +193,8 @@ message TestMapFieldExtra {
   }
   map<int32, EnumMap> map_field = 1;
 }
+
+message TestNameConflict {
+  map<string, string> map_field = 1;
+  optional bool clear_map_field = 2;
+}

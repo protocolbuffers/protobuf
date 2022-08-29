@@ -62,6 +62,9 @@ UPB_INLINE uint64_t _upb_UInt64_FromULL(unsigned long long v) {
   return (uint64_t)v;
 }
 
+extern const float kUpb_FltInfinity;
+extern const double kUpb_Infinity;
+
 /** upb_MiniTable *************************************************************/
 
 /* upb_MiniTable represents the memory layout of a given upb_MessageDef.  The

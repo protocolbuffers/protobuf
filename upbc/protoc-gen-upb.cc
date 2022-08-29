@@ -38,6 +38,7 @@
 #include "upb/upb.hpp"
 #include "upbc/common.h"
 #include "upbc/file_layout.h"
+#include "upbc/names.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -54,15 +55,17 @@ namespace protobuf = ::google::protobuf;
 inline std::vector<const google::protobuf::FieldDescriptor*> FieldHotnessOrder(
     const google::protobuf::Descriptor* message) {
   std::vector<const google::protobuf::FieldDescriptor*> fields;
-  for (int i = 0; i < message->field_count(); i++) {
+  size_t field_count = message->field_count();
+  fields.reserve(field_count);
+  for (size_t i = 0; i < field_count; i++) {
     fields.push_back(message->field(i));
   }
-  std::sort(fields.begin(), fields.end(),
-            [](const google::protobuf::FieldDescriptor* a,
-               const google::protobuf::FieldDescriptor* b) {
-              return std::make_pair(!a->is_required(), a->number()) <
-                     std::make_pair(!b->is_required(), b->number());
-            });
+  std::sort(
+      fields.begin(), fields.end(),
+      [](const google::protobuf::FieldDescriptor* a, const google::protobuf::FieldDescriptor* b) {
+        return std::make_pair(!a->is_required(), a->number()) <
+               std::make_pair(!b->is_required(), b->number());
+      });
   return fields;
 }
 
@@ -190,6 +193,26 @@ bool HasNonZeroDefault(const protobuf::FieldDescriptor* field) {
   return false;
 }
 
+std::string FloatToCLiteral(float value) {
+  if (value == std::numeric_limits<float>::infinity()) {
+    return "kUpb_FltInfinity";
+  } else if (value == -std::numeric_limits<float>::infinity()) {
+    return "-kUpb_FltInfinity";
+  } else {
+    return absl::StrCat(value);
+  }
+}
+
+std::string DoubleToCLiteral(double value) {
+  if (value == std::numeric_limits<double>::infinity()) {
+    return "kUpb_Infinity";
+  } else if (value == -std::numeric_limits<double>::infinity()) {
+    return "-kUpb_Infinity";
+  } else {
+    return absl::StrCat(value);
+  }
+}
+
 std::string FieldDefault(const protobuf::FieldDescriptor* field) {
   switch (field->cpp_type()) {
     case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
@@ -210,9 +233,9 @@ std::string FieldDefault(const protobuf::FieldDescriptor* field) {
       return absl::Substitute("_upb_UInt64_FromULL($0ull)",
                               field->default_value_uint64());
     case protobuf::FieldDescriptor::CPPTYPE_FLOAT:
-      return absl::StrCat(field->default_value_float());
+      return FloatToCLiteral(field->default_value_float());
     case protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
-      return absl::StrCat(field->default_value_double());
+      return DoubleToCLiteral(field->default_value_double());
     case protobuf::FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool() ? "true" : "false";
     case protobuf::FieldDescriptor::CPPTYPE_ENUM:
@@ -380,7 +403,9 @@ void GenerateOneofInHeader(const protobuf::OneofDescriptor* oneof,
 
 void GenerateHazzer(const protobuf::FieldDescriptor* field,
                     const FileLayout& layout, absl::string_view msg_name,
+                    const NameToFieldDescriptorMap& field_names,
                     Output& output) {
+  std::string resolved_name = ResolveFieldName(field, field_names);
   if (layout.HasHasbit(field)) {
     output(
         R"cc(
@@ -388,7 +413,7 @@ void GenerateHazzer(const protobuf::FieldDescriptor* field,
             return _upb_hasbit(msg, $2);
           }
         )cc",
-        msg_name, field->name(), layout.GetHasbitIndex(field));
+        msg_name, resolved_name, layout.GetHasbitIndex(field));
   } else if (field->real_containing_oneof()) {
     output(
         R"cc(
@@ -396,7 +421,7 @@ void GenerateHazzer(const protobuf::FieldDescriptor* field,
             return _upb_getoneofcase(msg, $2) == $3;
           }
         )cc",
-        msg_name, field->name(),
+        msg_name, resolved_name,
         layout.GetOneofCaseOffset(field->real_containing_oneof()),
         field->number());
   } else if (field->message_type()) {
@@ -406,19 +431,20 @@ void GenerateHazzer(const protobuf::FieldDescriptor* field,
             return _upb_has_submsg_nohasbit(msg, $2);
           }
         )cc",
-        msg_name, field->name(), layout.GetFieldOffset(field));
+        msg_name, resolved_name, layout.GetFieldOffset(field));
   }
 }
 
 void GenerateClear(const protobuf::FieldDescriptor* field,
                    const FileLayout& layout, absl::string_view msg_name,
+                   const NameToFieldDescriptorMap& field_names,
                    Output& output) {
   if (field == field->containing_type()->map_key() ||
       field == field->containing_type()->map_value()) {
     // Cannot be cleared.
     return;
   }
-
+  std::string resolved_name = ResolveFieldName(field, field_names);
   if (field->real_containing_oneof()) {
     const protobuf::OneofDescriptor* oneof = field->real_containing_oneof();
     std::string oneof_fullname = ToCIdent(oneof->full_name());
@@ -432,7 +458,7 @@ void GenerateClear(const protobuf::FieldDescriptor* field,
             UPB_WRITE_ONEOF(msg, $2, $3, $7, $4, $6_NOT_SET);
           }
         )cc",
-        msg_name, field->name(), CType(field), layout.GetFieldOffset(field),
+        msg_name, resolved_name, CType(field), layout.GetFieldOffset(field),
         layout.GetOneofCaseOffset(field->real_containing_oneof()),
         field->number(), oneof_fullname, default_value);
   } else {
@@ -445,7 +471,7 @@ void GenerateClear(const protobuf::FieldDescriptor* field,
                 _upb_clearhas(msg, $3);
               }
             )cc",
-            msg_name, field->name(), layout.GetFieldOffset(field),
+            msg_name, resolved_name, layout.GetFieldOffset(field),
             layout.GetHasbitIndex(field));
       } else {
         output(
@@ -454,7 +480,7 @@ void GenerateClear(const protobuf::FieldDescriptor* field,
                 *UPB_PTR_AT(msg, $2, const upb_Message*) = NULL;
               }
             )cc",
-            msg_name, field->name(), layout.GetFieldOffset(field));
+            msg_name, resolved_name, layout.GetFieldOffset(field));
       }
     } else if (layout.HasHasbit(field)) {
       if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING) {
@@ -465,7 +491,7 @@ void GenerateClear(const protobuf::FieldDescriptor* field,
                 _upb_clearhas(msg, $4);
               }
             )cc",
-            msg_name, field->name(), CType(field), layout.GetFieldOffset(field),
+            msg_name, resolved_name, CType(field), layout.GetFieldOffset(field),
             layout.GetHasbitIndex(field));
       } else {
         output(
@@ -475,7 +501,7 @@ void GenerateClear(const protobuf::FieldDescriptor* field,
                 _upb_clearhas(msg, $4);
               }
             )cc",
-            msg_name, field->name(), CType(field), layout.GetFieldOffset(field),
+            msg_name, resolved_name, CType(field), layout.GetFieldOffset(field),
             layout.GetHasbitIndex(field));
       }
     } else {
@@ -486,7 +512,7 @@ void GenerateClear(const protobuf::FieldDescriptor* field,
                 *UPB_PTR_AT(msg, $3, $2) = upb_StringView_FromDataAndSize(NULL, 0);
               }
             )cc",
-            msg_name, field->name(), CType(field),
+            msg_name, resolved_name, CType(field),
             layout.GetFieldOffset(field));
       } else {
         output(
@@ -495,7 +521,7 @@ void GenerateClear(const protobuf::FieldDescriptor* field,
                 *UPB_PTR_AT(msg, $3, $2) = 0;
               }
             )cc",
-            msg_name, field->name(), CType(field), layout.GetFieldOffset(field),
+            msg_name, resolved_name, CType(field), layout.GetFieldOffset(field),
             layout.GetHasbitIndex(field));
       }
     }
@@ -504,7 +530,9 @@ void GenerateClear(const protobuf::FieldDescriptor* field,
 
 void GenerateRepeatedClear(const protobuf::FieldDescriptor* field,
                            const FileLayout& layout, absl::string_view msg_name,
+                           const NameToFieldDescriptorMap& field_names,
                            Output& output) {
+  std::string resolved_name = ResolveFieldName(field, field_names);
   if (layout.HasHasbit(field)) {
     output(
         R"cc(
@@ -513,7 +541,7 @@ void GenerateRepeatedClear(const protobuf::FieldDescriptor* field,
             _upb_clearhas(msg, $4);
           }
         )cc",
-        msg_name, field->name(), layout.GetFieldOffset(field),
+        msg_name, resolved_name, layout.GetFieldOffset(field),
         layout.GetHasbitIndex(field));
   } else {
     output(
@@ -522,30 +550,32 @@ void GenerateRepeatedClear(const protobuf::FieldDescriptor* field,
             _upb_array_detach(msg, $2);
           }
         )cc",
-        msg_name, field->name(), layout.GetFieldOffset(field));
+        msg_name, resolved_name, layout.GetFieldOffset(field));
   }
 }
 
 void GenerateMapGetters(const protobuf::FieldDescriptor* field,
                         const FileLayout& layout, absl::string_view msg_name,
+                        const NameToFieldDescriptorMap& field_names,
                         Output& output) {
   const protobuf::Descriptor* entry = field->message_type();
   const protobuf::FieldDescriptor* key = entry->FindFieldByNumber(1);
   const protobuf::FieldDescriptor* val = entry->FindFieldByNumber(2);
+  std::string resolved_name = ResolveFieldName(field, field_names);
   output(
       R"cc(
         UPB_INLINE size_t $0_$1_size(const $0* msg) {
           return _upb_msg_map_size(msg, $2);
         }
       )cc",
-      msg_name, field->name(), layout.GetFieldOffset(field));
+      msg_name, resolved_name, layout.GetFieldOffset(field));
   output(
       R"cc(
         UPB_INLINE bool $0_$1_get(const $0* msg, $2 key, $3* val) {
           return _upb_msg_map_get(msg, $4, &key, $5, val, $6);
         }
       )cc",
-      msg_name, field->name(), CType(key), CType(val),
+      msg_name, resolved_name, CType(key), CType(val),
       layout.GetFieldOffset(field),
       key->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
           ? "0"
@@ -559,7 +589,7 @@ void GenerateMapGetters(const protobuf::FieldDescriptor* field,
           return ($0)_upb_msg_map_next(msg, $3, iter);
         }
       )cc",
-      CTypeConst(field), msg_name, field->name(), layout.GetFieldOffset(field));
+      CTypeConst(field), msg_name, resolved_name, layout.GetFieldOffset(field));
 }
 
 void GenerateMapEntryGetters(const protobuf::FieldDescriptor* field,
@@ -580,18 +610,22 @@ void GenerateMapEntryGetters(const protobuf::FieldDescriptor* field,
 
 void GenerateRepeatedGetters(const protobuf::FieldDescriptor* field,
                              const FileLayout& layout,
-                             absl::string_view msg_name, Output& output) {
+                             absl::string_view msg_name,
+                             const NameToFieldDescriptorMap& field_names,
+                             Output& output) {
   output(
       R"cc(
         UPB_INLINE $0 const* $1_$2(const $1* msg, size_t* len) {
           return ($0 const*)_upb_array_accessor(msg, $3, len);
         }
       )cc",
-      CTypeConst(field), msg_name, field->name(), layout.GetFieldOffset(field));
+      CTypeConst(field), msg_name, ResolveFieldName(field, field_names),
+      layout.GetFieldOffset(field));
 }
 
 void GenerateOneofGetters(const protobuf::FieldDescriptor* field,
                           const FileLayout& layout, absl::string_view msg_name,
+                          const NameToFieldDescriptorMap& field_names,
                           Output& output) {
   output(
       R"cc(
@@ -599,14 +633,17 @@ void GenerateOneofGetters(const protobuf::FieldDescriptor* field,
           return UPB_READ_ONEOF(msg, $0, $3, $4, $5, $6);
         }
       )cc",
-      CTypeConst(field), msg_name, field->name(), layout.GetFieldOffset(field),
+      CTypeConst(field), msg_name, ResolveFieldName(field, field_names),
+      layout.GetFieldOffset(field),
       layout.GetOneofCaseOffset(field->real_containing_oneof()),
       field->number(), FieldDefault(field));
 }
 
 void GenerateScalarGetters(const protobuf::FieldDescriptor* field,
                            const FileLayout& layout, absl::string_view msg_name,
+                           const NameToFieldDescriptorMap& field_names,
                            Output& output) {
+  std::string resolved_name = ResolveFieldName(field, field_names);
   if (HasNonZeroDefault(field)) {
     output(
         R"cc(
@@ -614,7 +651,7 @@ void GenerateScalarGetters(const protobuf::FieldDescriptor* field,
             return $1_has_$2(msg) ? *UPB_PTR_AT(msg, $3, $0) : $4;
           }
         )cc",
-        CTypeConst(field), msg_name, field->name(),
+        CTypeConst(field), msg_name, resolved_name,
         layout.GetFieldOffset(field), FieldDefault(field));
   } else {
     output(
@@ -623,45 +660,48 @@ void GenerateScalarGetters(const protobuf::FieldDescriptor* field,
             return *UPB_PTR_AT(msg, $3, $0);
           }
         )cc",
-        CTypeConst(field), msg_name, field->name(),
+        CTypeConst(field), msg_name, resolved_name,
         layout.GetFieldOffset(field));
   }
 }
 
 void GenerateGetters(const protobuf::FieldDescriptor* field,
                      const FileLayout& layout, absl::string_view msg_name,
+                     const NameToFieldDescriptorMap& field_names,
                      Output& output) {
   if (field->is_map()) {
-    GenerateMapGetters(field, layout, msg_name, output);
+    GenerateMapGetters(field, layout, msg_name, field_names, output);
   } else if (field->containing_type()->options().map_entry()) {
     GenerateMapEntryGetters(field, msg_name, output);
   } else if (field->is_repeated()) {
-    GenerateRepeatedGetters(field, layout, msg_name, output);
+    GenerateRepeatedGetters(field, layout, msg_name, field_names, output);
   } else if (field->real_containing_oneof()) {
-    GenerateOneofGetters(field, layout, msg_name, output);
+    GenerateOneofGetters(field, layout, msg_name, field_names, output);
   } else {
-    GenerateScalarGetters(field, layout, msg_name, output);
+    GenerateScalarGetters(field, layout, msg_name, field_names, output);
   }
 }
 
 void GenerateMapSetters(const protobuf::FieldDescriptor* field,
                         const FileLayout& layout, absl::string_view msg_name,
+                        const NameToFieldDescriptorMap& field_names,
                         Output& output) {
   const protobuf::Descriptor* entry = field->message_type();
   const protobuf::FieldDescriptor* key = entry->FindFieldByNumber(1);
   const protobuf::FieldDescriptor* val = entry->FindFieldByNumber(2);
+  std::string resolved_name = ResolveFieldName(field, field_names);
   output(
       R"cc(
         UPB_INLINE void $0_$1_clear($0* msg) { _upb_msg_map_clear(msg, $2); }
       )cc",
-      msg_name, field->name(), layout.GetFieldOffset(field));
+      msg_name, resolved_name, layout.GetFieldOffset(field));
   output(
       R"cc(
         UPB_INLINE bool $0_$1_set($0* msg, $2 key, $3 val, upb_Arena* a) {
           return _upb_msg_map_set(msg, $4, &key, $5, &val, $6, a);
         }
       )cc",
-      msg_name, field->name(), CType(key), CType(val),
+      msg_name, resolved_name, CType(key), CType(val),
       layout.GetFieldOffset(field),
       key->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
           ? "0"
@@ -675,7 +715,7 @@ void GenerateMapSetters(const protobuf::FieldDescriptor* field,
           return _upb_msg_map_delete(msg, $3, &key, $4);
         }
       )cc",
-      msg_name, field->name(), CType(key), layout.GetFieldOffset(field),
+      msg_name, resolved_name, CType(key), layout.GetFieldOffset(field),
       key->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
           ? "0"
           : "sizeof(key)");
@@ -685,26 +725,29 @@ void GenerateMapSetters(const protobuf::FieldDescriptor* field,
           return ($0)_upb_msg_map_next(msg, $3, iter);
         }
       )cc",
-      CType(field), msg_name, field->name(), layout.GetFieldOffset(field));
+      CType(field), msg_name, resolved_name, layout.GetFieldOffset(field));
 }
 
 void GenerateRepeatedSetters(const protobuf::FieldDescriptor* field,
                              const FileLayout& layout,
-                             absl::string_view msg_name, Output& output) {
+                             absl::string_view msg_name,
+                             const NameToFieldDescriptorMap& field_names,
+                             Output& output) {
+  std::string resolved_name = ResolveFieldName(field, field_names);
   output(
       R"cc(
         UPB_INLINE $0* $1_mutable_$2($1* msg, size_t* len) {
           return ($0*)_upb_array_mutable_accessor(msg, $3, len);
         }
       )cc",
-      CType(field), msg_name, field->name(), layout.GetFieldOffset(field));
+      CType(field), msg_name, resolved_name, layout.GetFieldOffset(field));
   output(
       R"cc(
         UPB_INLINE $0* $1_resize_$2($1* msg, size_t len, upb_Arena* arena) {
           return ($0*)_upb_Array_Resize_accessor2(msg, $3, len, $4, arena);
         }
       )cc",
-      CType(field), msg_name, field->name(), layout.GetFieldOffset(field),
+      CType(field), msg_name, resolved_name, layout.GetFieldOffset(field),
       SizeLg2(field));
   if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
     output(
@@ -716,7 +759,7 @@ void GenerateRepeatedSetters(const protobuf::FieldDescriptor* field,
             return sub;
           }
         )cc",
-        MessageName(field->message_type()), msg_name, field->name(),
+        MessageName(field->message_type()), msg_name, resolved_name,
         MessageInit(field->message_type()), layout.GetFieldOffset(field),
         SizeLg2(field));
   } else {
@@ -726,23 +769,25 @@ void GenerateRepeatedSetters(const protobuf::FieldDescriptor* field,
             return _upb_Array_Append_accessor2(msg, $3, $4, &val, arena);
           }
         )cc",
-        CType(field), msg_name, field->name(), layout.GetFieldOffset(field),
+        CType(field), msg_name, resolved_name, layout.GetFieldOffset(field),
         SizeLg2(field));
   }
 }
 
 void GenerateNonRepeatedSetters(const protobuf::FieldDescriptor* field,
                                 const FileLayout& layout,
-                                absl::string_view msg_name, Output& output) {
+                                absl::string_view msg_name,
+                                const NameToFieldDescriptorMap& field_names,
+                                Output& output) {
   if (field == field->containing_type()->map_key()) {
     // Key cannot be mutated.
     return;
   }
-
+  std::string resolved_name = ResolveFieldName(field, field_names);
   // The common function signature for all setters.  Varying
   // implementations follow.
   output("UPB_INLINE void $0_set_$1($0 *msg, $2 value) {\n", msg_name,
-         field->name(), CType(field));
+         resolved_name, CType(field));
 
   if (field == field->containing_type()->map_value()) {
     output(
@@ -784,20 +829,21 @@ void GenerateNonRepeatedSetters(const protobuf::FieldDescriptor* field,
             return sub;
           }
         )cc",
-        MessageName(field->message_type()), msg_name, field->name(),
+        MessageName(field->message_type()), msg_name, resolved_name,
         MessageInit(field->message_type()));
   }
 }
 
 void GenerateSetters(const protobuf::FieldDescriptor* field,
                      const FileLayout& layout, absl::string_view msg_name,
+                     const NameToFieldDescriptorMap& field_names,
                      Output& output) {
   if (field->is_map()) {
-    GenerateMapSetters(field, layout, msg_name, output);
+    GenerateMapSetters(field, layout, msg_name, field_names, output);
   } else if (field->is_repeated()) {
-    GenerateRepeatedSetters(field, layout, msg_name, output);
+    GenerateRepeatedSetters(field, layout, msg_name, field_names, output);
   } else {
-    GenerateNonRepeatedSetters(field, layout, msg_name, output);
+    GenerateNonRepeatedSetters(field, layout, msg_name, field_names, output);
   }
 }
 
@@ -805,7 +851,6 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message,
                              const FileLayout& layout, Output& output) {
   output("/* $0 */\n\n", message->full_name());
   std::string msg_name = ToCIdent(message->full_name());
-
   if (!message->options().map_entry()) {
     GenerateMessageFunctionsInHeader(message, output);
   }
@@ -814,20 +859,21 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message,
     GenerateOneofInHeader(message->oneof_decl(i), layout, msg_name, output);
   }
 
+  auto field_names = CreateFieldNameMap(message);
   for (auto field : FieldNumberOrder(message)) {
-    GenerateHazzer(field, layout, msg_name, output);
+    GenerateHazzer(field, layout, msg_name, field_names, output);
     if (field->is_repeated()) {
-      GenerateRepeatedClear(field, layout, msg_name, output);
+      GenerateRepeatedClear(field, layout, msg_name, field_names, output);
     } else {
-      GenerateClear(field, layout, msg_name, output);
+      GenerateClear(field, layout, msg_name, field_names, output);
     }
-    GenerateGetters(field, layout, msg_name, output);
+    GenerateGetters(field, layout, msg_name, field_names, output);
   }
 
   output("\n");
 
   for (auto field : FieldNumberOrder(message)) {
-    GenerateSetters(field, layout, msg_name, output);
+    GenerateSetters(field, layout, msg_name, field_names, output);
   }
 
   output("\n");
@@ -934,7 +980,6 @@ void WriteHeader(const FileLayout& layout, Output& output) {
   }
 
   output("\n");
-
   for (auto message : this_file_messages) {
     GenerateMessageInHeader(message, layout, output);
   }
