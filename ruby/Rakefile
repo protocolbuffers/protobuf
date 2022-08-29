@@ -49,7 +49,7 @@ genproto_output = []
 
 # We won't have access to .. from within docker, but the proto files
 # will be there, thanks to the :genproto rule dependency for gem:native.
-unless ENV['IN_DOCKER'] == 'true' or ENV['BAZEL'] == 'true'
+unless ENV['BAZEL'] == 'true'
   well_known_protos.each do |proto_file|
     input_file = "../src/" + proto_file
     output_file = "lib/" + proto_file.sub(/\.proto$/, "_pb.rb")
