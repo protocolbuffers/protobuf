@@ -29,7 +29,9 @@
 
 syntax = "proto2";
 
-package objc.protobuf.tests;
+package objc.protobuf.tests.cycle;
+
+option objc_class_prefix = "Cycle";
 
 // Cycles in the Message graph can cause problems for message class
 // initialization order.
@@ -37,20 +39,20 @@ package objc.protobuf.tests;
 // You can't make a object graph that spans files, so this can only be done
 // within a single proto file.
 
-message CycleFoo {
-  optional CycleFoo a_foo = 1;
-  optional CycleBar a_bar = 2;
-  optional CycleBaz a_baz = 3;
+message Foo {
+  optional Foo a_foo = 1;
+  optional Bar a_bar = 2;
+  optional Baz a_baz = 3;
 }
 
-message CycleBar {
-  optional CycleBar a_bar = 1;
-  optional CycleBaz a_baz = 2;
-  optional CycleFoo a_foo = 3;
+message Bar {
+  optional Bar a_bar = 1;
+  optional Baz a_baz = 2;
+  optional Foo a_foo = 3;
 }
 
-message CycleBaz {
-  optional CycleBaz a_baz = 1;
-  optional CycleFoo a_foo = 2;
-  optional CycleBar a_bar = 3;
+message Baz {
+  optional Baz a_baz = 1;
+  optional Foo a_foo = 2;
+  optional Bar a_bar = 3;
 }

@@ -42,10 +42,8 @@ OBJC_TEST_PROTO_FILES=(
   objectivec/Tests/unittest_extension_chain_e.proto
   objectivec/Tests/unittest_extension_chain_f.proto
   objectivec/Tests/unittest_extension_chain_g.proto
-  objectivec/Tests/unittest_import_public_lite.proto
   objectivec/Tests/unittest_import_public.proto
   objectivec/Tests/unittest_import.proto
-  objectivec/Tests/unittest_mset_wire_format.proto
   objectivec/Tests/unittest_mset.proto
   objectivec/Tests/unittest_objc_options.proto
   objectivec/Tests/unittest_objc_startup.proto
@@ -128,8 +126,11 @@ find "${OUTPUT_DIR}" \
 # -----------------------------------------------------------------------------
 # Generate the Objective C specific testing protos.
 
-"${PROTOC}"                                  \
-  --objc_out="${OUTPUT_DIR}"                 \
-  --proto_path=.                             \
-  --proto_path=src                           \
+"${PROTOC}"                                                                 \
+  --objc_out="${OUTPUT_DIR}"                                                \
+  --objc_opt=expected_prefixes_path=objectivec/Tests/expected_prefixes.txt  \
+  --objc_opt=prefixes_must_be_registered=yes                                \
+  --objc_opt=require_prefixes=yes                                           \
+  --proto_path=.                                                            \
+  --proto_path=src                                                          \
   "${OBJC_TEST_PROTO_FILES[@]}"

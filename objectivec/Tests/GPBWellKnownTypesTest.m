@@ -161,9 +161,9 @@ static const NSTimeInterval kTimeAccuracy = 1e-9;
 
   // Set and extract covers most of the code.
 
-  TestAny *subMessage = [TestAny message];
+  AnyTestMessage *subMessage = [AnyTestMessage message];
   subMessage.int32Value = 12345;
-  TestAny *message = [TestAny message];
+  AnyTestMessage *message = [AnyTestMessage message];
   NSError *err = nil;
   message.anyValue = [GPBAny anyWithMessage:subMessage error:&err];
   XCTAssertNil(err);
@@ -171,14 +171,14 @@ static const NSTimeInterval kTimeAccuracy = 1e-9;
   NSData *data = message.data;
   XCTAssertNotNil(data);
 
-  TestAny *message2 = [TestAny parseFromData:data error:&err];
+  AnyTestMessage *message2 = [AnyTestMessage parseFromData:data error:&err];
   XCTAssertNil(err);
   XCTAssertNotNil(message2);
   XCTAssertTrue(message2.hasAnyValue);
 
-  TestAny *subMessage2 =
-      (TestAny *)[message.anyValue unpackMessageClass:[TestAny class]
-                                                error:&err];
+  AnyTestMessage *subMessage2 =
+      (AnyTestMessage *)[message.anyValue unpackMessageClass:[AnyTestMessage class]
+                                                       error:&err];
   XCTAssertNil(err);
   XCTAssertNotNil(subMessage2);
   XCTAssertEqual(subMessage2.int32Value, 12345);
@@ -189,9 +189,9 @@ static const NSTimeInterval kTimeAccuracy = 1e-9;
   NSData *data2 = message.data;
   XCTAssertEqualObjects(data2, data);
 
-  TestAny *subMessage3 =
-      (TestAny *)[message.anyValue unpackMessageClass:[TestAny class]
-                                                error:NULL];
+  AnyTestMessage *subMessage3 =
+      (AnyTestMessage *)[message.anyValue unpackMessageClass:[AnyTestMessage class]
+                                                       error:NULL];
   XCTAssertNotNil(subMessage3);
   XCTAssertEqualObjects(subMessage2, subMessage3);
 
