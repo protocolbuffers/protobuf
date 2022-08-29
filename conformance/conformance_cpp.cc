@@ -87,7 +87,7 @@ absl::Status ReadFd(int fd, char* buf, size_t len) {
 }
 
 absl::Status WriteFd(int fd, const void* buf, size_t len) {
-  if (write(fd, buf, len) != len) {
+  if (static_cast<size_t>(write(fd, buf, len)) != len) {
     return absl::ErrnoToStatus(errno, "error reading to test runner");
   }
   return absl::OkStatus();

@@ -9,7 +9,6 @@ load("//conformance:defs.bzl", "conformance_test")
 filegroup(
     name = "source_files",
     visibility = [
-        "//benchmarks/php:__pkg__",
         "//conformance:__pkg__",
         "//php:__pkg__",
     ],
