@@ -1106,11 +1106,6 @@ int CalculateBase64EscapedLen(int input_len, bool do_padding) {
   return len;
 }
 
-// Base64Escape does padding, so this calculation includes padding.
-int CalculateBase64EscapedLen(int input_len) {
-  return CalculateBase64EscapedLen(input_len, true);
-}
-
 int Base64EscapeInternal(const unsigned char *src, int szsrc, char *dest,
                          int szdest, const absl::string_view base64,
                          bool do_padding) {
