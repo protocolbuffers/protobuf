@@ -14,11 +14,13 @@ COPTS = select({
         "/wd4506",  # no definition for inline function 'function'
         "/wd4800",  # 'type' : forcing value to bool 'true' or 'false' (performance warning)
         "/wd4996",  # The compiler encountered a deprecated declaration.
+        "/WX",      # Treat warnings as errors.
     ],
     "//conditions:default": [
         "-DHAVE_ZLIB",
         "-Woverloaded-virtual",
         "-Wno-sign-compare",
+        "-Werror",
     ],
 })
 

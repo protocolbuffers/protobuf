@@ -1,2 +1,1 @@
 build --cxxopt=-std=c++14 --host_cxxopt=-std=c++14
-test --copt=-Werror --host_copt=-Werror
