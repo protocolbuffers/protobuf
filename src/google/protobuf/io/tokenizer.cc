@@ -292,10 +292,10 @@ void Tokenizer::NextChar() {
   } else {
     Refresh();
   }
-  CheckUtf8();
+  MaybeCheckUtf8();
 }
 
-void Tokenizer::CheckUtf8() {
+void Tokenizer::MaybeCheckUtf8() {
   if (!require_valid_utf8_) {
     return;
   }

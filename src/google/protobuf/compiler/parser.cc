@@ -617,6 +617,8 @@ bool Parser::Parse(io::Tokenizer* input, FileDescriptorProto* file) {
   input_ = input;
   had_errors_ = false;
   syntax_identifier_.clear();
+  // Proto source code must be in UTF-8 encoding.
+  // TODO: make this conditional somehow: compile-time Or command-line?
   input->set_require_valid_utf8(true);
 
   // Note that |file| could be NULL at this point if

@@ -242,7 +242,7 @@ class PROTOBUF_EXPORT Tokenizer {
     require_valid_utf8_ = value;
     if (value) {
       // initialize book-keeping flags from first char of input
-      CheckUtf8();
+      MaybeCheckUtf8();
     }
   }
 
@@ -338,7 +338,7 @@ class PROTOBUF_EXPORT Tokenizer {
 
   // Check the most recent character read to verify that the input
   // is correctly encoded UTF8. Does nothing if !require_valid_utf8_.
-  void CheckUtf8();
+  void MaybeCheckUtf8();
 
   inline void RecordTo(std::string* target);
   inline void StopRecording();
