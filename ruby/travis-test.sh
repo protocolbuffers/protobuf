@@ -7,11 +7,7 @@ test_version() {
   version=$1
   bazel_args=" \
     -k --test_output=streamed \
-    --action_env=PATH \
-    --action_env=GEM_PATH \
-    --action_env=GEM_HOME \
-    --test_env=KOKORO_RUBY_VERSION=$version \
-    --test_env=BAZEL=true"
+    --test_env=KOKORO_RUBY_VERSION=$version"
 
   if [[ $version == jruby-9* ]] ; then
     RUBY_PLATFORM=java

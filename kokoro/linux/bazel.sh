@@ -18,7 +18,6 @@ ENVS=()
 ENVS+=("--test_env=KOKORO_JAVA_VERSION")
 ENVS+=("--test_env=KOKORO_PYTHON_VERSION")
 ENVS+=("--test_env=KOKORO_RUBY_VERSION")
-ENVS+=("--test_env=BAZEL=true")
 
 if [ -n "$BAZEL_ENV" ]; then
   for env in $BAZEL_ENV; do

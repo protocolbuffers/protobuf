@@ -1,2 +1,5 @@
 build --cxxopt=-std=c++14 --host_cxxopt=-std=c++14
-build --action_env=GEM_HOME
+common --action_env=PATH
+common --action_env=GEM_HOME
+common --action_env=GEM_PATH
+common --test_env=BAZEL=true
