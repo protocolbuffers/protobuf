@@ -218,8 +218,8 @@ class ExpectingObjectWriter : public ObjectWriter {
         .RetiresOnSaturation();
     return this;
   }
-  virtual ObjectWriter* RenderBytes(absl::string_view name,
-                                    absl::string_view value) {
+  ObjectWriter* RenderBytes(absl::string_view name,
+                            absl::string_view value) override {
     (name.empty() ? EXPECT_CALL(*mock_, RenderBytes(IsEmpty(),
                                                     TypedEq<absl::string_view>(
                                                         std::string(value))))

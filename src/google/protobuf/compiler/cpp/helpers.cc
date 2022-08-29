@@ -210,22 +210,6 @@ bool AllocExpected(const Descriptor* descriptor) {
   return false;
 }
 
-// Describes different approaches to detect non-canonical int32 encoding. Only
-// kNever or kAlways is eligible for *simple* verification methods.
-enum class VerifyInt32Type {
-  kCustom,  // Only check if field number matches.
-  kNever,   // Do not check.
-  kAlways,  // Always check.
-};
-
-inline VerifySimpleType VerifyInt32TypeToVerifyCustom(VerifyInt32Type t) {
-  static VerifySimpleType kCustomTypes[] = {
-      VerifySimpleType::kCustom, VerifySimpleType::kCustomInt32Never,
-      VerifySimpleType::kCustomInt32Always};
-  return kCustomTypes[static_cast<int32_t>(t) -
-                      static_cast<int32_t>(VerifyInt32Type::kCustom)];
-}
-
 }  // namespace
 
 bool IsLazy(const FieldDescriptor* field, const Options& options,
