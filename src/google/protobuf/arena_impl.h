@@ -540,7 +540,6 @@ class PROTOBUF_EXPORT SerialArena {
 
  private:
   friend class ThreadSafeArena;
-  friend class ArenaBenchmark;
 
   // Creates a new SerialArena inside mem using the remaining memory as for
   // future allocations.
