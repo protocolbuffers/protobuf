@@ -1,1 +1,2 @@
 build --cxxopt=-std=c++14
+test --cxxopt=-Werror
