@@ -226,8 +226,6 @@
 		F44FEAD628B546E300EC57B3 /* unittest_deprecated.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = unittest_deprecated.proto; sourceTree = "<group>"; };
 		F44FEAD728B546E300EC57B3 /* any_test.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = any_test.proto; sourceTree = "<group>"; };
 		F44FEAD828B546E300EC57B3 /* unittest_extension_chain_b.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = unittest_extension_chain_b.proto; sourceTree = "<group>"; };
-		F44FEAD928B546E300EC57B3 /* unittest_import_public_lite.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = unittest_import_public_lite.proto; sourceTree = "<group>"; };
-		F44FEADA28B546E300EC57B3 /* unittest_mset_wire_format.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = unittest_mset_wire_format.proto; sourceTree = "<group>"; };
 		F44FEADB28B546E300EC57B3 /* unittest_import.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = unittest_import.proto; sourceTree = "<group>"; };
 		F44FEADC28B546E300EC57B3 /* unittest_mset.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = unittest_mset.proto; sourceTree = "<group>"; };
 		F44FEADD28B546E300EC57B3 /* unittest.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = unittest.proto; sourceTree = "<group>"; };
@@ -525,10 +523,8 @@
 				F44FEAE328B546E300EC57B3 /* unittest_extension_chain_e.proto */,
 				F44FEADE28B546E300EC57B3 /* unittest_extension_chain_f.proto */,
 				F44FEAE128B546E300EC57B3 /* unittest_extension_chain_g.proto */,
-				F44FEAD928B546E300EC57B3 /* unittest_import_public_lite.proto */,
 				F44FEAE028B546E300EC57B3 /* unittest_import_public.proto */,
 				F44FEADB28B546E300EC57B3 /* unittest_import.proto */,
-				F44FEADA28B546E300EC57B3 /* unittest_mset_wire_format.proto */,
 				F44FEADC28B546E300EC57B3 /* unittest_mset.proto */,
 				8B35468621A61EB2000BD30D /* unittest_objc_options.proto */,
 				F4CF31711B162EF500BD9B06 /* unittest_objc_startup.proto */,

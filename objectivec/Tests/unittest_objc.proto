@@ -34,6 +34,9 @@ import "objectivec/Tests/unittest.proto";
 
 package objc.protobuf.tests;
 
+// Explicit empty prefix, tests some validations code paths also.
+option objc_class_prefix = "";
+
 // Used to check that Headerdocs and appledoc work correctly. If these comments
 // are not handled correctly, Xcode will fail to build the tests.
 message TestGeneratedComments {
