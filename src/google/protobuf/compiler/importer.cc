@@ -256,10 +256,6 @@ DiskSourceTree::DiskSourceTree() {}
 
 DiskSourceTree::~DiskSourceTree() {}
 
-static inline char LastChar(const std::string& str) {
-  return str[str.size() - 1];
-}
-
 // Given a path, returns an equivalent path with these changes:
 // - On Windows, any backslashes are replaced with forward slashes.
 // - Any instances of the directory "." are removed.
