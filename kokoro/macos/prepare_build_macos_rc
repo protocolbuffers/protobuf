@@ -4,14 +4,15 @@
 
 set -eux
 
+export HOMEBREW_PREFIX=$(brew --prefix)
+
 ##
 # Select Xcode version
 
-# Remember to update the Xcode version when Xcode_11.3.app is not available.
-# If xcode is not available, it will probably encounter the failure for
-# "autom4te: need GNU m4 1.4 or later: /usr/bin/m4"
-# go/kokoro/userdocs/macos/selecting_xcode.md for more information.
-export DEVELOPER_DIR=/Applications/Xcode_11.3.app/Contents/Developer
+##
+# Select Xcode version
+export DEVELOPER_DIR=/Applications/Xcode_13.3.1.app/Contents/Developer
+sudo xcode-select -s "${DEVELOPER_DIR}"
 
 ##
 # Select C/C++ compilers
@@ -20,21 +21,25 @@ export CC=gcc
 export CXX=g++
 
 ##
+# Install Python 2 by default
+
+eval "$(pyenv init -)"
+pyenv install -v -s 2.7.18 && pyenv global 2.7.18
+
+##
 # Install Tox
 
 if [[ "${KOKORO_INSTALL_TOX:-}" == "yes" ]] ; then
-  sudo python3 -m pip install --upgrade pip tox
+  pyenv install -v -s 3.7.13
+  pyenv global 3.7.13
+  sudo python -m pip install --upgrade pip tox tox-pyenv
 fi
 
 ##
-# Install RVM
-
+# Setup RVM
 if [[ "${KOKORO_INSTALL_RVM:-}" == "yes" ]] ; then
-  curl -sSL https://rvm.io/mpapis.asc | gpg --import -
-  curl -sSL https://rvm.io/pkuczynski.asc | gpg --import -
-
-  # Old OpenSSL versions cannot handle the SSL certificate used by
-  # https://get.rvm.io, so as a workaround we download RVM directly from
-  # GitHub. See this issue for details: https://github.com/rvm/rvm/issues/5133
-  curl -sSL https://raw.githubusercontent.com/rvm/rvm/master/binscripts/rvm-installer | bash -s stable --ruby
+    git config --global --add safe.directory $HOMEBREW_PREFIX/Library/Taps/homebrew/homebrew-cask
+    git config --global --add safe.directory $HOMEBREW_PREFIX/Library/Taps/homebrew/homebrew-core
+    git config --global --add safe.directory $HOMEBREW_PREFIX/Library/Taps/homebrew/homebrew-services
+    sudo chown -R $(whoami) $HOME/.rvm/
 fi
