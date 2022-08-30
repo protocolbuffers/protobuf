@@ -249,12 +249,11 @@ struct AllocationPolicy {
   size_t max_block_size = kDefaultMaxBlockSize;
   void* (*block_alloc)(size_t) = nullptr;
   void (*block_dealloc)(void*, size_t) = nullptr;
-  ArenaMetricsCollector* metrics_collector = nullptr;
 
   bool IsDefault() const {
     return start_block_size == kDefaultStartBlockSize &&
            max_block_size == kDefaultMaxBlockSize && block_alloc == nullptr &&
-           block_dealloc == nullptr && metrics_collector == nullptr;
+           block_dealloc == nullptr;
   }
 };
 
@@ -291,22 +290,11 @@ class TaggedAllocationPolicyPtr {
     set_mask<kUserOwnedInitialBlock>(v);
   }
 
-  bool should_record_allocs() const {
-    return static_cast<bool>(get_mask<kRecordAllocs>());
-  }
-  void set_should_record_allocs(bool v) { set_mask<kRecordAllocs>(v); }
-
   uintptr_t get_raw() const { return policy_; }
-
-  inline void RecordAlloc(const std::type_info* allocated_type,
-                          size_t n) const {
-    get()->metrics_collector->OnAlloc(allocated_type, n);
-  }
 
  private:
   enum : uintptr_t {
     kUserOwnedInitialBlock = 1,
-    kRecordAllocs = 2,
   };
 
   static constexpr uintptr_t kTagsMask = 7;
@@ -384,7 +372,8 @@ class PROTOBUF_EXPORT SerialArena {
   // the right size. We can statically know if the allocation size can benefit
   // from it.
   template <AllocationClient alloc_client = AllocationClient::kDefault>
-  void* AllocateAligned(size_t n, const AllocationPolicy* policy) {
+  void* AllocateAligned(size_t n, const AllocationPolicy* policy,
+                        ThreadSafeArenaStats* stats) {
     GOOGLE_DCHECK_EQ(internal::AlignUpTo8(n), n);  // Must be already aligned.
     GOOGLE_DCHECK_GE(limit_, ptr());
 
@@ -395,7 +384,7 @@ class PROTOBUF_EXPORT SerialArena {
     }
 
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(n))) {
-      return AllocateAlignedFallback(n, policy);
+      return AllocateAlignedFallback(n, policy, stats);
     }
     return AllocateFromExisting(n);
   }
@@ -473,23 +462,46 @@ class PROTOBUF_EXPORT SerialArena {
     return true;
   }
 
+  // If there is enough space in the current block, allocate space for one `T`
+  // object and register for destruction. The object has not been constructed
+  // and the memory returned is uninitialized.
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE void* MaybeAllocateWithCleanup() {
+    GOOGLE_DCHECK_GE(limit_, ptr());
+    static_assert(!std::is_trivially_destructible<T>::value,
+                  "This function is only for non-trivial types.");
+
+    constexpr int aligned_size = AlignUpTo8(sizeof(T));
+    constexpr auto destructor = cleanup::arena_destruct_object<T>;
+    size_t required = aligned_size + cleanup::Size(destructor);
+    if (PROTOBUF_PREDICT_FALSE(!HasSpace(required))) {
+      return nullptr;
+    }
+    void* ptr = AllocateFromExistingWithCleanupFallback(aligned_size,
+                                                        alignof(T), destructor);
+    PROTOBUF_ASSUME(ptr != nullptr);
+    return ptr;
+  }
+
   PROTOBUF_ALWAYS_INLINE
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
                                    void (*destructor)(void*),
-                                   const AllocationPolicy* policy) {
+                                   const AllocationPolicy* policy,
+                                   ThreadSafeArenaStats* stats) {
     size_t required = AlignUpTo(n, align) + cleanup::Size(destructor);
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(required))) {
-      return AllocateAlignedWithCleanupFallback(n, align, destructor, policy);
+      return AllocateAlignedWithCleanupFallback(n, align, destructor, policy,
+                                                stats);
     }
     return AllocateFromExistingWithCleanupFallback(n, align, destructor);
   }
 
   PROTOBUF_ALWAYS_INLINE
   void AddCleanup(void* elem, void (*destructor)(void*),
-                  const AllocationPolicy* policy) {
+                  const AllocationPolicy* policy, ThreadSafeArenaStats* stats) {
     size_t required = cleanup::Size(destructor);
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(required))) {
-      return AddCleanupFallback(elem, destructor, policy);
+      return AddCleanupFallback(elem, destructor, policy, stats);
     }
     AddCleanupFromExisting(elem, destructor);
   }
@@ -528,7 +540,6 @@ class PROTOBUF_EXPORT SerialArena {
 
  private:
   friend class ThreadSafeArena;
-  friend class ArenaBenchmark;
 
   // Creates a new SerialArena inside mem using the remaining memory as for
   // future allocations.
@@ -582,9 +593,6 @@ class PROTOBUF_EXPORT SerialArena {
 
   // Limiting address up to which memory can be allocated from the head block.
   char* limit_;
-  // For holding sampling information.  The pointer is owned by the
-  // ThreadSafeArena that holds this serial arena.
-  ThreadSafeArenaStats* arena_stats_;
 
   // Repeated*Field and Arena play together to reduce memory consumption by
   // reusing blocks. Currently, natural growth of the repeated field types makes
@@ -601,14 +609,18 @@ class PROTOBUF_EXPORT SerialArena {
   CachedBlock** cached_blocks_ = nullptr;
 
   // Constructor is private as only New() should be used.
-  inline SerialArena(Block* b, void* owner, ThreadSafeArenaStats* stats);
-  void* AllocateAlignedFallback(size_t n, const AllocationPolicy* policy);
+  inline SerialArena(Block* b, void* owner);
+  void* AllocateAlignedFallback(size_t n, const AllocationPolicy* policy,
+                                ThreadSafeArenaStats* stats);
   void* AllocateAlignedWithCleanupFallback(size_t n, size_t align,
                                            void (*destructor)(void*),
-                                           const AllocationPolicy* policy);
+                                           const AllocationPolicy* policy,
+                                           ThreadSafeArenaStats* stats);
   void AddCleanupFallback(void* elem, void (*destructor)(void*),
-                          const AllocationPolicy* policy);
-  void AllocateNewBlock(size_t n, const AllocationPolicy* policy);
+                          const AllocationPolicy* policy,
+                          ThreadSafeArenaStats* stats);
+  void AllocateNewBlock(size_t n, const AllocationPolicy* policy,
+                        ThreadSafeArenaStats* stats);
 
  public:
   static constexpr size_t kBlockHeaderSize = AlignUpTo8(sizeof(Block));
@@ -662,13 +674,14 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   uint64_t SpaceUsed() const;
 
   template <AllocationClient alloc_client = AllocationClient::kDefault>
-  void* AllocateAligned(size_t n, const std::type_info* type) {
+  void* AllocateAligned(size_t n) {
     SerialArena* arena;
-    if (PROTOBUF_PREDICT_TRUE(!alloc_policy_.should_record_allocs() &&
-                              GetSerialArenaFast(&arena))) {
-      return arena->AllocateAligned<alloc_client>(n, AllocPolicy());
+    if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+      return arena->AllocateAligned<alloc_client>(n, AllocPolicy(),
+                                                  arena_stats_.MutableStats());
     } else {
-      return AllocateAlignedFallback(n, type);
+      return GetSerialArenaFallback(&thread_cache())
+          ->AllocateAligned(n, AllocPolicy(), arena_stats_.MutableStats());
     }
   }
 
@@ -686,16 +699,14 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // code for the happy path.
   PROTOBUF_NDEBUG_INLINE bool MaybeAllocateAligned(size_t n, void** out) {
     SerialArena* arena;
-    if (PROTOBUF_PREDICT_TRUE(!alloc_policy_.should_record_allocs() &&
-                              GetSerialArenaFast(&arena))) {
+    if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
       return arena->MaybeAllocateAligned(n, out);
     }
     return false;
   }
 
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
-                                   void (*destructor)(void*),
-                                   const std::type_info* type);
+                                   void (*destructor)(void*));
 
   // Add object pointer and cleanup function pointer to the list.
   void AddCleanup(void* elem, void (*cleanup)(void*));
@@ -706,6 +717,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   }
 
  private:
+  friend class TcParser;
   static uint64_t GetNextLifeCycleId();
 
   // Unique for each arena. Changes on Reset().
@@ -723,10 +735,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   const AllocationPolicy* AllocPolicy() const { return alloc_policy_.get(); }
   void InitializeFrom(void* mem, size_t size);
   void InitializeWithPolicy(void* mem, size_t size, AllocationPolicy policy);
-  void* AllocateAlignedFallback(size_t n, const std::type_info* type);
   void* AllocateAlignedWithCleanupFallback(size_t n, size_t align,
-                                           void (*destructor)(void*),
-                                           const std::type_info* type);
+                                           void (*destructor)(void*));
 
   void Init();
   void SetInitialBlock(void* mem, size_t size);

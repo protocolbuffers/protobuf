@@ -37,8 +37,8 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/type.pb.h>
-#include <google/protobuf/stubs/statusor.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/status/statusor.h"
+#include "absl/strings/string_view.h"
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -54,10 +54,11 @@ class ProtoWriter;
 // For primitive types (int32, int64, uint32, uint64, double, float, bool),
 // the data is stored by value.
 //
-// For string, a StringPiece is stored. For Cord, a pointer to Cord is stored.
-// Just like StringPiece, the DataPiece class does not own the storage for
-// the actual string or Cord, so it is the user's responsibility to guarantee
-// that the underlying storage is still valid when the DataPiece is accessed.
+// For string, an absl::string_view is stored. For Cord, a pointer to Cord is
+// stored. Just like absl::string_view, the DataPiece class does not own the
+// storage for the actual string or Cord, so it is the user's responsibility to
+// guarantee that the underlying storage is still valid when the DataPiece is
+// accessed.
 class PROTOBUF_EXPORT DataPiece {
  public:
   // Identifies data type of the value.
@@ -93,12 +94,13 @@ class PROTOBUF_EXPORT DataPiece {
       : type_(TYPE_FLOAT), float_(value), use_strict_base64_decoding_(false) {}
   explicit DataPiece(const bool value)
       : type_(TYPE_BOOL), bool_(value), use_strict_base64_decoding_(false) {}
-  DataPiece(StringPiece value, bool use_strict_base64_decoding)
+  DataPiece(absl::string_view value, bool use_strict_base64_decoding)
       : type_(TYPE_STRING),
         str_(value),
         use_strict_base64_decoding_(use_strict_base64_decoding) {}
   // Constructor for bytes. The second parameter is not used.
-  DataPiece(StringPiece value, bool /*dummy*/, bool use_strict_base64_decoding)
+  DataPiece(absl::string_view value, bool /*dummy*/,
+            bool use_strict_base64_decoding)
       : type_(TYPE_BYTES),
         str_(value),
         use_strict_base64_decoding_(use_strict_base64_decoding) {}
@@ -120,41 +122,41 @@ class PROTOBUF_EXPORT DataPiece {
 
   bool use_strict_base64_decoding() { return use_strict_base64_decoding_; }
 
-  StringPiece str() const {
+  absl::string_view str() const {
     GOOGLE_LOG_IF(DFATAL, type_ != TYPE_STRING) << "Not a string type.";
     return str_;
   }
 
 
   // Parses, casts or converts the value stored in the DataPiece into an int32.
-  util::StatusOr<int32_t> ToInt32() const;
+  absl::StatusOr<int32_t> ToInt32() const;
 
   // Parses, casts or converts the value stored in the DataPiece into a uint32.
-  util::StatusOr<uint32_t> ToUint32() const;
+  absl::StatusOr<uint32_t> ToUint32() const;
 
   // Parses, casts or converts the value stored in the DataPiece into an int64.
-  util::StatusOr<int64_t> ToInt64() const;
+  absl::StatusOr<int64_t> ToInt64() const;
 
   // Parses, casts or converts the value stored in the DataPiece into a uint64.
-  util::StatusOr<uint64_t> ToUint64() const;
+  absl::StatusOr<uint64_t> ToUint64() const;
 
   // Parses, casts or converts the value stored in the DataPiece into a double.
-  util::StatusOr<double> ToDouble() const;
+  absl::StatusOr<double> ToDouble() const;
 
   // Parses, casts or converts the value stored in the DataPiece into a float.
-  util::StatusOr<float> ToFloat() const;
+  absl::StatusOr<float> ToFloat() const;
 
   // Parses, casts or converts the value stored in the DataPiece into a bool.
-  util::StatusOr<bool> ToBool() const;
+  absl::StatusOr<bool> ToBool() const;
 
   // Parses, casts or converts the value stored in the DataPiece into a string.
-  util::StatusOr<std::string> ToString() const;
+  absl::StatusOr<std::string> ToString() const;
 
   // Tries to convert the value contained in this datapiece to string. If the
   // conversion fails, it returns the default_string.
-  std::string ValueAsStringOrDefault(StringPiece default_string) const;
+  std::string ValueAsStringOrDefault(absl::string_view default_string) const;
 
-  util::StatusOr<std::string> ToBytes() const;
+  absl::StatusOr<std::string> ToBytes() const;
 
  private:
   friend class ProtoWriter;
@@ -168,7 +170,7 @@ class PROTOBUF_EXPORT DataPiece {
 
   // Same as the ToEnum() method above but with additional flag to ignore
   // unknown enum values.
-  util::StatusOr<int> ToEnum(const google::protobuf::Enum* enum_type,
+  absl::StatusOr<int> ToEnum(const google::protobuf::Enum* enum_type,
                              bool use_lower_camel_for_enums,
                              bool case_insensitive_enum_parsing,
                              bool ignore_unknown_enum_values,
@@ -177,15 +179,15 @@ class PROTOBUF_EXPORT DataPiece {
   // For numeric conversion between
   //     int32, int64, uint32, uint64, double, float and bool
   template <typename To>
-  util::StatusOr<To> GenericConvert() const;
+  absl::StatusOr<To> GenericConvert() const;
 
   // For conversion from string to
   //     int32, int64, uint32, uint64, double, float and bool
   template <typename To>
-  util::StatusOr<To> StringToNumber(bool (*func)(StringPiece, To*)) const;
+  absl::StatusOr<To> StringToNumber(bool (*func)(absl::string_view, To*)) const;
 
   // Decodes a base64 string. Returns true on success.
-  bool DecodeBase64(StringPiece src, std::string* dest) const;
+  bool DecodeBase64(absl::string_view src, std::string* dest) const;
 
   // Helper function to initialize this DataPiece with 'other'.
   void InternalCopy(const DataPiece& other);
@@ -202,7 +204,7 @@ class PROTOBUF_EXPORT DataPiece {
     double double_;
     float float_;
     bool bool_;
-    StringPiece str_;
+    absl::string_view str_;
   };
 
   // Uses a stricter version of base64 decoding for byte fields.

@@ -33,8 +33,6 @@
 #ifndef GOOGLE_PROTOBUF_PYTHON_CPP_SCOPED_PYOBJECT_PTR_H__
 #define GOOGLE_PROTOBUF_PYTHON_CPP_SCOPED_PYOBJECT_PTR_H__
 
-#include <google/protobuf/stubs/common.h>
-
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 namespace google {
@@ -50,6 +48,8 @@ class ScopedPythonPtr {
   // The reference count of the specified py_object is not incremented.
   explicit ScopedPythonPtr(PyObjectStruct* py_object = nullptr)
       : ptr_(py_object) {}
+  ScopedPythonPtr(const ScopedPythonPtr&) = delete;
+  ScopedPythonPtr& operator=(const ScopedPythonPtr&) = delete;
 
   // If a PyObject is owned, decrement its reference count.
   ~ScopedPythonPtr() { Py_XDECREF(ptr_); }
@@ -89,8 +89,6 @@ class ScopedPythonPtr {
 
  private:
   PyObjectStruct* ptr_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ScopedPythonPtr);
 };
 
 typedef ScopedPythonPtr<PyObject> ScopedPyObjectPtr;

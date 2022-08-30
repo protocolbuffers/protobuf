@@ -35,29 +35,27 @@
 #include <google/protobuf/extension_set.h>
 
 #include <tuple>
-#include <unordered_set>
 #include <utility>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <google/protobuf/arena.h>
+#include "absl/container/flat_hash_set.h"
+#include "absl/hash/hash.h"
 #include <google/protobuf/extension_set_inl.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/metadata_lite.h>
 #include <google/protobuf/parse_context.h>
 #include <google/protobuf/port.h>
 #include <google/protobuf/repeated_field.h>
-#include <google/protobuf/stubs/map_util.h>
-#include <google/protobuf/stubs/hash.h>
 
-// clang-format off
-#include <google/protobuf/port_def.inc>  // must be last.
-// clang-format on
+// must be last.
+#include <google/protobuf/port_def.inc>
+
 namespace google {
 namespace protobuf {
 namespace internal {
-
 namespace {
 
 inline WireFormatLite::FieldType real_type(FieldType type) {
@@ -71,8 +69,6 @@ inline WireFormatLite::CppType cpp_type(FieldType type) {
 
 // Registry stuff.
 
-// Note that we cannot use hetererogeneous lookup for std containers since we
-// need to support C++11.
 struct ExtensionEq {
   bool operator()(const ExtensionInfo& lhs, const ExtensionInfo& rhs) const {
     return lhs.message == rhs.message && lhs.number == rhs.number;
@@ -81,13 +77,12 @@ struct ExtensionEq {
 
 struct ExtensionHasher {
   std::size_t operator()(const ExtensionInfo& info) const {
-    return std::hash<const MessageLite*>{}(info.message) ^
-           std::hash<int>{}(info.number);
+    return absl::HashOf(info.message, info.number);
   }
 };
 
 using ExtensionRegistry =
-    std::unordered_set<ExtensionInfo, ExtensionHasher, ExtensionEq>;
+    absl::flat_hash_set<ExtensionInfo, ExtensionHasher, ExtensionEq>;
 
 static const ExtensionRegistry* global_registry = nullptr;
 
@@ -96,7 +91,7 @@ static const ExtensionRegistry* global_registry = nullptr;
 void Register(const ExtensionInfo& info) {
   static auto local_static_registry = OnShutdownDelete(new ExtensionRegistry);
   global_registry = local_static_registry;
-  if (!InsertIfNotPresent(local_static_registry, info)) {
+  if (!local_static_registry->insert(info).second) {
     GOOGLE_LOG(FATAL) << "Multiple extension registrations for type \""
                << info.message->GetTypeName() << "\", field number "
                << info.number << ".";

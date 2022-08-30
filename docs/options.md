@@ -340,3 +340,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. Oclea Service Layer RPC
    * Website: https://oclea.com/
    * Extension: 1150
+
+1. mypy-protobuf
+   * Website: https://github.com/nipunn1313/mypy-protobuf
+   * Extension: 1151-1154

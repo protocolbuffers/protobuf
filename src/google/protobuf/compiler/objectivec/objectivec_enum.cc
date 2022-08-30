@@ -28,8 +28,6 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <algorithm>
-#include <limits>
 #include <map>
 #include <string>
 
@@ -37,6 +35,11 @@
 #include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_split.h"
+#include "absl/strings/str_replace.h"
+#include <algorithm> // std::find()
 
 namespace google {
 namespace protobuf {
@@ -47,9 +50,9 @@ std::string SafelyPrintIntToCode(int v) {
   if (v == std::numeric_limits<int>::min()) {
     // Some compilers try to parse -2147483648 as two tokens and then get spicy
     // about the fact that +2147483648 cannot be represented as an int.
-    return StrCat(v + 1, " - 1");
+    return absl::StrCat(v + 1, " - 1");
   } else {
-    return StrCat(v);
+    return absl::StrCat(v);
   }
 }
 }  // namespace
@@ -207,7 +210,7 @@ void EnumGenerator::GenerateSource(io::Printer* printer) {
   for (int i = 0; i < text_blob.size(); i += kBytesPerLine) {
     printer->Print(
         "\n        \"$data$\"",
-        "data", EscapeTrigraphs(CEscape(text_blob.substr(i, kBytesPerLine))));
+        "data", EscapeTrigraphs(absl::CEscape(text_blob.substr(i, kBytesPerLine))));
   }
   printer->Print(
       ";\n"
@@ -237,7 +240,7 @@ void EnumGenerator::GenerateSource(io::Printer* printer) {
         "                                     enumVerifier:$name$_IsValidValue\n"
         "                              extraTextFormatInfo:extraTextFormatInfo];\n",
         "name", name_,
-        "extraTextFormatInfo", CEscape(text_format_decode_data.Data()));
+        "extraTextFormatInfo", absl::CEscape(text_format_decode_data.Data()));
     }
     printer->Print(
       "    GPBEnumDescriptor *expected = nil;\n"

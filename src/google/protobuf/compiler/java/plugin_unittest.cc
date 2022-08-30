@@ -39,9 +39,9 @@
 #include <google/protobuf/compiler/command_line_interface.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include "absl/strings/str_split.h"
 
 namespace google {
 namespace protobuf {
@@ -114,7 +114,7 @@ TEST(JavaPluginTest, PluginTest) {
   std::string output;
   GOOGLE_CHECK_OK(File::GetContents(TestTempDir() + "/Test.java", &output,
                              true));
-  std::vector<std::string> lines = Split(output, "\n");
+  std::vector<std::string> lines = absl::StrSplit(output, "\n");
   bool found_generated_annotation = false;
   bool found_do_not_edit = false;
   for (const auto& line : lines) {

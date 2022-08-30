@@ -33,7 +33,6 @@ filegroup(
         "src/*/obj/**/*"
     ]) + [
         "src/Directory.Build.props",
-        "src/Google.Protobuf.Benchmarks/wrapper_benchmark_messages.proto",
         "src/Google.Protobuf.Test/testprotos.pb",
         "src/Google.Protobuf.sln",
     ],
@@ -67,7 +66,6 @@ inline_sh_test(
         ":srcs",
         "src/Google.Protobuf.sln",
         "//csharp/src/Google.Protobuf.Conformance:srcs",
-        "//benchmarks/datasets:proto3_datasets"
     ],
     cmd = """
         pushd `dirname $(location src/Google.Protobuf.sln)`/..

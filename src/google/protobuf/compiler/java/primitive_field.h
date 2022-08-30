@@ -62,6 +62,10 @@ class ImmutablePrimitiveFieldGenerator : public ImmutableFieldGenerator {
                                             int messageBitIndex,
                                             int builderBitIndex,
                                             Context* context);
+  ImmutablePrimitiveFieldGenerator(const ImmutablePrimitiveFieldGenerator&) =
+      delete;
+  ImmutablePrimitiveFieldGenerator& operator=(
+      const ImmutablePrimitiveFieldGenerator&) = delete;
   ~ImmutablePrimitiveFieldGenerator() override;
 
   // implements ImmutableFieldGenerator
@@ -91,9 +95,6 @@ class ImmutablePrimitiveFieldGenerator : public ImmutableFieldGenerator {
   const FieldDescriptor* descriptor_;
   std::map<std::string, std::string> variables_;
   ClassNameResolver* name_resolver_;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutablePrimitiveFieldGenerator);
 };
 
 class ImmutablePrimitiveOneofFieldGenerator
@@ -102,6 +103,10 @@ class ImmutablePrimitiveOneofFieldGenerator
   ImmutablePrimitiveOneofFieldGenerator(const FieldDescriptor* descriptor,
                                         int messageBitIndex,
                                         int builderBitIndex, Context* context);
+  ImmutablePrimitiveOneofFieldGenerator(
+      const ImmutablePrimitiveOneofFieldGenerator&) = delete;
+  ImmutablePrimitiveOneofFieldGenerator& operator=(
+      const ImmutablePrimitiveOneofFieldGenerator&) = delete;
   ~ImmutablePrimitiveOneofFieldGenerator() override;
 
   void GenerateMembers(io::Printer* printer) const override;
@@ -111,9 +116,6 @@ class ImmutablePrimitiveOneofFieldGenerator
   void GenerateParsingCode(io::Printer* printer) const override;
   void GenerateSerializationCode(io::Printer* printer) const override;
   void GenerateSerializedSizeCode(io::Printer* printer) const override;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutablePrimitiveOneofFieldGenerator);
 };
 
 class RepeatedImmutablePrimitiveFieldGenerator
@@ -122,6 +124,10 @@ class RepeatedImmutablePrimitiveFieldGenerator
   explicit RepeatedImmutablePrimitiveFieldGenerator(
       const FieldDescriptor* descriptor, int messageBitIndex,
       int builderBitIndex, Context* context);
+  RepeatedImmutablePrimitiveFieldGenerator(
+      const RepeatedImmutablePrimitiveFieldGenerator&) = delete;
+  RepeatedImmutablePrimitiveFieldGenerator& operator=(
+      const RepeatedImmutablePrimitiveFieldGenerator&) = delete;
   ~RepeatedImmutablePrimitiveFieldGenerator() override;
 
   // implements ImmutableFieldGenerator ---------------------------------------
@@ -151,8 +157,6 @@ class RepeatedImmutablePrimitiveFieldGenerator
   const FieldDescriptor* descriptor_;
   std::map<std::string, std::string> variables_;
   ClassNameResolver* name_resolver_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RepeatedImmutablePrimitiveFieldGenerator);
 };
 
 }  // namespace java

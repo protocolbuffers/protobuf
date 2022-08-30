@@ -44,7 +44,9 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/substitute.h"
 #include <google/protobuf/compiler/java/context.h>
 #include <google/protobuf/compiler/java/doc_comment.h>
 #include <google/protobuf/compiler/java/enum.h>
@@ -115,7 +117,7 @@ void ImmutableMessageGenerator::GenerateStaticVariables(
 
   std::map<std::string, std::string> vars;
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
-  vars["index"] = StrCat(descriptor_->index());
+  vars["index"] = absl::StrCat(descriptor_->index());
   vars["classname"] = name_resolver_->GetImmutableClassName(descriptor_);
   if (descriptor_->containing_type() != NULL) {
     vars["parent"] = UniqueFileScopeIdentifier(descriptor_->containing_type());
@@ -159,7 +161,7 @@ int ImmutableMessageGenerator::GenerateStaticVariableInitializers(
   int bytecode_estimate = 0;
   std::map<std::string, std::string> vars;
   vars["identifier"] = UniqueFileScopeIdentifier(descriptor_);
-  vars["index"] = StrCat(descriptor_->index());
+  vars["index"] = absl::StrCat(descriptor_->index());
   vars["classname"] = name_resolver_->GetImmutableClassName(descriptor_);
   if (descriptor_->containing_type() != NULL) {
     vars["parent"] = UniqueFileScopeIdentifier(descriptor_->containing_type());
@@ -340,7 +342,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
         "      $classname$> implements\n"
         "    $extra_interfaces$\n"
         "    $classname$OrBuilder {\n");
-    builder_type = strings::Substitute(
+    builder_type = absl::Substitute(
         "com.google.protobuf.GeneratedMessage$1.ExtendableBuilder<$0, ?>",
         name_resolver_->GetImmutableClassName(descriptor_),
         GeneratedCodeVersionSuffix());
@@ -354,7 +356,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
                    "    $extra_interfaces$\n"
                    "    $classname$OrBuilder {\n");
     builder_type =
-        strings::Substitute("com.google.protobuf.GeneratedMessage$0.Builder<?>",
+        absl::Substitute("com.google.protobuf.GeneratedMessage$0.Builder<?>",
                          GeneratedCodeVersionSuffix());
   }
   printer->Print("private static final long serialVersionUID = 0L;\n");
@@ -432,7 +434,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
     vars["oneof_capitalized_name"] =
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
-    vars["oneof_index"] = StrCat((oneof)->index());
+    vars["oneof_index"] = absl::StrCat((oneof)->index());
     vars["{"] = "";
     vars["}"] = "";
     // oneofCase_ and oneof_
@@ -454,12 +456,12 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
       printer->Print(
           "$deprecation$$field_name$($field_number$),\n", "deprecation",
           field->options().deprecated() ? "@java.lang.Deprecated " : "",
-          "field_name", ToUpper(field->name()), "field_number",
-          StrCat(field->number()));
+          "field_name", absl::AsciiStrToUpper(field->name()), "field_number",
+          absl::StrCat(field->number()));
       printer->Annotate("field_name", field);
     }
     printer->Print("$cap_oneof_name$_NOT_SET(0);\n", "cap_oneof_name",
-                   ToUpper(vars["oneof_name"]));
+                   absl::AsciiStrToUpper(vars["oneof_name"]));
     printer->Print(vars,
                    "private final int value;\n"
                    "private $oneof_capitalized_name$Case(int value) {\n"
@@ -486,8 +488,8 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
     for (int j = 0; j < (oneof)->field_count(); j++) {
       const FieldDescriptor* field = (oneof)->field(j);
       printer->Print("    case $field_number$: return $field_name$;\n",
-                     "field_number", StrCat(field->number()),
-                     "field_name", ToUpper(field->name()));
+                     "field_number", absl::StrCat(field->number()),
+                     "field_name", absl::AsciiStrToUpper(field->name()));
     }
     printer->Print(
         "    case 0: return $cap_oneof_name$_NOT_SET;\n"
@@ -497,7 +499,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
         "public int getNumber() {\n"
         "  return this.value;\n"
         "}\n",
-        "cap_oneof_name", ToUpper(vars["oneof_name"]));
+        "cap_oneof_name", absl::AsciiStrToUpper(vars["oneof_name"]));
     printer->Outdent();
     printer->Print("};\n\n");
     // oneofCase()
@@ -519,7 +521,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     printer->Print("public static final int $constant_name$ = $number$;\n",
                    "constant_name", FieldConstantName(descriptor_->field(i)),
-                   "number", StrCat(descriptor_->field(i)->number()));
+                   "number", absl::StrCat(descriptor_->field(i)->number()));
     printer->Annotate("constant_name", descriptor_->field(i));
     field_generators_.get(descriptor_->field(i)).GenerateMembers(printer);
     printer->Print("\n");
@@ -835,7 +837,7 @@ void ImmutableMessageGenerator::GenerateDescriptorMethods(
       printer->Print(
           "case $number$:\n"
           "  return internalGet$capitalized_name$();\n",
-          "number", StrCat(field->number()), "capitalized_name",
+          "number", absl::StrCat(field->number()), "capitalized_name",
           info->capitalized_name);
     }
     printer->Print(
@@ -1045,7 +1047,7 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
     for (int j = 0; j < (oneof)->field_count(); j++) {
       const FieldDescriptor* field = (oneof)->field(j);
       printer->Print("case $field_number$:\n", "field_number",
-                     StrCat(field->number()));
+                     absl::StrCat(field->number()));
       printer->Indent();
       field_generators_.get(field).GenerateEqualsCode(printer);
       printer->Print("break;\n");
@@ -1119,7 +1121,7 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
     for (int j = 0; j < (oneof)->field_count(); j++) {
       const FieldDescriptor* field = (oneof)->field(j);
       printer->Print("case $field_number$:\n", "field_number",
-                     StrCat(field->number()));
+                     absl::StrCat(field->number()));
       printer->Indent();
       field_generators_.get(field).GenerateHashCode(printer);
       printer->Print("break;\n");
@@ -1223,7 +1225,7 @@ void ImmutableMessageGenerator::GenerateParsingConstructor(
         field->number(), WireFormat::WireTypeForFieldType(field->type()));
 
     printer->Print("case $tag$: {\n", "tag",
-                   StrCat(static_cast<int32_t>(tag)));
+                   absl::StrCat(static_cast<int32_t>(tag)));
     printer->Indent();
 
     field_generators_.get(field).GenerateParsingCode(printer);
@@ -1239,7 +1241,7 @@ void ImmutableMessageGenerator::GenerateParsingConstructor(
       uint32_t packed_tag = WireFormatLite::MakeTag(
           field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
       printer->Print("case $tag$: {\n", "tag",
-                     StrCat(static_cast<int32_t>(packed_tag)));
+                     absl::StrCat(static_cast<int32_t>(packed_tag)));
       printer->Indent();
 
       field_generators_.get(field).GenerateParsingCodeFromPacked(printer);

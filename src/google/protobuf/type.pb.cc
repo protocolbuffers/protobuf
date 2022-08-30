@@ -242,7 +242,7 @@ static const ::_pbi::DescriptorTable* const descriptor_table_google_2fprotobuf_2
   &::descriptor_table_google_2fprotobuf_2fany_2eproto,
   &::descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto,
 };
-static ::_pbi::once_flag descriptor_table_google_2fprotobuf_2ftype_2eproto_once;
+static ::absl::once_flag descriptor_table_google_2fprotobuf_2ftype_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2ftype_2eproto = {
     false, false, 1592, descriptor_table_protodef_google_2fprotobuf_2ftype_2eproto,
     "google/protobuf/type.proto",

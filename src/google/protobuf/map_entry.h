@@ -98,6 +98,8 @@ class MapEntry : public MapEntryImpl<Derived, Message, Key, Value,
   explicit MapEntry(Arena* arena)
       : MapEntryImpl<Derived, Message, Key, Value, kKeyFieldType,
                      kValueFieldType>(arena) {}
+  MapEntry(const MapEntry&) = delete;
+  MapEntry& operator=(const MapEntry&) = delete;
   ~MapEntry() override {
     Message::_internal_metadata_.template Delete<UnknownFieldSet>();
   }
@@ -121,8 +123,6 @@ class MapEntry : public MapEntryImpl<Derived, Message, Key, Value,
   template <typename C, typename K, typename V,
             WireFormatLite::FieldType k_wire_type, WireFormatLite::FieldType>
   friend class internal::MapField;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapEntry);
 };
 
 }  // namespace internal

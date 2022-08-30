@@ -55,7 +55,8 @@
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
 #include "absl/synchronization/mutex.h"
-#include <google/protobuf/stubs/time.h>
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/stubs/stl_util.h>
 
@@ -649,7 +650,7 @@ void CheckDeleteByNumber(const std::vector<int>& field_numbers,
   }
 }
 
-#define MAKE_VECTOR(x) std::vector<int>(x, x + GOOGLE_ARRAYSIZE(x))
+#define MAKE_VECTOR(x) std::vector<int>(x, x + ABSL_ARRAYSIZE(x))
 TEST_F(UnknownFieldSetTest, DeleteByNumber) {
   CheckDeleteByNumber(std::vector<int>(), 1, std::vector<int>());
   static const int kTestFieldNumbers1[] = {1, 2, 3};

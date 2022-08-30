@@ -155,6 +155,7 @@ cc_library(
         ":jsoncpp",
         ":test_messages_proto2_proto_cc",
         ":test_messages_proto3_proto_cc",
+        "@com_google_absl//absl/status",
     ],
 )
 
@@ -190,6 +191,8 @@ cc_binary(
         "//:protobuf",
         "//:test_messages_proto2_cc_proto",
         "//:test_messages_proto3_cc_proto",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
     ],
 )
 

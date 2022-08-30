@@ -193,6 +193,8 @@ class PROTOBUF_EXPORT Printer {
   Printer(ZeroCopyOutputStream* output, char variable_delimiter,
           AnnotationCollector* annotation_collector);
 
+  Printer(const Printer&) = delete;
+  Printer& operator=(const Printer&) = delete;
   ~Printer();
 
   // Link a substitution variable emitted by the last call to Print to the
@@ -369,8 +371,6 @@ class PROTOBUF_EXPORT Printer {
   // If non-null, annotation_collector_ is used to store annotations about
   // generated code.
   AnnotationCollector* const annotation_collector_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Printer);
 };
 
 }  // namespace io

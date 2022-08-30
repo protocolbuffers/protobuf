@@ -49,14 +49,14 @@
 #include <google/protobuf/map_unittest.pb.h>
 #include <google/protobuf/test_util.h>
 #include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/util/field_comparator.h>
 #include <google/protobuf/util/message_differencer.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
+#include "absl/functional/bind_front.h"
+#include "absl/strings/str_split.h"
 #include <google/protobuf/util/message_differencer_unittest.pb.h>
 
 namespace google {
@@ -68,7 +68,7 @@ namespace {
 const FieldDescriptor* GetFieldDescriptor(const Message& message,
                                           const std::string& field_name) {
   std::vector<std::string> field_path =
-      Split(field_name, ".", true);
+      absl::StrSplit(field_name, ".", absl::SkipEmpty());
   const Descriptor* descriptor = message.GetDescriptor();
   const FieldDescriptor* field = nullptr;
   for (int i = 0; i < field_path.size(); i++) {
@@ -1869,7 +1869,7 @@ class TestIgnorer : public util::MessageDifferencer::IgnoreCriteria {
       name += parent_fields[i].field->name() + ".";
     }
     name += field->name();
-    for (int i = 0; i < GOOGLE_ARRAYSIZE(kIgnoredFields); ++i) {
+    for (int i = 0; i < ABSL_ARRAYSIZE(kIgnoredFields); ++i) {
       if (name.compare(kIgnoredFields[i]) == 0) {
         return true;
       }
@@ -3472,9 +3472,6 @@ class MatchingTest : public testing::Test {
     }
     return output;
   }
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MatchingTest);
 };
 
 TEST_F(MatchingTest, StreamReporterMatching) {

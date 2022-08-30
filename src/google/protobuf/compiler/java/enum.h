@@ -62,6 +62,8 @@ class EnumGenerator {
  public:
   EnumGenerator(const EnumDescriptor* descriptor, bool immutable_api,
                 Context* context);
+  EnumGenerator(const EnumGenerator&) = delete;
+  EnumGenerator& operator=(const EnumGenerator&) = delete;
   ~EnumGenerator();
 
   void Generate(io::Printer* printer);
@@ -88,8 +90,6 @@ class EnumGenerator {
   ClassNameResolver* name_resolver_;
 
   bool CanUseEnumValues();
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumGenerator);
 };
 
 }  // namespace java

@@ -30,15 +30,19 @@
 
 #include <google/protobuf/compiler/php/php_generator.h>
 
+#include <sstream>
+
 #include <google/protobuf/compiler/code_generator.h>
 #include <google/protobuf/compiler/plugin.h>
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/stubs/strutil.h>
-
-#include <sstream>
 
 const std::string kDescriptorFile = "google/protobuf/descriptor.proto";
 const std::string kEmptyFile = "google/protobuf/empty.proto";
@@ -763,8 +767,8 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
         "$arr = GPBUtil::checkMapField($var, "
         "\\Google\\Protobuf\\Internal\\GPBType::^key_type^, "
         "\\Google\\Protobuf\\Internal\\GPBType::^value_type^",
-        "key_type", ToUpper(key->type_name()),
-        "value_type", ToUpper(value->type_name()));
+        "key_type", absl::AsciiStrToUpper(key->type_name()),
+        "value_type", absl::AsciiStrToUpper(value->type_name()));
     if (value->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       printer->Print(
           ", \\^class_name^);\n",
@@ -782,7 +786,7 @@ void GenerateFieldAccessor(const FieldDescriptor* field, const Options& options,
     printer->Print(
         "$arr = GPBUtil::checkRepeatedField($var, "
         "\\Google\\Protobuf\\Internal\\GPBType::^type^",
-        "type", ToUpper(field->type_name()));
+        "type", absl::AsciiStrToUpper(field->type_name()));
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       printer->Print(
           ", \\^class_name^);\n",
@@ -912,9 +916,9 @@ void GenerateMessageToPool(const std::string& name_prefix,
           "->map('^field^', \\Google\\Protobuf\\Internal\\GPBType::^key^, "
           "\\Google\\Protobuf\\Internal\\GPBType::^value^, ^number^^other^)\n",
           "field", field->name(),
-          "key", ToUpper(key->type_name()),
-          "value", ToUpper(val->type_name()),
-          "number", StrCat(field->number()),
+          "key", absl::AsciiStrToUpper(key->type_name()),
+          "value", absl::AsciiStrToUpper(val->type_name()),
+          "number", absl::StrCat(field->number()),
           "other", EnumOrMessageSuffix(val, true));
     } else if (!field->real_containing_oneof()) {
       printer->Print(
@@ -922,8 +926,8 @@ void GenerateMessageToPool(const std::string& name_prefix,
           "\\Google\\Protobuf\\Internal\\GPBType::^type^, ^number^^other^)\n",
           "field", field->name(),
           "label", LabelForField(field),
-          "type", ToUpper(field->type_name()),
-          "number", StrCat(field->number()),
+          "type", absl::AsciiStrToUpper(field->type_name()),
+          "number", absl::StrCat(field->number()),
           "other", EnumOrMessageSuffix(field, true));
     }
   }
@@ -940,8 +944,8 @@ void GenerateMessageToPool(const std::string& name_prefix,
           "->value('^field^', "
           "\\Google\\Protobuf\\Internal\\GPBType::^type^, ^number^^other^)\n",
           "field", field->name(),
-          "type", ToUpper(field->type_name()),
-          "number", StrCat(field->number()),
+          "type", absl::AsciiStrToUpper(field->type_name()),
+          "number", absl::StrCat(field->number()),
           "other", EnumOrMessageSuffix(field, true));
     }
     printer->Print("->finish()\n");
@@ -1749,7 +1753,7 @@ static void GenerateDocCommentBodyForLocation(
     // HTML-escape them so that they don't accidentally close the doc comment.
     comments = EscapePhpdoc(comments);
 
-    std::vector<std::string> lines = Split(comments, "\n", true);
+    std::vector<std::string> lines = absl::StrSplit(comments, "\n", absl::SkipEmpty());
     while (!lines.empty() && lines.back().empty()) {
       lines.pop_back();
     }
@@ -2265,7 +2269,7 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
 
     for (size_t i = 0; i < serialized.size();) {
       for (size_t j = 0; j < 25 && i < serialized.size(); ++i, ++j) {
-        printer.Print("'$ch$', ", "ch", CEscape(serialized.substr(i, 1)));
+        printer.Print("'$ch$', ", "ch", absl::CEscape(serialized.substr(i, 1)));
       }
       printer.Print("\n");
     }
@@ -2392,11 +2396,11 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
                             std::string* error) const {
   Options options;
 
-  for (const auto& option : Split(parameter, ",", true)) {
-    const std::vector<std::string> option_pair = Split(option, "=", true);
+  for (const auto& option : absl::StrSplit(parameter, ",", absl::SkipEmpty())) {
+    const std::vector<std::string> option_pair = absl::StrSplit(option, "=", absl::SkipEmpty());
     if (HasPrefixString(option_pair[0], "aggregate_metadata")) {
       options.aggregate_metadata = true;
-      for (const auto& prefix : Split(option_pair[1], "#", false)) {
+      for (const auto& prefix : absl::StrSplit(option_pair[1], "#", absl::AllowEmpty())) {
         options.aggregate_metadata_prefixes.emplace(prefix);
         GOOGLE_LOG(INFO) << prefix;
       }

@@ -48,7 +48,7 @@
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/port.h>
-#include <google/protobuf/stubs/casts.h>
+#include "absl/base/casts.h"
 #include <google/protobuf/arenastring.h>
 #include <google/protobuf/message_lite.h>
 #include <google/protobuf/repeated_field.h>
@@ -86,6 +86,7 @@ namespace internal {
 // This class is really a namespace that contains only static methods.
 class PROTOBUF_EXPORT WireFormatLite {
  public:
+  WireFormatLite() = delete;
   // -----------------------------------------------------------------
   // Helper constants and functions related to the format.  These are
   // mostly meant for internal and generated code to use.
@@ -745,8 +746,6 @@ class PROTOBUF_EXPORT WireFormatLite {
   static const WireFormatLite::WireType kWireTypeForFieldType[];
   static void WriteSubMessageMaybeToArray(int size, const MessageLite& value,
                                           io::CodedOutputStream* output);
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(WireFormatLite);
 };
 
 // A class which deals with unknown values.  The default implementation just
@@ -821,19 +820,19 @@ inline size_t WireFormatLite::TagSize(int field_number,
 }
 
 inline uint32_t WireFormatLite::EncodeFloat(float value) {
-  return bit_cast<uint32_t>(value);
+  return absl::bit_cast<uint32_t>(value);
 }
 
 inline float WireFormatLite::DecodeFloat(uint32_t value) {
-  return bit_cast<float>(value);
+  return absl::bit_cast<float>(value);
 }
 
 inline uint64_t WireFormatLite::EncodeDouble(double value) {
-  return bit_cast<uint64_t>(value);
+  return absl::bit_cast<uint64_t>(value);
 }
 
 inline double WireFormatLite::DecodeDouble(uint64_t value) {
-  return bit_cast<double>(value);
+  return absl::bit_cast<double>(value);
 }
 
 // ZigZag Transform:  Encodes signed integers so that they can be

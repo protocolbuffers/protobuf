@@ -33,9 +33,8 @@
 #import "GPBCodedInputStream.h"
 #import "GPBMessage_PackagePrivate.h"
 #import "GPBUnknownField_PackagePrivate.h"
-#import "google/protobuf/Unittest.pbobjc.h"
-#import "google/protobuf/UnittestMset.pbobjc.h"
-#import "google/protobuf/UnittestMsetWireFormat.pbobjc.h"
+#import "objectivec/Tests/Unittest.pbobjc.h"
+#import "objectivec/Tests/UnittestMset.pbobjc.h"
 
 @interface WireFormatTests : GPBTestCase
 @end
@@ -144,11 +143,11 @@
 const int kUnknownTypeId = 1550055;
 
 - (void)testSerializeMessageSet {
-  // Set up a TestMessageSet with two known messages and an unknown one.
-  TestMessageSet* message_set = [TestMessageSet message];
-  [[message_set getExtension:[TestMessageSetExtension1 messageSetExtension]]
+  // Set up a MSetMessage with two known messages and an unknown one.
+  MSetMessage* message_set = [MSetMessage message];
+  [[message_set getExtension:[MSetMessageExtension1 messageSetExtension]]
       setI:123];
-  [[message_set getExtension:[TestMessageSetExtension2 messageSetExtension]]
+  [[message_set getExtension:[MSetMessageExtension2 messageSetExtension]]
       setStr:@"foo"];
   GPBUnknownField* unknownField =
       [[[GPBUnknownField alloc] initWithNumber:kUnknownTypeId] autorelease];
@@ -160,26 +159,26 @@ const int kUnknownTypeId = 1550055;
 
   NSData* data = [message_set data];
 
-  // Parse back using RawMessageSet and check the contents.
-  RawMessageSet* raw = [RawMessageSet parseFromData:data error:NULL];
+  // Parse back using MSetRawMessageSet and check the contents.
+  MSetRawMessageSet* raw = [MSetRawMessageSet parseFromData:data error:NULL];
 
   XCTAssertEqual([raw.unknownFields countOfFields], (NSUInteger)0);
 
   XCTAssertEqual(raw.itemArray.count, (NSUInteger)3);
   XCTAssertEqual((uint32_t)[raw.itemArray[0] typeId],
-                 [TestMessageSetExtension1 messageSetExtension].fieldNumber);
+                 [MSetMessageExtension1 messageSetExtension].fieldNumber);
   XCTAssertEqual((uint32_t)[raw.itemArray[1] typeId],
-                 [TestMessageSetExtension2 messageSetExtension].fieldNumber);
+                 [MSetMessageExtension2 messageSetExtension].fieldNumber);
   XCTAssertEqual([raw.itemArray[2] typeId], kUnknownTypeId);
 
-  TestMessageSetExtension1* message1 =
-      [TestMessageSetExtension1 parseFromData:[((RawMessageSet_Item*)raw.itemArray[0]) message]
-                                        error:NULL];
+  MSetMessageExtension1* message1 =
+      [MSetMessageExtension1 parseFromData:[((MSetRawMessageSet_Item*)raw.itemArray[0]) message]
+                                     error:NULL];
   XCTAssertEqual(message1.i, 123);
 
-  TestMessageSetExtension2* message2 =
-      [TestMessageSetExtension2 parseFromData:[((RawMessageSet_Item*)raw.itemArray[1]) message]
-                                        error:NULL];
+  MSetMessageExtension2* message2 =
+      [MSetMessageExtension2 parseFromData:[((MSetRawMessageSet_Item*)raw.itemArray[1]) message]
+                                     error:NULL];
   XCTAssertEqualObjects(message2.str, @"foo");
 
   XCTAssertEqualObjects([raw.itemArray[2] message],
@@ -187,29 +186,29 @@ const int kUnknownTypeId = 1550055;
 }
 
 - (void)testParseMessageSet {
-  // Set up a RawMessageSet with two known messages and an unknown one.
-  RawMessageSet* raw = [RawMessageSet message];
+  // Set up a MSetRawMessageSet with two known messages and an unknown one.
+  MSetRawMessageSet* raw = [MSetRawMessageSet message];
 
   {
-    RawMessageSet_Item* item = [RawMessageSet_Item message];
-    item.typeId = [TestMessageSetExtension1 messageSetExtension].fieldNumber;
-    TestMessageSetExtension1* message = [TestMessageSetExtension1 message];
+    MSetRawMessageSet_Item* item = [MSetRawMessageSet_Item message];
+    item.typeId = [MSetMessageExtension1 messageSetExtension].fieldNumber;
+    MSetMessageExtension1* message = [MSetMessageExtension1 message];
     message.i = 123;
     item.message = [message data];
     [raw.itemArray addObject:item];
   }
 
   {
-    RawMessageSet_Item* item = [RawMessageSet_Item message];
-    item.typeId = [TestMessageSetExtension2 messageSetExtension].fieldNumber;
-    TestMessageSetExtension2* message = [TestMessageSetExtension2 message];
+    MSetRawMessageSet_Item* item = [MSetRawMessageSet_Item message];
+    item.typeId = [MSetMessageExtension2 messageSetExtension].fieldNumber;
+    MSetMessageExtension2* message = [MSetMessageExtension2 message];
     message.str = @"foo";
     item.message = [message data];
     [raw.itemArray addObject:item];
   }
 
   {
-    RawMessageSet_Item* item = [RawMessageSet_Item message];
+    MSetRawMessageSet_Item* item = [MSetRawMessageSet_Item message];
     item.typeId = kUnknownTypeId;
     item.message = [NSData dataWithBytes:"bar" length:3];
     [raw.itemArray addObject:item];
@@ -217,19 +216,19 @@ const int kUnknownTypeId = 1550055;
 
   NSData* data = [raw data];
 
-  // Parse as a TestMessageSet and check the contents.
-  TestMessageSet* messageSet =
-      [TestMessageSet parseFromData:data
-                  extensionRegistry:[UnittestMsetRoot extensionRegistry]
+  // Parse as a MSetMessage and check the contents.
+  MSetMessage* messageSet =
+      [MSetMessage parseFromData:data
+                  extensionRegistry:[MSetUnittestMsetRoot extensionRegistry]
                               error:NULL];
 
   XCTAssertEqual(
       [[messageSet
-          getExtension:[TestMessageSetExtension1 messageSetExtension]] i],
+          getExtension:[MSetMessageExtension1 messageSetExtension]] i],
       123);
   XCTAssertEqualObjects(
       [[messageSet
-          getExtension:[TestMessageSetExtension2 messageSetExtension]] str],
+          getExtension:[MSetMessageExtension2 messageSetExtension]] str],
       @"foo");
 
   XCTAssertEqual([messageSet.unknownFields countOfFields], (NSUInteger)1);

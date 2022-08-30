@@ -60,10 +60,7 @@ cc_library(
     name = "printer",
     srcs = ["printer.cc"],
     hdrs = ["printer.h"],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": ["-Wno-maybe-uninitialized"],
-    }),
+    copts = COPTS,
     include_prefix = "google/protobuf/io",
     deps = [
         ":io",
@@ -93,10 +90,7 @@ cc_library(
     name = "gzip_stream",
     srcs = ["gzip_stream.cc"],
     hdrs = ["gzip_stream.h"],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": ["-Wno-maybe-uninitialized"],
-    }),
+    copts = COPTS,
     include_prefix = "google/protobuf/io",
     deps = [
         ":io",
@@ -128,10 +122,7 @@ cc_test(
         "tokenizer_unittest.cc",
         "zero_copy_stream_unittest.cc",
     ],
-    copts = COPTS + select({
-        "//build_defs:config_msvc": [],
-        "//conditions:default": ["-Wno-maybe-uninitialized"],
-    }),
+    copts = COPTS,
     data = [
         "//src/google/protobuf:testdata",
     ],

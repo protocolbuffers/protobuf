@@ -145,7 +145,7 @@ class PROTOBUF_EXPORT Empty final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.Empty";
   }
   protected:

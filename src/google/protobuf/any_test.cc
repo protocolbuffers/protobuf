@@ -31,6 +31,7 @@
 #include <google/protobuf/any_test.pb.h>
 #include <google/protobuf/unittest.pb.h>
 #include <gtest/gtest.h>
+#include "absl/strings/str_cat.h"
 
 
 // Must be included last.

@@ -37,9 +37,12 @@
 #include <google/protobuf/struct.pb.h>
 #include <google/protobuf/type.pb.h>
 #include <google/protobuf/descriptor.h>
-#include <google/protobuf/stubs/status.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/status/status.h"
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/util/internal/utility.h>
+#include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/mathutil.h>
 
 namespace google {
@@ -47,17 +50,17 @@ namespace protobuf {
 namespace util {
 namespace converter {
 
-using util::Status;
+using ::absl::Status;
 
 namespace {
 
 template <typename To, typename From>
-util::StatusOr<To> ValidateNumberConversion(To after, From before) {
+absl::StatusOr<To> ValidateNumberConversion(To after, From before) {
   if (after == before &&
       MathUtil::Sign<From>(before) == MathUtil::Sign<To>(after)) {
     return after;
   } else {
-    return util::InvalidArgumentError(
+    return absl::InvalidArgumentError(
         std::is_integral<From>::value       ? ValueAsString(before)
         : std::is_same<From, double>::value ? DoubleAsString(before)
                                             : FloatAsString(before));
@@ -68,7 +71,7 @@ util::StatusOr<To> ValidateNumberConversion(To after, From before) {
 //     int32, int64, uint32, uint64, double and float
 // except conversion between double and float.
 template <typename To, typename From>
-util::StatusOr<To> NumberConvertAndCheck(From before) {
+absl::StatusOr<To> NumberConvertAndCheck(From before) {
   if (std::is_same<From, To>::value) return before;
 
   To after = static_cast<To>(before);
@@ -78,7 +81,7 @@ util::StatusOr<To> NumberConvertAndCheck(From before) {
 // For conversion to integer types (int32, int64, uint32, uint64) from floating
 // point types (double, float) only.
 template <typename To, typename From>
-util::StatusOr<To> FloatingPointToIntConvertAndCheck(From before) {
+absl::StatusOr<To> FloatingPointToIntConvertAndCheck(From before) {
   if (std::is_same<From, To>::value) return before;
 
   To after = static_cast<To>(before);
@@ -86,13 +89,13 @@ util::StatusOr<To> FloatingPointToIntConvertAndCheck(From before) {
 }
 
 // For conversion between double and float only.
-util::StatusOr<double> FloatToDouble(float before) {
+absl::StatusOr<double> FloatToDouble(float before) {
   // Casting float to double should just work as double has more precision
   // than float.
   return static_cast<double>(before);
 }
 
-util::StatusOr<float> DoubleToFloat(double before) {
+absl::StatusOr<float> DoubleToFloat(double before) {
   if (std::isnan(before)) {
     return std::numeric_limits<float>::quiet_NaN();
   } else if (!std::isfinite(before)) {
@@ -119,7 +122,7 @@ util::StatusOr<float> DoubleToFloat(double before) {
       }
     }
     // Double value outside of the range of float.
-    return util::InvalidArgumentError(DoubleAsString(before));
+    return absl::InvalidArgumentError(DoubleAsString(before));
   } else {
     return static_cast<float>(before);
   }
@@ -127,7 +130,7 @@ util::StatusOr<float> DoubleToFloat(double before) {
 
 }  // namespace
 
-util::StatusOr<int32_t> DataPiece::ToInt32() const {
+absl::StatusOr<int32_t> DataPiece::ToInt32() const {
   if (type_ == TYPE_STRING)
     return StringToNumber<int32_t>(safe_strto32);
 
@@ -140,7 +143,7 @@ util::StatusOr<int32_t> DataPiece::ToInt32() const {
   return GenericConvert<int32_t>();
 }
 
-util::StatusOr<uint32_t> DataPiece::ToUint32() const {
+absl::StatusOr<uint32_t> DataPiece::ToUint32() const {
   if (type_ == TYPE_STRING)
     return StringToNumber<uint32_t>(safe_strtou32);
 
@@ -153,7 +156,7 @@ util::StatusOr<uint32_t> DataPiece::ToUint32() const {
   return GenericConvert<uint32_t>();
 }
 
-util::StatusOr<int64_t> DataPiece::ToInt64() const {
+absl::StatusOr<int64_t> DataPiece::ToInt64() const {
   if (type_ == TYPE_STRING)
     return StringToNumber<int64_t>(safe_strto64);
 
@@ -166,7 +169,7 @@ util::StatusOr<int64_t> DataPiece::ToInt64() const {
   return GenericConvert<int64_t>();
 }
 
-util::StatusOr<uint64_t> DataPiece::ToUint64() const {
+absl::StatusOr<uint64_t> DataPiece::ToUint64() const {
   if (type_ == TYPE_STRING)
     return StringToNumber<uint64_t>(safe_strtou64);
 
@@ -179,7 +182,7 @@ util::StatusOr<uint64_t> DataPiece::ToUint64() const {
   return GenericConvert<uint64_t>();
 }
 
-util::StatusOr<double> DataPiece::ToDouble() const {
+absl::StatusOr<double> DataPiece::ToDouble() const {
   if (type_ == TYPE_FLOAT) {
     return FloatToDouble(float_);
   }
@@ -187,11 +190,11 @@ util::StatusOr<double> DataPiece::ToDouble() const {
     if (str_ == "Infinity") return std::numeric_limits<double>::infinity();
     if (str_ == "-Infinity") return -std::numeric_limits<double>::infinity();
     if (str_ == "NaN") return std::numeric_limits<double>::quiet_NaN();
-    util::StatusOr<double> value = StringToNumber<double>(safe_strtod);
+    absl::StatusOr<double> value = StringToNumber<double>(safe_strtod);
     if (value.ok() && !std::isfinite(value.value())) {
       // safe_strtod converts out-of-range values to +inf/-inf, but we want
       // to report them as errors.
-      return util::InvalidArgumentError(StrCat("\"", str_, "\""));
+      return absl::InvalidArgumentError(absl::StrCat("\"", str_, "\""));
     } else {
       return value;
     }
@@ -199,7 +202,7 @@ util::StatusOr<double> DataPiece::ToDouble() const {
   return GenericConvert<double>();
 }
 
-util::StatusOr<float> DataPiece::ToFloat() const {
+absl::StatusOr<float> DataPiece::ToFloat() const {
   if (type_ == TYPE_DOUBLE) {
     return DoubleToFloat(double_);
   }
@@ -214,7 +217,7 @@ util::StatusOr<float> DataPiece::ToFloat() const {
   return GenericConvert<float>();
 }
 
-util::StatusOr<bool> DataPiece::ToBool() const {
+absl::StatusOr<bool> DataPiece::ToBool() const {
   switch (type_) {
     case TYPE_BOOL:
       return bool_;
@@ -223,36 +226,36 @@ util::StatusOr<bool> DataPiece::ToBool() const {
     default:
       break;
   }
-  return util::InvalidArgumentError(
+  return absl::InvalidArgumentError(
       ValueAsStringOrDefault("Wrong type. Cannot convert to Bool."));
 }
 
-util::StatusOr<std::string> DataPiece::ToString() const {
+absl::StatusOr<std::string> DataPiece::ToString() const {
   switch (type_) {
     case TYPE_STRING:
       return std::string(str_);
     case TYPE_BYTES: {
       std::string base64;
-      Base64Escape(str_, &base64);
+      absl::Base64Escape(str_, &base64);
       return base64;
     }
     default:
-      return util::InvalidArgumentError(
+      return absl::InvalidArgumentError(
           ValueAsStringOrDefault("Cannot convert to string."));
   }
 }
 
 std::string DataPiece::ValueAsStringOrDefault(
-    StringPiece default_string) const {
+    absl::string_view default_string) const {
   switch (type_) {
     case TYPE_INT32:
-      return StrCat(i32_);
+      return absl::StrCat(i32_);
     case TYPE_INT64:
-      return StrCat(i64_);
+      return absl::StrCat(i64_);
     case TYPE_UINT32:
-      return StrCat(u32_);
+      return absl::StrCat(u32_);
     case TYPE_UINT64:
-      return StrCat(u64_);
+      return absl::StrCat(u64_);
     case TYPE_DOUBLE:
       return DoubleAsString(double_);
     case TYPE_FLOAT:
@@ -260,11 +263,11 @@ std::string DataPiece::ValueAsStringOrDefault(
     case TYPE_BOOL:
       return SimpleBtoa(bool_);
     case TYPE_STRING:
-      return StrCat("\"", str_.ToString(), "\"");
+      return absl::StrCat("\"", str_, "\"");
     case TYPE_BYTES: {
       std::string base64;
-      WebSafeBase64Escape(str_, &base64);
-      return StrCat("\"", base64, "\"");
+      absl::WebSafeBase64Escape(str_, &base64);
+      return absl::StrCat("\"", base64, "\"");
     }
     case TYPE_NULL:
       return "null";
@@ -273,22 +276,22 @@ std::string DataPiece::ValueAsStringOrDefault(
   }
 }
 
-util::StatusOr<std::string> DataPiece::ToBytes() const {
-  if (type_ == TYPE_BYTES) return str_.ToString();
+absl::StatusOr<std::string> DataPiece::ToBytes() const {
+  if (type_ == TYPE_BYTES) return std::string(str_);
   if (type_ == TYPE_STRING) {
     std::string decoded;
     if (!DecodeBase64(str_, &decoded)) {
-      return util::InvalidArgumentError(
+      return absl::InvalidArgumentError(
           ValueAsStringOrDefault("Invalid data in input."));
     }
     return decoded;
   } else {
-    return util::InvalidArgumentError(ValueAsStringOrDefault(
+    return absl::InvalidArgumentError(ValueAsStringOrDefault(
         "Wrong type. Only String or Bytes can be converted to Bytes."));
   }
 }
 
-util::StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
+absl::StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
                                       bool use_lower_camel_for_enums,
                                       bool case_insensitive_enum_parsing,
                                       bool ignore_unknown_enum_values,
@@ -303,7 +306,7 @@ util::StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
     if (value != nullptr) return value->number();
 
     // Check if int version of enum is sent as string.
-    util::StatusOr<int32_t> int_value = ToInt32();
+    absl::StatusOr<int32_t> int_value = ToInt32();
     if (int_value.ok()) {
       if (const google::protobuf::EnumValue* enum_value =
               FindEnumValueByNumberOrNull(enum_type, int_value.value())) {
@@ -317,7 +320,7 @@ util::StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
     if (should_normalize_enum) {
       for (std::string::iterator it = enum_name.begin(); it != enum_name.end();
            ++it) {
-        *it = *it == '-' ? '_' : ascii_toupper(*it);
+        *it = *it == '-' ? '_' : absl::ascii_toupper(*it);
       }
       value = FindEnumValueByNameOrNull(enum_type, enum_name);
       if (value != nullptr) return value->number();
@@ -343,12 +346,12 @@ util::StatusOr<int> DataPiece::ToEnum(const google::protobuf::Enum* enum_type,
     // enum because we preserve unknown enum values as well.
     return ToInt32();
   }
-  return util::InvalidArgumentError(
+  return absl::InvalidArgumentError(
       ValueAsStringOrDefault("Cannot find enum with given value."));
 }
 
 template <typename To>
-util::StatusOr<To> DataPiece::GenericConvert() const {
+absl::StatusOr<To> DataPiece::GenericConvert() const {
   switch (type_) {
     case TYPE_INT32:
       return NumberConvertAndCheck<To, int32_t>(i32_);
@@ -363,35 +366,35 @@ util::StatusOr<To> DataPiece::GenericConvert() const {
     case TYPE_FLOAT:
       return NumberConvertAndCheck<To, float>(float_);
     default:  // TYPE_ENUM, TYPE_STRING, TYPE_CORD, TYPE_BOOL
-      return util::InvalidArgumentError(ValueAsStringOrDefault(
+      return absl::InvalidArgumentError(ValueAsStringOrDefault(
           "Wrong type. Bool, Enum, String and Cord not supported in "
           "GenericConvert."));
   }
 }
 
 template <typename To>
-util::StatusOr<To> DataPiece::StringToNumber(bool (*func)(StringPiece,
+absl::StatusOr<To> DataPiece::StringToNumber(bool (*func)(absl::string_view,
                                                           To*)) const {
   if (str_.size() > 0 && (str_[0] == ' ' || str_[str_.size() - 1] == ' ')) {
-    return util::InvalidArgumentError(StrCat("\"", str_, "\""));
+    return absl::InvalidArgumentError(absl::StrCat("\"", str_, "\""));
   }
   To result;
   if (func(str_, &result)) return result;
-  return util::InvalidArgumentError(
-      StrCat("\"", std::string(str_), "\""));
+  return absl::InvalidArgumentError(
+      absl::StrCat("\"", std::string(str_), "\""));
 }
 
-bool DataPiece::DecodeBase64(StringPiece src, std::string* dest) const {
+bool DataPiece::DecodeBase64(absl::string_view src, std::string* dest) const {
   // Try web-safe decode first, if it fails, try the non-web-safe decode.
-  if (WebSafeBase64Unescape(src, dest)) {
+  if (absl::WebSafeBase64Unescape(src, dest)) {
     if (use_strict_base64_decoding_) {
       // In strict mode, check if the escaped version gives us the same value as
       // unescaped.
       std::string encoded;
       // WebSafeBase64Escape does no padding by default.
-      WebSafeBase64Escape(*dest, &encoded);
+      absl::WebSafeBase64Escape(*dest, &encoded);
       // Remove trailing padding '=' characters before comparison.
-      StringPiece src_no_padding = StringPiece(src).substr(
+      absl::string_view src_no_padding = absl::string_view(src).substr(
           0, HasSuffixString(src, "=") ? src.find_last_not_of('=') + 1
                                       : src.length());
       return encoded == src_no_padding;
@@ -399,12 +402,11 @@ bool DataPiece::DecodeBase64(StringPiece src, std::string* dest) const {
     return true;
   }
 
-  if (Base64Unescape(src, dest)) {
+  if (absl::Base64Unescape(src, dest)) {
     if (use_strict_base64_decoding_) {
       std::string encoded;
-      Base64Escape(reinterpret_cast<const unsigned char*>(dest->data()),
-                         dest->length(), &encoded, false);
-      StringPiece src_no_padding = StringPiece(src).substr(
+      strings::LegacyBase64EscapeWithoutPadding(*dest, &encoded);
+      absl::string_view src_no_padding = absl::string_view(src).substr(
           0, HasSuffixString(src, "=") ? src.find_last_not_of('=') + 1
                                       : src.length());
       return encoded == src_no_padding;

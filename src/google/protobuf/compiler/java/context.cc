@@ -32,10 +32,10 @@
 
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/compiler/java/field.h>
 #include <google/protobuf/compiler/java/helpers.h>
 #include <google/protobuf/compiler/java/name_resolver.h>
-#include <google/protobuf/stubs/map_util.h>
 
 namespace google {
 namespace protobuf {
@@ -159,8 +159,8 @@ void Context::InitializeFieldGeneratorInfoForFields(
     // For fields conflicting with some other fields, we append the field
     // number to their field names in generated code to avoid conflicts.
     if (is_conflict[i]) {
-      info.name += StrCat(field->number());
-      info.capitalized_name += StrCat(field->number());
+      info.name += absl::StrCat(field->number());
+      info.capitalized_name += absl::StrCat(field->number());
       info.disambiguated_reason = conflict_reason[i];
     }
     field_generator_info_map_[field] = info;
@@ -169,24 +169,22 @@ void Context::InitializeFieldGeneratorInfoForFields(
 
 const FieldGeneratorInfo* Context::GetFieldGeneratorInfo(
     const FieldDescriptor* field) const {
-  const FieldGeneratorInfo* result =
-      FindOrNull(field_generator_info_map_, field);
-  if (result == NULL) {
+  auto it = field_generator_info_map_.find(field);
+  if (it == field_generator_info_map_.end()) {
     GOOGLE_LOG(FATAL) << "Can not find FieldGeneratorInfo for field: "
                << field->full_name();
   }
-  return result;
+  return &it->second;
 }
 
 const OneofGeneratorInfo* Context::GetOneofGeneratorInfo(
     const OneofDescriptor* oneof) const {
-  const OneofGeneratorInfo* result =
-      FindOrNull(oneof_generator_info_map_, oneof);
-  if (result == NULL) {
+  auto it = oneof_generator_info_map_.find(oneof);
+  if (it == oneof_generator_info_map_.end()) {
     GOOGLE_LOG(FATAL) << "Can not find OneofGeneratorInfo for oneof: "
                << oneof->name();
   }
-  return result;
+  return &it->second;
 }
 
 // Does this message class have generated parsing, serialization, and other

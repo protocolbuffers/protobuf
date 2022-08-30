@@ -50,8 +50,8 @@
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/testing/googletest.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/substitute.h>
-#include <google/protobuf/stubs/map_util.h>
+#include "absl/strings/str_join.h"
+#include "absl/strings/substitute.h"
 
 namespace google {
 namespace protobuf {
@@ -69,11 +69,11 @@ class MockErrorCollector : public io::ErrorCollector {
 
   // implements ErrorCollector ---------------------------------------
   void AddWarning(int line, int column, const std::string& message) override {
-    strings::SubstituteAndAppend(&warning_, "$0:$1: $2\n", line, column, message);
+    absl::SubstituteAndAppend(&warning_, "$0:$1: $2\n", line, column, message);
   }
 
   void AddError(int line, int column, const std::string& message) override {
-    strings::SubstituteAndAppend(&text_, "$0:$1: $2\n", line, column, message);
+    absl::SubstituteAndAppend(&text_, "$0:$1: $2\n", line, column, message);
   }
 };
 
@@ -2402,7 +2402,7 @@ TEST_F(ParseDescriptorDebugTest, TestCommentsInDebugString) {
     const std::string debug_string =
         descriptor->DebugStringWithOptions(debug_string_options);
 
-    for (int i = 0; i < GOOGLE_ARRAYSIZE(expected_comments); ++i) {
+    for (int i = 0; i < ABSL_ARRAYSIZE(expected_comments); ++i) {
       std::string::size_type found_pos =
           debug_string.find(expected_comments[i]);
       EXPECT_TRUE(found_pos != std::string::npos)
@@ -2678,8 +2678,8 @@ class SourceInfoTest : public ParserTest {
         return true;
       }
     } else {
-      std::pair<int, int> start_pos = FindOrDie(markers_, start_marker);
-      std::pair<int, int> end_pos = FindOrDie(markers_, end_marker);
+      std::pair<int, int> start_pos = markers_.at(start_marker);
+      std::pair<int, int> end_pos = markers_.at(end_marker);
 
       RepeatedField<int> expected_span;
       expected_span.Add(start_pos.first);
@@ -2710,7 +2710,7 @@ class SourceInfoTest : public ParserTest {
           } else {
             EXPECT_EQ(
                 expected_leading_detached_comments,
-                Join(iter->second->leading_detached_comments(), "\n"));
+                absl::StrJoin(iter->second->leading_detached_comments(), "\n"));
           }
 
           spans_.erase(iter);

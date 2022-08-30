@@ -38,6 +38,7 @@
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/map_field.h>
@@ -374,7 +375,7 @@ static std::string SubMessagePrefix(const std::string& prefix,
   }
   if (index != -1) {
     result.append("[");
-    result.append(StrCat(index));
+    result.append(absl::StrCat(index));
     result.append("]");
   }
   result.append(".");

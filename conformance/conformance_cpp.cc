@@ -42,15 +42,14 @@
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/util/json_util.h>
 #include <google/protobuf/util/type_resolver_util.h>
-#include <google/protobuf/stubs/status.h>
-#include <google/protobuf/stubs/statusor.h>
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance.pb.h"
 #include <google/protobuf/test_messages_proto2.pb.h>
 #include <google/protobuf/test_messages_proto3.pb.h>
 #include <google/protobuf/test_messages_proto3.pb.h>
 #include <google/protobuf/util/type_resolver.h>
-#include <google/protobuf/stubs/status.h>
 #include <google/protobuf/stubs/status_macros.h>
 
 // Must be included last.
@@ -69,29 +68,29 @@ using ::google::protobuf::util::TypeResolver;
 using ::protobuf_test_messages::proto2::TestAllTypesProto2;
 using ::protobuf_test_messages::proto3::TestAllTypesProto3;
 
-util::Status ReadFd(int fd, char* buf, size_t len) {
+absl::Status ReadFd(int fd, char* buf, size_t len) {
   while (len > 0) {
     ssize_t bytes_read = read(fd, buf, len);
 
     if (bytes_read == 0) {
-      return util::DataLossError("unexpected EOF");
+      return absl::DataLossError("unexpected EOF");
     }
 
     if (bytes_read < 0) {
-      return util::ErrnoToStatus(errno, "error reading from test runner");
+      return absl::ErrnoToStatus(errno, "error reading from test runner");
     }
 
     len -= bytes_read;
     buf += bytes_read;
   }
-  return util::OkStatus();
+  return absl::OkStatus();
 }
 
-util::Status WriteFd(int fd, const void* buf, size_t len) {
-  if (write(fd, buf, len) != len) {
-    return util::ErrnoToStatus(errno, "error reading to test runner");
+absl::Status WriteFd(int fd, const void* buf, size_t len) {
+  if (static_cast<size_t>(write(fd, buf, len)) != len) {
+    return absl::ErrnoToStatus(errno, "error reading to test runner");
   }
-  return util::OkStatus();
+  return absl::OkStatus();
 }
 
 class Harness {
@@ -102,15 +101,15 @@ class Harness {
 
     resolver_.reset(NewTypeResolverForDescriptorPool(
         "type.googleapis.com", DescriptorPool::generated_pool()));
-    type_url_ = StrCat("type.googleapis.com/",
+    type_url_ = absl::StrCat("type.googleapis.com/",
                              TestAllTypesProto3::GetDescriptor()->full_name());
   }
 
-  util::StatusOr<ConformanceResponse> RunTest(
+  absl::StatusOr<ConformanceResponse> RunTest(
       const ConformanceRequest& request);
 
   // Returns Ok(true) if we're done processing requests.
-  util::StatusOr<bool> ServeConformanceRequest();
+  absl::StatusOr<bool> ServeConformanceRequest();
 
  private:
   bool verbose_ = false;
@@ -118,14 +117,14 @@ class Harness {
   std::string type_url_;
 };
 
-util::StatusOr<ConformanceResponse> Harness::RunTest(
+absl::StatusOr<ConformanceResponse> Harness::RunTest(
     const ConformanceRequest& request) {
   const Descriptor* descriptor =
       DescriptorPool::generated_pool()->FindMessageTypeByName(
           request.message_type());
   if (descriptor == nullptr) {
-    return util::NotFoundError(
-        StrCat("No such message type: ", request.message_type()));
+    return absl::NotFoundError(
+        absl::StrCat("No such message type: ", request.message_type()));
   }
 
   std::unique_ptr<Message> test_message(
@@ -148,12 +147,12 @@ util::StatusOr<ConformanceResponse> Harness::RunTest(
            conformance::JSON_IGNORE_UNKNOWN_PARSING_TEST);
 
       std::string proto_binary;
-      util::Status status =
+      absl::Status status =
           JsonToBinaryString(resolver_.get(), type_url_, request.json_payload(),
                              &proto_binary, options);
       if (!status.ok()) {
         response.set_parse_error(
-            StrCat("parse error: ", status.message()));
+            absl::StrCat("parse error: ", status.message()));
         return response;
       }
 
@@ -176,16 +175,16 @@ util::StatusOr<ConformanceResponse> Harness::RunTest(
     }
 
     case ConformanceRequest::PAYLOAD_NOT_SET:
-      return util::InvalidArgumentError("request didn't have payload");
+      return absl::InvalidArgumentError("request didn't have payload");
 
     default:
-      return util::InvalidArgumentError(
-          StrCat("unknown payload type", request.payload_case()));
+      return absl::InvalidArgumentError(
+          absl::StrCat("unknown payload type", request.payload_case()));
   }
 
   switch (request.requested_output_format()) {
     case conformance::UNSPECIFIED:
-      return util::InvalidArgumentError("unspecified output format");
+      return absl::InvalidArgumentError("unspecified output format");
 
     case conformance::PROTOBUF: {
       GOOGLE_CHECK(
@@ -196,11 +195,11 @@ util::StatusOr<ConformanceResponse> Harness::RunTest(
     case conformance::JSON: {
       std::string proto_binary;
       GOOGLE_CHECK(test_message->SerializeToString(&proto_binary));
-      util::Status status =
+      absl::Status status =
           BinaryToJsonString(resolver_.get(), type_url_, proto_binary,
                              response.mutable_json_payload());
       if (!status.ok()) {
-        response.set_serialize_error(StrCat(
+        response.set_serialize_error(absl::StrCat(
             "failed to serialize JSON output: ", status.message()));
       }
       break;
@@ -215,14 +214,14 @@ util::StatusOr<ConformanceResponse> Harness::RunTest(
     }
 
     default:
-      return util::InvalidArgumentError(StrCat(
+      return absl::InvalidArgumentError(absl::StrCat(
           "unknown output format", request.requested_output_format()));
   }
 
   return response;
 }
 
-util::StatusOr<bool> Harness::ServeConformanceRequest() {
+absl::StatusOr<bool> Harness::ServeConformanceRequest() {
   uint32_t in_len;
   if (!ReadFd(STDIN_FILENO, reinterpret_cast<char*>(&in_len), sizeof(in_len))
            .ok()) {
@@ -237,7 +236,7 @@ util::StatusOr<bool> Harness::ServeConformanceRequest() {
   ConformanceRequest request;
   GOOGLE_CHECK(request.ParseFromString(serialized_input));
 
-  util::StatusOr<ConformanceResponse> response = RunTest(request);
+  absl::StatusOr<ConformanceResponse> response = RunTest(request);
   RETURN_IF_ERROR(response.status());
 
   std::string serialized_output;

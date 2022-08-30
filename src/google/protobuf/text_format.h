@@ -46,6 +46,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/port.h>
+#include "absl/strings/string_view.h"
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/message.h>
 #include <google/protobuf/message_lite.h>
@@ -76,6 +77,9 @@ class ErrorCollector;  // tokenizer.h
 // This class is really a namespace that contains only static methods.
 class PROTOBUF_EXPORT TextFormat {
  public:
+  TextFormat(const TextFormat&) = delete;
+  TextFormat& operator=(const TextFormat&) = delete;
+
   // Outputs a textual representation of the given message to the given
   // output stream. Returns false if printing fails.
   static bool Print(const Message& message, io::ZeroCopyOutputStream* output);
@@ -131,6 +135,8 @@ class PROTOBUF_EXPORT TextFormat {
   class PROTOBUF_EXPORT FastFieldValuePrinter {
    public:
     FastFieldValuePrinter();
+    FastFieldValuePrinter(const FastFieldValuePrinter&) = delete;
+    FastFieldValuePrinter& operator=(const FastFieldValuePrinter&) = delete;
     virtual ~FastFieldValuePrinter();
     virtual void PrintBool(bool val, BaseTextGenerator* generator) const;
     virtual void PrintInt32(int32_t val, BaseTextGenerator* generator) const;
@@ -167,15 +173,14 @@ class PROTOBUF_EXPORT TextFormat {
     virtual void PrintMessageEnd(const Message& message, int field_index,
                                  int field_count, bool single_line_mode,
                                  BaseTextGenerator* generator) const;
-
-   private:
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FastFieldValuePrinter);
   };
 
   // Deprecated: please use FastFieldValuePrinter instead.
   class PROTOBUF_EXPORT FieldValuePrinter {
    public:
     FieldValuePrinter();
+    FieldValuePrinter(const FieldValuePrinter&) = delete;
+    FieldValuePrinter& operator=(const FieldValuePrinter&) = delete;
     virtual ~FieldValuePrinter();
     virtual std::string PrintBool(bool val) const;
     virtual std::string PrintInt32(int32_t val) const;
@@ -199,18 +204,16 @@ class PROTOBUF_EXPORT TextFormat {
 
    private:
     FastFieldValuePrinter delegate_;
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldValuePrinter);
   };
 
   class PROTOBUF_EXPORT MessagePrinter {
    public:
     MessagePrinter() {}
+    MessagePrinter(const MessagePrinter&) = delete;
+    MessagePrinter& operator=(const MessagePrinter&) = delete;
     virtual ~MessagePrinter() {}
     virtual void Print(const Message& message, bool single_line_mode,
                        BaseTextGenerator* generator) const = 0;
-
-   private:
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessagePrinter);
   };
 
   // Interface that Printers or Parsers can use to find extensions, or types
@@ -476,13 +479,13 @@ class PROTOBUF_EXPORT TextFormat {
   // google::protobuf::MessageLite::ParseFromString().
   static bool Parse(io::ZeroCopyInputStream* input, Message* output);
   // Like Parse(), but reads directly from a string.
-  static bool ParseFromString(ConstStringParam input, Message* output);
+  static bool ParseFromString(absl::string_view input, Message* output);
 
   // Like Parse(), but the data is merged into the given message, as if
   // using Message::MergeFrom().
   static bool Merge(io::ZeroCopyInputStream* input, Message* output);
   // Like Merge(), but reads directly from a string.
-  static bool MergeFromString(ConstStringParam input, Message* output);
+  static bool MergeFromString(absl::string_view input, Message* output);
 
   // Parse the given text as a single field value and store it into the
   // given field of the given message. If the field is a repeated field,
@@ -571,11 +574,11 @@ class PROTOBUF_EXPORT TextFormat {
     // Like TextFormat::Parse().
     bool Parse(io::ZeroCopyInputStream* input, Message* output);
     // Like TextFormat::ParseFromString().
-    bool ParseFromString(ConstStringParam input, Message* output);
+    bool ParseFromString(absl::string_view input, Message* output);
     // Like TextFormat::Merge().
     bool Merge(io::ZeroCopyInputStream* input, Message* output);
     // Like TextFormat::MergeFromString().
-    bool MergeFromString(ConstStringParam input, Message* output);
+    bool MergeFromString(absl::string_view input, Message* output);
 
     // Set where to report parse errors.  If nullptr (the default), errors will
     // be printed to stderr.
@@ -670,8 +673,6 @@ class PROTOBUF_EXPORT TextFormat {
                                     ParseLocationRange location);
   static inline ParseInfoTree* CreateNested(ParseInfoTree* info_tree,
                                             const FieldDescriptor* field);
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TextFormat);
 };
 
 inline void TextFormat::RecordLocation(ParseInfoTree* info_tree,
