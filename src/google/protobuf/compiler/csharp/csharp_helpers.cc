@@ -32,28 +32,37 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
+#include <google/protobuf/compiler/csharp/csharp_helpers.h>
+
 #include <algorithm>
 #include <limits>
-#include <vector>
 #include <sstream>
+#include <vector>
 
-#include <google/protobuf/compiler/csharp/csharp_helpers.h>
-#include <google/protobuf/compiler/csharp/csharp_names.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
-
-#include <google/protobuf/compiler/csharp/csharp_field_base.h>
+#include "absl/container/flat_hash_set.h"
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 #include <google/protobuf/compiler/csharp/csharp_enum_field.h>
+#include <google/protobuf/compiler/csharp/csharp_field_base.h>
 #include <google/protobuf/compiler/csharp/csharp_map_field.h>
 #include <google/protobuf/compiler/csharp/csharp_message_field.h>
+#include <google/protobuf/compiler/csharp/csharp_names.h>
 #include <google/protobuf/compiler/csharp/csharp_options.h>
 #include <google/protobuf/compiler/csharp/csharp_primitive_field.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_enum_field.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_message_field.h>
 #include <google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h>
 #include <google/protobuf/compiler/csharp/csharp_wrapper_field.h>
+#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/io/printer.h>
+
+// Must be last.
+#include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
@@ -218,18 +227,18 @@ std::string ShoutyToPascalCase(const std::string& input) {
   char previous = '_';
   for (int i = 0; i < input.size(); i++) {
     char current = input[i];
-    if (!ascii_isalnum(current)) {
+    if (!absl::ascii_isalnum(current)) {
       previous = current;
       continue;
     }
-    if (!ascii_isalnum(previous)) {
-      result += ascii_toupper(current);
-    } else if (ascii_isdigit(previous)) {
-      result += ascii_toupper(current);
-    } else if (ascii_islower(previous)) {
+    if (!absl::ascii_isalnum(previous)) {
+      result += absl::ascii_toupper(current);
+    } else if (absl::ascii_isdigit(previous)) {
+      result += absl::ascii_toupper(current);
+    } else if (absl::ascii_islower(previous)) {
       result += current;
     } else {
-      result += ascii_tolower(current);
+      result += absl::ascii_tolower(current);
     }
     previous = current;
   }
@@ -247,7 +256,7 @@ std::string TryRemovePrefix(const std::string& prefix, const std::string& value)
   std::string prefix_to_match = "";
   for (size_t i = 0; i < prefix.size(); i++) {
     if (prefix[i] != '_') {
-      prefix_to_match += ascii_tolower(prefix[i]);
+      prefix_to_match += absl::ascii_tolower(prefix[i]);
     }
   }
 
@@ -260,7 +269,7 @@ std::string TryRemovePrefix(const std::string& prefix, const std::string& value)
     if (value[value_index] == '_') {
       continue;
     }
-    if (ascii_tolower(value[value_index]) != prefix_to_match[prefix_index++]) {
+    if (absl::ascii_tolower(value[value_index]) != prefix_to_match[prefix_index++]) {
       // Failed to match the prefix - bail out early.
       return value;
     }
@@ -294,7 +303,7 @@ std::string GetEnumValueName(const std::string& enum_name, const std::string& en
   std::string result = ShoutyToPascalCase(stripped);
   // Just in case we have an enum name of FOO and a value of FOO_2... make sure the returned
   // string is a valid identifier.
-  if (ascii_isdigit(result[0])) {
+  if (absl::ascii_isdigit(result[0])) {
     result = "_" + result;
   }
   return result;
@@ -398,7 +407,7 @@ std::string GetFieldConstantName(const FieldDescriptor* field) {
 
 std::string GetPropertyName(const FieldDescriptor* descriptor) {
   // Names of members declared or overridden in the message.
-  static const auto& reserved_member_names = *new std::unordered_set<std::string>({
+  static const auto& reserved_member_names = *new absl::flat_hash_set<absl::string_view>({
     "Types",
     "Descriptor",
     "Equals",
@@ -630,3 +639,5 @@ bool IsNullable(const FieldDescriptor* descriptor) {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include <google/protobuf/port_undef.inc>

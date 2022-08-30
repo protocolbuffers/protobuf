@@ -42,14 +42,16 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/stubs/bytestream.h>
-#include <google/protobuf/stubs/status.h>
+#include "absl/container/flat_hash_set.h"
+#include "absl/status/status.h"
+#include "absl/strings/string_view.h"
 #include <google/protobuf/util/internal/datapiece.h>
 #include <google/protobuf/util/internal/error_listener.h>
 #include <google/protobuf/util/internal/proto_writer.h>
 #include <google/protobuf/util/internal/structured_objectwriter.h>
 #include <google/protobuf/util/internal/type_info.h>
 #include <google/protobuf/util/type_resolver.h>
-#include <google/protobuf/stubs/hash.h>
+
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -151,22 +153,25 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
                           strings::ByteSink* output, ErrorListener* listener,
                           const ProtoStreamObjectWriter::Options& options =
                               ProtoStreamObjectWriter::Options::Defaults());
+  ProtoStreamObjectWriter() = delete;
+  ProtoStreamObjectWriter(const ProtoStreamObjectWriter&) = delete;
+  ProtoStreamObjectWriter& operator=(const ProtoStreamObjectWriter&) = delete;
   ~ProtoStreamObjectWriter() override;
 
   // ObjectWriter methods.
-  ProtoStreamObjectWriter* StartObject(StringPiece name) override;
+  ProtoStreamObjectWriter* StartObject(absl::string_view name) override;
   ProtoStreamObjectWriter* EndObject() override;
-  ProtoStreamObjectWriter* StartList(StringPiece name) override;
+  ProtoStreamObjectWriter* StartList(absl::string_view name) override;
   ProtoStreamObjectWriter* EndList() override;
 
   // Renders a DataPiece 'value' into a field whose wire type is determined
   // from the given field 'name'.
-  ProtoStreamObjectWriter* RenderDataPiece(StringPiece name,
+  ProtoStreamObjectWriter* RenderDataPiece(absl::string_view name,
                                            const DataPiece& data) override;
 
  protected:
   // Function that renders a well known type with modified behavior.
-  typedef util::Status (*TypeRenderer)(ProtoStreamObjectWriter*,
+  typedef absl::Status (*TypeRenderer)(ProtoStreamObjectWriter*,
                                        const DataPiece&);
 
   // Handles writing Anys out using nested object writers and the like.
@@ -176,7 +181,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     ~AnyWriter();
 
     // Passes a StartObject call through to the Any writer.
-    void StartObject(StringPiece name);
+    void StartObject(absl::string_view name);
 
     // Passes an EndObject call through to the Any. Returns true if the any
     // handled the EndObject call, false if the Any is now all done and is no
@@ -184,13 +189,13 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     bool EndObject();
 
     // Passes a StartList call through to the Any writer.
-    void StartList(StringPiece name);
+    void StartList(absl::string_view name);
 
     // Passes an EndList call through to the Any writer.
     void EndList();
 
     // Renders a data piece on the any.
-    void RenderDataPiece(StringPiece name, const DataPiece& value);
+    void RenderDataPiece(absl::string_view name, const DataPiece& value);
 
    private:
     // Before the "@type" field is encountered, we store all incoming data
@@ -209,11 +214,11 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
       explicit Event(Type type) : type_(type), value_(DataPiece::NullData()) {}
 
       // Constructor for START_OBJECT and START_LIST events.
-      explicit Event(Type type, StringPiece name)
+      explicit Event(Type type, absl::string_view name)
           : type_(type), name_(name), value_(DataPiece::NullData()) {}
 
       // Constructor for RENDER_DATA_PIECE events.
-      explicit Event(StringPiece name, const DataPiece& value)
+      explicit Event(absl::string_view name, const DataPiece& value)
           : type_(RENDER_DATA_PIECE), name_(name), value_(value) {
         DeepCopy();
       }
@@ -299,6 +304,9 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
 
     // Constructor for a field of a message.
     Item(Item* parent, ItemType item_type, bool is_placeholder, bool is_list);
+    Item() = delete;
+    Item(const Item&) = delete;
+    Item& operator=(const Item&) = delete;
 
     ~Item() override {}
 
@@ -318,7 +326,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     // The hash set (map_keys_) is ONLY used to keep track of map keys.
     // Return true if insert successfully; returns false if the map key was
     // already present.
-    bool InsertMapKeyIfNotPresent(StringPiece map_key);
+    bool InsertMapKeyIfNotPresent(absl::string_view map_key);
 
     bool is_placeholder() const { return is_placeholder_; }
     bool is_list() const { return is_list_; }
@@ -336,7 +344,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
 
     // Set of map keys already seen for the type_. Used to validate incoming
     // messages so no map key appears more than once.
-    std::unique_ptr<std::unordered_set<std::string> > map_keys_;
+    absl::flat_hash_set<std::string> map_keys_;
 
     // Conveys whether this Item is a placeholder or not. Placeholder items are
     // pushed to stack to account for special types.
@@ -345,8 +353,6 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
     // Conveys whether this Item is a list or not. This is used to send
     // StartList or EndList calls to underlying ObjectWriter.
     bool is_list_;
-
-    GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(Item);
   };
 
   ProtoStreamObjectWriter(const TypeInfo* typeinfo,
@@ -375,24 +381,24 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
 
   // Renders google.protobuf.Value in struct.proto. It picks the right oneof
   // type based on value's type.
-  static util::Status RenderStructValue(ProtoStreamObjectWriter* ow,
+  static absl::Status RenderStructValue(ProtoStreamObjectWriter* ow,
                                         const DataPiece& data);
 
   // Renders google.protobuf.Timestamp value.
-  static util::Status RenderTimestamp(ProtoStreamObjectWriter* ow,
+  static absl::Status RenderTimestamp(ProtoStreamObjectWriter* ow,
                                       const DataPiece& data);
 
   // Renders google.protobuf.FieldMask value.
-  static util::Status RenderFieldMask(ProtoStreamObjectWriter* ow,
+  static absl::Status RenderFieldMask(ProtoStreamObjectWriter* ow,
                                       const DataPiece& data);
 
   // Renders google.protobuf.Duration value.
-  static util::Status RenderDuration(ProtoStreamObjectWriter* ow,
+  static absl::Status RenderDuration(ProtoStreamObjectWriter* ow,
                                      const DataPiece& data);
 
   // Renders wrapper message types for primitive types in
   // google/protobuf/wrappers.proto.
-  static util::Status RenderWrapperType(ProtoStreamObjectWriter* ow,
+  static absl::Status RenderWrapperType(ProtoStreamObjectWriter* ow,
                                         const DataPiece& data);
 
   static void InitRendererMap();
@@ -405,7 +411,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
   // is of element type MAP or STRUCT_MAP.
   // It also calls the appropriate error callback and unnormalzied_name is used
   // for error string.
-  bool ValidMapKey(StringPiece unnormalized_name);
+  bool ValidMapKey(absl::string_view unnormalized_name);
 
   // Pushes an item on to the stack. Also calls either StartObject or StartList
   // on the underlying ObjectWriter depending on whether is_list is false or
@@ -413,7 +419,7 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
   // is_placeholder conveys whether the item is a placeholder item or not.
   // Placeholder items are pushed when adding auxiliary types' StartObject or
   // StartList calls.
-  void Push(StringPiece name, Item::ItemType item_type,
+  void Push(absl::string_view name, Item::ItemType item_type,
             bool is_placeholder, bool is_list);
 
 
@@ -439,8 +445,6 @@ class PROTOBUF_EXPORT ProtoStreamObjectWriter : public ProtoWriter {
 
   // Reference to the options that control this class's behavior.
   const ProtoStreamObjectWriter::Options options_;
-
-  GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(ProtoStreamObjectWriter);
 };
 
 }  // namespace converter

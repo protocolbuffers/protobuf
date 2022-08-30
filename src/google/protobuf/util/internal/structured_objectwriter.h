@@ -33,8 +33,9 @@
 
 #include <memory>
 
-#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/common.h>
+#include "absl/base/casts.h"
+#include <google/protobuf/port.h>
 #include <google/protobuf/util/internal/object_writer.h>
 
 // Must be included last.
@@ -58,6 +59,8 @@ namespace converter {
 // Derived classes could be thread-unsafe.
 class PROTOBUF_EXPORT StructuredObjectWriter : public ObjectWriter {
  public:
+  StructuredObjectWriter(const StructuredObjectWriter&) = delete;
+  StructuredObjectWriter& operator=(const StructuredObjectWriter&) = delete;
   ~StructuredObjectWriter() override {}
 
  protected:
@@ -72,12 +75,15 @@ class PROTOBUF_EXPORT StructuredObjectWriter : public ObjectWriter {
     explicit BaseElement(BaseElement* parent)
         : parent_(parent),
           level_(parent == nullptr ? 0 : parent->level() + 1) {}
+    BaseElement() = delete;
+    BaseElement(const BaseElement&) = delete;
+    BaseElement& operator=(const BaseElement&) = delete;
     virtual ~BaseElement() {}
 
     // Releases ownership of the parent and returns a pointer to it.
     template <typename ElementType>
     ElementType* pop() {
-      return down_cast<ElementType*>(parent_.release());
+      return google::protobuf::internal::DownCast<ElementType*>(parent_.release());
     }
 
     // Returns true if this element is the root.
@@ -97,8 +103,6 @@ class PROTOBUF_EXPORT StructuredObjectWriter : public ObjectWriter {
     // Number of hops to the root Element.
     // The root Element has nullptr parent_ and a level_ of 0.
     const int level_;
-
-    GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(BaseElement);
   };
 
   StructuredObjectWriter() {}
@@ -108,7 +112,6 @@ class PROTOBUF_EXPORT StructuredObjectWriter : public ObjectWriter {
 
  private:
   // Do not add any data members to this class.
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StructuredObjectWriter);
 };
 
 }  // namespace converter

@@ -38,12 +38,16 @@
 #include <stack>
 #include <unordered_map>
 
-#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/base/casts.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/strings/str_join.h"
+#include "absl/strings/string_view.h"
+#include "absl/synchronization/mutex.h"
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/generated_message_reflection.h>
@@ -57,16 +61,14 @@
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/stubs/map_util.h>
 #include <google/protobuf/stubs/stl_util.h>
-#include <google/protobuf/stubs/hash.h>
+
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
 
 namespace google {
 namespace protobuf {
-
 namespace internal {
 
 // TODO(gerbens) make this factorized better. This should not have to hop
@@ -76,6 +78,7 @@ void RegisterFileLevelMetadata(const DescriptorTable* descriptor_table);
 
 }  // namespace internal
 
+using internal::DownCast;
 using internal::ReflectionOps;
 using internal::WireFormat;
 using internal::WireFormatLite;
@@ -93,7 +96,7 @@ void Message::MergeFrom(const Message& from) {
 }
 
 void Message::CheckTypeAndMergeFrom(const MessageLite& other) {
-  MergeFrom(*down_cast<const Message*>(&other));
+  MergeFrom(*DownCast<const Message*>(&other));
 }
 
 void Message::CopyFrom(const Message& from) {
@@ -153,7 +156,7 @@ void Message::FindInitializationErrors(std::vector<std::string>* errors) const {
 std::string Message::InitializationErrorString() const {
   std::vector<std::string> errors;
   FindInitializationErrors(&errors);
-  return Join(errors, ", ");
+  return absl::StrJoin(errors, ", ");
 }
 
 void Message::CheckInitialized() const {
@@ -241,11 +244,6 @@ MessageFactory::~MessageFactory() {}
 
 namespace {
 
-
-#define HASH_MAP std::unordered_map
-#define STR_HASH_FXN hash<::google::protobuf::StringPiece>
-
-
 class GeneratedMessageFactory final : public MessageFactory {
  public:
   static GeneratedMessageFactory* singleton();
@@ -257,14 +255,58 @@ class GeneratedMessageFactory final : public MessageFactory {
   const Message* GetPrototype(const Descriptor* type) override;
 
  private:
+  const Message* FindInTypeMap(const Descriptor* type)
+      ABSL_SHARED_LOCKS_REQUIRED(mutex_)
+  {
+    auto it = type_map_.find(type);
+    if (it == type_map_.end()) return nullptr;
+    return it->second;
+  }
+
+  const google::protobuf::internal::DescriptorTable* FindInFileMap(
+      absl::string_view name) {
+    auto it = files_.find(name);
+    if (it == files_.end()) return nullptr;
+    return *it;
+  }
+
+  struct DescriptorByNameHash {
+    using is_transparent = void;
+    size_t operator()(const google::protobuf::internal::DescriptorTable* t) const {
+      return absl::HashOf(absl::string_view{t->filename});
+    }
+
+    size_t operator()(absl::string_view name) const {
+      return absl::HashOf(name);
+    }
+  };
+  struct DescriptorByNameEq {
+    using is_transparent = void;
+    bool operator()(const google::protobuf::internal::DescriptorTable* lhs,
+                    const google::protobuf::internal::DescriptorTable* rhs) const {
+      return lhs == rhs || (*this)(lhs->filename, rhs->filename);
+    }
+    bool operator()(absl::string_view lhs,
+                    const google::protobuf::internal::DescriptorTable* rhs) const {
+      return (*this)(lhs, rhs->filename);
+    }
+    bool operator()(const google::protobuf::internal::DescriptorTable* lhs,
+                    absl::string_view rhs) const {
+      return (*this)(lhs->filename, rhs);
+    }
+    bool operator()(absl::string_view lhs, absl::string_view rhs) const {
+      return lhs == rhs;
+    }
+  };
+
   // Only written at static init time, so does not require locking.
-  HASH_MAP<StringPiece, const google::protobuf::internal::DescriptorTable*,
-           STR_HASH_FXN>
-      file_map_;
+  absl::flat_hash_set<const google::protobuf::internal::DescriptorTable*,
+                      DescriptorByNameHash, DescriptorByNameEq>
+      files_;
 
   absl::Mutex mutex_;
-  // Initialized lazily, so requires locking.
-  std::unordered_map<const Descriptor*, const Message*> type_map_;
+  absl::flat_hash_map<const Descriptor*, const Message*> type_map_
+      ABSL_GUARDED_BY(mutex_);
 };
 
 GeneratedMessageFactory* GeneratedMessageFactory::singleton() {
@@ -275,7 +317,7 @@ GeneratedMessageFactory* GeneratedMessageFactory::singleton() {
 
 void GeneratedMessageFactory::RegisterFile(
     const google::protobuf::internal::DescriptorTable* table) {
-  if (!InsertIfNotPresent(&file_map_, table->filename, table)) {
+  if (!files_.insert(table).second) {
     GOOGLE_LOG(FATAL) << "File is already registered: " << table->filename;
   }
 }
@@ -290,7 +332,7 @@ void GeneratedMessageFactory::RegisterType(const Descriptor* descriptor,
   // function during GetPrototype(), in which case we already have locked
   // the mutex.
   mutex_.AssertHeld();
-  if (!InsertIfNotPresent(&type_map_, descriptor, prototype)) {
+  if (!type_map_.try_emplace(descriptor, prototype).second) {
     GOOGLE_LOG(DFATAL) << "Type is already registered: " << descriptor->full_name();
   }
 }
@@ -299,7 +341,7 @@ void GeneratedMessageFactory::RegisterType(const Descriptor* descriptor,
 const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
   {
     absl::ReaderMutexLock lock(&mutex_);
-    const Message* result = FindPtrOrNull(type_map_, type);
+    const Message* result = FindInTypeMap(type);
     if (result != nullptr) return result;
   }
 
@@ -309,7 +351,7 @@ const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
 
   // Apparently the file hasn't been registered yet.  Let's do that now.
   const internal::DescriptorTable* registration_data =
-      FindPtrOrNull(file_map_, type->file()->name().c_str());
+      FindInFileMap(type->file()->name());
   if (registration_data == nullptr) {
     GOOGLE_LOG(DFATAL) << "File appears to be in generated pool but wasn't "
                    "registered: "
@@ -320,12 +362,12 @@ const Message* GeneratedMessageFactory::GetPrototype(const Descriptor* type) {
   absl::WriterMutexLock lock(&mutex_);
 
   // Check if another thread preempted us.
-  const Message* result = FindPtrOrNull(type_map_, type);
+  const Message* result = FindInTypeMap(type);
   if (result == nullptr) {
     // Nope.  OK, register everything.
     internal::RegisterFileLevelMetadata(registration_data);
     // Should be here now.
-    result = FindPtrOrNull(type_map_, type);
+    result = FindInTypeMap(type);
   }
 
   if (result == nullptr) {

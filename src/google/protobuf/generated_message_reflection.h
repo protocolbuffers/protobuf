@@ -40,14 +40,14 @@
 
 #include <string>
 
-#include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/once.h>
-#include <google/protobuf/port.h>
+#include "absl/base/call_once.h"
+#include "absl/base/casts.h"
+#include "absl/strings/string_view.h"
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/generated_enum_reflection.h>
+#include <google/protobuf/port.h>
 #include <google/protobuf/unknown_field_set.h>
-
 
 // Must be included last.
 #include <google/protobuf/port_def.inc>
@@ -331,7 +331,7 @@ struct PROTOBUF_EXPORT DescriptorTable {
   int size;  // of serialized descriptor
   const char* descriptor;
   const char* filename;
-  once_flag* once;
+  absl::once_flag* once;
   const DescriptorTable* const* deps;
   int num_deps;
   int num_messages;
@@ -357,7 +357,7 @@ void PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* table,
 // It takes a `Metadata` and returns it to allow for tail calls and reduce
 // binary size.
 Metadata PROTOBUF_EXPORT AssignDescriptors(const DescriptorTable* (*table)(),
-                                           internal::once_flag* once,
+                                           absl::once_flag* once,
                                            const Metadata& metadata);
 
 // These cannot be in lite so we put them in the reflection.

@@ -92,7 +92,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/escaping.h"
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/io/strtod.h>
 #include <google/protobuf/io/zero_copy_stream.h>
@@ -1024,7 +1024,7 @@ double Tokenizer::ParseFloat(const std::string& text) {
          static_cast<size_t>(end - start) != text.size() || *start == '-')
       << " Tokenizer::ParseFloat() passed text that could not have been"
          " tokenized as a float: "
-      << CEscape(text);
+      << absl::CEscape(text);
   return result;
 }
 
@@ -1145,7 +1145,7 @@ void Tokenizer::ParseStringAppend(const std::string& text,
   if (text_size == 0) {
     GOOGLE_LOG(DFATAL) << " Tokenizer::ParseStringAppend() passed text that could not"
                    " have been tokenized as a string: "
-                << CEscape(text);
+                << absl::CEscape(text);
     return;
   }
 

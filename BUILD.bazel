@@ -160,6 +160,7 @@ internal_ruby_proto_library(
 
 cc_binary(
     name = "protoc",
+    copts = COPTS,
     linkopts = LINK_OPTS + PROTOC_LINK_OPTS,
     visibility = ["//visibility:public"],
     deps = ["//src/google/protobuf/compiler:protoc_lib"],

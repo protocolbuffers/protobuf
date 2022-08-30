@@ -71,6 +71,8 @@ class SourceLocationTable;
 class PROTOBUF_EXPORT Parser {
  public:
   Parser();
+  Parser(const Parser&) = delete;
+  Parser& operator=(const Parser&) = delete;
   ~Parser();
 
   // Parse the entire input and construct a FileDescriptorProto representing
@@ -545,8 +547,6 @@ class PROTOBUF_EXPORT Parser {
   // the next element (See SourceCodeInfo.Location in descriptor.proto), when
   // ConsumeEndOfDeclaration() is called.
   std::vector<std::string> upcoming_detached_comments_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Parser);
 };
 
 // A table mapping (descriptor, ErrorLocation) pairs -- as reported by

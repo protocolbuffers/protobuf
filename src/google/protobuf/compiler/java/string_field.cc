@@ -44,6 +44,7 @@
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/compiler/java/context.h>
 #include <google/protobuf/compiler/java/doc_comment.h>
 #include <google/protobuf/compiler/java/helpers.h>
@@ -76,8 +77,8 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       ImmutableDefaultValue(descriptor, name_resolver, context->options());
   (*variables)["capitalized_type"] = "String";
   (*variables)["tag"] =
-      StrCat(static_cast<int32_t>(WireFormat::MakeTag(descriptor)));
-  (*variables)["tag_size"] = StrCat(
+      absl::StrCat(static_cast<int32_t>(WireFormat::MakeTag(descriptor)));
+  (*variables)["tag_size"] = absl::StrCat(
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   (*variables)["null_check"] =
       "  if (value == null) {\n"

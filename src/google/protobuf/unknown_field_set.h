@@ -86,6 +86,8 @@ class UnknownField;  // below
 class PROTOBUF_EXPORT UnknownFieldSet {
  public:
   UnknownFieldSet();
+  UnknownFieldSet(const UnknownFieldSet&) = delete;
+  UnknownFieldSet& operator=(const UnknownFieldSet&) = delete;
   ~UnknownFieldSet();
 
   // Remove all fields.
@@ -209,7 +211,6 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   }
 
   std::vector<UnknownField> fields_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(UnknownFieldSet);
 };
 
 namespace internal {
@@ -217,7 +218,7 @@ namespace internal {
 inline void WriteVarint(uint32_t num, uint64_t val, UnknownFieldSet* unknown) {
   unknown->AddVarint(num, val);
 }
-inline void WriteLengthDelimited(uint32_t num, StringPiece val,
+inline void WriteLengthDelimited(uint32_t num, absl::string_view val,
                                  UnknownFieldSet* unknown) {
   unknown->AddLengthDelimited(num)->assign(val.data(), val.size());
 }

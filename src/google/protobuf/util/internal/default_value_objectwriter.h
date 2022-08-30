@@ -38,7 +38,7 @@
 #include <vector>
 
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/string_view.h"
 #include <google/protobuf/util/internal/datapiece.h>
 #include <google/protobuf/util/internal/object_writer.h>
 #include <google/protobuf/util/internal/type_info.h>
@@ -81,44 +81,46 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
                            const google::protobuf::Type& type,
                            ObjectWriter* ow);
 
+  DefaultValueObjectWriter(const DefaultValueObjectWriter&) = delete;
+  DefaultValueObjectWriter& operator=(const DefaultValueObjectWriter&) = delete;
   ~DefaultValueObjectWriter() override;
 
   // ObjectWriter methods.
-  DefaultValueObjectWriter* StartObject(StringPiece name) override;
+  DefaultValueObjectWriter* StartObject(absl::string_view name) override;
 
   DefaultValueObjectWriter* EndObject() override;
 
-  DefaultValueObjectWriter* StartList(StringPiece name) override;
+  DefaultValueObjectWriter* StartList(absl::string_view name) override;
 
   DefaultValueObjectWriter* EndList() override;
 
-  DefaultValueObjectWriter* RenderBool(StringPiece name,
+  DefaultValueObjectWriter* RenderBool(absl::string_view name,
                                        bool value) override;
 
-  DefaultValueObjectWriter* RenderInt32(StringPiece name,
+  DefaultValueObjectWriter* RenderInt32(absl::string_view name,
                                         int32_t value) override;
 
-  DefaultValueObjectWriter* RenderUint32(StringPiece name,
+  DefaultValueObjectWriter* RenderUint32(absl::string_view name,
                                          uint32_t value) override;
 
-  DefaultValueObjectWriter* RenderInt64(StringPiece name,
+  DefaultValueObjectWriter* RenderInt64(absl::string_view name,
                                         int64_t value) override;
 
-  DefaultValueObjectWriter* RenderUint64(StringPiece name,
+  DefaultValueObjectWriter* RenderUint64(absl::string_view name,
                                          uint64_t value) override;
 
-  DefaultValueObjectWriter* RenderDouble(StringPiece name,
+  DefaultValueObjectWriter* RenderDouble(absl::string_view name,
                                          double value) override;
 
-  DefaultValueObjectWriter* RenderFloat(StringPiece name,
+  DefaultValueObjectWriter* RenderFloat(absl::string_view name,
                                         float value) override;
 
-  DefaultValueObjectWriter* RenderString(StringPiece name,
-                                         StringPiece value) override;
-  DefaultValueObjectWriter* RenderBytes(StringPiece name,
-                                        StringPiece value) override;
+  DefaultValueObjectWriter* RenderString(absl::string_view name,
+                                         absl::string_view value) override;
+  DefaultValueObjectWriter* RenderBytes(absl::string_view name,
+                                        absl::string_view value) override;
 
-  DefaultValueObjectWriter* RenderNull(StringPiece name) override;
+  DefaultValueObjectWriter* RenderNull(absl::string_view name) override;
 
   // Register the callback for scrubbing of fields.
   void RegisterFieldScrubCallBack(FieldScrubCallBack field_scrub_callback);
@@ -153,6 +155,8 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
          const std::vector<std::string>& path, bool suppress_empty_list,
          bool preserve_proto_field_names, bool use_ints_for_enums,
          FieldScrubCallBack field_scrub_callback);
+    Node(const Node&) = delete;
+    Node& operator=(const Node&) = delete;
     virtual ~Node() {
       for (int i = 0; i < children_.size(); ++i) {
         delete children_[i];
@@ -163,7 +167,7 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
     void AddChild(Node* child) { children_.push_back(child); }
 
     // Finds the child given its name.
-    Node* FindChild(StringPiece name);
+    Node* FindChild(absl::string_view name);
 
     // Populates children of this Node based on its type. If there are already
     // children created, they will be merged to the result. Caller should pass
@@ -239,9 +243,6 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
 
     // Function for determining whether a field needs to be scrubbed or not.
     FieldScrubCallBack field_scrub_callback_;
-
-   private:
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Node);
   };
 
   // Creates a new Node and returns it. Caller owns memory of returned object.
@@ -279,7 +280,7 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   void WriteRoot();
 
   // Adds or replaces the data_ of a primitive child node.
-  void RenderDataPiece(StringPiece name, const DataPiece& data);
+  void RenderDataPiece(absl::string_view name, const DataPiece& data);
 
   // Returns the default enum value as a DataPiece, or the first enum value if
   // there is no default. For proto3, where we cannot specify an explicit
@@ -318,8 +319,6 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
   FieldScrubCallBack field_scrub_callback_;
 
   ObjectWriter* ow_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DefaultValueObjectWriter);
 };
 
 }  // namespace converter

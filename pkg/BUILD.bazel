@@ -88,7 +88,6 @@ pkg_filegroup(
     srcs = [
         ":dist_files",
         "//:common_dist_files",
-        "//benchmarks:all_dist_files",
         "//build_defs:dist_files",
         "//conformance:all_dist_files",
         "//src:all_dist_files",

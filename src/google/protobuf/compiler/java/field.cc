@@ -40,7 +40,8 @@
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/io/printer.h>
 #include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
+#include "absl/strings/str_cat.h"
+#include "absl/strings/substitute.h"
 #include <google/protobuf/compiler/java/context.h>
 #include <google/protobuf/compiler/java/enum_field.h>
 #include <google/protobuf/compiler/java/enum_field_lite.h>
@@ -250,7 +251,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["capitalized_name"] = info->capitalized_name;
   (*variables)["disambiguated_reason"] = info->disambiguated_reason;
   (*variables)["constant_name"] = FieldConstantName(descriptor);
-  (*variables)["number"] = StrCat(descriptor->number());
+  (*variables)["number"] = absl::StrCat(descriptor->number());
   (*variables)["kt_dsl_builder"] = "_builder";
   // These variables are placeholders to pick out the beginning and ends of
   // identifiers for annotations (when doing so with existing variables would
@@ -285,13 +286,13 @@ void SetCommonOneofVariables(const FieldDescriptor* descriptor,
   (*variables)["oneof_name"] = info->name;
   (*variables)["oneof_capitalized_name"] = info->capitalized_name;
   (*variables)["oneof_index"] =
-      StrCat(descriptor->containing_oneof()->index());
+      absl::StrCat(descriptor->containing_oneof()->index());
   (*variables)["oneof_stored_type"] = GetOneofStoredType(descriptor);
   (*variables)["set_oneof_case_message"] =
-      info->name + "Case_ = " + StrCat(descriptor->number());
+      info->name + "Case_ = " + absl::StrCat(descriptor->number());
   (*variables)["clear_oneof_case_message"] = info->name + "Case_ = 0";
   (*variables)["has_oneof_case_message"] =
-      info->name + "Case_ == " + StrCat(descriptor->number());
+      info->name + "Case_ == " + absl::StrCat(descriptor->number());
 }
 
 void PrintExtraFieldInfo(const std::map<std::string, std::string>& variables,

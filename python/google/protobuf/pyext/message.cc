@@ -69,6 +69,7 @@
 #include <google/protobuf/pyext/unknown_field_set.h>
 #include <google/protobuf/pyext/unknown_fields.h>
 #include <google/protobuf/util/message_differencer.h>
+#include "absl/strings/string_view.h"
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/strtod.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
@@ -408,7 +409,7 @@ static PyObject* GetClassAttribute(CMessageClass *self, PyObject* name) {
   Py_ssize_t attr_size;
   static const char kSuffix[] = "_FIELD_NUMBER";
   if (PyString_AsStringAndSize(name, &attr, &attr_size) >= 0 &&
-      HasSuffixString(StringPiece(attr, attr_size), kSuffix)) {
+      HasSuffixString(absl::string_view(attr, attr_size), kSuffix)) {
     std::string field_name(attr, attr_size - sizeof(kSuffix) + 1);
     LowerString(&field_name);
 
@@ -913,7 +914,7 @@ static PyObject* GetIntegerEnumValue(const FieldDescriptor& descriptor,
       return nullptr;
     }
     const EnumValueDescriptor* enum_value_descriptor =
-        enum_descriptor->FindValueByName(StringParam(enum_label, size));
+        enum_descriptor->FindValueByName(absl::string_view(enum_label, size));
     if (enum_value_descriptor == nullptr) {
       PyErr_Format(PyExc_ValueError, "unknown enum label \"%s\"", enum_label);
       return nullptr;
@@ -1340,7 +1341,7 @@ int HasFieldByDescriptor(CMessage* self,
 }
 
 const FieldDescriptor* FindFieldWithOneofs(const Message* message,
-                                           ConstStringParam field_name,
+                                           absl::string_view field_name,
                                            bool* in_oneof) {
   *in_oneof = false;
   const Descriptor* descriptor = message->GetDescriptor();
@@ -1389,8 +1390,8 @@ PyObject* HasField(CMessage* self, PyObject* arg) {
 
   Message* message = self->message;
   bool is_in_oneof;
-  const FieldDescriptor* field_descriptor =
-      FindFieldWithOneofs(message, StringParam(field_name, size), &is_in_oneof);
+  const FieldDescriptor* field_descriptor = FindFieldWithOneofs(
+      message, absl::string_view(field_name, size), &is_in_oneof);
   if (field_descriptor == nullptr) {
     if (!is_in_oneof) {
       PyErr_Format(PyExc_ValueError, "Protocol message %s has no field %s.",
@@ -1574,7 +1575,7 @@ PyObject* ClearField(CMessage* self, PyObject* arg) {
   AssureWritable(self);
   bool is_in_oneof;
   const FieldDescriptor* field_descriptor = FindFieldWithOneofs(
-      self->message, StringParam(field_name, field_size), &is_in_oneof);
+      self->message, absl::string_view(field_name, field_size), &is_in_oneof);
   if (field_descriptor == nullptr) {
     if (is_in_oneof) {
       // We gave the name of a oneof, and none of its fields are set.
@@ -1884,7 +1885,7 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   const char* ptr;
   internal::ParseContext ctx(
       depth, false, &ptr,
-      StringPiece(static_cast<const char*>(data.buf), data.len));
+      absl::string_view(static_cast<const char*>(data.buf), data.len));
   PyBuffer_Release(&data);
   ctx.data().pool = factory->pool->pool;
   ctx.data().factory = factory->message_factory;
@@ -1976,7 +1977,7 @@ static PyObject* WhichOneof(CMessage* self, PyObject* arg) {
   if (PyString_AsStringAndSize(arg, &name_data, &name_size) < 0) return nullptr;
   const OneofDescriptor* oneof_desc =
       self->message->GetDescriptor()->FindOneofByName(
-          StringParam(name_data, name_size));
+          absl::string_view(name_data, name_size));
   if (oneof_desc == nullptr) {
     PyErr_Format(PyExc_ValueError,
                  "Protocol message has no oneof \"%s\" field.", name_data);

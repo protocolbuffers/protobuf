@@ -74,6 +74,8 @@ class PROTOBUF_EXPORT GzipInputStream PROTOBUF_FUTURE_FINAL
   // buffer_size and format may be -1 for default of 64kB and GZIP format
   explicit GzipInputStream(ZeroCopyInputStream* sub_stream,
                            Format format = AUTO, int buffer_size = -1);
+  GzipInputStream(const GzipInputStream&) = delete;
+  GzipInputStream& operator=(const GzipInputStream&) = delete;
   virtual ~GzipInputStream();
 
   // Return last error message or NULL if no error.
@@ -101,8 +103,6 @@ class PROTOBUF_EXPORT GzipInputStream PROTOBUF_FUTURE_FINAL
 
   int Inflate(int flush);
   void DoNextOutput(const void** data, int* size);
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(GzipInputStream);
 };
 
 class PROTOBUF_EXPORT GzipOutputStream PROTOBUF_FUTURE_FINAL
@@ -141,6 +141,8 @@ class PROTOBUF_EXPORT GzipOutputStream PROTOBUF_FUTURE_FINAL
 
   // Create a GzipOutputStream with the given options.
   GzipOutputStream(ZeroCopyOutputStream* sub_stream, const Options& options);
+  GzipOutputStream(const GzipOutputStream&) = delete;
+  GzipOutputStream& operator=(const GzipOutputStream&) = delete;
 
   virtual ~GzipOutputStream();
 
@@ -191,8 +193,6 @@ class PROTOBUF_EXPORT GzipOutputStream PROTOBUF_FUTURE_FINAL
   // Takes zlib flush mode.
   // Returns zlib error code.
   int Deflate(int flush);
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(GzipOutputStream);
 };
 
 }  // namespace io

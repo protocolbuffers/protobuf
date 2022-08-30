@@ -34,30 +34,16 @@
 
 // Makes sure all the generated headers compile with ARC on.
 
-// The unittest_custom_options.proto extends the messages in descriptor.proto
-// so we build it in to test extending in general. The library doesn't provide
-// a descriptor as it doesn't use the classes/enums.
-#import "google/protobuf/Descriptor.pbobjc.h"
-
-#import "google/protobuf/Unittest.pbobjc.h"
-#import "google/protobuf/UnittestCustomOptions.pbobjc.h"
-#import "google/protobuf/UnittestCycle.pbobjc.h"
-#import "google/protobuf/UnittestDeprecated.pbobjc.h"
-#import "google/protobuf/UnittestDeprecatedFile.pbobjc.h"
-#import "google/protobuf/UnittestDropUnknownFields.pbobjc.h"
-#import "google/protobuf/UnittestEmbedOptimizeFor.pbobjc.h"
-#import "google/protobuf/UnittestEmpty.pbobjc.h"
-#import "google/protobuf/UnittestEnormousDescriptor.pbobjc.h"
-#import "google/protobuf/UnittestImport.pbobjc.h"
-#import "google/protobuf/UnittestImportLite.pbobjc.h"
-#import "google/protobuf/UnittestImportPublic.pbobjc.h"
-#import "google/protobuf/UnittestImportPublicLite.pbobjc.h"
-#import "google/protobuf/UnittestLite.pbobjc.h"
-#import "google/protobuf/UnittestMset.pbobjc.h"
-#import "google/protobuf/UnittestNoGenericServices.pbobjc.h"
-#import "google/protobuf/UnittestObjc.pbobjc.h"
-#import "google/protobuf/UnittestObjcStartup.pbobjc.h"
-#import "google/protobuf/UnittestOptimizeFor.pbobjc.h"
-#import "google/protobuf/UnittestPreserveUnknownEnum.pbobjc.h"
-#import "google/protobuf/UnittestRuntimeProto2.pbobjc.h"
-#import "google/protobuf/UnittestRuntimeProto3.pbobjc.h"
+#import "objectivec/Tests/Unittest.pbobjc.h"
+#import "objectivec/Tests/UnittestCycle.pbobjc.h"
+#import "objectivec/Tests/UnittestDeprecated.pbobjc.h"
+#import "objectivec/Tests/UnittestDeprecatedFile.pbobjc.h"
+#import "objectivec/Tests/UnittestImport.pbobjc.h"
+#import "objectivec/Tests/UnittestImportPublic.pbobjc.h"
+#import "objectivec/Tests/UnittestMset.pbobjc.h"
+#import "objectivec/Tests/UnittestObjc.pbobjc.h"
+#import "objectivec/Tests/UnittestObjcOptions.pbobjc.h"
+#import "objectivec/Tests/UnittestObjcStartup.pbobjc.h"
+#import "objectivec/Tests/UnittestPreserveUnknownEnum.pbobjc.h"
+#import "objectivec/Tests/UnittestRuntimeProto2.pbobjc.h"
+#import "objectivec/Tests/UnittestRuntimeProto3.pbobjc.h"

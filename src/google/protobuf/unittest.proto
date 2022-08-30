@@ -1554,3 +1554,12 @@ message BoolParseTester {
   optional int32 other_field = 99;
 };
 
+message StringParseTester {
+  optional string optional_string_lowfield = 1;
+  optional string optional_string_midfield = 1001;
+  optional string optional_string_hifield = 1000001;
+  repeated string repeated_string_lowfield = 2;
+  repeated string repeated_string_midfield = 1002;
+  repeated string repeated_string_hifield = 1000002;
+};
+

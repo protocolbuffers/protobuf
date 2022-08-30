@@ -198,7 +198,7 @@ inline const std::string& FieldDescriptorProto_Type_Name(FieldDescriptorProto_Ty
     <FieldDescriptorProto_Type_descriptor, 1, 18>(static_cast<int>(value));
 }
 inline bool FieldDescriptorProto_Type_Parse(
-    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, FieldDescriptorProto_Type* value) {
+    ::absl::string_view name, FieldDescriptorProto_Type* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldDescriptorProto_Type>(
     FieldDescriptorProto_Type_descriptor(), name, value);
 }
@@ -226,7 +226,7 @@ inline const std::string& FieldDescriptorProto_Label_Name(FieldDescriptorProto_L
     <FieldDescriptorProto_Label_descriptor, 1, 3>(static_cast<int>(value));
 }
 inline bool FieldDescriptorProto_Label_Parse(
-    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, FieldDescriptorProto_Label* value) {
+    ::absl::string_view name, FieldDescriptorProto_Label* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldDescriptorProto_Label>(
     FieldDescriptorProto_Label_descriptor(), name, value);
 }
@@ -254,7 +254,7 @@ inline const std::string& FileOptions_OptimizeMode_Name(FileOptions_OptimizeMode
     <FileOptions_OptimizeMode_descriptor, 1, 3>(static_cast<int>(value));
 }
 inline bool FileOptions_OptimizeMode_Parse(
-    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, FileOptions_OptimizeMode* value) {
+    ::absl::string_view name, FileOptions_OptimizeMode* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FileOptions_OptimizeMode>(
     FileOptions_OptimizeMode_descriptor(), name, value);
 }
@@ -282,7 +282,7 @@ inline const std::string& FieldOptions_CType_Name(FieldOptions_CType value) {
     <FieldOptions_CType_descriptor, 0, 2>(static_cast<int>(value));
 }
 inline bool FieldOptions_CType_Parse(
-    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, FieldOptions_CType* value) {
+    ::absl::string_view name, FieldOptions_CType* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldOptions_CType>(
     FieldOptions_CType_descriptor(), name, value);
 }
@@ -310,7 +310,7 @@ inline const std::string& FieldOptions_JSType_Name(FieldOptions_JSType value) {
     <FieldOptions_JSType_descriptor, 0, 2>(static_cast<int>(value));
 }
 inline bool FieldOptions_JSType_Parse(
-    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, FieldOptions_JSType* value) {
+    ::absl::string_view name, FieldOptions_JSType* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<FieldOptions_JSType>(
     FieldOptions_JSType_descriptor(), name, value);
 }
@@ -338,7 +338,7 @@ inline const std::string& MethodOptions_IdempotencyLevel_Name(MethodOptions_Idem
     <MethodOptions_IdempotencyLevel_descriptor, 0, 2>(static_cast<int>(value));
 }
 inline bool MethodOptions_IdempotencyLevel_Parse(
-    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, MethodOptions_IdempotencyLevel* value) {
+    ::absl::string_view name, MethodOptions_IdempotencyLevel* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<MethodOptions_IdempotencyLevel>(
     MethodOptions_IdempotencyLevel_descriptor(), name, value);
 }
@@ -366,7 +366,7 @@ inline const std::string& GeneratedCodeInfo_Annotation_Semantic_Name(GeneratedCo
     <GeneratedCodeInfo_Annotation_Semantic_descriptor, 0, 2>(static_cast<int>(value));
 }
 inline bool GeneratedCodeInfo_Annotation_Semantic_Parse(
-    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, GeneratedCodeInfo_Annotation_Semantic* value) {
+    ::absl::string_view name, GeneratedCodeInfo_Annotation_Semantic* value) {
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<GeneratedCodeInfo_Annotation_Semantic>(
     GeneratedCodeInfo_Annotation_Semantic_descriptor(), name, value);
 }
@@ -482,7 +482,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.FileDescriptorSet";
   }
   protected:
@@ -646,7 +646,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.FileDescriptorProto";
   }
   protected:
@@ -1065,7 +1065,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.DescriptorProto.ExtensionRange";
   }
   protected:
@@ -1260,7 +1260,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.DescriptorProto.ReservedRange";
   }
   protected:
@@ -1435,7 +1435,7 @@ class PROTOBUF_EXPORT DescriptorProto final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.DescriptorProto";
   }
   protected:
@@ -1789,7 +1789,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.ExtensionRangeOptions";
   }
   protected:
@@ -2145,7 +2145,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.FieldDescriptorProto";
   }
   protected:
@@ -2217,7 +2217,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
       "Incorrect type passed to function Type_Name.");
     return FieldDescriptorProto_Type_Name(enum_t_value);
   }
-  static inline bool Type_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,
+  static inline bool Type_Parse(::absl::string_view name,
       Type* value) {
     return FieldDescriptorProto_Type_Parse(name, value);
   }
@@ -2249,7 +2249,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
       "Incorrect type passed to function Label_Name.");
     return FieldDescriptorProto_Label_Name(enum_t_value);
   }
-  static inline bool Label_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,
+  static inline bool Label_Parse(::absl::string_view name,
       Label* value) {
     return FieldDescriptorProto_Label_Parse(name, value);
   }
@@ -2579,7 +2579,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.OneofDescriptorProto";
   }
   protected:
@@ -2764,7 +2764,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.EnumDescriptorProto.EnumReservedRange";
   }
   protected:
@@ -2939,7 +2939,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.EnumDescriptorProto";
   }
   protected:
@@ -3192,7 +3192,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.EnumValueDescriptorProto";
   }
   protected:
@@ -3392,7 +3392,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.ServiceDescriptorProto";
   }
   protected:
@@ -3597,7 +3597,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.MethodDescriptorProto";
   }
   protected:
@@ -3852,7 +3852,7 @@ class PROTOBUF_EXPORT FileOptions final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.FileOptions";
   }
   protected:
@@ -3894,7 +3894,7 @@ class PROTOBUF_EXPORT FileOptions final :
       "Incorrect type passed to function OptimizeMode_Name.");
     return FileOptions_OptimizeMode_Name(enum_t_value);
   }
-  static inline bool OptimizeMode_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,
+  static inline bool OptimizeMode_Parse(::absl::string_view name,
       OptimizeMode* value) {
     return FileOptions_OptimizeMode_Parse(name, value);
   }
@@ -4591,7 +4591,7 @@ class PROTOBUF_EXPORT MessageOptions final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.MessageOptions";
   }
   protected:
@@ -5008,7 +5008,7 @@ class PROTOBUF_EXPORT FieldOptions final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.FieldOptions";
   }
   protected:
@@ -5050,7 +5050,7 @@ class PROTOBUF_EXPORT FieldOptions final :
       "Incorrect type passed to function CType_Name.");
     return FieldOptions_CType_Name(enum_t_value);
   }
-  static inline bool CType_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,
+  static inline bool CType_Parse(::absl::string_view name,
       CType* value) {
     return FieldOptions_CType_Parse(name, value);
   }
@@ -5082,7 +5082,7 @@ class PROTOBUF_EXPORT FieldOptions final :
       "Incorrect type passed to function JSType_Name.");
     return FieldOptions_JSType_Name(enum_t_value);
   }
-  static inline bool JSType_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,
+  static inline bool JSType_Parse(::absl::string_view name,
       JSType* value) {
     return FieldOptions_JSType_Parse(name, value);
   }
@@ -5534,7 +5534,7 @@ class PROTOBUF_EXPORT OneofOptions final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.OneofOptions";
   }
   protected:
@@ -5890,7 +5890,7 @@ class PROTOBUF_EXPORT EnumOptions final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.EnumOptions";
   }
   protected:
@@ -6277,7 +6277,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.EnumValueOptions";
   }
   protected:
@@ -6649,7 +6649,7 @@ class PROTOBUF_EXPORT ServiceOptions final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.ServiceOptions";
   }
   protected:
@@ -7021,7 +7021,7 @@ class PROTOBUF_EXPORT MethodOptions final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.MethodOptions";
   }
   protected:
@@ -7063,7 +7063,7 @@ class PROTOBUF_EXPORT MethodOptions final :
       "Incorrect type passed to function IdempotencyLevel_Name.");
     return MethodOptions_IdempotencyLevel_Name(enum_t_value);
   }
-  static inline bool IdempotencyLevel_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,
+  static inline bool IdempotencyLevel_Parse(::absl::string_view name,
       IdempotencyLevel* value) {
     return MethodOptions_IdempotencyLevel_Parse(name, value);
   }
@@ -7440,7 +7440,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.UninterpretedOption.NamePart";
   }
   protected:
@@ -7623,7 +7623,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.UninterpretedOption";
   }
   protected:
@@ -7895,7 +7895,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.SourceCodeInfo.Location";
   }
   protected:
@@ -8156,7 +8156,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.SourceCodeInfo";
   }
   protected:
@@ -8322,7 +8322,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.GeneratedCodeInfo.Annotation";
   }
   protected:
@@ -8364,7 +8364,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
       "Incorrect type passed to function Semantic_Name.");
     return GeneratedCodeInfo_Annotation_Semantic_Name(enum_t_value);
   }
-  static inline bool Semantic_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,
+  static inline bool Semantic_Parse(::absl::string_view name,
       Semantic* value) {
     return GeneratedCodeInfo_Annotation_Semantic_Parse(name, value);
   }
@@ -8589,7 +8589,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
 
   private:
   friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+  static ::absl::string_view FullMessageName() {
     return "google.protobuf.GeneratedCodeInfo";
   }
   protected:

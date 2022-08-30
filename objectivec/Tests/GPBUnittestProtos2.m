@@ -31,4 +31,4 @@
 // This one file in the chain tests is compiled by itself to ensure if was
 // generated with the extra #imports needed to pull in the indirect Root class
 // used in its Root registry.
-#import "google/protobuf/UnittestExtensionChainF.pbobjc.m"
+#import "objectivec/Tests/UnittestExtensionChainF.pbobjc.m"

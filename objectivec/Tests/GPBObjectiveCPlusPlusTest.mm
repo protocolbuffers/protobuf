@@ -43,8 +43,8 @@
 // The "well know types" should have cross file enums needing imports.
 #import "GPBProtocolBuffers.h"
 // Some of the tests explicitly use cross file enums also.
-#import "google/protobuf/Unittest.pbobjc.h"
-#import "google/protobuf/UnittestImport.pbobjc.h"
+#import "objectivec/Tests/Unittest.pbobjc.h"
+#import "objectivec/Tests/UnittestImport.pbobjc.h"
 
 // Sanity check the conditions of the test within the Xcode project.
 #if !__cplusplus

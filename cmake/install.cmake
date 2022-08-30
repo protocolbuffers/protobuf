@@ -90,6 +90,8 @@ configure_file(${protobuf_SOURCE_DIR}/cmake/protobuf-module.cmake.in
   ${CMAKE_BUILD_CMAKEDIR}/protobuf-module.cmake @ONLY)
 configure_file(${protobuf_SOURCE_DIR}/cmake/protobuf-options.cmake
   ${CMAKE_BUILD_CMAKEDIR}/protobuf-options.cmake @ONLY)
+configure_file(${protobuf_SOURCE_DIR}/cmake/protobuf-generate.cmake
+  ${CMAKE_BUILD_CMAKEDIR}/protobuf-generate.cmake @ONLY)
 
 # Allows the build directory to be used as a find directory.
 

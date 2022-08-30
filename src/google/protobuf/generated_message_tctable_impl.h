@@ -33,7 +33,9 @@
 
 #include <cstdint>
 #include <cstdlib>
+#include <string>
 #include <type_traits>
+#include <utility>
 
 #include <google/protobuf/port.h>
 #include <google/protobuf/extension_set.h>
@@ -572,11 +574,15 @@ class PROTOBUF_EXPORT TcParser final {
   template <typename TagType, Utf8Type utf8>
   static inline const char* RepeatedString(PROTOBUF_TC_PARAM_DECL);
 
+  static inline const char* ParseRepeatedStringOnce(
+      const char* ptr, Arena* arena, SerialArena* serial_arena,
+      ParseContext* ctx, RepeatedPtrField<std::string>& field);
+
   // Mini field lookup:
   static const TcParseTableBase::FieldEntry* FindFieldEntry(
       const TcParseTableBase* table, uint32_t field_num);
-  static StringPiece MessageName(const TcParseTableBase* table);
-  static StringPiece FieldName(const TcParseTableBase* table,
+  static absl::string_view MessageName(const TcParseTableBase* table);
+  static absl::string_view FieldName(const TcParseTableBase* table,
                                      const TcParseTableBase::FieldEntry*);
   static bool ChangeOneof(const TcParseTableBase* table,
                           const TcParseTableBase::FieldEntry& entry,
@@ -586,7 +592,7 @@ class PROTOBUF_EXPORT TcParser final {
   // UTF-8 validation:
   static void ReportFastUtf8Error(uint32_t decoded_tag,
                                   const TcParseTableBase* table);
-  static bool MpVerifyUtf8(StringPiece wire_bytes,
+  static bool MpVerifyUtf8(absl::string_view wire_bytes,
                            const TcParseTableBase* table,
                            const TcParseTableBase::FieldEntry& entry,
                            uint16_t xform_val);

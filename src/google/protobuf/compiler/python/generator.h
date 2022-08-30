@@ -74,6 +74,8 @@ struct GeneratorOptions {
 class PROTOC_EXPORT Generator : public CodeGenerator {
  public:
   Generator();
+  Generator(const Generator&) = delete;
+  Generator& operator=(const Generator&) = delete;
   ~Generator() override;
 
   // CodeGenerator methods.
@@ -188,8 +190,6 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   mutable io::Printer* printer_;  // Set in Generate().  Under mutex_.
 
   bool opensource_runtime_ = true;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Generator);
 };
 
 }  // namespace python

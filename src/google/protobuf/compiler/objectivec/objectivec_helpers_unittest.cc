@@ -249,7 +249,7 @@ class TestLineCollector : public LineConsumer {
                     bool skip_msg = false)
     : lines_(inout_lines), reject_(reject_line), skip_msg_(skip_msg) {}
 
-  bool ConsumeLine(const StringPiece& line, std::string* out_error) override {
+  bool ConsumeLine(const absl::string_view& line, std::string* out_error) override {
     if (reject_ && *reject_ == line) {
       if (!skip_msg_) {
         *out_error = std::string("Rejected '") + *reject_ + "'";
@@ -269,7 +269,7 @@ class TestLineCollector : public LineConsumer {
 };
 
 const int kBlockSizes[] = {-1, 1, 2, 5, 64};
-const int kBlockSizeCount = GOOGLE_ARRAYSIZE(kBlockSizes);
+const int kBlockSizeCount = ABSL_ARRAYSIZE(kBlockSizes);
 
 TEST(ObjCHelper, ParseSimple_BasicsSuccess) {
   const std::vector<std::pair<std::string, std::vector<std::string>>> tests = {
@@ -340,7 +340,7 @@ TEST(ObjCHelper, ParseSimple_RejectLines) {
       TestLineCollector collector(nullptr, &std::get<1>(test));
       EXPECT_FALSE(ParseSimpleStream(input, "dummy", &collector, &err_str));
       std::string expected_err =
-        StrCat("error: dummy Line ", std::get<2>(test), ", Rejected '", std::get<1>(test), "'");
+        absl::StrCat("error: dummy Line ", std::get<2>(test), ", Rejected '", std::get<1>(test), "'");
       EXPECT_EQ(err_str, expected_err);
     }
   }
@@ -362,7 +362,7 @@ TEST(ObjCHelper, ParseSimple_RejectLinesNoMessage) {
       TestLineCollector collector(nullptr, &std::get<1>(test), true /* skip msg */);
       EXPECT_FALSE(ParseSimpleStream(input, "dummy", &collector, &err_str));
       std::string expected_err =
-        StrCat("error: dummy Line ", std::get<2>(test),
+        absl::StrCat("error: dummy Line ", std::get<2>(test),
                ", ConsumeLine failed without setting an error.");
       EXPECT_EQ(err_str, expected_err);
     }

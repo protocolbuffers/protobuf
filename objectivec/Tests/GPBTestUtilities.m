@@ -30,9 +30,9 @@
 
 #import "GPBTestUtilities.h"
 
-#import "google/protobuf/MapUnittest.pbobjc.h"
-#import "google/protobuf/Unittest.pbobjc.h"
-#import "google/protobuf/UnittestImport.pbobjc.h"
+#import "objectivec/Tests/MapUnittest.pbobjc.h"
+#import "objectivec/Tests/Unittest.pbobjc.h"
+#import "objectivec/Tests/UnittestImport.pbobjc.h"
 
 const uint32_t kGPBDefaultRepeatCount = 2;
 

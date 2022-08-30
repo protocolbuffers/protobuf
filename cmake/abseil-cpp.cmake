@@ -34,7 +34,10 @@ set(protobuf_ABSL_USED_TARGETS
   absl::base
   absl::bind_front
   absl::cleanup
+  absl::cord
+  absl::core_headers
   absl::debugging
+  absl::dynamic_annotations
   absl::flags
   absl::flat_hash_map
   absl::flat_hash_set

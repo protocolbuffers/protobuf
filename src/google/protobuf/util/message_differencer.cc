@@ -55,6 +55,8 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
 #include <google/protobuf/stubs/stringprintf.h>
 #include <google/protobuf/util/field_comparator.h>
 
@@ -152,6 +154,10 @@ class MessageDifferencer::MultipleFieldsMapKeyComparator
     key_field_path.push_back(key);
     key_field_paths_.push_back(key_field_path);
   }
+  MultipleFieldsMapKeyComparator(const MultipleFieldsMapKeyComparator&) =
+      delete;
+  MultipleFieldsMapKeyComparator& operator=(
+      const MultipleFieldsMapKeyComparator&) = delete;
   bool IsMatch(const Message& message1, const Message& message2,
                const std::vector<SpecificField>& parent_fields) const override {
     for (const auto& path : key_field_paths_) {
@@ -203,7 +209,6 @@ class MessageDifferencer::MultipleFieldsMapKeyComparator
   }
   MessageDifferencer* message_differencer_;
   std::vector<std::vector<const FieldDescriptor*> > key_field_paths_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MultipleFieldsMapKeyComparator);
 };
 
 // Preserve the order when treating repeated field as SMART_LIST. The current
@@ -1688,6 +1693,8 @@ class MaximumMatcher {
   // match_list1[i] == -1 means the node is not matched. Same with match_list2.
   MaximumMatcher(int count1, int count2, NodeMatchCallback callback,
                  std::vector<int>* match_list1, std::vector<int>* match_list2);
+  MaximumMatcher(const MaximumMatcher&) = delete;
+  MaximumMatcher& operator=(const MaximumMatcher&) = delete;
   // Find a maximum match and return the number of matched node pairs.
   // If early_return is true, this method will return 0 immediately when it
   // finds that not all nodes on the left side can be matched.
@@ -1708,7 +1715,6 @@ class MaximumMatcher {
   std::map<std::pair<int, int>, bool> cached_match_results_;
   std::vector<int>* match_list1_;
   std::vector<int>* match_list2_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MaximumMatcher);
 };
 
 MaximumMatcher::MaximumMatcher(int count1, int count2,
@@ -2000,14 +2006,14 @@ void MessageDifferencer::StreamReporter::PrintPath(
         continue;
       }
     } else {
-      printer_->PrintRaw(StrCat(specific_field.unknown_field_number));
+      printer_->PrintRaw(absl::StrCat(specific_field.unknown_field_number));
     }
     if (left_side && specific_field.index >= 0) {
-      printer_->Print("[$name$]", "name", StrCat(specific_field.index));
+      printer_->Print("[$name$]", "name", absl::StrCat(specific_field.index));
     }
     if (!left_side && specific_field.new_index >= 0) {
       printer_->Print("[$name$]", "name",
-                      StrCat(specific_field.new_index));
+                      absl::StrCat(specific_field.new_index));
     }
   }
 }
@@ -2072,19 +2078,19 @@ void MessageDifferencer::StreamReporter::PrintUnknownFieldValue(
   std::string output;
   switch (unknown_field->type()) {
     case UnknownField::TYPE_VARINT:
-      output = StrCat(unknown_field->varint());
+      output = absl::StrCat(unknown_field->varint());
       break;
     case UnknownField::TYPE_FIXED32:
-      output = StrCat(
-          "0x", strings::Hex(unknown_field->fixed32(), strings::ZERO_PAD_8));
+      output = absl::StrCat(
+          "0x", absl::Hex(unknown_field->fixed32(), absl::kZeroPad8));
       break;
     case UnknownField::TYPE_FIXED64:
-      output = StrCat(
-          "0x", strings::Hex(unknown_field->fixed64(), strings::ZERO_PAD_16));
+      output = absl::StrCat(
+          "0x", absl::Hex(unknown_field->fixed64(), absl::kZeroPad16));
       break;
     case UnknownField::TYPE_LENGTH_DELIMITED:
       output = StringPrintf(
-          "\"%s\"", CEscape(unknown_field->length_delimited()).c_str());
+          "\"%s\"", absl::CEscape(unknown_field->length_delimited()).c_str());
       break;
     case UnknownField::TYPE_GROUP:
       // TODO(kenton):  Print the contents of the group like we do for
@@ -2126,7 +2132,7 @@ void MessageDifferencer::StreamReporter::PrintMapKey(
     if (key_string.empty()) {
       key_string = "''";
     }
-    printer_->PrintRaw(StrCat("[", key_string, "]"));
+    printer_->PrintRaw(absl::StrCat("[", key_string, "]"));
   }
 }
 

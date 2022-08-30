@@ -46,7 +46,7 @@
 //     ->EndObject();
 //
 //   // Actual testing
-//   mock.StartObject(StringPiece())
+//   mock.StartObject(absl::string_view())
 //         ->RenderString("key", "value")
 //       ->EndObject();
 
@@ -54,7 +54,7 @@
 
 #include <google/protobuf/stubs/common.h>
 #include <gmock/gmock.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/string_view.h"
 #include <google/protobuf/util/internal/object_writer.h>
 
 namespace google {
@@ -74,35 +74,37 @@ class MockObjectWriter : public ObjectWriter {
  public:
   MockObjectWriter() {}
 
-  MOCK_METHOD(ObjectWriter*, StartObject, (StringPiece), (override));
+  MOCK_METHOD(ObjectWriter*, StartObject, (absl::string_view), (override));
   MOCK_METHOD(ObjectWriter*, EndObject, (), (override));
-  MOCK_METHOD(ObjectWriter*, StartList, (StringPiece), (override));
+  MOCK_METHOD(ObjectWriter*, StartList, (absl::string_view), (override));
   MOCK_METHOD(ObjectWriter*, EndList, (), (override));
-  MOCK_METHOD(ObjectWriter*, RenderBool, (StringPiece, bool), (override));
-  MOCK_METHOD(ObjectWriter*, RenderInt32, (StringPiece, int32_t),
+  MOCK_METHOD(ObjectWriter*, RenderBool, (absl::string_view, bool), (override));
+  MOCK_METHOD(ObjectWriter*, RenderInt32, (absl::string_view, int32_t),
               (override));
-  MOCK_METHOD(ObjectWriter*, RenderUint32, (StringPiece, uint32_t),
+  MOCK_METHOD(ObjectWriter*, RenderUint32, (absl::string_view, uint32_t),
               (override));
-  MOCK_METHOD(ObjectWriter*, RenderInt64, (StringPiece, int64_t),
+  MOCK_METHOD(ObjectWriter*, RenderInt64, (absl::string_view, int64_t),
               (override));
-  MOCK_METHOD(ObjectWriter*, RenderUint64, (StringPiece, uint64_t),
+  MOCK_METHOD(ObjectWriter*, RenderUint64, (absl::string_view, uint64_t),
               (override));
-  MOCK_METHOD(ObjectWriter*, RenderDouble, (StringPiece, double),
+  MOCK_METHOD(ObjectWriter*, RenderDouble, (absl::string_view, double),
               (override));
-  MOCK_METHOD(ObjectWriter*, RenderFloat, (StringPiece, float),
+  MOCK_METHOD(ObjectWriter*, RenderFloat, (absl::string_view, float),
               (override));
   MOCK_METHOD(ObjectWriter*, RenderString,
-              (StringPiece, StringPiece), (override));
-  MOCK_METHOD(ObjectWriter*, RenderBytes, (StringPiece, StringPiece),
-              (override));
-  MOCK_METHOD(ObjectWriter*, RenderNull, (StringPiece), (override));
+              (absl::string_view, absl::string_view), (override));
+  MOCK_METHOD(ObjectWriter*, RenderBytes,
+              (absl::string_view, absl::string_view), (override));
+  MOCK_METHOD(ObjectWriter*, RenderNull, (absl::string_view), (override));
 };
 
 class ExpectingObjectWriter : public ObjectWriter {
  public:
   explicit ExpectingObjectWriter(MockObjectWriter* mock) : mock_(mock) {}
+  ExpectingObjectWriter(const ExpectingObjectWriter&) = delete;
+  ExpectingObjectWriter& operator=(const ExpectingObjectWriter&) = delete;
 
-  ObjectWriter* StartObject(StringPiece name) override {
+  ObjectWriter* StartObject(absl::string_view name) override {
     (name.empty() ? EXPECT_CALL(*mock_, StartObject(IsEmpty()))
                   : EXPECT_CALL(*mock_, StartObject(Eq(std::string(name)))))
         .WillOnce(Return(mock_))
@@ -117,7 +119,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  ObjectWriter* StartList(StringPiece name) override {
+  ObjectWriter* StartList(absl::string_view name) override {
     (name.empty() ? EXPECT_CALL(*mock_, StartList(IsEmpty()))
                   : EXPECT_CALL(*mock_, StartList(Eq(std::string(name)))))
         .WillOnce(Return(mock_))
@@ -132,7 +134,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  ObjectWriter* RenderBool(StringPiece name, bool value) override {
+  ObjectWriter* RenderBool(absl::string_view name, bool value) override {
     (name.empty()
          ? EXPECT_CALL(*mock_, RenderBool(IsEmpty(), TypedEq<bool>(value)))
          : EXPECT_CALL(*mock_,
@@ -142,7 +144,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  ObjectWriter* RenderInt32(StringPiece name, int32_t value) override {
+  ObjectWriter* RenderInt32(absl::string_view name, int32_t value) override {
     (name.empty()
          ? EXPECT_CALL(*mock_, RenderInt32(IsEmpty(), TypedEq<int32_t>(value)))
          : EXPECT_CALL(*mock_, RenderInt32(Eq(std::string(name)),
@@ -152,7 +154,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  ObjectWriter* RenderUint32(StringPiece name, uint32_t value) override {
+  ObjectWriter* RenderUint32(absl::string_view name, uint32_t value) override {
     (name.empty() ? EXPECT_CALL(*mock_, RenderUint32(IsEmpty(),
                                                      TypedEq<uint32_t>(value)))
                   : EXPECT_CALL(*mock_, RenderUint32(Eq(std::string(name)),
@@ -162,7 +164,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  ObjectWriter* RenderInt64(StringPiece name, int64_t value) override {
+  ObjectWriter* RenderInt64(absl::string_view name, int64_t value) override {
     (name.empty()
          ? EXPECT_CALL(*mock_, RenderInt64(IsEmpty(), TypedEq<int64_t>(value)))
          : EXPECT_CALL(*mock_, RenderInt64(Eq(std::string(name)),
@@ -172,7 +174,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  ObjectWriter* RenderUint64(StringPiece name, uint64_t value) override {
+  ObjectWriter* RenderUint64(absl::string_view name, uint64_t value) override {
     (name.empty() ? EXPECT_CALL(*mock_, RenderUint64(IsEmpty(),
                                                      TypedEq<uint64_t>(value)))
                   : EXPECT_CALL(*mock_, RenderUint64(Eq(std::string(name)),
@@ -182,7 +184,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  ObjectWriter* RenderDouble(StringPiece name, double value) override {
+  ObjectWriter* RenderDouble(absl::string_view name, double value) override {
     (name.empty()
          ? EXPECT_CALL(*mock_,
                        RenderDouble(IsEmpty(), NanSensitiveDoubleEq(value)))
@@ -193,7 +195,7 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  ObjectWriter* RenderFloat(StringPiece name, float value) override {
+  ObjectWriter* RenderFloat(absl::string_view name, float value) override {
     (name.empty()
          ? EXPECT_CALL(*mock_,
                        RenderFloat(IsEmpty(), NanSensitiveFloatEq(value)))
@@ -204,31 +206,32 @@ class ExpectingObjectWriter : public ObjectWriter {
     return this;
   }
 
-  ObjectWriter* RenderString(StringPiece name,
-                             StringPiece value) override {
+  ObjectWriter* RenderString(absl::string_view name,
+                             absl::string_view value) override {
     (name.empty() ? EXPECT_CALL(*mock_, RenderString(IsEmpty(),
-                                                     TypedEq<StringPiece>(
+                                                     TypedEq<absl::string_view>(
                                                          std::string(value))))
                   : EXPECT_CALL(*mock_, RenderString(Eq(std::string(name)),
-                                                     TypedEq<StringPiece>(
+                                                     TypedEq<absl::string_view>(
                                                          std::string(value)))))
         .WillOnce(Return(mock_))
         .RetiresOnSaturation();
     return this;
   }
-  virtual ObjectWriter* RenderBytes(StringPiece name, StringPiece value) {
-    (name.empty()
-         ? EXPECT_CALL(*mock_, RenderBytes(IsEmpty(), TypedEq<StringPiece>(
-                                                          value.ToString())))
-         : EXPECT_CALL(*mock_,
-                       RenderBytes(Eq(std::string(name)),
-                                   TypedEq<StringPiece>(value.ToString()))))
+  ObjectWriter* RenderBytes(absl::string_view name,
+                            absl::string_view value) override {
+    (name.empty() ? EXPECT_CALL(*mock_, RenderBytes(IsEmpty(),
+                                                    TypedEq<absl::string_view>(
+                                                        std::string(value))))
+                  : EXPECT_CALL(*mock_, RenderBytes(Eq(std::string(name)),
+                                                    TypedEq<absl::string_view>(
+                                                        std::string(value)))))
         .WillOnce(Return(mock_))
         .RetiresOnSaturation();
     return this;
   }
 
-  ObjectWriter* RenderNull(StringPiece name) override {
+  ObjectWriter* RenderNull(absl::string_view name) override {
     (name.empty() ? EXPECT_CALL(*mock_, RenderNull(IsEmpty()))
                   : EXPECT_CALL(*mock_, RenderNull(Eq(std::string(name))))
                         .WillOnce(Return(mock_))
@@ -238,8 +241,6 @@ class ExpectingObjectWriter : public ObjectWriter {
 
  private:
   MockObjectWriter* mock_;
-
-  GOOGLE_DISALLOW_IMPLICIT_CONSTRUCTORS(ExpectingObjectWriter);
 };
 
 }  // namespace converter

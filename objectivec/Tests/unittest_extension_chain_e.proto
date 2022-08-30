@@ -29,12 +29,14 @@
 
 syntax = "proto2";
 
-package protobuf_unittest;
+package objc.protobuf.tests.chain;
 
-import "google/protobuf/unittest.proto";
+import "objectivec/Tests/unittest.proto";
+
+option objc_class_prefix = "Chain";
 
 // The Root for this file should end up just merging in unittest's Root.
 
-message ChainEMessage {
+message EMessage {
   optional TestAllTypes my_field = 1;
 }
