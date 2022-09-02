@@ -548,10 +548,13 @@ def internal_ruby_proto_library(
         tags = ["manual"],
     )
 
+    deps = []
+    if default_runtime:
+        deps.append(default_runtime)
     ruby_library(
         name = name,
         srcs = [name + "_genproto"],
-        deps = [default_runtime],
+        deps = deps,
         testonly = testonly,
         visibility = visibility,
         includes = includes,

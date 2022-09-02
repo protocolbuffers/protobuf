@@ -148,6 +148,7 @@ internal_ruby_proto_library(
     name = "well_known_ruby_protos",
     srcs = [":well_known_protos"],
     includes = ["src"],
+    default_runtime = "",
     visibility = [
         "//conformance:__pkg__",
         "//ruby:__subpackages__",

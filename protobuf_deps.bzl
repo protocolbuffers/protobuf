@@ -13,6 +13,7 @@ PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.truth:truth:1.1.2",
     "junit:junit:4.13.2",
     "org.mockito:mockito-core:4.3.1",
+    "org.jruby:jruby-complete:9.2.20.1"
 ]
 
 def _github_archive(repo, commit, **kwargs):

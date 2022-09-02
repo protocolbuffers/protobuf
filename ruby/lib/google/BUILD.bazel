@@ -1,6 +1,5 @@
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_ruby//ruby:defs.bzl", "ruby_library")
-load("//ruby:internal.bzl", "internal_ruby_extension")
 
 config_setting(
     name = "requires_bundle",
@@ -14,22 +13,30 @@ cc_binary(
     tags = ["manual"],
 )
 
+# Move the bundle to the location expected by our Ruby files.
 genrule(
-    name = "gen_bundle",
+    name = "copy_bundle",
     srcs = ["//ruby/ext/google/protobuf_c:bundle"],
     outs = ["protobuf_c.bundle"],
     cmd = "cp $< $@",
     tags = ["manual"],
 )
 
-internal_ruby_extension(
-    name = "protobuf_java",
-    extension = "protobuf_java.jar",
-    deps = ["//ruby:java_srcs"],
-    target_compatible_with = select({
-        "//ruby:java_ruby": [],
-        "//conditions:default": ["@platforms//:incompatible"],
-    }),
+java_binary(
+    name = "protobuf_java_bin",
+    runtime_deps = [
+        "//ruby/src/main/java:protobuf_java"
+    ],
+    create_executable = False,
+)
+
+# Move the jar to the location expected by our Ruby files.
+genrule(
+    name = "copy_jar",
+    srcs = ["protobuf_java_bin_deploy.jar"],
+    outs = ["protobuf_java.jar"],
+    cmd = "cp $< $@",
+    tags = ["manual"],
 )
 
 ruby_library(
@@ -37,9 +44,10 @@ ruby_library(
     srcs = glob([
         "**/*.rb",
     ]),
+    deps = ["//:well_known_ruby_protos"],
     includes = ["ruby/lib"],
     data = select({
-        "//ruby:java_ruby": [":protobuf_java"],
+        "//ruby:java_ruby": ["protobuf_java.jar"],
         "@platforms//os:osx": ["protobuf_c.bundle"],
         "//conditions:default": ["protobuf_c.so"],
     }),

@@ -23,28 +23,6 @@ config_setting(
     values = {"define": "ruby_platform=c"},
 )
 
-filegroup(
-    name = "java_srcs",
-    srcs = glob([
-        "src/**/*.proto",
-        "src/**/*.java",
-        "Gemfile",
-        "google-protobuf.gemspec",
-        "pom.xml",
-    ]),
-    visibility = [
-        "//ruby:__subpackages__",
-    ],
-)
-
-filegroup(
-    name = "rake",
-    srcs = ["Rakefile"],
-    visibility = [
-        "//ruby:__subpackages__",
-    ],
-)
-
 ruby_library(
     name = "protobuf",
     deps = ["//ruby/lib/google:protobuf_lib"],
