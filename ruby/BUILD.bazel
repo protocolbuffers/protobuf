@@ -8,7 +8,6 @@ load("@upb//cmake:build_defs.bzl", "staleness_test")
 load("//:protobuf.bzl", "internal_ruby_proto_library")
 load("//build_defs:internal_shell.bzl", "inline_sh_test")
 load("//conformance:defs.bzl", "conformance_test")
-load(":internal.bzl", "internal_ruby_extension")
 
 ################################################################################
 # Ruby Runtime
@@ -25,82 +24,32 @@ config_setting(
 )
 
 filegroup(
-    name = "srcs",
+    name = "java_srcs",
     srcs = glob([
-        "lib/**/*.rb",
         "src/**/*.proto",
-    ]) + [
+        "src/**/*.java",
         "Gemfile",
-        "Rakefile",
         "google-protobuf.gemspec",
         "pom.xml",
+    ]),
+    visibility = [
+        "//ruby:__subpackages__",
     ],
 )
 
-internal_ruby_extension(
-    name = "protobuf_c_mac",
-    extension = "lib/google/protobuf_c.bundle",
-    deps = glob(["ext/google/protobuf_c/*"]),
-    target_compatible_with = select({
-        ":java_ruby": ["@platforms//:incompatible"],
-        "//conditions:default": ["@platforms//os:osx"],
-    }),
-)
-
-internal_ruby_extension(
-    name = "protobuf_c",
-    extension = "lib/google/protobuf_c.so",
-    deps = glob(["ext/google/protobuf_c/*"]),
-    target_compatible_with = select({
-        ":java_ruby": ["@platforms//:incompatible"],
-        "@platforms//os:osx": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
-)
-
-internal_ruby_extension(
-    name = "protobuf_java",
-    extension = "lib/google/protobuf_java.jar",
-    deps = glob(["src/**/*.java"]),
-    target_compatible_with = select({
-        ":java_ruby": [],
-        "//conditions:default": ["@platforms//:incompatible"],
-    }),
-)
-
 filegroup(
-    name = "protobuf",
-    srcs = [
-        ":srcs",
-        "@utf8_range//:utf8_range_srcs",
-    ] + select({
-        ":java_ruby": [":protobuf_java"],
-        "@bazel_tools//src/conditions:darwin": [":protobuf_c_mac"],
-        "//conditions:default": [":protobuf_c"],
-    }),
+    name = "rake",
+    srcs = ["Rakefile"],
     visibility = [
-        "//conformance:__subpackages__",
         "//ruby:__subpackages__",
     ],
 )
 
 ruby_library(
-    name = "protobuf_lib",
-    srcs = glob([
-        "lib/**/*.rb",
-    ]),
-    deps = [
-        #"protobuf_gem",
-        #"@protobuf_bundle//:test-unit"
-    ],
-    includes = ["ruby/lib"],
-    data = [
-        "lib/google/protobuf_c.so",
-        "ext/google/protobuf_c/extconf.rb",
-    ],
+    name = "protobuf",
+    deps = ["//ruby/lib/google:protobuf_lib"],
     visibility = [
-        "//conformance:__subpackages__",
-        "//ruby:__subpackages__",
+        "//visibility:public",
     ],
 )
 
@@ -173,11 +122,14 @@ pkg_files(
     name = "dist_files",
     srcs = [
         "//ruby/tests:dist_files",
-        ":srcs",
+        "//ruby/ext/google/protobuf_c:dist_files",
+        "//ruby/lib/google:dist_files",
+        ":java_srcs",
         ".gitignore",
         "BUILD.bazel",
         "internal.bzl",
         "Gemfile",
+        "Rakefile",
         "README.md",
         "travis-test.sh",
     ],

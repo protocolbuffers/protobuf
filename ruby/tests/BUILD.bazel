@@ -19,7 +19,7 @@ ruby_test(
     name = "basic",
     deps = [
         ":common_tests",
-        "//ruby:protobuf_lib",
+        "//ruby:protobuf",
         "//ruby:test_ruby_protos",
         "@protobuf_bundle//:test-unit"
     ],
@@ -30,7 +30,7 @@ ruby_test(
     name = "basic_proto2",
     deps = [
         ":common_tests",
-        "//ruby:protobuf_lib",
+        "//ruby:protobuf",
         "//ruby:test_ruby_protos",
         "@protobuf_bundle//:test-unit"
     ],
@@ -41,7 +41,7 @@ ruby_test(
     name = "encode_decode_test",
     deps = [
         ":common_tests",
-        "//ruby:protobuf_lib",
+        "//ruby:protobuf",
         "//ruby:test_ruby_protos",
         "@protobuf_bundle//:test-unit"
     ],
@@ -52,7 +52,7 @@ ruby_test(
     name = "gc_test",
     deps = [
         ":common_tests",
-        "//ruby:protobuf_lib",
+        "//ruby:protobuf",
         "//ruby:test_ruby_protos",
         "@protobuf_bundle//:test-unit"
     ],
@@ -63,7 +63,7 @@ ruby_test(
     name = "generated_code_test",
     deps = [
         ":common_tests",
-        "//ruby:protobuf_lib",
+        "//ruby:protobuf",
         "//ruby:test_ruby_protos",
         "@protobuf_bundle//:test-unit"
     ],
@@ -74,7 +74,7 @@ ruby_test(
     name = "multi_level_nesting_test",
     deps = [
         ":common_tests",
-        "//ruby:protobuf_lib",
+        "//ruby:protobuf",
         "//ruby:test_ruby_protos",
         "@protobuf_bundle//:test-unit"
     ],
@@ -85,7 +85,7 @@ ruby_test(
     name = "repeated_field_test",
     deps = [
         ":common_tests",
-        "//ruby:protobuf_lib",
+        "//ruby:protobuf",
         "//ruby:test_ruby_protos",
         "@protobuf_bundle//:test-unit"
     ],
@@ -96,7 +96,7 @@ ruby_test(
     name = "ruby_version",
     deps = [
         ":common_tests",
-        "//ruby:protobuf_lib",
+        "//ruby:protobuf",
         "//ruby:test_ruby_protos",
         "@protobuf_bundle//:test-unit"
     ],
@@ -107,7 +107,7 @@ ruby_test(
     name = "stress",
     deps = [
         ":common_tests",
-        "//ruby:protobuf_lib",
+        "//ruby:protobuf",
         "//ruby:test_ruby_protos",
         "@protobuf_bundle//:test-unit"
     ],
@@ -118,7 +118,7 @@ ruby_test(
     name = "type_errors",
     deps = [
         ":common_tests",
-        "//ruby:protobuf_lib",
+        "//ruby:protobuf",
         "//ruby:test_ruby_protos",
         "@protobuf_bundle//:test-unit"
     ],

@@ -18,17 +18,14 @@ def internal_ruby_extension(
     native.genrule(
         name = name,
         srcs = deps + [
-            "Rakefile",
-            ":srcs",
-            #":test_ruby_protos",
-            #":tests",
+            "//ruby:rake",
             "@utf8_range//:utf8_range_srcs",
         ],
         tags = ["manual"],
         outs = [extension],
-        cmd = "pushd `dirname $(location Rakefile)`\n" +
+        cmd = "pushd `dirname $(location //ruby:rake)`\n" +
               "BAZEL=true rake\n" +
               "popd\n" +
-              "cp `dirname $(location Rakefile)`/%s $(OUTS)\n" % extension,
-        **kwargs
+              "cp `dirname $(location //ruby:rake)`/lib/google/%s $(OUTS)\n" % extension,
+        **kwargs,
     )

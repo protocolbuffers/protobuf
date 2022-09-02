@@ -494,7 +494,7 @@ def internal_ruby_proto_library(
         outs = [],
         proto_deps = [],
         includes = ["."],
-        default_runtime = "@com_google_protobuf//ruby:protobuf_lib",
+        default_runtime = "@com_google_protobuf//ruby:protobuf",
         protoc = "@com_google_protobuf//:protoc",
         testonly = None,
         visibility = ["//visibility:public"],

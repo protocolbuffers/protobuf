@@ -1,0 +1,54 @@
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_ruby//ruby:defs.bzl", "ruby_library")
+load("//ruby:internal.bzl", "internal_ruby_extension")
+
+config_setting(
+    name = "requires_bundle",
+    constraint_values = ["@platforms//os:osx"],
+)
+
+cc_binary(
+    name = "protobuf_c.so",
+    deps = ["//ruby/ext/google/protobuf_c"],
+    linkshared = 1,
+    tags = ["manual"],
+)
+
+genrule(
+    name = "gen_bundle",
+    srcs = ["//ruby/ext/google/protobuf_c:bundle"],
+    outs = ["protobuf_c.bundle"],
+    cmd = "cp $< $@",
+    tags = ["manual"],
+)
+
+internal_ruby_extension(
+    name = "protobuf_java",
+    extension = "protobuf_java.jar",
+    deps = ["//ruby:java_srcs"],
+    target_compatible_with = select({
+        "//ruby:java_ruby": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+)
+
+ruby_library(
+    name = "protobuf_lib",
+    srcs = glob([
+        "**/*.rb",
+    ]),
+    includes = ["ruby/lib"],
+    data = select({
+        "//ruby:java_ruby": [":protobuf_java"],
+        "@platforms//os:osx": ["protobuf_c.bundle"],
+        "//conditions:default": ["protobuf_c.so"],
+    }),
+    visibility = ["//ruby:__pkg__"],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob(["**/*.rb"]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//ruby:__pkg__"],
+)

@@ -1,0 +1,46 @@
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+
+package(default_visibility = ["//ruby:__subpackages__"])
+
+cc_library(
+    name = "protobuf_c",
+    srcs = glob([
+        "*.h",
+        "*.c",
+    ]),
+    deps = [
+        "//third_party/utf8_range",
+        "@org_ruby_lang_ruby_toolchain//:headers",
+    ],
+    target_compatible_with = select({
+        "//ruby:java_ruby": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+    linkstatic = True,
+    alwayslink = True,
+)
+
+apple_binary(
+    name = "bundle",
+    binary_type = "loadable_bundle",
+    linkopts = [
+        "-undefined,dynamic_lookup",
+        "-multiply_defined,suppress",
+    ],
+    platform_type = "macos",
+    tags = ["manual"],
+    deps = [
+        ":protobuf_c",
+    ],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = glob([
+        "*.h",
+        "*.c",
+        "*.rb",
+    ]),
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//ruby:__pkg__"],
+)
