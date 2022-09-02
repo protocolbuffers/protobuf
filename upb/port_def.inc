@@ -241,7 +241,11 @@
 
 #undef UPB_FASTTABLE_SUPPORTED
 
-/* ASAN poisoning (for arena) *************************************************/
+/* ASAN poisoning (for arena).
+ * If using UPB from an interpreted language like Ruby, a build of the
+ * interpreter compiled with ASAN enbabled must be used in order to get sane and
+ * expected behavior.
+ */
 
 #if defined(__SANITIZE_ADDRESS__)
 #define UPB_ASAN 1
