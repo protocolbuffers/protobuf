@@ -824,7 +824,7 @@ module CommonTests
                                       :repeated_enum => [:A, :B, :C],
                                       :repeated_msg => [proto_module::TestMessage2.new(:foo => 1),
                                                         proto_module::TestMessage2.new(:foo => 2)])
-    if proto_module == ::BasicTest
+    if proto_module.class.name == "BasicTest"
       # For proto3 we can add an unknown enum value safely.
       m.repeated_enum << 100
     end

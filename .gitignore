@@ -174,7 +174,6 @@ ruby/tests/generated_code_proto2_pb.rb
 ruby/tests/multi_level_nesting_test_pb.rb
 ruby/tests/test_import_proto2_pb.rb
 ruby/tests/test_ruby_package_proto2_pb.rb
-ruby/Gemfile.lock
 ruby/compatibility_tests/v3.0.0/protoc
 ruby/compatibility_tests/v3.0.0/tests/generated_code_pb.rb
 ruby/compatibility_tests/v3.0.0/tests/test_import_pb.rb
