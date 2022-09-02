@@ -3,10 +3,9 @@
 # See also code generation logic under /src/google/protobuf/compiler/ruby.
 
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("@rules_ruby//ruby:defs.bzl", "ruby_library", "ruby_test", "ruby_gem")
+load("@rules_ruby//ruby:defs.bzl", "ruby_library")
 load("@upb//cmake:build_defs.bzl", "staleness_test")
 load("//:protobuf.bzl", "internal_ruby_proto_library")
-load("//build_defs:internal_shell.bzl", "inline_sh_test")
 load("//conformance:defs.bzl", "conformance_test")
 
 ################################################################################
@@ -99,13 +98,12 @@ staleness_test(
 pkg_files(
     name = "dist_files",
     srcs = [
-        "//ruby/tests:dist_files",
         "//ruby/ext/google/protobuf_c:dist_files",
         "//ruby/lib/google:dist_files",
-        ":java_srcs",
+        "//ruby/src/main/java:dist_files",
+        "//ruby/tests:dist_files",
         ".gitignore",
         "BUILD.bazel",
-        "internal.bzl",
         "Gemfile",
         "Rakefile",
         "README.md",
