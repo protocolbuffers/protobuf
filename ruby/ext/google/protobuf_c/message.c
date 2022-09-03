@@ -696,15 +696,18 @@ bool Message_Equal(const upb_Message* m1, const upb_Message* m2,
   if (m1 == m2) return true;
 
   size_t size1, size2;
-  int encode_opts = kUpb_EncodeOption_SkipUnknown | kUpb_EncodeOption_Deterministic;
+  int encode_opts =
+      kUpb_EncodeOption_SkipUnknown | kUpb_EncodeOption_Deterministic;
   upb_Arena* arena_tmp = upb_Arena_New();
   const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
 
   // Compare deterministically serialized payloads with no unknown fields.
   char* data1;
   char* data2;
-  upb_EncodeStatus status1 = upb_Encode(m1, layout, encode_opts, arena_tmp, &data1, &size1);
-  upb_EncodeStatus status2 = upb_Encode(m2, layout, encode_opts, arena_tmp, &data2, &size2);
+  upb_EncodeStatus status1 =
+      upb_Encode(m1, layout, encode_opts, arena_tmp, &data1, &size1);
+  upb_EncodeStatus status2 =
+      upb_Encode(m2, layout, encode_opts, arena_tmp, &data2, &size2);
 
   if (status1 == kUpb_EncodeStatus_Ok && status2 == kUpb_EncodeStatus_Ok) {
     bool ret = (size1 == size2) && (memcmp(data1, data2, size1) == 0);
@@ -742,9 +745,10 @@ uint64_t Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
   size_t size;
 
   // Hash a deterministically serialized payloads with no unknown fields.
-  upb_EncodeStatus status = upb_Encode(msg, upb_MessageDef_MiniTable(m),
-                    kUpb_EncodeOption_SkipUnknown | kUpb_EncodeOption_Deterministic, arena,
-                    &data, &size);
+  upb_EncodeStatus status = upb_Encode(
+      msg, upb_MessageDef_MiniTable(m),
+      kUpb_EncodeOption_SkipUnknown | kUpb_EncodeOption_Deterministic, arena,
+      &data, &size);
 
   if (status == kUpb_EncodeStatus_Ok) {
     uint64_t ret = _upb_Hash(data, size, seed);
@@ -972,7 +976,8 @@ static VALUE Message_decode(int argc, VALUE* argv, VALUE klass) {
       rb_raise(rb_eArgError, "Expected hash arguments.");
     }
 
-    VALUE depth = rb_hash_lookup(hash_args, ID2SYM(rb_intern("recursion_limit")));
+    VALUE depth =
+        rb_hash_lookup(hash_args, ID2SYM(rb_intern("recursion_limit")));
 
     if (depth != Qnil && TYPE(depth) == T_FIXNUM) {
       options |= UPB_DECODE_MAXDEPTH(FIX2INT(depth));
@@ -986,9 +991,10 @@ static VALUE Message_decode(int argc, VALUE* argv, VALUE klass) {
   VALUE msg_rb = initialize_rb_class_with_no_args(klass);
   Message* msg = ruby_to_Message(msg_rb);
 
-  upb_DecodeStatus status = upb_Decode(
-      RSTRING_PTR(data), RSTRING_LEN(data), (upb_Message*)msg->msg,
-      upb_MessageDef_MiniTable(msg->msgdef), NULL, options, Arena_get(msg->arena));
+  upb_DecodeStatus status =
+      upb_Decode(RSTRING_PTR(data), RSTRING_LEN(data), (upb_Message*)msg->msg,
+                 upb_MessageDef_MiniTable(msg->msgdef), NULL, options,
+                 Arena_get(msg->arena));
 
   if (status != kUpb_DecodeStatus_Ok) {
     rb_raise(cParseError, "Error occurred during parsing");
@@ -1088,17 +1094,19 @@ static VALUE Message_encode(int argc, VALUE* argv, VALUE klass) {
     if (TYPE(hash_args) != T_HASH) {
       rb_raise(rb_eArgError, "Expected hash arguments.");
     }
-    VALUE depth = rb_hash_lookup(hash_args, ID2SYM(rb_intern("recursion_limit")));
+    VALUE depth =
+        rb_hash_lookup(hash_args, ID2SYM(rb_intern("recursion_limit")));
 
     if (depth != Qnil && TYPE(depth) == T_FIXNUM) {
       options |= UPB_DECODE_MAXDEPTH(FIX2INT(depth));
     }
   }
 
-  upb_Arena *arena = upb_Arena_New();
+  upb_Arena* arena = upb_Arena_New();
 
-  upb_EncodeStatus status = upb_Encode(msg->msg, upb_MessageDef_MiniTable(msg->msgdef),
-                    options, arena, &data, &size);
+  upb_EncodeStatus status =
+      upb_Encode(msg->msg, upb_MessageDef_MiniTable(msg->msgdef), options,
+                 arena, &data, &size);
 
   if (status == kUpb_EncodeStatus_Ok) {
     VALUE ret = rb_str_new(data, size);
@@ -1138,7 +1146,8 @@ static VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {
   if (argc == 2) {
     VALUE hash_args = argv[1];
     if (TYPE(hash_args) != T_HASH) {
-      if (RTEST(rb_funcall(hash_args, rb_intern("respond_to?"), 1, rb_str_new2("to_h")))) {
+      if (RTEST(rb_funcall(hash_args, rb_intern("respond_to?"), 1,
+                           rb_str_new2("to_h")))) {
         hash_args = rb_funcall(hash_args, rb_intern("to_h"), 0);
       } else {
         rb_raise(rb_eArgError, "Expected hash arguments.");
@@ -1295,8 +1304,10 @@ upb_Message* Message_deep_copy(const upb_Message* msg, const upb_MessageDef* m,
   upb_Message* new_msg = upb_Message_New(m, arena);
   char* data;
 
-  if (upb_Encode(msg, layout, 0, tmp_arena, &data, &size) != kUpb_EncodeStatus_Ok ||
-      upb_Decode(data, size, new_msg, layout, NULL, 0, arena) != kUpb_DecodeStatus_Ok) {
+  if (upb_Encode(msg, layout, 0, tmp_arena, &data, &size) !=
+          kUpb_EncodeStatus_Ok ||
+      upb_Decode(data, size, new_msg, layout, NULL, 0, arena) !=
+          kUpb_DecodeStatus_Ok) {
     upb_Arena_Free(tmp_arena);
     rb_raise(cParseError, "Error occurred copying proto");
   }
@@ -1396,7 +1407,8 @@ static void Message_define_class(VALUE klass) {
 
 void Message_register(VALUE protobuf) {
   cParseError = rb_const_get(protobuf, rb_intern("ParseError"));
-  cAbstractMessage = rb_define_class_under(protobuf, "AbstractMessage", rb_cObject);
+  cAbstractMessage =
+      rb_define_class_under(protobuf, "AbstractMessage", rb_cObject);
   Message_define_class(cAbstractMessage);
   rb_gc_register_address(&cAbstractMessage);
 
