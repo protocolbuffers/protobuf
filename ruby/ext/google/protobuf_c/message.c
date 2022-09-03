@@ -696,15 +696,17 @@ bool Message_Equal(const upb_Message* m1, const upb_Message* m2,
   if (m1 == m2) return true;
 
   size_t size1, size2;
-  int encode_opts = kUpb_Encode_SkipUnknown | kUpb_Encode_Deterministic;
+  int encode_opts = kUpb_EncodeOption_SkipUnknown | kUpb_EncodeOption_Deterministic;
   upb_Arena* arena_tmp = upb_Arena_New();
   const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
 
   // Compare deterministically serialized payloads with no unknown fields.
-  char* data1 = upb_Encode(m1, layout, encode_opts, arena_tmp, &size1);
-  char* data2 = upb_Encode(m2, layout, encode_opts, arena_tmp, &size2);
+  char* data1;
+  char* data2;
+  upb_EncodeStatus status1 = upb_Encode(m1, layout, encode_opts, arena_tmp, &data1, &size1);
+  upb_EncodeStatus status2 = upb_Encode(m2, layout, encode_opts, arena_tmp, &data2, &size2);
 
-  if (data1 && data2) {
+  if (status1 == kUpb_EncodeStatus_Ok && status2 == kUpb_EncodeStatus_Ok) {
     bool ret = (size1 == size2) && (memcmp(data1, data2, size1) == 0);
     upb_Arena_Free(arena_tmp);
     return ret;
@@ -736,15 +738,15 @@ static VALUE Message_eq(VALUE _self, VALUE _other) {
 uint64_t Message_Hash(const upb_Message* msg, const upb_MessageDef* m,
                       uint64_t seed) {
   upb_Arena* arena = upb_Arena_New();
-  const char* data;
+  char* data;
   size_t size;
 
   // Hash a deterministically serialized payloads with no unknown fields.
-  data = upb_Encode(msg, upb_MessageDef_MiniTable(m),
-                    kUpb_Encode_SkipUnknown | kUpb_Encode_Deterministic, arena,
-                    &size);
+  upb_EncodeStatus status = upb_Encode(msg, upb_MessageDef_MiniTable(m),
+                    kUpb_EncodeOption_SkipUnknown | kUpb_EncodeOption_Deterministic, arena,
+                    &data, &size);
 
-  if (data) {
+  if (status == kUpb_EncodeStatus_Ok) {
     uint64_t ret = _upb_Hash(data, size, seed);
     upb_Arena_Free(arena);
     return ret;
@@ -1070,7 +1072,7 @@ static VALUE Message_decode_json(int argc, VALUE* argv, VALUE klass) {
 static VALUE Message_encode(int argc, VALUE* argv, VALUE klass) {
   Message* msg = ruby_to_Message(argv[0]);
   int options = 0;
-  const char* data;
+  char* data;
   size_t size;
 
   if (CLASS_OF(argv[0]) != klass) {
@@ -1095,10 +1097,10 @@ static VALUE Message_encode(int argc, VALUE* argv, VALUE klass) {
 
   upb_Arena *arena = upb_Arena_New();
 
-  data = upb_Encode(msg->msg, upb_MessageDef_MiniTable(msg->msgdef),
-                    options, arena, &size);
+  upb_EncodeStatus status = upb_Encode(msg->msg, upb_MessageDef_MiniTable(msg->msgdef),
+                    options, arena, &data, &size);
 
-  if (data) {
+  if (status == kUpb_EncodeStatus_Ok) {
     VALUE ret = rb_str_new(data, size);
     rb_enc_associate(ret, rb_ascii8bit_encoding());
     upb_Arena_Free(arena);
@@ -1290,11 +1292,11 @@ upb_Message* Message_deep_copy(const upb_Message* msg, const upb_MessageDef* m,
   const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
   size_t size;
 
-  char* data = upb_Encode(msg, layout, 0, tmp_arena, &size);
   upb_Message* new_msg = upb_Message_New(m, arena);
+  char* data;
 
-  if (!data || upb_Decode(data, size, new_msg, layout, NULL, 0, arena) !=
-                   kUpb_DecodeStatus_Ok) {
+  if (upb_Encode(msg, layout, 0, tmp_arena, &data, &size) != kUpb_EncodeStatus_Ok ||
+      upb_Decode(data, size, new_msg, layout, NULL, 0, arena) != kUpb_DecodeStatus_Ok) {
     upb_Arena_Free(tmp_arena);
     rb_raise(cParseError, "Error occurred copying proto");
   }
