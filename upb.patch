@@ -11,7 +11,7 @@ index a49327b2..7aaf58a7 100644
  
  cc_library(
 diff --git a/bazel/amalgamate.py b/bazel/amalgamate.py
-index 70399085..e1f5dbe3 100755
+index 70399085..d60cba5d 100755
 --- bazel/amalgamate.py
 +++ bazel/amalgamate.py
 @@ -35,43 +35,42 @@ def parse_include(line):
@@ -82,13 +82,12 @@ index 70399085..e1f5dbe3 100755
  
      has_copyright = lines[1].startswith(" * Copyright")
      if has_copyright:
-@@ -79,51 +78,56 @@ class Amalgamator:
+@@ -79,51 +78,54 @@ class Amalgamator:
          lines.pop(0)
        lines.pop(0)
  
 -    lines.insert(0, "\n/** " + infile_name + " " + ("*" * 60) +"/");
-+    lines.insert(0, "\n/** " + infile_name + " " + ("*" * 60) +"/\n");
- 
+-
      for line in lines:
 -      if not self._process_include(line, outfile):
 +      if not self._process_include(line):
