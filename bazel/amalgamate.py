@@ -35,11 +35,6 @@ def parse_include(line):
   match = INCLUDE_RE.match(line)
   return match.groups()[0] if match else None
 
-def is_core_upb_header(fname):
-  if not fname.endswith(".h"):
-    return False
-  return fname.startswith("upb") or fname.startswith("google")
-
 class Amalgamator:
   def __init__(self, h_out, c_out):
     self.include_paths = ["."]
@@ -115,8 +110,6 @@ class Amalgamator:
 
 c_out = sys.argv[1]
 h_out = sys.argv[2]
-print(c_out)
-print(h_out)
 amalgamator = Amalgamator(h_out, c_out)
 c_files = []
 h_files = []
