@@ -331,14 +331,16 @@ module CommonTests
     l.push :A
     l.push :B
     l.push :C
-    assert l.count == 3
+    l.push :V0
+    assert l.count == 4
     assert_raise RangeError do
       l.push :D
     end
     assert l[0] == :A
+    assert l[3] == :V0
 
-    l.push 4
-    assert l[3] == 4
+    l.push 5
+    assert l[4] == 5
   end
 
   def test_rptfield_initialize
@@ -712,6 +714,8 @@ module CommonTests
     assert proto_module::TestEnum::A == 1
     assert proto_module::TestEnum::B == 2
     assert proto_module::TestEnum::C == 3
+
+    assert proto_module::TestEnum::V0 == 4
 
     assert proto_module::TestEnum::lookup(1) == :A
     assert proto_module::TestEnum::lookup(2) == :B
