@@ -1276,6 +1276,7 @@ VALUE build_module_from_enumdesc(VALUE _enumdesc) {
       }
     }
     rb_define_const(mod, name, INT2NUM(value));
+    free(name);
   }
 
   rb_define_singleton_method(mod, "lookup", enum_lookup, 1);
