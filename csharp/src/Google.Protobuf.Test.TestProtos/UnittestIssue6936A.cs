@@ -23,11 +23,10 @@ namespace UnitTest.Issues.TestProtos {
 
     static UnittestIssue6936AReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
-          string.Concat(
-            "Chp1bml0dGVzdF9pc3N1ZTY5MzZfYS5wcm90bxIPdW5pdHRlc3RfaXNzdWVz",
-            "GiBnb29nbGUvcHJvdG9idWYvZGVzY3JpcHRvci5wcm90bzouCgNvcHQSHy5n",
-            "b29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMY0IYDIAEoCUIdqgIaVW5p",
-            "dFRlc3QuSXNzdWVzLlRlc3RQcm90b3NiBnByb3RvMw=="));
+          "Chp1bml0dGVzdF9pc3N1ZTY5MzZfYS5wcm90bxIPdW5pdHRlc3RfaXNzdWVz" +
+          "GiBnb29nbGUvcHJvdG9idWYvZGVzY3JpcHRvci5wcm90bzouCgNvcHQSHy5n" +
+          "b29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMY0IYDIAEoCUIdqgIaVW5p" +
+          "dFRlc3QuSXNzdWVzLlRlc3RQcm90b3NiBnByb3RvMw==");
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pb::Extension[] { UnittestIssue6936AExtensions.Opt }, null));
