@@ -1162,7 +1162,7 @@ void ImmutableMessageGenerator::GenerateExtensionRegistrationCode(
 // ===================================================================
 void ImmutableMessageGenerator::GenerateParser(io::Printer* printer) {
   printer->Print(
-      "$visibility$ static final com.google.protobuf.Parser<$classname$>\n"
+      "private static final com.google.protobuf.Parser<$classname$>\n"
       "    PARSER = new com.google.protobuf.AbstractParser<$classname$>() {\n"
       "  @java.lang.Override\n"
       "  public $classname$ parsePartialFrom(\n"
@@ -1195,9 +1195,6 @@ void ImmutableMessageGenerator::GenerateParser(io::Printer* printer) {
       "  return PARSER;\n"
       "}\n"
       "\n",
-      "visibility",
-      ExposePublicParser(descriptor_->file()) ? "@java.lang.Deprecated public"
-                                              : "private",
       "classname", descriptor_->name());
 }
 
