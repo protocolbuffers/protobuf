@@ -1,0 +1,17 @@
+{
+    "main": {
+        "protoc_version": "18.3-dev",
+        "lts": false,
+        "date": "2022-01-05",
+        "languages": {
+            "cpp": "3.18.3-dev",
+            "csharp": "3.18.3-dev",
+            "java": "3.18.3-dev",
+            "javascript": "3.18.3-dev",
+            "objectivec": "3.18.3-dev",
+            "php": "3.18.3-dev",
+            "python": "3.18.3-dev",
+            "ruby": "3.18.3-dev"
+        }
+    }
+}
