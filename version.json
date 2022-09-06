@@ -1,0 +1,17 @@
+{
+    "16.x": {
+        "protoc_version": "16.2-dev",
+        "lts": false,
+        "date": "2022-01-05",
+        "languages": {
+            "cpp": "3.16.2-dev",
+            "csharp": "3.16.2-dev",
+            "java": "3.16.2-dev",
+            "javascript": "3.16.2-dev",
+            "objectivec": "3.16.2-dev",
+            "php": "3.16.2-dev",
+            "python": "3.16.2-dev",
+            "ruby": "3.16.2-dev"
+        }
+    }
+}
