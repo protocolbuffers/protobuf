@@ -2376,7 +2376,7 @@ namespace ProtobufTestMessages.Proto2 {
 
     /// <summary>Field number for the "default_string" field.</summary>
     public const int DefaultStringFieldNumber = 254;
-    private readonly static string DefaultStringDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("Um9zZWJ1ZA=="), 0, 7);
+    private readonly static string DefaultStringDefaultValue = "Rosebud";
 
     private string defaultString_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

@@ -35,7 +35,9 @@
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 
 #include <algorithm>
+#include <codecvt>
 #include <limits>
+#include <locale>
 #include <sstream>
 #include <vector>
 
@@ -535,6 +537,24 @@ std::string StringToBase64(const std::string& input) {
       result += '=';
       src += 1;
       break;
+  }
+  return result;
+}
+
+static const char hex_chars[] = "0123456789abcdef";
+
+std::string StringToStringLiteral(const std::string& input) {
+  std::string result;
+  for (char16_t ch : std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(input)) {
+    if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')) {
+      result += ch;
+      continue;
+    }
+    result += "\\u";
+    result += hex_chars[ch >> 12];
+    result += hex_chars[(ch >> 8) & 0xf];
+    result += hex_chars[(ch >> 4) & 0xf];
+    result += hex_chars[ch & 0xf];
   }
   return result;
 }
