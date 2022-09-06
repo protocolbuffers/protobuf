@@ -265,8 +265,12 @@ void FilePlatformLayout::BuildExtensions(const protobuf::FileDescriptor* fd) {
                GetFieldModifiers(f));
     upb_MiniTable_Extension& ext = extension_map_[f];
     upb_MiniTable_Sub sub;
+    // The extendee may be from another file, so we build a temporary MiniTable
+    // for it, just for the purpose of building the extension.
+    // Note, we are not caching so this could use more memory than is necessary.
+    upb_MiniTable* extendee = MakeMiniTable(f->containing_type());
     bool ok = upb_MiniTable_BuildExtension(e.data().data(), e.data().size(),
-                                           &ext, sub, status.ptr());
+                                           &ext, extendee, sub, status.ptr());
     if (!ok) {
       // TODO(haberman): Use ABSL CHECK() when it is available.
       fprintf(stderr, "Error building mini-table: %s\n",

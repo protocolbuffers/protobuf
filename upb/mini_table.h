@@ -156,6 +156,7 @@ void upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTable_Field* field,
 
 const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
                                          upb_MiniTable_Extension* ext,
+                                         const upb_MiniTable* extendee,
                                          upb_MiniTable_Sub sub,
                                          upb_Status* status);
 

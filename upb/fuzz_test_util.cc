@@ -111,8 +111,6 @@ void Builder::BuildEnums() {
 
 bool Builder::LinkExtension(upb_MiniTable_Extension* ext) {
   upb_MiniTable_Field* field = &ext->field;
-  ext->extendee = NextMiniTable();
-  if (!ext->extendee) return false;
   if (field->descriptortype == kUpb_FieldType_Message ||
       field->descriptortype == kUpb_FieldType_Group) {
     auto mt = NextMiniTable();
@@ -140,8 +138,10 @@ void Builder::BuildExtensions(upb_ExtensionRegistry** exts) {
       upb_MiniTable_Extension* ext = reinterpret_cast<upb_MiniTable_Extension*>(
           upb_Arena_Malloc(arena_, sizeof(*ext)));
       upb_MiniTable_Sub sub;
-      ptr =
-          upb_MiniTable_BuildExtension(ptr, end - ptr, ext, sub, status.ptr());
+      const upb_MiniTable* extendee = NextMiniTable();
+      if (!extendee) break;
+      ptr = upb_MiniTable_BuildExtension(ptr, end - ptr, ext, extendee, sub,
+                                         status.ptr());
       if (!ptr) break;
       if (!LinkExtension(ext)) continue;
       if (_upb_extreg_get(*exts, ext->extendee, ext->field.number)) continue;

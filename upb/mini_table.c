@@ -1102,6 +1102,7 @@ upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
 
 const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
                                          upb_MiniTable_Extension* ext,
+                                         const upb_MiniTable* extendee,
                                          upb_MiniTable_Sub sub,
                                          upb_Status* status) {
   upb_MtDecoder decoder = {
@@ -1117,9 +1118,25 @@ const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
   uint16_t count = 0;
   const char* ret =
       upb_MtDecoder_Parse(&decoder, data, len, ext, sizeof(*ext), &count, NULL);
-  ext->field.mode |= kUpb_LabelFlags_IsExtension;
-  ext->field.offset = 0;
-  ext->field.presence = 0;
+  if (!ret) return NULL;
+
+  upb_MiniTable_Field* f = &ext->field;
+
+  f->mode |= kUpb_LabelFlags_IsExtension;
+  f->offset = 0;
+  f->presence = 0;
+
+  if (extendee->ext & kUpb_ExtMode_IsMessageSet) {
+    // Extensions of MessageSet must be messages.
+    if (!upb_IsSubMessage(f)) return NULL;
+
+    // Extensions of MessageSet must be non-repeating.
+    if ((f->mode & kUpb_FieldMode_Mask) == kUpb_FieldMode_Array) return NULL;
+  }
+
+  ext->extendee = extendee;
+  ext->sub = sub;
+
   return ret;
 }
 
