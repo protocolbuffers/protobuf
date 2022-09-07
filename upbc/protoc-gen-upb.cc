@@ -896,7 +896,7 @@ void WriteHeader(const FileLayout& layout, Output& output) {
     if (i == 0) {
       output("/* Public Imports. */\n");
     }
-    output("#include \"$0\"\n", HeaderFilename(file));
+    output("#include \"$0\"\n", HeaderFilename(file->public_dependency(i)));
     if (i == file->public_dependency_count() - 1) {
       output("\n");
     }
