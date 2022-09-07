@@ -513,8 +513,22 @@ upb_proto_reflection_library(
 )
 
 cc_test(
-    name = "json_test",
-    srcs = ["upb/json_test.cc"],
+    name = "json_decode_test",
+    srcs = ["upb/json_decode_test.cc"],
+    deps = [
+        ":json",
+        ":json_test_upb_proto",
+        ":json_test_upb_proto_reflection",
+        ":reflection",
+        ":struct_upb_proto",
+        ":upb",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "json_encode_test",
+    srcs = ["upb/json_encode_test.cc"],
     deps = [
         ":json",
         ":json_test_upb_proto",
