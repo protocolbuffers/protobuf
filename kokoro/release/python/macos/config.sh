@@ -21,10 +21,6 @@ function install_virtualenv {
 }
 
 function pre_build {
-    # Any stuff that you need to do before you start building the wheels
-    # Runs in the root directory of this repository.
-    pushd protobuf
-
     # Build protoc
     ./autogen.sh
     ./configure
