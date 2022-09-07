@@ -1541,7 +1541,7 @@ static void make_layout(upb_DefBuilder* ctx, const upb_MessageDef* m) {
 
   /* TODO(haberman): initialize fast tables so that reflection-based parsing
    * can get the same speeds as linked-in types. */
-  l->fasttable[0].field_parser = &fastdecode_generic;
+  l->fasttable[0].field_parser = &_upb_FastDecoder_DecodeGeneric;
   l->fasttable[0].field_data = 0;
 
   if (upb_MessageDef_IsMapEntry(m)) {

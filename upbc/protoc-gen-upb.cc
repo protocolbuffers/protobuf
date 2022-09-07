@@ -1208,9 +1208,9 @@ std::vector<TableEntry> FastDecodeTable(const protobuf::Descriptor* message,
     }
     while ((size_t)slot >= table.size()) {
       size_t size = std::max(static_cast<size_t>(1), table.size() * 2);
-      table.resize(size, TableEntry{"fastdecode_generic", 0});
+      table.resize(size, TableEntry{"_upb_FastDecoder_DecodeGeneric", 0});
     }
-    if (table[slot].first != "fastdecode_generic") {
+    if (table[slot].first != "_upb_FastDecoder_DecodeGeneric") {
       // A hotter field already filled this slot.
       continue;
     }
