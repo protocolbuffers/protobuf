@@ -47,8 +47,10 @@ RUN cd /var/local \
   && make install
 
 # Install composer
-RUN curl -sS https://getcomposer.org/installer | php
-RUN mv composer.phar /usr/local/bin/composer
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+RUN php composer-setup.php
+RUN mv composer.phar /usr/bin/composer
+RUN php -r "unlink('composer-setup.php');"
 
 # Download php source code
 RUN git clone https://github.com/php/php-src
