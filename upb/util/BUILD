@@ -62,6 +62,7 @@ cc_library(
     hdrs = ["required_fields.h"],
     visibility = ["//visibility:public"],
     deps = [
+        "//:collections",
         "//:port",
         "//:reflection",
     ],

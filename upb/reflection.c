@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include "upb/internal/table.h"
+#include "upb/map.h"
 #include "upb/msg.h"
 #include "upb/port_def.inc"
 

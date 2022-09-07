@@ -29,6 +29,7 @@
 
 #include "python/message.h"
 #include "python/protobuf.h"
+#include "upb/map.h"
 #include "upb/reflection.h"
 #include "upb/util/compare.h"
 

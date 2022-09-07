@@ -38,6 +38,7 @@
 #include "upb/encode.h"
 #include "upb/internal/atoi.h"
 #include "upb/internal/unicode.h"
+#include "upb/map.h"
 #include "upb/reflection.h"
 
 // Must be last.

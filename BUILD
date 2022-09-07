@@ -412,10 +412,10 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":collections",
         ":encode_internal",
         ":port",
         ":reflection",
-        ":table_internal",
     ],
 )
 
@@ -433,6 +433,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":atoi_internal",
+        ":collections",
         ":encode_internal",
         ":port",
         ":reflection",

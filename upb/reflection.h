@@ -28,9 +28,8 @@
 #ifndef UPB_REFLECTION_H_
 #define UPB_REFLECTION_H_
 
-#include "upb/array.h"
 #include "upb/def.h"
-#include "upb/map.h"
+#include "upb/message_value.h"
 #include "upb/msg.h"
 #include "upb/upb.h"
 

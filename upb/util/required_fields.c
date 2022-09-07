@@ -33,6 +33,7 @@
 #include <stdio.h>
 
 #include "upb/internal/vsnprintf_compat.h"
+#include "upb/map.h"
 #include "upb/reflection.h"
 
 // Must be last.
