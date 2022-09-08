@@ -4,23 +4,12 @@
 
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_ruby//ruby:defs.bzl", "ruby_library")
-load("@upb//cmake:build_defs.bzl", "staleness_test")
 load("//:protobuf.bzl", "internal_ruby_proto_library")
 load("//conformance:defs.bzl", "conformance_test")
 
 ################################################################################
 # Ruby Runtime
 ################################################################################
-
-config_setting(
-    name = "java_ruby",
-    values = {"define": "ruby_platform=java"},
-)
-
-config_setting(
-    name = "c_ruby",
-    values = {"define": "ruby_platform=c"},
-)
 
 ruby_library(
     name = "protobuf",
@@ -52,7 +41,7 @@ conformance_test(
     testee = "//conformance:conformance_ruby",
     text_format_failure_list = "//conformance:text_format_failure_list_ruby.txt",
     target_compatible_with = select({
-        ":java_ruby": ["@platforms//:incompatible"],
+        "@rules_ruby//ruby/runtime:config_jruby": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
 )
@@ -63,32 +52,9 @@ conformance_test(
     testee = "//conformance:conformance_ruby",
     text_format_failure_list = "//conformance:text_format_failure_list_jruby.txt",
     target_compatible_with = select({
-        ":java_ruby": [],
+        "@rules_ruby//ruby/runtime:config_jruby": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-)
-
-genrule(
-    name = "copy_ruby_amalgamation_h",
-    srcs = ["@upb//:ruby-upb.h"],
-    outs = ["generated-in/ext/google/protobuf_c/ruby-upb.h"],
-    cmd = "cp $< $@",
-)
-
-genrule(
-    name = "copy_ruby_amalgamation_c",
-    srcs = ["@upb//:ruby-upb.c"],
-    outs = ["generated-in/ext/google/protobuf_c/ruby-upb.c"],
-    cmd = "cp $< $@",
-)
-
-staleness_test(
-    name = "test_amalgamation_staleness",
-    outs = [
-        "ext/google/protobuf_c/ruby-upb.h",
-        "ext/google/protobuf_c/ruby-upb.c",
-    ],
-    generated_pattern = "generated-in/%s",
 )
 
 ################################################################################

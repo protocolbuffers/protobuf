@@ -47,7 +47,7 @@ ruby_library(
     deps = ["//:well_known_ruby_protos"],
     includes = ["ruby/lib"],
     data = select({
-        "//ruby:java_ruby": ["protobuf_java.jar"],
+        "@rules_ruby//ruby/runtime:config_jruby": ["protobuf_java.jar"],
         "@platforms//os:osx": ["protobuf_c.bundle"],
         "//conditions:default": ["protobuf_c.so"],
     }),

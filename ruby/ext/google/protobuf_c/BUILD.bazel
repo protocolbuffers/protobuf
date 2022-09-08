@@ -1,4 +1,5 @@
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@upb//cmake:build_defs.bzl", "staleness_test")
 
 package(default_visibility = ["//ruby:__subpackages__"])
 
@@ -9,11 +10,11 @@ cc_library(
         "*.c",
     ]),
     deps = [
-        "//third_party/utf8_range",
-        "@org_ruby_lang_ruby_toolchain//:headers",
+        "@rules_ruby//ruby/runtime:headers",
+        "@utf8_range//:utf8_range",
     ],
     target_compatible_with = select({
-        "//ruby:java_ruby": ["@platforms//:incompatible"],
+        "@rules_ruby//ruby/runtime:config_jruby": ["@platforms//:incompatible"],
         "//conditions:default": [],
     }),
     linkstatic = True,
@@ -43,4 +44,27 @@ pkg_files(
     ]),
     strip_prefix = strip_prefix.from_root(""),
     visibility = ["//ruby:__pkg__"],
+)
+
+genrule(
+    name = "copy_ruby_amalgamation_h",
+    srcs = ["@upb//:ruby-upb.h"],
+    outs = ["generated-in/ruby-upb.h"],
+    cmd = "cp $< $@",
+)
+
+genrule(
+    name = "copy_ruby_amalgamation_c",
+    srcs = ["@upb//:ruby-upb.c"],
+    outs = ["generated-in/ruby-upb.c"],
+    cmd = "cp $< $@",
+)
+
+staleness_test(
+    name = "test_amalgamation_staleness",
+    outs = [
+        "ruby-upb.h",
+        "ruby-upb.c",
+    ],
+    generated_pattern = "generated-in/%s",
 )

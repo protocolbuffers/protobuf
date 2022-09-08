@@ -31,9 +31,14 @@ http_archive(
     urls = ["https://github.com/bazelbuild/platforms/archive/da5541f26b7de1dc8e04c075c99df5351742a4a2.zip"],  # 2022-05-27
 )
 
+# TODO(mkruskal) Delete this before merging, it's for local dev only.
 local_repository(
     name = "rules_ruby",
-    path = "../rules_ruby-2",
+    path = "../rules_ruby",
+)
+local_repository(
+    name = "upb",
+    path = "../upb",
 )
 
 # Load common dependencies.
@@ -72,9 +77,9 @@ kotlin_repositories()
 load("@io_bazel_rules_kotlin//kotlin:core.bzl", "kt_register_toolchains")
 kt_register_toolchains()
 
-load("@rules_ruby//ruby:deps.bzl", "rules_ruby_select_sdk", "rules_ruby_dependencies")
+load("@rules_ruby//ruby:deps.bzl", "rules_ruby_dependencies", "rules_ruby_register_toolchains")
 rules_ruby_dependencies()
-rules_ruby_select_sdk()
+rules_ruby_register_toolchains(["system"])
 
 load("@rules_ruby//ruby:defs.bzl", "ruby_bundle")
 ruby_bundle(

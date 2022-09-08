@@ -2,7 +2,6 @@ load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@rules_cc//cc:defs.bzl", "objc_library")
 load("@rules_proto//proto:defs.bzl", "ProtoInfo")
 load("@rules_python//python:defs.bzl", "py_library")
-load("@rules_ruby//ruby:defs.bzl", "rb_library")
 load("@rules_ruby//ruby:defs.bzl", "ruby_library")
 
 def _GetPath(ctx, path):
