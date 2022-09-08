@@ -1361,7 +1361,7 @@ static PyObject* PyUpb_Message_ClearField(PyObject* _self, PyObject* arg) {
   }
 
   if (o) f = upb_Message_WhichOneof(self->ptr.msg, o);
-  PyUpb_Message_DoClearField(_self, f);
+  if (f) PyUpb_Message_DoClearField(_self, f);
   Py_RETURN_NONE;
 }
 
