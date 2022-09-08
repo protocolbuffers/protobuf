@@ -34,7 +34,9 @@ using System;
 using System.Reflection;
 using Google.Protobuf.TestProtos;
 using NUnit.Framework;
+using UnitTest.Issues.TestProtos;
 
+#pragma warning disable CS0612 // Type or member is obsolete
 namespace Google.Protobuf
 {
     public class DeprecatedMemberTest
@@ -46,9 +48,20 @@ namespace Google.Protobuf
         }
 
         [Test]
-        public void TestDepreatedPrimitiveValue()
-        {
-            AssertIsDeprecated(typeof(TestDeprecatedFields).GetProperty("DeprecatedInt32"));
-        }
+        public void TestDepreatedPrimitiveValue() =>
+            AssertIsDeprecated(typeof(TestDeprecatedFields).GetProperty(nameof(TestDeprecatedFields.DeprecatedInt32)));
+
+        [Test]
+        public void TestDeprecatedMessage() =>
+            AssertIsDeprecated(typeof(DeprecatedChild));
+
+        [Test]
+        public void TestDeprecatedEnum() =>
+            AssertIsDeprecated(typeof(DeprecatedEnum));
+
+        [Test]
+        public void TestDeprecatedEnumValue() =>
+            AssertIsDeprecated(typeof(DeprecatedEnum).GetField(nameof(DeprecatedEnum.DeprecatedZero)));
     }
 }
+#pragma warning restore CS0612 // Type or member is obsolete
