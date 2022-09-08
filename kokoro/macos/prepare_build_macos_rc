@@ -7,6 +7,10 @@ set -eux
 export HOMEBREW_PREFIX=$(brew --prefix)
 
 ##
+# Remove any pre-existing protobuf installation.
+brew uninstall protobuf
+
+##
 # Select Xcode version
 
 ##
