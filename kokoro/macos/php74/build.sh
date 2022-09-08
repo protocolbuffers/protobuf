@@ -11,10 +11,9 @@ source kokoro/macos/prepare_build_macos_rc
 # Install Dependencies
 brew cleanup
 brew install coreutils php@7.4
-brew services restart php@7.4
 
 # Configure path
-PHP_FOLDER=$(find $HOMEBREW_PREFIX -type d -regex ".*php.*/7.4.[0-9]*")
+PHP_FOLDER=$(find $HOMEBREW_PREFIX -type d -regex ".*php.*/7.4.[0-9_.]*")
 test ! -z "$PHP_FOLDER"
 export PATH="$PHP_FOLDER/bin:$PATH"
 
