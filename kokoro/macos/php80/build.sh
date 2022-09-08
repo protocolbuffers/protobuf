@@ -13,6 +13,9 @@ brew cleanup
 brew install coreutils php@8.0
 brew services restart php@8.0
 
+# debug logging - REMOVE
+find $HOMEBREW_PREFIX -type d
+
 # Configure path
 PHP_FOLDER=$(find $HOMEBREW_PREFIX -type d -regex ".*php.*/8.0.[0-9]*")
 test ! -z "$PHP_FOLDER"
