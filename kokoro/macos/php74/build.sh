@@ -12,10 +12,16 @@ source kokoro/macos/prepare_build_macos_rc
 brew cleanup
 brew install coreutils php@7.4
 
+# debug logging - REMOVE
+find $HOMEBREW_PREFIX -type d
+
 # Configure path
 PHP_FOLDER=$(find $HOMEBREW_PREFIX -type d -regex ".*php.*/7.4.[0-9_.]*")
 test ! -z "$PHP_FOLDER"
 export PATH="$PHP_FOLDER/bin:$PATH"
+
+# debug logging - REMOVE
+find $PHP_FOLDER -type d
 
 # Test
 kokoro/macos/test_php.sh
