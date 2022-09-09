@@ -544,8 +544,8 @@ module CommonTests
     assert m["z"] == :C
     m["z"] = 2
     assert m["z"] == :B
-    m["z"] = 4
-    assert m["z"] == 4
+    m["z"] = 5
+    assert m["z"] == 5
     assert_raise RangeError do
       m["z"] = :Z
     end
@@ -792,7 +792,7 @@ module CommonTests
     assert_raise(NoMethodError) { m.a }
     assert_raise(NoMethodError) { m.a_const_const }
   end
-  
+
   def test_repeated_push
     m = proto_module::TestMessage.new
 
@@ -1766,7 +1766,7 @@ module CommonTests
     assert_raise(FrozenErrorType) { m.repeated_msg = proto_module::TestMessage2.new }
     assert_raise(FrozenErrorType) { m.repeated_enum = :A }
   end
-  
+
   def test_eq
     m1 = proto_module::TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
     m2 = proto_module::TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
