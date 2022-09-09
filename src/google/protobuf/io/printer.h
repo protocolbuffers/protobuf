@@ -220,7 +220,7 @@ class AnnotationProtoCollector : public AnnotationCollector {
 // pointer (which will cause the Printer to store a pointer, potentially
 // avoiding a copy.)
 //
-// p.Emit(vars, "..."); is effecitvely syntax sugar for
+// p.Emit(vars, "..."); is effectively syntax sugar for
 //
 //  { auto v = p.WithVars(vars); p.Emit("..."); }
 //
@@ -230,7 +230,7 @@ class AnnotationProtoCollector : public AnnotationCollector {
 // # Annotations
 //
 // If Printer is given an AnnotationCollector, it will use it to record which
-// spans of genreated code correspond to user-indicated descriptors. There are
+// spans of generated code correspond to user-indicated descriptors. There are
 // a few different ways of indicating when to emit annotations.
 //
 // The WithAnnotations() function is like WithVars(), but accepts maps with
@@ -428,7 +428,7 @@ class PROTOBUF_EXPORT Printer {
     size_t spaces_per_indent = 2;
     // Whether to emit a "codegen trace" for calls to Emit(). If true, each call
     // to Emit() will print a comment indicating where in the source of the
-    // compiler the Emit() call occured.
+    // compiler the Emit() call occurred.
     //
     // If disengaged, defaults to whether or not the environment variable
     // `PROTOC_CODEGEN_TRACE` is set.
@@ -689,7 +689,7 @@ class PROTOBUF_EXPORT Printer {
     // If set, leading whitespace will be stripped from the format string to
     // determine the "extraneous indentation" that is produced when the format
     // string is a C++ raw string. This is used to remove leading spaces from
-    // a raw string that would otherwise result in eratic indentation in the
+    // a raw string that would otherwise result in erratic indentation in the
     // output.
     bool strip_raw_string_indentation = false;
     // If set, the annotation lookup frames are searched, per the annotation
