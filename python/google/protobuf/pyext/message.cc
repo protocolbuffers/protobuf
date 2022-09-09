@@ -73,7 +73,6 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
-#include "util/gtl/map_util.h"
 
 // clang-format off
 #include "google/protobuf/port_def.inc"
@@ -2677,22 +2676,22 @@ CMessage* CMessage::BuildSubMessageFromPointer(
   if (!this->child_submessages) {
     this->child_submessages = new CMessage::SubMessagesMap();
   }
-  CMessage* cmsg = gtl::FindPtrOrNull(
-      *this->child_submessages, sub_message);
-  if (cmsg) {
-    Py_INCREF(cmsg);
-  } else {
-    cmsg = cmessage::NewEmptyMessage(message_class);
-
-    if (cmsg == nullptr) {
-      return nullptr;
-    }
-    cmsg->message = sub_message;
-    Py_INCREF(this);
-    cmsg->parent = this;
-    cmsg->parent_field_descriptor = field_descriptor;
-    cmessage::SetSubmessage(this, cmsg);
+  auto it = this->child_submessages->find(sub_message);
+  if (it != this->child_submessages->end()) {
+    Py_INCREF(it->second);
+    return it->second;
   }
+
+  CMessage* cmsg = cmessage::NewEmptyMessage(message_class);
+
+  if (cmsg == nullptr) {
+    return nullptr;
+  }
+  cmsg->message = sub_message;
+  Py_INCREF(this);
+  cmsg->parent = this;
+  cmsg->parent_field_descriptor = field_descriptor;
+  cmessage::SetSubmessage(this, cmsg);
   return cmsg;
 }
 
@@ -2700,11 +2699,10 @@ CMessage* CMessage::MaybeReleaseSubMessage(Message* sub_message) {
   if (!this->child_submessages) {
     return nullptr;
   }
-  CMessage* released = gtl::FindPtrOrNull(
-      *this->child_submessages, sub_message);
-  if (!released) {
-    return nullptr;
-  }
+  auto it = this->child_submessages->find(sub_message);
+  if (it == this->child_submessages->end()) return nullptr;
+  CMessage* released = it->second;
+
   // The target message will now own its content.
   Py_CLEAR(released->parent);
   released->parent_field_descriptor = nullptr;

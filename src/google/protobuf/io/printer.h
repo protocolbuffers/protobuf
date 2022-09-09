@@ -414,6 +414,13 @@ class PROTOBUF_EXPORT Printer {
 
   // Options for controlling how the output of a Printer is formatted.
   struct Options {
+    Options() = default;
+    Options(const Options&) = default;
+    Options(Options&&) = default;
+    Options(char variable_delimiter, AnnotationCollector* annotation_collector)
+      : variable_delimiter(variable_delimiter),
+        annotation_collector(annotation_collector) {}
+
     // The delimiter for variable substitutions, e.g. $foo$.
     char variable_delimiter = kDefaultVariableDelimiter;
     // An optional listener the Printer calls whenever it emits a source
@@ -432,7 +439,7 @@ class PROTOBUF_EXPORT Printer {
     //
     // If disengaged, defaults to whether or not the environment variable
     // `PROTOC_CODEGEN_TRACE` is set.
-    absl::optional<bool> enable_codegen_trace;
+    absl::optional<bool> enable_codegen_trace = absl::nullopt;
   };
 
   // Constructs a new Printer with the default options to output to

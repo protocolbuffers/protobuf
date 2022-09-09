@@ -30,10 +30,6 @@
 
 #include "google/protobuf/parse_context.h"
 
-#ifdef __aarch64__
-#include <arm_acle.h>
-#endif
-
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/arenastring.h"

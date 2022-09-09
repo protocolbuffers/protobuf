@@ -46,7 +46,6 @@
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
-#include "util/gtl/map_util.h"
 
 namespace google {
 namespace protobuf {
