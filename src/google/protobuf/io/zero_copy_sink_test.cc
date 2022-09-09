@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/io/zero_copy_sink.h>
+#include "google/protobuf/io/zero_copy_sink.h"
 
 #include <algorithm>
 #include <array>
@@ -36,8 +36,8 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
 #include <gtest/gtest.h>
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"

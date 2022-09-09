@@ -35,8 +35,8 @@
 #include <Python.h>
 
 #include <unordered_map>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/pyext/descriptor_pool.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/pyext/descriptor_pool.h"
 
 namespace google {
 namespace protobuf {

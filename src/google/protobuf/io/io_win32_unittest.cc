@@ -40,7 +40,7 @@
 #if defined(_WIN32)
 
 #define WIN32_LEAN_AND_MEAN
-#include <google/protobuf/io/io_win32.h>
+#include "google/protobuf/io/io_win32.h"
 
 #include <errno.h>
 #include <fcntl.h>

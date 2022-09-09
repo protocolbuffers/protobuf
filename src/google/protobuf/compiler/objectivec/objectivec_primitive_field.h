@@ -31,7 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_PRIMITIVE_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_PRIMITIVE_FIELD_H__
 
-#include <google/protobuf/compiler/objectivec/objectivec_field.h>
+#include "google/protobuf/compiler/objectivec/objectivec_field.h"
 
 namespace google {
 namespace protobuf {

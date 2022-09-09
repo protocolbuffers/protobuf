@@ -36,10 +36,10 @@
 #include <functional>
 #include <stack>
 
-#include <google/protobuf/stubs/callback.h>
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/stubs/callback.h"
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/port.h"
 
 
 namespace google {

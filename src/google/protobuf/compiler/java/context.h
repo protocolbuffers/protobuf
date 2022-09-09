@@ -34,9 +34,9 @@
 #include <memory>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
 #include "absl/container/flat_hash_map.h"
-#include <google/protobuf/compiler/java/options.h>
+#include "google/protobuf/compiler/java/options.h"
+#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {

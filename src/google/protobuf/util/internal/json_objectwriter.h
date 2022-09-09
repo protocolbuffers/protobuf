@@ -35,12 +35,12 @@
 #include <memory>
 #include <string>
 
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/stubs/bytestream.h>
-#include <google/protobuf/util/internal/structured_objectwriter.h>
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/stubs/bytestream.h"
+#include "google/protobuf/util/internal/structured_objectwriter.h"
 
 // clang-format off
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 // clang-format on
 
 namespace google {
@@ -274,6 +274,6 @@ class PROTOBUF_EXPORT JsonObjectWriter : public StructuredObjectWriter {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_JSON_OBJECTWRITER_H__

@@ -40,7 +40,6 @@
 #import "objectivec/Tests/UnittestDeprecatedFile.pbobjc.h"
 #import "objectivec/Tests/UnittestImport.pbobjc.h"
 #import "objectivec/Tests/UnittestImportPublic.pbobjc.h"
-#import "objectivec/Tests/UnittestImportPublicLite.pbobjc.h"
 #import "objectivec/Tests/UnittestMset.pbobjc.h"
 #import "objectivec/Tests/UnittestObjc.pbobjc.h"
 #import "objectivec/Tests/UnittestObjcOptions.pbobjc.h"

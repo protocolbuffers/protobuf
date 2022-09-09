@@ -34,14 +34,14 @@
 
 #include <algorithm>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/implicit_weak_message.h>
-#include <google/protobuf/repeated_field.h>
-#include <google/protobuf/port.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/implicit_weak_message.h"
+#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -150,4 +150,4 @@ MessageLite* RepeatedPtrFieldBase::AddWeak(const MessageLite* prototype) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

@@ -36,24 +36,24 @@
 #include <string>
 #include <utility>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/message.h>
-#include <google/protobuf/text_format.h>
-#include <google/protobuf/util/json_util.h>
-#include <google/protobuf/util/type_resolver_util.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/text_format.h"
+#include "google/protobuf/util/json_util.h"
+#include "google/protobuf/util/type_resolver_util.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance.pb.h"
-#include <google/protobuf/test_messages_proto2.pb.h>
-#include <google/protobuf/test_messages_proto3.pb.h>
-#include <google/protobuf/test_messages_proto3.pb.h>
-#include <google/protobuf/util/type_resolver.h>
-#include <google/protobuf/stubs/status_macros.h>
+#include "google/protobuf/test_messages_proto2.pb.h"
+#include "google/protobuf/test_messages_proto3.pb.h"
+#include "google/protobuf/test_messages_proto3.pb.h"
+#include "google/protobuf/util/type_resolver.h"
+#include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -87,7 +87,7 @@ absl::Status ReadFd(int fd, char* buf, size_t len) {
 }
 
 absl::Status WriteFd(int fd, const void* buf, size_t len) {
-  if (write(fd, buf, len) != len) {
+  if (static_cast<size_t>(write(fd, buf, len)) != len) {
     return absl::ErrnoToStatus(errno, "error reading to test runner");
   }
   return absl::OkStatus();

@@ -28,14 +28,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/stubs/bytestream.h>
+#include "google/protobuf/stubs/bytestream.h"
 
+#include <gtest/gtest.h>
 #include <stdio.h>
 #include <string.h>
+
 #include <algorithm>
 
-#include <google/protobuf/testing/googletest.h>
-#include <gtest/gtest.h>
+#include "google/protobuf/testing/googletest.h"
 
 namespace google {
 namespace protobuf {
@@ -121,8 +122,6 @@ class FlushingByteSink : public StringByteSink {
  public:
   explicit FlushingByteSink(std::string* dest) : StringByteSink(dest) {}
   virtual void Flush() { Append("z", 1); }
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FlushingByteSink);
 };
 
 // Write and Flush via the ByteSink superclass interface.

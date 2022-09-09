@@ -37,7 +37,7 @@
 #include <memory>
 #include <set>
 
-#include <google/protobuf/pyext/message.h>
+#include "google/protobuf/pyext/message.h"
 
 namespace google {
 namespace protobuf {

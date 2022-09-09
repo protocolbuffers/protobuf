@@ -32,11 +32,12 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/command_line_interface.h>
+#include "google/protobuf/compiler/command_line_interface.h"
 
-#include <google/protobuf/stubs/platform_macros.h>
+#include "google/protobuf/stubs/platform_macros.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #ifdef major
 #undef major
@@ -58,6 +59,10 @@
 #include <limits.h>  // For PATH_MAX
 
 #include <memory>
+#include <string>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
@@ -65,30 +70,30 @@
 #include <sys/sysctl.h>
 #endif
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/compiler/subprocess.h>
-#include <google/protobuf/compiler/plugin.pb.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/stringprintf.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/compiler/subprocess.h"
+#include "google/protobuf/compiler/plugin.pb.h"
+#include "google/protobuf/stubs/strutil.h"
+#include "google/protobuf/stubs/stringprintf.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/substitute.h"
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/importer.h>
-#include <google/protobuf/compiler/zip_writer.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/io_win32.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/text_format.h>
-#include <google/protobuf/stubs/stl_util.h>
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/importer.h"
+#include "google/protobuf/compiler/zip_writer.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/io_win32.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/text_format.h"
+#include "google/protobuf/stubs/stl_util.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -1298,9 +1303,9 @@ bool CommandLineInterface::ParseInputFiles(
             direct_dependencies_.end()) {
           indirect_imports = true;
           std::cerr << parsed_file->name() << ": "
-                    << StringReplace(direct_dependencies_violation_msg_, "%s",
-                                     parsed_file->dependency(i)->name(),
-                                     true /* replace_all */)
+                    << absl::StrReplaceAll(
+                           direct_dependencies_violation_msg_,
+                           {{"%s", parsed_file->dependency(i)->name()}})
                     << std::endl;
         }
       }
@@ -1945,6 +1950,23 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     }
     mode_ = MODE_PRINT;
     print_mode_ = PRINT_FREE_FIELDS;
+  } else if (name == "--enable_codegen_trace") {
+    // We use environment variables here so that subprocesses see this setting
+    // when we spawn them.
+    //
+    // Setting environment variables is more-or-less asking for a data race,
+    // because C got this wrong and did not mandate synchronization.
+    // In practice, this code path is "only" in the main thread of protoc, and
+    // it is common knowledge that touching setenv in a library is asking for
+    // life-ruining bugs *anyways*. As such, there is a reasonable probability
+    // that there isn't another thread kicking environment variables at this
+    // moment.
+
+#ifdef _WIN32
+    ::_putenv(absl::StrCat(io::Printer::kProtocCodegenTrace, "=yes").c_str());
+#else
+    ::setenv(io::Printer::kProtocCodegenTrace.data(), "yes", 0);
+#endif
   } else {
     // Some other flag.  Look it up in the generators list.
     const GeneratorInfo* generator_info = FindGeneratorByFlag(name);
@@ -2070,7 +2092,10 @@ Parse PROTO_FILES and generate output based on the options given:
                               defined in the given proto files. Groups share
                               the same field number space with the parent
                               message. Extension ranges are counted as
-                              occupied fields numbers.)";
+                              occupied fields numbers.
+  --enable_codegen_trace      Enables tracing which parts of protoc are
+                              responsible for what codegen output. Not supported
+                              by all backends or on all platforms.)";
   if (!plugin_prefix_.empty()) {
     std::cout << R"(
   --plugin=EXECUTABLE         Specifies a plugin executable to use.

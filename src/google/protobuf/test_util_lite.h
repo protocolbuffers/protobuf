@@ -35,7 +35,7 @@
 #ifndef GOOGLE_PROTOBUF_TEST_UTIL_LITE_H__
 #define GOOGLE_PROTOBUF_TEST_UTIL_LITE_H__
 
-#include <google/protobuf/unittest_lite.pb.h>
+#include "google/protobuf/unittest_lite.pb.h"
 
 namespace google {
 namespace protobuf {

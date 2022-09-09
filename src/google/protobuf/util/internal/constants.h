@@ -33,7 +33,7 @@
 
 #include <cstdint>
 
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/stubs/common.h"
 
 // This file contains constants used by //net/proto2/util/converter.
 

@@ -32,7 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/cpp/enum.h>
+#include "google/protobuf/compiler/cpp/enum.h"
 
 #include <cstdint>
 #include <limits>
@@ -40,10 +40,10 @@
 #include <unordered_set>
 #include <utility>
 
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/compiler/cpp/helpers.h>
-#include <google/protobuf/compiler/cpp/names.h>
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/stubs/strutil.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/names.h"
 
 namespace google {
 namespace protobuf {
@@ -51,9 +51,9 @@ namespace compiler {
 namespace cpp {
 
 namespace {
-// The GOOGLE_ARRAYSIZE constant is the max enum value plus 1. If the max enum value
-// is kint32max, GOOGLE_ARRAYSIZE will overflow. In such cases we should omit the
-// generation of the GOOGLE_ARRAYSIZE constant.
+// The ARRAYSIZE constant is the max enum value plus 1. If the max enum value
+// is kint32max, ARRAYSIZE will overflow. In such cases we should omit the
+// generation of the ARRAYSIZE constant.
 bool ShouldGenerateArraySize(const EnumDescriptor* descriptor) {
   int32_t max_value = descriptor->value(0)->number();
   for (int i = 0; i < descriptor->value_count(); i++) {

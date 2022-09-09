@@ -1,7 +1,6 @@
-#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
-// Copyright 2019 Google Inc.  All rights reserved.
-// https://github.com/protocolbuffers/protobuf
+// Copyright 2008 Google Inc.  All rights reserved.
+// https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -28,45 +27,47 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-#endregion
 
-using BenchmarkDotNet.Attributes;
+#ifndef GOOGLE_PROTOBUF_ARENA_CONFIG_H__
+#define GOOGLE_PROTOBUF_ARENA_CONFIG_H__
 
-namespace Google.Protobuf.Benchmarks
-{
-    /// <summary>
-    /// Benchmarks using ByteString.
-    /// </summary>
-    [MemoryDiagnoser]
-    public class ByteStringBenchmark
-    {
-        private const int Zero = 0;
-        private const int Kilobyte = 1024;
-        private const int _128Kilobytes = 1024 * 128;
-        private const int Megabyte = 1024 * 1024;
-        private const int _10Megabytes = 1024 * 1024 * 10;
+#include <atomic>
+#include <cstddef>
 
-        byte[] byteBuffer;
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
-        [GlobalSetup]
-        public void GlobalSetup()
-        {
-            byteBuffer = new byte[PayloadSize];
-        }
+namespace google {
+namespace protobuf {
+namespace internal {
+namespace arena_config_internal {
 
-        [Params(Zero, Kilobyte, _128Kilobytes, Megabyte, _10Megabytes)]
-        public int PayloadSize { get; set; }
+// We use an atomic here only for correctness so that we can read/write
+// concurrently. We don't have memory order requirements so we use relaxed
+// memory ordering.
+PROTOBUF_EXPORT extern std::atomic<size_t> default_arena_max_block_size;
 
-        [Benchmark]
-        public ByteString CopyFrom()
-        {
-            return ByteString.CopyFrom(byteBuffer);
-        }
+}  // namespace arena_config_internal
 
-        [Benchmark]
-        public ByteString UnsafeWrap()
-        {
-            return UnsafeByteOperations.UnsafeWrap(byteBuffer);
-        }
-    }
+// The default value to use for DefaultArenaMaxBlockSize when
+// SetDefaultArenaMaxBlockSize hasn't been called.
+PROTOBUF_EXPORT extern const size_t kDefaultDefaultArenaMaxBlockSize;
+
+// The default value to use for arena max block size when no value is provided
+// in ArenaOptions.
+inline size_t GetDefaultArenaMaxBlockSize() {
+  return arena_config_internal::default_arena_max_block_size.load(
+      std::memory_order_relaxed);
 }
+inline void SetDefaultArenaMaxBlockSize(size_t default_arena_max_block_size) {
+  return arena_config_internal::default_arena_max_block_size.store(
+      default_arena_max_block_size, std::memory_order_relaxed);
+}
+
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google
+
+#include "google/protobuf/port_undef.inc"
+
+#endif  // GOOGLE_PROTOBUF_ARENA_CONFIG_H__

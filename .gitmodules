@@ -1,12 +1,8 @@
-[submodule "third_party/benchmark"]
-	path = third_party/benchmark
-	url = https://github.com/google/benchmark.git
-        ignore = dirty
 [submodule "third_party/googletest"]
 	path = third_party/googletest
 	url = https://github.com/google/googletest.git
 	ignore = dirty
 [submodule "third_party/abseil-cpp"]
 	path = third_party/abseil-cpp
-	url = https://github.com/abseil/abseil-cpp
+	url = https://github.com/abseil/abseil-cpp.git
 	branch = lts_2022_06_23

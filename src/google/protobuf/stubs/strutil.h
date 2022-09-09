@@ -33,16 +33,18 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_STRUTIL_H__
 #define GOOGLE_PROTOBUF_STUBS_STRUTIL_H__
 
-#include <google/protobuf/stubs/common.h>
 #include <stdlib.h>
 
 #include <cstring>
-#include <google/protobuf/port_def.inc>
 #include <vector>
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/stubs/common.h"
+
+// Must be last.
+#include "google/protobuf/port_def.inc"  // NOLINT
 
 namespace google {
 namespace protobuf {
@@ -470,6 +472,6 @@ double NoLocaleStrtod(const char* str, char** endptr);
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_STUBS_STRUTIL_H__

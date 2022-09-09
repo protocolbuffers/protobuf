@@ -51,13 +51,14 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/descriptor.h>  // FieldDescriptor
-#include <google/protobuf/message.h>     // Message
-#include <google/protobuf/unknown_field_set.h>
-#include <google/protobuf/util/field_comparator.h>
+#include "google/protobuf/descriptor.h"  // FieldDescriptor
+#include "google/protobuf/message.h"     // Message
+#include "google/protobuf/unknown_field_set.h"
+#include "absl/container/fixed_array.h"
+#include "google/protobuf/util/field_comparator.h"
 
 // Always include as last one, otherwise it can break compilation
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -79,7 +80,7 @@ class FieldContext;  // declared below MessageDifferencer
 // In case of internal google codebase we are using absl::FixedArray instead
 // of vector. It significantly speeds up proto comparison (by ~30%) by
 // reducing the number of malloc/free operations
-typedef std::vector<const FieldDescriptor*> FieldDescriptorArray;
+typedef absl::FixedArray<const FieldDescriptor*, 16> FieldDescriptorArray;
 
 // A basic differencer that can be used to determine
 // the differences between two specified Protocol Messages. If any differences
@@ -975,6 +976,6 @@ class PROTOBUF_EXPORT FieldContext {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_UTIL_MESSAGE_DIFFERENCER_H__

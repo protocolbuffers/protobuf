@@ -34,8 +34,8 @@
 
 #include <limits>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
 
 namespace google {
 namespace protobuf {

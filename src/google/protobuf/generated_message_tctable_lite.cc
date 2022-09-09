@@ -32,16 +32,16 @@
 #include <numeric>
 #include <type_traits>
 
-#include <google/protobuf/extension_set.h>
-#include <google/protobuf/generated_message_tctable_decl.h>
-#include <google/protobuf/generated_message_tctable_impl.h>
-#include <google/protobuf/inlined_string_field.h>
-#include <google/protobuf/message_lite.h>
-#include <google/protobuf/parse_context.h>
-#include <google/protobuf/wire_format_lite.h>
+#include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/inlined_string_field.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/parse_context.h"
+#include "google/protobuf/wire_format_lite.h"
 
 // clang-format off
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 // clang-format on
 
 namespace google {
@@ -312,6 +312,23 @@ const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
     default:
       return Error(PROTOBUF_TC_PARAM_PASS);
   }
+}
+
+template <typename TagType>
+const char* TcParser::FastEndGroupImpl(PROTOBUF_TC_PARAM_DECL) {
+  if (PROTOBUF_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
+    PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
+  }
+  ctx->SetLastTag(data.decoded_tag());
+  ptr += sizeof(TagType);
+  PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
+}
+
+const char* TcParser::FastEndG1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return FastEndGroupImpl<uint8_t>(PROTOBUF_TC_PARAM_PASS);
+}
+const char* TcParser::FastEndG2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return FastEndGroupImpl<uint16_t>(PROTOBUF_TC_PARAM_PASS);
 }
 
 namespace {

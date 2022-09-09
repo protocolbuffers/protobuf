@@ -30,7 +30,7 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
-#include <google/protobuf/compiler/java/doc_comment.h>
+#include "google/protobuf/compiler/java/doc_comment.h"
 
 #include <gtest/gtest.h>
 

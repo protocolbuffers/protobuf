@@ -36,11 +36,11 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/zero_copy_stream.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -79,7 +79,7 @@ struct Options {
 };
 
 // Escape C++ trigraphs by escaping question marks to "\?".
-std::string PROTOC_EXPORT EscapeTrigraphs(const std::string& to_escape);
+std::string PROTOC_EXPORT EscapeTrigraphs(absl::string_view to_escape);
 
 // Remove white space from either end of a absl::string_view.
 void PROTOC_EXPORT TrimWhitespace(absl::string_view* input);
@@ -352,6 +352,6 @@ class PROTOC_EXPORT ImportWriter {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_HELPERS_H__

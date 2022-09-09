@@ -52,10 +52,10 @@
 
 #include <cstdint>
 
-#include <google/protobuf/stubs/common.h>
 #include <gmock/gmock.h>
 #include "absl/strings/string_view.h"
-#include <google/protobuf/util/internal/object_writer.h>
+#include "google/protobuf/port.h"
+#include "google/protobuf/util/internal/object_writer.h"
 
 namespace google {
 namespace protobuf {
@@ -218,8 +218,8 @@ class ExpectingObjectWriter : public ObjectWriter {
         .RetiresOnSaturation();
     return this;
   }
-  virtual ObjectWriter* RenderBytes(absl::string_view name,
-                                    absl::string_view value) {
+  ObjectWriter* RenderBytes(absl::string_view name,
+                            absl::string_view value) override {
     (name.empty() ? EXPECT_CALL(*mock_, RenderBytes(IsEmpty(),
                                                     TypedEq<absl::string_view>(
                                                         std::string(value))))

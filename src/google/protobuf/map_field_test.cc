@@ -32,21 +32,21 @@
 #include <memory>
 #include <unordered_map>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/map_unittest.pb.h>
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/arena.h>
-#include <google/protobuf/map.h>
-#include <google/protobuf/map_field_inl.h>
-#include <google/protobuf/message.h>
-#include <google/protobuf/repeated_field.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/map.h"
+#include "google/protobuf/map_field_inl.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/repeated_field.h"
 #include <gtest/gtest.h>
-#include <google/protobuf/arena_test_util.h>
-#include <google/protobuf/map_test_util.h>
+#include "google/protobuf/arena_test_util.h"
+#include "google/protobuf/map_test_util.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {

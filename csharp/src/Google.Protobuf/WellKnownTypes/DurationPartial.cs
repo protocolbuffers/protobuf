@@ -38,7 +38,7 @@ namespace Google.Protobuf.WellKnownTypes
 {
     // Manually-written partial class for the Duration well-known type,
     // providing a conversion to TimeSpan and convenience operators.
-    public partial class Duration : ICustomDiagnosticMessage
+    public partial class Duration : ICustomDiagnosticMessage, IComparable<Duration>
     {
         /// <summary>
         /// The number of nanoseconds in a second.
@@ -265,6 +265,27 @@ namespace Google.Protobuf.WellKnownTypes
                     builder.Append(nanos.ToString("d9", CultureInfo.InvariantCulture));
                 }
             }
+        }
+
+
+        /// <summary>
+        /// Given another duration, returns 0 if the durations are equivalent, -1 if this duration is shorter than the other, and 1 otherwise.
+        /// </summary>
+        /// <remarks>
+        /// This method expects that both durations are normalized; that is, that the values of <see cref="Seconds"/>
+        /// and <see cref="Nanos"/> are within the documented bounds.
+        /// If either value is not normalized, the results of this method are unspecified.
+        /// </remarks>
+        /// <param name="other">The duration to compare with this object.</param>
+        /// <returns>An integer indicating whether this duration is shorter or longer than <paramref name="other"/>.</returns>
+        public int CompareTo(Duration other)
+        {
+            return other == null ? 1
+                : Seconds < other.Seconds ? -1
+                : Seconds > other.Seconds ? 1
+                : Nanos < other.Nanos ? -1
+                : Nanos > other.Nanos ? 1
+                : 0;
         }
     }
 }

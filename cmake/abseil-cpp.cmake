@@ -33,6 +33,7 @@ set(protobuf_ABSL_USED_TARGETS
   absl::algorithm
   absl::base
   absl::bind_front
+  absl::bits
   absl::cleanup
   absl::cord
   absl::core_headers
@@ -43,6 +44,7 @@ set(protobuf_ABSL_USED_TARGETS
   absl::flat_hash_set
   absl::function_ref
   absl::hash
+  absl::layout
   absl::memory
   absl::optional
   absl::span

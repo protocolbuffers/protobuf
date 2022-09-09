@@ -37,15 +37,15 @@
 #include <type_traits>
 #include <utility>
 
-#include <google/protobuf/port.h>
-#include <google/protobuf/extension_set.h>
-#include <google/protobuf/generated_message_tctable_decl.h>
-#include <google/protobuf/metadata_lite.h>
-#include <google/protobuf/parse_context.h>
-#include <google/protobuf/wire_format_lite.h>
+#include "google/protobuf/port.h"
+#include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/metadata_lite.h"
+#include "google/protobuf/parse_context.h"
+#include "google/protobuf/wire_format_lite.h"
 
 // Must come last:
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -478,6 +478,9 @@ class PROTOBUF_EXPORT TcParser final {
   // parsing.
   static const char* MiniParse(PROTOBUF_TC_PARAM_DECL);
 
+  static const char* FastEndG1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastEndG2(PROTOBUF_TC_PARAM_DECL);
+
  private:
   friend class GeneratedTcTableLiteTest;
   static void* MaybeGetSplitBase(MessageLite* msg, const bool is_split,
@@ -488,6 +491,9 @@ class PROTOBUF_EXPORT TcParser final {
   static inline const char* SingularParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
   template <typename TagType, bool group_coding, bool aux_is_table>
   static inline const char* RepeatedParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
+
+  template <typename TagType>
+  static const char* FastEndGroupImpl(PROTOBUF_TC_PARAM_DECL);
 
   static inline PROTOBUF_ALWAYS_INLINE void SyncHasbits(
       MessageLite* msg, uint64_t hasbits, const TcParseTableBase* table) {
@@ -752,6 +758,6 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::Error(
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_IMPL_H__

@@ -28,14 +28,26 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: liujisi@google.com (Pherl Liu)
+#include "google/protobuf/arena_config.h"
 
-syntax = "proto2";
+#include <atomic>
+#include <cstddef>
 
-package objc.protobuf.tests.import;
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
-option optimize_for = LITE_RUNTIME;
+namespace google {
+namespace protobuf {
+namespace internal {
 
-message PublicImportMessageLite {
-  optional int32 e = 1;
-}
+PROTOBUF_CONSTINIT const size_t kDefaultDefaultArenaMaxBlockSize = 8 << 10;
+
+namespace arena_config_internal {
+
+std::atomic<size_t> default_arena_max_block_size{
+    kDefaultDefaultArenaMaxBlockSize};
+
+}  // namespace arena_config_internal
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google

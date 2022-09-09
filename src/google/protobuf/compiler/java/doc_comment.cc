@@ -32,16 +32,16 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/java/doc_comment.h>
+#include "google/protobuf/compiler/java/doc_comment.h"
 
 #include <vector>
 
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/str_split.h"
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/printer.h>
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {

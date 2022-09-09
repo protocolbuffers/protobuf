@@ -28,17 +28,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/compiler/ruby/ruby_generator.h>
+#include "google/protobuf/compiler/ruby/ruby_generator.h"
 
 #include <iomanip>
 #include <sstream>
 
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/plugin.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/plugin.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 
 namespace google {
 namespace protobuf {
@@ -68,7 +68,7 @@ std::string NumberToString(numeric_type value) {
 }
 
 std::string GetRequireName(const std::string& proto_file) {
-  int lastindex = proto_file.find_last_of(".");
+  int lastindex = proto_file.find_last_of('.');
   return proto_file.substr(0, lastindex) + "_pb";
 }
 
@@ -158,7 +158,7 @@ std::string DefaultValueForField(const FieldDescriptor* field) {
         for (int i = 0; i < default_str.length(); ++i) {
           // Write the hex form of each byte.
           os << "\\x" << std::hex << std::setw(2)
-             << ((uint16)((unsigned char)default_str.at(i)));
+             << ((uint16_t)((unsigned char)default_str.at(i)));
         }
         os << "\".force_encoding(\"ASCII-8BIT\")";
       }
@@ -421,7 +421,7 @@ int GeneratePackageModules(const FileDescriptor* file, io::Printer* printer) {
     //    -> A.B.C
     if (package_name.find("::") != std::string::npos) {
       need_change_to_module = false;
-    } else if (package_name.find(".") != std::string::npos) {
+    } else if (package_name.find('.') != std::string::npos) {
       GOOGLE_LOG(WARNING) << "ruby_package option should be in the form of:"
                           << " 'A::B::C' and not 'A.B.C'";
     }

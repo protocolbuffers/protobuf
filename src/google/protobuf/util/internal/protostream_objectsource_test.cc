@@ -28,30 +28,30 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/internal/protostream_objectsource.h>
+#include "google/protobuf/util/internal/protostream_objectsource.h"
 
 #include <cstdint>
 #include <memory>
 #include <sstream>
 
-#include <google/protobuf/any.pb.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/util/internal/expecting_objectwriter.h>
+#include "google/protobuf/any.pb.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/util/internal/expecting_objectwriter.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/util/internal/constants.h>
-#include <google/protobuf/util/internal/testdata/anys.pb.h>
-#include <google/protobuf/util/internal/testdata/books.pb.h>
-#include <google/protobuf/util/internal/testdata/field_mask.pb.h>
-#include <google/protobuf/util/internal/testdata/maps.pb.h>
-#include <google/protobuf/util/internal/testdata/proto3.pb.h>
-#include <google/protobuf/util/internal/testdata/struct.pb.h>
-#include <google/protobuf/util/internal/testdata/timestamp_duration.pb.h>
-#include <google/protobuf/util/internal/type_info_test_helper.h>
+#include "google/protobuf/util/internal/constants.h"
+#include "google/protobuf/util/internal/testdata/anys.pb.h"
+#include "google/protobuf/util/internal/testdata/books.pb.h"
+#include "google/protobuf/util/internal/testdata/field_mask.pb.h"
+#include "google/protobuf/util/internal/testdata/maps.pb.h"
+#include "google/protobuf/util/internal/testdata/proto3.pb.h"
+#include "google/protobuf/util/internal/testdata/struct.pb.h"
+#include "google/protobuf/util/internal/testdata/timestamp_duration.pb.h"
+#include "google/protobuf/util/internal/type_info_test_helper.h"
 
 
 namespace google {

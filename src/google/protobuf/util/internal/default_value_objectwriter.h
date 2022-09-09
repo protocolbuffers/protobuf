@@ -37,16 +37,16 @@
 #include <stack>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
 #include "absl/strings/string_view.h"
-#include <google/protobuf/util/internal/datapiece.h>
-#include <google/protobuf/util/internal/object_writer.h>
-#include <google/protobuf/util/internal/type_info.h>
-#include <google/protobuf/util/internal/utility.h>
-#include <google/protobuf/util/type_resolver.h>
+#include "google/protobuf/port.h"
+#include "google/protobuf/util/internal/datapiece.h"
+#include "google/protobuf/util/internal/object_writer.h"
+#include "google/protobuf/util/internal/type_info.h"
+#include "google/protobuf/util/internal/utility.h"
+#include "google/protobuf/util/type_resolver.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -326,6 +326,6 @@ class PROTOBUF_EXPORT DefaultValueObjectWriter : public ObjectWriter {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_DEFAULT_VALUE_OBJECTWRITER_H__

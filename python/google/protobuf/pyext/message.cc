@@ -31,7 +31,7 @@
 // Author: anuraag@google.com (Anuraag Agrawal)
 // Author: tibell@google.com (Johan Tibell)
 
-#include <google/protobuf/pyext/message.h>
+#include "google/protobuf/pyext/message.h"
 
 #include <structmember.h>  // A Python header file.
 
@@ -41,7 +41,7 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/strutil.h"
 
 #ifndef PyVarObject_HEAD_INIT
 #define PyVarObject_HEAD_INIT(type, size) PyObject_HEAD_INIT(type) size,
@@ -49,34 +49,34 @@
 #ifndef Py_TYPE
 #define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
 #endif
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/message.h>
-#include <google/protobuf/text_format.h>
-#include <google/protobuf/unknown_field_set.h>
-#include <google/protobuf/pyext/descriptor.h>
-#include <google/protobuf/pyext/descriptor_pool.h>
-#include <google/protobuf/pyext/extension_dict.h>
-#include <google/protobuf/pyext/field.h>
-#include <google/protobuf/pyext/map_container.h>
-#include <google/protobuf/pyext/message_factory.h>
-#include <google/protobuf/pyext/repeated_composite_container.h>
-#include <google/protobuf/pyext/repeated_scalar_container.h>
-#include <google/protobuf/pyext/safe_numerics.h>
-#include <google/protobuf/pyext/scoped_pyobject_ptr.h>
-#include <google/protobuf/pyext/unknown_field_set.h>
-#include <google/protobuf/pyext/unknown_fields.h>
-#include <google/protobuf/util/message_differencer.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/text_format.h"
+#include "google/protobuf/unknown_field_set.h"
+#include "google/protobuf/pyext/descriptor.h"
+#include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/pyext/extension_dict.h"
+#include "google/protobuf/pyext/field.h"
+#include "google/protobuf/pyext/map_container.h"
+#include "google/protobuf/pyext/message_factory.h"
+#include "google/protobuf/pyext/repeated_composite_container.h"
+#include "google/protobuf/pyext/repeated_scalar_container.h"
+#include "google/protobuf/pyext/safe_numerics.h"
+#include "google/protobuf/pyext/scoped_pyobject_ptr.h"
+#include "google/protobuf/pyext/unknown_field_set.h"
+#include "google/protobuf/pyext/unknown_fields.h"
+#include "google/protobuf/util/message_differencer.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/strtod.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/stubs/map_util.h>
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/strtod.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "util/gtl/map_util.h"
 
 // clang-format off
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 // clang-format on
 
 #define PyString_AsString(ob) \
@@ -2677,7 +2677,7 @@ CMessage* CMessage::BuildSubMessageFromPointer(
   if (!this->child_submessages) {
     this->child_submessages = new CMessage::SubMessagesMap();
   }
-  CMessage* cmsg = FindPtrOrNull(
+  CMessage* cmsg = gtl::FindPtrOrNull(
       *this->child_submessages, sub_message);
   if (cmsg) {
     Py_INCREF(cmsg);
@@ -2700,7 +2700,7 @@ CMessage* CMessage::MaybeReleaseSubMessage(Message* sub_message) {
   if (!this->child_submessages) {
     return nullptr;
   }
-  CMessage* released = FindPtrOrNull(
+  CMessage* released = gtl::FindPtrOrNull(
       *this->child_submessages, sub_message);
   if (!released) {
     return nullptr;

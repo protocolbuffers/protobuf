@@ -32,10 +32,10 @@ syntax = "proto3";
 
 import "objectivec/Tests/unittest.proto";
 
-// We don't put this in a package within proto2 because we need to make sure
-// that the generated code doesn't depend on being in the proto2 namespace.
-// In map_test_util.h we do "using namespace unittest = objc.protobuf.tests".
 package objc.protobuf.tests;
+
+// Explicit empty prefix, tests some validations code paths also.
+option objc_class_prefix = "";
 
 // Tests maps.
 message TestMap {

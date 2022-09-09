@@ -32,8 +32,10 @@
 
 syntax = "proto2";
 
-package objc.protobuf.tests.import;
+package objc.protobuf.tests.public_import;
 
-message PublicImportMessage {
+option objc_class_prefix = "PublicImport";
+
+message Message {
   optional int32 e = 1;
 }

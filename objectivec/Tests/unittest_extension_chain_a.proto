@@ -29,7 +29,7 @@
 
 syntax = "proto2";
 
-package objc.protobuf.tests;
+package objc.protobuf.tests.chain;
 
 import "objectivec/Tests/unittest.proto";
 
@@ -37,15 +37,17 @@ import "objectivec/Tests/unittest_extension_chain_b.proto";
 import "objectivec/Tests/unittest_extension_chain_c.proto";
 import "objectivec/Tests/unittest_extension_chain_d.proto";
 
+option objc_class_prefix = "Chain";
+
 // The Root for this file should end up adding the local extension and merging
 // in the extensions from D's Root (unittest and C will come via D's).
 
-message ChainAMessage {
-  optional ChainBMessage b = 1;
-  optional ChainCMessage c = 2;
-  optional ChainDMessage d = 3;
+message AMessage {
+  optional BMessage b = 1;
+  optional CMessage c = 2;
+  optional DMessage d = 3;
 }
 
-extend TestAllExtensions {
+extend objc.protobuf.tests.TestAllExtensions {
   optional int32 chain_a_extension = 10001;
 }

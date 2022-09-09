@@ -37,11 +37,11 @@
 // within an enclosing namespace and requires header files to be included
 // out of this file.
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
 #include <gtest/gtest.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/message.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/message.h"
 
 namespace google {
 namespace protobuf {
