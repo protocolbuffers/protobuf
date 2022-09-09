@@ -2527,12 +2527,6 @@ static int count_bits_debug(uint64_t x) {
   return n;
 }
 
-static int compare_int32(const void* a_ptr, const void* b_ptr) {
-  int32_t a = *(int32_t*)a_ptr;
-  int32_t b = *(int32_t*)b_ptr;
-  return a < b ? -1 : (a == b ? 0 : 1);
-}
-
 static upb_MiniTable_Enum* create_enumlayout(upb_DefBuilder* ctx,
                                              const upb_EnumDef* e) {
   const char* desc = _upb_EnumDef_MiniDescriptor(e, ctx->tmp_arena);
