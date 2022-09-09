@@ -296,10 +296,17 @@ void GenerateEnum(const EnumDescriptor* en, io::Printer* printer) {
 
   for (int i = 0; i < en->value_count(); i++) {
     const EnumValueDescriptor* value = en->value(i);
+    char* name = strdup(value->name());
+    if (name[0] < 'A' || name[0] > 'Z') {
+      if (name[0] >= 'a' && name[0] <= 'z') {
+        name[0] -= 32; // auto capitalize
+      }
+    }
     printer->Print(
       "value :$name$, $number$\n",
-      "name", value->name(),
+      "name", name,
       "number", NumberToString(value->number()));
+    free(name);
   }
 
   printer->Outdent();
