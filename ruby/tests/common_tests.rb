@@ -714,16 +714,17 @@ module CommonTests
     assert proto_module::TestEnum::A == 1
     assert proto_module::TestEnum::B == 2
     assert proto_module::TestEnum::C == 3
-
     assert proto_module::TestEnum::V0 == 4
 
     assert proto_module::TestEnum::lookup(1) == :A
     assert proto_module::TestEnum::lookup(2) == :B
     assert proto_module::TestEnum::lookup(3) == :C
+    assert proto_module::TestEnum::lookup(4) == :V0
 
     assert proto_module::TestEnum::resolve(:A) == 1
     assert proto_module::TestEnum::resolve(:B) == 2
     assert proto_module::TestEnum::resolve(:C) == 3
+    assert proto_module::TestEnum::resolve(:V0) == 4
   end
 
   def test_enum_const_get_helpers
