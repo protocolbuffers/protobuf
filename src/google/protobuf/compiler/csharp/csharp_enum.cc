@@ -61,6 +61,9 @@ EnumGenerator::~EnumGenerator() {
 
 void EnumGenerator::Generate(io::Printer* printer) {
   WriteEnumDocComment(printer, descriptor_);
+  if (descriptor_->options().deprecated()) {
+    printer->Print("[global::System.ObsoleteAttribute]\n");
+  }
   printer->Print("$access_level$ enum $name$ {\n",
                  "access_level", class_access_level(),
                  "name", descriptor_->name());
@@ -69,6 +72,9 @@ void EnumGenerator::Generate(io::Printer* printer) {
   std::set<int> used_number;
   for (int i = 0; i < descriptor_->value_count(); i++) {
       WriteEnumValueDocComment(printer, descriptor_->value(i));
+      if (descriptor_->value(i)->options().deprecated()) {
+        printer->Print("[global::System.ObsoleteAttribute]\n");
+      }
       std::string original_name = descriptor_->value(i)->name();
       std::string name =
           GetEnumValueName(descriptor_->name(), descriptor_->value(i)->name());
