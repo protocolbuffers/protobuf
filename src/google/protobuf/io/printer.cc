@@ -320,8 +320,8 @@ bool Printer::ValidateIndexLookupInBounds(size_t index,
 
 void Printer::PrintImpl(absl::string_view format,
                         absl::Span<const std::string> args, PrintOptions opts) {
-  // Inside of this function, we set intentation as we print new lines from the
-  // format string. No matter how we exit this functon, we should fix up the
+  // Inside of this function, we set indentation as we print new lines from the
+  // format string. No matter how we exit this function, we should fix up the
   // indent to what it was before we entered; a cleanup makes it easy to avoid
   // this mistake.
   size_t original_indent = indent_;
