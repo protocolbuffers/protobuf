@@ -2644,8 +2644,6 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
     if (ctx->layout) {
       UPB_ASSERT(ctx->enum_count < ctx->layout->enum_count);
       e->layout = ctx->layout->enums[ctx->enum_count++];
-      UPB_ASSERT(upb_inttable_count(&e->iton) ==
-                 e->layout->value_count + count_bits_debug(e->layout->mask));
     } else {
       e->layout = create_enumlayout(ctx, e);
     }

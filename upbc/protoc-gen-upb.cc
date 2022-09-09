@@ -1373,16 +1373,13 @@ void WriteMessage(const protobuf::Descriptor* message, const FileLayout& layout,
 
 void WriteEnum(const upb_MiniTable_Enum* mt, const protobuf::EnumDescriptor* e,
                Output& output) {
-  std::string values_init = "NULL";
-
-  if (mt->value_count) {
-    values_init = EnumInit(e) + "_values";
-    output("static const int32_t $0[$1] = {\n", values_init, mt->value_count);
-    for (int i = 0; i < mt->value_count; i++) {
-      output("  $0,\n", mt->values[i]);
-    }
-    output("};\n\n");
+  std::string values_init = "{\n";
+  uint32_t value_count = (mt->mask_limit / 32) + mt->value_count;
+  for (uint32_t i = 0; i < value_count; i++) {
+    absl::StrAppend(&values_init, "                0x", absl::Hex(mt->data[i]),
+                    ",\n");
   }
+  values_init += "    }";
 
   output(
       R"cc(
@@ -1392,8 +1389,7 @@ void WriteEnum(const upb_MiniTable_Enum* mt, const protobuf::EnumDescriptor* e,
             $3,
         };
       )cc",
-      EnumInit(e), values_init, absl::StrCat("0x", absl::Hex(mt->mask), "ULL"),
-      mt->value_count);
+      EnumInit(e), mt->mask_limit, mt->value_count, values_init);
   output("\n");
 }
 

@@ -31,6 +31,7 @@
 
 #include "upb/internal/array.h"
 #include "upb/internal/decode.h"
+#include "upb/msg_internal.h"
 #include "upb/upb.h"
 
 // Must be last.
@@ -421,11 +422,7 @@ static bool _upb_Decoder_CheckEnumSlow(upb_Decoder* d, const char* ptr,
                                        const upb_MiniTable_Enum* e,
                                        const upb_MiniTable_Field* field,
                                        uint32_t v) {
-  // OPT: binary search long lists?
-  int n = e->value_count;
-  for (int i = 0; i < n; i++) {
-    if ((uint32_t)e->values[i] == v) return true;
-  }
+  if (_upb_MiniTable_CheckEnumValueSlow(e, v)) return true;
 
   // Unrecognized enum goes into unknown fields.
   // For packed fields the tag could be arbitrarily far in the past, so we
@@ -445,8 +442,8 @@ static bool _upb_Decoder_CheckEnum(upb_Decoder* d, const char* ptr,
                                    wireval* val) {
   uint32_t v = val->uint32_val;
 
-  if (UPB_LIKELY(v < 64) && UPB_LIKELY(((1ULL << v) & e->mask))) return true;
-
+  _kUpb_FastEnumCheck_Status status = _upb_MiniTable_CheckEnumValueFast(e, v);
+  if (UPB_LIKELY(status == _kUpb_FastEnumCheck_ValueIsInEnum)) return true;
   return _upb_Decoder_CheckEnumSlow(d, ptr, msg, e, field, v);
 }
 

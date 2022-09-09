@@ -50,19 +50,6 @@ UPB_INLINE const upb_MiniTable_Enum* upb_MiniTable_GetSubEnumTable(
   return mini_table->subs[field->submsg_index].subenum;
 }
 
-// Validates enum value against range defined by enum mini table.
-UPB_INLINE bool upb_MiniTable_Enum_CheckValue(const upb_MiniTable_Enum* e,
-                                              int32_t val) {
-  uint32_t uval = (uint32_t)val;
-  if (uval < 64) return e->mask & (1ULL << uval);
-  // OPT: binary search long lists?
-  int n = e->value_count;
-  for (int i = 0; i < n; i++) {
-    if (e->values[i] == val) return true;
-  }
-  return false;
-}
-
 /** upb_MtDataEncoder *********************************************************/
 
 // Functions to encode a string in a format that can be loaded by
