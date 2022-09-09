@@ -38,15 +38,15 @@
 #include <cstdint>
 #include <string>
 
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/descriptor.h>
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/descriptor.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/compiler/java/context.h>
-#include <google/protobuf/compiler/java/options.h>
-#include <google/protobuf/descriptor.pb.h>
+#include "google/protobuf/compiler/java/context.h"
+#include "google/protobuf/compiler/java/options.h"
+#include "google/protobuf/descriptor.pb.h"
 
 // Must be last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -485,5 +485,5 @@ std::pair<int, int> GetTableDrivenNumberOfEntriesAndLookUpStartFieldNumber(
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_HELPERS_H__

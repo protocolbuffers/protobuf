@@ -32,7 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/generated_message_reflection.h>
+#include "google/protobuf/generated_message_reflection.h"
 
 #include <algorithm>
 #include <atomic>
@@ -40,28 +40,28 @@
 #include <cstring>
 #include <set>
 #include <string>
-#include <unordered_map>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
 #include "absl/base/casts.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/extension_set.h>
-#include <google/protobuf/generated_message_tctable_gen.h>
-#include <google/protobuf/generated_message_tctable_impl.h>
-#include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/inlined_string_field.h>
-#include <google/protobuf/map_field.h>
-#include <google/protobuf/map_field_inl.h>
-#include <google/protobuf/repeated_field.h>
-#include <google/protobuf/unknown_field_set.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_message_tctable_gen.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/inlined_string_field.h"
+#include "google/protobuf/map_field.h"
+#include "google/protobuf/map_field_inl.h"
+#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/unknown_field_set.h"
 
 
 // clang-format off
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 // clang-format on
 
 #define GOOGLE_PROTOBUF_HAS_ONEOF
@@ -139,7 +139,8 @@ const std::string** MakeDenseEnumCache(const EnumDescriptor* desc, int min_val,
   return str_ptrs;
 }
 
-const std::string& NameOfDenseEnumSlow(int v, DenseEnumCacheInfo* deci) {
+PROTOBUF_NOINLINE const std::string& NameOfDenseEnumSlow(
+    int v, DenseEnumCacheInfo* deci) {
   if (v < deci->min_val || v > deci->max_val)
     return GetEmptyStringAlreadyInited();
 
@@ -2977,12 +2978,12 @@ static uint32_t AlignTo(uint32_t v) {
 }
 
 static internal::TailCallParseFunc GetFastParseFunction(
-    const std::string& name) {
+    absl::string_view name) {
   // This list must be synchronized with TcParser.
   // Missing entries are replaced with MiniParse in opt mode to avoid runtime
   // failures. It check-fails in debug mode.
   static const auto* const map =
-      new std::unordered_map<std::string, internal::TailCallParseFunc>{
+      new absl::flat_hash_map<absl::string_view, internal::TailCallParseFunc>{
           {"::_pbi::TcParser::FastF32S1", internal::TcParser::FastF32S1},
           {"::_pbi::TcParser::FastF32S2", internal::TcParser::FastF32S2},
           {"::_pbi::TcParser::FastF32R1", internal::TcParser::FastF32R1},
@@ -3075,6 +3076,8 @@ static internal::TailCallParseFunc GetFastParseFunction(
           {"::_pbi::TcParser::FastMtR2", internal::TcParser::FastMtR2},
           {"::_pbi::TcParser::FastGtR1", internal::TcParser::FastGtR1},
           {"::_pbi::TcParser::FastGtR2", internal::TcParser::FastGtR2},
+          {"::_pbi::TcParser::FastEndG1", internal::TcParser::FastEndG1},
+          {"::_pbi::TcParser::FastEndG2", internal::TcParser::FastEndG2},
       };
   auto it = map->find(name);
   if (it == map->end()) {
@@ -3109,8 +3112,14 @@ void Reflection::PopulateTcParseFastEntries(
     TcParseTableBase::FastFieldEntry* fast_entries) const {
   for (const auto& fast_field : table_info.fast_path_fields) {
     if (fast_field.field == nullptr) {
-      // No fast entry here. Use mini parser.
-      *fast_entries++ = {internal::TcParser::MiniParse, {}};
+      if (fast_field.func_name.empty()) {
+        // No fast entry here. Use mini parser.
+        *fast_entries++ = {internal::TcParser::MiniParse, {}};
+      } else {
+        // No field, but still a special entry.
+        *fast_entries++ = {GetFastParseFunction(fast_field.func_name),
+                           {fast_field.coded_tag, fast_field.nonfield_info}};
+      }
     } else if (fast_field.func_name.find("TcParser::FastEv") !=
                fast_field.func_name.npos) {
       // We can't use fast parsing for these entries because we can't specify
@@ -3624,4 +3633,4 @@ bool IsDescendant(Message& root, const Message& message) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

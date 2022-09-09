@@ -39,12 +39,12 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/generated_message_tctable_decl.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
 
 // Must come last:
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -81,6 +81,7 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     uint16_t coded_tag;
     uint8_t hasbit_idx;
     uint8_t aux_idx;
+    uint16_t nonfield_info;
   };
   std::vector<FastFieldInfo> fast_path_fields;
 
@@ -157,6 +158,6 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_GEN_H__

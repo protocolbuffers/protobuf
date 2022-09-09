@@ -34,11 +34,14 @@
 #ifndef GOOGLE_PROTOBUF_GOOGLETEST_H__
 #define GOOGLE_PROTOBUF_GOOGLETEST_H__
 
+#include <gmock/gmock.h>
+
 #include <map>
 #include <vector>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <gmock/gmock.h>
+
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+
 // Disable death tests if we use exceptions in CHECK().
 #if !PROTOBUF_USE_EXCEPTIONS && defined(GTEST_HAS_DEATH_TEST) && \
     !GTEST_OS_WINDOWS
@@ -81,6 +84,8 @@ static const LogLevel WARNING = LOGLEVEL_WARNING;
 class ScopedMemoryLog {
  public:
   ScopedMemoryLog();
+  ScopedMemoryLog(const ScopedMemoryLog&) = delete;
+  ScopedMemoryLog& operator=(const ScopedMemoryLog&) = delete;
   virtual ~ScopedMemoryLog();
 
   // Fetches all messages with the given severity level.
@@ -94,8 +99,6 @@ class ScopedMemoryLog {
                         const std::string& message);
 
   static ScopedMemoryLog* active_log_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ScopedMemoryLog);
 };
 
 }  // namespace protobuf

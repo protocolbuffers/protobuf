@@ -49,36 +49,36 @@
 #include <memory>
 #include <vector>
 
-#include <google/protobuf/compiler/cpp/unittest.h>
+#include "google/protobuf/compiler/cpp/unittest.h"
 #include "absl/strings/string_view.h"
 #ifndef _MSC_VER
 // We exclude this large proto because it's too large for
 // visual studio to compile (report internal errors).
-#include <google/protobuf/unittest_enormous_descriptor.pb.h>
+#include "google/protobuf/unittest_enormous_descriptor.pb.h"
 #endif
-#include <google/protobuf/stubs/callback.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/compiler/cpp/helpers.h>
-#include <google/protobuf/unittest_no_generic_services.pb.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/stubs/callback.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/unittest_no_generic_services.pb.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
 #include "absl/strings/substitute.h"
-#include <google/protobuf/arena.h>
-#include <google/protobuf/compiler/cpp/test_bad_identifiers.pb.h>
-#include <google/protobuf/compiler/importer.h>
-#include <google/protobuf/compiler/scc.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/test_util2.h>
-#include <google/protobuf/stubs/stl_util.h>
+#include "google/protobuf/arena.h"
+#include "google/protobuf/compiler/cpp/test_bad_identifiers.pb.h"
+#include "google/protobuf/compiler/importer.h"
+#include "google/protobuf/compiler/scc.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/test_util2.h"
+#include "google/protobuf/stubs/stl_util.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -2222,4 +2222,4 @@ TEST(DESCRIPTOR_INIT_TEST_NAME, Initialized) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

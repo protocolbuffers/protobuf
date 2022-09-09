@@ -41,17 +41,17 @@
 #include <unordered_set>
 #include <vector>
 
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
-#include <google/protobuf/compiler/objectivec/objectivec_nsobject_methods.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/io/io_win32.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/port.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/objectivec/objectivec_helpers.h"
+#include "google/protobuf/compiler/objectivec/objectivec_nsobject_methods.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/io_win32.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_split.h"
@@ -571,8 +571,8 @@ void MaybeUnQuote(absl::string_view* input) {
 }  // namespace
 
 // Escape C++ trigraphs by escaping question marks to \?
-std::string EscapeTrigraphs(const std::string& to_escape) {
-  return StringReplace(to_escape, "?", "\\?", true);
+std::string EscapeTrigraphs(absl::string_view to_escape) {
+  return absl::StrReplaceAll(to_escape, {{"?", "\\?"}});
 }
 
 void TrimWhitespace(absl::string_view* input) {
@@ -1217,14 +1217,15 @@ std::string BuildCommentsString(const SourceLocation& location,
     add_leading_space = true;
   }
 
-  for (int i = 0; i < lines.size(); i++) {
-    std::string line = StripPrefixString(lines[i], " ");
-    // HeaderDoc and appledoc use '\' and '@' for markers; escape them.
-    line = StringReplace(line, "\\", "\\\\", true);
-    line = StringReplace(line, "@", "\\@", true);
-    // Decouple / from * to not have inline comments inside comments.
-    line = StringReplace(line, "/*", "/\\*", true);
-    line = StringReplace(line, "*/", "*\\/", true);
+  for (size_t i = 0; i < lines.size(); i++) {
+    std::string line = absl::StrReplaceAll(
+        StripPrefixString(lines[i], " "),
+        {// HeaderDoc and appledoc use '\' and '@' for markers; escape them.
+         {"\\", "\\\\"},
+         {"@", "\\@"},
+         // Decouple / from * to not have inline comments inside comments.
+         {"/*", "/\\*"},
+         {"*/", "*\\/"}});
     line = prefix + line;
     StripWhitespace(&line);
     // If not a one line, need to add the first space before *, as

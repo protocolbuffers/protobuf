@@ -33,37 +33,15 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_STL_UTIL_H__
 #define GOOGLE_PROTOBUF_STUBS_STL_UTIL_H__
 
-#include <google/protobuf/stubs/common.h>
-
 #include <algorithm>
 
+#include "google/protobuf/stubs/common.h"
+
 // Must be last.
-#include <google/protobuf/port_def.inc>  // NOLINT
+#include "google/protobuf/port_def.inc"  // NOLINT
 
 namespace google {
 namespace protobuf {
-
-// Inside Google, this function implements a horrible, disgusting hack in which
-// we reach into the string's private implementation and resize it without
-// initializing the new bytes.  In some cases doing this can significantly
-// improve performance.  However, since it's totally non-portable it has no
-// place in open source code.  Feel free to fill this function in with your
-// own disgusting hack if you want the perf boost.
-inline void STLStringResizeUninitialized(std::string* s, size_t new_size) {
-  s->resize(new_size);
-}
-
-// As above, but we make sure to follow amortized growth in which we always
-// increase the capacity by at least a constant factor >1.
-inline void STLStringResizeUninitializedAmortized(std::string* s,
-                                                  size_t new_size) {
-  const size_t cap = s->capacity();
-  if (new_size > cap) {
-    // Make sure to always grow by at least a factor of 2x.
-    s->reserve(std::max<size_t>(new_size, 2 * cap));
-  }
-  STLStringResizeUninitialized(s, new_size);
-}
 
 // Return a mutable char* pointing to a string's internal buffer,
 // which may not be null-terminated. Writing through this pointer will
@@ -85,6 +63,6 @@ inline char* string_as_array(std::string* str) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>  // NOLINT
+#include "google/protobuf/port_undef.inc"  // NOLINT
 
 #endif  // GOOGLE_PROTOBUF_STUBS_STL_UTIL_H__

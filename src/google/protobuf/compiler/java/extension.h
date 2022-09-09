@@ -38,7 +38,7 @@
 #include <map>
 #include <string>
 
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {

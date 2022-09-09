@@ -36,12 +36,12 @@
 #include <string>
 #include <utility>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/any.pb.h>
-#include <google/protobuf/type.pb.h>
-#include <google/protobuf/repeated_field.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/any.pb.h"
+#include "google/protobuf/type.pb.h"
+#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
@@ -49,7 +49,7 @@
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -202,6 +202,6 @@ PROTOBUF_EXPORT bool SafeStrToFloat(absl::string_view str, float* value);
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_UTILITY_H__

@@ -1,0 +1,36 @@
+load("@rules_cc//cc:defs.bzl", "cc_binary")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("//benchmarks:internal.bzl", "internal_benchmark_test")
+
+# The benchmark binary which can be run over any dataset.
+cc_binary(
+    name = "cpp_benchmark",
+    srcs = [
+        "cpp_benchmark.cc",
+    ],
+    deps = [
+        "//:protobuf",
+        "//benchmarks:benchmarks_cc_proto",
+        "//benchmarks/datasets:cc_protos",
+        "@com_github_google_benchmark//:benchmark_main",
+    ],
+)
+
+# A pre-configured binary using the checked in datasets.
+internal_benchmark_test(
+    name = "cpp",
+    binary = ":cpp_benchmark",
+    datasets = [
+        "//benchmarks/datasets",
+    ],
+)
+
+pkg_files(
+    name = "dist_files",
+    srcs = [
+        "BUILD.bazel",
+        "cpp_benchmark.cc",
+    ],
+    strip_prefix = strip_prefix.from_root(""),
+    visibility = ["//benchmarks:__pkg__"],
+)

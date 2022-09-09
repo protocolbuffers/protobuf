@@ -41,11 +41,12 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/compiler/cpp/field.h>
-#include <google/protobuf/compiler/cpp/helpers.h>
-#include <google/protobuf/compiler/scc.h>
-#include <google/protobuf/compiler/cpp/options.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/compiler/cpp/field.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/compiler/scc.h"
+#include "google/protobuf/compiler/cpp/options.h"
 
 namespace google {
 namespace protobuf {
@@ -136,8 +137,10 @@ class FileGenerator {
   void GenerateForwardDeclarations(io::Printer* printer);
 
   // Generates top or bottom of a header file.
-  void GenerateTopHeaderGuard(io::Printer* printer, bool pb_h);
-  void GenerateBottomHeaderGuard(io::Printer* printer, bool pb_h);
+  void GenerateTopHeaderGuard(
+      io::Printer* printer, google::protobuf::compiler::cpp::GeneratedFileType file_type);
+  void GenerateBottomHeaderGuard(
+      io::Printer* printer, google::protobuf::compiler::cpp::GeneratedFileType file_type);
 
   // Generates #include directives.
   void GenerateLibraryIncludes(io::Printer* printer);

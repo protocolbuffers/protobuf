@@ -38,19 +38,22 @@
 #include <string>
 #include <typeinfo>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/port.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+#include "absl/numeric/bits.h"
+#include "absl/synchronization/mutex.h"
+#include "google/protobuf/port.h"
 
 
 #ifdef ADDRESS_SANITIZER
 #include <sanitizer/asan_interface.h>
 #endif  // ADDRESS_SANITIZER
 
-#include <google/protobuf/arenaz_sampler.h>
+#include "google/protobuf/arena_config.h"
+#include "google/protobuf/arenaz_sampler.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 
 namespace google {
@@ -243,17 +246,16 @@ class PROTOBUF_EXPORT ArenaMetricsCollector {
 
 struct AllocationPolicy {
   static constexpr size_t kDefaultStartBlockSize = 256;
-  static constexpr size_t kDefaultMaxBlockSize = 8192;
 
   size_t start_block_size = kDefaultStartBlockSize;
-  size_t max_block_size = kDefaultMaxBlockSize;
+  size_t max_block_size = GetDefaultArenaMaxBlockSize();
   void* (*block_alloc)(size_t) = nullptr;
   void (*block_dealloc)(void*, size_t) = nullptr;
 
   bool IsDefault() const {
     return start_block_size == kDefaultStartBlockSize &&
-           max_block_size == kDefaultMaxBlockSize && block_alloc == nullptr &&
-           block_dealloc == nullptr;
+           max_block_size == GetDefaultArenaMaxBlockSize() &&
+           block_alloc == nullptr && block_dealloc == nullptr;
   }
 };
 
@@ -317,6 +319,8 @@ class TaggedAllocationPolicyPtr {
 
 enum class AllocationClient { kDefault, kArray };
 
+class ThreadSafeArena;
+
 // A simple arena allocator. Calls to allocate functions must be properly
 // serialized by the caller, hence this class cannot be used as a general
 // purpose allocator in a multi-threaded program. It serves as a building block
@@ -350,7 +354,7 @@ class PROTOBUF_EXPORT SerialArena {
     if (PROTOBUF_PREDICT_FALSE(size < 16)) return nullptr;
     // We round up to the next larger block in case the memory doesn't match
     // the pattern we are looking for.
-    const size_t index = Bits::Log2FloorNonZero64(size - 1) - 3;
+    const size_t index = absl::bit_width(size - 1) - 4;
 
     if (index >= cached_block_length_) return nullptr;
     auto& cached_head = cached_blocks_[index];
@@ -372,8 +376,7 @@ class PROTOBUF_EXPORT SerialArena {
   // the right size. We can statically know if the allocation size can benefit
   // from it.
   template <AllocationClient alloc_client = AllocationClient::kDefault>
-  void* AllocateAligned(size_t n, const AllocationPolicy* policy,
-                        ThreadSafeArenaStats* stats) {
+  void* AllocateAligned(size_t n) {
     GOOGLE_DCHECK_EQ(internal::AlignUpTo8(n), n);  // Must be already aligned.
     GOOGLE_DCHECK_GE(limit_, ptr());
 
@@ -384,7 +387,7 @@ class PROTOBUF_EXPORT SerialArena {
     }
 
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(n))) {
-      return AllocateAlignedFallback(n, policy, stats);
+      return AllocateAlignedFallback(n);
     }
     return AllocateFromExisting(n);
   }
@@ -407,13 +410,13 @@ class PROTOBUF_EXPORT SerialArena {
     if (sizeof(void*) < 8) {
       if (PROTOBUF_PREDICT_FALSE(size < 16)) return;
     } else {
-      GOOGLE_DCHECK(size >= 16);
+      PROTOBUF_ASSUME(size >= 16);
     }
 
     // We round down to the next smaller block in case the memory doesn't match
     // the pattern we are looking for. eg, someone might have called Reserve()
     // on the repeated field.
-    const size_t index = Bits::Log2FloorNonZero64(size) - 4;
+    const size_t index = absl::bit_width(size) - 5;
 
     if (PROTOBUF_PREDICT_FALSE(index >= cached_block_length_)) {
       // We can't put this object on the freelist so make this object the
@@ -485,13 +488,10 @@ class PROTOBUF_EXPORT SerialArena {
 
   PROTOBUF_ALWAYS_INLINE
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
-                                   void (*destructor)(void*),
-                                   const AllocationPolicy* policy,
-                                   ThreadSafeArenaStats* stats) {
+                                   void (*destructor)(void*)) {
     size_t required = AlignUpTo(n, align) + cleanup::Size(destructor);
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(required))) {
-      return AllocateAlignedWithCleanupFallback(n, align, destructor, policy,
-                                                stats);
+      return AllocateAlignedWithCleanupFallback(n, align, destructor);
     }
     return AllocateFromExistingWithCleanupFallback(n, align, destructor);
   }
@@ -501,7 +501,7 @@ class PROTOBUF_EXPORT SerialArena {
                   const AllocationPolicy* policy, ThreadSafeArenaStats* stats) {
     size_t required = cleanup::Size(destructor);
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(required))) {
-      return AddCleanupFallback(elem, destructor, policy, stats);
+      return AddCleanupFallback(elem, destructor);
     }
     AddCleanupFromExisting(elem, destructor);
   }
@@ -533,18 +533,14 @@ class PROTOBUF_EXPORT SerialArena {
     cleanup::CreateNode(tag, limit_, elem, destructor);
   }
 
- public:
-  void* owner() const { return owner_; }
-  SerialArena* next() const { return next_; }
-  void set_next(SerialArena* next) { next_ = next; }
-
  private:
   friend class ThreadSafeArena;
 
   // Creates a new SerialArena inside mem using the remaining memory as for
   // future allocations.
-  static SerialArena* New(SerialArena::Memory mem, void* owner,
-                          ThreadSafeArenaStats* stats);
+  // The `parent` arena must outlive the serial arena, which is guaranteed
+  // because the parent manages the lifetime of the serial arenas.
+  static SerialArena* New(SerialArena::Memory mem, ThreadSafeArena& parent);
   // Free SerialArena returning the memory passed in to New
   template <typename Deallocator>
   Memory Free(Deallocator deallocator);
@@ -570,9 +566,8 @@ class PROTOBUF_EXPORT SerialArena {
     // data follows
   };
 
-  void* owner_;            // &ThreadCache of this thread;
+  ThreadSafeArena& parent_;
   std::atomic<Block*> head_;  // Head of linked list of blocks.
-  SerialArena* next_;      // Next SerialArena in this linked list.
   std::atomic<size_t> space_used_{0};  // Necessary for metrics.
   std::atomic<size_t> space_allocated_;
 
@@ -609,18 +604,12 @@ class PROTOBUF_EXPORT SerialArena {
   CachedBlock** cached_blocks_ = nullptr;
 
   // Constructor is private as only New() should be used.
-  inline SerialArena(Block* b, void* owner);
-  void* AllocateAlignedFallback(size_t n, const AllocationPolicy* policy,
-                                ThreadSafeArenaStats* stats);
+  inline SerialArena(Block* b, ThreadSafeArena& parent);
+  void* AllocateAlignedFallback(size_t n);
   void* AllocateAlignedWithCleanupFallback(size_t n, size_t align,
-                                           void (*destructor)(void*),
-                                           const AllocationPolicy* policy,
-                                           ThreadSafeArenaStats* stats);
-  void AddCleanupFallback(void* elem, void (*destructor)(void*),
-                          const AllocationPolicy* policy,
-                          ThreadSafeArenaStats* stats);
-  void AllocateNewBlock(size_t n, const AllocationPolicy* policy,
-                        ThreadSafeArenaStats* stats);
+                                           void (*destructor)(void*));
+  void AddCleanupFallback(void* elem, void (*destructor)(void*));
+  void AllocateNewBlock(size_t n);
 
  public:
   static constexpr size_t kBlockHeaderSize = AlignUpTo8(sizeof(Block));
@@ -677,11 +666,9 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   void* AllocateAligned(size_t n) {
     SerialArena* arena;
     if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
-      return arena->AllocateAligned<alloc_client>(n, AllocPolicy(),
-                                                  arena_stats_.MutableStats());
+      return arena->AllocateAligned<alloc_client>(n);
     } else {
-      return GetSerialArenaFallback(&thread_cache())
-          ->AllocateAligned(n, AllocPolicy(), arena_stats_.MutableStats());
+      return AllocateAlignedFallback<alloc_client>(n);
     }
   }
 
@@ -717,8 +704,20 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   }
 
  private:
+  friend class ArenaBenchmark;
   friend class TcParser;
+  friend class SerialArena;
   static uint64_t GetNextLifeCycleId();
+
+  class SerialArenaChunk;
+
+  // Returns a new SerialArenaChunk that has {id, serial} at slot 0. It may
+  // grow based on "prev_num_slots".
+  static SerialArenaChunk* NewSerialArenaChunk(uint32_t prev_capacity, void* id,
+                                               SerialArena* serial);
+
+  // Adds SerialArena to the chunked list. May create a new chunk.
+  void AddSerialArena(void* id, SerialArena* serial);
 
   // Unique for each arena. Changes on Reset().
   uint64_t tag_and_id_ = 0;
@@ -729,8 +728,11 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   static_assert(std::is_trivially_destructible<SerialArena>{},
                 "SerialArena needs to be trivially destructible.");
-  // Pointer to a linked list of SerialArena.
-  std::atomic<SerialArena*> threads_;
+  // Pointer to a linked list of SerialArenaChunk.
+  std::atomic<SerialArenaChunk*> head_;
+
+  // Adding a new chunk to head_ must be protected by mutex_.
+  absl::Mutex mutex_;
 
   const AllocationPolicy* AllocPolicy() const { return alloc_policy_.get(); }
   void InitializeFrom(void* mem, size_t size);
@@ -739,7 +741,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
                                            void (*destructor)(void*));
 
   void Init();
-  void SetInitialBlock(void* mem, size_t size);
+  SerialArena* SetInitialBlock(void* mem, size_t size);
 
   // Delete or Destruct all objects owned by the arena.
   void CleanupList();
@@ -762,16 +764,22 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     }
     return false;
   }
-  SerialArena* GetSerialArenaFallback(void* me);
 
+  // Finds SerialArena or creates one if not found.
+  SerialArena* GetSerialArenaFallback();
+
+  template <AllocationClient alloc_client = AllocationClient::kDefault>
+  void* AllocateAlignedFallback(size_t n);
+
+  // Executes callback function over chunked list of SerialArena in reverse
+  // chronological order. Passes const SerialArena*.
   template <typename Functor>
-  void PerSerialArena(Functor fn) {
-    // By omitting an Acquire barrier we ensure that any user code that doesn't
-    // properly synchronize Reset() or the destructor will throw a TSAN warning.
-    SerialArena* serial = threads_.load(std::memory_order_relaxed);
+  void PerConstSerialArena(Functor fn) const;
 
-    for (; serial; serial = serial->next()) fn(serial);
-  }
+  // Executes callback function over chunked list of SerialArena in reverse
+  // chronological order.
+  template <typename Functor>
+  void PerSerialArena(Functor fn);
 
   // Releases all memory except the first block which it returns. The first
   // block might be owned by the user and thus need some extra checks before
@@ -847,6 +855,6 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_ARENA_IMPL_H__

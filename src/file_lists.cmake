@@ -16,6 +16,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/api.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_config.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/importer.cc
@@ -61,7 +62,6 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/struct.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/bytestream.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/int128.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/stringprintf.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/structurally_valid.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil.cc
@@ -100,6 +100,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/api.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_config.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_impl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.h
@@ -162,10 +163,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/bytestream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/callback.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/int128.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/logging.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/macros.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/map_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/mathutil.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/platform_macros.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/port.h
@@ -211,6 +209,7 @@ set(libprotobuf_hdrs
 set(libprotobuf_lite_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_config.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set.cc
@@ -231,7 +230,6 @@ set(libprotobuf_lite_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/bytestream.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/int128.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/stringprintf.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/structurally_valid.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil.cc
@@ -242,6 +240,7 @@ set(libprotobuf_lite_srcs
 set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_config.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_impl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.h
@@ -274,10 +273,7 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/bytestream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/callback.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/int128.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/logging.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/macros.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/map_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/mathutil.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/platform_macros.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/port.h
@@ -788,6 +784,7 @@ set(test_plugin_files
 set(io_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/coded_stream_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/io_win32_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/io/printer_death_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/printer_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/tokenizer_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_sink_test.cc
@@ -845,7 +842,6 @@ set(util_test_protos_files
 set(stubs_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/bytestream_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common_unittest.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/int128_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/stringprintf_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/structurally_valid_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil_unittest.cc

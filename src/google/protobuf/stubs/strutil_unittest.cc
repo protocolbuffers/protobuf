@@ -30,13 +30,13 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/strutil.h"
 
+#include <gtest/gtest.h>
 #include <locale.h>
 
-#include <google/protobuf/stubs/stl_util.h>
-#include <google/protobuf/testing/googletest.h>
-#include <gtest/gtest.h>
+#include "google/protobuf/stubs/stl_util.h"
+#include "google/protobuf/testing/googletest.h"
 
 #ifdef _WIN32
 #define snprintf _snprintf

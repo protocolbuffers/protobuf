@@ -42,7 +42,7 @@
 // performance-minded Python code leverage the fast C++ implementation
 // directly.
 
-#include <google/protobuf/compiler/python/generator.h>
+#include "google/protobuf/compiler/python/generator.h"
 
 #include <algorithm>
 #include <limits>
@@ -52,20 +52,20 @@
 #include <utility>
 #include <vector>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/stubs/stringprintf.h>
+#include "google/protobuf/stubs/stringprintf.h"
 #include "absl/strings/substitute.h"
-#include <google/protobuf/compiler/python/helpers.h>
-#include <google/protobuf/compiler/python/pyi_generator.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
+#include "google/protobuf/compiler/python/helpers.h"
+#include "google/protobuf/compiler/python/pyi_generator.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 
 namespace google {
 namespace protobuf {

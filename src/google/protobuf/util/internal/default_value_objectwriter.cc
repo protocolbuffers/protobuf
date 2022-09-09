@@ -28,13 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/internal/default_value_objectwriter.h>
+#include "google/protobuf/util/internal/default_value_objectwriter.h"
 
 #include <cstdint>
 
 #include "absl/container/flat_hash_map.h"
-#include <google/protobuf/util/internal/constants.h>
-#include <google/protobuf/util/internal/utility.h>
+#include "google/protobuf/util/internal/constants.h"
+#include "google/protobuf/util/internal/utility.h"
 
 namespace google {
 namespace protobuf {

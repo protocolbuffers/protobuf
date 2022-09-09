@@ -34,7 +34,7 @@
 #ifndef GOOGLE_PROTOBUF_TESTING_FILE_H__
 #define GOOGLE_PROTOBUF_TESTING_FILE_H__
 
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/stubs/common.h"
 
 namespace google {
 namespace protobuf {
@@ -45,6 +45,9 @@ const int DEFAULT_FILE_MODE = 0777;
 // in tests.
 class File {
  public:
+  File(const File&) = delete;
+  File& operator=(const File&) = delete;
+
   // Check if the file exists.
   static bool Exists(const std::string& name);
 
@@ -96,9 +99,6 @@ class File {
                           bool /*is_default*/) {
     return WriteStringToFile(contents, name);
   }
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(File);
 };
 
 }  // namespace protobuf

@@ -49,11 +49,12 @@ using type_info = ::type_info;
 #endif
 
 #include <type_traits>
-#include <google/protobuf/arena_impl.h>
-#include <google/protobuf/port.h>
+#include "google/protobuf/arena_config.h"
+#include "google/protobuf/arena_impl.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -143,7 +144,7 @@ struct ArenaOptions {
 
   ArenaOptions()
       : start_block_size(internal::AllocationPolicy::kDefaultStartBlockSize),
-        max_block_size(internal::AllocationPolicy::kDefaultMaxBlockSize),
+        max_block_size(internal::GetDefaultArenaMaxBlockSize()),
         initial_block(nullptr),
         initial_block_size(0),
         block_alloc(nullptr),
@@ -770,6 +771,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_ARENA_H__

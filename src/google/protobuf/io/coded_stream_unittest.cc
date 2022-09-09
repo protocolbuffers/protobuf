@@ -34,7 +34,7 @@
 //
 // This file contains tests and benchmarks.
 
-#include <google/protobuf/io/coded_stream.h>
+#include "google/protobuf/io/coded_stream.h"
 
 #include <limits.h>
 
@@ -43,19 +43,19 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
-#include <google/protobuf/stubs/logging.h>
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include "google/protobuf/io/zero_copy_stream_impl.h"
 
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/testing/googletest.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -1347,4 +1347,4 @@ TEST_F(CodedStreamTest, InputOver2G) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

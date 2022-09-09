@@ -44,12 +44,12 @@
 // correctly and produces the interfaces we expect, which is why this test
 // is written this way.
 
-#include <google/protobuf/compiler/cpp/unittest.h>
+#include "google/protobuf/compiler/cpp/unittest.h"
 
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/unittest_embed_optimize_for.pb.h>
-#include <google/protobuf/unittest_optimize_for.pb.h>
-#include <google/protobuf/test_util.h>
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_embed_optimize_for.pb.h"
+#include "google/protobuf/unittest_optimize_for.pb.h"
+#include "google/protobuf/test_util.h"
 
 #define MESSAGE_TEST_NAME MessageTest
 #define GENERATED_DESCRIPTOR_TEST_NAME GeneratedDescriptorTest
@@ -64,7 +64,7 @@
 #define UNITTEST_IMPORT ::protobuf_unittest_import
 
 // Must include after the above macros.
-#include <google/protobuf/compiler/cpp/unittest.inc>
+#include "google/protobuf/compiler/cpp/unittest.inc"
 
 namespace google {
 namespace protobuf {

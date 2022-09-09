@@ -35,8 +35,8 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/io/printer.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {

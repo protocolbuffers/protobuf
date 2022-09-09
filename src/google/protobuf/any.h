@@ -33,12 +33,12 @@
 
 #include <string>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/arenastring.h>
-#include <google/protobuf/message_lite.h>
+#include "google/protobuf/port.h"
+#include "google/protobuf/arenastring.h"
+#include "google/protobuf/message_lite.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -152,6 +152,6 @@ bool GetAnyFieldDescriptors(const Message& message,
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_ANY_H__

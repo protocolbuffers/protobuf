@@ -39,10 +39,10 @@
 #define GOOGLE_PROTOBUF_COMPILER_CSHARP_NAMES_H__
 
 #include <string>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/port.h>
+#include "google/protobuf/port.h"
+#include "google/protobuf/stubs/common.h"
 
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -104,6 +104,6 @@ std::string PROTOC_EXPORT GetOutputFile(const FileDescriptor* descriptor,
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_NAMES_H__

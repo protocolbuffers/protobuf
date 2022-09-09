@@ -28,13 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/unittest_proto3.pb.h>
+#include "google/protobuf/unittest_proto3.pb.h"
 
 #define LITE_TEST_NAME Proto3LiteTest
 #define UNITTEST ::proto3_unittest
 
 // Must include after the above macros.
-#include <google/protobuf/proto3_lite_unittest.inc>
+#include "google/protobuf/proto3_lite_unittest.inc"
 
 // Make extract script happy.
 namespace google {

@@ -28,11 +28,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/pyext/field.h>
+#include "google/protobuf/pyext/field.h"
 
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/pyext/descriptor.h>
-#include <google/protobuf/pyext/message.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/pyext/descriptor.h"
+#include "google/protobuf/pyext/message.h"
 
 namespace google {
 namespace protobuf {

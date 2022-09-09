@@ -28,16 +28,18 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/inlined_string_field.h>
+#include "google/protobuf/inlined_string_field.h"
 
-#include <google/protobuf/arena.h>
-#include <google/protobuf/arenastring.h>
-#include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/message_lite.h>
-#include <google/protobuf/parse_context.h>
+#include "google/protobuf/arena.h"
+#include "absl/strings/internal/resize_uninitialized.h"
+#include "google/protobuf/arenastring.h"
+#include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/parse_context.h"
+
 
 // clang-format off
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 // clang-format on
 
 namespace google {
