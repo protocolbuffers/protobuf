@@ -40,7 +40,7 @@
 
 #include <string>
 
-#include <google/protobuf/compiler/java/options.h>
+#include "google/protobuf/compiler/java/options.h"
 
 namespace google {
 namespace protobuf {

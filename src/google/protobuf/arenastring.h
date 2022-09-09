@@ -36,15 +36,15 @@
 #include <type_traits>
 #include <utility>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/arena.h>
-#include <google/protobuf/port.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/port.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/explicitly_constructed.h>
+#include "google/protobuf/explicitly_constructed.h"
 
 // must be last:
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -476,6 +476,6 @@ inline std::string* ArenaStringPtr::UnsafeMutablePointer() {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_ARENASTRING_H__

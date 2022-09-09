@@ -41,11 +41,11 @@
 #include <set>
 #include <string>
 
-#include <google/protobuf/compiler/cpp/field.h>
-#include <google/protobuf/compiler/cpp/helpers.h>
-#include <google/protobuf/compiler/cpp/message_layout_helper.h>
-#include <google/protobuf/compiler/cpp/options.h>
-#include <google/protobuf/compiler/cpp/parse_function_generator.h>
+#include "google/protobuf/compiler/cpp/field.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/message_layout_helper.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/compiler/cpp/parse_function_generator.h"
 
 namespace google {
 namespace protobuf {

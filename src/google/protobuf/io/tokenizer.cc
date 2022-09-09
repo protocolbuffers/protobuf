@@ -88,18 +88,18 @@
 // I'd love to hear about other alternatives, though, as this code isn't
 // exactly pretty.
 
-#include <google/protobuf/io/tokenizer.h>
+#include "google/protobuf/io/tokenizer.h"
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/escaping.h"
-#include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/io/strtod.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/stubs/stl_util.h>
+#include "google/protobuf/stubs/stringprintf.h"
+#include "google/protobuf/io/strtod.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/stubs/stl_util.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -1236,4 +1236,4 @@ bool Tokenizer::IsIdentifier(const std::string& text) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

@@ -36,7 +36,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_SERVICE_H__
 
 #include <map>
-#include <google/protobuf/descriptor.h>
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {

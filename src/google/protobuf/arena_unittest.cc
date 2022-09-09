@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/arena.h>
+#include "google/protobuf/arena.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -39,29 +39,29 @@
 #include <typeinfo>
 #include <vector>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/unittest_arena.pb.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_arena.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
-#include <google/protobuf/arena_test_util.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/extension_set.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/message.h>
-#include <google/protobuf/message_lite.h>
-#include <google/protobuf/repeated_field.h>
-#include <google/protobuf/test_util.h>
-#include <google/protobuf/unknown_field_set.h>
-#include <google/protobuf/wire_format_lite.h>
+#include "google/protobuf/arena_test_util.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/extension_set.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/test_util.h"
+#include "google/protobuf/unknown_field_set.h"
+#include "google/protobuf/wire_format_lite.h"
 
 #include "absl/synchronization/mutex.h"
 
 // Must be included last
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 using proto2_arena_unittest::ArenaMessage;
 using protobuf_unittest::ForeignMessage;
@@ -1575,4 +1575,4 @@ TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

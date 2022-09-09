@@ -32,7 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/cpp/message.h>
+#include "google/protobuf/compiler/cpp/message.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -45,31 +45,31 @@
 #include <utility>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/map_entry_lite.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/map_entry_lite.h"
+#include "google/protobuf/wire_format.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/stubs/stringprintf.h>
+#include "google/protobuf/stubs/stringprintf.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include <google/protobuf/compiler/cpp/enum.h>
-#include <google/protobuf/compiler/cpp/extension.h>
-#include <google/protobuf/compiler/cpp/field.h>
-#include <google/protobuf/compiler/cpp/helpers.h>
-#include <google/protobuf/compiler/cpp/padding_optimizer.h>
-#include <google/protobuf/compiler/cpp/parse_function_generator.h>
-#include <google/protobuf/descriptor.pb.h>
+#include "google/protobuf/compiler/cpp/enum.h"
+#include "google/protobuf/compiler/cpp/extension.h"
+#include "google/protobuf/compiler/cpp/field.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/padding_optimizer.h"
+#include "google/protobuf/compiler/cpp/parse_function_generator.h"
+#include "google/protobuf/descriptor.pb.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -410,7 +410,6 @@ class ColdChunkSkipper {
         has_bit_indices_(has_bit_indices),
         access_info_map_(options.access_info_map),
         cold_threshold_(cold_threshold) {
-    SetCommonVars(options, &variables_);
     SetCommonMessageDataVariables(descriptor, &variables_);
   }
 
@@ -4450,4 +4449,4 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

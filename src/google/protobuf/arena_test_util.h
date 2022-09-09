@@ -31,11 +31,11 @@
 #ifndef GOOGLE_PROTOBUF_ARENA_TEST_UTIL_H__
 #define GOOGLE_PROTOBUF_ARENA_TEST_UTIL_H__
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/arena.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace google {
 namespace protobuf {

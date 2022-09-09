@@ -30,17 +30,18 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
-#include <google/protobuf/stubs/callback.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/stubs/common.h"
+
 #include <gtest/gtest.h>
 
 #include <vector>
 
 #include "absl/strings/ascii.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/stubs/callback.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/strutil.h"
+#include "google/protobuf/testing/googletest.h"
 
 namespace google {
 namespace protobuf {

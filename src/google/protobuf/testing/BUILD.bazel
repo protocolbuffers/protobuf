@@ -25,6 +25,7 @@ cc_library(
         "//:protobuf_lite",  # for ShutdownProtobufLibrary
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs:lite",
+        "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest",
     ],
 )

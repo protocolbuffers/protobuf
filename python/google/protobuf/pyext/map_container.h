@@ -36,9 +36,9 @@
 
 #include <cstdint>
 
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/message.h>
-#include <google/protobuf/pyext/message.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/pyext/message.h"
 
 namespace google {
 namespace protobuf {

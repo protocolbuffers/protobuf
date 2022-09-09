@@ -30,8 +30,8 @@
 
 #include <cstddef>
 
-#include <google/protobuf/generated_message_tctable_impl.h>
-#include <google/protobuf/wire_format_lite.h>
+#include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/wire_format_lite.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -80,7 +80,7 @@ TEST(IsEntryForFieldNumTest, Matcher) {
       }};
   // clang-format on
   int table_field_numbers[] = {1, 2, 3};
-  table.field_lookup_table = {65535, 65535};
+  table.field_lookup_table = {{65535, 65535}};
 
   auto& entries = table.field_entries;
   EXPECT_THAT(&entries[0], IsEntryForFieldNum(&table, 1, table_field_numbers));

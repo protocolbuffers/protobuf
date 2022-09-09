@@ -38,10 +38,10 @@
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_GENERATOR_H__
 
 #include <string>
-#include <google/protobuf/compiler/code_generator.h>
+#include "google/protobuf/compiler/code_generator.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -78,6 +78,6 @@ class PROTOC_EXPORT JavaGenerator : public CodeGenerator {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_GENERATOR_H__

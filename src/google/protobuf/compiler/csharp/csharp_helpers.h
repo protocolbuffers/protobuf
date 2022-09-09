@@ -37,13 +37,13 @@
 
 #include <string>
 
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/port.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/port_def.inc>
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/port_def.inc"
+#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {
@@ -195,6 +195,6 @@ inline bool RequiresPresenceBit(const FieldDescriptor* descriptor) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_HELPERS_H__

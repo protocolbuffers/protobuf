@@ -33,7 +33,7 @@
 
 #include <map>
 #include <string>
-#include <google/protobuf/compiler/objectivec/objectivec_field.h>
+#include "google/protobuf/compiler/objectivec/objectivec_field.h"
 
 namespace google {
 namespace protobuf {

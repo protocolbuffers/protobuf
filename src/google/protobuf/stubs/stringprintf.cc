@@ -30,15 +30,16 @@
 
 // from google3/base/stringprintf.cc
 
-#include <google/protobuf/stubs/stringprintf.h>
+#include "google/protobuf/stubs/stringprintf.h"
 
 #include <errno.h>
-#include <stdarg.h> // For va_list and related operations
-#include <stdio.h> // MSVC requires this for _vsnprintf
+#include <stdarg.h>  // For va_list and related operations
+#include <stdio.h>   // MSVC requires this for _vsnprintf
+
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
 
 namespace google {
 namespace protobuf {
@@ -152,7 +153,7 @@ std::string StringPrintfVector(const char* format,
   for (int i = 0; i < v.size(); ++i) {
     cstr[i] = v[i].c_str();
   }
-  for (int i = v.size(); i < GOOGLE_ARRAYSIZE(cstr); ++i) {
+  for (int i = v.size(); i < kStringPrintfVectorMaxArgs; ++i) {
     cstr[i] = &string_printf_empty_block[0];
   }
 

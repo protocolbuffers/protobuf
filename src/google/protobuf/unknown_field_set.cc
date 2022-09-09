@@ -32,24 +32,25 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/unknown_field_set.h>
+#include "google/protobuf/unknown_field_set.h"
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/extension_set.h>
-#include <google/protobuf/generated_message_tctable_decl.h>
-#include <google/protobuf/generated_message_tctable_impl.h>
-#include <google/protobuf/parse_context.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/stubs/stl_util.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "absl/strings/internal/resize_uninitialized.h"
+#include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/parse_context.h"
+#include "google/protobuf/wire_format.h"
+#include "google/protobuf/wire_format_lite.h"
+
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -243,7 +244,7 @@ bool UnknownFieldSet::ParseFromArray(const void* data, int size) {
 bool UnknownFieldSet::SerializeToString(std::string* output) const {
   const size_t size =
       google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(*this);
-  STLStringResizeUninitializedAmortized(output, size);
+  absl::strings_internal::STLStringResizeUninitializedAmortized(output, size);
   google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
       *this, reinterpret_cast<uint8_t*>(const_cast<char*>(output->data())));
   return true;
@@ -347,4 +348,4 @@ const char* UnknownFieldParse(uint64_t tag, UnknownFieldSet* unknown,
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

@@ -32,7 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/cpp/file.h>
+#include "google/protobuf/compiler/cpp/file.h"
 
 #include <iostream>
 #include <map>
@@ -42,20 +42,20 @@
 #include <unordered_set>
 #include <vector>
 
-#include <google/protobuf/compiler/scc.h>
+#include "google/protobuf/compiler/scc.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
-#include <google/protobuf/compiler/cpp/enum.h>
-#include <google/protobuf/compiler/cpp/extension.h>
-#include <google/protobuf/compiler/cpp/helpers.h>
-#include <google/protobuf/compiler/cpp/message.h>
-#include <google/protobuf/compiler/cpp/service.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
+#include "google/protobuf/compiler/cpp/enum.h"
+#include "google/protobuf/compiler/cpp/extension.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/message.h"
+#include "google/protobuf/compiler/cpp/service.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 
 // Must be last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -110,7 +110,6 @@ inline void UnmuteWuninitialized(Formatter& format) {
 FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
     : file_(file), options_(options), scc_analyzer_(options) {
   // These variables are the same on a file level
-  SetCommonVars(options, &variables_);
   variables_["dllexport_decl"] = options.dllexport_decl;
   variables_["tablename"] = UniqueName("TableStruct", file_, options_);
   variables_["file_level_metadata"] =
@@ -258,7 +257,8 @@ void FileGenerator::GenerateProtoHeader(io::Printer* printer,
     return;
   }
 
-  GenerateTopHeaderGuard(printer, false);
+  GenerateTopHeaderGuard(printer,
+                         google::protobuf::compiler::cpp::GeneratedFileType::kProtoH);
 
   if (!options_.opensource_runtime) {
     format(
@@ -286,13 +286,15 @@ void FileGenerator::GenerateProtoHeader(io::Printer* printer,
 
   GenerateHeader(printer);
 
-  GenerateBottomHeaderGuard(printer, false);
+  GenerateBottomHeaderGuard(printer,
+                            google::protobuf::compiler::cpp::GeneratedFileType::kProtoH);
 }
 
 void FileGenerator::GeneratePBHeader(io::Printer* printer,
                                      const std::string& info_path) {
   Formatter format(printer, variables_);
-  GenerateTopHeaderGuard(printer, true);
+  GenerateTopHeaderGuard(printer,
+                         google::protobuf::compiler::cpp::GeneratedFileType::kPbH);
 
   if (options_.proto_h) {
     std::string target_basename = StripProto(file_->name());
@@ -331,7 +333,8 @@ void FileGenerator::GeneratePBHeader(io::Printer* printer,
         "\n");
   }
 
-  GenerateBottomHeaderGuard(printer, true);
+  GenerateBottomHeaderGuard(printer,
+                            google::protobuf::compiler::cpp::GeneratedFileType::kPbH);
 }
 
 void FileGenerator::DoIncludeFile(const std::string& google3_name,
@@ -347,7 +350,7 @@ void FileGenerator::DoIncludeFile(const std::string& google3_name,
     path = StringReplace(path, "proto/", "", false);
     path = StringReplace(path, "public/", "", false);
     if (options_.runtime_include_base.empty()) {
-      format("#include <google/protobuf/$1$>", path);
+      format("#include \"google/protobuf/$1$\"", path);
     } else {
       format("#include \"$1$google/protobuf/$2$\"",
              options_.runtime_include_base, path);
@@ -1084,7 +1087,8 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* printer) {
   format("PROTOBUF_NAMESPACE_CLOSE\n");
 }
 
-void FileGenerator::GenerateTopHeaderGuard(io::Printer* printer, bool pb_h) {
+void FileGenerator::GenerateTopHeaderGuard(
+    io::Printer* printer, google::protobuf::compiler::cpp::GeneratedFileType file_type) {
   Formatter format(printer, variables_);
   // Generate top of header.
   format(
@@ -1096,7 +1100,7 @@ void FileGenerator::GenerateTopHeaderGuard(io::Printer* printer, bool pb_h) {
       "\n"
       "#include <limits>\n"
       "#include <string>\n",
-      IncludeGuard(file_, pb_h, options_));
+      IncludeGuard(file_, file_type, options_));
   if (!options_.opensource_runtime && !enum_generators_.empty()) {
     // Add header to provide std::is_integral for safe Enum_Name() function.
     format("#include <type_traits>\n");
@@ -1104,10 +1108,11 @@ void FileGenerator::GenerateTopHeaderGuard(io::Printer* printer, bool pb_h) {
   format("\n");
 }
 
-void FileGenerator::GenerateBottomHeaderGuard(io::Printer* printer, bool pb_h) {
+void FileGenerator::GenerateBottomHeaderGuard(
+    io::Printer* printer, google::protobuf::compiler::cpp::GeneratedFileType file_type) {
   Formatter format(printer, variables_);
   format("#endif  // $GOOGLE_PROTOBUF$_INCLUDED_$1$\n",
-         IncludeGuard(file_, pb_h, options_));
+         IncludeGuard(file_, file_type, options_));
 }
 
 void FileGenerator::GenerateLibraryIncludes(io::Printer* printer) {

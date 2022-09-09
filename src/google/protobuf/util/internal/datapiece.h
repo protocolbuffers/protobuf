@@ -34,14 +34,15 @@
 #include <cstdint>
 #include <string>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/type.pb.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/type.pb.h"
+#include "google/protobuf/port.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -216,6 +217,6 @@ class PROTOBUF_EXPORT DataPiece {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_DATAPIECE_H__

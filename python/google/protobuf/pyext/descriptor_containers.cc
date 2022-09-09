@@ -54,13 +54,13 @@
 // This inclusion must appear before all the others.
 #include <Python.h>
 
-#include <google/protobuf/pyext/descriptor_containers.h>
+#include "google/protobuf/pyext/descriptor_containers.h"
 // clang-format on
 
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/pyext/descriptor.h>
-#include <google/protobuf/pyext/descriptor_pool.h>
-#include <google/protobuf/pyext/scoped_pyobject_ptr.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/pyext/descriptor.h"
+#include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 #include "absl/strings/string_view.h"
 
 #define PyString_AsStringAndSize(ob, charpp, sizep)              \

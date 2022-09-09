@@ -63,20 +63,20 @@
 #include <sstream>
 #include <utility>
 
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/test_util2.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/io_win32.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include "google/protobuf/testing/file.h"
+#include "google/protobuf/test_util2.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/io_win32.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
 
 #if HAVE_ZLIB
-#include <google/protobuf/io/gzip_stream.h>
+#include "google/protobuf/io/gzip_stream.h"
 #endif
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 
 namespace google {

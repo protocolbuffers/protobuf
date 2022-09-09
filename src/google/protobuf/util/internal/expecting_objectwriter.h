@@ -52,10 +52,10 @@
 
 #include <cstdint>
 
-#include <google/protobuf/stubs/common.h>
 #include <gmock/gmock.h>
 #include "absl/strings/string_view.h"
-#include <google/protobuf/util/internal/object_writer.h>
+#include "google/protobuf/port.h"
+#include "google/protobuf/util/internal/object_writer.h"
 
 namespace google {
 namespace protobuf {

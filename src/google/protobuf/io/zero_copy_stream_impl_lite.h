@@ -49,14 +49,15 @@
 #include <string>
 #include <utility>
 
-#include <google/protobuf/stubs/callback.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/stubs/stl_util.h>
+#include "google/protobuf/stubs/callback.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/stubs/stl_util.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -420,6 +421,6 @@ inline std::pair<char*, bool> as_string_data(std::string* s) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_LITE_H__

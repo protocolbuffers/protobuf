@@ -5,15 +5,15 @@
 
 #include <algorithm>
 
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/extension_set.h>
-#include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/generated_message_reflection.h>
-#include <google/protobuf/reflection_ops.h>
-#include <google/protobuf/wire_format.h>
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/extension_set.h"
+#include "google/protobuf/wire_format_lite.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/generated_message_reflection.h"
+#include "google/protobuf/reflection_ops.h"
+#include "google/protobuf/wire_format.h"
 // @@protoc_insertion_point(includes)
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 PROTOBUF_PRAGMA_INIT_SEG
 
@@ -367,4 +367,4 @@ PROTOBUF_NAMESPACE_CLOSE
 #if defined(__llvm__)
   #pragma clang diagnostic pop
 #endif  // __llvm__
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

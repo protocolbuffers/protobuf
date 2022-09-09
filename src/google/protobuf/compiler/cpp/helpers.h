@@ -41,20 +41,21 @@
 #include <map>
 #include <string>
 
-#include <google/protobuf/compiler/scc.h>
-#include <google/protobuf/compiler/code_generator.h>
+#include "google/protobuf/compiler/scc.h"
+#include "google/protobuf/compiler/code_generator.h"
+#include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/str_split.h"
-#include <google/protobuf/compiler/cpp/names.h>
-#include <google/protobuf/compiler/cpp/options.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/port.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/compiler/cpp/names.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/port.h"
 #include "absl/strings/str_cat.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -85,9 +86,6 @@ inline std::string DeprecatedAttribute(const Options& /* options */,
 // of '-'.
 extern const char kThickSeparator[];
 extern const char kThinSeparator[];
-
-void SetCommonVars(const Options& options,
-                   std::map<std::string, std::string>* variables);
 
 // Variables to access message data from the message scope.
 void SetCommonMessageDataVariables(
@@ -298,7 +296,7 @@ std::string QualifiedFileLevelSymbol(const FileDescriptor* file,
                                      const Options& options);
 
 // Escape C++ trigraphs by escaping question marks to \?
-std::string EscapeTrigraphs(const std::string& to_escape);
+std::string EscapeTrigraphs(absl::string_view to_escape);
 
 // Escaped function name to eliminate naming conflict.
 std::string SafeFunctionName(const Descriptor* descriptor,
@@ -518,12 +516,26 @@ bool IsAnyMessage(const Descriptor* descriptor, const Options& options);
 
 bool IsWellKnownMessage(const FileDescriptor* descriptor);
 
-inline std::string IncludeGuard(const FileDescriptor* file, bool pb_h,
+enum class GeneratedFileType : int { kPbH, kProtoH, kProtoStaticReflectionH };
+
+inline std::string IncludeGuard(const FileDescriptor* file,
+                                GeneratedFileType file_type,
                                 const Options& options) {
   // If we are generating a .pb.h file and the proto_h option is enabled, then
   // the .pb.h gets an extra suffix.
-  std::string filename_identifier = FilenameIdentifier(
-      file->name() + (pb_h && options.proto_h ? ".pb.h" : ""));
+  std::string extension;
+  switch (file_type) {
+    case GeneratedFileType::kPbH:
+      extension = ".pb.h";
+      break;
+    case GeneratedFileType::kProtoH:
+      extension = ".proto.h";
+      break;
+    case GeneratedFileType::kProtoStaticReflectionH:
+      extension = ".proto.static_reflection.h";
+  }
+  std::string filename_identifier =
+      FilenameIdentifier(file->name() + extension);
 
   if (IsWellKnownMessage(file)) {
     // For well-known messages we need third_party/protobuf and net/proto2 to
@@ -1000,6 +1012,6 @@ bool HasMessageFieldOrExtension(const Descriptor* desc);
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_HELPERS_H__

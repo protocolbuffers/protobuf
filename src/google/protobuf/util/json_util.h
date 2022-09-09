@@ -34,14 +34,14 @@
 #define GOOGLE_PROTOBUF_UTIL_JSON_UTIL_H__
 
 
-#include <google/protobuf/stubs/bytestream.h>
+#include "google/protobuf/stubs/bytestream.h"
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/message.h>
-#include <google/protobuf/util/type_resolver.h>
+#include "google/protobuf/message.h"
+#include "google/protobuf/util/type_resolver.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -192,6 +192,6 @@ inline absl::Status JsonToBinaryString(TypeResolver* resolver,
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_UTIL_JSON_UTIL_H__

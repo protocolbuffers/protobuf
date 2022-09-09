@@ -32,17 +32,17 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/unittest_proto3_arena.pb.h>
-#include <google/protobuf/unittest_proto3_optional.pb.h>
-#include <google/protobuf/arena.h>
-#include <google/protobuf/text_format.h>
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_proto3_arena.pb.h"
+#include "google/protobuf/unittest_proto3_optional.pb.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/text_format.h"
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/test_util.h>
+#include "google/protobuf/stubs/strutil.h"
+#include "google/protobuf/test_util.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 using proto3_arena_unittest::ForeignMessage;
 using proto3_arena_unittest::TestAllTypes;

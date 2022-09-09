@@ -28,22 +28,22 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/internal/datapiece.h>
+#include "google/protobuf/util/internal/datapiece.h"
 
 #include <cmath>
 #include <cstdint>
 #include <limits>
 
-#include <google/protobuf/struct.pb.h>
-#include <google/protobuf/type.pb.h>
-#include <google/protobuf/descriptor.h>
+#include "google/protobuf/struct.pb.h"
+#include "google/protobuf/type.pb.h"
+#include "google/protobuf/descriptor.h"
 #include "absl/status/status.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/util/internal/utility.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/mathutil.h>
+#include "google/protobuf/util/internal/utility.h"
+#include "google/protobuf/stubs/strutil.h"
+#include "google/protobuf/stubs/mathutil.h"
 
 namespace google {
 namespace protobuf {
@@ -222,6 +222,8 @@ absl::StatusOr<bool> DataPiece::ToBool() const {
     case TYPE_BOOL:
       return bool_;
     case TYPE_STRING:
+      // Calls out to absl::SimpleAtob, which supports "true"/"false",
+      // "yes"/"no", "y"/"n", "t"/"f", and "1"/"0".
       return StringToNumber<bool>(safe_strtob);
     default:
       break;

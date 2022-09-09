@@ -814,8 +814,8 @@
 #endif
 
 // Tail call table-driven parsing can be enabled by defining
-// PROTOBUF_EXPERIMENTAL_USE_TAIL_CALL_TABLE_PARSER at compilation time. Note
-// that this macro is for small-scale testing only, and is not supported.
+// PROTOBUF_EXPERIMENTAL_USE_TAIL_CALL_TABLE_PARSER at compilation time.
+// We hope to turn on table-driven parsing by default in Q4 2022.
 #ifdef PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED
 #error PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED was previously declared
 #endif
@@ -826,9 +826,7 @@
 #ifdef PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION
 #error PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION was previously defined
 #endif
-#if !defined(PROTOBUF_TEMPORARY_DISABLE_TABLE_PARSER_ON_REFLECTION) && \
-    (defined(PROTOBUF_EXPERIMENTAL_USE_TABLE_PARSER_ON_REFLECTION) ||  \
-     defined(PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED))
+#if !defined(PROTOBUF_TEMPORARY_DISABLE_TABLE_PARSER_ON_REFLECTION)
 #define PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION 1
 #endif  // PROTOBUF_ENABLE_FORCE_ALLOCATION_ON_CONSTRUCTION
 

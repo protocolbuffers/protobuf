@@ -28,20 +28,20 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/internal/json_objectwriter.h>
+#include "google/protobuf/util/internal/json_objectwriter.h"
 
 #include <cmath>
 #include <cstdint>
 #include <limits>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/base/casts.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/util/internal/json_escaping.h>
-#include <google/protobuf/util/internal/utility.h>
+#include "google/protobuf/util/internal/json_escaping.h"
+#include "google/protobuf/util/internal/utility.h"
 
 
 namespace google {

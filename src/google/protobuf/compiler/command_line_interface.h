@@ -49,11 +49,11 @@
 #include <utility>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
 #include "absl/strings/string_view.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -465,6 +465,6 @@ class PROTOC_EXPORT CommandLineInterface {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_COMMAND_LINE_INTERFACE_H__

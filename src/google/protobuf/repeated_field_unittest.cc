@@ -35,7 +35,7 @@
 // TODO(kenton):  Improve this unittest to bring it up to the standards of
 //   other proto2 unittests.
 
-#include <google/protobuf/repeated_field.h>
+#include "google/protobuf/repeated_field.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -47,17 +47,18 @@
 #include <type_traits>
 #include <vector>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/stubs/strutil.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/numeric/bits.h"
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/stubs/stl_util.h>
+#include "google/protobuf/stubs/stl_util.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -179,7 +180,7 @@ void CheckAllocationSizes(bool is_ptr) {
         // Must be `>= 16`, as expected by the Arena.
         ASSERT_GE(last_alloc, 16);
         // Must be of a power of two.
-        size_t log2 = Bits::Log2FloorNonZero64(last_alloc);
+        size_t log2 = absl::bit_width(last_alloc) - 1;
         ASSERT_EQ((1 << log2), last_alloc);
       }
 
@@ -642,14 +643,16 @@ TEST(RepeatedField, AddRange4) {
 // an input iterator.
 TEST(RepeatedField, AddRange5) {
   RepeatedField<int> me;
+  me.Add(0);
 
   std::stringstream ss;
   ss << 1 << ' ' << 2;
 
   me.Add(std::istream_iterator<int>(ss), std::istream_iterator<int>());
-  ASSERT_EQ(me.size(), 2);
-  ASSERT_EQ(me.Get(0), 1);
-  ASSERT_EQ(me.Get(1), 2);
+  ASSERT_EQ(me.size(), 3);
+  ASSERT_EQ(me.Get(0), 0);
+  ASSERT_EQ(me.Get(1), 1);
+  ASSERT_EQ(me.Get(2), 2);
 }
 
 TEST(RepeatedField, AddAndAssignRanges) {
@@ -2414,4 +2417,4 @@ TEST_F(RepeatedFieldInsertionIteratorsTest, MoveProtos) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
