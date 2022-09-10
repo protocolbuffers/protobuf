@@ -62,7 +62,7 @@ For more usage information on Bazel, please refer to http://bazel.build.
 
 To compile a package that uses Protocol Buffers, you need to setup a Bazel
 WORKSPACE that's hooked up to the protobuf repository and loads its
-dependencies.  For an example, see [WORKSPACE](examples/WORKSPACE).
+dependencies.  For an example, see [WORKSPACE](/WORKSPACE).
 
 **Note for Mac users**
 
