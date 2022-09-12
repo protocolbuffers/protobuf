@@ -41,12 +41,14 @@
 #define GOOGLE_PROTOBUF_STUBS_STRINGPRINTF_H
 
 #include <stdarg.h>
+
 #include <string>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/stubs/common.h"
 
-#include <google/protobuf/port_def.inc>
+// Must be last.
+#include "google/protobuf/port_def.inc"  // NOLINT
 
 namespace google {
 namespace protobuf {
@@ -80,6 +82,6 @@ PROTOBUF_EXPORT extern std::string StringPrintfVector(
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_STUBS_STRINGPRINTF_H

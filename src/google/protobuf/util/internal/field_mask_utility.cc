@@ -28,16 +28,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/internal/field_mask_utility.h>
+#include "google/protobuf/util/internal/field_mask_utility.h"
 
 #include "absl/status/status.h"
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/util/internal/utility.h>
-#include <google/protobuf/stubs/status_macros.h>
+#include "google/protobuf/util/internal/utility.h"
+#include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {

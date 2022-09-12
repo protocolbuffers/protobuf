@@ -38,61 +38,47 @@
 #include <map>
 #include <string>
 
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/compiler/cpp/options.h>
-
-namespace google {
-namespace protobuf {
-namespace io {
-class Printer;  // printer.h
-}
-}  // namespace protobuf
-}  // namespace google
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-
 class ServiceGenerator {
  public:
   // See generator.cc for the meaning of dllexport_decl.
-  explicit ServiceGenerator(const ServiceDescriptor* descriptor,
-                            const std::map<std::string, std::string>& vars,
-                            const Options& options);
+  ServiceGenerator(const ServiceDescriptor* descriptor,
+                   const std::map<std::string, std::string>& vars,
+                   const Options& options)
+      : descriptor_(descriptor), options_(&options), vars_(vars) {
+    vars_["classname"] = descriptor_->name();
+    vars_["full_name"] = descriptor_->full_name();
+  }
+
   ServiceGenerator(const ServiceGenerator&) = delete;
   ServiceGenerator& operator=(const ServiceGenerator&) = delete;
-  ~ServiceGenerator();
+  ServiceGenerator(ServiceGenerator&&) = delete;
+  ServiceGenerator& operator=(ServiceGenerator&&) = delete;
 
-  // Header stuff.
+  ~ServiceGenerator() = default;
 
   // Generate the class definitions for the service's interface and the
   // stub implementation.
   void GenerateDeclarations(io::Printer* printer);
-
-  // Source file stuff.
 
   // Generate implementations of everything declared by
   // GenerateDeclarations().
   void GenerateImplementation(io::Printer* printer);
 
  private:
-  enum RequestOrResponse { REQUEST, RESPONSE };
-  enum VirtualOrNon { VIRTUAL, NON_VIRTUAL };
-
-  // Header stuff.
-
-  // Generate the service abstract interface.
-  void GenerateInterface(io::Printer* printer);
-
-  // Generate the stub class definition.
-  void GenerateStubDefinition(io::Printer* printer);
+  enum RequestOrResponse { kRequest, kResponse };
+  enum VirtualOrNot { kVirtual, kNonVirtual };
 
   // Prints signatures for all methods in the
-  void GenerateMethodSignatures(VirtualOrNon virtual_or_non,
+  void GenerateMethodSignatures(VirtualOrNot virtual_or_not,
                                 io::Printer* printer);
-
-  // Source file stuff.
 
   // Generate the default implementations of the service methods, which
   // produce a "not implemented" error.
@@ -104,18 +90,20 @@ class ServiceGenerator {
   // Generate the Get{Request,Response}Prototype() methods.
   void GenerateGetPrototype(RequestOrResponse which, io::Printer* printer);
 
+  // Generate the cases in CallMethod().
+  void GenerateCallMethodCases(io::Printer* printer);
+
   // Generate the stub's implementations of the service methods.
   void GenerateStubMethods(io::Printer* printer);
 
   const ServiceDescriptor* descriptor_;
+  const Options* options_;
   std::map<std::string, std::string> vars_;
-  const Options& options_;
 
   int index_in_metadata_;
 
   friend class FileGenerator;
 };
-
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

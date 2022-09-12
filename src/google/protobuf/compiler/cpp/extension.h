@@ -38,8 +38,8 @@
 #include <map>
 #include <string>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/compiler/cpp/options.h>
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {

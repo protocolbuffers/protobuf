@@ -32,16 +32,20 @@
 #define GOOGLE_PROTOBUF_COMPILER_CSHARP_FIELD_BASE_H__
 
 #include <string>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/strutil.h"
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_split.h"
+#include "absl/strings/str_replace.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/str_replace.h"
 
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/csharp/csharp_source_generator_base.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/io/printer.h>
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/csharp/csharp_source_generator_base.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {

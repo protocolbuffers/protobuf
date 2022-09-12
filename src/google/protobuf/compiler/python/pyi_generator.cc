@@ -28,19 +28,19 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/compiler/python/pyi_generator.h>
+#include "google/protobuf/compiler/python/pyi_generator.h"
 
 #include <string>
 #include <utility>
 
 #include "absl/strings/ascii.h"
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/str_split.h"
-#include <google/protobuf/compiler/python/helpers.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
+#include "google/protobuf/compiler/python/helpers.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 
 namespace google {
 namespace protobuf {
@@ -491,6 +491,7 @@ void PyiGenerator::PrintMessage(
     }
     is_first = false;
     printer_->Print(", $field_name$: ", "field_name", field_name);
+    Annotate("field_name", field_des);
     if (field_des->is_repeated() ||
         field_des->cpp_type() != FieldDescriptor::CPPTYPE_BOOL) {
       printer_->Print("_Optional[");

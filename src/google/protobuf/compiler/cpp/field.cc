@@ -32,7 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/cpp/field.h>
+#include "google/protobuf/compiler/cpp/field.h"
 
 #include <cstdint>
 #include <memory>
@@ -41,18 +41,18 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include <google/protobuf/compiler/cpp/helpers.h>
-#include <google/protobuf/compiler/cpp/primitive_field.h>
-#include <google/protobuf/compiler/cpp/string_field.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/compiler/cpp/enum_field.h>
-#include <google/protobuf/compiler/cpp/map_field.h>
-#include <google/protobuf/compiler/cpp/message_field.h>
-#include <google/protobuf/descriptor.pb.h>
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/primitive_field.h"
+#include "google/protobuf/compiler/cpp/string_field.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/wire_format.h"
+#include "google/protobuf/stubs/strutil.h"
+#include "google/protobuf/compiler/cpp/enum_field.h"
+#include "google/protobuf/compiler/cpp/map_field.h"
+#include "google/protobuf/compiler/cpp/message_field.h"
+#include "google/protobuf/descriptor.pb.h"
 
 namespace google {
 namespace protobuf {
@@ -155,7 +155,6 @@ void AddAccessorAnnotations(const FieldDescriptor* descriptor,
   std::string field_member = (*variables)["field"];
   const google::protobuf::OneofDescriptor* oneof_member =
       descriptor->real_containing_oneof();
-  const std::string proto_ns = (*variables)["proto_ns"];
   const std::string substitute_template_prefix =
       absl::StrCat("  ", (*variables)["tracker"], ".$1<$0>(this, ");
   std::string prepared_template;
@@ -183,7 +182,7 @@ void AddAccessorAnnotations(const FieldDescriptor* descriptor,
   } else if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_STRING) {
     if (oneof_member) {
       prepared_template = GenerateTemplateForOneofString(
-          descriptor, (*variables)["proto_ns"], field_member);
+          descriptor, ProtobufNamespace(options), field_member);
     } else {
       prepared_template =
           GenerateTemplateForSingleString(descriptor, field_member);
@@ -237,7 +236,6 @@ void AddAccessorAnnotations(const FieldDescriptor* descriptor,
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              std::map<std::string, std::string>* variables,
                              const Options& options) {
-  SetCommonVars(options, variables);
   SetCommonMessageDataVariables(descriptor->containing_type(), variables);
 
   (*variables)["ns"] = Namespace(descriptor, options);

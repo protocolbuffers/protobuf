@@ -28,10 +28,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/map_proto2_unittest.pb.h>
-#include <google/protobuf/map_unittest.pb.h>
-#include <google/protobuf/reflection_tester.h>
-#include <google/protobuf/test_util2.h>
+#include "google/protobuf/map_proto2_unittest.pb.h"
+#include "google/protobuf/map_unittest.pb.h"
+#include "google/protobuf/reflection_tester.h"
+#include "google/protobuf/test_util2.h"
 
 
 #define BRIDGE_UNITTEST ::google::protobuf::bridge_unittest
@@ -41,13 +41,13 @@
 
 // Must include after defining UNITTEST, etc.
 // clang-format off
-#include <google/protobuf/test_util.inc>
-#include <google/protobuf/map_test_util.inc>
-#include <google/protobuf/map_test.inc>
+#include "google/protobuf/test_util.inc"
+#include "google/protobuf/map_test_util.inc"
+#include "google/protobuf/map_test.inc"
 // clang-format on
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -85,4 +85,4 @@ TEST(MapTest, Aligned8OnArena) { MapTest_Aligned<AlignedAs8, true>(); }
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

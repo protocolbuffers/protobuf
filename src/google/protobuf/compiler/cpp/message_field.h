@@ -38,8 +38,8 @@
 #include <map>
 #include <string>
 
-#include <google/protobuf/compiler/cpp/field.h>
-#include <google/protobuf/compiler/cpp/helpers.h>
+#include "google/protobuf/compiler/cpp/field.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
 
 namespace google {
 namespace protobuf {

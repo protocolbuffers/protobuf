@@ -31,14 +31,12 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_LOGGING_H_
 #define GOOGLE_PROTOBUF_STUBS_LOGGING_H_
 
-#include <google/protobuf/stubs/macros.h>
-#include <google/protobuf/stubs/port.h>
-
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/stubs/port.h"
 
 // Must be last.
-#include <google/protobuf/port_def.inc>  // NOLINT
+#include "google/protobuf/port_def.inc"  // NOLINT
 
 // ===================================================================
 // emulates google3/base/logging.h
@@ -236,6 +234,6 @@ class PROTOBUF_EXPORT LogSilencer {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>  // NOLINT
+#include "google/protobuf/port_undef.inc"  // NOLINT
 
 #endif  // GOOGLE_PROTOBUF_STUBS_LOGGING_H_

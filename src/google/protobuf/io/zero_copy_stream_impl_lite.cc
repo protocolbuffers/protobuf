@@ -32,19 +32,19 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 #include <algorithm>
 #include <limits>
 #include <utility>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/base/casts.h"
-#include <google/protobuf/stubs/stl_util.h>
+#include "absl/strings/internal/resize_uninitialized.h"
 
 // Must be included last
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -158,7 +158,7 @@ bool StringOutputStream::Next(void** data, int* size) {
   // Avoid integer overflow in returned '*size'.
   new_size = std::min(new_size, old_size + std::numeric_limits<int>::max());
   // Increase the size, also make sure that it is at least kMinimumSize.
-  STLStringResizeUninitialized(
+  absl::strings_internal::STLStringResizeUninitialized(
       target_,
       std::max(new_size,
                kMinimumSize + 0));  // "+ 0" works around GCC4 weirdness.

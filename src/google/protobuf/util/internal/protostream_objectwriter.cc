@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/internal/protostream_objectwriter.h>
+#include "google/protobuf/util/internal/protostream_objectwriter.h"
 
 #include <cstdint>
 #include <functional>
@@ -36,22 +36,22 @@
 #include <unordered_map>
 #include <unordered_set>
 
-#include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/wire_format_lite.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/base/call_once.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/strip.h"
 #include "absl/time/time.h"
-#include <google/protobuf/util/internal/constants.h>
-#include <google/protobuf/util/internal/field_mask_utility.h>
-#include <google/protobuf/util/internal/object_location_tracker.h>
-#include <google/protobuf/util/internal/utility.h>
+#include "google/protobuf/util/internal/constants.h"
+#include "google/protobuf/util/internal/field_mask_utility.h"
+#include "google/protobuf/util/internal/object_location_tracker.h"
+#include "google/protobuf/util/internal/utility.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {

@@ -28,14 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/reflection_tester.h>
+#include "google/protobuf/reflection_tester.h"
 
 #include <gtest/gtest.h>
-#include <google/protobuf/map_field.h>
-#include <google/protobuf/message.h>
+#include "google/protobuf/map_field.h"
+#include "google/protobuf/message.h"
 
 // Must include last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -1670,4 +1670,4 @@ void MapReflectionTester::ExpectClearViaReflectionIterator(Message* message) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

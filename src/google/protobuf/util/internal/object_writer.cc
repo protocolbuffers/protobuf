@@ -28,9 +28,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/internal/object_writer.h>
+#include "google/protobuf/util/internal/object_writer.h"
 
-#include <google/protobuf/util/internal/datapiece.h>
+#include "google/protobuf/util/internal/datapiece.h"
 
 namespace google {
 namespace protobuf {

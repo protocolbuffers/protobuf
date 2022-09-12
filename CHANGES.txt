@@ -12,6 +12,15 @@
   * Use table-driven parser for reflection based objects.
   * Update Map's InternalSwap() to take a pointer to the other Map.
   * Add ARM-optimized Varint decoding functions.
+  * Minor optimization for parsing groups
+  * Declare ReflectiveProtoHook class
+  * Reduce size of VarintParse code in protocol buffers, by calling the shared
+    routine after handling just one-byte varint encoding inline, rather than
+    handling one-byte and two-byte varints inline.
+  * Avoid inlining some large heavily duplicated routines in repeated_ptr_field.h
+  * Add ReflectiveProtoHook to Reflection.
+  * Turns on table-driven parser for reflection based objects.
+
 
   Kotlin
   * Suppress deprecation warnings in Kotlin generated code.

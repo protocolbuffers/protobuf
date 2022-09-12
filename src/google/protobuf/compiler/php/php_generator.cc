@@ -28,21 +28,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/compiler/php/php_generator.h>
+#include "google/protobuf/compiler/php/php_generator.h"
 
 #include <sstream>
 
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/plugin.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/plugin.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
-#include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
+#include "absl/strings/str_replace.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 
 const std::string kDescriptorFile = "google/protobuf/descriptor.proto";
 const std::string kEmptyFile = "google/protobuf/empty.proto";
@@ -1952,17 +1952,13 @@ void GenerateServiceMethodDocComment(io::Printer* printer,
 }
 
 std::string FilenameCName(const FileDescriptor* file) {
-  std::string c_name = file->name();
-  c_name = StringReplace(c_name, ".", "_", true);
-  c_name = StringReplace(c_name, "/", "_", true);
-  return c_name;
+  return absl::StrReplaceAll(file->name(), {{".", "_"}, {"/", "_"}});
 }
 
 void GenerateCEnum(const EnumDescriptor* desc, io::Printer* printer) {
-  std::string c_name = desc->full_name();
-  c_name = StringReplace(c_name, ".", "_", true);
-  std::string php_name = FullClassName(desc, Options());
-  php_name = StringReplace(php_name, "\\", "\\\\", true);
+  std::string c_name = absl::StrReplaceAll(desc->full_name(), {{".", "_"}});
+  std::string php_name =
+      absl::StrReplaceAll(FullClassName(desc, Options()), {{"\\", "\\\\"}});
   printer->Print(
       "/* $c_name$ */\n"
       "\n"
@@ -2045,10 +2041,9 @@ void GenerateCEnum(const EnumDescriptor* desc, io::Printer* printer) {
 }
 
 void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
-  std::string c_name = message->full_name();
-  c_name = StringReplace(c_name, ".", "_", true);
-  std::string php_name = FullClassName(message, Options());
-  php_name = StringReplace(php_name, "\\", "\\\\", true);
+  std::string c_name = absl::StrReplaceAll(message->full_name(), {{".", "_"}});
+  std::string php_name =
+      absl::StrReplaceAll(FullClassName(message, Options()), {{"\\", "\\\\"}});
   printer->Print(
       "/* $c_name$ */\n"
       "\n"
@@ -2198,8 +2193,7 @@ void GenerateCMessage(const Descriptor* message, io::Printer* printer) {
 }
 
 void GenerateEnumCInit(const EnumDescriptor* desc, io::Printer* printer) {
-  std::string c_name = desc->full_name();
-  c_name = StringReplace(c_name, ".", "_", true);
+  std::string c_name = absl::StrReplaceAll(desc->full_name(), {{".", "_"}});
 
   printer->Print(
       "  $c_name$_ModuleInit();\n",
@@ -2207,8 +2201,7 @@ void GenerateEnumCInit(const EnumDescriptor* desc, io::Printer* printer) {
 }
 
 void GenerateCInit(const Descriptor* message, io::Printer* printer) {
-  std::string c_name = message->full_name();
-  c_name = StringReplace(c_name, ".", "_", true);
+  std::string c_name = absl::StrReplaceAll(message->full_name(), {{".", "_"}});
 
   printer->Print(
       "  $c_name$_ModuleInit();\n",
@@ -2250,8 +2243,9 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
     std::string metadata_filename = GeneratedMetadataFileName(file, Options());
     std::string metadata_classname = FilenameToClassname(metadata_filename);
     std::string metadata_c_name =
-        StringReplace(metadata_classname, "\\", "_", true);
-    metadata_classname = StringReplace(metadata_classname, "\\", "\\\\", true);
+        absl::StrReplaceAll(metadata_classname, {{"\\", "_"}});
+    metadata_classname =
+        absl::StrReplaceAll(metadata_classname, {{"\\", "\\\\"}});
     FileDescriptorProto file_proto;
     file->CopyTo(&file_proto);
     std::string serialized;
@@ -2332,7 +2326,7 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
     std::string metadata_filename = GeneratedMetadataFileName(file, Options());
     std::string metadata_classname = FilenameToClassname(metadata_filename);
     std::string metadata_c_name =
-        StringReplace(metadata_classname, "\\", "_", true);
+        absl::StrReplaceAll(metadata_classname, {{"\\", "_"}});
     printer.Print(
         "  $metadata_c_name$_ModuleInit();\n",
         "metadata_c_name", metadata_c_name);

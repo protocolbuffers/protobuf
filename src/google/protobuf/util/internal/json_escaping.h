@@ -33,8 +33,9 @@
 
 #include <cstdint>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/bytestream.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/bytestream.h"
+#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {

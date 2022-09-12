@@ -36,13 +36,14 @@
 #ifndef GOOGLE_PROTOBUF_PORT_H__
 #define GOOGLE_PROTOBUF_PORT_H__
 
+#include <cassert>
 #include <cstddef>
 #include <new>
 #include <type_traits>
 
 
 // must be last
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 
 namespace google {
@@ -113,6 +114,6 @@ inline ToRef DownCast(From& f) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_PORT_H__

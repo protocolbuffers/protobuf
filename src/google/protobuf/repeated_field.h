@@ -52,16 +52,17 @@
 #include <type_traits>
 #include <utility>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/arena.h>
-#include <google/protobuf/port.h>
-#include <google/protobuf/message_lite.h>
-#include <google/protobuf/repeated_ptr_field.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/repeated_ptr_field.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -467,7 +468,9 @@ class RepeatedField final {
     }
     FastAdderImpl(const FastAdderImpl&) = delete;
     FastAdderImpl& operator=(const FastAdderImpl&) = delete;
-    ~FastAdderImpl() { repeated_field_->ExchangeCurrentSize(index_); }
+    ~FastAdderImpl() {
+      repeated_field_->current_size_ = index_;
+    }
 
     void Add(Element val) {
       if (index_ == capacity_) {
@@ -1214,6 +1217,6 @@ extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedIterator<double>;
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_REPEATED_FIELD_H__

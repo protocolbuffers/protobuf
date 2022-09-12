@@ -45,35 +45,35 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/any.pb.h>
-#include <google/protobuf/test_util2.h>
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/unittest_custom_options.pb.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/stubs/stringprintf.h"
+#include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/file.h"
+#include "google/protobuf/any.pb.h"
+#include "google/protobuf/test_util2.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_custom_options.pb.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/status/status.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/command_line_interface.h>
-#include <google/protobuf/compiler/mock_code_generator.h>
-#include <google/protobuf/compiler/subprocess.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/io/io_win32.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/command_line_interface.h"
+#include "google/protobuf/compiler/mock_code_generator.h"
+#include "google/protobuf/compiler/subprocess.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/io_win32.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/strutil.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -372,8 +372,8 @@ void CommandLineInterfaceTest::RunWithArgs(std::vector<std::string> args) {
 
   std::unique_ptr<const char*[]> argv(new const char*[args.size()]);
 
-  for (int i = 0; i < args.size(); i++) {
-    args[i] = StringReplace(args[i], "$tmpdir", temp_directory_, true);
+  for (size_t i = 0; i < args.size(); i++) {
+    args[i] = absl::StrReplaceAll(args[i], {{"$tmpdir", temp_directory_}});
     argv[i] = args[i].c_str();
   }
 
@@ -410,7 +410,7 @@ void CommandLineInterfaceTest::CreateTempFile(const std::string& name,
   // Write file.
   std::string full_name = temp_directory_ + "/" + name;
   GOOGLE_CHECK_OK(File::SetContents(
-      full_name, StringReplace(contents, "$tmpdir", temp_directory_, true),
+      full_name, absl::StrReplaceAll(contents, {{"$tmpdir", temp_directory_}}),
       true));
 }
 
@@ -429,7 +429,7 @@ void CommandLineInterfaceTest::ExpectNoErrors() {
 void CommandLineInterfaceTest::ExpectErrorText(
     const std::string& expected_text) {
   EXPECT_NE(0, return_code_);
-  EXPECT_EQ(StringReplace(expected_text, "$tmpdir", temp_directory_, true),
+  EXPECT_EQ(absl::StrReplaceAll(expected_text, {{"$tmpdir", temp_directory_}}),
             error_text_);
 }
 
@@ -542,7 +542,7 @@ void CommandLineInterfaceTest::ExpectFileContent(const std::string& filename,
   std::string file_contents;
   GOOGLE_CHECK_OK(File::GetContents(path, &file_contents, true));
 
-  EXPECT_EQ(StringReplace(content, "$tmpdir", temp_directory_, true),
+  EXPECT_EQ(absl::StrReplaceAll(content, {{"$tmpdir", temp_directory_}}),
             file_contents);
 }
 
@@ -2785,7 +2785,7 @@ INSTANTIATE_TEST_SUITE_P(FileDescriptorSetSource, EncodeDecodeTest,
 
 #endif  // !GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 }  // namespace compiler
 }  // namespace protobuf

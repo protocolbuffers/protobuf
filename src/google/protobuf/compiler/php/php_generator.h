@@ -31,12 +31,12 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_PHP_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_PHP_GENERATOR_H__
 
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/descriptor.h>
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/descriptor.h"
 
 #include <string>
 
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -87,6 +87,6 @@ inline bool IsWrapperType(const FieldDescriptor* descriptor) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_PHP_GENERATOR_H__

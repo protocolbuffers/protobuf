@@ -115,9 +115,11 @@ cc_library(
     name = "arena",
     srcs = [
         "arena.cc",
+        "arena_config.cc",
     ],
     hdrs = [
         "arena.h",
+        "arena_config.h",
         "arena_impl.h",
         "arenaz_sampler.h",
     ],
@@ -136,6 +138,7 @@ cc_library(
     name = "protobuf_lite",
     srcs = [
         "any_lite.cc",
+        "arena_config.cc",
         "arenastring.cc",
         "arenaz_sampler.cc",
         "extension_set.cc",
@@ -154,6 +157,7 @@ cc_library(
     hdrs = [
         "any.h",
         "arena.h",
+        "arena_config.h",
         "arena_impl.h",
         "arenastring.h",
         "arenaz_sampler.h",
@@ -199,6 +203,8 @@ cc_library(
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs:lite",
         "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_absl//absl/strings:internal",
         "@com_google_absl//absl/synchronization",
         "@com_google_absl//absl/time",
     ],
@@ -288,6 +294,7 @@ cc_library(
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/hash",
+        "@com_google_absl//absl/strings:internal",
         "@com_google_absl//absl/synchronization",
         "@com_google_absl//absl/time",
     ],
