@@ -1,5 +1,5 @@
 {
-    "16.x": {
+    "3.16.x": {
         "protoc_version": "16.2-dev",
         "lts": false,
         "date": "2022-01-05",
