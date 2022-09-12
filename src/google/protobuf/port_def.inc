@@ -875,6 +875,13 @@
 #undef PACKAGE
 #endif
 
+// linux is a legacy MACRO defined in most popular C++ standards.
+#ifdef linux
+#pragma push_macro("linux")
+#undef linux
+#define PROTOBUF_DID_UNDEF_LINUX
+#endif
+
 // Windows declares several inconvenient macro names.  We #undef them and then
 // restore them in port_undef.inc.
 #ifdef _WIN32

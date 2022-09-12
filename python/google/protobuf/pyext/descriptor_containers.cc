@@ -54,6 +54,8 @@
 // This inclusion must appear before all the others.
 #include <Python.h>
 
+#include <string>
+
 #include "google/protobuf/pyext/descriptor_containers.h"
 // clang-format on
 

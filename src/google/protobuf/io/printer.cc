@@ -169,7 +169,13 @@ void Printer::Emit(
 
   absl::flat_hash_map<absl::string_view,
                       absl::variant<std::string, std::function<void()>>>
-      map = vars;
+      map;
+  map.reserve(vars.size());
+  for (auto& var : vars) {
+    auto result = map.insert(var);
+    GOOGLE_CHECK(result.second) << "repeated variable in Emit() call: \"" << var.first
+                         << "\"";
+  }
 
   var_lookups_.emplace_back([&map](absl::string_view var) -> LookupResult {
     auto it = map.find(var);
