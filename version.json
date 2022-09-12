@@ -1,5 +1,5 @@
 {
-    "main": {
+    "3.18.x": {
         "protoc_version": "18.3-dev",
         "lts": false,
         "date": "2022-01-05",
