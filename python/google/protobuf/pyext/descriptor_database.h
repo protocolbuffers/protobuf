@@ -34,6 +34,9 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+#include <string>
+#include <vector>
+
 #include "google/protobuf/descriptor_database.h"
 
 namespace google {
