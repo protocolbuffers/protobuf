@@ -102,6 +102,7 @@ if _implementation_type == 'cpp':
   try:
     # pylint: disable=g-import-not-at-top
     from google.protobuf.pyext import _message
+    sys.modules['google.protobuf.internal.cpp._message'] = _message
     _c_module = _message
     del _message
   except ImportError:
@@ -149,6 +150,12 @@ except ImportError:
 # Please don't use this function if possible.
 def Type():
   return _implementation_type
+
+
+def _SetType(implementation_type):
+  """Never use! Only for protobuf benchmark."""
+  global _implementation_type
+  _implementation_type = implementation_type
 
 
 # See comment on 'Type' above.

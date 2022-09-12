@@ -56,13 +56,13 @@
 
 #include <string>
 
-#include "google/protobuf/pyext/descriptor_containers.h"
+#include "third_party/py/google/protobuf/pyext/descriptor_containers.h"
 // clang-format on
 
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/pyext/descriptor.h"
-#include "google/protobuf/pyext/descriptor_pool.h"
-#include "google/protobuf/pyext/scoped_pyobject_ptr.h"
+#include "third_party/py/google/protobuf/pyext/descriptor.h"
+#include "third_party/py/google/protobuf/pyext/descriptor_pool.h"
+#include "third_party/py/google/protobuf/pyext/scoped_pyobject_ptr.h"
 #include "absl/strings/string_view.h"
 
 #define PyString_AsStringAndSize(ob, charpp, sizep)              \

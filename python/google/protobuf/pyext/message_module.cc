@@ -32,11 +32,11 @@
 #include <Python.h>
 
 #include "google/protobuf/message_lite.h"
-#include "google/protobuf/pyext/descriptor.h"
-#include "google/protobuf/pyext/descriptor_pool.h"
-#include "google/protobuf/pyext/message.h"
-#include "google/protobuf/pyext/message_factory.h"
-#include "google/protobuf/proto_api.h"
+#include "third_party/py/google/protobuf/pyext/descriptor.h"
+#include "third_party/py/google/protobuf/pyext/descriptor_pool.h"
+#include "third_party/py/google/protobuf/pyext/message.h"
+#include "third_party/py/google/protobuf/pyext/message_factory.h"
+#include "third_party/py/google/protobuf/proto_api.h"
 
 namespace {
 
