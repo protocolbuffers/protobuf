@@ -1,7 +1,7 @@
 {
     "main": {
         "protoc_version": "19.5-dev",
-        "lts": false,
+        "lts": true,
         "date": "2022-01-28",
         "languages": {
             "cpp": "3.19.5-dev",
