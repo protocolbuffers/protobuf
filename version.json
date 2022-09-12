@@ -1,7 +1,7 @@
 {
     "3.18.x": {
         "protoc_version": "18.3-dev",
-        "lts": false,
+        "lts": true,
         "date": "2022-01-05",
         "languages": {
             "cpp": "3.18.3-dev",
