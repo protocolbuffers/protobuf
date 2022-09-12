@@ -30,7 +30,10 @@
 
 // Implements the DescriptorPool, which collects all descriptors.
 
+#include <string>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>

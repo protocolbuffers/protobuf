@@ -220,7 +220,7 @@ inline const Descriptor* FieldScope(const FieldDescriptor* field) {
 std::string FieldMessageTypeName(const FieldDescriptor* field,
                                  const Options& options);
 
-// Get the C++ type name for a primitive type (e.g. "double", "::google::protobuf::int32", etc.).
+// Get the C++ type name for a primitive type (e.g. "double", "::int32", etc.).
 const char* PrimitiveTypeName(FieldDescriptor::CppType type);
 std::string PrimitiveTypeName(const Options& options,
                               FieldDescriptor::CppType type);

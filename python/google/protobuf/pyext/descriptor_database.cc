@@ -34,6 +34,8 @@
 #include "google/protobuf/pyext/descriptor_database.h"
 
 #include <cstdint>
+#include <string>
+#include <vector>
 
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
