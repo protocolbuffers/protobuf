@@ -218,7 +218,8 @@ void ImmutableStringFieldGenerator::GenerateInterfaceMembers(
 
 void ImmutableStringFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
-  printer->Print(variables_, "private volatile java.lang.Object $name$_;\n");
+  printer->Print(variables_, "@SuppressWarnings(\"serial\")\n"
+                             "private volatile java.lang.Object $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
 
   if (HasHazzer(descriptor_)) {
@@ -801,6 +802,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateInterfaceMembers(
 void RepeatedImmutableStringFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   printer->Print(variables_,
+                 "@SuppressWarnings(\"serial\")\n"
                  "private com.google.protobuf.LazyStringList $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);
