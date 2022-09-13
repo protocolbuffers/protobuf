@@ -6,18 +6,18 @@
   "homepage": "https://developers.google.com/protocol-buffers/",
   "license": "BSD-3-Clause",
   "require": {
-    "php": ">=5.5.0"
+    "php": ">=7.0.0"
   },
   "require-dev": {
-    "phpunit/phpunit": ">=4.8.0"
+    "phpunit/phpunit": ">=5.0.0"
   },
   "suggest": {
     "ext-bcmath": "Need to support JSON deserialization"
   },
   "autoload": {
     "psr-4": {
-      "Google\\Protobuf\\": "php/src/Google/Protobuf",
-      "GPBMetadata\\Google\\Protobuf\\": "php/src/GPBMetadata/Google/Protobuf"
+      "Google\\Protobuf\\": "src/Google/Protobuf",
+      "GPBMetadata\\Google\\Protobuf\\": "src/GPBMetadata/Google/Protobuf"
     }
   }
 }
