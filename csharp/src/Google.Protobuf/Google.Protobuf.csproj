@@ -4,7 +4,7 @@
     <Description>C# runtime library for Protocol Buffers - Google's data interchange format.</Description>
     <Copyright>Copyright 2015, Google Inc.</Copyright>
     <AssemblyTitle>Google Protocol Buffers</AssemblyTitle>
-    <VersionPrefix>3.20.1</VersionPrefix>
+    <VersionPrefix>3.20.2</VersionPrefix>
     <!-- C# 7.2 is required for Span/BufferWriter/ReadOnlySequence -->
     <LangVersion>7.2</LangVersion>
     <Authors>Google Inc.</Authors>
