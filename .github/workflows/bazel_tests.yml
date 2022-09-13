@@ -20,14 +20,19 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         include:
-          - { CC: clang, os: ubuntu-20.04, flags: "" }
-          - { CC: clang, os: ubuntu-20.04, flags: "-c opt" }  # Some warnings only fire with -c opt
-          - { CC: gcc, os: ubuntu-20.04, flags: "-c opt" }
-          - { CC: clang, os: ubuntu-20.04, flags: "--//:fasttable_enabled=true -- -cmake:test_generated_files" }
-          - { CC: clang, os: ubuntu-20.04, flags: "--config=asan -c dbg -- -benchmarks:benchmark -python/..." }
-          - { CC: clang, os: ubuntu-20.04, flags: "--config=ubsan -c dbg -- -benchmarks:benchmark -python/... -upb/bindings/lua/...", install: "libunwind-dev" }
-          - { CC: clang, os: ubuntu-20.04, flags: "--copt=-m32 --linkopt=-m32 -- -... benchmarks:benchmark ", install: "g++-multilib" }
-          - { CC: clang, os: macos-11, flags: "" }
+          - { NAME: "Fastbuild", BAZEL: bazel, CC: clang, os: ubuntu-20.04, flags: "" }
+          - { NAME: "Optmized", BAZEL: bazel, CC: clang, os: ubuntu-20.04, flags: "-c opt" }  # Some warnings only fire with -c opt
+          - { NAME: "GCC Optimized", BAZEL: bazel, CC: gcc, os: ubuntu-20.04, flags: "-c opt" }
+          - { NAME: "FastTable", BAZEL: bazel, CC: clang, os: ubuntu-20.04, flags: "--//:fasttable_enabled=true -- -cmake:test_generated_files" }
+          - { NAME: "ASAN", BAZEL: bazel, CC: clang, os: ubuntu-20.04, flags: "--config=asan -c dbg -- -benchmarks:benchmark -python/..." }
+          - { NAME: "UBSAN", BAZEL: bazel, CC: clang, os: ubuntu-20.04, flags: "--config=ubsan -c dbg -- -benchmarks:benchmark -python/... -upb/bindings/lua/...", install: "libunwind-dev" }
+          - { NAME: "32-bit", BAZEL: bazel, CC: clang, os: ubuntu-20.04, flags: "--copt=-m32 --linkopt=-m32 -- -... benchmarks:benchmark ", install: "g++-multilib" }
+          - { NAME: "macOS", BAZEL: bazel, CC: clang, os: macos-11, flags: "" }
+          # We support two Bazel versions back per https://opensource.google/documentation/policies/cplusplus-support
+          - { NAME: "Bazel 4.1.0", BAZEL: bazel-4.1.0-linux-x86_64, CC: clang, os: ubuntu-20.04, flags: "" }
+          - { NAME: "Bazel 5.3.0", BAZEL: bazel-5.3.0-linux-x86_64, CC: clang, os: ubuntu-20.04, flags: "" }
+
+    name: ${{ matrix.NAME }}
 
     steps:
       - uses: actions/checkout@v2
@@ -37,6 +42,15 @@ jobs:
           credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
           export_environment_variables: true
         if: ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/upb' }}
+      - name: Download historical Bazel version
+        run: |
+             FILENAME=$HOME/bin/${{ matrix.BAZEL }}
+             VERSION=$(echo ${{ matrix.BAZEL }} | cut -d- -f 2 )
+             mkdir -p $HOME/bin
+             echo $HOME/bin >> $GITHUB_PATH
+             wget -O $FILENAME https://github.com/bazelbuild/bazel/releases/download/$VERSION/${{ matrix.BAZEL }}
+             chmod a+x $FILENAME
+        if: ${{ matrix.BAZEL != 'bazel' }}
       - name: Set up Bazel read/write caching
         run: echo "BAZEL_CACHE_AUTH=--google_default_credentials" >> $GITHUB_ENV
         if: ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/upb' }}
@@ -49,4 +63,4 @@ jobs:
         run: sudo apt update && sudo apt install -y ${{ matrix.install }}
         if: matrix.install != ''
       - name: Run tests
-        run: cd ${{ github.workspace }} && PATH=/tmp/venv/bin:$PATH CC=${{ matrix.CC }} bazel test --test_output=errors $BAZEL_CACHE $BAZEL_CACHE_AUTH ... ${{ matrix.flags }}
+        run: cd ${{ github.workspace }} && PATH=/tmp/venv/bin:$PATH CC=${{ matrix.CC }} ${{ matrix.BAZEL }} test --test_output=errors $BAZEL_CACHE $BAZEL_CACHE_AUTH ... ${{ matrix.flags }}

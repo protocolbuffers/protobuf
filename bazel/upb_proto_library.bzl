@@ -29,7 +29,18 @@
 """
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
+
+# begin:google_only
+# load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
+# end:google_only
+
+# begin:github_only
+# Compatibility code for Bazel 4.x. Remove this when we drop support for Bazel 4.x.
+load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
+
+def use_cpp_toolchain():
+    return ["@bazel_tools//tools/cpp:toolchain_type"]
+# end:github_only
 
 # Generic support code #########################################################
 
