@@ -5,7 +5,7 @@
     <title>Google Protocol Buffers tools</title>
     <summary>Tools for Protocol Buffers - Google's data interchange format.</summary>
     <description>See project site for more info.</description>
-    <version>3.20.1</version>
+    <version>3.20.2</version>
     <authors>Google Inc.</authors>
     <owners>protobuf-packages</owners>
     <licenseUrl>https://github.com/protocolbuffers/protobuf/blob/master/LICENSE</licenseUrl>
