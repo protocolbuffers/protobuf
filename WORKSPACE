@@ -21,10 +21,13 @@ http_archive(
 )
 
 http_archive(
-     name = "com_google_googletest",
-     urls = ["https://github.com/google/googletest/archive/b6cd405286ed8635ece71c72f118e659f4ade3fb.zip"],  # 2019-01-07
-     strip_prefix = "googletest-b6cd405286ed8635ece71c72f118e659f4ade3fb",
-     sha256 = "ff7a82736e158c077e76188232eac77913a15dac0b22508c390ab3f88e6d6d86",
+    name = "com_google_googletest",
+    sha256 = "81964fe578e9bd7c94dfdb09c8e4d6e6759e19967e397dbea48d1c10e45d0df2",
+    strip_prefix = "googletest-release-1.12.1",
+    urls = [
+        "https://mirror.bazel.build/github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz",
+        "https://github.com/google/googletest/archive/refs/tags/release-1.12.1.tar.gz",
+    ],
 )
 
 http_archive(
