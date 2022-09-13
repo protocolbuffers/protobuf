@@ -1,7 +1,5 @@
 #!/bin/bash
-
 set -ex
-
 # Make sure we are in a protobuf source tree.
 [ -f "php/release.sh" ] || {
   echo "This script must be ran under root of protobuf source tree."
@@ -10,28 +8,21 @@ set -ex
 
 VERSION=$1
 
+rm -rf protobuf-php
 git clone https://github.com/protocolbuffers/protobuf-php.git
-git clone https://github.com/protocolbuffers/protobuf.git
 
 # Clean old files
-pushd protobuf-php
-rm -rf src
-popd
-
-# Checkout the target version
-pushd protobuf/php
-git checkout -b $VERSION
-popd
+rm -rf protobuf-php/src
 
 # Copy files
-pushd protobuf-php
-mv ../protobuf/php/src src
-mv ../protobuf/composer.json composer.json
-sed -i 's|php/src|src|g' composer.json
+cp -r php/src protobuf-php
+cp php/composer.json.dist protobuf-php/composer.json
+
+cd protobuf-php
 git add .
 git commit -m "$VERSION"
-git tag "$VERSION"
-popd
-
-# Clean up
-rm -rf protobuf
+if [ $(git tag -l "$VERSION") ]; then
+  echo "tag $VERSION already exists"
+else
+  git tag "$VERSION"
+fi
