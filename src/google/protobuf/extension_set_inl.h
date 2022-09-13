@@ -206,16 +206,21 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
     const char* ptr, const Msg* containing_type,
     internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
   std::string payload;
-  uint32 type_id = 0;
-  bool payload_read = false;
+  uint32 type_id;
+  enum class State { kNoTag, kHasType, kHasPayload, kDone };
+  State state = State::kNoTag;
+
   while (!ctx->Done(&ptr)) {
     uint32 tag = static_cast<uint8>(*ptr++);
     if (tag == WireFormatLite::kMessageSetTypeIdTag) {
       uint64 tmp;
       ptr = ParseBigVarint(ptr, &tmp);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-      type_id = tmp;
-      if (payload_read) {
+      if (state == State::kNoTag) {
+        type_id = tmp;
+        state = State::kHasType;
+      } else if (state == State::kHasPayload) {
+        type_id = tmp;
         ExtensionInfo extension;
         bool was_packed_on_wire;
         if (!FindExtension(2, type_id, containing_type, ctx, &extension,
@@ -241,20 +246,24 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
           GOOGLE_PROTOBUF_PARSER_ASSERT(value->_InternalParse(p, &tmp_ctx) &&
                                          tmp_ctx.EndedAtLimit());
         }
-        type_id = 0;
+        state = State::kDone;
       }
     } else if (tag == WireFormatLite::kMessageSetMessageTag) {
-      if (type_id != 0) {
+      if (state == State::kHasType) {
         ptr = ParseFieldMaybeLazily(static_cast<uint64>(type_id) * 8 + 2, ptr,
                                     containing_type, metadata, ctx);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
-        type_id = 0;
+        state = State::kDone;
       } else {
+        std::string tmp;
         int32 size = ReadSize(&ptr);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        ptr = ctx->ReadString(ptr, size, &payload);
+        ptr = ctx->ReadString(ptr, size, &tmp);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        payload_read = true;
+        if (state == State::kNoTag) {
+          payload = std::move(tmp);
+          state = State::kHasPayload;
+        }
       }
     } else {
       ptr = ReadTag(ptr - 1, &tag);

@@ -657,9 +657,11 @@ struct WireFormat::MessageSetParser {
   const char* _InternalParse(const char* ptr, internal::ParseContext* ctx) {
     // Parse a MessageSetItem
     auto metadata = reflection->MutableInternalMetadata(msg);
+    enum class State { kNoTag, kHasType, kHasPayload, kDone };
+    State state = State::kNoTag;
+
     std::string payload;
     uint32 type_id = 0;
-    bool payload_read = false;
     while (!ctx->Done(&ptr)) {
       // We use 64 bit tags in order to allow typeid's that span the whole
       // range of 32 bit numbers.
@@ -668,8 +670,11 @@ struct WireFormat::MessageSetParser {
         uint64 tmp;
         ptr = ParseBigVarint(ptr, &tmp);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        type_id = tmp;
-        if (payload_read) {
+        if (state == State::kNoTag) {
+          type_id = tmp;
+          state = State::kHasType;
+        } else if (state == State::kHasPayload) {
+          type_id = tmp;
           const FieldDescriptor* field;
           if (ctx->data().pool == nullptr) {
             field = reflection->FindKnownExtensionByNumber(type_id);
@@ -696,17 +701,17 @@ struct WireFormat::MessageSetParser {
             GOOGLE_PROTOBUF_PARSER_ASSERT(value->_InternalParse(p, &tmp_ctx) &&
                                            tmp_ctx.EndedAtLimit());
           }
-          type_id = 0;
+          state = State::kDone;
         }
         continue;
       } else if (tag == WireFormatLite::kMessageSetMessageTag) {
-        if (type_id == 0) {
+        if (state == State::kNoTag) {
           int32 size = ReadSize(&ptr);
           GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
           ptr = ctx->ReadString(ptr, size, &payload);
           GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-          payload_read = true;
-        } else {
+          state = State::kHasPayload;
+        } else if (state == State::kHasType) {
           // We're now parsing the payload
           const FieldDescriptor* field = nullptr;
           if (descriptor->IsExtensionNumber(type_id)) {
@@ -720,7 +725,12 @@ struct WireFormat::MessageSetParser {
           ptr = WireFormat::_InternalParseAndMergeField(
               msg, ptr, ctx, static_cast<uint64>(type_id) * 8 + 2, reflection,
               field);
-          type_id = 0;
+          state = State::kDone;
+        } else {
+          int32 size = ReadSize(&ptr);
+          GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+          ptr = ctx->Skip(ptr, size);
+          GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         }
       } else {
         // An unknown field in MessageSetItem.
