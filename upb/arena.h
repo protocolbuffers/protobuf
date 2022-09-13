@@ -72,6 +72,8 @@ void upb_Arena_Free(upb_Arena* a);
 bool upb_Arena_AddCleanup(upb_Arena* a, void* ud, upb_CleanupFunc* func);
 bool upb_Arena_Fuse(upb_Arena* a, upb_Arena* b);
 void* _upb_Arena_SlowMalloc(upb_Arena* a, size_t size);
+size_t upb_Arena_SpaceAllocated(upb_Arena* arena);
+uint32_t upb_Arena_DebugRefCount(upb_Arena* arena);
 
 UPB_INLINE upb_alloc* upb_Arena_Alloc(upb_Arena* a) { return (upb_alloc*)a; }
 
