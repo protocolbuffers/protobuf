@@ -49,6 +49,7 @@
 #include <google/protobuf/stubs/casts.h>
 #include <google/protobuf/stubs/strutil.h>
 #include <google/protobuf/stubs/stl_util.h>
+#include <google/protobuf/dynamic_message.h>
 
 // clang-format off
 #include <google/protobuf/port_def.inc>
