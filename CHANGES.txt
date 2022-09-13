@@ -1,7 +1,10 @@
+2022-09-13 version 18.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+
 2022-01-05 version 3.18.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
   Java
-  * Improve performance characteristics of UnknownFieldSet parsing (#9371)
+  * Improve performance characteristics of UnknownFieldSet parsing (#9371) 
 
 2021-10-04 version 3.18.1 (C++/Java/Python/PHP/Objective-C/C#/Ruby/JavaScript)
 
