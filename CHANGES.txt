@@ -1,3 +1,8 @@
+2022-09-13 version 16.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+C++
+* Reduce memory consumption of MessageSet parsing
+
 2022-01-05 version 3.16.1 (Java)
 
   Java
