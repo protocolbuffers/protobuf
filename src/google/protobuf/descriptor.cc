@@ -7683,7 +7683,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       if (uninterpreted_option_->has_positive_int_value()) {
         if (uninterpreted_option_->positive_int_value() >
             static_cast<uint64_t>(std::numeric_limits<int32_t>::max())) {
-          return AddValueError("Value out of range for int32 option \"" +
+          return AddValueError("Value out of range, -2,147,483,648 to 2,147,483,647, for int32 option \"" +
                                option_field->full_name() + "\".");
         } else {
           SetInt32(option_field->number(),
@@ -7693,7 +7693,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       } else if (uninterpreted_option_->has_negative_int_value()) {
         if (uninterpreted_option_->negative_int_value() <
             static_cast<int64_t>(std::numeric_limits<int32_t>::min())) {
-          return AddValueError("Value out of range for int32 option \"" +
+          return AddValueError("Value out of range, -2,147,483,648 to 2,147,483,647, for int32 option \"" +
                                option_field->full_name() + "\".");
         } else {
           SetInt32(option_field->number(),
@@ -7701,7 +7701,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
                    option_field->type(), unknown_fields);
         }
       } else {
-        return AddValueError("Value must be integer for int32 option \"" +
+        return AddValueError("Value must be integer, from -2,147,483,648 to 2,147,483,647, for int32 option \"" +
                              option_field->full_name() + "\".");
       }
       break;
@@ -7710,7 +7710,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       if (uninterpreted_option_->has_positive_int_value()) {
         if (uninterpreted_option_->positive_int_value() >
             static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
-          return AddValueError("Value out of range for int64 option \"" +
+          return AddValueError("Value out of range, -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807, for int64 option \"" +
                                option_field->full_name() + "\".");
         } else {
           SetInt64(option_field->number(),
@@ -7722,7 +7722,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
                  uninterpreted_option_->negative_int_value(),
                  option_field->type(), unknown_fields);
       } else {
-        return AddValueError("Value must be integer for int64 option \"" +
+        return AddValueError("Value must be integer, from -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807, for int64 option \"" +
                              option_field->full_name() + "\".");
       }
       break;
@@ -7731,7 +7731,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       if (uninterpreted_option_->has_positive_int_value()) {
         if (uninterpreted_option_->positive_int_value() >
             std::numeric_limits<uint32_t>::max()) {
-          return AddValueError("Value out of range for uint32 option \"" +
+          return AddValueError("Value out of range, 0 to 4,294,967,295, for uint32 option \"" +
                                option_field->name() + "\".");
         } else {
           SetUInt32(option_field->number(),
@@ -7740,8 +7740,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
         }
       } else {
         return AddValueError(
-            "Value must be non-negative integer for uint32 "
-            "option \"" +
+            "Value must be integer, from 0 to 4,294,967,295, for uint32 option \"" +
             option_field->full_name() + "\".");
       }
       break;
@@ -7753,8 +7752,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
                   option_field->type(), unknown_fields);
       } else {
         return AddValueError(
-            "Value must be non-negative integer for uint64 "
-            "option \"" +
+            "Value must be integer, from 0 to 18,446,744,073,709,551,615, for uint64 option \"" +
             option_field->full_name() + "\".");
       }
       break;
