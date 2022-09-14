@@ -9645,7 +9645,7 @@ static upb_MessageValue jsondec_enum(jsondec* d, const upb_FieldDef* f) {
       }
       const upb_EnumDef* e = upb_FieldDef_EnumSubDef(f);
       const upb_EnumValueDef* ev =
-          upb_EnumDef_FindValueByNameWithSize(e, str.data, str.size);
+          upb_EnumDef_FindValueByNameWithSize(e, name, str.size);
       upb_MessageValue val;
       if (ev) {
         val.int32_val = upb_EnumValueDef_Number(ev);
