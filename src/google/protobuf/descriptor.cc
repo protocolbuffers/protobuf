@@ -58,6 +58,7 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "google/protobuf/stubs/stringprintf.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
@@ -7675,6 +7676,14 @@ bool DescriptorBuilder::OptionInterpreter::ExamineIfOptionIsSet(
   return true;
 }
 
+#define VALUE_OUT_OF_RANGE(T, NAME) absl::StrFormat(  \
+  "Value out of range, %d to %d, for " #T " option \"%s\".", \
+  std::numeric_limits<T##_t>::min(), std::numeric_limits<T##_t>::max(), NAME)
+
+#define VALUE_MUST_BE_INT(T, NAME) absl::StrFormat(  \
+  "Value must be integer, from %d to %d, for " #T " option \"%s\".", \
+  std::numeric_limits<T##_t>::min(), std::numeric_limits<T##_t>::max(), NAME)
+
 bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
     const FieldDescriptor* option_field, UnknownFieldSet* unknown_fields) {
   // We switch on the CppType to validate.
@@ -7683,8 +7692,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       if (uninterpreted_option_->has_positive_int_value()) {
         if (uninterpreted_option_->positive_int_value() >
             static_cast<uint64_t>(std::numeric_limits<int32_t>::max())) {
-          return AddValueError("Value out of range, -2,147,483,648 to 2,147,483,647, for int32 option \"" +
-                               option_field->full_name() + "\".");
+          return AddValueError(VALUE_OUT_OF_RANGE(int32, option_field->full_name()));
         } else {
           SetInt32(option_field->number(),
                    uninterpreted_option_->positive_int_value(),
@@ -7693,16 +7701,14 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       } else if (uninterpreted_option_->has_negative_int_value()) {
         if (uninterpreted_option_->negative_int_value() <
             static_cast<int64_t>(std::numeric_limits<int32_t>::min())) {
-          return AddValueError("Value out of range, -2,147,483,648 to 2,147,483,647, for int32 option \"" +
-                               option_field->full_name() + "\".");
+          return AddValueError(VALUE_OUT_OF_RANGE(int32, option_field->full_name()));
         } else {
           SetInt32(option_field->number(),
                    uninterpreted_option_->negative_int_value(),
                    option_field->type(), unknown_fields);
         }
       } else {
-        return AddValueError("Value must be integer, from -2,147,483,648 to 2,147,483,647, for int32 option \"" +
-                             option_field->full_name() + "\".");
+        return AddValueError(VALUE_MUST_BE_INT(int32, option_field->full_name()));
       }
       break;
 
@@ -7710,8 +7716,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       if (uninterpreted_option_->has_positive_int_value()) {
         if (uninterpreted_option_->positive_int_value() >
             static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
-          return AddValueError("Value out of range, -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807, for int64 option \"" +
-                               option_field->full_name() + "\".");
+          return AddValueError(VALUE_OUT_OF_RANGE(int64, option_field->full_name()));
         } else {
           SetInt64(option_field->number(),
                    uninterpreted_option_->positive_int_value(),
@@ -7722,8 +7727,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
                  uninterpreted_option_->negative_int_value(),
                  option_field->type(), unknown_fields);
       } else {
-        return AddValueError("Value must be integer, from -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807, for int64 option \"" +
-                             option_field->full_name() + "\".");
+        return AddValueError(VALUE_MUST_BE_INT(int64, option_field->full_name()));
       }
       break;
 
@@ -7731,17 +7735,14 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       if (uninterpreted_option_->has_positive_int_value()) {
         if (uninterpreted_option_->positive_int_value() >
             std::numeric_limits<uint32_t>::max()) {
-          return AddValueError("Value out of range, 0 to 4,294,967,295, for uint32 option \"" +
-                               option_field->name() + "\".");
+          return AddValueError(VALUE_OUT_OF_RANGE(uint32, option_field->full_name()));
         } else {
           SetUInt32(option_field->number(),
                     uninterpreted_option_->positive_int_value(),
                     option_field->type(), unknown_fields);
         }
       } else {
-        return AddValueError(
-            "Value must be integer, from 0 to 4,294,967,295, for uint32 option \"" +
-            option_field->full_name() + "\".");
+        return AddValueError(VALUE_MUST_BE_INT(uint32, option_field->full_name()));
       }
       break;
 
@@ -7751,9 +7752,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
                   uninterpreted_option_->positive_int_value(),
                   option_field->type(), unknown_fields);
       } else {
-        return AddValueError(
-            "Value must be integer, from 0 to 18,446,744,073,709,551,615, for uint64 option \"" +
-            option_field->full_name() + "\".");
+        return AddValueError(VALUE_MUST_BE_INT(uint64, option_field->full_name()));
       }
       break;
 
