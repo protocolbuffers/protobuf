@@ -5,9 +5,9 @@
  <summary>Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data.</summary>
  <description>https://developers.google.com/protocol-buffers/</description>
  <lead>
-  <name>Bo Yang</name>
-  <user>stanleycheung</user>
-  <email>protobuf-opensource@google.com</email>
+  <name>Protobuf Team</name>
+  <user>protobufpackages</user>
+  <email>protobufpackages@google.com</email>
   <active>yes</active>
  </lead>
  <date>2022-09-13</date>
@@ -1212,7 +1212,7 @@ G  A release.
     <release>stable</release>
     <api>stable</api>
    </stability>
-   <date>2022-09-13</date>
+   <date>2022-09-14</date>
    <time>11:09:09</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>
