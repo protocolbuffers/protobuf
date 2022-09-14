@@ -2230,11 +2230,11 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForNonRepeatedTypes() {
       "optional_aliased_enum: ALIAS_BAZ");
   RunValidJsonTest(
       "EnumFieldWithAliasLowerCase", REQUIRED,
-      R"({"optionalAliasedEnum": "Moo"})",
+      R"({"optionalAliasedEnum": "moo"})",
       "optional_aliased_enum: ALIAS_BAZ");
   RunValidJsonTest(
       "EnumFieldWithAliasDifferentCase", REQUIRED,
-      R"({"optionalAliasedEnum": "BAz"})",
+      R"({"optionalAliasedEnum": "bAz"})",
       "optional_aliased_enum: ALIAS_BAZ");
   // Enum values must be represented as strings.
   ExpectParseFailureForJson(
