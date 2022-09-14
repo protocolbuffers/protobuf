@@ -9,7 +9,7 @@
 
     <groupId>com.google.protobuf.jruby</groupId>
     <artifactId>protobuf-jruby</artifactId>
-    <version>3.20.1</version>
+    <version>3.20.2</version>
     <name>Protocol Buffer JRuby native extension</name>
     <description>
       Protocol Buffers are a way of encoding structured data in an efficient yet
@@ -76,7 +76,7 @@
         <dependency>
           <groupId>com.google.protobuf</groupId>
           <artifactId>protobuf-java-util</artifactId>
-          <version>3.20.1</version>
+          <version>3.20.2</version>
         </dependency>
         <dependency>
             <groupId>org.jruby</groupId>

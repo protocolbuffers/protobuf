@@ -127,7 +127,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_setter, 0, 0, 1)
   ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
-#define PHP_PROTOBUF_VERSION "3.20.1"
+#define PHP_PROTOBUF_VERSION "3.20.2"
 
 // ptr -> PHP object cache. This is a weak map that caches lazily-created
 // wrapper objects around upb types:
