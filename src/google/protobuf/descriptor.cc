@@ -5993,9 +5993,8 @@ void DescriptorBuilder::CheckEnumValueUniqueness(
           "Enum name " + value->name() + " has the same name as " +
           values[stripped]->name() +
           " if you ignore case and strip out the enum name prefix (if any). "
-          "This is error-prone and can lead to undefined behavior. "
-          "Please avoid doing this. If you are using allow_alias, please "
-          "assign the same numeric value to both enums.";
+          "(If you are using allow_alias, please assign the same numeric "
+          "value to both enums.)";
       // There are proto2 enums out there with conflicting names, so to preserve
       // compatibility we issue only a warning for proto2.
       if (result->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
