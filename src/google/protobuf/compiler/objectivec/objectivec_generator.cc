@@ -100,7 +100,7 @@ bool ObjectiveCGenerator::GenerateAll(
   // e.g. protoc ... --objc_opt=expected_prefixes=file.txt,generate_for_named_framework=MyFramework
 
   Options validation_options;
-  FileGenerator::GenerationOptions generation_options;
+  GenerationOptions generation_options;
 
   std::vector<std::pair<std::string, std::string> > options;
   ParseGeneratorParameter(parameter, &options);
