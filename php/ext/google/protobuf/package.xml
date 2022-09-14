@@ -5,9 +5,9 @@
  <summary>Google's language-neutral, platform-neutral, extensible mechanism for serializing structured data.</summary>
  <description>https://developers.google.com/protocol-buffers/</description>
  <lead>
-  <name>Bo Yang</name>
-  <user>stanleycheung</user>
-  <email>protobuf-opensource@google.com</email>
+  <name>Protobuf Team</name>
+  <user>protobufpackages</user>
+  <email>protobuf-packages@google.com</email>
   <active>yes</active>
  </lead>
  <date>2022-09-13</date>
