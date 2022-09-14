@@ -2,7 +2,7 @@
     "3.18.x": {
         "protoc_version": "18.3",
         "lts": true,
-        "date": "2022-09-13",
+        "date": "2022-09-14",
         "languages": {
             "cpp": "3.18.3",
             "csharp": "3.18.3",
