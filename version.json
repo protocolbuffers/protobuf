@@ -2,7 +2,7 @@
     "3.19.x": {
         "protoc_version": "19.5",
         "lts": true,
-        "date": "2022-09-13",
+        "date": "2022-09-14",
         "languages": {
             "cpp": "3.19.5",
             "csharp": "3.19.5",
