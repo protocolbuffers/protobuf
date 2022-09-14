@@ -3847,8 +3847,6 @@ class DescriptorBuilder {
                           internal::FlatAllocator& alloc);
   void BuildOneof(const OneofDescriptorProto& proto, Descriptor* parent,
                   OneofDescriptor* result, internal::FlatAllocator& alloc);
-  void CheckEnumValueUniqueness(const EnumDescriptorProto& proto,
-                                const EnumDescriptor* result);
   void BuildEnum(const EnumDescriptorProto& proto, const Descriptor* parent,
                  EnumDescriptor* result, internal::FlatAllocator& alloc);
   void BuildEnumValue(const EnumValueDescriptorProto& proto,
@@ -3859,6 +3857,14 @@ class DescriptorBuilder {
   void BuildMethod(const MethodDescriptorProto& proto,
                    const ServiceDescriptor* parent, MethodDescriptor* result,
                    internal::FlatAllocator& alloc);
+
+  void CheckFieldJSONNameUniqueness(const DescriptorProto& proto,
+                                    const Descriptor* result);
+  void CheckFieldJSONNameUniqueness(std::string message_name,
+                                    const DescriptorProto& message,
+                                    bool is_proto2, bool use_custom_names);
+  void CheckEnumValueUniqueness(const EnumDescriptorProto& proto,
+                                const EnumDescriptor* result);
 
   void LogUnusedDependency(const FileDescriptorProto& proto,
                            const FileDescriptor* result);
@@ -5415,7 +5421,10 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
     }
   }
 
+  CheckFieldJSONNameUniqueness(proto, result);
 
+  // Check that fields aren't using reserved names or numbers and that they
+  // aren't using extension numbers.
   for (int i = 0; i < result->field_count(); i++) {
     const FieldDescriptor* field = result->field(i);
     for (int j = 0; j < result->extension_range_count(); j++) {
@@ -5476,6 +5485,75 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
                                   range2->start, range2->end - 1, range1->start,
                                   range1->end - 1));
       }
+    }
+  }
+}
+
+std::string GetJSONName(const FieldDescriptorProto& field, bool use_custom, bool* was_custom) {
+  if (use_custom && field.has_json_name()) {
+    *was_custom = true;
+    return field.json_name();
+  }
+  *was_custom = false;
+  return ToJsonName(field.name());
+}
+
+void DescriptorBuilder::CheckFieldJSONNameUniqueness(
+    const DescriptorProto& proto, const Descriptor* result) {
+  bool is_proto2 = result->file()->syntax() == FileDescriptor::SYNTAX_PROTO2;
+  std::string message_name = result->full_name();
+  // two passes: one looking only at default JSON names, and one that considers custom JSON names
+  CheckFieldJSONNameUniqueness(message_name, proto, is_proto2, false);
+  CheckFieldJSONNameUniqueness(message_name, proto, is_proto2, true);
+}
+
+struct JSONNameDetails {
+  const FieldDescriptorProto* field;
+  std::string orig_name;
+  bool is_custom;
+};
+
+void DescriptorBuilder::CheckFieldJSONNameUniqueness(
+    std::string message_name,const DescriptorProto& message, bool is_proto2, bool use_custom_names) {
+
+  std::map<std::string, struct JSONNameDetails> name_to_field;
+  for (int i = 0; i < message.field_size(); ++i) {
+    bool is_custom;
+    std::string name = GetJSONName(message.field(i), use_custom_names, &is_custom);
+    std::string lowercase_name = absl::AsciiStrToLower(name);
+    auto existing = name_to_field.find(lowercase_name);
+    if (existing != name_to_field.end()) {
+      auto match = existing->second;
+      if (use_custom_names && !is_custom && !match.is_custom) {
+        // if this pass is considering custom JSON names, but neither of the
+        // names involved in the conflict are custom, don't bother with a message.
+        // That will have been reported from other pass (non-custom JSON names).
+        continue;
+      }
+      std::string this_type = is_custom ? "custom" : "default";
+      std::string existing_type = match.is_custom ? "custom" : "default";
+      // If the matched name differs (which it can only differ in case), include it
+      // in the error message, for maximum clarity to user.
+      std::string name_suffix = name == match.orig_name ? "" : " (\"" + match.orig_name + "\")";
+      std::string error_message =
+          "The " + this_type + " JSON name of field \"" + message.field(i).name() +
+          "\" (\"" + name + "\") conflicts with the " + existing_type + " JSON name of field \"" +
+          match.field->name() + "\"" + name_suffix + ".";
+
+      bool involves_default = !is_custom || !match.is_custom;
+      if (is_proto2 && involves_default) {
+        AddWarning(message_name, message.field(i),
+                 DescriptorPool::ErrorCollector::NAME, error_message);
+      } else {
+        if (involves_default) {
+          error_message += " This is not allowed in proto3.";
+        }
+        AddError(message_name, message.field(i),
+                 DescriptorPool::ErrorCollector::NAME, error_message);
+      }
+    } else {
+      struct JSONNameDetails details = { &message.field(i), name, is_custom };
+      name_to_field[lowercase_name] = details;
     }
   }
 }
@@ -5913,6 +5991,7 @@ void DescriptorBuilder::CheckEnumValueUniqueness(
         AddWarning(value->full_name(), proto.value(i),
                    DescriptorPool::ErrorCollector::NAME, error_message);
       } else {
+        error_message += " This is not allowed in proto3.";
         AddError(value->full_name(), proto.value(i),
                  DescriptorPool::ErrorCollector::NAME, error_message);
       }
@@ -6779,20 +6858,6 @@ void DescriptorBuilder::ValidateProto3(FileDescriptor* file,
   }
 }
 
-static std::string ToLowercaseWithoutUnderscores(const std::string& name) {
-  std::string result;
-  for (char character : name) {
-    if (character != '_') {
-      if (character >= 'A' && character <= 'Z') {
-        result.push_back(character - 'A' + 'a');
-      } else {
-        result.push_back(character);
-      }
-    }
-  }
-  return result;
-}
-
 void DescriptorBuilder::ValidateProto3Message(Descriptor* message,
                                               const DescriptorProto& proto) {
   for (int i = 0; i < message->nested_type_count(); ++i) {
@@ -6816,25 +6881,6 @@ void DescriptorBuilder::ValidateProto3Message(Descriptor* message,
     // Using MessageSet doesn't make sense since we disallow extensions.
     AddError(message->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
              "MessageSet is not supported in proto3.");
-  }
-
-  // In proto3, we reject field names if they conflict in camelCase.
-  // Note that we currently enforce a stricter rule: Field names must be
-  // unique after being converted to lowercase with underscores removed.
-  std::map<std::string, const FieldDescriptor*> name_to_field;
-  for (int i = 0; i < message->field_count(); ++i) {
-    std::string lowercase_name =
-        ToLowercaseWithoutUnderscores(message->field(i)->name());
-    if (name_to_field.find(lowercase_name) != name_to_field.end()) {
-      AddError(message->full_name(), proto.field(i),
-               DescriptorPool::ErrorCollector::NAME,
-               "The JSON camel-case name of field \"" +
-                   message->field(i)->name() + "\" conflicts with field \"" +
-                   name_to_field[lowercase_name]->name() + "\". This is not " +
-                   "allowed in proto3.");
-    } else {
-      name_to_field[lowercase_name] = message->field(i);
-    }
   }
 }
 
