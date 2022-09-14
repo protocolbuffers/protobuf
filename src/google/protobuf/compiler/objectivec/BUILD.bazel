@@ -35,6 +35,7 @@ cc_library(
         "objectivec_message_field.h",
         "objectivec_nsobject_methods.h",
         "objectivec_oneof.h",
+        "objectivec_options.h",
         "objectivec_primitive_field.h",
     ],
     copts = COPTS,
