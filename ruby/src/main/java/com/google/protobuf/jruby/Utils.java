@@ -351,7 +351,7 @@ public class Utils {
     if (name != null && name.length() > 0) {
       int ch = name.codePointAt(0);
       if (ch >= 'a' && ch <= 'z') {
-        // Protobuf enums can start with lowercase letters, while Ruby's symbol should
+        // Protobuf enums can start with lowercase letters, while Ruby's constant should
         // always start with uppercase letters. We tolerate this case by capitalizing
         // the first character if possible.
         return Character.toUpperCase(ch) + name.substring(1);
