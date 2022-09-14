@@ -16,7 +16,7 @@ rm -rf protobuf-php/src
 
 # Copy files
 cp -r php/src protobuf-php
-cp php/composer.json.dist protobuf-php/composer.json
+cp composer.json protobuf-php/composer.json
 
 cd protobuf-php
 git add .
