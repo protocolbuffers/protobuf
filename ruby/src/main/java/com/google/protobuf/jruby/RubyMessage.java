@@ -1064,7 +1064,12 @@ public class RubyMessage extends RubyObject {
         if (Utils.isRubyNum(value)) {
           val = enumDescriptor.findValueByNumberCreatingIfUnknown(RubyNumeric.num2int(value));
         } else {
-          val = enumDescriptor.findValueByName(value.asJavaString());
+          String name = value.asJavaString();
+          int ch = name.codePointAt(0);
+          if (ch >= 'a' && ch <= 'z') {
+            name = Character.toUpperCase(ch) + name.substring(1);
+          }
+          val = enumDescriptor.findValueByName(name);
         }
         break;
       default:
