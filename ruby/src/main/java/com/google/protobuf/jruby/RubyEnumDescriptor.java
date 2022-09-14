@@ -130,14 +130,14 @@ public class RubyEnumDescriptor extends RubyObject {
     if (Utils.isRubyNum(value)) {
       enumValue = descriptor.findValueByNumberCreatingIfUnknown(RubyNumeric.num2int(value));
     } else {
-      enumValue = descriptor.findValueByName(value.asJavaString());
+      enumValue = descriptor.findValueByName(Utils.fixEnumName(value.asJavaString()));
     }
 
     return enumValue != null;
   }
 
   protected IRubyObject nameToNumber(ThreadContext context, IRubyObject name) {
-    EnumValueDescriptor value = descriptor.findValueByName(name.asJavaString());
+    EnumValueDescriptor value = descriptor.findValueByName(Utils.fixEnumName(name.asJavaString()));
     return value == null ? context.nil : context.runtime.newFixnum(value.getNumber());
   }
 
@@ -162,16 +162,10 @@ public class RubyEnumDescriptor extends RubyObject {
     boolean defaultValueRequiredButNotFound =
         descriptor.getFile().getSyntax() == FileDescriptor.Syntax.PROTO3;
     for (EnumValueDescriptor value : descriptor.getValues()) {
-      String name = value.getName();
+      String name = Utils.fixEnumName(value.getName());
       // Make sure it's a valid constant name before trying to create it
       int ch = name.codePointAt(0);
       if (Character.isUpperCase(ch)) {
-        enumModule.defineConstant(name, runtime.newFixnum(value.getNumber()));
-      } else if (ch >= 'a' && ch <= 'z') {
-        // Protobuf enums can start with lowercase letters, while Ruby's symbol should
-        // always start with uppercase letters. We tolerate this case by capitalizing
-        // the first character if possible.
-        name = Character.toUpperCase(ch) + name.substring(1);
         enumModule.defineConstant(name, runtime.newFixnum(value.getNumber()));
       } else {
         runtime
