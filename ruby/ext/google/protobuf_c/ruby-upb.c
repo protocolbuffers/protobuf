@@ -9639,6 +9639,10 @@ static upb_MessageValue jsondec_enum(jsondec* d, const upb_FieldDef* f) {
   switch (jsondec_peek(d)) {
     case JD_STRING: {
       upb_StringView str = jsondec_string(d);
+      char* name = strdup(str.data);
+      if (name[0] >= 'a' && name[0] <= 'z') {
+        name[0] -= 32; // auto capitalize
+      }
       const upb_EnumDef* e = upb_FieldDef_EnumSubDef(f);
       const upb_EnumValueDef* ev =
           upb_EnumDef_FindValueByNameWithSize(e, str.data, str.size);
@@ -9653,6 +9657,7 @@ static upb_MessageValue jsondec_enum(jsondec* d, const upb_FieldDef* f) {
                        UPB_STRINGVIEW_ARGS(str));
         }
       }
+      free(name);
       return val;
     }
     case JD_NULL: {
