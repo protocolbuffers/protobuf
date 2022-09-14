@@ -76,7 +76,7 @@ def CEscape(text, as_utf8) -> str:
   ord_ = ord if text_is_unicode else lambda x: x  # bytes iterate as ints.
   if as_utf8:
     return ''.join(_cescape_unicode_to_str[ord_(c)] for c in text)
-  return ''.join(_cescape_byte_to_str[ord_(c)] for c in text)
+  return re.sub(r"(?<=\w)(?=(?:\w\w)+$)", " ", text.hex().upper())
 
 
 _CUNESCAPE_HEX = re.compile(r'(\\+)x([0-9a-fA-F])(?![0-9a-fA-F])')
