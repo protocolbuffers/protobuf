@@ -115,8 +115,7 @@ genrule(
     cmd = """
         $(execpath //src/google/protobuf/compiler:protoc_nowkt) \
             --cpp_out=$(RULEDIR)/../.. \
-            --proto_path=src \
-            --proto_path=external/com_google_protobuf/src \
+            --proto_path=$$([ -d src ] && echo "src" || echo "external/com_google_protobuf/src") \
             --proto_path=. \
             $(SRCS)
     """,
