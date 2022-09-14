@@ -592,6 +592,56 @@ TEST_F(ParseMessageTest, FieldOptions) {
       "}");
 }
 
+TEST_F(ParseMessageTest, FieldOptionsSupportLargeDecimalLiteral) {
+  // decimal integer literal > uint64 max
+  ExpectParsesTo(
+      "import \"google/protobuf/descriptor.proto\";\n"
+      "extend google.protobuf.FieldOptions {\n"
+      "  optional double f = 10101;\n"
+      "}\n"
+      "message TestMessage {\n"
+      "  optional double a = 1 [default = 18446744073709551616];\n"
+      "  optional double b = 2 [default = -18446744073709551616];\n"
+      "  optional double c = 3 [(f) = 18446744073709551616];\n"
+      "  optional double d = 4 [(f) = -18446744073709551616];\n"
+      "}\n",
+
+      "dependency: \"google/protobuf/descriptor.proto\""
+      "extension {"
+      "  name: \"f\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 10101"
+      "  extendee: \"google.protobuf.FieldOptions\""
+      "}"
+      "message_type {"
+      "  name: \"TestMessage\""
+      "  field {"
+      "    name: \"a\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 1"
+      "    default_value: \"1.8446744073709552e+19\""
+      "  }"
+      "  field {"
+      "    name: \"b\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 2"
+      "    default_value: \"-1.8446744073709552e+19\""
+      "  }"
+      "  field {"
+      "    name: \"c\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 3"
+      "    options{"
+      "      uninterpreted_option{"
+      "        name{ name_part: \"f\" is_extension: true }"
+      "        double_value: 1.8446744073709552e+19"
+      "      }"
+      "    }"
+      "  }"
+      "  field {"
+      "    name: \"d\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 4"
+      "    options{"
+      "      uninterpreted_option{"
+      "        name{ name_part: \"f\" is_extension: true }"
+      "        double_value: -1.8446744073709552e+19"
+      "      }"
+      "    }"
+      "  }"
+      "}");
+}
+
 TEST_F(ParseMessageTest, Oneof) {
   ExpectParsesTo(
       "message TestMessage {\n"
