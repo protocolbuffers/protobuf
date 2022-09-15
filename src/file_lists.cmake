@@ -11,10 +11,18 @@ endif()
 
 # //pkg:protobuf
 set(libprotobuf_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/any.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/any_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/api.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/duration.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/empty.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/field_mask.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/source_context.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/struct.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/timestamp.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/type.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/any.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/any_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_config.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.cc
@@ -24,12 +32,9 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_database.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/duration.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/dynamic_message.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/empty.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set_heavy.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/field_mask.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_enum_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_bases.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_reflection.cc
@@ -58,16 +63,12 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/service.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/source_context.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/struct.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/bytestream.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/stringprintf.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/structurally_valid.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/timestamp.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/type.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unknown_field_set.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/delimited_message_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/field_comparator.cc
@@ -91,14 +92,21 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/type_resolver_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_lite.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.pb.cc
 )
 
 # //pkg:protobuf
 set(libprotobuf_hdrs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/any.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/api.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/duration.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/empty.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/field_mask.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/source_context.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/struct.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/timestamp.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/type.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/any.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_config.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_impl.h
@@ -109,15 +117,12 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor_database.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/duration.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/dynamic_message.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/empty.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/endian.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/explicitly_constructed.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set_inl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/field_access_listener.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/field_mask.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_enum_reflection.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_enum_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/generated_message_bases.h
@@ -158,8 +163,6 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/service.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/source_context.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/struct.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/bytestream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/callback.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common.h
@@ -172,8 +175,6 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/stringprintf.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/timestamp.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/type.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unknown_field_set.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/delimited_message_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/field_comparator.h
@@ -202,7 +203,6 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/type_resolver_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_lite.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.pb.h
 )
 
 # //pkg:protobuf_lite
