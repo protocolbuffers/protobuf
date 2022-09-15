@@ -7676,6 +7676,9 @@ bool DescriptorBuilder::OptionInterpreter::ExamineIfOptionIsSet(
   return true;
 }
 
+namespace {
+// Helpers for method below
+
 template <typename T> std::string ValueOutOfRange(
     absl::string_view type_name, absl::string_view option_name) {
   return absl::StrFormat(
@@ -7691,6 +7694,8 @@ template <typename T> std::string ValueMustBeInt(
     std::numeric_limits<T>::min(), std::numeric_limits<T>::max(),
     type_name, option_name);
 }
+
+} // namespace
 
 bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
     const FieldDescriptor* option_field, UnknownFieldSet* unknown_fields) {
