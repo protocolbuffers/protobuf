@@ -32,20 +32,17 @@
 #include <iostream>
 #include <string>
 #include <unordered_set>
-#include "google/protobuf/compiler/objectivec/objectivec_generator.h"
+
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
 #include "google/protobuf/compiler/objectivec/objectivec_file.h"
+#include "google/protobuf/compiler/objectivec/objectivec_generator.h"
 #include "google/protobuf/compiler/objectivec/objectivec_helpers.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/stubs/strutil.h"
-#include "absl/strings/ascii.h"
-#include "absl/strings/escaping.h"
-#include "absl/strings/str_split.h"
-#include "absl/strings/str_replace.h"
-#include "absl/strings/ascii.h"
-#include "absl/strings/escaping.h"
-#include "absl/strings/str_split.h"
-#include "absl/strings/str_replace.h"
 
 namespace google {
 namespace protobuf {

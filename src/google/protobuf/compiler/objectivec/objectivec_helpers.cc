@@ -41,21 +41,21 @@
 #include <unordered_set>
 #include <vector>
 
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/objectivec/objectivec_helpers.h"
 #include "google/protobuf/compiler/objectivec/objectivec_nsobject_methods.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/stubs/strutil.h"
-#include "absl/strings/ascii.h"
-#include "absl/strings/escaping.h"
-#include "absl/strings/str_split.h"
-#include "absl/strings/str_replace.h"
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
 // error cases, so it seems to be ok to use as a back door for errors.
@@ -199,7 +199,7 @@ std::string PrefixModeStorage::prefix_from_proto_package_mappings(const FileDesc
 
   if (prefix_lookup != package_to_prefix_map_.end()) {
     return prefix_lookup->second;
-  }  
+  }
 
   return "";
 }
