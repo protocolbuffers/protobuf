@@ -513,13 +513,14 @@ void PathSplit(const std::string& path, std::string* directory,
   }
 }
 
-bool IsSpecialName(const std::string& name, const std::string* special_names,
-                   size_t count) {
+bool IsSpecialNamePrefix(const std::string& name,
+                         const std::string* special_names,
+                         size_t count) {
   for (size_t i = 0; i < count; ++i) {
-    size_t length = special_names[i].length();
+    const size_t length = special_names[i].length();
     if (name.compare(0, length, special_names[i]) == 0) {
       if (name.length() > length) {
-        // If name is longer than the retained_name[i] that it matches
+        // If name is longer than the special_names[i] that it matches
         // the next character must be not lower case (newton vs newTon vs
         // new_ton).
         return !absl::ascii_islower(name[length]);
@@ -589,14 +590,46 @@ bool IsRetainedName(const std::string& name) {
   // http://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmRules.html
   static const std::string retained_names[] = {"new", "alloc", "copy",
                                                "mutableCopy"};
-  return IsSpecialName(name, retained_names,
-                       sizeof(retained_names) / sizeof(retained_names[0]));
+  return IsSpecialNamePrefix(name, retained_names,
+                             sizeof(retained_names) / sizeof(retained_names[0]));
 }
 
 bool IsInitName(const std::string& name) {
   static const std::string init_names[] = {"init"};
-  return IsSpecialName(name, init_names,
-                       sizeof(init_names) / sizeof(init_names[0]));
+  return IsSpecialNamePrefix(name, init_names,
+                             sizeof(init_names) / sizeof(init_names[0]));
+}
+
+bool IsCreateName(const std::string& name) {
+  // List of segments from
+  // https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFMemoryMgmt/Concepts/Ownership.html#//apple_ref/doc/uid/20001148-103029
+  static const std::string create_names[] = {"Create", "Copy"};
+  const size_t count = sizeof(create_names) / sizeof(create_names[0]);
+
+  for (size_t i = 0; i < count; ++i) {
+    const size_t length = create_names[i].length();
+    size_t pos = name.find(create_names[i]);
+    if (pos != std::string::npos) {
+      // The above docs don't actually call out anything about the characters
+      // before the special words. So it's not clear if something like
+      // "FOOCreate" would or would not match the "The Create Rule", but by not
+      // checking, and claiming it does match, then callers will annotate with
+      // `cf_returns_not_retained` which will ensure things work as desired.
+      //
+      // The footnote here is the docs do have a passing reference to "NoCopy",
+      // but again, not looking for that and just returning `true` will cause
+      // callers to annotate the api as not being a Create Rule function.
+
+      // If name is longer than the create_names[i] that it matches the next
+      // character must be not lower case (Copyright vs CopyFoo vs Copy_Foo).
+      if (name.length() > pos + length) {
+        return !absl::ascii_islower(name[pos + length]);
+      } else {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 std::string BaseFileName(const FileDescriptor* file) {
