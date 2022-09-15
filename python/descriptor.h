@@ -31,7 +31,7 @@
 #include <stdbool.h>
 
 #include "python/python_api.h"
-#include "upb/def.h"
+#include "upb/reflection/def.h"
 
 typedef enum {
   kPyUpb_Descriptor = 0,

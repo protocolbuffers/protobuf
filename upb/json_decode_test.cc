@@ -31,9 +31,9 @@
 
 #include "google/protobuf/struct.upb.h"
 #include "gtest/gtest.h"
-#include "upb/def.hpp"
 #include "upb/json_test.upb.h"
 #include "upb/json_test.upbdefs.h"
+#include "upb/reflection/def.hpp"
 #include "upb/upb.hpp"
 
 static upb_test_Box* JsonDecode(const char* json, upb_Arena* a) {

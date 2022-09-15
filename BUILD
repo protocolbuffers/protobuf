@@ -326,15 +326,31 @@ cc_library(
 
 cc_library(
     name = "generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+    srcs = [
+        "upb/reflection/common.h",
+        "upb/reflection/def_pool.h",
+        "upb/reflection/def_type.h",
+        "upb/reflection/enum_def.h",
+        "upb/reflection/enum_value_def.h",
+        "upb/reflection/extension_range.h",
+        "upb/reflection/field_def.h",
+        "upb/reflection/file_def.h",
+        "upb/reflection/message_def.h",
+        "upb/reflection/method_def.h",
+        "upb/reflection/oneof_def.h",
+        "upb/reflection/service_def.h",
+    ],
     hdrs = [
-        "upb/def.h",
         "upb/port_def.inc",
         "upb/port_undef.inc",
+        "upb/reflection/def.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":descriptor_upb_proto",
         ":reflection",
+        ":table_internal",
     ],
 )
 

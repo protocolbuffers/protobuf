@@ -35,7 +35,7 @@
 #include "benchmarks/descriptor.upb.h"
 #include "benchmarks/descriptor.upbdefs.h"
 #include "benchmarks/descriptor_sv.pb.h"
-#include "upb/def.hpp"
+#include "upb/reflection/def.hpp"
 
 upb_StringView descriptor = benchmarks_descriptor_proto_upbdefinit.descriptor;
 namespace protobuf = ::google::protobuf;

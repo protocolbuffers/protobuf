@@ -29,8 +29,8 @@
 #define PYUPB_CONVERT_H__
 
 #include "protobuf.h"
-#include "upb/def.h"
-#include "upb/reflection.h"
+#include "upb/reflection/def.h"
+#include "upb/reflection/message.h"
 
 // Converts `val` to a Python object according to the type information in `f`.
 // Any newly-created Python objects that reference non-primitive data from `val`

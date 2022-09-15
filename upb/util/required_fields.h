@@ -28,8 +28,8 @@
 #ifndef UPB_UTIL_REQUIRED_FIELDS_H_
 #define UPB_UTIL_REQUIRED_FIELDS_H_
 
-#include "upb/def.h"
-#include "upb/reflection.h"
+#include "upb/reflection/def.h"
+#include "upb/reflection/message.h"
 
 /* Must be last. */
 #include "upb/port_def.inc"

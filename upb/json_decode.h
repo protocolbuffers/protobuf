@@ -28,7 +28,7 @@
 #ifndef UPB_JSONDECODE_H_
 #define UPB_JSONDECODE_H_
 
-#include "upb/def.h"
+#include "upb/reflection/def.h"
 
 // Must be last.
 #include "upb/port_def.inc"

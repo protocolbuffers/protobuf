@@ -29,7 +29,7 @@
 
 #include "python/descriptor.h"
 #include "python/protobuf.h"
-#include "upb/def.h"
+#include "upb/reflection/def.h"
 
 // Implements __repr__ as str(dict(self)).
 static PyObject* PyUpb_DescriptorMap_Repr(PyObject* _self) {

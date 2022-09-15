@@ -32,7 +32,7 @@
 #include "python/descriptor.h"
 #include "python/message.h"
 #include "python/protobuf.h"
-#include "upb/def.h"
+#include "upb/reflection/def.h"
 #include "upb/util/def_to_proto.h"
 
 // -----------------------------------------------------------------------------

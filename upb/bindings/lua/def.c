@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/def.h"
+#include "upb/reflection/def.h"
 
 #include <float.h>
 #include <math.h>

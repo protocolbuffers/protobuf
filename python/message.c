@@ -32,8 +32,8 @@
 #include "python/extension_dict.h"
 #include "python/map.h"
 #include "python/repeated.h"
-#include "upb/def.h"
-#include "upb/reflection.h"
+#include "upb/reflection/def.h"
+#include "upb/reflection/message.h"
 #include "upb/text_encode.h"
 #include "upb/util/required_fields.h"
 

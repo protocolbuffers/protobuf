@@ -43,7 +43,7 @@
 #include "upb/json_encode.h"
 #include "upb/map.h"
 #include "upb/port_def.inc"
-#include "upb/reflection.h"
+#include "upb/reflection/message.h"
 #include "upb/text_encode.h"
 
 /*

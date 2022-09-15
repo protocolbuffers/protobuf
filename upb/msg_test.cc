@@ -28,12 +28,12 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
-#include "upb/def.hpp"
 #include "upb/fuzz_test_util.h"
 #include "upb/json_decode.h"
 #include "upb/json_encode.h"
 #include "upb/msg_test.upb.h"
 #include "upb/msg_test.upbdefs.h"
+#include "upb/reflection/def.hpp"
 #include "upb/upb.hpp"
 
 // begin:google_only
