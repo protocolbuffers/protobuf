@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022, Google LLC
+ * Copyright (c) 2009-2021, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,12 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPBC_CODE_GENERATOR_REQUEST_H_
-#define UPBC_CODE_GENERATOR_REQUEST_H_
+// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
 
-#include "upb/reflection/def.h"
-#include "upb/upb.h"
-#include "upbc/code_generator_request.upb.h"
+#ifndef UPB_REFLECTION_ENUM_VALUE_DEF_H_
+#define UPB_REFLECTION_ENUM_VALUE_DEF_H_
+
+#include "upb/reflection/common.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -39,9 +39,24 @@
 extern "C" {
 #endif
 
-upbc_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
-    struct google_protobuf_compiler_CodeGeneratorRequest* request, upb_Arena* a,
-    upb_Status* s);
+const upb_EnumDef* upb_EnumValueDef_Enum(const upb_EnumValueDef* v);
+const char* upb_EnumValueDef_FullName(const upb_EnumValueDef* v);
+bool upb_EnumValueDef_HasOptions(const upb_EnumValueDef* v);
+uint32_t upb_EnumValueDef_Index(const upb_EnumValueDef* v);
+const char* upb_EnumValueDef_Name(const upb_EnumValueDef* v);
+int32_t upb_EnumValueDef_Number(const upb_EnumValueDef* v);
+const google_protobuf_EnumValueOptions* upb_EnumValueDef_Options(
+    const upb_EnumValueDef* v);
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+upb_EnumValueDef* _upb_EnumValueDef_At(const upb_EnumValueDef* v, int i);
+
+// Allocate and initialize an array of |n| enum value defs owned by |e|.
+upb_EnumValueDef* _upb_EnumValueDefs_New(
+    upb_DefBuilder* ctx, const char* prefix, int n,
+    const google_protobuf_EnumValueDescriptorProto* const* protos, upb_EnumDef* e,
+    bool* is_sorted);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -49,4 +64,4 @@ upbc_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
 
 #include "upb/port_undef.inc"
 
-#endif /* UPBC_CODE_GENERATOR_REQUEST_H_ */
+#endif /* UPB_REFLECTION_ENUM_VALUE_DEF_H_ */

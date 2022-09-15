@@ -25,87 +25,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// This header is deprecated, use upb/reflection/message.h instead
+
 #ifndef UPB_REFLECTION_H_
 #define UPB_REFLECTION_H_
 
-#include "upb/def.h"
-#include "upb/message_value.h"
-#include "upb/msg.h"
-#include "upb/upb.h"
-
-// Must be last.
-#include "upb/port_def.inc"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-upb_MessageValue upb_FieldDef_Default(const upb_FieldDef* f);
-
-/** upb_Message
- * *******************************************************************/
-
-/* Creates a new message of the given type in the given arena. */
-upb_Message* upb_Message_New(const upb_MessageDef* m, upb_Arena* a);
-
-/* Returns the value associated with this field. */
-upb_MessageValue upb_Message_Get(const upb_Message* msg, const upb_FieldDef* f);
-
-/* Returns a mutable pointer to a map, array, or submessage value.  If the given
- * arena is non-NULL this will construct a new object if it was not previously
- * present.  May not be called for primitive fields. */
-upb_MutableMessageValue upb_Message_Mutable(upb_Message* msg,
-                                            const upb_FieldDef* f,
-                                            upb_Arena* a);
-
-/* May only be called for fields where upb_FieldDef_HasPresence(f) == true. */
-bool upb_Message_Has(const upb_Message* msg, const upb_FieldDef* f);
-
-/* Returns the field that is set in the oneof, or NULL if none are set. */
-const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
-                                           const upb_OneofDef* o);
-
-/* Sets the given field to the given value.  For a msg/array/map/string, the
- * caller must ensure that the target data outlives |msg| (by living either in
- * the same arena or a different arena that outlives it).
- *
- * Returns false if allocation fails. */
-bool upb_Message_Set(upb_Message* msg, const upb_FieldDef* f,
-                     upb_MessageValue val, upb_Arena* a);
-
-/* Clears any field presence and sets the value back to its default. */
-void upb_Message_ClearField(upb_Message* msg, const upb_FieldDef* f);
-
-/* Clear all data and unknown fields. */
-void upb_Message_Clear(upb_Message* msg, const upb_MessageDef* m);
-
-/* Iterate over present fields.
- *
- * size_t iter = kUpb_Message_Begin;
- * const upb_FieldDef *f;
- * upb_MessageValue val;
- * while (upb_Message_Next(msg, m, ext_pool, &f, &val, &iter)) {
- *   process_field(f, val);
- * }
- *
- * If ext_pool is NULL, no extensions will be returned.  If the given symtab
- * returns extensions that don't match what is in this message, those extensions
- * will be skipped.
- */
-
-#define kUpb_Message_Begin -1
-bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
-                      const upb_DefPool* ext_pool, const upb_FieldDef** f,
-                      upb_MessageValue* val, size_t* iter);
-
-/* Clears all unknown field data from this message and all submessages. */
-bool upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
-                                int maxdepth);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#include "upb/port_undef.inc"
+#include "upb/reflection/message.h"
 
 #endif /* UPB_REFLECTION_H_ */

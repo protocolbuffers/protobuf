@@ -186,7 +186,6 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
   int field_number = ext_table->field.number;
   upb_FindUnknownRet result = upb_MiniTable_FindUnknown(msg, field_number);
   if (result.status != kUpb_FindUnknown_Ok) {
-    UPB_ASSERT(result.status != kUpb_GetExtension_ParseError);
     return kUpb_GetExtension_NotPresent;
   }
   // Decode and promote from unknown.
@@ -197,7 +196,7 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
   }
   const char* data = result.ptr;
   uint32_t tag;
-  uint64_t message_len;
+  uint64_t message_len = 0;
   data = decode_tag(data, &tag);
   data = decode_varint64(data, &message_len);
   upb_DecodeStatus status =
@@ -245,7 +244,6 @@ upb_GetExtensionAsBytes_Status upb_MiniTable_GetExtensionAsBytes(
   int field_number = ext_table->field.number;
   upb_FindUnknownRet result = upb_MiniTable_FindUnknown(msg, field_number);
   if (result.status != kUpb_FindUnknown_Ok) {
-    UPB_ASSERT(result.status != kUpb_GetExtension_ParseError);
     return kUpb_GetExtensionAsBytes_NotPresent;
   }
   const char* data = result.ptr;
@@ -328,7 +326,7 @@ upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
   uint64_t uint64_val;
 
   while (ptr < end) {
-    uint32_t tag;
+    uint32_t tag = 0;
     int field;
     int wire_type;
     const char* unknown_begin = ptr;

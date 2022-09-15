@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022, Google LLC
+ * Copyright (c) 2009-2021, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,12 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPBC_CODE_GENERATOR_REQUEST_H_
-#define UPBC_CODE_GENERATOR_REQUEST_H_
+// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
 
-#include "upb/reflection/def.h"
-#include "upb/upb.h"
-#include "upbc/code_generator_request.upb.h"
+#ifndef UPB_REFLECTION_SERVICE_DEF_H_
+#define UPB_REFLECTION_SERVICE_DEF_H_
+
+#include "upb/reflection/common.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -39,9 +39,25 @@
 extern "C" {
 #endif
 
-upbc_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
-    struct google_protobuf_compiler_CodeGeneratorRequest* request, upb_Arena* a,
-    upb_Status* s);
+const upb_FileDef* upb_ServiceDef_File(const upb_ServiceDef* s);
+const upb_MethodDef* upb_ServiceDef_FindMethodByName(const upb_ServiceDef* s,
+                                                     const char* name);
+const char* upb_ServiceDef_FullName(const upb_ServiceDef* s);
+bool upb_ServiceDef_HasOptions(const upb_ServiceDef* s);
+int upb_ServiceDef_Index(const upb_ServiceDef* s);
+const upb_MethodDef* upb_ServiceDef_Method(const upb_ServiceDef* s, int i);
+int upb_ServiceDef_MethodCount(const upb_ServiceDef* s);
+const char* upb_ServiceDef_Name(const upb_ServiceDef* s);
+const google_protobuf_ServiceOptions* upb_ServiceDef_Options(const upb_ServiceDef* s);
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+upb_ServiceDef* _upb_ServiceDef_At(const upb_ServiceDef* s, int i);
+
+// Allocate and initialize an array of |n| service defs.
+upb_ServiceDef* _upb_ServiceDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_ServiceDescriptorProto* const* protos);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -49,4 +65,4 @@ upbc_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
 
 #include "upb/port_undef.inc"
 
-#endif /* UPBC_CODE_GENERATOR_REQUEST_H_ */
+#endif /* UPB_REFLECTION_SERVICE_DEF_H_ */

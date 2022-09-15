@@ -25,38 +25,61 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_INTERNAL_MINI_DESCRIPTOR_H_
-#define UPB_INTERNAL_MINI_DESCRIPTOR_H_
+#include "upb/reflection/def_builder.h"
 
-#include "upb/mini_descriptor.h"
+#include "gtest/gtest.h"
+#include "upb/reflection/def.hpp"
 
 // Must be last.
 #include "upb/port_def.inc"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+struct IdentTest {
+  const char* text;
+  bool ok;
+};
 
-// Creates and returns a mini descriptor string for an enum, or NULL on error.
-// If the values in the enum happen to be defined in ascending order (when cast
-// to uint32_t) then |sorted| should be NULL. Otherwise it must point to an
-// array containing pointers to the enum value defs in sorted order.
-const char* _upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e,
-                                           const upb_EnumValueDef** sorted,
-                                           upb_Arena* a);
+static const std::vector<IdentTest> FullIdentTests = {
+    {"foo.bar", true},   {"foo.", true},  {"foo", true},
 
-// Creates and returns a mini descriptor string for a field, or NULL on error.
-const char* _upb_MiniDescriptor_EncodeField(const upb_FieldDef* f,
-                                            upb_Arena* a);
+    {"foo.7bar", false}, {".foo", false}, {"#", false},
+    {".", false},        {"", false},
+};
 
-// Creates and returns a mini descriptor string for a message, or NULL on error.
-const char* _upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m,
-                                              upb_Arena* a);
+static const std::vector<IdentTest> NotFullIdentTests = {
+    {"foo", true},      {"foo1", true},
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+    {"foo.bar", false}, {"1foo", false}, {"#", false},
+    {".", false},       {"", false},
+};
 
-#include "upb/port_undef.inc"
+TEST(DefBuilder, TestIdents) {
+  upb_StringView sv;
+  upb_Status status;
+  upb_DefBuilder ctx;
+  ctx.status = &status;
+  upb_Status_Clear(&status);
 
-#endif /* UPB_INTERNAL_MINI_DESCRIPTOR_H_ */
+  for (const auto& test : FullIdentTests) {
+    sv.data = test.text;
+    sv.size = strlen(test.text);
+
+    if (UPB_SETJMP(ctx.err)) {
+      EXPECT_FALSE(test.ok);
+    } else {
+      _upb_DefBuilder_CheckIdentFull(&ctx, sv);
+      EXPECT_TRUE(test.ok);
+    }
+  }
+
+  for (const auto& test : NotFullIdentTests) {
+    sv.data = test.text;
+    sv.size = strlen(test.text);
+
+    if (UPB_SETJMP(ctx.err)) {
+      EXPECT_FALSE(test.ok);
+    } else {
+      _upb_DefBuilder_CheckIdentNotFull(&ctx, sv);
+      EXPECT_TRUE(test.ok);
+    }
+  }
+}

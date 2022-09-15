@@ -25,9 +25,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/internal/mini_descriptor.h"
+#include "upb/reflection/mini_descriptor_encode.h"
 
 #include "upb/mini_table.h"
+#include "upb/reflection/def_builder.h"
+#include "upb/reflection/def_type.h"
+#include "upb/reflection/enum_def.h"
+#include "upb/reflection/enum_value_def.h"
+#include "upb/reflection/field_def.h"
+#include "upb/reflection/file_def.h"
+#include "upb/reflection/message_def.h"
+#include "upb/reflection/oneof_def.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -232,4 +240,20 @@ const char* _upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m,
   *s.ptr++ = '\0';
 
   return s.buf;
+}
+
+/******************************************************************************/
+
+const char* upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e, upb_Arena* a) {
+  return _upb_EnumDef_MiniDescriptor(e, a);
+}
+
+const char* upb_MiniDescriptor_EncodeField(const upb_FieldDef* f,
+                                           upb_Arena* a) {
+  return _upb_MiniDescriptor_EncodeField(f, a);
+}
+
+const char* upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m,
+                                             upb_Arena* a) {
+  return _upb_MiniDescriptor_EncodeMessage(m, a);
 }

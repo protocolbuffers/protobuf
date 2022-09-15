@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022, Google LLC
+ * Copyright (c) 2009-2021, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,12 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPBC_CODE_GENERATOR_REQUEST_H_
-#define UPBC_CODE_GENERATOR_REQUEST_H_
+// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
 
-#include "upb/reflection/def.h"
-#include "upb/upb.h"
-#include "upbc/code_generator_request.upb.h"
+#ifndef UPB_REFLECTION_EXTENSION_RANGE_H_
+#define UPB_REFLECTION_EXTENSION_RANGE_H_
+
+#include "upb/reflection/common.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -39,9 +39,22 @@
 extern "C" {
 #endif
 
-upbc_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
-    struct google_protobuf_compiler_CodeGeneratorRequest* request, upb_Arena* a,
-    upb_Status* s);
+int32_t upb_ExtensionRange_Start(const upb_ExtensionRange* r);
+int32_t upb_ExtensionRange_End(const upb_ExtensionRange* r);
+
+bool upb_ExtensionRange_HasOptions(const upb_ExtensionRange* r);
+const google_protobuf_ExtensionRangeOptions* upb_ExtensionRange_Options(
+    const upb_ExtensionRange* r);
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+upb_ExtensionRange* _upb_ExtensionRange_At(const upb_ExtensionRange* r, int i);
+
+// Allocate and initialize an array of |n| extension ranges owned by |m|.
+upb_ExtensionRange* _upb_ExtensionRanges_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_DescriptorProto_ExtensionRange* const* protos,
+    const upb_MessageDef* m);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -49,4 +62,4 @@ upbc_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
 
 #include "upb/port_undef.inc"
 
-#endif /* UPBC_CODE_GENERATOR_REQUEST_H_ */
+#endif /* UPB_REFLECTION_EXTENSION_RANGE_H_ */

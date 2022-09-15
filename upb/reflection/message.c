@@ -25,13 +25,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/reflection.h"
+#include "upb/reflection/message.h"
 
 #include <string.h>
 
 #include "upb/internal/table.h"
 #include "upb/map.h"
 #include "upb/msg.h"
+#include "upb/reflection/def_builder.h"
+#include "upb/reflection/def_pool.h"
+#include "upb/reflection/def_type.h"
+#include "upb/reflection/field_def.h"
+#include "upb/reflection/message_def.h"
+#include "upb/reflection/oneof_def.h"
+
+// Must be last.
 #include "upb/port_def.inc"
 
 static size_t get_field_size(const upb_MiniTable_Field* f) {
@@ -58,9 +66,6 @@ static size_t get_field_size(const upb_MiniTable_Field* f) {
   };
   return upb_IsRepeatedOrMap(f) ? sizeof(void*) : sizes[f->descriptortype];
 }
-
-/** upb_Message
- * *******************************************************************/
 
 upb_Message* upb_Message_New(const upb_MessageDef* m, upb_Arena* a) {
   return _upb_Message_New(upb_MessageDef_MiniTable(m), a);

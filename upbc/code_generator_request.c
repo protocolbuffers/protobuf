@@ -31,8 +31,9 @@
 #include <stdio.h>
 
 #include "google/protobuf/compiler/plugin.upb.h"
-#include "upb/mini_descriptor.h"
 #include "upb/mini_table.h"
+#include "upb/reflection/def.h"
+#include "upb/reflection/mini_descriptor_encode.h"
 
 // Must be last.
 #include "upb/port_def.inc"

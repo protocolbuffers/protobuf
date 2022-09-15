@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022, Google LLC
+ * Copyright (c) 2009-2021, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,28 +25,18 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPBC_CODE_GENERATOR_REQUEST_H_
-#define UPBC_CODE_GENERATOR_REQUEST_H_
+#ifndef UPB_REFLECTION_DEF_H_
+#define UPB_REFLECTION_DEF_H_
 
-#include "upb/reflection/def.h"
-#include "upb/upb.h"
-#include "upbc/code_generator_request.upb.h"
+#include "upb/reflection/def_pool.h"
+#include "upb/reflection/enum_def.h"
+#include "upb/reflection/enum_value_def.h"
+#include "upb/reflection/extension_range.h"
+#include "upb/reflection/field_def.h"
+#include "upb/reflection/file_def.h"
+#include "upb/reflection/message_def.h"
+#include "upb/reflection/method_def.h"
+#include "upb/reflection/oneof_def.h"
+#include "upb/reflection/service_def.h"
 
-// Must be last.
-#include "upb/port_def.inc"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-upbc_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
-    struct google_protobuf_compiler_CodeGeneratorRequest* request, upb_Arena* a,
-    upb_Status* s);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#include "upb/port_undef.inc"
-
-#endif /* UPBC_CODE_GENERATOR_REQUEST_H_ */
+#endif /* UPB_REFLECTION_DEF_H_ */

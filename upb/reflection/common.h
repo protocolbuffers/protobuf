@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022, Google LLC
+ * Copyright (c) 2009-2021, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,33 +25,31 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_MINI_DESCRIPTOR_H_
-#define UPB_MINI_DESCRIPTOR_H_
+// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
 
-#include "upb/arena.h"
-#include "upb/def.h"
+// Declarations common to all public def types.
 
-// Must be last.
-#include "upb/port_def.inc"
+#ifndef UPB_REFLECTION_COMMON_H_
+#define UPB_REFLECTION_COMMON_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "google/protobuf/descriptor.upb.h"
 
-// Creates and returns a mini descriptor string for an enum, or NULL on error.
-const char* upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e, upb_Arena* a);
+typedef enum { kUpb_Syntax_Proto2 = 2, kUpb_Syntax_Proto3 = 3 } upb_Syntax;
 
-// Creates and returns a mini descriptor string for a field, or NULL on error.
-const char* upb_MiniDescriptor_EncodeField(const upb_FieldDef* f, upb_Arena* a);
+// Forward declarations for circular references.
+typedef struct upb_DefPool upb_DefPool;
+typedef struct upb_EnumDef upb_EnumDef;
+typedef struct upb_EnumValueDef upb_EnumValueDef;
+typedef struct upb_ExtensionRange upb_ExtensionRange;
+typedef struct upb_FieldDef upb_FieldDef;
+typedef struct upb_FileDef upb_FileDef;
+typedef struct upb_MessageDef upb_MessageDef;
+typedef struct upb_MethodDef upb_MethodDef;
+typedef struct upb_OneofDef upb_OneofDef;
+typedef struct upb_ServiceDef upb_ServiceDef;
 
-// Creates and returns a mini descriptor string for a message, or NULL on error.
-const char* upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m,
-                                             upb_Arena* a);
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+typedef struct upb_DefBuilder upb_DefBuilder;
 
-#include "upb/port_undef.inc"
-
-#endif /* UPB_MINI_DESCRIPTOR_H_ */
+#endif /* UPB_REFLECTION_COMMON_H_ */

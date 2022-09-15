@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022, Google LLC
+ * Copyright (c) 2009-2021, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,21 +25,26 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/internal/mini_descriptor.h"
+#include "upb/reflection/def_type.h"
 
 // Must be last.
 #include "upb/port_def.inc"
 
-const char* upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e, upb_Arena* a) {
-  return _upb_EnumDef_MiniDescriptor(e, a);
+upb_deftype_t _upb_DefType_Type(upb_value v) {
+  const uintptr_t num = (uintptr_t)upb_value_getconstptr(v);
+  return num & UPB_DEFTYPE_MASK;
 }
 
-const char* upb_MiniDescriptor_EncodeField(const upb_FieldDef* f,
-                                           upb_Arena* a) {
-  return _upb_MiniDescriptor_EncodeField(f, a);
+upb_value _upb_DefType_Pack(const void* ptr, upb_deftype_t type) {
+  uintptr_t num = (uintptr_t)ptr;
+  UPB_ASSERT((num & UPB_DEFTYPE_MASK) == 0);
+  num |= type;
+  return upb_value_constptr((const void*)num);
 }
 
-const char* upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m,
-                                             upb_Arena* a) {
-  return _upb_MiniDescriptor_EncodeMessage(m, a);
+const void* _upb_DefType_Unpack(upb_value v, upb_deftype_t type) {
+  uintptr_t num = (uintptr_t)upb_value_getconstptr(v);
+  return (num & UPB_DEFTYPE_MASK) == type
+             ? (const void*)(num & ~UPB_DEFTYPE_MASK)
+             : NULL;
 }

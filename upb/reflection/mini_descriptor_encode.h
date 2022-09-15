@@ -25,12 +25,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPBC_CODE_GENERATOR_REQUEST_H_
-#define UPBC_CODE_GENERATOR_REQUEST_H_
+#ifndef UPB_REFLECTION_MINI_DESCRIPTOR_ENCODE_H_
+#define UPB_REFLECTION_MINI_DESCRIPTOR_ENCODE_H_
 
-#include "upb/reflection/def.h"
-#include "upb/upb.h"
-#include "upbc/code_generator_request.upb.h"
+#include "upb/reflection/common.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -39,9 +37,33 @@
 extern "C" {
 #endif
 
-upbc_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
-    struct google_protobuf_compiler_CodeGeneratorRequest* request, upb_Arena* a,
-    upb_Status* s);
+// Creates and returns a mini descriptor string for an enum, or NULL on error.
+const char* upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e, upb_Arena* a);
+
+// Creates and returns a mini descriptor string for a field, or NULL on error.
+const char* upb_MiniDescriptor_EncodeField(const upb_FieldDef* f, upb_Arena* a);
+
+// Creates and returns a mini descriptor string for a message, or NULL on error.
+const char* upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m,
+                                             upb_Arena* a);
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+// Creates and returns a mini descriptor string for an enum, or NULL on error.
+// If the values in the enum happen to be defined in ascending order (when cast
+// to uint32_t) then |sorted| should be NULL. Otherwise it must point to an
+// array containing pointers to the enum value defs in sorted order.
+const char* _upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e,
+                                           const upb_EnumValueDef** sorted,
+                                           upb_Arena* a);
+
+// Creates and returns a mini descriptor string for a field, or NULL on error.
+const char* _upb_MiniDescriptor_EncodeField(const upb_FieldDef* f,
+                                            upb_Arena* a);
+
+// Creates and returns a mini descriptor string for a message, or NULL on error.
+const char* _upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m,
+                                              upb_Arena* a);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -49,4 +71,4 @@ upbc_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
 
 #include "upb/port_undef.inc"
 
-#endif /* UPBC_CODE_GENERATOR_REQUEST_H_ */
+#endif /* UPB_REFLECTION_MINI_DESCRIPTOR_ENCODE_H_ */
