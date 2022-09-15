@@ -58,6 +58,7 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "google/protobuf/stubs/stringprintf.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
@@ -5489,15 +5490,6 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   }
 }
 
-std::string GetJsonName(const FieldDescriptorProto& field, bool use_custom, bool* was_custom) {
-  if (use_custom && field.has_json_name()) {
-    *was_custom = true;
-    return field.json_name();
-  }
-  *was_custom = false;
-  return ToJsonName(field.name());
-}
-
 void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     const DescriptorProto& proto, const Descriptor* result) {
   bool is_proto2 = result->file()->syntax() == FileDescriptor::SYNTAX_PROTO2;
@@ -5507,52 +5499,68 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
   CheckFieldJsonNameUniqueness(message_name, proto, is_proto2, true);
 }
 
+namespace {
+// Helpers for function below
+
+std::string GetJsonName(const FieldDescriptorProto& field, bool use_custom, bool* was_custom) {
+  if (use_custom && field.has_json_name()) {
+    *was_custom = true;
+    return field.json_name();
+  }
+  *was_custom = false;
+  return ToJsonName(field.name());
+}
+
 struct JsonNameDetails {
   const FieldDescriptorProto* field;
   std::string orig_name;
   bool is_custom;
 };
 
+} // namespace
+
 void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     std::string message_name,const DescriptorProto& message, bool is_proto2, bool use_custom_names) {
 
-  std::map<std::string, JsonNameDetails> name_to_field;
-  for (int i = 0; i < message.field_size(); ++i) {
+  absl::flat_hash_map<std::string, JsonNameDetails> name_to_field;
+  for (const FieldDescriptorProto& field : message.field()) {
     bool is_custom;
-    std::string name = GetJsonName(message.field(i), use_custom_names, &is_custom);
+    std::string name = GetJsonName(field, use_custom_names, &is_custom);
     std::string lowercase_name = absl::AsciiStrToLower(name);
     auto existing = name_to_field.find(lowercase_name);
     if (existing != name_to_field.end()) {
-      auto match = existing->second;
+      JsonNameDetails& match = existing->second;
       if (use_custom_names && !is_custom && !match.is_custom) {
         // if this pass is considering custom JSON names, but neither of the
         // names involved in the conflict are custom, don't bother with a message.
         // That will have been reported from other pass (non-custom JSON names).
         continue;
       }
-      std::string this_type = is_custom ? "custom" : "default";
-      std::string existing_type = match.is_custom ? "custom" : "default";
+      absl::string_view this_type = is_custom ? "custom" : "default";
+      absl::string_view existing_type = match.is_custom ? "custom" : "default";
       // If the matched name differs (which it can only differ in case), include it
       // in the error message, for maximum clarity to user.
-      std::string name_suffix = name == match.orig_name ? "" : " (\"" + match.orig_name + "\")";
-      std::string error_message =
-          "The " + this_type + " JSON name of field \"" + message.field(i).name() +
-          "\" (\"" + name + "\") conflicts with the " + existing_type + " JSON name of field \"" +
-          match.field->name() + "\"" + name_suffix + ".";
+      absl::string_view name_suffix = "";
+      if (name != match.orig_name) {
+        name_suffix = absl::StrCat(" (\"", match.orig_name, "\")");
+      }
+      std::string error_message = absl::StrFormat(
+          "The %s JSON name of field \"%s\" (\"%s\") conflicts with the %s JSON name of field \"%s\"%s.",
+          this_type, field.name(), name, existing_type, match.field->name(), name_suffix);
 
       bool involves_default = !is_custom || !match.is_custom;
       if (is_proto2 && involves_default) {
-        AddWarning(message_name, message.field(i),
+        AddWarning(message_name, field,
                  DescriptorPool::ErrorCollector::NAME, error_message);
       } else {
         if (involves_default) {
-          error_message += " This is not allowed in proto3.";
+          absl::StrAppend(&error_message, " This is not allowed in proto3.");
         }
-        AddError(message_name, message.field(i),
+        AddError(message_name, field,
                  DescriptorPool::ErrorCollector::NAME, error_message);
       }
     } else {
-      JsonNameDetails details = { &message.field(i), name, is_custom };
+      JsonNameDetails details = { &field, name, is_custom };
       name_to_field[lowercase_name] = details;
     }
   }
@@ -5961,12 +5969,12 @@ void DescriptorBuilder::CheckEnumValueUniqueness(
   //     NAME_TYPE_LAST_NAME = 2,
   //   }
   PrefixRemover remover(result->name());
-  std::map<std::string, const EnumValueDescriptor*> values;
+  absl::flat_hash_map<std::string, const EnumValueDescriptor*> values;
   for (int i = 0; i < result->value_count(); i++) {
     const EnumValueDescriptor* value = result->value(i);
     std::string stripped =
         EnumValueToPascalCase(remover.MaybeRemove(value->name()));
-    std::pair<std::map<std::string, const EnumValueDescriptor*>::iterator, bool>
+    std::pair<absl::flat_hash_map<std::string, const EnumValueDescriptor*>::iterator, bool>
         insert_result = values.insert(std::make_pair(stripped, value));
     bool inserted = insert_result.second;
 
@@ -5978,19 +5986,18 @@ void DescriptorBuilder::CheckEnumValueUniqueness(
     // stripping should de-dup the labels in this case).
     if (!inserted && insert_result.first->second->name() != value->name() &&
         insert_result.first->second->number() != value->number()) {
-      std::string error_message =
-          "Enum name " + value->name() + " has the same name as " +
-          values[stripped]->name() +
-          " if you ignore case and strip out the enum name prefix (if any). "
-          "(If you are using allow_alias, please assign the same numeric "
-          "value to both enums.)";
+      std::string error_message = absl::StrFormat(
+          "Enum name %s has the same name as %s if you ignore case and strip "
+          "out the enum name prefix (if any). (If you are using allow_alias, "
+          "please assign the same numeric value to both enums.)",
+          value->name(), values[stripped]->name());
       // There are proto2 enums out there with conflicting names, so to preserve
       // compatibility we issue only a warning for proto2.
       if (result->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
         AddWarning(value->full_name(), proto.value(i),
                    DescriptorPool::ErrorCollector::NAME, error_message);
       } else {
-        error_message += " This is not allowed in proto3.";
+        absl::StrAppend(&error_message, " This is not allowed in proto3.");
         AddError(value->full_name(), proto.value(i),
                  DescriptorPool::ErrorCollector::NAME, error_message);
       }
