@@ -31,7 +31,7 @@
 #import <Foundation/Foundation.h>
 
 @class GPBMessage;
-@class GPBExtensionRegistry;
+@protocol GPBExtensionRegistry;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -184,7 +184,7 @@ CF_EXTERN_C_END
  *                          extensions for message.
  **/
 - (void)readMessage:(GPBMessage *)message
-  extensionRegistry:(nullable GPBExtensionRegistry *)extensionRegistry;
+  extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry;
 
 /**
  * Reads and discards a single field, given its tag value.

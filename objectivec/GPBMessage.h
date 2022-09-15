@@ -36,7 +36,7 @@
 @class GPBCodedInputStream;
 @class GPBCodedOutputStream;
 @class GPBExtensionDescriptor;
-@class GPBExtensionRegistry;
+@protocol GPBExtensionRegistry;
 @class GPBFieldDescriptor;
 @class GPBUnknownFieldSet;
 
@@ -147,7 +147,7 @@ CF_EXTERN_C_END
  * @return A new instance of the generated class.
  **/
 + (nullable instancetype)parseFromData:(NSData *)data
-                     extensionRegistry:(nullable GPBExtensionRegistry *)extensionRegistry
+                     extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
                                  error:(NSError **)errorPtr;
 
 /**
@@ -171,7 +171,7 @@ CF_EXTERN_C_END
  **/
 + (nullable instancetype)parseFromCodedInputStream:(GPBCodedInputStream *)input
                                  extensionRegistry:
-                                     (nullable GPBExtensionRegistry *)extensionRegistry
+                                     (nullable id<GPBExtensionRegistry>)extensionRegistry
                                              error:(NSError **)errorPtr;
 
 /**
@@ -196,7 +196,7 @@ CF_EXTERN_C_END
  **/
 + (nullable instancetype)parseDelimitedFromCodedInputStream:(GPBCodedInputStream *)input
                                           extensionRegistry:
-                                              (nullable GPBExtensionRegistry *)extensionRegistry
+                                              (nullable id<GPBExtensionRegistry>)extensionRegistry
                                                       error:(NSError **)errorPtr;
 
 /**
@@ -239,7 +239,7 @@ CF_EXTERN_C_END
  * @return An initialized instance of the generated class.
  **/
 - (nullable instancetype)initWithData:(NSData *)data
-                    extensionRegistry:(nullable GPBExtensionRegistry *)extensionRegistry
+                    extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry
                                 error:(NSError **)errorPtr;
 
 /**
@@ -264,7 +264,7 @@ CF_EXTERN_C_END
  **/
 - (nullable instancetype)initWithCodedInputStream:(GPBCodedInputStream *)input
                                 extensionRegistry:
-                                    (nullable GPBExtensionRegistry *)extensionRegistry
+                                    (nullable id<GPBExtensionRegistry>)extensionRegistry
                                             error:(NSError **)errorPtr;
 
 /**
@@ -278,7 +278,7 @@ CF_EXTERN_C_END
  *                                         unsuccessful.
  **/
 - (void)mergeFromData:(NSData *)data
-    extensionRegistry:(nullable GPBExtensionRegistry *)extensionRegistry;
+    extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry;
 
 /**
  * Merges the fields from another message (of the same type) into this

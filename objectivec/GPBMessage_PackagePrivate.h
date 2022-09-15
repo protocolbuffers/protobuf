@@ -78,13 +78,13 @@ typedef struct GPBMessage_Storage *GPBMessage_StoragePtr;
 // or zero for EOF.
 // NOTE: This will throw if there is an error while parsing.
 - (void)mergeFromCodedInputStream:(GPBCodedInputStream *)input
-                extensionRegistry:(GPBExtensionRegistry *)extensionRegistry;
+                extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry;
 
 // Parses the next delimited message of this type from the input and merges it
 // with this message.
 - (void)mergeDelimitedFromCodedInputStream:(GPBCodedInputStream *)input
                          extensionRegistry:
-                             (GPBExtensionRegistry *)extensionRegistry;
+                             (id<GPBExtensionRegistry>)extensionRegistry;
 
 - (void)addUnknownMapEntry:(int32_t)fieldNum value:(NSData *)data;
 

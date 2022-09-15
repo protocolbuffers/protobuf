@@ -40,7 +40,7 @@
 
 static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
                                         GPBCodedInputStream *input,
-                                        GPBExtensionRegistry *extensionRegistry,
+                                        id<GPBExtensionRegistry>extensionRegistry,
                                         GPBMessage *existingValue)
     __attribute__((ns_returns_retained));
 
@@ -273,7 +273,7 @@ static void WriteArrayIncludingTagsToCodedOutputStream(
 void GPBExtensionMergeFromInputStream(GPBExtensionDescriptor *extension,
                                       BOOL isPackedOnStream,
                                       GPBCodedInputStream *input,
-                                      GPBExtensionRegistry *extensionRegistry,
+                                      id<GPBExtensionRegistry>extensionRegistry,
                                       GPBMessage *message) {
   GPBExtensionDescription *description = extension->description_;
   GPBCodedInputStreamState *state = &input->state_;
@@ -334,7 +334,7 @@ size_t GPBComputeExtensionSerializedSizeIncludingTag(
 // Note that this returns a retained value intentionally.
 static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
                                         GPBCodedInputStream *input,
-                                        GPBExtensionRegistry *extensionRegistry,
+                                        id<GPBExtensionRegistry>extensionRegistry,
                                         GPBMessage *existingValue) {
   GPBExtensionDescription *description = extension->description_;
   GPBCodedInputStreamState *state = &input->state_;
