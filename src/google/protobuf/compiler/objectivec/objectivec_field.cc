@@ -30,22 +30,18 @@
 
 #include <iostream>
 
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
+#include "google/protobuf/compiler/objectivec/objectivec_enum_field.h"
 #include "google/protobuf/compiler/objectivec/objectivec_field.h"
 #include "google/protobuf/compiler/objectivec/objectivec_helpers.h"
-#include "google/protobuf/compiler/objectivec/objectivec_enum_field.h"
 #include "google/protobuf/compiler/objectivec/objectivec_map_field.h"
 #include "google/protobuf/compiler/objectivec/objectivec_message_field.h"
 #include "google/protobuf/compiler/objectivec/objectivec_primitive_field.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/stubs/strutil.h"
-#include "absl/strings/ascii.h"
-#include "absl/strings/escaping.h"
-#include "absl/strings/str_split.h"
-#include "absl/strings/str_replace.h"
-#include "absl/strings/ascii.h"
-#include "absl/strings/escaping.h"
-#include "absl/strings/str_split.h"
-#include "absl/strings/str_replace.h"
 
 namespace google {
 namespace protobuf {
