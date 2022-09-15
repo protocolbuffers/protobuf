@@ -665,52 +665,25 @@ static bool streql2(const char* a, size_t n, const char* b) {
   return n == strlen(b) && memcmp(a, b, n) == 0;
 }
 
-static size_t getjsonname(const char* name, size_t size, char* buf,
-                          size_t len) {
-  size_t src, dst = 0;
+// Implement the transformation as described in the spec:
+//   1. upper case all letters after an underscore.
+//   2. remove all underscores.
+static char* make_json_name(const char* name, size_t size, upb_Arena* a) {
+  char* out = upb_Arena_Malloc(a, size + 1);  // +1 is to add a trailing '\0'
+  if (out == NULL) return NULL;
+
   bool ucase_next = false;
-
-#define WRITE(byte)      \
-  ++dst;                 \
-  if (dst < len)         \
-    buf[dst - 1] = byte; \
-  else if (dst == len)   \
-  buf[dst - 1] = '\0'
-
-  if (!name) {
-    WRITE('\0');
-    return 0;
-  }
-
-  /* Implement the transformation as described in the spec:
-   *   1. upper case all letters after an underscore.
-   *   2. remove all underscores.
-   */
-  for (src = 0; src < size; src++) {
-    if (name[src] == '_') {
+  char* des = out;
+  for (size_t i = 0; i < size; i++) {
+    if (name[i] == '_') {
       ucase_next = true;
-      continue;
-    }
-
-    if (ucase_next) {
-      WRITE(toupper(name[src]));
-      ucase_next = false;
     } else {
-      WRITE(name[src]);
+      *des++ = ucase_next ? toupper(name[i]) : name[i];
+      ucase_next = false;
     }
   }
-
-  WRITE('\0');
-  return dst;
-
-#undef WRITE
-}
-
-static char* makejsonname(upb_DefBuilder* ctx, const char* name, size_t size) {
-  size_t json_size = size + 1;  // +1 for trailing '\0'
-  char* json_name = _upb_DefBuilder_Alloc(ctx, json_size);
-  getjsonname(name, size, json_name, json_size);
-  return json_name;
+  *des++ = '\0';
+  return out;
 }
 
 static str_t* newstr(upb_DefBuilder* ctx, const char* data, size_t len) {
@@ -891,8 +864,6 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
                                  upb_MessageDef* m,
                                  const google_protobuf_FieldDescriptorProto* field_proto,
                                  upb_FieldDef* f) {
-  const char* json_name;
-
   // Must happen before _upb_DefBuilder_Add()
   f->file = _upb_DefBuilder_File(ctx);
 
@@ -902,30 +873,27 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
 
   const upb_StringView name = google_protobuf_FieldDescriptorProto_name(field_proto);
   _upb_DefBuilder_CheckIdentNotFull(ctx, name);
-  const char* full_name = _upb_DefBuilder_MakeFullName(ctx, prefix, name);
 
-  if (google_protobuf_FieldDescriptorProto_has_json_name(field_proto)) {
+  f->has_json_name_ = google_protobuf_FieldDescriptorProto_has_json_name(field_proto);
+  if (f->has_json_name_) {
     const upb_StringView sv =
         google_protobuf_FieldDescriptorProto_json_name(field_proto);
-    json_name = upb_strdup2(sv.data, sv.size, ctx->arena);
-    if (!json_name) _upb_DefBuilder_OomErr(ctx);
-    f->has_json_name_ = true;
+    f->json_name = upb_strdup2(sv.data, sv.size, ctx->arena);
   } else {
-    json_name = makejsonname(ctx, name.data, name.size);
-    f->has_json_name_ = false;
+    f->json_name = make_json_name(name.data, name.size, ctx->arena);
   }
+  if (!f->json_name) _upb_DefBuilder_OomErr(ctx);
 
-  f->full_name = full_name;
-  f->json_name = json_name;
+  f->full_name = _upb_DefBuilder_MakeFullName(ctx, prefix, name);
   f->label_ = (int)google_protobuf_FieldDescriptorProto_label(field_proto);
   f->number_ = google_protobuf_FieldDescriptorProto_number(field_proto);
-  f->scope.oneof = NULL;
   f->proto3_optional_ =
       google_protobuf_FieldDescriptorProto_proto3_optional(field_proto);
   f->msgdef = m;
+  f->scope.oneof = NULL;
 
-  bool has_type = google_protobuf_FieldDescriptorProto_has_type(field_proto);
-  bool has_type_name =
+  const bool has_type = google_protobuf_FieldDescriptorProto_has_type(field_proto);
+  const bool has_type_name =
       google_protobuf_FieldDescriptorProto_has_type_name(field_proto);
 
   f->type_ = (int)google_protobuf_FieldDescriptorProto_type(field_proto);
@@ -937,14 +905,14 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
       case kUpb_FieldType_Enum:
         if (!has_type_name) {
           _upb_DefBuilder_Errf(ctx, "field of type %d requires type name (%s)",
-                               (int)f->type_, full_name);
+                               (int)f->type_, f->full_name);
         }
         break;
       default:
         if (has_type_name) {
           _upb_DefBuilder_Errf(
               ctx, "invalid type for field with type_name set (%s, %d)",
-              full_name, (int)f->type_);
+              f->full_name, (int)f->type_);
         }
     }
   } else if (has_type_name) {
