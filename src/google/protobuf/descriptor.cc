@@ -3865,9 +3865,9 @@ class DescriptorBuilder {
                    const ServiceDescriptor* parent, MethodDescriptor* result,
                    internal::FlatAllocator& alloc);
 
-  void CheckFieldJSONNameUniqueness(const DescriptorProto& proto,
+  void CheckFieldJsonNameUniqueness(const DescriptorProto& proto,
                                     const Descriptor* result);
-  void CheckFieldJSONNameUniqueness(std::string message_name,
+  void CheckFieldJsonNameUniqueness(std::string message_name,
                                     const DescriptorProto& message,
                                     bool is_proto2, bool use_custom_names);
   void CheckEnumValueUniqueness(const EnumDescriptorProto& proto,
@@ -5428,7 +5428,7 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
     }
   }
 
-  CheckFieldJSONNameUniqueness(proto, result);
+  CheckFieldJsonNameUniqueness(proto, result);
 
   // Check that fields aren't using reserved names or numbers and that they
   // aren't using extension numbers.
@@ -5496,7 +5496,7 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   }
 }
 
-std::string GetJSONName(const FieldDescriptorProto& field, bool use_custom, bool* was_custom) {
+std::string GetJsonName(const FieldDescriptorProto& field, bool use_custom, bool* was_custom) {
   if (use_custom && field.has_json_name()) {
     *was_custom = true;
     return field.json_name();
@@ -5505,28 +5505,28 @@ std::string GetJSONName(const FieldDescriptorProto& field, bool use_custom, bool
   return ToJsonName(field.name());
 }
 
-void DescriptorBuilder::CheckFieldJSONNameUniqueness(
+void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     const DescriptorProto& proto, const Descriptor* result) {
   bool is_proto2 = result->file()->syntax() == FileDescriptor::SYNTAX_PROTO2;
   std::string message_name = result->full_name();
   // two passes: one looking only at default JSON names, and one that considers custom JSON names
-  CheckFieldJSONNameUniqueness(message_name, proto, is_proto2, false);
-  CheckFieldJSONNameUniqueness(message_name, proto, is_proto2, true);
+  CheckFieldJsonNameUniqueness(message_name, proto, is_proto2, false);
+  CheckFieldJsonNameUniqueness(message_name, proto, is_proto2, true);
 }
 
-struct JSONNameDetails {
+struct JsonNameDetails {
   const FieldDescriptorProto* field;
   std::string orig_name;
   bool is_custom;
 };
 
-void DescriptorBuilder::CheckFieldJSONNameUniqueness(
+void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     std::string message_name,const DescriptorProto& message, bool is_proto2, bool use_custom_names) {
 
-  std::map<std::string, struct JSONNameDetails> name_to_field;
+  std::map<std::string, JsonNameDetails> name_to_field;
   for (int i = 0; i < message.field_size(); ++i) {
     bool is_custom;
-    std::string name = GetJSONName(message.field(i), use_custom_names, &is_custom);
+    std::string name = GetJsonName(message.field(i), use_custom_names, &is_custom);
     std::string lowercase_name = absl::AsciiStrToLower(name);
     auto existing = name_to_field.find(lowercase_name);
     if (existing != name_to_field.end()) {
@@ -5559,7 +5559,7 @@ void DescriptorBuilder::CheckFieldJSONNameUniqueness(
                  DescriptorPool::ErrorCollector::NAME, error_message);
       }
     } else {
-      struct JSONNameDetails details = { &message.field(i), name, is_custom };
+      JsonNameDetails details = { &message.field(i), name, is_custom };
       name_to_field[lowercase_name] = details;
     }
   }
