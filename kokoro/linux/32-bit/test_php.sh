@@ -37,7 +37,7 @@ build_php_c() {
 }
 
 cmake .
-cmake --build . --target protoc -- -j20
+cmake --build . -- -j20
 export PROTOC=$(pwd)/protoc
 
 build_php 7.0
