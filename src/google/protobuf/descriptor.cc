@@ -7677,7 +7677,7 @@ bool DescriptorBuilder::OptionInterpreter::ExamineIfOptionIsSet(
 }
 
 template <typename T> std::string ValueOutOfRange(
-    std::string type_name, std::string option_name) {
+    absl::string_view type_name, absl::string_view option_name) {
   return absl::StrFormat(
     "Value out of range, %d to %d, for %s option \"%s\".", \
     std::numeric_limits<T>::min(), std::numeric_limits<T>::max(),
@@ -7685,7 +7685,7 @@ template <typename T> std::string ValueOutOfRange(
 }
 
 template <typename T> std::string ValueMustBeInt(
-    std::string type_name, std::string option_name) {
+    absl::string_view type_name, absl::string_view option_name) {
   return absl::StrFormat(
     "Value must be integer, from %d to %d, for %s option \"%s\".", \
     std::numeric_limits<T>::min(), std::numeric_limits<T>::max(),
@@ -7724,7 +7724,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       if (uninterpreted_option_->has_positive_int_value()) {
         if (uninterpreted_option_->positive_int_value() >
             static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
-          return AddValueError(ValueOutOfRange<int64>("int64", option_field->full_name()));
+          return AddValueError(ValueOutOfRange<int64_t>("int64", option_field->full_name()));
         } else {
           SetInt64(option_field->number(),
                    uninterpreted_option_->positive_int_value(),
@@ -7735,7 +7735,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
                  uninterpreted_option_->negative_int_value(),
                  option_field->type(), unknown_fields);
       } else {
-        return AddValueError(ValueMustBeInt<int64>("int64", option_field->full_name()));
+        return AddValueError(ValueMustBeInt<int64_t>("int64", option_field->full_name()));
       }
       break;
 
@@ -7743,14 +7743,14 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       if (uninterpreted_option_->has_positive_int_value()) {
         if (uninterpreted_option_->positive_int_value() >
             std::numeric_limits<uint32_t>::max()) {
-          return AddValueError(ValueOutOfRange<uint32>("uint32", option_field->full_name()));
+          return AddValueError(ValueOutOfRange<uint32_t>("uint32", option_field->full_name()));
         } else {
           SetUInt32(option_field->number(),
                     uninterpreted_option_->positive_int_value(),
                     option_field->type(), unknown_fields);
         }
       } else {
-        return AddValueError(ValueMustBeInt<uint32>("uint32", option_field->full_name()));
+        return AddValueError(ValueMustBeInt<uint32_t>("uint32", option_field->full_name()));
       }
       break;
 
@@ -7760,7 +7760,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
                   uninterpreted_option_->positive_int_value(),
                   option_field->type(), unknown_fields);
       } else {
-        return AddValueError(ValueMustBeInt<uint64>("uint64", option_field->full_name()));
+        return AddValueError(ValueMustBeInt<uint64_t>("uint64", option_field->full_name()));
       }
       break;
 
