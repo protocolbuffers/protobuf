@@ -239,6 +239,10 @@ class PROTOBUF_EXPORT Parser {
     LocationRecorder(const LocationRecorder& parent, int path1, int path2);
 
     // Creates a recorder that generates locations into given source code info.
+    LocationRecorder(const LocationRecorder& parent,
+                     SourceCodeInfo* source_code_info);
+    // Creates a recorder that generates locations into given source code info
+    // and calls AddPath() one time.
     LocationRecorder(const LocationRecorder& parent, int path1,
                      SourceCodeInfo* source_code_info);
 
