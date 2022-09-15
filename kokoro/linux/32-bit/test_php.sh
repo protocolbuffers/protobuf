@@ -38,6 +38,7 @@ build_php_c() {
 
 cmake .
 cmake --build . -- -j20
+ctest --verbose --parallel 20
 export PROTOC=$(pwd)/protoc
 
 build_php 7.0
