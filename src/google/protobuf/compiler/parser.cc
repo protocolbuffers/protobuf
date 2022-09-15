@@ -288,6 +288,16 @@ bool Parser::ConsumeInteger64(uint64_t max_value, uint64_t* output,
   }
 }
 
+bool Parser::TryConsumeInteger64(uint64_t max_value, uint64_t* output) {
+  if (LookingAtType(io::Tokenizer::TYPE_INTEGER) &&
+      io::Tokenizer::ParseInteger(input_->current().text, max_value,
+                                  output)) {
+    input_->Next();
+    return true;
+  }
+  return false;
+}
+
 bool Parser::ConsumeNumber(double* output, const char* error) {
   if (LookingAtType(io::Tokenizer::TYPE_FLOAT)) {
     *output = io::Tokenizer::ParseFloat(input_->current().text);
@@ -296,13 +306,19 @@ bool Parser::ConsumeNumber(double* output, const char* error) {
   } else if (LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
     // Also accept integers.
     uint64_t value = 0;
-    if (!io::Tokenizer::ParseInteger(input_->current().text,
+    if (io::Tokenizer::ParseInteger(input_->current().text,
                                      std::numeric_limits<uint64_t>::max(),
                                      &value)) {
+      *output = value;
+    } else if (input_->current().text[0] == '0') {
+      // octal or hexadecimal; don't bother parsing as float
+      AddError("Integer out of range.");
+      // We still return true because we did, in fact, parse a number.
+    } else if (!io::Tokenizer::TryParseFloat(input_->current().text, output)) {
+      // out of int range, and not valid float? 🤷
       AddError("Integer out of range.");
       // We still return true because we did, in fact, parse a number.
     }
-    *output = value;
     input_->Next();
     return true;
   } else if (LookingAt("inf")) {
@@ -1575,18 +1591,20 @@ bool Parser::ParseOption(Message* options,
             is_negative
                 ? static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) + 1
                 : std::numeric_limits<uint64_t>::max();
-        DO(ConsumeInteger64(max_value, &value, "Expected integer."));
-        if (is_negative) {
-          value_location.AddPath(
-              UninterpretedOption::kNegativeIntValueFieldNumber);
-          uninterpreted_option->set_negative_int_value(
-              static_cast<int64_t>(0 - value));
-        } else {
-          value_location.AddPath(
-              UninterpretedOption::kPositiveIntValueFieldNumber);
-          uninterpreted_option->set_positive_int_value(value);
+        if (TryConsumeInteger64(max_value, &value)) {
+          if (is_negative) {
+            value_location.AddPath(
+                UninterpretedOption::kNegativeIntValueFieldNumber);
+            uninterpreted_option->set_negative_int_value(
+                static_cast<int64_t>(0 - value));
+          } else {
+            value_location.AddPath(
+                UninterpretedOption::kPositiveIntValueFieldNumber);
+            uninterpreted_option->set_positive_int_value(value);
+          }
+          break;
         }
-        break;
+        // value too large for an integer; fall through below to treat as floating point
       }
 
       case io::Tokenizer::TYPE_FLOAT: {

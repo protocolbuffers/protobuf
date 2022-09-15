@@ -5557,7 +5557,7 @@ TEST_F(ValidationErrorTest, Int32OptionValueOutOfPositiveRange) {
       "                                 positive_int_value: 0x80000000 } "
       "}",
 
-      "foo.proto: foo.proto: OPTION_VALUE: Value out of range "
+      "foo.proto: foo.proto: OPTION_VALUE: Value out of range, -2147483648 to 2147483647, "
       "for int32 option \"foo\".\n");
 }
 
@@ -5574,7 +5574,7 @@ TEST_F(ValidationErrorTest, Int32OptionValueOutOfNegativeRange) {
       "                                 negative_int_value: -0x80000001 } "
       "}",
 
-      "foo.proto: foo.proto: OPTION_VALUE: Value out of range "
+      "foo.proto: foo.proto: OPTION_VALUE: Value out of range, -2147483648 to 2147483647, "
       "for int32 option \"foo\".\n");
 }
 
@@ -5590,7 +5590,7 @@ TEST_F(ValidationErrorTest, Int32OptionValueIsNotPositiveInt) {
       "                                        is_extension: true } "
       "                                 string_value: \"5\" } }",
 
-      "foo.proto: foo.proto: OPTION_VALUE: Value must be integer "
+      "foo.proto: foo.proto: OPTION_VALUE: Value must be integer, from -2147483648 to 2147483647, "
       "for int32 option \"foo\".\n");
 }
 
@@ -5608,7 +5608,7 @@ TEST_F(ValidationErrorTest, Int64OptionValueOutOfRange) {
       "} "
       "}",
 
-      "foo.proto: foo.proto: OPTION_VALUE: Value out of range "
+      "foo.proto: foo.proto: OPTION_VALUE: Value out of range, -9223372036854775808 to 9223372036854775807, "
       "for int64 option \"foo\".\n");
 }
 
@@ -5624,7 +5624,7 @@ TEST_F(ValidationErrorTest, Int64OptionValueIsNotPositiveInt) {
       "                                        is_extension: true } "
       "                                 identifier_value: \"5\" } }",
 
-      "foo.proto: foo.proto: OPTION_VALUE: Value must be integer "
+      "foo.proto: foo.proto: OPTION_VALUE: Value must be integer, from -9223372036854775808 to 9223372036854775807, "
       "for int64 option \"foo\".\n");
 }
 
@@ -5640,7 +5640,7 @@ TEST_F(ValidationErrorTest, UInt32OptionValueOutOfRange) {
       "                                        is_extension: true } "
       "                                 positive_int_value: 0x100000000 } }",
 
-      "foo.proto: foo.proto: OPTION_VALUE: Value out of range "
+      "foo.proto: foo.proto: OPTION_VALUE: Value out of range, 0 to 4294967295, "
       "for uint32 option \"foo\".\n");
 }
 
@@ -5656,7 +5656,7 @@ TEST_F(ValidationErrorTest, UInt32OptionValueIsNotPositiveInt) {
       "                                        is_extension: true } "
       "                                 double_value: -5.6 } }",
 
-      "foo.proto: foo.proto: OPTION_VALUE: Value must be non-negative integer "
+      "foo.proto: foo.proto: OPTION_VALUE: Value must be integer, from 0 to 4294967295, "
       "for uint32 option \"foo\".\n");
 }
 
@@ -5672,7 +5672,7 @@ TEST_F(ValidationErrorTest, UInt64OptionValueIsNotPositiveInt) {
       "                                        is_extension: true } "
       "                                 negative_int_value: -5 } }",
 
-      "foo.proto: foo.proto: OPTION_VALUE: Value must be non-negative integer "
+      "foo.proto: foo.proto: OPTION_VALUE: Value must be integer, from 0 to 18446744073709551615, "
       "for uint64 option \"foo\".\n");
 }
 
