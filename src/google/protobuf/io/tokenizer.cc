@@ -1002,7 +1002,7 @@ bool Tokenizer::ParseInteger(const std::string& text, uint64_t max_value,
 }
 
 double Tokenizer::ParseFloat(const std::string& text) {
-  double result;
+  double result = 0;
   if (!TryParseFloat(text, &result)) {
     LOG(DFATAL)
         << " Tokenizer::ParseFloat() passed text that could not have been"
