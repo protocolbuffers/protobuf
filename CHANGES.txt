@@ -43,6 +43,11 @@
   Compiler
   * Print full path name of source .proto file on error
 
+2022-09-13 version 21.6 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+C++
+* Reduce memory consumption of MessageSet parsing
+
 2022-08-09 version 21.5 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
 
   PHP
