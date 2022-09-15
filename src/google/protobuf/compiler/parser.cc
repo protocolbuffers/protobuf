@@ -1730,7 +1730,8 @@ bool Parser::ParseReserved(DescriptorProto* message,
 }
 
 bool Parser::ParseReservedName(std::string* name, const char* error_message) {
-  // capture position of token
+  // Capture the position of the token, in case we have to report an
+  // error after it is consumed.
   int line = input_->current().line;
   int col = input_->current().column;
   DO(ConsumeString(name, error_message));
