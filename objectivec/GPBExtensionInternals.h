@@ -34,12 +34,12 @@
 
 @class GPBCodedInputStream;
 @class GPBCodedOutputStream;
-@class GPBExtensionRegistry;
+@protocol GPBExtensionRegistry;
 
 void GPBExtensionMergeFromInputStream(GPBExtensionDescriptor *extension,
                                       BOOL isPackedOnStream,
                                       GPBCodedInputStream *input,
-                                      GPBExtensionRegistry *extensionRegistry,
+                                      id<GPBExtensionRegistry>extensionRegistry,
                                       GPBMessage *message);
 
 size_t GPBComputeExtensionSerializedSizeIncludingTag(

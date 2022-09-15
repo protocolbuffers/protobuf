@@ -61,7 +61,7 @@ typedef struct GPBCodedInputStreamState {
 // support for older data.
 - (void)readGroup:(int32_t)fieldNumber
               message:(GPBMessage *)message
-    extensionRegistry:(GPBExtensionRegistry *)extensionRegistry;
+    extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry;
 
 // Reads a group field value from the stream and merges it into the given
 // UnknownFieldSet.
@@ -70,7 +70,7 @@ typedef struct GPBCodedInputStreamState {
 
 // Reads a map entry.
 - (void)readMapEntry:(id)mapDictionary
-    extensionRegistry:(GPBExtensionRegistry *)extensionRegistry
+    extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry
                 field:(GPBFieldDescriptor *)field
         parentMessage:(GPBMessage *)parentMessage;
 @end
