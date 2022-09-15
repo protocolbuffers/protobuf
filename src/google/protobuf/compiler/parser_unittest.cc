@@ -1941,6 +1941,22 @@ TEST_F(ParserValidationErrorTest, FieldDefaultValueError) {
       "2:32: Enum type \"Baz\" has no value named \"NO_SUCH_VALUE\".\n");
 }
 
+TEST_F(ParserValidationErrorTest, FieldDefaultIntegerOutOfRange) {
+  ExpectHasErrors(
+      "message Foo {\n"
+      "  optional double bar = 1 [default = 0x10000000000000000];\n"
+      "}\n",
+      "1:37: Integer out of range.\n");
+}
+
+TEST_F(ParserValidationErrorTest, FieldOptionOutOfRange) {
+  ExpectHasErrors(
+      "message Foo {\n"
+      "  optional double bar = 1 [foo = 0x10000000000000000];\n"
+      "}\n",
+      "1:33: Integer out of range.\n");
+}
+
 TEST_F(ParserValidationErrorTest, FileOptionNameError) {
   ExpectHasValidationErrors(
       "option foo = 5;",

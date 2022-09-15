@@ -310,9 +310,14 @@ bool Parser::ConsumeNumber(double* output, const char* error) {
                                      std::numeric_limits<uint64_t>::max(),
                                      &value)) {
       *output = value;
-    } else {
-      // out of int range, treat as double literal
-      *output = io::Tokenizer::ParseFloat(input_->current().text);
+    } else if (input_->current().text[0] == '0') {
+      // octal or hexadecimal; don't bother parsing as float
+      AddError("Integer out of range.");
+      // We still return true because we did, in fact, parse a number.
+    } else if (!io::Tokenizer::TryParseFloat(input_->current().text, output)) {
+      // out of int range, and not valid float? 🤷
+      AddError("Integer out of range.");
+      // We still return true because we did, in fact, parse a number.
     }
     input_->Next();
     return true;
