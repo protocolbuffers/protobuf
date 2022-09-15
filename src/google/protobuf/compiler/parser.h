@@ -394,6 +394,7 @@ class PROTOBUF_EXPORT Parser {
                      const LocationRecorder& message_location);
   bool ParseReservedNames(DescriptorProto* message,
                           const LocationRecorder& parent_location);
+  bool ParseReservedName(std::string* name, const char* error_message);
   bool ParseReservedNumbers(DescriptorProto* message,
                             const LocationRecorder& parent_location);
   bool ParseReserved(EnumDescriptorProto* message,

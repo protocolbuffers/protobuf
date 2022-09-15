@@ -1675,6 +1675,15 @@ TEST_F(ParseErrorTest, EnumReservedMissingQuotes) {
       "2:11: Expected enum value or number range.\n");
 }
 
+TEST_F(ParseErrorTest, EnumReservedInvalidIdentifier) {
+  ExpectHasErrors(
+      "enum TestEnum {\n"
+      "  FOO = 1;\n"
+      "  reserved \"foo bar\";\n"
+      "}\n",
+      "2:11: Reserved name \"foo bar\" is not a valid identifier.\n");
+}
+
 // -------------------------------------------------------------------
 // Reserved field number errors
 
@@ -1700,6 +1709,14 @@ TEST_F(ParseErrorTest, ReservedMissingQuotes) {
       "  reserved foo;\n"
       "}\n",
       "1:11: Expected field name or number range.\n");
+}
+
+TEST_F(ParseErrorTest, ReservedInvalidIdentifier) {
+  ExpectHasErrors(
+      "message Foo {\n"
+      "  reserved \"foo bar\";\n"
+      "}\n",
+      "1:11: Reserved name \"foo bar\" is not a valid identifier.\n");
 }
 
 TEST_F(ParseErrorTest, ReservedNegativeNumber) {
