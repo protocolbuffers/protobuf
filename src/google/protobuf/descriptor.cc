@@ -5500,7 +5500,8 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     const DescriptorProto& proto, const Descriptor* result) {
   bool is_proto2 = result->file()->syntax() == FileDescriptor::SYNTAX_PROTO2;
   std::string message_name = result->full_name();
-  // two passes: one looking only at default JSON names, and one that considers custom JSON names
+  // two passes: one looking only at default JSON names, and one that considers
+  // custom JSON names
   CheckFieldJsonNameUniqueness(message_name, proto, is_proto2, false);
   CheckFieldJsonNameUniqueness(message_name, proto, is_proto2, true);
 }
@@ -5508,7 +5509,8 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
 namespace {
 // Helpers for function below
 
-std::string GetJsonName(const FieldDescriptorProto& field, bool use_custom, bool* was_custom) {
+std::string GetJsonName(const FieldDescriptorProto& field, bool use_custom,
+                        bool* was_custom) {
   if (use_custom && field.has_json_name()) {
     *was_custom = true;
     return field.json_name();
@@ -5526,7 +5528,8 @@ struct JsonNameDetails {
 } // namespace
 
 void DescriptorBuilder::CheckFieldJsonNameUniqueness(
-    std::string message_name,const DescriptorProto& message, bool is_proto2, bool use_custom_names) {
+    std::string message_name, const DescriptorProto& message, bool is_proto2,
+    bool use_custom_names) {
 
   absl::flat_hash_map<std::string, JsonNameDetails> name_to_field;
   for (const FieldDescriptorProto& field : message.field()) {
@@ -5538,35 +5541,38 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
       JsonNameDetails& match = existing->second;
       if (use_custom_names && !is_custom && !match.is_custom) {
         // if this pass is considering custom JSON names, but neither of the
-        // names involved in the conflict are custom, don't bother with a message.
-        // That will have been reported from other pass (non-custom JSON names).
+        // names involved in the conflict are custom, don't bother with a
+        // message. That will have been reported from other pass (non-custom
+        // JSON names).
         continue;
       }
       absl::string_view this_type = is_custom ? "custom" : "default";
       absl::string_view existing_type = match.is_custom ? "custom" : "default";
-      // If the matched name differs (which it can only differ in case), include it
-      // in the error message, for maximum clarity to user.
+      // If the matched name differs (which it can only differ in case), include
+      // it in the error message, for maximum clarity to user.
       absl::string_view name_suffix = "";
       if (name != match.orig_name) {
         name_suffix = absl::StrCat(" (\"", match.orig_name, "\")");
       }
-      std::string error_message = absl::StrFormat(
-          "The %s JSON name of field \"%s\" (\"%s\") conflicts with the %s JSON name of field \"%s\"%s.",
-          this_type, field.name(), name, existing_type, match.field->name(), name_suffix);
+      std::string error_message =
+          absl::StrFormat("The %s JSON name of field \"%s\" (\"%s\") conflicts "
+                          "with the %s JSON name of field \"%s\"%s.",
+                          this_type, field.name(), name, existing_type,
+                          match.field->name(), name_suffix);
 
       bool involves_default = !is_custom || !match.is_custom;
       if (is_proto2 && involves_default) {
-        AddWarning(message_name, field,
-                 DescriptorPool::ErrorCollector::NAME, error_message);
+        AddWarning(message_name, field, DescriptorPool::ErrorCollector::NAME,
+                   error_message);
       } else {
         if (involves_default) {
           absl::StrAppend(&error_message, " This is not allowed in proto3.");
         }
-        AddError(message_name, field,
-                 DescriptorPool::ErrorCollector::NAME, error_message);
+        AddError(message_name, field, DescriptorPool::ErrorCollector::NAME,
+                 error_message);
       }
     } else {
-      JsonNameDetails details = { &field, name, is_custom };
+      JsonNameDetails details = {&field, name, is_custom};
       name_to_field[lowercase_name] = details;
     }
   }
@@ -5984,8 +5990,7 @@ void DescriptorBuilder::CheckEnumValueUniqueness(
     const EnumValueDescriptor* value = result->value(i);
     std::string stripped =
         EnumValueToPascalCase(remover.MaybeRemove(value->name()));
-    std::pair<absl::flat_hash_map<std::string, const EnumValueDescriptor*>::iterator, bool>
-        insert_result = values.insert(std::make_pair(stripped, value));
+    auto insert_result = values.insert(std::make_pair(stripped, value));
     bool inserted = insert_result.second;
 
     // We don't throw the error if the two conflicting symbols are identical, or
