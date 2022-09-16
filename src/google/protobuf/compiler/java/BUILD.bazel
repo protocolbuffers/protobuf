@@ -7,6 +7,15 @@ load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
+    name = "names",
+    hdrs = ["names.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/java",
+    visibility = ["//visibility:public"],
+    deps = ["//src/google/protobuf:protobuf_nowkt"],
+)
+
+cc_library(
     name = "java",
     srcs = [
         "context.cc",
@@ -65,7 +74,6 @@ cc_library(
         "message_lite.h",
         "message_serialization.h",
         "name_resolver.h",
-        "names.h",
         "options.h",
         "primitive_field.h",
         "primitive_field_lite.h",
@@ -81,6 +89,7 @@ cc_library(
         "//src/google/protobuf/compiler:__pkg__",
     ],
     deps = [
+        ":names",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "@com_google_absl//absl/container:flat_hash_set",
