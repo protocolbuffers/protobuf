@@ -2230,7 +2230,7 @@ class Proto3Test(unittest.TestCase):
 
   def testMapItems(self):
     # Map items used to have strange behaviors when use c extension. Because
-    # [] may reorder the map and invalidate any exsting iterators.
+    # [] may reorder the map and invalidate any existing iterators.
     # TODO(jieluo): Check if [] reordering the map is a bug or intended
     # behavior.
     msg = map_unittest_pb2.TestMap()
