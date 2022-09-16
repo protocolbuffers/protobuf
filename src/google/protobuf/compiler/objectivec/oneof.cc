@@ -89,27 +89,33 @@ void OneofGenerator::GenerateCaseEnum(io::Printer* printer) {
         "field_number", absl::StrCat(field->number()));
   }
   printer->Outdent();
+  // clang-format off
   printer->Print(
       "};\n"
       "\n");
+  // clang-format on
 }
 
 void OneofGenerator::GeneratePublicCasePropertyDeclaration(
     io::Printer* printer) {
+  // clang-format off
   printer->Print(
       variables_,
       "$comments$"
       "@property(nonatomic, readonly) $enum_name$ $name$OneOfCase;\n"
       "\n");
+  // clang-format on
 }
 
 void OneofGenerator::GenerateClearFunctionDeclaration(io::Printer* printer) {
+  // clang-format off
   printer->Print(
       variables_,
       "/**\n"
       " * Clears whatever value was set for the oneof '$name$'.\n"
       " **/\n"
       "void $owning_message_class$_Clear$capitalized_name$OneOfCase($owning_message_class$ *message);\n");
+  // clang-format on
 }
 
 void OneofGenerator::GeneratePropertyImplementation(io::Printer* printer) {
@@ -119,6 +125,7 @@ void OneofGenerator::GeneratePropertyImplementation(io::Printer* printer) {
 }
 
 void OneofGenerator::GenerateClearFunctionImplementation(io::Printer* printer) {
+  // clang-format off
   printer->Print(
       variables_,
       "void $owning_message_class$_Clear$capitalized_name$OneOfCase($owning_message_class$ *message) {\n"
@@ -126,6 +133,7 @@ void OneofGenerator::GenerateClearFunctionImplementation(io::Printer* printer) {
       "  GPBOneofDescriptor *oneof = [descriptor.oneofs objectAtIndex:$raw_index$];\n"
       "  GPBClearOneof(message, oneof);\n"
       "}\n");
+  // clang-format on
 }
 
 std::string OneofGenerator::DescriptorName(void) const {

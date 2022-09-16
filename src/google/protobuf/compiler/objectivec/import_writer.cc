@@ -213,12 +213,14 @@ void ImportWriter::PrintRuntimeImports(
 
   if (default_cpp_symbol) {
     printer->Print(
+        // clang-format off
         "// This CPP symbol can be defined to use imports that match up to the framework\n"
         "// imports needed when using CocoaPods.\n"
         "#if !defined($cpp_symbol$)\n"
         " #define $cpp_symbol$ 0\n"
         "#endif\n"
         "\n",
+        // clang-format on
         "cpp_symbol", cpp_symbol);
   }
 
