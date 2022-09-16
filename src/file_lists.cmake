@@ -11,8 +11,8 @@ endif()
 
 # //pkg:protobuf
 set(libprotobuf_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/api.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/api.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/duration.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/empty.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/field_mask.pb.cc
