@@ -88,26 +88,6 @@ cc_library(
 )
 
 cc_library(
-    name = "generatiors",
-    hdrs = ["generators.h"],
-    srcs = ["generators.cc"],
-    copts = COPTS,
-    include_prefix = "google/protobuf/compiler",
-    visibility = ["//visibility:public"],
-    deps = [
-        ":code_generator",
-        "//src/google/protobuf/compiler/cpp",
-        "//src/google/protobuf/compiler/csharp",
-        "//src/google/protobuf/compiler/java",
-        "//src/google/protobuf/compiler/objectivec",
-        "//src/google/protobuf/compiler/php",
-        "//src/google/protobuf/compiler/python",
-        "//src/google/protobuf/compiler/ruby",
-    ],
-)
-
-
-cc_library(
     name = "protoc_lib_nowkt",
     srcs = [
         "main.cc",
