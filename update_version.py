@@ -80,7 +80,7 @@ def RewriteXml(filename, rewriter, add_xml_prefix=True):
   # document.toxml() always prepend the XML version without inserting new line.
   # We wants to preserve as much of the original formatting as possible, so we
   # will remove the default XML version and replace it with our custom one when
-  # whever necessary.
+  # whenever necessary.
   content = document.toxml().replace('<?xml version="1.0" ?>', '')
   file_handle = open(filename, 'wb')
   if add_xml_prefix:

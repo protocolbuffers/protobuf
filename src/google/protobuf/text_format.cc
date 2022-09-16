@@ -978,7 +978,7 @@ class TextFormat::Parser::ParserImpl {
   }
 
   // Consumes an identifier and saves its value in the identifier parameter.
-  // Returns false if the token is not of type IDENTFIER.
+  // Returns false if the token is not of type IDENTIFIER.
   bool ConsumeIdentifier(std::string* identifier) {
     if (LookingAtType(io::Tokenizer::TYPE_IDENTIFIER)) {
       *identifier = tokenizer_.current().text;
@@ -2286,7 +2286,7 @@ class MapEntryMessageComparator {
 namespace internal {
 class MapFieldPrinterHelper {
  public:
-  // DynamicMapSorter::Sort cannot be used because it enfores syncing with
+  // DynamicMapSorter::Sort cannot be used because it enforces syncing with
   // repeated field.
   static bool SortMap(const Message& message, const Reflection* reflection,
                       const FieldDescriptor* field,
