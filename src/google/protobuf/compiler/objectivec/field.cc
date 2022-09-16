@@ -243,6 +243,7 @@ void FieldGenerator::GenerateFieldDescription(
     io::Printer* printer, bool include_default) const {
   // Printed in the same order as the structure decl.
   if (include_default) {
+    // clang-format off
     printer->Print(
         variables_,
         "{\n"
@@ -255,7 +256,9 @@ void FieldGenerator::GenerateFieldDescription(
         "  .core.flags = $fieldflags$,\n"
         "  .core.dataType = GPBDataType$field_type$,\n"
         "},\n");
+    // clang-format on
   } else {
+    // clang-format off
     printer->Print(
         variables_,
         "{\n"
@@ -267,6 +270,7 @@ void FieldGenerator::GenerateFieldDescription(
         "  .flags = $fieldflags$,\n"
         "  .dataType = GPBDataType$field_type$,\n"
         "},\n");
+    // clang-format on
   }
 }
 
@@ -326,14 +330,18 @@ void SingleFieldGenerator::GenerateFieldStorageDeclaration(
 void SingleFieldGenerator::GeneratePropertyDeclaration(
     io::Printer* printer) const {
   printer->Print(variables_, "$comments$");
+  // clang-format off
   printer->Print(
       variables_,
       "@property(nonatomic, readwrite) $property_type$ $name$$deprecated_attribute$;\n"
       "\n");
+  // clang-format on
   if (WantsHasProperty()) {
+    // clang-format off
     printer->Print(
         variables_,
         "@property(nonatomic, readwrite) BOOL has$capitalized_name$$deprecated_attribute$;\n");
+    // clang-format on
   }
 }
 
@@ -377,14 +385,18 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
   // conventions (init*, new*, etc.)
 
   printer->Print(variables_, "$comments$");
+  // clang-format off
   printer->Print(
       variables_,
       "@property(nonatomic, readwrite, $property_storage_attribute$, null_resettable) $property_type$ *$name$$storage_attribute$$deprecated_attribute$;\n");
+  // clang-format on
   if (WantsHasProperty()) {
+    // clang-format off
     printer->Print(
         variables_,
         "/** Test to see if @c $name$ has been set. */\n"
         "@property(nonatomic, readwrite) BOOL has$capitalized_name$$deprecated_attribute$;\n");
+    // clang-format on
   }
   if (IsInitName(variables_.find("name")->second)) {
     // If property name starts with init we need to annotate it to get past ARC.
@@ -430,6 +442,7 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
   // dealing with needing Objective C's rules around storage name conventions
   // (init*, new*, etc.)
 
+  // clang-format off
   printer->Print(
       variables_,
       "$comments$"
@@ -437,11 +450,14 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
       "@property(nonatomic, readwrite, strong, null_resettable) $array_property_type$ *$name$$storage_attribute$$deprecated_attribute$;\n"
       "/** The number of items in @c $name$ without causing the container to be created. */\n"
       "@property(nonatomic, readonly) NSUInteger $name$_Count$deprecated_attribute$;\n");
+  // clang-format on
   if (IsInitName(variables_.find("name")->second)) {
     // If property name starts with init we need to annotate it to get past ARC.
     // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
+    // clang-format off
     printer->Print(variables_,
                    "- ($array_property_type$ *)$name$ GPB_METHOD_FAMILY_NONE$deprecated_attribute$;\n");
+    // clang-format on
   }
   printer->Print("\n");
 }

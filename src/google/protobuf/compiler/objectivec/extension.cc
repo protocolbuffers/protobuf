@@ -77,9 +77,12 @@ void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) {
   // Unlike normal message fields, check if the file for the extension was
   // deprecated.
   vars["deprecated_attribute"] = GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file());
-  printer->Print(vars,
-                 "$comments$"
-                 "+ (GPBExtensionDescriptor *)$method_name$$storage_attribute$$deprecated_attribute$;\n");
+  // clang-format off
+  printer->Print(
+      vars,
+      "$comments$"
+      "+ (GPBExtensionDescriptor *)$method_name$$storage_attribute$$deprecated_attribute$;\n");
+  // clang-format on
 }
 
 void ExtensionGenerator::GenerateStaticVariablesInitialization(
@@ -122,17 +125,20 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
     vars["enum_desc_func_name"] = "NULL";
   }
 
-  printer->Print(vars,
-                 "{\n"
-                 "  .defaultValue.$default_name$ = $default$,\n"
-                 "  .singletonName = GPBStringifySymbol($root_class_and_method_name$),\n"
-                 "  .extendedClass.clazz = $extended_type$,\n"
-                 "  .messageOrGroupClass.clazz = $type$,\n"
-                 "  .enumDescriptorFunc = $enum_desc_func_name$,\n"
-                 "  .fieldNumber = $number$,\n"
-                 "  .dataType = $extension_type$,\n"
-                 "  .options = $options$,\n"
-                 "},\n");
+  // clang-format off
+  printer->Print(
+      vars,
+      "{\n"
+      "  .defaultValue.$default_name$ = $default$,\n"
+      "  .singletonName = GPBStringifySymbol($root_class_and_method_name$),\n"
+      "  .extendedClass.clazz = $extended_type$,\n"
+      "  .messageOrGroupClass.clazz = $type$,\n"
+      "  .enumDescriptorFunc = $enum_desc_func_name$,\n"
+      "  .fieldNumber = $number$,\n"
+      "  .dataType = $extension_type$,\n"
+      "  .options = $options$,\n"
+      "},\n");
+  // clang-format on
 }
 
 void ExtensionGenerator::DetermineObjectiveCClassDefinitions(
@@ -147,9 +153,11 @@ void ExtensionGenerator::DetermineObjectiveCClassDefinitions(
 }
 
 void ExtensionGenerator::GenerateRegistrationSource(io::Printer* printer) {
+  // clang-format off
   printer->Print(
       "[registry addExtension:$root_class_and_method_name$];\n",
       "root_class_and_method_name", root_class_and_method_name_);
+  // clang-format on
 }
 
 }  // namespace objectivec

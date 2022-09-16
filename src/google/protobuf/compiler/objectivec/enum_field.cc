@@ -78,6 +78,7 @@ void EnumFieldGenerator::GenerateCFunctionDeclarations(
     return;
   }
 
+  // clang-format off
   printer->Print(
       variables_,
       "/**\n"
@@ -92,12 +93,14 @@ void EnumFieldGenerator::GenerateCFunctionDeclarations(
       " **/\n"
       "void Set$owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message, int32_t value);\n"
       "\n");
+  // clang-format on
 }
 
 void EnumFieldGenerator::GenerateCFunctionImplementations(
     io::Printer* printer) const {
   if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) return;
 
+  // clang-format off
   printer->Print(
       variables_,
       "int32_t $owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message) {\n"
@@ -112,6 +115,7 @@ void EnumFieldGenerator::GenerateCFunctionImplementations(
       "  GPBSetMessageRawEnumField(message, field, value);\n"
       "}\n"
       "\n");
+  // clang-format on
 }
 
 void EnumFieldGenerator::DetermineForwardDeclarations(

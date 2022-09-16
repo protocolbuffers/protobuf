@@ -130,13 +130,15 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
   if (HasPreservingUnknownEnumSemantics(descriptor_->file())) {
     // Include the unknown value.
     printer->Print(
-      "/**\n"
-      " * Value used if any message's field encounters a value that is not defined\n"
-      " * by this enum. The message will also have C functions to get/set the rawValue\n"
-      " * of the field.\n"
-      " **/\n"
-      "$name$_GPBUnrecognizedEnumeratorValue = kGPBUnrecognizedEnumeratorValue,\n",
-      "name", name_);
+        // clang-format off
+        "/**\n"
+        " * Value used if any message's field encounters a value that is not defined\n"
+        " * by this enum. The message will also have C functions to get/set the rawValue\n"
+        " * of the field.\n"
+        " **/\n"
+        "$name$_GPBUnrecognizedEnumeratorValue = kGPBUnrecognizedEnumeratorValue,\n",
+        // clang-format on
+        "name", name_);
   }
   for (int i = 0; i < all_values_.size(); i++) {
     if (alias_values_to_skip_.find(all_values_[i]) != alias_values_to_skip_.end()) {
@@ -160,6 +162,7 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
   }
   printer->Outdent();
   printer->Print(
+      // clang-format off
       "};\n"
       "\n"
       "GPBEnumDescriptor *$name$_EnumDescriptor(void);\n"
@@ -169,6 +172,7 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
       " * the time this source was generated.\n"
       " **/\n"
       "BOOL $name$_IsValidValue(int32_t value);\n"
+      // clang-format on
       "\n",
       "name", name_);
 }
@@ -199,9 +203,11 @@ void EnumGenerator::GenerateSource(io::Printer* printer) {
   }
 
   printer->Print(
+      // clang-format off
       "GPBEnumDescriptor *$name$_EnumDescriptor(void) {\n"
       "  static _Atomic(GPBEnumDescriptor*) descriptor = nil;\n"
       "  if (!descriptor) {\n",
+      // clang-format on
       "name", name_);
 
   static const int kBytesPerLine = 40;  // allow for escaping
@@ -222,15 +228,18 @@ void EnumGenerator::GenerateSource(io::Printer* printer) {
 
   if (text_format_decode_data.num_entries() == 0) {
     printer->Print(
+        // clang-format off
         "    GPBEnumDescriptor *worker =\n"
         "        [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol($name$)\n"
         "                                       valueNames:valueNames\n"
         "                                           values:values\n"
         "                                            count:(uint32_t)(sizeof(values) / sizeof(int32_t))\n"
         "                                     enumVerifier:$name$_IsValidValue];\n",
+        // clang-format on
         "name", name_);
-    } else {
-      printer->Print(
+  } else {
+    printer->Print(
+        // clang-format off
         "    static const char *extraTextFormatInfo = \"$extraTextFormatInfo$\";\n"
         "    GPBEnumDescriptor *worker =\n"
         "        [GPBEnumDescriptor allocDescriptorForName:GPBNSStringifySymbol($name$)\n"
@@ -239,21 +248,26 @@ void EnumGenerator::GenerateSource(io::Printer* printer) {
         "                                            count:(uint32_t)(sizeof(values) / sizeof(int32_t))\n"
         "                                     enumVerifier:$name$_IsValidValue\n"
         "                              extraTextFormatInfo:extraTextFormatInfo];\n",
+        // clang-format on
         "name", name_,
         "extraTextFormatInfo", absl::CEscape(text_format_decode_data.Data()));
-    }
-    printer->Print(
-      "    GPBEnumDescriptor *expected = nil;\n"
-      "    if (!atomic_compare_exchange_strong(&descriptor, &expected, worker)) {\n"
-      "      [worker release];\n"
-      "    }\n"
-      "  }\n"
-      "  return descriptor;\n"
-      "}\n\n");
+  }
+  // clang-format off
+  printer->Print(
+    "    GPBEnumDescriptor *expected = nil;\n"
+    "    if (!atomic_compare_exchange_strong(&descriptor, &expected, worker)) {\n"
+    "      [worker release];\n"
+    "    }\n"
+    "  }\n"
+    "  return descriptor;\n"
+    "}\n\n");
+  // clang-format on
 
   printer->Print(
+      // clang-format off
       "BOOL $name$_IsValidValue(int32_t value__) {\n"
       "  switch (value__) {\n",
+      // clang-format on
       "name", name_);
 
   for (int i = 0; i < base_values_.size(); i++) {
@@ -262,12 +276,14 @@ void EnumGenerator::GenerateSource(io::Printer* printer) {
         "name", EnumValueName(base_values_[i]));
   }
 
+  // clang-format off
   printer->Print(
       "      return YES;\n"
       "    default:\n"
       "      return NO;\n"
       "  }\n"
       "}\n\n");
+  // clang-format on
 }
 }  // namespace objectivec
 }  // namespace compiler
