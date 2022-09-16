@@ -36,10 +36,16 @@ build_php_c() {
   test_php_c
 }
 
-cmake .
+mkdir build
+pushd build
+cmake ..
 cmake --build . -- -j20
 ctest --verbose --parallel 20
 export PROTOC=$(pwd)/protoc
+popd
+
+# Cleanup after Bazel build
+rm -rf build
 
 build_php 7.0
 build_php 7.1
