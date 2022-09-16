@@ -792,7 +792,7 @@ void ImmutableMapFieldGenerator::GenerateKotlinDslMembers(
       variables_,
       "@kotlin.jvm.JvmSynthetic\n"
       "@JvmName(\"clear$kt_capitalized_name$\")\n"
-      "fun com.google.protobuf.kotlin.DslMap"
+      "public fun com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  .clear() {\n"
       "     $kt_dsl_builder$.${$clear$capitalized_name$$}$()\n"
