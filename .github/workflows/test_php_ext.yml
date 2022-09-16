@@ -45,6 +45,8 @@ jobs:
             version: "7.4.18-dbg"
           - php-image: php:8.1-cli
             version: "8.1.14"
+          - php-image: php:8.2-cli
+            version: "8.2"
     name: Build ${{ matrix.version }}
     runs-on: ubuntu-latest
     container: ${{ matrix.php-image }}
