@@ -91,19 +91,20 @@ static int cmp_values(const void* a, const void* b) {
   return (A < B) ? -1 : (A > B);
 }
 
-const char* _upb_EnumDef_MiniDescriptor(const upb_EnumDef* e, upb_Arena* a) {
-  if (e->is_sorted) return _upb_MiniDescriptor_EncodeEnum(e, NULL, a);
+bool _upb_EnumDef_MiniDescriptor(const upb_EnumDef* e, upb_Arena* a,
+                                 upb_StringView* out) {
+  if (e->is_sorted) return _upb_MiniDescriptor_EncodeEnum(e, NULL, a, out);
 
   const upb_EnumValueDef** sorted = (const upb_EnumValueDef**)upb_Arena_Malloc(
       a, e->value_count * sizeof(void*));
-  if (!sorted) return NULL;
+  if (!sorted) return false;
 
   for (size_t i = 0; i < e->value_count; i++) {
     sorted[i] = upb_EnumDef_Value(e, i);
   }
   qsort(sorted, e->value_count, sizeof(void*), cmp_values);
 
-  return _upb_MiniDescriptor_EncodeEnum(e, sorted, a);
+  return _upb_MiniDescriptor_EncodeEnum(e, sorted, a, out);
 }
 
 const google_protobuf_EnumOptions* upb_EnumDef_Options(const upb_EnumDef* e) {
@@ -166,13 +167,13 @@ const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i) {
 
 static upb_MiniTable_Enum* create_enumlayout(upb_DefBuilder* ctx,
                                              const upb_EnumDef* e) {
-  const char* desc = _upb_EnumDef_MiniDescriptor(e, ctx->tmp_arena);
-  if (!desc)
-    _upb_DefBuilder_Errf(ctx, "OOM while building enum MiniDescriptor");
+  upb_StringView sv;
+  bool ok = _upb_EnumDef_MiniDescriptor(e, ctx->tmp_arena, &sv);
+  if (!ok) _upb_DefBuilder_Errf(ctx, "OOM while building enum MiniDescriptor");
 
   upb_Status status;
   upb_MiniTable_Enum* layout =
-      upb_MiniTable_BuildEnum(desc, strlen(desc), ctx->arena, &status);
+      upb_MiniTable_BuildEnum(sv.data, sv.size, ctx->arena, &status);
   if (!layout)
     _upb_DefBuilder_Errf(ctx, "Error building enum MiniTable: %s", status.msg);
   return layout;
