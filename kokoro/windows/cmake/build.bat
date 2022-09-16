@@ -13,6 +13,7 @@ cd build
 
 cmake .. ^
 	-G "Visual Studio 15 2017" -A x64 ^
+  -Dprotobuf_BUILD_EXAMPLES=ON ^
 	-Dprotobuf_BUILD_CONFORMANCE=OFF ^
 	-Dprotobuf_WITH_ZLIB=OFF ^
 	-Dprotobuf_TEST_XML_OUTDIR=%KOKORO_ARTIFACTS_DIR%\logs\ || goto :error
