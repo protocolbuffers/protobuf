@@ -457,11 +457,13 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_map_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_message_field.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_nsobject_methods.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_oneof.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_options.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_primitive_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/php_generator.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/php_names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/generator.h
