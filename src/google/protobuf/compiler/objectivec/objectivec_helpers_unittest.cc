@@ -101,10 +101,12 @@ TEST(ObjCHelper, TextFormatDecodeData_DecodeDataForString_ByteCodes) {
 
   // Long name so multiple decode ops are needed.
 
+  // clang-format off
   input_for_decode =
       "longFieldNameIsLooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong1000";
   desired_output_for_decode =
       "long_field_name_is_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong_1000";
+  // clang-format on
   expected = std::string("\x04\xA5\xA4\xA2\xBF\x1F\x0E\x84\x0", 9);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
@@ -154,11 +156,13 @@ TEST(ObjCHelper, TextFormatDecodeData_RawStrings) {
   EXPECT_EQ(4, decode_data.num_entries());
 
   uint8_t expected_data[] = {
+      // clang-format off
       0x4,
       0x1, 0x0, 'z', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'I', 'J', 0x0,
       0x3, 0x0, 'a', 'b', 'c', 'd', 'e', 'z', 'g', 'h', 'I', 'J', 0x0,
       0x2, 0x0, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'I', 0x0,
       0x4, 0x0, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'I', 'J', 'z', 0x0,
+      // clang-format on
   };
   std::string expected((const char*)expected_data, sizeof(expected_data));
 
@@ -172,12 +176,15 @@ TEST(ObjCHelper, TextFormatDecodeData_ByteCodes) {
   decode_data.AddString(3, "abcdefghIJ", "_AbcdefghIJ");
   decode_data.AddString(2, "abcdefghIJ", "Abcd_EfghIJ");
   decode_data.AddString(4, "abcdefghIJ", "ABCD__EfghI_j");
+  // clang-format off
   decode_data.AddString(1000,
                         "longFieldNameIsLooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong1000",
                         "long_field_name_is_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong_1000");
+  // clang-format on
 
   EXPECT_EQ(5, decode_data.num_entries());
 
+  // clang-format off
   uint8_t expected_data[] = {
       0x5,
       // All as is (00 op)
@@ -196,6 +203,7 @@ TEST(ObjCHelper, TextFormatDecodeData_ByteCodes) {
       //   underscore, as is + 3 (00 op)
       0xE8, 0x07, 0x04, 0xA5, 0xA4, 0xA2, 0xBF, 0x1F, 0x0E, 0x84, 0x0,
   };
+  // clang-format on
   std::string expected((const char*)expected_data, sizeof(expected_data));
 
   EXPECT_EQ(expected, decode_data.Data());

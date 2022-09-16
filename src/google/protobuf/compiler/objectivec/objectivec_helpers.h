@@ -40,7 +40,9 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
+// clang-format off
 #include "google/protobuf/port_def.inc"
+// clang-format on
 
 namespace google {
 namespace protobuf {
