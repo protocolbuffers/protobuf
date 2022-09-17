@@ -41,12 +41,8 @@ pushd build
 cmake ..
 cmake --build . -- -j20
 ctest --verbose --parallel 20
-popd
-
-# Cleanup after Bazel build
-mv build/protoc .
 export PROTOC=$(pwd)/protoc
-rm -rf build
+popd
 
 build_php 7.0
 build_php 7.1
@@ -57,3 +53,6 @@ build_php_c 7.4
 build_php_c 7.1-zts
 build_php_c 7.2-zts
 build_php_c 7.5-zts
+
+# Cleanup after CMake build
+rm -rf build
