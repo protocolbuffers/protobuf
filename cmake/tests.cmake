@@ -172,13 +172,20 @@ add_custom_target(save-installed-headers)
 add_custom_target(remove-installed-headers)
 add_custom_target(restore-installed-headers)
 
-# Explicitly skip the bootstrapping headers as it's directly used in tests
-set(_installed_hdrs ${libprotobuf_hdrs} ${libprotoc_hdrs})
-list(REMOVE_ITEM _installed_hdrs
+file(GLOB_RECURSE _local_hdrs
+  "${PROJECT_SOURCE_DIR}/src/*.h"
+  "${PROJECT_SOURCE_DIR}/src/*.inc")
+
+# Explicitly skip the bootstrapping and test headers.
+list(REMOVE_ITEM _local_hdrs
   "${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.pb.h"
   "${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h")
+set(_test_hdrs ${test_util_hdrs} ${lite_test_util_hdrs})
+foreach(_hdr ${_test_hdrs})
+  list(REMOVE_ITEM _local_hdrs ${_hdr})
+endforeach()
 
-foreach(_hdr ${_installed_hdrs})
+foreach(_hdr ${_local_hdrs})
   string(REPLACE "${protobuf_SOURCE_DIR}/src" "" _file ${_hdr})
   set(_tmp_file "${CMAKE_BINARY_DIR}/tmp-install-test/${_file}")
   add_custom_command(TARGET remove-installed-headers PRE_BUILD
