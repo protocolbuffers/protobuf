@@ -43,19 +43,20 @@ endif()
 include(${protobuf_SOURCE_DIR}/src/file_lists.cmake)
 
 set(lite_test_protos
-  ${protobuf_lite_test_protos_proto_srcs}
+  ${protobuf_lite_test_protos_files}
 )
 
 set(tests_protos
-  ${protobuf_test_protos_proto_srcs}
+  ${protobuf_test_protos_files}
   ${compiler_test_protos_files}
   ${util_test_protos_files}
 )
 
 macro(compile_proto_file filename)
-  string(REPLACE .proto .pb.cc pb_file ${filename})
+  string(REPLACE .proto .pb.h pb_hdr ${filename})
+  string(REPLACE .proto .pb.cc pb_src ${filename})
   add_custom_command(
-    OUTPUT ${pb_file}
+    OUTPUT ${pb_hdr} ${pb_src}
     DEPENDS ${protobuf_PROTOC_EXE} ${filename}
     COMMAND ${protobuf_PROTOC_EXE} ${filename}
         --proto_path=${protobuf_SOURCE_DIR}/src
@@ -67,13 +68,13 @@ endmacro(compile_proto_file)
 set(lite_test_proto_files)
 foreach(proto_file ${lite_test_protos})
   compile_proto_file(${proto_file})
-  set(lite_test_proto_files ${lite_test_proto_files} ${pb_file})
+  set(lite_test_proto_files ${lite_test_proto_files} ${pb_src} ${pb_hdr})
 endforeach(proto_file)
 
 set(tests_proto_files)
 foreach(proto_file ${tests_protos})
   compile_proto_file(${proto_file})
-  set(tests_proto_files ${tests_proto_files} ${pb_file})
+  set(tests_proto_files ${tests_proto_files} ${pb_src} ${pb_hdr})
 endforeach(proto_file)
 
 add_library(protobuf-lite-test-common STATIC
@@ -188,9 +189,6 @@ foreach(_hdr ${_exclude_hdrs})
   list(REMOVE_ITEM _local_hdrs ${_hdr})
 endforeach()
 
-# Exclude generated proto headers
-list(FILTER _local_hdrs EXCLUDE REGEX ".*\.pb\.h$")
-
 foreach(_hdr ${_local_hdrs})
   string(REPLACE "${protobuf_SOURCE_DIR}/src" "" _file ${_hdr})
   set(_tmp_file "${CMAKE_BINARY_DIR}/tmp-install-test/${_file}")
@@ -206,6 +204,6 @@ endforeach()
 
 add_dependencies(remove-installed-headers save-installed-headers)
 if(protobuf_REMOVE_INSTALLED_HEADERS)
-  add_dependencies(protobuf-lite-test-common remove-installed-headers)
-  add_dependencies(protobuf-test-common remove-installed-headers)
+  # Make sure we remove all the headers *before* any codegen occurs.
+  add_dependencies(${protobuf_PROTOC_EXE} remove-installed-headers)
 endif()

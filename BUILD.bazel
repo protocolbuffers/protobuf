@@ -325,6 +325,12 @@ alias(
 ################################################################################
 
 alias(
+    name = "lite_test_proto_srcs",
+    actual = "//src/google/protobuf:lite_test_proto_srcs",  # proto_library
+    visibility = ["//:__subpackages__"],
+)
+
+alias(
     name = "lite_test_protos",
     actual = "//src/google/protobuf:lite_test_protos",  # proto_library
     visibility = ["//:__subpackages__"],

@@ -319,9 +319,9 @@ gen_file_lists(
         ":test_util": "test_util",
         # Tests and test-only protos:
         "//src/google/protobuf:full_test_srcs": "protobuf_test",
-        "//src/google/protobuf:test_protos": "protobuf_test_protos",
+        "//src/google/protobuf:test_proto_srcs": "protobuf_test_protos",
         "//src/google/protobuf:lite_test_srcs": "protobuf_lite_test",
-        "//src/google/protobuf:lite_test_protos": "protobuf_lite_test_protos",
+        "//src/google/protobuf:lite_test_proto_srcs": "protobuf_lite_test_protos",
         "//src/google/protobuf/compiler:test_srcs": "compiler_test",
         "//src/google/protobuf/compiler:test_proto_srcs": "compiler_test_protos",
         "//src/google/protobuf/compiler:test_plugin_srcs": "test_plugin",
