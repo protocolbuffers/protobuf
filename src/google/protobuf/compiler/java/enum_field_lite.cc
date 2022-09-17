@@ -329,7 +329,7 @@ void ImmutableEnumFieldLiteGenerator::GenerateKotlinDslMembers(
   if (SupportUnknownEnumValue(descriptor_->file())) {
     printer->Print(
         variables_,
-        "$kt_deprecation$ var $kt_name$Value: kotlin.Int\n"
+        "$kt_deprecation$public var $kt_name$Value: kotlin.Int\n"
         "  @JvmName(\"${$get$kt_capitalized_name$Value$}$\")\n"
         "  get() = $kt_dsl_builder$.${$get$capitalized_name$Value$}$()\n"
         "  @JvmName(\"${$set$kt_capitalized_name$Value$}$\")\n"
