@@ -157,6 +157,8 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/metadata_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/port_def.inc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/port_undef.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_internal.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_ops.h
@@ -179,6 +181,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/delimited_message_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/field_comparator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/field_mask_util.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/internal/constants.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/internal/datapiece.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/internal/default_value_objectwriter.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/internal/error_listener.h
@@ -524,6 +527,20 @@ set(plugin_proto_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin_proto-descriptor-set.proto.bin
 )
 
+# //pkg:common_test
+set(common_test_srcs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/googletest.cc
+)
+
+# //pkg:common_test
+set(common_test_hdrs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/googletest.h
+)
+
 # //pkg:lite_test_util
 set(lite_test_util_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_test_util.cc
@@ -542,12 +559,17 @@ set(lite_test_util_hdrs
 
 # //pkg:test_util
 set(test_util_srcs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_tester.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/internal/type_info_test_helper.cc
 )
 
 # //pkg:test_util
 set(test_util_hdrs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/unittest.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/unittest.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test_util.inc
@@ -555,7 +577,11 @@ set(test_util_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_tester.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.inc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util2.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util_lite.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/internal/expecting_objectwriter.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/internal/mock_error_listener.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/internal/type_info_test_helper.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_unittest.inc
 )
 
@@ -750,26 +776,6 @@ set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator_unittest.cc
 )
 
-# //pkg:compiler_annotation_test_util
-set(annotation_test_util_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.cc
-)
-
-# //pkg:compiler_annotation_test_util
-set(annotation_test_util_hdrs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.h
-)
-
-# //pkg:compiler_mock_code_generator
-set(mock_code_generator_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.cc
-)
-
-# //pkg:compiler_mock_code_generator
-set(mock_code_generator_hdrs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.h
-)
-
 # //src/google/protobuf/compiler:test_proto_srcs
 set(compiler_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/test_bad_identifiers.proto
@@ -790,18 +796,6 @@ set(io_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/tokenizer_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_sink_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream_unittest.cc
-)
-
-# //pkg:testinglib
-set(testing_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/googletest.cc
-)
-
-# //pkg:testinglib
-set(testing_hdrs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/googletest.h
 )
 
 # //src/google/protobuf/util:test_srcs

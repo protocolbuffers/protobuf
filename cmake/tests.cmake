@@ -85,8 +85,8 @@ target_link_libraries(protobuf-lite-test-common
 set(common_test_files
   ${test_util_hdrs}
   ${test_util_srcs}
-  ${mock_code_generator_srcs}
-  ${testing_srcs}
+  ${common_test_hdrs}
+  ${common_test_srcs}
 )
 
 add_library(protobuf-test-common STATIC
@@ -138,8 +138,8 @@ target_link_libraries(tests protobuf-lite-test-common protobuf-test-common ${pro
 
 set(test_plugin_files
   ${test_plugin_files}
-  ${mock_code_generator_srcs}
-  ${testing_srcs}
+  ${common_test_hdrs}
+  ${common_test_srcs}
 )
 
 add_executable(test_plugin ${test_plugin_files})
@@ -176,12 +176,15 @@ file(GLOB_RECURSE _local_hdrs
   "${PROJECT_SOURCE_DIR}/src/*.h"
   "${PROJECT_SOURCE_DIR}/src/*.inc")
 
-# Explicitly skip the bootstrapping and test headers.
-list(REMOVE_ITEM _local_hdrs
+# Exclude the bootstrapping that are directly used by tests.
+set(_exclude_hdrs
   "${protobuf_SOURCE_DIR}/src/google/protobuf/descriptor.pb.h"
   "${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h")
-set(_test_hdrs ${test_util_hdrs} ${lite_test_util_hdrs})
-foreach(_hdr ${_test_hdrs})
+
+# Exclude test library headers.
+list(APPEND _exclude_hdrs ${test_util_hdrs} ${lite_test_util_hdrs} ${common_test_hdrs}
+  ${compiler_test_utils_hdrs})
+foreach(_hdr ${_exclude_hdrs})
   list(REMOVE_ITEM _local_hdrs ${_hdr})
 endforeach()
 
