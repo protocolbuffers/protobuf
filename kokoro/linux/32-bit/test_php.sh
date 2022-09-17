@@ -41,10 +41,11 @@ pushd build
 cmake ..
 cmake --build . -- -j20
 ctest --verbose --parallel 20
-export PROTOC=$(pwd)/protoc
 popd
 
 # Cleanup after Bazel build
+mv build/protoc .
+export PROTOC=$(pwd)/protoc
 rm -rf build
 
 build_php 7.0
