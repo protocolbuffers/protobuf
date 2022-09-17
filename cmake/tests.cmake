@@ -188,6 +188,9 @@ foreach(_hdr ${_exclude_hdrs})
   list(REMOVE_ITEM _local_hdrs ${_hdr})
 endforeach()
 
+# Exclude generated proto headers
+list(FILTER _local_hdrs EXCLUDE REGEX ".*\.pb\.h$")
+
 foreach(_hdr ${_local_hdrs})
   string(REPLACE "${protobuf_SOURCE_DIR}/src" "" _file ${_hdr})
   set(_tmp_file "${CMAKE_BINARY_DIR}/tmp-install-test/${_file}")
