@@ -342,40 +342,43 @@ static const char* _upb_Decoder_ReadString(upb_Decoder* d, const char* ptr,
 }
 
 UPB_FORCEINLINE
+static const char* _upb_Decoder_RecurseSubMessage(upb_Decoder* d,
+                                                  const char* ptr,
+                                                  upb_Message* submsg,
+                                                  const upb_MiniTable* subl,
+                                                  uint32_t expected_end_group) {
+  if (--d->depth < 0) {
+    _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_MaxDepthExceeded);
+  }
+  ptr = _upb_Decoder_DecodeMessage(d, ptr, submsg, subl);
+  d->depth++;
+  if (d->end_group != expected_end_group) {
+    _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
+  }
+  return ptr;
+}
+
+UPB_FORCEINLINE
 static const char* _upb_Decoder_DecodeSubMessage(
     upb_Decoder* d, const char* ptr, upb_Message* submsg,
     const upb_MiniTable_Sub* subs, const upb_MiniTable_Field* field, int size) {
   int saved_delta = _upb_Decoder_PushLimit(d, ptr, size);
   const upb_MiniTable* subl = subs[field->submsg_index].submsg;
-  if (--d->depth < 0) {
-    _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_MaxDepthExceeded);
-  }
-  ptr = _upb_Decoder_DecodeMessage(d, ptr, submsg, subl);
-  if (d->end_group != DECODE_NOGROUP) {
-    _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
-  }
+  ptr = _upb_Decoder_RecurseSubMessage(d, ptr, submsg, subl, DECODE_NOGROUP);
   _upb_Decoder_PopLimit(d, ptr, saved_delta);
-  d->depth++;
   return ptr;
 }
 
 UPB_FORCEINLINE
-static const char* _upb_Decoder_DoDecodeGroup(upb_Decoder* d, const char* ptr,
-                                              upb_Message* submsg,
-                                              const upb_MiniTable* subl,
-                                              uint32_t number) {
-  if (--d->depth < 0) {
-    _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_MaxDepthExceeded);
-  }
+static const char* _upb_Decoder_DecodeGroup(upb_Decoder* d, const char* ptr,
+                                            upb_Message* submsg,
+                                            const upb_MiniTable* subl,
+                                            uint32_t number) {
   if (_upb_Decoder_IsDone(d, &ptr)) {
     _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
   }
-  ptr = _upb_Decoder_DecodeMessage(d, ptr, submsg, subl);
-  if (d->end_group != number) {
-    _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
-  }
+  ptr = _upb_Decoder_RecurseSubMessage(d, ptr, submsg, subl, number);
   d->end_group = DECODE_NOGROUP;
-  d->depth++;
   return ptr;
 }
 
@@ -383,7 +386,7 @@ UPB_FORCEINLINE
 static const char* _upb_Decoder_DecodeUnknownGroup(upb_Decoder* d,
                                                    const char* ptr,
                                                    uint32_t number) {
-  return _upb_Decoder_DoDecodeGroup(d, ptr, NULL, NULL, number);
+  return _upb_Decoder_DecodeGroup(d, ptr, NULL, NULL, number);
 }
 
 UPB_FORCEINLINE
@@ -391,7 +394,7 @@ static const char* _upb_Decoder_DecodeKnownGroup(
     upb_Decoder* d, const char* ptr, upb_Message* submsg,
     const upb_MiniTable_Sub* subs, const upb_MiniTable_Field* field) {
   const upb_MiniTable* subl = subs[field->submsg_index].submsg;
-  return _upb_Decoder_DoDecodeGroup(d, ptr, submsg, subl, field->number);
+  return _upb_Decoder_DecodeGroup(d, ptr, submsg, subl, field->number);
 }
 
 static char* upb_Decoder_EncodeVarint32(uint32_t val, char* ptr) {
