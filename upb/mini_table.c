@@ -754,7 +754,10 @@ static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
   while (ptr < d->end) {
     char ch = *ptr++;
     if (ch <= kUpb_EncodedValue_MaxField) {
-      if (!d->table && last_field) return --ptr;
+      if (!d->table && last_field) {
+        // For extensions, consume only a single field and then return.
+        return --ptr;
+      }
       upb_MiniTable_Field* field = fields;
       *field_count += 1;
       fields = (char*)fields + field_size;
@@ -1148,7 +1151,7 @@ const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
   uint16_t count = 0;
   const char* ret =
       upb_MtDecoder_Parse(&decoder, data, len, ext, sizeof(*ext), &count, NULL);
-  if (!ret) return NULL;
+  if (!ret || count != 1) return NULL;
 
   upb_MiniTable_Field* f = &ext->field;
 

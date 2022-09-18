@@ -570,4 +570,9 @@ TEST(MessageTest, MapField) {
 //       -696925610, -654590577);
 // }
 //
+// TEST(FuzzTest, ExtendMessageSetWithEmptyExtension) {
+//   DecodeEncodeArbitrarySchemaAndPayload({{"\n"}, {}, "_", {}}, std::string(), 0,
+//                                         0);
+// }
+//
 // end:google_only
