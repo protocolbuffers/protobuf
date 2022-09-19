@@ -30,9 +30,9 @@
 
 #import <Foundation/Foundation.h>
 
+#import "GPBExtensionRegistry.h"
+
 @class GPBMessage;
-@class GPBExtensionRegistry;
-@protocol GPBExtensionRegistry;
 
 NS_ASSUME_NONNULL_BEGIN
 

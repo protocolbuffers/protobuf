@@ -31,13 +31,12 @@
 #import <Foundation/Foundation.h>
 
 #import "GPBBootstrap.h"
+#import "GPBExtensionRegistry.h"
 
 @class GPBDescriptor;
 @class GPBCodedInputStream;
 @class GPBCodedOutputStream;
 @class GPBExtensionDescriptor;
-@class GPBExtensionRegistry;
-@protocol GPBExtensionRegistry;
 @class GPBFieldDescriptor;
 @class GPBUnknownFieldSet;
 
