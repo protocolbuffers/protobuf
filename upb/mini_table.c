@@ -892,7 +892,13 @@ size_t upb_MtDecoder_Place(upb_MtDecoder* d, upb_FieldRep rep) {
   size_t size = upb_MtDecoder_SizeOfRep(rep, d->platform);
   size_t align = upb_MtDecoder_AlignOfRep(rep, d->platform);
   size_t ret = UPB_ALIGN_UP(d->table->size, align);
-  d->table->size = ret + size;
+  static const size_t max = UINT16_MAX;
+  size_t new_size = ret + size;
+  if (new_size > max) {
+    upb_MtDecoder_ErrorFormat(
+        d, "Message size exceeded maximum size of %zu bytes", max);
+  }
+  d->table->size = new_size;
   return ret;
 }
 
