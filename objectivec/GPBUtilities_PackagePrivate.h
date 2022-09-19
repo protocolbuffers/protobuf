@@ -209,67 +209,58 @@ GPBGetHasIvarField(GPBMessage *self, GPBFieldDescriptor *field) {
 
 #pragma clang diagnostic pop
 
+// Disable clang-format for the macros.
+// clang-format off
+
 //%PDDM-DEFINE GPB_IVAR_SET_DECL(NAME, TYPE)
 //%void GPBSet##NAME##IvarWithFieldPrivate(GPBMessage *self,
 //%            NAME$S                    GPBFieldDescriptor *field,
 //%            NAME$S                    TYPE value);
 //%PDDM-EXPAND GPB_IVAR_SET_DECL(Bool, BOOL)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 void GPBSetBoolIvarWithFieldPrivate(GPBMessage *self,
                                     GPBFieldDescriptor *field,
                                     BOOL value);
-// clang-format on
 //%PDDM-EXPAND GPB_IVAR_SET_DECL(Int32, int32_t)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 void GPBSetInt32IvarWithFieldPrivate(GPBMessage *self,
                                      GPBFieldDescriptor *field,
                                      int32_t value);
-// clang-format on
 //%PDDM-EXPAND GPB_IVAR_SET_DECL(UInt32, uint32_t)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 void GPBSetUInt32IvarWithFieldPrivate(GPBMessage *self,
                                       GPBFieldDescriptor *field,
                                       uint32_t value);
-// clang-format on
 //%PDDM-EXPAND GPB_IVAR_SET_DECL(Int64, int64_t)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 void GPBSetInt64IvarWithFieldPrivate(GPBMessage *self,
                                      GPBFieldDescriptor *field,
                                      int64_t value);
-// clang-format on
 //%PDDM-EXPAND GPB_IVAR_SET_DECL(UInt64, uint64_t)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 void GPBSetUInt64IvarWithFieldPrivate(GPBMessage *self,
                                       GPBFieldDescriptor *field,
                                       uint64_t value);
-// clang-format on
 //%PDDM-EXPAND GPB_IVAR_SET_DECL(Float, float)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 void GPBSetFloatIvarWithFieldPrivate(GPBMessage *self,
                                      GPBFieldDescriptor *field,
                                      float value);
-// clang-format on
 //%PDDM-EXPAND GPB_IVAR_SET_DECL(Double, double)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 void GPBSetDoubleIvarWithFieldPrivate(GPBMessage *self,
                                       GPBFieldDescriptor *field,
                                       double value);
-// clang-format on
 //%PDDM-EXPAND-END (7 expansions)
+
+// clang-format on
 
 void GPBSetEnumIvarWithFieldPrivate(GPBMessage *self,
                                     GPBFieldDescriptor *field,

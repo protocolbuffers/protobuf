@@ -371,6 +371,8 @@ static void GPBMaybeClearOneofPrivate(GPBMessage *self,
 
 #pragma mark - IVar accessors
 
+// clang-format off
+
 //%PDDM-DEFINE IVAR_POD_ACCESSORS_DEFN(NAME, TYPE)
 //%TYPE GPBGetMessage##NAME##Field(GPBMessage *self,
 //% TYPE$S            NAME$S       GPBFieldDescriptor *field) {
@@ -500,6 +502,8 @@ static void GPBMaybeClearOneofPrivate(GPBMessage *self,
 //%  GPBSetCopyObjectIvarWithField(self, field, (id)value);
 //%}
 //%
+
+// clang-format on
 
 // Object types are handled slightly differently, they need to be released
 // and retained.
@@ -804,9 +808,10 @@ void GPBSetBoolIvarWithFieldPrivate(GPBMessage *self,
   GPBBecomeVisibleToAutocreator(self);
 }
 
+// clang-format off
+
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(Int32, int32_t)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 int32_t GPBGetMessageInt32Field(GPBMessage *self,
                                 GPBFieldDescriptor *field) {
@@ -876,10 +881,8 @@ void GPBSetInt32IvarWithFieldPrivate(GPBMessage *self,
   GPBBecomeVisibleToAutocreator(self);
 }
 
-// clang-format on
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(UInt32, uint32_t)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 uint32_t GPBGetMessageUInt32Field(GPBMessage *self,
                                   GPBFieldDescriptor *field) {
@@ -949,10 +952,8 @@ void GPBSetUInt32IvarWithFieldPrivate(GPBMessage *self,
   GPBBecomeVisibleToAutocreator(self);
 }
 
-// clang-format on
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(Int64, int64_t)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 int64_t GPBGetMessageInt64Field(GPBMessage *self,
                                 GPBFieldDescriptor *field) {
@@ -1022,10 +1023,8 @@ void GPBSetInt64IvarWithFieldPrivate(GPBMessage *self,
   GPBBecomeVisibleToAutocreator(self);
 }
 
-// clang-format on
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(UInt64, uint64_t)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 uint64_t GPBGetMessageUInt64Field(GPBMessage *self,
                                   GPBFieldDescriptor *field) {
@@ -1095,10 +1094,8 @@ void GPBSetUInt64IvarWithFieldPrivate(GPBMessage *self,
   GPBBecomeVisibleToAutocreator(self);
 }
 
-// clang-format on
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(Float, float)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 float GPBGetMessageFloatField(GPBMessage *self,
                               GPBFieldDescriptor *field) {
@@ -1168,10 +1165,8 @@ void GPBSetFloatIvarWithFieldPrivate(GPBMessage *self,
   GPBBecomeVisibleToAutocreator(self);
 }
 
-// clang-format on
 //%PDDM-EXPAND IVAR_POD_ACCESSORS_DEFN(Double, double)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 double GPBGetMessageDoubleField(GPBMessage *self,
                                 GPBFieldDescriptor *field) {
@@ -1241,14 +1236,12 @@ void GPBSetDoubleIvarWithFieldPrivate(GPBMessage *self,
   GPBBecomeVisibleToAutocreator(self);
 }
 
-// clang-format on
 //%PDDM-EXPAND-END (6 expansions)
 
 // Aliases are function calls that are virtually the same.
 
 //%PDDM-EXPAND IVAR_ALIAS_DEFN_COPY_OBJECT(String, NSString)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 // Only exists for public api, no core code should use this.
 NSString *GPBGetMessageStringField(GPBMessage *self,
@@ -1279,10 +1272,8 @@ void GPBSetMessageStringField(GPBMessage *self,
   GPBSetCopyObjectIvarWithField(self, field, (id)value);
 }
 
-// clang-format on
 //%PDDM-EXPAND IVAR_ALIAS_DEFN_COPY_OBJECT(Bytes, NSData)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 // Only exists for public api, no core code should use this.
 NSData *GPBGetMessageBytesField(GPBMessage *self,
@@ -1313,10 +1304,8 @@ void GPBSetMessageBytesField(GPBMessage *self,
   GPBSetCopyObjectIvarWithField(self, field, (id)value);
 }
 
-// clang-format on
 //%PDDM-EXPAND IVAR_ALIAS_DEFN_OBJECT(Message, GPBMessage)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 // Only exists for public api, no core code should use this.
 GPBMessage *GPBGetMessageMessageField(GPBMessage *self,
@@ -1347,10 +1336,8 @@ void GPBSetMessageMessageField(GPBMessage *self,
   GPBSetObjectIvarWithField(self, field, (id)value);
 }
 
-// clang-format on
 //%PDDM-EXPAND IVAR_ALIAS_DEFN_OBJECT(Group, GPBMessage)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 // Only exists for public api, no core code should use this.
 GPBMessage *GPBGetMessageGroupField(GPBMessage *self,
@@ -1381,8 +1368,9 @@ void GPBSetMessageGroupField(GPBMessage *self,
   GPBSetObjectIvarWithField(self, field, (id)value);
 }
 
-// clang-format on
 //%PDDM-EXPAND-END (4 expansions)
+
+// clang-format on
 
 // GPBGetMessageRepeatedField is defined in GPBMessage.m
 
@@ -2050,12 +2038,12 @@ NSString *GPBTextFormatForUnknownFieldSet(GPBUnknownFieldSet *unknownSet,
       enumerateValuesWithBlock:^(CTYPE value, NSUInteger idx, BOOL * stop) {  \
     _Pragma("unused(idx, stop)");                                             \
     [result                                                                   \
-        appendFormat:@"%@%d: " #FORMAT "\n", lineIndent, fieldNumber, value]; \
+        appendFormat:@"%@%d: " FORMAT "\n", lineIndent, fieldNumber, value]; \
       }];
 
-    PRINT_LOOP(varintList, uint64_t, %llu);
-    PRINT_LOOP(fixed32List, uint32_t, 0x%X);
-    PRINT_LOOP(fixed64List, uint64_t, 0x%llX);
+    PRINT_LOOP(varintList, uint64_t, "%llu");
+    PRINT_LOOP(fixed32List, uint32_t, "0x%X");
+    PRINT_LOOP(fixed64List, uint64_t, "0x%llX");
 
 #undef PRINT_LOOP
 

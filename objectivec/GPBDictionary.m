@@ -73,6 +73,9 @@ static BOOL DictDefault_IsValidValue(int32_t value) {
   return (value != kGPBUnrecognizedEnumeratorValue);
 }
 
+// Disable clang-format for the macros.
+// clang-format off
+
 //%PDDM-DEFINE SERIALIZE_SUPPORT_2_TYPE(VALUE_NAME, VALUE_TYPE, GPBDATATYPE_NAME1, GPBDATATYPE_NAME2)
 //%static size_t ComputeDict##VALUE_NAME##FieldSize(VALUE_TYPE value, uint32_t fieldNum, GPBDataType dataType) {
 //%  if (dataType == GPBDataType##GPBDATATYPE_NAME1) {
@@ -147,7 +150,6 @@ static BOOL DictDefault_IsValidValue(int32_t value) {
 //%SERIALIZE_SUPPORT_3_TYPE(Object, id, Message, String, Bytes)
 //%PDDM-EXPAND SERIALIZE_SUPPORT_HELPERS()
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 static size_t ComputeDictInt32FieldSize(int32_t value, uint32_t fieldNum, GPBDataType dataType) {
   if (dataType == GPBDataTypeInt32) {
@@ -326,8 +328,9 @@ static void WriteDictObjectField(GPBCodedOutputStream *stream, id value, uint32_
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND-END SERIALIZE_SUPPORT_HELPERS()
+
+// clang-format on
 
 size_t GPBDictionaryComputeSizeInternalHelper(NSDictionary *dict, GPBFieldDescriptor *field) {
   GPBDataType mapValueType = GPBGetFieldDataType(field);
@@ -569,6 +572,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 //
 // Macros for the common basic cases.
 //
+
+// Disable clang-format for the macros.
+// clang-format off
 
 //%PDDM-DEFINE DICTIONARY_IMPL_FOR_POD_KEY(KEY_NAME, KEY_TYPE)
 //%DICTIONARY_POD_IMPL_FOR_KEY(KEY_NAME, KEY_TYPE, , POD)
@@ -1429,7 +1435,6 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 //%PDDM-EXPAND DICTIONARY_IMPL_FOR_POD_KEY(UInt32, uint32_t)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - UInt32 -> UInt32
 
@@ -3176,10 +3181,8 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND DICTIONARY_IMPL_FOR_POD_KEY(Int32, int32_t)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Int32 -> UInt32
 
@@ -4926,10 +4929,8 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND DICTIONARY_IMPL_FOR_POD_KEY(UInt64, uint64_t)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - UInt64 -> UInt32
 
@@ -6676,10 +6677,8 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND DICTIONARY_IMPL_FOR_POD_KEY(Int64, int64_t)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Int64 -> UInt32
 
@@ -8426,10 +8425,8 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND DICTIONARY_POD_IMPL_FOR_KEY(String, NSString, *, OBJECT)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - String -> UInt32
 
@@ -10032,13 +10029,11 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND-END (5 expansions)
 
 
 //%PDDM-EXPAND DICTIONARY_BOOL_KEY_TO_POD_IMPL(UInt32, uint32_t)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Bool -> UInt32
 
@@ -10246,10 +10241,8 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND DICTIONARY_BOOL_KEY_TO_POD_IMPL(Int32, int32_t)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Bool -> Int32
 
@@ -10457,10 +10450,8 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND DICTIONARY_BOOL_KEY_TO_POD_IMPL(UInt64, uint64_t)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Bool -> UInt64
 
@@ -10668,10 +10659,8 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND DICTIONARY_BOOL_KEY_TO_POD_IMPL(Int64, int64_t)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Bool -> Int64
 
@@ -10879,10 +10868,8 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND DICTIONARY_BOOL_KEY_TO_POD_IMPL(Bool, BOOL)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Bool -> Bool
 
@@ -11090,10 +11077,8 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND DICTIONARY_BOOL_KEY_TO_POD_IMPL(Float, float)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Bool -> Float
 
@@ -11301,10 +11286,8 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND DICTIONARY_BOOL_KEY_TO_POD_IMPL(Double, double)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Bool -> Double
 
@@ -11512,10 +11495,8 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND DICTIONARY_BOOL_KEY_TO_OBJECT_IMPL(Object, id)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Bool -> Object
 
@@ -11744,8 +11725,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND-END (8 expansions)
+
+// clang-format on
 
 #pragma mark - Bool -> Enum
 
@@ -11916,9 +11898,10 @@ void GPBDictionaryReadEntry(id mapDictionary,
   }
 }
 
+// clang-format off
+
 //%PDDM-EXPAND SERIAL_DATA_FOR_ENTRY_POD_Enum(Bool)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (NSData *)serializedDataForUnknownValue:(int32_t)value
                                    forKey:(GPBGenericValue *)key
@@ -11933,8 +11916,9 @@ void GPBDictionaryReadEntry(id mapDictionary,
   return data;
 }
 
-// clang-format on
 //%PDDM-EXPAND-END SERIAL_DATA_FOR_ENTRY_POD_Enum(Bool)
+
+// clang-format on
 
 - (size_t)computeSerializedSizeAsField:(GPBFieldDescriptor *)field {
   GPBDataType valueDataType = GPBGetFieldDataType(field);

@@ -62,6 +62,7 @@
 
 - (void)testGPBDecodeTextFormatName {
   uint8_t decodeData[] = {
+    // clang-format off
     0x6,
     // An inlined string (first to make sure the leading null is handled
     // correctly, and with a key of zero to check that).
@@ -80,6 +81,7 @@
     //   underscore, lower + 30 (01 op), as is + 30 (00 op), as is + 13 (00 op),
     //   underscore, as is + 3 (00 op)
     0xE8, 0x07, 0x04, 0xA5, 0xA4, 0xA2, 0xBF, 0x1F, 0x0E, 0x84, 0x0,
+    // clang-format on
   };
   NSString *inputStr = @"abcdefghIJ";
 
@@ -104,10 +106,12 @@
   // An inlined string (and key of zero).
   XCTAssertEqualObjects(GPBDecodeTextFormatName(decodeData, 0, inputStr), @"zbcdefghIJ");
 
+  // clang-format off
   // Long name so multiple decode ops are needed.
   inputStr = @"longFieldNameIsLooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong1000";
   XCTAssertEqualObjects(GPBDecodeTextFormatName(decodeData, 1000, inputStr),
                         @"long_field_name_is_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong_1000");
+  // clang-format on
 }
 
 - (void)testTextFormat {
@@ -141,12 +145,14 @@
   message.subEnum = self_autorelease_RetainCount;
   message.new_p.copy_p = @"foo";
 
+  // clang-format off
   NSString *expected = @"_cmd: true\n"
                        @"isProxy: true\n"
                        @"SubEnum: retainCount\n"
                        @"New {\n"
                        @"  copy: \"foo\"\n"
                        @"}\n";
+  // clang-format on
   NSString *result = GPBTextFormatForMessage(message, nil);
   XCTAssertEqualObjects(expected, result);
 }

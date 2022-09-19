@@ -43,9 +43,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+// Disable clang-format for the macros.
+// clang-format off
+
 //%PDDM-EXPAND DECLARE_DICTIONARIES()
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - UInt32 -> UInt32
 
@@ -5479,7 +5481,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND-END DECLARE_DICTIONARIES()
 
 NS_ASSUME_NONNULL_END
@@ -5770,3 +5771,5 @@ NS_ASSUME_NONNULL_END
 //% **/
 //%- (void)setRawValue:(VALUE_TYPE)rawValue forKey:(KEY_TYPE##KisP$S##KisP)key;
 //%
+
+// clang-format on

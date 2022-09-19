@@ -337,6 +337,9 @@
   // being true.
   //
 
+// Disable clang-format for the macros.
+// clang-format off
+
 //%PDDM-DEFINE PROTO2_TEST_HAS_FIELD(FIELD, NON_ZERO_VALUE, ZERO_VALUE)
 //%  {  // optional##FIELD :: NON_ZERO_VALUE
 //%    Message2 *msg = [[Message2 alloc] init];
@@ -399,7 +402,6 @@
 //%PROTO2_TEST_CLEAR_FIELD_WITH_NIL(Message, [Message2 message])
 //%PDDM-EXPAND PROTO2_TEST_HAS_FIELDS()
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   {  // optionalInt32 :: 1
     Message2 *msg = [[Message2 alloc] init];
@@ -753,8 +755,9 @@
     [msg release];
   }
 
-// clang-format on
 //%PDDM-EXPAND-END PROTO2_TEST_HAS_FIELDS()
+
+// clang-format on
 }
 
 - (void)testProto3SingleFieldHasBehavior {
@@ -762,6 +765,9 @@
   // Setting to any value but the default value (0) should result has*
   // being true.  When set to the default, shouldn't be true.
   //
+
+// Disable clang-format for the macros.
+// clang-format off
 
 //%PDDM-DEFINE PROTO3_TEST_HAS_FIELD(FIELD, NON_ZERO_VALUE, ZERO_VALUE)
 //%  {  // optional##FIELD
@@ -815,7 +821,6 @@
 //%PROTO3_TEST_CLEAR_FIELD_WITH_NIL(Message, [Message3 message])
 //%PDDM-EXPAND PROTO3_TEST_HAS_FIELDS()
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   {  // optionalInt32
     Message3 *msg = [[Message3 alloc] init];
@@ -1015,14 +1020,18 @@
     [msg release];
   }
 
-// clang-format on
 //%PDDM-EXPAND-END PROTO3_TEST_HAS_FIELDS()
+
+// clang-format on
 }
 
 - (void)testProto3SingleOptionalFieldHasBehavior {
   //
   // Setting to any value including the default (0) should result in true.
   //
+
+// Disable clang-format for the macros.
+// clang-format off
 
 //%PDDM-DEFINE PROTO3_TEST_OPTIONAL_HAS_FIELD(FIELD, NON_ZERO_VALUE, ZERO_VALUE)
 //%  {  // optional##FIELD
@@ -1060,7 +1069,6 @@
 //%PROTO3_TEST_OPTIONAL_HAS_FIELD(Enum, Message3Optional_Enum_Bar, Message3Optional_Enum_Foo)
 //%PDDM-EXPAND PROTO3_TEST_OPTIONAL_HAS_FIELDS()
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   {  // optionalInt32
     Message3Optional *msg = [[Message3Optional alloc] init];
@@ -1258,8 +1266,9 @@
     [msg release];
   }
 
-// clang-format on
 //%PDDM-EXPAND-END PROTO3_TEST_OPTIONAL_HAS_FIELDS()
+
+// clang-format on
 }
 
 - (void)testAccessingProto2UnknownEnumValues {

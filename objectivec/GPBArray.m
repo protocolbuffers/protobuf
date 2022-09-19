@@ -47,6 +47,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   return (value != kGPBUnrecognizedEnumeratorValue);
 }
 
+// Disable clang-format for the macros.
+// clang-format off
+
 //%PDDM-DEFINE VALIDATE_RANGE(INDEX, COUNT)
 //%  if (INDEX >= COUNT) {
 //%    [NSException raise:NSRangeException
@@ -194,12 +197,12 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 //%  return result;
 //%}
 //%
-//%- (void)enumerate##ACCESSOR_NAME##ValuesWithBlock:(void (NS_NOESCAPE ^)(TYPE value, NSUInteger idx, BOOL *stop))block {
+//%- (void)enumerate##ACCESSOR_NAME##ValuesWithBlock:(void(NS_NOESCAPE ^)(TYPE value, NSUInteger idx, BOOL *stop))block {
 //%  [self enumerate##ACCESSOR_NAME##ValuesWithOptions:(NSEnumerationOptions)0 usingBlock:block];
 //%}
 //%
 //%- (void)enumerate##ACCESSOR_NAME##ValuesWithOptions:(NSEnumerationOptions)opts
-//%                  ACCESSOR_NAME$S      usingBlock:(void (NS_NOESCAPE ^)(TYPE value, NSUInteger idx, BOOL *stop))block {
+//%                  ACCESSOR_NAME$S      usingBlock:(void(NS_NOESCAPE ^)(TYPE value, NSUInteger idx, BOOL *stop))block {
 //%  // NSEnumerationConcurrent isn't currently supported (and Apple's docs say that is ok).
 //%  BOOL stop = NO;
 //%  if ((opts & NSEnumerationReverse) == 0) {
@@ -292,10 +295,8 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 //%  _values[idx2] = temp;
 //%}
 //%
-
 //%PDDM-EXPAND ARRAY_INTERFACE_SIMPLE(Int32, int32_t, %d)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Int32
 
@@ -406,12 +407,12 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   return result;
 }
 
-- (void)enumerateValuesWithBlock:(void (NS_NOESCAPE ^)(int32_t value, NSUInteger idx, BOOL *stop))block {
+- (void)enumerateValuesWithBlock:(void(NS_NOESCAPE ^)(int32_t value, NSUInteger idx, BOOL *stop))block {
   [self enumerateValuesWithOptions:(NSEnumerationOptions)0 usingBlock:block];
 }
 
 - (void)enumerateValuesWithOptions:(NSEnumerationOptions)opts
-                        usingBlock:(void (NS_NOESCAPE ^)(int32_t value, NSUInteger idx, BOOL *stop))block {
+                        usingBlock:(void(NS_NOESCAPE ^)(int32_t value, NSUInteger idx, BOOL *stop))block {
   // NSEnumerationConcurrent isn't currently supported (and Apple's docs say that is ok).
   BOOL stop = NO;
   if ((opts & NSEnumerationReverse) == 0) {
@@ -542,10 +543,8 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND ARRAY_INTERFACE_SIMPLE(UInt32, uint32_t, %u)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - UInt32
 
@@ -656,12 +655,12 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   return result;
 }
 
-- (void)enumerateValuesWithBlock:(void (NS_NOESCAPE ^)(uint32_t value, NSUInteger idx, BOOL *stop))block {
+- (void)enumerateValuesWithBlock:(void(NS_NOESCAPE ^)(uint32_t value, NSUInteger idx, BOOL *stop))block {
   [self enumerateValuesWithOptions:(NSEnumerationOptions)0 usingBlock:block];
 }
 
 - (void)enumerateValuesWithOptions:(NSEnumerationOptions)opts
-                        usingBlock:(void (NS_NOESCAPE ^)(uint32_t value, NSUInteger idx, BOOL *stop))block {
+                        usingBlock:(void(NS_NOESCAPE ^)(uint32_t value, NSUInteger idx, BOOL *stop))block {
   // NSEnumerationConcurrent isn't currently supported (and Apple's docs say that is ok).
   BOOL stop = NO;
   if ((opts & NSEnumerationReverse) == 0) {
@@ -792,10 +791,8 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND ARRAY_INTERFACE_SIMPLE(Int64, int64_t, %lld)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Int64
 
@@ -906,12 +903,12 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   return result;
 }
 
-- (void)enumerateValuesWithBlock:(void (NS_NOESCAPE ^)(int64_t value, NSUInteger idx, BOOL *stop))block {
+- (void)enumerateValuesWithBlock:(void(NS_NOESCAPE ^)(int64_t value, NSUInteger idx, BOOL *stop))block {
   [self enumerateValuesWithOptions:(NSEnumerationOptions)0 usingBlock:block];
 }
 
 - (void)enumerateValuesWithOptions:(NSEnumerationOptions)opts
-                        usingBlock:(void (NS_NOESCAPE ^)(int64_t value, NSUInteger idx, BOOL *stop))block {
+                        usingBlock:(void(NS_NOESCAPE ^)(int64_t value, NSUInteger idx, BOOL *stop))block {
   // NSEnumerationConcurrent isn't currently supported (and Apple's docs say that is ok).
   BOOL stop = NO;
   if ((opts & NSEnumerationReverse) == 0) {
@@ -1042,10 +1039,8 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND ARRAY_INTERFACE_SIMPLE(UInt64, uint64_t, %llu)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - UInt64
 
@@ -1156,12 +1151,12 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   return result;
 }
 
-- (void)enumerateValuesWithBlock:(void (NS_NOESCAPE ^)(uint64_t value, NSUInteger idx, BOOL *stop))block {
+- (void)enumerateValuesWithBlock:(void(NS_NOESCAPE ^)(uint64_t value, NSUInteger idx, BOOL *stop))block {
   [self enumerateValuesWithOptions:(NSEnumerationOptions)0 usingBlock:block];
 }
 
 - (void)enumerateValuesWithOptions:(NSEnumerationOptions)opts
-                        usingBlock:(void (NS_NOESCAPE ^)(uint64_t value, NSUInteger idx, BOOL *stop))block {
+                        usingBlock:(void(NS_NOESCAPE ^)(uint64_t value, NSUInteger idx, BOOL *stop))block {
   // NSEnumerationConcurrent isn't currently supported (and Apple's docs say that is ok).
   BOOL stop = NO;
   if ((opts & NSEnumerationReverse) == 0) {
@@ -1292,10 +1287,8 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND ARRAY_INTERFACE_SIMPLE(Float, float, %f)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Float
 
@@ -1406,12 +1399,12 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   return result;
 }
 
-- (void)enumerateValuesWithBlock:(void (NS_NOESCAPE ^)(float value, NSUInteger idx, BOOL *stop))block {
+- (void)enumerateValuesWithBlock:(void(NS_NOESCAPE ^)(float value, NSUInteger idx, BOOL *stop))block {
   [self enumerateValuesWithOptions:(NSEnumerationOptions)0 usingBlock:block];
 }
 
 - (void)enumerateValuesWithOptions:(NSEnumerationOptions)opts
-                        usingBlock:(void (NS_NOESCAPE ^)(float value, NSUInteger idx, BOOL *stop))block {
+                        usingBlock:(void(NS_NOESCAPE ^)(float value, NSUInteger idx, BOOL *stop))block {
   // NSEnumerationConcurrent isn't currently supported (and Apple's docs say that is ok).
   BOOL stop = NO;
   if ((opts & NSEnumerationReverse) == 0) {
@@ -1542,10 +1535,8 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND ARRAY_INTERFACE_SIMPLE(Double, double, %lf)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Double
 
@@ -1656,12 +1647,12 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   return result;
 }
 
-- (void)enumerateValuesWithBlock:(void (NS_NOESCAPE ^)(double value, NSUInteger idx, BOOL *stop))block {
+- (void)enumerateValuesWithBlock:(void(NS_NOESCAPE ^)(double value, NSUInteger idx, BOOL *stop))block {
   [self enumerateValuesWithOptions:(NSEnumerationOptions)0 usingBlock:block];
 }
 
 - (void)enumerateValuesWithOptions:(NSEnumerationOptions)opts
-                        usingBlock:(void (NS_NOESCAPE ^)(double value, NSUInteger idx, BOOL *stop))block {
+                        usingBlock:(void(NS_NOESCAPE ^)(double value, NSUInteger idx, BOOL *stop))block {
   // NSEnumerationConcurrent isn't currently supported (and Apple's docs say that is ok).
   BOOL stop = NO;
   if ((opts & NSEnumerationReverse) == 0) {
@@ -1792,10 +1783,8 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND ARRAY_INTERFACE_SIMPLE(Bool, BOOL, %d)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Bool
 
@@ -1906,12 +1895,12 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   return result;
 }
 
-- (void)enumerateValuesWithBlock:(void (NS_NOESCAPE ^)(BOOL value, NSUInteger idx, BOOL *stop))block {
+- (void)enumerateValuesWithBlock:(void(NS_NOESCAPE ^)(BOOL value, NSUInteger idx, BOOL *stop))block {
   [self enumerateValuesWithOptions:(NSEnumerationOptions)0 usingBlock:block];
 }
 
 - (void)enumerateValuesWithOptions:(NSEnumerationOptions)opts
-                        usingBlock:(void (NS_NOESCAPE ^)(BOOL value, NSUInteger idx, BOOL *stop))block {
+                        usingBlock:(void(NS_NOESCAPE ^)(BOOL value, NSUInteger idx, BOOL *stop))block {
   // NSEnumerationConcurrent isn't currently supported (and Apple's docs say that is ok).
   BOOL stop = NO;
   if ((opts & NSEnumerationReverse) == 0) {
@@ -2042,8 +2031,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND-END (7 expansions)
+
+// clang-format on
 
 #pragma mark - Enum
 
@@ -2138,9 +2128,11 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
                                   count:_count];
 }
 
+// Disable clang-format for the macros.
+// clang-format off
+
 //%PDDM-EXPAND ARRAY_IMMUTABLE_CORE(Enum, int32_t, Raw, %d)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)dealloc {
   NSAssert(!_autocreator,
@@ -2180,12 +2172,12 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   return result;
 }
 
-- (void)enumerateRawValuesWithBlock:(void (NS_NOESCAPE ^)(int32_t value, NSUInteger idx, BOOL *stop))block {
+- (void)enumerateRawValuesWithBlock:(void(NS_NOESCAPE ^)(int32_t value, NSUInteger idx, BOOL *stop))block {
   [self enumerateRawValuesWithOptions:(NSEnumerationOptions)0 usingBlock:block];
 }
 
 - (void)enumerateRawValuesWithOptions:(NSEnumerationOptions)opts
-                           usingBlock:(void (NS_NOESCAPE ^)(int32_t value, NSUInteger idx, BOOL *stop))block {
+                           usingBlock:(void(NS_NOESCAPE ^)(int32_t value, NSUInteger idx, BOOL *stop))block {
   // NSEnumerationConcurrent isn't currently supported (and Apple's docs say that is ok).
   BOOL stop = NO;
   if ((opts & NSEnumerationReverse) == 0) {
@@ -2200,21 +2192,22 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
     }
   }
 }
-// clang-format on
 //%PDDM-EXPAND-END ARRAY_IMMUTABLE_CORE(Enum, int32_t, Raw, %d)
 
+// clang-format on
+
 - (int32_t)valueAtIndex:(NSUInteger)index {
+// clang-format off
 //%PDDM-EXPAND VALIDATE_RANGE(index, _count)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   if (index >= _count) {
     [NSException raise:NSRangeException
                 format:@"Index (%lu) beyond bounds (%lu)",
                        (unsigned long)index, (unsigned long)_count];
   }
-// clang-format on
 //%PDDM-EXPAND-END VALIDATE_RANGE(index, _count)
+// clang-format on
   int32_t result = _values[index];
   if (!_validationFunc(result)) {
     result = kGPBUnrecognizedEnumeratorValue;
@@ -2223,17 +2216,17 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (int32_t)rawValueAtIndex:(NSUInteger)index {
+// clang-format off
 //%PDDM-EXPAND VALIDATE_RANGE(index, _count)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   if (index >= _count) {
     [NSException raise:NSRangeException
                 format:@"Index (%lu) beyond bounds (%lu)",
                        (unsigned long)index, (unsigned long)_count];
   }
-// clang-format on
 //%PDDM-EXPAND-END VALIDATE_RANGE(index, _count)
+// clang-format on
   return _values[index];
 }
 
@@ -2271,9 +2264,10 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   }
 }
 
+// clang-format off
+
 //%PDDM-EXPAND ARRAY_MUTABLE_CORE(Enum, int32_t, Raw, %d)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)internalResizeToCapacity:(NSUInteger)newCapacity {
   _values = reallocf(_values, newCapacity * sizeof(int32_t));
@@ -2379,10 +2373,8 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   _values[idx2] = temp;
 }
 
-// clang-format on
 //%PDDM-EXPAND MUTATION_METHODS(Enum, int32_t, , EnumValidationList, EnumValidationOne)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)addValue:(int32_t)value {
   [self addValues:&value count:1];
@@ -2449,7 +2441,6 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   }
   _values[index] = value;
 }
-// clang-format on
 //%PDDM-EXPAND-END (2 expansions)
 
 //%PDDM-DEFINE MUTATION_HOOK_EnumValidationList()
@@ -2469,6 +2460,8 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 //%                       [self class], value];
 //%  }
 //%
+
+// clang-format on
 
 @end
 
@@ -2556,17 +2549,17 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state
-                                  objects:(id __unsafe_unretained [])buffer
+                                  objects:(id __unsafe_unretained[])buffer
                                     count:(NSUInteger)len {
   return [_array countByEnumeratingWithState:state objects:buffer count:len];
 }
 
-- (void)enumerateObjectsUsingBlock:(void (NS_NOESCAPE ^)(id obj, NSUInteger idx, BOOL *stop))block {
+- (void)enumerateObjectsUsingBlock:(void(NS_NOESCAPE ^)(id obj, NSUInteger idx, BOOL *stop))block {
   [_array enumerateObjectsUsingBlock:block];
 }
 
 - (void)enumerateObjectsWithOptions:(NSEnumerationOptions)opts
-                         usingBlock:(void (NS_NOESCAPE ^)(id obj, NSUInteger idx, BOOL *stop))block {
+                         usingBlock:(void(NS_NOESCAPE ^)(id obj, NSUInteger idx, BOOL *stop))block {
   [_array enumerateObjectsWithOptions:opts usingBlock:block];
 }
 

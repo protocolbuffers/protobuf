@@ -87,6 +87,9 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 
 #pragma mark - PDDM Macros
 
+// Disable clang-format for the macros.
+// clang-format off
+
 //%PDDM-DEFINE ARRAY_TESTS(NAME, TYPE, VAL1, VAL2, VAL3, VAL4)
 //%ARRAY_TESTS2(NAME, TYPE, VAL1, VAL2, VAL3, VAL4, )
 //%PDDM-DEFINE ARRAY_TESTS2(NAME, TYPE, VAL1, VAL2, VAL3, VAL4, HELPER)
@@ -433,7 +436,6 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 //%
 //%PDDM-EXPAND ARRAY_TESTS(Int32, int32_t, 1, 2, 3, 4)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Int32
 
@@ -776,10 +778,8 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND ARRAY_TESTS(UInt32, uint32_t, 11U, 12U, 13U, 14U)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - UInt32
 
@@ -1122,10 +1122,8 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND ARRAY_TESTS(Int64, int64_t, 31LL, 32LL, 33LL, 34LL)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Int64
 
@@ -1468,10 +1466,8 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND ARRAY_TESTS(UInt64, uint64_t, 41ULL, 42ULL, 43ULL, 44ULL)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - UInt64
 
@@ -1814,10 +1810,8 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND ARRAY_TESTS(Float, float, 51.f, 52.f, 53.f, 54.f)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Float
 
@@ -2160,10 +2154,8 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND ARRAY_TESTS(Double, double, 61., 62., 63., 64.)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Double
 
@@ -2506,10 +2498,8 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND ARRAY_TESTS(Bool, BOOL, TRUE, TRUE, FALSE, FALSE)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Bool
 
@@ -2852,10 +2842,8 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND ARRAY_TESTS2(Enum, int32_t, 71, 72, 73, 74, Raw)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 #pragma mark - Enum
 
@@ -3198,8 +3186,9 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND-END (8 expansions)
+
+// clang-format on
 
 #pragma mark - Non macro-based Enum tests
 

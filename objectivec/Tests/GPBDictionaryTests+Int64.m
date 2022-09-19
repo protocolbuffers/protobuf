@@ -36,13 +36,15 @@
 #import "GPBTestUtilities.h"
 #import "objectivec/Tests/UnittestRuntimeProto2.pbobjc.h"
 
+// Disable clang-format for the macros.
+// clang-format off
+
 // Pull in the macros (using an external file because expanding all tests
 // in a single file makes a file that is failing to work with within Xcode.
 //%PDDM-IMPORT-DEFINES GPBDictionaryTests.pddm
 
 //%PDDM-EXPAND TEST_FOR_POD_KEY(Int64, int64_t, 21LL, 22LL, 23LL, 24LL)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 // To let the testing macros work, add some extra methods to simplify things.
 @interface GPBInt64EnumDictionary (TestingTweak)
@@ -3673,6 +3675,5 @@ static BOOL TestingEnum_IsValidValue(int32_t value) {
 
 @end
 
-// clang-format on
 //%PDDM-EXPAND-END TEST_FOR_POD_KEY(Int64, int64_t, 21LL, 22LL, 23LL, 24LL)
 
