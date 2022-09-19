@@ -81,7 +81,7 @@ def _generate_output_file(ctx, src, extension):
     package = ctx.label.package
     if not _is_google3:
         strip_import_prefix = ctx.rule.attr.strip_import_prefix
-        if strip_import_prefix:
+        if strip_import_prefix and strip_import_prefix != "/":
             if not package.startswith(strip_import_prefix[1:]):
                 fail("%s does not begin with prefix %s" % (package, strip_import_prefix))
             package = package[len(strip_import_prefix):]
