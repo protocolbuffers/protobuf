@@ -62,15 +62,15 @@ typedef struct MessageLackingClazz_storage_ {
   static GPBDescriptor *descriptor = nil;
   if (!descriptor) {
     static GPBMessageFieldDescription fields[] = {
-      {
-        .name = "foo",
-        .dataTypeSpecific.className = "NSString",
-        .number = 1,
-        .hasIndex = 0,
-        .offset = (uint32_t)offsetof(MessageLackingClazz_storage_, foo),
-        .flags = (GPBFieldFlags)(GPBFieldOptional),
-        .dataType = GPBDataTypeMessage,
-      },
+        {
+            .name = "foo",
+            .dataTypeSpecific.className = "NSString",
+            .number = 1,
+            .hasIndex = 0,
+            .offset = (uint32_t)offsetof(MessageLackingClazz_storage_, foo),
+            .flags = (GPBFieldFlags)(GPBFieldOptional),
+            .dataType = GPBDataTypeMessage,
+        },
     };
     GPBFileDescriptor *desc =
         [[[GPBFileDescriptor alloc] initWithPackage:@"test"
@@ -78,14 +78,14 @@ typedef struct MessageLackingClazz_storage_ {
                                              syntax:GPBFileSyntaxProto3] autorelease];
 
     // GPBDescriptorInitializationFlag_UsesClassRefs intentionally not set here
-    descriptor =
-        [GPBDescriptor allocDescriptorForClass:[MessageLackingClazz class]
-                                     rootClass:[MessageLackingClazzRoot class]
-                                          file:desc
-                                        fields:fields
-                                    fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
-                                   storageSize:sizeof(MessageLackingClazz_storage_)
-                                         flags:GPBDescriptorInitializationFlag_None];
+    descriptor = [GPBDescriptor
+        allocDescriptorForClass:[MessageLackingClazz class]
+                      rootClass:[MessageLackingClazzRoot class]
+                           file:desc
+                         fields:fields
+                     fieldCount:(uint32_t)(sizeof(fields) / sizeof(GPBMessageFieldDescription))
+                    storageSize:sizeof(MessageLackingClazz_storage_)
+                          flags:GPBDescriptorInitializationFlag_None];
     [descriptor setupContainingMessageClassName:"MessageLackingClazz"];
   }
   return descriptor;
@@ -94,24 +94,24 @@ typedef struct MessageLackingClazz_storage_ {
 
 @implementation MessageLackingClazzRoot
 
-+ (GPBExtensionRegistry*)extensionRegistry {
++ (GPBExtensionRegistry *)extensionRegistry {
   // This is called by +initialize so there is no need to worry
   // about thread safety and initialization of registry.
-  static GPBExtensionRegistry* registry = nil;
+  static GPBExtensionRegistry *registry = nil;
   if (!registry) {
     registry = [[GPBExtensionRegistry alloc] init];
     static GPBExtensionDescription descriptions[] = {
-      {
-        .defaultValue.valueMessage = NULL,
-        .singletonName = "MessageLackingClazzRoot_ext1",
-        .extendedClass.name = "MessageLackingClazz",
-        .messageOrGroupClass.name = "MessageLackingClazz",
-        .enumDescriptorFunc = NULL,
-        .fieldNumber = 1,
-        .dataType = GPBDataTypeMessage,
-        // GPBExtensionUsesClazz Intentionally not set
-        .options = 0,
-      },
+        {
+            .defaultValue.valueMessage = NULL,
+            .singletonName = "MessageLackingClazzRoot_ext1",
+            .extendedClass.name = "MessageLackingClazz",
+            .messageOrGroupClass.name = "MessageLackingClazz",
+            .enumDescriptorFunc = NULL,
+            .fieldNumber = 1,
+            .dataType = GPBDataTypeMessage,
+            // GPBExtensionUsesClazz Intentionally not set
+            .options = 0,
+        },
     };
     for (size_t i = 0; i < sizeof(descriptions) / sizeof(descriptions[0]); ++i) {
       // Intentionall using `-initWithExtensionDescription:` and not `
