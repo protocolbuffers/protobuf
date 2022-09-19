@@ -2056,19 +2056,15 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
   return [[[self alloc] initWithValidationFunction:func] autorelease];
 }
 
-+ (instancetype)arrayWithValidationFunction:(GPBEnumValidationFunc)func
-                                   rawValue:(int32_t)value {
-  return [[[self alloc] initWithValidationFunction:func
-                                         rawValues:&value
-                                             count:1] autorelease];
++ (instancetype)arrayWithValidationFunction:(GPBEnumValidationFunc)func rawValue:(int32_t)value {
+  return [[[self alloc] initWithValidationFunction:func rawValues:&value count:1] autorelease];
 }
 
 + (instancetype)arrayWithValueArray:(GPBEnumArray *)array {
-  return [[(GPBEnumArray*)[self alloc] initWithValueArray:array] autorelease];
+  return [[(GPBEnumArray *)[self alloc] initWithValueArray:array] autorelease];
 }
 
-+ (instancetype)arrayWithValidationFunction:(GPBEnumValidationFunc)func
-                                   capacity:(NSUInteger)count {
++ (instancetype)arrayWithValidationFunction:(GPBEnumValidationFunc)func capacity:(NSUInteger)count {
   return [[[self alloc] initWithValidationFunction:func capacity:count] autorelease];
 }
 
@@ -2091,7 +2087,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
-                                 rawValues:(const int32_t [])values
+                                 rawValues:(const int32_t[])values
                                      count:(NSUInteger)count {
   self = [self initWithValidationFunction:func];
   if (self) {
@@ -2103,17 +2099,16 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
         _count = count;
       } else {
         [self release];
-        [NSException raise:NSMallocException
-                    format:@"Failed to allocate %lu bytes",
-                           (unsigned long)(count * sizeof(int32_t))];
+        [NSException
+             raise:NSMallocException
+            format:@"Failed to allocate %lu bytes", (unsigned long)(count * sizeof(int32_t))];
       }
     }
   }
   return self;
 }
 
-- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
-                                  capacity:(NSUInteger)count {
+- (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func capacity:(NSUInteger)count {
   self = [self initWithValidationFunction:func];
   if (self && count) {
     [self internalResizeToCapacity:count];
@@ -2122,10 +2117,9 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (instancetype)copyWithZone:(NSZone *)zone {
-  return [[GPBEnumArray allocWithZone:zone]
-             initWithValidationFunction:_validationFunc
-                              rawValues:_values
-                                  count:_count];
+  return [[GPBEnumArray allocWithZone:zone] initWithValidationFunction:_validationFunc
+                                                             rawValues:_values
+                                                                 count:_count];
 }
 
 // Disable clang-format for the macros.
@@ -2197,7 +2191,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 // clang-format on
 
 - (int32_t)valueAtIndex:(NSUInteger)index {
-// clang-format off
+  // clang-format off
 //%PDDM-EXPAND VALIDATE_RANGE(index, _count)
 // This block of code is generated, do not edit it directly.
 
@@ -2207,7 +2201,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
                        (unsigned long)index, (unsigned long)_count];
   }
 //%PDDM-EXPAND-END VALIDATE_RANGE(index, _count)
-// clang-format on
+  // clang-format on
   int32_t result = _values[index];
   if (!_validationFunc(result)) {
     result = kGPBUnrecognizedEnumeratorValue;
@@ -2216,7 +2210,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (int32_t)rawValueAtIndex:(NSUInteger)index {
-// clang-format off
+  // clang-format off
 //%PDDM-EXPAND VALIDATE_RANGE(index, _count)
 // This block of code is generated, do not edit it directly.
 
@@ -2226,16 +2220,18 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
                        (unsigned long)index, (unsigned long)_count];
   }
 //%PDDM-EXPAND-END VALIDATE_RANGE(index, _count)
-// clang-format on
+  // clang-format on
   return _values[index];
 }
 
-- (void)enumerateValuesWithBlock:(void (NS_NOESCAPE ^)(int32_t value, NSUInteger idx, BOOL *stop))block {
+- (void)enumerateValuesWithBlock:(void(NS_NOESCAPE ^)(int32_t value, NSUInteger idx, BOOL *stop))
+                                     block {
   [self enumerateValuesWithOptions:(NSEnumerationOptions)0 usingBlock:block];
 }
 
 - (void)enumerateValuesWithOptions:(NSEnumerationOptions)opts
-                        usingBlock:(void (NS_NOESCAPE ^)(int32_t value, NSUInteger idx, BOOL *stop))block {
+                        usingBlock:(void(NS_NOESCAPE ^)(int32_t value, NSUInteger idx, BOOL *stop))
+                                       block {
   // NSEnumerationConcurrent isn't currently supported (and Apple's docs say that is ok).
   BOOL stop = NO;
   GPBEnumValidationFunc func = _validationFunc;
@@ -2472,8 +2468,7 @@ static BOOL ArrayDefault_IsValidValue(int32_t value) {
 }
 
 - (void)dealloc {
-  NSAssert(!_autocreator,
-           @"%@: Autocreator must be cleared before release, autocreator: %@",
+  NSAssert(!_autocreator, @"%@: Autocreator must be cleared before release, autocreator: %@",
            [self class], _autocreator);
   [_array release];
   [super dealloc];
