@@ -72,7 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
  * MyMessage *msg = [MyMessage parseData:data extensionRegistry:registry error:&parseError];
  * ```
  **/
-@interface GPBExtensionRegistry : NSObject<NSCopying, GPBExtensionRegistry>
+@interface GPBExtensionRegistry : NSObject <NSCopying, GPBExtensionRegistry>
 
 /**
  * Adds the given GPBExtensionDescriptor to this registry.
