@@ -97,6 +97,7 @@ cc_library(
         "unittest.inc",
     ],
     strip_include_prefix = "/src",
+    visibility = ["//pkg:__pkg__"],
 )
 
 cc_test(
