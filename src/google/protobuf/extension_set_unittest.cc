@@ -855,8 +855,10 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
     const size_t old_capacity =                                                \
         message->GetRepeatedExtension(unittest::repeated_##type##_extension)   \
             .Capacity();                                                       \
-    EXPECT_GE(old_capacity,                                                    \
-              (RepeatedFieldLowerClampLimit<cpptype, sizeof(void*)>()));       \
+    EXPECT_GE(                                                                 \
+        old_capacity,                                                          \
+        (RepeatedFieldLowerClampLimit<cpptype, std::max(sizeof(cpptype),       \
+                                                        sizeof(void*))>()));   \
     for (int i = 0; i < 16; ++i) {                                             \
       message->AddExtension(unittest::repeated_##type##_extension, value);     \
     }                                                                          \
