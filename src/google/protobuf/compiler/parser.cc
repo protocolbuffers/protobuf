@@ -288,6 +288,16 @@ bool Parser::ConsumeInteger64(uint64_t max_value, uint64_t* output,
   }
 }
 
+bool Parser::TryConsumeInteger64(uint64_t max_value, uint64_t* output) {
+  if (LookingAtType(io::Tokenizer::TYPE_INTEGER) &&
+      io::Tokenizer::ParseInteger(input_->current().text, max_value,
+                                  output)) {
+    input_->Next();
+    return true;
+  }
+  return false;
+}
+
 bool Parser::ConsumeNumber(double* output, const char* error) {
   if (LookingAtType(io::Tokenizer::TYPE_FLOAT)) {
     *output = io::Tokenizer::ParseFloat(input_->current().text);
@@ -296,13 +306,19 @@ bool Parser::ConsumeNumber(double* output, const char* error) {
   } else if (LookingAtType(io::Tokenizer::TYPE_INTEGER)) {
     // Also accept integers.
     uint64_t value = 0;
-    if (!io::Tokenizer::ParseInteger(input_->current().text,
+    if (io::Tokenizer::ParseInteger(input_->current().text,
                                      std::numeric_limits<uint64_t>::max(),
                                      &value)) {
+      *output = value;
+    } else if (input_->current().text[0] == '0') {
+      // octal or hexadecimal; don't bother parsing as float
+      AddError("Integer out of range.");
+      // We still return true because we did, in fact, parse a number.
+    } else if (!io::Tokenizer::TryParseFloat(input_->current().text, output)) {
+      // out of int range, and not valid float? 🤷
       AddError("Integer out of range.");
       // We still return true because we did, in fact, parse a number.
     }
-    *output = value;
     input_->Next();
     return true;
   } else if (LookingAt("inf")) {
@@ -408,6 +424,11 @@ Parser::LocationRecorder::LocationRecorder(Parser* parser)
 
 Parser::LocationRecorder::LocationRecorder(const LocationRecorder& parent) {
   Init(parent, parent.source_code_info_);
+}
+
+Parser::LocationRecorder::LocationRecorder(const LocationRecorder& parent,
+                                           SourceCodeInfo* source_code_info) {
+  Init(parent, source_code_info);
 }
 
 Parser::LocationRecorder::LocationRecorder(const LocationRecorder& parent,
@@ -1239,13 +1260,22 @@ bool Parser::ParseDefaultAssignment(
     field->clear_default_value();
   }
 
+  LocationRecorder location(field_location,
+                            FieldDescriptorProto::kDefaultValueFieldNumber);
+
   DO(Consume("default"));
   DO(Consume("="));
 
-  LocationRecorder location(field_location,
-                            FieldDescriptorProto::kDefaultValueFieldNumber);
-  location.RecordLegacyLocation(field,
-                                DescriptorPool::ErrorCollector::DEFAULT_VALUE);
+  // We don't need to create separate spans in source code info for name and value,
+  // since there's no way to represent them distinctly in a location path. But we will
+  // want a separate recorder for the value, just to have more precise location info
+  // in error messages. So we let it create a location in no_op, so it doesn't add a
+  // span to the file descriptor.
+  SourceCodeInfo no_op;
+  LocationRecorder value_location(location, &no_op);
+  value_location.RecordLegacyLocation(
+      field, DescriptorPool::ErrorCollector::DEFAULT_VALUE);
+
   std::string* default_value = field->mutable_default_value();
 
   if (!field->has_type()) {
@@ -1379,13 +1409,23 @@ bool Parser::ParseJsonName(FieldDescriptorProto* field,
 
   LocationRecorder location(field_location,
                             FieldDescriptorProto::kJsonNameFieldNumber);
-  location.RecordLegacyLocation(field,
-                                DescriptorPool::ErrorCollector::OPTION_NAME);
 
-  DO(Consume("json_name"));
+  // We don't need to create separate spans in source code info for name and value,
+  // since there's no way to represent them distinctly in a location path. But we will
+  // want a separate recorder for them, just to have more precise location info
+  // in error messages. So we let them create a location in no_op, so they don't
+  // add a span to the file descriptor.
+  SourceCodeInfo no_op;
+  {
+    LocationRecorder name_location(location, &no_op);
+    name_location.RecordLegacyLocation(
+        field, DescriptorPool::ErrorCollector::OPTION_NAME);
+
+    DO(Consume("json_name"));
+  }
   DO(Consume("="));
 
-  LocationRecorder value_location(location);
+  LocationRecorder value_location(location, &no_op);
   value_location.RecordLegacyLocation(
       field, DescriptorPool::ErrorCollector::OPTION_VALUE);
 
@@ -1551,18 +1591,20 @@ bool Parser::ParseOption(Message* options,
             is_negative
                 ? static_cast<uint64_t>(std::numeric_limits<int64_t>::max()) + 1
                 : std::numeric_limits<uint64_t>::max();
-        DO(ConsumeInteger64(max_value, &value, "Expected integer."));
-        if (is_negative) {
-          value_location.AddPath(
-              UninterpretedOption::kNegativeIntValueFieldNumber);
-          uninterpreted_option->set_negative_int_value(
-              static_cast<int64_t>(0 - value));
-        } else {
-          value_location.AddPath(
-              UninterpretedOption::kPositiveIntValueFieldNumber);
-          uninterpreted_option->set_positive_int_value(value);
+        if (TryConsumeInteger64(max_value, &value)) {
+          if (is_negative) {
+            value_location.AddPath(
+                UninterpretedOption::kNegativeIntValueFieldNumber);
+            uninterpreted_option->set_negative_int_value(
+                static_cast<int64_t>(0 - value));
+          } else {
+            value_location.AddPath(
+                UninterpretedOption::kPositiveIntValueFieldNumber);
+            uninterpreted_option->set_positive_int_value(value);
+          }
+          break;
         }
-        break;
+        // value too large for an integer; fall through below to treat as floating point
       }
 
       case io::Tokenizer::TYPE_FLOAT: {

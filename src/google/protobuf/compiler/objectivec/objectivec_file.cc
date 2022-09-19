@@ -38,6 +38,7 @@
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/objectivec_enum.h"
 #include "google/protobuf/compiler/objectivec/objectivec_extension.h"
+#include "google/protobuf/compiler/objectivec/objectivec_file.h"
 #include "google/protobuf/compiler/objectivec/objectivec_helpers.h"
 #include "google/protobuf/compiler/objectivec/objectivec_message.h"
 #include "google/protobuf/io/printer.h"

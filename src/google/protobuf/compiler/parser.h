@@ -180,6 +180,9 @@ class PROTOBUF_EXPORT Parser {
   // is greater than max_value, an error will be reported.
   bool ConsumeInteger64(uint64_t max_value, uint64_t* output,
                         const char* error);
+  // Try to consume a 64-bit integer and store its value in "output".  No
+  // error is reported on failure, allowing caller to consume token another way.
+  bool TryConsumeInteger64(uint64_t max_value, uint64_t* output);
   // Consume a number and store its value in "output".  This will accept
   // tokens of either INTEGER or FLOAT type.
   bool ConsumeNumber(double* output, const char* error);
@@ -239,6 +242,10 @@ class PROTOBUF_EXPORT Parser {
     LocationRecorder(const LocationRecorder& parent, int path1, int path2);
 
     // Creates a recorder that generates locations into given source code info.
+    LocationRecorder(const LocationRecorder& parent,
+                     SourceCodeInfo* source_code_info);
+    // Creates a recorder that generates locations into given source code info
+    // and calls AddPath() one time.
     LocationRecorder(const LocationRecorder& parent, int path1,
                      SourceCodeInfo* source_code_info);
 

@@ -39,6 +39,7 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/objectivec/objectivec_file.h"
+#include "google/protobuf/compiler/objectivec/objectivec_generator.h"
 #include "google/protobuf/compiler/objectivec/objectivec_helpers.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"

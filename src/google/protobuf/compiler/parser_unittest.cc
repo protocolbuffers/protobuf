@@ -592,6 +592,56 @@ TEST_F(ParseMessageTest, FieldOptions) {
       "}");
 }
 
+TEST_F(ParseMessageTest, FieldOptionsSupportLargeDecimalLiteral) {
+  // decimal integer literal > uint64 max
+  ExpectParsesTo(
+      "import \"google/protobuf/descriptor.proto\";\n"
+      "extend google.protobuf.FieldOptions {\n"
+      "  optional double f = 10101;\n"
+      "}\n"
+      "message TestMessage {\n"
+      "  optional double a = 1 [default = 18446744073709551616];\n"
+      "  optional double b = 2 [default = -18446744073709551616];\n"
+      "  optional double c = 3 [(f) = 18446744073709551616];\n"
+      "  optional double d = 4 [(f) = -18446744073709551616];\n"
+      "}\n",
+
+      "dependency: \"google/protobuf/descriptor.proto\""
+      "extension {"
+      "  name: \"f\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 10101"
+      "  extendee: \"google.protobuf.FieldOptions\""
+      "}"
+      "message_type {"
+      "  name: \"TestMessage\""
+      "  field {"
+      "    name: \"a\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 1"
+      "    default_value: \"1.8446744073709552e+19\""
+      "  }"
+      "  field {"
+      "    name: \"b\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 2"
+      "    default_value: \"-1.8446744073709552e+19\""
+      "  }"
+      "  field {"
+      "    name: \"c\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 3"
+      "    options{"
+      "      uninterpreted_option{"
+      "        name{ name_part: \"f\" is_extension: true }"
+      "        double_value: 1.8446744073709552e+19"
+      "      }"
+      "    }"
+      "  }"
+      "  field {"
+      "    name: \"d\" label: LABEL_OPTIONAL type: TYPE_DOUBLE number: 4"
+      "    options{"
+      "      uninterpreted_option{"
+      "        name{ name_part: \"f\" is_extension: true }"
+      "        double_value: -1.8446744073709552e+19"
+      "      }"
+      "    }"
+      "  }"
+      "}");
+}
+
 TEST_F(ParseMessageTest, Oneof) {
   ExpectParsesTo(
       "message TestMessage {\n"
@@ -1889,6 +1939,22 @@ TEST_F(ParserValidationErrorTest, FieldDefaultValueError) {
       "  optional Baz bar = 1 [default=NO_SUCH_VALUE];\n"
       "}\n",
       "2:32: Enum type \"Baz\" has no value named \"NO_SUCH_VALUE\".\n");
+}
+
+TEST_F(ParserValidationErrorTest, FieldDefaultIntegerOutOfRange) {
+  ExpectHasErrors(
+      "message Foo {\n"
+      "  optional double bar = 1 [default = 0x10000000000000000];\n"
+      "}\n",
+      "1:37: Integer out of range.\n");
+}
+
+TEST_F(ParserValidationErrorTest, FieldOptionOutOfRange) {
+  ExpectHasErrors(
+      "message Foo {\n"
+      "  optional double bar = 1 [foo = 0x10000000000000000];\n"
+      "}\n",
+      "1:33: Integer out of range.\n");
 }
 
 TEST_F(ParserValidationErrorTest, FileOptionNameError) {
@@ -3415,18 +3481,19 @@ TEST_F(SourceInfoTest, FieldOptions) {
   EXPECT_TRUE(
       Parse("message Foo {"
             "  optional int32 bar = 1 "
-            "$a$[default=$b$123$c$,$d$opt1=123$e$,"
-            "$f$opt2='hi'$g$]$h$;"
+            "$a$[$b$default=123$c$, $d$opt1=123$e$, "
+            "$f$opt2='hi'$g$, $h$json_name='barBar'$i$]$j$;"
             "}\n"));
 
   const FieldDescriptorProto& field = file_.message_type(0).field(0);
   const UninterpretedOption& option1 = field.options().uninterpreted_option(0);
   const UninterpretedOption& option2 = field.options().uninterpreted_option(1);
 
-  EXPECT_TRUE(HasSpan('a', 'h', field.options()));
+  EXPECT_TRUE(HasSpan('a', 'j', field.options()));
   EXPECT_TRUE(HasSpan('b', 'c', field, "default_value"));
   EXPECT_TRUE(HasSpan('d', 'e', option1));
   EXPECT_TRUE(HasSpan('f', 'g', option2));
+  EXPECT_TRUE(HasSpan('h', 'i', field, "json_name"));
 
   // Ignore these.
   EXPECT_TRUE(HasSpan(file_));

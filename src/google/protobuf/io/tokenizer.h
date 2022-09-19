@@ -214,6 +214,10 @@ class PROTOBUF_EXPORT Tokenizer {
   // result is undefined (possibly an assert failure).
   static double ParseFloat(const std::string& text);
 
+  // Parses given text as if it were a TYPE_FLOAT token.  Returns false if the
+  // given text is not actually a valid float literal.
+  static bool TryParseFloat(const std::string& text, double* result);
+
   // Parses a TYPE_STRING token.  This never fails, so long as the text actually
   // comes from a TYPE_STRING token parsed by Tokenizer.  If it doesn't, the
   // result is undefined (possibly an assert failure).
