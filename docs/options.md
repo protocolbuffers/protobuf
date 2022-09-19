@@ -344,3 +344,7 @@ with info about your project (name and website) so we can add an entry for you.
 1. mypy-protobuf
    * Website: https://github.com/nipunn1313/mypy-protobuf
    * Extension: 1151-1154
+
+1. Pigweed protobuf compiler
+   * Website: https://pigweed.dev/pw_protobuf
+   * Extension: 1155
