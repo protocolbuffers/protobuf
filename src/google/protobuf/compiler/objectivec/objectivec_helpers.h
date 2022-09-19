@@ -39,7 +39,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/compiler/objectivec/objectivec_names.h"
+#include "google/protobuf/compiler/objectivec/names.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

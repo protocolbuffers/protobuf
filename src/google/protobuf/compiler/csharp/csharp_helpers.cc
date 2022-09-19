@@ -47,7 +47,7 @@
 #include "google/protobuf/compiler/csharp/csharp_field_base.h"
 #include "google/protobuf/compiler/csharp/csharp_map_field.h"
 #include "google/protobuf/compiler/csharp/csharp_message_field.h"
-#include "google/protobuf/compiler/csharp/csharp_names.h"
+#include "google/protobuf/compiler/csharp/names.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"
 #include "google/protobuf/compiler/csharp/csharp_primitive_field.h"
 #include "google/protobuf/compiler/csharp/csharp_repeated_enum_field.h"

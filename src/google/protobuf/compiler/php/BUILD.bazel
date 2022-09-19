@@ -7,8 +7,8 @@ load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
-    name = "php_names",
-    hdrs = ["php_names.h"],
+    name = "names",
+    hdrs = ["names.h"],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/php",
     visibility = ["//visibility:public"],
@@ -26,7 +26,7 @@ cc_library(
         "//src/google/protobuf/compiler:__pkg__",
     ],
     deps = [
-        ":php_names",
+        ":names",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "@com_google_absl//absl/strings",

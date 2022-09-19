@@ -38,7 +38,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
-#include "google/protobuf/compiler/csharp/csharp_names.h"
+#include "google/protobuf/compiler/csharp/names.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/printer.h"

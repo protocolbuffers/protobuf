@@ -7,8 +7,8 @@ load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
-    name = "objectivec_names",
-    hdrs = ["objectivec_names.h"],
+    name = "names",
+    hdrs = ["names.h"],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/objectivec",
     visibility = ["//visibility:public"],
@@ -54,7 +54,7 @@ cc_library(
         "//src/google/protobuf/compiler:__pkg__",
     ],
     deps = [
-        ":objectivec_names",
+        ":names",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "@com_google_absl//absl/strings",
