@@ -30,10 +30,6 @@
 
 #include "google/protobuf/parse_context.h"
 
-#ifdef __aarch64__
-#include <arm_acle.h>
-#endif
-
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/arenastring.h"
@@ -581,7 +577,7 @@ const char* UnknownFieldParse(uint32_t tag, std::string* unknown,
 //
 // 2) Calculate the index of the cleared continuation bit in order to determine
 //    where the encoded Varint ends and the size of the decoded value.  The
-//    easist way to do this is mask off all data bits, leaving just the
+//    easiest way to do this is mask off all data bits, leaving just the
 //    continuation bits.  We actually need to do the masking on an inverted
 //    copy of the data, which leaves a 1 in all continuation bits which were
 //    originally clear.  The number of trailing zeroes in this value indicates

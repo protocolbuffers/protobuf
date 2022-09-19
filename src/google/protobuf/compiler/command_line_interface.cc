@@ -75,6 +75,7 @@
 #include "google/protobuf/compiler/subprocess.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/stubs/strutil.h"
+#include "absl/strings/match.h"
 #include "google/protobuf/stubs/stringprintf.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
@@ -1065,9 +1066,9 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   if (mode_ == MODE_COMPILE) {
     for (int i = 0; i < output_directives_.size(); i++) {
       std::string output_location = output_directives_[i].output_location;
-      if (!HasSuffixString(output_location, ".zip") &&
-          !HasSuffixString(output_location, ".jar") &&
-          !HasSuffixString(output_location, ".srcjar")) {
+      if (!absl::EndsWith(output_location, ".zip") &&
+          !absl::EndsWith(output_location, ".jar") &&
+          !absl::EndsWith(output_location, ".srcjar")) {
         AddTrailingSlash(&output_location);
       }
 
@@ -1088,12 +1089,12 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   for (const auto& pair : output_directories) {
     const std::string& location = pair.first;
     GeneratorContextImpl* directory = pair.second.get();
-    if (HasSuffixString(location, "/")) {
+    if (absl::EndsWith(location, "/")) {
       if (!directory->WriteAllToDisk(location)) {
         return 1;
       }
     } else {
-      if (HasSuffixString(location, ".jar")) {
+      if (absl::EndsWith(location, ".jar")) {
         directory->AddJarManifest();
       }
 
@@ -1971,7 +1972,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     // Some other flag.  Look it up in the generators list.
     const GeneratorInfo* generator_info = FindGeneratorByFlag(name);
     if (generator_info == nullptr &&
-        (plugin_prefix_.empty() || !HasSuffixString(name, "_out"))) {
+        (plugin_prefix_.empty() || !absl::EndsWith(name, "_out"))) {
       // Check if it's a generator option flag.
       generator_info = FindGeneratorByOption(name);
       if (generator_info != nullptr) {
@@ -1981,7 +1982,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
           parameters->append(",");
         }
         parameters->append(value);
-      } else if (HasPrefixString(name, "--") && HasSuffixString(name, "_opt")) {
+      } else if (absl::StartsWith(name, "--") && absl::EndsWith(name, "_opt")) {
         std::string* parameters =
             &plugin_parameters_[PluginName(plugin_prefix_, name)];
         if (!parameters->empty()) {
@@ -2165,8 +2166,8 @@ bool CommandLineInterface::GenerateOutput(
   std::string error;
   if (output_directive.generator == nullptr) {
     // This is a plugin.
-    GOOGLE_CHECK(HasPrefixString(output_directive.name, "--") &&
-          HasSuffixString(output_directive.name, "_out"))
+    GOOGLE_CHECK(absl::StartsWith(output_directive.name, "--") &&
+          absl::EndsWith(output_directive.name, "_out"))
         << "Bad name for plugin generator: " << output_directive.name;
 
     std::string plugin_name = PluginName(plugin_prefix_, output_directive.name);

@@ -81,6 +81,57 @@ proto_library(
     strip_import_prefix = "/src",
 )
 
+# Generate code for the well-known types on demand.
+# This needs to be done in a separate genrule because we publish protoc and the
+# C++ runtime with the WKT code linked in.  We need to use a stripped down
+# compiler and runtime library to generate them, and cc_proto_library doesn't
+# support swapping out the compiler binary (even though a custom runtime can
+# be passed to proto_lang_toolchain).
+#
+# TODO(b/246826624) We still check in generated pb.h and pb.cc files purely to
+# support CMake builds.  These aren't used at all by Bazel and will be removed
+# in the future once CMake can generate them too.
+
+WELL_KNOWN_TYPES = [
+    "any",
+    "api",
+    "duration",
+    "empty",
+    "field_mask",
+    "source_context",
+    "struct",
+    "timestamp",
+    "type",
+    "wrappers",
+]
+
+genrule(
+    name = "gen_wkt_cc_sources",
+    srcs = [wkt + ".proto" for wkt in WELL_KNOWN_TYPES],
+    exec_tools = ["//src/google/protobuf/compiler:protoc_nowkt"],
+    outs =
+        [wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES] +
+        [wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
+    cmd = """
+        $(execpath //src/google/protobuf/compiler:protoc_nowkt) \
+            --cpp_out=$(RULEDIR)/../.. \
+            --proto_path=$$(dirname $$(dirname $$(dirname $(location any.proto)))) \
+            $(SRCS)
+    """,
+    visibility = ["//visibility:private"],
+)
+
+cc_library(
+    name = "wkt_cc_proto",
+    srcs = [wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
+    hdrs = [wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES],
+    deps = [":protobuf_nowkt"],
+    copts = COPTS,
+    include_prefix = "google/protobuf",
+    linkopts = LINK_OPTS,
+    visibility = ["//pkg:__pkg__"],
+)
+
 # Built-in runtime types
 
 proto_library(
@@ -211,19 +262,14 @@ cc_library(
 )
 
 cc_library(
-    name = "protobuf",
+    name = "protobuf_nowkt",
     srcs = [
         "any.cc",
-        "any.pb.cc",
-        "api.pb.cc",
         "descriptor.cc",
         "descriptor.pb.cc",
         "descriptor_database.cc",
-        "duration.pb.cc",
         "dynamic_message.cc",
-        "empty.pb.cc",
         "extension_set_heavy.cc",
-        "field_mask.pb.cc",
         "generated_message_bases.cc",
         "generated_message_reflection.cc",
         "generated_message_tctable_full.cc",
@@ -232,26 +278,16 @@ cc_library(
         "message.cc",
         "reflection_ops.cc",
         "service.cc",
-        "source_context.pb.cc",
-        "struct.pb.cc",
         "text_format.cc",
-        "timestamp.pb.cc",
-        "type.pb.cc",
         "unknown_field_set.cc",
         "wire_format.cc",
-        "wrappers.pb.cc",
     ],
     hdrs = [
-        "any.pb.h",
-        "api.pb.h",
         "descriptor.h",
         "descriptor.pb.h",
         "descriptor_database.h",
-        "duration.pb.h",
         "dynamic_message.h",
-        "empty.pb.h",
         "field_access_listener.h",
-        "field_mask.pb.h",
         "generated_enum_reflection.h",
         "generated_message_bases.h",
         "generated_message_reflection.h",
@@ -265,25 +301,19 @@ cc_library(
         "reflection_internal.h",
         "reflection_ops.h",
         "service.h",
-        "source_context.pb.h",
-        "struct.pb.h",
         "text_format.h",
-        "timestamp.pb.h",
-        "type.pb.h",
         "unknown_field_set.h",
         "wire_format.h",
-        "wrappers.pb.h",
     ],
     copts = COPTS,
     include_prefix = "google/protobuf",
     linkopts = LINK_OPTS,
     visibility = [
-        "//:__pkg__",
         "//pkg:__pkg__",
         "//src/google/protobuf:__subpackages__",
     ],
     deps = [
-        ":protobuf_lite",
+       ":protobuf_lite",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:gzip_stream",
         "//src/google/protobuf/io:printer",
@@ -297,6 +327,22 @@ cc_library(
         "@com_google_absl//absl/strings:internal",
         "@com_google_absl//absl/synchronization",
         "@com_google_absl//absl/time",
+    ],
+)
+
+cc_library(
+    name = "protobuf",
+    deps = [
+        ":protobuf_nowkt",
+        ":wkt_cc_proto",
+    ],
+    copts = COPTS,
+    include_prefix = "google/protobuf",
+    linkopts = LINK_OPTS,
+    visibility = [
+        "//:__pkg__",
+        "//pkg:__pkg__",
+        "//src/google/protobuf:__subpackages__",
     ],
 )
 

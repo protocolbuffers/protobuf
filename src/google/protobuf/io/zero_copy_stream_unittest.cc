@@ -1053,7 +1053,7 @@ TEST_F(IoTest, LimitingInputStream) {
 TEST_F(IoTest, LimitingInputStreamByteCount) {
   const int kHalfBufferSize = 128;
   const int kBufferSize = kHalfBufferSize * 2;
-  uint8 buffer[kBufferSize];
+  uint8 buffer[kBufferSize] = {};
 
   // Set up input. Only allow half to be read at once.
   ArrayInputStream array_input(buffer, kBufferSize, kHalfBufferSize);

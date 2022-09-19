@@ -434,7 +434,7 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
 
 - (void)readGroup:(int32_t)fieldNumber
               message:(GPBMessage *)message
-    extensionRegistry:(GPBExtensionRegistry *)extensionRegistry {
+    extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
   CheckRecursionLimit(&state_);
   ++state_.recursionDepth;
   [message mergeFromCodedInputStream:self extensionRegistry:extensionRegistry];
@@ -454,7 +454,7 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
 }
 
 - (void)readMessage:(GPBMessage *)message
-    extensionRegistry:(GPBExtensionRegistry *)extensionRegistry {
+    extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
   CheckRecursionLimit(&state_);
   int32_t length = ReadRawVarint32(&state_);
   size_t oldLimit = GPBCodedInputStreamPushLimit(&state_, length);
@@ -466,7 +466,7 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
 }
 
 - (void)readMapEntry:(id)mapDictionary
-    extensionRegistry:(GPBExtensionRegistry *)extensionRegistry
+    extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry
                 field:(GPBFieldDescriptor *)field
         parentMessage:(GPBMessage *)parentMessage {
   CheckRecursionLimit(&state_);

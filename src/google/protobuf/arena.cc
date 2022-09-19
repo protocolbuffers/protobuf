@@ -105,7 +105,7 @@ class GetDeallocator {
   size_t* space_allocated_;
 };
 
-SerialArena::SerialArena(Block* b, ThreadSafeArena& parent)
+SerialArena::SerialArena(ArenaBlock* b, ThreadSafeArena& parent)
     : parent_(parent), space_allocated_(b->size()) {
   set_head(b);
   set_ptr(b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize));
@@ -117,13 +117,13 @@ SerialArena* SerialArena::New(Memory mem, ThreadSafeArena& parent) {
   ThreadSafeArenaStats::RecordAllocateStats(parent.arena_stats_.MutableStats(),
                                             /*used=*/0, /*allocated=*/mem.size,
                                             /*wasted=*/0);
-  auto b = new (mem.ptr) Block{nullptr, mem.size};
+  auto b = new (mem.ptr) ArenaBlock{nullptr, mem.size};
   return new (b->Pointer(kBlockHeaderSize)) SerialArena(b, parent);
 }
 
 template <typename Deallocator>
 SerialArena::Memory SerialArena::Free(Deallocator deallocator) {
-  Block* b = head();
+  ArenaBlock* b = head();
   Memory mem = {b, b->size()};
   while (b->next) {
     b = b->next;  // We must first advance before deleting this block
@@ -179,7 +179,7 @@ void SerialArena::AllocateNewBlock(size_t n) {
   ThreadSafeArenaStats::RecordAllocateStats(parent_.arena_stats_.MutableStats(),
                                             /*used=*/used,
                                             /*allocated=*/mem.size, wasted);
-  set_head(new (mem.ptr) Block{head(), mem.size});
+  set_head(new (mem.ptr) ArenaBlock{head(), mem.size});
   set_ptr(head()->Pointer(kBlockHeaderSize));
   limit_ = head()->Pointer(head()->size());
 
@@ -199,7 +199,7 @@ uint64_t SerialArena::SpaceUsed() const {
   const uint64_t current_block_size = head()->size();
   uint64_t space_used = std::min(
       static_cast<uint64_t>(
-          ptr() - const_cast<Block*>(head())->Pointer(kBlockHeaderSize)),
+          ptr() - const_cast<ArenaBlock*>(head())->Pointer(kBlockHeaderSize)),
       current_block_size);
   space_used += space_used_.load(std::memory_order_relaxed);
   // Remove the overhead of the SerialArena itself.
@@ -208,7 +208,7 @@ uint64_t SerialArena::SpaceUsed() const {
 }
 
 void SerialArena::CleanupList() {
-  Block* b = head();
+  ArenaBlock* b = head();
   b->cleanup_nodes = limit_;
   do {
     char* limit = reinterpret_cast<char*>(

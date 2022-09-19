@@ -19,6 +19,10 @@ endif()
 if(POLICY CMP0091)
   cmake_policy(SET CMP0091 NEW)
 endif()
+# Honor visibility properties for all target types.
+if(POLICY CMP0063)
+  cmake_policy(SET CMP0063 NEW)
+endif()
 
 # Project
 project(protobuf C CXX)
@@ -32,14 +36,31 @@ if(protobuf_DEPRECATED_CMAKE_SUBDIRECTORY_USAGE)
   get_filename_component(protobuf_SOURCE_DIR ${protobuf_SOURCE_DIR} DIRECTORY)
 endif()
 
-# Add c++14 flags
-if (CYGWIN)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14")
-else()
+# Add C++14 flags
+if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
+endif()
+if(CYGWIN)
+  string(REGEX_MATCH "-std=gnu\\+\\+([0-9]+)" _protobuf_CXX_STD "${CMAKE_CXX_FLAGS}")
+endif()
+if(NOT _protobuf_CXX_STD)
+  set(_protobuf_CXX_STD "${CMAKE_CXX_STANDARD}")
+endif()
+if(_protobuf_CXX_STD LESS "14")
+  message(FATAL_ERROR "Protocol Buffers requires at least C++14, but is configured for C++${_protobuf_CXX_STD}")
+endif()
+if(CYGWIN)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++${_protobuf_CXX_STD}")
+else()
+  set(CMAKE_CXX_STANDARD ${_protobuf_CXX_STD})
   set(CMAKE_CXX_STANDARD_REQUIRED ON)
   set(CMAKE_CXX_EXTENSIONS OFF)
 endif()
+
+# For -fvisibility=hidden and -fvisibility-inlines-hidden
+set(CMAKE_C_VISIBILITY_PRESET hidden)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 
 # The Intel compiler isn't able to deal with noinline member functions of
 # template classes defined in headers.  As such it spams the output with

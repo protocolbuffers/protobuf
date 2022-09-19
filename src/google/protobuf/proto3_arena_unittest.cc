@@ -38,7 +38,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/text_format.h"
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/strutil.h"
+#include "absl/strings/match.h"
 #include "google/protobuf/test_util.h"
 
 // Must be included last.
@@ -296,7 +296,7 @@ TEST(Proto3OptionalTest, OptionalFieldDescriptor) {
 
   for (int i = 0; i < d->field_count(); i++) {
     const FieldDescriptor* f = d->field(i);
-    if (HasPrefixString(f->name(), "singular")) {
+    if (absl::StartsWith(f->name(), "singular")) {
       EXPECT_FALSE(f->has_optional_keyword()) << f->full_name();
       EXPECT_FALSE(f->has_presence()) << f->full_name();
       EXPECT_FALSE(f->containing_oneof()) << f->full_name();

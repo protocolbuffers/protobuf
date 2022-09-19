@@ -28,54 +28,24 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MESSAGE_FIELD_H__
-#define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MESSAGE_FIELD_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_OPTIONS_H__
+#define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_OPTIONS_H__
 
-#include <map>
 #include <string>
-
-#include "google/protobuf/compiler/objectivec/objectivec_field.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
-class MessageFieldGenerator : public ObjCObjFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
-
- protected:
-  explicit MessageFieldGenerator(const FieldDescriptor* descriptor);
-
-  MessageFieldGenerator(const MessageFieldGenerator&) = delete;
-  MessageFieldGenerator& operator=(const MessageFieldGenerator&) = delete;
-
-  virtual ~MessageFieldGenerator();
-
- public:
-  virtual void DetermineForwardDeclarations(
-      std::set<std::string>* fwd_decls,
-      bool include_external_types) const override;
-  virtual void DetermineObjectiveCClassDefinitions(
-      std::set<std::string>* fwd_decls) const override;
-};
-
-class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
-
- protected:
-  explicit RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor);
-  virtual ~RepeatedMessageFieldGenerator();
-
-  RepeatedMessageFieldGenerator(const RepeatedMessageFieldGenerator&) = delete;
-  RepeatedMessageFieldGenerator operator=(const RepeatedMessageFieldGenerator&) = delete;
-
- public:
-  virtual void DetermineForwardDeclarations(
-      std::set<std::string>* fwd_decls,
-      bool include_external_types) const override;
-  virtual void DetermineObjectiveCClassDefinitions(
-      std::set<std::string>* fwd_decls) const override;
+// Generation options, documented within objectivec_generator.cc.
+struct GenerationOptions {
+  std::string generate_for_named_framework;
+  std::string named_framework_to_proto_path_mappings_path;
+  std::string runtime_import_prefix;
+  // TODO(thomasvl): Eventually flip this default to false for better interop
+  // with Swift if proto usages span modules made from ObjC sources.
+  bool headers_use_forward_declarations = true;
 };
 
 }  // namespace objectivec
@@ -83,4 +53,4 @@ class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MESSAGE_FIELD_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_OPTIONS_H__

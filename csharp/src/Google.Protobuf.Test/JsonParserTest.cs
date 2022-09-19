@@ -576,6 +576,10 @@ namespace Google.Protobuf
         [TestCase("-3.402823e38", -3.402823e38f)]
         [TestCase("1.5e1", 15f)]
         [TestCase("15e-1", 1.5f)]
+        [TestCase("3.4028235e38", float.MaxValue)]
+        [TestCase("-3.4028235e38", float.MinValue)]
+        [TestCase("3.4028235e+38", float.MaxValue)]
+        [TestCase("-3.4028235e+38", float.MinValue)]
         public void NumberToFloat_Valid(string jsonValue, float expectedParsedValue)
         {
             string json = "{ \"singleFloat\": " + jsonValue + "}";
@@ -584,8 +588,10 @@ namespace Google.Protobuf
         }
 
         [Test]
-        [TestCase("3.402824e38", typeof(InvalidProtocolBufferException))]
-        [TestCase("-3.402824e38", typeof(InvalidProtocolBufferException))]
+        [TestCase("3.4028236e38", typeof(InvalidProtocolBufferException))]
+        [TestCase("-3.4028236e38", typeof(InvalidProtocolBufferException))]
+        [TestCase("3.4028236e+38", typeof(InvalidProtocolBufferException))]
+        [TestCase("-3.4028236e+38", typeof(InvalidProtocolBufferException))]
         [TestCase("1,0", typeof(InvalidJsonException))]
         [TestCase("1.0.0", typeof(InvalidJsonException))]
         [TestCase("+1", typeof(InvalidJsonException))]

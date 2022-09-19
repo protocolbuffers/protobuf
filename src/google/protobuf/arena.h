@@ -252,9 +252,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   inline ~Arena() {}
 
-  // TODO(protobuf-team): Fix callers to use constructor and delete this method.
-  void Init(const ArenaOptions&) {}
-
   // API to create proto2 message objects on the arena. If the arena passed in
   // is nullptr, then a heap allocated object is returned. Type T must be a
   // message defined in a .proto file with cc_enable_arenas set to true,

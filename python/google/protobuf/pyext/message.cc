@@ -42,7 +42,7 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/stubs/strutil.h"
+#include "absl/strings/match.h"
 
 #ifndef PyVarObject_HEAD_INIT
 #define PyVarObject_HEAD_INIT(type, size) PyObject_HEAD_INIT(type) size,
@@ -70,11 +70,11 @@
 #include "google/protobuf/pyext/unknown_field_set.h"
 #include "google/protobuf/pyext/unknown_fields.h"
 #include "google/protobuf/util/message_differencer.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
-#include "util/gtl/map_util.h"
 
 // clang-format off
 #include "google/protobuf/port_def.inc"
@@ -410,7 +410,7 @@ static PyObject* GetClassAttribute(CMessageClass *self, PyObject* name) {
   Py_ssize_t attr_size;
   static const char kSuffix[] = "_FIELD_NUMBER";
   if (PyString_AsStringAndSize(name, &attr, &attr_size) >= 0 &&
-      HasSuffixString(absl::string_view(attr, attr_size), kSuffix)) {
+      absl::EndsWith(absl::string_view(attr, attr_size), kSuffix)) {
     std::string field_name(attr, attr_size - sizeof(kSuffix) + 1);
     LowerString(&field_name);
 
@@ -2678,22 +2678,22 @@ CMessage* CMessage::BuildSubMessageFromPointer(
   if (!this->child_submessages) {
     this->child_submessages = new CMessage::SubMessagesMap();
   }
-  CMessage* cmsg = gtl::FindPtrOrNull(
-      *this->child_submessages, sub_message);
-  if (cmsg) {
-    Py_INCREF(cmsg);
-  } else {
-    cmsg = cmessage::NewEmptyMessage(message_class);
-
-    if (cmsg == nullptr) {
-      return nullptr;
-    }
-    cmsg->message = sub_message;
-    Py_INCREF(this);
-    cmsg->parent = this;
-    cmsg->parent_field_descriptor = field_descriptor;
-    cmessage::SetSubmessage(this, cmsg);
+  auto it = this->child_submessages->find(sub_message);
+  if (it != this->child_submessages->end()) {
+    Py_INCREF(it->second);
+    return it->second;
   }
+
+  CMessage* cmsg = cmessage::NewEmptyMessage(message_class);
+
+  if (cmsg == nullptr) {
+    return nullptr;
+  }
+  cmsg->message = sub_message;
+  Py_INCREF(this);
+  cmsg->parent = this;
+  cmsg->parent_field_descriptor = field_descriptor;
+  cmessage::SetSubmessage(this, cmsg);
   return cmsg;
 }
 
@@ -2701,11 +2701,10 @@ CMessage* CMessage::MaybeReleaseSubMessage(Message* sub_message) {
   if (!this->child_submessages) {
     return nullptr;
   }
-  CMessage* released = gtl::FindPtrOrNull(
-      *this->child_submessages, sub_message);
-  if (!released) {
-    return nullptr;
-  }
+  auto it = this->child_submessages->find(sub_message);
+  if (it == this->child_submessages->end()) return nullptr;
+  CMessage* released = it->second;
+
   // The target message will now own its content.
   Py_CLEAR(released->parent);
   released->parent_field_descriptor = nullptr;

@@ -136,7 +136,7 @@ class CodedStreamTest : public testing::Test {
   static uint8_t buffer_[kBufferSize];
 };
 
-uint8_t CodedStreamTest::buffer_[CodedStreamTest::kBufferSize];
+uint8_t CodedStreamTest::buffer_[CodedStreamTest::kBufferSize] = {};
 
 // We test each operation over a variety of block sizes to insure that
 // we test cases where reads or writes cross buffer boundaries, cases
@@ -727,7 +727,7 @@ TEST_1D(CodedStreamTest, ReadStringImpossiblyLarge, kBlockSizes) {
 TEST_F(CodedStreamTest, ReadStringImpossiblyLargeFromStringOnStack) {
   // Same test as above, except directly use a buffer. This used to cause
   // crashes while the above did not.
-  uint8_t buffer[8];
+  uint8_t buffer[8] = {};
   CodedInputStream coded_input(buffer, 8);
   std::string str;
   EXPECT_FALSE(coded_input.ReadString(&str, 1 << 30));
@@ -1318,7 +1318,7 @@ class ReallyBigInputStream : public ZeroCopyInputStream {
   int backup_amount_;
 
  private:
-  char buffer_[1024];
+  char buffer_[1024] = {};
   int64_t buffer_count_;
 };
 

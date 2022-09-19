@@ -48,7 +48,7 @@
 #include "google/protobuf/stubs/common.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
-#include "google/protobuf/stubs/strutil.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/stubs/stringprintf.h"
 #include "absl/strings/string_view.h"
@@ -127,6 +127,16 @@ Printer::Printer(ZeroCopyOutputStream* output, Options options)
         ::getenv(kProtocCodegenTrace.data()) != nullptr;
     options_.enable_codegen_trace = kEnableCodegenTrace;
   }
+}
+
+absl::string_view Printer::LookupVar(absl::string_view var) {
+  LookupResult result = LookupInFrameStack(var, absl::MakeSpan(var_lookups_));
+  GOOGLE_CHECK(result.has_value()) << "could not find " << var;
+  auto* view = absl::get_if<absl::string_view>(&*result);
+  GOOGLE_CHECK(view != nullptr) << "could not find " << var
+                         << "; found callback instead";
+
+  return *view;
 }
 
 bool Printer::Validate(bool cond, Printer::PrintOptions opts,
@@ -326,8 +336,8 @@ bool Printer::ValidateIndexLookupInBounds(size_t index,
 
 void Printer::PrintImpl(absl::string_view format,
                         absl::Span<const std::string> args, PrintOptions opts) {
-  // Inside of this function, we set intentation as we print new lines from the
-  // format string. No matter how we exit this functon, we should fix up the
+  // Inside of this function, we set indentation as we print new lines from the
+  // format string. No matter how we exit this function, we should fix up the
   // indent to what it was before we entered; a cleanup makes it easy to avoid
   // this mistake.
   size_t original_indent = indent_;
@@ -614,10 +624,12 @@ void Printer::PrintImpl(absl::string_view format,
       //
       //   };
       //
-      // in many cases. We *also* do this if a ; follows the substitution,
+      // in many cases. We *also* do this if a ; or , follows the substitution,
       // because this helps clang-format keep its head on in many cases.
       // Users that need to keep the semi can write $foo$/**/;
-      absl::ConsumePrefix(&format, ";");
+      if (!absl::ConsumePrefix(&format, ";")) {
+        absl::ConsumePrefix(&format, ",");
+      }
       absl::ConsumePrefix(&format, "\n");
       indent_ =
           original_indent + ConsumeIndentForLine(raw_string_indent_len, format);
