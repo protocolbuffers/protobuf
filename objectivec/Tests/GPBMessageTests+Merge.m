@@ -197,9 +197,8 @@
   // Known value.
 
   src.e = UnknownEnumsMyEnum_Bar;
-  src.repeatedEArray =
-      [GPBEnumArray arrayWithValidationFunction:UnknownEnumsMyEnum_IsValidValue
-                                       rawValue:UnknownEnumsMyEnum_Bar];
+  src.repeatedEArray = [GPBEnumArray arrayWithValidationFunction:UnknownEnumsMyEnum_IsValidValue
+                                                        rawValue:UnknownEnumsMyEnum_Bar];
   src.repeatedPackedEArray =
       [GPBEnumArray arrayWithValidationFunction:UnknownEnumsMyEnum_IsValidValue
                                        rawValue:UnknownEnumsMyEnum_Bar];
@@ -211,8 +210,7 @@
   XCTAssertEqual(dst.repeatedEArray.count, 1U);
   XCTAssertEqual([dst.repeatedEArray valueAtIndex:0], UnknownEnumsMyEnum_Bar);
   XCTAssertEqual(dst.repeatedPackedEArray.count, 1U);
-  XCTAssertEqual([dst.repeatedPackedEArray valueAtIndex:0],
-                 UnknownEnumsMyEnum_Bar);
+  XCTAssertEqual([dst.repeatedPackedEArray valueAtIndex:0], UnknownEnumsMyEnum_Bar);
   XCTAssertEqual(dst.oneofE1, UnknownEnumsMyEnum_Bar);
 
   // Unknown value.
@@ -220,9 +218,8 @@
   const int32_t kUnknownValue = 666;
 
   SetUnknownEnumsMyMessage_E_RawValue(src, kUnknownValue);
-  src.repeatedEArray =
-      [GPBEnumArray arrayWithValidationFunction:UnknownEnumsMyEnum_IsValidValue
-                                       rawValue:kUnknownValue];
+  src.repeatedEArray = [GPBEnumArray arrayWithValidationFunction:UnknownEnumsMyEnum_IsValidValue
+                                                        rawValue:kUnknownValue];
   src.repeatedPackedEArray =
       [GPBEnumArray arrayWithValidationFunction:UnknownEnumsMyEnum_IsValidValue
                                        rawValue:kUnknownValue];
@@ -238,13 +235,11 @@
                  UnknownEnumsMyEnum_GPBUnrecognizedEnumeratorValue);
   XCTAssertEqual([dst.repeatedEArray rawValueAtIndex:1], kUnknownValue);
   XCTAssertEqual(dst.repeatedPackedEArray.count, 2U);
-  XCTAssertEqual([dst.repeatedPackedEArray valueAtIndex:0],
-                 UnknownEnumsMyEnum_Bar);
+  XCTAssertEqual([dst.repeatedPackedEArray valueAtIndex:0], UnknownEnumsMyEnum_Bar);
   XCTAssertEqual([dst.repeatedPackedEArray valueAtIndex:1],
                  UnknownEnumsMyEnum_GPBUnrecognizedEnumeratorValue);
   XCTAssertEqual([dst.repeatedPackedEArray rawValueAtIndex:1], kUnknownValue);
-  XCTAssertEqual(dst.oneofE1,
-                 UnknownEnumsMyEnum_GPBUnrecognizedEnumeratorValue);
+  XCTAssertEqual(dst.oneofE1, UnknownEnumsMyEnum_GPBUnrecognizedEnumeratorValue);
   XCTAssertEqual(UnknownEnumsMyMessage_OneofE1_RawValue(dst), kUnknownValue);
 }
 
@@ -258,8 +253,8 @@
 
   dst.oneofEnum = Message2_Enum_Bar;
 
-// Disable clang-format for the macros.
-// clang-format off
+  // Disable clang-format for the macros.
+  // clang-format off
 
 //%PDDM-DEFINE MERGE2_TEST(SET_NAME, SET_VALUE, CLEARED_NAME, CLEARED_DEFAULT)
 //%  src.oneof##SET_NAME = SET_VALUE;
@@ -396,7 +391,7 @@
 
 //%PDDM-EXPAND-END (14 expansions)
 
-// clang-format on
+  // clang-format on
 
   NSString *oneofStringDefault = @"string";
   NSData *oneofBytesDefault = [@"data" dataUsingEncoding:NSUTF8StringEncoding];
@@ -410,8 +405,7 @@
   src.oneofBytes = [@"bar" dataUsingEncoding:NSUTF8StringEncoding];
   [dst mergeFrom:src];
   XCTAssertEqual(dst.oOneOfCase, Message2_O_OneOfCase_OneofBytes);
-  XCTAssertEqualObjects(dst.oneofBytes,
-                        [@"bar" dataUsingEncoding:NSUTF8StringEncoding]);
+  XCTAssertEqualObjects(dst.oneofBytes, [@"bar" dataUsingEncoding:NSUTF8StringEncoding]);
   XCTAssertEqualObjects(dst.oneofString, oneofStringDefault);
 
   Message2_OneofGroup *group = [Message2_OneofGroup message];
@@ -483,8 +477,8 @@
 
   dst.oneofEnum = Message3_Enum_Bar;
 
-// Disable clang-format for the macros.
-// clang-format off
+  // Disable clang-format for the macros.
+  // clang-format off
 
 //%PDDM-DEFINE MERGE3_TEST(SET_NAME, SET_VALUE, CLEARED_NAME, CLEARED_DEFAULT)
 //%  src.oneof##SET_NAME = SET_VALUE;
@@ -621,7 +615,7 @@
 
 //%PDDM-EXPAND-END (14 expansions)
 
-// clang-format on
+  // clang-format on
 
   NSString *oneofStringDefault = @"";
   NSData *oneofBytesDefault = [NSData data];
@@ -635,10 +629,8 @@
   src.oneofBytes = [@"bar" dataUsingEncoding:NSUTF8StringEncoding];
   [dst mergeFrom:src];
   XCTAssertEqual(dst.oOneOfCase, Message3_O_OneOfCase_OneofBytes);
-  XCTAssertEqualObjects(dst.oneofBytes,
-                        [@"bar" dataUsingEncoding:NSUTF8StringEncoding]);
+  XCTAssertEqualObjects(dst.oneofBytes, [@"bar" dataUsingEncoding:NSUTF8StringEncoding]);
   XCTAssertEqualObjects(dst.oneofString, oneofStringDefault);
-
 
   Message3 *subMessage = [Message3 message];
   subMessage.optionalInt32 = 777;

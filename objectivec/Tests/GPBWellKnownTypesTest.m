@@ -46,8 +46,7 @@ static const NSTimeInterval kTimeAccuracy = 1e-9;
 - (void)testTimeStamp {
   // Test negative and positive values.
   NSTimeInterval values[] = {
-      -428027599.483999967, -1234567.0, -0.5, 0, 0.75, 54321.0, 2468086,483999967
-  };
+      -428027599.483999967, -1234567.0, -0.5, 0, 0.75, 54321.0, 2468086, 483999967};
   for (size_t i = 0; i < GPBARRAYSIZE(values); ++i) {
     NSTimeInterval value = values[i];
 
@@ -55,30 +54,24 @@ static const NSTimeInterval kTimeAccuracy = 1e-9;
     NSDate *date = [NSDate dateWithTimeIntervalSince1970:value];
     GPBTimestamp *timeStamp = [[GPBTimestamp alloc] initWithDate:date];
 
-    XCTAssertGreaterThanOrEqual(timeStamp.nanos, 0,
-                                @"Offset %f - Date: %@", (double)value, date);
-    XCTAssertLessThan(timeStamp.nanos, 1e9,
-                      @"Offset %f - Date: %@", (double)value, date);
+    XCTAssertGreaterThanOrEqual(timeStamp.nanos, 0, @"Offset %f - Date: %@", (double)value, date);
+    XCTAssertLessThan(timeStamp.nanos, 1e9, @"Offset %f - Date: %@", (double)value, date);
 
     // Comparing timeIntervals instead of directly comparing dates because date
     // equality requires the time intervals to be exactly the same, and the
     // timeintervals go through a bit of floating point error as they are
     // converted back and forth from the internal representation.
-    XCTAssertEqualWithAccuracy(value, timeStamp.date.timeIntervalSince1970,
-                               kTimeAccuracy,
+    XCTAssertEqualWithAccuracy(value, timeStamp.date.timeIntervalSince1970, kTimeAccuracy,
                                @"Offset %f - Date: %@", (double)value, date);
     [timeStamp release];
 
     // Test Creation - timeIntervalSince1970.
     timeStamp = [[GPBTimestamp alloc] initWithTimeIntervalSince1970:value];
 
-    XCTAssertGreaterThanOrEqual(timeStamp.nanos, 0,
-                                @"Offset %f - Date: %@", (double)value, date);
-    XCTAssertLessThan(timeStamp.nanos, 1e9,
-                      @"Offset %f - Date: %@", (double)value, date);
+    XCTAssertGreaterThanOrEqual(timeStamp.nanos, 0, @"Offset %f - Date: %@", (double)value, date);
+    XCTAssertLessThan(timeStamp.nanos, 1e9, @"Offset %f - Date: %@", (double)value, date);
 
-    XCTAssertEqualWithAccuracy(value, timeStamp.timeIntervalSince1970,
-                               kTimeAccuracy,
+    XCTAssertEqualWithAccuracy(value, timeStamp.timeIntervalSince1970, kTimeAccuracy,
                                @"Offset %f - Date: %@", (double)value, date);
     [timeStamp release];
 
@@ -86,13 +79,10 @@ static const NSTimeInterval kTimeAccuracy = 1e-9;
     timeStamp = [[GPBTimestamp alloc] init];
     timeStamp.date = date;
 
-    XCTAssertGreaterThanOrEqual(timeStamp.nanos, 0,
-                                @"Offset %f - Date: %@", (double)value, date);
-    XCTAssertLessThan(timeStamp.nanos, 1e9,
-                      @"Offset %f - Date: %@", (double)value, date);
+    XCTAssertGreaterThanOrEqual(timeStamp.nanos, 0, @"Offset %f - Date: %@", (double)value, date);
+    XCTAssertLessThan(timeStamp.nanos, 1e9, @"Offset %f - Date: %@", (double)value, date);
 
-    XCTAssertEqualWithAccuracy(value, timeStamp.date.timeIntervalSince1970,
-                               kTimeAccuracy,
+    XCTAssertEqualWithAccuracy(value, timeStamp.date.timeIntervalSince1970, kTimeAccuracy,
                                @"Offset %f - Date: %@", (double)value, date);
     [timeStamp release];
 
@@ -100,13 +90,10 @@ static const NSTimeInterval kTimeAccuracy = 1e-9;
     timeStamp = [[GPBTimestamp alloc] init];
     timeStamp.timeIntervalSince1970 = value;
 
-    XCTAssertGreaterThanOrEqual(timeStamp.nanos, 0,
-                                @"Offset %f - Date: %@", (double)value, date);
-    XCTAssertLessThan(timeStamp.nanos, 1e9,
-                      @"Offset %f - Date: %@", (double)value, date);
+    XCTAssertGreaterThanOrEqual(timeStamp.nanos, 0, @"Offset %f - Date: %@", (double)value, date);
+    XCTAssertLessThan(timeStamp.nanos, 1e9, @"Offset %f - Date: %@", (double)value, date);
 
-    XCTAssertEqualWithAccuracy(value, timeStamp.date.timeIntervalSince1970,
-                               kTimeAccuracy,
+    XCTAssertEqualWithAccuracy(value, timeStamp.date.timeIntervalSince1970, kTimeAccuracy,
                                @"Offset %f - Date: %@", (double)value, date);
 
     [timeStamp release];
@@ -115,50 +102,40 @@ static const NSTimeInterval kTimeAccuracy = 1e-9;
 
 - (void)testDuration {
   // Test negative and positive values.
-  NSTimeInterval values[] = { -1000.0001, -500.0, -0.5, 0, 0.75, 1000.0, 2000.0002 };
+  NSTimeInterval values[] = {-1000.0001, -500.0, -0.5, 0, 0.75, 1000.0, 2000.0002};
   for (size_t i = 0; i < GPBARRAYSIZE(values); ++i) {
     NSTimeInterval value = values[i];
 
     // Test Creation.
-    GPBDuration *duration =
-        [[GPBDuration alloc] initWithTimeInterval:value];
-    XCTAssertEqualWithAccuracy(value, duration.timeInterval, kTimeAccuracy,
-                               @"For interval %f", (double)value);
+    GPBDuration *duration = [[GPBDuration alloc] initWithTimeInterval:value];
+    XCTAssertEqualWithAccuracy(value, duration.timeInterval, kTimeAccuracy, @"For interval %f",
+                               (double)value);
     if (value > 0) {
-      XCTAssertGreaterThanOrEqual(duration.seconds, 0,
-                                  @"For interval %f", (double)value);
-      XCTAssertGreaterThanOrEqual(duration.nanos, 0,
-                                  @"For interval %f", (double)value);
+      XCTAssertGreaterThanOrEqual(duration.seconds, 0, @"For interval %f", (double)value);
+      XCTAssertGreaterThanOrEqual(duration.nanos, 0, @"For interval %f", (double)value);
     } else {
-      XCTAssertLessThanOrEqual(duration.seconds, 0,
-                               @"For interval %f", (double)value);
-      XCTAssertLessThanOrEqual(duration.nanos, 0,
-                               @"For interval %f", (double)value);
+      XCTAssertLessThanOrEqual(duration.seconds, 0, @"For interval %f", (double)value);
+      XCTAssertLessThanOrEqual(duration.nanos, 0, @"For interval %f", (double)value);
     }
     [duration release];
 
     // Test Mutation.
     duration = [[GPBDuration alloc] init];
     duration.timeInterval = value;
-    XCTAssertEqualWithAccuracy(value, duration.timeInterval, kTimeAccuracy,
-                               @"For interval %f", (double)value);
+    XCTAssertEqualWithAccuracy(value, duration.timeInterval, kTimeAccuracy, @"For interval %f",
+                               (double)value);
     if (value > 0) {
-      XCTAssertGreaterThanOrEqual(duration.seconds, 0,
-                                  @"For interval %f", (double)value);
-      XCTAssertGreaterThanOrEqual(duration.nanos, 0,
-                                  @"For interval %f", (double)value);
+      XCTAssertGreaterThanOrEqual(duration.seconds, 0, @"For interval %f", (double)value);
+      XCTAssertGreaterThanOrEqual(duration.nanos, 0, @"For interval %f", (double)value);
     } else {
-      XCTAssertLessThanOrEqual(duration.seconds, 0,
-                               @"For interval %f", (double)value);
-      XCTAssertLessThanOrEqual(duration.nanos, 0,
-                               @"For interval %f", (double)value);
+      XCTAssertLessThanOrEqual(duration.seconds, 0, @"For interval %f", (double)value);
+      XCTAssertLessThanOrEqual(duration.nanos, 0, @"For interval %f", (double)value);
     }
     [duration release];
   }
 }
 
 - (void)testAnyHelpers {
-
   // Set and extract covers most of the code.
 
   AnyTestMessage *subMessage = [AnyTestMessage message];
@@ -177,8 +154,7 @@ static const NSTimeInterval kTimeAccuracy = 1e-9;
   XCTAssertTrue(message2.hasAnyValue);
 
   AnyTestMessage *subMessage2 =
-      (AnyTestMessage *)[message.anyValue unpackMessageClass:[AnyTestMessage class]
-                                                       error:&err];
+      (AnyTestMessage *)[message.anyValue unpackMessageClass:[AnyTestMessage class] error:&err];
   XCTAssertNil(err);
   XCTAssertNotNil(subMessage2);
   XCTAssertEqual(subMessage2.int32Value, 12345);
@@ -190,24 +166,21 @@ static const NSTimeInterval kTimeAccuracy = 1e-9;
   XCTAssertEqualObjects(data2, data);
 
   AnyTestMessage *subMessage3 =
-      (AnyTestMessage *)[message.anyValue unpackMessageClass:[AnyTestMessage class]
-                                                       error:NULL];
+      (AnyTestMessage *)[message.anyValue unpackMessageClass:[AnyTestMessage class] error:NULL];
   XCTAssertNotNil(subMessage3);
   XCTAssertEqualObjects(subMessage2, subMessage3);
 
   // Try to extract wrong type.
 
   GPBTimestamp *wrongMessage =
-      (GPBTimestamp *)[message.anyValue unpackMessageClass:[GPBTimestamp class]
-                                                     error:&err];
+      (GPBTimestamp *)[message.anyValue unpackMessageClass:[GPBTimestamp class] error:&err];
   XCTAssertNotNil(err);
   XCTAssertNil(wrongMessage);
   XCTAssertEqualObjects(err.domain, GPBWellKnownTypesErrorDomain);
   XCTAssertEqual(err.code, GPBWellKnownTypesErrorCodeTypeURLMismatch);
 
-  wrongMessage =
-      (GPBTimestamp *)[message.anyValue unpackMessageClass:[GPBTimestamp class]
-                                                     error:NULL];
+  wrongMessage = (GPBTimestamp *)[message.anyValue unpackMessageClass:[GPBTimestamp class]
+                                                                error:NULL];
   XCTAssertNil(wrongMessage);
 }
 

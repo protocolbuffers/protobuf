@@ -54,15 +54,13 @@
 }
 
 - (void)testSerializationPacked {
-  TestPackedTypes* message =
-      [self packedSetRepeatedCount:kGPBDefaultRepeatCount];
+  TestPackedTypes* message = [self packedSetRepeatedCount:kGPBDefaultRepeatCount];
 
   NSData* rawBytes = message.data;
   [self assertFieldsInOrder:rawBytes];
   XCTAssertEqual(message.serializedSize, (size_t)rawBytes.length);
 
-  TestPackedTypes* message2 =
-      [TestPackedTypes parseFromData:rawBytes error:NULL];
+  TestPackedTypes* message2 = [TestPackedTypes parseFromData:rawBytes error:NULL];
 
   [self assertPackedFieldsSet:message2 repeatedCount:kGPBDefaultRepeatCount];
 }
@@ -72,8 +70,7 @@
   // so if we serealize a TestAllExtensions then parse it as TestAllTypes
   // it should work.
 
-  TestAllExtensions* message =
-      [self allExtensionsSetRepeatedCount:kGPBDefaultRepeatCount];
+  TestAllExtensions* message = [self allExtensionsSetRepeatedCount:kGPBDefaultRepeatCount];
   NSData* rawBytes = message.data;
   [self assertFieldsInOrder:rawBytes];
   XCTAssertEqual(message.serializedSize, (size_t)rawBytes.length);
@@ -86,13 +83,11 @@
 - (void)testSerializePackedExtensions {
   // TestPackedTypes and TestPackedExtensions should have compatible wire
   // formats; check that they serialize to the same string.
-  TestPackedExtensions* message =
-      [self packedExtensionsSetRepeatedCount:kGPBDefaultRepeatCount];
+  TestPackedExtensions* message = [self packedExtensionsSetRepeatedCount:kGPBDefaultRepeatCount];
   NSData* rawBytes = message.data;
   [self assertFieldsInOrder:rawBytes];
 
-  TestPackedTypes* message2 =
-      [self packedSetRepeatedCount:kGPBDefaultRepeatCount];
+  TestPackedTypes* message2 = [self packedSetRepeatedCount:kGPBDefaultRepeatCount];
   NSData* rawBytes2 = message2.data;
 
   XCTAssertEqualObjects(rawBytes, rawBytes2);
@@ -116,7 +111,6 @@
   [self assertAllExtensionsSet:message2 repeatedCount:kGPBDefaultRepeatCount];
 }
 
-
 - (void)testExtensionsSerializedSize {
   size_t allSet = [self allSetRepeatedCount:kGPBDefaultRepeatCount].serializedSize;
   size_t extensionSet = [self allExtensionsSetRepeatedCount:kGPBDefaultRepeatCount].serializedSize;
@@ -125,8 +119,7 @@
 
 - (void)testParsePackedExtensions {
   // Ensure that packed extensions can be properly parsed.
-  TestPackedExtensions* message =
-      [self packedExtensionsSetRepeatedCount:kGPBDefaultRepeatCount];
+  TestPackedExtensions* message = [self packedExtensionsSetRepeatedCount:kGPBDefaultRepeatCount];
   NSData* rawBytes = message.data;
   [self assertFieldsInOrder:rawBytes];
 
@@ -136,8 +129,7 @@
                                                      extensionRegistry:registry
                                                                  error:NULL];
 
-  [self assertPackedExtensionsSet:message2
-                    repeatedCount:kGPBDefaultRepeatCount];
+  [self assertPackedExtensionsSet:message2 repeatedCount:kGPBDefaultRepeatCount];
 }
 
 const int kUnknownTypeId = 1550055;
@@ -145,15 +137,12 @@ const int kUnknownTypeId = 1550055;
 - (void)testSerializeMessageSet {
   // Set up a MSetMessage with two known messages and an unknown one.
   MSetMessage* message_set = [MSetMessage message];
-  [[message_set getExtension:[MSetMessageExtension1 messageSetExtension]]
-      setI:123];
-  [[message_set getExtension:[MSetMessageExtension2 messageSetExtension]]
-      setStr:@"foo"];
+  [[message_set getExtension:[MSetMessageExtension1 messageSetExtension]] setI:123];
+  [[message_set getExtension:[MSetMessageExtension2 messageSetExtension]] setStr:@"foo"];
   GPBUnknownField* unknownField =
       [[[GPBUnknownField alloc] initWithNumber:kUnknownTypeId] autorelease];
   [unknownField addLengthDelimited:[NSData dataWithBytes:"bar" length:3]];
-  GPBUnknownFieldSet* unknownFieldSet =
-      [[[GPBUnknownFieldSet alloc] init] autorelease];
+  GPBUnknownFieldSet* unknownFieldSet = [[[GPBUnknownFieldSet alloc] init] autorelease];
   [unknownFieldSet addField:unknownField];
   [message_set setUnknownFields:unknownFieldSet];
 
@@ -181,8 +170,7 @@ const int kUnknownTypeId = 1550055;
                                      error:NULL];
   XCTAssertEqualObjects(message2.str, @"foo");
 
-  XCTAssertEqualObjects([raw.itemArray[2] message],
-                        [NSData dataWithBytes:"bar" length:3]);
+  XCTAssertEqualObjects([raw.itemArray[2] message], [NSData dataWithBytes:"bar" length:3]);
 }
 
 - (void)testParseMessageSet {
@@ -217,26 +205,19 @@ const int kUnknownTypeId = 1550055;
   NSData* data = [raw data];
 
   // Parse as a MSetMessage and check the contents.
-  MSetMessage* messageSet =
-      [MSetMessage parseFromData:data
-                  extensionRegistry:[MSetUnittestMsetRoot extensionRegistry]
-                              error:NULL];
+  MSetMessage* messageSet = [MSetMessage parseFromData:data
+                                     extensionRegistry:[MSetUnittestMsetRoot extensionRegistry]
+                                                 error:NULL];
 
-  XCTAssertEqual(
-      [[messageSet
-          getExtension:[MSetMessageExtension1 messageSetExtension]] i],
-      123);
-  XCTAssertEqualObjects(
-      [[messageSet
-          getExtension:[MSetMessageExtension2 messageSetExtension]] str],
-      @"foo");
+  XCTAssertEqual([[messageSet getExtension:[MSetMessageExtension1 messageSetExtension]] i], 123);
+  XCTAssertEqualObjects([[messageSet getExtension:[MSetMessageExtension2 messageSetExtension]] str],
+                        @"foo");
 
   XCTAssertEqual([messageSet.unknownFields countOfFields], (NSUInteger)1);
   GPBUnknownField* unknownField = [messageSet.unknownFields getField:kUnknownTypeId];
   XCTAssertNotNil(unknownField);
   XCTAssertEqual(unknownField.lengthDelimitedList.count, (NSUInteger)1);
-  XCTAssertEqualObjects(unknownField.lengthDelimitedList[0],
-                        [NSData dataWithBytes:"bar" length:3]);
+  XCTAssertEqualObjects(unknownField.lengthDelimitedList[0], [NSData dataWithBytes:"bar" length:3]);
 }
 
 - (void)assertFieldsInOrder:(NSData*)data {
