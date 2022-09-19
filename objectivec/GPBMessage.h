@@ -36,6 +36,7 @@
 @class GPBCodedInputStream;
 @class GPBCodedOutputStream;
 @class GPBExtensionDescriptor;
+@class GPBExtensionRegistry;
 @protocol GPBExtensionRegistry;
 @class GPBFieldDescriptor;
 @class GPBUnknownFieldSet;

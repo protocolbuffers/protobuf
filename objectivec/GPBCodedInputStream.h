@@ -31,6 +31,7 @@
 #import <Foundation/Foundation.h>
 
 @class GPBMessage;
+@class GPBExtensionRegistry;
 @protocol GPBExtensionRegistry;
 
 NS_ASSUME_NONNULL_BEGIN
