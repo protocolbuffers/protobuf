@@ -5,7 +5,9 @@
 
 set -e
 
-PROTOC=$(realpath protoc)
+if [[ -z "${PROTOC}" ]]; then
+  PROTOC=$(realpath protoc)
+fi
 if [ ! -f $PROTOC ]; then
   bazel build -c opt //:protoc
   PROTOC=$(realpath bazel-bin/protoc)

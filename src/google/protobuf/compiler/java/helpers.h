@@ -84,9 +84,6 @@ void PrintEnumVerifierLogic(io::Printer* printer,
 // first letter.
 std::string ToCamelCase(const std::string& input, bool lower_first);
 
-char ToUpperCh(char ch);
-char ToLowerCh(char ch);
-
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
 // first letter.
 std::string UnderscoresToCamelCase(const std::string& name,

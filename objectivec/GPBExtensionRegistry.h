@@ -41,6 +41,24 @@ NS_ASSUME_NONNULL_BEGIN
  * GPBExtensionRegistry in which you have registered any extensions that you
  * want to be able to parse. Otherwise, those extensions will just be treated
  * like unknown fields.
+ **/
+@protocol GPBExtensionRegistry <NSObject>
+
+/**
+ * Looks for the extension registered for the given field number on a given
+ * GPBDescriptor.
+ *
+ * @param descriptor  The descriptor to look for a registered extension on.
+ * @param fieldNumber The field number of the extension to look for.
+ *
+ * @return The registered GPBExtensionDescriptor or nil if none was found.
+ **/
+- (nullable GPBExtensionDescriptor *)extensionForDescriptor:(GPBDescriptor *)descriptor
+                                                fieldNumber:(NSInteger)fieldNumber;
+@end
+
+/**
+ * A concrete implementation of `GPBExtensionRegistry`.
  *
  * The *Root classes provide `+extensionRegistry` for the extensions defined
  * in a given file *and* all files it imports. You can also create a
@@ -54,7 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
  * MyMessage *msg = [MyMessage parseData:data extensionRegistry:registry error:&parseError];
  * ```
  **/
-@interface GPBExtensionRegistry : NSObject<NSCopying>
+@interface GPBExtensionRegistry : NSObject<NSCopying, GPBExtensionRegistry>
 
 /**
  * Adds the given GPBExtensionDescriptor to this registry.
@@ -69,18 +87,6 @@ NS_ASSUME_NONNULL_BEGIN
  * @param registry The registry to merge into this registry.
  **/
 - (void)addExtensions:(GPBExtensionRegistry *)registry;
-
-/**
- * Looks for the extension registered for the given field number on a given
- * GPBDescriptor.
- *
- * @param descriptor  The descriptor to look for a registered extension on.
- * @param fieldNumber The field number of the extension to look for.
- *
- * @return The registered GPBExtensionDescriptor or nil if none was found.
- **/
-- (nullable GPBExtensionDescriptor *)extensionForDescriptor:(GPBDescriptor *)descriptor
-                                                fieldNumber:(NSInteger)fieldNumber;
 
 @end
 

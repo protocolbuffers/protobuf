@@ -34,7 +34,7 @@
 
 @class GPBCodedInputStream;
 @class GPBCodedOutputStream;
-@class GPBExtensionRegistry;
+@protocol GPBExtensionRegistry;
 @class GPBFieldDescriptor;
 
 @protocol GPBDictionaryInternalsProtocol
@@ -493,7 +493,7 @@ BOOL GPBDictionaryIsInitializedInternalHelper(NSDictionary *dict,
 
 // Helper to read a map instead.
 void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
-                            GPBExtensionRegistry *registry,
+                            id<GPBExtensionRegistry>registry,
                             GPBFieldDescriptor *field,
                             GPBMessage *parentMessage);
 

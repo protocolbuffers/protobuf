@@ -34,7 +34,7 @@
 #include <utility>
 
 #include "absl/strings/ascii.h"
-#include "google/protobuf/stubs/strutil.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_split.h"
 #include "google/protobuf/compiler/python/helpers.h"
 #include "google/protobuf/descriptor.h"
@@ -577,7 +577,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
   for (const std::pair<std::string, std::string>& option : options) {
     if (option.first == "annotate_code") {
       annotate_code = true;
-    } else if (HasSuffixString(option.first, ".pyi")) {
+    } else if (absl::EndsWith(option.first, ".pyi")) {
       filename = option.first;
     } else {
       *error = "Unknown generator option: " + option.first;

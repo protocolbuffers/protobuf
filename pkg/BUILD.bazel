@@ -365,7 +365,8 @@ cc_dist_library(
     }),
     tags = ["manual"],
     deps = [
-        "//src/google/protobuf",
+        "//src/google/protobuf:wkt_cc_proto",
+        "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf:arena",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/compiler:importer",

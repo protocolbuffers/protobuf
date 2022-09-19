@@ -109,7 +109,8 @@ def MessageToJson(
         names as defined in the .proto file. If False, convert the field
         names to lowerCamelCase.
     indent: The JSON object will be pretty-printed with this indent level.
-        An indent level of 0 or negative will only insert newlines.
+        An indent level of 0 or negative will only insert newlines. If the
+        indent level is None, no newlines will be inserted.
     sort_keys: If True, then the output will be sorted by field names.
     use_integers_for_enums: If true, print integers instead of enum names.
     descriptor_pool: A Descriptor Pool for resolving types. If None use the

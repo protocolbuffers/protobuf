@@ -74,62 +74,6 @@ TEST(StringUtilityTest, ImmuneToLocales) {
   setlocale(LC_NUMERIC, old_locale.c_str());
 }
 
-class ReplaceChars
-    : public ::testing::TestWithParam<
-          std::tuple<std::string, std::string, const char*, char>> {};
-
-TEST_P(ReplaceChars, ReplacesAllOccurencesOfAnyCharInReplaceWithAReplaceChar) {
-  std::string expected = std::get<0>(GetParam());
-  std::string string_to_replace_in = std::get<1>(GetParam());
-  const char* what_to_replace = std::get<2>(GetParam());
-  char replacement = std::get<3>(GetParam());
-  ReplaceCharacters(&string_to_replace_in, what_to_replace, replacement);
-  ASSERT_EQ(expected, string_to_replace_in);
-}
-
-INSTANTIATE_TEST_CASE_P(
-    Replace, ReplaceChars,
-    ::testing::Values(
-        std::make_tuple("", "", "", '_'),    // empty string should remain empty
-        std::make_tuple(" ", " ", "", '_'),  // no replacement string
-        std::make_tuple(" ", " ", "_-abcedf",
-                        '*'),  // replacement character not in string
-        std::make_tuple("replace", "Replace", "R",
-                        'r'),  // replace one character
-        std::make_tuple("not_spaces__", "not\nspaces\t ", " \t\r\n",
-                        '_'),  // replace some special characters
-        std::make_tuple("c++", "cxx", "x",
-                        '+'),  // same character multiple times
-        std::make_tuple("qvvvvvng v T", "queueing a T", "aeiou",
-                        'v')));  // replace all voewls
-
-class StripWs
-    : public ::testing::TestWithParam<std::tuple<std::string, std::string>> {};
-
-TEST_P(StripWs, AlwaysStripsLeadingAndTrailingWhitespace) {
-  std::string expected = std::get<0>(GetParam());
-  std::string string_to_strip = std::get<1>(GetParam());
-  StripWhitespace(&string_to_strip);
-  ASSERT_EQ(expected, string_to_strip);
-}
-
-INSTANTIATE_TEST_CASE_P(
-    Strip, StripWs,
-    ::testing::Values(
-        std::make_tuple("", ""),   // empty string should remain empty
-        std::make_tuple("", " "),  // only ws should become empty
-        std::make_tuple("no whitespace",
-                        " no whitespace"),  // leading ws removed
-        std::make_tuple("no whitespace",
-                        "no whitespace "),  // trailing ws removed
-        std::make_tuple("no whitespace",
-                        " no whitespace "),  // same nb. of leading and trailing
-        std::make_tuple(
-            "no whitespace",
-            "  no whitespace "),  // different nb. of leading/trailing
-        std::make_tuple("no whitespace",
-                        " no whitespace  ")));  // more trailing than leading
-
 }  // anonymous namespace
 }  // namespace protobuf
 }  // namespace google

@@ -881,7 +881,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 }
 
 - (instancetype)initWithData:(NSData *)data
-           extensionRegistry:(GPBExtensionRegistry *)extensionRegistry
+           extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry
                        error:(NSError **)errorPtr {
   if ((self = [self init])) {
     @try {
@@ -912,7 +912,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 
 - (instancetype)initWithCodedInputStream:(GPBCodedInputStream *)input
                        extensionRegistry:
-                           (GPBExtensionRegistry *)extensionRegistry
+                           (id<GPBExtensionRegistry>)extensionRegistry
                                    error:(NSError **)errorPtr {
   if ((self = [self init])) {
     @try {
@@ -1973,7 +1973,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 #pragma mark - mergeFrom
 
 - (void)mergeFromData:(NSData *)data
-    extensionRegistry:(GPBExtensionRegistry *)extensionRegistry {
+    extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
   GPBCodedInputStream *input = [[GPBCodedInputStream alloc] initWithData:data];
   [self mergeFromCodedInputStream:input extensionRegistry:extensionRegistry];
   [input checkLastTagWas:0];
@@ -1983,7 +1983,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 #pragma mark - mergeDelimitedFrom
 
 - (void)mergeDelimitedFromCodedInputStream:(GPBCodedInputStream *)input
-                         extensionRegistry:(GPBExtensionRegistry *)extensionRegistry {
+                         extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
   GPBCodedInputStreamState *state = &input->state_;
   if (GPBCodedInputStreamIsAtEnd(state)) {
     return;
@@ -2003,7 +2003,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 }
 
 + (instancetype)parseFromData:(NSData *)data
-            extensionRegistry:(GPBExtensionRegistry *)extensionRegistry
+            extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry
                         error:(NSError **)errorPtr {
   return [[[self alloc] initWithData:data
                    extensionRegistry:extensionRegistry
@@ -2011,7 +2011,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 }
 
 + (instancetype)parseFromCodedInputStream:(GPBCodedInputStream *)input
-                        extensionRegistry:(GPBExtensionRegistry *)extensionRegistry
+                        extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry
                                     error:(NSError **)errorPtr {
   return
       [[[self alloc] initWithCodedInputStream:input
@@ -2023,7 +2023,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 
 + (instancetype)parseDelimitedFromCodedInputStream:(GPBCodedInputStream *)input
                                  extensionRegistry:
-                                     (GPBExtensionRegistry *)extensionRegistry
+                                     (id<GPBExtensionRegistry>)extensionRegistry
                                              error:(NSError **)errorPtr {
   GPBMessage *message = [[[self alloc] init] autorelease];
   @try {
@@ -2065,7 +2065,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 }
 
 - (void)parseMessageSet:(GPBCodedInputStream *)input
-      extensionRegistry:(GPBExtensionRegistry *)extensionRegistry {
+      extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
   uint32_t typeId = 0;
   NSData *rawBytes = nil;
   GPBExtensionDescriptor *extension = nil;
@@ -2117,7 +2117,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 }
 
 - (BOOL)parseUnknownField:(GPBCodedInputStream *)input
-        extensionRegistry:(GPBExtensionRegistry *)extensionRegistry
+        extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry
                       tag:(uint32_t)tag {
   GPBWireFormat wireType = GPBWireFormatGetTagWireType(tag);
   int32_t fieldNumber = GPBWireFormatGetTagFieldNumber(tag);
@@ -2170,7 +2170,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 
 static void MergeSingleFieldFromCodedInputStream(
     GPBMessage *self, GPBFieldDescriptor *field, GPBFileSyntax syntax,
-    GPBCodedInputStream *input, GPBExtensionRegistry *extensionRegistry) {
+    GPBCodedInputStream *input, id<GPBExtensionRegistry>extensionRegistry) {
   GPBDataType fieldDataType = GPBGetFieldDataType(field);
   switch (fieldDataType) {
 #define CASE_SINGLE_POD(NAME, TYPE, FUNC_TYPE)                             \
@@ -2306,7 +2306,7 @@ static void MergeRepeatedPackedFieldFromCodedInputStream(
 
 static void MergeRepeatedNotPackedFieldFromCodedInputStream(
     GPBMessage *self, GPBFieldDescriptor *field, GPBFileSyntax syntax,
-    GPBCodedInputStream *input, GPBExtensionRegistry *extensionRegistry) {
+    GPBCodedInputStream *input, id<GPBExtensionRegistry>extensionRegistry) {
   GPBCodedInputStreamState *state = &input->state_;
   id genericArray = GetOrCreateArrayIvarWithField(self, field);
   switch (GPBGetFieldDataType(field)) {
@@ -2371,7 +2371,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
 }
 
 - (void)mergeFromCodedInputStream:(GPBCodedInputStream *)input
-                extensionRegistry:(GPBExtensionRegistry *)extensionRegistry {
+                extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
   GPBDescriptor *descriptor = [self descriptor];
   GPBFileSyntax syntax = descriptor.file.syntax;
   GPBCodedInputStreamState *state = &input->state_;

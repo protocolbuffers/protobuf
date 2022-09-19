@@ -45,7 +45,7 @@
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/strutil.h"
+#include "absl/strings/match.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/stubs/stl_util.h"
@@ -1560,7 +1560,7 @@ TEST_F(Utf8ValidationTest, OldVerifyUTF8String) {
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
   ASSERT_EQ(1, errors.size());
   EXPECT_TRUE(
-      HasPrefixString(errors[0],
+      absl::StartsWith(errors[0],
                        "String field contains invalid UTF-8 data when "
                        "serializing a protocol buffer. Use the "
                        "'bytes' type if you intend to send raw bytes."));
