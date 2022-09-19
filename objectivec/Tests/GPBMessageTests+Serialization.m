@@ -113,6 +113,9 @@
   // Proto3 optionals should be just like proto2, zero values also get serialized.
   //
 
+// Disable clang-format for the macros.
+// clang-format off
+
 //%PDDM-DEFINE PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(FIELD, ZERO_VALUE, EXPECTED_LEN)
 //%  {  // optional##FIELD
 //%    Message3Optional *msg = [[Message3Optional alloc] init];
@@ -153,7 +156,6 @@
 //%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Enum, Message3Optional_Enum_Foo, 3)
 //%PDDM-EXPAND PROTO3_TEST_SERIALIZE_OPTIONAL_FIELDS()
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   {  // optionalInt32
     Message3Optional *msg = [[Message3Optional alloc] init];
@@ -415,8 +417,9 @@
     [msg release];
   }
 
-// clang-format on
 //%PDDM-EXPAND-END PROTO3_TEST_SERIALIZE_OPTIONAL_FIELDS()
+
+// clang-format on
 }
 
 - (void)testProto2UnknownEnumToUnknownField {
@@ -520,6 +523,9 @@
   XCTAssertEqual(orig.oneofE1, UnknownEnumsMyEnumPlusExtra_EExtra);
 }
 
+// Disable clang-format for the macros.
+// clang-format off
+
 //%PDDM-DEFINE TEST_ROUNDTRIP_ONEOF(MESSAGE, FIELD, VALUE)
 //%TEST_ROUNDTRIP_ONEOF_ADV(MESSAGE, FIELD, VALUE, )
 //%PDDM-DEFINE TEST_ROUNDTRIP_ONEOF_ADV(MESSAGE, FIELD, VALUE, EQ_SUFFIX)
@@ -583,7 +589,6 @@
 //%
 //%PDDM-EXPAND TEST_ROUNDTRIP_ONEOFS(2, NO)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)testProto2RoundTripOneof {
 
@@ -814,10 +819,8 @@
   [subMessage release];
 }
 
-// clang-format on
 //%PDDM-EXPAND TEST_ROUNDTRIP_ONEOFS(3, YES)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)testProto3RoundTripOneof {
 
@@ -1034,8 +1037,9 @@
   [subMessage release];
 }
 
-// clang-format on
 //%PDDM-EXPAND-END (2 expansions)
+
+// clang-format on
 
 - (void)testPackedUnpackedMessageParsing {
   // packed is optional, a repeated field should parse when packed or unpacked.
