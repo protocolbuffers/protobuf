@@ -58,10 +58,9 @@
 //   xcrun clang -dM -E -x c /dev/null | grep __apple_build_version__
 // Example usage:
 //  #if GPB_STATIC_ANALYZER_ONLY(5621, 5623) ... #endif
-#define GPB_STATIC_ANALYZER_ONLY(BEGIN_APPLE_BUILD_VERSION, END_APPLE_BUILD_VERSION) \
-    (defined(__clang_analyzer__) && \
-     (__apple_build_version__ >= BEGIN_APPLE_BUILD_VERSION && \
-      __apple_build_version__ <= END_APPLE_BUILD_VERSION))
+#define GPB_STATIC_ANALYZER_ONLY(BEGIN_APPLE_BUILD_VERSION, END_APPLE_BUILD_VERSION)       \
+  (defined(__clang_analyzer__) && (__apple_build_version__ >= BEGIN_APPLE_BUILD_VERSION && \
+                                   __apple_build_version__ <= END_APPLE_BUILD_VERSION))
 
 enum {
   kMapKeyFieldNumber = 1,
@@ -349,8 +348,7 @@ size_t GPBDictionaryComputeSizeInternalHelper(NSDictionary *dict, GPBFieldDescri
 }
 
 void GPBDictionaryWriteToStreamInternalHelper(GPBCodedOutputStream *outputStream,
-                                              NSDictionary *dict,
-                                              GPBFieldDescriptor *field) {
+                                              NSDictionary *dict, GPBFieldDescriptor *field) {
   NSCAssert(field.mapKeyDataType == GPBDataTypeString, @"Unexpected key type");
   GPBDataType mapValueType = GPBGetFieldDataType(field);
   uint32_t tag = GPBWireFormatMakeTag(GPBFieldNumber(field), GPBWireFormatLengthDelimited);
@@ -374,7 +372,7 @@ void GPBDictionaryWriteToStreamInternalHelper(GPBCodedOutputStream *outputStream
 BOOL GPBDictionaryIsInitializedInternalHelper(NSDictionary *dict, GPBFieldDescriptor *field) {
   NSCAssert(field.mapKeyDataType == GPBDataTypeString, @"Unexpected key type");
   NSCAssert(GPBGetFieldDataType(field) == GPBDataTypeMessage, @"Unexpected value type");
-  #pragma unused(field)  // For when asserts are off in release.
+#pragma unused(field)  // For when asserts are off in release.
   GPBMessage *msg;
   NSEnumerator *objects = [dict objectEnumerator];
   while ((msg = [objects nextObject])) {
@@ -386,11 +384,8 @@ BOOL GPBDictionaryIsInitializedInternalHelper(NSDictionary *dict, GPBFieldDescri
 }
 
 // Note: if the type is an object, it the retain pass back to the caller.
-static void ReadValue(GPBCodedInputStream *stream,
-                      GPBGenericValue *valueToFill,
-                      GPBDataType type,
-                      id<GPBExtensionRegistry>registry,
-                      GPBFieldDescriptor *field) {
+static void ReadValue(GPBCodedInputStream *stream, GPBGenericValue *valueToFill, GPBDataType type,
+                      id<GPBExtensionRegistry> registry, GPBFieldDescriptor *field) {
   switch (type) {
     case GPBDataTypeBool:
       valueToFill->valueBool = GPBCodedInputStreamReadBool(&stream->state_);
@@ -455,10 +450,8 @@ static void ReadValue(GPBCodedInputStream *stream,
   }
 }
 
-void GPBDictionaryReadEntry(id mapDictionary,
-                            GPBCodedInputStream *stream,
-                            id<GPBExtensionRegistry>registry,
-                            GPBFieldDescriptor *field,
+void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
+                            id<GPBExtensionRegistry> registry, GPBFieldDescriptor *field,
                             GPBMessage *parentMessage) {
   GPBDataType keyDataType = field.mapKeyDataType;
   GPBDataType valueDataType = GPBGetFieldDataType(field);
@@ -472,8 +465,7 @@ void GPBDictionaryReadEntry(id mapDictionary,
   }
 
   GPBCodedInputStreamState *state = &stream->state_;
-  uint32_t keyTag =
-      GPBWireFormatMakeTag(kMapKeyFieldNumber, GPBWireFormatForType(keyDataType, NO));
+  uint32_t keyTag = GPBWireFormatMakeTag(kMapKeyFieldNumber, GPBWireFormatForType(keyDataType, NO));
   uint32_t valueTag =
       GPBWireFormatMakeTag(kMapValueFieldNumber, GPBWireFormatForType(valueDataType, NO));
 
@@ -488,7 +480,7 @@ void GPBDictionaryReadEntry(id mapDictionary,
       // zero signals EOF / limit reached
       break;
     } else {  // Unknown
-      if (![stream skipField:tag]){
+      if (![stream skipField:tag]) {
         hitError = YES;
         break;
       }
@@ -529,21 +521,20 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
     if ((keyDataType == GPBDataTypeString) && GPBDataTypeIsObject(valueDataType)) {
 #if GPB_STATIC_ANALYZER_ONLY(6020053, 7000181)
-     // Limited to Xcode 6.4 - 7.2, are known to fail here. The upper end can
-     // be raised as needed for new Xcodes.
-     //
-     // This is only needed on a "shallow" analyze; on a "deep" analyze, the
-     // existing code path gets this correct. In shallow, the analyzer decides
-     // GPBDataTypeIsObject(valueDataType) is both false and true on a single
-     // path through this function, allowing nil to be used for the
-     // setObject:forKey:.
-     if (value.valueString == nil) {
-       value.valueString = [@"" retain];
-     }
+      // Limited to Xcode 6.4 - 7.2, are known to fail here. The upper end can
+      // be raised as needed for new Xcodes.
+      //
+      // This is only needed on a "shallow" analyze; on a "deep" analyze, the
+      // existing code path gets this correct. In shallow, the analyzer decides
+      // GPBDataTypeIsObject(valueDataType) is both false and true on a single
+      // path through this function, allowing nil to be used for the
+      // setObject:forKey:.
+      if (value.valueString == nil) {
+        value.valueString = [@"" retain];
+      }
 #endif
       // mapDictionary is an NSMutableDictionary
-      [(NSMutableDictionary *)mapDictionary setObject:value.valueString
-                                               forKey:key.valueString];
+      [(NSMutableDictionary *)mapDictionary setObject:value.valueString forKey:key.valueString];
     } else {
       if (valueDataType == GPBDataTypeEnum) {
         if (GPBHasPreservingUnknownEnumSemantics([parentMessage descriptor].file.syntax) ||
@@ -11749,8 +11740,8 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (instancetype)initWithValidationFunction:(GPBEnumValidationFunc)func
-                                rawValues:(const int32_t [])rawValues
-                                   forKeys:(const BOOL [])keys
+                                 rawValues:(const int32_t[])rawValues
+                                   forKeys:(const BOOL[])keys
                                      count:(NSUInteger)count {
   self = [super init];
   if (self) {
@@ -11790,8 +11781,7 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 #if !defined(NS_BLOCK_ASSERTIONS)
 - (void)dealloc {
-  NSAssert(!_autocreator,
-           @"%@: Autocreator must be cleared before release, autocreator: %@",
+  NSAssert(!_autocreator, @"%@: Autocreator must be cleared before release, autocreator: %@",
            [self class], _autocreator);
   [super dealloc];
 }
@@ -11840,7 +11830,7 @@ void GPBDictionaryReadEntry(id mapDictionary,
   return (_valueSet[0] ? 1 : 0) + (_valueSet[1] ? 1 : 0);
 }
 
-- (BOOL)getEnum:(int32_t*)value forKey:(BOOL)key {
+- (BOOL)getEnum:(int32_t *)value forKey:(BOOL)key {
   int idx = (key ? 1 : 0);
   if (_valueSet[idx]) {
     if (value) {
@@ -11855,7 +11845,7 @@ void GPBDictionaryReadEntry(id mapDictionary,
   return NO;
 }
 
-- (BOOL)getRawValue:(int32_t*)rawValue forKey:(BOOL)key {
+- (BOOL)getRawValue:(int32_t *)rawValue forKey:(BOOL)key {
   int idx = (key ? 1 : 0);
   if (_valueSet[idx]) {
     if (rawValue) {
@@ -11866,8 +11856,8 @@ void GPBDictionaryReadEntry(id mapDictionary,
   return NO;
 }
 
-- (void)enumerateKeysAndRawValuesUsingBlock:
-    (void (NS_NOESCAPE ^)(BOOL key, int32_t value, BOOL *stop))block {
+- (void)enumerateKeysAndRawValuesUsingBlock:(void(NS_NOESCAPE ^)(BOOL key, int32_t value,
+                                                                 BOOL *stop))block {
   BOOL stop = NO;
   if (_valueSet[0]) {
     block(NO, _values[0], &stop);
@@ -11877,8 +11867,8 @@ void GPBDictionaryReadEntry(id mapDictionary,
   }
 }
 
-- (void)enumerateKeysAndEnumsUsingBlock:
-    (void (NS_NOESCAPE ^)(BOOL key, int32_t rawValue, BOOL *stop))block {
+- (void)enumerateKeysAndEnumsUsingBlock:(void(NS_NOESCAPE ^)(BOOL key, int32_t rawValue,
+                                                             BOOL *stop))block {
   BOOL stop = NO;
   GPBEnumValidationFunc func = _validationFunc;
   int32_t validatedValue;
@@ -11956,7 +11946,7 @@ void GPBDictionaryReadEntry(id mapDictionary,
   }
 }
 
-- (void)enumerateForTextFormat:(void (NS_NOESCAPE ^)(id keyObj, id valueObj))block {
+- (void)enumerateForTextFormat:(void(NS_NOESCAPE ^)(id keyObj, id valueObj))block {
   if (_valueSet[0]) {
     block(@"false", @(_values[0]));
   }
@@ -11965,8 +11955,7 @@ void GPBDictionaryReadEntry(id mapDictionary,
   }
 }
 
-- (void)setGPBGenericValue:(GPBGenericValue *)value
-     forGPBGenericValueKey:(GPBGenericValue *)key {
+- (void)setGPBGenericValue:(GPBGenericValue *)value forGPBGenericValueKey:(GPBGenericValue *)key {
   int idx = (key->valueBool ? 1 : 0);
   _values[idx] = value->valueInt32;
   _valueSet[idx] = YES;
@@ -11989,8 +11978,7 @@ void GPBDictionaryReadEntry(id mapDictionary,
 - (void)setEnum:(int32_t)value forKey:(BOOL)key {
   if (!_validationFunc(value)) {
     [NSException raise:NSInvalidArgumentException
-                format:@"GPBBoolEnumDictionary: Attempt to set an unknown enum value (%d)",
-     value];
+                format:@"GPBBoolEnumDictionary: Attempt to set an unknown enum value (%d)", value];
   }
   int idx = (key ? 1 : 0);
   _values[idx] = value;
@@ -12027,8 +12015,7 @@ void GPBDictionaryReadEntry(id mapDictionary,
 }
 
 - (void)dealloc {
-  NSAssert(!_autocreator,
-           @"%@: Autocreator must be cleared before release, autocreator: %@",
+  NSAssert(!_autocreator, @"%@: Autocreator must be cleared before release, autocreator: %@",
            [self class], _autocreator);
   [_dictionary release];
   [super dealloc];
@@ -12036,14 +12023,12 @@ void GPBDictionaryReadEntry(id mapDictionary,
 
 #pragma mark Required NSDictionary overrides
 
-- (instancetype)initWithObjects:(const id [])objects
-                        forKeys:(const id<NSCopying> [])keys
+- (instancetype)initWithObjects:(const id[])objects
+                        forKeys:(const id<NSCopying>[])keys
                           count:(NSUInteger)count {
   self = [super init];
   if (self) {
-    _dictionary = [[NSMutableDictionary alloc] initWithObjects:objects
-                                                       forKeys:keys
-                                                         count:count];
+    _dictionary = [[NSMutableDictionary alloc] initWithObjects:objects forKeys:keys count:count];
   }
   return self;
 }
@@ -12116,16 +12101,12 @@ void GPBDictionaryReadEntry(id mapDictionary,
   }
 }
 
-- (void)enumerateKeysAndObjectsUsingBlock:(void (NS_NOESCAPE ^)(id key,
-                                                    id obj,
-                                                    BOOL *stop))block {
+- (void)enumerateKeysAndObjectsUsingBlock:(void(NS_NOESCAPE ^)(id key, id obj, BOOL *stop))block {
   [_dictionary enumerateKeysAndObjectsUsingBlock:block];
 }
 
 - (void)enumerateKeysAndObjectsWithOptions:(NSEnumerationOptions)opts
-                                usingBlock:(void (NS_NOESCAPE ^)(id key,
-                                                     id obj,
-                                                     BOOL *stop))block {
+                                usingBlock:(void(NS_NOESCAPE ^)(id key, id obj, BOOL *stop))block {
   [_dictionary enumerateKeysAndObjectsWithOptions:opts usingBlock:block];
 }
 
