@@ -57,13 +57,13 @@ def _get_real_short_path(file):
 def _get_real_root(ctx, file):
     real_short_path = _get_real_short_path(file)
     root = file.path[:-len(real_short_path) - 1]
-    if not _is_google3 and ctx.rule.attr.strip_import_prefix and ctx.rule.attr.strip_import_prefix != "DO_NOT_STRIP":
+    if not _is_google3 and ctx.rule.attr.strip_import_prefix:
         root = paths.join(root, ctx.rule.attr.strip_import_prefix[1:])
     return root
 
 def _generate_output_file(ctx, src, extension):
     package = ctx.label.package
-    if not _is_google3 and ctx.rule.attr.strip_import_prefix and ctx.rule.attr.strip_import_prefix != "DO_NOT_STRIP":
+    if not _is_google3 and ctx.rule.attr.strip_import_prefix and ctx.rule.attr.strip_import_prefix != "/":
         package = package[len(ctx.rule.attr.strip_import_prefix):]
     real_short_path = _get_real_short_path(src)
     real_short_path = paths.relativize(real_short_path, package)
