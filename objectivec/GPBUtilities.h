@@ -50,8 +50,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * @return An NSString with the TextFormat of the message.
  **/
-NSString *GPBTextFormatForMessage(GPBMessage *message,
-                                  NSString * __nullable lineIndent);
+NSString *GPBTextFormatForMessage(GPBMessage *message, NSString *__nullable lineIndent);
 
 /**
  * Generates a string that should be a valid "TextFormat" for the C++ version
@@ -63,8 +62,8 @@ NSString *GPBTextFormatForMessage(GPBMessage *message,
  *
  * @return An NSString with the TextFormat of the unknown field set.
  **/
-NSString *GPBTextFormatForUnknownFieldSet(GPBUnknownFieldSet * __nullable unknownSet,
-                                          NSString * __nullable lineIndent);
+NSString *GPBTextFormatForUnknownFieldSet(GPBUnknownFieldSet *__nullable unknownSet,
+                                          NSString *__nullable lineIndent);
 
 /**
  * Checks if the given field number is set on a message.
