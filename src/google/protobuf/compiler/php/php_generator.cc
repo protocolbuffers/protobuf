@@ -50,29 +50,11 @@ const std::string kDescriptorMetadataFile =
     "GPBMetadata/Google/Protobuf/Internal/Descriptor.php";
 const std::string kDescriptorDirName = "Google/Protobuf/Internal";
 const std::string kDescriptorPackageName = "Google\\Protobuf\\Internal";
-const char* const kReservedNames[] = {
-    "abstract",     "and",        "array",        "as",         "break",
-    "callable",     "case",       "catch",        "class",      "clone",
-    "const",        "continue",   "declare",      "default",    "die",
-    "do",           "echo",       "else",         "elseif",     "empty",
-    "enddeclare",   "endfor",     "endforeach",   "endif",      "endswitch",
-    "endwhile",     "eval",       "exit",         "extends",    "final",
-    "finally",      "fn",         "for",          "foreach",    "function",
-    "global",       "goto",       "if",           "implements", "include",
-    "include_once", "instanceof", "insteadof",    "interface",  "isset",
-    "list",         "match",      "namespace",    "new",        "or",
-    "parent",       "print",      "private",      "protected",  "public",
-    "readonly",     "require",    "require_once", "return",     "self",
-    "static",       "switch",     "throw",        "trait",      "try",
-    "unset",        "use",        "var",          "while",      "xor",
-    "yield",        "int",        "float",        "bool",       "string",
-    "true",         "false",      "null",         "void",       "iterable"};
 const char* const kValidConstantNames[] = {
     "int",   "float", "bool", "string",   "true",
     "false", "null",  "void", "iterable", "parent",
     "self", "readonly"
 };
-const int kReservedNamesSize = 80;
 const int kValidConstantNamesSize = 12;
 const int kFieldSetter = 1;
 const int kFieldGetter = 2;
@@ -124,31 +106,6 @@ void GenerateServiceDocComment(io::Printer* printer,
 void GenerateServiceMethodDocComment(io::Printer* printer,
                               const MethodDescriptor* method);
 
-std::string ReservedNamePrefix(const std::string& classname,
-                                const FileDescriptor* file) {
-  bool is_reserved = false;
-
-  std::string lower = classname;
-  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
-
-  for (int i = 0; i < kReservedNamesSize; i++) {
-    if (lower == kReservedNames[i]) {
-      is_reserved = true;
-      break;
-    }
-  }
-
-  if (is_reserved) {
-    if (file->package() == "google.protobuf") {
-      return "GPB";
-    } else {
-      return "PB";
-    }
-  }
-
-  return "";
-}
-
 template <typename DescriptorType>
 std::string DescriptorFullName(const DescriptorType* desc, bool is_internal) {
   if (is_internal) {
@@ -157,34 +114,6 @@ std::string DescriptorFullName(const DescriptorType* desc, bool is_internal) {
   } else {
     return desc->full_name();
   }
-}
-
-template <typename DescriptorType>
-std::string ClassNamePrefix(const std::string& classname,
-                            const DescriptorType* desc) {
-  const std::string& prefix = (desc->file()->options()).php_class_prefix();
-  if (!prefix.empty()) {
-    return prefix;
-  }
-
-  return ReservedNamePrefix(classname, desc->file());
-}
-
-template <typename DescriptorType>
-std::string GeneratedClassNameImpl(const DescriptorType* desc) {
-  std::string classname = ClassNamePrefix(desc->name(), desc) + desc->name();
-  const Descriptor* containing = desc->containing_type();
-  while (containing != NULL) {
-    classname = ClassNamePrefix(containing->name(), desc) + containing->name()
-       + '\\' + classname;
-    containing = containing->containing_type();
-  }
-  return classname;
-}
-
-std::string GeneratedClassNameImpl(const ServiceDescriptor* desc) {
-  std::string classname = desc->name();
-  return ClassNamePrefix(classname, desc) + classname;
 }
 
 template <typename DescriptorType>
@@ -199,15 +128,7 @@ std::string LegacyGeneratedClassName(const DescriptorType* desc) {
 }
 
 std::string ClassNamePrefix(const std::string& classname) {
-  std::string lower = classname;
-  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
-
-  for (int i = 0; i < kReservedNamesSize; i++) {
-    if (lower == kReservedNames[i]) {
-      return "PB";
-    }
-  }
-
+  if (IsReservedName(classname)) return "PB";
   return "";
 }
 
@@ -217,12 +138,7 @@ std::string ConstantNamePrefix(const std::string& classname) {
   std::string lower = classname;
   std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
 
-  for (int i = 0; i < kReservedNamesSize; i++) {
-    if (lower == kReservedNames[i]) {
-      is_reserved = true;
-      break;
-    }
-  }
+  is_reserved = IsReservedName(lower);
 
   for (int i = 0; i < kValidConstantNamesSize; i++) {
     if (lower == kValidConstantNames[i]) {
@@ -257,7 +173,7 @@ std::string RootPhpNamespace(const DescriptorType* desc,
 
 template <typename DescriptorType>
 std::string FullClassName(const DescriptorType* desc, const Options& options) {
-  std::string classname = GeneratedClassNameImpl(desc);
+  std::string classname = GeneratedClassName(desc);
   std::string php_namespace = RootPhpNamespace(desc, options);
   if (!php_namespace.empty()) {
     return php_namespace + "\\" + classname;
@@ -1312,7 +1228,7 @@ void LegacyGenerateClassFile(const FileDescriptor* file,
   Outdent(&printer);
   printer.Print("}\n");
   printer.Print("class_exists(^new^::class);\n",
-      "new", GeneratedClassNameImpl(desc));
+      "new", GeneratedClassName(desc));
   printer.Print("@trigger_error('^old^ is deprecated and will be removed in "
       "the next major release. Use ^fullname^ instead', E_USER_DEPRECATED);\n\n",
       "old", LegacyFullClassName(desc, options),
@@ -2341,18 +2257,6 @@ void GenerateCWellKnownTypes(const std::vector<const FileDescriptor*>& files,
 }
 
 }  // namespace
-
-std::string GeneratedClassName(const Descriptor* desc) {
-  return GeneratedClassNameImpl(desc);
-}
-
-std::string GeneratedClassName(const EnumDescriptor* desc) {
-  return GeneratedClassNameImpl(desc);
-}
-
-std::string GeneratedClassName(const ServiceDescriptor* desc) {
-  return GeneratedClassNameImpl(desc);
-}
 
 bool Generator::Generate(const FileDescriptor* file,
                          const std::string& parameter,

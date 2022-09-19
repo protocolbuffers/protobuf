@@ -9,10 +9,20 @@ load("//build_defs:cpp_opts.bzl", "COPTS")
 cc_library(
     name = "names",
     hdrs = ["names.h"],
+    srcs = [
+        # Internal dependencies.
+        "names.cc",
+        "name_resolver.cc",
+        "name_resolver.h",
+        "options.h",
+    ],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/java",
     visibility = ["//visibility:public"],
-    deps = ["//src/google/protobuf:protobuf_nowkt"],
+    deps = [
+        "//src/google/protobuf:protobuf_nowkt",
+        "@com_google_absl//absl/container:flat_hash_set",
+    ],
 )
 
 cc_library(
@@ -41,7 +51,6 @@ cc_library(
         "message_field_lite.cc",
         "message_lite.cc",
         "message_serialization.cc",
-        "name_resolver.cc",
         "primitive_field.cc",
         "primitive_field_lite.cc",
         "service.cc",
@@ -73,8 +82,6 @@ cc_library(
         "message_field_lite.h",
         "message_lite.h",
         "message_serialization.h",
-        "name_resolver.h",
-        "options.h",
         "primitive_field.h",
         "primitive_field_lite.h",
         "service.h",

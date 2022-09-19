@@ -9,10 +9,14 @@ load("//build_defs:cpp_opts.bzl", "COPTS")
 cc_library(
     name = "names",
     hdrs = ["names.h"],
+    srcs = ["names.cc"],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/csharp",
     visibility = ["//visibility:public"],
-    deps = ["//src/google/protobuf:protobuf_nowkt"],
+    deps = [
+        "//src/google/protobuf:protobuf_nowkt",
+        "@com_google_absl//absl/strings",
+    ],
 )
 
 cc_library(

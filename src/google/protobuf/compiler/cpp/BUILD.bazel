@@ -10,6 +10,12 @@ load("//build_defs:cpp_opts.bzl", "COPTS")
 cc_library(
     name = "names",
     hdrs = ["names.h"],
+    srcs = [
+        # Internal dependencies.
+        "helpers.h",
+        "helpers.cc",
+        "options.h",
+    ],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/cpp",
     visibility = ["//visibility:public"],
@@ -25,7 +31,6 @@ cc_library(
         "field.cc",
         "file.cc",
         "generator.cc",
-        "helpers.cc",
         "map_field.cc",
         "message.cc",
         "message_field.cc",
@@ -42,12 +47,10 @@ cc_library(
         "field.h",
         "file.h",
         "generator.h",
-        "helpers.h",
         "map_field.h",
         "message.h",
         "message_field.h",
         "message_layout_helper.h",
-        "options.h",
         "padding_optimizer.h",
         "parse_function_generator.h",
         "primitive_field.h",
