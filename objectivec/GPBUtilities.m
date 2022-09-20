@@ -115,18 +115,16 @@ void GPBMessageDropUnknownFieldsRecursively(GPBMessage *initialMessage) {
           switch (field.mapKeyDataType) {
             case GPBDataTypeBool:
               [(GPBBoolObjectDictionary *)rawFieldMap
-                  enumerateKeysAndObjectsUsingBlock:^(BOOL key, id _Nonnull object,
-                                                      BOOL *_Nonnull stop) {
-#pragma unused(key, stop)
+                  enumerateKeysAndObjectsUsingBlock:^(__unused BOOL key, id _Nonnull object,
+                                                      __unused BOOL *_Nonnull stop) {
                     [todo addObject:object];
                   }];
               break;
             case GPBDataTypeFixed32:
             case GPBDataTypeUInt32:
               [(GPBUInt32ObjectDictionary *)rawFieldMap
-                  enumerateKeysAndObjectsUsingBlock:^(uint32_t key, id _Nonnull object,
-                                                      BOOL *_Nonnull stop) {
-#pragma unused(key, stop)
+                  enumerateKeysAndObjectsUsingBlock:^(__unused uint32_t key, id _Nonnull object,
+                                                      __unused BOOL *_Nonnull stop) {
                     [todo addObject:object];
                   }];
               break;
@@ -134,18 +132,16 @@ void GPBMessageDropUnknownFieldsRecursively(GPBMessage *initialMessage) {
             case GPBDataTypeSFixed32:
             case GPBDataTypeSInt32:
               [(GPBInt32ObjectDictionary *)rawFieldMap
-                  enumerateKeysAndObjectsUsingBlock:^(int32_t key, id _Nonnull object,
-                                                      BOOL *_Nonnull stop) {
-#pragma unused(key, stop)
+                  enumerateKeysAndObjectsUsingBlock:^(__unused int32_t key, id _Nonnull object,
+                                                      __unused BOOL *_Nonnull stop) {
                     [todo addObject:object];
                   }];
               break;
             case GPBDataTypeFixed64:
             case GPBDataTypeUInt64:
               [(GPBUInt64ObjectDictionary *)rawFieldMap
-                  enumerateKeysAndObjectsUsingBlock:^(uint64_t key, id _Nonnull object,
-                                                      BOOL *_Nonnull stop) {
-#pragma unused(key, stop)
+                  enumerateKeysAndObjectsUsingBlock:^(__unused uint64_t key, id _Nonnull object,
+                                                      __unused BOOL *_Nonnull stop) {
                     [todo addObject:object];
                   }];
               break;
@@ -153,17 +149,16 @@ void GPBMessageDropUnknownFieldsRecursively(GPBMessage *initialMessage) {
             case GPBDataTypeSFixed64:
             case GPBDataTypeSInt64:
               [(GPBInt64ObjectDictionary *)rawFieldMap
-                  enumerateKeysAndObjectsUsingBlock:^(int64_t key, id _Nonnull object,
-                                                      BOOL *_Nonnull stop) {
-#pragma unused(key, stop)
+                  enumerateKeysAndObjectsUsingBlock:^(__unused int64_t key, id _Nonnull object,
+                                                      __unused BOOL *_Nonnull stop) {
                     [todo addObject:object];
                   }];
               break;
             case GPBDataTypeString:
               [(NSDictionary *)rawFieldMap
-                  enumerateKeysAndObjectsUsingBlock:^(
-                      NSString *_Nonnull key, GPBMessage *_Nonnull obj, BOOL *_Nonnull stop) {
-#pragma unused(key, stop)
+                  enumerateKeysAndObjectsUsingBlock:^(__unused NSString *_Nonnull key,
+                                                      GPBMessage *_Nonnull obj,
+                                                      __unused BOOL *_Nonnull stop) {
                     [todo addObject:obj];
                   }];
               break;
@@ -1604,8 +1599,7 @@ static void AppendTextFormatForMapMessageField(id map, GPBFieldDescriptor *field
   if ((keyDataType == GPBDataTypeString) && GPBDataTypeIsObject(valueDataType)) {
     // map is an NSDictionary.
     NSDictionary *dict = map;
-    [dict enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
-#pragma unused(stop)
+    [dict enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, __unused BOOL *stop) {
       [toStr appendString:(isFirst ? msgStartFirst : msgStart)];
       isFirst = NO;
 
@@ -1997,11 +1991,11 @@ NSString *GPBTextFormatForUnknownFieldSet(GPBUnknownFieldSet *unknownSet, NSStri
   for (GPBUnknownField *field in [unknownSet sortedFields]) {
     int32_t fieldNumber = [field number];
 
-#define PRINT_LOOP(PROPNAME, CTYPE, FORMAT)                                              \
-  [field.PROPNAME enumerateValuesWithBlock:^(CTYPE value, NSUInteger idx, BOOL * stop) { \
-    _Pragma("unused(idx, stop)");                                                        \
-    [result appendFormat:@"%@%d: " FORMAT "\n", lineIndent, fieldNumber, value];         \
-  }];
+#define PRINT_LOOP(PROPNAME, CTYPE, FORMAT)                                                    \
+  [field.PROPNAME                                                                              \
+      enumerateValuesWithBlock:^(CTYPE value, __unused NSUInteger idx, __unused BOOL * stop) { \
+        [result appendFormat:@"%@%d: " FORMAT "\n", lineIndent, fieldNumber, value];           \
+      }];
 
     PRINT_LOOP(varintList, uint64_t, "%llu");
     PRINT_LOOP(fixed32List, uint32_t, "0x%X");
@@ -2180,14 +2174,12 @@ NSString *GPBDecodeTextFormatName(const uint8_t *decodeData, int32_t key, NSStri
 
 // Shim from the older generated code into the runtime.
 void GPBSetInt32IvarWithFieldInternal(GPBMessage *self, GPBFieldDescriptor *field, int32_t value,
-                                      GPBFileSyntax syntax) {
-#pragma unused(syntax)
+                                      __unused GPBFileSyntax syntax) {
   GPBSetMessageInt32Field(self, field, value);
 }
 
 void GPBMaybeClearOneof(GPBMessage *self, GPBOneofDescriptor *oneof, int32_t oneofHasIndex,
-                        uint32_t fieldNumberNotToClear) {
-#pragma unused(fieldNumberNotToClear)
+                        __unused uint32_t fieldNumberNotToClear) {
 #if defined(DEBUG) && DEBUG
   NSCAssert([[self descriptor] oneofWithName:oneof.name] == oneof,
             @"OneofDescriptor %@ doesn't appear to be for %@ messages.", oneof.name, [self class]);

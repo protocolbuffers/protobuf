@@ -101,13 +101,11 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
 //%  XCTAssertNotNil(array);
 //%  XCTAssertEqual(array.count, 0U);
 //%  XCTAssertThrowsSpecificNamed([array valueAtIndex:0], NSException, NSRangeException);
-//%  [array enumerateValuesWithBlock:^(TYPE value, NSUInteger idx, BOOL *stop) {
-//%    #pragma unused(value, idx, stop)
+//%  [array enumerateValuesWithBlock:^(__unused TYPE value, __unused NSUInteger idx, __unused BOOL *stop) {
 //%    XCTFail(@"Shouldn't get here!");
 //%  }];
 //%  [array enumerateValuesWithOptions:NSEnumerationReverse
-//%                         usingBlock:^(TYPE value, NSUInteger idx, BOOL *stop) {
-//%    #pragma unused(value, idx, stop)
+//%                         usingBlock:^(__unused TYPE value, __unused NSUInteger idx, __unused BOOL *stop) {
 //%    XCTFail(@"Shouldn't get here!");
 //%  }];
 //%  [array release];
@@ -445,13 +443,11 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertNotNil(array);
   XCTAssertEqual(array.count, 0U);
   XCTAssertThrowsSpecificNamed([array valueAtIndex:0], NSException, NSRangeException);
-  [array enumerateValuesWithBlock:^(int32_t value, NSUInteger idx, BOOL *stop) {
-    #pragma unused(value, idx, stop)
+  [array enumerateValuesWithBlock:^(__unused int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [array enumerateValuesWithOptions:NSEnumerationReverse
-                         usingBlock:^(int32_t value, NSUInteger idx, BOOL *stop) {
-    #pragma unused(value, idx, stop)
+                         usingBlock:^(__unused int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [array release];
@@ -789,13 +785,11 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertNotNil(array);
   XCTAssertEqual(array.count, 0U);
   XCTAssertThrowsSpecificNamed([array valueAtIndex:0], NSException, NSRangeException);
-  [array enumerateValuesWithBlock:^(uint32_t value, NSUInteger idx, BOOL *stop) {
-    #pragma unused(value, idx, stop)
+  [array enumerateValuesWithBlock:^(__unused uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [array enumerateValuesWithOptions:NSEnumerationReverse
-                         usingBlock:^(uint32_t value, NSUInteger idx, BOOL *stop) {
-    #pragma unused(value, idx, stop)
+                         usingBlock:^(__unused uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [array release];
@@ -1133,13 +1127,11 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertNotNil(array);
   XCTAssertEqual(array.count, 0U);
   XCTAssertThrowsSpecificNamed([array valueAtIndex:0], NSException, NSRangeException);
-  [array enumerateValuesWithBlock:^(int64_t value, NSUInteger idx, BOOL *stop) {
-    #pragma unused(value, idx, stop)
+  [array enumerateValuesWithBlock:^(__unused int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [array enumerateValuesWithOptions:NSEnumerationReverse
-                         usingBlock:^(int64_t value, NSUInteger idx, BOOL *stop) {
-    #pragma unused(value, idx, stop)
+                         usingBlock:^(__unused int64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [array release];
@@ -1477,13 +1469,11 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertNotNil(array);
   XCTAssertEqual(array.count, 0U);
   XCTAssertThrowsSpecificNamed([array valueAtIndex:0], NSException, NSRangeException);
-  [array enumerateValuesWithBlock:^(uint64_t value, NSUInteger idx, BOOL *stop) {
-    #pragma unused(value, idx, stop)
+  [array enumerateValuesWithBlock:^(__unused uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [array enumerateValuesWithOptions:NSEnumerationReverse
-                         usingBlock:^(uint64_t value, NSUInteger idx, BOOL *stop) {
-    #pragma unused(value, idx, stop)
+                         usingBlock:^(__unused uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [array release];
@@ -1821,13 +1811,11 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertNotNil(array);
   XCTAssertEqual(array.count, 0U);
   XCTAssertThrowsSpecificNamed([array valueAtIndex:0], NSException, NSRangeException);
-  [array enumerateValuesWithBlock:^(float value, NSUInteger idx, BOOL *stop) {
-    #pragma unused(value, idx, stop)
+  [array enumerateValuesWithBlock:^(__unused float value, __unused NSUInteger idx, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [array enumerateValuesWithOptions:NSEnumerationReverse
-                         usingBlock:^(float value, NSUInteger idx, BOOL *stop) {
-    #pragma unused(value, idx, stop)
+                         usingBlock:^(__unused float value, __unused NSUInteger idx, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [array release];
@@ -2165,13 +2153,11 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertNotNil(array);
   XCTAssertEqual(array.count, 0U);
   XCTAssertThrowsSpecificNamed([array valueAtIndex:0], NSException, NSRangeException);
-  [array enumerateValuesWithBlock:^(double value, NSUInteger idx, BOOL *stop) {
-    #pragma unused(value, idx, stop)
+  [array enumerateValuesWithBlock:^(__unused double value, __unused NSUInteger idx, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [array enumerateValuesWithOptions:NSEnumerationReverse
-                         usingBlock:^(double value, NSUInteger idx, BOOL *stop) {
-    #pragma unused(value, idx, stop)
+                         usingBlock:^(__unused double value, __unused NSUInteger idx, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [array release];
@@ -2509,13 +2495,11 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertNotNil(array);
   XCTAssertEqual(array.count, 0U);
   XCTAssertThrowsSpecificNamed([array valueAtIndex:0], NSException, NSRangeException);
-  [array enumerateValuesWithBlock:^(BOOL value, NSUInteger idx, BOOL *stop) {
-    #pragma unused(value, idx, stop)
+  [array enumerateValuesWithBlock:^(__unused BOOL value, __unused NSUInteger idx, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [array enumerateValuesWithOptions:NSEnumerationReverse
-                         usingBlock:^(BOOL value, NSUInteger idx, BOOL *stop) {
-    #pragma unused(value, idx, stop)
+                         usingBlock:^(__unused BOOL value, __unused NSUInteger idx, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [array release];
@@ -2853,13 +2837,11 @@ static BOOL TestingEnum_IsValidValue2(int32_t value) {
   XCTAssertNotNil(array);
   XCTAssertEqual(array.count, 0U);
   XCTAssertThrowsSpecificNamed([array valueAtIndex:0], NSException, NSRangeException);
-  [array enumerateValuesWithBlock:^(int32_t value, NSUInteger idx, BOOL *stop) {
-    #pragma unused(value, idx, stop)
+  [array enumerateValuesWithBlock:^(__unused int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [array enumerateValuesWithOptions:NSEnumerationReverse
-                         usingBlock:^(int32_t value, NSUInteger idx, BOOL *stop) {
-    #pragma unused(value, idx, stop)
+                         usingBlock:^(__unused int32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
     XCTFail(@"Shouldn't get here!");
   }];
   [array release];
