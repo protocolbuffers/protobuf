@@ -40,6 +40,7 @@
 
 #include <string>
 
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/compiler/java/options.h"
 
 namespace google {

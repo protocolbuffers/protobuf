@@ -127,11 +127,6 @@ std::string LegacyGeneratedClassName(const DescriptorType* desc) {
   return ClassNamePrefix(classname, desc) + classname;
 }
 
-std::string ClassNamePrefix(const std::string& classname) {
-  if (IsReservedName(classname)) return "PB";
-  return "";
-}
-
 std::string ConstantNamePrefix(const std::string& classname) {
   bool is_reserved = false;
 
@@ -199,6 +194,11 @@ std::string LegacyFullClassName(const DescriptorType* desc,
   return classname;
 }
 
+std::string PhpNamePrefix(const std::string& classname) {
+  if (IsReservedName(classname)) return "PB";
+  return "";
+}
+
 std::string PhpName(const std::string& full_name, const Options& options) {
   if (options.is_descriptor) {
     return kDescriptorPackageName;
@@ -212,7 +212,7 @@ std::string PhpName(const std::string& full_name, const Options& options) {
       segment += full_name[i] + ('A' - 'a');
       cap_next_letter = false;
     } else if (full_name[i] == '.') {
-      result += ClassNamePrefix(segment) + segment + '\\';
+      result += PhpNamePrefix(segment) + segment + '\\';
       segment = "";
       cap_next_letter = true;
     } else {
@@ -220,7 +220,7 @@ std::string PhpName(const std::string& full_name, const Options& options) {
       cap_next_letter = false;
     }
   }
-  result += ClassNamePrefix(segment) + segment;
+  result += PhpNamePrefix(segment) + segment;
   return result;
 }
 

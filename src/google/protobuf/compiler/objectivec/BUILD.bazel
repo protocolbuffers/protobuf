@@ -9,14 +9,30 @@ load("//build_defs:cpp_opts.bzl", "COPTS")
 cc_library(
     name = "names",
     hdrs = ["names.h"],
-    srcs = [
-        "names.cc",
-        "objectivec_nsobject_methods.h",
-    ],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/objectivec",
     visibility = ["//visibility:public"],
-    deps = ["//src/google/protobuf:protobuf_nowkt"],
+    deps = [
+        ":names_internal",
+    ],
+)
+
+cc_library(
+    name = "names_internal",
+    hdrs = [
+        "names.h",
+        "objectivec_nsobject_methods.h",
+    ],
+    srcs = [
+        "names.cc",
+    ],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/objectivec",
+    visibility = ["//pkg:__pkg__"],
+    deps = [
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf:protobuf_nowkt",
+    ],
 )
 
 cc_library(

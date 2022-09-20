@@ -41,7 +41,6 @@
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/descriptor.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -188,19 +187,6 @@ template <typename Descriptor>
 std::string AnnotationFileName(const Descriptor* descriptor,
                                const std::string& suffix) {
   return descriptor->name() + suffix + ".java.pb.meta";
-}
-
-template <typename Descriptor>
-void MaybePrintGeneratedAnnotation(Context* context, io::Printer* printer,
-                                   Descriptor* descriptor, bool immutable,
-                                   const std::string& suffix = "") {
-  if (IsOwnFile(descriptor, immutable)) {
-    PrintGeneratedAnnotation(printer, '$',
-                             context->options().annotate_code
-                                 ? AnnotationFileName(descriptor, suffix)
-                                 : "",
-                             context->options());
-  }
 }
 
 // Get the unqualified name that should be used for a field's field
