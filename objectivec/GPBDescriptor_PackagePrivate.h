@@ -348,15 +348,7 @@ GPB_INLINE BOOL GPBExtensionIsWireFormat(GPBExtensionDescription *description) {
 
 // Helper for compile time assets.
 #ifndef GPBInternalCompileAssert
-#if __has_feature(c_static_assert) || __has_extension(c_static_assert)
 #define GPBInternalCompileAssert(test, msg) _Static_assert((test), #msg)
-#else
-// Pre-Xcode 7 support.
-#define GPBInternalCompileAssertSymbolInner(line, msg) GPBInternalCompileAssert##line##__##msg
-#define GPBInternalCompileAssertSymbol(line, msg) GPBInternalCompileAssertSymbolInner(line, msg)
-#define GPBInternalCompileAssert(test, msg) \
-  typedef char GPBInternalCompileAssertSymbol(__LINE__, msg)[((test) ? 1 : -1)]
-#endif  // __has_feature(c_static_assert) || __has_extension(c_static_assert)
 #endif  // GPBInternalCompileAssert
 
 // Sanity check that there isn't padding between the field description
