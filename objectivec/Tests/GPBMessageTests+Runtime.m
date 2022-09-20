@@ -2600,8 +2600,7 @@
 
   // Ensure the messages are unique per map.
   [msg1.mapInt32ForeignMessage
-      enumerateKeysAndObjectsUsingBlock:^(int32_t key, id value, BOOL *stop) {
-#pragma unused(stop)
+      enumerateKeysAndObjectsUsingBlock:^(int32_t key, id value, __unused BOOL *stop) {
         ForeignMessage *subMsg2 = [msg2.mapInt32ForeignMessage objectForKey:key];
         XCTAssertNotEqual(value, subMsg2);  // Ptr compare, new object.
       }];

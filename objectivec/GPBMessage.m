@@ -953,13 +953,12 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
               NSMutableDictionary *newDict =
                   [[NSMutableDictionary alloc] initWithCapacity:existingDict.count];
               newValue = newDict;
-              [existingDict
-                  enumerateKeysAndObjectsUsingBlock:^(NSString *key, GPBMessage *msg, BOOL *stop) {
-#pragma unused(stop)
-                    GPBMessage *copiedMsg = [msg copyWithZone:zone];
-                    [newDict setObject:copiedMsg forKey:key];
-                    [copiedMsg release];
-                  }];
+              [existingDict enumerateKeysAndObjectsUsingBlock:^(NSString *key, GPBMessage *msg,
+                                                                __unused BOOL *stop) {
+                GPBMessage *copiedMsg = [msg copyWithZone:zone];
+                [newDict setObject:copiedMsg forKey:key];
+                [copiedMsg release];
+              }];
             } else {
               // Is one of the GPB*ObjectDictionary classes.  Type doesn't
               // matter, just need one to invoke the selector.
@@ -2909,8 +2908,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
 #define CASE_REPEATED_POD_EXTRA(NAME, TYPE, ARRAY_TYPE, ARRAY_ACCESSOR_NAME)  \
         case GPBDataType##NAME: {                                             \
           GPB##ARRAY_TYPE##Array *array = genericArray;                       \
-          [array enumerate##ARRAY_ACCESSOR_NAME##ValuesWithBlock:^(TYPE value, NSUInteger idx, BOOL *stop) { \
-            _Pragma("unused(idx, stop)");                                     \
+          [array enumerate##ARRAY_ACCESSOR_NAME##ValuesWithBlock:^(TYPE value, __unused NSUInteger idx, __unused BOOL *stop) { \
             dataSize += GPBCompute##NAME##SizeNoTag(value);                   \
           }];                                                                 \
           break;                                                              \
