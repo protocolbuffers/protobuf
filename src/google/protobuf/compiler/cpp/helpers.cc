@@ -43,6 +43,7 @@
 #include <queue>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
@@ -1085,6 +1086,46 @@ bool IsWellKnownMessage(const FileDescriptor* file) {
       "google/protobuf/wrappers.proto",
   };
   return well_known_files->find(file->name()) != well_known_files->end();
+}
+
+void NamespaceOpener::ChangeTo(absl::string_view name) {
+  std::vector<std::string> new_stack =
+      absl::StrSplit(name, "::", absl::SkipEmpty());
+  size_t len = std::min(name_stack_.size(), new_stack.size());
+  size_t common_idx = 0;
+  while (common_idx < len) {
+    if (name_stack_[common_idx] != new_stack[common_idx]) {
+      break;
+    }
+    ++common_idx;
+  }
+
+  for (size_t i = name_stack_.size(); i > common_idx; i--) {
+    const auto& ns = name_stack_[i - 1];
+    if (ns == "PROTOBUF_NAMESPACE_ID") {
+      p_->Emit(R"cc(
+        PROTOBUF_NAMESPACE_CLOSE
+      )cc");
+    } else {
+      p_->Emit({{"ns", ns}}, R"(
+          }  // namespace $ns$
+        )");
+    }
+  }
+  for (size_t i = common_idx; i < new_stack.size(); ++i) {
+    const auto& ns = new_stack[i];
+    if (ns == "PROTOBUF_NAMESPACE_ID") {
+      p_->Emit(R"cc(
+        PROTOBUF_NAMESPACE_OPEN
+      )cc");
+    } else {
+      p_->Emit({{"ns", ns}}, R"(
+        namespace $ns$ {
+      )");
+    }
+  }
+
+  name_stack_ = std::move(new_stack);
 }
 
 static void GenerateUtf8CheckCode(const FieldDescriptor* field,

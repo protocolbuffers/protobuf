@@ -794,6 +794,7 @@ TEST_F(CommandLineInterfaceTest, MultipleInputsWithImport) {
                                     "bar.proto", "Bar");
 }
 
+
 TEST_F(CommandLineInterfaceTest, MultipleInputsWithImport_DescriptorSetIn) {
   // Test parsing multiple input files with an import of a separate file.
   FileDescriptorSet file_descriptor_set;

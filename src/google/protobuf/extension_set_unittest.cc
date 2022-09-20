@@ -49,6 +49,7 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
+#include "absl/strings/match.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/stubs/stl_util.h"
@@ -1234,7 +1235,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
     std::string prefix = "." + template_descriptor->full_name() + ".";
     if (extension->has_type_name()) {
       std::string* type_name = extension->mutable_type_name();
-      if (HasPrefixString(*type_name, prefix)) {
+      if (absl::StartsWith(*type_name, prefix)) {
         type_name->replace(0, prefix.size(), ".dynamic_extensions.");
       }
     }

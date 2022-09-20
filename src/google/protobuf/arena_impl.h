@@ -90,6 +90,29 @@ inline PROTOBUF_ALWAYS_INLINE void* AlignTo(void* p, size_t a) {
   }
 }
 
+// Arena blocks are variable length malloc-ed objects.  The following structure
+// describes the common header for all blocks.
+struct ArenaBlock {
+  ArenaBlock(ArenaBlock* next, size_t size)
+      : next(next), cleanup_nodes(nullptr), relaxed_size(size) {
+    GOOGLE_DCHECK_GT(size, sizeof(ArenaBlock));
+  }
+
+  char* Pointer(size_t n) {
+    GOOGLE_DCHECK(n <= size());
+    return reinterpret_cast<char*>(this) + n;
+  }
+
+  size_t size() const { return relaxed_size.load(std::memory_order_relaxed); }
+
+  ArenaBlock* const next;
+  void* cleanup_nodes;
+
+ private:
+  const std::atomic<size_t> relaxed_size;
+  // data follows
+};
+
 namespace cleanup {
 
 template <typename T>
@@ -545,29 +568,8 @@ class PROTOBUF_EXPORT SerialArena {
   template <typename Deallocator>
   Memory Free(Deallocator deallocator);
 
-  // Blocks are variable length malloc-ed objects.  The following structure
-  // describes the common header for all blocks.
-  struct Block {
-    Block(Block* next, size_t size)
-        : next(next), cleanup_nodes(nullptr), relaxed_size(size) {}
-
-    char* Pointer(size_t n) {
-      GOOGLE_DCHECK(n <= size());
-      return reinterpret_cast<char*>(this) + n;
-    }
-
-    size_t size() const { return relaxed_size.load(std::memory_order_relaxed); }
-
-    Block* const next;
-    void* cleanup_nodes;
-
-   private:
-    const std::atomic<size_t> relaxed_size;
-    // data follows
-  };
-
   ThreadSafeArena& parent_;
-  std::atomic<Block*> head_;  // Head of linked list of blocks.
+  std::atomic<ArenaBlock*> head_;      // Head of linked list of blocks.
   std::atomic<size_t> space_used_{0};  // Necessary for metrics.
   std::atomic<size_t> space_allocated_;
 
@@ -577,9 +579,11 @@ class PROTOBUF_EXPORT SerialArena {
   std::atomic<char*> ptr_;
 
   // Helper getters/setters to handle relaxed operations on atomic variables.
-  Block* head() { return head_.load(std::memory_order_relaxed); }
-  const Block* head() const { return head_.load(std::memory_order_relaxed); }
-  void set_head(Block* head) {
+  ArenaBlock* head() { return head_.load(std::memory_order_relaxed); }
+  const ArenaBlock* head() const {
+    return head_.load(std::memory_order_relaxed);
+  }
+  void set_head(ArenaBlock* head) {
     return head_.store(head, std::memory_order_relaxed);
   }
   char* ptr() { return ptr_.load(std::memory_order_relaxed); }
@@ -604,7 +608,8 @@ class PROTOBUF_EXPORT SerialArena {
   CachedBlock** cached_blocks_ = nullptr;
 
   // Constructor is private as only New() should be used.
-  inline SerialArena(Block* b, ThreadSafeArena& parent);
+  inline SerialArena(ArenaBlock* b, ThreadSafeArena& parent);
+
   void* AllocateAlignedFallback(size_t n);
   void* AllocateAlignedWithCleanupFallback(size_t n, size_t align,
                                            void (*destructor)(void*));
@@ -612,7 +617,7 @@ class PROTOBUF_EXPORT SerialArena {
   void AllocateNewBlock(size_t n);
 
  public:
-  static constexpr size_t kBlockHeaderSize = AlignUpTo8(sizeof(Block));
+  static constexpr size_t kBlockHeaderSize = AlignUpTo8(sizeof(ArenaBlock));
 };
 
 // Tag type used to invoke the constructor of message-owned arena.

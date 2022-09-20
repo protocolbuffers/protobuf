@@ -39,7 +39,7 @@
 #include "google/protobuf/map_lite_unittest.pb.h"
 #include "google/protobuf/unittest_lite.pb.h"
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/strutil.h"
+#include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -1144,8 +1144,8 @@ TEST(Lite, CorrectEnding) {
 
 TEST(Lite, DebugString) {
   protobuf_unittest::TestAllTypesLite message1, message2;
-  EXPECT_TRUE(HasPrefixString(message1.DebugString(), "MessageLite at 0x"));
-  EXPECT_TRUE(HasPrefixString(message2.DebugString(), "MessageLite at 0x"));
+  EXPECT_TRUE(absl::StartsWith(message1.DebugString(), "MessageLite at 0x"));
+  EXPECT_TRUE(absl::StartsWith(message2.DebugString(), "MessageLite at 0x"));
 
   // DebugString() and ShortDebugString() are the same for now.
   EXPECT_EQ(message1.DebugString(), message1.ShortDebugString());

@@ -76,7 +76,7 @@ class PROTOBUF_EXPORT GzipInputStream PROTOBUF_FUTURE_FINAL
                            Format format = AUTO, int buffer_size = -1);
   GzipInputStream(const GzipInputStream&) = delete;
   GzipInputStream& operator=(const GzipInputStream&) = delete;
-  virtual ~GzipInputStream();
+  ~GzipInputStream() override;
 
   // Return last error message or NULL if no error.
   inline const char* ZlibErrorMessage() const { return zcontext_.msg; }
@@ -144,7 +144,7 @@ class PROTOBUF_EXPORT GzipOutputStream PROTOBUF_FUTURE_FINAL
   GzipOutputStream(const GzipOutputStream&) = delete;
   GzipOutputStream& operator=(const GzipOutputStream&) = delete;
 
-  virtual ~GzipOutputStream();
+  ~GzipOutputStream() override;
 
   // Return last error message or NULL if no error.
   inline const char* ZlibErrorMessage() const { return zcontext_.msg; }

@@ -31,21 +31,24 @@
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
-#include <climits>
 #include <errno.h>
 #include <fcntl.h>
+#include <stdlib.h>
+
+#include <climits>
 #include <fstream>
 #include <iostream>
 #include <sstream>
-#include <stdlib.h>
 #include <unordered_set>
 #include <vector>
 
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
-#include "google/protobuf/compiler/code_generator.h"
+#include "absl/strings/strip.h"
 #include "google/protobuf/compiler/objectivec/objectivec_helpers.h"
 #include "google/protobuf/compiler/objectivec/objectivec_nsobject_methods.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -55,7 +58,6 @@
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/strutil.h"
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
 // error cases, so it seems to be ok to use as a back door for errors.
@@ -466,7 +468,7 @@ std::string SanitizeNameForObjC(const std::string& prefix,
   // a) Doesn't start with the prefix or
   // b) Isn't equivalent to the prefix or
   // c) Has the prefix, but the letter after the prefix is lowercase
-  if (HasPrefixString(input, prefix)) {
+  if (absl::StartsWith(input, prefix)) {
     if (input.length() == prefix.length() || !absl::ascii_isupper(input[prefix.length()])) {
       sanitized = prefix + input;
     } else {
@@ -797,7 +799,7 @@ std::string EnumValueShortName(const EnumValueDescriptor* descriptor) {
   const std::string class_name = EnumName(descriptor->type());
   const std::string long_name_prefix = class_name + "_";
   const std::string long_name = EnumValueName(descriptor);
-  return StripPrefixString(long_name, long_name_prefix);
+  return std::string(absl::StripPrefix(long_name, long_name_prefix));
 }
 
 std::string UnCamelCaseEnumShortName(const std::string& name) {
@@ -826,7 +828,7 @@ std::string FieldName(const FieldDescriptor* field) {
     result += "Array";
   } else {
     // If it wasn't repeated, but ends in "Array", force on the _p suffix.
-    if (HasSuffixString(result, "Array")) {
+    if (absl::EndsWith(result, "Array")) {
       result += "_p";
     }
   }
@@ -876,20 +878,22 @@ std::string ObjCClassDeclaration(const std::string& class_name) {
 }
 
 std::string UnCamelCaseFieldName(const std::string& name, const FieldDescriptor* field) {
-  std::string worker(name);
-  if (HasSuffixString(worker, "_p")) {
-    worker = StripSuffixString(worker, "_p");
+  absl::string_view worker(name);
+  if (absl::EndsWith(worker, "_p")) {
+    worker = absl::StripSuffix(worker, "_p");
   }
-  if (field->is_repeated() && HasSuffixString(worker, "Array")) {
-    worker = StripSuffixString(worker, "Array");
+  if (field->is_repeated() && absl::EndsWith(worker, "Array")) {
+    worker = absl::StripSuffix(worker, "Array");
   }
   if (field->type() == FieldDescriptor::TYPE_GROUP) {
     if (worker.length() > 0) {
       if (absl::ascii_islower(worker[0])) {
-        worker[0] = absl::ascii_toupper(worker[0]);
+        std::string copy(worker);
+        copy[0] = absl::ascii_toupper(worker[0]);
+        return copy;
       }
     }
-    return worker;
+    return std::string(worker);
   } else {
     std::string result;
     for (int i = 0; i < worker.size(); i++) {
@@ -1252,7 +1256,7 @@ std::string BuildCommentsString(const SourceLocation& location,
 
   for (size_t i = 0; i < lines.size(); i++) {
     std::string line = absl::StrReplaceAll(
-        StripPrefixString(lines[i], " "),
+        absl::StripPrefix(lines[i], " "),
         {// HeaderDoc and appledoc use '\' and '@' for markers; escape them.
          {"\\", "\\\\"},
          {"@", "\\@"},
@@ -1260,9 +1264,9 @@ std::string BuildCommentsString(const SourceLocation& location,
          {"/*", "/\\*"},
          {"*/", "*\\/"}});
     line = prefix + line;
-    StripWhitespace(&line);
+    absl::StripAsciiWhitespace(&line);
     // If not a one line, need to add the first space before *, as
-    // StripWhitespace would have removed it.
+    // absl::StripAsciiWhitespace would have removed it.
     line = (add_leading_space ? " " : "") + line;
     final_comments += line + suffix;
   }
@@ -1425,7 +1429,7 @@ bool ValidateObjCClassPrefix(
         other_package_for_prefix = i->first;
         // Stop on the first real package listing, if it was a no_package file
         // specific entry, keep looking to try and find a package one.
-        if (!HasPrefixString(other_package_for_prefix, no_package_prefix)) {
+        if (!absl::StartsWith(other_package_for_prefix, no_package_prefix)) {
           break;
         }
       }
@@ -1438,16 +1442,19 @@ bool ValidateObjCClassPrefix(
       *out_error =
           "error: Found 'option objc_class_prefix = \"" + prefix +
           "\";' in '" + file->name() + "'; that prefix is already used for ";
-      if (HasPrefixString(other_package_for_prefix, no_package_prefix)) {
-        *out_error += "file '" +
-          StripPrefixString(other_package_for_prefix, no_package_prefix) +
-          "'.";
+      if (absl::StartsWith(other_package_for_prefix, no_package_prefix)) {
+        absl::StrAppend(
+            out_error, "file '",
+            absl::StripPrefix(other_package_for_prefix, no_package_prefix),
+            "'.");
       } else {
-        *out_error += "'package " + other_package_for_prefix + ";'.";
+        absl::StrAppend(out_error, "'package ",
+                        other_package_for_prefix + ";'.");
       }
-      *out_error +=
-        " It can only be reused by adding '" + lookup_key + " = " + prefix +
-        "' to the expected prefixes file (" + expected_prefixes_path + ").";
+      absl::StrAppend(out_error, " It can only be reused by adding '",
+                      lookup_key, " = ", prefix,
+                      "' to the expected prefixes file (",
+                      expected_prefixes_path, ").");
       return false;  // Only report first usage of the prefix.
     }
   } // !prefix.empty() && have_expected_prefix_file

@@ -48,7 +48,7 @@
 #include <memory>
 #include <vector>
 
-#include "google/protobuf/stubs/strutil.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
@@ -282,7 +282,7 @@ static std::string CanonicalizePath(absl::string_view path) {
   // backslashes are standard.  Let's avoid confusion and use only forward
   // slashes.
   std::string path_str;
-  if (HasPrefixString(path, "\\\\")) {
+  if (absl::StartsWith(path, "\\\\")) {
     // Avoid converting two leading backslashes.
     path_str = "\\\\" + absl::StrReplaceAll(path.substr(2), {{"\\", "/"}});
   } else {
@@ -306,8 +306,8 @@ static std::string CanonicalizePath(absl::string_view path) {
 }
 
 static inline bool ContainsParentReference(absl::string_view path) {
-  return path == ".." || HasPrefixString(path, "../") ||
-         HasSuffixString(path, "/..") || absl::StrContains(path, "/../");
+  return path == ".." || absl::StartsWith(path, "../") ||
+         absl::EndsWith(path, "/..") || absl::StrContains(path, "/../");
 }
 
 // Maps a file from an old location to a new one.  Typically, old_prefix is
@@ -336,7 +336,7 @@ static bool ApplyMapping(absl::string_view filename,
       // We do not allow the file name to use "..".
       return false;
     }
-    if (HasPrefixString(filename, "/") || IsWindowsAbsolutePath(filename)) {
+    if (absl::StartsWith(filename, "/") || IsWindowsAbsolutePath(filename)) {
       // This is an absolute path, so it isn't matched by the empty string.
       return false;
     }
@@ -344,7 +344,7 @@ static bool ApplyMapping(absl::string_view filename,
     if (!result->empty()) result->push_back('/');
     result->append(std::string(filename));
     return true;
-  } else if (HasPrefixString(filename, old_prefix)) {
+  } else if (absl::StartsWith(filename, old_prefix)) {
     // old_prefix is a prefix of the filename.  Is it the whole filename?
     if (filename.size() == old_prefix.size()) {
       // Yep, it's an exact match.

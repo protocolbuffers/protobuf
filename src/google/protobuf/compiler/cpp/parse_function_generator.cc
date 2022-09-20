@@ -630,11 +630,11 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
       std::string func_name = info.func_name;
       // For 1-byte tags we have a more optimized version of the varint parser
       // that can hardcode the offset and has bit.
-      if (HasSuffixString(func_name, "V8S1") ||
-          HasSuffixString(func_name, "V32S1") ||
-          HasSuffixString(func_name, "V64S1")) {
-        std::string field_type = HasSuffixString(func_name, "V8S1") ? "bool"
-                                 : HasSuffixString(func_name, "V32S1")
+      if (absl::EndsWith(func_name, "V8S1") ||
+          absl::EndsWith(func_name, "V32S1") ||
+          absl::EndsWith(func_name, "V64S1")) {
+        std::string field_type = absl::EndsWith(func_name, "V8S1") ? "bool"
+                                 : absl::EndsWith(func_name, "V32S1")
                                      ? "uint32_t"
                                      : "uint64_t";
         func_name =

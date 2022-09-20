@@ -57,6 +57,7 @@
 #include "google/protobuf/stubs/strutil.h"
 #include "absl/container/fixed_array.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/stubs/stringprintf.h"
 #include "google/protobuf/util/field_comparator.h"

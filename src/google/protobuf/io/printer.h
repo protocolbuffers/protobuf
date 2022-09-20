@@ -495,6 +495,13 @@ class PROTOBUF_EXPORT Printer {
     return absl::MakeCleanup([this] { var_lookups_.pop_back(); });
   }
 
+  // Looks up a variable set with WithVars().
+  //
+  // Will crash if:
+  // - `var` is not present in the lookup frame table.
+  // - `var` is a callback, rather than a string.
+  absl::string_view LookupVar(absl::string_view var);
+
   // Pushes a new annotation lookup frame that stores `vars` by reference.
   //
   // Returns an RAII object that pops the lookup frame.

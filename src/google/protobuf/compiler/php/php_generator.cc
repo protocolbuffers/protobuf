@@ -33,13 +33,12 @@
 #include <sstream>
 
 #include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/compiler/plugin.h"
-#include "google/protobuf/descriptor.h"
 #include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
-#include "absl/strings/str_split.h"
 #include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -153,8 +152,7 @@ std::string ReservedNamePrefix(const std::string& classname,
 template <typename DescriptorType>
 std::string DescriptorFullName(const DescriptorType* desc, bool is_internal) {
   if (is_internal) {
-    return StringReplace(desc->full_name(),
-                         "google.protobuf",
+    return StringReplace(desc->full_name(), "google.protobuf",
                          "google.protobuf.internal", false);
   } else {
     return desc->full_name();
@@ -1110,7 +1108,7 @@ static bool NeedsUnwrapping(const FileDescriptor* file,
     has_aggregate_metadata_prefix = true;
   } else {
     for (const auto& prefix : options.aggregate_metadata_prefixes) {
-      if (HasPrefixString(file->package(), prefix)) {
+      if (absl::StartsWith(file->package(), prefix)) {
         has_aggregate_metadata_prefix = true;
         break;
       }
@@ -2392,7 +2390,7 @@ bool Generator::GenerateAll(const std::vector<const FileDescriptor*>& files,
 
   for (const auto& option : absl::StrSplit(parameter, ",", absl::SkipEmpty())) {
     const std::vector<std::string> option_pair = absl::StrSplit(option, "=", absl::SkipEmpty());
-    if (HasPrefixString(option_pair[0], "aggregate_metadata")) {
+    if (absl::StartsWith(option_pair[0], "aggregate_metadata")) {
       options.aggregate_metadata = true;
       for (const auto& prefix : absl::StrSplit(option_pair[1], "#", absl::AllowEmpty())) {
         options.aggregate_metadata_prefixes.emplace(prefix);
