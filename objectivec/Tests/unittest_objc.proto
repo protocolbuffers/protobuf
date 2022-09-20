@@ -239,8 +239,7 @@ extend self {
   repeated   sint32 byref               =  3004 [packed = true];
 }
 
-// Test handing of fields that start with init* since Xcode 5's ARC support
-// doesn't like messages that look like initializers but aren't.
+// Test handing of fields that start with init*.
 message ObjCInitFoo {
   optional string init_val = 11;
   optional int32 init_size = 12;
