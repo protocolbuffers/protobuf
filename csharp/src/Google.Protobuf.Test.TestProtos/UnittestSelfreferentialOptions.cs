@@ -23,20 +23,7 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
 
     static UnittestSelfreferentialOptionsReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
-          "CiZ1bml0dGVzdF9zZWxmcmVmZXJlbnRpYWxfb3B0aW9ucy5wcm90bxIpcHJv" +
-          "dG9idWZfdW5pdHRlc3Rfc2VsZnJlZmVyZW50aWFsX29wdGlvbnMaIGdvb2ds" +
-          "ZS9wcm90b2J1Zi9kZXNjcmlwdG9yLnByb3RvIkwKCkZvb09wdGlvbnMSHgoH" +
-          "aW50X29wdBgBIAEoBUINyj4KCAHAPgLKPgIIAxITCgNmb28YAiABKAVCBso+" +
-          "AxDSCSoJCOgHEICAgIACOjkKC2Jhcl9vcHRpb25zEh0uZ29vZ2xlLnByb3Rv" +
-          "YnVmLkZpZWxkT3B0aW9ucxjoByABKAVCBMA+0gk6agoLZm9vX29wdGlvbnMS" +
-          "HS5nb29nbGUucHJvdG9idWYuRmllbGRPcHRpb25zGOkHIAEoCzI1LnByb3Rv" +
-          "YnVmX3VuaXR0ZXN0X3NlbGZyZWZlcmVudGlhbF9vcHRpb25zLkZvb09wdGlv" +
-          "bnM6SwoLZm9vX2ludF9vcHQSNS5wcm90b2J1Zl91bml0dGVzdF9zZWxmcmVm" +
-          "ZXJlbnRpYWxfb3B0aW9ucy5Gb29PcHRpb25zGOgHIAEoBTqCAQoLZm9vX2Zv" +
-          "b19vcHQSNS5wcm90b2J1Zl91bml0dGVzdF9zZWxmcmVmZXJlbnRpYWxfb3B0" +
-          "aW9ucy5Gb29PcHRpb25zGOkHIAEoCzI1LnByb3RvYnVmX3VuaXR0ZXN0X3Nl" +
-          "bGZyZWZlcmVudGlhbF9vcHRpb25zLkZvb09wdGlvbnNCNKoCMVVuaXRUZXN0" +
-          "Lklzc3Vlcy5UZXN0UHJvdG9zLlNlbGZyZWZlcmVudGlhbE9wdGlvbnM=");
+          "CiZ1bml0dGVzdF9zZWxmcmVmZXJlbnRpYWxfb3B0aW9ucy5wcm90bxIpcHJvdG9idWZfdW5pdHRlc3Rfc2VsZnJlZmVyZW50aWFsX29wdGlvbnMaIGdvb2dsZS9wcm90b2J1Zi9kZXNjcmlwdG9yLnByb3RvIkwKCkZvb09wdGlvbnMSHgoHaW50X29wdBgBIAEoBUINyj4KCAHAPgLKPgIIAxITCgNmb28YAiABKAVCBso+AxDSCSoJCOgHEICAgIACOjkKC2Jhcl9vcHRpb25zEh0uZ29vZ2xlLnByb3RvYnVmLkZpZWxkT3B0aW9ucxjoByABKAVCBMA+0gk6agoLZm9vX29wdGlvbnMSHS5nb29nbGUucHJvdG9idWYuRmllbGRPcHRpb25zGOkHIAEoCzI1LnByb3RvYnVmX3VuaXR0ZXN0X3NlbGZyZWZlcmVudGlhbF9vcHRpb25zLkZvb09wdGlvbnM6SwoLZm9vX2ludF9vcHQSNS5wcm90b2J1Zl91bml0dGVzdF9zZWxmcmVmZXJlbnRpYWxfb3B0aW9ucy5Gb29PcHRpb25zGOgHIAEoBTqCAQoLZm9vX2Zvb19vcHQSNS5wcm90b2J1Zl91bml0dGVzdF9zZWxmcmVmZXJlbnRpYWxfb3B0aW9ucy5Gb29PcHRpb25zGOkHIAEoCzI1LnByb3RvYnVmX3VuaXR0ZXN0X3NlbGZyZWZlcmVudGlhbF9vcHRpb25zLkZvb09wdGlvbnNCNKoCMVVuaXRUZXN0Lklzc3Vlcy5UZXN0UHJvdG9zLlNlbGZyZWZlcmVudGlhbE9wdGlvbnM=");
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pb::Extension[] { UnittestSelfreferentialOptionsExtensions.BarOptions, UnittestSelfreferentialOptionsExtensions.FooOptions, UnittestSelfreferentialOptionsExtensions.FooIntOpt, UnittestSelfreferentialOptionsExtensions.FooFooOpt }, new pbr::GeneratedClrTypeInfo[] {

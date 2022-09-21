@@ -23,18 +23,7 @@ namespace Google.Protobuf.Examples.AddressBook {
 
     static AddressbookReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
-          "ChFhZGRyZXNzYm9vay5wcm90bxIIdHV0b3JpYWwaH2dvb2dsZS9wcm90b2J1" +
-          "Zi90aW1lc3RhbXAucHJvdG8ihwIKBlBlcnNvbhIMCgRuYW1lGAEgASgJEgoK" +
-          "AmlkGAIgASgFEg0KBWVtYWlsGAMgASgJEiwKBnBob25lcxgEIAMoCzIcLnR1" +
-          "dG9yaWFsLlBlcnNvbi5QaG9uZU51bWJlchIwCgxsYXN0X3VwZGF0ZWQYBSAB" +
-          "KAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wGkcKC1Bob25lTnVtYmVy" +
-          "Eg4KBm51bWJlchgBIAEoCRIoCgR0eXBlGAIgASgOMhoudHV0b3JpYWwuUGVy" +
-          "c29uLlBob25lVHlwZSIrCglQaG9uZVR5cGUSCgoGTU9CSUxFEAASCAoESE9N" +
-          "RRABEggKBFdPUksQAiIvCgtBZGRyZXNzQm9vaxIgCgZwZW9wbGUYASADKAsy" +
-          "EC50dXRvcmlhbC5QZXJzb25ClQEKG2NvbS5leGFtcGxlLnR1dG9yaWFsLnBy" +
-          "b3Rvc0IRQWRkcmVzc0Jvb2tQcm90b3NQAVo6Z2l0aHViLmNvbS9wcm90b2Nv" +
-          "bGJ1ZmZlcnMvcHJvdG9idWYvZXhhbXBsZXMvZ28vdHV0b3JpYWxwYqoCJEdv" +
-          "b2dsZS5Qcm90b2J1Zi5FeGFtcGxlcy5BZGRyZXNzQm9va2IGcHJvdG8z");
+          "ChFhZGRyZXNzYm9vay5wcm90bxIIdHV0b3JpYWwaH2dvb2dsZS9wcm90b2J1Zi90aW1lc3RhbXAucHJvdG8ihwIKBlBlcnNvbhIMCgRuYW1lGAEgASgJEgoKAmlkGAIgASgFEg0KBWVtYWlsGAMgASgJEiwKBnBob25lcxgEIAMoCzIcLnR1dG9yaWFsLlBlcnNvbi5QaG9uZU51bWJlchIwCgxsYXN0X3VwZGF0ZWQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wGkcKC1Bob25lTnVtYmVyEg4KBm51bWJlchgBIAEoCRIoCgR0eXBlGAIgASgOMhoudHV0b3JpYWwuUGVyc29uLlBob25lVHlwZSIrCglQaG9uZVR5cGUSCgoGTU9CSUxFEAASCAoESE9NRRABEggKBFdPUksQAiIvCgtBZGRyZXNzQm9vaxIgCgZwZW9wbGUYASADKAsyEC50dXRvcmlhbC5QZXJzb25ClQEKG2NvbS5leGFtcGxlLnR1dG9yaWFsLnByb3Rvc0IRQWRkcmVzc0Jvb2tQcm90b3NQAVo6Z2l0aHViLmNvbS9wcm90b2NvbGJ1ZmZlcnMvcHJvdG9idWYvZXhhbXBsZXMvZ28vdHV0b3JpYWxwYqoCJEdvb2dsZS5Qcm90b2J1Zi5FeGFtcGxlcy5BZGRyZXNzQm9va2IGcHJvdG8z");
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {

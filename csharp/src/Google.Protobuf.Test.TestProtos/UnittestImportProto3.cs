@@ -23,12 +23,7 @@ namespace Google.Protobuf.TestProtos {
 
     static UnittestImportProto3Reflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
-          "Chx1bml0dGVzdF9pbXBvcnRfcHJvdG8zLnByb3RvEhhwcm90b2J1Zl91bml0" +
-          "dGVzdF9pbXBvcnQaI3VuaXR0ZXN0X2ltcG9ydF9wdWJsaWNfcHJvdG8zLnBy" +
-          "b3RvIhoKDUltcG9ydE1lc3NhZ2USCQoBZBgBIAEoBSpZCgpJbXBvcnRFbnVt" +
-          "EhsKF0lNUE9SVF9FTlVNX1VOU1BFQ0lGSUVEEAASDgoKSU1QT1JUX0ZPTxAH" +
-          "Eg4KCklNUE9SVF9CQVIQCBIOCgpJTVBPUlRfQkFaEAlCHaoCGkdvb2dsZS5Q" +
-          "cm90b2J1Zi5UZXN0UHJvdG9zUABiBnByb3RvMw==");
+          "Chx1bml0dGVzdF9pbXBvcnRfcHJvdG8zLnByb3RvEhhwcm90b2J1Zl91bml0dGVzdF9pbXBvcnQaI3VuaXR0ZXN0X2ltcG9ydF9wdWJsaWNfcHJvdG8zLnByb3RvIhoKDUltcG9ydE1lc3NhZ2USCQoBZBgBIAEoBSpZCgpJbXBvcnRFbnVtEhsKF0lNUE9SVF9FTlVNX1VOU1BFQ0lGSUVEEAASDgoKSU1QT1JUX0ZPTxAHEg4KCklNUE9SVF9CQVIQCBIOCgpJTVBPUlRfQkFaEAlCHaoCGkdvb2dsZS5Qcm90b2J1Zi5UZXN0UHJvdG9zUABiBnByb3RvMw==");
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.TestProtos.UnittestImportPublicProto3Reflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.TestProtos.ImportEnum), }, null, new pbr::GeneratedClrTypeInfo[] {

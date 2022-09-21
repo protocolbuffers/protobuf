@@ -23,9 +23,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     static UnittestImportPublicReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
-          "Chx1bml0dGVzdF9pbXBvcnRfcHVibGljLnByb3RvEh9wcm90b2J1Zl91bml0" +
-          "dGVzdF9pbXBvcnRfcHJvdG8yIiAKE1B1YmxpY0ltcG9ydE1lc3NhZ2USCQoB" +
-          "ZRgBIAEoBUIkqgIhR29vZ2xlLlByb3RvYnVmLlRlc3RQcm90b3MuUHJvdG8y");
+          "Chx1bml0dGVzdF9pbXBvcnRfcHVibGljLnByb3RvEh9wcm90b2J1Zl91bml0dGVzdF9pbXBvcnRfcHJvdG8yIiAKE1B1YmxpY0ltcG9ydE1lc3NhZ2USCQoBZRgBIAEoBUIkqgIhR29vZ2xlLlByb3RvYnVmLlRlc3RQcm90b3MuUHJvdG8y");
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {

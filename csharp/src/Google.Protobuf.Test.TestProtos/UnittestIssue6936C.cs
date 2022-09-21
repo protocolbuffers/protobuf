@@ -23,11 +23,7 @@ namespace UnitTest.Issues.TestProtos {
 
     static UnittestIssue6936CReflection() {
       byte[] descriptorData = global::System.Convert.FromBase64String(
-          "Chp1bml0dGVzdF9pc3N1ZTY5MzZfYy5wcm90bxIPdW5pdHRlc3RfaXNzdWVz" +
-          "Ghp1bml0dGVzdF9pc3N1ZTY5MzZfYS5wcm90bxoadW5pdHRlc3RfaXNzdWU2" +
-          "OTM2X2IucHJvdG8iMQoDQmFyEiEKA2ZvbxgBIAEoCzIULnVuaXR0ZXN0X2lz" +
-          "c3Vlcy5Gb286B4K1GANiYXJCHaoCGlVuaXRUZXN0Lklzc3Vlcy5UZXN0UHJv" +
-          "dG9zYgZwcm90bzM=");
+          "Chp1bml0dGVzdF9pc3N1ZTY5MzZfYy5wcm90bxIPdW5pdHRlc3RfaXNzdWVzGhp1bml0dGVzdF9pc3N1ZTY5MzZfYS5wcm90bxoadW5pdHRlc3RfaXNzdWU2OTM2X2IucHJvdG8iMQoDQmFyEiEKA2ZvbxgBIAEoCzIULnVuaXR0ZXN0X2lzc3Vlcy5Gb286B4K1GANiYXJCHaoCGlVuaXRUZXN0Lklzc3Vlcy5UZXN0UHJvdG9zYgZwcm90bzM=");
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::UnitTest.Issues.TestProtos.UnittestIssue6936AReflection.Descriptor, global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
