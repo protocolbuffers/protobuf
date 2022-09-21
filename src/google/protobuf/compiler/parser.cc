@@ -390,11 +390,14 @@ void Parser::AddError(const std::string& error) {
   AddError(input_->current().line, input_->current().column, error);
 }
 
-void Parser::AddWarning(const std::string& warning) {
+void Parser::AddWarning(int line, int column, const std::string& warning) {
   if (error_collector_ != nullptr) {
-    error_collector_->AddWarning(input_->current().line,
-                                 input_->current().column, warning);
+    error_collector_->AddWarning(line, column, warning);
   }
+}
+
+void Parser::AddWarning(const std::string& warning) {
+  AddWarning(input_->current().line, input_->current().column, warning);
 }
 
 // -------------------------------------------------------------------
@@ -1736,7 +1739,7 @@ bool Parser::ParseReservedName(std::string* name, const char* error_message) {
   int col = input_->current().column;
   DO(ConsumeString(name, error_message));
   if (!io::Tokenizer::IsIdentifier(*name)) {
-    AddError(line, col, absl::StrFormat("Reserved name \"%s\" is not a valid identifier.", *name));
+    AddWarning(line, col, absl::StrFormat("Reserved name \"%s\" is not a valid identifier.", *name));
     return false;
   }
   return true;
