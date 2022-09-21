@@ -5510,21 +5510,19 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
 namespace {
 // Helpers for function below
 
-std::string GetJsonName(const FieldDescriptorProto& field, bool use_custom,
-                        bool* was_custom) {
-  if (use_custom && field.has_json_name()) {
-    *was_custom = true;
-    return field.json_name();
-  }
-  *was_custom = false;
-  return ToJsonName(field.name());
-}
-
 struct JsonNameDetails {
   const FieldDescriptorProto* field;
   std::string orig_name;
   bool is_custom;
 };
+
+JsonNameDetails GetJsonNameDetails(const FieldDescriptorProto* field, bool use_custom) {
+  if (use_custom && field->has_json_name()) {
+    return {field, field->json_name(), true};
+  }
+  return {field, ToJsonName(field->name()), false};
+}
+
 
 } // namespace
 
@@ -5534,38 +5532,36 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
 
   absl::flat_hash_map<std::string, JsonNameDetails> name_to_field;
   for (const FieldDescriptorProto& field : message.field()) {
-    bool is_custom;
-    std::string name = GetJsonName(field, use_custom_names, &is_custom);
-    std::string lowercase_name = absl::AsciiStrToLower(name);
+    JsonNameDetails details = GetJsonNameDetails(&field, use_custom_names);
+    std::string lowercase_name = absl::AsciiStrToLower(details.orig_name);
     auto existing = name_to_field.find(lowercase_name);
     if (existing == name_to_field.end()) {
-      JsonNameDetails details = {&field, name, is_custom};
       name_to_field[lowercase_name] = details;
       continue;
     }
     JsonNameDetails& match = existing->second;
-    if (use_custom_names && !is_custom && !match.is_custom) {
+    if (use_custom_names && !details.is_custom && !match.is_custom) {
       // if this pass is considering custom JSON names, but neither of the
       // names involved in the conflict are custom, don't bother with a
       // message. That will have been reported from other pass (non-custom
       // JSON names).
       continue;
     }
-    absl::string_view this_type = is_custom ? "custom" : "default";
+    absl::string_view this_type = details.is_custom ? "custom" : "default";
     absl::string_view existing_type = match.is_custom ? "custom" : "default";
     // If the matched name differs (which it can only differ in case), include
     // it in the error message, for maximum clarity to user.
     absl::string_view name_suffix = "";
-    if (name != match.orig_name) {
+    if (details.orig_name != match.orig_name) {
       name_suffix = absl::StrCat(" (\"", match.orig_name, "\")");
     }
     std::string error_message =
         absl::StrFormat("The %s JSON name of field \"%s\" (\"%s\") conflicts "
                         "with the %s JSON name of field \"%s\"%s.",
-                        this_type, field.name(), name, existing_type,
+                        this_type, field.name(), details.orig_name, existing_type,
                         match.field->name(), name_suffix);
 
-    bool involves_default = !is_custom || !match.is_custom;
+    bool involves_default = !details.is_custom || !match.is_custom;
     if (syntax == FileDescriptor::SYNTAX_PROTO2 && involves_default) {
       AddWarning(message_name, field, DescriptorPool::ErrorCollector::NAME,
                  error_message);
