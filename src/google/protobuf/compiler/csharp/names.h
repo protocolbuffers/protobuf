@@ -89,9 +89,8 @@ std::string GetReflectionClassUnqualifiedName(const FileDescriptor* descriptor);
 //
 // Returns:
 //   The unqualified name of the generated C# extensions class that provide
-//   access to message extensions. Proto compiler generates such class for each
-//   .proto file that contains message extensions.
-//   processed.
+//   access to extensions. Proto compiler generates such class for each
+//   .proto file processed that contains extensions.
 std::string GetExtensionClassUnqualifiedName(const FileDescriptor* descriptor);
 
 // Requires:
