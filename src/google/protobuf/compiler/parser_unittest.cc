@@ -147,6 +147,16 @@ class ParserTest : public testing::Test {
     EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
   }
 
+  // Parse the text and expect that the given warnings are reported.
+  void ExpectHasWarnings(const char* text, const char* expected_warnings) {
+    SetupParser(text);
+    FileDescriptorProto file;
+    ASSERT_TRUE(parser_->Parse(input_.get(), &file));
+    EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
+    ASSERT_EQ("", error_collector_.text_);
+    EXPECT_EQ(expected_warnings, error_collector_.warning_);
+  }
+
   // Same as above but does not expect that the parser parses the complete
   // input.
   void ExpectHasEarlyExitErrors(const char* text, const char* expected_errors) {
@@ -1725,6 +1735,17 @@ TEST_F(ParseErrorTest, EnumReservedMissingQuotes) {
       "2:11: Expected enum value or number range.\n");
 }
 
+TEST_F(ParseErrorTest, EnumReservedInvalidIdentifier) {
+  ExpectHasWarnings(
+      R"pb(
+      enum TestEnum {
+        FOO = 1;
+        reserved "foo bar";
+      }
+      )pb",
+      "3:17: Reserved name \"foo bar\" is not a valid identifier.\n");
+}
+
 // -------------------------------------------------------------------
 // Reserved field number errors
 
@@ -1750,6 +1771,16 @@ TEST_F(ParseErrorTest, ReservedMissingQuotes) {
       "  reserved foo;\n"
       "}\n",
       "1:11: Expected field name or number range.\n");
+}
+
+TEST_F(ParseErrorTest, ReservedInvalidIdentifier) {
+  ExpectHasWarnings(
+      R"pb(
+      message Foo {
+        reserved "foo bar";
+      }
+      )pb",
+      "2:17: Reserved name \"foo bar\" is not a valid identifier.\n");
 }
 
 TEST_F(ParseErrorTest, ReservedNegativeNumber) {
