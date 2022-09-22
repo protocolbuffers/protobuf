@@ -5553,7 +5553,7 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     absl::string_view existing_type = match.is_custom ? "custom" : "default";
     // If the matched name differs (which it can only differ in case), include
     // it in the error message, for maximum clarity to user.
-    absl::string_view name_suffix = "";
+    std::string name_suffix;
     if (details.orig_name != match.orig_name) {
       name_suffix = absl::StrCat(" (\"", match.orig_name, "\")");
     }
