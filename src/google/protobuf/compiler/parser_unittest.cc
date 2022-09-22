@@ -151,7 +151,7 @@ class ParserTest : public testing::Test {
   void ExpectHasWarnings(const char* text, const char* expected_warnings) {
     SetupParser(text);
     FileDescriptorProto file;
-    parser_->Parse(input_.get(), &file);
+    ASSERT_TRUE(parser_->Parse(input_.get(), &file));
     EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
     ASSERT_EQ("", error_collector_.text_);
     EXPECT_EQ(expected_warnings, error_collector_.warning_);

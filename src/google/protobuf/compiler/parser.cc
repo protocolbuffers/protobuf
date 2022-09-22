@@ -1740,7 +1740,6 @@ bool Parser::ParseReservedName(std::string* name, const char* error_message) {
   DO(ConsumeString(name, error_message));
   if (!io::Tokenizer::IsIdentifier(*name)) {
     AddWarning(line, col, absl::StrFormat("Reserved name \"%s\" is not a valid identifier.", *name));
-    return false;
   }
   return true;
 }
