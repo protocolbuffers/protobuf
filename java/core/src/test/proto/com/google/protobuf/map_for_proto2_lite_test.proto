@@ -128,6 +128,3 @@ message ReservedAsMapFieldWithEnumValue {
   // null is not a 'reserved word' per se but as a literal needs similar care
   map<string, SampleEnum> null = 10;
 }
-package map_for_proto2_lite_test;
-option java_package = "map_lite_test";
-option optimize_for = LITE_RUNTIME;

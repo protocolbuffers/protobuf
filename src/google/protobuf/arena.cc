@@ -53,6 +53,17 @@
 namespace google {
 namespace protobuf {
 namespace internal {
+namespace {
+
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT ArenaBlock
+kSentryArenaBlock = {};
+
+ArenaBlock* SentryArenaBlock() {
+  // const_cast<> is okay as kSentryArenaBlock will never be mutated.
+  return const_cast<ArenaBlock*>(&kSentryArenaBlock);
+}
+
+}
 
 static SerialArena::Memory AllocateMemory(const AllocationPolicy* policy_ptr,
                                           size_t last_size, size_t min_bytes) {
@@ -105,8 +116,6 @@ class GetDeallocator {
   size_t* space_allocated_;
 };
 
-constexpr ArenaBlock SerialArena::kSentryBlock;
-
 // It is guaranteed that this is constructed in `b`. IOW, this is not the first
 // arena and `b` cannot be sentry.
 SerialArena::SerialArena(ArenaBlock* b, ThreadSafeArena& parent)
@@ -120,7 +129,7 @@ SerialArena::SerialArena(ArenaBlock* b, ThreadSafeArena& parent)
 
 // It is guaranteed that this is the first SerialArena. Use sentry block.
 SerialArena::SerialArena(ThreadSafeArena& parent)
-    : head_{SentryBlock()}, parent_{parent} {}
+    : head_{SentryArenaBlock()}, parent_{parent} {}
 
 // It is guaranteed that this is the first SerialArena but `b` may be user
 // provided or newly allocated to store AllocationPolicy.
@@ -308,7 +317,7 @@ void SerialArena::CleanupList() {
 // where the size of "ids" and "arenas" is determined at runtime; hence the use
 // of Layout.
 struct SerialArenaChunkHeader {
-  constexpr SerialArenaChunkHeader(uint32_t capacity, uint32_t size)
+  PROTOBUF_CONSTEXPR SerialArenaChunkHeader(uint32_t capacity, uint32_t size)
       : next_chunk(nullptr), capacity(capacity), size(size) {}
 
   ThreadSafeArena::SerialArenaChunk* next_chunk;
@@ -433,7 +442,7 @@ class ThreadSafeArena::SerialArenaChunk {
   }
 };
 
-constexpr SerialArenaChunkHeader kSentryArenaChunk = {0, 0};
+PROTOBUF_CONSTEXPR SerialArenaChunkHeader kSentryArenaChunk = {0, 0};
 
 ThreadSafeArena::SerialArenaChunk* ThreadSafeArena::SentrySerialArenaChunk() {
   // const_cast is okay because the sentry chunk is never mutated. Also,
@@ -487,7 +496,7 @@ ThreadSafeArena::ThreadSafeArena(void* mem, size_t size,
 ArenaBlock* ThreadSafeArena::FirstBlock(void* buf, size_t size) {
   GOOGLE_DCHECK_EQ(reinterpret_cast<uintptr_t>(buf) & 7, 0u);
   if (buf == nullptr || size <= kBlockHeaderSize) {
-    return SerialArena::SentryBlock();
+    return SentryArenaBlock();
   }
   // Record user-owned block.
   alloc_policy_.set_is_user_owned_initial_block(true);
@@ -702,7 +711,7 @@ uint64_t ThreadSafeArena::Reset() {
                         : kBlockHeaderSize + kAllocPolicySize;
     first_arena_.Init(new (mem.ptr) ArenaBlock{nullptr, mem.size}, offset);
   } else {
-    first_arena_.Init(SerialArena::SentryBlock(), 0);
+    first_arena_.Init(SentryArenaBlock(), 0);
   }
 
   // Since the first block and potential alloc_policy on the first block is
