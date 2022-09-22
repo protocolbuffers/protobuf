@@ -132,6 +132,8 @@ namespace internal {
 // Checks if the buffer contains structurally-valid UTF-8.  Implemented in
 // structurally_valid.cc.
 PROTOBUF_EXPORT bool IsStructurallyValidUTF8(const char* buf, int len);
+PROTOBUF_EXPORT bool IsStructurallyValidUTF8(const char* buf, int len,
+                                             int* codepoints_consumed);
 
 inline bool IsStructurallyValidUTF8(absl::string_view str) {
   return IsStructurallyValidUTF8(str.data(), static_cast<int>(str.length()));

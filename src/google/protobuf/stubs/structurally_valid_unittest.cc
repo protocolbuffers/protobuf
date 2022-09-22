@@ -42,16 +42,41 @@ namespace {
 
 TEST(StructurallyValidTest, ValidUTF8String) {
   // On GCC, this string can be written as:
-  //   "abcd 1234 - \u2014\u2013\u2212"
+  //   "abcd 1234 - \u2014 \u2013 \u2212 \u00A9 \U0001F642 - xyz789"
   // MSVC seems to interpret \u differently.
   std::string valid_str(
-      "abcd 1234 - \342\200\224\342\200\223\342\210\222 - xyz789");
+      "abcd 1234 - \342\200\224 \342\200\223 \342\210\222 \302\251 \360\237\231\202 - xyz789");
+  int codepoints;
   EXPECT_TRUE(IsStructurallyValidUTF8(valid_str.data(),
-                                      valid_str.size()));
+                                      valid_str.size(),
+                                      &codepoints));
+  EXPECT_EQ(30, codepoints);
   // Additional check for pointer alignment
   for (int i = 1; i < 8; ++i) {
     EXPECT_TRUE(IsStructurallyValidUTF8(valid_str.data() + i,
-                                        valid_str.size() - i));
+                                        valid_str.size() - i,
+                                        &codepoints));
+    EXPECT_EQ(30-i, codepoints);
+  }
+}
+
+TEST(StructurallyValidTest, ValidUTF8StringOnlyASCII) {
+  // On GCC, this string can be written as:
+  //   "abcd 1234 - \u2014\u2013\u2212 - xyz789"
+  // MSVC seems to interpret \u differently.
+  std::string valid_str(
+      "abcd 1234 - MNO - xyz789");
+  int codepoints;
+  EXPECT_TRUE(IsStructurallyValidUTF8(valid_str.data(),
+                                      valid_str.size(),
+                                      &codepoints));
+  EXPECT_EQ(24, codepoints);
+  // Additional check for pointer alignment
+  for (int i = 1; i < 8; ++i) {
+    EXPECT_TRUE(IsStructurallyValidUTF8(valid_str.data() + i,
+                                        valid_str.size() - i,
+                                        &codepoints));
+    EXPECT_EQ(24-i, codepoints);
   }
 }
 

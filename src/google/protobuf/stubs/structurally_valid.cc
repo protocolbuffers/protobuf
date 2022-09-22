@@ -388,8 +388,10 @@ namespace {
 int UTF8GenericScan(const UTF8ScanObj* st,
                     const char * str,
                     int str_length,
-                    int* bytes_consumed) {
+                    int* bytes_consumed,
+                    int* codepoints_consumed) {
   *bytes_consumed = 0;
+  *codepoints_consumed = 0;
   if (str_length == 0) return kExitOK;
 
   int eshift = st->entry_shift;
@@ -403,6 +405,7 @@ int UTF8GenericScan(const UTF8ScanObj* st,
   // Do state-table scan
   int e = 0;
   uint8_t c;
+  int cp_count = 0;
   const uint8_t* Tbl2 = &st->fast_state[0];
   const uint32_t losub = st->losub;
   const uint32_t hiadd = st->hiadd;
@@ -412,6 +415,7 @@ int UTF8GenericScan(const UTF8ScanObj* st,
          (src < srclimit) &&
          Tbl2[src[0]] == 0) {
     src++;
+    cp_count++;
   }
   if (((uintptr_t)src & 0x07) == 0) {
     // Do fast for groups of 8 identity bytes.
@@ -422,6 +426,7 @@ int UTF8GenericScan(const UTF8ScanObj* st,
       uint32_t s0123 = (reinterpret_cast<const uint32_t *>(src))[0];
       uint32_t s4567 = (reinterpret_cast<const uint32_t *>(src))[1];
       src += 8;
+      cp_count += 8;
       // This is a fast range check for all bytes in [lowsub..0x80-hiadd)
       uint32_t temp = (s0123 - losub) | (s0123 + hiadd) |
                       (s4567 - losub) | (s4567 + hiadd);
@@ -431,12 +436,14 @@ int UTF8GenericScan(const UTF8ScanObj* st,
                     (Tbl2[src[-6]] | Tbl2[src[-5]]);
         if (e0123 != 0) {
           src -= 8;
+          cp_count -= 8;
           break;
         }    // Exit on Non-interchange
         e0123 = (Tbl2[src[-4]] | Tbl2[src[-3]]) |
                 (Tbl2[src[-2]] | Tbl2[src[-1]]);
         if (e0123 != 0) {
           src -= 4;
+          cp_count -= 4;
           break;
         }    // Exit on Non-interchange
         // Else OK, go around again
@@ -453,6 +460,7 @@ int UTF8GenericScan(const UTF8ScanObj* st,
     e = Tbl[c];
     src++;
     if (e >= kExitIllegalStructure) {break;}
+    if (e == 0) {cp_count++;}
     Tbl = &Tbl_0[e << eshift];
   }
   //----------------------------
@@ -491,14 +499,17 @@ int UTF8GenericScan(const UTF8ScanObj* st,
   }
 
   *bytes_consumed = src - isrc;
+  *codepoints_consumed = cp_count;
   return e;
 }
 
 int UTF8GenericScanFastAscii(const UTF8ScanObj* st,
                     const char * str,
                     int str_length,
-                    int* bytes_consumed) {
+                    int* bytes_consumed,
+                    int* codepoints_consumed) {
   *bytes_consumed = 0;
+  *codepoints_consumed = 0;
   if (str_length == 0) return kExitOK;
 
   const uint8_t* isrc =  reinterpret_cast<const uint8_t*>(str);
@@ -509,6 +520,7 @@ int UTF8GenericScanFastAscii(const UTF8ScanObj* st,
   int rest_consumed;
   int exit_reason;
   do {
+    const uint8_t* csrc = src;
     // Check initial few bytes one at a time until 8-byte aligned
     while ((((uintptr_t)src & 0x07) != 0) &&
            (src < srclimit) && (src[0] < 0x80)) {
@@ -527,7 +539,10 @@ int UTF8GenericScanFastAscii(const UTF8ScanObj* st,
     }
     // Run state table on the rest
     n = src - isrc;
-    exit_reason = UTF8GenericScan(st, str + n, str_length - n, &rest_consumed);
+    *codepoints_consumed += src - csrc;
+    int more_codepoints;
+    exit_reason = UTF8GenericScan(st, str + n, str_length - n, &rest_consumed, &more_codepoints);
+    *codepoints_consumed += more_codepoints;
     src += rest_consumed;
   } while ( exit_reason == kExitDoAgain );
 
@@ -553,21 +568,27 @@ InitDetector init_detector;
 
 }  // namespace
 
-bool IsStructurallyValidUTF8(const char* buf, int len) {
+bool IsStructurallyValidUTF8(const char* buf, int len, int* codepoints_consumed) {
   if (!module_initialized_) return true;
 
   int bytes_consumed = 0;
-  UTF8GenericScanFastAscii(&utf8acceptnonsurrogates_obj,
-                           buf, len, &bytes_consumed);
+  UTF8GenericScanFastAscii(&utf8acceptnonsurrogates_obj, buf, len,
+                           &bytes_consumed, codepoints_consumed);
   return (bytes_consumed == len);
+}
+
+bool IsStructurallyValidUTF8(const char* buf, int len) {
+  int codepoints_consumed;
+  return IsStructurallyValidUTF8(buf, len, &codepoints_consumed);
 }
 
 int UTF8SpnStructurallyValid(absl::string_view str) {
   if (!module_initialized_) return str.size();
 
   int bytes_consumed = 0;
-  UTF8GenericScanFastAscii(&utf8acceptnonsurrogates_obj,
-                           str.data(), str.size(), &bytes_consumed);
+  int codepoints_consumed = 0;
+  UTF8GenericScanFastAscii(&utf8acceptnonsurrogates_obj, str.data(), str.size(),
+                           &bytes_consumed, &codepoints_consumed);
   return bytes_consumed;
 }
 
