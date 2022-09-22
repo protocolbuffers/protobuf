@@ -40,8 +40,8 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/util/internal/mock_error_listener.h"
-#include "google/protobuf/stubs/bytestream.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/stubs/bytestream.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"

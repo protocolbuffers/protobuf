@@ -35,6 +35,8 @@
 #error "port_undef.inc must be included after port_def.inc"
 #endif
 
+#undef PROTOBUF_POISON_MEMORY_REGION
+#undef PROTOBUF_UNPOISON_MEMORY_REGION
 #undef PROTOBUF_BUILTIN_BSWAP16
 #undef PROTOBUF_BUILTIN_BSWAP32
 #undef PROTOBUF_BUILTIN_BSWAP64

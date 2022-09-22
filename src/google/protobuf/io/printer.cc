@@ -46,11 +46,12 @@
 
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/stubs/stringprintf.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "absl/types/optional.h"
@@ -61,9 +62,8 @@ namespace google {
 namespace protobuf {
 namespace io {
 namespace {
-// Returns the number of spaces stripped.
-size_t ConsumeInitialRawStringIndent(absl::string_view& format) {
-  size_t len = 0;
+// Returns the number of spaces of the first non empty line.
+size_t RawStringIndentLen(absl::string_view format) {
   // We are processing a call that looks like
   //
   // p->Emit(R"cc(
@@ -72,10 +72,19 @@ size_t ConsumeInitialRawStringIndent(absl::string_view& format) {
   //   };
   // )cc");
   //
-  // We need to discard all leading newlines, then consume all spaces until
-  // we reach a non-space; this run of spaces is stripped off at the start of
-  // each line.
-
+  // or
+  //
+  // p->Emit(R"cc(
+  //
+  //   class Foo {
+  //     int x, y, z;
+  //   };
+  // )cc");
+  //
+  // To compute the indent, we need to discard all leading newlines, then
+  // count all spaces until we reach a non-space; this run of spaces is
+  // stripped off at the start of each line.
+  size_t len = 0;
   while (absl::ConsumePrefix(&format, "\n")) {
   }
 
@@ -169,41 +178,17 @@ void Printer::Outdent() {
 }
 
 void Printer::Emit(
-    std::initializer_list<std::pair<
-        absl::string_view, absl::variant<std::string, std::function<void()>>>>
+    std::initializer_list<
+        VarDefinition<absl::string_view, /*allow_callbacks=*/true>>
         vars,
     absl::string_view format, SourceLocation loc) {
   PrintOptions opts;
   opts.strip_raw_string_indentation = true;
   opts.loc = loc;
 
-  absl::flat_hash_map<absl::string_view,
-                      absl::variant<std::string, std::function<void()>>>
-      map;
-  map.reserve(vars.size());
-  for (auto& var : vars) {
-    auto result = map.insert(var);
-    GOOGLE_CHECK(result.second) << "repeated variable in Emit() call: \"" << var.first
-                         << "\"";
-  }
-
-  var_lookups_.emplace_back([&map](absl::string_view var) -> LookupResult {
-    auto it = map.find(var);
-    if (it == map.end()) {
-      return absl::nullopt;
-    }
-    if (auto* str = absl::get_if<std::string>(&it->second)) {
-      return *str;
-    }
-
-    auto* f = absl::get_if<std::function<void()>>(&it->second);
-    GOOGLE_CHECK(f != nullptr);
-    return *f;
-  });
+  auto defs = WithDefs(vars);
 
   PrintImpl(format, {}, opts);
-
-  var_lookups_.pop_back();
 }
 
 absl::optional<std::pair<size_t, size_t>> Printer::GetSubstitutionRange(
@@ -305,7 +290,7 @@ void Printer::PrintCodegenTrace(absl::optional<SourceLocation> loc) {
     sink_.Write("\n");
   }
 
-  PrintRaw(StringPrintf("%s @%s:%d\n", options_.comment_start,
+  PrintRaw(absl::StrFormat("%s @%s:%d\n", options_.comment_start,
                            loc->file_name(), loc->line()));
   at_start_of_line_ = true;
 }
@@ -314,7 +299,7 @@ bool Printer::ValidateIndexLookupInBounds(size_t index,
                                           size_t current_arg_index,
                                           size_t args_len, PrintOptions opts) {
   if (!Validate(index < args_len, opts, [this, index] {
-        return StringPrintf("annotation %c{%d%c is out of bounds",
+        return absl::StrFormat("annotation %c{%d%c is out of bounds",
                                options_.variable_delimiter, index + 1,
                                options_.variable_delimiter);
       })) {
@@ -322,7 +307,7 @@ bool Printer::ValidateIndexLookupInBounds(size_t index,
   }
   if (!Validate(
           index <= current_arg_index, opts, [this, index, current_arg_index] {
-            return StringPrintf(
+            return absl::StrFormat(
                 "annotation arg must be in correct order as given; expected "
                 "%c{%d%c but got %c{%d%c",
                 options_.variable_delimiter, current_arg_index + 1,
@@ -352,9 +337,16 @@ void Printer::PrintImpl(absl::string_view format,
     substitutions_.clear();
   }
 
-  size_t raw_string_indent_len = opts.strip_raw_string_indentation
-                                     ? ConsumeInitialRawStringIndent(format)
-                                     : 0;
+  size_t raw_string_indent_len =
+      opts.strip_raw_string_indentation ? RawStringIndentLen(format) : 0;
+
+  if (opts.strip_raw_string_indentation) {
+    // We only want to remove a single newline from the input string to allow
+    // extra newlines at the start to go into the generated code.
+    absl::ConsumePrefix(&format, "\n");
+    while (absl::ConsumePrefix(&format, " ")) {
+    }
+  }
 
   PrintCodegenTrace(opts.loc);
 
@@ -534,7 +526,7 @@ void Printer::PrintImpl(absl::string_view format,
         annot_records.pop_back();
 
         if (!Validate(record_var.first == var, opts, [record_var, var] {
-              return StringPrintf(
+              return absl::StrFormat(
                   "_start and _end variables must match, but got %s and %s, "
                   "respectively",
                   record_var.first, var);
@@ -659,7 +651,7 @@ void Printer::PrintImpl(absl::string_view format,
   Validate(arg_index == args.size(), opts,
            [original] { return absl::StrCat("unused args: ", original); });
   Validate(annot_stack.empty(), opts, [this, original] {
-    return StringPrintf(
+    return absl::StrFormat(
         "annotation range was not closed; expected %c}%c: %s",
         options_.variable_delimiter, options_.variable_delimiter, original);
   });

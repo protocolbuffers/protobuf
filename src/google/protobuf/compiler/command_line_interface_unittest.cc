@@ -38,6 +38,8 @@
 
 #include <cstdint>
 
+#include "absl/strings/str_format.h"
+
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
@@ -45,7 +47,6 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/stubs/stringprintf.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
@@ -2259,9 +2260,9 @@ TEST_F(CommandLineInterfaceTest, PluginReceivesCompilerVersion) {
 
   Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
 
-  ExpectErrorSubstring(StringPrintf("Saw compiler_version: %d %s",
-                                    GOOGLE_PROTOBUF_VERSION,
-                                    GOOGLE_PROTOBUF_VERSION_SUFFIX));
+  ExpectErrorSubstring(absl::StrFormat("Saw compiler_version: %d %s",
+                                       GOOGLE_PROTOBUF_VERSION,
+                                       GOOGLE_PROTOBUF_VERSION_SUFFIX));
 }
 
 TEST_F(CommandLineInterfaceTest, GeneratorPluginNotFound) {

@@ -137,6 +137,9 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   // We use `x.getClass()` as a null check because it generates less bytecode
   // than an `if (x == null) { throw ... }` statement.
   (*variables)["null_check"] = "value.getClass();\n";
+  // Calls to Annotate() use variable ranges to know which text to annotate.
+  (*variables)["{"] = "";
+  (*variables)["}"] = "";
 }
 
 }  // namespace
@@ -165,15 +168,19 @@ void ImmutableEnumFieldLiteGenerator::GenerateInterfaceMembers(
   if (HasHazzer(descriptor_)) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(variables_,
-                   "$deprecation$boolean has$capitalized_name$();\n");
+                   "$deprecation$boolean ${$has$capitalized_name$$}$();\n");
+    printer->Annotate("{", "}", descriptor_);
   }
   if (SupportUnknownEnumValue(descriptor_->file())) {
     WriteFieldEnumValueAccessorDocComment(printer, descriptor_, GETTER);
     printer->Print(variables_,
-                   "$deprecation$int get$capitalized_name$Value();\n");
+                   "$deprecation$int ${$get$capitalized_name$Value$}$();\n");
+    printer->Annotate("{", "}", descriptor_);
   }
   WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
-  printer->Print(variables_, "$deprecation$$type$ get$capitalized_name$();\n");
+  printer->Print(variables_,
+                 "$deprecation$$type$ ${$get$capitalized_name$$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void ImmutableEnumFieldLiteGenerator::GenerateMembers(
@@ -550,24 +557,31 @@ int RepeatedImmutableEnumFieldLiteGenerator::GetNumBitsForMessage() const {
 void RepeatedImmutableEnumFieldLiteGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);
-  printer->Print(
-      variables_,
-      "$deprecation$java.util.List<$type$> get$capitalized_name$List();\n");
+  printer->Print(variables_,
+                 "$deprecation$java.util.List<$type$> "
+                 "${$get$capitalized_name$List$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT);
   printer->Print(variables_,
-                 "$deprecation$int get$capitalized_name$Count();\n");
+                 "$deprecation$int ${$get$capitalized_name$Count$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER);
-  printer->Print(variables_,
-                 "$deprecation$$type$ get$capitalized_name$(int index);\n");
+  printer->Print(
+      variables_,
+      "$deprecation$$type$ ${$get$capitalized_name$$}$(int index);\n");
+  printer->Annotate("{", "}", descriptor_);
   if (SupportUnknownEnumValue(descriptor_->file())) {
     WriteFieldEnumValueAccessorDocComment(printer, descriptor_, LIST_GETTER);
     printer->Print(variables_,
                    "$deprecation$java.util.List<java.lang.Integer>\n"
-                   "get$capitalized_name$ValueList();\n");
+                   "${$get$capitalized_name$ValueList$}$();\n");
+    printer->Annotate("{", "}", descriptor_);
     WriteFieldEnumValueAccessorDocComment(printer, descriptor_,
                                           LIST_INDEXED_GETTER);
-    printer->Print(variables_,
-                   "$deprecation$int get$capitalized_name$Value(int index);\n");
+    printer->Print(
+        variables_,
+        "$deprecation$int ${$get$capitalized_name$Value$}$(int index);\n");
+    printer->Annotate("{", "}", descriptor_);
   }
 }
 

@@ -47,7 +47,7 @@
 #include "absl/base/casts.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/stubs/stringprintf.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/time/time.h"
 #include "google/protobuf/util/internal/constants.h"
@@ -332,7 +332,7 @@ absl::Status ProtoStreamObjectSource::RenderTimestamp(
   absl::Time tm = absl::FromUnixSeconds(seconds);
   std::string formatted_seconds =
       absl::FormatTime(kRfc3339TimeFormat, tm, absl::UTCTimeZone());
-  std::string formatted_time = StringPrintf(
+  std::string formatted_time = absl::StrFormat(
       "%s%sZ", formatted_seconds.c_str(),
       FormatNanos(
           nanos,
@@ -374,7 +374,7 @@ absl::Status ProtoStreamObjectSource::RenderDuration(
     sign = "-";
     nanos = -nanos;
   }
-  std::string formatted_duration = StringPrintf(
+  std::string formatted_duration = absl::StrFormat(
       "%s%lld%ss", sign.c_str(), static_cast<long long>(seconds),  // NOLINT
       FormatNanos(
           nanos,
@@ -1111,7 +1111,7 @@ std::string FormatNanos(uint32_t nanos, bool with_trailing_zeros) {
   const int precision = (nanos % 1000 != 0)      ? 9
                         : (nanos % 1000000 != 0) ? 6
                                                  : 3;
-  std::string formatted = StringPrintf(
+  std::string formatted = absl::StrFormat(
       "%.*f", precision, static_cast<double>(nanos) / kNanosPerSecond);
   // remove the leading 0 before decimal.
   return formatted.substr(1);

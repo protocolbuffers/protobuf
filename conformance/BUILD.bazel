@@ -143,7 +143,11 @@ cc_library(
         "conformance_test.h",
     ],
     includes = ["."],
-    deps = [":conformance_cc_proto"],
+    deps = [
+        ":conformance_cc_proto",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+    ],
 )
 
 cc_library(
@@ -178,6 +182,7 @@ cc_binary(
         ":binary_json_conformance_suite",
         ":conformance_test",
         ":text_format_conformance_suite",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
