@@ -178,7 +178,7 @@ TEST_P(MiniTableTest, SizeOverflow) {
 
   // A bit under max_double_fields is ok.
   ASSERT_TRUE(e.StartMessage(0));
-  for (int i = 1; i < max_double_fields; i++) {
+  for (size_t i = 1; i < max_double_fields; i++) {
     ASSERT_TRUE(e.PutField(kUpb_FieldType_Double, i, 0));
   }
   upb::Status status;
@@ -188,7 +188,7 @@ TEST_P(MiniTableTest, SizeOverflow) {
 
   // A bit over max_double_fields fails.
   ASSERT_TRUE(e.StartMessage(0));
-  for (int i = 1; i < max_double_fields + 2; i++) {
+  for (size_t i = 1; i < max_double_fields + 2; i++) {
     ASSERT_TRUE(e.PutField(kUpb_FieldType_Double, i, 0));
   }
   upb_MiniTable* table2 = upb_MiniTable_Build(

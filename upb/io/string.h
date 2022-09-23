@@ -62,9 +62,9 @@ UPB_INLINE bool upb_String_Init(upb_String* s, upb_Arena* a) {
   s->size_ = 0;
   s->capacity_ = kDefaultCapacity;
   s->data_ = (char*)upb_Arena_Malloc(a, kDefaultCapacity);
+  s->arena_ = a;
   if (!s->data_) return false;
   s->data_[0] = '\0';
-  s->arena_ = a;
   return true;
 }
 

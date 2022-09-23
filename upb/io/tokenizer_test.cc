@@ -81,7 +81,7 @@ static bool StringEquals(const char* a, const char* b) {
   };                                                              \
                                                                   \
   TEST_F(FIXTURE##_##NAME##_DD, NAME) {                           \
-    for (int i = 0; i < arraysize(CASES); i++) {                  \
+    for (size_t i = 0; i < arraysize(CASES); i++) {               \
       SCOPED_TRACE(testing::Message()                             \
                    << #CASES " case #" << i << ": " << CASES[i]); \
       DoSingleCase(CASES[i]);                                     \
@@ -100,8 +100,8 @@ static bool StringEquals(const char* a, const char* b) {
   };                                                                        \
                                                                             \
   TEST_F(FIXTURE##_##NAME##_DD, NAME) {                                     \
-    for (int i = 0; i < arraysize(CASES1); i++) {                           \
-      for (int j = 0; j < arraysize(CASES2); j++) {                         \
+    for (size_t i = 0; i < arraysize(CASES1); i++) {                        \
+      for (size_t j = 0; j < arraysize(CASES2); j++) {                      \
         SCOPED_TRACE(testing::Message()                                     \
                      << #CASES1 " case #" << i << ": " << CASES1[i] << ", " \
                      << #CASES2 " case #" << j << ": " << CASES2[j]);       \
@@ -571,7 +571,7 @@ TEST_1D(TokenizerTest, ShCommentStyle, kBlockSizes) {
   auto t = upb_Tokenizer_New(NULL, 0, input, options, arena.ptr());
 
   // Advance through tokens and check that they are parsed as expected.
-  for (int i = 0; i < arraysize(kTokens); i++) {
+  for (size_t i = 0; i < arraysize(kTokens); i++) {
     EXPECT_TRUE(upb_Tokenizer_Next(t, NULL));
     EXPECT_TRUE(StringEquals(upb_Tokenizer_TextData(t), kTokens[i]));
   }
@@ -1000,7 +1000,7 @@ TEST_F(TokenizerTest, ParseString) {
 
   upb::Arena arena;
 
-  for (int i = 0; i < sizeof(inputs) / sizeof(inputs[0]); i++) {
+  for (size_t i = 0; i < sizeof(inputs) / sizeof(inputs[0]); i++) {
     auto sv = upb_Parse_String(inputs[i].data(), arena.ptr());
     EXPECT_TRUE(StringEquals(sv.data, outputs[i].data()));
   }
@@ -1202,7 +1202,7 @@ static std::string StandardUTF8(uint32_t code_point) {
 
 static std::string DisplayHex(const std::string& data) {
   std::string output;
-  for (int i = 0; i < data.size(); ++i) {
+  for (size_t i = 0; i < data.size(); ++i) {
     absl::StrAppendFormat(&output, "%02x ", data[i]);
   }
   return output;
