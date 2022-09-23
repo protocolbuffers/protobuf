@@ -77,7 +77,7 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
       if ([request.messageType isEqual:@"protobuf_test_messages.proto3.TestAllTypesProto3"]) {
         msgClass = [Proto3TestAllTypesProto3 class];
       } else if ([request.messageType isEqual:@"protobuf_test_messages.proto2.TestAllTypesProto2"]) {
-        msgClass = [TestAllTypesProto2 class];
+        msgClass = [Proto2TestAllTypesProto2 class];
       } else {
         response.runtimeError =
             [NSString stringWithFormat:@"Protobuf request had an unknown message_type: %@",
