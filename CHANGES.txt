@@ -39,6 +39,9 @@
     constructed FieldMaskTrees.
   * Optimized Java proto serialization gencode for protos having many extension ranges with few fields in between.
   * More thoroughly annotate public generated code in Java lite protocol buffers.
+  * Fixed Bug in proto3 java lite repeated enum fields. Failed to call copyOnWrite before modifying previously built message. Causes modification to already "built" messages that should be immutable.
+  * Refactoring java full runtime to reuse sub-message builders and prepare to migrate parsing logic from parse constructor to builder.
+  * Fix Java reflection serialization of empty packed fields.
 
   Python
   * Changes ordering of printed fields in .pyi files from lexicographic to the same ordering found in the proto descriptor.

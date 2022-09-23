@@ -67,6 +67,7 @@
 #include "google/protobuf/compiler/cpp/padding_optimizer.h"
 #include "google/protobuf/compiler/cpp/parse_function_generator.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/generated_message_tctable_gen.h"
 
 
 // Must be included last.
@@ -473,8 +474,7 @@ void ColdChunkSkipper::OnStartChunk(int chunk, int cached_has_word_index,
   }
 
   // Emit has_bit check for each has_bit_dword index.
-  format("if (PROTOBUF_PREDICT_FALSE(");
-  int first_word = HasbitWord(chunk, 0);
+  format("if (PROTOBUF_PREDICT_FALSE(false");
   while (chunk < limit_chunk_) {
     uint32_t mask = 0;
     int this_word = HasbitWord(chunk, 0);
@@ -488,9 +488,7 @@ void ColdChunkSkipper::OnStartChunk(int chunk, int cached_has_word_index,
       }
     }
 
-    if (this_word != first_word) {
-      format(" ||\n    ");
-    }
+    format(" ||\n    ");
     format.Set("mask", absl::Hex(mask, absl::kZeroPad8));
     if (this_word == cached_has_word_index) {
       format("(cached_has_bits & 0x$mask$u) != 0");
@@ -669,13 +667,46 @@ MessageGenerator::MessageGenerator(
   message_layout_helper_->OptimizeLayout(&optimized_order_, options_,
                                          scc_analyzer_);
 
-  // This message has hasbits iff one or more fields need one.
+  // Allocate has_bit_indices_ iff the message has a field that needs hasbits.
+  int has_bit_fields = 0;
   for (auto field : optimized_order_) {
     if (HasHasbit(field)) {
+      ++has_bit_fields;
       if (has_bit_indices_.empty()) {
         has_bit_indices_.resize(descriptor_->field_count(), kNoHasbit);
       }
-      has_bit_indices_[field->index()] = max_has_bit_index_++;
+    }
+  }
+  // For messages with more than 32 has bits, do a first pass which only
+  // allocates has bits to fields that might be in the fast table.
+  bool allocated_fast[32] = {};
+  if (has_bit_fields > 32) {
+    for (const auto* field : optimized_order_) {
+      if (HasHasbit(field)) {
+        if (!IsDescriptorEligibleForFastParsing(field)) continue;
+
+        // A fast-table with > 16 entries ends up incorporating
+        // the high-bit for VarInt encoding into the index for the table,
+        // so we have to incorporate it here also, when computing the
+        // index likely to be used for that table.
+        int fast_index = field->number();
+        if (fast_index >= 16) fast_index = 16 + (fast_index % 16);
+        GOOGLE_CHECK_GE(fast_index, 1);
+        GOOGLE_CHECK_LT(fast_index, 32);
+
+        if (allocated_fast[fast_index]) continue;
+        allocated_fast[fast_index] = true;
+
+        has_bit_indices_[field->index()] = max_has_bit_index_++;
+      }
+    }
+  }
+  // Then do a second pass which allocates all remaining has bits
+  for (const auto* field : optimized_order_) {
+    if (HasHasbit(field)) {
+      if (has_bit_indices_[field->index()] == kNoHasbit) {
+        has_bit_indices_[field->index()] = max_has_bit_index_++;
+      }
     }
     if (IsStringInlined(field, options_)) {
       if (inlined_string_indices_.empty()) {
@@ -687,6 +718,7 @@ MessageGenerator::MessageGenerator(
       inlined_string_indices_[field->index()] = max_inlined_string_index_++;
     }
   }
+  GOOGLE_CHECK_EQ(max_has_bit_index_, has_bit_fields);
 
   if (!has_bit_indices_.empty()) {
     field_generators_.SetHasBitIndices(has_bit_indices_);

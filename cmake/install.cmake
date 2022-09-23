@@ -47,7 +47,7 @@ include(${protobuf_SOURCE_DIR}/src/file_lists.cmake)
 set(protobuf_HEADERS
   ${libprotobuf_hdrs}
   ${libprotoc_hdrs}
-  ${wkt_protos_files}
+  ${wkt_protos_proto_srcs}
   ${descriptor_proto_proto_srcs}
   ${plugin_proto_proto_srcs}
 )

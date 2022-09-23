@@ -56,14 +56,14 @@ namespace internal {
 namespace {
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT ArenaBlock
-kSentryArenaBlock = {};
+    kSentryArenaBlock = {};
 
 ArenaBlock* SentryArenaBlock() {
   // const_cast<> is okay as kSentryArenaBlock will never be mutated.
   return const_cast<ArenaBlock*>(&kSentryArenaBlock);
 }
 
-}
+}  // namespace
 
 static SerialArena::Memory AllocateMemory(const AllocationPolicy* policy_ptr,
                                           size_t last_size, size_t min_bytes) {

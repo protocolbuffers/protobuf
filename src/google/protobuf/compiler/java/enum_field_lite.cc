@@ -850,6 +850,7 @@ void RepeatedImmutableEnumFieldLiteGenerator::GenerateBuilderMembers(
     printer->Print(variables_,
                    "$deprecation$public Builder "
                    "${$add$capitalized_name$Value$}$(int value) {\n"
+                   "  copyOnWrite();\n"
                    "  instance.add$capitalized_name$Value(value);\n"
                    "  return this;\n"
                    "}\n");
