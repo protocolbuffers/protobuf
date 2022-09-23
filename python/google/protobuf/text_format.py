@@ -557,7 +557,7 @@ class _Printer(object):
         # For groups, use the capitalized name.
         out.write(field.message_type.name)
       else:
-          out.write(field.name)
+        out.write(field.name)
 
     if (self.force_colon or
         field.cpp_type != descriptor.FieldDescriptor.CPPTYPE_MESSAGE):
@@ -923,8 +923,6 @@ class _Parser(object):
       # pylint: disable=protected-access
       field = message.Extensions._FindExtensionByName(name)
       # pylint: enable=protected-access
-
-
       if not field:
         if self.allow_unknown_extension:
           field = None
@@ -1012,7 +1010,6 @@ class _Parser(object):
     # semicolons.
     if not tokenizer.TryConsume(','):
       tokenizer.TryConsume(';')
-
 
   def _LogSilentMarker(self, field_name):
     pass
