@@ -178,6 +178,8 @@ void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
 
   (*variables)["default_entry"] =
       (*variables)["capitalized_name"] + "DefaultEntryHolder.defaultEntry";
+  // { and } variables are used as delimiters when emitting annotations.
+  (*variables)["{"] = (*variables)["}"] = "";
 }
 
 }  // namespace

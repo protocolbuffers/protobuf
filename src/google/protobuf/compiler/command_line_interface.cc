@@ -76,7 +76,7 @@
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/match.h"
-#include "google/protobuf/stubs/stringprintf.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/substitute.h"
@@ -2618,7 +2618,7 @@ void GatherOccupiedFieldRanges(
 void FormatFreeFieldNumbers(const std::string& name,
                             const std::set<FieldRange>& ranges) {
   std::string output;
-  StringAppendF(&output, "%-35s free:", name.c_str());
+  absl::StrAppendFormat(&output, "%-35s free:", name.c_str());
   int next_free_number = 1;
   for (std::set<FieldRange>::const_iterator i = ranges.begin();
        i != ranges.end(); ++i) {
@@ -2629,17 +2629,17 @@ void FormatFreeFieldNumbers(const std::string& name,
     if (next_free_number < i->first) {
       if (next_free_number + 1 == i->first) {
         // Singleton
-        StringAppendF(&output, " %d", next_free_number);
+        absl::StrAppendFormat(&output, " %d", next_free_number);
       } else {
         // Range
-        StringAppendF(&output, " %d-%d", next_free_number,
+        absl::StrAppendFormat(&output, " %d-%d", next_free_number,
                               i->first - 1);
       }
     }
     next_free_number = i->second;
   }
   if (next_free_number <= FieldDescriptor::kMaxNumber) {
-    StringAppendF(&output, " %d-INF", next_free_number);
+    absl::StrAppendFormat(&output, " %d-INF", next_free_number);
   }
   std::cout << output << std::endl;
 }

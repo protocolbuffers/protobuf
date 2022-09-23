@@ -53,9 +53,10 @@
 #include "google/protobuf/map_entry_lite.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/stubs/strutil.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/stubs/stringprintf.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
@@ -791,38 +792,36 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
 
     format.AddMap(vars);
 
-      if (field->is_repeated()) {
+    if (field->is_repeated()) {
+      format("$deprecated_attr$int ${1$$name$_size$}$() const$2$\n", field,
+             !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
+      if (!IsFieldStripped(field, options_)) {
         format(
-            "$deprecated_attr$int ${1$$name$_size$}$() const$2$\n", field,
-            !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
-        if (!IsFieldStripped(field, options_)) {
-          format(
-              "private:\n"
-              "int ${1$_internal_$name$_size$}$() const;\n"
-              "public:\n",
-              field);
-        }
-      } else if (HasHasMethod(field)) {
-        format(
-            "$deprecated_attr$bool ${1$has_$name$$}$() const$2$\n", field,
-            !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
-        if (!IsFieldStripped(field, options_)) {
-          format(
-              "private:\n"
-              "bool _internal_has_$name$() const;\n"
-              "public:\n");
-        }
-      } else if (HasPrivateHasMethod(field)) {
-        if (!IsFieldStripped(field, options_)) {
-          format(
-              "private:\n"
-              "bool ${1$_internal_has_$name$$}$() const;\n"
-              "public:\n",
-              field);
-        }
+            "private:\n"
+            "int ${1$_internal_$name$_size$}$() const;\n"
+            "public:\n",
+            field);
       }
-      format("$deprecated_attr$void ${1$clear_$name$$}$()$2$\n", field,
-             !IsFieldStripped(field, options_) ? ";" : "{__builtin_trap();}");
+    } else if (HasHasMethod(field)) {
+      format("$deprecated_attr$bool ${1$has_$name$$}$() const$2$\n", field,
+             !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
+      if (!IsFieldStripped(field, options_)) {
+        format(
+            "private:\n"
+            "bool _internal_has_$name$() const;\n"
+            "public:\n");
+      }
+    } else if (HasPrivateHasMethod(field)) {
+      if (!IsFieldStripped(field, options_)) {
+        format(
+            "private:\n"
+            "bool ${1$_internal_has_$name$$}$() const;\n"
+            "public:\n",
+            field);
+      }
+    }
+    format("$deprecated_attr$void ${1$clear_$name$$}$()$2$\n", field,
+           !IsFieldStripped(field, options_) ? ";" : "{__builtin_trap();}");
 
     // Generate type-specific accessor declarations.
     field_generators_.get(field).GenerateAccessorDeclarations(printer);
@@ -1267,9 +1266,9 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
       GenerateSingularFieldHasBits(field, format);
     }
 
-      if (!IsCrossFileMaybeMap(field)) {
-        GenerateFieldClear(field, true, format);
-      }
+    if (!IsCrossFileMaybeMap(field)) {
+      GenerateFieldClear(field, true, format);
+    }
     // Generate type-specific accessors.
     if (!IsFieldStripped(field, options_)) {
       field_generators_.get(field).GenerateInlineAccessorDefinitions(printer);
@@ -2130,8 +2129,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
   format("};\n\n");
   for (auto field : FieldRange(descriptor_)) {
     if (!IsFieldStripped(field, options_)) {
-      field_generators_.get(field).GenerateInternalAccessorDefinitions(
-          printer);
+      field_generators_.get(field).GenerateInternalAccessorDefinitions(printer);
     }
   }
 
@@ -2677,8 +2675,7 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* printer) {
       continue;
     }
     put_sep();
-    field_generators_.get(field).GenerateConstexprAggregateInitializer(
-        printer);
+    field_generators_.get(field).GenerateConstexprAggregateInitializer(printer);
   }
   if (ShouldSplit(descriptor_, options_)) {
     put_sep();

@@ -87,8 +87,7 @@ bool TextFormatConformanceTestSuite::ParseResponse(
         ReportFailure(test_name, level, request, response,
                       absl::StrCat("Test was asked for ",
                                    WireFormatToString(requested_output),
-                                   " output but provided PROTOBUF instead.")
-                          .c_str());
+                                   " output but provided PROTOBUF instead."));
         return false;
       }
 
@@ -103,11 +102,11 @@ bool TextFormatConformanceTestSuite::ParseResponse(
 
     case ConformanceResponse::kTextPayload: {
       if (requested_output != conformance::TEXT_FORMAT) {
-        ReportFailure(test_name, level, request, response,
-                      absl::StrCat("Test was asked for ",
-                                   WireFormatToString(requested_output),
-                                   " output but provided TEXT_FORMAT instead.")
-                          .c_str());
+        ReportFailure(
+            test_name, level, request, response,
+            absl::StrCat("Test was asked for ",
+                         WireFormatToString(requested_output),
+                         " output but provided TEXT_FORMAT instead."));
         return false;
       }
 

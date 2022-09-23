@@ -59,7 +59,6 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
-#include "google/protobuf/stubs/stringprintf.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/substitute.h"
@@ -1634,7 +1633,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
     // EnumDescriptor (it's not a part of the enum as originally defined), but
     // we do insert it into the table so that we can return the same pointer
     // later.
-    std::string enum_value_name = StringPrintf(
+    std::string enum_value_name = absl::StrFormat(
         "UNKNOWN_ENUM_VALUE_%s_%d", parent->name().c_str(), number);
     auto* pool = DescriptorPool::generated_pool();
     auto* tables = const_cast<DescriptorPool::Tables*>(pool->tables_.get());

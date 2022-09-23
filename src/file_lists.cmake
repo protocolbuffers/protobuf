@@ -65,7 +65,6 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/service.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/bytestream.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/stringprintf.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/structurally_valid.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format.cc
@@ -174,7 +173,6 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/port.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/status_macros.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/stl_util.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/stringprintf.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unknown_field_set.h
@@ -233,7 +231,6 @@ set(libprotobuf_lite_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/bytestream.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/stringprintf.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/structurally_valid.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_lite.cc
@@ -282,7 +279,6 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/port.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/status_macros.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/stl_util.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/stringprintf.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_lite.h
 )
@@ -750,7 +746,6 @@ set(util_test_protos_files
 set(stubs_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/bytestream_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common_unittest.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/stringprintf_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/structurally_valid_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil_unittest.cc
 )

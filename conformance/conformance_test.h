@@ -276,7 +276,7 @@ class ConformanceTestSuite {
   void ReportFailure(const std::string& test_name, ConformanceLevel level,
                      const conformance::ConformanceRequest& request,
                      const conformance::ConformanceResponse& response,
-                     const char* fmt, ...);
+                     absl::string_view message);
   void ReportSkip(const std::string& test_name,
                   const conformance::ConformanceRequest& request,
                   const conformance::ConformanceResponse& response);

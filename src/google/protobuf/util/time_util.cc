@@ -37,7 +37,7 @@
 #include "google/protobuf/timestamp.pb.h"
 #include "absl/numeric/int128.h"
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/stubs/stringprintf.h"
+#include "absl/strings/str_format.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
 
@@ -127,11 +127,11 @@ Duration CreateNormalized(int64_t seconds, int32_t nanos) {
 // precision to represent the exact value.
 std::string FormatNanos(int32_t nanos) {
   if (nanos % kNanosPerMillisecond == 0) {
-    return StringPrintf("%03d", nanos / kNanosPerMillisecond);
+    return absl::StrFormat("%03d", nanos / kNanosPerMillisecond);
   } else if (nanos % kNanosPerMicrosecond == 0) {
-    return StringPrintf("%06d", nanos / kNanosPerMicrosecond);
+    return absl::StrFormat("%06d", nanos / kNanosPerMicrosecond);
   } else {
-    return StringPrintf("%09d", nanos);
+    return absl::StrFormat("%09d", nanos);
   }
 }
 

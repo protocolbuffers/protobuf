@@ -110,6 +110,9 @@ void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   // We use `x.getClass()` as a null check because it generates less bytecode
   // than an `if (x == null) { throw ... }` statement.
   (*variables)["null_check"] = "value.getClass();\n";
+  // Annotations often use { and } to determine ranges.
+  (*variables)["{"] = "";
+  (*variables)["}"] = "";
 }
 
 }  // namespace
@@ -140,9 +143,13 @@ int ImmutableMessageFieldLiteGenerator::GetNumBitsForMessage() const {
 void ImmutableMessageFieldLiteGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
   WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
-  printer->Print(variables_, "$deprecation$boolean has$capitalized_name$();\n");
+  printer->Print(variables_,
+                 "$deprecation$boolean ${$has$capitalized_name$$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
   WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
-  printer->Print(variables_, "$deprecation$$type$ get$capitalized_name$();\n");
+  printer->Print(variables_,
+                 "$deprecation$$type$ ${$get$capitalized_name$$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void ImmutableMessageFieldLiteGenerator::GenerateMembers(
@@ -523,13 +530,17 @@ void RepeatedImmutableMessageFieldLiteGenerator::GenerateInterfaceMembers(
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
                  "$deprecation$java.util.List<$type$> \n"
-                 "    get$capitalized_name$List();\n");
+                 "    ${$get$capitalized_name$List$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
+  WriteFieldDocComment(printer, descriptor_);
+  printer->Print(
+      variables_,
+      "$deprecation$$type$ ${$get$capitalized_name$$}$(int index);\n");
+  printer->Annotate("{", "}", descriptor_);
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,
-                 "$deprecation$$type$ get$capitalized_name$(int index);\n");
-  WriteFieldDocComment(printer, descriptor_);
-  printer->Print(variables_,
-                 "$deprecation$int get$capitalized_name$Count();\n");
+                 "$deprecation$int ${$get$capitalized_name$Count$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void RepeatedImmutableMessageFieldLiteGenerator::GenerateMembers(

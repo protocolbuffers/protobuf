@@ -84,6 +84,7 @@ cc_library(
         ":importer",
         "//src/google/protobuf:protobuf_nowkt",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
@@ -126,8 +127,8 @@ cc_library(
         "//pkg:__pkg__",
     ],
     deps = [
-        "//:protobuf",
         ":protoc_lib_nowkt",
+        "//:protobuf",
     ],
 )
 
