@@ -319,7 +319,9 @@ upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
 
   const char* ptr = upb_Message_GetUnknown(msg, &size);
   if (size == 0) {
+    ret.status = kUpb_FindUnknown_NotPresent;
     ret.ptr = NULL;
+    ret.len = 0;
     return ret;
   }
   const char* end = ptr + size;
