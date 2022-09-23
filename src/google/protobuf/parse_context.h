@@ -619,7 +619,7 @@ constexpr static const __uint64_t AvxByteMask[] = {0x0,
 static const __m128i Zero128I = _mm_setzero_si128();
 
 template <typename T>
-inline const char* VarintParseAvx(const char* p, T* out) {
+inline PROTOBUF_NODISCARD const char* VarintParseAvx(const char* p, T* out) {
   auto ptr = reinterpret_cast<const uint8_t*>(p);
   uint32_t res = ptr[0];
   if (!(res & 0x80)) {
