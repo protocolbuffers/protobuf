@@ -35,6 +35,9 @@
 #include <cstring>
 #include <string>
 #include <type_traits>
+#include <immintrin.h>
+#include <emmintrin.h>
+#include <pmmintrin.h>
 
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -602,8 +605,67 @@ static PROTOBUF_ALWAYS_INLINE inline uint64_t Ubfx7(uint64_t data,
 
 #endif  // __aarch64__
 
+#if  defined (__SSE3__) && defined (__AVX512BW__)\
+  && defined (__AVX512VL__) && defined (__BMI2__)
+
+constexpr static const  __uint64_t AvxByteMask[] =
+  {0x0, 0xff,0xffff, 0xffffff,0xffffffff,0xffffffffff,0xffffffffffff,0xffffffffffffff,0xffffffffffffffff};
+static const __m128i Zero128I=_mm_setzero_si128 ();
+
 template <typename T>
-PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
+inline const char *VarintParseAvx(const char *p, T *out) {
+  auto ptr = reinterpret_cast<const uint8_t*>(p);
+  uint32_t res = ptr[0];
+  if (!(res & 0x80)) {
+    *out = res;
+    return p + 1;
+  }
+  uint32_t byte = ptr[1];
+  res += (byte - 1) << 7;
+  if (!(byte & 0x80)) {
+    *out = res;
+    return p + 2;
+  }
+  __m128i data128i =  _mm_lddqu_si128 (reinterpret_cast<const __m128i*>(p));
+  const uint8* dptr = reinterpret_cast<uint8*>(&data128i);
+  //"0x3ff" = 10 bytes
+  __mmask16 msb= _mm_mask_cmp_epi8_mask(0x3ff,data128i,Zero128I,_MM_CMPINT_NLT);
+  uint32_t cnt = _tzcnt_u32 (msb);
+
+  if constexpr (std::is_same<T,uint32_t>::value){
+     if(PROTOBUF_PREDICT_TRUE(cnt<10)){
+       uint32_t  maskIndex = cnt<5?cnt+1:5;
+       uint64_t  data64= (*(reinterpret_cast<const uint64_t*>(dptr))) & AvxByteMask[maskIndex];
+       *out=static_cast<uint32>(_pext_u64 (data64, 0x7F7F7F7F7F));
+       return p+cnt+1;
+     }
+     return nullptr;
+  }
+
+  if constexpr (std::is_same<T,uint64_t>::value){
+      if(cnt<8){
+        uint32_t  maskIndex =cnt+1;
+        uint64_t  data64= (*(reinterpret_cast<const uint64_t*>(dptr))) & AvxByteMask[maskIndex];
+        *out = _pext_u64 (data64, 0x7F7F7F7F7F7F7F7F);
+        return p+cnt+1;
+      }
+
+      if(cnt<10){
+        uint32_t  maskIndex =cnt+1-8;
+        uint64 tempValueLo = _pext_u64 (*(reinterpret_cast<const uint64_t*>(dptr)),0x7F7F7F7F7F7F7F7F);
+        uint64 tempValueHi = _pext_u64 (*(reinterpret_cast<const  uint64_t*>(dptr+8)) & AvxByteMask[maskIndex], 0x7F7F);
+        *out=(tempValueHi<<56) |tempValueLo;
+        return p+cnt+1;
+      }
+  }
+
+  return nullptr;
+}
+
+#endif //__SSE3__ && __AVX512BW__ && __AVX512VL__ && __BMI2__
+
+template <typename T>
+PROTOBUF_NODISCARD const char* VarintParseNoneAvx(const char* p, T* out) {
 #if defined(__aarch64__) && defined(PROTOBUF_LITTLE_ENDIAN)
   // This optimization is not supported in big endian mode
   uint64_t first8;
@@ -632,6 +694,14 @@ PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
   return VarintParseSlow(p, res, out);
 #endif  // __aarch64__
 }
+
+
+#if  defined (__SSE3__) && defined (__AVX512BW__)\
+  && defined (__AVX512VL__) && defined (__BMI2__)
+  #define VarintParse VarintParseAvx
+#else
+  #define VarintParse VarintParseNoneAvx
+#endif
 
 // Used for tags, could read up to 5 bytes which must be available.
 // Caller must ensure its safe to call.
