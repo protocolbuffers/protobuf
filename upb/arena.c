@@ -186,6 +186,7 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   a->head.ptr = mem;
   a->head.end = UPB_PTR_AT(mem, n - sizeof(*a), char);
   a->freelist = NULL;
+  a->freelist_tail = NULL;
   a->cleanup_metadata = upb_cleanup_metadata(NULL, true);
 
   return a;
