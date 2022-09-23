@@ -45,7 +45,7 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/stubs/stringprintf.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
@@ -1114,7 +1114,7 @@ void EscapeUtf16ToString(uint16_t code, std::string* output) {
   } else if (code >= 0x20 && code <= 0x7f) {
     output->push_back(static_cast<char>(code));
   } else {
-    output->append(StringPrintf("\\u%04x", code));
+    output->append(absl::StrFormat("\\u%04x", code));
   }
 }
 

@@ -35,6 +35,7 @@
 #include "google/protobuf/util/json_util.h"
 #include "google/protobuf/util/type_resolver_util.h"
 #include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
 #include "third_party/jsoncpp/json.h"
 #include "conformance_test.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
@@ -584,16 +585,16 @@ void BinaryAndJsonConformanceSuite::RunValidJsonTestWithValidator(
 
   if (response.result_case() != ConformanceResponse::kJsonPayload) {
     ReportFailure(effective_test_name, level, request, response,
-                  "Expected JSON payload but got type %d.",
-                  response.result_case());
+                  absl::StrCat("Expected JSON payload but got type ",
+                               response.result_case()));
     return;
   }
   Json::Reader reader;
   Json::Value value;
   if (!reader.parse(response.json_payload(), value)) {
     ReportFailure(effective_test_name, level, request, response,
-                  "JSON payload cannot be parsed as valid JSON: %s",
-                  reader.getFormattedErrorMessages().c_str());
+                  absl::StrCat("JSON payload cannot be parsed as valid JSON: ",
+                               reader.getFormattedErrorMessages()));
     return;
   }
   if (!validator(value)) {

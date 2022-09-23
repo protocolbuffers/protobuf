@@ -129,6 +129,8 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       GenerateGetBitFromLocal(builderBitIndex);
   (*variables)["set_has_field_bit_to_local"] =
       GenerateSetBitToLocal(messageBitIndex);
+  // Annotations often use { and } variables to denote text ranges.
+  (*variables)["{"] = (*variables)["}"] = "";
 }
 
 }  // namespace
@@ -182,15 +184,19 @@ void ImmutableStringFieldLiteGenerator::GenerateInterfaceMembers(
   if (HasHazzer(descriptor_)) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
     printer->Print(variables_,
-                   "$deprecation$boolean has$capitalized_name$();\n");
+                   "$deprecation$boolean ${$has$capitalized_name$$}$();\n");
+    printer->Annotate("{", "}", descriptor_);
   }
   WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
-  printer->Print(variables_,
-                 "$deprecation$java.lang.String get$capitalized_name$();\n");
+  printer->Print(
+      variables_,
+      "$deprecation$java.lang.String ${$get$capitalized_name$$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
   WriteFieldStringBytesAccessorDocComment(printer, descriptor_, GETTER);
   printer->Print(variables_,
                  "$deprecation$com.google.protobuf.ByteString\n"
-                 "    get$capitalized_name$Bytes();\n");
+                 "    ${$get$capitalized_name$Bytes$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void ImmutableStringFieldLiteGenerator::GenerateMembers(
@@ -569,18 +575,22 @@ void RepeatedImmutableStringFieldLiteGenerator::GenerateInterfaceMembers(
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);
   printer->Print(variables_,
                  "$deprecation$java.util.List<java.lang.String>\n"
-                 "    get$capitalized_name$List();\n");
+                 "    ${$get$capitalized_name$List$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT);
   printer->Print(variables_,
-                 "$deprecation$int get$capitalized_name$Count();\n");
+                 "$deprecation$int ${$get$capitalized_name$Count$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER);
-  printer->Print(
-      variables_,
-      "$deprecation$java.lang.String get$capitalized_name$(int index);\n");
+  printer->Print(variables_,
+                 "$deprecation$java.lang.String "
+                 "${$get$capitalized_name$$}$(int index);\n");
+  printer->Annotate("{", "}", descriptor_);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER);
   printer->Print(variables_,
                  "$deprecation$com.google.protobuf.ByteString\n"
-                 "    get$capitalized_name$Bytes(int index);\n");
+                 "    ${$get$capitalized_name$Bytes$}$(int index);\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void RepeatedImmutableStringFieldLiteGenerator::GenerateMembers(

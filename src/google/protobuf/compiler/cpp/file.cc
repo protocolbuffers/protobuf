@@ -41,6 +41,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include "google/protobuf/compiler/scc.h"
@@ -51,7 +52,7 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/stubs/stringprintf.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
@@ -860,13 +861,13 @@ void FileGenerator::GenerateSource(io::Printer* p) {
 
 void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   if (!message_generators_.empty()) {
-    p->Emit({{"len", absl::StrCat(message_generators_.size())}}, R"cc(
+    p->Emit({{"len", message_generators_.size()}}, R"cc(
       static ::_pb::Metadata $file_level_metadata$[$len$];
     )cc");
   }
 
   if (!enum_generators_.empty()) {
-    p->Emit({{"len", absl::StrCat(enum_generators_.size())}}, R"cc(
+    p->Emit({{"len", enum_generators_.size()}}, R"cc(
       static const ::_pb::EnumDescriptor* $file_level_enum_descriptors$[$len$];
     )cc");
   } else {
@@ -877,7 +878,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   }
 
   if (HasGenericServices(file_, options_) && file_->service_count() > 0) {
-    p->Emit({{"len", absl::StrCat(file_->service_count())}}, R"cc(
+    p->Emit({{"len", file_->service_count()}}, R"cc(
       static const ::_pb::ServiceDescriptor*
           $file_level_service_descriptors$[$len$];
     )cc");
@@ -1015,7 +1016,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   if (num_deps > 0) {
     p->Emit(
         {
-            {"len", absl::StrCat(num_deps)},
+            {"len", num_deps},
             {"deps",
              [&] {
                for (auto dep : refs.strong_reflection_files) {
@@ -1046,13 +1047,13 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
   p->Emit(
       {
           {"eager", eager ? "true" : "false"},
-          {"file_proto_len", absl::StrCat(file_data.size())},
+          {"file_proto_len", file_data.size()},
           {"proto_name", desc_name},
           {"deps_ptr", num_deps == 0
                            ? "nullptr"
                            : absl::StrCat(p->LookupVar("desc_table"), "_deps")},
-          {"num_deps", absl::StrCat(num_deps)},
-          {"num_msgs", absl::StrCat(message_generators_.size())},
+          {"num_deps", num_deps},
+          {"num_msgs", message_generators_.size()},
           {"msgs_ptr", message_generators_.empty()
                            ? "nullptr"
                            : std::string(p->LookupVar("file_level_metadata"))},
@@ -1116,8 +1117,7 @@ class FileGenerator::ForwardDeclarations {
 
   void Print(io::Printer* p, const Options& options) const {
     for (const auto& e : enums_) {
-      auto a = p->WithAnnotations({{"enum", e.second}});
-      p->Emit({{"enum", e.first}}, R"cc(
+      p->Emit({{"enum", e.first, e.second}}, R"cc(
         enum $enum$ : int;
         bool $enum$_IsValid(int value);
       )cc");
@@ -1125,10 +1125,9 @@ class FileGenerator::ForwardDeclarations {
 
     for (const auto& c : classes_) {
       const Descriptor* desc = c.second;
-      auto a = p->WithAnnotations({{"class", desc}});
       p->Emit(
           {
-              {"class", c.first},
+              {"class", c.first, desc},
               {"default_type", DefaultInstanceType(desc, options)},
               {"default_name", DefaultInstanceName(desc, options)},
           },
@@ -1254,9 +1253,8 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
     IncludeFile("net/proto2/public/port_def.inc", p);
     p->Emit(
         {
-            {"min_version",
-             absl::StrCat(PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC)},
-            {"version", absl::StrCat(PROTOBUF_VERSION)},
+            {"min_version", PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC},
+            {"version", PROTOBUF_VERSION},
         },
         R"(
         #if PROTOBUF_VERSION < $min_version$

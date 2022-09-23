@@ -34,8 +34,8 @@
 #define GOOGLE_PROTOBUF_UTIL_JSON_UTIL_H__
 
 
-#include "google/protobuf/stubs/bytestream.h"
 #include "absl/status/status.h"
+#include "google/protobuf/stubs/bytestream.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/util/type_resolver.h"

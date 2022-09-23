@@ -548,20 +548,49 @@ TEST_F(PrinterTest, Emit) {
             "}\n");
 }
 
+TEST_F(PrinterTest, EmitKeepsExtraLine) {
+  {
+    Printer printer(output());
+    printer.Emit(R"cc(
+
+      class Foo {
+        int x, y, z;
+      };
+    )cc");
+    printer.Emit(R"java(
+
+      public final class Bar {
+        Bar() {}
+      }
+    )java");
+  }
+
+  EXPECT_EQ(written(),
+            "\n"
+            "class Foo {\n"
+            "  int x, y, z;\n"
+            "};\n"
+            "\n"
+            "public final class Bar {\n"
+            "  Bar() {}\n"
+            "}\n");
+}
+
 TEST_F(PrinterTest, EmitWithSubs) {
   {
     Printer printer(output());
-    printer.Emit({{"class", "Foo"}, {"f1", "x"}, {"f2", "y"}, {"f3", "z"}},
-                 R"cc(
-                   class $class$ {
-                     int $f1$, $f2$, $f3$;
-                   };
-                 )cc");
+    printer.Emit(
+        {{"class", "Foo"}, {"f1", "x"}, {"f2", "y"}, {"f3", "z"}, {"init", 42}},
+        R"cc(
+          class $class$ {
+            int $f1$, $f2$, $f3$ = $init$;
+          };
+        )cc");
   }
 
   EXPECT_EQ(written(),
             "class Foo {\n"
-            "  int x, y, z;\n"
+            "  int x, y, z = 42;\n"
             "};\n");
 }
 
@@ -573,17 +602,18 @@ TEST_F(PrinterTest, EmitWithVars) {
         {"f1", "x"},
         {"f2", "y"},
         {"f3", "z"},
+        {"init", 42},
     });
     printer.Emit(R"cc(
       class $class$ {
-        int $f1$, $f2$, $f3$;
+        int $f1$, $f2$, $f3$ = $init$;
       };
     )cc");
   }
 
   EXPECT_EQ(written(),
             "class Foo {\n"
-            "  int x, y, z;\n"
+            "  int x, y, z = 42;\n"
             "};\n");
 }
 
@@ -664,6 +694,28 @@ TEST_F(PrinterTest, EmitSameNameAnnotationFileNameOnly) {
     Printer printer(output(), '$', &collector);
     auto v = printer.WithVars({{"class", "Foo"}});
     auto a = printer.WithAnnotations({{"class", "file.proto"}});
+
+    printer.Emit({{"f1", "x"}, {"f2", "y"}, {"f3", "z"}}, R"cc(
+      class $class$ {
+        int $f1$, $f2$, $f3$;
+      };
+    )cc");
+  }
+
+  EXPECT_EQ(written(),
+            "class Foo {\n"
+            "  int x, y, z;\n"
+            "};\n");
+
+  EXPECT_THAT(collector.Get(),
+              ElementsAre(Annotation(6, 9, "file.proto", IsEmpty())));
+}
+
+TEST_F(PrinterTest, EmitThreeArgWithVars) {
+  FakeAnnotationCollector collector;
+  {
+    Printer printer(output(), '$', &collector);
+    auto v = printer.WithVars({{"class", "Foo", "file.proto"}});
 
     printer.Emit({{"f1", "x"}, {"f2", "y"}, {"f3", "z"}}, R"cc(
       class $class$ {

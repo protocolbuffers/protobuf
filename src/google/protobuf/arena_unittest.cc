@@ -46,6 +46,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
+#include "absl/synchronization/barrier.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/extension_set.h"
@@ -281,7 +282,8 @@ TEST(ArenaTest, CreateWithMoveArguments) {
 TEST(ArenaTest, InitialBlockTooSmall) {
   // Construct a small blocks of memory to be used by the arena allocator; then,
   // allocate an object which will not fit in the initial block.
-  for (int size = 0; size <= Arena::kBlockOverhead + 32; size++) {
+  for (uint32_t size = 0; size <= internal::SerialArena::kBlockHeaderSize + 32;
+       size++) {
     std::vector<char> arena_block(size);
     ArenaOptions options;
     options.initial_block = arena_block.data();
@@ -1406,6 +1408,31 @@ TEST(ArenaTest, SpaceAllocated_and_Used) {
   EXPECT_EQ(Align8(55), arena_2.SpaceUsed());
   EXPECT_EQ(1024, arena_2.Reset());
 }
+
+namespace {
+
+void VerifyArenaOverhead(Arena& arena, size_t overhead) {
+  EXPECT_EQ(0, arena.SpaceAllocated());
+
+  // Allocate a tiny block and record the allocation size.
+  constexpr size_t kTinySize = 8;
+  Arena::CreateArray<char>(&arena, kTinySize);
+  uint64_t space_allocated = arena.SpaceAllocated();
+
+  // Next allocation expects to fill up the block but no new block.
+  uint64_t next_size = space_allocated - overhead - kTinySize;
+  Arena::CreateArray<char>(&arena, next_size);
+
+  EXPECT_EQ(space_allocated, arena.SpaceAllocated());
+}
+
+}  // namespace
+
+TEST(ArenaTest, FirstArenaOverhead) {
+  Arena arena;
+  VerifyArenaOverhead(arena, internal::SerialArena::kBlockHeaderSize);
+}
+
 
 TEST(ArenaTest, BlockSizeDoubling) {
   Arena arena;
