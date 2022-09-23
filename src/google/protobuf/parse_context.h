@@ -661,9 +661,9 @@ inline const char* VarintParseAvx(const char* p, T* out) {
 
     if (cnt < 10) {
       uint32_t maskIndex = cnt + 1 - 8;
-      uint64 tempValueLo = _pext_u64(*(reinterpret_cast<const uint64_t*>(dptr)),
+      uint64_t tempValueLo = _pext_u64(*(reinterpret_cast<const uint64_t*>(dptr)),
                                      0x7F7F7F7F7F7F7F7F);
-      uint64 tempValueHi =
+      uint64_t tempValueHi =
           _pext_u64(*(reinterpret_cast<const uint64_t*>(dptr + 8)) &
                         AvxByteMask[maskIndex],
                     0x7F7F);
