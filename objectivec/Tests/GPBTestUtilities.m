@@ -66,8 +66,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 
 // Return data for name. Optionally (based on #if setting) write out dataToWrite
 // to replace that data. Useful for setting golden masters.
-- (NSData *)getDataFileNamed:(NSString *)name
-                 dataToWrite:(NSData *)dataToWrite {
+- (NSData *)getDataFileNamed:(NSString *)name dataToWrite:(NSData *)dataToWrite {
   NSBundle *bundle = [NSBundle bundleForClass:[self class]];
   NSString *path = [bundle pathForResource:[name stringByDeletingPathExtension]
                                     ofType:[name pathExtension]];
@@ -93,63 +92,30 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 // -------------------------------------------------------------------
 
 - (void)modifyRepeatedExtensions:(TestAllExtensions *)message {
-  [message setExtension:[UnittestRoot repeatedInt32Extension]
-                  index:1
-                  value:@501];
-  [message setExtension:[UnittestRoot repeatedInt64Extension]
-                  index:1
-                  value:@502];
-  [message setExtension:[UnittestRoot repeatedUint32Extension]
-                  index:1
-                  value:@503];
-  [message setExtension:[UnittestRoot repeatedUint64Extension]
-                  index:1
-                  value:@504];
-  [message setExtension:[UnittestRoot repeatedSint32Extension]
-                  index:1
-                  value:@505];
-  [message setExtension:[UnittestRoot repeatedSint64Extension]
-                  index:1
-                  value:@506];
-  [message setExtension:[UnittestRoot repeatedFixed32Extension]
-                  index:1
-                  value:@507];
-  [message setExtension:[UnittestRoot repeatedFixed64Extension]
-                  index:1
-                  value:@508];
-  [message setExtension:[UnittestRoot repeatedSfixed32Extension]
-                  index:1
-                  value:@509];
-  [message setExtension:[UnittestRoot repeatedSfixed64Extension]
-                  index:1
-                  value:@510];
-  [message setExtension:[UnittestRoot repeatedFloatExtension]
-                  index:1
-                  value:@511.0f];
-  [message setExtension:[UnittestRoot repeatedDoubleExtension]
-                  index:1
-                  value:@512.0];
-  [message setExtension:[UnittestRoot repeatedBoolExtension]
-                  index:1
-                  value:@YES];
-  [message setExtension:[UnittestRoot repeatedStringExtension]
-                  index:1
-                  value:@"515"];
+  [message setExtension:[UnittestRoot repeatedInt32Extension] index:1 value:@501];
+  [message setExtension:[UnittestRoot repeatedInt64Extension] index:1 value:@502];
+  [message setExtension:[UnittestRoot repeatedUint32Extension] index:1 value:@503];
+  [message setExtension:[UnittestRoot repeatedUint64Extension] index:1 value:@504];
+  [message setExtension:[UnittestRoot repeatedSint32Extension] index:1 value:@505];
+  [message setExtension:[UnittestRoot repeatedSint64Extension] index:1 value:@506];
+  [message setExtension:[UnittestRoot repeatedFixed32Extension] index:1 value:@507];
+  [message setExtension:[UnittestRoot repeatedFixed64Extension] index:1 value:@508];
+  [message setExtension:[UnittestRoot repeatedSfixed32Extension] index:1 value:@509];
+  [message setExtension:[UnittestRoot repeatedSfixed64Extension] index:1 value:@510];
+  [message setExtension:[UnittestRoot repeatedFloatExtension] index:1 value:@511.0f];
+  [message setExtension:[UnittestRoot repeatedDoubleExtension] index:1 value:@512.0];
+  [message setExtension:[UnittestRoot repeatedBoolExtension] index:1 value:@YES];
+  [message setExtension:[UnittestRoot repeatedStringExtension] index:1 value:@"515"];
   [message setExtension:[UnittestRoot repeatedBytesExtension]
                   index:1
                   value:[NSData gpbtu_dataWithUint32:516]];
 
   RepeatedGroup_extension *repeatedGroup = [RepeatedGroup_extension message];
   [repeatedGroup setA:517];
-  [message setExtension:[UnittestRoot repeatedGroupExtension]
-                  index:1
-                  value:repeatedGroup];
-  TestAllTypes_NestedMessage *nestedMessage =
-      [TestAllTypes_NestedMessage message];
+  [message setExtension:[UnittestRoot repeatedGroupExtension] index:1 value:repeatedGroup];
+  TestAllTypes_NestedMessage *nestedMessage = [TestAllTypes_NestedMessage message];
   [nestedMessage setBb:518];
-  [message setExtension:[UnittestRoot repeatedNestedMessageExtension]
-                  index:1
-                  value:nestedMessage];
+  [message setExtension:[UnittestRoot repeatedNestedMessageExtension] index:1 value:nestedMessage];
   ForeignMessage *foreignMessage = [ForeignMessage message];
   [foreignMessage setC:519];
   [message setExtension:[UnittestRoot repeatedForeignMessageExtension]
@@ -157,9 +123,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
                   value:foreignMessage];
   ImportMessage *importMessage = [ImportMessage message];
   [importMessage setD:520];
-  [message setExtension:[UnittestRoot repeatedImportMessageExtension]
-                  index:1
-                  value:importMessage];
+  [message setExtension:[UnittestRoot repeatedImportMessageExtension] index:1 value:importMessage];
 
   [message setExtension:[UnittestRoot repeatedNestedEnumExtension]
                   index:1
@@ -171,16 +135,11 @@ const uint32_t kGPBDefaultRepeatCount = 2;
                   index:1
                   value:@(ImportEnum_ImportFoo)];
 
-  [message setExtension:[UnittestRoot repeatedStringPieceExtension]
-                  index:1
-                  value:@"524"];
-  [message setExtension:[UnittestRoot repeatedCordExtension]
-                  index:1
-                  value:@"525"];
+  [message setExtension:[UnittestRoot repeatedStringPieceExtension] index:1 value:@"524"];
+  [message setExtension:[UnittestRoot repeatedCordExtension] index:1 value:@"525"];
 }
 
-- (void)assertAllExtensionsSet:(TestAllExtensions *)message
-                 repeatedCount:(uint32_t)count {
+- (void)assertAllExtensionsSet:(TestAllExtensions *)message repeatedCount:(uint32_t)count {
   XCTAssertTrue([message hasExtension:[UnittestRoot optionalInt32Extension]]);
   XCTAssertTrue([message hasExtension:[UnittestRoot optionalInt64Extension]]);
   XCTAssertTrue([message hasExtension:[UnittestRoot optionalUint32Extension]]);
@@ -238,29 +197,44 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertTrue([message hasExtension:[UnittestRoot defaultCordExtension]]);
 
   XCTAssertEqual(101, [[message getExtension:[UnittestRoot optionalInt32Extension]] intValue]);
-  XCTAssertEqual(102LL, [[message getExtension:[UnittestRoot optionalInt64Extension]] longLongValue]);
-  XCTAssertEqual(103U, [[message getExtension:[UnittestRoot optionalUint32Extension]] unsignedIntValue]);
-  XCTAssertEqual(104ULL, [[message getExtension:[UnittestRoot optionalUint64Extension]] unsignedLongLongValue]);
+  XCTAssertEqual(102LL,
+                 [[message getExtension:[UnittestRoot optionalInt64Extension]] longLongValue]);
+  XCTAssertEqual(103U,
+                 [[message getExtension:[UnittestRoot optionalUint32Extension]] unsignedIntValue]);
+  XCTAssertEqual(104ULL, [[message getExtension:[UnittestRoot optionalUint64Extension]]
+                             unsignedLongLongValue]);
   XCTAssertEqual(105, [[message getExtension:[UnittestRoot optionalSint32Extension]] intValue]);
-  XCTAssertEqual(106LL, [[message getExtension:[UnittestRoot optionalSint64Extension]] longLongValue]);
-  XCTAssertEqual(107U, [[message getExtension:[UnittestRoot optionalFixed32Extension]] unsignedIntValue]);
-  XCTAssertEqual(108ULL, [[message getExtension:[UnittestRoot optionalFixed64Extension]] unsignedLongLongValue]);
+  XCTAssertEqual(106LL,
+                 [[message getExtension:[UnittestRoot optionalSint64Extension]] longLongValue]);
+  XCTAssertEqual(107U,
+                 [[message getExtension:[UnittestRoot optionalFixed32Extension]] unsignedIntValue]);
+  XCTAssertEqual(108ULL, [[message getExtension:[UnittestRoot optionalFixed64Extension]]
+                             unsignedLongLongValue]);
   XCTAssertEqual(109, [[message getExtension:[UnittestRoot optionalSfixed32Extension]] intValue]);
-  XCTAssertEqual(110LL, [[message getExtension:[UnittestRoot optionalSfixed64Extension]] longLongValue]);
-  XCTAssertEqualWithAccuracy(111.0f, [[message getExtension:[UnittestRoot optionalFloatExtension]] floatValue], 0.01);
-  XCTAssertEqualWithAccuracy(112.0, [[message getExtension:[UnittestRoot optionalDoubleExtension]] doubleValue], 0.01);
+  XCTAssertEqual(110LL,
+                 [[message getExtension:[UnittestRoot optionalSfixed64Extension]] longLongValue]);
+  XCTAssertEqualWithAccuracy(
+      111.0f, [[message getExtension:[UnittestRoot optionalFloatExtension]] floatValue], 0.01);
+  XCTAssertEqualWithAccuracy(
+      112.0, [[message getExtension:[UnittestRoot optionalDoubleExtension]] doubleValue], 0.01);
   XCTAssertTrue([[message getExtension:[UnittestRoot optionalBoolExtension]] boolValue]);
   XCTAssertEqualObjects(@"115", [message getExtension:[UnittestRoot optionalStringExtension]]);
-  XCTAssertEqualObjects([NSData gpbtu_dataWithEmbeddedNulls], [message getExtension:[UnittestRoot optionalBytesExtension]]);
+  XCTAssertEqualObjects([NSData gpbtu_dataWithEmbeddedNulls],
+                        [message getExtension:[UnittestRoot optionalBytesExtension]]);
 
-  XCTAssertEqual(117, [(TestAllTypes_OptionalGroup*)[message getExtension:[UnittestRoot optionalGroupExtension]] a]);
-  XCTAssertEqual(118, [(TestAllTypes_NestedMessage*)[message getExtension:[UnittestRoot optionalNestedMessageExtension]] bb]);
+  XCTAssertEqual(117, [(TestAllTypes_OptionalGroup *)[message
+                          getExtension:[UnittestRoot optionalGroupExtension]] a]);
+  XCTAssertEqual(118, [(TestAllTypes_NestedMessage *)[message
+                          getExtension:[UnittestRoot optionalNestedMessageExtension]] bb]);
   XCTAssertEqual(119, [[message getExtension:[UnittestRoot optionalForeignMessageExtension]] c]);
   XCTAssertEqual(120, [[message getExtension:[UnittestRoot optionalImportMessageExtension]] d]);
 
-  XCTAssertEqual(TestAllTypes_NestedEnum_Baz, [[message getExtension:[UnittestRoot optionalNestedEnumExtension]] intValue]);
-  XCTAssertEqual(ForeignEnum_ForeignBaz, [[message getExtension:[UnittestRoot optionalForeignEnumExtension]] intValue]);
-  XCTAssertEqual(ImportEnum_ImportBaz, [[message getExtension:[UnittestRoot optionalImportEnumExtension]] intValue]);
+  XCTAssertEqual(TestAllTypes_NestedEnum_Baz,
+                 [[message getExtension:[UnittestRoot optionalNestedEnumExtension]] intValue]);
+  XCTAssertEqual(ForeignEnum_ForeignBaz,
+                 [[message getExtension:[UnittestRoot optionalForeignEnumExtension]] intValue]);
+  XCTAssertEqual(ImportEnum_ImportBaz,
+                 [[message getExtension:[UnittestRoot optionalImportEnumExtension]] intValue]);
 
   XCTAssertEqualObjects(@"124", [message getExtension:[UnittestRoot optionalStringPieceExtension]]);
   XCTAssertEqualObjects(@"125", [message getExtension:[UnittestRoot optionalCordExtension]]);
@@ -284,9 +258,12 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedBytesExtension]] count]);
 
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedGroupExtension]] count]);
-  XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedNestedMessageExtension]] count]);
-  XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedForeignMessageExtension]] count]);
-  XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedImportMessageExtension]] count]);
+  XCTAssertEqual(count,
+                 [[message getExtension:[UnittestRoot repeatedNestedMessageExtension]] count]);
+  XCTAssertEqual(count,
+                 [[message getExtension:[UnittestRoot repeatedForeignMessageExtension]] count]);
+  XCTAssertEqual(count,
+                 [[message getExtension:[UnittestRoot repeatedImportMessageExtension]] count]);
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedNestedEnumExtension]] count]);
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedForeignEnumExtension]] count]);
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedImportEnumExtension]] count]);
@@ -333,18 +310,20 @@ const uint32_t kGPBDefaultRepeatCount = 2;
     [data release];
 
     extension = [message getExtension:[UnittestRoot repeatedGroupExtension]];
-    XCTAssertEqual((int)(217 + i * 100), [(TestAllTypes_OptionalGroup*)extension[i] a]);
+    XCTAssertEqual((int)(217 + i * 100), [(TestAllTypes_OptionalGroup *)extension[i] a]);
     extension = [message getExtension:[UnittestRoot repeatedNestedMessageExtension]];
-    XCTAssertEqual((int)(218 + i * 100), [(TestAllTypes_NestedMessage*)extension[i] bb]);
+    XCTAssertEqual((int)(218 + i * 100), [(TestAllTypes_NestedMessage *)extension[i] bb]);
     extension = [message getExtension:[UnittestRoot repeatedForeignMessageExtension]];
     XCTAssertEqual((int)(219 + i * 100), [extension[i] c]);
     extension = [message getExtension:[UnittestRoot repeatedImportMessageExtension]];
     XCTAssertEqual((int)(220 + i * 100), [extension[i] d]);
 
     extension = [message getExtension:[UnittestRoot repeatedNestedEnumExtension]];
-    XCTAssertEqual((i % 2) ? TestAllTypes_NestedEnum_Bar : TestAllTypes_NestedEnum_Baz, [extension[i] intValue]);
+    XCTAssertEqual((i % 2) ? TestAllTypes_NestedEnum_Bar : TestAllTypes_NestedEnum_Baz,
+                   [extension[i] intValue]);
     extension = [message getExtension:[UnittestRoot repeatedForeignEnumExtension]];
-    XCTAssertEqual((i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz, [extension[i] intValue]);
+    XCTAssertEqual((i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz,
+                   [extension[i] intValue]);
     extension = [message getExtension:[UnittestRoot repeatedImportEnumExtension]];
     XCTAssertEqual((i % 2) ? ImportEnum_ImportBar : ImportEnum_ImportBaz, [extension[i] intValue]);
 
@@ -385,24 +364,37 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertTrue([message hasExtension:[UnittestRoot defaultCordExtension]]);
 
   XCTAssertEqual(401, [[message getExtension:[UnittestRoot defaultInt32Extension]] intValue]);
-  XCTAssertEqual(402LL, [[message getExtension:[UnittestRoot defaultInt64Extension]] longLongValue]);
-  XCTAssertEqual(403U, [[message getExtension:[UnittestRoot defaultUint32Extension]] unsignedIntValue]);
-  XCTAssertEqual(404ULL, [[message getExtension:[UnittestRoot defaultUint64Extension]] unsignedLongLongValue]);
+  XCTAssertEqual(402LL,
+                 [[message getExtension:[UnittestRoot defaultInt64Extension]] longLongValue]);
+  XCTAssertEqual(403U,
+                 [[message getExtension:[UnittestRoot defaultUint32Extension]] unsignedIntValue]);
+  XCTAssertEqual(
+      404ULL, [[message getExtension:[UnittestRoot defaultUint64Extension]] unsignedLongLongValue]);
   XCTAssertEqual(405, [[message getExtension:[UnittestRoot defaultSint32Extension]] intValue]);
-  XCTAssertEqual(406LL, [[message getExtension:[UnittestRoot defaultSint64Extension]] longLongValue]);
-  XCTAssertEqual(407U, [[message getExtension:[UnittestRoot defaultFixed32Extension]] unsignedIntValue]);
-  XCTAssertEqual(408ULL, [[message getExtension:[UnittestRoot defaultFixed64Extension]] unsignedLongLongValue]);
+  XCTAssertEqual(406LL,
+                 [[message getExtension:[UnittestRoot defaultSint64Extension]] longLongValue]);
+  XCTAssertEqual(407U,
+                 [[message getExtension:[UnittestRoot defaultFixed32Extension]] unsignedIntValue]);
+  XCTAssertEqual(408ULL, [[message getExtension:[UnittestRoot defaultFixed64Extension]]
+                             unsignedLongLongValue]);
   XCTAssertEqual(409, [[message getExtension:[UnittestRoot defaultSfixed32Extension]] intValue]);
-  XCTAssertEqual(410LL,[[message getExtension:[UnittestRoot defaultSfixed64Extension]] longLongValue]);
-  XCTAssertEqualWithAccuracy(411.0f, [[message getExtension:[UnittestRoot defaultFloatExtension]] floatValue], 0.01);
-  XCTAssertEqualWithAccuracy(412.0, [[message getExtension:[UnittestRoot defaultDoubleExtension]] doubleValue], 0.01);
+  XCTAssertEqual(410LL,
+                 [[message getExtension:[UnittestRoot defaultSfixed64Extension]] longLongValue]);
+  XCTAssertEqualWithAccuracy(
+      411.0f, [[message getExtension:[UnittestRoot defaultFloatExtension]] floatValue], 0.01);
+  XCTAssertEqualWithAccuracy(
+      412.0, [[message getExtension:[UnittestRoot defaultDoubleExtension]] doubleValue], 0.01);
   XCTAssertFalse([[message getExtension:[UnittestRoot defaultBoolExtension]] boolValue]);
   XCTAssertEqualObjects(@"415", [message getExtension:[UnittestRoot defaultStringExtension]]);
-  XCTAssertEqualObjects([NSData gpbtu_dataWithUint32:416], [message getExtension:[UnittestRoot defaultBytesExtension]]);
+  XCTAssertEqualObjects([NSData gpbtu_dataWithUint32:416],
+                        [message getExtension:[UnittestRoot defaultBytesExtension]]);
 
-  XCTAssertEqual(TestAllTypes_NestedEnum_Foo, [[message getExtension:[UnittestRoot defaultNestedEnumExtension]] intValue]);
-  XCTAssertEqual(ForeignEnum_ForeignFoo, [[message getExtension:[UnittestRoot defaultForeignEnumExtension]] intValue]);
-  XCTAssertEqual(ImportEnum_ImportFoo, [[message getExtension:[UnittestRoot defaultImportEnumExtension]] intValue]);
+  XCTAssertEqual(TestAllTypes_NestedEnum_Foo,
+                 [[message getExtension:[UnittestRoot defaultNestedEnumExtension]] intValue]);
+  XCTAssertEqual(ForeignEnum_ForeignFoo,
+                 [[message getExtension:[UnittestRoot defaultForeignEnumExtension]] intValue]);
+  XCTAssertEqual(ImportEnum_ImportFoo,
+                 [[message getExtension:[UnittestRoot defaultImportEnumExtension]] intValue]);
 
   XCTAssertEqualObjects(@"424", [message getExtension:[UnittestRoot defaultStringPieceExtension]]);
   XCTAssertEqualObjects(@"425", [message getExtension:[UnittestRoot defaultCordExtension]]);
@@ -430,9 +422,12 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedBytesExtension]] count]);
 
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedGroupExtension]] count]);
-  XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedNestedMessageExtension]] count]);
-  XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedForeignMessageExtension]] count]);
-  XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedImportMessageExtension]] count]);
+  XCTAssertEqual(count,
+                 [[message getExtension:[UnittestRoot repeatedNestedMessageExtension]] count]);
+  XCTAssertEqual(count,
+                 [[message getExtension:[UnittestRoot repeatedForeignMessageExtension]] count]);
+  XCTAssertEqual(count,
+                 [[message getExtension:[UnittestRoot repeatedImportMessageExtension]] count]);
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedNestedEnumExtension]] count]);
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedForeignEnumExtension]] count]);
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedImportEnumExtension]] count]);
@@ -440,24 +435,37 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedStringPieceExtension]] count]);
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot repeatedCordExtension]] count]);
 
-  XCTAssertEqual(201,[[message getExtension:[UnittestRoot repeatedInt32Extension]][0] intValue]);
-  XCTAssertEqual(202LL, [[message getExtension:[UnittestRoot repeatedInt64Extension]][0] longLongValue]);
-  XCTAssertEqual(203U, [[message getExtension:[UnittestRoot repeatedUint32Extension]][0] unsignedIntValue]);
-  XCTAssertEqual(204ULL, [[message getExtension:[UnittestRoot repeatedUint64Extension]][0] unsignedLongLongValue]);
+  XCTAssertEqual(201, [[message getExtension:[UnittestRoot repeatedInt32Extension]][0] intValue]);
+  XCTAssertEqual(202LL,
+                 [[message getExtension:[UnittestRoot repeatedInt64Extension]][0] longLongValue]);
+  XCTAssertEqual(
+      203U, [[message getExtension:[UnittestRoot repeatedUint32Extension]][0] unsignedIntValue]);
+  XCTAssertEqual(204ULL, [[message getExtension:[UnittestRoot repeatedUint64Extension]][0]
+                             unsignedLongLongValue]);
   XCTAssertEqual(205, [[message getExtension:[UnittestRoot repeatedSint32Extension]][0] intValue]);
-  XCTAssertEqual(206LL, [[message getExtension:[UnittestRoot repeatedSint64Extension]][0] longLongValue]);
-  XCTAssertEqual(207U, [[message getExtension:[UnittestRoot repeatedFixed32Extension]][0] unsignedIntValue]);
-  XCTAssertEqual(208ULL, [[message getExtension:[UnittestRoot repeatedFixed64Extension]][0] unsignedLongLongValue]);
-  XCTAssertEqual(209, [[message getExtension:[UnittestRoot repeatedSfixed32Extension]][0] intValue]);
-  XCTAssertEqual(210LL, [[message getExtension:[UnittestRoot repeatedSfixed64Extension]][0] longLongValue]);
-  XCTAssertEqualWithAccuracy(211.0f, [[message getExtension:[UnittestRoot repeatedFloatExtension]][0] floatValue], 0.01);
-  XCTAssertEqualWithAccuracy(212.0, [[message getExtension:[UnittestRoot repeatedDoubleExtension]][0] doubleValue], 0.01);
+  XCTAssertEqual(206LL,
+                 [[message getExtension:[UnittestRoot repeatedSint64Extension]][0] longLongValue]);
+  XCTAssertEqual(
+      207U, [[message getExtension:[UnittestRoot repeatedFixed32Extension]][0] unsignedIntValue]);
+  XCTAssertEqual(208ULL, [[message getExtension:[UnittestRoot repeatedFixed64Extension]][0]
+                             unsignedLongLongValue]);
+  XCTAssertEqual(209,
+                 [[message getExtension:[UnittestRoot repeatedSfixed32Extension]][0] intValue]);
+  XCTAssertEqual(
+      210LL, [[message getExtension:[UnittestRoot repeatedSfixed64Extension]][0] longLongValue]);
+  XCTAssertEqualWithAccuracy(
+      211.0f, [[message getExtension:[UnittestRoot repeatedFloatExtension]][0] floatValue], 0.01);
+  XCTAssertEqualWithAccuracy(
+      212.0, [[message getExtension:[UnittestRoot repeatedDoubleExtension]][0] doubleValue], 0.01);
   XCTAssertFalse([[message getExtension:[UnittestRoot repeatedBoolExtension]][0] boolValue]);
   XCTAssertEqualObjects(@"215", [message getExtension:[UnittestRoot repeatedStringExtension]][0]);
-  XCTAssertEqualObjects([NSData gpbtu_dataWithUint32:216], [message getExtension:[UnittestRoot repeatedBytesExtension]][0]);
+  XCTAssertEqualObjects([NSData gpbtu_dataWithUint32:216],
+                        [message getExtension:[UnittestRoot repeatedBytesExtension]][0]);
 
-  XCTAssertEqual(217, [(TestAllTypes_OptionalGroup*)[message getExtension:[UnittestRoot repeatedGroupExtension]][0] a]);
-  XCTAssertEqual(218, [(TestAllTypes_NestedMessage*)[message getExtension:[UnittestRoot repeatedNestedMessageExtension]][0] bb]);
+  XCTAssertEqual(217, [(TestAllTypes_OptionalGroup *)[message
+                          getExtension:[UnittestRoot repeatedGroupExtension]][0] a]);
+  XCTAssertEqual(218, [(TestAllTypes_NestedMessage *)[message
+                          getExtension:[UnittestRoot repeatedNestedMessageExtension]][0] bb]);
   XCTAssertEqual(219, [[message getExtension:[UnittestRoot repeatedForeignMessageExtension]][0] c]);
   XCTAssertEqual(220, [[message getExtension:[UnittestRoot repeatedImportMessageExtension]][0] d]);
 
@@ -468,28 +476,42 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqual(ImportEnum_ImportBaz,
                  [[message getExtension:[UnittestRoot repeatedImportEnumExtension]][0] intValue]);
 
-  XCTAssertEqualObjects(@"224", [message getExtension:[UnittestRoot repeatedStringPieceExtension]][0]);
+  XCTAssertEqualObjects(@"224",
+                        [message getExtension:[UnittestRoot repeatedStringPieceExtension]][0]);
   XCTAssertEqualObjects(@"225", [message getExtension:[UnittestRoot repeatedCordExtension]][0]);
 
   // Actually verify the second (modified) elements now.
   XCTAssertEqual(501, [[message getExtension:[UnittestRoot repeatedInt32Extension]][1] intValue]);
-  XCTAssertEqual(502LL, [[message getExtension:[UnittestRoot repeatedInt64Extension]][1] longLongValue]);
-  XCTAssertEqual(503U, [[message getExtension:[UnittestRoot repeatedUint32Extension]][1] unsignedIntValue]);
-  XCTAssertEqual(504ULL, [[message getExtension:[UnittestRoot repeatedUint64Extension]][1] unsignedLongLongValue]);
+  XCTAssertEqual(502LL,
+                 [[message getExtension:[UnittestRoot repeatedInt64Extension]][1] longLongValue]);
+  XCTAssertEqual(
+      503U, [[message getExtension:[UnittestRoot repeatedUint32Extension]][1] unsignedIntValue]);
+  XCTAssertEqual(504ULL, [[message getExtension:[UnittestRoot repeatedUint64Extension]][1]
+                             unsignedLongLongValue]);
   XCTAssertEqual(505, [[message getExtension:[UnittestRoot repeatedSint32Extension]][1] intValue]);
-  XCTAssertEqual(506LL, [[message getExtension:[UnittestRoot repeatedSint64Extension]][1] longLongValue]);
-  XCTAssertEqual(507U, [[message getExtension:[UnittestRoot repeatedFixed32Extension]][1] unsignedIntValue]);
-  XCTAssertEqual(508ULL, [[message getExtension:[UnittestRoot repeatedFixed64Extension]][1] unsignedLongLongValue]);
-  XCTAssertEqual(509, [[message getExtension:[UnittestRoot repeatedSfixed32Extension]][1] intValue]);
-  XCTAssertEqual(510LL, [[message getExtension:[UnittestRoot repeatedSfixed64Extension]][1] longLongValue]);
-  XCTAssertEqualWithAccuracy(511.0f, [[message getExtension:[UnittestRoot repeatedFloatExtension]][1] floatValue], 0.01);
-  XCTAssertEqualWithAccuracy(512.0, [[message getExtension:[UnittestRoot repeatedDoubleExtension]][1] doubleValue], 0.01);
+  XCTAssertEqual(506LL,
+                 [[message getExtension:[UnittestRoot repeatedSint64Extension]][1] longLongValue]);
+  XCTAssertEqual(
+      507U, [[message getExtension:[UnittestRoot repeatedFixed32Extension]][1] unsignedIntValue]);
+  XCTAssertEqual(508ULL, [[message getExtension:[UnittestRoot repeatedFixed64Extension]][1]
+                             unsignedLongLongValue]);
+  XCTAssertEqual(509,
+                 [[message getExtension:[UnittestRoot repeatedSfixed32Extension]][1] intValue]);
+  XCTAssertEqual(
+      510LL, [[message getExtension:[UnittestRoot repeatedSfixed64Extension]][1] longLongValue]);
+  XCTAssertEqualWithAccuracy(
+      511.0f, [[message getExtension:[UnittestRoot repeatedFloatExtension]][1] floatValue], 0.01);
+  XCTAssertEqualWithAccuracy(
+      512.0, [[message getExtension:[UnittestRoot repeatedDoubleExtension]][1] doubleValue], 0.01);
   XCTAssertTrue([[message getExtension:[UnittestRoot repeatedBoolExtension]][1] boolValue]);
   XCTAssertEqualObjects(@"515", [message getExtension:[UnittestRoot repeatedStringExtension]][1]);
-  XCTAssertEqualObjects([NSData gpbtu_dataWithUint32:516], [message getExtension:[UnittestRoot repeatedBytesExtension]][1]);
+  XCTAssertEqualObjects([NSData gpbtu_dataWithUint32:516],
+                        [message getExtension:[UnittestRoot repeatedBytesExtension]][1]);
 
-  XCTAssertEqual(517, [(TestAllTypes_OptionalGroup*)[message getExtension:[UnittestRoot repeatedGroupExtension]][1] a]);
-  XCTAssertEqual(518, [(TestAllTypes_NestedMessage*)[message getExtension:[UnittestRoot repeatedNestedMessageExtension]][1] bb]);
+  XCTAssertEqual(517, [(TestAllTypes_OptionalGroup *)[message
+                          getExtension:[UnittestRoot repeatedGroupExtension]][1] a]);
+  XCTAssertEqual(518, [(TestAllTypes_NestedMessage *)[message
+                          getExtension:[UnittestRoot repeatedNestedMessageExtension]][1] bb]);
   XCTAssertEqual(519, [[message getExtension:[UnittestRoot repeatedForeignMessageExtension]][1] c]);
   XCTAssertEqual(520, [[message getExtension:[UnittestRoot repeatedImportMessageExtension]][1] d]);
 
@@ -500,14 +522,14 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqual(ImportEnum_ImportFoo,
                  [[message getExtension:[UnittestRoot repeatedImportEnumExtension]][1] intValue]);
 
-  XCTAssertEqualObjects(@"524", [message getExtension:[UnittestRoot repeatedStringPieceExtension]][1]);
+  XCTAssertEqualObjects(@"524",
+                        [message getExtension:[UnittestRoot repeatedStringPieceExtension]][1]);
   XCTAssertEqualObjects(@"525", [message getExtension:[UnittestRoot repeatedCordExtension]][1]);
 }
 
 // -------------------------------------------------------------------
 
-- (void)assertAllFieldsSet:(TestAllTypes *)message
-             repeatedCount:(uint32_t)count {
+- (void)assertAllFieldsSet:(TestAllTypes *)message repeatedCount:(uint32_t)count {
   XCTAssertTrue(message.hasOptionalInt32);
   XCTAssertTrue(message.hasOptionalInt64);
   XCTAssertTrue(message.hasOptionalUint32);
@@ -555,8 +577,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqualWithAccuracy(112.0, message.optionalDouble, 0.1);
   XCTAssertTrue(message.optionalBool);
   XCTAssertEqualObjects(@"115", message.optionalString);
-  XCTAssertEqualObjects([NSData gpbtu_dataWithEmbeddedNulls],
-                        message.optionalBytes);
+  XCTAssertEqualObjects([NSData gpbtu_dataWithEmbeddedNulls], message.optionalBytes);
 
   XCTAssertEqual(117, message.optionalGroup.a);
   XCTAssertEqual(118, message.optionalNestedMessage.bb);
@@ -627,28 +648,19 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqual(count, message.repeatedCordArray_Count);
 
   for (uint32_t i = 0; i < count; ++i) {
-    XCTAssertEqual((int)(201 + i * 100),
-                   [message.repeatedInt32Array valueAtIndex:i]);
+    XCTAssertEqual((int)(201 + i * 100), [message.repeatedInt32Array valueAtIndex:i]);
     XCTAssertEqual(202 + i * 100, [message.repeatedInt64Array valueAtIndex:i]);
     XCTAssertEqual(203 + i * 100, [message.repeatedUint32Array valueAtIndex:i]);
     XCTAssertEqual(204 + i * 100, [message.repeatedUint64Array valueAtIndex:i]);
-    XCTAssertEqual((int)(205 + i * 100),
-                   [message.repeatedSint32Array valueAtIndex:i]);
+    XCTAssertEqual((int)(205 + i * 100), [message.repeatedSint32Array valueAtIndex:i]);
     XCTAssertEqual(206 + i * 100, [message.repeatedSint64Array valueAtIndex:i]);
-    XCTAssertEqual(207 + i * 100,
-                   [message.repeatedFixed32Array valueAtIndex:i]);
-    XCTAssertEqual(208 + i * 100,
-                   [message.repeatedFixed64Array valueAtIndex:i]);
-    XCTAssertEqual((int)(209 + i * 100),
-                   [message.repeatedSfixed32Array valueAtIndex:i]);
-    XCTAssertEqual(210 + i * 100,
-                   [message.repeatedSfixed64Array valueAtIndex:i]);
-    XCTAssertEqualWithAccuracy(
-        211 + i * 100, [message.repeatedFloatArray valueAtIndex:i], 0.1);
-    XCTAssertEqualWithAccuracy(
-        212 + i * 100, [message.repeatedDoubleArray valueAtIndex:i], 0.1);
-    XCTAssertEqual((i % 2) ? YES : NO,
-                   [message.repeatedBoolArray valueAtIndex:i]);
+    XCTAssertEqual(207 + i * 100, [message.repeatedFixed32Array valueAtIndex:i]);
+    XCTAssertEqual(208 + i * 100, [message.repeatedFixed64Array valueAtIndex:i]);
+    XCTAssertEqual((int)(209 + i * 100), [message.repeatedSfixed32Array valueAtIndex:i]);
+    XCTAssertEqual(210 + i * 100, [message.repeatedSfixed64Array valueAtIndex:i]);
+    XCTAssertEqualWithAccuracy(211 + i * 100, [message.repeatedFloatArray valueAtIndex:i], 0.1);
+    XCTAssertEqualWithAccuracy(212 + i * 100, [message.repeatedDoubleArray valueAtIndex:i], 0.1);
+    XCTAssertEqual((i % 2) ? YES : NO, [message.repeatedBoolArray valueAtIndex:i]);
 
     NSString *string = [[NSString alloc] initWithFormat:@"%d", 215 + i * 100];
     XCTAssertEqualObjects(string, message.repeatedStringArray[i]);
@@ -658,14 +670,21 @@ const uint32_t kGPBDefaultRepeatCount = 2;
     XCTAssertEqualObjects(data, message.repeatedBytesArray[i]);
     [data release];
 
-    XCTAssertEqual((int)(217 + i * 100), ((TestAllTypes_RepeatedGroup*)message.repeatedGroupArray[i]).a);
-    XCTAssertEqual((int)(218 + i * 100), ((TestAllTypes_NestedMessage*)message.repeatedNestedMessageArray[i]).bb);
-    XCTAssertEqual((int)(219 + i * 100), ((ForeignMessage*)message.repeatedForeignMessageArray[i]).c);
-    XCTAssertEqual((int)(220 + i * 100), ((ImportMessage*)message.repeatedImportMessageArray[i]).d);
+    XCTAssertEqual((int)(217 + i * 100),
+                   ((TestAllTypes_RepeatedGroup *)message.repeatedGroupArray[i]).a);
+    XCTAssertEqual((int)(218 + i * 100),
+                   ((TestAllTypes_NestedMessage *)message.repeatedNestedMessageArray[i]).bb);
+    XCTAssertEqual((int)(219 + i * 100),
+                   ((ForeignMessage *)message.repeatedForeignMessageArray[i]).c);
+    XCTAssertEqual((int)(220 + i * 100),
+                   ((ImportMessage *)message.repeatedImportMessageArray[i]).d);
 
-    XCTAssertEqual((i % 2) ? TestAllTypes_NestedEnum_Bar : TestAllTypes_NestedEnum_Baz, [message.repeatedNestedEnumArray valueAtIndex:i]);
-    XCTAssertEqual((i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz, [message.repeatedForeignEnumArray valueAtIndex:i]);
-    XCTAssertEqual((i % 2) ? ImportEnum_ImportBar : ImportEnum_ImportBaz, [message.repeatedImportEnumArray valueAtIndex:i]);
+    XCTAssertEqual((i % 2) ? TestAllTypes_NestedEnum_Bar : TestAllTypes_NestedEnum_Baz,
+                   [message.repeatedNestedEnumArray valueAtIndex:i]);
+    XCTAssertEqual((i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz,
+                   [message.repeatedForeignEnumArray valueAtIndex:i]);
+    XCTAssertEqual((i % 2) ? ImportEnum_ImportBar : ImportEnum_ImportBaz,
+                   [message.repeatedImportEnumArray valueAtIndex:i]);
 
     string = [[NSString alloc] initWithFormat:@"%d", 224 + i * 100];
     XCTAssertEqualObjects(string, message.repeatedStringPieceArray[i]);
@@ -715,8 +734,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqualWithAccuracy(412.0, message.defaultDouble, 0.1);
   XCTAssertFalse(message.defaultBool);
   XCTAssertEqualObjects(@"415", message.defaultString);
-  XCTAssertEqualObjects([NSData gpbtu_dataWithUint32:416],
-                        message.defaultBytes);
+  XCTAssertEqualObjects([NSData gpbtu_dataWithUint32:416], message.defaultBytes);
 
   XCTAssertEqual(TestAllTypes_NestedEnum_Foo, message.defaultNestedEnum);
   XCTAssertEqual(ForeignEnum_ForeignFoo, message.defaultForeignEnum);
@@ -746,8 +764,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   TestAllTypes_OptionalGroup *allTypes = [TestAllTypes_OptionalGroup message];
   [allTypes setA:117];
   [message setOptionalGroup:allTypes];
-  TestAllTypes_NestedMessage *nestedMessage =
-      [TestAllTypes_NestedMessage message];
+  TestAllTypes_NestedMessage *nestedMessage = [TestAllTypes_NestedMessage message];
   [nestedMessage setBb:118];
   [message setOptionalNestedMessage:nestedMessage];
   ForeignMessage *foreignMessage = [ForeignMessage message];
@@ -788,8 +805,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
     [message.repeatedBytesArray addObject:data];
     [data release];
 
-    TestAllTypes_RepeatedGroup *testAll =
-        [[TestAllTypes_RepeatedGroup alloc] init];
+    TestAllTypes_RepeatedGroup *testAll = [[TestAllTypes_RepeatedGroup alloc] init];
     [testAll setA:217 + i * 100];
     [message.repeatedGroupArray addObject:testAll];
     [testAll release];
@@ -809,10 +825,13 @@ const uint32_t kGPBDefaultRepeatCount = 2;
     [message.repeatedImportMessageArray addObject:importMessage];
     [importMessage release];
 
-    [message.repeatedNestedEnumArray addValue:(i % 2) ? TestAllTypes_NestedEnum_Bar : TestAllTypes_NestedEnum_Baz];
+    [message.repeatedNestedEnumArray
+        addValue:(i % 2) ? TestAllTypes_NestedEnum_Bar : TestAllTypes_NestedEnum_Baz];
 
-    [message.repeatedForeignEnumArray addValue:(i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz];
-    [message.repeatedImportEnumArray addValue:(i % 2) ? ImportEnum_ImportBar : ImportEnum_ImportBaz];
+    [message.repeatedForeignEnumArray
+        addValue:(i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz];
+    [message.repeatedImportEnumArray
+        addValue:(i % 2) ? ImportEnum_ImportBar : ImportEnum_ImportBaz];
 
     string = [[NSString alloc] initWithFormat:@"%d", 224 + i * 100];
     [message.repeatedStringPieceArray addObject:string];
@@ -933,8 +952,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   message.hasDefaultCord = NO;
 }
 
-- (void)setAllExtensions:(TestAllExtensions *)message
-           repeatedCount:(uint32_t)count {
+- (void)setAllExtensions:(TestAllExtensions *)message repeatedCount:(uint32_t)count {
   [message setExtension:[UnittestRoot optionalInt32Extension] value:@101];
   [message setExtension:[UnittestRoot optionalInt64Extension] value:@102L];
   [message setExtension:[UnittestRoot optionalUint32Extension] value:@103];
@@ -954,60 +972,40 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 
   OptionalGroup_extension *optionalGroup = [OptionalGroup_extension message];
   [optionalGroup setA:117];
-  [message setExtension:[UnittestRoot optionalGroupExtension]
-                  value:optionalGroup];
-  TestAllTypes_NestedMessage *nestedMessage =
-      [TestAllTypes_NestedMessage message];
+  [message setExtension:[UnittestRoot optionalGroupExtension] value:optionalGroup];
+  TestAllTypes_NestedMessage *nestedMessage = [TestAllTypes_NestedMessage message];
   [nestedMessage setBb:118];
-  [message setExtension:[UnittestRoot optionalNestedMessageExtension]
-                  value:nestedMessage];
+  [message setExtension:[UnittestRoot optionalNestedMessageExtension] value:nestedMessage];
   ForeignMessage *foreignMessage = [ForeignMessage message];
   [foreignMessage setC:119];
-  [message setExtension:[UnittestRoot optionalForeignMessageExtension]
-                  value:foreignMessage];
+  [message setExtension:[UnittestRoot optionalForeignMessageExtension] value:foreignMessage];
   ImportMessage *importMessage = [ImportMessage message];
   [importMessage setD:120];
-  [message setExtension:[UnittestRoot optionalImportMessageExtension]
-                  value:importMessage];
+  [message setExtension:[UnittestRoot optionalImportMessageExtension] value:importMessage];
 
   [message setExtension:[UnittestRoot optionalNestedEnumExtension]
                   value:@(TestAllTypes_NestedEnum_Baz)];
   [message setExtension:[UnittestRoot optionalForeignEnumExtension]
                   value:@(ForeignEnum_ForeignBaz)];
-  [message setExtension:[UnittestRoot optionalImportEnumExtension]
-                  value:@(ImportEnum_ImportBaz)];
+  [message setExtension:[UnittestRoot optionalImportEnumExtension] value:@(ImportEnum_ImportBaz)];
 
-  [message setExtension:[UnittestRoot optionalStringPieceExtension]
-                  value:@"124"];
+  [message setExtension:[UnittestRoot optionalStringPieceExtension] value:@"124"];
   [message setExtension:[UnittestRoot optionalCordExtension] value:@"125"];
 
   for (uint32_t i = 0; i < count; ++i) {
-    [message addExtension:[UnittestRoot repeatedInt32Extension]
-                    value:@(201 + i * 100)];
-    [message addExtension:[UnittestRoot repeatedInt64Extension]
-                    value:@(202 + i * 100)];
-    [message addExtension:[UnittestRoot repeatedUint32Extension]
-                    value:@(203 + i * 100)];
-    [message addExtension:[UnittestRoot repeatedUint64Extension]
-                    value:@(204 + i * 100)];
-    [message addExtension:[UnittestRoot repeatedSint32Extension]
-                    value:@(205 + i * 100)];
-    [message addExtension:[UnittestRoot repeatedSint64Extension]
-                    value:@(206 + i * 100)];
-    [message addExtension:[UnittestRoot repeatedFixed32Extension]
-                    value:@(207 + i * 100)];
-    [message addExtension:[UnittestRoot repeatedFixed64Extension]
-                    value:@(208 + i * 100)];
-    [message addExtension:[UnittestRoot repeatedSfixed32Extension]
-                    value:@(209 + i * 100)];
-    [message addExtension:[UnittestRoot repeatedSfixed64Extension]
-                    value:@(210 + i * 100)];
-    [message addExtension:[UnittestRoot repeatedFloatExtension]
-                    value:@(211 + i * 100)];
-    [message addExtension:[UnittestRoot repeatedDoubleExtension]
-                    value:@(212 + i * 100)];
-    [message addExtension:[UnittestRoot repeatedBoolExtension]
-                    value:@((i % 2) ? YES : NO)];
+    [message addExtension:[UnittestRoot repeatedInt32Extension] value:@(201 + i * 100)];
+    [message addExtension:[UnittestRoot repeatedInt64Extension] value:@(202 + i * 100)];
+    [message addExtension:[UnittestRoot repeatedUint32Extension] value:@(203 + i * 100)];
+    [message addExtension:[UnittestRoot repeatedUint64Extension] value:@(204 + i * 100)];
+    [message addExtension:[UnittestRoot repeatedSint32Extension] value:@(205 + i * 100)];
+    [message addExtension:[UnittestRoot repeatedSint64Extension] value:@(206 + i * 100)];
+    [message addExtension:[UnittestRoot repeatedFixed32Extension] value:@(207 + i * 100)];
+    [message addExtension:[UnittestRoot repeatedFixed64Extension] value:@(208 + i * 100)];
+    [message addExtension:[UnittestRoot repeatedSfixed32Extension] value:@(209 + i * 100)];
+    [message addExtension:[UnittestRoot repeatedSfixed64Extension] value:@(210 + i * 100)];
+    [message addExtension:[UnittestRoot repeatedFloatExtension] value:@(211 + i * 100)];
+    [message addExtension:[UnittestRoot repeatedDoubleExtension] value:@(212 + i * 100)];
+    [message addExtension:[UnittestRoot repeatedBoolExtension] value:@((i % 2) ? YES : NO)];
     NSString *string = [[NSString alloc] initWithFormat:@"%d", 215 + i * 100];
     [message addExtension:[UnittestRoot repeatedStringExtension] value:string];
     [string release];
@@ -1015,40 +1013,31 @@ const uint32_t kGPBDefaultRepeatCount = 2;
     [message addExtension:[UnittestRoot repeatedBytesExtension] value:data];
     [data release];
 
-    RepeatedGroup_extension *repeatedGroup =
-        [[RepeatedGroup_extension alloc] init];
+    RepeatedGroup_extension *repeatedGroup = [[RepeatedGroup_extension alloc] init];
     [repeatedGroup setA:217 + i * 100];
-    [message addExtension:[UnittestRoot repeatedGroupExtension]
-                    value:repeatedGroup];
+    [message addExtension:[UnittestRoot repeatedGroupExtension] value:repeatedGroup];
     [repeatedGroup release];
     nestedMessage = [[TestAllTypes_NestedMessage alloc] init];
     [nestedMessage setBb:218 + i * 100];
-    [message addExtension:[UnittestRoot repeatedNestedMessageExtension]
-                    value:nestedMessage];
+    [message addExtension:[UnittestRoot repeatedNestedMessageExtension] value:nestedMessage];
     [nestedMessage release];
     foreignMessage = [[ForeignMessage alloc] init];
     [foreignMessage setC:219 + i * 100];
-    [message addExtension:[UnittestRoot repeatedForeignMessageExtension]
-                    value:foreignMessage];
+    [message addExtension:[UnittestRoot repeatedForeignMessageExtension] value:foreignMessage];
     [foreignMessage release];
     importMessage = [[ImportMessage alloc] init];
     [importMessage setD:220 + i * 100];
-    [message addExtension:[UnittestRoot repeatedImportMessageExtension]
-                    value:importMessage];
+    [message addExtension:[UnittestRoot repeatedImportMessageExtension] value:importMessage];
     [importMessage release];
     [message addExtension:[UnittestRoot repeatedNestedEnumExtension]
-                    value:@((i % 2) ? TestAllTypes_NestedEnum_Bar
-                                    : TestAllTypes_NestedEnum_Baz)];
+                    value:@((i % 2) ? TestAllTypes_NestedEnum_Bar : TestAllTypes_NestedEnum_Baz)];
     [message addExtension:[UnittestRoot repeatedForeignEnumExtension]
-                    value:@((i % 2) ? ForeignEnum_ForeignBar
-                                    : ForeignEnum_ForeignBaz)];
-    [message
-        addExtension:[UnittestRoot repeatedImportEnumExtension]
-               value:@((i % 2) ? ImportEnum_ImportBar : ImportEnum_ImportBaz)];
+                    value:@((i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz)];
+    [message addExtension:[UnittestRoot repeatedImportEnumExtension]
+                    value:@((i % 2) ? ImportEnum_ImportBar : ImportEnum_ImportBaz)];
 
     string = [[NSString alloc] initWithFormat:@"%d", 224 + i * 100];
-    [message addExtension:[UnittestRoot repeatedStringPieceExtension]
-                    value:string];
+    [message addExtension:[UnittestRoot repeatedStringPieceExtension] value:string];
     [string release];
 
     string = [[NSString alloc] initWithFormat:@"%d", 225 + i * 100];
@@ -1077,13 +1066,10 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 
   [message setExtension:[UnittestRoot defaultNestedEnumExtension]
                   value:@(TestAllTypes_NestedEnum_Foo)];
-  [message setExtension:[UnittestRoot defaultForeignEnumExtension]
-                  value:@(ForeignEnum_ForeignFoo)];
-  [message setExtension:[UnittestRoot defaultImportEnumExtension]
-                  value:@(ImportEnum_ImportFoo)];
+  [message setExtension:[UnittestRoot defaultForeignEnumExtension] value:@(ForeignEnum_ForeignFoo)];
+  [message setExtension:[UnittestRoot defaultImportEnumExtension] value:@(ImportEnum_ImportFoo)];
 
-  [message setExtension:[UnittestRoot defaultStringPieceExtension]
-                  value:@"424"];
+  [message setExtension:[UnittestRoot defaultStringPieceExtension] value:@"424"];
   [message setExtension:[UnittestRoot defaultCordExtension] value:@"425"];
 }
 
@@ -1113,9 +1099,8 @@ const uint32_t kGPBDefaultRepeatCount = 2;
     [message.mapInt32Bytes setObject:data forKey:113 + i * 100];
     [data release];
 
-    [message.mapInt32Enum
-        setEnum:(i % 2) ? MapEnum_MapEnumBar : MapEnum_MapEnumBaz
-         forKey:114 + i * 100];
+    [message.mapInt32Enum setEnum:(i % 2) ? MapEnum_MapEnumBar : MapEnum_MapEnumBaz
+                           forKey:114 + i * 100];
 
     ForeignMessage *subMsg = [[ForeignMessage alloc] init];
     subMsg.c = i + 1;
@@ -1376,8 +1361,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqualWithAccuracy(52e3, message.defaultDouble, 0.1);
   XCTAssertTrue(message.defaultBool);
   XCTAssertEqualObjects(@"hello", message.defaultString);
-  XCTAssertEqualObjects([NSData gpbtu_dataWithCString:"world"],
-                        message.defaultBytes);
+  XCTAssertEqualObjects([NSData gpbtu_dataWithCString:"world"], message.defaultBytes);
 
   XCTAssertEqual(TestAllTypes_NestedEnum_Bar, message.defaultNestedEnum);
   XCTAssertEqual(ForeignEnum_ForeignBar, message.defaultForeignEnum);
@@ -1419,20 +1403,29 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 
   // Optional fields without defaults are set to zero or something like it.
   XCTAssertEqual(0, [[message getExtension:[UnittestRoot optionalInt32Extension]] intValue]);
-  XCTAssertEqual(0LL,[[message getExtension:[UnittestRoot optionalInt64Extension]] longLongValue]);
-  XCTAssertEqual(0U, [[message getExtension:[UnittestRoot optionalUint32Extension]] unsignedIntValue]);
-  XCTAssertEqual(0ULL, [[message getExtension:[UnittestRoot optionalUint64Extension]] unsignedLongLongValue]);
+  XCTAssertEqual(0LL, [[message getExtension:[UnittestRoot optionalInt64Extension]] longLongValue]);
+  XCTAssertEqual(0U,
+                 [[message getExtension:[UnittestRoot optionalUint32Extension]] unsignedIntValue]);
+  XCTAssertEqual(
+      0ULL, [[message getExtension:[UnittestRoot optionalUint64Extension]] unsignedLongLongValue]);
   XCTAssertEqual(0, [[message getExtension:[UnittestRoot optionalSint32Extension]] intValue]);
-  XCTAssertEqual(0LL, [[message getExtension:[UnittestRoot optionalSint64Extension]] longLongValue]);
-  XCTAssertEqual(0U, [[message getExtension:[UnittestRoot optionalFixed32Extension]] unsignedIntValue]);
-  XCTAssertEqual(0ULL, [[message getExtension:[UnittestRoot optionalFixed64Extension]] unsignedLongLongValue]);
+  XCTAssertEqual(0LL,
+                 [[message getExtension:[UnittestRoot optionalSint64Extension]] longLongValue]);
+  XCTAssertEqual(0U,
+                 [[message getExtension:[UnittestRoot optionalFixed32Extension]] unsignedIntValue]);
+  XCTAssertEqual(
+      0ULL, [[message getExtension:[UnittestRoot optionalFixed64Extension]] unsignedLongLongValue]);
   XCTAssertEqual(0, [[message getExtension:[UnittestRoot optionalSfixed32Extension]] intValue]);
-  XCTAssertEqual(0LL, [[message getExtension:[UnittestRoot optionalSfixed64Extension]] longLongValue]);
-  XCTAssertEqualWithAccuracy(0.0f, [[message getExtension:[UnittestRoot optionalFloatExtension]] floatValue], 0.01);
-  XCTAssertEqualWithAccuracy(0.0, [[message getExtension:[UnittestRoot optionalDoubleExtension]] doubleValue], 0.01);
+  XCTAssertEqual(0LL,
+                 [[message getExtension:[UnittestRoot optionalSfixed64Extension]] longLongValue]);
+  XCTAssertEqualWithAccuracy(
+      0.0f, [[message getExtension:[UnittestRoot optionalFloatExtension]] floatValue], 0.01);
+  XCTAssertEqualWithAccuracy(
+      0.0, [[message getExtension:[UnittestRoot optionalDoubleExtension]] doubleValue], 0.01);
   XCTAssertFalse([[message getExtension:[UnittestRoot optionalBoolExtension]] boolValue]);
   XCTAssertEqualObjects(@"", [message getExtension:[UnittestRoot optionalStringExtension]]);
-  XCTAssertEqualObjects(GPBEmptyNSData(), [message getExtension:[UnittestRoot optionalBytesExtension]]);
+  XCTAssertEqualObjects(GPBEmptyNSData(),
+                        [message getExtension:[UnittestRoot optionalBytesExtension]]);
 
   // Embedded messages should also be clear.
 
@@ -1441,18 +1434,20 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertFalse([[message getExtension:[UnittestRoot optionalForeignMessageExtension]] hasC]);
   XCTAssertFalse([[message getExtension:[UnittestRoot optionalImportMessageExtension]] hasD]);
 
-  XCTAssertEqual(0, [(TestAllTypes_OptionalGroup*)[message getExtension:[UnittestRoot optionalGroupExtension]] a]);
-  XCTAssertEqual(0, [(TestAllTypes_NestedMessage*)[message getExtension:[UnittestRoot optionalNestedMessageExtension]] bb]);
+  XCTAssertEqual(0, [(TestAllTypes_OptionalGroup *)[message
+                        getExtension:[UnittestRoot optionalGroupExtension]] a]);
+  XCTAssertEqual(0, [(TestAllTypes_NestedMessage *)[message
+                        getExtension:[UnittestRoot optionalNestedMessageExtension]] bb]);
   XCTAssertEqual(0, [[message getExtension:[UnittestRoot optionalForeignMessageExtension]] c]);
   XCTAssertEqual(0, [[message getExtension:[UnittestRoot optionalImportMessageExtension]] d]);
 
   // Enums without defaults are set to the first value in the enum.
   XCTAssertEqual(TestAllTypes_NestedEnum_Foo,
-               [[message getExtension:[UnittestRoot optionalNestedEnumExtension]] intValue]);
+                 [[message getExtension:[UnittestRoot optionalNestedEnumExtension]] intValue]);
   XCTAssertEqual(ForeignEnum_ForeignFoo,
-               [[message getExtension:[UnittestRoot optionalForeignEnumExtension]] intValue]);
+                 [[message getExtension:[UnittestRoot optionalForeignEnumExtension]] intValue]);
   XCTAssertEqual(ImportEnum_ImportFoo,
-               [[message getExtension:[UnittestRoot optionalImportEnumExtension]] intValue]);
+                 [[message getExtension:[UnittestRoot optionalImportEnumExtension]] intValue]);
 
   XCTAssertEqualObjects(@"", [message getExtension:[UnittestRoot optionalStringPieceExtension]]);
   XCTAssertEqualObjects(@"", [message getExtension:[UnittestRoot optionalCordExtension]]);
@@ -1510,28 +1505,36 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertFalse([message hasExtension:[UnittestRoot defaultCordExtension]]);
 
   // Fields with defaults have their default values (duh).
-  XCTAssertEqual( 41, [[message getExtension:[UnittestRoot defaultInt32Extension]] intValue]);
-  XCTAssertEqual( 42LL, [[message getExtension:[UnittestRoot defaultInt64Extension]] longLongValue]);
-  XCTAssertEqual( 43U, [[message getExtension:[UnittestRoot defaultUint32Extension]] unsignedIntValue]);
-  XCTAssertEqual( 44ULL, [[message getExtension:[UnittestRoot defaultUint64Extension]] unsignedLongLongValue]);
+  XCTAssertEqual(41, [[message getExtension:[UnittestRoot defaultInt32Extension]] intValue]);
+  XCTAssertEqual(42LL, [[message getExtension:[UnittestRoot defaultInt64Extension]] longLongValue]);
+  XCTAssertEqual(43U,
+                 [[message getExtension:[UnittestRoot defaultUint32Extension]] unsignedIntValue]);
+  XCTAssertEqual(
+      44ULL, [[message getExtension:[UnittestRoot defaultUint64Extension]] unsignedLongLongValue]);
   XCTAssertEqual(-45, [[message getExtension:[UnittestRoot defaultSint32Extension]] intValue]);
-  XCTAssertEqual( 46LL, [[message getExtension:[UnittestRoot defaultSint64Extension]] longLongValue]);
-  XCTAssertEqual( 47, [[message getExtension:[UnittestRoot defaultFixed32Extension]] intValue]);
-  XCTAssertEqual( 48ULL, [[message getExtension:[UnittestRoot defaultFixed64Extension]] unsignedLongLongValue]);
-  XCTAssertEqual( 49, [[message getExtension:[UnittestRoot defaultSfixed32Extension]] intValue]);
-  XCTAssertEqual(-50LL, [[message getExtension:[UnittestRoot defaultSfixed64Extension]] longLongValue]);
-  XCTAssertEqualWithAccuracy( 51.5f, [[message getExtension:[UnittestRoot defaultFloatExtension]] floatValue], 0.01);
-  XCTAssertEqualWithAccuracy( 52e3, [[message getExtension:[UnittestRoot defaultDoubleExtension]] doubleValue], 0.01);
+  XCTAssertEqual(46LL,
+                 [[message getExtension:[UnittestRoot defaultSint64Extension]] longLongValue]);
+  XCTAssertEqual(47, [[message getExtension:[UnittestRoot defaultFixed32Extension]] intValue]);
+  XCTAssertEqual(
+      48ULL, [[message getExtension:[UnittestRoot defaultFixed64Extension]] unsignedLongLongValue]);
+  XCTAssertEqual(49, [[message getExtension:[UnittestRoot defaultSfixed32Extension]] intValue]);
+  XCTAssertEqual(-50LL,
+                 [[message getExtension:[UnittestRoot defaultSfixed64Extension]] longLongValue]);
+  XCTAssertEqualWithAccuracy(
+      51.5f, [[message getExtension:[UnittestRoot defaultFloatExtension]] floatValue], 0.01);
+  XCTAssertEqualWithAccuracy(
+      52e3, [[message getExtension:[UnittestRoot defaultDoubleExtension]] doubleValue], 0.01);
   XCTAssertTrue([[message getExtension:[UnittestRoot defaultBoolExtension]] boolValue]);
   XCTAssertEqualObjects(@"hello", [message getExtension:[UnittestRoot defaultStringExtension]]);
-  XCTAssertEqualObjects([NSData gpbtu_dataWithCString:"world"], [message getExtension:[UnittestRoot defaultBytesExtension]]);
+  XCTAssertEqualObjects([NSData gpbtu_dataWithCString:"world"],
+                        [message getExtension:[UnittestRoot defaultBytesExtension]]);
 
   XCTAssertEqual(TestAllTypes_NestedEnum_Bar,
-               [[message getExtension:[UnittestRoot defaultNestedEnumExtension]] intValue]);
+                 [[message getExtension:[UnittestRoot defaultNestedEnumExtension]] intValue]);
   XCTAssertEqual(ForeignEnum_ForeignBar,
-               [[message getExtension:[UnittestRoot defaultForeignEnumExtension]] intValue]);
+                 [[message getExtension:[UnittestRoot defaultForeignEnumExtension]] intValue]);
   XCTAssertEqual(ImportEnum_ImportBar,
-               [[message getExtension:[UnittestRoot defaultImportEnumExtension]] intValue]);
+                 [[message getExtension:[UnittestRoot defaultImportEnumExtension]] intValue]);
 
   XCTAssertEqualObjects(@"abc", [message getExtension:[UnittestRoot defaultStringPieceExtension]]);
   XCTAssertEqualObjects(@"123", [message getExtension:[UnittestRoot defaultCordExtension]]);
@@ -1557,29 +1560,24 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   [message.repeatedBytesArray replaceObjectAtIndex:1 withObject:data];
   [data release];
 
-  TestAllTypes_RepeatedGroup *testAll =
-      [[TestAllTypes_RepeatedGroup alloc] init];
+  TestAllTypes_RepeatedGroup *testAll = [[TestAllTypes_RepeatedGroup alloc] init];
   [testAll setA:517];
   [message.repeatedGroupArray replaceObjectAtIndex:1 withObject:testAll];
   [testAll release];
 
-  TestAllTypes_NestedMessage *nestedMessage =
-      [[TestAllTypes_NestedMessage alloc] init];
+  TestAllTypes_NestedMessage *nestedMessage = [[TestAllTypes_NestedMessage alloc] init];
   [nestedMessage setBb:518];
-  [message.repeatedNestedMessageArray replaceObjectAtIndex:1
-                                                withObject:nestedMessage];
+  [message.repeatedNestedMessageArray replaceObjectAtIndex:1 withObject:nestedMessage];
   [nestedMessage release];
 
   ForeignMessage *foreignMessage = [[ForeignMessage alloc] init];
   [foreignMessage setC:519];
-  [message.repeatedForeignMessageArray replaceObjectAtIndex:1
-                                                 withObject:foreignMessage];
+  [message.repeatedForeignMessageArray replaceObjectAtIndex:1 withObject:foreignMessage];
   [foreignMessage release];
 
   ImportMessage *importMessage = [[ImportMessage alloc] init];
   [importMessage setD:520];
-  [message.repeatedImportMessageArray replaceObjectAtIndex:1
-                                                withObject:importMessage];
+  [message.repeatedImportMessageArray replaceObjectAtIndex:1 withObject:importMessage];
   [importMessage release];
 
   [message.repeatedNestedEnumArray replaceValueAtIndex:1 withValue:TestAllTypes_NestedEnum_Foo];
@@ -1590,8 +1588,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   [message.repeatedCordArray replaceObjectAtIndex:1 withObject:@"525"];
 }
 
-- (void)assertRepeatedFieldsModified:(TestAllTypes *)message
-                       repeatedCount:(uint32_t)count {
+- (void)assertRepeatedFieldsModified:(TestAllTypes *)message repeatedCount:(uint32_t)count {
   // ModifyRepeatedFields only sets the second repeated element of each
   // field.  In addition to verifying this, we also verify that the first
   // element and size were *not* modified.
@@ -1664,13 +1661,12 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqualWithAccuracy(212.0, [message.repeatedDoubleArray valueAtIndex:0], 0.01);
   XCTAssertFalse([message.repeatedBoolArray valueAtIndex:0]);
   XCTAssertEqualObjects(@"215", message.repeatedStringArray[0]);
-  XCTAssertEqualObjects([NSData gpbtu_dataWithUint32:216],
-                        message.repeatedBytesArray[0]);
+  XCTAssertEqualObjects([NSData gpbtu_dataWithUint32:216], message.repeatedBytesArray[0]);
 
-  XCTAssertEqual(217, ((TestAllTypes_RepeatedGroup*)message.repeatedGroupArray[0]).a);
-  XCTAssertEqual(218, ((TestAllTypes_NestedMessage*)message.repeatedNestedMessageArray[0]).bb);
-  XCTAssertEqual(219, ((ForeignMessage*)message.repeatedForeignMessageArray[0]).c);
-  XCTAssertEqual(220, ((ImportMessage*)message.repeatedImportMessageArray[0]).d);
+  XCTAssertEqual(217, ((TestAllTypes_RepeatedGroup *)message.repeatedGroupArray[0]).a);
+  XCTAssertEqual(218, ((TestAllTypes_NestedMessage *)message.repeatedNestedMessageArray[0]).bb);
+  XCTAssertEqual(219, ((ForeignMessage *)message.repeatedForeignMessageArray[0]).c);
+  XCTAssertEqual(220, ((ImportMessage *)message.repeatedImportMessageArray[0]).d);
 
   XCTAssertEqual(TestAllTypes_NestedEnum_Baz, [message.repeatedNestedEnumArray valueAtIndex:0]);
   XCTAssertEqual(ForeignEnum_ForeignBaz, [message.repeatedForeignEnumArray valueAtIndex:0]);
@@ -1694,13 +1690,12 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqualWithAccuracy(512.0, [message.repeatedDoubleArray valueAtIndex:1], 0.01);
   XCTAssertTrue([message.repeatedBoolArray valueAtIndex:1]);
   XCTAssertEqualObjects(@"515", message.repeatedStringArray[1]);
-  XCTAssertEqualObjects([NSData gpbtu_dataWithUint32:516],
-                        message.repeatedBytesArray[1]);
+  XCTAssertEqualObjects([NSData gpbtu_dataWithUint32:516], message.repeatedBytesArray[1]);
 
-  XCTAssertEqual(517, ((TestAllTypes_RepeatedGroup*)message.repeatedGroupArray[1]).a);
-  XCTAssertEqual(518, ((TestAllTypes_NestedMessage*)message.repeatedNestedMessageArray[1]).bb);
-  XCTAssertEqual(519, ((ForeignMessage*)message.repeatedForeignMessageArray[1]).c);
-  XCTAssertEqual(520, ((ImportMessage*)message.repeatedImportMessageArray[1]).d);
+  XCTAssertEqual(517, ((TestAllTypes_RepeatedGroup *)message.repeatedGroupArray[1]).a);
+  XCTAssertEqual(518, ((TestAllTypes_NestedMessage *)message.repeatedNestedMessageArray[1]).bb);
+  XCTAssertEqual(519, ((ForeignMessage *)message.repeatedForeignMessageArray[1]).c);
+  XCTAssertEqual(520, ((ImportMessage *)message.repeatedImportMessageArray[1]).d);
 
   XCTAssertEqual(TestAllTypes_NestedEnum_Foo, [message.repeatedNestedEnumArray valueAtIndex:1]);
   XCTAssertEqual(ForeignEnum_ForeignFoo, [message.repeatedForeignEnumArray valueAtIndex:1]);
@@ -1710,8 +1705,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqualObjects(@"525", message.repeatedCordArray[1]);
 }
 
-- (void)setPackedFields:(TestPackedTypes *)message
-          repeatedCount:(uint32_t)count {
+- (void)setPackedFields:(TestPackedTypes *)message repeatedCount:(uint32_t)count {
   // Must match -setUnpackedFields:repeatedCount:
   // Must match -setPackedExtensions:repeatedCount:
   // Must match -setUnpackedExtensions:repeatedCount:
@@ -1755,13 +1749,11 @@ const uint32_t kGPBDefaultRepeatCount = 2;
     [message.packedBoolArray addValue:(i % 2) ? YES : NO];
   }
   for (uint32_t i = 0; i < count; ++i) {
-    [message.packedEnumArray
-        addValue:(i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz];
+    [message.packedEnumArray addValue:(i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz];
   }
 }
 
-- (void)setUnpackedFields:(TestUnpackedTypes *)message
-            repeatedCount:(uint32_t)count {
+- (void)setUnpackedFields:(TestUnpackedTypes *)message repeatedCount:(uint32_t)count {
   // Must match -setPackedFields:repeatedCount:
   // Must match -setPackedExtensions:repeatedCount:
   // Must match -setUnpackedExtensions:repeatedCount:
@@ -1805,13 +1797,11 @@ const uint32_t kGPBDefaultRepeatCount = 2;
     [message.unpackedBoolArray addValue:(i % 2) ? YES : NO];
   }
   for (uint32_t i = 0; i < count; ++i) {
-    [message.unpackedEnumArray
-        addValue:(i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz];
+    [message.unpackedEnumArray addValue:(i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz];
   }
 }
 
-- (void)assertPackedFieldsSet:(TestPackedTypes *)message
-                repeatedCount:(uint32_t)count {
+- (void)assertPackedFieldsSet:(TestPackedTypes *)message repeatedCount:(uint32_t)count {
   XCTAssertEqual(count, message.packedInt32Array.count);
   XCTAssertEqual(count, message.packedInt64Array.count);
   XCTAssertEqual(count, message.packedUint32Array.count);
@@ -1827,108 +1817,71 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqual(count, message.packedBoolArray.count);
   XCTAssertEqual(count, message.packedEnumArray.count);
   for (uint32_t i = 0; i < count; ++i) {
-    XCTAssertEqual((int)(601 + i * 100),
-                   [message.packedInt32Array valueAtIndex:i]);
+    XCTAssertEqual((int)(601 + i * 100), [message.packedInt32Array valueAtIndex:i]);
     XCTAssertEqual(602 + i * 100, [message.packedInt64Array valueAtIndex:i]);
     XCTAssertEqual(603 + i * 100, [message.packedUint32Array valueAtIndex:i]);
     XCTAssertEqual(604 + i * 100, [message.packedUint64Array valueAtIndex:i]);
-    XCTAssertEqual((int)(605 + i * 100),
-                   [message.packedSint32Array valueAtIndex:i]);
+    XCTAssertEqual((int)(605 + i * 100), [message.packedSint32Array valueAtIndex:i]);
     XCTAssertEqual(606 + i * 100, [message.packedSint64Array valueAtIndex:i]);
     XCTAssertEqual(607 + i * 100, [message.packedFixed32Array valueAtIndex:i]);
     XCTAssertEqual(608 + i * 100, [message.packedFixed64Array valueAtIndex:i]);
-    XCTAssertEqual((int)(609 + i * 100),
-                   [message.packedSfixed32Array valueAtIndex:i]);
+    XCTAssertEqual((int)(609 + i * 100), [message.packedSfixed32Array valueAtIndex:i]);
     XCTAssertEqual(610 + i * 100, [message.packedSfixed64Array valueAtIndex:i]);
-    XCTAssertEqualWithAccuracy(611 + i * 100,
-                               [message.packedFloatArray valueAtIndex:i], 0.01);
-    XCTAssertEqualWithAccuracy(
-        612 + i * 100, [message.packedDoubleArray valueAtIndex:i], 0.01);
-    XCTAssertEqual((i % 2) ? YES : NO,
-                   [message.packedBoolArray valueAtIndex:i]);
+    XCTAssertEqualWithAccuracy(611 + i * 100, [message.packedFloatArray valueAtIndex:i], 0.01);
+    XCTAssertEqualWithAccuracy(612 + i * 100, [message.packedDoubleArray valueAtIndex:i], 0.01);
+    XCTAssertEqual((i % 2) ? YES : NO, [message.packedBoolArray valueAtIndex:i]);
     XCTAssertEqual((i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz,
                    [message.packedEnumArray valueAtIndex:i]);
   }
 }
 
-- (void)setPackedExtensions:(TestPackedExtensions *)message
-              repeatedCount:(uint32_t)count {
+- (void)setPackedExtensions:(TestPackedExtensions *)message repeatedCount:(uint32_t)count {
   // Must match -setPackedFields:repeatedCount:
   // Must match -setUnpackedFields:repeatedCount:
   // Must match -setUnpackedExtensions:repeatedCount:
   for (uint32_t i = 0; i < count; i++) {
-    [message addExtension:[UnittestRoot packedInt32Extension]
-                    value:@(601 + i * 100)];
-    [message addExtension:[UnittestRoot packedInt64Extension]
-                    value:@(602 + i * 100)];
-    [message addExtension:[UnittestRoot packedUint32Extension]
-                    value:@(603 + i * 100)];
-    [message addExtension:[UnittestRoot packedUint64Extension]
-                    value:@(604 + i * 100)];
-    [message addExtension:[UnittestRoot packedSint32Extension]
-                    value:@(605 + i * 100)];
-    [message addExtension:[UnittestRoot packedSint64Extension]
-                    value:@(606 + i * 100)];
-    [message addExtension:[UnittestRoot packedFixed32Extension]
-                    value:@(607 + i * 100)];
-    [message addExtension:[UnittestRoot packedFixed64Extension]
-                    value:@(608 + i * 100)];
-    [message addExtension:[UnittestRoot packedSfixed32Extension]
-                    value:@(609 + i * 100)];
-    [message addExtension:[UnittestRoot packedSfixed64Extension]
-                    value:@(610 + i * 100)];
-    [message addExtension:[UnittestRoot packedFloatExtension]
-                    value:@(611 + i * 100)];
-    [message addExtension:[UnittestRoot packedDoubleExtension]
-                    value:@(612 + i * 100)];
-    [message addExtension:[UnittestRoot packedBoolExtension]
-                    value:@((i % 2) ? YES : NO)];
+    [message addExtension:[UnittestRoot packedInt32Extension] value:@(601 + i * 100)];
+    [message addExtension:[UnittestRoot packedInt64Extension] value:@(602 + i * 100)];
+    [message addExtension:[UnittestRoot packedUint32Extension] value:@(603 + i * 100)];
+    [message addExtension:[UnittestRoot packedUint64Extension] value:@(604 + i * 100)];
+    [message addExtension:[UnittestRoot packedSint32Extension] value:@(605 + i * 100)];
+    [message addExtension:[UnittestRoot packedSint64Extension] value:@(606 + i * 100)];
+    [message addExtension:[UnittestRoot packedFixed32Extension] value:@(607 + i * 100)];
+    [message addExtension:[UnittestRoot packedFixed64Extension] value:@(608 + i * 100)];
+    [message addExtension:[UnittestRoot packedSfixed32Extension] value:@(609 + i * 100)];
+    [message addExtension:[UnittestRoot packedSfixed64Extension] value:@(610 + i * 100)];
+    [message addExtension:[UnittestRoot packedFloatExtension] value:@(611 + i * 100)];
+    [message addExtension:[UnittestRoot packedDoubleExtension] value:@(612 + i * 100)];
+    [message addExtension:[UnittestRoot packedBoolExtension] value:@((i % 2) ? YES : NO)];
     [message addExtension:[UnittestRoot packedEnumExtension]
-                    value:@((i % 2) ? ForeignEnum_ForeignBar
-                                    : ForeignEnum_ForeignBaz)];
+                    value:@((i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz)];
   }
 }
 
-- (void)setUnpackedExtensions:(TestUnpackedExtensions *)message
-                repeatedCount:(uint32_t)count {
+- (void)setUnpackedExtensions:(TestUnpackedExtensions *)message repeatedCount:(uint32_t)count {
   // Must match -setPackedFields:repeatedCount:
   // Must match -setUnpackedFields:repeatedCount:
   // Must match -setPackedExtensions:repeatedCount:
   for (uint32_t i = 0; i < count; i++) {
-    [message addExtension:[UnittestRoot unpackedInt32Extension]
-                    value:@(601 + i * 100)];
-    [message addExtension:[UnittestRoot unpackedInt64Extension]
-                    value:@(602 + i * 100)];
-    [message addExtension:[UnittestRoot unpackedUint32Extension]
-                    value:@(603 + i * 100)];
-    [message addExtension:[UnittestRoot unpackedUint64Extension]
-                    value:@(604 + i * 100)];
-    [message addExtension:[UnittestRoot unpackedSint32Extension]
-                    value:@(605 + i * 100)];
-    [message addExtension:[UnittestRoot unpackedSint64Extension]
-                    value:@(606 + i * 100)];
-    [message addExtension:[UnittestRoot unpackedFixed32Extension]
-                    value:@(607 + i * 100)];
-    [message addExtension:[UnittestRoot unpackedFixed64Extension]
-                    value:@(608 + i * 100)];
-    [message addExtension:[UnittestRoot unpackedSfixed32Extension]
-                    value:@(609 + i * 100)];
-    [message addExtension:[UnittestRoot unpackedSfixed64Extension]
-                    value:@(610 + i * 100)];
-    [message addExtension:[UnittestRoot unpackedFloatExtension]
-                    value:@(611 + i * 100)];
-    [message addExtension:[UnittestRoot unpackedDoubleExtension]
-                    value:@(612 + i * 100)];
-    [message addExtension:[UnittestRoot unpackedBoolExtension]
-                    value:@((i % 2) ? YES : NO)];
+    [message addExtension:[UnittestRoot unpackedInt32Extension] value:@(601 + i * 100)];
+    [message addExtension:[UnittestRoot unpackedInt64Extension] value:@(602 + i * 100)];
+    [message addExtension:[UnittestRoot unpackedUint32Extension] value:@(603 + i * 100)];
+    [message addExtension:[UnittestRoot unpackedUint64Extension] value:@(604 + i * 100)];
+    [message addExtension:[UnittestRoot unpackedSint32Extension] value:@(605 + i * 100)];
+    [message addExtension:[UnittestRoot unpackedSint64Extension] value:@(606 + i * 100)];
+    [message addExtension:[UnittestRoot unpackedFixed32Extension] value:@(607 + i * 100)];
+    [message addExtension:[UnittestRoot unpackedFixed64Extension] value:@(608 + i * 100)];
+    [message addExtension:[UnittestRoot unpackedSfixed32Extension] value:@(609 + i * 100)];
+    [message addExtension:[UnittestRoot unpackedSfixed64Extension] value:@(610 + i * 100)];
+    [message addExtension:[UnittestRoot unpackedFloatExtension] value:@(611 + i * 100)];
+    [message addExtension:[UnittestRoot unpackedDoubleExtension] value:@(612 + i * 100)];
+    [message addExtension:[UnittestRoot unpackedBoolExtension] value:@((i % 2) ? YES : NO)];
     [message addExtension:[UnittestRoot unpackedEnumExtension]
-                    value:@((i % 2) ? ForeignEnum_ForeignBar
-                         : ForeignEnum_ForeignBaz)];
+                    value:@((i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz)];
   }
 }
 
-- (void)assertPackedExtensionsSet:(TestPackedExtensions *)message
-                    repeatedCount:(uint32_t)count{
+- (void)assertPackedExtensionsSet:(TestPackedExtensions *)message repeatedCount:(uint32_t)count {
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot packedInt32Extension]] count]);
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot packedInt64Extension]] count]);
   XCTAssertEqual(count, [[message getExtension:[UnittestRoot packedUint32Extension]] count]);
@@ -2016,20 +1969,24 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqualObjects([message valueForKey:@"hasOptionalNestedMessage"], @YES);
   XCTAssertNotNil(message.optionalNestedMessage);
   XCTAssertEqualObjects([message valueForKeyPath:@"optionalNestedMessage.hasBb"], @YES);
-  XCTAssertEqualObjects(@(message.optionalNestedMessage.bb), [message valueForKeyPath:@"optionalNestedMessage.bb"]);
+  XCTAssertEqualObjects(@(message.optionalNestedMessage.bb),
+                        [message valueForKeyPath:@"optionalNestedMessage.bb"]);
   XCTAssertEqualObjects([message valueForKey:@"hasOptionalForeignMessage"], @YES);
   XCTAssertNotNil(message.optionalForeignMessage);
   XCTAssertEqualObjects([message valueForKeyPath:@"optionalForeignMessage.hasC"], @YES);
-  XCTAssertEqualObjects(@(message.optionalForeignMessage.c), [message valueForKeyPath:@"optionalForeignMessage.c"]);
+  XCTAssertEqualObjects(@(message.optionalForeignMessage.c),
+                        [message valueForKeyPath:@"optionalForeignMessage.c"]);
   XCTAssertEqualObjects([message valueForKey:@"hasOptionalImportMessage"], @YES);
   XCTAssertNotNil(message.optionalForeignMessage);
   XCTAssertEqualObjects([message valueForKeyPath:@"optionalImportMessage.hasD"], @YES);
-  XCTAssertEqualObjects(@(message.optionalImportMessage.d), [message valueForKeyPath:@"optionalImportMessage.d"]);
+  XCTAssertEqualObjects(@(message.optionalImportMessage.d),
+                        [message valueForKeyPath:@"optionalImportMessage.d"]);
 
   XCTAssertEqualObjects([message valueForKey:@"hasOptionalNestedEnum"], @YES);
   XCTAssertEqualObjects(@(message.optionalNestedEnum), [message valueForKey:@"optionalNestedEnum"]);
   XCTAssertEqualObjects([message valueForKey:@"hasOptionalForeignEnum"], @YES);
-  XCTAssertEqualObjects(@(message.optionalForeignEnum), [message valueForKey:@"optionalForeignEnum"]);
+  XCTAssertEqualObjects(@(message.optionalForeignEnum),
+                        [message valueForKey:@"optionalForeignEnum"]);
   XCTAssertEqualObjects([message valueForKey:@"hasOptionalImportEnum"], @YES);
   XCTAssertEqualObjects(@(message.optionalImportEnum), [message valueForKey:@"optionalImportEnum"]);
 
@@ -2048,10 +2005,14 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqualObjects(message.repeatedUint64Array, [message valueForKey:@"repeatedUint64Array"]);
   XCTAssertEqualObjects(message.repeatedSint32Array, [message valueForKey:@"repeatedSint32Array"]);
   XCTAssertEqualObjects(message.repeatedSint64Array, [message valueForKey:@"repeatedSint64Array"]);
-  XCTAssertEqualObjects(message.repeatedFixed32Array, [message valueForKey:@"repeatedFixed32Array"]);
-  XCTAssertEqualObjects(message.repeatedFixed64Array, [message valueForKey:@"repeatedFixed64Array"]);
-  XCTAssertEqualObjects(message.repeatedSfixed32Array, [message valueForKey:@"repeatedSfixed32Array"]);
-  XCTAssertEqualObjects(message.repeatedSfixed64Array, [message valueForKey:@"repeatedSfixed64Array"]);
+  XCTAssertEqualObjects(message.repeatedFixed32Array,
+                        [message valueForKey:@"repeatedFixed32Array"]);
+  XCTAssertEqualObjects(message.repeatedFixed64Array,
+                        [message valueForKey:@"repeatedFixed64Array"]);
+  XCTAssertEqualObjects(message.repeatedSfixed32Array,
+                        [message valueForKey:@"repeatedSfixed32Array"]);
+  XCTAssertEqualObjects(message.repeatedSfixed64Array,
+                        [message valueForKey:@"repeatedSfixed64Array"]);
   XCTAssertEqualObjects(message.repeatedFloatArray, [message valueForKey:@"repeatedFloatArray"]);
   XCTAssertEqualObjects(message.repeatedDoubleArray, [message valueForKey:@"repeatedDoubleArray"]);
   XCTAssertEqualObjects(message.repeatedBoolArray, [message valueForKey:@"repeatedBoolArray"]);
@@ -2059,44 +2020,75 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqualObjects(message.repeatedBytesArray, [message valueForKey:@"repeatedBytesArray"]);
 
   XCTAssertEqualObjects(message.repeatedGroupArray, [message valueForKey:@"repeatedGroupArray"]);
-  XCTAssertEqualObjects(message.repeatedNestedMessageArray, [message valueForKey:@"repeatedNestedMessageArray"]);
-  XCTAssertEqualObjects(message.repeatedForeignMessageArray, [message valueForKey:@"repeatedForeignMessageArray"]);
-  XCTAssertEqualObjects(message.repeatedImportMessageArray, [message valueForKey:@"repeatedImportMessageArray"]);
+  XCTAssertEqualObjects(message.repeatedNestedMessageArray,
+                        [message valueForKey:@"repeatedNestedMessageArray"]);
+  XCTAssertEqualObjects(message.repeatedForeignMessageArray,
+                        [message valueForKey:@"repeatedForeignMessageArray"]);
+  XCTAssertEqualObjects(message.repeatedImportMessageArray,
+                        [message valueForKey:@"repeatedImportMessageArray"]);
 
-  XCTAssertEqualObjects(message.repeatedNestedEnumArray, [message valueForKey:@"repeatedNestedEnumArray"]);
-  XCTAssertEqualObjects(message.repeatedForeignEnumArray, [message valueForKey:@"repeatedForeignEnumArray"]);
-  XCTAssertEqualObjects(message.repeatedImportEnumArray, [message valueForKey:@"repeatedImportEnumArray"]);
+  XCTAssertEqualObjects(message.repeatedNestedEnumArray,
+                        [message valueForKey:@"repeatedNestedEnumArray"]);
+  XCTAssertEqualObjects(message.repeatedForeignEnumArray,
+                        [message valueForKey:@"repeatedForeignEnumArray"]);
+  XCTAssertEqualObjects(message.repeatedImportEnumArray,
+                        [message valueForKey:@"repeatedImportEnumArray"]);
 
-  XCTAssertEqualObjects(message.repeatedStringPieceArray, [message valueForKey:@"repeatedStringPieceArray"]);
+  XCTAssertEqualObjects(message.repeatedStringPieceArray,
+                        [message valueForKey:@"repeatedStringPieceArray"]);
   XCTAssertEqualObjects(message.repeatedCordArray, [message valueForKey:@"repeatedCordArray"]);
 
-  XCTAssertEqualObjects(@(message.repeatedInt32Array_Count), [message valueForKey:@"repeatedInt32Array_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedInt64Array_Count), [message valueForKey:@"repeatedInt64Array_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedUint32Array_Count), [message valueForKey:@"repeatedUint32Array_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedUint64Array_Count), [message valueForKey:@"repeatedUint64Array_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedSint32Array_Count), [message valueForKey:@"repeatedSint32Array_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedSint64Array_Count), [message valueForKey:@"repeatedSint64Array_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedFixed32Array_Count), [message valueForKey:@"repeatedFixed32Array_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedFixed64Array_Count), [message valueForKey:@"repeatedFixed64Array_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedSfixed32Array_Count), [message valueForKey:@"repeatedSfixed32Array_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedSfixed64Array_Count), [message valueForKey:@"repeatedSfixed64Array_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedFloatArray_Count), [message valueForKey:@"repeatedFloatArray_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedDoubleArray_Count), [message valueForKey:@"repeatedDoubleArray_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedBoolArray_Count), [message valueForKey:@"repeatedBoolArray_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedStringArray_Count), [message valueForKey:@"repeatedStringArray_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedBytesArray_Count), [message valueForKey:@"repeatedBytesArray_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedInt32Array_Count),
+                        [message valueForKey:@"repeatedInt32Array_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedInt64Array_Count),
+                        [message valueForKey:@"repeatedInt64Array_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedUint32Array_Count),
+                        [message valueForKey:@"repeatedUint32Array_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedUint64Array_Count),
+                        [message valueForKey:@"repeatedUint64Array_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedSint32Array_Count),
+                        [message valueForKey:@"repeatedSint32Array_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedSint64Array_Count),
+                        [message valueForKey:@"repeatedSint64Array_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedFixed32Array_Count),
+                        [message valueForKey:@"repeatedFixed32Array_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedFixed64Array_Count),
+                        [message valueForKey:@"repeatedFixed64Array_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedSfixed32Array_Count),
+                        [message valueForKey:@"repeatedSfixed32Array_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedSfixed64Array_Count),
+                        [message valueForKey:@"repeatedSfixed64Array_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedFloatArray_Count),
+                        [message valueForKey:@"repeatedFloatArray_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedDoubleArray_Count),
+                        [message valueForKey:@"repeatedDoubleArray_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedBoolArray_Count),
+                        [message valueForKey:@"repeatedBoolArray_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedStringArray_Count),
+                        [message valueForKey:@"repeatedStringArray_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedBytesArray_Count),
+                        [message valueForKey:@"repeatedBytesArray_Count"]);
 
-  XCTAssertEqualObjects(@(message.repeatedGroupArray_Count), [message valueForKey:@"repeatedGroupArray_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedNestedMessageArray_Count), [message valueForKey:@"repeatedNestedMessageArray_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedForeignMessageArray_Count), [message valueForKey:@"repeatedForeignMessageArray_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedImportMessageArray_Count), [message valueForKey:@"repeatedImportMessageArray_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedGroupArray_Count),
+                        [message valueForKey:@"repeatedGroupArray_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedNestedMessageArray_Count),
+                        [message valueForKey:@"repeatedNestedMessageArray_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedForeignMessageArray_Count),
+                        [message valueForKey:@"repeatedForeignMessageArray_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedImportMessageArray_Count),
+                        [message valueForKey:@"repeatedImportMessageArray_Count"]);
 
-  XCTAssertEqualObjects(@(message.repeatedNestedEnumArray_Count), [message valueForKey:@"repeatedNestedEnumArray_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedForeignEnumArray_Count), [message valueForKey:@"repeatedForeignEnumArray_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedImportEnumArray_Count), [message valueForKey:@"repeatedImportEnumArray_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedNestedEnumArray_Count),
+                        [message valueForKey:@"repeatedNestedEnumArray_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedForeignEnumArray_Count),
+                        [message valueForKey:@"repeatedForeignEnumArray_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedImportEnumArray_Count),
+                        [message valueForKey:@"repeatedImportEnumArray_Count"]);
 
-  XCTAssertEqualObjects(@(message.repeatedStringPieceArray_Count), [message valueForKey:@"repeatedStringPieceArray_Count"]);
-  XCTAssertEqualObjects(@(message.repeatedCordArray_Count), [message valueForKey:@"repeatedCordArray_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedStringPieceArray_Count),
+                        [message valueForKey:@"repeatedStringPieceArray_Count"]);
+  XCTAssertEqualObjects(@(message.repeatedCordArray_Count),
+                        [message valueForKey:@"repeatedCordArray_Count"]);
 
   // -----------------------------------------------------------------
 
@@ -2144,8 +2136,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqualObjects(message.defaultCord, [message valueForKey:@"defaultCord"]);
 }
 
-- (void)setAllFieldsViaKVC:(TestAllTypes *)message
-             repeatedCount:(uint32_t)count {
+- (void)setAllFieldsViaKVC:(TestAllTypes *)message repeatedCount:(uint32_t)count {
   [message setValue:@101 forKey:@"optionalInt32"];
   [message setValue:@102 forKey:@"optionalInt64"];
   [message setValue:@103 forKey:@"optionalUint32"];
@@ -2160,14 +2151,12 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   [message setValue:@112 forKey:@"optionalDouble"];
   [message setValue:@YES forKey:@"optionalBool"];
   [message setValue:@"115" forKey:@"optionalString"];
-  [message setValue:[NSData gpbtu_dataWithEmbeddedNulls]
-             forKey:@"optionalBytes"];
+  [message setValue:[NSData gpbtu_dataWithEmbeddedNulls] forKey:@"optionalBytes"];
 
   TestAllTypes_OptionalGroup *allTypes = [TestAllTypes_OptionalGroup message];
   [allTypes setValue:@117 forKey:@"a"];
   [message setValue:allTypes forKey:@"optionalGroup"];
-  TestAllTypes_NestedMessage *nestedMessage =
-      [TestAllTypes_NestedMessage message];
+  TestAllTypes_NestedMessage *nestedMessage = [TestAllTypes_NestedMessage message];
   [nestedMessage setValue:@118 forKey:@"bb"];
   [message setValue:nestedMessage forKey:@"optionalNestedMessage"];
   ForeignMessage *foreignMessage = [ForeignMessage message];
@@ -2177,8 +2166,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   [importMessage setValue:@120 forKey:@"d"];
   [message setValue:importMessage forKey:@"optionalImportMessage"];
 
-  [message setValue:@(TestAllTypes_NestedEnum_Baz)
-             forKey:@"optionalNestedEnum"];
+  [message setValue:@(TestAllTypes_NestedEnum_Baz) forKey:@"optionalNestedEnum"];
   [message setValue:@(ForeignEnum_ForeignBaz) forKey:@"optionalForeignEnum"];
   [message setValue:@(ImportEnum_ImportBaz) forKey:@"optionalImportEnum"];
 
@@ -2299,8 +2287,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 
   array = [[NSMutableArray alloc] initWithCapacity:count];
   for (uint32_t i = 0; i < count; ++i) {
-    TestAllTypes_RepeatedGroup *testAll =
-        [[TestAllTypes_RepeatedGroup alloc] init];
+    TestAllTypes_RepeatedGroup *testAll = [[TestAllTypes_RepeatedGroup alloc] init];
     [testAll setA:217 + i * 100];
     [array addObject:testAll];
     [testAll release];
@@ -2339,26 +2326,22 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   [array release];
 
   {
-    GPBEnumArray *scratch = [GPBEnumArray
-        arrayWithValidationFunction:TestAllTypes_NestedEnum_IsValidValue];
+    GPBEnumArray *scratch =
+        [GPBEnumArray arrayWithValidationFunction:TestAllTypes_NestedEnum_IsValidValue];
     for (uint32_t i = 0; i < count; ++i) {
-      [scratch addValue:(i % 2) ? TestAllTypes_NestedEnum_Bar
-                                : TestAllTypes_NestedEnum_Baz];
+      [scratch addValue:(i % 2) ? TestAllTypes_NestedEnum_Bar : TestAllTypes_NestedEnum_Baz];
     }
     [message setValue:scratch forKey:@"repeatedNestedEnumArray"];
   }
   {
-    GPBEnumArray *scratch =
-        [GPBEnumArray arrayWithValidationFunction:ForeignEnum_IsValidValue];
+    GPBEnumArray *scratch = [GPBEnumArray arrayWithValidationFunction:ForeignEnum_IsValidValue];
     for (uint32_t i = 0; i < count; ++i) {
-      [scratch
-          addValue:(i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz];
+      [scratch addValue:(i % 2) ? ForeignEnum_ForeignBar : ForeignEnum_ForeignBaz];
     }
     [message setValue:scratch forKey:@"repeatedForeignEnumArray"];
   }
   {
-    GPBEnumArray *scratch =
-        [GPBEnumArray arrayWithValidationFunction:ImportEnum_IsValidValue];
+    GPBEnumArray *scratch = [GPBEnumArray arrayWithValidationFunction:ImportEnum_IsValidValue];
     for (uint32_t i = 0; i < count; ++i) {
       [scratch addValue:(i % 2) ? ImportEnum_ImportBar : ImportEnum_ImportBaz];
     }
@@ -2428,8 +2411,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
 
   XCTAssertEqualObjects([message valueForKey:@"hasOptionalGroup"], @NO);
   XCTAssertEqualObjects([message valueForKey:@"hasOptionalNestedMessage"], @NO);
-  XCTAssertEqualObjects([message valueForKey:@"hasOptionalForeignMessage"],
-                        @NO);
+  XCTAssertEqualObjects([message valueForKey:@"hasOptionalForeignMessage"], @NO);
   XCTAssertEqualObjects([message valueForKey:@"hasOptionalImportMessage"], @NO);
 
   XCTAssertEqualObjects([message valueForKey:@"hasOptionalNestedEnum"], @NO);
@@ -2454,8 +2436,7 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqualObjects([message valueForKey:@"optionalDouble"], @0);
   XCTAssertEqualObjects([message valueForKey:@"optionalBool"], @NO);
   XCTAssertEqualObjects([message valueForKey:@"optionalString"], @"");
-  XCTAssertEqualObjects([message valueForKey:@"optionalBytes"],
-                        GPBEmptyNSData());
+  XCTAssertEqualObjects([message valueForKey:@"optionalBytes"], GPBEmptyNSData());
 
   // Embedded messages should also be exist, but be clear.
   XCTAssertNotNil([message valueForKeyPath:@"optionalGroup"]);
@@ -2463,28 +2444,20 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertNotNil([message valueForKeyPath:@"optionalForeignMessage"]);
   XCTAssertNotNil([message valueForKeyPath:@"optionalImportMessage"]);
   XCTAssertEqualObjects([message valueForKeyPath:@"optionalGroup.hasA"], @NO);
-  XCTAssertEqualObjects(
-      [message valueForKeyPath:@"optionalNestedMessage.hasBb"], @NO);
-  XCTAssertEqualObjects(
-      [message valueForKeyPath:@"optionalForeignMessage.hasC"], @NO);
-  XCTAssertEqualObjects([message valueForKeyPath:@"optionalImportMessage.hasD"],
-                        @NO);
+  XCTAssertEqualObjects([message valueForKeyPath:@"optionalNestedMessage.hasBb"], @NO);
+  XCTAssertEqualObjects([message valueForKeyPath:@"optionalForeignMessage.hasC"], @NO);
+  XCTAssertEqualObjects([message valueForKeyPath:@"optionalImportMessage.hasD"], @NO);
 
   XCTAssertEqualObjects([message valueForKeyPath:@"optionalGroup.a"], @0);
-  XCTAssertEqualObjects([message valueForKeyPath:@"optionalNestedMessage.bb"],
-                        @0);
-  XCTAssertEqualObjects([message valueForKeyPath:@"optionalForeignMessage.c"],
-                        @0);
-  XCTAssertEqualObjects([message valueForKeyPath:@"optionalImportMessage.d"],
-                        @0);
+  XCTAssertEqualObjects([message valueForKeyPath:@"optionalNestedMessage.bb"], @0);
+  XCTAssertEqualObjects([message valueForKeyPath:@"optionalForeignMessage.c"], @0);
+  XCTAssertEqualObjects([message valueForKeyPath:@"optionalImportMessage.d"], @0);
 
   // Enums without defaults are set to the first value in the enum.
   XCTAssertEqualObjects([message valueForKey:@"optionalNestedEnum"],
                         @(TestAllTypes_NestedEnum_Foo));
-  XCTAssertEqualObjects([message valueForKey:@"optionalForeignEnum"],
-                        @(ForeignEnum_ForeignFoo));
-  XCTAssertEqualObjects([message valueForKey:@"optionalImportEnum"],
-                        @(ImportEnum_ImportFoo));
+  XCTAssertEqualObjects([message valueForKey:@"optionalForeignEnum"], @(ForeignEnum_ForeignFoo));
+  XCTAssertEqualObjects([message valueForKey:@"optionalImportEnum"], @(ImportEnum_ImportFoo));
 
   XCTAssertEqualObjects([message valueForKey:@"optionalStringPiece"], @"");
   XCTAssertEqualObjects([message valueForKey:@"optionalCord"], @"");
@@ -2532,12 +2505,9 @@ const uint32_t kGPBDefaultRepeatCount = 2;
   XCTAssertEqualObjects([message valueForKey:@"defaultBytes"],
                         [NSData gpbtu_dataWithCString:"world"]);
 
-  XCTAssertEqualObjects([message valueForKey:@"defaultNestedEnum"],
-                        @(TestAllTypes_NestedEnum_Bar));
-  XCTAssertEqualObjects([message valueForKey:@"defaultForeignEnum"],
-                        @(ForeignEnum_ForeignBar));
-  XCTAssertEqualObjects([message valueForKey:@"defaultImportEnum"],
-                        @(ImportEnum_ImportBar));
+  XCTAssertEqualObjects([message valueForKey:@"defaultNestedEnum"], @(TestAllTypes_NestedEnum_Bar));
+  XCTAssertEqualObjects([message valueForKey:@"defaultForeignEnum"], @(ForeignEnum_ForeignBar));
+  XCTAssertEqualObjects([message valueForKey:@"defaultImportEnum"], @(ImportEnum_ImportBar));
 
   XCTAssertEqualObjects([message valueForKey:@"defaultStringPiece"], @"abc");
   XCTAssertEqualObjects([message valueForKey:@"defaultCord"], @"123");

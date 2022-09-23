@@ -129,6 +129,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return internalGetFieldAccessorTable().descriptor;
   }
 
+  // TODO(gberg): remove this. Have to leave it for now to support old gencode.
   protected void mergeFromAndMakeImmutableInternal(
       CodedInputStream input, ExtensionRegistryLite extensionRegistry)
       throws InvalidProtocolBufferException {
@@ -746,7 +747,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       return setUnknownFields(
           UnknownFieldSet.newBuilder(this.unknownFields).mergeFrom(unknownFields).build());
     }
-
 
     @Override
     public boolean isInitialized() {

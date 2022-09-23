@@ -193,6 +193,8 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       GenerateGetBitFromLocal(builderBitIndex);
   (*variables)["set_has_field_bit_to_local"] =
       GenerateSetBitToLocal(messageBitIndex);
+  // Annotations often use { and } variables to denote ranges.
+  (*variables)["{"] = (*variables)["}"] = "";
 }
 
 }  // namespace
@@ -224,7 +226,9 @@ void ImmutablePrimitiveFieldLiteGenerator::GenerateInterfaceMembers(
                    "$deprecation$boolean has$capitalized_name$();\n");
   }
   WriteFieldAccessorDocComment(printer, descriptor_, GETTER);
-  printer->Print(variables_, "$deprecation$$type$ get$capitalized_name$();\n");
+  printer->Print(variables_,
+                 "$deprecation$$type$ ${$get$capitalized_name$$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void ImmutablePrimitiveFieldLiteGenerator::GenerateMembers(
@@ -527,13 +531,17 @@ void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateInterfaceMembers(
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);
   printer->Print(variables_,
                  "$deprecation$java.util.List<$boxed_type$> "
-                 "get$capitalized_name$List();\n");
+                 "${$get$capitalized_name$List$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_COUNT);
   printer->Print(variables_,
-                 "$deprecation$int get$capitalized_name$Count();\n");
+                 "$deprecation$int ${$get$capitalized_name$Count$}$();\n");
+  printer->Annotate("{", "}", descriptor_);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER);
-  printer->Print(variables_,
-                 "$deprecation$$type$ get$capitalized_name$(int index);\n");
+  printer->Print(
+      variables_,
+      "$deprecation$$type$ ${$get$capitalized_name$$}$(int index);\n");
+  printer->Annotate("{", "}", descriptor_);
 }
 
 void RepeatedImmutablePrimitiveFieldLiteGenerator::GenerateMembers(

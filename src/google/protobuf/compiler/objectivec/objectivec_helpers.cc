@@ -516,7 +516,8 @@ void PathSplit(const std::string& path, std::string* directory,
 }
 
 bool IsSpecialNamePrefix(const std::string& name,
-                         const std::string* special_names, size_t count) {
+                         const std::string* special_names,
+                         size_t count) {
   for (size_t i = 0; i < count; ++i) {
     const size_t length = special_names[i].length();
     if (name.compare(0, length, special_names[i]) == 0) {
@@ -591,8 +592,8 @@ bool IsRetainedName(const std::string& name) {
   // http://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmRules.html
   static const std::string retained_names[] = {"new", "alloc", "copy",
                                                "mutableCopy"};
-  return IsSpecialNamePrefix(
-      name, retained_names, sizeof(retained_names) / sizeof(retained_names[0]));
+  return IsSpecialNamePrefix(name, retained_names,
+                             sizeof(retained_names) / sizeof(retained_names[0]));
 }
 
 bool IsInitName(const std::string& name) {

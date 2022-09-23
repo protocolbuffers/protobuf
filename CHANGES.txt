@@ -22,6 +22,10 @@
   * Turns on table-driven parser for reflection based objects.
   * Save code space by avoiding inlining of large-in-aggregate code-space MessageLite::~MessageLite destructor.
   * Undefine the macro `linux` when compiling protobuf
+  * Reduce memory consumption of MessageSet parsing.
+  * Save code space by avoiding inlining of large-in-aggregate code-space MessageLite::~MessageLite destructor.
+  * Breaking change: delete Arena::Init
+  * Make a PROTOBUF_POISON/UNPOISON to reduce noise in the source
 
 
   Kotlin
@@ -34,6 +38,7 @@
   * Performance improvement for repeated use of FieldMaskUtil#merge by caching
     constructed FieldMaskTrees.
   * Optimized Java proto serialization gencode for protos having many extension ranges with few fields in between.
+  * More thoroughly annotate public generated code in Java lite protocol buffers.
 
   Python
   * Changes ordering of printed fields in .pyi files from lexicographic to the same ordering found in the proto descriptor.

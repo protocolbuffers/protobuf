@@ -36,12 +36,13 @@
 #include <set>
 #include <string>
 
-#include "google/protobuf/stubs/stringprintf.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/util/field_comparator.h"
 #include "google/protobuf/util/json_util.h"
 #include "google/protobuf/util/message_differencer.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "conformance/conformance.pb.h"
 
 using conformance::ConformanceRequest;
@@ -177,10 +178,11 @@ string ConformanceTestSuite::ConformanceRequestSetting::
 
 void ConformanceTestSuite::ReportSuccess(const string& test_name) {
   if (expected_to_fail_.erase(test_name) != 0) {
-    StringAppendF(&output_,
-                  "ERROR: test %s is in the failure list, but test succeeded.  "
-                  "Remove it from the failure list.\n",
-                  test_name.c_str());
+    absl::StrAppendFormat(
+        &output_,
+        "ERROR: test %s is in the failure list, but test succeeded.  "
+        "Remove it from the failure list.\n",
+        test_name);
     unexpected_succeeding_tests_.insert(test_name);
   }
   successes_++;
@@ -190,33 +192,29 @@ void ConformanceTestSuite::ReportFailure(const string& test_name,
                                          ConformanceLevel level,
                                          const ConformanceRequest& request,
                                          const ConformanceResponse& response,
-                                         const char* fmt, ...) {
+                                         absl::string_view message) {
   if (expected_to_fail_.erase(test_name) == 1) {
     expected_failures_++;
     if (!verbose_)
       return;
   } else if (level == RECOMMENDED && !enforce_recommended_) {
-    StringAppendF(&output_, "WARNING, test=%s: ", test_name.c_str());
+    absl::StrAppendFormat(&output_, "WARNING, test=%s: ", test_name);
   } else {
-    StringAppendF(&output_, "ERROR, test=%s: ", test_name.c_str());
+    absl::StrAppendFormat(&output_, "ERROR, test=%s: ", test_name);
     unexpected_failing_tests_.insert(test_name);
   }
-  va_list args;
-  va_start(args, fmt);
-  StringAppendV(&output_, fmt, args);
-  va_end(args);
-  StringAppendF(&output_, " request=%s, response=%s\n",
-                request.ShortDebugString().c_str(),
-                response.ShortDebugString().c_str());
+  absl::StrAppendFormat(&output_, "%s request=%s, response=%s\n", message,
+                        request.ShortDebugString(),
+                        response.ShortDebugString());
 }
 
 void ConformanceTestSuite::ReportSkip(const string& test_name,
                                       const ConformanceRequest& request,
                                       const ConformanceResponse& response) {
   if (verbose_) {
-    StringAppendF(&output_, "SKIPPED, test=%s request=%s, response=%s\n",
-                  test_name.c_str(), request.ShortDebugString().c_str(),
-                  response.ShortDebugString().c_str());
+    absl::StrAppendFormat(
+        &output_, "SKIPPED, test=%s request=%s, response=%s\n", test_name,
+        request.ShortDebugString(), response.ShortDebugString());
   }
   skipped_.insert(test_name);
 }
@@ -301,9 +299,10 @@ void ConformanceTestSuite::VerifyResponse(
       ReportSuccess(test_name);
     }
   } else {
-    ReportFailure(test_name, level, request, response,
-                  "Output was not equivalent to reference message: %s.",
-                  differences.c_str());
+    ReportFailure(
+        test_name, level, request, response,
+        absl::StrCat("Output was not equivalent to reference message: ",
+                     differences));
   }
 }
 
@@ -326,11 +325,9 @@ void ConformanceTestSuite::RunTest(const string& test_name,
   }
 
   if (verbose_) {
-    StringAppendF(&output_,
-                  "conformance test: name=%s, request=%s, response=%s\n",
-                  test_name.c_str(),
-                  request.ShortDebugString().c_str(),
-                  response->ShortDebugString().c_str());
+    absl::StrAppendFormat(
+        &output_, "conformance test: name=%s, request=%s, response=%s\n",
+        test_name, request.ShortDebugString(), response->ShortDebugString());
   }
 }
 
@@ -341,13 +338,12 @@ bool ConformanceTestSuite::CheckSetEmpty(
   if (set_to_check.empty()) {
     return true;
   } else {
-    StringAppendF(&output_, "\n");
-    StringAppendF(&output_, "%s\n\n", msg.c_str());
-    for (std::set<string>::const_iterator iter = set_to_check.begin();
-         iter != set_to_check.end(); ++iter) {
-      StringAppendF(&output_, "  %s\n", iter->c_str());
+    absl::StrAppendFormat(&output_, "\n");
+    absl::StrAppendFormat(&output_, "%s\n\n", msg);
+    for (absl::string_view v : set_to_check) {
+      absl::StrAppendFormat(&output_, "  %s\n", v);
     }
-    StringAppendF(&output_, "\n");
+    absl::StrAppendFormat(&output_, "\n");
 
     if (!write_to_file.empty()) {
       std::string full_filename;
@@ -362,13 +358,11 @@ bool ConformanceTestSuite::CheckSetEmpty(
       }
       std::ofstream os(*filename);
       if (os) {
-        for (std::set<string>::const_iterator iter = set_to_check.begin();
-             iter != set_to_check.end(); ++iter) {
-          os << *iter << "\n";
+        for (absl::string_view v : set_to_check) {
+          os << v << "\n";
         }
       } else {
-        StringAppendF(&output_, "Failed to open file: %s\n",
-                      filename->c_str());
+        absl::StrAppendFormat(&output_, "Failed to open file: %s\n", *filename);
       }
     }
 
@@ -452,12 +446,12 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
                   "features is not implemented)");
   }
 
-  StringAppendF(&output_,
-                "CONFORMANCE SUITE %s: %d successes, %zu skipped, "
-                "%d expected failures, %zu unexpected failures.\n",
-                ok ? "PASSED" : "FAILED", successes_, skipped_.size(),
-                expected_failures_, unexpected_failing_tests_.size());
-  StringAppendF(&output_, "\n");
+  absl::StrAppendFormat(&output_,
+                        "CONFORMANCE SUITE %s: %d successes, %zu skipped, "
+                        "%d expected failures, %zu unexpected failures.\n",
+                        ok ? "PASSED" : "FAILED", successes_, skipped_.size(),
+                        expected_failures_, unexpected_failing_tests_.size());
+  absl::StrAppendFormat(&output_, "\n");
 
   output->assign(output_);
 

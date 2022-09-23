@@ -38,6 +38,7 @@
 #include <cstdint>
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "google/protobuf/io/coded_stream.h"
@@ -117,29 +118,32 @@ void ImmutableMessageLiteGenerator::GenerateInterface(io::Printer* printer) {
   MaybePrintGeneratedAnnotation(context_, printer, descriptor_,
                                 /* immutable = */ true, "OrBuilder");
 
+  std::map<std::string, std::string> variables = {
+      {"{", ""},
+      {"}", ""},
+      {"deprecation",
+       descriptor_->options().deprecated() ? "@java.lang.Deprecated " : ""},
+      {"extra_interfaces", ExtraMessageOrBuilderInterfaces(descriptor_)},
+      {"classname", descriptor_->name()},
+  };
+
   if (!context_->options().opensource_runtime) {
     printer->Print("@com.google.protobuf.Internal.ProtoNonnullApi\n");
   }
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
+        variables,
         "$deprecation$public interface ${$$classname$OrBuilder$}$ extends \n"
         "    $extra_interfaces$\n"
         "     com.google.protobuf.GeneratedMessageLite.\n"
         "          ExtendableMessageOrBuilder<\n"
-        "              $classname$, $classname$.Builder> {\n",
-        "deprecation",
-        descriptor_->options().deprecated() ? "@java.lang.Deprecated " : "",
-        "extra_interfaces", ExtraMessageOrBuilderInterfaces(descriptor_),
-        "classname", descriptor_->name(), "{", "", "}", "");
+        "              $classname$, $classname$.Builder> {\n");
   } else {
     printer->Print(
+        variables,
         "$deprecation$public interface ${$$classname$OrBuilder$}$ extends\n"
         "    $extra_interfaces$\n"
-        "    com.google.protobuf.MessageLiteOrBuilder {\n",
-        "deprecation",
-        descriptor_->options().deprecated() ? "@java.lang.Deprecated " : "",
-        "extra_interfaces", ExtraMessageOrBuilderInterfaces(descriptor_),
-        "classname", descriptor_->name(), "{", "", "}", "");
+        "    com.google.protobuf.MessageLiteOrBuilder {\n");
   }
   printer->Annotate("{", "}", descriptor_);
 
@@ -150,13 +154,15 @@ void ImmutableMessageLiteGenerator::GenerateInterface(io::Printer* printer) {
         .GenerateInterfaceMembers(printer);
   }
   for (auto oneof : oneofs_) {
-    printer->Print(
-        "\n"
-        "public $classname$.$oneof_capitalized_name$Case "
-        "get$oneof_capitalized_name$Case();\n",
-        "oneof_capitalized_name",
-        context_->GetOneofGeneratorInfo(oneof)->capitalized_name, "classname",
-        context_->GetNameResolver()->GetImmutableClassName(descriptor_));
+    variables["oneof_capitalized_name"] =
+        context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
+    variables["classname"] =
+        context_->GetNameResolver()->GetImmutableClassName(descriptor_);
+    printer->Print(variables,
+                   "\n"
+                   "public ${$$classname$.$oneof_capitalized_name$Case$}$ "
+                   "get$oneof_capitalized_name$Case();\n");
+    printer->Annotate("{", "}", oneof);
   }
   printer->Outdent();
 
@@ -168,7 +174,7 @@ void ImmutableMessageLiteGenerator::GenerateInterface(io::Printer* printer) {
 void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   bool is_own_file = IsOwnFile(descriptor_, /* immutable = */ true);
 
-  std::map<std::string, std::string> variables;
+  std::map<std::string, std::string> variables = {{"{", ""}, {"}", ""}};
   variables["static"] = is_own_file ? " " : " static ";
   variables["classname"] = descriptor_->name();
   variables["extra_interfaces"] = ExtraMessageInterfaces(descriptor_);
@@ -185,7 +191,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   if (descriptor_->extension_range_count() > 0) {
     printer->Print(
         variables,
-        "$deprecation$public $static$final class $classname$ extends\n"
+        "$deprecation$public $static$final class ${$$classname$$}$ extends\n"
         "    com.google.protobuf.GeneratedMessageLite.ExtendableMessage<\n"
         "      $classname$, $classname$.Builder> implements\n"
         "    $extra_interfaces$\n"
@@ -196,7 +202,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   } else {
     printer->Print(
         variables,
-        "$deprecation$public $static$final class $classname$ extends\n"
+        "$deprecation$public $static$final class ${$$classname$$}$ extends\n"
         "    com.google.protobuf.GeneratedMessageLite<\n"
         "        $classname$, $classname$.Builder> implements\n"
         "    $extra_interfaces$\n"
@@ -204,6 +210,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
 
     builder_type = "com.google.protobuf.GeneratedMessageLite.Builder";
   }
+  printer->Annotate("{", "}", descriptor_);
   printer->Indent();
 
   GenerateConstructor(printer);
@@ -236,7 +243,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   }
 
   // oneof
-  std::map<std::string, std::string> vars;
+  std::map<std::string, std::string> vars = {{"{", ""}, {"}", ""}};
   for (auto oneof : oneofs_) {
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
     vars["oneof_capitalized_name"] =
@@ -249,13 +256,15 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
                      "private java.lang.Object $oneof_name$_;\n");
     }
     // OneofCase enum
-    printer->Print(vars, "public enum $oneof_capitalized_name$Case {\n");
+    printer->Print(vars, "public enum ${$$oneof_capitalized_name$Case$}$ {\n");
+    printer->Annotate("{", "}", oneof);
     printer->Indent();
     for (int j = 0; j < (oneof)->field_count(); j++) {
       const FieldDescriptor* field = (oneof)->field(j);
       printer->Print("$field_name$($field_number$),\n", "field_name",
                      absl::AsciiStrToUpper(field->name()), "field_number",
                      absl::StrCat(field->number()));
+      printer->Annotate("field_name", field);
     }
     printer->Print("$cap_oneof_name$_NOT_SET(0);\n", "cap_oneof_name",
                    absl::AsciiStrToUpper(vars["oneof_name"]));
@@ -303,16 +312,19 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
     printer->Print(vars,
                    "@java.lang.Override\n"
                    "public $oneof_capitalized_name$Case\n"
-                   "get$oneof_capitalized_name$Case() {\n"
+                   "${$get$oneof_capitalized_name$Case$}$() {\n"
                    "  return $oneof_capitalized_name$Case.forNumber(\n"
                    "      $oneof_name$Case_);\n"
-                   "}\n"
+                   "}\n");
+    printer->Annotate("{", "}", oneof);
+    printer->Print(vars,
                    "\n"
-                   "private void clear$oneof_capitalized_name$() {\n"
+                   "private void ${$clear$oneof_capitalized_name$$}$() {\n"
                    "  $oneof_name$Case_ = 0;\n"
                    "  $oneof_name$_ = null;\n"
                    "}\n"
                    "\n");
+    printer->Annotate("{", "}", oneof);
   }
 
   // Fields
@@ -320,6 +332,7 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
     printer->Print("public static final int $constant_name$ = $number$;\n",
                    "constant_name", FieldConstantName(descriptor_->field(i)),
                    "number", absl::StrCat(descriptor_->field(i)->number()));
+    printer->Annotate("constant_name", descriptor_->field(i));
     field_generators_.get(descriptor_->field(i)).GenerateMembers(printer);
     printer->Print("\n");
   }

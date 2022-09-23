@@ -14,7 +14,6 @@ cc_library(
     srcs = [
         "bytestream.cc",
         "common.cc",
-        "stringprintf.cc",
         "structurally_valid.cc",
         "strutil.cc",
     ],
@@ -28,7 +27,6 @@ cc_library(
         "port.h",
         "status_macros.h",
         "stl_util.h",
-        "stringprintf.h",
         "strutil.h",
     ],
     copts = COPTS,
@@ -59,7 +57,6 @@ cc_library(
         "port.h",
         "status_macros.h",
         "stl_util.h",
-        "stringprintf.h",
         "strutil.h",
     ],
     deps = [
@@ -76,7 +73,6 @@ cc_test(
     srcs = [
         "bytestream_unittest.cc",
         "common_unittest.cc",
-        "stringprintf_unittest.cc",
         "structurally_valid_unittest.cc",
         "strutil_unittest.cc",
     ],

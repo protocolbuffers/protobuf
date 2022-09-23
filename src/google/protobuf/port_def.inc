@@ -118,6 +118,15 @@
 #define PROTOBUF_has_builtin_DEFINED_
 #endif
 
+#ifdef ADDRESS_SANITIZER
+#include <sanitizer/asan_interface.h>
+#define PROTOBUF_POISON_MEMORY_REGION(p, n) ASAN_POISON_MEMORY_REGION(p, n)
+#define PROTOBUF_UNPOISON_MEMORY_REGION(p, n) ASAN_UNPOISON_MEMORY_REGION(p, n)
+#else  // ADDRESS_SANITIZER
+#define PROTOBUF_POISON_MEMORY_REGION(p, n)
+#define PROTOBUF_UNPOISON_MEMORY_REGION(p, n)
+#endif  // ADDRESS_SANITIZER
+
 // Portable PROTOBUF_BUILTIN_BSWAPxx definitions
 // Code must check for availability, e.g.: `defined(PROTOBUF_BUILTIN_BSWAP32)`
 #ifdef PROTOBUF_BUILTIN_BSWAP16

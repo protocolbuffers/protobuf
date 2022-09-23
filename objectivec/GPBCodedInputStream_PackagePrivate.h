@@ -65,8 +65,7 @@ typedef struct GPBCodedInputStreamState {
 
 // Reads a group field value from the stream and merges it into the given
 // UnknownFieldSet.
-- (void)readUnknownGroup:(int32_t)fieldNumber
-                 message:(GPBUnknownFieldSet *)message;
+- (void)readUnknownGroup:(int32_t)fieldNumber message:(GPBUnknownFieldSet *)message;
 
 // Reads a map entry.
 - (void)readMapEntry:(id)mapDictionary
@@ -97,16 +96,13 @@ NSString *GPBCodedInputStreamReadRetainedString(GPBCodedInputStreamState *state)
     __attribute((ns_returns_retained));
 NSData *GPBCodedInputStreamReadRetainedBytes(GPBCodedInputStreamState *state)
     __attribute((ns_returns_retained));
-NSData *GPBCodedInputStreamReadRetainedBytesNoCopy(
-    GPBCodedInputStreamState *state) __attribute((ns_returns_retained));
+NSData *GPBCodedInputStreamReadRetainedBytesNoCopy(GPBCodedInputStreamState *state)
+    __attribute((ns_returns_retained));
 
-size_t GPBCodedInputStreamPushLimit(GPBCodedInputStreamState *state,
-                                    size_t byteLimit);
-void GPBCodedInputStreamPopLimit(GPBCodedInputStreamState *state,
-                                 size_t oldLimit);
+size_t GPBCodedInputStreamPushLimit(GPBCodedInputStreamState *state, size_t byteLimit);
+void GPBCodedInputStreamPopLimit(GPBCodedInputStreamState *state, size_t oldLimit);
 size_t GPBCodedInputStreamBytesUntilLimit(GPBCodedInputStreamState *state);
 BOOL GPBCodedInputStreamIsAtEnd(GPBCodedInputStreamState *state);
-void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
-                                        int32_t value);
+void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state, int32_t value);
 
 CF_EXTERN_C_END

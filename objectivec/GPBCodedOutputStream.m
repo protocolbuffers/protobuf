@@ -67,8 +67,7 @@ static void GPBRefreshBuffer(GPBOutputBufferState *state) {
     [NSException raise:GPBCodedOutputStreamException_OutOfSpace format:@""];
   }
   if (state->position != 0) {
-    NSInteger written =
-        [state->output write:state->bytes maxLength:state->position];
+    NSInteger written = [state->output write:state->bytes maxLength:state->position];
     if (written != (NSInteger)state->position) {
       [NSException raise:GPBCodedOutputStreamException_WriteFailed format:@""];
     }
@@ -118,27 +117,24 @@ static void GPBWriteInt32NoTag(GPBOutputBufferState *state, int32_t value) {
   }
 }
 
-static void GPBWriteUInt32(GPBOutputBufferState *state, int32_t fieldNumber,
-                           uint32_t value) {
+static void GPBWriteUInt32(GPBOutputBufferState *state, int32_t fieldNumber, uint32_t value) {
   GPBWriteTagWithFormat(state, fieldNumber, GPBWireFormatVarint);
   GPBWriteRawVarint32(state, value);
 }
 
-static void GPBWriteTagWithFormat(GPBOutputBufferState *state,
-                                  uint32_t fieldNumber, GPBWireFormat format) {
+static void GPBWriteTagWithFormat(GPBOutputBufferState *state, uint32_t fieldNumber,
+                                  GPBWireFormat format) {
   GPBWriteRawVarint32(state, GPBWireFormatMakeTag(fieldNumber, format));
 }
 
-static void GPBWriteRawLittleEndian32(GPBOutputBufferState *state,
-                                      int32_t value) {
+static void GPBWriteRawLittleEndian32(GPBOutputBufferState *state, int32_t value) {
   GPBWriteRawByte(state, (value)&0xFF);
   GPBWriteRawByte(state, (value >> 8) & 0xFF);
   GPBWriteRawByte(state, (value >> 16) & 0xFF);
   GPBWriteRawByte(state, (value >> 24) & 0xFF);
 }
 
-static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
-                                      int64_t value) {
+static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state, int64_t value) {
   GPBWriteRawByte(state, (int32_t)(value)&0xFF);
   GPBWriteRawByte(state, (int32_t)(value >> 8) & 0xFF);
   GPBWriteRawByte(state, (int32_t)(value >> 16) & 0xFF);
@@ -170,8 +166,7 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
 // This initializer isn't exposed, but it is the designated initializer.
 // Setting OutputStream and NSData is to control the buffering behavior/size
 // of the work, but that is more obvious via the bufferSize: version.
-- (instancetype)initWithOutputStream:(NSOutputStream *)output
-                                data:(NSMutableData *)data {
+- (instancetype)initWithOutputStream:(NSOutputStream *)output data:(NSMutableData *)data {
   if ((self = [super init])) {
     buffer_ = [data retain];
     state_.bytes = [data mutableBytes];
@@ -184,8 +179,7 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
 
 + (instancetype)streamWithOutputStream:(NSOutputStream *)output {
   NSMutableData *data = [NSMutableData dataWithLength:PAGE_SIZE];
-  return [[[self alloc] initWithOutputStream:output
-                                        data:data] autorelease];
+  return [[[self alloc] initWithOutputStream:output data:data] autorelease];
 }
 
 + (instancetype)streamWithData:(NSMutableData *)data {
@@ -277,8 +271,7 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
     return;
   }
 
-  const char *quickString =
-      CFStringGetCStringPtr((CFStringRef)value, kCFStringEncodingUTF8);
+  const char *quickString = CFStringGetCStringPtr((CFStringRef)value, kCFStringEncodingUTF8);
 
   // Fast path: Most strings are short, if the buffer already has space,
   // add to it directly.
@@ -300,9 +293,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
                 remainingRange:NULL];
     }
     if (result) {
-      NSAssert2((usedBufferLength == length),
-                @"Our UTF8 calc was wrong? %tu vs %zd", usedBufferLength,
-                length);
+      NSAssert2((usedBufferLength == length), @"Our UTF8 calc was wrong? %tu vs %zd",
+                usedBufferLength, length);
       state_.position += usedBufferLength;
       return;
     }
@@ -311,9 +303,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   } else {
     // Slow path: just get it as data and write it out.
     NSData *utf8Data = [value dataUsingEncoding:NSUTF8StringEncoding];
-    NSAssert2(([utf8Data length] == length),
-              @"Strings UTF8 length was wrong? %tu vs %zd", [utf8Data length],
-              length);
+    NSAssert2(([utf8Data length] == length), @"Strings UTF8 length was wrong? %tu vs %zd",
+              [utf8Data length], length);
     [self writeRawData:utf8Data];
   }
 }
@@ -333,14 +324,12 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   [self writeGroupNoTag:fieldNumber value:value];
 }
 
-- (void)writeUnknownGroupNoTag:(int32_t)fieldNumber
-                         value:(const GPBUnknownFieldSet *)value {
+- (void)writeUnknownGroupNoTag:(int32_t)fieldNumber value:(const GPBUnknownFieldSet *)value {
   [value writeToCodedOutputStream:self];
   GPBWriteTagWithFormat(&state_, fieldNumber, GPBWireFormatEndGroup);
 }
 
-- (void)writeUnknownGroup:(int32_t)fieldNumber
-                    value:(GPBUnknownFieldSet *)value {
+- (void)writeUnknownGroup:(int32_t)fieldNumber value:(GPBUnknownFieldSet *)value {
   GPBWriteTagWithFormat(&state_, fieldNumber, GPBWireFormatStartGroup);
   [self writeUnknownGroupNoTag:fieldNumber value:value];
 }
@@ -418,6 +407,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   GPBWriteRawVarint64(&state_, GPBEncodeZigZag64(value));
 }
 
+// clang-format off
+
 //%PDDM-DEFINE WRITE_PACKABLE_DEFNS(NAME, ARRAY_TYPE, TYPE, ACCESSOR_NAME)
 //%- (void)write##NAME##Array:(int32_t)fieldNumber
 //%       NAME$S     values:(GPB##ARRAY_TYPE##Array *)values
@@ -452,7 +443,6 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
 //%
 //%PDDM-EXPAND WRITE_PACKABLE_DEFNS(Double, Double, double, )
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeDoubleArray:(int32_t)fieldNumber
                   values:(GPBDoubleArray *)values
@@ -478,10 +468,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND WRITE_PACKABLE_DEFNS(Float, Float, float, )
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeFloatArray:(int32_t)fieldNumber
                  values:(GPBFloatArray *)values
@@ -507,10 +495,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND WRITE_PACKABLE_DEFNS(UInt64, UInt64, uint64_t, )
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeUInt64Array:(int32_t)fieldNumber
                   values:(GPBUInt64Array *)values
@@ -536,10 +522,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND WRITE_PACKABLE_DEFNS(Int64, Int64, int64_t, )
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeInt64Array:(int32_t)fieldNumber
                  values:(GPBInt64Array *)values
@@ -565,10 +549,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND WRITE_PACKABLE_DEFNS(Int32, Int32, int32_t, )
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeInt32Array:(int32_t)fieldNumber
                  values:(GPBInt32Array *)values
@@ -594,10 +576,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND WRITE_PACKABLE_DEFNS(UInt32, UInt32, uint32_t, )
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeUInt32Array:(int32_t)fieldNumber
                   values:(GPBUInt32Array *)values
@@ -623,10 +603,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND WRITE_PACKABLE_DEFNS(Fixed64, UInt64, uint64_t, )
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeFixed64Array:(int32_t)fieldNumber
                    values:(GPBUInt64Array *)values
@@ -652,10 +630,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND WRITE_PACKABLE_DEFNS(Fixed32, UInt32, uint32_t, )
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeFixed32Array:(int32_t)fieldNumber
                    values:(GPBUInt32Array *)values
@@ -681,10 +657,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND WRITE_PACKABLE_DEFNS(SInt32, Int32, int32_t, )
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeSInt32Array:(int32_t)fieldNumber
                   values:(GPBInt32Array *)values
@@ -710,10 +684,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND WRITE_PACKABLE_DEFNS(SInt64, Int64, int64_t, )
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeSInt64Array:(int32_t)fieldNumber
                   values:(GPBInt64Array *)values
@@ -739,10 +711,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND WRITE_PACKABLE_DEFNS(SFixed64, Int64, int64_t, )
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeSFixed64Array:(int32_t)fieldNumber
                     values:(GPBInt64Array *)values
@@ -768,10 +738,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND WRITE_PACKABLE_DEFNS(SFixed32, Int32, int32_t, )
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeSFixed32Array:(int32_t)fieldNumber
                     values:(GPBInt32Array *)values
@@ -797,10 +765,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND WRITE_PACKABLE_DEFNS(Bool, Bool, BOOL, )
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeBoolArray:(int32_t)fieldNumber
                 values:(GPBBoolArray *)values
@@ -826,10 +792,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND WRITE_PACKABLE_DEFNS(Enum, Enum, int32_t, Raw)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeEnumArray:(int32_t)fieldNumber
                 values:(GPBEnumArray *)values
@@ -855,10 +819,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND WRITE_UNPACKABLE_DEFNS(String, NSString)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeStringArray:(int32_t)fieldNumber values:(NSArray *)values {
   for (NSString *value in values) {
@@ -866,10 +828,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND WRITE_UNPACKABLE_DEFNS(Message, GPBMessage)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeMessageArray:(int32_t)fieldNumber values:(NSArray *)values {
   for (GPBMessage *value in values) {
@@ -877,10 +837,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND WRITE_UNPACKABLE_DEFNS(Bytes, NSData)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeBytesArray:(int32_t)fieldNumber values:(NSArray *)values {
   for (NSData *value in values) {
@@ -888,10 +846,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND WRITE_UNPACKABLE_DEFNS(Group, GPBMessage)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeGroupArray:(int32_t)fieldNumber values:(NSArray *)values {
   for (GPBMessage *value in values) {
@@ -899,10 +855,8 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND WRITE_UNPACKABLE_DEFNS(UnknownGroup, GPBUnknownFieldSet)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)writeUnknownGroupArray:(int32_t)fieldNumber values:(NSArray *)values {
   for (GPBUnknownFieldSet *value in values) {
@@ -910,26 +864,22 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   }
 }
 
-// clang-format on
 //%PDDM-EXPAND-END (19 expansions)
 
-- (void)writeMessageSetExtension:(int32_t)fieldNumber
-                           value:(GPBMessage *)value {
-  GPBWriteTagWithFormat(&state_, GPBWireFormatMessageSetItem,
-                        GPBWireFormatStartGroup);
+// clang-format on
+
+- (void)writeMessageSetExtension:(int32_t)fieldNumber value:(GPBMessage *)value {
+  GPBWriteTagWithFormat(&state_, GPBWireFormatMessageSetItem, GPBWireFormatStartGroup);
   GPBWriteUInt32(&state_, GPBWireFormatMessageSetTypeId, fieldNumber);
   [self writeMessage:GPBWireFormatMessageSetMessage value:value];
-  GPBWriteTagWithFormat(&state_, GPBWireFormatMessageSetItem,
-                        GPBWireFormatEndGroup);
+  GPBWriteTagWithFormat(&state_, GPBWireFormatMessageSetItem, GPBWireFormatEndGroup);
 }
 
 - (void)writeRawMessageSetExtension:(int32_t)fieldNumber value:(NSData *)value {
-  GPBWriteTagWithFormat(&state_, GPBWireFormatMessageSetItem,
-                        GPBWireFormatStartGroup);
+  GPBWriteTagWithFormat(&state_, GPBWireFormatMessageSetItem, GPBWireFormatStartGroup);
   GPBWriteUInt32(&state_, GPBWireFormatMessageSetTypeId, fieldNumber);
   [self writeBytes:GPBWireFormatMessageSetMessage value:value];
-  GPBWriteTagWithFormat(&state_, GPBWireFormatMessageSetItem,
-                        GPBWireFormatEndGroup);
+  GPBWriteTagWithFormat(&state_, GPBWireFormatMessageSetItem, GPBWireFormatEndGroup);
 }
 
 - (void)flush {
@@ -946,9 +896,7 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
   [self writeRawPtr:[data bytes] offset:0 length:[data length]];
 }
 
-- (void)writeRawPtr:(const void *)value
-             offset:(size_t)offset
-             length:(size_t)length {
+- (void)writeRawPtr:(const void *)value offset:(size_t)offset length:(size_t)length {
   if (value == nil || length == 0) {
     return;
   }
@@ -963,8 +911,7 @@ static void GPBWriteRawLittleEndian64(GPBOutputBufferState *state,
     // Write extends past current buffer.  Fill the rest of this buffer and
     // flush.
     size_t bytesWritten = bufferBytesLeft;
-    memcpy(state_.bytes + state_.position, ((uint8_t *)value) + offset,
-           bytesWritten);
+    memcpy(state_.bytes + state_.position, ((uint8_t *)value) + offset, bytesWritten);
     offset += bytesWritten;
     length -= bytesWritten;
     state_.position = bufferLength;
@@ -1027,13 +974,9 @@ size_t GPBComputeFloatSizeNoTag(Float32 value) {
   return LITTLE_ENDIAN_32_SIZE;
 }
 
-size_t GPBComputeUInt64SizeNoTag(uint64_t value) {
-  return GPBComputeRawVarint64Size(value);
-}
+size_t GPBComputeUInt64SizeNoTag(uint64_t value) { return GPBComputeRawVarint64Size(value); }
 
-size_t GPBComputeInt64SizeNoTag(int64_t value) {
-  return GPBComputeRawVarint64Size(value);
-}
+size_t GPBComputeInt64SizeNoTag(int64_t value) { return GPBComputeRawVarint64Size(value); }
 
 size_t GPBComputeInt32SizeNoTag(int32_t value) {
   if (value >= 0) {
@@ -1068,13 +1011,9 @@ size_t GPBComputeStringSizeNoTag(NSString *value) {
   return GPBComputeRawVarint32SizeForInteger(length) + length;
 }
 
-size_t GPBComputeGroupSizeNoTag(GPBMessage *value) {
-  return [value serializedSize];
-}
+size_t GPBComputeGroupSizeNoTag(GPBMessage *value) { return [value serializedSize]; }
 
-size_t GPBComputeUnknownGroupSizeNoTag(GPBUnknownFieldSet *value) {
-  return value.serializedSize;
-}
+size_t GPBComputeUnknownGroupSizeNoTag(GPBUnknownFieldSet *value) { return value.serializedSize; }
 
 size_t GPBComputeMessageSizeNoTag(GPBMessage *value) {
   size_t size = [value serializedSize];
@@ -1086,13 +1025,9 @@ size_t GPBComputeBytesSizeNoTag(NSData *value) {
   return GPBComputeRawVarint32SizeForInteger(valueLength) + valueLength;
 }
 
-size_t GPBComputeUInt32SizeNoTag(int32_t value) {
-  return GPBComputeRawVarint32Size(value);
-}
+size_t GPBComputeUInt32SizeNoTag(int32_t value) { return GPBComputeRawVarint32Size(value); }
 
-size_t GPBComputeEnumSizeNoTag(int32_t value) {
-  return GPBComputeInt32SizeNoTag(value);
-}
+size_t GPBComputeEnumSizeNoTag(int32_t value) { return GPBComputeInt32SizeNoTag(value); }
 
 size_t GPBComputeSFixed32SizeNoTag(int32_t value) {
 #pragma unused(value)
@@ -1152,10 +1087,8 @@ size_t GPBComputeGroupSize(int32_t fieldNumber, GPBMessage *value) {
   return GPBComputeTagSize(fieldNumber) * 2 + GPBComputeGroupSizeNoTag(value);
 }
 
-size_t GPBComputeUnknownGroupSize(int32_t fieldNumber,
-                                  GPBUnknownFieldSet *value) {
-  return GPBComputeTagSize(fieldNumber) * 2 +
-         GPBComputeUnknownGroupSizeNoTag(value);
+size_t GPBComputeUnknownGroupSize(int32_t fieldNumber, GPBUnknownFieldSet *value) {
+  return GPBComputeTagSize(fieldNumber) * 2 + GPBComputeUnknownGroupSizeNoTag(value);
 }
 
 size_t GPBComputeMessageSize(int32_t fieldNumber, GPBMessage *value) {
@@ -1187,27 +1120,23 @@ size_t GPBComputeSInt32Size(int32_t fieldNumber, int32_t value) {
 }
 
 size_t GPBComputeSInt64Size(int32_t fieldNumber, int64_t value) {
-  return GPBComputeTagSize(fieldNumber) +
-         GPBComputeRawVarint64Size(GPBEncodeZigZag64(value));
+  return GPBComputeTagSize(fieldNumber) + GPBComputeRawVarint64Size(GPBEncodeZigZag64(value));
 }
 
-size_t GPBComputeMessageSetExtensionSize(int32_t fieldNumber,
-                                         GPBMessage *value) {
+size_t GPBComputeMessageSetExtensionSize(int32_t fieldNumber, GPBMessage *value) {
   return GPBComputeTagSize(GPBWireFormatMessageSetItem) * 2 +
          GPBComputeUInt32Size(GPBWireFormatMessageSetTypeId, fieldNumber) +
          GPBComputeMessageSize(GPBWireFormatMessageSetMessage, value);
 }
 
-size_t GPBComputeRawMessageSetExtensionSize(int32_t fieldNumber,
-                                            NSData *value) {
+size_t GPBComputeRawMessageSetExtensionSize(int32_t fieldNumber, NSData *value) {
   return GPBComputeTagSize(GPBWireFormatMessageSetItem) * 2 +
          GPBComputeUInt32Size(GPBWireFormatMessageSetTypeId, fieldNumber) +
          GPBComputeBytesSize(GPBWireFormatMessageSetMessage, value);
 }
 
 size_t GPBComputeTagSize(int32_t fieldNumber) {
-  return GPBComputeRawVarint32Size(
-      GPBWireFormatMakeTag(fieldNumber, GPBWireFormatVarint));
+  return GPBComputeRawVarint32Size(GPBWireFormatMakeTag(fieldNumber, GPBWireFormatVarint));
 }
 
 size_t GPBComputeWireFormatTagSize(int field_number, GPBDataType dataType) {

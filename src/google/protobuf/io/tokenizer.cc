@@ -93,7 +93,7 @@
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/strings/escaping.h"
-#include "google/protobuf/stubs/stringprintf.h"
+#include "absl/strings/str_format.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/stubs/stl_util.h"
@@ -708,7 +708,7 @@ bool Tokenizer::Next() {
         if (current_char_ & 0x80) {
           error_collector_->AddError(
               line_, column_,
-              StringPrintf("Interpreting non ascii codepoint %d.",
+              absl::StrFormat("Interpreting non ascii codepoint %d.",
                               static_cast<unsigned char>(current_char_)));
         }
         NextChar();
@@ -1052,7 +1052,7 @@ static void AppendUTF8(uint32_t code_point, std::string* output) {
     // Unicode code points end at 0x10FFFF, so this is out-of-range.
     // ConsumeString permits hex values up to 0x1FFFFF, and FetchUnicodePoint
     // doesn't perform a range check.
-    StringAppendF(output, "\\U%08x", code_point);
+    absl::StrAppendFormat(output, "\\U%08x", code_point);
     return;
   }
   tmp = ghtonl(tmp);
