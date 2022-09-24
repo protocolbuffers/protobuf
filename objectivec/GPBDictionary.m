@@ -51,17 +51,6 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdirect-ivar-access"
 
-// Used to include code only visible to specific versions of the static
-// analyzer. Useful for wrapping code that only exists to silence the analyzer.
-// Determine the values you want to use for BEGIN_APPLE_BUILD_VERSION,
-// END_APPLE_BUILD_VERSION using:
-//   xcrun clang -dM -E -x c /dev/null | grep __apple_build_version__
-// Example usage:
-//  #if GPB_STATIC_ANALYZER_ONLY(5621, 5623) ... #endif
-#define GPB_STATIC_ANALYZER_ONLY(BEGIN_APPLE_BUILD_VERSION, END_APPLE_BUILD_VERSION)       \
-  (defined(__clang_analyzer__) && (__apple_build_version__ >= BEGIN_APPLE_BUILD_VERSION && \
-                                   __apple_build_version__ <= END_APPLE_BUILD_VERSION))
-
 enum {
   kMapKeyFieldNumber = 1,
   kMapValueFieldNumber = 2,
@@ -520,19 +509,6 @@ void GPBDictionaryReadEntry(id mapDictionary, GPBCodedInputStream *stream,
     }
 
     if ((keyDataType == GPBDataTypeString) && GPBDataTypeIsObject(valueDataType)) {
-#if GPB_STATIC_ANALYZER_ONLY(6020053, 7000181)
-      // Limited to Xcode 6.4 - 7.2, are known to fail here. The upper end can
-      // be raised as needed for new Xcodes.
-      //
-      // This is only needed on a "shallow" analyze; on a "deep" analyze, the
-      // existing code path gets this correct. In shallow, the analyzer decides
-      // GPBDataTypeIsObject(valueDataType) is both false and true on a single
-      // path through this function, allowing nil to be used for the
-      // setObject:forKey:.
-      if (value.valueString == nil) {
-        value.valueString = [@"" retain];
-      }
-#endif
       // mapDictionary is an NSMutableDictionary
       [(NSMutableDictionary *)mapDictionary setObject:value.valueString forKey:key.valueString];
     } else {
