@@ -314,20 +314,18 @@ gen_file_lists(
         "//src/google/protobuf:descriptor_proto": "descriptor_proto",
         "//src/google/protobuf/compiler:plugin_proto": "plugin_proto",
         # Test libraries:
+        ":common_test": "common_test",
         ":lite_test_util": "lite_test_util",
         ":test_util": "test_util",
         # Tests and test-only protos:
         "//src/google/protobuf:full_test_srcs": "protobuf_test",
-        "//src/google/protobuf:test_protos": "protobuf_test_protos",
+        "//src/google/protobuf:test_proto_srcs": "protobuf_test_protos",
         "//src/google/protobuf:lite_test_srcs": "protobuf_lite_test",
-        "//src/google/protobuf:lite_test_protos": "protobuf_lite_test_protos",
+        "//src/google/protobuf:lite_test_proto_srcs": "protobuf_lite_test_protos",
         "//src/google/protobuf/compiler:test_srcs": "compiler_test",
-        ":compiler_annotation_test_util": "annotation_test_util",
-        ":compiler_mock_code_generator": "mock_code_generator",
         "//src/google/protobuf/compiler:test_proto_srcs": "compiler_test_protos",
         "//src/google/protobuf/compiler:test_plugin_srcs": "test_plugin",
         "//src/google/protobuf/io:test_srcs": "io_test",
-        ":testinglib": "testing",
         "//src/google/protobuf/util:test_srcs": "util_test",
         "//src/google/protobuf/util:test_proto_srcs": "util_test_protos",
         "//src/google/protobuf/stubs:test_srcs": "stubs_test",
@@ -365,10 +363,11 @@ cc_dist_library(
     }),
     tags = ["manual"],
     deps = [
-        "//src/google/protobuf:wkt_cc_proto",
-        "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf:arena",
+        "//src/google/protobuf:port_def",
         "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf:wkt_cc_proto",
         "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:gzip_stream",
@@ -384,6 +383,7 @@ cc_dist_library(
         "//src/google/protobuf/util:json_util",
         "//src/google/protobuf/util:time_util",
         "//src/google/protobuf/util:type_resolver_util",
+        "//src/google/protobuf/util/internal:constants",
         "//src/google/protobuf/util/internal:datapiece",
         "//src/google/protobuf/util/internal:default_value",
         "//src/google/protobuf/util/internal:field_mask_utility",
@@ -422,28 +422,25 @@ cc_dist_library(
     name = "test_util",
     testonly = 1,
     tags = ["manual"],
-    deps = ["//src/google/protobuf:test_util"],
+    deps = [
+        "//src/google/protobuf:test_util",
+        "//src/google/protobuf:test_util2",
+        "//src/google/protobuf/compiler:annotation_test_util",
+        "//src/google/protobuf/compiler/cpp:unittest_lib",
+        "//src/google/protobuf/util/internal:expecting_objectwriter",
+        "//src/google/protobuf/util/internal:mock_error_listener",
+        "//src/google/protobuf/util/internal:type_info_test_helper",
+    ],
 )
 
 cc_dist_library(
-    name = "compiler_annotation_test_util",
+    name = "common_test",
     testonly = 1,
     tags = ["manual"],
-    deps = ["//src/google/protobuf/compiler:annotation_test_util"],
-)
-
-cc_dist_library(
-    name = "compiler_mock_code_generator",
-    testonly = 1,
-    tags = ["manual"],
-    deps = ["//src/google/protobuf/compiler:mock_code_generator"],
-)
-
-cc_dist_library(
-    name = "testinglib",
-    testonly = 1,
-    tags = ["manual"],
-    deps = ["//src/google/protobuf/testing"],
+    deps = [
+        "//src/google/protobuf/compiler:mock_code_generator",
+        "//src/google/protobuf/testing",
+    ],
 )
 
 ################################################################################

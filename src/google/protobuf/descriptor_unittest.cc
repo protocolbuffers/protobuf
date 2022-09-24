@@ -5624,7 +5624,8 @@ TEST_F(ValidationErrorTest, Int32OptionValueOutOfPositiveRange) {
       "                                 positive_int_value: 0x80000000 } "
       "}",
 
-      "foo.proto: foo.proto: OPTION_VALUE: Value out of range "
+      "foo.proto: foo.proto: OPTION_VALUE: Value out of range, -2147483648 to "
+      "2147483647, "
       "for int32 option \"foo\".\n");
 }
 
@@ -5641,7 +5642,8 @@ TEST_F(ValidationErrorTest, Int32OptionValueOutOfNegativeRange) {
       "                                 negative_int_value: -0x80000001 } "
       "}",
 
-      "foo.proto: foo.proto: OPTION_VALUE: Value out of range "
+      "foo.proto: foo.proto: OPTION_VALUE: Value out of range, -2147483648 to "
+      "2147483647, "
       "for int32 option \"foo\".\n");
 }
 
@@ -5657,7 +5659,8 @@ TEST_F(ValidationErrorTest, Int32OptionValueIsNotPositiveInt) {
       "                                        is_extension: true } "
       "                                 string_value: \"5\" } }",
 
-      "foo.proto: foo.proto: OPTION_VALUE: Value must be integer "
+      "foo.proto: foo.proto: OPTION_VALUE: Value must be integer, from "
+      "-2147483648 to 2147483647, "
       "for int32 option \"foo\".\n");
 }
 
@@ -5675,7 +5678,8 @@ TEST_F(ValidationErrorTest, Int64OptionValueOutOfRange) {
       "} "
       "}",
 
-      "foo.proto: foo.proto: OPTION_VALUE: Value out of range "
+      "foo.proto: foo.proto: OPTION_VALUE: Value out of range, "
+      "-9223372036854775808 to 9223372036854775807, "
       "for int64 option \"foo\".\n");
 }
 
@@ -5691,7 +5695,8 @@ TEST_F(ValidationErrorTest, Int64OptionValueIsNotPositiveInt) {
       "                                        is_extension: true } "
       "                                 identifier_value: \"5\" } }",
 
-      "foo.proto: foo.proto: OPTION_VALUE: Value must be integer "
+      "foo.proto: foo.proto: OPTION_VALUE: Value must be integer, from "
+      "-9223372036854775808 to 9223372036854775807, "
       "for int64 option \"foo\".\n");
 }
 
@@ -5707,7 +5712,8 @@ TEST_F(ValidationErrorTest, UInt32OptionValueOutOfRange) {
       "                                        is_extension: true } "
       "                                 positive_int_value: 0x100000000 } }",
 
-      "foo.proto: foo.proto: OPTION_VALUE: Value out of range "
+      "foo.proto: foo.proto: OPTION_VALUE: Value out of range, 0 to "
+      "4294967295, "
       "for uint32 option \"foo\".\n");
 }
 
@@ -5723,7 +5729,8 @@ TEST_F(ValidationErrorTest, UInt32OptionValueIsNotPositiveInt) {
       "                                        is_extension: true } "
       "                                 double_value: -5.6 } }",
 
-      "foo.proto: foo.proto: OPTION_VALUE: Value must be non-negative integer "
+      "foo.proto: foo.proto: OPTION_VALUE: Value must be integer, from 0 to "
+      "4294967295, "
       "for uint32 option \"foo\".\n");
 }
 
@@ -5739,7 +5746,8 @@ TEST_F(ValidationErrorTest, UInt64OptionValueIsNotPositiveInt) {
       "                                        is_extension: true } "
       "                                 negative_int_value: -5 } }",
 
-      "foo.proto: foo.proto: OPTION_VALUE: Value must be non-negative integer "
+      "foo.proto: foo.proto: OPTION_VALUE: Value must be integer, from 0 to "
+      "18446744073709551615, "
       "for uint64 option \"foo\".\n");
 }
 
@@ -6478,9 +6486,10 @@ TEST_F(ValidationErrorTest, EnumValuesConflictWithDifferentCasing) {
       "}",
       "foo.proto: bar: NAME: Enum name bar has the same name as BAR "
       "if you ignore case and strip out the enum name prefix (if any). "
-      "This is error-prone and can lead to undefined behavior. "
-      "Please avoid doing this. If you are using allow_alias, please assign "
-      "the same numeric value to both enums.\n");
+      "(If you are using allow_alias, please assign the same numeric "
+      "value to both enums.)"
+      " This is not allowed in proto3.\n"
+  );
 
   // Not an error because both enums are mapped to the same value.
   BuildFile(
@@ -6501,14 +6510,29 @@ TEST_F(ValidationErrorTest, EnumValuesConflictWhenPrefixesStripped) {
       "name: 'foo.proto' "
       "enum_type {"
       "  name: 'FooEnum' "
+      "  value { name: 'BAR' number: 0 }"
+      "  value { name: 'bar' number: 1 }"
+      "}",
+      "foo.proto: bar: NAME: Enum name bar has the same name as BAR "
+      "if you ignore case and strip out the enum name prefix (if any). "
+      "(If you are using allow_alias, please assign the same numeric "
+      "value to both enums.)"
+      " This is not allowed in proto3.\n"
+  );
+  BuildFileWithErrors(
+      "syntax: 'proto3'"
+      "name: 'foo.proto' "
+      "enum_type {"
+      "  name: 'FooEnum' "
       "  value { name: 'FOO_ENUM_BAZ' number: 0 }"
       "  value { name: 'BAZ' number: 1 }"
       "}",
       "foo.proto: BAZ: NAME: Enum name BAZ has the same name as FOO_ENUM_BAZ "
       "if you ignore case and strip out the enum name prefix (if any). "
-      "This is error-prone and can lead to undefined behavior. "
-      "Please avoid doing this. If you are using allow_alias, please assign "
-      "the same numeric value to both enums.\n");
+      "(If you are using allow_alias, please assign the same numeric value "
+      "to both enums.)"
+      " This is not allowed in proto3.\n"
+  );
 
   BuildFileWithErrors(
       "syntax: 'proto3'"
@@ -6520,9 +6544,10 @@ TEST_F(ValidationErrorTest, EnumValuesConflictWhenPrefixesStripped) {
       "}",
       "foo.proto: BAZ: NAME: Enum name BAZ has the same name as FOOENUM_BAZ "
       "if you ignore case and strip out the enum name prefix (if any). "
-      "This is error-prone and can lead to undefined behavior. "
-      "Please avoid doing this. If you are using allow_alias, please assign "
-      "the same numeric value to both enums.\n");
+      "(If you are using allow_alias, please assign the same numeric value "
+      "to both enums.)"
+      " This is not allowed in proto3.\n"
+  );
 
   BuildFileWithErrors(
       "syntax: 'proto3'"
@@ -6534,9 +6559,10 @@ TEST_F(ValidationErrorTest, EnumValuesConflictWhenPrefixesStripped) {
       "}",
       "foo.proto: BAR__BAZ: NAME: Enum name BAR__BAZ has the same name as "
       "FOO_ENUM_BAR_BAZ if you ignore case and strip out the enum name prefix "
-      "(if any). This is error-prone and can lead to undefined behavior. "
-      "Please avoid doing this. If you are using allow_alias, please assign "
-      "the same numeric value to both enums.\n");
+      "(if any). (If you are using allow_alias, please assign the same numeric "
+      "value to both enums.)"
+      " This is not allowed in proto3.\n"
+  );
 
   BuildFileWithErrors(
       "syntax: 'proto3'"
@@ -6548,9 +6574,10 @@ TEST_F(ValidationErrorTest, EnumValuesConflictWhenPrefixesStripped) {
       "}",
       "foo.proto: BAR_BAZ: NAME: Enum name BAR_BAZ has the same name as "
       "FOO_ENUM__BAR_BAZ if you ignore case and strip out the enum name prefix "
-      "(if any). This is error-prone and can lead to undefined behavior. "
-      "Please avoid doing this. If you are using allow_alias, please assign "
-      "the same numeric value to both enums.\n");
+      "(if any). (If you are using allow_alias, please assign the same numeric "
+      "value to both enums.)"
+      " This is not allowed in proto3.\n"
+  );
 
   // This isn't an error because the underscore will cause the PascalCase to
   // differ by case (BarBaz vs. Barbaz).
@@ -6886,6 +6913,7 @@ TEST_F(ValidationErrorTest, ValidateProto3Extension) {
 
 // Test that field names that may conflict in JSON is not allowed by protoc.
 TEST_F(ValidationErrorTest, ValidateProto3JsonName) {
+  // TODO(b/248626372) Re-enable this once they're errors in google3.
   // The comparison is case-insensitive.
   BuildFileWithErrors(
       "name: 'foo.proto' "
@@ -6895,8 +6923,11 @@ TEST_F(ValidationErrorTest, ValidateProto3JsonName) {
       "  field { name:'name' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
       "  field { name:'Name' number:2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
       "}",
-      "foo.proto: Foo: NAME: The JSON camel-case name of field \"Name\" "
-      "conflicts with field \"name\". This is not allowed in proto3.\n");
+      "foo.proto: Foo: NAME: The default JSON name of field \"Name\" "
+      "(\"Name\") "
+      "conflicts with the default JSON name of field \"name\" (\"name\"). This "
+      "is "
+      "not allowed in proto3.\n");
   // Underscores are ignored.
   BuildFileWithErrors(
       "name: 'foo.proto' "
@@ -6906,8 +6937,11 @@ TEST_F(ValidationErrorTest, ValidateProto3JsonName) {
       "  field { name:'ab' number:1 label:LABEL_OPTIONAL type:TYPE_INT32 }"
       "  field { name:'_a__b_' number:2 label:LABEL_OPTIONAL type:TYPE_INT32 }"
       "}",
-      "foo.proto: Foo: NAME: The JSON camel-case name of field \"_a__b_\" "
-      "conflicts with field \"ab\". This is not allowed in proto3.\n");
+      "foo.proto: Foo: NAME: The default JSON name of field \"_a__b_\" "
+      "(\"AB\") "
+      "conflicts with the default JSON name of field \"ab\" (\"ab\"). This is "
+      "not "
+      "allowed in proto3.\n");
 }
 
 

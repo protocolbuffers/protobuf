@@ -392,14 +392,20 @@ filegroup(
     ],
 )
 
-proto_library(
-    name = "lite_test_protos",
+filegroup(
+    name = "lite_test_proto_srcs",
     srcs = [
         "map_lite_unittest.proto",
         "unittest_import_lite.proto",
         "unittest_import_public_lite.proto",
         "unittest_lite.proto",
     ],
+    visibility = ["//:__subpackages__"],
+)
+
+proto_library(
+    name = "lite_test_protos",
+    srcs = [":lite_test_proto_srcs"],
     strip_import_prefix = "/src",
     visibility = ["//:__subpackages__"],
     deps = [

@@ -48,15 +48,18 @@ using google::protobuf::Timestamp;
 namespace {
 
 TEST(TimeUtilTest, TimestampStringFormat) {
-  Timestamp begin, end;
-  EXPECT_TRUE(TimeUtil::FromString("0001-01-01T00:00:00Z", &begin));
-  EXPECT_EQ(TimeUtil::kTimestampMinSeconds, begin.seconds());
-  EXPECT_EQ(0, begin.nanos());
-  EXPECT_TRUE(TimeUtil::FromString("9999-12-31T23:59:59.999999999Z", &end));
-  EXPECT_EQ(TimeUtil::kTimestampMaxSeconds, end.seconds());
-  EXPECT_EQ(999999999, end.nanos());
-  EXPECT_EQ("0001-01-01T00:00:00Z", TimeUtil::ToString(begin));
-  EXPECT_EQ("9999-12-31T23:59:59.999999999Z", TimeUtil::ToString(end));
+  // These these are out of bounds for 32-bit architectures.
+  if (sizeof(time_t) >= sizeof(uint64_t)) {
+    Timestamp begin, end;
+    EXPECT_TRUE(TimeUtil::FromString("0001-01-01T00:00:00Z", &begin));
+    EXPECT_EQ(TimeUtil::kTimestampMinSeconds, begin.seconds());
+    EXPECT_EQ(0, begin.nanos());
+    EXPECT_TRUE(TimeUtil::FromString("9999-12-31T23:59:59.999999999Z", &end));
+    EXPECT_EQ(TimeUtil::kTimestampMaxSeconds, end.seconds());
+    EXPECT_EQ(999999999, end.nanos());
+    EXPECT_EQ("0001-01-01T00:00:00Z", TimeUtil::ToString(begin));
+    EXPECT_EQ("9999-12-31T23:59:59.999999999Z", TimeUtil::ToString(end));
+  }
 
   // Test negative timestamps.
   Timestamp time = TimeUtil::NanosecondsToTimestamp(-1);
@@ -94,9 +97,12 @@ TEST(TimeUtilTest, DurationStringFormat) {
   EXPECT_TRUE(TimeUtil::FromString("0001-01-01T00:00:00Z", &begin));
   EXPECT_TRUE(TimeUtil::FromString("9999-12-31T23:59:59.999999999Z", &end));
 
-  EXPECT_EQ("315537897599.999999999s", TimeUtil::ToString(end - begin));
+  // These these are out of bounds for 32-bit architectures.
+  if (sizeof(time_t) >= sizeof(uint64_t)) {
+    EXPECT_EQ("315537897599.999999999s", TimeUtil::ToString(end - begin));
+    EXPECT_EQ("-315537897599.999999999s", TimeUtil::ToString(begin - end));
+  }
   EXPECT_EQ(999999999, (end - begin).nanos());
-  EXPECT_EQ("-315537897599.999999999s", TimeUtil::ToString(begin - end));
   EXPECT_EQ(-999999999, (begin - end).nanos());
 
   // Generated output should contain 3, 6, or 9 fractional digits.

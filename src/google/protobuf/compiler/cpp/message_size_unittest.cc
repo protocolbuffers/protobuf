@@ -139,9 +139,9 @@ TEST(GeneratedMessageTest, OneStringSize) {
 
 TEST(GeneratedMessageTest, MoreStringSize) {
   struct MockGenerated : public MockMessageBase {  // 16 bytes
-    int has_bits[1];                               // 4 bytes
     int cached_size;                               // 4 bytes
     MockRepeatedPtrField data;                     // 24 bytes
+    // + 4 bytes padding
   };
   GOOGLE_CHECK_MESSAGE_SIZE(MockGenerated, 48);
   EXPECT_EQ(sizeof(protobuf_unittest::MoreString), sizeof(MockGenerated));

@@ -122,7 +122,7 @@ SerialArena::SerialArena(ArenaBlock* b, ThreadSafeArena& parent)
     : ptr_{b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize)},
       limit_{b->Limit()},
       head_{b},
-      space_allocated_{b->size()},
+      space_allocated_{b->size},
       parent_{parent} {
   GOOGLE_DCHECK(!b->IsSentry());
 }
@@ -135,7 +135,7 @@ SerialArena::SerialArena(ThreadSafeArena& parent)
 // provided or newly allocated to store AllocationPolicy.
 SerialArena::SerialArena(FirstSerialArena, ArenaBlock* b,
                          ThreadSafeArena& parent)
-    : head_{b}, space_allocated_{b->size()}, parent_{parent} {
+    : head_{b}, space_allocated_{b->size}, parent_{parent} {
   if (b->IsSentry()) return;
 
   set_ptr(b->Pointer(kBlockHeaderSize));
@@ -145,9 +145,9 @@ SerialArena::SerialArena(FirstSerialArena, ArenaBlock* b,
 void SerialArena::Init(ArenaBlock* b, size_t offset) {
   set_ptr(b->Pointer(offset));
   limit_ = b->Limit();
-  set_head(b);
+  head_.relaxed_set(b);
   space_used_.relaxed_set(0);
-  space_allocated_.relaxed_set(b->size());
+  space_allocated_.relaxed_set(b->size);
   cached_block_length_ = 0;
   cached_blocks_ = nullptr;
 }
@@ -164,11 +164,11 @@ SerialArena* SerialArena::New(Memory mem, ThreadSafeArena& parent) {
 template <typename Deallocator>
 SerialArena::Memory SerialArena::Free(Deallocator deallocator) {
   ArenaBlock* b = head();
-  Memory mem = {b, b->size()};
+  Memory mem = {b, b->size};
   while (b->next) {
     b = b->next;  // We must first advance before deleting this block
     deallocator(mem);
-    mem = {b, b->size()};
+    mem = {b, b->size};
   }
   return mem;
 }
@@ -204,7 +204,7 @@ void SerialArena::AllocateNewBlock(size_t n) {
 
     // Record how much used in this block.
     used = static_cast<size_t>(ptr() - old_head->Pointer(kBlockHeaderSize));
-    wasted = old_head->size() - used;
+    wasted = old_head->size - used;
     space_used_.relaxed_set(space_used_.relaxed_get() + used);
   }
 
@@ -213,7 +213,7 @@ void SerialArena::AllocateNewBlock(size_t n) {
   // but with a CPU regression. The regression might have been an artifact of
   // the microbenchmark.
 
-  auto mem = AllocateMemory(parent_.AllocPolicy(), old_head->size(), n);
+  auto mem = AllocateMemory(parent_.AllocPolicy(), old_head->size, n);
   // We don't want to emit an expensive RMW instruction that requires
   // exclusive access to a cacheline. Hence we write it in terms of a
   // regular add.
@@ -222,9 +222,10 @@ void SerialArena::AllocateNewBlock(size_t n) {
                                             /*used=*/used,
                                             /*allocated=*/mem.size, wasted);
   auto* new_head = new (mem.ptr) ArenaBlock{old_head, mem.size};
-  set_head(new_head);
   set_ptr(new_head->Pointer(kBlockHeaderSize));
   limit_ = new_head->Limit();
+  // Previous writes must take effect before writing new head.
+  head_.atomic_set(new_head);
 
 #ifdef ADDRESS_SANITIZER
   ASAN_POISON_MEMORY_REGION(ptr(), limit_ - ptr());
@@ -239,10 +240,10 @@ uint64_t SerialArena::SpaceUsed() const {
   // usage of the *current* block.
   // TODO(mkruskal) Consider eliminating this race in exchange for a possible
   // performance hit on ARM (see cl/455186837).
-  const ArenaBlock* h = head();
+  const ArenaBlock* h = head_.atomic_get();
   if (h->IsSentry()) return 0;
 
-  const uint64_t current_block_size = h->size();
+  const uint64_t current_block_size = h->size;
   uint64_t current_space_used = std::min(
       static_cast<uint64_t>(
           ptr() - const_cast<ArenaBlock*>(h)->Pointer(kBlockHeaderSize)),
@@ -400,7 +401,7 @@ class ThreadSafeArena::SerialArenaChunk {
     }
 
     id(idx).relaxed_set(me);
-    arena(idx).relaxed_set(serial);
+    arena(idx).atomic_set(serial);
     return true;
   }
 
@@ -774,7 +775,7 @@ template <typename Functor>
 void ThreadSafeArena::PerConstSerialArenaInChunk(Functor fn) const {
   WalkConstSerialArenaChunk([&fn](const SerialArenaChunk* chunk) {
     for (const auto& each : chunk->arenas()) {
-      const SerialArena* serial = each.relaxed_get();
+      const SerialArena* serial = each.atomic_get();
       // It is possible that newly added SerialArena is not updated although
       // size was. This is acceptable for SpaceAllocated and SpaceUsed.
       if (serial == nullptr) continue;

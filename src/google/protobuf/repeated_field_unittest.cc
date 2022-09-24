@@ -429,14 +429,14 @@ TEST(RepeatedField, ReserveNothing) {
 
 TEST(RepeatedField, ReserveLowerClamp) {
   int clamped_value = internal::CalculateReserveSize<bool, sizeof(void*)>(0, 1);
-  EXPECT_GE(clamped_value, 8 / sizeof(bool));
+  EXPECT_GE(clamped_value, sizeof(void*) / sizeof(bool));
   EXPECT_EQ((internal::RepeatedFieldLowerClampLimit<bool, sizeof(void*)>()),
             clamped_value);
   // EXPECT_EQ(clamped_value, (internal::CalculateReserveSize<bool,
   // sizeof(void*)>( clamped_value, 2)));
 
   clamped_value = internal::CalculateReserveSize<int, sizeof(void*)>(0, 1);
-  EXPECT_GE(clamped_value, 8 / sizeof(int));
+  EXPECT_GE(clamped_value, sizeof(void*) / sizeof(int));
   EXPECT_EQ((internal::RepeatedFieldLowerClampLimit<int, sizeof(void*)>()),
             clamped_value);
   // EXPECT_EQ(clamped_value, (internal::CalculateReserveSize<int,

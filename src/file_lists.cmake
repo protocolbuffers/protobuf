@@ -156,6 +156,8 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/metadata_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/port_def.inc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/port_undef.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_internal.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_ops.h
@@ -177,6 +179,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/delimited_message_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/field_comparator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/field_mask_util.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/internal/constants.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/internal/datapiece.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/internal/default_value_objectwriter.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/internal/error_listener.h
@@ -520,6 +523,20 @@ set(plugin_proto_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin_proto-descriptor-set.proto.bin
 )
 
+# //pkg:common_test
+set(common_test_srcs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/googletest.cc
+)
+
+# //pkg:common_test
+set(common_test_hdrs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/googletest.h
+)
+
 # //pkg:lite_test_util
 set(lite_test_util_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_test_util.cc
@@ -538,12 +555,17 @@ set(lite_test_util_hdrs
 
 # //pkg:test_util
 set(test_util_srcs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_tester.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/internal/type_info_test_helper.cc
 )
 
 # //pkg:test_util
 set(test_util_hdrs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/unittest.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/unittest.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test_util.inc
@@ -551,7 +573,11 @@ set(test_util_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_tester.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.inc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util2.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util_lite.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/internal/expecting_objectwriter.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/internal/mock_error_listener.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/util/internal/type_info_test_helper.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_unittest.inc
 )
 
@@ -586,8 +612,8 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_unittest.cc
 )
 
-# //src/google/protobuf:test_protos
-set(protobuf_test_protos_proto_srcs
+# //src/google/protobuf:test_proto_srcs
+set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_proto2_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_unittest.proto
@@ -619,110 +645,18 @@ set(protobuf_test_protos_proto_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_well_known_types.proto
 )
 
-# //src/google/protobuf:test_protos
-set(protobuf_test_protos_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/any_test.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/map_proto2_unittest.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/map_unittest.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_arena.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_custom_options.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_drop_unknown_fields.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_embed_optimize_for.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_empty.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_enormous_descriptor.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import_public.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lazy_dependencies.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lazy_dependencies_custom_option.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lazy_dependencies_enum.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lite_imports_nonlite.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_mset.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_mset_wire_format.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_no_field_presence.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_no_generic_services.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_optimize_for.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_preserve_unknown_enum.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_preserve_unknown_enum2.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_arena.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_arena_lite.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_lite.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_optional.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_well_known_types.proto.pb.cc
-)
-
-# //src/google/protobuf:test_protos
-set(protobuf_test_protos_hdrs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/any_test.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/map_proto2_unittest.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/map_unittest.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_arena.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_custom_options.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_drop_unknown_fields.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_embed_optimize_for.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_empty.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_enormous_descriptor.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import_public.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lazy_dependencies.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lazy_dependencies_custom_option.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lazy_dependencies_enum.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lite_imports_nonlite.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_mset.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_mset_wire_format.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_no_field_presence.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_no_generic_services.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_optimize_for.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_preserve_unknown_enum.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_preserve_unknown_enum2.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_arena.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_arena_lite.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_lite.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_proto3_optional.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_well_known_types.proto.pb.h
-)
-
-# //src/google/protobuf:test_protos
-set(protobuf_test_protos_files
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos-descriptor-set.proto.bin
-)
-
 # //src/google/protobuf:lite_test_srcs
 set(protobuf_lite_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/lite_arena_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/lite_unittest.cc
 )
 
-# //src/google/protobuf:lite_test_protos
-set(protobuf_lite_test_protos_proto_srcs
+# //src/google/protobuf:lite_test_proto_srcs
+set(protobuf_lite_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_lite_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import_lite.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import_public_lite.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lite.proto
-)
-
-# //src/google/protobuf:lite_test_protos
-set(protobuf_lite_test_protos_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/map_lite_unittest.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import_lite.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import_public_lite.proto.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lite.proto.pb.cc
-)
-
-# //src/google/protobuf:lite_test_protos
-set(protobuf_lite_test_protos_hdrs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/map_lite_unittest.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import_lite.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_import_public_lite.proto.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_lite.proto.pb.h
-)
-
-# //src/google/protobuf:lite_test_protos
-set(protobuf_lite_test_protos_files
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/lite_test_protos-descriptor-set.proto.bin
 )
 
 # //src/google/protobuf/compiler:test_srcs
@@ -746,26 +680,6 @@ set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator_unittest.cc
 )
 
-# //pkg:compiler_annotation_test_util
-set(annotation_test_util_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.cc
-)
-
-# //pkg:compiler_annotation_test_util
-set(annotation_test_util_hdrs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.h
-)
-
-# //pkg:compiler_mock_code_generator
-set(mock_code_generator_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.cc
-)
-
-# //pkg:compiler_mock_code_generator
-set(mock_code_generator_hdrs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.h
-)
-
 # //src/google/protobuf/compiler:test_proto_srcs
 set(compiler_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/test_bad_identifiers.proto
@@ -786,18 +700,6 @@ set(io_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/tokenizer_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_sink_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream_unittest.cc
-)
-
-# //pkg:testinglib
-set(testing_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/googletest.cc
-)
-
-# //pkg:testinglib
-set(testing_hdrs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/googletest.h
 )
 
 # //src/google/protobuf/util:test_srcs

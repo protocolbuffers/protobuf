@@ -132,13 +132,6 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   (*variables)["set_mutable_bit_builder"] = GenerateSetBit(builderBitIndex);
   (*variables)["clear_mutable_bit_builder"] = GenerateClearBit(builderBitIndex);
 
-  // For repeated fields, one bit is used for whether the array is immutable
-  // in the parsing constructor.
-  (*variables)["get_mutable_bit_parser"] =
-      GenerateGetBitMutableLocal(builderBitIndex);
-  (*variables)["set_mutable_bit_parser"] =
-      GenerateSetBitMutableLocal(builderBitIndex);
-
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
   (*variables)["set_has_field_bit_to_local"] =
@@ -383,7 +376,7 @@ void ImmutableStringFieldGenerator::GenerateKotlinDslMembers(
     io::Printer* printer) const {
   WriteFieldDocComment(printer, descriptor_, /* kdoc */ true);
   printer->Print(variables_,
-                 "$kt_deprecation$var $kt_name$: kotlin.String\n"
+                 "$kt_deprecation$public var $kt_name$: kotlin.String\n"
                  "  @JvmName(\"${$get$kt_capitalized_name$$}$\")\n"
                  "  get() = $kt_dsl_builder$.${$get$capitalized_name$$}$()\n"
                  "  @JvmName(\"${$set$kt_capitalized_name$$}$\")\n"
@@ -394,7 +387,7 @@ void ImmutableStringFieldGenerator::GenerateKotlinDslMembers(
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ false, /* kdoc */ true);
   printer->Print(variables_,
-                 "fun ${$clear$kt_capitalized_name$$}$() {\n"
+                 "public fun ${$clear$kt_capitalized_name$$}$() {\n"
                  "  $kt_dsl_builder$.${$clear$capitalized_name$$}$()\n"
                  "}\n");
 
@@ -403,7 +396,7 @@ void ImmutableStringFieldGenerator::GenerateKotlinDslMembers(
                                  /* builder */ false, /* kdoc */ true);
     printer->Print(
         variables_,
-        "fun ${$has$kt_capitalized_name$$}$(): kotlin.Boolean {\n"
+        "public fun ${$has$kt_capitalized_name$$}$(): kotlin.Boolean {\n"
         "  return $kt_dsl_builder$.${$has$capitalized_name$$}$()\n"
         "}\n");
   }
@@ -457,24 +450,17 @@ void ImmutableStringFieldGenerator::GenerateBuildingCode(
   printer->Print(variables_, "result.$name$_ = $name$_;\n");
 }
 
-void ImmutableStringFieldGenerator::GenerateParsingCode(
+void ImmutableStringFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
-                   "java.lang.String s = input.readStringRequireUtf8();\n"
-                   "$set_has_field_bit_message$\n"
-                   "$name$_ = s;\n");
+                   "$name$_ = input.readStringRequireUtf8();\n"
+                   "$set_has_field_bit_builder$\n");
   } else {
     printer->Print(variables_,
-                   "com.google.protobuf.ByteString bs = input.readBytes();\n"
-                   "$set_has_field_bit_message$\n"
-                   "$name$_ = bs;\n");
+                   "$name$_ = input.readBytes();\n"
+                   "$set_has_field_bit_builder$\n");
   }
-}
-
-void ImmutableStringFieldGenerator::GenerateParsingDoneCode(
-    io::Printer* printer) const {
-  // noop for strings.
 }
 
 void ImmutableStringFieldGenerator::GenerateSerializationCode(
@@ -700,6 +686,11 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
                  "}\n");
 }
 
+void ImmutableStringOneofFieldGenerator::GenerateBuilderClearCode(
+    io::Printer* printer) const {
+  // String fields in oneofs are correctly cleared by clearing the oneof
+}
+
 void ImmutableStringOneofFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   // Allow a slight breach of abstraction here in order to avoid forcing
@@ -718,7 +709,7 @@ void ImmutableStringOneofFieldGenerator::GenerateBuildingCode(
                  "}\n");
 }
 
-void ImmutableStringOneofFieldGenerator::GenerateParsingCode(
+void ImmutableStringOneofFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
@@ -968,14 +959,14 @@ void RepeatedImmutableStringFieldGenerator::GenerateKotlinDslMembers(
       " */\n"
       "@kotlin.OptIn"
       "(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)\n"
-      "class ${$$kt_capitalized_name$Proxy$}$ private constructor()"
+      "public class ${$$kt_capitalized_name$Proxy$}$ private constructor()"
       " : com.google.protobuf.kotlin.DslProxy()\n");
 
   // property for List<String>
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER,
                                /* builder */ false, /* kdoc */ true);
   printer->Print(variables_,
-                 "$kt_deprecation$ val $kt_name$: "
+                 "$kt_deprecation$public val $kt_name$: "
                  "com.google.protobuf.kotlin.DslList"
                  "<kotlin.String, ${$$kt_capitalized_name$Proxy$}$>\n"
                  "  @kotlin.jvm.JvmSynthetic\n"
@@ -989,7 +980,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateKotlinDslMembers(
   printer->Print(variables_,
                  "@kotlin.jvm.JvmSynthetic\n"
                  "@kotlin.jvm.JvmName(\"add$kt_capitalized_name$\")\n"
-                 "fun com.google.protobuf.kotlin.DslList"
+                 "public fun com.google.protobuf.kotlin.DslList"
                  "<kotlin.String, ${$$kt_capitalized_name$Proxy$}$>."
                  "add(value: kotlin.String) {\n"
                  "  $kt_dsl_builder$.${$add$capitalized_name$$}$(value)\n"
@@ -1002,7 +993,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateKotlinDslMembers(
                  "@kotlin.jvm.JvmSynthetic\n"
                  "@kotlin.jvm.JvmName(\"plusAssign$kt_capitalized_name$\")\n"
                  "@Suppress(\"NOTHING_TO_INLINE\")\n"
-                 "inline operator fun com.google.protobuf.kotlin.DslList"
+                 "public inline operator fun com.google.protobuf.kotlin.DslList"
                  "<kotlin.String, ${$$kt_capitalized_name$Proxy$}$>."
                  "plusAssign(value: kotlin.String) {\n"
                  "  add(value)\n"
@@ -1015,7 +1006,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateKotlinDslMembers(
       variables_,
       "@kotlin.jvm.JvmSynthetic\n"
       "@kotlin.jvm.JvmName(\"addAll$kt_capitalized_name$\")\n"
-      "fun com.google.protobuf.kotlin.DslList"
+      "public fun com.google.protobuf.kotlin.DslList"
       "<kotlin.String, ${$$kt_capitalized_name$Proxy$}$>."
       "addAll(values: kotlin.collections.Iterable<kotlin.String>) {\n"
       "  $kt_dsl_builder$.${$addAll$capitalized_name$$}$(values)\n"
@@ -1029,7 +1020,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateKotlinDslMembers(
       "@kotlin.jvm.JvmSynthetic\n"
       "@kotlin.jvm.JvmName(\"plusAssignAll$kt_capitalized_name$\")\n"
       "@Suppress(\"NOTHING_TO_INLINE\")\n"
-      "inline operator fun com.google.protobuf.kotlin.DslList"
+      "public inline operator fun com.google.protobuf.kotlin.DslList"
       "<kotlin.String, ${$$kt_capitalized_name$Proxy$}$>."
       "plusAssign(values: kotlin.collections.Iterable<kotlin.String>) {\n"
       "  addAll(values)\n"
@@ -1042,7 +1033,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateKotlinDslMembers(
       variables_,
       "@kotlin.jvm.JvmSynthetic\n"
       "@kotlin.jvm.JvmName(\"set$kt_capitalized_name$\")\n"
-      "operator fun com.google.protobuf.kotlin.DslList"
+      "public operator fun com.google.protobuf.kotlin.DslList"
       "<kotlin.String, ${$$kt_capitalized_name$Proxy$}$>."
       "set(index: kotlin.Int, value: kotlin.String) {\n"
       "  $kt_dsl_builder$.${$set$capitalized_name$$}$(index, value)\n"
@@ -1053,7 +1044,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateKotlinDslMembers(
   printer->Print(variables_,
                  "@kotlin.jvm.JvmSynthetic\n"
                  "@kotlin.jvm.JvmName(\"clear$kt_capitalized_name$\")\n"
-                 "fun com.google.protobuf.kotlin.DslList"
+                 "public fun com.google.protobuf.kotlin.DslList"
                  "<kotlin.String, ${$$kt_capitalized_name$Proxy$}$>."
                  "clear() {\n"
                  "  $kt_dsl_builder$.${$clear$capitalized_name$$}$()\n"
@@ -1110,33 +1101,19 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuildingCode(
                  "result.$name$_ = $name$_;\n");
 }
 
-void RepeatedImmutableStringFieldGenerator::GenerateParsingCode(
+void RepeatedImmutableStringFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
-                   "java.lang.String s = input.readStringRequireUtf8();\n");
+                   "java.lang.String s = input.readStringRequireUtf8();\n"
+                   "ensure$capitalized_name$IsMutable();\n"
+                   "$name$_.add(s);\n");
   } else {
     printer->Print(variables_,
-                   "com.google.protobuf.ByteString bs = input.readBytes();\n");
+                   "com.google.protobuf.ByteString bs = input.readBytes();\n"
+                   "ensure$capitalized_name$IsMutable();\n"
+                   "$name$_.add(bs);\n");
   }
-  printer->Print(variables_,
-                 "if (!$get_mutable_bit_parser$) {\n"
-                 "  $name$_ = new com.google.protobuf.LazyStringArrayList();\n"
-                 "  $set_mutable_bit_parser$;\n"
-                 "}\n");
-  if (CheckUtf8(descriptor_)) {
-    printer->Print(variables_, "$name$_.add(s);\n");
-  } else {
-    printer->Print(variables_, "$name$_.add(bs);\n");
-  }
-}
-
-void RepeatedImmutableStringFieldGenerator::GenerateParsingDoneCode(
-    io::Printer* printer) const {
-  printer->Print(variables_,
-                 "if ($get_mutable_bit_parser$) {\n"
-                 "  $name$_ = $name$_.getUnmodifiableView();\n"
-                 "}\n");
 }
 
 void RepeatedImmutableStringFieldGenerator::GenerateSerializationCode(
