@@ -138,7 +138,7 @@ void ServiceGenerator::GenerateImplementation(io::Printer* printer) {
   auto vars = printer->WithVars(&vars_);
   printer->Emit(
       {
-          {"index", absl::StrCat(index_in_metadata_)},
+          {"index", index_in_metadata_},
           {"no_impl_methods", [&] { GenerateNotImplementedMethods(printer); }},
           {"call_method", [&] { GenerateCallMethod(printer); }},
           {"get_request", [&] { GenerateGetPrototype(kRequest, printer); }},

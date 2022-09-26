@@ -58,7 +58,7 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/stubs/stringprintf.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
@@ -1345,7 +1345,7 @@ void Generator::FixOptionsForEnum(const EnumDescriptor& enum_descriptor) const {
         OptionsValue(value_descriptor.options().SerializeAsString());
     if (value_options != "None") {
       PrintDescriptorOptionsFixingCode(
-          StringPrintf("%s.values_by_name[\"%s\"]", descriptor_name.c_str(),
+          absl::StrFormat("%s.values_by_name[\"%s\"]", descriptor_name.c_str(),
                           value_descriptor.name().c_str()),
           value_options, printer_);
     }

@@ -171,13 +171,13 @@ extern NSString *const GPBCodedOutputStreamException_WriteFailed;
  * @param offset The offset into the blob to start writing out.
  * @param length The number of bytes from the blob to write out.
  **/
-- (void)writeRawPtr:(const void *)data
-             offset:(size_t)offset
-             length:(size_t)length;
+- (void)writeRawPtr:(const void *)data offset:(size_t)offset length:(size_t)length;
+
+// Disable clang-format for the macros.
+// clang-format off
 
 //%PDDM-EXPAND _WRITE_DECLS()
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 /**
  * Write a double for the given field number.
@@ -631,8 +631,9 @@ extern NSString *const GPBCodedOutputStreamException_WriteFailed;
 - (void)writeUnknownGroupNoTag:(int32_t)fieldNumber
                          value:(GPBUnknownFieldSet *)value;
 
-// clang-format on
 //%PDDM-EXPAND-END _WRITE_DECLS()
+
+// clang-format on
 
 /**
 Write a MessageSet extension field to the stream. For historical reasons,
@@ -655,6 +656,9 @@ reasons, the wire format differs from normal fields.
 @end
 
 NS_ASSUME_NONNULL_END
+
+// Disable clang-format for the macros.
+// clang-format off
 
 // Write methods for types that can be in packed arrays.
 //%PDDM-DEFINE _WRITE_PACKABLE_DECLS(NAME, ARRAY_TYPE, TYPE)
@@ -755,3 +759,5 @@ NS_ASSUME_NONNULL_END
 //%_WRITE_UNPACKABLE_DECLS(Bytes, NSData)
 //%_WRITE_GROUP_DECLS(Group, GPBMessage)
 //%_WRITE_GROUP_DECLS(UnknownGroup, GPBUnknownFieldSet)
+
+// clang-format on

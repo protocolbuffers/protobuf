@@ -36,18 +36,15 @@
 
 #import "GPBUtilities_PackagePrivate.h"
 
-NSString *const GPBWellKnownTypesErrorDomain =
-    GPBNSStringifySymbol(GPBWellKnownTypesErrorDomain);
+NSString *const GPBWellKnownTypesErrorDomain = GPBNSStringifySymbol(GPBWellKnownTypesErrorDomain);
 
 static NSString *kTypePrefixGoogleApisCom = @"type.googleapis.com/";
 
-static NSTimeInterval TimeIntervalFromSecondsAndNanos(int64_t seconds,
-                                                      int32_t nanos) {
+static NSTimeInterval TimeIntervalFromSecondsAndNanos(int64_t seconds, int32_t nanos) {
   return seconds + (NSTimeInterval)nanos / 1e9;
 }
 
-static int32_t SecondsAndNanosFromTimeInterval(NSTimeInterval time,
-                                               int64_t *outSeconds,
+static int32_t SecondsAndNanosFromTimeInterval(NSTimeInterval time, int64_t *outSeconds,
                                                BOOL nanosMustBePositive) {
   NSTimeInterval seconds;
   NSTimeInterval nanos = modf(time, &seconds);
@@ -79,8 +76,7 @@ static NSString *BuildTypeURL(NSString *typeURLPrefix, NSString *fullName) {
 
 static NSString *ParseTypeFromURL(NSString *typeURLString) {
   NSRange range = [typeURLString rangeOfString:@"/" options:NSBackwardsSearch];
-  if ((range.location == NSNotFound) ||
-      (NSMaxRange(range) == typeURLString.length)) {
+  if ((range.location == NSNotFound) || (NSMaxRange(range) == typeURLString.length)) {
     return nil;
   }
   NSString *result = [typeURLString substringFromIndex:range.location + 1];
@@ -98,8 +94,7 @@ static NSString *ParseTypeFromURL(NSString *typeURLString) {
 - (instancetype)initWithTimeIntervalSince1970:(NSTimeInterval)timeIntervalSince1970 {
   if ((self = [super init])) {
     int64_t seconds;
-    int32_t nanos = SecondsAndNanosFromTimeInterval(
-        timeIntervalSince1970, &seconds, YES);
+    int32_t nanos = SecondsAndNanosFromTimeInterval(timeIntervalSince1970, &seconds, YES);
     self.seconds = seconds;
     self.nanos = nanos;
   }
@@ -120,8 +115,7 @@ static NSString *ParseTypeFromURL(NSString *typeURLString) {
 
 - (void)setTimeIntervalSince1970:(NSTimeInterval)timeIntervalSince1970 {
   int64_t seconds;
-  int32_t nanos =
-      SecondsAndNanosFromTimeInterval(timeIntervalSince1970, &seconds, YES);
+  int32_t nanos = SecondsAndNanosFromTimeInterval(timeIntervalSince1970, &seconds, YES);
   self.seconds = seconds;
   self.nanos = nanos;
 }
@@ -135,8 +129,7 @@ static NSString *ParseTypeFromURL(NSString *typeURLString) {
 - (instancetype)initWithTimeInterval:(NSTimeInterval)timeInterval {
   if ((self = [super init])) {
     int64_t seconds;
-    int32_t nanos = SecondsAndNanosFromTimeInterval(
-        timeInterval, &seconds, NO);
+    int32_t nanos = SecondsAndNanosFromTimeInterval(timeInterval, &seconds, NO);
     self.seconds = seconds;
     self.nanos = nanos;
   }
@@ -153,8 +146,7 @@ static NSString *ParseTypeFromURL(NSString *typeURLString) {
 
 - (void)setTimeInterval:(NSTimeInterval)timeInterval {
   int64_t seconds;
-  int32_t nanos =
-      SecondsAndNanosFromTimeInterval(timeInterval, &seconds, NO);
+  int32_t nanos = SecondsAndNanosFromTimeInterval(timeInterval, &seconds, NO);
   self.seconds = seconds;
   self.nanos = nanos;
 }
@@ -173,26 +165,19 @@ static NSString *ParseTypeFromURL(NSString *typeURLString) {
 
 @implementation GPBAny (GBPWellKnownTypes)
 
-+ (instancetype)anyWithMessage:(GPBMessage *)message
-                         error:(NSError **)errorPtr {
-  return [self anyWithMessage:message
-                typeURLPrefix:kTypePrefixGoogleApisCom
-                        error:errorPtr];
++ (instancetype)anyWithMessage:(GPBMessage *)message error:(NSError **)errorPtr {
+  return [self anyWithMessage:message typeURLPrefix:kTypePrefixGoogleApisCom error:errorPtr];
 }
 
 + (instancetype)anyWithMessage:(GPBMessage *)message
                  typeURLPrefix:(NSString *)typeURLPrefix
                          error:(NSError **)errorPtr {
-  return [[[self alloc] initWithMessage:message
-                          typeURLPrefix:typeURLPrefix
+  return [[[self alloc] initWithMessage:message typeURLPrefix:typeURLPrefix
                                   error:errorPtr] autorelease];
 }
 
-- (instancetype)initWithMessage:(GPBMessage *)message
-                          error:(NSError **)errorPtr {
-  return [self initWithMessage:message
-                 typeURLPrefix:kTypePrefixGoogleApisCom
-                         error:errorPtr];
+- (instancetype)initWithMessage:(GPBMessage *)message error:(NSError **)errorPtr {
+  return [self initWithMessage:message typeURLPrefix:kTypePrefixGoogleApisCom error:errorPtr];
 }
 
 - (instancetype)initWithMessage:(GPBMessage *)message
@@ -200,9 +185,7 @@ static NSString *ParseTypeFromURL(NSString *typeURLString) {
                           error:(NSError **)errorPtr {
   self = [self init];
   if (self) {
-    if (![self packWithMessage:message
-                 typeURLPrefix:typeURLPrefix
-                         error:errorPtr]) {
+    if (![self packWithMessage:message typeURLPrefix:typeURLPrefix error:errorPtr]) {
       [self release];
       self = nil;
     }
@@ -210,11 +193,8 @@ static NSString *ParseTypeFromURL(NSString *typeURLString) {
   return self;
 }
 
-- (BOOL)packWithMessage:(GPBMessage *)message
-                  error:(NSError **)errorPtr {
-  return [self packWithMessage:message
-                 typeURLPrefix:kTypePrefixGoogleApisCom
-                         error:errorPtr];
+- (BOOL)packWithMessage:(GPBMessage *)message error:(NSError **)errorPtr {
+  return [self packWithMessage:message typeURLPrefix:kTypePrefixGoogleApisCom error:errorPtr];
 }
 
 - (BOOL)packWithMessage:(GPBMessage *)message
@@ -223,10 +203,9 @@ static NSString *ParseTypeFromURL(NSString *typeURLString) {
   NSString *fullName = [message descriptor].fullName;
   if (fullName.length == 0) {
     if (errorPtr) {
-      *errorPtr =
-          [NSError errorWithDomain:GPBWellKnownTypesErrorDomain
-                              code:GPBWellKnownTypesErrorCodeFailedToComputeTypeURL
-                          userInfo:nil];
+      *errorPtr = [NSError errorWithDomain:GPBWellKnownTypesErrorDomain
+                                      code:GPBWellKnownTypesErrorCodeFailedToComputeTypeURL
+                                  userInfo:nil];
     }
     return NO;
   }
@@ -238,15 +217,13 @@ static NSString *ParseTypeFromURL(NSString *typeURLString) {
   return YES;
 }
 
-- (GPBMessage *)unpackMessageClass:(Class)messageClass
-                             error:(NSError **)errorPtr {
+- (GPBMessage *)unpackMessageClass:(Class)messageClass error:(NSError **)errorPtr {
   NSString *fullName = [messageClass descriptor].fullName;
   if (fullName.length == 0) {
     if (errorPtr) {
-      *errorPtr =
-          [NSError errorWithDomain:GPBWellKnownTypesErrorDomain
-                              code:GPBWellKnownTypesErrorCodeFailedToComputeTypeURL
-                      userInfo:nil];
+      *errorPtr = [NSError errorWithDomain:GPBWellKnownTypesErrorDomain
+                                      code:GPBWellKnownTypesErrorCodeFailedToComputeTypeURL
+                                  userInfo:nil];
     }
     return nil;
   }
@@ -254,10 +231,9 @@ static NSString *ParseTypeFromURL(NSString *typeURLString) {
   NSString *expectedFullName = ParseTypeFromURL(self.typeURL);
   if ((expectedFullName == nil) || ![expectedFullName isEqual:fullName]) {
     if (errorPtr) {
-      *errorPtr =
-          [NSError errorWithDomain:GPBWellKnownTypesErrorDomain
-                              code:GPBWellKnownTypesErrorCodeTypeURLMismatch
-                          userInfo:nil];
+      *errorPtr = [NSError errorWithDomain:GPBWellKnownTypesErrorDomain
+                                      code:GPBWellKnownTypesErrorCodeTypeURLMismatch
+                                  userInfo:nil];
     }
     return nil;
   }
@@ -265,8 +241,7 @@ static NSString *ParseTypeFromURL(NSString *typeURLString) {
   // Any is proto3, which means no extensions, so this assumes anything put
   // within an any also won't need extensions. A second helper could be added
   // if needed.
-  return [messageClass parseFromData:self.value
-                               error:errorPtr];
+  return [messageClass parseFromData:self.value error:errorPtr];
 }
 
 @end

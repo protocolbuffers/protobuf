@@ -185,7 +185,7 @@ CF_EXTERN_C_END
  *                          extensions for message.
  **/
 - (void)readMessage:(GPBMessage *)message
-  extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry;
+    extensionRegistry:(nullable id<GPBExtensionRegistry>)extensionRegistry;
 
 /**
  * Reads and discards a single field, given its tag value.

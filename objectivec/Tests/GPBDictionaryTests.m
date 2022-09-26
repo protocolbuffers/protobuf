@@ -56,17 +56,17 @@
   XCTAssertTrue([dict isEqual:@{}]);
   XCTAssertTrue([dict isEqualToDictionary:@{}]);
 
-  XCTAssertFalse([dict isEqual:@{ @"foo" : @"bar" }]);
-  XCTAssertFalse([dict isEqualToDictionary:@{ @"foo" : @"bar" }]);
+  XCTAssertFalse([dict isEqual:@{@"foo" : @"bar"}]);
+  XCTAssertFalse([dict isEqualToDictionary:@{@"foo" : @"bar"}]);
 
   [dict setObject:@"bar" forKey:@"foo"];
 
   XCTAssertFalse([dict isEqual:@{}]);
   XCTAssertFalse([dict isEqualToDictionary:@{}]);
-  XCTAssertTrue([dict isEqual:@{ @"foo" : @"bar" }]);
-  XCTAssertTrue([dict isEqualToDictionary:@{ @"foo" : @"bar" }]);
-  XCTAssertFalse([dict isEqual:@{ @"bar" : @"baz" }]);
-  XCTAssertFalse([dict isEqualToDictionary:@{ @"bar" : @"baz" }]);
+  XCTAssertTrue([dict isEqual:@{@"foo" : @"bar"}]);
+  XCTAssertTrue([dict isEqualToDictionary:@{@"foo" : @"bar"}]);
+  XCTAssertFalse([dict isEqual:@{@"bar" : @"baz"}]);
+  XCTAssertFalse([dict isEqualToDictionary:@{@"bar" : @"baz"}]);
 
   GPBAutocreatedDictionary *dict2 = [[GPBAutocreatedDictionary alloc] init];
 
@@ -90,14 +90,14 @@
     GPBAutocreatedDictionary *dict = [[GPBAutocreatedDictionary alloc] init];
 
     NSDictionary *cpy = [dict copy];
-    XCTAssertTrue(cpy != dict); // Ptr compare
+    XCTAssertTrue(cpy != dict);  // Ptr compare
     XCTAssertTrue([cpy isKindOfClass:[NSDictionary class]]);
     XCTAssertFalse([cpy isKindOfClass:[GPBAutocreatedDictionary class]]);
     XCTAssertEqual(cpy.count, (NSUInteger)0);
 
     NSDictionary *cpy2 = [dict copy];
-    XCTAssertTrue(cpy2 != dict); // Ptr compare
-    XCTAssertTrue(cpy2 != cpy); // Ptr compare
+    XCTAssertTrue(cpy2 != dict);  // Ptr compare
+    XCTAssertTrue(cpy2 != cpy);   // Ptr compare
     XCTAssertTrue([cpy2 isKindOfClass:[NSDictionary class]]);
     XCTAssertFalse([cpy2 isKindOfClass:[GPBAutocreatedDictionary class]]);
     XCTAssertEqual(cpy2.count, (NSUInteger)0);
@@ -111,14 +111,14 @@
     GPBAutocreatedDictionary *dict = [[GPBAutocreatedDictionary alloc] init];
 
     NSMutableDictionary *cpy = [dict mutableCopy];
-    XCTAssertTrue(cpy != dict); // Ptr compare
+    XCTAssertTrue(cpy != dict);  // Ptr compare
     XCTAssertTrue([cpy isKindOfClass:[NSMutableDictionary class]]);
     XCTAssertFalse([cpy isKindOfClass:[GPBAutocreatedDictionary class]]);
     XCTAssertEqual(cpy.count, (NSUInteger)0);
 
     NSMutableDictionary *cpy2 = [dict mutableCopy];
-    XCTAssertTrue(cpy2 != dict); // Ptr compare
-    XCTAssertTrue(cpy2 != cpy); // Ptr compare
+    XCTAssertTrue(cpy2 != dict);  // Ptr compare
+    XCTAssertTrue(cpy2 != cpy);   // Ptr compare
     XCTAssertTrue([cpy2 isKindOfClass:[NSMutableDictionary class]]);
     XCTAssertFalse([cpy2 isKindOfClass:[GPBAutocreatedDictionary class]]);
     XCTAssertEqual(cpy2.count, (NSUInteger)0);
@@ -134,7 +134,7 @@
     dict[@"baz"] = @"mumble";
 
     NSDictionary *cpy = [dict copy];
-    XCTAssertTrue(cpy != dict); // Ptr compare
+    XCTAssertTrue(cpy != dict);  // Ptr compare
     XCTAssertTrue([cpy isKindOfClass:[NSDictionary class]]);
     XCTAssertFalse([cpy isKindOfClass:[GPBAutocreatedDictionary class]]);
     XCTAssertEqual(cpy.count, (NSUInteger)2);
@@ -142,8 +142,8 @@
     XCTAssertEqualObjects(cpy[@"baz"], @"mumble");
 
     NSDictionary *cpy2 = [dict copy];
-    XCTAssertTrue(cpy2 != dict); // Ptr compare
-    XCTAssertTrue(cpy2 != cpy); // Ptr compare
+    XCTAssertTrue(cpy2 != dict);  // Ptr compare
+    XCTAssertTrue(cpy2 != cpy);   // Ptr compare
     XCTAssertTrue([cpy2 isKindOfClass:[NSDictionary class]]);
     XCTAssertFalse([cpy2 isKindOfClass:[GPBAutocreatedDictionary class]]);
     XCTAssertEqual(cpy2.count, (NSUInteger)2);
@@ -161,7 +161,7 @@
     dict[@"baz"] = @"mumble";
 
     NSMutableDictionary *cpy = [dict mutableCopy];
-    XCTAssertTrue(cpy != dict); // Ptr compare
+    XCTAssertTrue(cpy != dict);  // Ptr compare
     XCTAssertTrue([cpy isKindOfClass:[NSMutableDictionary class]]);
     XCTAssertFalse([cpy isKindOfClass:[GPBAutocreatedDictionary class]]);
     XCTAssertEqual(cpy.count, (NSUInteger)2);
@@ -169,8 +169,8 @@
     XCTAssertEqualObjects(cpy[@"baz"], @"mumble");
 
     NSMutableDictionary *cpy2 = [dict mutableCopy];
-    XCTAssertTrue(cpy2 != dict); // Ptr compare
-    XCTAssertTrue(cpy2 != cpy); // Ptr compare
+    XCTAssertTrue(cpy2 != dict);  // Ptr compare
+    XCTAssertTrue(cpy2 != cpy);   // Ptr compare
     XCTAssertTrue([cpy2 isKindOfClass:[NSMutableDictionary class]]);
     XCTAssertFalse([cpy2 isKindOfClass:[GPBAutocreatedDictionary class]]);
     XCTAssertEqual(cpy2.count, (NSUInteger)2);

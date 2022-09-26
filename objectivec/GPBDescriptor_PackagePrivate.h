@@ -37,12 +37,12 @@
 
 // Describes attributes of the field.
 typedef NS_OPTIONS(uint16_t, GPBFieldFlags) {
-  GPBFieldNone            = 0,
+  GPBFieldNone = 0,
   // These map to standard protobuf concepts.
-  GPBFieldRequired        = 1 << 0,
-  GPBFieldRepeated        = 1 << 1,
-  GPBFieldPacked          = 1 << 2,
-  GPBFieldOptional        = 1 << 3,
+  GPBFieldRequired = 1 << 0,
+  GPBFieldRepeated = 1 << 1,
+  GPBFieldPacked = 1 << 2,
+  GPBFieldOptional = 1 << 3,
   GPBFieldHasDefaultValue = 1 << 4,
 
   // Indicate that the field should "clear" when set to zero value. This is the
@@ -60,19 +60,19 @@ typedef NS_OPTIONS(uint16_t, GPBFieldFlags) {
 
   // These bits are used to mark the field as a map and what the key
   // type is.
-  GPBFieldMapKeyMask     = 0xF << 8,
-  GPBFieldMapKeyInt32    =  1 << 8,
-  GPBFieldMapKeyInt64    =  2 << 8,
-  GPBFieldMapKeyUInt32   =  3 << 8,
-  GPBFieldMapKeyUInt64   =  4 << 8,
-  GPBFieldMapKeySInt32   =  5 << 8,
-  GPBFieldMapKeySInt64   =  6 << 8,
-  GPBFieldMapKeyFixed32  =  7 << 8,
-  GPBFieldMapKeyFixed64  =  8 << 8,
-  GPBFieldMapKeySFixed32 =  9 << 8,
+  GPBFieldMapKeyMask = 0xF << 8,
+  GPBFieldMapKeyInt32 = 1 << 8,
+  GPBFieldMapKeyInt64 = 2 << 8,
+  GPBFieldMapKeyUInt32 = 3 << 8,
+  GPBFieldMapKeyUInt64 = 4 << 8,
+  GPBFieldMapKeySInt32 = 5 << 8,
+  GPBFieldMapKeySInt64 = 6 << 8,
+  GPBFieldMapKeyFixed32 = 7 << 8,
+  GPBFieldMapKeyFixed64 = 8 << 8,
+  GPBFieldMapKeySFixed32 = 9 << 8,
   GPBFieldMapKeySFixed64 = 10 << 8,
-  GPBFieldMapKeyBool     = 11 << 8,
-  GPBFieldMapKeyString   = 12 << 8,
+  GPBFieldMapKeyBool = 11 << 8,
+  GPBFieldMapKeyString = 12 << 8,
 };
 
 // NOTE: The structures defined here have their members ordered to minimize
@@ -88,7 +88,7 @@ typedef struct GPBMessageFieldDescription {
     // kept around right now for backwards compatibility.
     // clazz is used iff GPBDescriptorInitializationFlag_UsesClassRefs is set.
     char *className;  // Name of the class of the message.
-    Class clazz;  // Class of the message.
+    Class clazz;      // Class of the message.
     // For enums only: If EnumDescriptors are compiled in, it will be that,
     // otherwise it will be the verifier.
     GPBEnumDescriptorFunc enumDescFunc;
@@ -120,10 +120,10 @@ typedef struct GPBMessageFieldDescriptionWithDefault {
 
 // Describes attributes of the extension.
 typedef NS_OPTIONS(uint8_t, GPBExtensionOptions) {
-  GPBExtensionNone          = 0,
+  GPBExtensionNone = 0,
   // These map to standard protobuf concepts.
-  GPBExtensionRepeated      = 1 << 0,
-  GPBExtensionPacked        = 1 << 1,
+  GPBExtensionRepeated = 1 << 0,
+  GPBExtensionPacked = 1 << 1,
   GPBExtensionSetWireFormat = 1 << 2,
 };
 
@@ -132,10 +132,10 @@ typedef struct GPBExtensionDescription {
   GPBGenericValue defaultValue;
   const char *singletonName;
   // Before 3.12, `extendedClass` was just a `const char *`. Thanks to nested
-  // initialization (https://en.cppreference.com/w/c/language/struct_initialization#Nested_initialization)
-  // old generated code with `.extendedClass = GPBStringifySymbol(Something)`
-  // still works; and the current generator can use `extendedClass.clazz`, to
-  // pass a Class reference.
+  // initialization
+  // (https://en.cppreference.com/w/c/language/struct_initialization#Nested_initialization) old
+  // generated code with `.extendedClass = GPBStringifySymbol(Something)` still works; and the
+  // current generator can use `extendedClass.clazz`, to pass a Class reference.
   union {
     const char *name;
     Class clazz;
@@ -150,9 +150,9 @@ typedef struct GPBExtensionDescription {
   union {
     const char *messageOrGroupClassName;
     union {
-     const char *name;
-     Class clazz;
-   } messageOrGroupClass;
+      const char *name;
+      Class clazz;
+    } messageOrGroupClass;
   };
   GPBEnumDescriptorFunc enumDescriptorFunc;
   int32_t fieldNumber;
@@ -161,14 +161,14 @@ typedef struct GPBExtensionDescription {
 } GPBExtensionDescription;
 
 typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
-  GPBDescriptorInitializationFlag_None              = 0,
+  GPBDescriptorInitializationFlag_None = 0,
   GPBDescriptorInitializationFlag_FieldsWithDefault = 1 << 0,
-  GPBDescriptorInitializationFlag_WireFormat        = 1 << 1,
+  GPBDescriptorInitializationFlag_WireFormat = 1 << 1,
 
   // This is used as a stopgap as we move from using class names to class
   // references. The runtime needs to support both until we allow a
   // breaking change in the runtime.
-  GPBDescriptorInitializationFlag_UsesClassRefs     = 1 << 2,
+  GPBDescriptorInitializationFlag_UsesClassRefs = 1 << 2,
 
   // This flag is used to indicate that the generated sources already contain
   // the `GPBFieldClearHasIvarOnZero` flag and it doesn't have to be computed
@@ -185,14 +185,13 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
 }
 
 // fieldDescriptions have to be long lived, they are held as raw pointers.
-+ (instancetype)
-    allocDescriptorForClass:(Class)messageClass
-                  rootClass:(Class)rootClass
-                       file:(GPBFileDescriptor *)file
-                     fields:(void *)fieldDescriptions
-                 fieldCount:(uint32_t)fieldCount
-                storageSize:(uint32_t)storageSize
-                      flags:(GPBDescriptorInitializationFlags)flags;
++ (instancetype)allocDescriptorForClass:(Class)messageClass
+                              rootClass:(Class)rootClass
+                                   file:(GPBFileDescriptor *)file
+                                 fields:(void *)fieldDescriptions
+                             fieldCount:(uint32_t)fieldCount
+                            storageSize:(uint32_t)storageSize
+                                  flags:(GPBDescriptorInitializationFlags)flags;
 
 - (instancetype)initWithClass:(Class)messageClass
                          file:(GPBFileDescriptor *)file
@@ -220,8 +219,7 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
 - (instancetype)initWithPackage:(NSString *)package
                      objcPrefix:(NSString *)objcPrefix
                          syntax:(GPBFileSyntax)syntax;
-- (instancetype)initWithPackage:(NSString *)package
-                         syntax:(GPBFileSyntax)syntax;
+- (instancetype)initWithPackage:(NSString *)package syntax:(GPBFileSyntax)syntax;
 @end
 
 @interface GPBOneofDescriptor () {
@@ -258,19 +256,17 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
 @interface GPBEnumDescriptor ()
 // valueNames, values and extraTextFormatInfo have to be long lived, they are
 // held as raw pointers.
-+ (instancetype)
-    allocDescriptorForName:(NSString *)name
-                valueNames:(const char *)valueNames
-                    values:(const int32_t *)values
-                     count:(uint32_t)valueCount
-              enumVerifier:(GPBEnumValidationFunc)enumVerifier;
-+ (instancetype)
-    allocDescriptorForName:(NSString *)name
-                valueNames:(const char *)valueNames
-                    values:(const int32_t *)values
-                     count:(uint32_t)valueCount
-              enumVerifier:(GPBEnumValidationFunc)enumVerifier
-       extraTextFormatInfo:(const char *)extraTextFormatInfo;
++ (instancetype)allocDescriptorForName:(NSString *)name
+                            valueNames:(const char *)valueNames
+                                values:(const int32_t *)values
+                                 count:(uint32_t)valueCount
+                          enumVerifier:(GPBEnumValidationFunc)enumVerifier;
++ (instancetype)allocDescriptorForName:(NSString *)name
+                            valueNames:(const char *)valueNames
+                                values:(const int32_t *)values
+                                 count:(uint32_t)valueCount
+                          enumVerifier:(GPBEnumValidationFunc)enumVerifier
+                   extraTextFormatInfo:(const char *)extraTextFormatInfo;
 
 - (instancetype)initWithName:(NSString *)name
                   valueNames:(const char *)valueNames
@@ -309,8 +305,7 @@ CF_EXTERN_C_BEGIN
 #pragma clang diagnostic ignored "-Wdirect-ivar-access"
 
 GPB_INLINE BOOL GPBFieldIsMapOrArray(GPBFieldDescriptor *field) {
-  return (field->description_->flags &
-          (GPBFieldRepeated | GPBFieldMapKeyMask)) != 0;
+  return (field->description_->flags & (GPBFieldRepeated | GPBFieldMapKeyMask)) != 0;
 }
 
 GPB_INLINE GPBDataType GPBGetFieldDataType(GPBFieldDescriptor *field) {
@@ -353,22 +348,13 @@ GPB_INLINE BOOL GPBExtensionIsWireFormat(GPBExtensionDescription *description) {
 
 // Helper for compile time assets.
 #ifndef GPBInternalCompileAssert
-  #if __has_feature(c_static_assert) || __has_extension(c_static_assert)
-    #define GPBInternalCompileAssert(test, msg) _Static_assert((test), #msg)
-  #else
-    // Pre-Xcode 7 support.
-    #define GPBInternalCompileAssertSymbolInner(line, msg) GPBInternalCompileAssert ## line ## __ ## msg
-    #define GPBInternalCompileAssertSymbol(line, msg) GPBInternalCompileAssertSymbolInner(line, msg)
-    #define GPBInternalCompileAssert(test, msg) \
-        typedef char GPBInternalCompileAssertSymbol(__LINE__, msg) [ ((test) ? 1 : -1) ]
-  #endif  // __has_feature(c_static_assert) || __has_extension(c_static_assert)
-#endif // GPBInternalCompileAssert
+#define GPBInternalCompileAssert(test, msg) _Static_assert((test), #msg)
+#endif  // GPBInternalCompileAssert
 
 // Sanity check that there isn't padding between the field description
 // structures with and without a default.
 GPBInternalCompileAssert(sizeof(GPBMessageFieldDescriptionWithDefault) ==
-                         (sizeof(GPBGenericValue) +
-                          sizeof(GPBMessageFieldDescription)),
+                             (sizeof(GPBGenericValue) + sizeof(GPBMessageFieldDescription)),
                          DescriptionsWithDefault_different_size_than_expected);
 
 CF_EXTERN_C_END

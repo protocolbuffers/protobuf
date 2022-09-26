@@ -179,30 +179,21 @@ bool IsFieldEligibleForFastParsing(
     const TailCallTableInfo::FieldEntryInfo& entry,
     const TailCallTableInfo::OptionProvider& option_provider) {
   const auto* field = entry.field;
+  // Conditions which exclude a field from being handled by fast parsing
+  // regardless of options should be considered in IsExcludedFromFastParsing.
+  if (!IsDescriptorEligibleForFastParsing(field)) return false;
+
   const auto options = option_provider.GetForField(field);
-  // Map, oneof, weak, and lazy fields are not handled on the fast path.
-  if (field->is_map() || field->real_containing_oneof() ||
-      field->options().weak() || options.is_implicitly_weak ||
-      options.is_lazy || options.should_split) {
-    return false;
-  }
+  // Weak, lazy, and split fields are not handled on the fast path.
+  if (options.is_implicitly_weak) return false;
+  if (options.is_lazy) return false;
+  if (options.should_split) return false;
 
   // We will check for a valid auxiliary index range later. However, we might
   // want to change the value we check for inlined string fields.
   int aux_idx = entry.aux_idx;
 
   switch (field->type()) {
-    case FieldDescriptor::TYPE_ENUM:
-      // If enum values are not validated at parse time, then this field can be
-      // handled on the fast path like an int32.
-      if (cpp::HasPreservingUnknownEnumSemantics(field)) {
-        break;
-      }
-      if (field->is_repeated() && field->is_packed()) {
-        return false;
-      }
-      break;
-
       // Some bytes fields can be handled on fast path.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES:
@@ -234,13 +225,6 @@ bool IsFieldEligibleForFastParsing(
   if (aux_idx > std::numeric_limits<uint8_t>::max()) {
     return false;
   }
-
-  // The largest tag that can be read by the tailcall parser is two bytes
-  // when varint-coded. This allows 14 bits for the numeric tag value:
-  //   byte 0   byte 1
-  //   1nnnnttt 0nnnnnnn
-  //    ^^^^^^^  ^^^^^^^
-  if (field->number() >= 1 << 11) return false;
 
   return true;
 }

@@ -44,9 +44,9 @@
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/strings/str_format.h"
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/stringprintf.h"
 #include "google/protobuf/unittest_lazy_dependencies.pb.h"
 #include "google/protobuf/unittest_proto3_arena.pb.h"
 #include "google/protobuf/io/tokenizer.h"
@@ -591,7 +591,7 @@ class SimpleErrorCollector : public io::ErrorCollector {
  public:
   // implements ErrorCollector ---------------------------------------
   void AddError(int line, int column, const std::string& message) override {
-    last_error_ = StringPrintf("%d:%d:", line, column) + message;
+    last_error_ = absl::StrFormat("%d:%d:%s", line, column, message);
   }
 
   const std::string& last_error() { return last_error_; }
