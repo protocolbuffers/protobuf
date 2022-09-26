@@ -73,15 +73,12 @@ static uint32_t jenkins_one_at_a_time_hash(const char *key) {
 // to worry about deallocation. All of the items are added to it at
 // startup, and so the keys don't need to be retained/released.
 // Keys are NULL terminated char *.
-static const void *GPBRootExtensionKeyRetain(CFAllocatorRef allocator, const void *value) {
-#pragma unused(allocator)
+static const void *GPBRootExtensionKeyRetain(__unused CFAllocatorRef allocator, const void *value) {
   return value;
 }
 
-static void GPBRootExtensionKeyRelease(CFAllocatorRef allocator, const void *value) {
-#pragma unused(allocator)
-#pragma unused(value)
-}
+static void GPBRootExtensionKeyRelease(__unused CFAllocatorRef allocator,
+                                       __unused const void *value) {}
 
 static CFStringRef GPBRootExtensionCopyKeyDescription(const void *value) {
   const char *key = (const char *)value;
@@ -207,8 +204,7 @@ BOOL GPBResolveExtensionClassMethod(Class self, SEL sel) {
   if (extension != nil) {
     const char *encoding = GPBMessageEncodingForSelector(@selector(getClassValue), NO);
     Class metaClass = objc_getMetaClass(class_getName(self));
-    IMP imp = imp_implementationWithBlock(^(id obj) {
-#pragma unused(obj)
+    IMP imp = imp_implementationWithBlock(^(__unused id obj) {
       return extension;
     });
     BOOL methodAdded = class_addMethod(metaClass, sel, imp, encoding);

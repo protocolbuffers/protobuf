@@ -296,8 +296,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   return result;
 }
 
-- (id)copyWithZone:(NSZone *)zone {
-#pragma unused(zone)
+- (id)copyWithZone:(__unused NSZone *)zone {
   return [self retain];
 }
 
@@ -997,8 +996,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   [super dealloc];
 }
 
-- (instancetype)copyWithZone:(NSZone *)zone {
-#pragma unused(zone)
+- (instancetype)copyWithZone:(__unused NSZone *)zone {
   // Immutable.
   return [self retain];
 }

@@ -224,20 +224,11 @@ if [[ "${DO_XCODE_IOS_TESTS}" == "yes" ]] ; then
   # just pick a mix of OS Versions and 32/64 bit.
   # NOTE: Different Xcode have different simulated hardware/os support.
   case "${XCODE_VERSION}" in
-    [6-9].* )
-      echo "ERROR: Xcode 10.2 or higher is required." 1>&2
+    [6-9].* | 1[0-2].* )
+      echo "ERROR: Xcode 13.3.1 or higher is required." 1>&2
       exit 11
       ;;
-    10.*)
-      XCODEBUILD_TEST_BASE_IOS+=(
-          -destination "platform=iOS Simulator,name=iPhone 4s,OS=8.1" # 32bit
-          -destination "platform=iOS Simulator,name=iPhone 7,OS=latest" # 64bit
-          # 10.x also seems to often fail running destinations in parallel (with
-          # 32bit one include at least)
-          -disable-concurrent-destination-testing
-      )
-      ;;
-    11.* | 12.* | 13.* | 14.*)
+    13.* | 14.*)
       # Dropped 32bit as Apple doesn't seem support the simulators either.
       XCODEBUILD_TEST_BASE_IOS+=(
           -destination "platform=iOS Simulator,name=iPhone 8,OS=latest" # 64bit
@@ -274,8 +265,8 @@ if [[ "${DO_XCODE_OSX_TESTS}" == "yes" ]] ; then
     XCODEBUILD_TEST_BASE_OSX+=( -quiet )
   fi
   case "${XCODE_VERSION}" in
-    [6-9].* )
-      echo "ERROR: Xcode 10.2 or higher is required." 1>&2
+    [6-9].* | 1[0-2].* )
+      echo "ERROR: Xcode 13.3.1 or higher is required." 1>&2
       exit 11
       ;;
   esac
@@ -295,14 +286,9 @@ if [[ "${DO_XCODE_TVOS_TESTS}" == "yes" ]] ; then
       -scheme ProtocolBuffers
   )
   case "${XCODE_VERSION}" in
-    [6-9].* )
-      echo "ERROR: Xcode 10.2 or higher is required." 1>&2
+    [6-9].* | 1[0-2].* )
+      echo "ERROR: Xcode 13.3.1 or higher is required." 1>&2
       exit 11
-      ;;
-    10.* | 11.* | 12.*)
-      XCODEBUILD_TEST_BASE_TVOS+=(
-        -destination "platform=tvOS Simulator,name=Apple TV 4K,OS=latest"
-      )
       ;;
     13.* | 14.*)
       XCODEBUILD_TEST_BASE_TVOS+=(
