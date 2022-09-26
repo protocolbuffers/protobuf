@@ -32,13 +32,13 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/cpp/string_field.h>
+#include "google/protobuf/compiler/cpp/string_field.h"
 
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/compiler/cpp/helpers.h>
-#include <google/protobuf/descriptor.pb.h>
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/descriptor.pb.h"
 
 
 namespace google {
@@ -53,7 +53,7 @@ void SetStringVariables(const FieldDescriptor* descriptor,
                         const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
 
-  const std::string kNS = "::" + (*variables)["proto_ns"] + "::internal::";
+  const std::string kNS = "::" + ProtobufNamespace(options) + "::internal::";
   const std::string kArenaStringPtr = kNS + "ArenaStringPtr";
 
   (*variables)["default"] = DefaultValue(options, descriptor);
@@ -80,7 +80,6 @@ void SetStringVariables(const FieldDescriptor* descriptor,
       descriptor->type() == FieldDescriptor::TYPE_BYTES ? "void" : "char";
   (*variables)["setter"] =
       descriptor->type() == FieldDescriptor::TYPE_BYTES ? "SetBytes" : "Set";
-  (*variables)["null_check"] = (*variables)["DCHK"] + "(value != nullptr);\n";
   // NOTE: Escaped here to unblock proto1->proto2 migration.
   // TODO(liujisi): Extend this to apply for other conflicting methods.
   (*variables)["release_name"] =
@@ -804,7 +803,7 @@ void RepeatedStringFieldGenerator::GenerateInlineAccessorDefinitions(
       "  // @@protoc_insertion_point(field_set:$full_name$)\n"
       "}\n"
       "inline void $classname$::set_$name$(int index, const char* value) {\n"
-      "  $null_check$"
+      "  $DCHK$(value != nullptr);"
       "  $field$.Mutable(index)->assign(value);\n"
       "$annotate_set$"
       "  // @@protoc_insertion_point(field_set_char:$full_name$)\n"
@@ -841,7 +840,7 @@ void RepeatedStringFieldGenerator::GenerateInlineAccessorDefinitions(
       "  // @@protoc_insertion_point(field_add:$full_name$)\n"
       "}\n"
       "inline void $classname$::add_$name$(const char* value) {\n"
-      "  $null_check$"
+      "  $DCHK$(value != nullptr);"
       "  $field$.Add()->assign(value);\n"
       "$annotate_add$"
       "  // @@protoc_insertion_point(field_add_char:$full_name$)\n"

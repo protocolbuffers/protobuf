@@ -35,10 +35,6 @@
 #ifndef GOOGLE_PROTOBUF_COMMON_H__
 #define GOOGLE_PROTOBUF_COMMON_H__
 
-#include <google/protobuf/stubs/macros.h>
-#include <google/protobuf/stubs/platform_macros.h>
-#include <google/protobuf/stubs/port.h>
-
 #include <algorithm>
 #include <iostream>
 #include <map>
@@ -48,6 +44,8 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
+#include "google/protobuf/stubs/platform_macros.h"
+#include "google/protobuf/stubs/port.h"
 
 #ifndef PROTOBUF_USE_EXCEPTIONS
 #if defined(_MSC_VER) && defined(_CPPUNWIND)
@@ -70,7 +68,7 @@
 #include <pthread.h>
 #endif
 
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace std {}
 
@@ -83,7 +81,7 @@ namespace internal {
 
 // The current version, represented as a single integer to make comparison
 // easier:  major * 10^6 + minor * 10^3 + micro
-#define GOOGLE_PROTOBUF_VERSION 3021005
+#define GOOGLE_PROTOBUF_VERSION 3021006
 
 // A suffix string for alpha, beta or rc releases. Empty for stable releases.
 #define GOOGLE_PROTOBUF_VERSION_SUFFIX ""
@@ -199,6 +197,6 @@ class FatalException : public std::exception {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMMON_H__

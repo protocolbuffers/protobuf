@@ -33,16 +33,18 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_STRUTIL_H__
 #define GOOGLE_PROTOBUF_STUBS_STRUTIL_H__
 
-#include <google/protobuf/stubs/common.h>
 #include <stdlib.h>
 
 #include <cstring>
-#include <google/protobuf/port_def.inc>
 #include <vector>
 
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/stubs/common.h"
+
+// Must be last.
+#include "google/protobuf/port_def.inc"  // NOLINT
 
 namespace google {
 namespace protobuf {
@@ -63,99 +65,6 @@ inline int hex_digit_to_int(char c) {
     x += 9;
   }
   return x & 0xf;
-}
-
-// ----------------------------------------------------------------------
-// HasPrefixString()
-//    Check if a string begins with a given prefix.
-// StripPrefixString()
-//    Given a string and a putative prefix, returns the string minus the
-//    prefix string if the prefix matches, otherwise the original
-//    string.
-// ----------------------------------------------------------------------
-inline bool HasPrefixString(absl::string_view str, absl::string_view prefix) {
-  return str.size() >= prefix.size() &&
-         memcmp(str.data(), prefix.data(), prefix.size()) == 0;
-}
-
-inline std::string StripPrefixString(const std::string& str,
-                                     const std::string& prefix) {
-  if (HasPrefixString(str, prefix)) {
-    return str.substr(prefix.size());
-  } else {
-    return str;
-  }
-}
-
-// ----------------------------------------------------------------------
-// HasSuffixString()
-//    Return true if str ends in suffix.
-// StripSuffixString()
-//    Given a string and a putative suffix, returns the string minus the
-//    suffix string if the suffix matches, otherwise the original
-//    string.
-// ----------------------------------------------------------------------
-inline bool HasSuffixString(absl::string_view str, absl::string_view suffix) {
-  return str.size() >= suffix.size() &&
-         memcmp(str.data() + str.size() - suffix.size(), suffix.data(),
-                suffix.size()) == 0;
-}
-
-inline std::string StripSuffixString(const std::string& str,
-                                     const std::string& suffix) {
-  if (HasSuffixString(str, suffix)) {
-    return str.substr(0, str.size() - suffix.size());
-  } else {
-    return str;
-  }
-}
-
-// ----------------------------------------------------------------------
-// ReplaceCharacters
-//    Replaces any occurrence of the character 'remove' (or the characters
-//    in 'remove') with the character 'replacewith'.
-//    Good for keeping html characters or protocol characters (\t) out
-//    of places where they might cause a problem.
-// StripWhitespace
-//    Removes whitespaces from both ends of the given string.
-// ----------------------------------------------------------------------
-PROTOBUF_EXPORT void ReplaceCharacters(std::string* s, const char* remove,
-                                       char replacewith);
-
-PROTOBUF_EXPORT void StripWhitespace(std::string* s);
-
-// ----------------------------------------------------------------------
-// LowerString()
-// UpperString()
-// ToUpper()
-//    Convert the characters in "s" to lowercase or uppercase.  ASCII-only:
-//    these functions intentionally ignore locale because they are applied to
-//    identifiers used in the Protocol Buffer language, not to natural-language
-//    strings.
-// ----------------------------------------------------------------------
-
-inline void LowerString(std::string* s) {
-  std::string::iterator end = s->end();
-  for (std::string::iterator i = s->begin(); i != end; ++i) {
-    // tolower() changes based on locale.  We don't want this!
-    if ('A' <= *i && *i <= 'Z') *i += 'a' - 'A';
-  }
-}
-
-inline void UpperString(std::string* s) {
-  std::string::iterator end = s->end();
-  for (std::string::iterator i = s->begin(); i != end; ++i) {
-    // toupper() changes based on locale.  We don't want this!
-    if ('a' <= *i && *i <= 'z') *i += 'A' - 'a';
-  }
-}
-
-inline void ToUpper(std::string* s) { UpperString(s); }
-
-inline std::string ToUpper(const std::string& s) {
-  std::string out = s;
-  UpperString(&out);
-  return out;
 }
 
 // ----------------------------------------------------------------------
@@ -271,133 +180,18 @@ inline bool safe_strtod(absl::string_view str, double* value) {
 }
 
 // ----------------------------------------------------------------------
-// FastIntToBuffer()
-// FastHexToBuffer()
-// FastHex64ToBuffer()
-// FastHex32ToBuffer()
-// FastTimeToBuffer()
-//    These are intended for speed.  FastIntToBuffer() assumes the
-//    integer is non-negative.  FastHexToBuffer() puts output in
-//    hex rather than decimal.  FastTimeToBuffer() puts the output
-//    into RFC822 format.
-//
-//    FastHex64ToBuffer() puts a 64-bit unsigned value in hex-format,
-//    padded to exactly 16 bytes (plus one byte for '\0')
-//
-//    FastHex32ToBuffer() puts a 32-bit unsigned value in hex-format,
-//    padded to exactly 8 bytes (plus one byte for '\0')
-//
-//       All functions take the output buffer as an arg.
-//    They all return a pointer to the beginning of the output,
-//    which may not be the beginning of the input buffer.
-// ----------------------------------------------------------------------
-
-// Suggested buffer size for FastToBuffer functions.  Also works with
-// DoubleToBuffer() and FloatToBuffer().
-static const int kFastToBufferSize = 32;
-
-PROTOBUF_EXPORT char* FastInt32ToBuffer(int32_t i, char* buffer);
-PROTOBUF_EXPORT char* FastInt64ToBuffer(int64_t i, char* buffer);
-char* FastUInt32ToBuffer(uint32_t i, char* buffer);  // inline below
-char* FastUInt64ToBuffer(uint64_t i, char* buffer);  // inline below
-PROTOBUF_EXPORT char* FastHexToBuffer(int i, char* buffer);
-PROTOBUF_EXPORT char* FastHex64ToBuffer(uint64_t i, char* buffer);
-PROTOBUF_EXPORT char* FastHex32ToBuffer(uint32_t i, char* buffer);
-
-// at least 22 bytes long
-inline char* FastIntToBuffer(int i, char* buffer) {
-  return (sizeof(i) == 4 ?
-          FastInt32ToBuffer(i, buffer) : FastInt64ToBuffer(i, buffer));
-}
-inline char* FastUIntToBuffer(unsigned int i, char* buffer) {
-  return (sizeof(i) == 4 ?
-          FastUInt32ToBuffer(i, buffer) : FastUInt64ToBuffer(i, buffer));
-}
-inline char* FastLongToBuffer(long i, char* buffer) {
-  return (sizeof(i) == 4 ?
-          FastInt32ToBuffer(i, buffer) : FastInt64ToBuffer(i, buffer));
-}
-inline char* FastULongToBuffer(unsigned long i, char* buffer) {
-  return (sizeof(i) == 4 ?
-          FastUInt32ToBuffer(i, buffer) : FastUInt64ToBuffer(i, buffer));
-}
-
-// ----------------------------------------------------------------------
-// FastInt32ToBufferLeft()
-// FastUInt32ToBufferLeft()
-// FastInt64ToBufferLeft()
-// FastUInt64ToBufferLeft()
-//
-// Like the Fast*ToBuffer() functions above, these are intended for speed.
-// Unlike the Fast*ToBuffer() functions, however, these functions write
-// their output to the beginning of the buffer (hence the name, as the
-// output is left-aligned).  The caller is responsible for ensuring that
-// the buffer has enough space to hold the output.
-//
-// Returns a pointer to the end of the string (i.e. the null character
-// terminating the string).
-// ----------------------------------------------------------------------
-
-PROTOBUF_EXPORT char* FastInt32ToBufferLeft(int32_t i, char* buffer);
-PROTOBUF_EXPORT char* FastUInt32ToBufferLeft(uint32_t i, char* buffer);
-PROTOBUF_EXPORT char* FastInt64ToBufferLeft(int64_t i, char* buffer);
-PROTOBUF_EXPORT char* FastUInt64ToBufferLeft(uint64_t i, char* buffer);
-
-// Just define these in terms of the above.
-inline char* FastUInt32ToBuffer(uint32_t i, char* buffer) {
-  FastUInt32ToBufferLeft(i, buffer);
-  return buffer;
-}
-inline char* FastUInt64ToBuffer(uint64_t i, char* buffer) {
-  FastUInt64ToBufferLeft(i, buffer);
-  return buffer;
-}
-
-inline std::string SimpleBtoa(bool value) { return value ? "true" : "false"; }
-
-// ----------------------------------------------------------------------
-// SimpleItoa()
-//    Description: converts an integer to a string.
-//
-//    Return value: string
-// ----------------------------------------------------------------------
-PROTOBUF_EXPORT std::string SimpleItoa(int i);
-PROTOBUF_EXPORT std::string SimpleItoa(unsigned int i);
-PROTOBUF_EXPORT std::string SimpleItoa(long i);
-PROTOBUF_EXPORT std::string SimpleItoa(unsigned long i);
-PROTOBUF_EXPORT std::string SimpleItoa(long long i);
-PROTOBUF_EXPORT std::string SimpleItoa(unsigned long long i);
-
-// ----------------------------------------------------------------------
 // SimpleDtoa()
 // SimpleFtoa()
-// DoubleToBuffer()
-// FloatToBuffer()
 //    Description: converts a double or float to a string which, if
 //    passed to NoLocaleStrtod(), will produce the exact same original double
 //    (except in case of NaN; all NaNs are considered the same value).
 //    We try to keep the string short but it's not guaranteed to be as
 //    short as possible.
 //
-//    DoubleToBuffer() and FloatToBuffer() write the text to the given
-//    buffer and return it.  The buffer must be at least
-//    kDoubleToBufferSize bytes for doubles and kFloatToBufferSize
-//    bytes for floats.  kFastToBufferSize is also guaranteed to be large
-//    enough to hold either.
-//
 //    Return value: string
 // ----------------------------------------------------------------------
 PROTOBUF_EXPORT std::string SimpleDtoa(double value);
 PROTOBUF_EXPORT std::string SimpleFtoa(float value);
-
-PROTOBUF_EXPORT char* DoubleToBuffer(double i, char* buffer);
-PROTOBUF_EXPORT char* FloatToBuffer(float i, char* buffer);
-
-// In practice, doubles should never need more than 24 bytes and floats
-// should never need more than 14 (including null terminators), but we
-// overestimate to be safe.
-static const int kDoubleToBufferSize = 32;
-static const int kFloatToBufferSize = 24;
 
 namespace strings {
 
@@ -410,17 +204,6 @@ using Hex = absl::Hex;
 //    Return a lower-case hex string representation of the given integer.
 // ----------------------------------------------------------------------
 PROTOBUF_EXPORT std::string ToHex(uint64_t num);
-
-// ----------------------------------------------------------------------
-// GlobalReplaceSubstring()
-//    Replaces all instances of a substring in a string.  Does nothing
-//    if 'substring' is empty.  Returns the number of replacements.
-//
-//    NOTE: The string pieces must not overlap s.
-// ----------------------------------------------------------------------
-PROTOBUF_EXPORT int GlobalReplaceSubstring(const std::string& substring,
-                                           const std::string& replacement,
-                                           std::string* s);
 
 namespace strings {
 // Encode src into dest web-safely with padding.
@@ -450,15 +233,6 @@ PROTOBUF_EXPORT int EncodeAsUTF8Char(uint32_t code_point, char* output);
 // ----------------------------------------------------------------------
 PROTOBUF_EXPORT int UTF8FirstLetterNumBytes(const char* src, int len);
 
-namespace strings {
-inline bool EndsWith(absl::string_view text, absl::string_view suffix) {
-  return suffix.empty() ||
-      (text.size() >= suffix.size() &&
-       memcmp(text.data() + (text.size() - suffix.size()), suffix.data(),
-              suffix.size()) == 0);
-}
-}  // namespace strings
-
 namespace internal {
 
 // A locale-independent version of the standard strtod(), which always
@@ -470,6 +244,6 @@ double NoLocaleStrtod(const char* str, char** endptr);
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_STUBS_STRUTIL_H__

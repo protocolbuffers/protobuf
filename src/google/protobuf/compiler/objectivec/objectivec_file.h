@@ -35,8 +35,9 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/io/printer.h>
+#include "google/protobuf/compiler/objectivec/objectivec_options.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {
@@ -49,17 +50,6 @@ class MessageGenerator;
 
 class FileGenerator {
  public:
-  struct GenerationOptions {
-    GenerationOptions()
-      // TODO(thomasvl): Eventually flip this default to false for better
-      // interop with Swift if proto usages span modules made from ObjC sources.
-      : headers_use_forward_declarations(true) {}
-    std::string generate_for_named_framework;
-    std::string named_framework_to_proto_path_mappings_path;
-    std::string runtime_import_prefix;
-    bool headers_use_forward_declarations;
-  };
-
   // Wrapper for some common state that is shared between file generations to
   // improve performance when more than one file is generated at a time.
   struct CommonState {

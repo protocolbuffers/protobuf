@@ -63,20 +63,20 @@
 #include <sstream>
 #include <utility>
 
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/test_util2.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/io_win32.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include "google/protobuf/testing/file.h"
+#include "google/protobuf/test_util2.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/io_win32.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
 
 #if HAVE_ZLIB
-#include <google/protobuf/io/gzip_stream.h>
+#include "google/protobuf/io/gzip_stream.h"
 #endif
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 
 namespace google {
@@ -720,6 +720,9 @@ TEST_F(IoTest, StringIo) {
 
 // Verifies that outputs up to kint32max can be created.
 TEST_F(IoTest, LargeOutput) {
+  // Filter out this test on 32-bit architectures.
+  if(sizeof(void*) < 8) return;
+
   std::string str;
   StringOutputStream output(&str);
   void* unused_data;
@@ -1053,7 +1056,7 @@ TEST_F(IoTest, LimitingInputStream) {
 TEST_F(IoTest, LimitingInputStreamByteCount) {
   const int kHalfBufferSize = 128;
   const int kBufferSize = kHalfBufferSize * 2;
-  uint8 buffer[kBufferSize];
+  uint8 buffer[kBufferSize] = {};
 
   // Set up input. Only allow half to be read at once.
   ArrayInputStream array_input(buffer, kBufferSize, kHalfBufferSize);

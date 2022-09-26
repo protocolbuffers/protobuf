@@ -118,6 +118,15 @@
 #define PROTOBUF_has_builtin_DEFINED_
 #endif
 
+#ifdef ADDRESS_SANITIZER
+#include <sanitizer/asan_interface.h>
+#define PROTOBUF_POISON_MEMORY_REGION(p, n) ASAN_POISON_MEMORY_REGION(p, n)
+#define PROTOBUF_UNPOISON_MEMORY_REGION(p, n) ASAN_UNPOISON_MEMORY_REGION(p, n)
+#else  // ADDRESS_SANITIZER
+#define PROTOBUF_POISON_MEMORY_REGION(p, n)
+#define PROTOBUF_UNPOISON_MEMORY_REGION(p, n)
+#endif  // ADDRESS_SANITIZER
+
 // Portable PROTOBUF_BUILTIN_BSWAPxx definitions
 // Code must check for availability, e.g.: `defined(PROTOBUF_BUILTIN_BSWAP32)`
 #ifdef PROTOBUF_BUILTIN_BSWAP16
@@ -212,7 +221,7 @@
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 3021005
+#define PROTOBUF_VERSION 3021006
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
@@ -814,8 +823,8 @@
 #endif
 
 // Tail call table-driven parsing can be enabled by defining
-// PROTOBUF_EXPERIMENTAL_USE_TAIL_CALL_TABLE_PARSER at compilation time. Note
-// that this macro is for small-scale testing only, and is not supported.
+// PROTOBUF_EXPERIMENTAL_USE_TAIL_CALL_TABLE_PARSER at compilation time.
+// We hope to turn on table-driven parsing by default in Q4 2022.
 #ifdef PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED
 #error PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED was previously declared
 #endif
@@ -826,9 +835,7 @@
 #ifdef PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION
 #error PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION was previously defined
 #endif
-#if !defined(PROTOBUF_TEMPORARY_DISABLE_TABLE_PARSER_ON_REFLECTION) && \
-    (defined(PROTOBUF_EXPERIMENTAL_USE_TABLE_PARSER_ON_REFLECTION) ||  \
-     defined(PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED))
+#if !defined(PROTOBUF_TEMPORARY_DISABLE_TABLE_PARSER_ON_REFLECTION)
 #define PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION 1
 #endif  // PROTOBUF_ENABLE_FORCE_ALLOCATION_ON_CONSTRUCTION
 
@@ -875,6 +882,13 @@
 #define PROTOBUF_DID_UNDEF_PACKAGE
 #pragma push_macro("PACKAGE")
 #undef PACKAGE
+#endif
+
+// linux is a legacy MACRO defined in most popular C++ standards.
+#ifdef linux
+#pragma push_macro("linux")
+#undef linux
+#define PROTOBUF_DID_UNDEF_LINUX
 #endif
 
 // Windows declares several inconvenient macro names.  We #undef them and then

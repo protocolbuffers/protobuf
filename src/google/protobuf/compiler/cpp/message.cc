@@ -32,7 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/cpp/message.h>
+#include "google/protobuf/compiler/cpp/message.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -45,31 +45,33 @@
 #include <utility>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/map_entry_lite.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/map_entry_lite.h"
+#include "google/protobuf/wire_format.h"
+#include "google/protobuf/stubs/strutil.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/stubs/stringprintf.h>
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include <google/protobuf/compiler/cpp/enum.h>
-#include <google/protobuf/compiler/cpp/extension.h>
-#include <google/protobuf/compiler/cpp/field.h>
-#include <google/protobuf/compiler/cpp/helpers.h>
-#include <google/protobuf/compiler/cpp/padding_optimizer.h>
-#include <google/protobuf/compiler/cpp/parse_function_generator.h>
-#include <google/protobuf/descriptor.pb.h>
+#include "google/protobuf/compiler/cpp/enum.h"
+#include "google/protobuf/compiler/cpp/extension.h"
+#include "google/protobuf/compiler/cpp/field.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/padding_optimizer.h"
+#include "google/protobuf/compiler/cpp/parse_function_generator.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/generated_message_tctable_gen.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -410,7 +412,6 @@ class ColdChunkSkipper {
         has_bit_indices_(has_bit_indices),
         access_info_map_(options.access_info_map),
         cold_threshold_(cold_threshold) {
-    SetCommonVars(options, &variables_);
     SetCommonMessageDataVariables(descriptor, &variables_);
   }
 
@@ -473,8 +474,7 @@ void ColdChunkSkipper::OnStartChunk(int chunk, int cached_has_word_index,
   }
 
   // Emit has_bit check for each has_bit_dword index.
-  format("if (PROTOBUF_PREDICT_FALSE(");
-  int first_word = HasbitWord(chunk, 0);
+  format("if (PROTOBUF_PREDICT_FALSE(false");
   while (chunk < limit_chunk_) {
     uint32_t mask = 0;
     int this_word = HasbitWord(chunk, 0);
@@ -488,9 +488,7 @@ void ColdChunkSkipper::OnStartChunk(int chunk, int cached_has_word_index,
       }
     }
 
-    if (this_word != first_word) {
-      format(" ||\n    ");
-    }
+    format(" ||\n    ");
     format.Set("mask", absl::Hex(mask, absl::kZeroPad8));
     if (this_word == cached_has_word_index) {
       format("(cached_has_bits & 0x$mask$u) != 0");
@@ -669,13 +667,46 @@ MessageGenerator::MessageGenerator(
   message_layout_helper_->OptimizeLayout(&optimized_order_, options_,
                                          scc_analyzer_);
 
-  // This message has hasbits iff one or more fields need one.
+  // Allocate has_bit_indices_ iff the message has a field that needs hasbits.
+  int has_bit_fields = 0;
   for (auto field : optimized_order_) {
     if (HasHasbit(field)) {
+      ++has_bit_fields;
       if (has_bit_indices_.empty()) {
         has_bit_indices_.resize(descriptor_->field_count(), kNoHasbit);
       }
-      has_bit_indices_[field->index()] = max_has_bit_index_++;
+    }
+  }
+  // For messages with more than 32 has bits, do a first pass which only
+  // allocates has bits to fields that might be in the fast table.
+  bool allocated_fast[32] = {};
+  if (has_bit_fields > 32) {
+    for (const auto* field : optimized_order_) {
+      if (HasHasbit(field)) {
+        if (!IsDescriptorEligibleForFastParsing(field)) continue;
+
+        // A fast-table with > 16 entries ends up incorporating
+        // the high-bit for VarInt encoding into the index for the table,
+        // so we have to incorporate it here also, when computing the
+        // index likely to be used for that table.
+        int fast_index = field->number();
+        if (fast_index >= 16) fast_index = 16 + (fast_index % 16);
+        GOOGLE_CHECK_GE(fast_index, 1);
+        GOOGLE_CHECK_LT(fast_index, 32);
+
+        if (allocated_fast[fast_index]) continue;
+        allocated_fast[fast_index] = true;
+
+        has_bit_indices_[field->index()] = max_has_bit_index_++;
+      }
+    }
+  }
+  // Then do a second pass which allocates all remaining has bits
+  for (const auto* field : optimized_order_) {
+    if (HasHasbit(field)) {
+      if (has_bit_indices_[field->index()] == kNoHasbit) {
+        has_bit_indices_[field->index()] = max_has_bit_index_++;
+      }
     }
     if (IsStringInlined(field, options_)) {
       if (inlined_string_indices_.empty()) {
@@ -687,6 +718,7 @@ MessageGenerator::MessageGenerator(
       inlined_string_indices_[field->index()] = max_inlined_string_index_++;
     }
   }
+  GOOGLE_CHECK_EQ(max_has_bit_index_, has_bit_fields);
 
   if (!has_bit_indices_.empty()) {
     field_generators_.SetHasBitIndices(has_bit_indices_);
@@ -792,38 +824,36 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
 
     format.AddMap(vars);
 
-      if (field->is_repeated()) {
+    if (field->is_repeated()) {
+      format("$deprecated_attr$int ${1$$name$_size$}$() const$2$\n", field,
+             !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
+      if (!IsFieldStripped(field, options_)) {
         format(
-            "$deprecated_attr$int ${1$$name$_size$}$() const$2$\n", field,
-            !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
-        if (!IsFieldStripped(field, options_)) {
-          format(
-              "private:\n"
-              "int ${1$_internal_$name$_size$}$() const;\n"
-              "public:\n",
-              field);
-        }
-      } else if (HasHasMethod(field)) {
-        format(
-            "$deprecated_attr$bool ${1$has_$name$$}$() const$2$\n", field,
-            !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
-        if (!IsFieldStripped(field, options_)) {
-          format(
-              "private:\n"
-              "bool _internal_has_$name$() const;\n"
-              "public:\n");
-        }
-      } else if (HasPrivateHasMethod(field)) {
-        if (!IsFieldStripped(field, options_)) {
-          format(
-              "private:\n"
-              "bool ${1$_internal_has_$name$$}$() const;\n"
-              "public:\n",
-              field);
-        }
+            "private:\n"
+            "int ${1$_internal_$name$_size$}$() const;\n"
+            "public:\n",
+            field);
       }
-      format("$deprecated_attr$void ${1$clear_$name$$}$()$2$\n", field,
-             !IsFieldStripped(field, options_) ? ";" : "{__builtin_trap();}");
+    } else if (HasHasMethod(field)) {
+      format("$deprecated_attr$bool ${1$has_$name$$}$() const$2$\n", field,
+             !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
+      if (!IsFieldStripped(field, options_)) {
+        format(
+            "private:\n"
+            "bool _internal_has_$name$() const;\n"
+            "public:\n");
+      }
+    } else if (HasPrivateHasMethod(field)) {
+      if (!IsFieldStripped(field, options_)) {
+        format(
+            "private:\n"
+            "bool ${1$_internal_has_$name$$}$() const;\n"
+            "public:\n",
+            field);
+      }
+    }
+    format("$deprecated_attr$void ${1$clear_$name$$}$()$2$\n", field,
+           !IsFieldStripped(field, options_) ? ";" : "{__builtin_trap();}");
 
     // Generate type-specific accessor declarations.
     field_generators_.get(field).GenerateAccessorDeclarations(printer);
@@ -1268,9 +1298,9 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
       GenerateSingularFieldHasBits(field, format);
     }
 
-      if (!IsCrossFileMaybeMap(field)) {
-        GenerateFieldClear(field, true, format);
-      }
+    if (!IsCrossFileMaybeMap(field)) {
+      GenerateFieldClear(field, true, format);
+    }
     // Generate type-specific accessors.
     if (!IsFieldStripped(field, options_)) {
       field_generators_.get(field).GenerateInlineAccessorDefinitions(printer);
@@ -2131,8 +2161,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
   format("};\n\n");
   for (auto field : FieldRange(descriptor_)) {
     if (!IsFieldStripped(field, options_)) {
-      field_generators_.get(field).GenerateInternalAccessorDefinitions(
-          printer);
+      field_generators_.get(field).GenerateInternalAccessorDefinitions(printer);
     }
   }
 
@@ -2678,8 +2707,7 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* printer) {
       continue;
     }
     put_sep();
-    field_generators_.get(field).GenerateConstexprAggregateInitializer(
-        printer);
+    field_generators_.get(field).GenerateConstexprAggregateInitializer(printer);
   }
   if (ShouldSplit(descriptor_, options_)) {
     put_sep();
@@ -4450,4 +4478,4 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

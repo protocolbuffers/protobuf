@@ -42,7 +42,7 @@
 #include <string>
 #include <unordered_map>
 
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/stubs/common.h"
 
 namespace google {
 namespace protobuf {

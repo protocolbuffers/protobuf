@@ -30,18 +30,21 @@
 
 // Implements the DescriptorPool, which collects all descriptors.
 
+#include <string>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/pyext/descriptor.h>
-#include <google/protobuf/pyext/descriptor_database.h>
-#include <google/protobuf/pyext/descriptor_pool.h>
-#include <google/protobuf/pyext/message.h>
-#include <google/protobuf/pyext/message_factory.h>
-#include <google/protobuf/pyext/scoped_pyobject_ptr.h>
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/pyext/descriptor.h"
+#include "google/protobuf/pyext/descriptor_database.h"
+#include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/pyext/message.h"
+#include "google/protobuf/pyext/message_factory.h"
+#include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 #include "absl/strings/string_view.h"
 
 #define PyString_AsStringAndSize(ob, charpp, sizep)              \

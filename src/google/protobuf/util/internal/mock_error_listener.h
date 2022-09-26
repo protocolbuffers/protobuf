@@ -33,8 +33,8 @@
 
 #include <gmock/gmock.h>
 #include "absl/strings/string_view.h"
-#include <google/protobuf/util/internal/error_listener.h>
-#include <google/protobuf/util/internal/location_tracker.h>
+#include "google/protobuf/util/internal/error_listener.h"
+#include "google/protobuf/util/internal/location_tracker.h"
 
 namespace google {
 namespace protobuf {

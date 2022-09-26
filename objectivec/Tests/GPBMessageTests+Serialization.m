@@ -113,6 +113,9 @@
   // Proto3 optionals should be just like proto2, zero values also get serialized.
   //
 
+  // Disable clang-format for the macros.
+  // clang-format off
+
 //%PDDM-DEFINE PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(FIELD, ZERO_VALUE, EXPECTED_LEN)
 //%  {  // optional##FIELD
 //%    Message3Optional *msg = [[Message3Optional alloc] init];
@@ -153,7 +156,6 @@
 //%PROTO3_TEST_SERIALIZE_OPTIONAL_FIELD(Enum, Message3Optional_Enum_Foo, 3)
 //%PDDM-EXPAND PROTO3_TEST_SERIALIZE_OPTIONAL_FIELDS()
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   {  // optionalInt32
     Message3Optional *msg = [[Message3Optional alloc] init];
@@ -415,17 +417,17 @@
     [msg release];
   }
 
-// clang-format on
 //%PDDM-EXPAND-END PROTO3_TEST_SERIALIZE_OPTIONAL_FIELDS()
+
+  // clang-format on
 }
 
 - (void)testProto2UnknownEnumToUnknownField {
   Message3 *orig = [[Message3 alloc] init];
 
   orig.optionalEnum = Message3_Enum_Extra3;
-  orig.repeatedEnumArray =
-      [GPBEnumArray arrayWithValidationFunction:Message3_Enum_IsValidValue
-                                       rawValue:Message3_Enum_Extra3];
+  orig.repeatedEnumArray = [GPBEnumArray arrayWithValidationFunction:Message3_Enum_IsValidValue
+                                                            rawValue:Message3_Enum_Extra3];
   orig.oneofEnum = Message3_Enum_Extra3;
 
   NSData *data = [orig data];
@@ -444,15 +446,12 @@
 
   XCTAssertEqual([unknownFields countOfFields], 3U);
   XCTAssertTrue([unknownFields hasField:Message2_FieldNumber_OptionalEnum]);
-  XCTAssertTrue(
-      [unknownFields hasField:Message2_FieldNumber_RepeatedEnumArray]);
+  XCTAssertTrue([unknownFields hasField:Message2_FieldNumber_RepeatedEnumArray]);
   XCTAssertTrue([unknownFields hasField:Message2_FieldNumber_OneofEnum]);
 
-  GPBUnknownField *field =
-      [unknownFields getField:Message2_FieldNumber_OptionalEnum];
+  GPBUnknownField *field = [unknownFields getField:Message2_FieldNumber_OptionalEnum];
   XCTAssertEqual(field.varintList.count, 1U);
-  XCTAssertEqual([field.varintList valueAtIndex:0],
-                 (uint64_t)Message3_Enum_Extra3);
+  XCTAssertEqual([field.varintList valueAtIndex:0], (uint64_t)Message3_Enum_Extra3);
 
   field = [unknownFields getField:Message2_FieldNumber_RepeatedEnumArray];
   XCTAssertEqual(field.varintList.count, 1U);
@@ -460,36 +459,32 @@
 
   field = [unknownFields getField:Message2_FieldNumber_OneofEnum];
   XCTAssertEqual(field.varintList.count, 1U);
-  XCTAssertEqual([field.varintList valueAtIndex:0],
-                 (uint64_t)Message3_Enum_Extra3);
+  XCTAssertEqual([field.varintList valueAtIndex:0], (uint64_t)Message3_Enum_Extra3);
 
   [msg release];
   [orig release];
 }
 
 - (void)testProto3UnknownEnumPreserving {
-  UnknownEnumsMyMessagePlusExtra *orig =
-      [UnknownEnumsMyMessagePlusExtra message];
+  UnknownEnumsMyMessagePlusExtra *orig = [UnknownEnumsMyMessagePlusExtra message];
 
   orig.e = UnknownEnumsMyEnumPlusExtra_EExtra;
-  orig.repeatedEArray = [GPBEnumArray
-      arrayWithValidationFunction:UnknownEnumsMyEnumPlusExtra_IsValidValue
-                         rawValue:UnknownEnumsMyEnumPlusExtra_EExtra];
-  orig.repeatedPackedEArray = [GPBEnumArray
-      arrayWithValidationFunction:UnknownEnumsMyEnumPlusExtra_IsValidValue
-                         rawValue:UnknownEnumsMyEnumPlusExtra_EExtra];
+  orig.repeatedEArray =
+      [GPBEnumArray arrayWithValidationFunction:UnknownEnumsMyEnumPlusExtra_IsValidValue
+                                       rawValue:UnknownEnumsMyEnumPlusExtra_EExtra];
+  orig.repeatedPackedEArray =
+      [GPBEnumArray arrayWithValidationFunction:UnknownEnumsMyEnumPlusExtra_IsValidValue
+                                       rawValue:UnknownEnumsMyEnumPlusExtra_EExtra];
   orig.oneofE1 = UnknownEnumsMyEnumPlusExtra_EExtra;
 
   // Everything should be there via raw values.
 
   NSData *data = [orig data];
   XCTAssertNotNil(data);
-  UnknownEnumsMyMessage *msg =
-      [UnknownEnumsMyMessage parseFromData:data error:NULL];
+  UnknownEnumsMyMessage *msg = [UnknownEnumsMyMessage parseFromData:data error:NULL];
 
   XCTAssertEqual(msg.e, UnknownEnumsMyEnum_GPBUnrecognizedEnumeratorValue);
-  XCTAssertEqual(UnknownEnumsMyMessage_E_RawValue(msg),
-                 UnknownEnumsMyEnumPlusExtra_EExtra);
+  XCTAssertEqual(UnknownEnumsMyMessage_E_RawValue(msg), UnknownEnumsMyEnumPlusExtra_EExtra);
   XCTAssertEqual(msg.repeatedEArray.count, 1U);
   XCTAssertEqual([msg.repeatedEArray valueAtIndex:0],
                  UnknownEnumsMyEnum_GPBUnrecognizedEnumeratorValue);
@@ -500,10 +495,8 @@
                  UnknownEnumsMyEnum_GPBUnrecognizedEnumeratorValue);
   XCTAssertEqual([msg.repeatedPackedEArray rawValueAtIndex:0],
                  (UnknownEnumsMyEnum)UnknownEnumsMyEnumPlusExtra_EExtra);
-  XCTAssertEqual(msg.oneofE1,
-                 UnknownEnumsMyEnum_GPBUnrecognizedEnumeratorValue);
-  XCTAssertEqual(UnknownEnumsMyMessage_OneofE1_RawValue(msg),
-                 UnknownEnumsMyEnumPlusExtra_EExtra);
+  XCTAssertEqual(msg.oneofE1, UnknownEnumsMyEnum_GPBUnrecognizedEnumeratorValue);
+  XCTAssertEqual(UnknownEnumsMyMessage_OneofE1_RawValue(msg), UnknownEnumsMyEnumPlusExtra_EExtra);
 
   // Everything should go out and come back.
 
@@ -512,13 +505,14 @@
 
   XCTAssertEqual(orig.e, UnknownEnumsMyEnumPlusExtra_EExtra);
   XCTAssertEqual(orig.repeatedEArray.count, 1U);
-  XCTAssertEqual([orig.repeatedEArray valueAtIndex:0],
-                 UnknownEnumsMyEnumPlusExtra_EExtra);
+  XCTAssertEqual([orig.repeatedEArray valueAtIndex:0], UnknownEnumsMyEnumPlusExtra_EExtra);
   XCTAssertEqual(orig.repeatedPackedEArray.count, 1U);
-  XCTAssertEqual([orig.repeatedPackedEArray valueAtIndex:0],
-                 UnknownEnumsMyEnumPlusExtra_EExtra);
+  XCTAssertEqual([orig.repeatedPackedEArray valueAtIndex:0], UnknownEnumsMyEnumPlusExtra_EExtra);
   XCTAssertEqual(orig.oneofE1, UnknownEnumsMyEnumPlusExtra_EExtra);
 }
+
+// Disable clang-format for the macros.
+// clang-format off
 
 //%PDDM-DEFINE TEST_ROUNDTRIP_ONEOF(MESSAGE, FIELD, VALUE)
 //%TEST_ROUNDTRIP_ONEOF_ADV(MESSAGE, FIELD, VALUE, )
@@ -583,7 +577,6 @@
 //%
 //%PDDM-EXPAND TEST_ROUNDTRIP_ONEOFS(2, NO)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)testProto2RoundTripOneof {
 
@@ -814,10 +807,8 @@
   [subMessage release];
 }
 
-// clang-format on
 //%PDDM-EXPAND TEST_ROUNDTRIP_ONEOFS(3, YES)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
 - (void)testProto3RoundTripOneof {
 
@@ -1034,8 +1025,9 @@
   [subMessage release];
 }
 
-// clang-format on
 //%PDDM-EXPAND-END (2 expansions)
+
+// clang-format on
 
 - (void)testPackedUnpackedMessageParsing {
   // packed is optional, a repeated field should parse when packed or unpacked.
@@ -1053,15 +1045,13 @@
                            @"Data should differ (packed vs unpacked) use");
 
   NSError *error = nil;
-  TestPackedTypes *packedParse =
-      [TestPackedTypes parseFromData:unpackedData error:&error];
+  TestPackedTypes *packedParse = [TestPackedTypes parseFromData:unpackedData error:&error];
   XCTAssertNotNil(packedParse);
   XCTAssertNil(error);
   XCTAssertEqualObjects(packedParse, packedOrig);
 
   error = nil;
-  TestUnpackedTypes *unpackedParsed =
-      [TestUnpackedTypes parseFromData:packedData error:&error];
+  TestUnpackedTypes *unpackedParsed = [TestUnpackedTypes parseFromData:packedData error:&error];
   XCTAssertNotNil(unpackedParsed);
   XCTAssertNil(error);
   XCTAssertEqualObjects(unpackedParsed, unpackedOrig);
@@ -1118,8 +1108,7 @@
   XCTAssertEqualObjects(fieldsData, extsData);
 
   NSError *error = nil;
-  TestPackedTypes *fieldsParse =
-      [TestPackedTypes parseFromData:extsData error:&error];
+  TestPackedTypes *fieldsParse = [TestPackedTypes parseFromData:extsData error:&error];
   XCTAssertNotNil(fieldsParse);
   XCTAssertNil(error);
   XCTAssertEqualObjects(fieldsParse, fieldsOrig);
@@ -1149,8 +1138,7 @@
   XCTAssertNotNil(extsData);
   XCTAssertEqualObjects(fieldsData, extsData);
 
-  TestUnpackedTypes *fieldsParse =
-      [TestUnpackedTypes parseFromData:extsData error:NULL];
+  TestUnpackedTypes *fieldsParse = [TestUnpackedTypes parseFromData:extsData error:NULL];
   XCTAssertNotNil(fieldsParse);
   XCTAssertEqualObjects(fieldsParse, fieldsOrig);
 
@@ -1163,11 +1151,9 @@
 }
 
 - (void)testErrorSubsectionInvalidLimit {
-  NSData *data = DataFromCStr(
-      "\x0A\x08\x0A\x07\x12\x04\x72\x02\x4B\x50\x12\x04\x72\x02\x4B\x50");
+  NSData *data = DataFromCStr("\x0A\x08\x0A\x07\x12\x04\x72\x02\x4B\x50\x12\x04\x72\x02\x4B\x50");
   NSError *error = nil;
-  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data
-                                                        error:&error];
+  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data error:&error];
   XCTAssertNil(msg);
   XCTAssertNotNil(error);
   XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
@@ -1177,8 +1163,7 @@
 - (void)testErrorSubsectionLimitReached {
   NSData *data = DataFromCStr("\x0A\x06\x12\x03\x72\x02\x4B\x50");
   NSError *error = nil;
-  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data
-                                                        error:&error];
+  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data error:&error];
   XCTAssertNil(msg);
   XCTAssertNotNil(error);
   XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
@@ -1208,8 +1193,7 @@
 - (void)testErrorInvalidSize {
   NSData *data = DataFromCStr("\x72\x03\x4B\x50");
   NSError *error = nil;
-  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data
-                                                        error:&error];
+  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data error:&error];
   XCTAssertNil(msg);
   XCTAssertNotNil(error);
   XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
@@ -1219,8 +1203,7 @@
 - (void)testErrorInvalidTag {
   NSData *data = DataFromCStr("\x0F");
   NSError *error = nil;
-  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data
-                                                        error:&error];
+  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data error:&error];
   XCTAssertNil(msg);
   XCTAssertNotNil(error);
   XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
@@ -1230,12 +1213,7 @@
 - (void)testZeroFieldNum {
   // These are ConformanceTestSuite::TestIllegalTags.
 
-  const char *tests[] = {
-    "\1DEADBEEF",
-    "\2\1\1",
-    "\3\4",
-    "\5DEAD"
-  };
+  const char *tests[] = {"\1DEADBEEF", "\2\1\1", "\3\4", "\5DEAD"};
 
   for (size_t i = 0; i < GPBARRAYSIZE(tests); ++i) {
     NSData *data = DataFromCStr(tests[i]);
@@ -1263,27 +1241,25 @@
 }
 
 - (void)testErrorRecursionDepthReached {
-  NSData *data = DataFromCStr(
-      "\x0A\xF2\x01\x0A\xEF\x01\x0A\xEC\x01\x0A\xE9\x01\x0A\xE6\x01"
-      "\x0A\xE3\x01\x0A\xE0\x01\x0A\xDD\x01\x0A\xDA\x01\x0A\xD7\x01"
-      "\x0A\xD4\x01\x0A\xD1\x01\x0A\xCE\x01\x0A\xCB\x01\x0A\xC8\x01"
-      "\x0A\xC5\x01\x0A\xC2\x01\x0A\xBF\x01\x0A\xBC\x01\x0A\xB9\x01"
-      "\x0A\xB6\x01\x0A\xB3\x01\x0A\xB0\x01\x0A\xAD\x01\x0A\xAA\x01"
-      "\x0A\xA7\x01\x0A\xA4\x01\x0A\xA1\x01\x0A\x9E\x01\x0A\x9B\x01"
-      "\x0A\x98\x01\x0A\x95\x01\x0A\x92\x01\x0A\x8F\x01\x0A\x8C\x01"
-      "\x0A\x89\x01\x0A\x86\x01\x0A\x83\x01\x0A\x80\x01\x0A\x7E"
-      "\x0A\x7C\x0A\x7A\x0A\x78\x0A\x76\x0A\x74\x0A\x72\x0A\x70"
-      "\x0A\x6E\x0A\x6C\x0A\x6A\x0A\x68\x0A\x66\x0A\x64\x0A\x62"
-      "\x0A\x60\x0A\x5E\x0A\x5C\x0A\x5A\x0A\x58\x0A\x56\x0A\x54"
-      "\x0A\x52\x0A\x50\x0A\x4E\x0A\x4C\x0A\x4A\x0A\x48\x0A\x46"
-      "\x0A\x44\x0A\x42\x0A\x40\x0A\x3E\x0A\x3C\x0A\x3A\x0A\x38"
-      "\x0A\x36\x0A\x34\x0A\x32\x0A\x30\x0A\x2E\x0A\x2C\x0A\x2A"
-      "\x0A\x28\x0A\x26\x0A\x24\x0A\x22\x0A\x20\x0A\x1E\x0A\x1C"
-      "\x0A\x1A\x0A\x18\x0A\x16\x0A\x14\x0A\x12\x0A\x10\x0A\x0E"
-      "\x0A\x0C\x0A\x0A\x0A\x08\x0A\x06\x12\x04\x72\x02\x4B\x50");
+  NSData *data = DataFromCStr("\x0A\xF2\x01\x0A\xEF\x01\x0A\xEC\x01\x0A\xE9\x01\x0A\xE6\x01"
+                              "\x0A\xE3\x01\x0A\xE0\x01\x0A\xDD\x01\x0A\xDA\x01\x0A\xD7\x01"
+                              "\x0A\xD4\x01\x0A\xD1\x01\x0A\xCE\x01\x0A\xCB\x01\x0A\xC8\x01"
+                              "\x0A\xC5\x01\x0A\xC2\x01\x0A\xBF\x01\x0A\xBC\x01\x0A\xB9\x01"
+                              "\x0A\xB6\x01\x0A\xB3\x01\x0A\xB0\x01\x0A\xAD\x01\x0A\xAA\x01"
+                              "\x0A\xA7\x01\x0A\xA4\x01\x0A\xA1\x01\x0A\x9E\x01\x0A\x9B\x01"
+                              "\x0A\x98\x01\x0A\x95\x01\x0A\x92\x01\x0A\x8F\x01\x0A\x8C\x01"
+                              "\x0A\x89\x01\x0A\x86\x01\x0A\x83\x01\x0A\x80\x01\x0A\x7E"
+                              "\x0A\x7C\x0A\x7A\x0A\x78\x0A\x76\x0A\x74\x0A\x72\x0A\x70"
+                              "\x0A\x6E\x0A\x6C\x0A\x6A\x0A\x68\x0A\x66\x0A\x64\x0A\x62"
+                              "\x0A\x60\x0A\x5E\x0A\x5C\x0A\x5A\x0A\x58\x0A\x56\x0A\x54"
+                              "\x0A\x52\x0A\x50\x0A\x4E\x0A\x4C\x0A\x4A\x0A\x48\x0A\x46"
+                              "\x0A\x44\x0A\x42\x0A\x40\x0A\x3E\x0A\x3C\x0A\x3A\x0A\x38"
+                              "\x0A\x36\x0A\x34\x0A\x32\x0A\x30\x0A\x2E\x0A\x2C\x0A\x2A"
+                              "\x0A\x28\x0A\x26\x0A\x24\x0A\x22\x0A\x20\x0A\x1E\x0A\x1C"
+                              "\x0A\x1A\x0A\x18\x0A\x16\x0A\x14\x0A\x12\x0A\x10\x0A\x0E"
+                              "\x0A\x0C\x0A\x0A\x0A\x08\x0A\x06\x12\x04\x72\x02\x4B\x50");
   NSError *error = nil;
-  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data
-                                                        error:&error];
+  NestedTestAllTypes *msg = [NestedTestAllTypes parseFromData:data error:&error];
   XCTAssertNil(msg);
   XCTAssertNotNil(error);
   XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
@@ -1294,9 +1270,7 @@
   NSData *data = DataFromCStr("\xFF\xFF\xFF\xFF\x0F");
   GPBCodedInputStream *input = [GPBCodedInputStream streamWithData:data];
   NSError *error;
-  [GPBMessage parseDelimitedFromCodedInputStream:input
-                               extensionRegistry:nil
-                                           error:&error];
+  [GPBMessage parseDelimitedFromCodedInputStream:input extensionRegistry:nil error:&error];
   XCTAssertNil(error);
 }
 
@@ -1432,10 +1406,8 @@
       initWithValidationFunction:Proto2MapEnumPlusExtra_IsValidValue] autorelease];
   orig.unknownMapField = [[[GPBInt32EnumDictionary alloc]
       initWithValidationFunction:Proto2MapEnumPlusExtra_IsValidValue] autorelease];
-  [orig.knownMapField setEnum:Proto2MapEnumPlusExtra_EProto2MapEnumFoo
-                       forKey:0];
-  [orig.unknownMapField setEnum:Proto2MapEnumPlusExtra_EProto2MapEnumExtra
-                         forKey:0];
+  [orig.knownMapField setEnum:Proto2MapEnumPlusExtra_EProto2MapEnumFoo forKey:0];
+  [orig.unknownMapField setEnum:Proto2MapEnumPlusExtra_EProto2MapEnumExtra forKey:0];
 
   NSData *data = [orig data];
   XCTAssertNotNil(data);
@@ -1447,8 +1419,7 @@
   XCTAssertEqual(msg1.unknownFields.countOfFields, 1U);
 
   data = [msg1 data];
-  TestEnumMapPlusExtra *msg2 =
-      [TestEnumMapPlusExtra parseFromData:data error:NULL];
+  TestEnumMapPlusExtra *msg2 = [TestEnumMapPlusExtra parseFromData:data error:NULL];
   val = -1;
   XCTAssertEqual(msg2.knownMapField.count, 1U);
   XCTAssertTrue([msg2.knownMapField getEnum:&val forKey:0]);

@@ -34,13 +34,13 @@
 #include <memory>
 
 #include "absl/base/casts.h"
-#include <google/protobuf/map.h>
-#include <google/protobuf/map_field.h>
-#include <google/protobuf/map_type_handler.h>
-#include <google/protobuf/port.h>
+#include "google/protobuf/map.h"
+#include "google/protobuf/map_field.h"
+#include "google/protobuf/map_type_handler.h"
+#include "google/protobuf/port.h"
 
 // must be last
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -376,6 +376,6 @@ size_t MapField<Derived, Key, T, kKeyFieldType,
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_MAP_FIELD_INL_H__

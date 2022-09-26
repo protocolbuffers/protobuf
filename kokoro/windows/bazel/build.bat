@@ -24,7 +24,7 @@ bazel %BAZEL_STARTUP% build //:protoc //:protobuf //:protobuf_lite %BAZEL_FLAGS%
 @rem TODO(b/241484899) Enable conformance tests on windows.
 bazel %BAZEL_STARTUP% test %BAZEL_FLAGS% ^
   --test_tag_filters=-conformance --build_tag_filters=-conformance ^
-  //src/...  || goto :error
+  //src/...  @com_google_protobuf_examples//... || goto :error
 
 goto :EOF
 

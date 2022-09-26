@@ -50,15 +50,15 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_BYTESTREAM_H_
 #define GOOGLE_PROTOBUF_STUBS_BYTESTREAM_H_
 
-#include <google/protobuf/stubs/common.h>
 #include <stddef.h>
 
 #include <string>
 
 #include "absl/strings/string_view.h"
+#include "google/protobuf/stubs/common.h"
 
 // Must be last.
-#include <google/protobuf/port_def.inc>  // NOLINT
+#include "google/protobuf/port_def.inc"  // NOLINT
 
 class CordByteSink;
 
@@ -80,6 +80,8 @@ namespace strings {
 class PROTOBUF_EXPORT ByteSink {
  public:
   ByteSink() {}
+  ByteSink(const ByteSink&) = delete;
+  ByteSink& operator=(const ByteSink&) = delete;
   virtual ~ByteSink() {}
 
   // Appends the "n" bytes starting at "bytes".
@@ -89,9 +91,6 @@ class PROTOBUF_EXPORT ByteSink {
   // subclasses may use internal buffers that require calling Flush() at the end
   // of the stream.
   virtual void Flush();
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ByteSink);
 };
 
 // An abstract interface for an object that produces a fixed-size sequence of
@@ -109,6 +108,8 @@ class PROTOBUF_EXPORT ByteSink {
 class PROTOBUF_EXPORT ByteSource {
  public:
   ByteSource() {}
+  ByteSource(const ByteSource&) = delete;
+  ByteSource& operator=(const ByteSource&) = delete;
   virtual ~ByteSource() {}
 
   // Returns the number of bytes left to read from the source. Available()
@@ -143,9 +144,6 @@ class PROTOBUF_EXPORT ByteSource {
   //
   // REQUIRES: Available() >= n
   virtual void CopyTo(ByteSink* sink, size_t n);
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ByteSource);
 };
 
 //
@@ -165,6 +163,8 @@ class PROTOBUF_EXPORT ByteSource {
 //
 class PROTOBUF_EXPORT UncheckedArrayByteSink : public ByteSink {
  public:
+  UncheckedArrayByteSink(const UncheckedArrayByteSink&) = delete;
+  UncheckedArrayByteSink& operator=(const UncheckedArrayByteSink&) = delete;
   explicit UncheckedArrayByteSink(char* dest) : dest_(dest) {}
   virtual void Append(const char* data, size_t n) override;
 
@@ -176,7 +176,6 @@ class PROTOBUF_EXPORT UncheckedArrayByteSink : public ByteSink {
 
  private:
   char* dest_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(UncheckedArrayByteSink);
 };
 
 // Implementation of ByteSink that writes to a sized byte array. This sink will
@@ -194,6 +193,8 @@ class PROTOBUF_EXPORT UncheckedArrayByteSink : public ByteSink {
 class PROTOBUF_EXPORT CheckedArrayByteSink : public ByteSink {
  public:
   CheckedArrayByteSink(char* outbuf, size_t capacity);
+  CheckedArrayByteSink(const CheckedArrayByteSink&) = delete;
+  CheckedArrayByteSink& operator=(const CheckedArrayByteSink&) = delete;
   virtual void Append(const char* bytes, size_t n) override;
 
   // Returns the number of bytes actually written to the sink.
@@ -208,7 +209,6 @@ class PROTOBUF_EXPORT CheckedArrayByteSink : public ByteSink {
   const size_t capacity_;
   size_t size_;
   bool overflowed_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CheckedArrayByteSink);
 };
 
 // Implementation of ByteSink that allocates an internal buffer (a char array)
@@ -230,6 +230,8 @@ class PROTOBUF_EXPORT CheckedArrayByteSink : public ByteSink {
 class PROTOBUF_EXPORT GrowingArrayByteSink : public strings::ByteSink {
  public:
   explicit GrowingArrayByteSink(size_t estimated_size);
+  GrowingArrayByteSink(const GrowingArrayByteSink&) = delete;
+  GrowingArrayByteSink& operator=(const GrowingArrayByteSink&) = delete;
   virtual ~GrowingArrayByteSink();
   virtual void Append(const char* bytes, size_t n) override;
 
@@ -244,7 +246,6 @@ class PROTOBUF_EXPORT GrowingArrayByteSink : public strings::ByteSink {
   size_t capacity_;
   char* buf_;
   size_t size_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(GrowingArrayByteSink);
 };
 
 // Implementation of ByteSink that appends to the given string.
@@ -260,11 +261,12 @@ class PROTOBUF_EXPORT GrowingArrayByteSink : public strings::ByteSink {
 class PROTOBUF_EXPORT StringByteSink : public ByteSink {
  public:
   explicit StringByteSink(std::string* dest) : dest_(dest) {}
+  StringByteSink(const StringByteSink&) = delete;
+  StringByteSink& operator=(const StringByteSink&) = delete;
   virtual void Append(const char* data, size_t n) override;
 
  private:
   std::string* dest_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(StringByteSink);
 };
 
 // Implementation of ByteSink that discards all data.
@@ -277,10 +279,9 @@ class PROTOBUF_EXPORT StringByteSink : public ByteSink {
 class PROTOBUF_EXPORT NullByteSink : public ByteSink {
  public:
   NullByteSink() {}
+  NullByteSink(const NullByteSink&) = delete;
+  NullByteSink& operator=(const NullByteSink&) = delete;
   void Append(const char* /*data*/, size_t /*n*/) override {}
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(NullByteSink);
 };
 
 //
@@ -299,6 +300,8 @@ class PROTOBUF_EXPORT NullByteSink : public ByteSink {
 class PROTOBUF_EXPORT ArrayByteSource : public ByteSource {
  public:
   explicit ArrayByteSource(absl::string_view s) : input_(s) {}
+  ArrayByteSource(const ArrayByteSource&) = delete;
+  ArrayByteSource& operator=(const ArrayByteSource&) = delete;
 
   virtual size_t Available() const override;
   virtual absl::string_view Peek() override;
@@ -306,7 +309,6 @@ class PROTOBUF_EXPORT ArrayByteSource : public ByteSource {
 
  private:
   absl::string_view input_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ArrayByteSource);
 };
 
 // Implementation of ByteSource that wraps another ByteSource, limiting the
@@ -349,6 +351,6 @@ class PROTOBUF_EXPORT LimitByteSource : public ByteSource {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>  // NOLINT
+#include "google/protobuf/port_undef.inc"  // NOLINT
 
 #endif  // GOOGLE_PROTOBUF_STUBS_BYTESTREAM_H_

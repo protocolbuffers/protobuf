@@ -35,6 +35,8 @@
 #error "port_undef.inc must be included after port_def.inc"
 #endif
 
+#undef PROTOBUF_POISON_MEMORY_REGION
+#undef PROTOBUF_UNPOISON_MEMORY_REGION
 #undef PROTOBUF_BUILTIN_BSWAP16
 #undef PROTOBUF_BUILTIN_BSWAP32
 #undef PROTOBUF_BUILTIN_BSWAP64
@@ -121,12 +123,17 @@
 
 #undef PROTOBUF_FUTURE_FINAL
 
+// Restore macros that may have been #undef'd in port_def.inc.
+
 #ifdef PROTOBUF_DID_UNDEF_PACKAGE
 #pragma pop_macro("PACKAGE")
 #undef PROTOBUF_DID_UNDEF_PACKAGE
 #endif
 
-// Restore macro that may have been #undef'd in port_def.inc.
+#ifdef PROTOBUF_DID_UNDEF_LINUX
+#pragma pop_macro("linux")
+#endif
+
 #ifdef _WIN32
 #pragma pop_macro("CREATE_NEW")
 #pragma pop_macro("DELETE")

@@ -28,13 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/compiler/java/kotlin_generator.h>
+#include "google/protobuf/compiler/java/kotlin_generator.h"
 
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/java/file.h>
-#include <google/protobuf/compiler/java/generator.h>
-#include <google/protobuf/compiler/java/helpers.h>
-#include <google/protobuf/compiler/java/options.h>
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/java/file.h"
+#include "google/protobuf/compiler/java/generator.h"
+#include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/options.h"
 
 namespace google {
 namespace protobuf {

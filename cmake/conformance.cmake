@@ -1,6 +1,8 @@
 
 add_custom_command(
-  OUTPUT ${protobuf_SOURCE_DIR}/conformance/conformance.pb.cc
+  OUTPUT
+    ${protobuf_SOURCE_DIR}/conformance/conformance.pb.h
+    ${protobuf_SOURCE_DIR}/conformance/conformance.pb.cc
   DEPENDS ${protobuf_PROTOC_EXE} ${protobuf_SOURCE_DIR}/conformance/conformance.proto
   COMMAND ${protobuf_PROTOC_EXE} ${protobuf_SOURCE_DIR}/conformance/conformance.proto
       --proto_path=${protobuf_SOURCE_DIR}/conformance
@@ -8,8 +10,11 @@ add_custom_command(
 )
 
 add_custom_command(
-  OUTPUT ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
-         ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
+  OUTPUT
+    ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.h
+    ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
+    ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.h
+    ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
   DEPENDS ${protobuf_PROTOC_EXE} ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.proto
           ${protobuf_PROTOC_EXE} ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.proto
   COMMAND ${protobuf_PROTOC_EXE} ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.proto
@@ -21,6 +26,7 @@ add_custom_command(
 add_executable(conformance_test_runner
   ${protobuf_SOURCE_DIR}/conformance/binary_json_conformance_suite.cc
   ${protobuf_SOURCE_DIR}/conformance/binary_json_conformance_suite.h
+  ${protobuf_SOURCE_DIR}/conformance/conformance.pb.h
   ${protobuf_SOURCE_DIR}/conformance/conformance.pb.cc
   ${protobuf_SOURCE_DIR}/conformance/conformance_test.cc
   ${protobuf_SOURCE_DIR}/conformance/conformance_test_runner.cc
@@ -29,14 +35,19 @@ add_executable(conformance_test_runner
   ${protobuf_SOURCE_DIR}/conformance/text_format_conformance_suite.h
   ${protobuf_SOURCE_DIR}/conformance/third_party/jsoncpp/json.h
   ${protobuf_SOURCE_DIR}/conformance/third_party/jsoncpp/jsoncpp.cpp
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
 )
 
 add_executable(conformance_cpp
+  ${protobuf_SOURCE_DIR}/conformance/conformance.pb.h
   ${protobuf_SOURCE_DIR}/conformance/conformance.pb.cc
   ${protobuf_SOURCE_DIR}/conformance/conformance_cpp.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto2.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
 )
 

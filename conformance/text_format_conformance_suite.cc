@@ -30,11 +30,11 @@
 
 #include "text_format_conformance_suite.h"
 
-#include <google/protobuf/any.pb.h>
-#include <google/protobuf/text_format.h>
+#include "google/protobuf/any.pb.h"
+#include "google/protobuf/text_format.h"
 #include "conformance_test.h"
-#include <google/protobuf/test_messages_proto2.pb.h>
-#include <google/protobuf/test_messages_proto3.pb.h>
+#include "google/protobuf/test_messages_proto2.pb.h"
+#include "google/protobuf/test_messages_proto3.pb.h"
 
 namespace proto2_messages = protobuf_test_messages::proto2;
 
@@ -87,8 +87,7 @@ bool TextFormatConformanceTestSuite::ParseResponse(
         ReportFailure(test_name, level, request, response,
                       absl::StrCat("Test was asked for ",
                                    WireFormatToString(requested_output),
-                                   " output but provided PROTOBUF instead.")
-                          .c_str());
+                                   " output but provided PROTOBUF instead."));
         return false;
       }
 
@@ -103,11 +102,11 @@ bool TextFormatConformanceTestSuite::ParseResponse(
 
     case ConformanceResponse::kTextPayload: {
       if (requested_output != conformance::TEXT_FORMAT) {
-        ReportFailure(test_name, level, request, response,
-                      absl::StrCat("Test was asked for ",
-                                   WireFormatToString(requested_output),
-                                   " output but provided TEXT_FORMAT instead.")
-                          .c_str());
+        ReportFailure(
+            test_name, level, request, response,
+            absl::StrCat("Test was asked for ",
+                         WireFormatToString(requested_output),
+                         " output but provided TEXT_FORMAT instead."));
         return false;
       }
 

@@ -32,33 +32,66 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/cpp/generator.h>
+#include "google/protobuf/compiler/cpp/generator.h"
 
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
+#include "google/protobuf/stubs/strutil.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
-#include <google/protobuf/compiler/cpp/file.h>
-#include <google/protobuf/compiler/cpp/helpers.h>
-#include <google/protobuf/descriptor.pb.h>
+#include "google/protobuf/compiler/cpp/file.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/descriptor.pb.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-
-CppGenerator::CppGenerator() {}
-CppGenerator::~CppGenerator() {}
-
 namespace {
-std::string NumberedCcFileName(const std::string& basename, int number) {
+std::string NumberedCcFileName(absl::string_view basename, int number) {
   return absl::StrCat(basename, ".out/", number, ".cc");
+}
+
+absl::flat_hash_map<std::string, std::string> CommonVars(
+    const Options& options) {
+  bool is_oss = options.opensource_runtime;
+  return {
+      {"proto_ns", ProtobufNamespace(options)},
+      {"string", "std::string"},
+      {"int8", "int8_t"},
+      {"int32", "int32_t"},
+      {"int64", "int64_t"},
+      {"uint8", "uint8_t"},
+      {"uint32", "uint32_t"},
+      {"uint64", "uint64_t"},
+
+      {"hrule_thick", kThickSeparator},
+      {"hrule_thin", kThinSeparator},
+
+      // Warning: there is some clever naming/splitting here to avoid extract
+      // script rewrites.  The names of these variables must not be things that
+      // the extract script will rewrite.  That's why we use "CHK" (for example)
+      // instead of "GOOGLE_CHECK".
+      //
+      // These values are things the extract script would rewrite if we did not
+      // split them.  It might not strictly matter since we don't generate
+      // google3 code in open-source.  But it's good to prevent surprising
+      // things from happening.
+      {"GOOGLE_PROTOBUF", is_oss ? "GOOGLE_PROTOBUF"
+                                 : "GOOGLE3_PROTOBU"
+                                   "F"},
+      {"CHK", is_oss ? "GOOGLE_CHECK"
+                     : "CHEC"
+                       "K"},
+      {"DCHK", is_oss ? "GOOGLE_DCHECK"
+                      : "DCHEC"
+                        "K"},
+  };
 }
 }  // namespace
 
@@ -66,7 +99,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
                             const std::string& parameter,
                             GeneratorContext* generator_context,
                             std::string* error) const {
-  std::vector<std::pair<std::string, std::string> > options;
+  std::vector<std::pair<std::string, std::string>> options;
   ParseGeneratorParameter(parameter, &options);
 
   // -----------------------------------------------------------------
@@ -95,68 +128,70 @@ bool CppGenerator::Generate(const FileDescriptor* file,
   file_options.opensource_runtime = opensource_runtime_;
   file_options.runtime_include_base = runtime_include_base_;
 
-  for (int i = 0; i < options.size(); i++) {
-    if (options[i].first == "dllexport_decl") {
-      file_options.dllexport_decl = options[i].second;
-    } else if (options[i].first == "safe_boundary_check") {
+  for (const auto& option : options) {
+    const auto& key = option.first;
+    const auto& value = option.second;
+
+    if (key == "dllexport_decl") {
+      file_options.dllexport_decl = value;
+    } else if (key == "safe_boundary_check") {
       file_options.safe_boundary_check = true;
-    } else if (options[i].first == "annotate_headers") {
+    } else if (key == "annotate_headers") {
       file_options.annotate_headers = true;
-    } else if (options[i].first == "annotation_pragma_name") {
-      file_options.annotation_pragma_name = options[i].second;
-    } else if (options[i].first == "annotation_guard_name") {
-      file_options.annotation_guard_name = options[i].second;
-    } else if (options[i].first == "speed") {
+    } else if (key == "annotation_pragma_name") {
+      file_options.annotation_pragma_name = value;
+    } else if (key == "annotation_guard_name") {
+      file_options.annotation_guard_name = value;
+    } else if (key == "speed") {
       file_options.enforce_mode = EnforceOptimizeMode::kSpeed;
-    } else if (options[i].first == "code_size") {
+    } else if (key == "code_size") {
       file_options.enforce_mode = EnforceOptimizeMode::kCodeSize;
-    } else if (options[i].first == "lite") {
+    } else if (key == "lite") {
       file_options.enforce_mode = EnforceOptimizeMode::kLiteRuntime;
-    } else if (options[i].first == "lite_implicit_weak_fields") {
+    } else if (key == "lite_implicit_weak_fields") {
       file_options.enforce_mode = EnforceOptimizeMode::kLiteRuntime;
       file_options.lite_implicit_weak_fields = true;
-      if (!options[i].second.empty()) {
-        file_options.num_cc_files =
-            strto32(options[i].second.c_str(), nullptr, 10);
+      if (!value.empty()) {
+        file_options.num_cc_files = strto32(value.c_str(), nullptr, 10);
       }
-    } else if (options[i].first == "proto_h") {
+    } else if (key == "proto_h") {
       file_options.proto_h = true;
-    } else if (options[i].first == "annotate_accessor") {
+    } else if (key == "annotate_accessor") {
       file_options.annotate_accessor = true;
-    } else if (options[i].first == "inject_field_listener_events") {
+    } else if (key == "inject_field_listener_events") {
       file_options.field_listener_options.inject_field_listener_events = true;
-    } else if (options[i].first == "forbidden_field_listener_events") {
+    } else if (key == "forbidden_field_listener_events") {
       std::size_t pos = 0;
       do {
-        std::size_t next_pos = options[i].second.find_first_of("+", pos);
+        std::size_t next_pos = value.find_first_of("+", pos);
         if (next_pos == std::string::npos) {
-          next_pos = options[i].second.size();
+          next_pos = value.size();
         }
         if (next_pos > pos)
           file_options.field_listener_options.forbidden_field_listener_events
-              .insert(options[i].second.substr(pos, next_pos - pos));
+              .insert(value.substr(pos, next_pos - pos));
         pos = next_pos + 1;
-      } while (pos < options[i].second.size());
-    } else if (options[i].first == "unverified_lazy_message_sets") {
+      } while (pos < value.size());
+    } else if (key == "unverified_lazy_message_sets") {
       file_options.unverified_lazy_message_sets = true;
-    } else if (options[i].first == "message_owned_arena_trial") {
+    } else if (key == "message_owned_arena_trial") {
       file_options.message_owned_arena_trial = true;
-    } else if (options[i].first == "force_eagerly_verified_lazy") {
+    } else if (key == "force_eagerly_verified_lazy") {
       file_options.force_eagerly_verified_lazy = true;
-    } else if (options[i].first == "experimental_tail_call_table_mode") {
-      if (options[i].second == "never") {
+    } else if (key == "experimental_tail_call_table_mode") {
+      if (value == "never") {
         file_options.tctable_mode = Options::kTCTableNever;
-      } else if (options[i].second == "guarded") {
+      } else if (value == "guarded") {
         file_options.tctable_mode = Options::kTCTableGuarded;
-      } else if (options[i].second == "always") {
+      } else if (value == "always") {
         file_options.tctable_mode = Options::kTCTableAlways;
       } else {
-        *error = "Unknown value for experimental_tail_call_table_mode: " +
-                 options[i].second;
+        *error =
+            "Unknown value for experimental_tail_call_table_mode: " + value;
         return false;
       }
     } else {
-      *error = "Unknown generator option: " + options[i].first;
+      *error = "Unknown generator option: " + key;
       return false;
     }
   }
@@ -183,39 +218,51 @@ bool CppGenerator::Generate(const FileDescriptor* file,
 
   // Generate header(s).
   if (file_options.proto_h) {
-    std::unique_ptr<io::ZeroCopyOutputStream> output(
-        generator_context->Open(basename + ".proto.h"));
+    auto output = absl::WrapUnique(
+        generator_context->Open(absl::StrCat(basename, ".proto.h")));
+
     GeneratedCodeInfo annotations;
     io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
         &annotations);
-    std::string info_path = basename + ".proto.h.meta";
-    io::Printer printer(
-        output.get(), '$',
-        file_options.annotate_headers ? &annotation_collector : nullptr);
-    file_generator.GenerateProtoHeader(
-        &printer, file_options.annotate_headers ? info_path : "");
+    io::Printer::Options options;
     if (file_options.annotate_headers) {
-      std::unique_ptr<io::ZeroCopyOutputStream> info_output(
-          generator_context->Open(info_path));
+      options.annotation_collector = &annotation_collector;
+    }
+
+    io::Printer p(output.get(), options);
+    auto v = p.WithVars(CommonVars(file_options));
+
+    std::string info_path = absl::StrCat(basename, ".proto.h.meta");
+    file_generator.GenerateProtoHeader(
+        &p, file_options.annotate_headers ? info_path : "");
+
+    if (file_options.annotate_headers) {
+      auto info_output = absl::WrapUnique(generator_context->Open(info_path));
       annotations.SerializeToZeroCopyStream(info_output.get());
     }
   }
 
   {
-    std::unique_ptr<io::ZeroCopyOutputStream> output(
-        generator_context->Open(basename + ".pb.h"));
+    auto output = absl::WrapUnique(
+        generator_context->Open(absl::StrCat(basename, ".pb.h")));
+
     GeneratedCodeInfo annotations;
     io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
         &annotations);
-    std::string info_path = basename + ".pb.h.meta";
-    io::Printer printer(
-        output.get(), '$',
-        file_options.annotate_headers ? &annotation_collector : nullptr);
-    file_generator.GeneratePBHeader(
-        &printer, file_options.annotate_headers ? info_path : "");
+    io::Printer::Options options;
     if (file_options.annotate_headers) {
-      std::unique_ptr<io::ZeroCopyOutputStream> info_output(
-          generator_context->Open(info_path));
+      options.annotation_collector = &annotation_collector;
+    }
+
+    io::Printer p(output.get(), options);
+    auto v = p.WithVars(CommonVars(file_options));
+
+    std::string info_path = absl::StrCat(basename, ".pb.h.meta");
+    file_generator.GeneratePBHeader(
+        &p, file_options.annotate_headers ? info_path : "");
+
+    if (file_options.annotate_headers) {
+      auto info_output = absl::WrapUnique(generator_context->Open(info_path));
       annotations.SerializeToZeroCopyStream(info_output.get());
     }
   }
@@ -225,10 +272,12 @@ bool CppGenerator::Generate(const FileDescriptor* file,
     {
       // This is the global .cc file, containing
       // enum/services/tables/reflection
-      std::unique_ptr<io::ZeroCopyOutputStream> output(
-          generator_context->Open(basename + ".pb.cc"));
-      io::Printer printer(output.get(), '$');
-      file_generator.GenerateGlobalSource(&printer);
+      auto output = absl::WrapUnique(
+          generator_context->Open(absl::StrCat(basename, ".pb.cc")));
+      io::Printer p(output.get());
+      auto v = p.WithVars(CommonVars(file_options));
+
+      file_generator.GenerateGlobalSource(&p);
     }
 
     int num_cc_files =
@@ -244,35 +293,43 @@ bool CppGenerator::Generate(const FileDescriptor* file,
              "and extensions.";
       num_cc_files = file_options.num_cc_files;
     }
+
     int cc_file_number = 0;
-    for (int i = 0; i < file_generator.NumMessages(); i++) {
-      std::unique_ptr<io::ZeroCopyOutputStream> output(generator_context->Open(
+    for (int i = 0; i < file_generator.NumMessages(); ++i) {
+      auto output = absl::WrapUnique(generator_context->Open(
           NumberedCcFileName(basename, cc_file_number++)));
-      io::Printer printer(output.get(), '$');
-      file_generator.GenerateSourceForMessage(i, &printer);
+      io::Printer p(output.get());
+      auto v = p.WithVars(CommonVars(file_options));
+
+      file_generator.GenerateSourceForMessage(i, &p);
     }
-    for (int i = 0; i < file_generator.NumExtensions(); i++) {
-      std::unique_ptr<io::ZeroCopyOutputStream> output(generator_context->Open(
+
+    for (int i = 0; i < file_generator.NumExtensions(); ++i) {
+      auto output = absl::WrapUnique(generator_context->Open(
           NumberedCcFileName(basename, cc_file_number++)));
-      io::Printer printer(output.get(), '$');
-      file_generator.GenerateSourceForExtension(i, &printer);
+      io::Printer p(output.get());
+      auto v = p.WithVars(CommonVars(file_options));
+
+      file_generator.GenerateSourceForExtension(i, &p);
     }
+
     // Create empty placeholder files if necessary to match the expected number
     // of files.
-    for (; cc_file_number < num_cc_files; ++cc_file_number) {
-      std::unique_ptr<io::ZeroCopyOutputStream> output(generator_context->Open(
-          NumberedCcFileName(basename, cc_file_number)));
+    while (cc_file_number < num_cc_files) {
+      (void)absl::WrapUnique(generator_context->Open(
+          NumberedCcFileName(basename, cc_file_number++)));
     }
   } else {
-    std::unique_ptr<io::ZeroCopyOutputStream> output(
-        generator_context->Open(basename + ".pb.cc"));
-    io::Printer printer(output.get(), '$');
-    file_generator.GenerateSource(&printer);
+    auto output = absl::WrapUnique(
+        generator_context->Open(absl::StrCat(basename, ".pb.cc")));
+    io::Printer p(output.get());
+    auto v = p.WithVars(CommonVars(file_options));
+
+    file_generator.GenerateSource(&p);
   }
 
   return true;
 }
-
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

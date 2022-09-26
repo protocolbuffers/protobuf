@@ -62,7 +62,7 @@
 #include <fstream>
 #include <vector>
 
-#include <google/protobuf/stubs/stringprintf.h>
+#include "absl/strings/str_format.h"
 #include "conformance/conformance.pb.h"
 #include "conformance_test.h"
 
@@ -165,9 +165,11 @@ void ForkPipeRunner::RunTest(const std::string &test_name,
 
     string error_msg;
     if (WIFEXITED(status)) {
-      StringAppendF(&error_msg, "child exited, status=%d", WEXITSTATUS(status));
+      absl::StrAppendFormat(&error_msg, "child exited, status=%d",
+                            WEXITSTATUS(status));
     } else if (WIFSIGNALED(status)) {
-      StringAppendF(&error_msg, "child killed by signal %d", WTERMSIG(status));
+      absl::StrAppendFormat(&error_msg, "child killed by signal %d",
+                            WTERMSIG(status));
     }
     GOOGLE_LOG(INFO) << error_msg;
     child_pid_ = -1;

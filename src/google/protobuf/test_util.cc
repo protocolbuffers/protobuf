@@ -38,7 +38,7 @@
 #include <windows.h>
 #endif
 
-#include <google/protobuf/test_util.h>
+#include "google/protobuf/test_util.h"
 
 namespace google {
 namespace protobuf {

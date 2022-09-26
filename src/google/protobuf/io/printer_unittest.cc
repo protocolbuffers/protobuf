@@ -32,530 +32,388 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/io/printer.h>
+#include "google/protobuf/io/printer.h"
 
+#include <ostream>
+#include <string>
+#include <tuple>
 #include <vector>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/descriptor.pb.h"
+#include <gmock/gmock.h>
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include "absl/container/flat_hash_map.h"
+#include "absl/strings/str_join.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace google {
 namespace protobuf {
 namespace io {
+using ::testing::AllOf;
+using ::testing::ElementsAre;
+using ::testing::ExplainMatchResult;
+using ::testing::Field;
+using ::testing::IsEmpty;
+using ::testing::MatchesRegex;
 
-// Each test repeats over several block sizes in order to test both cases
-// where particular writes cross a buffer boundary and cases where they do
-// not.
-
-TEST(Printer, EmptyPrinter) {
-  char buffer[8192];
-  const int block_size = 100;
-  ArrayOutputStream output(buffer, ABSL_ARRAYSIZE(buffer), block_size);
-  Printer printer(&output, '\0');
-  EXPECT_TRUE(!printer.failed());
-}
-
-TEST(Printer, BasicPrinting) {
-  char buffer[8192];
-
-  for (int block_size = 1; block_size < 512; block_size *= 2) {
-    ArrayOutputStream output(buffer, sizeof(buffer), block_size);
-
-    {
-      Printer printer(&output, '\0');
-
-      printer.Print("Hello World!");
-      printer.Print("  This is the same line.\n");
-      printer.Print("But this is a new one.\nAnd this is another one.");
-
-      EXPECT_FALSE(printer.failed());
-    }
-
-    buffer[output.ByteCount()] = '\0';
-
-    EXPECT_STREQ(
-        "Hello World!  This is the same line.\n"
-        "But this is a new one.\n"
-        "And this is another one.",
-        buffer);
+class PrinterTest : public testing::Test {
+ protected:
+  ZeroCopyOutputStream* output() {
+    GOOGLE_CHECK(stream_.has_value());
+    return &*stream_;
   }
-}
-
-TEST(Printer, WriteRaw) {
-  char buffer[8192];
-
-  for (int block_size = 1; block_size < 512; block_size *= 2) {
-    ArrayOutputStream output(buffer, sizeof(buffer), block_size);
-
-    {
-      std::string string_obj = "From an object\n";
-      Printer printer(&output, '$');
-      printer.WriteRaw("Hello World!", 12);
-      printer.PrintRaw("  This is the same line.\n");
-      printer.PrintRaw("But this is a new one.\nAnd this is another one.");
-      printer.WriteRaw("\n", 1);
-      printer.PrintRaw(string_obj);
-      EXPECT_FALSE(printer.failed());
-    }
-
-    buffer[output.ByteCount()] = '\0';
-
-    EXPECT_STREQ(
-        "Hello World!  This is the same line.\n"
-        "But this is a new one.\n"
-        "And this is another one."
-        "\n"
-        "From an object\n",
-        buffer);
+  absl::string_view written() {
+    stream_.reset();
+    return out_;
   }
+
+  std::string out_;
+  absl::optional<StringOutputStream> stream_{&out_};
+};
+
+TEST_F(PrinterTest, EmptyPrinter) {
+  Printer printer(output(), '\0');
+  EXPECT_FALSE(printer.failed());
 }
 
-TEST(Printer, VariableSubstitution) {
-  char buffer[8192];
-
-  for (int block_size = 1; block_size < 512; block_size *= 2) {
-    ArrayOutputStream output(buffer, sizeof(buffer), block_size);
-
-    {
-      Printer printer(&output, '$');
-      std::map<std::string, std::string> vars;
-
-      vars["foo"] = "World";
-      vars["bar"] = "$foo$";
-      vars["abcdefg"] = "1234";
-
-      printer.Print(vars, "Hello $foo$!\nbar = $bar$\n");
-      printer.PrintRaw("RawBit\n");
-      printer.Print(vars, "$abcdefg$\nA literal dollar sign:  $$");
-
-      vars["foo"] = "blah";
-      printer.Print(vars, "\nNow foo = $foo$.");
-
-      EXPECT_FALSE(printer.failed());
-    }
-
-    buffer[output.ByteCount()] = '\0';
-
-    EXPECT_STREQ(
-        "Hello World!\n"
-        "bar = $foo$\n"
-        "RawBit\n"
-        "1234\n"
-        "A literal dollar sign:  $\n"
-        "Now foo = blah.",
-        buffer);
-  }
-}
-
-TEST(Printer, InlineVariableSubstitution) {
-  char buffer[8192];
-
-  ArrayOutputStream output(buffer, sizeof(buffer));
-
+TEST_F(PrinterTest, BasicPrinting) {
   {
-    Printer printer(&output, '$');
+    Printer printer(output(), '\0');
+
+    printer.Print("Hello World!");
+    printer.Print("  This is the same line.\n");
+    printer.Print("But this is a new one.\nAnd this is another one.");
+    EXPECT_FALSE(printer.failed());
+  }
+
+  EXPECT_EQ(written(),
+            "Hello World!  This is the same line.\n"
+            "But this is a new one.\n"
+            "And this is another one.");
+}
+
+TEST_F(PrinterTest, WriteRaw) {
+  {
+    absl::string_view string_obj = "From an object\n";
+    Printer printer(output(), '$');
+    printer.WriteRaw("Hello World!", 12);
+    printer.PrintRaw("  This is the same line.\n");
+    printer.PrintRaw("But this is a new one.\nAnd this is another one.");
+    printer.WriteRaw("\n", 1);
+    printer.PrintRaw(string_obj);
+    EXPECT_FALSE(printer.failed());
+  }
+
+  EXPECT_EQ(written(),
+            "Hello World!  This is the same line.\n"
+            "But this is a new one.\n"
+            "And this is another one."
+            "\n"
+            "From an object\n");
+}
+
+TEST_F(PrinterTest, VariableSubstitution) {
+  {
+    Printer printer(output(), '$');
+
+    absl::flat_hash_map<std::string, std::string> vars{
+        {"foo", "World"},
+        {"bar", "$foo$"},
+        {"abcdefg", "1234"},
+    };
+
+    printer.Print(vars, "Hello $foo$!\nbar = $bar$\n");
+    printer.PrintRaw("RawBit\n");
+    printer.Print(vars, "$abcdefg$\nA literal dollar sign:  $$");
+
+    vars["foo"] = "blah";
+    printer.Print(vars, "\nNow foo = $foo$.");
+
+    EXPECT_FALSE(printer.failed());
+  }
+
+  EXPECT_EQ(written(),
+            "Hello World!\n"
+            "bar = $foo$\n"
+            "RawBit\n"
+            "1234\n"
+            "A literal dollar sign:  $\n"
+            "Now foo = blah.");
+}
+
+TEST_F(PrinterTest, InlineVariableSubstitution) {
+  {
+    Printer printer(output(), '$');
     printer.Print("Hello $foo$!\n", "foo", "World");
     printer.PrintRaw("RawBit\n");
     printer.Print("$foo$ $bar$\n", "foo", "one", "bar", "two");
     EXPECT_FALSE(printer.failed());
   }
 
-  buffer[output.ByteCount()] = '\0';
-
-  EXPECT_STREQ(
-      "Hello World!\n"
-      "RawBit\n"
-      "one two\n",
-      buffer);
+  EXPECT_EQ(written(),
+            "Hello World!\n"
+            "RawBit\n"
+            "one two\n");
 }
 
-// MockDescriptorFile defines only those members that Printer uses to write out
+// FakeDescriptorFile defines only those members that Printer uses to write out
 // annotations.
-class MockDescriptorFile {
- public:
-  explicit MockDescriptorFile(const std::string& file) : file_(file) {}
-
-  // The mock filename for this file.
-  const std::string& name() const { return file_; }
-
- private:
-  std::string file_;
+struct FakeDescriptorFile {
+  const std::string& name() const { return filename; }
+  std::string filename;
 };
 
-// MockDescriptor defines only those members that Printer uses to write out
+// FakeDescriptor defines only those members that Printer uses to write out
 // annotations.
-class MockDescriptor {
- public:
-  MockDescriptor(const std::string& file, const std::vector<int>& path)
-      : file_(file), path_(path) {}
+struct FakeDescriptor {
+  const FakeDescriptorFile* file() const { return &fake_file; }
+  void GetLocationPath(std::vector<int>* output) const { *output = path; }
 
-  // The mock file in which this descriptor was defined.
-  const MockDescriptorFile* file() const { return &file_; }
-
- private:
-  // Allows access to GetLocationPath.
-  friend class Printer;
-
-  // Copies the pre-stored path to output.
-  void GetLocationPath(std::vector<int>* output) const { *output = path_; }
-
-  MockDescriptorFile file_;
-  std::vector<int> path_;
+  FakeDescriptorFile fake_file;
+  std::vector<int> path;
 };
 
-TEST(Printer, AnnotateMap) {
-  char buffer[8192];
-  ArrayOutputStream output(buffer, sizeof(buffer));
-  GeneratedCodeInfo info;
-  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
-  {
-    Printer printer(&output, '$', &info_collector);
-    std::map<std::string, std::string> vars;
-    vars["foo"] = "3";
-    vars["bar"] = "5";
-    printer.Print(vars, "012$foo$4$bar$\n");
-    std::vector<int> path_1;
-    path_1.push_back(33);
-    std::vector<int> path_2;
-    path_2.push_back(11);
-    path_2.push_back(22);
-    MockDescriptor descriptor_1("path_1", path_1);
-    MockDescriptor descriptor_2("path_2", path_2);
-    printer.Annotate("foo", "foo", &descriptor_1);
-    printer.Annotate("bar", "bar", &descriptor_2);
+class FakeAnnotationCollector : public AnnotationCollector {
+ public:
+  ~FakeAnnotationCollector() override = default;
+
+  // Records that the bytes in file_path beginning with begin_offset and ending
+  // before end_offset are associated with the SourceCodeInfo-style path.
+  void AddAnnotation(size_t begin_offset, size_t end_offset,
+                     const std::string& file_path,
+                     const std::vector<int>& path) override {
+    annotations_.emplace_back(
+        Record{begin_offset, end_offset, file_path, path});
   }
-  buffer[output.ByteCount()] = '\0';
-  EXPECT_STREQ("012345\n", buffer);
-  ASSERT_EQ(2, info.annotation_size());
-  const GeneratedCodeInfo::Annotation* foo = info.annotation(0).path_size() == 1
-                                                 ? &info.annotation(0)
-                                                 : &info.annotation(1);
-  const GeneratedCodeInfo::Annotation* bar = info.annotation(0).path_size() == 1
-                                                 ? &info.annotation(1)
-                                                 : &info.annotation(0);
-  ASSERT_EQ(1, foo->path_size());
-  ASSERT_EQ(2, bar->path_size());
-  EXPECT_EQ(33, foo->path(0));
-  EXPECT_EQ(11, bar->path(0));
-  EXPECT_EQ(22, bar->path(1));
-  EXPECT_EQ("path_1", foo->source_file());
-  EXPECT_EQ("path_2", bar->source_file());
-  EXPECT_EQ(3, foo->begin());
-  EXPECT_EQ(4, foo->end());
-  EXPECT_EQ(5, bar->begin());
-  EXPECT_EQ(6, bar->end());
-}
 
-TEST(Printer, AnnotateInline) {
-  char buffer[8192];
-  ArrayOutputStream output(buffer, sizeof(buffer));
-  GeneratedCodeInfo info;
-  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
-  {
-    Printer printer(&output, '$', &info_collector);
-    printer.Print("012$foo$4$bar$\n", "foo", "3", "bar", "5");
-    std::vector<int> path_1;
-    path_1.push_back(33);
-    std::vector<int> path_2;
-    path_2.push_back(11);
-    path_2.push_back(22);
-    MockDescriptor descriptor_1("path_1", path_1);
-    MockDescriptor descriptor_2("path_2", path_2);
-    printer.Annotate("foo", "foo", &descriptor_1);
-    printer.Annotate("bar", "bar", &descriptor_2);
-  }
-  buffer[output.ByteCount()] = '\0';
-  EXPECT_STREQ("012345\n", buffer);
-  ASSERT_EQ(2, info.annotation_size());
-  const GeneratedCodeInfo::Annotation* foo = info.annotation(0).path_size() == 1
-                                                 ? &info.annotation(0)
-                                                 : &info.annotation(1);
-  const GeneratedCodeInfo::Annotation* bar = info.annotation(0).path_size() == 1
-                                                 ? &info.annotation(1)
-                                                 : &info.annotation(0);
-  ASSERT_EQ(1, foo->path_size());
-  ASSERT_EQ(2, bar->path_size());
-  EXPECT_EQ(33, foo->path(0));
-  EXPECT_EQ(11, bar->path(0));
-  EXPECT_EQ(22, bar->path(1));
-  EXPECT_EQ("path_1", foo->source_file());
-  EXPECT_EQ("path_2", bar->source_file());
-  EXPECT_EQ(3, foo->begin());
-  EXPECT_EQ(4, foo->end());
-  EXPECT_EQ(5, bar->begin());
-  EXPECT_EQ(6, bar->end());
-}
+  void AddAnnotationNew(Annotation& a) override {
+    GeneratedCodeInfo::Annotation annotation;
+    annotation.ParseFromString(a.second);
 
-TEST(Printer, AnnotateRange) {
-  char buffer[8192];
-  ArrayOutputStream output(buffer, sizeof(buffer));
-  GeneratedCodeInfo info;
-  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
-  {
-    Printer printer(&output, '$', &info_collector);
-    printer.Print("012$foo$4$bar$\n", "foo", "3", "bar", "5");
-    std::vector<int> path;
-    path.push_back(33);
-    MockDescriptor descriptor("path", path);
-    printer.Annotate("foo", "bar", &descriptor);
-  }
-  buffer[output.ByteCount()] = '\0';
-  EXPECT_STREQ("012345\n", buffer);
-  ASSERT_EQ(1, info.annotation_size());
-  const GeneratedCodeInfo::Annotation* foobar = &info.annotation(0);
-  ASSERT_EQ(1, foobar->path_size());
-  EXPECT_EQ(33, foobar->path(0));
-  EXPECT_EQ("path", foobar->source_file());
-  EXPECT_EQ(3, foobar->begin());
-  EXPECT_EQ(6, foobar->end());
-}
-
-TEST(Printer, AnnotateEmptyRange) {
-  char buffer[8192];
-  ArrayOutputStream output(buffer, sizeof(buffer));
-  GeneratedCodeInfo info;
-  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
-  {
-    Printer printer(&output, '$', &info_collector);
-    printer.Print("012$foo$4$baz$$bam$$bar$\n", "foo", "3", "bar", "5", "baz",
-                  "", "bam", "");
-    std::vector<int> path;
-    path.push_back(33);
-    MockDescriptor descriptor("path", path);
-    printer.Annotate("baz", "bam", &descriptor);
-  }
-  buffer[output.ByteCount()] = '\0';
-  EXPECT_STREQ("012345\n", buffer);
-  ASSERT_EQ(1, info.annotation_size());
-  const GeneratedCodeInfo::Annotation* bazbam = &info.annotation(0);
-  ASSERT_EQ(1, bazbam->path_size());
-  EXPECT_EQ(33, bazbam->path(0));
-  EXPECT_EQ("path", bazbam->source_file());
-  EXPECT_EQ(5, bazbam->begin());
-  EXPECT_EQ(5, bazbam->end());
-}
-
-TEST(Printer, AnnotateDespiteUnrelatedMultipleUses) {
-  char buffer[8192];
-  ArrayOutputStream output(buffer, sizeof(buffer));
-  GeneratedCodeInfo info;
-  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
-  {
-    Printer printer(&output, '$', &info_collector);
-    printer.Print("012$foo$4$foo$$bar$\n", "foo", "3", "bar", "5");
-    std::vector<int> path;
-    path.push_back(33);
-    MockDescriptor descriptor("path", path);
-    printer.Annotate("bar", "bar", &descriptor);
-  }
-  buffer[output.ByteCount()] = '\0';
-  EXPECT_STREQ("0123435\n", buffer);
-  ASSERT_EQ(1, info.annotation_size());
-  const GeneratedCodeInfo::Annotation* bar = &info.annotation(0);
-  ASSERT_EQ(1, bar->path_size());
-  EXPECT_EQ(33, bar->path(0));
-  EXPECT_EQ("path", bar->source_file());
-  EXPECT_EQ(6, bar->begin());
-  EXPECT_EQ(7, bar->end());
-}
-
-TEST(Printer, AnnotateIndent) {
-  char buffer[8192];
-  ArrayOutputStream output(buffer, sizeof(buffer));
-  GeneratedCodeInfo info;
-  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
-  {
-    Printer printer(&output, '$', &info_collector);
-    printer.Print("0\n");
-    printer.Indent();
-    printer.Print("$foo$", "foo", "4");
-    std::vector<int> path;
-    path.push_back(44);
-    MockDescriptor descriptor("path", path);
-    printer.Annotate("foo", &descriptor);
-    printer.Print(",\n");
-    printer.Print("$bar$", "bar", "9");
-    path[0] = 99;
-    MockDescriptor descriptor_two("path", path);
-    printer.Annotate("bar", &descriptor_two);
-    printer.Print("\n${$$D$$}$\n", "{", "", "}", "", "D", "d");
-    path[0] = 1313;
-    MockDescriptor descriptor_three("path", path);
-    printer.Annotate("{", "}", &descriptor_three);
-    printer.Outdent();
-    printer.Print("\n");
-  }
-  buffer[output.ByteCount()] = '\0';
-  EXPECT_STREQ("0\n  4,\n  9\n  d\n\n", buffer);
-  ASSERT_EQ(3, info.annotation_size());
-  const GeneratedCodeInfo::Annotation* foo = &info.annotation(0);
-  ASSERT_EQ(1, foo->path_size());
-  EXPECT_EQ(44, foo->path(0));
-  EXPECT_EQ("path", foo->source_file());
-  EXPECT_EQ(4, foo->begin());
-  EXPECT_EQ(5, foo->end());
-  const GeneratedCodeInfo::Annotation* bar = &info.annotation(1);
-  ASSERT_EQ(1, bar->path_size());
-  EXPECT_EQ(99, bar->path(0));
-  EXPECT_EQ("path", bar->source_file());
-  EXPECT_EQ(9, bar->begin());
-  EXPECT_EQ(10, bar->end());
-  const GeneratedCodeInfo::Annotation* braces = &info.annotation(2);
-  ASSERT_EQ(1, braces->path_size());
-  EXPECT_EQ(1313, braces->path(0));
-  EXPECT_EQ("path", braces->source_file());
-  EXPECT_EQ(13, braces->begin());
-  EXPECT_EQ(14, braces->end());
-}
-
-TEST(Printer, AnnotateIndentNewline) {
-  char buffer[8192];
-  ArrayOutputStream output(buffer, sizeof(buffer));
-  GeneratedCodeInfo info;
-  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
-  {
-    Printer printer(&output, '$', &info_collector);
-    printer.Indent();
-    printer.Print("$A$$N$$B$C\n", "A", "", "N", "\nz", "B", "");
-    std::vector<int> path;
-    path.push_back(0);
-    MockDescriptor descriptor("path", path);
-    printer.Annotate("A", "B", &descriptor);
-    printer.Outdent();
-    printer.Print("\n");
-  }
-  buffer[output.ByteCount()] = '\0';
-  EXPECT_STREQ("\nz  C\n\n", buffer);
-  ASSERT_EQ(1, info.annotation_size());
-  const GeneratedCodeInfo::Annotation* ab = &info.annotation(0);
-  ASSERT_EQ(1, ab->path_size());
-  EXPECT_EQ(0, ab->path(0));
-  EXPECT_EQ("path", ab->source_file());
-  EXPECT_EQ(0, ab->begin());
-  EXPECT_EQ(4, ab->end());
-}
-
-TEST(Printer, Indenting) {
-  char buffer[8192];
-
-  for (int block_size = 1; block_size < 512; block_size *= 2) {
-    ArrayOutputStream output(buffer, sizeof(buffer), block_size);
-
-    {
-      Printer printer(&output, '$');
-      std::map<std::string, std::string> vars;
-
-      vars["newline"] = "\n";
-
-      printer.Print("This is not indented.\n");
-      printer.Indent();
-      printer.Print("This is indented\nAnd so is this\n");
-      printer.Outdent();
-      printer.Print("But this is not.");
-      printer.Indent();
-      printer.Print(
-          "  And this is still the same line.\n"
-          "But this is indented.\n");
-      printer.PrintRaw("RawBit has indent at start\n");
-      printer.PrintRaw("but not after a raw newline\n");
-      printer.Print(vars,
-                    "Note that a newline in a variable will break "
-                    "indenting, as we see$newline$here.\n");
-      printer.Indent();
-      printer.Print("And this");
-      printer.Outdent();
-      printer.Outdent();
-      printer.Print(" is double-indented\nBack to normal.");
-
-      EXPECT_FALSE(printer.failed());
+    Record r{a.first.first, a.first.second, annotation.source_file(), {}};
+    for (int i : annotation.path()) {
+      r.path.push_back(i);
     }
 
-    buffer[output.ByteCount()] = '\0';
-
-    EXPECT_STREQ(
-        "This is not indented.\n"
-        "  This is indented\n"
-        "  And so is this\n"
-        "But this is not.  And this is still the same line.\n"
-        "  But this is indented.\n"
-        "  RawBit has indent at start\n"
-        "but not after a raw newline\n"
-        "Note that a newline in a variable will break indenting, as we see\n"
-        "here.\n"
-        "    And this is double-indented\n"
-        "Back to normal.",
-        buffer);
+    annotations_.emplace_back(r);
   }
-}
 
-// Death tests do not work on Windows as of yet.
-#ifdef PROTOBUF_HAS_DEATH_TEST
-TEST(Printer, Death) {
-  char buffer[8192];
-
-  ArrayOutputStream output(buffer, sizeof(buffer));
-  Printer printer(&output, '$');
-
-  EXPECT_DEBUG_DEATH(printer.Print("$nosuchvar$"), "Undefined variable");
-  EXPECT_DEBUG_DEATH(printer.Print("$unclosed"), "Unclosed variable name");
-  EXPECT_DEBUG_DEATH(printer.Outdent(), "without matching Indent");
-}
-
-TEST(Printer, AnnotateMultipleUsesDeath) {
-  char buffer[8192];
-  ArrayOutputStream output(buffer, sizeof(buffer));
-  GeneratedCodeInfo info;
-  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
-  {
-    Printer printer(&output, '$', &info_collector);
-    printer.Print("012$foo$4$foo$\n", "foo", "3");
+  struct Record {
+    size_t start, end;
+    std::string file_path;
     std::vector<int> path;
-    path.push_back(33);
-    MockDescriptor descriptor("path", path);
-    EXPECT_DEBUG_DEATH(printer.Annotate("foo", "foo", &descriptor), "multiple");
-  }
+
+    friend std::ostream& operator<<(std::ostream& out, const Record& record) {
+      return out << "Record{" << record.start << ", " << record.end << ", \""
+                 << record.file_path << "\", ["
+                 << absl::StrJoin(record.path, ", ") << "]}";
+    }
+  };
+
+  absl::Span<const Record> Get() const { return annotations_; }
+
+ private:
+  std::vector<Record> annotations_;
+};
+
+template <typename Start, typename End, typename FilePath, typename Path>
+testing::Matcher<FakeAnnotationCollector::Record> Annotation(Start start,
+                                                             End end,
+                                                             FilePath file_path,
+                                                             Path path) {
+  return AllOf(Field("start", &FakeAnnotationCollector::Record::start, start),
+               Field("end", &FakeAnnotationCollector::Record::end, end),
+               Field("file_path", &FakeAnnotationCollector::Record::file_path,
+                     file_path),
+               Field("path", &FakeAnnotationCollector::Record::path, path));
 }
 
-TEST(Printer, AnnotateNegativeLengthDeath) {
-  char buffer[8192];
-  ArrayOutputStream output(buffer, sizeof(buffer));
-  GeneratedCodeInfo info;
-  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
+TEST_F(PrinterTest, AnnotateMap) {
+  FakeAnnotationCollector collector;
   {
-    Printer printer(&output, '$', &info_collector);
+    Printer printer(output(), '$', &collector);
+    absl::flat_hash_map<std::string, std::string> vars = {{"foo", "3"},
+                                                          {"bar", "5"}};
+    printer.Print(vars, "012$foo$4$bar$\n");
+
+    FakeDescriptor descriptor_1{{"path_1"}, {33}};
+    FakeDescriptor descriptor_2{{"path_2"}, {11, 22}};
+    printer.Annotate("foo", "foo", &descriptor_1);
+    printer.Annotate("bar", "bar", &descriptor_2);
+  }
+
+  EXPECT_EQ(written(), "012345\n");
+  EXPECT_THAT(collector.Get(),
+              ElementsAre(Annotation(3, 4, "path_1", ElementsAre(33)),
+                          Annotation(5, 6, "path_2", ElementsAre(11, 22))));
+}
+
+TEST_F(PrinterTest, AnnotateInline) {
+  FakeAnnotationCollector collector;
+  {
+    Printer printer(output(), '$', &collector);
     printer.Print("012$foo$4$bar$\n", "foo", "3", "bar", "5");
-    std::vector<int> path;
-    path.push_back(33);
-    MockDescriptor descriptor("path", path);
-    EXPECT_DEBUG_DEATH(printer.Annotate("bar", "foo", &descriptor), "negative");
+
+    FakeDescriptor descriptor_1{{"path_1"}, {33}};
+    FakeDescriptor descriptor_2{{"path_2"}, {11, 22}};
+    printer.Annotate("foo", "foo", &descriptor_1);
+    printer.Annotate("bar", "bar", &descriptor_2);
   }
+
+  EXPECT_EQ(written(), "012345\n");
+  EXPECT_THAT(collector.Get(),
+              ElementsAre(Annotation(3, 4, "path_1", ElementsAre(33)),
+                          Annotation(5, 6, "path_2", ElementsAre(11, 22))));
 }
 
-TEST(Printer, AnnotateUndefinedDeath) {
-  char buffer[8192];
-  ArrayOutputStream output(buffer, sizeof(buffer));
-  GeneratedCodeInfo info;
-  AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
+TEST_F(PrinterTest, AnnotateRange) {
+  FakeAnnotationCollector collector;
   {
-    Printer printer(&output, '$', &info_collector);
-    printer.Print("012$foo$4$foo$\n", "foo", "3");
-    std::vector<int> path;
-    path.push_back(33);
-    MockDescriptor descriptor("path", path);
-    EXPECT_DEBUG_DEATH(printer.Annotate("bar", "bar", &descriptor),
-                       "Undefined");
+    Printer printer(output(), '$', &collector);
+    printer.Print("012$foo$4$bar$\n", "foo", "3", "bar", "5");
+
+    FakeDescriptor descriptor{{"path"}, {33}};
+    printer.Annotate("foo", "bar", &descriptor);
   }
+
+  EXPECT_EQ(written(), "012345\n");
+  EXPECT_THAT(collector.Get(),
+              ElementsAre(Annotation(3, 6, "path", ElementsAre(33))));
 }
-#endif  // PROTOBUF_HAS_DEATH_TEST
 
-TEST(Printer, WriteFailurePartial) {
-  char buffer[17];
+TEST_F(PrinterTest, AnnotateEmptyRange) {
+  FakeAnnotationCollector collector;
+  {
+    Printer printer(output(), '$', &collector);
+    printer.Print("012$foo$4$baz$$bam$$bar$\n", "foo", "3", "bar", "5", "baz",
+                  "", "bam", "");
 
-  ArrayOutputStream output(buffer, sizeof(buffer));
+    FakeDescriptor descriptor{{"path"}, {33}};
+    printer.Annotate("baz", "bam", &descriptor);
+  }
+
+  EXPECT_EQ(written(), "012345\n");
+  EXPECT_THAT(collector.Get(),
+              ElementsAre(Annotation(5, 5, "path", ElementsAre(33))));
+}
+
+TEST_F(PrinterTest, AnnotateDespiteUnrelatedMultipleUses) {
+  FakeAnnotationCollector collector;
+  {
+    Printer printer(output(), '$', &collector);
+    printer.Print("012$foo$4$foo$$bar$\n", "foo", "3", "bar", "5");
+
+    FakeDescriptor descriptor{{"path"}, {33}};
+    printer.Annotate("bar", "bar", &descriptor);
+  }
+
+  EXPECT_EQ(written(), "0123435\n");
+  EXPECT_THAT(collector.Get(),
+              ElementsAre(Annotation(6, 7, "path", ElementsAre(33))));
+}
+
+TEST_F(PrinterTest, AnnotateIndent) {
+  FakeAnnotationCollector collector;
+  {
+    Printer printer(output(), '$', &collector);
+    printer.Print("0\n");
+    printer.Indent();
+
+    printer.Print("$foo$", "foo", "4");
+    FakeDescriptor descriptor1{{"path"}, {44}};
+    printer.Annotate("foo", &descriptor1);
+
+    printer.Print(",\n");
+    printer.Print("$bar$", "bar", "9");
+    FakeDescriptor descriptor2{{"path"}, {99}};
+    printer.Annotate("bar", &descriptor2);
+
+    printer.Print("\n${$$D$$}$\n", "{", "", "}", "", "D", "d");
+    FakeDescriptor descriptor3{{"path"}, {1313}};
+    printer.Annotate("{", "}", &descriptor3);
+
+    printer.Outdent();
+    printer.Print("\n");
+  }
+
+  EXPECT_EQ(written(), "0\n  4,\n  9\n  d\n\n");
+  EXPECT_THAT(collector.Get(),
+              ElementsAre(Annotation(4, 5, "path", ElementsAre(44)),
+                          Annotation(9, 10, "path", ElementsAre(99)),
+                          Annotation(13, 14, "path", ElementsAre(1313))));
+}
+
+TEST_F(PrinterTest, AnnotateIndentNewline) {
+  FakeAnnotationCollector collector;
+  {
+    Printer printer(output(), '$', &collector);
+    printer.Indent();
+
+    printer.Print("$A$$N$$B$C\n", "A", "", "N", "\nz", "B", "");
+    FakeDescriptor descriptor{{"path"}, {0}};
+    printer.Annotate("A", "B", &descriptor);
+
+    printer.Outdent();
+    printer.Print("\n");
+  }
+  EXPECT_EQ(written(), "\nz  C\n\n");
+
+  EXPECT_THAT(collector.Get(),
+              ElementsAre(Annotation(0, 4, "path", ElementsAre(0))));
+}
+
+TEST_F(PrinterTest, Indenting) {
+  {
+    Printer printer(output(), '$');
+    absl::flat_hash_map<std::string, std::string> vars = {{"newline", "\n"}};
+
+    printer.Print("This is not indented.\n");
+    printer.Indent();
+    printer.Print("This is indented\nAnd so is this\n");
+    printer.Outdent();
+    printer.Print("But this is not.");
+    printer.Indent();
+    printer.Print(
+        "  And this is still the same line.\n"
+        "But this is indented.\n");
+    printer.PrintRaw("RawBit has indent at start\n");
+    printer.PrintRaw("but not after a raw newline\n");
+    printer.Print(vars,
+                  "Note that a newline in a variable will break "
+                  "indenting, as we see$newline$here.\n");
+    printer.Indent();
+    printer.Print("And this");
+    printer.Outdent();
+    printer.Outdent();
+    printer.Print(" is double-indented\nBack to normal.");
+
+    EXPECT_FALSE(printer.failed());
+  }
+
+  EXPECT_EQ(
+      written(),
+      "This is not indented.\n"
+      "  This is indented\n"
+      "  And so is this\n"
+      "But this is not.  And this is still the same line.\n"
+      "  But this is indented.\n"
+      "  RawBit has indent at start\n"
+      "but not after a raw newline\n"
+      "Note that a newline in a variable will break indenting, as we see\n"
+      "here.\n"
+      "    And this is double-indented\n"
+      "Back to normal.");
+}
+
+TEST_F(PrinterTest, WriteFailurePartial) {
+  std::string buffer(17, '\xaa');
+  ArrayOutputStream output(&buffer[0], buffer.size());
   Printer printer(&output, '$');
 
   // Print 16 bytes to almost fill the buffer (should not fail).
@@ -573,13 +431,12 @@ TEST(Printer, WriteFailurePartial) {
   EXPECT_TRUE(printer.failed());
 
   // Buffer should contain the first 17 bytes written.
-  EXPECT_EQ("0123456789abcdef<", std::string(buffer, sizeof(buffer)));
+  EXPECT_EQ(buffer, "0123456789abcdef<");
 }
 
-TEST(Printer, WriteFailureExact) {
-  char buffer[16];
-
-  ArrayOutputStream output(buffer, sizeof(buffer));
+TEST_F(PrinterTest, WriteFailureExact) {
+  std::string buffer(16, '\xaa');
+  ArrayOutputStream output(&buffer[0], buffer.size());
   Printer printer(&output, '$');
 
   // Print 16 bytes to fill the buffer exactly (should not fail).
@@ -595,139 +452,358 @@ TEST(Printer, WriteFailureExact) {
   EXPECT_TRUE(printer.failed());
 
   // Buffer should contain the first 16 bytes written.
-  EXPECT_EQ("0123456789abcdef", std::string(buffer, sizeof(buffer)));
+  EXPECT_EQ(buffer, "0123456789abcdef");
 }
 
-TEST(Printer, FormatInternal) {
-  std::vector<std::string> args{"arg1", "arg2"};
-  std::map<std::string, std::string> vars{
-      {"foo", "bar"}, {"baz", "bla"}, {"empty", ""}};
-  // Substitution tests
+TEST_F(PrinterTest, FormatInternalDirectSub) {
   {
-    // Direct arg substitution
-    std::string s;
-    {
-      StringOutputStream output(&s);
-      Printer printer(&output, '$');
-      printer.FormatInternal(args, vars, "$1$ $2$");
-    }
-    EXPECT_EQ("arg1 arg2", s);
+    Printer printer(output(), '$');
+    printer.FormatInternal({"arg1", "arg2"}, {}, "$1$ $2$");
   }
+  EXPECT_EQ(written(), "arg1 arg2");
+}
+
+TEST_F(PrinterTest, FormatInternalSubWithSpacesLeft) {
   {
-    // Variable substitution including spaces left
-    std::string s;
-    {
-      StringOutputStream output(&s);
-      Printer printer(&output, '$');
-      printer.FormatInternal({}, vars, "$foo$$ baz$$ empty$");
-    }
-    EXPECT_EQ("bar bla", s);
+    Printer printer(output(), '$');
+    printer.FormatInternal({}, {{"foo", "bar"}, {"baz", "bla"}, {"empty", ""}},
+                           "$foo$$ baz$$ empty$");
   }
+  EXPECT_EQ(written(), "bar bla");
+}
+
+TEST_F(PrinterTest, FormatInternalSubWithSpacesRight) {
   {
-    // Variable substitution including spaces right
-    std::string s;
-    {
-      StringOutputStream output(&s);
-      Printer printer(&output, '$');
-      printer.FormatInternal({}, vars, "$empty $$foo $$baz$");
-    }
-    EXPECT_EQ("bar bla", s);
+    Printer printer(output(), '$');
+    printer.FormatInternal({}, {{"foo", "bar"}, {"baz", "bla"}, {"empty", ""}},
+                           "$empty $$foo $$baz$");
   }
+  EXPECT_EQ(written(), "bar bla");
+}
+
+TEST_F(PrinterTest, FormatInternalSubMixed) {
   {
-    // Mixed variable substitution
-    std::string s;
-    {
-      StringOutputStream output(&s);
-      Printer printer(&output, '$');
-      printer.FormatInternal(args, vars, "$empty $$1$ $foo $$2$ $baz$");
-    }
-    EXPECT_EQ("arg1 bar arg2 bla", s);
+    Printer printer(output(), '$');
+    printer.FormatInternal({"arg1", "arg2"},
+                           {{"foo", "bar"}, {"baz", "bla"}, {"empty", ""}},
+                           "$empty $$1$ $foo $$2$ $baz$");
+  }
+  EXPECT_EQ(written(), "arg1 bar arg2 bla");
+}
+
+TEST_F(PrinterTest, FormatInternalIndent) {
+  {
+    Printer printer(output(), '$');
+    printer.Indent();
+    printer.FormatInternal({"arg1", "arg2"},
+                           {{"foo", "bar"}, {"baz", "bla"}, {"empty", ""}},
+                           "$empty $\n\n$1$ $foo $$2$\n$baz$");
+    printer.Outdent();
+  }
+  EXPECT_EQ(written(), "\n\n  arg1 bar arg2\n  bla");
+}
+
+TEST_F(PrinterTest, FormatInternalAnnotations) {
+  FakeAnnotationCollector collector;
+  {
+    Printer printer(output(), '$', &collector);
+
+    printer.Indent();
+    GeneratedCodeInfo::Annotation annotation;
+    annotation.set_source_file("file.proto");
+    annotation.add_path(33);
+
+    printer.FormatInternal({annotation.SerializeAsString(), "arg1", "arg2"},
+                           {{"foo", "bar"}, {"baz", "bla"}, {"empty", ""}},
+                           "$empty $\n\n${1$$2$$}$ $3$\n$baz$");
+    printer.Outdent();
   }
 
-  // Indentation tests
+  EXPECT_EQ(written(), "\n\n  arg1 arg2\n  bla");
+  EXPECT_THAT(collector.Get(),
+              ElementsAre(Annotation(4, 8, "file.proto", ElementsAre(33))));
+}
+
+TEST_F(PrinterTest, Emit) {
   {
-    // Empty lines shouldn't indent.
-    std::string s;
-    {
-      StringOutputStream output(&s);
-      Printer printer(&output, '$');
-      printer.Indent();
-      printer.FormatInternal(args, vars, "$empty $\n\n$1$ $foo $$2$\n$baz$");
-      printer.Outdent();
-    }
-    EXPECT_EQ("\n\n  arg1 bar arg2\n  bla", s);
+    Printer printer(output());
+    printer.Emit(R"cc(
+      class Foo {
+        int x, y, z;
+      };
+    )cc");
+    printer.Emit(R"java(
+      public final class Bar {
+        Bar() {}
+      }
+    )java");
   }
+
+  EXPECT_EQ(written(),
+            "class Foo {\n"
+            "  int x, y, z;\n"
+            "};\n"
+            "public final class Bar {\n"
+            "  Bar() {}\n"
+            "}\n");
+}
+
+TEST_F(PrinterTest, EmitKeepsExtraLine) {
   {
-    // Annotations should respect indentation.
-    std::string s;
-    GeneratedCodeInfo info;
-    {
-      StringOutputStream output(&s);
-      AnnotationProtoCollector<GeneratedCodeInfo> info_collector(&info);
-      Printer printer(&output, '$', &info_collector);
-      printer.Indent();
-      GeneratedCodeInfo::Annotation annotation;
-      annotation.set_source_file("file.proto");
-      annotation.add_path(33);
-      std::vector<std::string> args{annotation.SerializeAsString(), "arg1",
-                                    "arg2"};
-      printer.FormatInternal(args, vars, "$empty $\n\n${1$$2$$}$ $3$\n$baz$");
-      printer.Outdent();
-    }
-    EXPECT_EQ("\n\n  arg1 arg2\n  bla", s);
-    ASSERT_EQ(1, info.annotation_size());
-    const GeneratedCodeInfo::Annotation* arg1 = &info.annotation(0);
-    ASSERT_EQ(1, arg1->path_size());
-    EXPECT_EQ(33, arg1->path(0));
-    EXPECT_EQ("file.proto", arg1->source_file());
-    EXPECT_EQ(4, arg1->begin());
-    EXPECT_EQ(8, arg1->end());
+    Printer printer(output());
+    printer.Emit(R"cc(
+
+      class Foo {
+        int x, y, z;
+      };
+    )cc");
+    printer.Emit(R"java(
+
+      public final class Bar {
+        Bar() {}
+      }
+    )java");
   }
-#ifdef PROTOBUF_HAS_DEATH_TEST
-  // Death tests in case of illegal format strings.
+
+  EXPECT_EQ(written(),
+            "\n"
+            "class Foo {\n"
+            "  int x, y, z;\n"
+            "};\n"
+            "\n"
+            "public final class Bar {\n"
+            "  Bar() {}\n"
+            "}\n");
+}
+
+TEST_F(PrinterTest, EmitWithSubs) {
   {
-    // Unused arguments
-    std::string s;
-    StringOutputStream output(&s);
-    Printer printer(&output, '$');
-    EXPECT_DEATH(printer.FormatInternal(args, vars, "$empty $$1$"), "Unused");
+    Printer printer(output());
+    printer.Emit(
+        {{"class", "Foo"}, {"f1", "x"}, {"f2", "y"}, {"f3", "z"}, {"init", 42}},
+        R"cc(
+          class $class$ {
+            int $f1$, $f2$, $f3$ = $init$;
+          };
+        )cc");
   }
+
+  EXPECT_EQ(written(),
+            "class Foo {\n"
+            "  int x, y, z = 42;\n"
+            "};\n");
+}
+
+TEST_F(PrinterTest, EmitWithVars) {
   {
-    // Wrong order arguments
-    std::string s;
-    StringOutputStream output(&s);
-    Printer printer(&output, '$');
-    EXPECT_DEATH(printer.FormatInternal(args, vars, "$2$ $1$"), "order");
+    Printer printer(output());
+    auto v = printer.WithVars({
+        {"class", "Foo"},
+        {"f1", "x"},
+        {"f2", "y"},
+        {"f3", "z"},
+        {"init", 42},
+    });
+    printer.Emit(R"cc(
+      class $class$ {
+        int $f1$, $f2$, $f3$ = $init$;
+      };
+    )cc");
   }
+
+  EXPECT_EQ(written(),
+            "class Foo {\n"
+            "  int x, y, z = 42;\n"
+            "};\n");
+}
+
+TEST_F(PrinterTest, EmitWithSpacedVars) {
   {
-    // Zero is illegal argument
-    std::string s;
-    StringOutputStream output(&s);
-    Printer printer(&output, '$');
-    EXPECT_DEATH(printer.FormatInternal(args, vars, "$0$"), "failed");
+    Printer printer(output());
+    auto v = printer.WithVars({
+        {"is_final", "final"},
+        {"isnt_final", ""},
+        {"class", "Foo"},
+    });
+    printer.Emit(R"java(
+      public $is_final $class $class$ {
+        // Stuff.
+      }
+    )java");
+    printer.Emit(R"java(
+      public $isnt_final $class $class$ {
+        // Stuff.
+      }
+    )java");
   }
+
+  EXPECT_EQ(written(),
+            "public final class Foo {\n"
+            "  // Stuff.\n"
+            "}\n"
+            "public class Foo {\n"
+            "  // Stuff.\n"
+            "}\n");
+}
+
+TEST_F(PrinterTest, EmitWithIndent) {
   {
-    // Argument out of bounds
-    std::string s;
-    StringOutputStream output(&s);
-    Printer printer(&output, '$');
-    EXPECT_DEATH(printer.FormatInternal(args, vars, "$1$ $2$ $3$"), "bounds");
+    Printer printer(output());
+    auto v = printer.WithIndent();
+    printer.Emit({{"f1", "x"}, {"f2", "y"}, {"f3", "z"}}, R"cc(
+      class Foo {
+        int $f1$, $f2$, $f3$;
+      };
+    )cc");
   }
+
+  EXPECT_EQ(written(),
+            "  class Foo {\n"
+            "    int x, y, z;\n"
+            "  };\n");
+}
+
+
+TEST_F(PrinterTest, EmitSameNameAnnotation) {
+  FakeAnnotationCollector collector;
   {
-    // Unknown variable
-    std::string s;
-    StringOutputStream output(&s);
-    Printer printer(&output, '$');
-    EXPECT_DEATH(printer.FormatInternal(args, vars, "$huh$ $1$$2$"), "Unknown");
+    Printer printer(output(), '$', &collector);
+    FakeDescriptor descriptor{{"file.proto"}, {33}};
+    auto v = printer.WithVars({{"class", "Foo"}});
+    auto a = printer.WithAnnotations({{"class", &descriptor}});
+
+    printer.Emit({{"f1", "x"}, {"f2", "y"}, {"f3", "z"}}, R"cc(
+      class $class$ {
+        int $f1$, $f2$, $f3$;
+      };
+    )cc");
   }
+
+  EXPECT_EQ(written(),
+            "class Foo {\n"
+            "  int x, y, z;\n"
+            "};\n");
+
+  EXPECT_THAT(collector.Get(),
+              ElementsAre(Annotation(6, 9, "file.proto", ElementsAre(33))));
+}
+
+TEST_F(PrinterTest, EmitSameNameAnnotationFileNameOnly) {
+  FakeAnnotationCollector collector;
   {
-    // Illegal variable
-    std::string s;
-    StringOutputStream output(&s);
-    Printer printer(&output, '$');
-    EXPECT_DEATH(printer.FormatInternal({}, vars, "$ $"), "Empty");
+    Printer printer(output(), '$', &collector);
+    auto v = printer.WithVars({{"class", "Foo"}});
+    auto a = printer.WithAnnotations({{"class", "file.proto"}});
+
+    printer.Emit({{"f1", "x"}, {"f2", "y"}, {"f3", "z"}}, R"cc(
+      class $class$ {
+        int $f1$, $f2$, $f3$;
+      };
+    )cc");
   }
-#endif  // PROTOBUF_HAS_DEATH_TEST
+
+  EXPECT_EQ(written(),
+            "class Foo {\n"
+            "  int x, y, z;\n"
+            "};\n");
+
+  EXPECT_THAT(collector.Get(),
+              ElementsAre(Annotation(6, 9, "file.proto", IsEmpty())));
+}
+
+TEST_F(PrinterTest, EmitThreeArgWithVars) {
+  FakeAnnotationCollector collector;
+  {
+    Printer printer(output(), '$', &collector);
+    auto v = printer.WithVars({{"class", "Foo", "file.proto"}});
+
+    printer.Emit({{"f1", "x"}, {"f2", "y"}, {"f3", "z"}}, R"cc(
+      class $class$ {
+        int $f1$, $f2$, $f3$;
+      };
+    )cc");
+  }
+
+  EXPECT_EQ(written(),
+            "class Foo {\n"
+            "  int x, y, z;\n"
+            "};\n");
+
+  EXPECT_THAT(collector.Get(),
+              ElementsAre(Annotation(6, 9, "file.proto", IsEmpty())));
+}
+
+TEST_F(PrinterTest, EmitRangeAnnotation) {
+  FakeAnnotationCollector collector;
+  {
+    Printer printer(output(), '$', &collector);
+    FakeDescriptor descriptor1{{"file1.proto"}, {33}};
+    FakeDescriptor descriptor2{{"file2.proto"}, {11, 22}};
+    auto v = printer.WithVars({{"class", "Foo"}});
+    auto a = printer.WithAnnotations({
+        {"message", &descriptor1},
+        {"field", &descriptor2},
+    });
+
+    printer.Emit({{"f1", "x"}, {"f2", "y"}, {"f3", "z"}}, R"cc(
+      $_start$message$ class $class$ {
+        $_start$field$ int $f1$, $f2$, $f3$;
+        $_end$field$
+      };
+      $_end$message$
+    )cc");
+  }
+
+  EXPECT_EQ(written(),
+            "class Foo {\n"
+            "  int x, y, z;\n"
+            "};\n");
+
+  EXPECT_THAT(
+      collector.Get(),
+      ElementsAre(Annotation(14, 27, "file2.proto", ElementsAre(11, 22)),
+                  Annotation(0, 30, "file1.proto", ElementsAre(33))));
+}
+
+TEST_F(PrinterTest, EmitCallbacks) {
+  {
+    Printer printer(output());
+    printer.Emit(
+        {
+            {"class", "Foo"},
+            {"method", "bar"},
+            {"methods",
+             [&] {
+               printer.Emit(R"cc(
+                 int $method$() { return 42; }
+               )cc");
+             }},
+            {"fields",
+             [&] {
+               printer.Emit(R"cc(
+                 int $method$_;
+               )cc");
+             }},
+        },
+        R"cc(
+          class $class$ {
+           public:
+            $methods$;
+
+           private:
+            $fields$;
+          };
+        )cc");
+  }
+
+  EXPECT_EQ(written(),
+            "class Foo {\n"
+            " public:\n"
+            "  int bar() { return 42; }\n"
+            "\n"
+            " private:\n"
+            "  int bar_;\n"
+            "};\n");
 }
 
 }  // namespace io

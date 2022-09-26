@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/arena.h>
+#include "google/protobuf/arena.h"
 #include <gtest/gtest.h>
 
 using UNITTEST::TestAllTypes;

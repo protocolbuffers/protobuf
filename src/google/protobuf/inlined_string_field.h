@@ -34,15 +34,15 @@
 #include <string>
 #include <utility>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/port.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/port.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/arenastring.h>
-#include <google/protobuf/message_lite.h>
+#include "google/protobuf/arenastring.h"
+#include "google/protobuf/message_lite.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -527,6 +527,6 @@ inline std::string* InlinedStringField::MutableNoCopy(std::nullptr_t) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_INLINED_STRING_FIELD_H__

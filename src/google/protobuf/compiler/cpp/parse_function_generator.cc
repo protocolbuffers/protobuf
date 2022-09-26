@@ -28,18 +28,18 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/compiler/cpp/parse_function_generator.h>
+#include "google/protobuf/compiler/cpp/parse_function_generator.h"
 
 #include <algorithm>
 #include <limits>
 #include <string>
 #include <utility>
 
-#include <google/protobuf/wire_format.h>
+#include "google/protobuf/wire_format.h"
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/compiler/cpp/helpers.h>
-#include <google/protobuf/generated_message_tctable_gen.h>
-#include <google/protobuf/generated_message_tctable_impl.h>
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/generated_message_tctable_gen.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
 
 namespace google {
 namespace protobuf {
@@ -120,7 +120,6 @@ ParseFunctionGenerator::ParseFunctionGenerator(
         descriptor_, ordered_fields_, GeneratedOptionProvider(this),
         has_bit_indices, inlined_string_indices));
   }
-  SetCommonVars(options_, &variables_);
   SetCommonMessageDataVariables(descriptor_, &variables_);
   SetUnknownFieldsVariable(descriptor_, options_, &variables_);
   variables_["classname"] = ClassName(descriptor, false);
@@ -621,17 +620,21 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
     }
     if (info.func_name.empty()) {
       format("{::_pbi::TcParser::MiniParse, {}},\n");
+    } else if (info.field == nullptr) {
+      // Fast slot that is not associated with a field. Eg end group tags.
+      format("{$1$, {$2$, $3$}},\n", info.func_name, info.coded_tag,
+             info.nonfield_info);
     } else {
       GOOGLE_CHECK(!ShouldSplit(info.field, options_));
 
       std::string func_name = info.func_name;
       // For 1-byte tags we have a more optimized version of the varint parser
       // that can hardcode the offset and has bit.
-      if (HasSuffixString(func_name, "V8S1") ||
-          HasSuffixString(func_name, "V32S1") ||
-          HasSuffixString(func_name, "V64S1")) {
-        std::string field_type = HasSuffixString(func_name, "V8S1") ? "bool"
-                                 : HasSuffixString(func_name, "V32S1")
+      if (absl::EndsWith(func_name, "V8S1") ||
+          absl::EndsWith(func_name, "V32S1") ||
+          absl::EndsWith(func_name, "V64S1")) {
+        std::string field_type = absl::EndsWith(func_name, "V8S1") ? "bool"
+                                 : absl::EndsWith(func_name, "V32S1")
                                      ? "uint32_t"
                                      : "uint64_t";
         func_name =

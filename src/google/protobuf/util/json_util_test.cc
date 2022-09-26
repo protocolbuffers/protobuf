@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/json_util.h>
+#include "google/protobuf/util/json_util.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -37,33 +37,33 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/duration.pb.h>
-#include <google/protobuf/field_mask.pb.h>
-#include <google/protobuf/struct.pb.h>
-#include <google/protobuf/timestamp.pb.h>
-#include <google/protobuf/wrappers.pb.h>
-#include <google/protobuf/unittest.pb.h>
+#include "google/protobuf/duration.pb.h"
+#include "google/protobuf/field_mask.pb.h"
+#include "google/protobuf/struct.pb.h"
+#include "google/protobuf/timestamp.pb.h"
+#include "google/protobuf/wrappers.pb.h"
+#include "google/protobuf/unittest.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/descriptor_database.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/util/internal/testdata/maps.pb.h>
-#include <google/protobuf/util/json_format.pb.h>
-#include <google/protobuf/util/json_format.pb.h>
-#include <google/protobuf/util/json_format_proto3.pb.h>
-#include <google/protobuf/util/json_format_proto3.pb.h>
-#include <google/protobuf/util/type_resolver.h>
-#include <google/protobuf/util/type_resolver_util.h>
-#include <google/protobuf/stubs/status_macros.h>
+#include "google/protobuf/descriptor_database.h"
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/util/internal/testdata/maps.pb.h"
+#include "google/protobuf/util/json_format.pb.h"
+#include "google/protobuf/util/json_format.pb.h"
+#include "google/protobuf/util/json_format_proto3.pb.h"
+#include "google/protobuf/util/json_format_proto3.pb.h"
+#include "google/protobuf/util/type_resolver.h"
+#include "google/protobuf/util/type_resolver_util.h"
+#include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 bool IsJson2() {
   // Pay no attention to the person behind the curtain.
@@ -507,6 +507,32 @@ TEST_P(JsonTest, FloatPrecision) {
 
   EXPECT_THAT(ToJson(v),
               IsOkAndHolds("[0.99000000953674316,0.87999999523162842]"));
+}
+
+TEST_P(JsonTest, FloatMinMaxValue) {
+  // 3.4028235e38 is FLT_MAX to 8-significant-digits. The final digit (5)
+  // is rounded up; that means that when parsing this as a 64-bit FP number,
+  // the value ends up higher than FLT_MAX. We still want to accept it though,
+  // as a reasonable representation of FLT_MAX.
+  auto m = ToProto<TestMessage>(R"json(
+    {
+      "repeatedFloatValue": [3.4028235e38, -3.4028235e38],
+    }
+  )json");
+  ASSERT_OK(m);
+  EXPECT_THAT(m->repeated_float_value(), ElementsAre(FLT_MAX, -FLT_MAX));
+}
+
+TEST_P(JsonTest, FloatOutOfRange) {
+  // Check that the slightly-lenient parsing demonstrated in FloatMinMaxValue
+  // doesn't mean we allow all values. The value being parsed differs only
+  // in the least significant (represented) digit.
+  auto m = ToProto<TestMessage>(R"json(
+    {
+      "floatValue": 3.4028236e38
+    }
+  )json");
+  EXPECT_THAT(m, StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 TEST_P(JsonTest, ParseLegacySingleRepeatedField) {

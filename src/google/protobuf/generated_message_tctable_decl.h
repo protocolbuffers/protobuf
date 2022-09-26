@@ -41,11 +41,11 @@
 #include <cstdint>
 #include <type_traits>
 
-#include <google/protobuf/message_lite.h>
-#include <google/protobuf/parse_context.h>
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/parse_context.h"
 
 // Must come last:
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -85,6 +85,27 @@ struct TcFieldData {
   uint8_t hasbit_idx() const { return static_cast<uint8_t>(data >> 16); }
   uint8_t aux_idx() const { return static_cast<uint8_t>(data >> 24); }
   uint16_t offset() const { return static_cast<uint16_t>(data >> 48); }
+
+  // Constructor for special entries that do not represent a field.
+  //  - End group: `nonfield_info` is the decoded tag.
+  constexpr TcFieldData(uint16_t coded_tag, uint16_t nonfield_info)
+      : data(uint64_t{nonfield_info} << 16 |  //
+             uint64_t{coded_tag}) {}
+
+  // Fields used in non-field entries
+  //
+  //     Bit:
+  //     +-----------+-------------------+
+  //     |63    ..     32|31     ..     0|
+  //     +---------------+---------------+
+  //     :   .   :   .   :   . 16|=======| [16] coded_tag()
+  //     :   .   :   . 32|=======|   .   : [16] decoded_tag()
+  //     :---.---:---.---:   .   :   .   : [32] (unused)
+  //     +-----------+-------------------+
+  //     |63    ..     32|31     ..     0|
+  //     +---------------+---------------+
+
+  uint16_t decoded_tag() const { return static_cast<uint16_t>(data >> 16); }
 
   // Fields used in mini table parsing:
   //
@@ -365,6 +386,6 @@ static_assert(offsetof(TcParseTable<1>, fast_entries) ==
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_DECL_H__

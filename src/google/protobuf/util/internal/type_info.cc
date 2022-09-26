@@ -28,17 +28,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/internal/type_info.h>
+#include "google/protobuf/util/internal/type_info.h"
 
 #include <map>
 #include <set>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/type.pb.h>
+#include "google/protobuf/type.pb.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/util/internal/utility.h>
+#include "google/protobuf/util/internal/utility.h"
 
 namespace google {
 namespace protobuf {
