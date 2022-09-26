@@ -40,8 +40,8 @@
 - (instancetype)init {
   if ((self = [super init])) {
     // The keys are ObjC classes, so straight up ptr comparisons are fine.
-    mutableClassMap_ = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, NULL,
-                                             &kCFTypeDictionaryValueCallBacks);
+    mutableClassMap_ =
+        CFDictionaryCreateMutable(kCFAllocatorDefault, 0, NULL, &kCFTypeDictionaryValueCallBacks);
   }
   return self;
 }
@@ -69,13 +69,13 @@
   }
 
   Class containingMessageClass = extension.containingMessageClass;
-  CFMutableDictionaryRef extensionMap = (CFMutableDictionaryRef)
-      CFDictionaryGetValue(mutableClassMap_, containingMessageClass);
+  CFMutableDictionaryRef extensionMap =
+      (CFMutableDictionaryRef)CFDictionaryGetValue(mutableClassMap_, containingMessageClass);
   if (extensionMap == nil) {
     // Use a custom dictionary here because the keys are numbers and conversion
     // back and forth from NSNumber isn't worth the cost.
-    extensionMap = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, NULL,
-                                             &kCFTypeDictionaryValueCallBacks);
+    extensionMap =
+        CFDictionaryCreateMutable(kCFAllocatorDefault, 0, NULL, &kCFTypeDictionaryValueCallBacks);
     CFDictionarySetValue(mutableClassMap_, containingMessageClass, extensionMap);
     CFRelease(extensionMap);
   }
@@ -87,13 +87,11 @@
 - (GPBExtensionDescriptor *)extensionForDescriptor:(GPBDescriptor *)descriptor
                                        fieldNumber:(NSInteger)fieldNumber {
   Class messageClass = descriptor.messageClass;
-  CFMutableDictionaryRef extensionMap = (CFMutableDictionaryRef)
-      CFDictionaryGetValue(mutableClassMap_, messageClass);
+  CFMutableDictionaryRef extensionMap =
+      (CFMutableDictionaryRef)CFDictionaryGetValue(mutableClassMap_, messageClass);
   ssize_t key = fieldNumber;
   GPBExtensionDescriptor *result =
-      (extensionMap
-       ? CFDictionaryGetValue(extensionMap, (const void *)key)
-       : nil);
+      (extensionMap ? CFDictionaryGetValue(extensionMap, (const void *)key) : nil);
   return result;
 }
 
@@ -107,8 +105,8 @@ static void CopySubDictionary(const void *key, const void *value, void *context)
   Class containingMessageClass = key;
   CFMutableDictionaryRef otherExtensionMap = (CFMutableDictionaryRef)value;
 
-  CFMutableDictionaryRef extensionMap = (CFMutableDictionaryRef)
-      CFDictionaryGetValue(mutableClassMap, containingMessageClass);
+  CFMutableDictionaryRef extensionMap =
+      (CFMutableDictionaryRef)CFDictionaryGetValue(mutableClassMap, containingMessageClass);
   if (extensionMap == nil) {
     extensionMap = CFDictionaryCreateMutableCopy(kCFAllocatorDefault, 0, otherExtensionMap);
     CFDictionarySetValue(mutableClassMap, containingMessageClass, extensionMap);

@@ -509,6 +509,32 @@ TEST_P(JsonTest, FloatPrecision) {
               IsOkAndHolds("[0.99000000953674316,0.87999999523162842]"));
 }
 
+TEST_P(JsonTest, FloatMinMaxValue) {
+  // 3.4028235e38 is FLT_MAX to 8-significant-digits. The final digit (5)
+  // is rounded up; that means that when parsing this as a 64-bit FP number,
+  // the value ends up higher than FLT_MAX. We still want to accept it though,
+  // as a reasonable representation of FLT_MAX.
+  auto m = ToProto<TestMessage>(R"json(
+    {
+      "repeatedFloatValue": [3.4028235e38, -3.4028235e38],
+    }
+  )json");
+  ASSERT_OK(m);
+  EXPECT_THAT(m->repeated_float_value(), ElementsAre(FLT_MAX, -FLT_MAX));
+}
+
+TEST_P(JsonTest, FloatOutOfRange) {
+  // Check that the slightly-lenient parsing demonstrated in FloatMinMaxValue
+  // doesn't mean we allow all values. The value being parsed differs only
+  // in the least significant (represented) digit.
+  auto m = ToProto<TestMessage>(R"json(
+    {
+      "floatValue": 3.4028236e38
+    }
+  )json");
+  EXPECT_THAT(m, StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
 TEST_P(JsonTest, ParseLegacySingleRepeatedField) {
   auto m = ToProto<TestMessage>(R"json({
     "repeatedInt32Value": 1997,

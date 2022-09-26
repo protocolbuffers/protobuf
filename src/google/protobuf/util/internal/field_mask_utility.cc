@@ -31,7 +31,7 @@
 #include "google/protobuf/util/internal/field_mask_utility.h"
 
 #include "absl/status/status.h"
-#include "google/protobuf/stubs/strutil.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/util/internal/utility.h"
 #include "google/protobuf/stubs/status_macros.h"
@@ -56,7 +56,7 @@ std::string AppendPathSegmentToPrefix(absl::string_view prefix,
     return std::string(prefix);
   }
   // If the segment is a map key, appends it to the prefix without the ".".
-  if (HasPrefixString(segment, "[\"")) {
+  if (absl::StartsWith(segment, "[\"")) {
     return absl::StrCat(prefix, segment);
   }
   return absl::StrCat(prefix, ".", segment);

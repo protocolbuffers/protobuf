@@ -171,7 +171,7 @@ class PROTOBUF_EXPORT MessageLite {
   constexpr MessageLite() {}
   MessageLite(const MessageLite&) = delete;
   MessageLite& operator=(const MessageLite&) = delete;
-  virtual ~MessageLite() = default;
+  virtual ~MessageLite();
 
   // Basic Operations ------------------------------------------------
 

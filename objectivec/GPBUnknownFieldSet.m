@@ -40,8 +40,7 @@
 
 static void checkNumber(int32_t number) {
   if (number == 0) {
-    [NSException raise:NSInvalidArgumentException
-                format:@"Zero is not a valid field number."];
+    [NSException raise:NSInvalidArgumentException format:@"Zero is not a valid field number."];
   }
 }
 
@@ -50,8 +49,7 @@ static void checkNumber(int32_t number) {
   CFMutableDictionaryRef fields_;
 }
 
-static void CopyWorker(const void *key, const void *value, void *context) {
-#pragma unused(key)
+static void CopyWorker(__unused const void *key, const void *value, void *context) {
   GPBUnknownField *field = value;
   GPBUnknownFieldSet *result = context;
 
@@ -111,8 +109,7 @@ static void CopyWorker(const void *key, const void *value, void *context) {
 
 - (GPBUnknownField *)getField:(int32_t)number {
   ssize_t key = number;
-  GPBUnknownField *result =
-      fields_ ? CFDictionaryGetValue(fields_, (void *)key) : nil;
+  GPBUnknownField *result = fields_ ? CFDictionaryGetValue(fields_, (void *)key) : nil;
   return result;
 }
 
@@ -125,8 +122,7 @@ static void CopyWorker(const void *key, const void *value, void *context) {
   size_t count = CFDictionaryGetCount(fields_);
   ssize_t keys[count];
   GPBUnknownField *values[count];
-  CFDictionaryGetKeysAndValues(fields_, (const void **)keys,
-                               (const void **)values);
+  CFDictionaryGetKeysAndValues(fields_, (const void **)keys, (const void **)values);
   struct GPBFieldPair {
     ssize_t key;
     GPBUnknownField *value;
@@ -135,12 +131,11 @@ static void CopyWorker(const void *key, const void *value, void *context) {
     pairs[i].key = keys[i];
     pairs[i].value = values[i];
   };
-  qsort_b(pairs, count, sizeof(struct GPBFieldPair),
-          ^(const void *first, const void *second) {
-            const struct GPBFieldPair *a = first;
-            const struct GPBFieldPair *b = second;
-            return (a->key > b->key) ? 1 : ((a->key == b->key) ? 0 : -1);
-          });
+  qsort_b(pairs, count, sizeof(struct GPBFieldPair), ^(const void *first, const void *second) {
+    const struct GPBFieldPair *a = first;
+    const struct GPBFieldPair *b = second;
+    return (a->key > b->key) ? 1 : ((a->key == b->key) ? 0 : -1);
+  });
   for (size_t i = 0; i < count; ++i) {
     values[i] = pairs[i].value;
   };
@@ -154,8 +149,7 @@ static void CopyWorker(const void *key, const void *value, void *context) {
   size_t count = CFDictionaryGetCount(fields_);
   ssize_t keys[count];
   GPBUnknownField *values[count];
-  CFDictionaryGetKeysAndValues(fields_, (const void **)keys,
-                               (const void **)values);
+  CFDictionaryGetKeysAndValues(fields_, (const void **)keys, (const void **)values);
   if (count > 1) {
     struct GPBFieldPair {
       ssize_t key;
@@ -166,12 +160,11 @@ static void CopyWorker(const void *key, const void *value, void *context) {
       pairs[i].key = keys[i];
       pairs[i].value = values[i];
     };
-    qsort_b(pairs, count, sizeof(struct GPBFieldPair),
-            ^(const void *first, const void *second) {
-              const struct GPBFieldPair *a = first;
-              const struct GPBFieldPair *b = second;
-              return (a->key > b->key) ? 1 : ((a->key == b->key) ? 0 : -1);
-            });
+    qsort_b(pairs, count, sizeof(struct GPBFieldPair), ^(const void *first, const void *second) {
+      const struct GPBFieldPair *a = first;
+      const struct GPBFieldPair *b = second;
+      return (a->key > b->key) ? 1 : ((a->key == b->key) ? 0 : -1);
+    });
     for (size_t i = 0; i < count; ++i) {
       GPBUnknownField *value = pairs[i].value;
       [value writeToOutput:output];
@@ -182,17 +175,16 @@ static void CopyWorker(const void *key, const void *value, void *context) {
 }
 
 - (NSString *)description {
-  NSMutableString *description = [NSMutableString
-      stringWithFormat:@"<%@ %p>: TextFormat: {\n", [self class], self];
+  NSMutableString *description =
+      [NSMutableString stringWithFormat:@"<%@ %p>: TextFormat: {\n", [self class], self];
   NSString *textFormat = GPBTextFormatForUnknownFieldSet(self, @"  ");
   [description appendString:textFormat];
   [description appendString:@"}"];
   return description;
 }
 
-static void GPBUnknownFieldSetSerializedSize(const void *key, const void *value,
+static void GPBUnknownFieldSetSerializedSize(__unused const void *key, const void *value,
                                              void *context) {
-#pragma unused(key)
   GPBUnknownField *field = value;
   size_t *result = context;
   *result += [field serializedSize];
@@ -201,16 +193,13 @@ static void GPBUnknownFieldSetSerializedSize(const void *key, const void *value,
 - (size_t)serializedSize {
   size_t result = 0;
   if (fields_) {
-    CFDictionaryApplyFunction(fields_, GPBUnknownFieldSetSerializedSize,
-                              &result);
+    CFDictionaryApplyFunction(fields_, GPBUnknownFieldSetSerializedSize, &result);
   }
   return result;
 }
 
-static void GPBUnknownFieldSetWriteAsMessageSetTo(const void *key,
-                                                  const void *value,
+static void GPBUnknownFieldSetWriteAsMessageSetTo(__unused const void *key, const void *value,
                                                   void *context) {
-#pragma unused(key)
   GPBUnknownField *field = value;
   GPBCodedOutputStream *output = context;
   [field writeAsMessageSetExtensionToOutput:output];
@@ -218,15 +207,12 @@ static void GPBUnknownFieldSetWriteAsMessageSetTo(const void *key,
 
 - (void)writeAsMessageSetTo:(GPBCodedOutputStream *)output {
   if (fields_) {
-    CFDictionaryApplyFunction(fields_, GPBUnknownFieldSetWriteAsMessageSetTo,
-                              output);
+    CFDictionaryApplyFunction(fields_, GPBUnknownFieldSetWriteAsMessageSetTo, output);
   }
 }
 
-static void GPBUnknownFieldSetSerializedSizeAsMessageSet(const void *key,
-                                                         const void *value,
-                                                         void *context) {
-#pragma unused(key)
+static void GPBUnknownFieldSetSerializedSizeAsMessageSet(__unused const void *key,
+                                                         const void *value, void *context) {
   GPBUnknownField *field = value;
   size_t *result = context;
   *result += [field serializedSizeAsMessageSetExtension];
@@ -235,16 +221,14 @@ static void GPBUnknownFieldSetSerializedSizeAsMessageSet(const void *key,
 - (size_t)serializedSizeAsMessageSet {
   size_t result = 0;
   if (fields_) {
-    CFDictionaryApplyFunction(
-        fields_, GPBUnknownFieldSetSerializedSizeAsMessageSet, &result);
+    CFDictionaryApplyFunction(fields_, GPBUnknownFieldSetSerializedSizeAsMessageSet, &result);
   }
   return result;
 }
 
 - (NSData *)data {
   NSMutableData *data = [NSMutableData dataWithLength:self.serializedSize];
-  GPBCodedOutputStream *output =
-      [[GPBCodedOutputStream alloc] initWithData:data];
+  GPBCodedOutputStream *output = [[GPBCodedOutputStream alloc] initWithData:data];
   [self writeToCodedOutputStream:output];
   [output release];
   return data;
@@ -260,8 +244,8 @@ static void GPBUnknownFieldSetSerializedSizeAsMessageSet(const void *key,
   if (!fields_) {
     // Use a custom dictionary here because the keys are numbers and conversion
     // back and forth from NSNumber isn't worth the cost.
-    fields_ = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, NULL,
-                                        &kCFTypeDictionaryValueCallBacks);
+    fields_ =
+        CFDictionaryCreateMutable(kCFAllocatorDefault, 0, NULL, &kCFTypeDictionaryValueCallBacks);
   }
   ssize_t key = number;
   CFDictionarySetValue(fields_, (const void *)key, field);
@@ -269,8 +253,7 @@ static void GPBUnknownFieldSetSerializedSizeAsMessageSet(const void *key,
 
 - (GPBUnknownField *)mutableFieldForNumber:(int32_t)number create:(BOOL)create {
   ssize_t key = number;
-  GPBUnknownField *existing =
-      fields_ ? CFDictionaryGetValue(fields_, (const void *)key) : nil;
+  GPBUnknownField *existing = fields_ ? CFDictionaryGetValue(fields_, (const void *)key) : nil;
   if (!existing && create) {
     existing = [[GPBUnknownField alloc] initWithNumber:number];
     // This retains existing.
@@ -280,10 +263,8 @@ static void GPBUnknownFieldSetSerializedSizeAsMessageSet(const void *key,
   return existing;
 }
 
-static void GPBUnknownFieldSetMergeUnknownFields(const void *key,
-                                                 const void *value,
+static void GPBUnknownFieldSetMergeUnknownFields(__unused const void *key, const void *value,
                                                  void *context) {
-#pragma unused(key)
   GPBUnknownField *field = value;
   GPBUnknownFieldSet *self = context;
 
@@ -304,8 +285,7 @@ static void GPBUnknownFieldSetMergeUnknownFields(const void *key,
 
 - (void)mergeUnknownFields:(GPBUnknownFieldSet *)other {
   if (other && other->fields_) {
-    CFDictionaryApplyFunction(other->fields_,
-                              GPBUnknownFieldSetMergeUnknownFields, self);
+    CFDictionaryApplyFunction(other->fields_, GPBUnknownFieldSetMergeUnknownFields, self);
   }
 }
 
@@ -362,8 +342,7 @@ static void GPBUnknownFieldSetMergeUnknownFields(const void *key,
 }
 
 - (void)mergeMessageSetMessage:(int32_t)number data:(NSData *)messageData {
-  [[self mutableFieldForNumber:number create:YES]
-      addLengthDelimited:messageData];
+  [[self mutableFieldForNumber:number create:YES] addLengthDelimited:messageData];
 }
 
 - (void)addUnknownMapEntry:(int32_t)fieldNum value:(NSData *)data {

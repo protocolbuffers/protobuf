@@ -45,7 +45,7 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/stubs/stringprintf.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
@@ -221,7 +221,7 @@ std::string ToCamelCase(const std::string& input, bool lower_first) {
     if (i == '_') {
       capitalize_next = true;
     } else if (capitalize_next) {
-      result.push_back(ToUpperCh(i));
+      result.push_back(absl::ascii_toupper(i));
       capitalize_next = false;
     } else {
       result.push_back(i);
@@ -230,18 +230,10 @@ std::string ToCamelCase(const std::string& input, bool lower_first) {
 
   // Lower-case the first letter.
   if (lower_first && !result.empty()) {
-    result[0] = ToLowerCh(result[0]);
+    result[0] = absl::ascii_tolower(result[0]);
   }
 
   return result;
-}
-
-char ToUpperCh(char ch) {
-  return (ch >= 'a' && ch <= 'z') ? (ch - 'a' + 'A') : ch;
-}
-
-char ToLowerCh(char ch) {
-  return (ch >= 'A' && ch <= 'Z') ? (ch - 'A' + 'a') : ch;
 }
 
 std::string UnderscoresToCamelCase(const FieldDescriptor* field) {
@@ -1122,7 +1114,7 @@ void EscapeUtf16ToString(uint16_t code, std::string* output) {
   } else if (code >= 0x20 && code <= 0x7f) {
     output->push_back(static_cast<char>(code));
   } else {
-    output->append(StringPrintf("\\u%04x", code));
+    output->append(absl::StrFormat("\\u%04x", code));
   }
 }
 

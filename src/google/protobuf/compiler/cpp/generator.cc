@@ -70,6 +70,9 @@ absl::flat_hash_map<std::string, std::string> CommonVars(
       {"uint32", "uint32_t"},
       {"uint64", "uint64_t"},
 
+      {"hrule_thick", kThickSeparator},
+      {"hrule_thin", kThinSeparator},
+
       // Warning: there is some clever naming/splitting here to avoid extract
       // script rewrites.  The names of these variables must not be things that
       // the extract script will rewrite.  That's why we use "CHK" (for example)
@@ -83,9 +86,11 @@ absl::flat_hash_map<std::string, std::string> CommonVars(
                                  : "GOOGLE3_PROTOBU"
                                    "F"},
       {"CHK", is_oss ? "GOOGLE_CHECK"
-                     : "CHECK"},
+                     : "CHEC"
+                       "K"},
       {"DCHK", is_oss ? "GOOGLE_DCHECK"
-                      : "DCHECK"},
+                      : "DCHEC"
+                        "K"},
   };
 }
 }  // namespace

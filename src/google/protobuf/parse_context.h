@@ -337,7 +337,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
   template <typename A>
   const char* AppendSize(const char* ptr, int size, const A& append) {
-    int chunk_size = buffer_end_ + kSlopBytes - ptr;
+    int chunk_size = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
     do {
       GOOGLE_DCHECK(size > chunk_size);
       if (next_chunk_ == nullptr) return nullptr;
@@ -351,7 +351,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       ptr = Next();
       if (ptr == nullptr) return nullptr;  // passed the limit
       ptr += kSlopBytes;
-      chunk_size = buffer_end_ + kSlopBytes - ptr;
+      chunk_size = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
     } while (size > chunk_size);
     append(ptr, size);
     return ptr + size;
@@ -880,7 +880,7 @@ template <typename T>
 const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
                                                 RepeatedField<T>* out) {
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-  int nbytes = buffer_end_ + kSlopBytes - ptr;
+  int nbytes = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
   while (size > nbytes) {
     int num = nbytes / sizeof(T);
     int old_entries = out->size();
@@ -898,7 +898,7 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
     ptr = Next();
     if (ptr == nullptr) return nullptr;
     ptr += kSlopBytes - (nbytes - block_size);
-    nbytes = buffer_end_ + kSlopBytes - ptr;
+    nbytes = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
   }
   int num = size / sizeof(T);
   int old_entries = out->size();
@@ -930,11 +930,11 @@ template <typename Add>
 const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add) {
   int size = ReadSize(&ptr);
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-  int chunk_size = buffer_end_ - ptr;
+  int chunk_size = static_cast<int>(buffer_end_ - ptr);
   while (size > chunk_size) {
     ptr = ReadPackedVarintArray(ptr, buffer_end_, add);
     if (ptr == nullptr) return nullptr;
-    int overrun = ptr - buffer_end_;
+    int overrun = static_cast<int>(ptr - buffer_end_);
     GOOGLE_DCHECK(overrun >= 0 && overrun <= kSlopBytes);
     if (size - chunk_size <= kSlopBytes) {
       // The current buffer contains all the information needed, we don't need
@@ -955,7 +955,7 @@ const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add) {
     ptr = Next();
     if (ptr == nullptr) return nullptr;
     ptr += overrun;
-    chunk_size = buffer_end_ - ptr;
+    chunk_size = static_cast<int>(buffer_end_ - ptr);
   }
   auto end = ptr + size;
   ptr = ReadPackedVarintArray(ptr, end, add);

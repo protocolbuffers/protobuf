@@ -22,6 +22,10 @@
   * Turns on table-driven parser for reflection based objects.
   * Save code space by avoiding inlining of large-in-aggregate code-space MessageLite::~MessageLite destructor.
   * Undefine the macro `linux` when compiling protobuf
+  * Reduce memory consumption of MessageSet parsing.
+  * Save code space by avoiding inlining of large-in-aggregate code-space MessageLite::~MessageLite destructor.
+  * Breaking change: delete Arena::Init
+  * Make a PROTOBUF_POISON/UNPOISON to reduce noise in the source
 
 
   Kotlin
@@ -34,6 +38,10 @@
   * Performance improvement for repeated use of FieldMaskUtil#merge by caching
     constructed FieldMaskTrees.
   * Optimized Java proto serialization gencode for protos having many extension ranges with few fields in between.
+  * More thoroughly annotate public generated code in Java lite protocol buffers.
+  * Fixed Bug in proto3 java lite repeated enum fields. Failed to call copyOnWrite before modifying previously built message. Causes modification to already "built" messages that should be immutable.
+  * Refactoring java full runtime to reuse sub-message builders and prepare to migrate parsing logic from parse constructor to builder.
+  * Fix Java reflection serialization of empty packed fields.
 
   Python
   * Changes ordering of printed fields in .pyi files from lexicographic to the same ordering found in the proto descriptor.
@@ -42,6 +50,11 @@
 
   Compiler
   * Print full path name of source .proto file on error
+
+2022-09-13 version 21.6 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+C++
+* Reduce memory consumption of MessageSet parsing
 
 2022-08-09 version 21.5 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
 

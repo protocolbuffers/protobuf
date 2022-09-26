@@ -359,6 +359,9 @@ message TestMixedFieldsAndExtensions {
 message TestGroup {
   optional group OptionalGroup = 16 {
     optional int32 a = 17;
+    optional int32 zz = 89;  // fast table size must be at least 16, for this
+                             // field to be parsed by the fast parser, since
+                             // 89 - 17 = 72 is a multiple of 8.
   }
   optional ForeignEnum optional_foreign_enum = 22;
 }

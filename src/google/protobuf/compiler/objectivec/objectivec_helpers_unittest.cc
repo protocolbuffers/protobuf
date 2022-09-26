@@ -101,10 +101,12 @@ TEST(ObjCHelper, TextFormatDecodeData_DecodeDataForString_ByteCodes) {
 
   // Long name so multiple decode ops are needed.
 
+  // clang-format off
   input_for_decode =
       "longFieldNameIsLooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong1000";
   desired_output_for_decode =
       "long_field_name_is_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong_1000";
+  // clang-format on
   expected = std::string("\x04\xA5\xA4\xA2\xBF\x1F\x0E\x84\x0", 9);
   result = TextFormatDecodeData::DecodeDataForString(input_for_decode,
                                                      desired_output_for_decode);
@@ -154,11 +156,13 @@ TEST(ObjCHelper, TextFormatDecodeData_RawStrings) {
   EXPECT_EQ(4, decode_data.num_entries());
 
   uint8_t expected_data[] = {
+      // clang-format off
       0x4,
       0x1, 0x0, 'z', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'I', 'J', 0x0,
       0x3, 0x0, 'a', 'b', 'c', 'd', 'e', 'z', 'g', 'h', 'I', 'J', 0x0,
       0x2, 0x0, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'I', 0x0,
       0x4, 0x0, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'I', 'J', 'z', 0x0,
+      // clang-format on
   };
   std::string expected((const char*)expected_data, sizeof(expected_data));
 
@@ -172,12 +176,15 @@ TEST(ObjCHelper, TextFormatDecodeData_ByteCodes) {
   decode_data.AddString(3, "abcdefghIJ", "_AbcdefghIJ");
   decode_data.AddString(2, "abcdefghIJ", "Abcd_EfghIJ");
   decode_data.AddString(4, "abcdefghIJ", "ABCD__EfghI_j");
+  // clang-format off
   decode_data.AddString(1000,
                         "longFieldNameIsLooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong1000",
                         "long_field_name_is_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong_1000");
+  // clang-format on
 
   EXPECT_EQ(5, decode_data.num_entries());
 
+  // clang-format off
   uint8_t expected_data[] = {
       0x5,
       // All as is (00 op)
@@ -196,6 +203,7 @@ TEST(ObjCHelper, TextFormatDecodeData_ByteCodes) {
       //   underscore, as is + 3 (00 op)
       0xE8, 0x07, 0x04, 0xA5, 0xA4, 0xA2, 0xBF, 0x1F, 0x0E, 0x84, 0x0,
   };
+  // clang-format on
   std::string expected((const char*)expected_data, sizeof(expected_data));
 
   EXPECT_EQ(expected, decode_data.Data());
@@ -367,6 +375,90 @@ TEST(ObjCHelper, ParseSimple_RejectLinesNoMessage) {
       EXPECT_EQ(err_str, expected_err);
     }
   }
+}
+
+TEST(ObjCHelper, IsRetainedName) {
+  EXPECT_TRUE(IsRetainedName("new"));
+  EXPECT_TRUE(IsRetainedName("alloc"));
+  EXPECT_TRUE(IsRetainedName("copy"));
+  EXPECT_TRUE(IsRetainedName("mutableCopy"));
+  EXPECT_TRUE(IsRetainedName("newFoo"));
+  EXPECT_TRUE(IsRetainedName("allocFoo"));
+  EXPECT_TRUE(IsRetainedName("copyFoo"));
+  EXPECT_TRUE(IsRetainedName("mutableCopyFoo"));
+  EXPECT_TRUE(IsRetainedName("new_foo"));
+  EXPECT_TRUE(IsRetainedName("alloc_foo"));
+  EXPECT_TRUE(IsRetainedName("copy_foo"));
+  EXPECT_TRUE(IsRetainedName("mutableCopy_foo"));
+
+  EXPECT_FALSE(IsRetainedName(""));
+  EXPECT_FALSE(IsRetainedName("ne"));
+  EXPECT_FALSE(IsRetainedName("all"));
+  EXPECT_FALSE(IsRetainedName("co"));
+  EXPECT_FALSE(IsRetainedName("mutable"));
+  EXPECT_FALSE(IsRetainedName("New"));
+  EXPECT_FALSE(IsRetainedName("Alloc"));
+  EXPECT_FALSE(IsRetainedName("Copy"));
+  EXPECT_FALSE(IsRetainedName("MutableCopy"));
+  EXPECT_FALSE(IsRetainedName("newer"));
+  EXPECT_FALSE(IsRetainedName("alloced"));
+  EXPECT_FALSE(IsRetainedName("copying"));
+  EXPECT_FALSE(IsRetainedName("mutableCopying"));
+
+  EXPECT_FALSE(IsRetainedName("init"));
+  EXPECT_FALSE(IsRetainedName("Create"));
+  EXPECT_FALSE(IsRetainedName("Copy"));
+}
+
+TEST(ObjCHelper, IsInitName) {
+  EXPECT_TRUE(IsInitName("init"));
+  EXPECT_TRUE(IsInitName("initFoo"));
+  EXPECT_TRUE(IsInitName("init_foo"));
+
+  EXPECT_FALSE(IsInitName(""));
+  EXPECT_FALSE(IsInitName("in"));
+  EXPECT_FALSE(IsInitName("Init"));
+  EXPECT_FALSE(IsInitName("inIt"));
+  EXPECT_FALSE(IsInitName("initial"));
+  EXPECT_FALSE(IsInitName("initiAl"));
+  EXPECT_FALSE(IsInitName("fooInit"));
+  EXPECT_FALSE(IsInitName("foo_init"));
+
+  EXPECT_FALSE(IsInitName("new"));
+  EXPECT_FALSE(IsInitName("alloc"));
+  EXPECT_FALSE(IsInitName("copy"));
+  EXPECT_FALSE(IsInitName("mutableCopy"));
+  EXPECT_FALSE(IsInitName("Create"));
+  EXPECT_FALSE(IsInitName("Copy"));
+}
+
+TEST(ObjCHelper, IsCreateName) {
+  EXPECT_TRUE(IsCreateName("Create"));
+  EXPECT_TRUE(IsCreateName("Copy"));
+  EXPECT_TRUE(IsCreateName("CreateFoo"));
+  EXPECT_TRUE(IsCreateName("CopyFoo"));
+  EXPECT_TRUE(IsCreateName("Create_foo"));
+  EXPECT_TRUE(IsCreateName("Copy_foo"));
+  EXPECT_TRUE(IsCreateName("ReCreate"));
+  EXPECT_TRUE(IsCreateName("ReCopy"));
+  EXPECT_TRUE(IsCreateName("FOOCreate"));
+  EXPECT_TRUE(IsCreateName("FOOCopy"));
+  EXPECT_TRUE(IsCreateName("CreateWithCopy"));
+
+  EXPECT_FALSE(IsCreateName(""));
+  EXPECT_FALSE(IsCreateName("Crea"));
+  EXPECT_FALSE(IsCreateName("Co"));
+  EXPECT_FALSE(IsCreateName("create"));
+  EXPECT_FALSE(IsCreateName("recreate"));
+  EXPECT_FALSE(IsCreateName("recopy"));
+  EXPECT_FALSE(IsCreateName("ReCreated"));
+  EXPECT_FALSE(IsCreateName("ReCopying"));
+
+  EXPECT_FALSE(IsCreateName("init"));
+  EXPECT_FALSE(IsCreateName("new"));
+  EXPECT_FALSE(IsCreateName("alloc"));
+  EXPECT_FALSE(IsCreateName("copy"));
+  EXPECT_TRUE(IsCreateName("mutableCopy"));
 }
 
 // TODO(thomasvl): Should probably add some unittests for all the special cases

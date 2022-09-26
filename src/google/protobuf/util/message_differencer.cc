@@ -57,8 +57,9 @@
 #include "google/protobuf/stubs/strutil.h"
 #include "absl/container/fixed_array.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/stubs/stringprintf.h"
+#include "absl/strings/str_format.h"
 #include "google/protobuf/util/field_comparator.h"
 
 // Always include as last one, otherwise it can break compilation
@@ -2090,7 +2091,7 @@ void MessageDifferencer::StreamReporter::PrintUnknownFieldValue(
           "0x", absl::Hex(unknown_field->fixed64(), absl::kZeroPad16));
       break;
     case UnknownField::TYPE_LENGTH_DELIMITED:
-      output = StringPrintf(
+      output = absl::StrFormat(
           "\"%s\"", absl::CEscape(unknown_field->length_delimited()).c_str());
       break;
     case UnknownField::TYPE_GROUP:

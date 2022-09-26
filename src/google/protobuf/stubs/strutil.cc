@@ -63,75 +63,7 @@
 namespace google {
 namespace protobuf {
 
-// These are defined as macros on some platforms.  #undef them so that we can
-// redefine them.
-#undef isxdigit
-#undef isprint
-
-// The definitions of these in ctype.h change based on locale.  Since our
-// string manipulation is all in relation to the protocol buffer and C++
-// languages, we always want to use the C locale.  So, we re-define these
-// exactly as we want them.
-inline bool isxdigit(char c) {
-  return ('0' <= c && c <= '9') ||
-         ('a' <= c && c <= 'f') ||
-         ('A' <= c && c <= 'F');
-}
-
-inline bool isprint(char c) {
-  return c >= 0x20 && c <= 0x7E;
-}
-
-// ----------------------------------------------------------------------
-// ReplaceCharacters
-//    Replaces any occurrence of the character 'remove' (or the characters
-//    in 'remove') with the character 'replacewith'.
-// ----------------------------------------------------------------------
-void ReplaceCharacters(std::string *s, const char *remove, char replacewith) {
-  const char *str_start = s->c_str();
-  const char *str = str_start;
-  for (str = strpbrk(str, remove);
-       str != nullptr;
-       str = strpbrk(str + 1, remove)) {
-    (*s)[str - str_start] = replacewith;
-  }
-}
-
-void StripWhitespace(std::string *str) {
-  int str_length = str->length();
-
-  // Strip off leading whitespace.
-  int first = 0;
-  while (first < str_length && absl::ascii_isspace(str->at(first))) {
-    ++first;
-  }
-  // If entire string is white space.
-  if (first == str_length) {
-    str->clear();
-    return;
-  }
-  if (first > 0) {
-    str->erase(0, first);
-    str_length -= first;
-  }
-
-  // Strip off trailing whitespace.
-  int last = str_length - 1;
-  while (last >= 0 && absl::ascii_isspace(str->at(last))) {
-    --last;
-  }
-  if (last != (str_length - 1) && last >= 0) {
-    str->erase(last + 1, std::string::npos);
-  }
-}
-
-// ----------------------------------------------------------------------
-// StringReplace()
-//    Replace the "old" pattern with the "new" pattern in a string,
-//    and append the result to "res".  If replace_all is false,
-//    it only replaces the first instance of "old."
-// ----------------------------------------------------------------------
-
+namespace {
 void StringReplace(const std::string &s, const std::string &oldsub,
                    const std::string &newsub, bool replace_all,
                    std::string *res) {
@@ -153,6 +85,7 @@ void StringReplace(const std::string &s, const std::string &oldsub,
   } while (replace_all);
   res->append(s, start_pos, s.length() - start_pos);
 }
+}  // namespace
 
 // ----------------------------------------------------------------------
 // StringReplace()
@@ -168,91 +101,6 @@ std::string StringReplace(const std::string &s, const std::string &oldsub,
   std::string ret;
   StringReplace(s, oldsub, newsub, replace_all, &ret);
   return ret;
-}
-
-// ----------------------------------------------------------------------
-// SplitStringUsing()
-//    Split a string using a character delimiter. Append the components
-//    to 'result'.
-//
-// Note: For multi-character delimiters, this routine will split on *ANY* of
-// the characters in the string, not the entire string as a single delimiter.
-// ----------------------------------------------------------------------
-template <typename ITR>
-static inline void SplitStringToIteratorUsing(absl::string_view full,
-                                              const char *delim, ITR &result) {
-  // Optimize the common case where delim is a single character.
-  if (delim[0] != '\0' && delim[1] == '\0') {
-    char c = delim[0];
-    const char* p = full.data();
-    const char* end = p + full.size();
-    while (p != end) {
-      if (*p == c) {
-        ++p;
-      } else {
-        const char* start = p;
-        while (++p != end && *p != c);
-        *result++ = std::string(start, p - start);
-      }
-    }
-    return;
-  }
-
-  std::string::size_type begin_index, end_index;
-  begin_index = full.find_first_not_of(delim);
-  while (begin_index != std::string::npos) {
-    end_index = full.find_first_of(delim, begin_index);
-    if (end_index == std::string::npos) {
-      *result++ = std::string(full.substr(begin_index));
-      return;
-    }
-    *result++ =
-        std::string(full.substr(begin_index, (end_index - begin_index)));
-    begin_index = full.find_first_not_of(delim, end_index);
-  }
-}
-
-void SplitStringUsing(absl::string_view full, const char *delim,
-                      std::vector<std::string> *result) {
-  std::back_insert_iterator<std::vector<std::string> > it(*result);
-  SplitStringToIteratorUsing(full, delim, it);
-}
-
-// Split a string using a character delimiter. Append the components
-// to 'result'.  If there are consecutive delimiters, this function
-// will return corresponding empty strings. The string is split into
-// at most the specified number of pieces greedily. This means that the
-// last piece may possibly be split further. To split into as many pieces
-// as possible, specify 0 as the number of pieces.
-//
-// If "full" is the empty string, yields an empty string as the only value.
-//
-// If "pieces" is negative for some reason, it returns the whole string
-// ----------------------------------------------------------------------
-template <typename ITR>
-static inline void SplitStringToIteratorAllowEmpty(absl::string_view full,
-                                                   const char *delim,
-                                                   int pieces, ITR &result) {
-  std::string::size_type begin_index, end_index;
-  begin_index = 0;
-
-  for (int i = 0; (i < pieces-1) || (pieces == 0); i++) {
-    end_index = full.find_first_of(delim, begin_index);
-    if (end_index == std::string::npos) {
-      *result++ = std::string(full.substr(begin_index));
-      return;
-    }
-    *result++ =
-        std::string(full.substr(begin_index, (end_index - begin_index)));
-    begin_index = end_index + 1;
-  }
-  *result++ = std::string(full.substr(begin_index));
-}
-
-void SplitStringAllowEmpty(absl::string_view full, const char *delim,
-                           std::vector<std::string> *result) {
-  std::back_insert_iterator<std::vector<std::string> > it(*result);
-  SplitStringToIteratorAllowEmpty(full, delim, 0, it);
 }
 
 // ----------------------------------------------------------------------
@@ -424,377 +272,8 @@ bool safe_uint_internal(std::string text, IntType *value_p) {
 }
 
 // ----------------------------------------------------------------------
-// FastIntToBuffer()
-// FastInt64ToBuffer()
-// FastHexToBuffer()
-// FastHex64ToBuffer()
-// FastHex32ToBuffer()
-// ----------------------------------------------------------------------
-
-// Offset into buffer where FastInt64ToBuffer places the end of string
-// null character.  Also used by FastInt64ToBufferLeft.
-static const int kFastInt64ToBufferOffset = 21;
-
-char *FastInt64ToBuffer(int64_t i, char* buffer) {
-  // We could collapse the positive and negative sections, but that
-  // would be slightly slower for positive numbers...
-  // 22 bytes is enough to store -2**64, -18446744073709551616.
-  char* p = buffer + kFastInt64ToBufferOffset;
-  *p-- = '\0';
-  if (i >= 0) {
-    do {
-      *p-- = '0' + i % 10;
-      i /= 10;
-    } while (i > 0);
-    return p + 1;
-  } else {
-    // On different platforms, % and / have different behaviors for
-    // negative numbers, so we need to jump through hoops to make sure
-    // we don't divide negative numbers.
-    if (i > -10) {
-      i = -i;
-      *p-- = '0' + i;
-      *p = '-';
-      return p;
-    } else {
-      // Make sure we aren't at MIN_INT, in which case we can't say i = -i
-      i = i + 10;
-      i = -i;
-      *p-- = '0' + i % 10;
-      // Undo what we did a moment ago
-      i = i / 10 + 1;
-      do {
-        *p-- = '0' + i % 10;
-        i /= 10;
-      } while (i > 0);
-      *p = '-';
-      return p;
-    }
-  }
-}
-
-// Offset into buffer where FastInt32ToBuffer places the end of string
-// null character.  Also used by FastInt32ToBufferLeft
-static const int kFastInt32ToBufferOffset = 11;
-
-// Yes, this is a duplicate of FastInt64ToBuffer.  But, we need this for the
-// compiler to generate 32 bit arithmetic instructions.  It's much faster, at
-// least with 32 bit binaries.
-char *FastInt32ToBuffer(int32_t i, char* buffer) {
-  // We could collapse the positive and negative sections, but that
-  // would be slightly slower for positive numbers...
-  // 12 bytes is enough to store -2**32, -4294967296.
-  char* p = buffer + kFastInt32ToBufferOffset;
-  *p-- = '\0';
-  if (i >= 0) {
-    do {
-      *p-- = '0' + i % 10;
-      i /= 10;
-    } while (i > 0);
-    return p + 1;
-  } else {
-    // On different platforms, % and / have different behaviors for
-    // negative numbers, so we need to jump through hoops to make sure
-    // we don't divide negative numbers.
-    if (i > -10) {
-      i = -i;
-      *p-- = '0' + i;
-      *p = '-';
-      return p;
-    } else {
-      // Make sure we aren't at MIN_INT, in which case we can't say i = -i
-      i = i + 10;
-      i = -i;
-      *p-- = '0' + i % 10;
-      // Undo what we did a moment ago
-      i = i / 10 + 1;
-      do {
-        *p-- = '0' + i % 10;
-        i /= 10;
-      } while (i > 0);
-      *p = '-';
-      return p;
-    }
-  }
-}
-
-char *FastHexToBuffer(int i, char* buffer) {
-  GOOGLE_CHECK(i >= 0) << "FastHexToBuffer() wants non-negative integers, not " << i;
-
-  static const char *hexdigits = "0123456789abcdef";
-  char *p = buffer + 21;
-  *p-- = '\0';
-  do {
-    *p-- = hexdigits[i & 15];   // mod by 16
-    i >>= 4;                    // divide by 16
-  } while (i > 0);
-  return p + 1;
-}
-
-char *InternalFastHexToBuffer(uint64_t value, char* buffer, int num_byte) {
-  static const char *hexdigits = "0123456789abcdef";
-  buffer[num_byte] = '\0';
-  for (int i = num_byte - 1; i >= 0; i--) {
-#ifdef _M_X64
-    // MSVC x64 platform has a bug optimizing the uint32(value) in the #else
-    // block. Given that the uint32 cast was to improve performance on 32-bit
-    // platforms, we use 64-bit '&' directly.
-    buffer[i] = hexdigits[value & 0xf];
-#else
-    buffer[i] = hexdigits[uint32_t(value) & 0xf];
-#endif
-    value >>= 4;
-  }
-  return buffer;
-}
-
-char *FastHex64ToBuffer(uint64_t value, char* buffer) {
-  return InternalFastHexToBuffer(value, buffer, 16);
-}
-
-char *FastHex32ToBuffer(uint32_t value, char* buffer) {
-  return InternalFastHexToBuffer(value, buffer, 8);
-}
-
-// ----------------------------------------------------------------------
-// FastInt32ToBufferLeft()
-// FastUInt32ToBufferLeft()
-// FastInt64ToBufferLeft()
-// FastUInt64ToBufferLeft()
-//
-// Like the Fast*ToBuffer() functions above, these are intended for speed.
-// Unlike the Fast*ToBuffer() functions, however, these functions write
-// their output to the beginning of the buffer (hence the name, as the
-// output is left-aligned).  The caller is responsible for ensuring that
-// the buffer has enough space to hold the output.
-//
-// Returns a pointer to the end of the string (i.e. the null character
-// terminating the string).
-// ----------------------------------------------------------------------
-
-static const char two_ASCII_digits[100][2] = {
-  {'0','0'}, {'0','1'}, {'0','2'}, {'0','3'}, {'0','4'},
-  {'0','5'}, {'0','6'}, {'0','7'}, {'0','8'}, {'0','9'},
-  {'1','0'}, {'1','1'}, {'1','2'}, {'1','3'}, {'1','4'},
-  {'1','5'}, {'1','6'}, {'1','7'}, {'1','8'}, {'1','9'},
-  {'2','0'}, {'2','1'}, {'2','2'}, {'2','3'}, {'2','4'},
-  {'2','5'}, {'2','6'}, {'2','7'}, {'2','8'}, {'2','9'},
-  {'3','0'}, {'3','1'}, {'3','2'}, {'3','3'}, {'3','4'},
-  {'3','5'}, {'3','6'}, {'3','7'}, {'3','8'}, {'3','9'},
-  {'4','0'}, {'4','1'}, {'4','2'}, {'4','3'}, {'4','4'},
-  {'4','5'}, {'4','6'}, {'4','7'}, {'4','8'}, {'4','9'},
-  {'5','0'}, {'5','1'}, {'5','2'}, {'5','3'}, {'5','4'},
-  {'5','5'}, {'5','6'}, {'5','7'}, {'5','8'}, {'5','9'},
-  {'6','0'}, {'6','1'}, {'6','2'}, {'6','3'}, {'6','4'},
-  {'6','5'}, {'6','6'}, {'6','7'}, {'6','8'}, {'6','9'},
-  {'7','0'}, {'7','1'}, {'7','2'}, {'7','3'}, {'7','4'},
-  {'7','5'}, {'7','6'}, {'7','7'}, {'7','8'}, {'7','9'},
-  {'8','0'}, {'8','1'}, {'8','2'}, {'8','3'}, {'8','4'},
-  {'8','5'}, {'8','6'}, {'8','7'}, {'8','8'}, {'8','9'},
-  {'9','0'}, {'9','1'}, {'9','2'}, {'9','3'}, {'9','4'},
-  {'9','5'}, {'9','6'}, {'9','7'}, {'9','8'}, {'9','9'}
-};
-
-char* FastUInt32ToBufferLeft(uint32_t u, char* buffer) {
-  uint32_t digits;
-  const char *ASCII_digits = nullptr;
-  // The idea of this implementation is to trim the number of divides to as few
-  // as possible by using multiplication and subtraction rather than mod (%),
-  // and by outputting two digits at a time rather than one.
-  // The huge-number case is first, in the hopes that the compiler will output
-  // that case in one branch-free block of code, and only output conditional
-  // branches into it from below.
-  if (u >= 1000000000) {  // >= 1,000,000,000
-    digits = u / 100000000;  // 100,000,000
-    ASCII_digits = two_ASCII_digits[digits];
-    buffer[0] = ASCII_digits[0];
-    buffer[1] = ASCII_digits[1];
-    buffer += 2;
-sublt100_000_000:
-    u -= digits * 100000000;  // 100,000,000
-lt100_000_000:
-    digits = u / 1000000;  // 1,000,000
-    ASCII_digits = two_ASCII_digits[digits];
-    buffer[0] = ASCII_digits[0];
-    buffer[1] = ASCII_digits[1];
-    buffer += 2;
-sublt1_000_000:
-    u -= digits * 1000000;  // 1,000,000
-lt1_000_000:
-    digits = u / 10000;  // 10,000
-    ASCII_digits = two_ASCII_digits[digits];
-    buffer[0] = ASCII_digits[0];
-    buffer[1] = ASCII_digits[1];
-    buffer += 2;
-sublt10_000:
-    u -= digits * 10000;  // 10,000
-lt10_000:
-    digits = u / 100;
-    ASCII_digits = two_ASCII_digits[digits];
-    buffer[0] = ASCII_digits[0];
-    buffer[1] = ASCII_digits[1];
-    buffer += 2;
-sublt100:
-    u -= digits * 100;
-lt100:
-    digits = u;
-    ASCII_digits = two_ASCII_digits[digits];
-    buffer[0] = ASCII_digits[0];
-    buffer[1] = ASCII_digits[1];
-    buffer += 2;
-done:
-    *buffer = 0;
-    return buffer;
-  }
-
-  if (u < 100) {
-    digits = u;
-    if (u >= 10) goto lt100;
-    *buffer++ = '0' + digits;
-    goto done;
-  }
-  if (u  <  10000) {   // 10,000
-    if (u >= 1000) goto lt10_000;
-    digits = u / 100;
-    *buffer++ = '0' + digits;
-    goto sublt100;
-  }
-  if (u  <  1000000) {   // 1,000,000
-    if (u >= 100000) goto lt1_000_000;
-    digits = u / 10000;  //    10,000
-    *buffer++ = '0' + digits;
-    goto sublt10_000;
-  }
-  if (u  <  100000000) {   // 100,000,000
-    if (u >= 10000000) goto lt100_000_000;
-    digits = u / 1000000;  //   1,000,000
-    *buffer++ = '0' + digits;
-    goto sublt1_000_000;
-  }
-  // we already know that u < 1,000,000,000
-  digits = u / 100000000;   // 100,000,000
-  *buffer++ = '0' + digits;
-  goto sublt100_000_000;
-}
-
-char* FastInt32ToBufferLeft(int32_t i, char* buffer) {
-  uint32_t u = 0;
-  if (i < 0) {
-    *buffer++ = '-';
-    u -= i;
-  } else {
-    u = i;
-  }
-  return FastUInt32ToBufferLeft(u, buffer);
-}
-
-char* FastUInt64ToBufferLeft(uint64_t u64, char* buffer) {
-  int digits;
-  const char *ASCII_digits = nullptr;
-
-  uint32_t u = static_cast<uint32_t>(u64);
-  if (u == u64) return FastUInt32ToBufferLeft(u, buffer);
-
-  uint64_t top_11_digits = u64 / 1000000000;
-  buffer = FastUInt64ToBufferLeft(top_11_digits, buffer);
-  u = u64 - (top_11_digits * 1000000000);
-
-  digits = u / 10000000;  // 10,000,000
-  GOOGLE_DCHECK_LT(digits, 100);
-  ASCII_digits = two_ASCII_digits[digits];
-  buffer[0] = ASCII_digits[0];
-  buffer[1] = ASCII_digits[1];
-  buffer += 2;
-  u -= digits * 10000000;  // 10,000,000
-  digits = u / 100000;  // 100,000
-  ASCII_digits = two_ASCII_digits[digits];
-  buffer[0] = ASCII_digits[0];
-  buffer[1] = ASCII_digits[1];
-  buffer += 2;
-  u -= digits * 100000;  // 100,000
-  digits = u / 1000;  // 1,000
-  ASCII_digits = two_ASCII_digits[digits];
-  buffer[0] = ASCII_digits[0];
-  buffer[1] = ASCII_digits[1];
-  buffer += 2;
-  u -= digits * 1000;  // 1,000
-  digits = u / 10;
-  ASCII_digits = two_ASCII_digits[digits];
-  buffer[0] = ASCII_digits[0];
-  buffer[1] = ASCII_digits[1];
-  buffer += 2;
-  u -= digits * 10;
-  digits = u;
-  *buffer++ = '0' + digits;
-  *buffer = 0;
-  return buffer;
-}
-
-char* FastInt64ToBufferLeft(int64_t i, char* buffer) {
-  uint64_t u = 0;
-  if (i < 0) {
-    *buffer++ = '-';
-    u -= i;
-  } else {
-    u = i;
-  }
-  return FastUInt64ToBufferLeft(u, buffer);
-}
-
-// ----------------------------------------------------------------------
-// SimpleItoa()
-//    Description: converts an integer to a string.
-//
-//    Return value: string
-// ----------------------------------------------------------------------
-
-std::string SimpleItoa(int i) {
-  char buffer[kFastToBufferSize];
-  return (sizeof(i) == 4) ?
-    FastInt32ToBuffer(i, buffer) :
-    FastInt64ToBuffer(i, buffer);
-}
-
-std::string SimpleItoa(unsigned int i) {
-  char buffer[kFastToBufferSize];
-  return std::string(buffer, (sizeof(i) == 4)
-                                 ? FastUInt32ToBufferLeft(i, buffer)
-                                 : FastUInt64ToBufferLeft(i, buffer));
-}
-
-std::string SimpleItoa(long i) {
-  char buffer[kFastToBufferSize];
-  return (sizeof(i) == 4) ?
-    FastInt32ToBuffer(i, buffer) :
-    FastInt64ToBuffer(i, buffer);
-}
-
-std::string SimpleItoa(unsigned long i) {
-  char buffer[kFastToBufferSize];
-  return std::string(buffer, (sizeof(i) == 4)
-                                 ? FastUInt32ToBufferLeft(i, buffer)
-                                 : FastUInt64ToBufferLeft(i, buffer));
-}
-
-std::string SimpleItoa(long long i) {
-  char buffer[kFastToBufferSize];
-  return (sizeof(i) == 4) ?
-    FastInt32ToBuffer(i, buffer) :
-    FastInt64ToBuffer(i, buffer);
-}
-
-std::string SimpleItoa(unsigned long long i) {
-  char buffer[kFastToBufferSize];
-  return std::string(buffer, (sizeof(i) == 4)
-                                 ? FastUInt32ToBufferLeft(i, buffer)
-                                 : FastUInt64ToBufferLeft(i, buffer));
-}
-
-// ----------------------------------------------------------------------
 // SimpleDtoa()
 // SimpleFtoa()
-// DoubleToBuffer()
-// FloatToBuffer()
 //    We want to print the value without losing precision, but we also do
 //    not want to print more digits than necessary.  This turns out to be
 //    trickier than it sounds.  Numbers like 0.2 cannot be represented
@@ -831,23 +310,18 @@ std::string SimpleItoa(unsigned long long i) {
 //    implementation.
 // ----------------------------------------------------------------------
 
-std::string SimpleDtoa(double value) {
-  char buffer[kDoubleToBufferSize];
-  return DoubleToBuffer(value, buffer);
-}
-
-std::string SimpleFtoa(float value) {
-  char buffer[kFloatToBufferSize];
-  return FloatToBuffer(value, buffer);
-}
+namespace {
+// In practice, doubles should never need more than 24 bytes and floats
+// should never need more than 14 (including null terminators), but we
+// overestimate to be safe.
+constexpr int kDoubleToBufferSize = 32;
+constexpr int kFloatToBufferSize = 24;
 
 static inline bool IsValidFloatChar(char c) {
-  return ('0' <= c && c <= '9') ||
-         c == 'e' || c == 'E' ||
-         c == '+' || c == '-';
+  return ('0' <= c && c <= '9') || c == 'e' || c == 'E' || c == '+' || c == '-';
 }
 
-void DelocalizeRadix(char* buffer) {
+void DelocalizeRadix(char *buffer) {
   // Fast check:  if the buffer has a normal decimal point, assume no
   // translation is needed.
   if (strchr(buffer, '.') != nullptr) return;
@@ -868,10 +342,50 @@ void DelocalizeRadix(char* buffer) {
   if (!IsValidFloatChar(*buffer) && *buffer != '\0') {
     // It appears the radix was a multi-byte character.  We need to remove the
     // extra bytes.
-    char* target = buffer;
-    do { ++buffer; } while (!IsValidFloatChar(*buffer) && *buffer != '\0');
+    char *target = buffer;
+    do {
+      ++buffer;
+    } while (!IsValidFloatChar(*buffer) && *buffer != '\0');
     memmove(target, buffer, strlen(buffer) + 1);
   }
+}
+
+char *FloatToBuffer(float value, char *buffer) {
+  // FLT_DIG is 6 for IEEE-754 floats, which are used on almost all
+  // platforms these days.  Just in case some system exists where FLT_DIG
+  // is significantly larger -- and risks overflowing our buffer -- we have
+  // this assert.
+  static_assert(FLT_DIG < 10, "FLT_DIG_is_too_big");
+
+  if (value == std::numeric_limits<double>::infinity()) {
+    strcpy(buffer, "inf");
+    return buffer;
+  } else if (value == -std::numeric_limits<double>::infinity()) {
+    strcpy(buffer, "-inf");
+    return buffer;
+  } else if (std::isnan(value)) {
+    strcpy(buffer, "nan");
+    return buffer;
+  }
+
+  int snprintf_result =
+      snprintf(buffer, kFloatToBufferSize, "%.*g", FLT_DIG, value);
+
+  // The snprintf should never overflow because the buffer is significantly
+  // larger than the precision we asked for.
+  GOOGLE_DCHECK(snprintf_result > 0 && snprintf_result < kFloatToBufferSize);
+
+  float parsed_value;
+  if (!safe_strtof(buffer, &parsed_value) || parsed_value != value) {
+    snprintf_result =
+        snprintf(buffer, kFloatToBufferSize, "%.*g", FLT_DIG + 3, value);
+
+    // Should never overflow; see above.
+    GOOGLE_DCHECK(snprintf_result > 0 && snprintf_result < kFloatToBufferSize);
+  }
+
+  DelocalizeRadix(buffer);
+  return buffer;
 }
 
 char* DoubleToBuffer(double value, char* buffer) {
@@ -916,6 +430,17 @@ char* DoubleToBuffer(double value, char* buffer) {
 
   DelocalizeRadix(buffer);
   return buffer;
+}
+}  // namespace
+
+std::string SimpleDtoa(double value) {
+  char buffer[kDoubleToBufferSize];
+  return DoubleToBuffer(value, buffer);
+}
+
+std::string SimpleFtoa(float value) {
+  char buffer[kFloatToBufferSize];
+  return FloatToBuffer(value, buffer);
 }
 
 static int memcasecmp(const char *s1, const char *s2, size_t len) {
@@ -992,72 +517,6 @@ bool safe_strto64(const std::string &str, int64_t *value) {
 
 bool safe_strtou64(const std::string &str, uint64_t *value) {
   return safe_uint_internal(str, value);
-}
-
-char* FloatToBuffer(float value, char* buffer) {
-  // FLT_DIG is 6 for IEEE-754 floats, which are used on almost all
-  // platforms these days.  Just in case some system exists where FLT_DIG
-  // is significantly larger -- and risks overflowing our buffer -- we have
-  // this assert.
-  static_assert(FLT_DIG < 10, "FLT_DIG_is_too_big");
-
-  if (value == std::numeric_limits<double>::infinity()) {
-    strcpy(buffer, "inf");
-    return buffer;
-  } else if (value == -std::numeric_limits<double>::infinity()) {
-    strcpy(buffer, "-inf");
-    return buffer;
-  } else if (std::isnan(value)) {
-    strcpy(buffer, "nan");
-    return buffer;
-  }
-
-  int snprintf_result =
-    snprintf(buffer, kFloatToBufferSize, "%.*g", FLT_DIG, value);
-
-  // The snprintf should never overflow because the buffer is significantly
-  // larger than the precision we asked for.
-  GOOGLE_DCHECK(snprintf_result > 0 && snprintf_result < kFloatToBufferSize);
-
-  float parsed_value;
-  if (!safe_strtof(buffer, &parsed_value) || parsed_value != value) {
-    snprintf_result =
-        snprintf(buffer, kFloatToBufferSize, "%.*g", FLT_DIG + 3, value);
-
-    // Should never overflow; see above.
-    GOOGLE_DCHECK(snprintf_result > 0 && snprintf_result < kFloatToBufferSize);
-  }
-
-  DelocalizeRadix(buffer);
-  return buffer;
-}
-
-int GlobalReplaceSubstring(const std::string &substring,
-                           const std::string &replacement, std::string *s) {
-  GOOGLE_CHECK(s != nullptr);
-  if (s->empty() || substring.empty())
-    return 0;
-  std::string tmp;
-  int num_replacements = 0;
-  int pos = 0;
-  for (absl::string_view::size_type match_pos =
-           s->find(substring.data(), pos, substring.length());
-       match_pos != std::string::npos; pos = match_pos + substring.length(),
-                                    match_pos = s->find(substring.data(), pos,
-                                                        substring.length())) {
-    ++num_replacements;
-    // Append the original content before the match.
-    tmp.append(*s, pos, match_pos - pos);
-    // Append the replacement for the match.
-    tmp.append(replacement.begin(), replacement.end());
-  }
-  // Append the content after the last match. If no replacements were made, the
-  // original string is left untouched.
-  if (num_replacements > 0) {
-    tmp.append(*s, pos, s->length() - pos);
-    s->swap(tmp);
-  }
-  return num_replacements;
 }
 
 namespace {

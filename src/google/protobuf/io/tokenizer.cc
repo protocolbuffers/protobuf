@@ -93,7 +93,7 @@
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/strings/escaping.h"
-#include "google/protobuf/stubs/stringprintf.h"
+#include "absl/strings/str_format.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/stubs/stl_util.h"
@@ -708,7 +708,7 @@ bool Tokenizer::Next() {
         if (current_char_ & 0x80) {
           error_collector_->AddError(
               line_, column_,
-              StringPrintf("Interpreting non ascii codepoint %d.",
+              absl::StrFormat("Interpreting non ascii codepoint %d.",
                               static_cast<unsigned char>(current_char_)));
         }
         NextChar();
@@ -1002,9 +1002,20 @@ bool Tokenizer::ParseInteger(const std::string& text, uint64_t max_value,
 }
 
 double Tokenizer::ParseFloat(const std::string& text) {
+  double result = 0;
+  if (!TryParseFloat(text, &result)) {
+    GOOGLE_LOG(DFATAL)
+        << " Tokenizer::ParseFloat() passed text that could not have been"
+           " tokenized as a float: "
+        << absl::CEscape(text);
+  }
+  return result;
+}
+
+bool Tokenizer::TryParseFloat(const std::string& text, double* result) {
   const char* start = text.c_str();
   char* end;
-  double result = NoLocaleStrtod(start, &end);
+  *result = NoLocaleStrtod(start, &end);
 
   // "1e" is not a valid float, but if the tokenizer reads it, it will
   // report an error but still return it as a valid token.  We need to
@@ -1020,12 +1031,7 @@ double Tokenizer::ParseFloat(const std::string& text) {
     ++end;
   }
 
-  GOOGLE_LOG_IF(DFATAL,
-         static_cast<size_t>(end - start) != text.size() || *start == '-')
-      << " Tokenizer::ParseFloat() passed text that could not have been"
-         " tokenized as a float: "
-      << absl::CEscape(text);
-  return result;
+  return static_cast<size_t>(end - start) == text.size() && *start != '-';
 }
 
 // Helper to append a Unicode code point to a string as UTF8, without bringing
@@ -1052,7 +1058,7 @@ static void AppendUTF8(uint32_t code_point, std::string* output) {
     // Unicode code points end at 0x10FFFF, so this is out-of-range.
     // ConsumeString permits hex values up to 0x1FFFFF, and FetchUnicodePoint
     // doesn't perform a range check.
-    StringAppendF(output, "\\U%08x", code_point);
+    absl::StrAppendFormat(output, "\\U%08x", code_point);
     return;
   }
   tmp = ghtonl(tmp);
