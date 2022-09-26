@@ -3606,19 +3606,18 @@ TEST_F(SourceInfoTest, FieldOptions) {
   EXPECT_TRUE(
       Parse("message Foo {"
             "  optional int32 bar = 1 "
-            "$a$[$b$default=123$c$, $d$opt1=123$e$, "
-            "$f$opt2='hi'$g$, $h$json_name='barBar'$i$]$j$;"
+            "$a$[default=$b$123$c$,$d$opt1=123$e$,"
+            "$f$opt2='hi'$g$]$h$;"
             "}\n"));
 
   const FieldDescriptorProto& field = file_.message_type(0).field(0);
   const UninterpretedOption& option1 = field.options().uninterpreted_option(0);
   const UninterpretedOption& option2 = field.options().uninterpreted_option(1);
 
-  EXPECT_TRUE(HasSpan('a', 'j', field.options()));
+  EXPECT_TRUE(HasSpan('a', 'h', field.options()));
   EXPECT_TRUE(HasSpan('b', 'c', field, "default_value"));
   EXPECT_TRUE(HasSpan('d', 'e', option1));
   EXPECT_TRUE(HasSpan('f', 'g', option2));
-  EXPECT_TRUE(HasSpan('h', 'i', field, "json_name"));
 
   // Ignore these.
   EXPECT_TRUE(HasSpan(file_));
