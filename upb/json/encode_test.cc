@@ -25,12 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/json_encode.h"
+#include "upb/json/encode.h"
 
 #include "google/protobuf/struct.upb.h"
 #include "gtest/gtest.h"
-#include "upb/json_test.upb.h"
-#include "upb/json_test.upbdefs.h"
+#include "upb/json/test.upb.h"
+#include "upb/json/test.upbdefs.h"
 #include "upb/reflection/def.hpp"
 #include "upb/upb.hpp"
 

@@ -462,13 +462,17 @@ cc_library(
     ],
 )
 
+# TODO(b/232091617): Once we can delete the deprecated forwarding headers
+# (= everything in upb/) we can move this build target down into json/
 cc_library(
     name = "json",
     srcs = [
-        "upb/json_decode.c",
-        "upb/json_encode.c",
+        "upb/json/decode.c",
+        "upb/json/encode.c",
     ],
     hdrs = [
+        "upb/json/decode.h",
+        "upb/json/encode.h",
         "upb/json_decode.h",
         "upb/json_encode.h",
     ],
@@ -558,7 +562,7 @@ upb_proto_library(
 proto_library(
     name = "json_test_proto",
     testonly = 1,
-    srcs = ["upb/json_test.proto"],
+    srcs = ["upb/json/test.proto"],
     deps = ["@com_google_protobuf//:struct_proto"],
 )
 
@@ -576,7 +580,7 @@ upb_proto_reflection_library(
 
 cc_test(
     name = "json_decode_test",
-    srcs = ["upb/json_decode_test.cc"],
+    srcs = ["upb/json/decode_test.cc"],
     deps = [
         ":json",
         ":json_test_upb_proto",
@@ -590,7 +594,7 @@ cc_test(
 
 cc_test(
     name = "json_encode_test",
-    srcs = ["upb/json_encode_test.cc"],
+    srcs = ["upb/json/encode_test.cc"],
     deps = [
         ":json",
         ":json_test_upb_proto",

@@ -41,8 +41,8 @@
 #include "google/protobuf/test_messages_proto3.upbdefs.h"
 #include "upb/decode.h"
 #include "upb/encode.h"
-#include "upb/json_decode.h"
-#include "upb/json_encode.h"
+#include "upb/json/decode.h"
+#include "upb/json/encode.h"
 #include "upb/reflection/message.h"
 #include "upb/text_encode.h"
 

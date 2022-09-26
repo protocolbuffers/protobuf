@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/json_decode.h"
+#include "upb/json/decode.h"
 
 #include <errno.h>
 #include <float.h>

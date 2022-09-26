@@ -25,11 +25,28 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// This header is deprecated, use upb/json/decode.h instead
+#ifndef UPB_JSON_DECODE_H_
+#define UPB_JSON_DECODE_H_
 
-#ifndef UPB_JSONDECODE_H_
-#define UPB_JSONDECODE_H_
+#include "upb/reflection/def.h"
 
-#include "upb/json/decode.h"
+// Must be last.
+#include "upb/port_def.inc"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+enum { upb_JsonDecode_IgnoreUnknown = 1 };
+
+bool upb_JsonDecode(const char* buf, size_t size, upb_Message* msg,
+                    const upb_MessageDef* m, const upb_DefPool* symtab,
+                    int options, upb_Arena* arena, upb_Status* status);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include "upb/port_undef.inc"
 
 #endif /* UPB_JSONDECODE_H_ */

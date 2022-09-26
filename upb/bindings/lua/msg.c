@@ -39,8 +39,8 @@
 
 #include "lauxlib.h"
 #include "upb/bindings/lua/upb.h"
-#include "upb/json_decode.h"
-#include "upb/json_encode.h"
+#include "upb/json/decode.h"
+#include "upb/json/encode.h"
 #include "upb/map.h"
 #include "upb/port_def.inc"
 #include "upb/reflection/message.h"
