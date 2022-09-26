@@ -71,9 +71,35 @@ std::string PROTOC_EXPORT GetClassName(const Descriptor* descriptor);
 //   descriptor != NULL
 //
 // Returns:
-//   The fully-qualified name of the C# class that provides
-//   access to the file descriptor. Proto compiler generates
+//   The fully-qualified C# enum class name.
+std::string GetClassName(const EnumDescriptor* descriptor);
+
+// Requires:
+//   descriptor != NULL
+//
+// Returns:
+//   The unqualified name of the C# class that provides access to the file
+//   descriptor. Proto compiler generates
 //   such class for each .proto file processed.
+std::string GetReflectionClassUnqualifiedName(const FileDescriptor* descriptor);
+
+// Gets unqualified name of the extension class
+// Requires:
+//   descriptor != NULL
+//
+// Returns:
+//   The unqualified name of the generated C# extensions class that provide
+//   access to extensions. Proto compiler generates such class for each
+//   .proto file processed that contains extensions.
+std::string GetExtensionClassUnqualifiedName(const FileDescriptor* descriptor);
+
+// Requires:
+//   descriptor != NULL
+//
+// Returns:
+//   The fully-qualified name of the C# class that provides access to the file
+//   descriptor. Proto compiler generates such class for each .proto file
+//   processed.
 std::string PROTOC_EXPORT
 GetReflectionClassName(const FileDescriptor* descriptor);
 
@@ -96,6 +122,18 @@ std::string PROTOC_EXPORT GetOutputFile(const FileDescriptor* descriptor,
                                         const bool generate_directories,
                                         const std::string base_namespace,
                                         std::string* error);
+
+std::string UnderscoresToPascalCase(const std::string& input);
+
+// Note that we wouldn't normally want to export this (we're not expecting
+// it to be used outside libprotoc itself) but this exposes it for testing.
+std::string PROTOC_EXPORT UnderscoresToCamelCase(const std::string& input,
+                                   bool cap_next_letter,
+                                   bool preserve_period);
+
+inline std::string UnderscoresToCamelCase(const std::string& input, bool cap_next_letter) {
+  return UnderscoresToCamelCase(input, cap_next_letter, false);
+}
 
 }  // namespace csharp
 }  // namespace compiler

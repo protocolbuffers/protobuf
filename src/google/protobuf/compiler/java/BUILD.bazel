@@ -7,6 +7,41 @@ load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
+    name = "names",
+    hdrs = ["names.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/java",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":names_internal",
+        "//src/google/protobuf:protobuf_nowkt",
+    ],
+)
+
+cc_library(
+    name = "names_internal",
+    hdrs = [
+        "helpers.h",
+        "name_resolver.h",
+        "names.h",
+        "options.h",
+    ],
+    srcs = [
+        "helpers.cc",
+        "name_resolver.cc",
+        "names.cc",
+    ],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/java",
+    visibility = ["//pkg:__pkg__"],
+    deps = [
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf:protobuf_nowkt",
+        "@com_google_absl//absl/container:flat_hash_set",
+    ],
+)
+
+cc_library(
     name = "java",
     srcs = [
         "context.cc",
@@ -21,7 +56,6 @@ cc_library(
         "file.cc",
         "generator.cc",
         "generator_factory.cc",
-        "helpers.cc",
         "kotlin_generator.cc",
         "map_field.cc",
         "map_field_lite.cc",
@@ -32,7 +66,6 @@ cc_library(
         "message_field_lite.cc",
         "message_lite.cc",
         "message_serialization.cc",
-        "name_resolver.cc",
         "primitive_field.cc",
         "primitive_field_lite.cc",
         "service.cc",
@@ -53,7 +86,6 @@ cc_library(
         "file.h",
         "generator.h",
         "generator_factory.h",
-        "helpers.h",
         "kotlin_generator.h",
         "map_field.h",
         "map_field_lite.h",
@@ -64,9 +96,6 @@ cc_library(
         "message_field_lite.h",
         "message_lite.h",
         "message_serialization.h",
-        "name_resolver.h",
-        "names.h",
-        "options.h",
         "primitive_field.h",
         "primitive_field_lite.h",
         "service.h",
@@ -81,6 +110,8 @@ cc_library(
         "//src/google/protobuf/compiler:__pkg__",
     ],
     deps = [
+        ":names_internal",
+        ":names",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "@com_google_absl//absl/container:flat_hash_set",

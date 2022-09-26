@@ -49,7 +49,7 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/strip.h"
-#include "google/protobuf/compiler/objectivec/objectivec_helpers.h"
+#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/objectivec_nsobject_methods.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/coded_stream.h"
