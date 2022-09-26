@@ -153,20 +153,20 @@
 - (size_t)serializedSize {
   __block size_t result = 0;
   int32_t number = number_;
-  [mutableVarintList_ enumerateValuesWithBlock:^(uint64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
-    result += GPBComputeUInt64Size(number, value);
-  }];
+  [mutableVarintList_
+      enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+        result += GPBComputeUInt64Size(number, value);
+      }];
 
-  [mutableFixed32List_ enumerateValuesWithBlock:^(uint32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
-    result += GPBComputeFixed32Size(number, value);
-  }];
+  [mutableFixed32List_
+      enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+        result += GPBComputeFixed32Size(number, value);
+      }];
 
-  [mutableFixed64List_ enumerateValuesWithBlock:^(uint64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
-    result += GPBComputeFixed64Size(number, value);
-  }];
+  [mutableFixed64List_
+      enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+        result += GPBComputeFixed64Size(number, value);
+      }];
 
   for (NSData *data in mutableLengthDelimitedList_) {
     result += GPBComputeBytesSize(number, data);
@@ -196,20 +196,20 @@
 - (NSString *)description {
   NSMutableString *description =
       [NSMutableString stringWithFormat:@"<%@ %p>: Field: %d {\n", [self class], self, number_];
-  [mutableVarintList_ enumerateValuesWithBlock:^(uint64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
-    [description appendFormat:@"\t%llu\n", value];
-  }];
+  [mutableVarintList_
+      enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+        [description appendFormat:@"\t%llu\n", value];
+      }];
 
-  [mutableFixed32List_ enumerateValuesWithBlock:^(uint32_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
-    [description appendFormat:@"\t%u\n", value];
-  }];
+  [mutableFixed32List_
+      enumerateValuesWithBlock:^(uint32_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+        [description appendFormat:@"\t%u\n", value];
+      }];
 
-  [mutableFixed64List_ enumerateValuesWithBlock:^(uint64_t value, NSUInteger idx, BOOL *stop) {
-#pragma unused(idx, stop)
-    [description appendFormat:@"\t%llu\n", value];
-  }];
+  [mutableFixed64List_
+      enumerateValuesWithBlock:^(uint64_t value, __unused NSUInteger idx, __unused BOOL *stop) {
+        [description appendFormat:@"\t%llu\n", value];
+      }];
 
   for (NSData *data in mutableLengthDelimitedList_) {
     [description appendFormat:@"\t%@\n", data];
