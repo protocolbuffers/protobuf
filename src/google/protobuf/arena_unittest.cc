@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/arena.h>
+#include "google/protobuf/arena.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -39,29 +39,30 @@
 #include <typeinfo>
 #include <vector>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/unittest_arena.pb.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_arena.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
-#include <google/protobuf/arena_test_util.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/extension_set.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/message.h>
-#include <google/protobuf/message_lite.h>
-#include <google/protobuf/repeated_field.h>
-#include <google/protobuf/test_util.h>
-#include <google/protobuf/unknown_field_set.h>
-#include <google/protobuf/wire_format_lite.h>
+#include "absl/synchronization/barrier.h"
+#include "google/protobuf/arena_test_util.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/extension_set.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/test_util.h"
+#include "google/protobuf/unknown_field_set.h"
+#include "google/protobuf/wire_format_lite.h"
 
 #include "absl/synchronization/mutex.h"
 
 // Must be included last
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 using proto2_arena_unittest::ArenaMessage;
 using protobuf_unittest::ForeignMessage;
@@ -281,7 +282,8 @@ TEST(ArenaTest, CreateWithMoveArguments) {
 TEST(ArenaTest, InitialBlockTooSmall) {
   // Construct a small blocks of memory to be used by the arena allocator; then,
   // allocate an object which will not fit in the initial block.
-  for (int size = 0; size <= Arena::kBlockOverhead + 32; size++) {
+  for (uint32_t size = 0; size <= internal::SerialArena::kBlockHeaderSize + 32;
+       size++) {
     std::vector<char> arena_block(size);
     ArenaOptions options;
     options.initial_block = arena_block.data();
@@ -1407,6 +1409,31 @@ TEST(ArenaTest, SpaceAllocated_and_Used) {
   EXPECT_EQ(1024, arena_2.Reset());
 }
 
+namespace {
+
+void VerifyArenaOverhead(Arena& arena, size_t overhead) {
+  EXPECT_EQ(0, arena.SpaceAllocated());
+
+  // Allocate a tiny block and record the allocation size.
+  constexpr size_t kTinySize = 8;
+  Arena::CreateArray<char>(&arena, kTinySize);
+  uint64_t space_allocated = arena.SpaceAllocated();
+
+  // Next allocation expects to fill up the block but no new block.
+  uint64_t next_size = space_allocated - overhead - kTinySize;
+  Arena::CreateArray<char>(&arena, next_size);
+
+  EXPECT_EQ(space_allocated, arena.SpaceAllocated());
+}
+
+}  // namespace
+
+TEST(ArenaTest, FirstArenaOverhead) {
+  Arena arena;
+  VerifyArenaOverhead(arena, internal::SerialArena::kBlockHeaderSize);
+}
+
+
 TEST(ArenaTest, BlockSizeDoubling) {
   Arena arena;
   EXPECT_EQ(0, arena.SpaceUsed());
@@ -1575,4 +1602,4 @@ TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

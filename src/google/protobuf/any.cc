@@ -28,15 +28,15 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/any.h>
+#include "google/protobuf/any.h"
 
-#include <google/protobuf/arenastring.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/message.h>
+#include "google/protobuf/arenastring.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/message.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -79,4 +79,4 @@ bool GetAnyFieldDescriptors(const Message& message,
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

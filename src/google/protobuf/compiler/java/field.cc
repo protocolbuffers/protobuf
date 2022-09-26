@@ -32,28 +32,28 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/java/field.h>
+#include "google/protobuf/compiler/java/field.h"
 
 #include <memory>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/substitute.h"
-#include <google/protobuf/compiler/java/context.h>
-#include <google/protobuf/compiler/java/enum_field.h>
-#include <google/protobuf/compiler/java/enum_field_lite.h>
-#include <google/protobuf/compiler/java/helpers.h>
-#include <google/protobuf/compiler/java/map_field.h>
-#include <google/protobuf/compiler/java/map_field_lite.h>
-#include <google/protobuf/compiler/java/message_field.h>
-#include <google/protobuf/compiler/java/message_field_lite.h>
-#include <google/protobuf/compiler/java/primitive_field.h>
-#include <google/protobuf/compiler/java/primitive_field_lite.h>
-#include <google/protobuf/compiler/java/string_field.h>
-#include <google/protobuf/compiler/java/string_field_lite.h>
+#include "google/protobuf/compiler/java/context.h"
+#include "google/protobuf/compiler/java/enum_field.h"
+#include "google/protobuf/compiler/java/enum_field_lite.h"
+#include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/map_field.h"
+#include "google/protobuf/compiler/java/map_field_lite.h"
+#include "google/protobuf/compiler/java/message_field.h"
+#include "google/protobuf/compiler/java/message_field_lite.h"
+#include "google/protobuf/compiler/java/primitive_field.h"
+#include "google/protobuf/compiler/java/primitive_field_lite.h"
+#include "google/protobuf/compiler/java/string_field.h"
+#include "google/protobuf/compiler/java/string_field_lite.h"
 
 
 namespace google {

@@ -28,16 +28,19 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/field_mask_util.h>
+#include "google/protobuf/util/field_mask_util.h"
 
 #include <cstdint>
+#include <map>
+#include <string>
+#include <vector>
 
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
-#include <google/protobuf/message.h>
+#include "google/protobuf/message.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -51,7 +54,7 @@ std::string FieldMaskUtil::ToString(const FieldMask& mask) {
 
 void FieldMaskUtil::FromString(absl::string_view str, FieldMask* out) {
   out->Clear();
-  std::vector<std::string> paths = absl::StrSplit(str, ",");
+  std::vector<std::string> paths = absl::StrSplit(str, ',');
   for (const std::string& path : paths) {
     if (path.empty()) continue;
     out->add_paths(path);
@@ -124,7 +127,7 @@ bool FieldMaskUtil::ToJsonString(const FieldMask& mask, std::string* out) {
 
 bool FieldMaskUtil::FromJsonString(absl::string_view str, FieldMask* out) {
   out->Clear();
-  std::vector<std::string> paths = absl::StrSplit(str, ",");
+  std::vector<std::string> paths = absl::StrSplit(str, ',');
   for (const std::string& path : paths) {
     if (path.empty()) continue;
     std::string snakecase_path;
@@ -142,7 +145,7 @@ bool FieldMaskUtil::GetFieldDescriptors(
   if (field_descriptors != nullptr) {
     field_descriptors->clear();
   }
-  std::vector<std::string> parts = absl::StrSplit(path, ".");
+  std::vector<std::string> parts = absl::StrSplit(path, '.');
   for (const std::string& field_name : parts) {
     if (descriptor == nullptr) {
       return false;
@@ -323,7 +326,7 @@ void FieldMaskTree::MergeToFieldMask(const std::string& prefix,
 }
 
 void FieldMaskTree::AddPath(const std::string& path) {
-  std::vector<std::string> parts = absl::StrSplit(path, ".");
+  std::vector<std::string> parts = absl::StrSplit(path, '.');
   if (parts.empty()) {
     return;
   }
@@ -356,7 +359,7 @@ void FieldMaskTree::RemovePath(const std::string& path,
     // code below.
     return;
   }
-  std::vector<std::string> parts = absl::StrSplit(path, ".");
+  std::vector<std::string> parts = absl::StrSplit(path, '.');
   if (parts.empty()) {
     return;
   }
@@ -405,7 +408,7 @@ void FieldMaskTree::RemovePath(const std::string& path,
 }
 
 void FieldMaskTree::IntersectPath(const std::string& path, FieldMaskTree* out) {
-  std::vector<std::string> parts = absl::StrSplit(path, ".");
+  std::vector<std::string> parts = absl::StrSplit(path, '.');
   if (parts.empty()) {
     return;
   }

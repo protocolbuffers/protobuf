@@ -28,11 +28,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/unittest_preserve_unknown_enum.pb.h>
-#include <google/protobuf/unittest_preserve_unknown_enum2.pb.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/dynamic_message.h>
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_preserve_unknown_enum.pb.h"
+#include "google/protobuf/unittest_preserve_unknown_enum2.pb.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
 #include <gtest/gtest.h>
 
 namespace google {

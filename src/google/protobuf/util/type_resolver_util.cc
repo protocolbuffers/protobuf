@@ -28,21 +28,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/type_resolver_util.h>
+#include "google/protobuf/util/type_resolver_util.h"
 
-#include <google/protobuf/type.pb.h>
-#include <google/protobuf/wrappers.pb.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/type.pb.h"
+#include "google/protobuf/wrappers.pb.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/status/status.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/util/internal/utility.h>
-#include <google/protobuf/util/type_resolver.h>
+#include "google/protobuf/util/internal/utility.h"
+#include "google/protobuf/util/type_resolver.h"
 
 // clang-format off
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 // clang-format on
 
 namespace google {

@@ -32,17 +32,17 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/descriptor_database.h>
+#include "google/protobuf/descriptor_database.h"
 
 #include <algorithm>
 #include <set>
 #include <utility>
 
 #include "absl/strings/ascii.h"
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/match.h"
 #include "absl/strings/str_replace.h"
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/stubs/stl_util.h>
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/stubs/stl_util.h"
 
 
 namespace google {
@@ -190,7 +190,7 @@ typename Container::const_iterator FindLastLessOrEqual(
 // "foo.bar.baz", but not a parent of "foo.barbaz").
 bool IsSubSymbol(absl::string_view sub_symbol, absl::string_view super_symbol) {
   return sub_symbol == super_symbol ||
-         (HasPrefixString(super_symbol, sub_symbol) &&
+         (absl::StartsWith(super_symbol, sub_symbol) &&
           super_symbol[sub_symbol.size()] == '.');
 }
 

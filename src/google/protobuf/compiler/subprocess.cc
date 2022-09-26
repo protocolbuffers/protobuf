@@ -30,7 +30,7 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
-#include <google/protobuf/compiler/subprocess.h>
+#include "google/protobuf/compiler/subprocess.h"
 
 #include <algorithm>
 #include <cstring>
@@ -43,26 +43,16 @@
 #include <sys/wait.h>
 #endif
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/substitute.h"
-#include <google/protobuf/io/io_win32.h>
-#include <google/protobuf/message.h>
+#include "google/protobuf/io/io_win32.h"
+#include "google/protobuf/message.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
-
-namespace {
-char* portable_strdup(const char* s) {
-  char* ns = (char*)malloc(strlen(s) + 1);
-  if (ns != nullptr) {
-    strcpy(ns, s);
-  }
-  return ns;
-}
-}  // namespace
 
 #ifdef _WIN32
 
@@ -317,6 +307,16 @@ Subprocess::~Subprocess() {
     close(child_stdout_);
   }
 }
+
+namespace {
+char* portable_strdup(const char* s) {
+  char* ns = (char*)malloc(strlen(s) + 1);
+  if (ns != nullptr) {
+    strcpy(ns, s);
+  }
+  return ns;
+}
+}  // namespace
 
 void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   // Note that we assume that there are no other threads, thus we don't have to

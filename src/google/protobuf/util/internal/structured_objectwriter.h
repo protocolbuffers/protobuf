@@ -33,13 +33,12 @@
 
 #include <memory>
 
-#include <google/protobuf/stubs/common.h>
 #include "absl/base/casts.h"
-#include <google/protobuf/port.h>
-#include <google/protobuf/util/internal/object_writer.h>
+#include "google/protobuf/port.h"
+#include "google/protobuf/util/internal/object_writer.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -119,6 +118,6 @@ class PROTOBUF_EXPORT StructuredObjectWriter : public ObjectWriter {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_STRUCTURED_OBJECTWRITER_H__

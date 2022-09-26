@@ -38,26 +38,27 @@
 #define GOOGLE_PROTOBUF_COMPILER_CPP_GENERATOR_H__
 
 #include <string>
-#include <google/protobuf/compiler/code_generator.h>
+#include <utility>
+
+#include "google/protobuf/compiler/code_generator.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-
 // CodeGenerator implementation which generates a C++ source file and
 // header.  If you create your own protocol compiler binary and you want
 // it to support C++ output, you can do so by registering an instance of this
 // CodeGenerator with the CommandLineInterface in your main() function.
 class PROTOC_EXPORT CppGenerator : public CodeGenerator {
  public:
-  CppGenerator();
+  CppGenerator() = default;
   CppGenerator(const CppGenerator&) = delete;
   CppGenerator& operator=(const CppGenerator&) = delete;
-  ~CppGenerator() override;
+  ~CppGenerator() override = default;
 
   enum class Runtime {
     kGoogle3,     // Use the internal google3 runtime.
@@ -76,33 +77,29 @@ class PROTOC_EXPORT CppGenerator : public CodeGenerator {
   // If set to a non-empty string, generated code will do:
   //   #include "<BASE>/google/protobuf/message.h"
   // instead of:
-  //   #include <google/protobuf/message.h>
+  //   #include "google/protobuf/message.h"
   // This has no effect if opensource_runtime = false.
-  void set_runtime_include_base(const std::string& base) {
-    runtime_include_base_ = base;
+  void set_runtime_include_base(std::string base) {
+    runtime_include_base_ = std::move(base);
   }
 
-  // implements CodeGenerator ----------------------------------------
   bool Generate(const FileDescriptor* file, const std::string& parameter,
                 GeneratorContext* generator_context,
                 std::string* error) const override;
 
   uint64_t GetSupportedFeatures() const override {
-    // We don't fully support this yet, but this is needed to unblock the tests,
-    // and we will have full support before the experimental flag is removed.
     return FEATURE_PROTO3_OPTIONAL;
   }
 
  private:
-  bool opensource_runtime_ = true;
+  bool opensource_runtime_ = PROTO2_IS_OSS;
   std::string runtime_include_base_;
 };
-
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CPP_GENERATOR_H__

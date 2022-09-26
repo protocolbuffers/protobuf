@@ -39,12 +39,12 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/generated_message_tctable_decl.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
 
 // Must come last:
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -81,6 +81,7 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
     uint16_t coded_tag;
     uint8_t hasbit_idx;
     uint8_t aux_idx;
+    uint16_t nonfield_info;
   };
   std::vector<FastFieldInfo> fast_path_fields;
 
@@ -153,10 +154,53 @@ struct PROTOBUF_EXPORT TailCallTableInfo {
   bool use_generated_fallback;
 };
 
+// A quick check to see if a field can be placed into the fast-table.
+// This is meant to be fast but not exhaustive; options that apply to some
+// fields may also exclude them.
+inline bool IsDescriptorEligibleForFastParsing(const FieldDescriptor* field) {
+  // Map, oneof, weak, and lazy fields are not handled on the fast path.
+  if (field->is_map()) return false;
+  if (field->real_containing_oneof()) return false;
+  if (field->options().weak()) return false;
+
+  switch (field->type()) {
+    case FieldDescriptor::TYPE_ENUM:
+      // If enum values are not validated at parse time, then this field can be
+      // handled on the fast path like an int32.
+      if (cpp::HasPreservingUnknownEnumSemantics(field)) {
+        break;
+      }
+      if (field->is_repeated() && field->is_packed()) {
+        return false;
+      }
+      break;
+
+      // Some bytes fields can be handled on fast path.
+    case FieldDescriptor::TYPE_STRING:
+    case FieldDescriptor::TYPE_BYTES:
+      if (field->options().ctype() != FieldOptions::STRING) {
+        return false;
+      }
+      break;
+
+    default:
+      break;
+  }
+
+  // The largest tag that can be read by the tailcall parser is two bytes
+  // when varint-coded. This allows 14 bits for the numeric tag value:
+  //   byte 0   byte 1
+  //   1nnnnttt 0nnnnnnn
+  //    ^^^^^^^  ^^^^^^^
+  if (field->number() >= 1 << 11) return false;
+
+  return true;
+}
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_GEN_H__

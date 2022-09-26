@@ -279,8 +279,9 @@ namespace Google.Protobuf.Collections
         }
 
         /// <summary>
-        /// Gets and sets the capacity of the RepeatedField's internal array.  WHen set, the internal array is reallocated to the given capacity.
-        /// <exception cref="ArgumentOutOfRangeException">The new value is less than Count -or- when Count is less than 0.</exception>
+        /// Gets and sets the capacity of the RepeatedField's internal array.
+        /// When set, the internal array is reallocated to the given capacity.
+        /// <exception cref="ArgumentOutOfRangeException">The new value is less than <see cref="Count"/>.</exception>
         /// </summary>
         public int Capacity
         {
@@ -338,7 +339,10 @@ namespace Google.Protobuf.Collections
         /// </summary>
         public void Clear()
         {
-            array = EmptyArray;
+            // Clear the content of the array (so that any objects it referred to can be garbage collected)
+            // but keep the capacity the same. This allows large repeated fields to be reused without
+            // array reallocation.
+            Array.Clear(array, 0, count);
             count = 0;
         }
 

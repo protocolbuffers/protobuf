@@ -36,21 +36,23 @@
 #include <string>
 #include <type_traits>
 
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/arena.h>
-#include <google/protobuf/port.h>
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/arena.h"
+#include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/arenastring.h>
-#include <google/protobuf/endian.h>
-#include <google/protobuf/implicit_weak_message.h>
-#include <google/protobuf/inlined_string_field.h>
-#include <google/protobuf/metadata_lite.h>
-#include <google/protobuf/repeated_field.h>
-#include <google/protobuf/wire_format_lite.h>
+#include "google/protobuf/arenastring.h"
+#include "google/protobuf/endian.h"
+#include "google/protobuf/implicit_weak_message.h"
+#include "google/protobuf/inlined_string_field.h"
+#include "google/protobuf/metadata_lite.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/wire_format_lite.h"
+
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 
 namespace google {
@@ -157,7 +159,13 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   PROTOBUF_NODISCARD const char* ReadString(const char* ptr, int size,
                                             std::string* s) {
     if (size <= buffer_end_ + kSlopBytes - ptr) {
-      s->assign(ptr, size);
+      // Fundamentally we just want to do assign to the string.
+      // However micro-benchmarks regress on string reading cases. So we copy
+      // the same logic from the old CodedInputStream ReadString. Note: as of
+      // Apr 2021, this is still a significant win over `assign()`.
+      absl::strings_internal::STLStringResizeUninitialized(s, size);
+      char* z = &(*s)[0];
+      memcpy(z, ptr, size);
       return ptr + size;
     }
     return ReadStringFallback(ptr, size, s);
@@ -329,7 +337,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
   template <typename A>
   const char* AppendSize(const char* ptr, int size, const A& append) {
-    int chunk_size = buffer_end_ + kSlopBytes - ptr;
+    int chunk_size = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
     do {
       GOOGLE_DCHECK(size > chunk_size);
       if (next_chunk_ == nullptr) return nullptr;
@@ -343,7 +351,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
       ptr = Next();
       if (ptr == nullptr) return nullptr;  // passed the limit
       ptr += kSlopBytes;
-      chunk_size = buffer_end_ + kSlopBytes - ptr;
+      chunk_size = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
     } while (size > chunk_size);
     append(ptr, size);
     return ptr + size;
@@ -565,21 +573,64 @@ inline const char* VarintParseSlow(const char* p, uint32_t res, uint64_t* out) {
   return tmp.first;
 }
 
+#ifdef __aarch64__
+const char* VarintParseSlowArm64(const char* p, uint64_t* out, uint64_t first8);
+const char* VarintParseSlowArm32(const char* p, uint32_t* out, uint64_t first8);
+
+inline const char* VarintParseSlowArm(const char* p, uint32_t* out,
+                                      uint64_t first8) {
+  return VarintParseSlowArm32(p, out, first8);
+}
+
+inline const char* VarintParseSlowArm(const char* p, uint64_t* out,
+                                      uint64_t first8) {
+  return VarintParseSlowArm64(p, out, first8);
+}
+
+// Moves data into a register and returns data.  This impacts the compiler's
+// scheduling and instruction selection decisions.
+static PROTOBUF_ALWAYS_INLINE inline uint64_t ForceToRegister(uint64_t data) {
+  asm("" : "+r"(data));
+  return data;
+}
+
+// Performs a 7 bit UBFX (Unsigned Bit Extract) starting at the indicated bit.
+static PROTOBUF_ALWAYS_INLINE inline uint64_t Ubfx7(uint64_t data,
+                                                    uint64_t start) {
+  return ForceToRegister((data >> start) & 0x7f);
+}
+
+#endif  // __aarch64__
+
 template <typename T>
 PROTOBUF_NODISCARD const char* VarintParse(const char* p, T* out) {
+#if defined(__aarch64__) && defined(PROTOBUF_LITTLE_ENDIAN)
+  // This optimization is not supported in big endian mode
+  uint64_t first8;
+  std::memcpy(&first8, p, sizeof(first8));
+  if (PROTOBUF_PREDICT_TRUE((first8 & 0x80) == 0)) {
+    *out = static_cast<uint8_t>(first8);
+    return p + 1;
+  }
+  if (PROTOBUF_PREDICT_TRUE((first8 & 0x8000) == 0)) {
+    uint64_t chunk1;
+    uint64_t chunk2;
+    // Extracting the two chunks this way gives a speedup for this path.
+    chunk1 = Ubfx7(first8, 0);
+    chunk2 = Ubfx7(first8, 8);
+    *out = chunk1 | (chunk2 << 7);
+    return p + 2;
+  }
+  return VarintParseSlowArm(p, out, first8);
+#else   // __aarch64__
   auto ptr = reinterpret_cast<const uint8_t*>(p);
   uint32_t res = ptr[0];
-  if (!(res & 0x80)) {
+  if ((res & 0x80) == 0) {
     *out = res;
     return p + 1;
   }
-  uint32_t byte = ptr[1];
-  res += (byte - 1) << 7;
-  if (!(byte & 0x80)) {
-    *out = res;
-    return p + 2;
-  }
   return VarintParseSlow(p, res, out);
+#endif  // __aarch64__
 }
 
 // Used for tags, could read up to 5 bytes which must be available.
@@ -829,7 +880,7 @@ template <typename T>
 const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
                                                 RepeatedField<T>* out) {
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-  int nbytes = buffer_end_ + kSlopBytes - ptr;
+  int nbytes = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
   while (size > nbytes) {
     int num = nbytes / sizeof(T);
     int old_entries = out->size();
@@ -847,7 +898,7 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
     ptr = Next();
     if (ptr == nullptr) return nullptr;
     ptr += kSlopBytes - (nbytes - block_size);
-    nbytes = buffer_end_ + kSlopBytes - ptr;
+    nbytes = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
   }
   int num = size / sizeof(T);
   int old_entries = out->size();
@@ -879,11 +930,11 @@ template <typename Add>
 const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add) {
   int size = ReadSize(&ptr);
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-  int chunk_size = buffer_end_ - ptr;
+  int chunk_size = static_cast<int>(buffer_end_ - ptr);
   while (size > chunk_size) {
     ptr = ReadPackedVarintArray(ptr, buffer_end_, add);
     if (ptr == nullptr) return nullptr;
-    int overrun = ptr - buffer_end_;
+    int overrun = static_cast<int>(ptr - buffer_end_);
     GOOGLE_DCHECK(overrun >= 0 && overrun <= kSlopBytes);
     if (size - chunk_size <= kSlopBytes) {
       // The current buffer contains all the information needed, we don't need
@@ -904,7 +955,7 @@ const char* EpsCopyInputStream::ReadPackedVarint(const char* ptr, Add add) {
     ptr = Next();
     if (ptr == nullptr) return nullptr;
     ptr += overrun;
-    chunk_size = buffer_end_ - ptr;
+    chunk_size = static_cast<int>(buffer_end_ - ptr);
   }
   auto end = ptr + size;
   ptr = ReadPackedVarintArray(ptr, end, add);
@@ -1066,6 +1117,6 @@ PROTOBUF_NODISCARD PROTOBUF_EXPORT const char* UnknownFieldParse(
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_PARSE_CONTEXT_H__

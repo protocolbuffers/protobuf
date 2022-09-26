@@ -31,13 +31,13 @@
 #ifndef GOOGLE_PROTOBUF_TEST_UTIL2_H__
 #define GOOGLE_PROTOBUF_TEST_UTIL2_H__
 
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/strutil.h"
 
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/testing/googletest.h"
 #include "absl/strings/str_replace.h"
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/util/message_differencer.h>
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/util/message_differencer.h"
 
 namespace google {
 namespace protobuf {

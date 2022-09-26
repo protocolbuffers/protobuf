@@ -34,7 +34,7 @@
 //
 // This file contains tests and benchmarks.
 
-#include <google/protobuf/io/coded_stream.h>
+#include "google/protobuf/io/coded_stream.h"
 
 #include <limits.h>
 
@@ -43,19 +43,19 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
-#include <google/protobuf/stubs/logging.h>
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include "google/protobuf/io/zero_copy_stream_impl.h"
 
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/testing/googletest.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -136,7 +136,7 @@ class CodedStreamTest : public testing::Test {
   static uint8_t buffer_[kBufferSize];
 };
 
-uint8_t CodedStreamTest::buffer_[CodedStreamTest::kBufferSize];
+uint8_t CodedStreamTest::buffer_[CodedStreamTest::kBufferSize] = {};
 
 // We test each operation over a variety of block sizes to insure that
 // we test cases where reads or writes cross buffer boundaries, cases
@@ -727,7 +727,7 @@ TEST_1D(CodedStreamTest, ReadStringImpossiblyLarge, kBlockSizes) {
 TEST_F(CodedStreamTest, ReadStringImpossiblyLargeFromStringOnStack) {
   // Same test as above, except directly use a buffer. This used to cause
   // crashes while the above did not.
-  uint8_t buffer[8];
+  uint8_t buffer[8] = {};
   CodedInputStream coded_input(buffer, 8);
   std::string str;
   EXPECT_FALSE(coded_input.ReadString(&str, 1 << 30));
@@ -1318,7 +1318,7 @@ class ReallyBigInputStream : public ZeroCopyInputStream {
   int backup_amount_;
 
  private:
-  char buffer_[1024];
+  char buffer_[1024] = {};
   int64_t buffer_count_;
 };
 
@@ -1347,4 +1347,4 @@ TEST_F(CodedStreamTest, InputOver2G) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

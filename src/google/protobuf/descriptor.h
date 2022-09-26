@@ -63,16 +63,17 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/port.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/port.h"
 #include "absl/base/call_once.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
+#include "google/protobuf/port.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 #ifdef SWIG
 #define PROTOBUF_EXPORT
@@ -760,6 +761,10 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase {
   // Reflection::HasField() is semantically meaningful.
   bool has_presence() const;
 
+  // Returns true if this TYPE_STRING-typed field requires UTF-8 validation on
+  // parse.
+  bool requires_utf8_validation() const;
+
   // Index of this field within the message's field array, or the file or
   // extension scope's extensions array.
   int index() const;
@@ -1141,6 +1146,13 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   // only be the case if this descriptor comes from a DescriptorPool
   // with AllowUnknownDependencies() set.
   bool is_placeholder() const;
+
+  // Returns true whether this is a "closed" enum, meaning that it:
+  // - Has a fixed set of named values.
+  // - Encountering values not in this set causes them to be treated as unknown
+  //   fields.
+  // - The first value (i.e., the default) may be nonzero.
+  bool is_closed() const;
 
   // Reserved fields -------------------------------------------------
 
@@ -1649,6 +1661,9 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // Fill the json_name field of FieldDescriptorProto for all fields. Can only
   // be called after CopyTo().
   void CopyJsonNameTo(FileDescriptorProto* proto) const;
+  // Fills in the file-level settings of this file (e.g. syntax, package,
+  // file options) to `proto`.
+  void CopyHeadingTo(FileDescriptorProto* proto) const;
 
   // See Descriptor::DebugString().
   std::string DebugString() const;
@@ -2199,6 +2214,10 @@ PROTOBUF_DEFINE_ARRAY_ACCESSOR(EnumDescriptor, reserved_range,
                                const EnumDescriptor::ReservedRange*)
 PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, reserved_name_count, int)
 
+inline bool EnumDescriptor::is_closed() const {
+  return file()->syntax() != FileDescriptor::SYNTAX_PROTO3;
+}
+
 PROTOBUF_DEFINE_NAME_ACCESSOR(EnumValueDescriptor)
 PROTOBUF_DEFINE_ACCESSOR(EnumValueDescriptor, number, int)
 PROTOBUF_DEFINE_ACCESSOR(EnumValueDescriptor, type, const EnumDescriptor*)
@@ -2361,6 +2380,11 @@ inline bool FieldDescriptor::has_presence() const {
   if (is_repeated()) return false;
   return cpp_type() == CPPTYPE_MESSAGE || containing_oneof() ||
          file()->syntax() == FileDescriptor::SYNTAX_PROTO2;
+}
+
+inline bool FieldDescriptor::requires_utf8_validation() const {
+  return type() == TYPE_STRING &&
+         file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
 }
 
 // To save space, index() is computed by looking at the descriptor's position
@@ -2540,6 +2564,6 @@ PROTOBUF_EXPORT Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field,
 }  // namespace google
 
 #undef PROTOBUF_INTERNAL_CHECK_CLASS_SIZE
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_DESCRIPTOR_H__

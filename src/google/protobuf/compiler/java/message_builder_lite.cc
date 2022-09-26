@@ -32,30 +32,31 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/java/message_builder_lite.h>
+#include "google/protobuf/compiler/java/message_builder_lite.h"
 
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/wire_format.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/substitute.h"
-#include <google/protobuf/compiler/java/context.h>
-#include <google/protobuf/compiler/java/doc_comment.h>
-#include <google/protobuf/compiler/java/enum.h>
-#include <google/protobuf/compiler/java/extension.h>
-#include <google/protobuf/compiler/java/generator_factory.h>
-#include <google/protobuf/compiler/java/helpers.h>
-#include <google/protobuf/compiler/java/name_resolver.h>
-#include <google/protobuf/descriptor.pb.h>
+#include "google/protobuf/compiler/java/context.h"
+#include "google/protobuf/compiler/java/doc_comment.h"
+#include "google/protobuf/compiler/java/enum.h"
+#include "google/protobuf/compiler/java/extension.h"
+#include "google/protobuf/compiler/java/generator_factory.h"
+#include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/descriptor.pb.h"
 
 // Must be last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -82,21 +83,27 @@ MessageBuilderLiteGenerator::~MessageBuilderLiteGenerator() {}
 
 void MessageBuilderLiteGenerator::Generate(io::Printer* printer) {
   WriteMessageDocComment(printer, descriptor_);
+  std::map<std::string, std::string> vars = {
+      {"{", ""},
+      {"}", ""},
+      {"classname", name_resolver_->GetImmutableClassName(descriptor_)},
+      {"extra_interfaces", ExtraBuilderInterfaces(descriptor_)},
+      {"extendible",
+       descriptor_->extension_range_count() > 0 ? "Extendable" : ""},
+  };
   printer->Print(
-      "public static final class Builder extends\n"
+      vars,
+      "public static final class ${$Builder$}$ extends\n"
       "    com.google.protobuf.GeneratedMessageLite.$extendible$Builder<\n"
       "      $classname$, Builder> implements\n"
       "    $extra_interfaces$\n"
-      "    $classname$OrBuilder {\n",
-      "classname", name_resolver_->GetImmutableClassName(descriptor_),
-      "extra_interfaces", ExtraBuilderInterfaces(descriptor_), "extendible",
-      descriptor_->extension_range_count() > 0 ? "Extendable" : "");
+      "    $classname$OrBuilder {\n");
+  printer->Annotate("{", "}", descriptor_);
   printer->Indent();
 
   GenerateCommonBuilderMethods(printer);
 
   // oneof
-  std::map<std::string, std::string> vars;
   for (auto oneof : oneofs_) {
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
     vars["oneof_capitalized_name"] =
@@ -107,16 +114,19 @@ void MessageBuilderLiteGenerator::Generate(io::Printer* printer) {
     printer->Print(vars,
                    "@java.lang.Override\n"
                    "public $oneof_capitalized_name$Case\n"
-                   "    get$oneof_capitalized_name$Case() {\n"
+                   "    ${$get$oneof_capitalized_name$Case$}$() {\n"
                    "  return instance.get$oneof_capitalized_name$Case();\n"
-                   "}\n"
+                   "}\n");
+    printer->Annotate("{", "}", oneof);
+    printer->Print(vars,
                    "\n"
-                   "public Builder clear$oneof_capitalized_name$() {\n"
+                   "public Builder ${$clear$oneof_capitalized_name$$}$() {\n"
                    "  copyOnWrite();\n"
                    "  instance.clear$oneof_capitalized_name$();\n"
                    "  return this;\n"
                    "}\n"
                    "\n");
+    printer->Annotate("{", "}", oneof);
   }
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -154,4 +164,4 @@ void MessageBuilderLiteGenerator::GenerateCommonBuilderMethods(
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

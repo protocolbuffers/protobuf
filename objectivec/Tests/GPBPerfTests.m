@@ -69,9 +69,9 @@ static const uint32_t kRepeatedCount = 100;
   // lock across threads when parsing different instances. The Serial version of the test should run
   // around ~2 times slower than the Parallel version since it's parsing the protos in the same
   // thread.
-  TestAllTypes *allTypesMessage = [TestAllTypes message];
+  TestAllTypes* allTypesMessage = [TestAllTypes message];
   [self setAllFields:allTypesMessage repeatedCount:2];
-  NSData *allTypesData = allTypesMessage.data;
+  NSData* allTypesData = allTypesMessage.data;
 
   [self measureBlock:^{
     for (int i = 0; i < 500; ++i) {
@@ -86,9 +86,9 @@ static const uint32_t kRepeatedCount = 100;
   // not lock across threads when parsing different instances. The Serial version of the test should
   // run around ~2 times slower than the Parallel version since it's parsing the protos in the same
   // thread.
-  TestAllTypes *allTypesMessage = [TestAllTypes message];
+  TestAllTypes* allTypesMessage = [TestAllTypes message];
   [self setAllFields:allTypesMessage repeatedCount:2];
-  NSData *allTypesData = allTypesMessage.data;
+  NSData* allTypesData = allTypesMessage.data;
 
   dispatch_queue_t concurrentQueue = dispatch_queue_create("perfQueue", DISPATCH_QUEUE_CONCURRENT);
 
@@ -104,7 +104,9 @@ static const uint32_t kRepeatedCount = 100;
         [TestAllTypes parseFromData:allTypesData error:NULL];
       });
 
-      dispatch_group_notify(group, concurrentQueue, ^{});
+      dispatch_group_notify(group, concurrentQueue,
+                            ^{
+                            });
 
       dispatch_release(group);
     }
@@ -118,9 +120,9 @@ static const uint32_t kRepeatedCount = 100;
   // lock across threads when parsing different instances when using extensions. The Serial version
   // of the test should run around ~2 times slower than the Parallel version since it's parsing the
   // protos in the same thread.
-  TestAllExtensions *allExtensionsMessage = [TestAllExtensions message];
+  TestAllExtensions* allExtensionsMessage = [TestAllExtensions message];
   [self setAllExtensions:allExtensionsMessage repeatedCount:2];
-  NSData *allExtensionsData = allExtensionsMessage.data;
+  NSData* allExtensionsData = allExtensionsMessage.data;
 
   [self measureBlock:^{
     for (int i = 0; i < 500; ++i) {
@@ -139,9 +141,9 @@ static const uint32_t kRepeatedCount = 100;
   // not lock across threads when parsing different instances when using extensions. The Serial
   // version of the test should run around ~2 times slower than the Parallel version since it's
   // parsing the protos in the same thread.
-  TestAllExtensions *allExtensionsMessage = [TestAllExtensions message];
+  TestAllExtensions* allExtensionsMessage = [TestAllExtensions message];
   [self setAllExtensions:allExtensionsMessage repeatedCount:2];
-  NSData *allExtensionsData = allExtensionsMessage.data;
+  NSData* allExtensionsData = allExtensionsMessage.data;
 
   dispatch_queue_t concurrentQueue = dispatch_queue_create("perfQueue", DISPATCH_QUEUE_CONCURRENT);
 
@@ -161,7 +163,9 @@ static const uint32_t kRepeatedCount = 100;
                                    error:NULL];
       });
 
-      dispatch_group_notify(group, concurrentQueue, ^{});
+      dispatch_group_notify(group, concurrentQueue,
+                            ^{
+                            });
 
       dispatch_release(group);
     }
@@ -177,8 +181,7 @@ static const uint32_t kRepeatedCount = 100;
       [self setAllExtensions:message repeatedCount:kRepeatedCount];
       NSData* rawBytes = [message data];
       [message release];
-      TestAllExtensions* message2 =
-          [[TestAllExtensions alloc] initWithData:rawBytes error:NULL];
+      TestAllExtensions* message2 = [[TestAllExtensions alloc] initWithData:rawBytes error:NULL];
       [message2 release];
     }
   }];
@@ -204,8 +207,8 @@ static const uint32_t kRepeatedCount = 100;
       [self setPackedExtensions:message repeatedCount:kRepeatedCount];
       NSData* rawBytes = [message data];
       [message release];
-      TestPackedExtensions* message2 =
-          [[TestPackedExtensions alloc] initWithData:rawBytes error:NULL];
+      TestPackedExtensions* message2 = [[TestPackedExtensions alloc] initWithData:rawBytes
+                                                                            error:NULL];
       [message2 release];
     }
   }];

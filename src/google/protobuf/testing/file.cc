@@ -31,7 +31,8 @@
 // Author: kenton@google.com (Kenton Varda)
 // emulates google3/file/base/file.cc
 
-#include <google/protobuf/testing/file.h>
+#include "google/protobuf/testing/file.h"
+
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -45,8 +46,8 @@
 #endif
 #include <errno.h>
 
-#include <google/protobuf/io/io_win32.h>
-#include <google/protobuf/stubs/logging.h>
+#include "google/protobuf/io/io_win32.h"
+#include "google/protobuf/stubs/logging.h"
 
 namespace google {
 namespace protobuf {

@@ -30,12 +30,13 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/stubs/common.h"
+
+#include <errno.h>
+#include <stdio.h>
 
 #include <atomic>
-#include <errno.h>
 #include <sstream>
-#include <stdio.h>
 #include <vector>
 
 #ifdef _WIN32
@@ -49,16 +50,14 @@
 #include <android/log.h>
 #endif
 
-#include <google/protobuf/stubs/callback.h>
-#include <google/protobuf/stubs/int128.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/strutil.h>
-
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/stubs/callback.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/strutil.h"
 
 // Must be last.
-#include <google/protobuf/port_def.inc>  // NOLINT
+#include "google/protobuf/port_def.inc"  // NOLINT
 
 namespace google {
 namespace protobuf {
@@ -216,13 +215,6 @@ LogMessage& LogMessage::operator<<(const absl::Status& status) {
   return *this;
 }
 
-LogMessage& LogMessage::operator<<(const uint128& value) {
-  std::ostringstream str;
-  str << value;
-  message_ += str.str();
-  return *this;
-}
-
 LogMessage& LogMessage::operator<<(char value) {
   return *this << absl::string_view(&value, 1);
 }
@@ -337,4 +329,4 @@ const char* FatalException::what() const throw() {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>  // NOLINT
+#include "google/protobuf/port_undef.inc"  // NOLINT

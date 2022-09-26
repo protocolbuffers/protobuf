@@ -32,30 +32,30 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/java/helpers.h>
+#include "google/protobuf/compiler/java/helpers.h"
 
 #include <algorithm>
 #include <cstdint>
 #include <limits>
 #include <vector>
 
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/wire_format.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/stubs/stringprintf.h>
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
-#include <google/protobuf/compiler/java/name_resolver.h>
-#include <google/protobuf/compiler/java/names.h>
-#include <google/protobuf/descriptor.pb.h>
+#include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/compiler/java/names.h"
+#include "google/protobuf/descriptor.pb.h"
 
 // Must be last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -221,7 +221,7 @@ std::string ToCamelCase(const std::string& input, bool lower_first) {
     if (i == '_') {
       capitalize_next = true;
     } else if (capitalize_next) {
-      result.push_back(ToUpperCh(i));
+      result.push_back(absl::ascii_toupper(i));
       capitalize_next = false;
     } else {
       result.push_back(i);
@@ -230,18 +230,10 @@ std::string ToCamelCase(const std::string& input, bool lower_first) {
 
   // Lower-case the first letter.
   if (lower_first && !result.empty()) {
-    result[0] = ToLowerCh(result[0]);
+    result[0] = absl::ascii_tolower(result[0]);
   }
 
   return result;
-}
-
-char ToUpperCh(char ch) {
-  return (ch >= 'a' && ch <= 'z') ? (ch - 'a' + 'A') : ch;
-}
-
-char ToLowerCh(char ch) {
-  return (ch >= 'A' && ch <= 'Z') ? (ch - 'A' + 'a') : ch;
 }
 
 std::string UnderscoresToCamelCase(const FieldDescriptor* field) {
@@ -298,7 +290,7 @@ std::string EscapeKotlinKeywords(std::string name) {
 }
 
 std::string UniqueFileScopeIdentifier(const Descriptor* descriptor) {
-  return "static_" + StringReplace(descriptor->full_name(), ".", "_", true);
+  return "static_" + absl::StrReplaceAll(descriptor->full_name(), {{".", "_"}});
 }
 
 std::string CamelCaseFieldName(const FieldDescriptor* field) {
@@ -335,7 +327,7 @@ std::string FileJavaPackage(const FileDescriptor* file, Options options) {
 }
 
 std::string JavaPackageToDir(std::string package_name) {
-  std::string package_dir = StringReplace(package_name, ".", "/", true);
+  std::string package_dir = absl::StrReplaceAll(package_name, {{".", "/"}});
   if (!package_dir.empty()) package_dir += "/";
   return package_dir;
 }
@@ -1122,7 +1114,7 @@ void EscapeUtf16ToString(uint16_t code, std::string* output) {
   } else if (code >= 0x20 && code <= 0x7f) {
     output->push_back(static_cast<char>(code));
   } else {
-    output->append(StringPrintf("\\u%04x", code));
+    output->append(absl::StrFormat("\\u%04x", code));
   }
 }
 
@@ -1131,4 +1123,4 @@ void EscapeUtf16ToString(uint16_t code, std::string* output) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

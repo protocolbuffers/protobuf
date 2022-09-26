@@ -33,18 +33,18 @@
 #include <utility>
 #include <vector>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/testing/file.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/file.h"
 #include <gmock/gmock.h>
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
-#include <google/protobuf/compiler/command_line_interface.h>
-#include <google/protobuf/compiler/java/generator.h>
-#include <google/protobuf/test_util2.h>
+#include "google/protobuf/compiler/command_line_interface.h"
+#include "google/protobuf/compiler/java/generator.h"
+#include "google/protobuf/test_util2.h"
 
 namespace google {
 namespace protobuf {

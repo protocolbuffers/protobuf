@@ -30,15 +30,15 @@
 
 // Author: ksroka@google.com (Krzysztof Sroka)
 
-#include <google/protobuf/util/field_comparator.h>
+#include "google/protobuf/util/field_comparator.h"
 
 #include <limits>
 #include <string>
 
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/message.h>
-#include <google/protobuf/util/message_differencer.h>
-#include <google/protobuf/stubs/mathutil.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/util/message_differencer.h"
+#include "google/protobuf/stubs/mathutil.h"
 
 namespace google {
 namespace protobuf {

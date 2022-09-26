@@ -33,35 +33,39 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/message_lite.h>
+#include "google/protobuf/message_lite.h"
 
 #include <climits>
 #include <cstdint>
 #include <string>
 #include <utility>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/arena.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/arena.h"
 #include "absl/base/dynamic_annotations.h"
+#include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
-#include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/parse_context.h>
-#include <google/protobuf/repeated_field.h>
-#include <google/protobuf/stubs/stl_util.h>
+#include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/parse_context.h"
+#include "google/protobuf/repeated_field.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
+
+MessageLite::~MessageLite(){
+// Defined out of line to save code space
+}
 
 std::string MessageLite::InitializationErrorString() const {
   return "(cannot determine missing fields for lite message)";
@@ -455,7 +459,8 @@ bool MessageLite::AppendPartialToString(std::string* output) const {
     return false;
   }
 
-  STLStringResizeUninitializedAmortized(output, old_size + byte_size);
+  absl::strings_internal::STLStringResizeUninitializedAmortized(
+      output, old_size + byte_size);
   uint8_t* start =
       reinterpret_cast<uint8_t*>(io::mutable_string_data(output) + old_size);
   SerializeToArrayImpl(*this, start, byte_size);
@@ -603,4 +608,4 @@ void ShutdownProtobufLibrary() {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

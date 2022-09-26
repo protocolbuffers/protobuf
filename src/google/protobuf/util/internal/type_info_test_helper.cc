@@ -28,21 +28,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/internal/type_info_test_helper.h>
+#include "google/protobuf/util/internal/type_info_test_helper.h"
 
 #include <memory>
 #include <vector>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/util/internal/constants.h>
-#include <google/protobuf/util/internal/default_value_objectwriter.h>
-#include <google/protobuf/util/internal/protostream_objectsource.h>
-#include <google/protobuf/util/internal/protostream_objectwriter.h>
-#include <google/protobuf/util/internal/type_info.h>
-#include <google/protobuf/util/type_resolver.h>
-#include <google/protobuf/util/type_resolver_util.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/util/internal/constants.h"
+#include "google/protobuf/util/internal/default_value_objectwriter.h"
+#include "google/protobuf/util/internal/protostream_objectsource.h"
+#include "google/protobuf/util/internal/protostream_objectwriter.h"
+#include "google/protobuf/util/internal/type_info.h"
+#include "google/protobuf/util/type_resolver.h"
+#include "google/protobuf/util/type_resolver_util.h"
 
 namespace google {
 namespace protobuf {

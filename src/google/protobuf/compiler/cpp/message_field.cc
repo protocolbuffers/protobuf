@@ -32,13 +32,13 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/cpp/message_field.h>
+#include "google/protobuf/compiler/cpp/message_field.h"
 
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/compiler/cpp/field.h>
-#include <google/protobuf/compiler/cpp/helpers.h>
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/compiler/cpp/field.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
 
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/strutil.h"
 
 namespace google {
 namespace protobuf {
@@ -73,7 +73,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
       QualifiedDefaultInstancePtr(descriptor->message_type(), options),
       implicit_weak);
   (*variables)["type_reference_function"] =
-      implicit_weak ? ("  ::" + (*variables)["proto_ns"] +
+      implicit_weak ? ("  ::" + ProtobufNamespace(options) +
                        "::internal::StrongReference(reinterpret_cast<const " +
                        (*variables)["type"] + "&>(\n" +
                        (*variables)["type_default_instance"] + "));\n")

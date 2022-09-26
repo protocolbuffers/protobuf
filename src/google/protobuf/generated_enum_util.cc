@@ -28,11 +28,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/generated_enum_util.h>
+#include "google/protobuf/generated_enum_util.h"
 
 #include <algorithm>
 
-#include <google/protobuf/generated_message_util.h>
+#include "google/protobuf/generated_message_util.h"
 
 namespace google {
 namespace protobuf {

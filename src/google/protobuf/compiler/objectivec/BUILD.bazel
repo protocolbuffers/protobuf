@@ -35,6 +35,7 @@ cc_library(
         "objectivec_message_field.h",
         "objectivec_nsobject_methods.h",
         "objectivec_oneof.h",
+        "objectivec_options.h",
         "objectivec_primitive_field.h",
     ],
     copts = COPTS,
@@ -44,7 +45,7 @@ cc_library(
         "//src/google/protobuf/compiler:__pkg__",
     ],
     deps = [
-        "//:protobuf",
+        "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "@com_google_absl//absl/strings",
     ],

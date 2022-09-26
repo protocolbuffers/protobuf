@@ -73,26 +73,19 @@ static uint32_t jenkins_one_at_a_time_hash(const char *key) {
 // to worry about deallocation. All of the items are added to it at
 // startup, and so the keys don't need to be retained/released.
 // Keys are NULL terminated char *.
-static const void *GPBRootExtensionKeyRetain(CFAllocatorRef allocator,
-                                             const void *value) {
-#pragma unused(allocator)
+static const void *GPBRootExtensionKeyRetain(__unused CFAllocatorRef allocator, const void *value) {
   return value;
 }
 
-static void GPBRootExtensionKeyRelease(CFAllocatorRef allocator,
-                                       const void *value) {
-#pragma unused(allocator)
-#pragma unused(value)
-}
+static void GPBRootExtensionKeyRelease(__unused CFAllocatorRef allocator,
+                                       __unused const void *value) {}
 
 static CFStringRef GPBRootExtensionCopyKeyDescription(const void *value) {
   const char *key = (const char *)value;
-  return CFStringCreateWithCString(kCFAllocatorDefault, key,
-                                   kCFStringEncodingUTF8);
+  return CFStringCreateWithCString(kCFAllocatorDefault, key, kCFStringEncodingUTF8);
 }
 
-static Boolean GPBRootExtensionKeyEqual(const void *value1,
-                                        const void *value2) {
+static Boolean GPBRootExtensionKeyEqual(const void *value1, const void *value2) {
   const char *key1 = (const char *)value1;
   const char *key2 = (const char *)value2;
   return strcmp(key1, key2) == 0;
@@ -117,17 +110,16 @@ static GPBExtensionRegistry *gDefaultExtensionRegistry = NULL;
   if (!gExtensionSingletonDictionary) {
     gExtensionSingletonDictionarySemaphore = dispatch_semaphore_create(1);
     CFDictionaryKeyCallBacks keyCallBacks = {
-      // See description above for reason for using custom dictionary.
-      0,
-      GPBRootExtensionKeyRetain,
-      GPBRootExtensionKeyRelease,
-      GPBRootExtensionCopyKeyDescription,
-      GPBRootExtensionKeyEqual,
-      GPBRootExtensionKeyHash,
+        // See description above for reason for using custom dictionary.
+        0,
+        GPBRootExtensionKeyRetain,
+        GPBRootExtensionKeyRelease,
+        GPBRootExtensionCopyKeyDescription,
+        GPBRootExtensionKeyEqual,
+        GPBRootExtensionKeyHash,
     };
-    gExtensionSingletonDictionary =
-        CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &keyCallBacks,
-                                  &kCFTypeDictionaryValueCallBacks);
+    gExtensionSingletonDictionary = CFDictionaryCreateMutable(kCFAllocatorDefault, 0, &keyCallBacks,
+                                                              &kCFTypeDictionaryValueCallBacks);
     gDefaultExtensionRegistry = [[GPBExtensionRegistry alloc] init];
   }
 
@@ -147,8 +139,7 @@ static GPBExtensionRegistry *gDefaultExtensionRegistry = NULL;
 
 + (void)globallyRegisterExtension:(GPBExtensionDescriptor *)field {
   const char *key = [field singletonNameC];
-  dispatch_semaphore_wait(gExtensionSingletonDictionarySemaphore,
-                          DISPATCH_TIME_FOREVER);
+  dispatch_semaphore_wait(gExtensionSingletonDictionarySemaphore, DISPATCH_TIME_FOREVER);
   CFDictionarySetValue(gExtensionSingletonDictionary, key, field);
   dispatch_semaphore_signal(gExtensionSingletonDictionarySemaphore);
 }
@@ -189,8 +180,7 @@ static id ExtensionForName(id self, SEL _cmd) {
   // initialized and Message classes ensure their Root was also initialized.
   NSAssert(gExtensionSingletonDictionary, @"Startup order broken!");
 
-  dispatch_semaphore_wait(gExtensionSingletonDictionarySemaphore,
-                          DISPATCH_TIME_FOREVER);
+  dispatch_semaphore_wait(gExtensionSingletonDictionarySemaphore, DISPATCH_TIME_FOREVER);
   id extension = (id)CFDictionaryGetValue(gExtensionSingletonDictionary, key);
   // We can't remove the key from the dictionary here (as an optimization),
   // two threads could have gone into +resolveClassMethod: for the same method,
@@ -212,11 +202,9 @@ BOOL GPBResolveExtensionClassMethod(Class self, SEL sel) {
   // file.
   id extension = ExtensionForName(self, sel);
   if (extension != nil) {
-    const char *encoding =
-        GPBMessageEncodingForSelector(@selector(getClassValue), NO);
+    const char *encoding = GPBMessageEncodingForSelector(@selector(getClassValue), NO);
     Class metaClass = objc_getMetaClass(class_getName(self));
-    IMP imp = imp_implementationWithBlock(^(id obj) {
-#pragma unused(obj)
+    IMP imp = imp_implementationWithBlock(^(__unused id obj) {
       return extension;
     });
     BOOL methodAdded = class_addMethod(metaClass, sel, imp, encoding);
@@ -233,7 +221,6 @@ BOOL GPBResolveExtensionClassMethod(Class self, SEL sel) {
   }
   return NO;
 }
-
 
 + (BOOL)resolveClassMethod:(SEL)sel {
   if (GPBResolveExtensionClassMethod(self, sel)) {

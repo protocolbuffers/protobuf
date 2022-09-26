@@ -32,7 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/importer.h>
+#include "google/protobuf/compiler/importer.h"
 
 #ifdef _MSC_VER
 #include <direct.h>
@@ -48,14 +48,15 @@
 #include <memory>
 #include <vector>
 
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/match.h"
 #include "absl/strings/str_join.h"
+#include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/compiler/parser.h>
-#include <google/protobuf/io/io_win32.h>
-#include <google/protobuf/io/tokenizer.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
+#include "google/protobuf/compiler/parser.h"
+#include "google/protobuf/io/io_win32.h"
+#include "google/protobuf/io/tokenizer.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
 
 #ifdef _WIN32
 #include <ctype.h>
@@ -75,7 +76,7 @@ using google::protobuf::io::win32::open;
 // Returns true if the text looks like a Windows-style absolute path, starting
 // with a drive letter.  Example:  "C:\foo".  TODO(kenton):  Share this with
 // copy in command_line_interface.cc?
-static bool IsWindowsAbsolutePath(const std::string& text) {
+static bool IsWindowsAbsolutePath(absl::string_view text) {
 #if defined(_WIN32) || defined(__CYGWIN__)
   return text.size() >= 3 && text[1] == ':' && isalpha(text[0]) &&
          (text[2] == '/' || text[2] == '\\') && text.find_last_of(':') == 1;
@@ -275,17 +276,19 @@ DiskSourceTree::~DiskSourceTree() {}
 //   then if foo/bar is a symbolic link, foo/bar/baz.proto will canonicalize
 //   to a path which does not appear to be under foo, and thus the compiler
 //   will complain that baz.proto is not inside the --proto_path.
-static std::string CanonicalizePath(std::string path) {
+static std::string CanonicalizePath(absl::string_view path) {
 #ifdef _WIN32
   // The Win32 API accepts forward slashes as a path delimiter even though
   // backslashes are standard.  Let's avoid confusion and use only forward
   // slashes.
-  if (HasPrefixString(path, "\\\\")) {
+  std::string path_str;
+  if (absl::StartsWith(path, "\\\\")) {
     // Avoid converting two leading backslashes.
-    path = "\\\\" + StringReplace(path.substr(2), "\\", "/", true);
+    path_str = "\\\\" + absl::StrReplaceAll(path.substr(2), {{"\\", "/"}});
   } else {
-    path = StringReplace(path, "\\", "/", true);
+    path_str = absl::StrReplaceAll(path, {{"\\", "/"}});
   }
+  path = path_str;
 #endif
 
   std::vector<absl::string_view> canonical_parts;
@@ -302,9 +305,9 @@ static std::string CanonicalizePath(std::string path) {
   return absl::StrJoin(canonical_parts, "/");
 }
 
-static inline bool ContainsParentReference(const std::string& path) {
-  return path == ".." || HasPrefixString(path, "../") ||
-         HasSuffixString(path, "/..") || path.find("/../") != std::string::npos;
+static inline bool ContainsParentReference(absl::string_view path) {
+  return path == ".." || absl::StartsWith(path, "../") ||
+         absl::EndsWith(path, "/..") || absl::StrContains(path, "/../");
 }
 
 // Maps a file from an old location to a new one.  Typically, old_prefix is
@@ -324,28 +327,28 @@ static inline bool ContainsParentReference(const std::string& path) {
 //   assert(!ApplyMapping("foo/bar", "baz", "qux", &result));
 //   assert(!ApplyMapping("foo/bar", "baz", "qux", &result));
 //   assert(!ApplyMapping("foobar", "foo", "baz", &result));
-static bool ApplyMapping(const std::string& filename,
-                         const std::string& old_prefix,
-                         const std::string& new_prefix, std::string* result) {
+static bool ApplyMapping(absl::string_view filename,
+                         absl::string_view old_prefix,
+                         absl::string_view new_prefix, std::string* result) {
   if (old_prefix.empty()) {
     // old_prefix matches any relative path.
     if (ContainsParentReference(filename)) {
       // We do not allow the file name to use "..".
       return false;
     }
-    if (HasPrefixString(filename, "/") || IsWindowsAbsolutePath(filename)) {
+    if (absl::StartsWith(filename, "/") || IsWindowsAbsolutePath(filename)) {
       // This is an absolute path, so it isn't matched by the empty string.
       return false;
     }
-    result->assign(new_prefix);
+    result->assign(std::string(new_prefix));
     if (!result->empty()) result->push_back('/');
-    result->append(filename);
+    result->append(std::string(filename));
     return true;
-  } else if (HasPrefixString(filename, old_prefix)) {
+  } else if (absl::StartsWith(filename, old_prefix)) {
     // old_prefix is a prefix of the filename.  Is it the whole filename?
     if (filename.size() == old_prefix.size()) {
       // Yep, it's an exact match.
-      *result = new_prefix;
+      *result = std::string(new_prefix);
       return true;
     } else {
       // Not an exact match.  Is the next character a '/'?  Otherwise,
@@ -362,14 +365,14 @@ static bool ApplyMapping(const std::string& filename,
       if (after_prefix_start != -1) {
         // Yep.  So the prefixes are directories and the filename is a file
         // inside them.
-        std::string after_prefix = filename.substr(after_prefix_start);
+        absl::string_view after_prefix = filename.substr(after_prefix_start);
         if (ContainsParentReference(after_prefix)) {
           // We do not allow the file name to use "..".
           return false;
         }
-        result->assign(new_prefix);
+        result->assign(std::string(new_prefix));
         if (!result->empty()) result->push_back('/');
-        result->append(after_prefix);
+        result->append(std::string(after_prefix));
         return true;
       }
     }
@@ -378,13 +381,14 @@ static bool ApplyMapping(const std::string& filename,
   return false;
 }
 
-void DiskSourceTree::MapPath(const std::string& virtual_path,
-                             const std::string& disk_path) {
-  mappings_.push_back(Mapping(virtual_path, CanonicalizePath(disk_path)));
+void DiskSourceTree::MapPath(absl::string_view virtual_path,
+                             absl::string_view disk_path) {
+  mappings_.push_back(
+      Mapping(std::string(virtual_path), CanonicalizePath(disk_path)));
 }
 
 DiskSourceTree::DiskFileToVirtualFileResult
-DiskSourceTree::DiskFileToVirtualFile(const std::string& disk_file,
+DiskSourceTree::DiskFileToVirtualFile(absl::string_view disk_file,
                                       std::string* virtual_file,
                                       std::string* shadowing_disk_file) {
   int mapping_index = -1;
@@ -428,14 +432,14 @@ DiskSourceTree::DiskFileToVirtualFile(const std::string& disk_file,
   return SUCCESS;
 }
 
-bool DiskSourceTree::VirtualFileToDiskFile(const std::string& virtual_file,
+bool DiskSourceTree::VirtualFileToDiskFile(absl::string_view virtual_file,
                                            std::string* disk_file) {
   std::unique_ptr<io::ZeroCopyInputStream> stream(
       OpenVirtualFile(virtual_file, disk_file));
   return stream != nullptr;
 }
 
-io::ZeroCopyInputStream* DiskSourceTree::Open(const std::string& filename) {
+io::ZeroCopyInputStream* DiskSourceTree::Open(absl::string_view filename) {
   return OpenVirtualFile(filename, nullptr);
 }
 
@@ -444,7 +448,7 @@ std::string DiskSourceTree::GetLastErrorMessage() {
 }
 
 io::ZeroCopyInputStream* DiskSourceTree::OpenVirtualFile(
-    const std::string& virtual_file, std::string* disk_file) {
+    absl::string_view virtual_file, std::string* disk_file) {
   if (virtual_file != CanonicalizePath(virtual_file) ||
       ContainsParentReference(virtual_file)) {
     // We do not allow importing of paths containing things like ".." or
@@ -481,11 +485,11 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenVirtualFile(
 }
 
 io::ZeroCopyInputStream* DiskSourceTree::OpenDiskFile(
-    const std::string& filename) {
+    absl::string_view filename) {
   struct stat sb;
   int ret = 0;
   do {
-    ret = stat(filename.c_str(), &sb);
+    ret = stat(std::string(filename).c_str(), &sb);
   } while (ret != 0 && errno == EINTR);
 #if defined(_WIN32)
   if (ret == 0 && sb.st_mode & S_IFDIR) {
@@ -500,7 +504,7 @@ io::ZeroCopyInputStream* DiskSourceTree::OpenDiskFile(
 #endif
   int file_descriptor;
   do {
-    file_descriptor = open(filename.c_str(), O_RDONLY);
+    file_descriptor = open(std::string(filename).c_str(), O_RDONLY);
   } while (file_descriptor < 0 && errno == EINTR);
   if (file_descriptor >= 0) {
     io::FileInputStream* result = new io::FileInputStream(file_descriptor);

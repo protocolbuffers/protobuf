@@ -30,17 +30,18 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
-#include <google/protobuf/stubs/callback.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/stubs/common.h"
+
 #include <gtest/gtest.h>
 
 #include <vector>
 
 #include "absl/strings/ascii.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/stubs/callback.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/strutil.h"
+#include "google/protobuf/testing/googletest.h"
 
 namespace google {
 namespace protobuf {
@@ -94,11 +95,14 @@ TEST(LoggingTest, DefaultLogging) {
   GOOGLE_LOG(ERROR  ) << "An error.";
 
   std::string text = GetCapturedTestStderr();
-  EXPECT_EQ(
-    "[libprotobuf INFO " __FILE__ ":" + SimpleItoa(line + 1) + "] A message.\n"
-    "[libprotobuf WARNING " __FILE__ ":" + SimpleItoa(line + 2) + "] A warning.\n"
-    "[libprotobuf ERROR " __FILE__ ":" + SimpleItoa(line + 3) + "] An error.\n",
-    text);
+  EXPECT_EQ(absl::StrCat("[libprotobuf INFO " __FILE__ ":", line + 1,
+                         "] A message.\n"
+                         "[libprotobuf WARNING " __FILE__ ":",
+                         line + 2,
+                         "] A warning.\n"
+                         "[libprotobuf ERROR " __FILE__ ":",
+                         line + 3, "] An error.\n"),
+            text);
 }
 
 TEST(LoggingTest, NullLogging) {
@@ -127,12 +131,10 @@ TEST(LoggingTest, CaptureLogging) {
   EXPECT_TRUE(SetLogHandler(old_handler) == &CaptureLog);
 
   ASSERT_EQ(2, captured_messages_.size());
-  EXPECT_EQ(
-    "2 " __FILE__ ":" + SimpleItoa(start_line + 1) + ": An error.",
-    captured_messages_[0]);
-  EXPECT_EQ(
-    "1 " __FILE__ ":" + SimpleItoa(start_line + 2) + ": A warning.",
-    captured_messages_[1]);
+  EXPECT_EQ(absl::StrCat("2 " __FILE__ ":", start_line + 1, ": An error."),
+            captured_messages_[0]);
+  EXPECT_EQ(absl::StrCat("1 " __FILE__ ":", start_line + 2, ": A warning."),
+            captured_messages_[1]);
 }
 
 TEST(LoggingTest, SilenceLogging) {
@@ -153,12 +155,10 @@ TEST(LoggingTest, SilenceLogging) {
   EXPECT_TRUE(SetLogHandler(old_handler) == &CaptureLog);
 
   ASSERT_EQ(2, captured_messages_.size());
-  EXPECT_EQ(
-    "0 " __FILE__ ":" + SimpleItoa(line1) + ": Visible1",
-    captured_messages_[0]);
-  EXPECT_EQ(
-    "0 " __FILE__ ":" + SimpleItoa(line2) + ": Visible2",
-    captured_messages_[1]);
+  EXPECT_EQ(absl::StrCat("0 " __FILE__ ":", line1, ": Visible1"),
+            captured_messages_[0]);
+  EXPECT_EQ(absl::StrCat("0 " __FILE__ ":", line2, ": Visible2"),
+            captured_messages_[1]);
 }
 
 class ClosureTest : public testing::Test {

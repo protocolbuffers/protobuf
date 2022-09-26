@@ -28,16 +28,18 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/compiler/python/helpers.h>
+#include "google/protobuf/compiler/python/helpers.h"
 
 #include <algorithm>
 
-#include <google/protobuf/stubs/strutil.h>
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
+#include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
+#include "absl/strings/strip.h"
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 
 namespace google {
 namespace protobuf {
@@ -47,8 +49,7 @@ namespace python {
 // Returns the Python module name expected for a given .proto filename.
 std::string ModuleName(const std::string& filename) {
   std::string basename = StripProto(filename);
-  ReplaceCharacters(&basename, "-", '_');
-  ReplaceCharacters(&basename, "/", '.');
+  absl::StrReplaceAll({{"-", "_"}, {"/", "."}}, &basename);
   return basename + "_pb2";
 }
 
@@ -94,7 +95,7 @@ std::string GetFileName(const FileDescriptor* file_des,
                         const std::string& suffix) {
   std::string module_name = ModuleName(file_des->name());
   std::string filename = module_name;
-  ReplaceCharacters(&filename, ".", '/');
+  absl::StrReplaceAll({{".", "/"}}, &filename);
   filename += suffix;
   return filename;
 }

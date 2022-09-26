@@ -59,10 +59,12 @@ message NegativeEnumMessage {
 // Decorate fields with [deprecated=true] as [System.Obsolete]
 
 message DeprecatedChild {
+    option deprecated = true;
 }
 
 enum DeprecatedEnum {
-    DEPRECATED_ZERO = 0;
+    option deprecated = true;
+    DEPRECATED_ZERO = 0 [deprecated = true];
     one = 1;
 }
 

@@ -28,12 +28,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 // This is a test including a single public header to ensure things build.
 // It helps test that imports are complete/ordered correctly.
 
 #import "GPBType.pbobjc.h"
-
 
 // Something in the body of this file so the compiler/linker won't complain
 // about an empty .o file.

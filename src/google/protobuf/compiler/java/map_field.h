@@ -31,7 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_MAP_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_MAP_FIELD_H__
 
-#include <google/protobuf/compiler/java/field.h>
+#include "google/protobuf/compiler/java/field.h"
 
 namespace google {
 namespace protobuf {

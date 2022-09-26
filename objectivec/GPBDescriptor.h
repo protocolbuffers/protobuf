@@ -62,14 +62,14 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 /**
  * Describes a proto message.
  **/
-@interface GPBDescriptor : NSObject<NSCopying>
+@interface GPBDescriptor : NSObject <NSCopying>
 
 /** Name of the message. */
 @property(nonatomic, readonly, copy) NSString *name;
 /** Fields declared in the message. */
-@property(nonatomic, readonly, strong, nullable) NSArray<GPBFieldDescriptor*> *fields;
+@property(nonatomic, readonly, strong, nullable) NSArray<GPBFieldDescriptor *> *fields;
 /** Oneofs declared in the message. */
-@property(nonatomic, readonly, strong, nullable) NSArray<GPBOneofDescriptor*> *oneofs;
+@property(nonatomic, readonly, strong, nullable) NSArray<GPBOneofDescriptor *> *oneofs;
 /** Extension range declared for the message. */
 @property(nonatomic, readonly, nullable) const GPBExtensionRange *extensionRanges;
 /** Number of extension ranges declared for the message. */
@@ -139,7 +139,7 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 /** Name of the oneof field. */
 @property(nonatomic, readonly) NSString *name;
 /** Fields declared in the oneof. */
-@property(nonatomic, readonly) NSArray<GPBFieldDescriptor*> *fields;
+@property(nonatomic, readonly) NSArray<GPBFieldDescriptor *> *fields;
 
 /**
  * Gets the field for the given number.
@@ -293,7 +293,7 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 /**
  * Describes a proto extension.
  **/
-@interface GPBExtensionDescriptor : NSObject<NSCopying>
+@interface GPBExtensionDescriptor : NSObject <NSCopying>
 /** Field number under which the extension is stored. */
 @property(nonatomic, readonly) uint32_t fieldNumber;
 /** The containing message class, i.e. the class extended by this extension. */

@@ -34,8 +34,8 @@
 #include <map>
 #include <string>
 
-#include <google/protobuf/compiler/cpp/helpers.h>
-#include <google/protobuf/compiler/cpp/message_field.h>
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/message_field.h"
 
 namespace google {
 namespace protobuf {

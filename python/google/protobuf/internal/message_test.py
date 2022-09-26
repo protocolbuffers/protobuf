@@ -889,6 +889,7 @@ class MessageTest(unittest.TestCase):
 
   def testOneofClearField(self, message_module):
     m = message_module.TestAllTypes()
+    m.ClearField('oneof_field')
     m.oneof_uint32 = 11
     m.ClearField('oneof_field')
     if message_module is unittest_pb2:

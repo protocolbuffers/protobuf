@@ -33,15 +33,15 @@
 
 #include <type_traits>
 
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/port.h>
-#include <google/protobuf/map.h>
-#include <google/protobuf/map_entry_lite.h>
-#include <google/protobuf/parse_context.h>
-#include <google/protobuf/wire_format_lite.h>
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/map.h"
+#include "google/protobuf/map_entry_lite.h"
+#include "google/protobuf/parse_context.h"
+#include "google/protobuf/wire_format_lite.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -204,6 +204,6 @@ inline PROTOBUF_NOINLINE void MapFieldLiteNotDestructed(void* map_field_lite) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_MAP_FIELD_LITE_H__

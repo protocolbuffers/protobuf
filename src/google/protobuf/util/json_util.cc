@@ -28,30 +28,30 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/json_util.h>
+#include "google/protobuf/util/json_util.h"
 
-#include <google/protobuf/stubs/common.h>
 #include "absl/base/call_once.h"
 #include "absl/status/status.h"
-#include <google/protobuf/stubs/bytestream.h>
+#include "absl/strings/ascii.h"
+#include "google/protobuf/stubs/bytestream.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_sink.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/util/internal/default_value_objectwriter.h>
-#include <google/protobuf/util/internal/error_listener.h>
-#include <google/protobuf/util/internal/json_objectwriter.h>
-#include <google/protobuf/util/internal/json_stream_parser.h>
-#include <google/protobuf/util/internal/protostream_objectsource.h>
-#include <google/protobuf/util/internal/protostream_objectwriter.h>
-#include <google/protobuf/util/type_resolver.h>
-#include <google/protobuf/util/type_resolver_util.h>
-#include <google/protobuf/stubs/status_macros.h>
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_sink.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/util/internal/default_value_objectwriter.h"
+#include "google/protobuf/util/internal/error_listener.h"
+#include "google/protobuf/util/internal/json_objectwriter.h"
+#include "google/protobuf/util/internal/json_stream_parser.h"
+#include "google/protobuf/util/internal/protostream_objectsource.h"
+#include "google/protobuf/util/internal/protostream_objectwriter.h"
+#include "google/protobuf/util/type_resolver.h"
+#include "google/protobuf/util/type_resolver_util.h"
+#include "google/protobuf/stubs/status_macros.h"
 
 
 // clang-format off
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 // clang-format on
 
 
@@ -142,7 +142,7 @@ class StatusErrorListener : public converter::ErrorListener {
 
   std::string GetLocString(const converter::LocationTrackerInterface& loc) {
     std::string loc_string = loc.ToString();
-    StripWhitespace(&loc_string);
+    absl::StripAsciiWhitespace(&loc_string);
     if (!loc_string.empty()) {
       loc_string = absl::StrCat("(", loc_string, ")");
     }

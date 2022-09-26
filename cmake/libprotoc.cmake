@@ -16,8 +16,7 @@ if(protobuf_HAVE_LD_VERSION_SCRIPT)
     LINK_DEPENDS ${protobuf_SOURCE_DIR}/src/libprotoc.map)
 endif()
 target_link_libraries(libprotoc PRIVATE libprotobuf)
-target_link_libraries(libprotoc PRIVATE ${protobuf_ABSL_USED_TARGETS})
-target_include_directories(libprotoc PRIVATE ${ABSL_ROOT_DIR})
+target_link_libraries(libprotoc PUBLIC ${protobuf_ABSL_USED_TARGETS})
 if(protobuf_BUILD_SHARED_LIBS)
   target_compile_definitions(libprotoc
     PUBLIC  PROTOBUF_USE_DLLS

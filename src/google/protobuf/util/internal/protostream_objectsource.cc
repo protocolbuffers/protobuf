@@ -28,36 +28,36 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/internal/protostream_objectsource.h>
+#include "google/protobuf/util/internal/protostream_objectsource.h"
 
 #include <cstdint>
 #include <unordered_map>
 #include <utility>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/unknown_field_set.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/unknown_field_set.h"
+#include "google/protobuf/wire_format.h"
+#include "google/protobuf/wire_format_lite.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/stubs/stringprintf.h>
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/time/time.h"
-#include <google/protobuf/util/internal/constants.h>
-#include <google/protobuf/util/internal/field_mask_utility.h>
-#include <google/protobuf/util/internal/utility.h>
-#include <google/protobuf/stubs/status_macros.h>
+#include "google/protobuf/util/internal/constants.h"
+#include "google/protobuf/util/internal/field_mask_utility.h"
+#include "google/protobuf/util/internal/utility.h"
+#include "google/protobuf/stubs/status_macros.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 
 namespace google {
@@ -332,7 +332,7 @@ absl::Status ProtoStreamObjectSource::RenderTimestamp(
   absl::Time tm = absl::FromUnixSeconds(seconds);
   std::string formatted_seconds =
       absl::FormatTime(kRfc3339TimeFormat, tm, absl::UTCTimeZone());
-  std::string formatted_time = StringPrintf(
+  std::string formatted_time = absl::StrFormat(
       "%s%sZ", formatted_seconds.c_str(),
       FormatNanos(
           nanos,
@@ -374,7 +374,7 @@ absl::Status ProtoStreamObjectSource::RenderDuration(
     sign = "-";
     nanos = -nanos;
   }
-  std::string formatted_duration = StringPrintf(
+  std::string formatted_duration = absl::StrFormat(
       "%s%lld%ss", sign.c_str(), static_cast<long long>(seconds),  // NOLINT
       FormatNanos(
           nanos,
@@ -1111,7 +1111,7 @@ std::string FormatNanos(uint32_t nanos, bool with_trailing_zeros) {
   const int precision = (nanos % 1000 != 0)      ? 9
                         : (nanos % 1000000 != 0) ? 6
                                                  : 3;
-  std::string formatted = StringPrintf(
+  std::string formatted = absl::StrFormat(
       "%.*f", precision, static_cast<double>(nanos) / kNanosPerSecond);
   // remove the leading 0 before decimal.
   return formatted.substr(1);

@@ -40,17 +40,17 @@
 
 #include <string>
 
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/stubs/common.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/generated_enum_reflection.h>
-#include <google/protobuf/port.h>
-#include <google/protobuf/unknown_field_set.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/generated_enum_reflection.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/unknown_field_set.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -402,6 +402,6 @@ const std::string& NameOfDenseEnum(int v) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_GENERATED_MESSAGE_REFLECTION_H__
