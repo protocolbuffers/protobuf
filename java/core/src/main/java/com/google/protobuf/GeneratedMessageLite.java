@@ -62,11 +62,50 @@ public abstract class GeneratedMessageLite<
         BuilderType extends GeneratedMessageLite.Builder<MessageType, BuilderType>>
     extends AbstractMessageLite<MessageType, BuilderType> {
 
+  /* For use by lite runtime only */
+  static final int UNINITIALIZED_SERIALIZED_SIZE = 0x7FFFFFFF;
+  private static final int MUTABLE_FLAG_MASK = 0x80000000;
+  private static final int MEMOIZED_SERIALIZED_SIZE_MASK = 0x7FFFFFFF;
+
+  /**
+   * We use the high bit of memoizedSerializedSize as the explicit mutability flag. It didn't make
+   * sense to have negative sizes anyway. Messages start as mutable.
+   *
+   * <p>Adding a standalone boolean would have added 8 bytes to every message instance.
+   *
+   * <p>We also reserve 0x7FFFFFFF as the "uninitialized" value.
+   */
+  private int memoizedSerializedSize = MUTABLE_FLAG_MASK | UNINITIALIZED_SERIALIZED_SIZE;
+
+  /* For use by the runtime only */
+  static final int UNINITIALIZED_HASH_CODE = 0;
+
   /** For use by generated code only. Lazily initialized to reduce allocations. */
   protected UnknownFieldSetLite unknownFields = UnknownFieldSetLite.getDefaultInstance();
 
-  /** For use by generated code only. */
-  protected int memoizedSerializedSize = -1;
+  boolean isMutable() {
+    return (memoizedSerializedSize & MUTABLE_FLAG_MASK) != 0;
+  }
+
+  void markImmutable() {
+    memoizedSerializedSize &= ~MUTABLE_FLAG_MASK;
+  }
+
+  int getMemoizedHashCode() {
+    return memoizedHashCode;
+  }
+
+  void setMemoizedHashCode(int value) {
+    memoizedHashCode = value;
+  }
+
+  void clearMemoizedHashCode() {
+    memoizedHashCode = UNINITIALIZED_HASH_CODE;
+  }
+
+  boolean hashCodeIsNotMemoized() {
+    return UNINITIALIZED_HASH_CODE == getMemoizedHashCode();
+  }
 
   @Override
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
@@ -84,6 +123,10 @@ public abstract class GeneratedMessageLite<
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
   public final BuilderType newBuilderForType() {
     return (BuilderType) dynamicMethod(MethodToInvoke.NEW_BUILDER);
+  }
+
+  MessageType newMutableInstance() {
+    return (MessageType) dynamicMethod(MethodToInvoke.NEW_MUTABLE_INSTANCE);
   }
 
   /**
@@ -106,11 +149,19 @@ public abstract class GeneratedMessageLite<
   @SuppressWarnings("unchecked") // Guaranteed by runtime
   @Override
   public int hashCode() {
-    if (memoizedHashCode != 0) {
-      return memoizedHashCode;
+    if (isMutable()) {
+      return computeHashCode();
     }
-    memoizedHashCode = Protobuf.getInstance().schemaFor(this).hashCode(this);
-    return memoizedHashCode;
+
+    if (hashCodeIsNotMemoized()) {
+      setMemoizedHashCode(computeHashCode());
+    }
+
+    return getMemoizedHashCode();
+  }
+
+  int computeHashCode() {
+    return Protobuf.getInstance().schemaFor(this).hashCode(this);
   }
 
   @SuppressWarnings("unchecked") // Guaranteed by isInstance + runtime
@@ -173,6 +224,7 @@ public abstract class GeneratedMessageLite<
   /** Called by subclasses to complete parsing. For use by generated code only. */
   protected void makeImmutable() {
     Protobuf.getInstance().schemaFor(this).makeImmutable(this);
+    markImmutable();
   }
 
   protected final <
@@ -198,8 +250,7 @@ public abstract class GeneratedMessageLite<
   @SuppressWarnings("unchecked")
   public final BuilderType toBuilder() {
     BuilderType builder = (BuilderType) dynamicMethod(MethodToInvoke.NEW_BUILDER);
-    builder.mergeFrom((MessageType) this);
-    return builder;
+    return builder.mergeFrom((MessageType) this);
   }
 
   /**
@@ -256,14 +307,22 @@ public abstract class GeneratedMessageLite<
     return dynamicMethod(method, null, null);
   }
 
+  void clearMemoizedSerializedSize() {
+    setMemoizedSerializedSize(UNINITIALIZED_SERIALIZED_SIZE);
+  }
+
   @Override
   int getMemoizedSerializedSize() {
-    return memoizedSerializedSize;
+    return memoizedSerializedSize & MEMOIZED_SERIALIZED_SIZE_MASK;
   }
 
   @Override
   void setMemoizedSerializedSize(int size) {
-    memoizedSerializedSize = size;
+    if (size < 0) {
+      throw new IllegalStateException("serialized size must be non-negative, was " + size);
+    }
+    memoizedSerializedSize =
+        (memoizedSerializedSize & MUTABLE_FLAG_MASK) | (size & MEMOIZED_SERIALIZED_SIZE_MASK);
   }
 
   @Override
@@ -274,11 +333,41 @@ public abstract class GeneratedMessageLite<
   }
 
   @Override
-  public int getSerializedSize() {
-    if (memoizedSerializedSize == -1) {
-      memoizedSerializedSize = Protobuf.getInstance().schemaFor(this).getSerializedSize(this);
+  int getSerializedSize(Schema schema) {
+    if (isMutable()) {
+      // The serialized size should never be memoized for mutable instances.
+      int size = computeSerializedSize(schema);
+      if (size < 0) {
+        throw new IllegalStateException("serialized size must be non-negative, was " + size);
+      }
+      return size;
     }
-    return memoizedSerializedSize;
+
+    // If memoizedSerializedSize has already been set, return it.
+    if (getMemoizedSerializedSize() != UNINITIALIZED_SERIALIZED_SIZE) {
+      return getMemoizedSerializedSize();
+    }
+
+    // Need to compute and memoize the serialized size.
+    int size = computeSerializedSize(schema);
+    setMemoizedSerializedSize(size);
+    return size;
+  }
+
+  @Override
+  public int getSerializedSize() {
+    // Calling this with 'null' to delay schema lookup in case the serializedSize is already
+    // memoized.
+    return getSerializedSize(null);
+  }
+
+  private int computeSerializedSize(Schema<?> nullableSchema) {
+    if (nullableSchema == null) {
+      return Protobuf.getInstance().schemaFor(this).getSerializedSize(this);
+    } else {
+      return ((Schema<GeneratedMessageLite<MessageType, BuilderType>>) nullableSchema)
+          .getSerializedSize(this);
+    }
   }
 
   /** Constructs a {@link MessageInfo} for this message type. */
@@ -318,6 +407,7 @@ public abstract class GeneratedMessageLite<
   protected static <T extends GeneratedMessageLite<?, ?>> void registerDefaultInstance(
       Class<T> clazz, T defaultInstance) {
     defaultInstanceMap.put(clazz, defaultInstance);
+    defaultInstance.makeImmutable();
   }
 
   protected static Object newMessageInfo(
@@ -342,13 +432,19 @@ public abstract class GeneratedMessageLite<
 
     private final MessageType defaultInstance;
     protected MessageType instance;
-    protected boolean isBuilt;
 
     protected Builder(MessageType defaultInstance) {
       this.defaultInstance = defaultInstance;
-      this.instance =
-          (MessageType) defaultInstance.dynamicMethod(MethodToInvoke.NEW_MUTABLE_INSTANCE);
-      isBuilt = false;
+      if (defaultInstance.isMutable()) {
+        throw new IllegalArgumentException("Default instance must be immutable.");
+      }
+      // this.instance should be set to defaultInstance but some tests rely on newBuilder().build()
+      // creating unique instances.
+      this.instance = newMutableInstance();
+    }
+
+    private MessageType newMutableInstance() {
+      return defaultInstance.newMutableInstance();
     }
 
     /**
@@ -356,15 +452,13 @@ public abstract class GeneratedMessageLite<
      * state before the write happens to preserve immutability guarantees.
      */
     protected final void copyOnWrite() {
-      if (isBuilt) {
+      if (!instance.isMutable()) {
         copyOnWriteInternal();
-        isBuilt = false;
       }
     }
 
     protected void copyOnWriteInternal() {
-      MessageType newInstance =
-          (MessageType) instance.dynamicMethod(MethodToInvoke.NEW_MUTABLE_INSTANCE);
+      MessageType newInstance = newMutableInstance();
       mergeFromInstance(newInstance, instance);
       instance = newInstance;
     }
@@ -376,27 +470,28 @@ public abstract class GeneratedMessageLite<
 
     @Override
     public final BuilderType clear() {
-      // No need to copy on write since we're dropping the instance anyways.
-      instance = (MessageType) instance.dynamicMethod(MethodToInvoke.NEW_MUTABLE_INSTANCE);
+      // No need to copy on write since we're dropping the instance anyway.
+      if (defaultInstance.isMutable()) {
+        throw new IllegalArgumentException("Default instance must be immutable.");
+      }
+      instance = newMutableInstance(); // should be defaultInstance;
       return (BuilderType) this;
     }
 
     @Override
     public BuilderType clone() {
       BuilderType builder = (BuilderType) getDefaultInstanceForType().newBuilderForType();
-      builder.mergeFrom(buildPartial());
+      builder.instance = buildPartial();
       return builder;
     }
 
     @Override
     public MessageType buildPartial() {
-      if (isBuilt) {
+      if (!instance.isMutable()) {
         return instance;
       }
 
       instance.makeImmutable();
-
-      isBuilt = true;
       return instance;
     }
 
@@ -416,12 +511,15 @@ public abstract class GeneratedMessageLite<
 
     /** All subclasses implement this. */
     public BuilderType mergeFrom(MessageType message) {
+      if (getDefaultInstanceForType().equals(message)) {
+        return (BuilderType) this;
+      }
       copyOnWrite();
       mergeFromInstance(instance, message);
       return (BuilderType) this;
     }
 
-    private void mergeFromInstance(MessageType dest, MessageType src) {
+    private static <MessageType> void mergeFromInstance(MessageType dest, MessageType src) {
       Protobuf.getInstance().schemaFor(dest).mergeFrom(dest, src);
     }
 
@@ -932,7 +1030,9 @@ public abstract class GeneratedMessageLite<
     @Override
     protected void copyOnWriteInternal() {
       super.copyOnWriteInternal();
-      instance.extensions = instance.extensions.clone();
+      if (instance.extensions != FieldSet.emptySet()) {
+        instance.extensions = instance.extensions.clone();
+      }
     }
 
     private FieldSet<ExtensionDescriptor> ensureExtensionsAreMutable() {
@@ -946,7 +1046,7 @@ public abstract class GeneratedMessageLite<
 
     @Override
     public final MessageType buildPartial() {
-      if (isBuilt) {
+      if (!instance.isMutable()) {
         return instance;
       }
 
@@ -1528,7 +1628,7 @@ public abstract class GeneratedMessageLite<
       T instance, CodedInputStream input, ExtensionRegistryLite extensionRegistry)
       throws InvalidProtocolBufferException {
     @SuppressWarnings("unchecked") // Guaranteed by protoc
-    T result = (T) instance.dynamicMethod(MethodToInvoke.NEW_MUTABLE_INSTANCE);
+    T result = instance.newMutableInstance();
     try {
       // TODO(yilunchong): Try to make input with type CodedInpuStream.ArrayDecoder use
       // fast path.
@@ -1561,15 +1661,12 @@ public abstract class GeneratedMessageLite<
       T instance, byte[] input, int offset, int length, ExtensionRegistryLite extensionRegistry)
       throws InvalidProtocolBufferException {
     @SuppressWarnings("unchecked") // Guaranteed by protoc
-    T result = (T) instance.dynamicMethod(MethodToInvoke.NEW_MUTABLE_INSTANCE);
+    T result = instance.newMutableInstance();
     try {
       Schema<T> schema = Protobuf.getInstance().schemaFor(result);
       schema.mergeFrom(
           result, input, offset, offset + length, new ArrayDecoders.Registers(extensionRegistry));
       schema.makeImmutable(result);
-      if (result.memoizedHashCode != 0) {
-        throw new RuntimeException();
-      }
     } catch (InvalidProtocolBufferException e) {
       if (e.getThrownFromInputStream()) {
         e = new InvalidProtocolBufferException(e);

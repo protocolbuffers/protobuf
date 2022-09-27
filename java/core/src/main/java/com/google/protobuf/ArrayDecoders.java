@@ -236,6 +236,29 @@ final class ArrayDecoders {
   @SuppressWarnings({"unchecked", "rawtypes"})
   static int decodeMessageField(
       Schema schema, byte[] data, int position, int limit, Registers registers) throws IOException {
+    Object msg = schema.newInstance();
+    int offset = mergeMessageField(msg, schema, data, position, limit, registers);
+    schema.makeImmutable(msg);
+    registers.object1 = msg;
+    return offset;
+  }
+
+  /** Decodes a group value. */
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  static int decodeGroupField(
+      Schema schema, byte[] data, int position, int limit, int endGroup, Registers registers)
+      throws IOException {
+    Object msg = schema.newInstance();
+    int offset = mergeGroupField(msg, schema, data, position, limit, endGroup, registers);
+    schema.makeImmutable(msg);
+    registers.object1 = msg;
+    return offset;
+  }
+
+  @SuppressWarnings({"unchecked", "rawtypes"})
+  static int mergeMessageField(
+      Object msg, Schema schema, byte[] data, int position, int limit, Registers registers)
+      throws IOException {
     int length = data[position++];
     if (length < 0) {
       position = decodeVarint32(length, data, position, registers);
@@ -244,27 +267,28 @@ final class ArrayDecoders {
     if (length < 0 || length > limit - position) {
       throw InvalidProtocolBufferException.truncatedMessage();
     }
-    Object result = schema.newInstance();
-    schema.mergeFrom(result, data, position, position + length, registers);
-    schema.makeImmutable(result);
-    registers.object1 = result;
+    schema.mergeFrom(msg, data, position, position + length, registers);
+    registers.object1 = msg;
     return position + length;
   }
 
-  /** Decodes a group value. */
   @SuppressWarnings({"unchecked", "rawtypes"})
-  static int decodeGroupField(
-      Schema schema, byte[] data, int position, int limit, int endGroup, Registers registers)
+  static int mergeGroupField(
+      Object msg,
+      Schema schema,
+      byte[] data,
+      int position,
+      int limit,
+      int endGroup,
+      Registers registers)
       throws IOException {
     // A group field must has a MessageSchema (the only other subclass of Schema is MessageSetSchema
     // and it can't be used in group fields).
     final MessageSchema messageSchema = (MessageSchema) schema;
-    Object result = messageSchema.newInstance();
     // It's OK to directly use parseProto2Message since proto3 doesn't have group.
     final int endPosition =
-        messageSchema.parseProto2Message(result, data, position, limit, endGroup, registers);
-    messageSchema.makeImmutable(result);
-    registers.object1 = result;
+        messageSchema.parseProto2Message(msg, data, position, limit, endGroup, registers);
+    registers.object1 = msg;
     return endPosition;
   }
 
@@ -848,26 +872,19 @@ final class ArrayDecoders {
           break;
         }
         case ENUM:
-        {
-          IntArrayList list = new IntArrayList();
-          position = decodePackedVarint32List(data, position, list, registers);
-          UnknownFieldSetLite unknownFields = message.unknownFields;
-          if (unknownFields == UnknownFieldSetLite.getDefaultInstance()) {
-            unknownFields = null;
+          {
+            IntArrayList list = new IntArrayList();
+            position = decodePackedVarint32List(data, position, list, registers);
+            SchemaUtil.filterUnknownEnumList(
+                message,
+                fieldNumber,
+                list,
+                extension.descriptor.getEnumType(),
+                null,
+                unknownFieldSchema);
+            extensions.setField(extension.descriptor, list);
+            break;
           }
-          unknownFields =
-              SchemaUtil.filterUnknownEnumList(
-                  fieldNumber,
-                  list,
-                  extension.descriptor.getEnumType(),
-                  unknownFields,
-                  unknownFieldSchema);
-          if (unknownFields != null) {
-            message.unknownFields = unknownFields;
-          }
-          extensions.setField(extension.descriptor, list);
-          break;
-        }
         default:
           throw new IllegalStateException(
               "Type cannot be packed: " + extension.descriptor.getLiteType());
@@ -879,13 +896,8 @@ final class ArrayDecoders {
         position = decodeVarint32(data, position, registers);
         Object enumValue = extension.descriptor.getEnumType().findValueByNumber(registers.int1);
         if (enumValue == null) {
-          UnknownFieldSetLite unknownFields = ((GeneratedMessageLite) message).unknownFields;
-          if (unknownFields == UnknownFieldSetLite.getDefaultInstance()) {
-            unknownFields = UnknownFieldSetLite.newInstance();
-            ((GeneratedMessageLite) message).unknownFields = unknownFields;
-          }
           SchemaUtil.storeUnknownEnum(
-              fieldNumber, registers.int1, unknownFields, unknownFieldSchema);
+              message, fieldNumber, registers.int1, null, unknownFieldSchema);
           return position;
         }
         // Note, we store the integer value instead of the actual enum object in FieldSet.
@@ -942,20 +954,45 @@ final class ArrayDecoders {
             value = registers.object1;
             break;
           case GROUP:
-            final int endTag = (fieldNumber << 3) | WireFormat.WIRETYPE_END_GROUP;
-            position = decodeGroupField(
-                Protobuf.getInstance().schemaFor(extension.getMessageDefaultInstance().getClass()),
-                data, position, limit, endTag, registers);
-            value = registers.object1;
-            break;
-
+            {
+              final int endTag = (fieldNumber << 3) | WireFormat.WIRETYPE_END_GROUP;
+              final Schema fieldSchema =
+                  Protobuf.getInstance()
+                      .schemaFor(extension.getMessageDefaultInstance().getClass());
+              if (extension.isRepeated()) {
+                position = decodeGroupField(fieldSchema, data, position, limit, endTag, registers);
+                extensions.addRepeatedField(extension.descriptor, registers.object1);
+              } else {
+                Object oldValue = extensions.getField(extension.descriptor);
+                if (oldValue == null) {
+                  oldValue = fieldSchema.newInstance();
+                  extensions.setField(extension.descriptor, oldValue);
+                }
+                position =
+                    mergeGroupField(
+                        oldValue, fieldSchema, data, position, limit, endTag, registers);
+              }
+              return position;
+            }
           case MESSAGE:
-            position = decodeMessageField(
-                Protobuf.getInstance().schemaFor(extension.getMessageDefaultInstance().getClass()),
-                data, position, limit, registers);
-            value = registers.object1;
-            break;
-
+            {
+              final Schema fieldSchema =
+                  Protobuf.getInstance()
+                      .schemaFor(extension.getMessageDefaultInstance().getClass());
+              if (extension.isRepeated()) {
+                position = decodeMessageField(fieldSchema, data, position, limit, registers);
+                extensions.addRepeatedField(extension.descriptor, registers.object1);
+              } else {
+                Object oldValue = extensions.getField(extension.descriptor);
+                if (oldValue == null) {
+                  oldValue = fieldSchema.newInstance();
+                  extensions.setField(extension.descriptor, oldValue);
+                }
+                position =
+                    mergeMessageField(oldValue, fieldSchema, data, position, limit, registers);
+              }
+              return position;
+            }
           case ENUM:
             throw new IllegalStateException("Shouldn't reach here.");
         }
@@ -963,17 +1000,6 @@ final class ArrayDecoders {
       if (extension.isRepeated()) {
         extensions.addRepeatedField(extension.descriptor, value);
       } else {
-        switch (extension.getLiteType()) {
-          case MESSAGE:
-          case GROUP:
-            Object oldValue = extensions.getField(extension.descriptor);
-            if (oldValue != null) {
-              value = Internal.mergeMessage(oldValue, value);
-            }
-            break;
-          default:
-            break;
-        }
         extensions.setField(extension.descriptor, value);
       }
     }

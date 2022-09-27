@@ -428,8 +428,8 @@ final class DescriptorMessageInfoFactory implements MessageInfoFactory {
     boolean enforceUtf8 = true;
     for (int i = 0; i < fieldDescriptors.size(); ++i) {
       FieldDescriptor fd = fieldDescriptors.get(i);
-      if (fd.getContainingOneof() != null) {
-        // Build a oneof member field.
+      if (fd.getContainingOneof() != null && !fd.getContainingOneof().isSynthetic()) {
+        // Build a oneof member field. But only if it is a real oneof, not a proto3 optional
         builder.withField(buildOneofMember(messageType, fd, oneofState, enforceUtf8, null));
         continue;
       }
