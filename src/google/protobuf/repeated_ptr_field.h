@@ -1351,7 +1351,7 @@ inline void RepeatedPtrField<Element>::Add(Iter begin, Iter end) {
   if (std::is_base_of<
           std::forward_iterator_tag,
           typename std::iterator_traits<Iter>::iterator_category>::value) {
-    int reserve = std::distance(begin, end);
+    int reserve = static_cast<int>(std::distance(begin, end));
     Reserve(size() + reserve);
   }
   for (; begin != end; ++begin) {
@@ -1496,8 +1496,8 @@ RepeatedPtrField<Element>::erase(const_iterator position) {
 template <typename Element>
 inline typename RepeatedPtrField<Element>::iterator
 RepeatedPtrField<Element>::erase(const_iterator first, const_iterator last) {
-  size_type pos_offset = std::distance(cbegin(), first);
-  size_type last_offset = std::distance(cbegin(), last);
+  size_type pos_offset = static_cast<size_type>(std::distance(cbegin(), first));
+  size_type last_offset = static_cast<size_type>(std::distance(cbegin(), last));
   DeleteSubrange(pos_offset, last_offset - pos_offset);
   return begin() + pos_offset;
 }
