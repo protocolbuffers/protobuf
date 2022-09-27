@@ -1,4 +1,16 @@
-2022-09-13 version 16.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+2022-09-27 version 3.16.3 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+  Java
+  * Refactoring java full runtime to reuse sub-message builders and prepare to
+    migrate parsing logic from parse constructor to builder.
+  * Move proto wireformat parsing functionality from the private "parsing
+    constructor" to the Builder class.
+  * Change the Lite runtime to prefer merging from the wireformat into mutable
+    messages rather than building up a new immutable object before merging. This
+    way results in fewer allocations and copy operations.
+
+
+2022-09-13 version 3.16.2 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
 
 C++
 * Reduce memory consumption of MessageSet parsing
