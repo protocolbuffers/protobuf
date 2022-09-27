@@ -418,10 +418,12 @@ public final class DynamicMessage extends AbstractMessage {
         }
       }
 
-      fields.makeImmutable();
       DynamicMessage result =
           new DynamicMessage(
-              type, fields, java.util.Arrays.copyOf(oneofCases, oneofCases.length), unknownFields);
+              type,
+              fields.buildPartial(),
+              java.util.Arrays.copyOf(oneofCases, oneofCases.length),
+              unknownFields);
       return result;
     }
 

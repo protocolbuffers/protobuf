@@ -133,6 +133,10 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     return internalGetFieldAccessorTable().descriptor;
   }
 
+  // TODO(b/248143958): This method should be removed. It enables parsing directly into an
+  // "immutable" message. Have to leave it for now to support old gencode.
+  // @deprecated use newBuilder().mergeFrom() instead
+  @Deprecated
   protected void mergeFromAndMakeImmutableInternal(
       CodedInputStream input, ExtensionRegistryLite extensionRegistry)
       throws InvalidProtocolBufferException {
@@ -299,12 +303,13 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
 
   @Override
   public UnknownFieldSet getUnknownFields() {
-    throw new UnsupportedOperationException(
-        "This is supposed to be overridden by subclasses.");
+    return unknownFields;
   }
 
   /**
    * Called by subclasses to parse an unknown field.
+   *
+   * <p>TODO(b/248153893) remove this method
    *
    * @return {@code true} unless the tag is an end-group tag.
    */
@@ -323,6 +328,8 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
   /**
    * Delegates to parseUnknownField. This method is obsolete, but we must retain it for
    * compatibility with older generated code.
+   *
+   * <p>TODO(b/248153893) remove this method
    */
   protected boolean parseUnknownFieldProto3(
       CodedInputStream input,
@@ -547,8 +554,18 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     // to dispatch dirty invalidations. See GeneratedMessageV3.BuilderListener.
     private boolean isClean;
 
-    private UnknownFieldSet unknownFields =
-        UnknownFieldSet.getDefaultInstance();
+    /**
+     * This field holds either an {@link UnknownFieldSet} or {@link UnknownFieldSet.Builder}.
+     *
+     * <p>We use an object because it should only be one or the other of those things at a time and
+     * Object is the only common base. This also saves space.
+     *
+     * <p>Conversions are lazy: if {@link #setUnknownFields} is called, this will contain {@link
+     * UnknownFieldSet}. If unknown fields are merged into this builder, the current {@link
+     * UnknownFieldSet} will be converted to a {@link UnknownFieldSet.Builder} and left that way
+     * until either {@link #setUnknownFields} or {@link #buildPartial} or {@link #build} is called.
+     */
+    private Object unknownFieldsOrBuilder = UnknownFieldSet.getDefaultInstance();
 
     protected Builder() {
       this(null);
@@ -604,7 +621,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
      */
     @Override
     public BuilderType clear() {
-      unknownFields = UnknownFieldSet.getDefaultInstance();
+      unknownFieldsOrBuilder = UnknownFieldSet.getDefaultInstance();
       onChanged();
       return (BuilderType) this;
     }
@@ -757,7 +774,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     }
 
     private BuilderType setUnknownFieldsInternal(final UnknownFieldSet unknownFields) {
-      this.unknownFields = unknownFields;
+      unknownFieldsOrBuilder = unknownFields;
       onChanged();
       return (BuilderType) this;
     }
@@ -776,12 +793,20 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     }
 
     @Override
-    public BuilderType mergeUnknownFields(
-        final UnknownFieldSet unknownFields) {
-      return setUnknownFields(
-        UnknownFieldSet.newBuilder(this.unknownFields)
-                       .mergeFrom(unknownFields)
-                       .build());
+    public BuilderType mergeUnknownFields(final UnknownFieldSet unknownFields) {
+      if (UnknownFieldSet.getDefaultInstance().equals(unknownFields)) {
+        return (BuilderType) this;
+      }
+
+      if (UnknownFieldSet.getDefaultInstance().equals(unknownFieldsOrBuilder)) {
+        unknownFieldsOrBuilder = unknownFields;
+        onChanged();
+        return (BuilderType) this;
+      }
+
+      getUnknownFieldSetBuilder().mergeFrom(unknownFields);
+      onChanged();
+      return (BuilderType) this;
     }
 
 
@@ -817,7 +842,50 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
 
     @Override
     public final UnknownFieldSet getUnknownFields() {
-      return unknownFields;
+      if (unknownFieldsOrBuilder instanceof UnknownFieldSet) {
+        return (UnknownFieldSet) unknownFieldsOrBuilder;
+      } else {
+        return ((UnknownFieldSet.Builder) unknownFieldsOrBuilder).buildPartial();
+      }
+    }
+
+    /**
+     * Called by generated subclasses to parse an unknown field.
+     *
+     * @return {@code true} unless the tag is an end-group tag.
+     */
+    protected boolean parseUnknownField(
+        CodedInputStream input, ExtensionRegistryLite extensionRegistry, int tag)
+        throws IOException {
+      if (input.shouldDiscardUnknownFields()) {
+        return input.skipField(tag);
+      }
+      return getUnknownFieldSetBuilder().mergeFieldFrom(tag, input);
+    }
+
+    /** Called by generated subclasses to add to the unknown field set. */
+    protected final void mergeUnknownLengthDelimitedField(int number, ByteString bytes) {
+      getUnknownFieldSetBuilder().mergeLengthDelimitedField(number, bytes);
+    }
+
+    /** Called by generated subclasses to add to the unknown field set. */
+    protected final void mergeUnknownVarintField(int number, int value) {
+      getUnknownFieldSetBuilder().mergeVarintField(number, value);
+    }
+
+    @Override
+    protected UnknownFieldSet.Builder getUnknownFieldSetBuilder() {
+      if (unknownFieldsOrBuilder instanceof UnknownFieldSet) {
+        unknownFieldsOrBuilder = ((UnknownFieldSet) unknownFieldsOrBuilder).toBuilder();
+      }
+      onChanged();
+      return (UnknownFieldSet.Builder) unknownFieldsOrBuilder;
+    }
+
+    @Override
+    protected void setUnknownFieldSetBuilder(UnknownFieldSet.Builder builder) {
+      unknownFieldsOrBuilder = builder;
+      onChanged();
     }
 
     /**
@@ -1609,7 +1677,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
     private FieldSet<FieldDescriptor> buildExtensions() {
       return extensions == null
           ? (FieldSet<FieldDescriptor>) FieldSet.emptySet()
-          : extensions.build();
+          : extensions.buildPartial();
     }
 
     @Override
@@ -1813,6 +1881,20 @@ public abstract class GeneratedMessageV3 extends AbstractMessage
         extensions.mergeFrom(other.extensions);
         onChanged();
       }
+    }
+
+    @Override
+    protected boolean parseUnknownField(
+        CodedInputStream input, ExtensionRegistryLite extensionRegistry, int tag)
+        throws IOException {
+      ensureExtensionsIsMutable();
+      return MessageReflection.mergeFieldFrom(
+          input,
+          input.shouldDiscardUnknownFields() ? null : getUnknownFieldSetBuilder(),
+          extensionRegistry,
+          getDescriptorForType(),
+          new MessageReflection.ExtensionBuilderAdapter(extensions),
+          tag);
     }
 
     private void verifyContainingType(final FieldDescriptor field) {

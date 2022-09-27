@@ -247,6 +247,15 @@ abstract class BinaryReader implements Reader {
 
     private <T> T readMessage(Schema<T> schema, ExtensionRegistryLite extensionRegistry)
         throws IOException {
+      T newInstance = schema.newInstance();
+      mergeMessageField(newInstance, schema, extensionRegistry);
+      schema.makeImmutable(newInstance);
+      return newInstance;
+    }
+
+    @Override
+    public <T> void mergeMessageField(
+        T target, Schema<T> schema, ExtensionRegistryLite extensionRegistry) throws IOException {
       int size = readVarint32();
       requireBytes(size);
 
@@ -256,15 +265,10 @@ abstract class BinaryReader implements Reader {
       limit = newLimit;
 
       try {
-        // Allocate and read the message.
-        T message = schema.newInstance();
-        schema.mergeFrom(message, this, extensionRegistry);
-        schema.makeImmutable(message);
-
+        schema.mergeFrom(target, this, extensionRegistry);
         if (pos != newLimit) {
           throw InvalidProtocolBufferException.parseFailure();
         }
-        return message;
       } finally {
         // Restore the limit.
         limit = prevLimit;
@@ -287,19 +291,23 @@ abstract class BinaryReader implements Reader {
 
     private <T> T readGroup(Schema<T> schema, ExtensionRegistryLite extensionRegistry)
         throws IOException {
+      T newInstance = schema.newInstance();
+      mergeGroupField(newInstance, schema, extensionRegistry);
+      schema.makeImmutable(newInstance);
+      return newInstance;
+    }
+
+    @Override
+    public <T> void mergeGroupField(
+        T target, Schema<T> schema, ExtensionRegistryLite extensionRegistry) throws IOException {
       int prevEndGroupTag = endGroupTag;
       endGroupTag = WireFormat.makeTag(WireFormat.getTagFieldNumber(tag), WIRETYPE_END_GROUP);
 
       try {
-        // Allocate and read the message.
-        T message = schema.newInstance();
-        schema.mergeFrom(message, this, extensionRegistry);
-        schema.makeImmutable(message);
-
+        schema.mergeFrom(target, this, extensionRegistry);
         if (tag != endGroupTag) {
           throw InvalidProtocolBufferException.parseFailure();
         }
-        return message;
       } finally {
         // Restore the old end group tag.
         endGroupTag = prevEndGroupTag;
