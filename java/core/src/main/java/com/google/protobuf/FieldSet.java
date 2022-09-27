@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * A class which represents an arbitrary set of fields of some message type. This is used to
@@ -123,9 +124,10 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     if (isImmutable) {
       return;
     }
-    for (Object value : fields.values()) {
-      if (value instanceof GeneratedMessageLite) {
-        ((GeneratedMessageLite<?, ?>) value).makeImmutable();
+    for (int i = 0; i < fields.getNumArrayEntries(); ++i) {
+      Entry<T, Object> entry = fields.getArrayEntryAt(i);
+      if (entry.getValue() instanceof GeneratedMessageLite) {
+        ((GeneratedMessageLite<?, ?>) entry.getValue()).makeImmutable();
       }
     }
     fields.makeImmutable();

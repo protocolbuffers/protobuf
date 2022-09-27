@@ -254,6 +254,9 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
             value = reader.readString();
             break;
           case GROUP:
+            // Special case handling for non-repeated sub-messages: merge in-place rather than
+            // building up new sub-messages and merging those, which is too slow.
+            // TODO(b/249368670): clean this up
             if (!extension.isRepeated()) {
               Object oldValue = extensions.getField(extension.descriptor);
               if (oldValue instanceof GeneratedMessageLite) {
@@ -274,6 +277,9 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
             break;
 
           case MESSAGE:
+            // Special case handling for non-repeated sub-messages: merge in-place rather than
+            // building up new sub-messages and merging those, which is too slow.
+            // TODO(b/249368670): clean this up
             if (!extension.isRepeated()) {
               Object oldValue = extensions.getField(extension.descriptor);
               if (oldValue instanceof GeneratedMessageLite) {
@@ -303,6 +309,7 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
         switch (extension.getLiteType()) {
           case MESSAGE:
           case GROUP:
+            // TODO(b/249368670): this shouldn't be reachable, clean this up
             Object oldValue = extensions.getField(extension.descriptor);
             if (oldValue != null) {
               value = Internal.mergeMessage(oldValue, value);
