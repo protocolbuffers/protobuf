@@ -28,7 +28,7 @@ Then you can run the built binary:
     $ bazel-bin/add_person_cpp addressbook.data
 
 To use protobuf in your own bazel project, please follow instructions in the
-[BUILD](BUILD.bazel) file and [WORKSPACE](WORKSPACE) file.
+[BUILD.bazel](BUILD.bazel) file and [WORKSPACE](WORKSPACE) file.
 
 ## Build the example using make
 
