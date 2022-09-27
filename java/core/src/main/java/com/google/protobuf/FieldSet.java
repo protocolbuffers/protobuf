@@ -123,6 +123,11 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     if (isImmutable) {
       return;
     }
+    for (Object value : fields.values()) {
+      if (value instanceof GeneratedMessageLite) {
+        ((GeneratedMessageLite<?, ?>) value).makeImmutable();
+      }
+    }
     fields.makeImmutable();
     isImmutable = true;
   }
