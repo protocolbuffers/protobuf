@@ -254,12 +254,40 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
             value = reader.readString();
             break;
           case GROUP:
+            if (!extension.isRepeated()) {
+              Object oldValue = extensions.getField(extension.descriptor);
+              if (oldValue instanceof GeneratedMessageLite) {
+                Schema extSchema = Protobuf.getInstance().schemaFor(oldValue);
+                if (!((GeneratedMessageLite<?, ?>) oldValue).isMutable()) {
+                  Object newValue = extSchema.newInstance();
+                  extSchema.mergeFrom(newValue, oldValue);
+                  extensions.setField(extension.descriptor, newValue);
+                  oldValue = newValue;
+                }
+                reader.mergeGroupField(oldValue, extSchema, extensionRegistry);
+                return unknownFields;
+              }
+            }
             value =
                 reader.readGroup(
                     extension.getMessageDefaultInstance().getClass(), extensionRegistry);
             break;
 
           case MESSAGE:
+            if (!extension.isRepeated()) {
+              Object oldValue = extensions.getField(extension.descriptor);
+              if (oldValue instanceof GeneratedMessageLite) {
+                Schema extSchema = Protobuf.getInstance().schemaFor(oldValue);
+                if (!((GeneratedMessageLite<?, ?>) oldValue).isMutable()) {
+                  Object newValue = extSchema.newInstance();
+                  extSchema.mergeFrom(newValue, oldValue);
+                  extensions.setField(extension.descriptor, newValue);
+                  oldValue = newValue;
+                }
+                reader.mergeMessageField(oldValue, extSchema, extensionRegistry);
+                return unknownFields;
+              }
+            }
             value =
                 reader.readMessage(
                     extension.getMessageDefaultInstance().getClass(), extensionRegistry);
