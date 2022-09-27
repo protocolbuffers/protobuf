@@ -180,19 +180,28 @@ public class LiteTest extends TestCase {
   }
 
   public void testMemoization() throws Exception {
-    TestAllExtensionsLite message = TestUtilLite.getAllLiteExtensionsSet();
+    GeneratedMessageLite<?, ?> message = TestUtilLite.getAllLiteExtensionsSet();
+
+    // This built message should not be mutable
+    assertThat(message.isMutable()).isFalse();
 
     // Test serialized size is memoized
-    message.memoizedSerializedSize = -1;
+    assertThat(message.getMemoizedSerializedSize())
+        .isEqualTo(GeneratedMessageLite.UNINITIALIZED_SERIALIZED_SIZE);
     int size = message.getSerializedSize();
-    assertTrue(size > 0);
-    assertEquals(size, message.memoizedSerializedSize);
+    assertThat(size).isGreaterThan(0);
+    assertThat(message.getMemoizedSerializedSize()).isEqualTo(size);
+    message.clearMemoizedSerializedSize();
+    assertThat(message.getMemoizedSerializedSize())
+        .isEqualTo(GeneratedMessageLite.UNINITIALIZED_SERIALIZED_SIZE);
 
     // Test hashCode is memoized
-    assertEquals(0, message.memoizedHashCode);
+    assertThat(message.hashCodeIsNotMemoized()).isTrue();
     int hashCode = message.hashCode();
-    assertTrue(hashCode != 0);
-    assertEquals(hashCode, message.memoizedHashCode);
+    assertThat(message.hashCodeIsNotMemoized()).isFalse();
+    assertThat(message.getMemoizedHashCode()).isEqualTo(hashCode);
+    message.clearMemoizedHashCode();
+    assertThat(message.hashCodeIsNotMemoized()).isTrue();
 
     // Test isInitialized is memoized
     Field memo = message.getClass().getDeclaredField("memoizedIsInitialized");

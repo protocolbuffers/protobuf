@@ -32,7 +32,6 @@ package com.google.protobuf;
 
 import com.google.protobuf.GeneratedMessageLite.ExtensionDescriptor;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +66,7 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
 
   @Override
   <UT, UB> UB parseExtension(
+      Object containerMessage,
       Reader reader,
       Object extensionObject,
       ExtensionRegistryLite extensionRegistry,
@@ -178,6 +178,7 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
             reader.readEnumList(list);
             unknownFields =
                 SchemaUtil.filterUnknownEnumList(
+                    containerMessage,
                     fieldNumber,
                     list,
                     extension.descriptor.getEnumType(),
@@ -199,7 +200,7 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
         Object enumValue = extension.descriptor.getEnumType().findValueByNumber(number);
         if (enumValue == null) {
           return SchemaUtil.storeUnknownEnum(
-              fieldNumber, number, unknownFields, unknownFieldSchema);
+              containerMessage, fieldNumber, number, unknownFields, unknownFieldSchema);
         }
         // Note, we store the integer value instead of the actual enum object in FieldSet.
         // This is also different from full-runtime where we store EnumValueDescriptor.
@@ -527,15 +528,13 @@ final class ExtensionSchemaLite extends ExtensionSchema<ExtensionDescriptor> {
       throws IOException {
     GeneratedMessageLite.GeneratedExtension<?, ?> extension =
         (GeneratedMessageLite.GeneratedExtension<?, ?>) extensionObject;
-    Object value = extension.getMessageDefaultInstance().newBuilderForType().buildPartial();
 
-    Reader reader = BinaryReader.newInstance(ByteBuffer.wrap(data.toByteArray()), true);
+    MessageLite.Builder builder = extension.getMessageDefaultInstance().newBuilderForType();
 
-    Protobuf.getInstance().mergeFrom(value, reader, extensionRegistry);
-    extensions.setField(extension.descriptor, value);
+    final CodedInputStream input = data.newCodedInput();
 
-    if (reader.getFieldNumber() != Reader.READ_DONE) {
-      throw InvalidProtocolBufferException.invalidEndTag();
-    }
+    builder.mergeFrom(input, extensionRegistry);
+    extensions.setField(extension.descriptor, builder.buildPartial());
+    input.checkLastTagWas(0);
   }
 }
