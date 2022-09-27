@@ -295,6 +295,9 @@ void MessageBuilderGenerator::GenerateDescriptorMethods(io::Printer* printer) {
 
 void MessageBuilderGenerator::GenerateCommonBuilderMethods(
     io::Printer* printer) {
+  // Decide if we really need to have the "maybeForceBuilderInitialization()"
+  // method.
+  // TODO(b/249158148): Remove the need for this entirely
   bool need_maybe_force_builder_init = false;
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (descriptor_->field(i)->message_type() != nullptr &&

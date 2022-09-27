@@ -609,7 +609,8 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderMembers(
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderClearCode(
     io::Printer* printer) const {
-  // When a primitive field is in a oneof, clearing the oneof clears that field.
+  // No-Op: When a primitive field is in a oneof, clearing the oneof clears that
+  // field.
 }
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateBuildingCode(

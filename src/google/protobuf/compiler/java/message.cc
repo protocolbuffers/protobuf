@@ -1372,7 +1372,7 @@ void ImmutableMessageGenerator::GenerateKotlinOrNull(io::Printer* printer) const
     const FieldDescriptor* field = descriptor_->field(i);
     if (field->has_presence() && GetJavaType(field) == JAVATYPE_MESSAGE) {
       printer->Print(
-          "val $full_classname$OrBuilder.$camelcase_name$OrNull: $full_name$?\n"
+          "public val $full_classname$OrBuilder.$camelcase_name$OrNull: $full_name$?\n"
           "  get() = if (has$name$()) get$name$() else null\n\n",
           "full_classname",
           EscapeKotlinKeywords(name_resolver_->GetClassName(descriptor_, true)),

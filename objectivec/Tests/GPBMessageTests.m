@@ -74,12 +74,9 @@
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath
-                      ofObject:(id)object
-                        change:(NSDictionary *)change
-                       context:(void *)context {
-#pragma unused(object)
-#pragma unused(change)
-#pragma unused(context)
+                      ofObject:(__unused id)object
+                        change:(__unused NSDictionary *)change
+                       context:(__unused void *)context {
   if ([keyPath isEqualToString:keyPath_]) {
     self.didObserve = YES;
   }

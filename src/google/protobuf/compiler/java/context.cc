@@ -131,10 +131,10 @@ void Context::InitializeFieldGeneratorInfoForFields(
   std::vector<std::string> conflict_reason(fields.size());
   for (int i = 0; i < fields.size(); ++i) {
     const FieldDescriptor* field = fields[i];
-    const std::string& name = UnderscoresToCapitalizedCamelCase(field);
+    const std::string& name = CapitalizedFieldName(field);
     for (int j = i + 1; j < fields.size(); ++j) {
       const FieldDescriptor* other = fields[j];
-      const std::string& other_name = UnderscoresToCapitalizedCamelCase(other);
+      const std::string& other_name = CapitalizedFieldName(other);
       if (name == other_name) {
         is_conflict[i] = is_conflict[j] = true;
         conflict_reason[i] = conflict_reason[j] =
@@ -155,7 +155,7 @@ void Context::InitializeFieldGeneratorInfoForFields(
     const FieldDescriptor* field = fields[i];
     FieldGeneratorInfo info;
     info.name = CamelCaseFieldName(field);
-    info.capitalized_name = UnderscoresToCapitalizedCamelCase(field);
+    info.capitalized_name = CapitalizedFieldName(field);
     // For fields conflicting with some other fields, we append the field
     // number to their field names in generated code to avoid conflicts.
     if (is_conflict[i]) {

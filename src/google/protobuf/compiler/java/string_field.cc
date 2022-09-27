@@ -688,7 +688,7 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
 
 void ImmutableStringOneofFieldGenerator::GenerateBuilderClearCode(
     io::Printer* printer) const {
-  // String fields in oneofs are correctly cleared by clearing the oneof
+  // No-Op: String fields in oneofs are correctly cleared by clearing the oneof
 }
 
 void ImmutableStringOneofFieldGenerator::GenerateMergingCode(

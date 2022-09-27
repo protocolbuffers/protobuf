@@ -49,7 +49,7 @@ namespace {
 
 TEST(TimeUtilTest, TimestampStringFormat) {
   // These these are out of bounds for 32-bit architectures.
-  if (sizeof(time_t) >= sizeof(uint64_t)) {
+  if(sizeof(time_t) >= sizeof(uint64_t)) {
     Timestamp begin, end;
     EXPECT_TRUE(TimeUtil::FromString("0001-01-01T00:00:00Z", &begin));
     EXPECT_EQ(TimeUtil::kTimestampMinSeconds, begin.seconds());
@@ -98,7 +98,7 @@ TEST(TimeUtilTest, DurationStringFormat) {
   EXPECT_TRUE(TimeUtil::FromString("9999-12-31T23:59:59.999999999Z", &end));
 
   // These these are out of bounds for 32-bit architectures.
-  if (sizeof(time_t) >= sizeof(uint64_t)) {
+  if(sizeof(time_t) >= sizeof(uint64_t)) {
     EXPECT_EQ("315537897599.999999999s", TimeUtil::ToString(end - begin));
     EXPECT_EQ("-315537897599.999999999s", TimeUtil::ToString(begin - end));
   }

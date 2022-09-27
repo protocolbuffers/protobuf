@@ -49,8 +49,7 @@ static void checkNumber(int32_t number) {
   CFMutableDictionaryRef fields_;
 }
 
-static void CopyWorker(const void *key, const void *value, void *context) {
-#pragma unused(key)
+static void CopyWorker(__unused const void *key, const void *value, void *context) {
   GPBUnknownField *field = value;
   GPBUnknownFieldSet *result = context;
 
@@ -184,8 +183,8 @@ static void CopyWorker(const void *key, const void *value, void *context) {
   return description;
 }
 
-static void GPBUnknownFieldSetSerializedSize(const void *key, const void *value, void *context) {
-#pragma unused(key)
+static void GPBUnknownFieldSetSerializedSize(__unused const void *key, const void *value,
+                                             void *context) {
   GPBUnknownField *field = value;
   size_t *result = context;
   *result += [field serializedSize];
@@ -199,9 +198,8 @@ static void GPBUnknownFieldSetSerializedSize(const void *key, const void *value,
   return result;
 }
 
-static void GPBUnknownFieldSetWriteAsMessageSetTo(const void *key, const void *value,
+static void GPBUnknownFieldSetWriteAsMessageSetTo(__unused const void *key, const void *value,
                                                   void *context) {
-#pragma unused(key)
   GPBUnknownField *field = value;
   GPBCodedOutputStream *output = context;
   [field writeAsMessageSetExtensionToOutput:output];
@@ -213,9 +211,8 @@ static void GPBUnknownFieldSetWriteAsMessageSetTo(const void *key, const void *v
   }
 }
 
-static void GPBUnknownFieldSetSerializedSizeAsMessageSet(const void *key, const void *value,
-                                                         void *context) {
-#pragma unused(key)
+static void GPBUnknownFieldSetSerializedSizeAsMessageSet(__unused const void *key,
+                                                         const void *value, void *context) {
   GPBUnknownField *field = value;
   size_t *result = context;
   *result += [field serializedSizeAsMessageSetExtension];
@@ -266,9 +263,8 @@ static void GPBUnknownFieldSetSerializedSizeAsMessageSet(const void *key, const 
   return existing;
 }
 
-static void GPBUnknownFieldSetMergeUnknownFields(const void *key, const void *value,
+static void GPBUnknownFieldSetMergeUnknownFields(__unused const void *key, const void *value,
                                                  void *context) {
-#pragma unused(key)
   GPBUnknownField *field = value;
   GPBUnknownFieldSet *self = context;
 

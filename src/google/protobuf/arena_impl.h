@@ -91,12 +91,14 @@ inline PROTOBUF_ALWAYS_INLINE void* AlignTo(void* p, size_t a) {
 // a default memory order (std::memory_order_seq_cst).
 template <typename T>
 struct Atomic {
-  PROTOBUF_CONSTEXPR explicit Atomic(T v) : val(v) {}
+  constexpr explicit Atomic(T v) : val(v) {}
 
   T relaxed_get() const { return val.load(std::memory_order_relaxed); }
+  T relaxed_get() { return val.load(std::memory_order_relaxed); }
   void relaxed_set(T v) { val.store(v, std::memory_order_relaxed); }
 
   T atomic_get() const { return val.load(std::memory_order_acquire); }
+  T atomic_get() { return val.load(std::memory_order_acquire); }
   void atomic_set(T v) { val.store(v, std::memory_order_release); }
 
   T relaxed_fetch_add(T v) {
@@ -112,25 +114,28 @@ struct Atomic {
 struct ArenaBlock {
   // For the sentry block with zero-size where ptr_, limit_, cleanup_nodes all
   // point to "this".
-  PROTOBUF_CONSTEXPR ArenaBlock()
-      : next(nullptr), cleanup_nodes(this), size(0) {}
+  constexpr ArenaBlock()
+      : next(nullptr), cleanup_nodes(this), relaxed_size(0) {}
 
   ArenaBlock(ArenaBlock* next, size_t size)
-      : next(next), cleanup_nodes(nullptr), size(size) {
+      : next(next), cleanup_nodes(nullptr), relaxed_size(size) {
     GOOGLE_DCHECK_GT(size, sizeof(ArenaBlock));
   }
 
   char* Pointer(size_t n) {
-    GOOGLE_DCHECK_LE(n, size);
+    GOOGLE_DCHECK_LE(n, size());
     return reinterpret_cast<char*>(this) + n;
   }
-  char* Limit() { return Pointer(size & static_cast<size_t>(-8)); }
+  char* Limit() { return Pointer(size() & static_cast<size_t>(-8)); }
 
-  bool IsSentry() const { return size == 0; }
+  size_t size() const { return relaxed_size.relaxed_get(); }
+  bool IsSentry() const { return size() == 0; }
 
   ArenaBlock* const next;
   void* cleanup_nodes;
-  const size_t size;
+
+ private:
+  const Atomic<size_t> relaxed_size;
   // data follows
 };
 
@@ -572,6 +577,13 @@ class PROTOBUF_EXPORT SerialArena {
  private:
   friend class ThreadSafeArena;
 
+  static constexpr ArenaBlock kSentryBlock = {};
+
+  static ArenaBlock* SentryBlock() {
+    // const_cast<> is okay as kSentryBlock will never be mutated.
+    return const_cast<ArenaBlock*>(&kSentryBlock);
+  }
+
   // Creates a new SerialArena inside mem using the remaining memory as for
   // future allocations.
   // The `parent` arena must outlive the serial arena, which is guaranteed
@@ -613,6 +625,7 @@ class PROTOBUF_EXPORT SerialArena {
   // Helper getters/setters to handle relaxed operations on atomic variables.
   ArenaBlock* head() { return head_.relaxed_get(); }
   const ArenaBlock* head() const { return head_.relaxed_get(); }
+  void set_head(ArenaBlock* head) { return head_.relaxed_set(head); }
 
   char* ptr() { return ptr_.relaxed_get(); }
   const char* ptr() const { return ptr_.relaxed_get(); }
@@ -859,7 +872,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 #pragma warning(disable : 4324)
 #endif
   struct alignas(kCacheAlignment) CacheAlignedLifecycleIdGenerator {
-    PROTOBUF_CONSTEXPR CacheAlignedLifecycleIdGenerator() : id{0} {}
+    constexpr CacheAlignedLifecycleIdGenerator() : id{0} {}
 
     Atomic<LifecycleIdAtomic> id;
   };

@@ -40,7 +40,11 @@
 
 #include <string>
 
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/compiler/java/options.h"
+
+// Must be last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -96,8 +100,36 @@ std::string FileJavaPackage(const FileDescriptor* descriptor,
 //   Capitalized camel case name field name.
 std::string CapitalizedFieldName(const FieldDescriptor* descriptor);
 
+// Returns:
+//   Converts a name to camel-case. If cap_first_letter is true, capitalize the
+//   first letter.
+std::string UnderscoresToCamelCase(const std::string& name,
+                                   bool cap_first_letter);
+// Requires:
+//   field != NULL
+// Returns:
+//   Converts the field's name to camel-case, e.g. "foo_bar_baz" becomes
+//   "fooBarBaz" or "FooBarBaz", respectively.
+std::string UnderscoresToCamelCase(const FieldDescriptor* field);
+
+// Requires:
+//   method != NULL
+// Returns:
+//   Similar, but for method names.  (Typically, this merely has the effect
+//   of lower-casing the first letter of the name.)
+std::string UnderscoresToCamelCase(const MethodDescriptor* method);
+
+// Requires:
+//   field != NULL
+// Returns:
+//   Same as UnderscoresToCamelCase, but checks for reserved keywords
+std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field);
+
+
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_NAMES_H__

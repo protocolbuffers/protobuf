@@ -8,6 +8,38 @@ load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
+    name = "names",
+    hdrs = ["names.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/cpp",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":names_internal",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf:protobuf_nowkt",
+    ],
+)
+
+cc_library(
+    name = "names_internal",
+    hdrs = [
+        "helpers.h",
+        "names.h",
+        "options.h",
+    ],
+    srcs = [
+        "helpers.cc",
+    ],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/cpp",
+    visibility = ["//pkg:__pkg__"],
+    deps = [
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf:protobuf_nowkt",
+    ],
+)
+
+cc_library(
     name = "cpp",
     srcs = [
         "enum.cc",
@@ -16,7 +48,6 @@ cc_library(
         "field.cc",
         "file.cc",
         "generator.cc",
-        "helpers.cc",
         "map_field.cc",
         "message.cc",
         "message_field.cc",
@@ -33,13 +64,10 @@ cc_library(
         "field.h",
         "file.h",
         "generator.h",
-        "helpers.h",
         "map_field.h",
         "message.h",
         "message_field.h",
         "message_layout_helper.h",
-        "names.h",
-        "options.h",
         "padding_optimizer.h",
         "parse_function_generator.h",
         "primitive_field.h",
@@ -53,6 +81,8 @@ cc_library(
         "//src/google/protobuf/compiler:__pkg__",
     ],
     deps = [
+        ":names_internal",
+        ":names",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "@com_google_absl//absl/base:core_headers",
