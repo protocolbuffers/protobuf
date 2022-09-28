@@ -354,7 +354,10 @@ public class Utils {
         // Protobuf enums can start with lowercase letters, while Ruby's constant should
         // always start with uppercase letters. We tolerate this case by capitalizing
         // the first character if possible.
-        return Character.toUpperCase(ch) + name.substring(1);
+        return new StringBuilder()
+                .appendCodePoint(Character.toUpperCase(ch))
+                .append(name.substring(1))
+                .toString();
       }
     }
     return name;

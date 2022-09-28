@@ -130,14 +130,14 @@ public class RubyEnumDescriptor extends RubyObject {
     if (Utils.isRubyNum(value)) {
       enumValue = descriptor.findValueByNumberCreatingIfUnknown(RubyNumeric.num2int(value));
     } else {
-      enumValue = descriptor.findValueByName(Utils.fixEnumName(value.asJavaString()));
+      enumValue = descriptor.findValueByName(value.asJavaString());
     }
 
     return enumValue != null;
   }
 
   protected IRubyObject nameToNumber(ThreadContext context, IRubyObject name) {
-    EnumValueDescriptor value = descriptor.findValueByName(Utils.fixEnumName(name.asJavaString()));
+    EnumValueDescriptor value = descriptor.findValueByName(name.asJavaString());
     return value == null ? context.nil : context.runtime.newFixnum(value.getNumber());
   }
 
