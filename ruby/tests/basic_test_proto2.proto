@@ -69,6 +69,7 @@ enum TestEnum {
   A = 1;
   B = 2;
   C = 3;
+  v0 = 4;
 }
 
 enum TestNonZeroEnum {

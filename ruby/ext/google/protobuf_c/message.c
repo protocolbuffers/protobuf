@@ -1290,15 +1290,20 @@ VALUE build_module_from_enumdesc(VALUE _enumdesc) {
   int n = upb_EnumDef_ValueCount(e);
   for (int i = 0; i < n; i++) {
     const upb_EnumValueDef* ev = upb_EnumDef_Value(e, i);
-    const char* name = upb_EnumValueDef_Name(ev);
+    char* name = strdup(upb_EnumValueDef_Name(ev));
     int32_t value = upb_EnumValueDef_Number(ev);
     if (name[0] < 'A' || name[0] > 'Z') {
-      rb_warn(
+      if (name[0] >= 'a' && name[0] <= 'z') {
+        name[0] -= 32; // auto capitalize
+      } else {
+        rb_warn(
           "Enum value '%s' does not start with an uppercase letter "
           "as is required for Ruby constants.",
           name);
+      }
     }
     rb_define_const(mod, name, INT2NUM(value));
+    free(name);
   }
 
   rb_define_singleton_method(mod, "lookup", enum_lookup, 1);
