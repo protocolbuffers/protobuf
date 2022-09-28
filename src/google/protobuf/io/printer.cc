@@ -49,7 +49,6 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
-#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
@@ -139,13 +138,14 @@ Printer::Printer(ZeroCopyOutputStream* output, Options options)
 }
 
 absl::string_view Printer::LookupVar(absl::string_view var) {
-  LookupResult result = LookupInFrameStack(var, absl::MakeSpan(var_lookups_));
+  absl::optional<ValueView> result =
+      LookupInFrameStack(var, absl::MakeSpan(var_lookups_));
   GOOGLE_CHECK(result.has_value()) << "could not find " << var;
-  auto* view = absl::get_if<absl::string_view>(&*result);
-  GOOGLE_CHECK(view != nullptr) << "could not find " << var
-                         << "; found callback instead";
+  auto* str = absl::get_if<absl::string_view>(&result->value);
+  GOOGLE_CHECK(str != nullptr) << "could not find " << var
+                        << "; found callback instead";
 
-  return *view;
+  return *str;
 }
 
 bool Printer::Validate(bool cond, Printer::PrintOptions opts,
@@ -376,6 +376,19 @@ void Printer::PrintImpl(absl::string_view format,
     char c = format.front();
     format = format.substr(1);
     if (c == '\n') {
+      if (at_start_of_line_) {
+        absl::string_view no_whitespace =
+            absl::StripLeadingAsciiWhitespace(next_chunk);
+        if (absl::ConsumePrefix(&no_whitespace, options_.comment_start) &&
+            absl::ConsumePrefix(&no_whitespace, "%")) {
+          // This is an elided comment. Skip printing it, and chomp whitespace
+          // as if we had just hit a newline.
+          indent_ = original_indent +
+                    ConsumeIndentForLine(raw_string_indent_len, format);
+          continue;
+        }
+      }
+
       PrintRaw(next_chunk);
       at_start_of_line_ = true;
       line_start_variables_.clear();
@@ -467,7 +480,7 @@ void Printer::PrintImpl(absl::string_view format,
       continue;
     }
 
-    LookupResult sub;
+    absl::optional<ValueView> sub;
     absl::optional<AnnotationRecord> same_name_record;
     if (opts.allow_digit_substitutions && absl::ascii_isdigit(var[0])) {
       PrintRaw(next_chunk);
@@ -483,7 +496,7 @@ void Printer::PrintImpl(absl::string_view format,
       if (idx == arg_index) {
         ++arg_index;
       }
-      sub = args[idx];
+      sub = ValueView{args[idx]};
     } else if (opts.use_annotation_frames &&
                (var == "_start" || var == "_end")) {
       bool is_start = var == "_start";
@@ -574,7 +587,7 @@ void Printer::PrintImpl(absl::string_view format,
     size_t range_start = sink_.bytes_written();
     size_t range_end = sink_.bytes_written();
 
-    if (auto* str = absl::get_if<absl::string_view>(&*sub)) {
+    if (const auto* str = sub->AsString()) {
       if (at_start_of_line_ && str->empty()) {
         line_start_variables_.emplace_back(var);
       }
@@ -588,7 +601,7 @@ void Printer::PrintImpl(absl::string_view format,
         PrintRaw(suffix);
       }
     } else {
-      auto* fnc = absl::get_if<std::function<void()>>(&*sub);
+      const auto* fnc = sub->AsCallback();
       GOOGLE_CHECK(fnc != nullptr);
 
       Validate(
@@ -596,13 +609,20 @@ void Printer::PrintImpl(absl::string_view format,
           "substitution that resolves to callback cannot contain whitespace");
 
       range_start = sink_.bytes_written();
-      (*fnc)();
+      GOOGLE_CHECK((*fnc)())
+          << "forbidden callback recursion while evaluating variable \"" << var
+          << "\"";
       range_end = sink_.bytes_written();
+    }
 
-      // If we just evaluated a closure, and we are at the start of a line, that
-      // means it finished with a newline. If a newline follows immediately
-      // after, we drop it. This helps callback formatting "work as expected"
-      // with respect to forms like
+    if (!sub->consume_after.empty()) {
+      // DO NOT SUBMIT
+      // std::cerr << "## \"" << absl::CHexEscape(sub->consume_after) << "\"\n";
+      // std::cerr << "## rest: \"" << absl::CHexEscape(format) << "\"\n";
+      // If we just evaluated a substitution with "consume after" characters,
+      // and we are at the start of a line, that means it finished with a
+      // newline. If a newline follows immediately after, we drop it. This helps
+      // callback formatting "work as expected" with respect to forms like
       //
       //   class Foo {
       //     $methods$;
@@ -615,15 +635,23 @@ void Printer::PrintImpl(absl::string_view format,
       //
       //   };
       //
-      // in many cases. We *also* do this if a ; or , follows the substitution,
-      // because this helps clang-format keep its head on in many cases.
-      // Users that need to keep the semi can write $foo$/**/;
-      if (!absl::ConsumePrefix(&format, ";")) {
-        absl::ConsumePrefix(&format, ",");
+      // in many cases. We *also* do this if an element of the `consume_after`
+      // set follows the substitution, because this helps clang-format keep
+      // its head on in many cases. Users that need to keep the semi can write
+      // $foo$/**/;
+      for (char c : sub->consume_after) {
+        if (absl::ConsumePrefix(&format, absl::string_view(&c, 1))) {
+          break;
+        }
       }
-      absl::ConsumePrefix(&format, "\n");
-      indent_ =
-          original_indent + ConsumeIndentForLine(raw_string_indent_len, format);
+      // std::cerr << "## trim: \"" << absl::CHexEscape(format) << "\"\n";
+      // Consume empty lines until we hit a nonempty line.
+      if (at_start_of_line_) {
+        while (absl::ConsumePrefix(&format, "\n")) {
+          indent_ = original_indent +
+                    ConsumeIndentForLine(raw_string_indent_len, format);
+        }
+      }
     }
 
     if (same_name_record.has_value() &&

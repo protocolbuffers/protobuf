@@ -594,6 +594,39 @@ TEST_F(PrinterTest, EmitWithSubs) {
             "};\n");
 }
 
+TEST_F(PrinterTest, EmitConsumeAfter) {
+  {
+    Printer printer(output());
+    printer.Emit(
+        {
+            {"class", "Foo"},
+            {"var", Printer::Value{"int x;", ";"}},
+        },
+        R"cc(
+          class $class$ {
+            $var$;
+          };
+        )cc");
+  }
+
+  EXPECT_EQ(written(),
+            "class Foo {\n"
+            "  int x;\n"
+            "};\n");
+}
+
+TEST_F(PrinterTest, EmitComments) {
+  {
+    Printer printer(output());
+    printer.Emit(R"cc(
+      // Yes.
+      //% No.
+    )cc");
+  }
+
+  EXPECT_EQ(written(), "// Yes.\n");
+}
+
 TEST_F(PrinterTest, EmitWithVars) {
   {
     Printer printer(output());
@@ -800,7 +833,6 @@ TEST_F(PrinterTest, EmitCallbacks) {
             "class Foo {\n"
             " public:\n"
             "  int bar() { return 42; }\n"
-            "\n"
             " private:\n"
             "  int bar_;\n"
             "};\n");

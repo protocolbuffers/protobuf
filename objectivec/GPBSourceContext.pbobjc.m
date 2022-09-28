@@ -4,21 +4,17 @@
 
 #import "GPBProtocolBuffers_RuntimeSupport.h"
 #import "GPBSourceContext.pbobjc.h"
-
 // @@protoc_insertion_point(imports)
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
 #pragma mark - GPBSourceContextRoot
 
 @implementation GPBSourceContextRoot
 
 // No extensions in the file and no imports, so no need to generate
 // +extensionRegistry.
-
 @end
-
 #pragma mark - GPBSourceContextRoot_FileDescriptor
 
 static GPBFileDescriptor *GPBSourceContextRoot_FileDescriptor(void) {
@@ -78,7 +74,6 @@ typedef struct GPBSourceContext__storage_ {
 }
 
 @end
-
 
 #pragma clang diagnostic pop
 

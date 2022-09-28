@@ -4,13 +4,11 @@
 
 #import "GPBProtocolBuffers_RuntimeSupport.h"
 #import "GPBApi.pbobjc.h"
-
 // @@protoc_insertion_point(imports)
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #pragma clang diagnostic ignored "-Wdollar-in-identifier-extension"
-
 #pragma mark - Objective C Class declarations
 // Forward declarations of Objective C classes that we can use as
 // static values in struct initializers.
@@ -26,9 +24,7 @@ GPBObjCClassDeclaration(GPBSourceContext);
 
 // No extensions in the file and none of the imports (direct or indirect)
 // defined extensions, so no need to generate +extensionRegistry.
-
 @end
-
 #pragma mark - GPBApiRoot_FileDescriptor
 
 static GPBFileDescriptor *GPBApiRoot_FileDescriptor(void) {
@@ -348,7 +344,6 @@ typedef struct GPBMixin__storage_ {
 }
 
 @end
-
 
 #pragma clang diagnostic pop
 

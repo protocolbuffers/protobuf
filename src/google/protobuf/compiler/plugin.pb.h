@@ -37,7 +37,6 @@
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
-
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fcompiler_2fplugin_2eproto PROTOC_EXPORT
 #ifdef major
 #undef major
@@ -45,7 +44,6 @@
 #ifdef minor
 #undef minor
 #endif  // minor
-
 PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 class AnyMetadata;
@@ -82,7 +80,6 @@ PROTOC_EXPORT ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File* Are
 template <>
 PROTOC_EXPORT ::PROTOBUF_NAMESPACE_ID::compiler::Version* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::compiler::Version>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
-
 PROTOBUF_NAMESPACE_OPEN
 namespace compiler {
 enum CodeGeneratorResponse_Feature : int {
@@ -113,7 +110,6 @@ inline bool CodeGeneratorResponse_Feature_Parse(absl::string_view name, CodeGene
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<CodeGeneratorResponse_Feature>(
       CodeGeneratorResponse_Feature_descriptor(), name, value);
 }
-
 // ===================================================================
 
 
@@ -966,9 +962,8 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
+
 // ===================================================================
-
-
 
 
 // ===================================================================
@@ -1796,11 +1791,9 @@ CodeGeneratorResponse::file() const {
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif  // __GNUC__
-
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace compiler
 PROTOBUF_NAMESPACE_CLOSE
-
 
 PROTOBUF_NAMESPACE_OPEN
 
@@ -1812,9 +1805,7 @@ inline const EnumDescriptor* GetEnumDescriptor<::PROTOBUF_NAMESPACE_ID::compiler
 }
 
 PROTOBUF_NAMESPACE_CLOSE
-
 // @@protoc_insertion_point(global_scope)
 
 #include "google/protobuf/port_undef.inc"
-
 #endif  // GOOGLE_PROTOBUF_INCLUDED_google_2fprotobuf_2fcompiler_2fplugin_2eproto_2epb_2eh

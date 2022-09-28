@@ -111,10 +111,10 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offs
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::Version, _impl_.minor_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::Version, _impl_.patch_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::Version, _impl_.suffix_),
-    1,
-    2,
-    3,
-    0,
+    1, // ???
+    2, // ???
+    3, // ???
+    0, // ???
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest, _internal_metadata_),
     ~0u,  // no _extensions_
@@ -127,10 +127,10 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offs
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest, _impl_.parameter_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest, _impl_.proto_file_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorRequest, _impl_.compiler_version_),
-    ~0u,
-    0,
-    ~0u,
-    1,
+    ~0u, // ???
+    0, // ???
+    ~0u, // ???
+    1, // ???
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File, _internal_metadata_),
     ~0u,  // no _extensions_
@@ -143,10 +143,10 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offs
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File, _impl_.insertion_point_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File, _impl_.content_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File, _impl_.generated_code_info_),
-    0,
-    1,
-    2,
-    3,
+    0, // ???
+    1, // ???
+    2, // ???
+    3, // ???
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse, _impl_._has_bits_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse, _internal_metadata_),
     ~0u,  // no _extensions_
@@ -158,9 +158,9 @@ const ::uint32_t TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto::offs
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse, _impl_.error_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse, _impl_.supported_features_),
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse, _impl_.file_),
-    0,
-    1,
-    ~0u,
+    0, // ???
+    1, // ???
+    ~0u, // ???
 };
 
 static const ::_pbi::MigrationSchema
@@ -262,7 +262,6 @@ constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::FEATURE_PROTO3_OP
 constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::Feature_MIN;
 constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::Feature_MAX;
 constexpr int CodeGeneratorResponse::Feature_ARRAYSIZE;
-
 #endif  // (__cplusplus < 201703) &&
         // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 // ===================================================================

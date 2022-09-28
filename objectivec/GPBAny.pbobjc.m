@@ -4,21 +4,17 @@
 
 #import "GPBProtocolBuffers_RuntimeSupport.h"
 #import "GPBAny.pbobjc.h"
-
 // @@protoc_insertion_point(imports)
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
 #pragma mark - GPBAnyRoot
 
 @implementation GPBAnyRoot
 
 // No extensions in the file and no imports, so no need to generate
 // +extensionRegistry.
-
 @end
-
 #pragma mark - GPBAnyRoot_FileDescriptor
 
 static GPBFileDescriptor *GPBAnyRoot_FileDescriptor(void) {
@@ -94,7 +90,6 @@ typedef struct GPBAny__storage_ {
 }
 
 @end
-
 
 #pragma clang diagnostic pop
 

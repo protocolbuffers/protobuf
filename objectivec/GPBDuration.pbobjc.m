@@ -4,21 +4,17 @@
 
 #import "GPBProtocolBuffers_RuntimeSupport.h"
 #import "GPBDuration.pbobjc.h"
-
 // @@protoc_insertion_point(imports)
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
 #pragma mark - GPBDurationRoot
 
 @implementation GPBDurationRoot
 
 // No extensions in the file and no imports, so no need to generate
 // +extensionRegistry.
-
 @end
-
 #pragma mark - GPBDurationRoot_FileDescriptor
 
 static GPBFileDescriptor *GPBDurationRoot_FileDescriptor(void) {
@@ -89,7 +85,6 @@ typedef struct GPBDuration__storage_ {
 }
 
 @end
-
 
 #pragma clang diagnostic pop
 

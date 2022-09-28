@@ -4,21 +4,17 @@
 
 #import "GPBProtocolBuffers_RuntimeSupport.h"
 #import "GPBFieldMask.pbobjc.h"
-
 // @@protoc_insertion_point(imports)
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
 #pragma mark - GPBFieldMaskRoot
 
 @implementation GPBFieldMaskRoot
 
 // No extensions in the file and no imports, so no need to generate
 // +extensionRegistry.
-
 @end
-
 #pragma mark - GPBFieldMaskRoot_FileDescriptor
 
 static GPBFileDescriptor *GPBFieldMaskRoot_FileDescriptor(void) {
@@ -78,7 +74,6 @@ typedef struct GPBFieldMask__storage_ {
 }
 
 @end
-
 
 #pragma clang diagnostic pop
 

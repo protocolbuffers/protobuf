@@ -4,21 +4,17 @@
 
 #import "GPBProtocolBuffers_RuntimeSupport.h"
 #import "GPBTimestamp.pbobjc.h"
-
 // @@protoc_insertion_point(imports)
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
 #pragma mark - GPBTimestampRoot
 
 @implementation GPBTimestampRoot
 
 // No extensions in the file and no imports, so no need to generate
 // +extensionRegistry.
-
 @end
-
 #pragma mark - GPBTimestampRoot_FileDescriptor
 
 static GPBFileDescriptor *GPBTimestampRoot_FileDescriptor(void) {
@@ -89,7 +85,6 @@ typedef struct GPBTimestamp__storage_ {
 }
 
 @end
-
 
 #pragma clang diagnostic pop
 

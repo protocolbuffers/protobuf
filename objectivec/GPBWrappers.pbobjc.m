@@ -4,21 +4,17 @@
 
 #import "GPBProtocolBuffers_RuntimeSupport.h"
 #import "GPBWrappers.pbobjc.h"
-
 // @@protoc_insertion_point(imports)
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
 #pragma mark - GPBWrappersRoot
 
 @implementation GPBWrappersRoot
 
 // No extensions in the file and no imports, so no need to generate
 // +extensionRegistry.
-
 @end
-
 #pragma mark - GPBWrappersRoot_FileDescriptor
 
 static GPBFileDescriptor *GPBWrappersRoot_FileDescriptor(void) {
@@ -437,7 +433,6 @@ typedef struct GPBBytesValue__storage_ {
 }
 
 @end
-
 
 #pragma clang diagnostic pop
 

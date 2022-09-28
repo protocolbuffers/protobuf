@@ -4,21 +4,17 @@
 
 #import "GPBProtocolBuffers_RuntimeSupport.h"
 #import "GPBEmpty.pbobjc.h"
-
 // @@protoc_insertion_point(imports)
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-
 #pragma mark - GPBEmptyRoot
 
 @implementation GPBEmptyRoot
 
 // No extensions in the file and no imports, so no need to generate
 // +extensionRegistry.
-
 @end
-
 #pragma mark - GPBEmptyRoot_FileDescriptor
 
 static GPBFileDescriptor *GPBEmptyRoot_FileDescriptor(void) {
@@ -65,7 +61,6 @@ typedef struct GPBEmpty__storage_ {
 }
 
 @end
-
 
 #pragma clang diagnostic pop
 

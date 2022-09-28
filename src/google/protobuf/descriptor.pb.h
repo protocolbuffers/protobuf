@@ -36,9 +36,7 @@
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
-
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fdescriptor_2eproto PROTOBUF_EXPORT
-
 PROTOBUF_NAMESPACE_OPEN
 namespace internal {
 class AnyMetadata;
@@ -188,7 +186,6 @@ PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* Arena::CreateMaybe
 template <>
 PROTOBUF_EXPORT ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart* Arena::CreateMaybeMessage<::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
-
 PROTOBUF_NAMESPACE_OPEN
 enum FieldDescriptorProto_Type : int {
   FieldDescriptorProto_Type_TYPE_DOUBLE = 1,
@@ -408,7 +405,6 @@ inline bool GeneratedCodeInfo_Annotation_Semantic_Parse(absl::string_view name, 
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<GeneratedCodeInfo_Annotation_Semantic>(
       GeneratedCodeInfo_Annotation_Semantic_descriptor(), name, value);
 }
-
 // ===================================================================
 
 
@@ -8291,9 +8287,8 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
 };
+
 // ===================================================================
-
-
 
 
 // ===================================================================
@@ -14240,10 +14235,8 @@ GeneratedCodeInfo::annotation() const {
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif  // __GNUC__
-
 // @@protoc_insertion_point(namespace_scope)
 PROTOBUF_NAMESPACE_CLOSE
-
 
 PROTOBUF_NAMESPACE_OPEN
 
@@ -14291,9 +14284,7 @@ inline const EnumDescriptor* GetEnumDescriptor<::PROTOBUF_NAMESPACE_ID::Generate
 }
 
 PROTOBUF_NAMESPACE_CLOSE
-
 // @@protoc_insertion_point(global_scope)
 
 #include "google/protobuf/port_undef.inc"
-
 #endif  // GOOGLE_PROTOBUF_INCLUDED_google_2fprotobuf_2fdescriptor_2eproto_2epb_2eh

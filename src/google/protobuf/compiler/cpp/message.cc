@@ -2319,7 +2319,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(io::Printer* p) {
     for (int i = 0; i < has_bit_indices_.size(); i++) {
       const std::string index =
           has_bit_indices_[i] >= 0 ? absl::StrCat(has_bit_indices_[i]) : "~0u";
-      format("$1$,\n", index);
+      format("$1$, // ???\n", index);
     }
   }
   if (!inlined_string_indices_.empty()) {

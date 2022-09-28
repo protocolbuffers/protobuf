@@ -786,6 +786,9 @@ void CommandLineInterface::MemoryOutputStream::UpdateMetadata(
 CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
   // Make sure all data has been written.
   inner_.reset();
+  // DO NOT SUBMIT
+  // std::cerr << "## wrote " << filename_ << "\n";
+  // std::cerr << data_ << "\n###\n";
 
   // Insert into the directory.
   auto pair = directory_->files_.insert({filename_, ""});
