@@ -162,9 +162,10 @@ public class RubyEnumDescriptor extends RubyObject {
     boolean defaultValueRequiredButNotFound =
         descriptor.getFile().getSyntax() == FileDescriptor.Syntax.PROTO3;
     for (EnumValueDescriptor value : descriptor.getValues()) {
-      String name = value.getName();
-      // Make sure its a valid constant name before trying to create it
-      if (Character.isUpperCase(name.codePointAt(0))) {
+      String name = fixEnumConstantName(value.getName());
+      // Make sure it's a valid constant name before trying to create it
+      int ch = name.codePointAt(0);
+      if (Character.isUpperCase(ch)) {
         enumModule.defineConstant(name, runtime.newFixnum(value.getNumber()));
       } else {
         runtime
@@ -187,6 +188,22 @@ public class RubyEnumDescriptor extends RubyObject {
     enumModule.instance_variable_set(runtime.newString(Utils.DESCRIPTOR_INSTANCE_VAR), this);
     enumModule.defineAnnotatedMethods(RubyEnum.class);
     return enumModule;
+  }
+
+  private static String fixEnumConstantName(String name) {
+    if (name != null && name.length() > 0) {
+      int ch = name.codePointAt(0);
+      if (ch >= 'a' && ch <= 'z') {
+        // Protobuf enums can start with lowercase letters, while Ruby's constant should
+        // always start with uppercase letters. We tolerate this case by capitalizing
+        // the first character if possible.
+        return new StringBuilder()
+                .appendCodePoint(Character.toUpperCase(ch))
+                .append(name.substring(1))
+                .toString();
+      }
+    }
+    return name;
   }
 
   private EnumDescriptor descriptor;
