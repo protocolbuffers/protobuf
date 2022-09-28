@@ -32,7 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/cpp/enum.h>
+#include "google/protobuf/compiler/cpp/enum.h"
 
 #include <cstdint>
 #include <limits>
@@ -40,10 +40,10 @@
 #include <unordered_set>
 #include <utility>
 
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/compiler/cpp/helpers.h>
-#include <google/protobuf/compiler/cpp/names.h>
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/stubs/strutil.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/names.h"
 
 namespace google {
 namespace protobuf {
@@ -51,9 +51,9 @@ namespace compiler {
 namespace cpp {
 
 namespace {
-// The GOOGLE_ARRAYSIZE constant is the max enum value plus 1. If the max enum value
-// is kint32max, GOOGLE_ARRAYSIZE will overflow. In such cases we should omit the
-// generation of the GOOGLE_ARRAYSIZE constant.
+// The ARRAYSIZE constant is the max enum value plus 1. If the max enum value
+// is kint32max, ARRAYSIZE will overflow. In such cases we should omit the
+// generation of the ARRAYSIZE constant.
 bool ShouldGenerateArraySize(const EnumDescriptor* descriptor) {
   int32_t max_value = descriptor->value(0)->number();
   for (int i = 0; i < descriptor->value_count(); i++) {
@@ -228,7 +228,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
     }
     format(
         "inline bool $classname$_Parse(\n"
-        "    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, $classname$* "
+        "    ::absl::string_view name, $classname$* "
         "value) "
         "{\n"
         "  return ::$proto_ns$::internal::ParseNamedEnum<$classname$>(\n"
@@ -237,7 +237,7 @@ void EnumGenerator::GenerateDefinition(io::Printer* printer) {
   } else {
     format(
         "bool $classname$_Parse(\n"
-        "    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, $classname$* "
+        "    ::absl::string_view name, $classname$* "
         "value);\n");
   }
 }
@@ -305,7 +305,7 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
       "}\n");
   format(
       "static inline bool "
-      "$nested_name$_Parse(::PROTOBUF_NAMESPACE_ID::ConstStringParam name,\n"
+      "$nested_name$_Parse(::absl::string_view name,\n"
       "    $resolved_name$* value) {\n"
       "  return $classname$_Parse(name, value);\n"
       "}\n");
@@ -435,7 +435,7 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
         CountUniqueValues(descriptor_));
     format(
         "bool $classname$_Parse(\n"
-        "    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, $classname$* "
+        "    ::absl::string_view name, $classname$* "
         "value) "
         "{\n"
         "  int int_value;\n"

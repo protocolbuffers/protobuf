@@ -28,13 +28,14 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/any_test.pb.h>
-#include <google/protobuf/unittest.pb.h>
+#include "google/protobuf/any_test.pb.h"
+#include "google/protobuf/unittest.pb.h"
 #include <gtest/gtest.h>
+#include "absl/strings/str_cat.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -191,4 +192,4 @@ TEST(AnyTest, PackSelfDeath) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

@@ -7,6 +7,35 @@ load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
+    name = "names",
+    hdrs = ["names.h"],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/objectivec",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":names_internal",
+    ],
+)
+
+cc_library(
+    name = "names_internal",
+    hdrs = [
+        "names.h",
+        "objectivec_nsobject_methods.h",
+    ],
+    srcs = [
+        "names.cc",
+    ],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/objectivec",
+    visibility = ["//pkg:__pkg__"],
+    deps = [
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf:protobuf_nowkt",
+    ],
+)
+
+cc_library(
     name = "objectivec",
     srcs = [
         "objectivec_enum.cc",
@@ -15,7 +44,6 @@ cc_library(
         "objectivec_field.cc",
         "objectivec_file.cc",
         "objectivec_generator.cc",
-        "objectivec_helpers.cc",
         "objectivec_map_field.cc",
         "objectivec_message.cc",
         "objectivec_message_field.cc",
@@ -33,8 +61,8 @@ cc_library(
         "objectivec_map_field.h",
         "objectivec_message.h",
         "objectivec_message_field.h",
-        "objectivec_nsobject_methods.h",
         "objectivec_oneof.h",
+        "objectivec_options.h",
         "objectivec_primitive_field.h",
     ],
     copts = COPTS,
@@ -44,8 +72,10 @@ cc_library(
         "//src/google/protobuf/compiler:__pkg__",
     ],
     deps = [
-        "//:protobuf",
+        ":names",
+        "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
+        "@com_google_absl//absl/strings",
     ],
 )
 

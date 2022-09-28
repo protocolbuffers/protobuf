@@ -32,25 +32,29 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/java/helpers.h>
+#include "google/protobuf/compiler/java/helpers.h"
 
 #include <algorithm>
 #include <cstdint>
 #include <limits>
-#include <unordered_set>
 #include <vector>
 
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/stubs/substitute.h>
-#include <google/protobuf/compiler/java/name_resolver.h>
-#include <google/protobuf/compiler/java/names.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/stubs/hash.h>  // for hash<T *>
+#include "google/protobuf/wire_format.h"
+#include "google/protobuf/stubs/strutil.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
+#include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/descriptor.pb.h"
 
 // Must be last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -64,77 +68,6 @@ const char kThickSeparator[] =
     "// ===================================================================\n";
 const char kThinSeparator[] =
     "// -------------------------------------------------------------------\n";
-
-namespace {
-const char* DefaultPackage(Options options) {
-  return options.opensource_runtime ? "" : "com.google.protos";
-}
-
-// Names that should be avoided (in UpperCamelCase format).
-// Using them will cause the compiler to generate accessors whose names
-// collide with methods defined in base classes.
-// Keep this list in sync with specialFieldNames in
-// java/core/src/main/java/com/google/protobuf/DescriptorMessageInfoFactory.java
-const char* kForbiddenWordList[] = {
-    // java.lang.Object:
-    "Class",
-    // com.google.protobuf.MessageLiteOrBuilder:
-    "DefaultInstanceForType",
-    // com.google.protobuf.MessageLite:
-    "ParserForType",
-    "SerializedSize",
-    // com.google.protobuf.MessageOrBuilder:
-    "AllFields",
-    "DescriptorForType",
-    "InitializationErrorString",
-    "UnknownFields",
-    // obsolete. kept for backwards compatibility of generated code
-    "CachedSize",
-};
-
-const std::unordered_set<std::string>* kReservedNames =
-    new std::unordered_set<std::string>({
-        "abstract",   "assert",       "boolean",   "break",      "byte",
-        "case",       "catch",        "char",      "class",      "const",
-        "continue",   "default",      "do",        "double",     "else",
-        "enum",       "extends",      "final",     "finally",    "float",
-        "for",        "goto",         "if",        "implements", "import",
-        "instanceof", "int",          "interface", "long",       "native",
-        "new",        "package",      "private",   "protected",  "public",
-        "return",     "short",        "static",    "strictfp",   "super",
-        "switch",     "synchronized", "this",      "throw",      "throws",
-        "transient",  "try",          "void",      "volatile",   "while",
-    });
-
-bool IsForbidden(const std::string& field_name) {
-  for (int i = 0; i < GOOGLE_ARRAYSIZE(kForbiddenWordList); ++i) {
-    if (UnderscoresToCamelCase(field_name, true) == kForbiddenWordList[i]) {
-      return true;
-    }
-  }
-  return false;
-}
-
-std::string FieldName(const FieldDescriptor* field) {
-  std::string field_name;
-  // Groups are hacky:  The name of the field is just the lower-cased name
-  // of the group type.  In Java, though, we would like to retain the original
-  // capitalization of the type name.
-  if (GetType(field) == FieldDescriptor::TYPE_GROUP) {
-    field_name = field->message_type()->name();
-  } else {
-    field_name = field->name();
-  }
-  if (IsForbidden(field_name)) {
-    // Append a trailing "#" to indicate that the name should be decorated to
-    // avoid collision with other names.
-    field_name += "#";
-  }
-  return field_name;
-}
-
-
-}  // namespace
 
 void PrintGeneratedAnnotation(io::Printer* printer, char delimiter,
                               const std::string& annotation_file,
@@ -157,8 +90,8 @@ void PrintEnumVerifierLogic(io::Printer* printer,
                             const char* var_name,
                             const char* terminating_string, bool enforce_lite) {
   std::string enum_verifier_string =
-      enforce_lite ? StrCat(var_name, ".internalGetVerifier()")
-                   : StrCat(
+      enforce_lite ? absl::StrCat(var_name, ".internalGetVerifier()")
+                   : absl::StrCat(
                          "new com.google.protobuf.Internal.EnumVerifier() {\n"
                          "        @java.lang.Override\n"
                          "        public boolean isInRange(int number) {\n"
@@ -169,7 +102,7 @@ void PrintEnumVerifierLogic(io::Printer* printer,
                          "      }");
   printer->Print(
       variables,
-      StrCat(enum_verifier_string, terminating_string).c_str());
+      absl::StrCat(enum_verifier_string, terminating_string).c_str());
 }
 
 std::string UnderscoresToCamelCase(const std::string& input,
@@ -218,7 +151,7 @@ std::string ToCamelCase(const std::string& input, bool lower_first) {
     if (i == '_') {
       capitalize_next = true;
     } else if (capitalize_next) {
-      result.push_back(ToUpperCh(i));
+      result.push_back(absl::ascii_toupper(i));
       capitalize_next = false;
     } else {
       result.push_back(i);
@@ -227,63 +160,31 @@ std::string ToCamelCase(const std::string& input, bool lower_first) {
 
   // Lower-case the first letter.
   if (lower_first && !result.empty()) {
-    result[0] = ToLowerCh(result[0]);
+    result[0] = absl::ascii_tolower(result[0]);
   }
 
   return result;
 }
 
-char ToUpperCh(char ch) {
-  return (ch >= 'a' && ch <= 'z') ? (ch - 'a' + 'A') : ch;
-}
-
-char ToLowerCh(char ch) {
-  return (ch >= 'A' && ch <= 'Z') ? (ch - 'A' + 'a') : ch;
-}
-
-std::string UnderscoresToCamelCase(const FieldDescriptor* field) {
-  return UnderscoresToCamelCase(FieldName(field), false);
-}
-
-std::string UnderscoresToCapitalizedCamelCase(const FieldDescriptor* field) {
-  return UnderscoresToCamelCase(FieldName(field), true);
-}
-
-std::string CapitalizedFieldName(const FieldDescriptor* field) {
-  return UnderscoresToCapitalizedCamelCase(field);
-}
-
-std::string UnderscoresToCamelCase(const MethodDescriptor* method) {
-  return UnderscoresToCamelCase(method->name(), false);
-}
-
-std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field) {
-  std::string name = UnderscoresToCamelCase(field);
-  if (kReservedNames->find(name) != kReservedNames->end()) {
-    return name + "_";
-  }
-  return name;
-}
-
 // Names that should be avoided as field names in Kotlin.
 // All Kotlin hard keywords are in this list.
-const std::unordered_set<std::string>* kKotlinForbiddenNames =
-    new std::unordered_set<std::string>({
-        "as",    "as?",   "break", "class",  "continue",  "do",     "else",
-        "false", "for",   "fun",   "if",     "in",        "!in",    "interface",
-        "is",    "!is",   "null",  "object", "package",   "return", "super",
-        "this",  "throw", "true",  "try",    "typealias", "typeof", "val",
-        "var",   "when",  "while",
-    });
+bool IsForbiddenKotlin(absl::string_view field_name) {
+  static const auto& kKotlinForbiddenNames =
+      *new absl::flat_hash_set<absl::string_view>({
+          "as",      "as?",       "break",  "class", "continue", "do",
+          "else",    "false",     "for",    "fun",   "if",       "in",
+          "!in",     "interface", "is",     "!is",   "null",     "object",
+          "package", "return",    "super",  "this",  "throw",    "true",
+          "try",     "typealias", "typeof", "val",   "var",      "when",
+          "while",
+      });
 
-bool IsForbiddenKotlin(const std::string& field_name) {
-  return kKotlinForbiddenNames->find(field_name) !=
-         kKotlinForbiddenNames->end();
+  return kKotlinForbiddenNames.contains(field_name);
 }
 
 std::string EscapeKotlinKeywords(std::string name) {
   std::vector<std::string> escaped_packages;
-  std::vector<std::string> packages = Split(name, "."); // NOLINT
+  std::vector<std::string> packages = absl::StrSplit(name, "."); // NOLINT
   for (const std::string& package : packages) {
     if (IsForbiddenKotlin(package)) {
       escaped_packages.push_back("`" + package + "`");
@@ -291,11 +192,11 @@ std::string EscapeKotlinKeywords(std::string name) {
       escaped_packages.push_back(package);
     }
   }
-  return Join(escaped_packages, ".");
+  return absl::StrJoin(escaped_packages, ".");
 }
 
 std::string UniqueFileScopeIdentifier(const Descriptor* descriptor) {
-  return "static_" + StringReplace(descriptor->full_name(), ".", "_", true);
+  return "static_" + absl::StrReplaceAll(descriptor->full_name(), {{".", "_"}});
 }
 
 std::string CamelCaseFieldName(const FieldDescriptor* field) {
@@ -310,53 +211,11 @@ std::string FileClassName(const FileDescriptor* file, bool immutable) {
   return ClassNameResolver().GetFileClassName(file, immutable);
 }
 
-std::string FileJavaPackage(const FileDescriptor* file, bool immutable,
-                            Options options) {
-  std::string result;
-
-  if (file->options().has_java_package()) {
-    result = file->options().java_package();
-  } else {
-    result = DefaultPackage(options);
-    if (!file->package().empty()) {
-      if (!result.empty()) result += '.';
-      result += file->package();
-    }
-  }
-
-  return result;
-}
-
-std::string FileJavaPackage(const FileDescriptor* file, Options options) {
-  return FileJavaPackage(file, true /* immutable */, options);
-}
-
 std::string JavaPackageToDir(std::string package_name) {
-  std::string package_dir = StringReplace(package_name, ".", "/", true);
+  std::string package_dir = absl::StrReplaceAll(package_name, {{".", "/"}});
   if (!package_dir.empty()) package_dir += "/";
   return package_dir;
 }
-
-std::string ClassName(const Descriptor* descriptor) {
-  ClassNameResolver name_resolver;
-  return name_resolver.GetClassName(descriptor, true);
-}
-
-std::string ClassName(const EnumDescriptor* descriptor) {
-  ClassNameResolver name_resolver;
-  return name_resolver.GetClassName(descriptor, true);
-}
-
-std::string ClassName(const ServiceDescriptor* descriptor) {
-  ClassNameResolver name_resolver;
-  return name_resolver.GetClassName(descriptor, true);
-}
-
-std::string ClassName(const FileDescriptor* descriptor) {
-  ClassNameResolver name_resolver;
-  return name_resolver.GetClassName(descriptor, true);
-}
-
 
 std::string ExtraMessageInterfaces(const Descriptor* descriptor) {
   std::string interfaces = "// @@protoc_insertion_point(message_implements:" +
@@ -379,7 +238,7 @@ std::string ExtraMessageOrBuilderInterfaces(const Descriptor* descriptor) {
 
 std::string FieldConstantName(const FieldDescriptor* field) {
   std::string name = field->name() + "_FIELD_NUMBER";
-  ToUpper(&name);
+  absl::AsciiStrToUpper(&name);
   return name;
 }
 
@@ -602,14 +461,14 @@ std::string DefaultValue(const FieldDescriptor* field, bool immutable,
   // of FieldDescriptor to call.
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
-      return StrCat(field->default_value_int32());
+      return absl::StrCat(field->default_value_int32());
     case FieldDescriptor::CPPTYPE_UINT32:
       // Need to print as a signed int since Java has no unsigned.
-      return StrCat(static_cast<int32_t>(field->default_value_uint32()));
+      return absl::StrCat(static_cast<int32_t>(field->default_value_uint32()));
     case FieldDescriptor::CPPTYPE_INT64:
-      return StrCat(field->default_value_int64()) + "L";
+      return absl::StrCat(field->default_value_int64()) + "L";
     case FieldDescriptor::CPPTYPE_UINT64:
-      return StrCat(static_cast<int64_t>(field->default_value_uint64())) +
+      return absl::StrCat(static_cast<int64_t>(field->default_value_uint64())) +
              "L";
     case FieldDescriptor::CPPTYPE_DOUBLE: {
       double value = field->default_value_double();
@@ -641,21 +500,21 @@ std::string DefaultValue(const FieldDescriptor* field, bool immutable,
       if (GetType(field) == FieldDescriptor::TYPE_BYTES) {
         if (field->has_default_value()) {
           // See comments in Internal.java for gory details.
-          return strings::Substitute(
+          return absl::Substitute(
               "com.google.protobuf.Internal.bytesDefaultValue(\"$0\")",
-              CEscape(field->default_value_string()));
+              absl::CEscape(field->default_value_string()));
         } else {
           return "com.google.protobuf.ByteString.EMPTY";
         }
       } else {
         if (AllAscii(field->default_value_string())) {
           // All chars are ASCII.  In this case CEscape() works fine.
-          return "\"" + CEscape(field->default_value_string()) + "\"";
+          return "\"" + absl::CEscape(field->default_value_string()) + "\"";
         } else {
           // See comments in Internal.java for gory details.
-          return strings::Substitute(
+          return absl::Substitute(
               "com.google.protobuf.Internal.stringDefaultValue(\"$0\")",
-              CEscape(field->default_value_string()));
+              absl::CEscape(field->default_value_string()));
         }
       }
 
@@ -728,7 +587,7 @@ const char* bit_masks[] = {
 
 std::string GetBitFieldName(int index) {
   std::string varName = "bitField";
-  varName += StrCat(index);
+  varName += absl::StrCat(index);
   varName += "_";
   return varName;
 }
@@ -939,7 +798,7 @@ const FieldDescriptor** SortFieldsByNumber(const Descriptor* descriptor) {
 // already_seen is used to avoid checking the same type multiple times
 // (and also to protect against recursion).
 bool HasRequiredFields(const Descriptor* type,
-                       std::unordered_set<const Descriptor*>* already_seen) {
+                       absl::flat_hash_set<const Descriptor*>* already_seen) {
   if (already_seen->count(type) > 0) {
     // The type is already in cache.  This means that either:
     // a. The type has no required fields.
@@ -974,7 +833,7 @@ bool HasRequiredFields(const Descriptor* type,
 }
 
 bool HasRequiredFields(const Descriptor* type) {
-  std::unordered_set<const Descriptor*> already_seen;
+  absl::flat_hash_set<const Descriptor*> already_seen;
   return HasRequiredFields(type, &already_seen);
 }
 
@@ -1119,7 +978,7 @@ void EscapeUtf16ToString(uint16_t code, std::string* output) {
   } else if (code >= 0x20 && code <= 0x7f) {
     output->push_back(static_cast<char>(code));
   } else {
-    output->append(StringPrintf("\\u%04x", code));
+    output->append(absl::StrFormat("\\u%04x", code));
   }
 }
 
@@ -1128,4 +987,4 @@ void EscapeUtf16ToString(uint16_t code, std::string* output) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

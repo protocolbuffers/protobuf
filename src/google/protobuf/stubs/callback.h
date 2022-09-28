@@ -3,9 +3,7 @@
 
 #include <type_traits>
 
-#include <google/protobuf/stubs/macros.h>
-
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 // ===================================================================
 // emulates google3/base/callback.h
@@ -73,48 +71,44 @@ namespace protobuf {
 class PROTOBUF_EXPORT Closure {
  public:
   Closure() {}
+  Closure(const Closure&) = delete;
+  Closure& operator=(const Closure&) = delete;
   virtual ~Closure();
 
   virtual void Run() = 0;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Closure);
 };
 
 template<typename R>
 class ResultCallback {
  public:
   ResultCallback() {}
+  ResultCallback(const ResultCallback&) = delete;
+  ResultCallback& operator=(const ResultCallback&) = delete;
   virtual ~ResultCallback() {}
 
   virtual R Run() = 0;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ResultCallback);
 };
 
 template <typename R, typename A1>
 class PROTOBUF_EXPORT ResultCallback1 {
  public:
   ResultCallback1() {}
+  ResultCallback1(const ResultCallback1&) = delete;
+  ResultCallback1& operator=(const ResultCallback1&) = delete;
   virtual ~ResultCallback1() {}
 
   virtual R Run(A1) = 0;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ResultCallback1);
 };
 
 template <typename R, typename A1, typename A2>
 class PROTOBUF_EXPORT ResultCallback2 {
  public:
   ResultCallback2() {}
+  ResultCallback2(const ResultCallback2&) = delete;
+  ResultCallback2& operator=(const ResultCallback2&) = delete;
   virtual ~ResultCallback2() {}
 
   virtual R Run(A1,A2) = 0;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ResultCallback2);
 };
 
 namespace internal {
@@ -578,6 +572,6 @@ void PROTOBUF_EXPORT DoNothing();
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_STUBS_CALLBACK_H_

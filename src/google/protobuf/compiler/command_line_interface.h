@@ -39,6 +39,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_COMMAND_LINE_INTERFACE_H__
 
 #include <cstdint>
+#include <functional>
 #include <map>
 #include <memory>
 #include <set>
@@ -48,10 +49,11 @@
 #include <utility>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
+#include "absl/strings/string_view.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -115,6 +117,8 @@ class PROTOC_EXPORT CommandLineInterface {
   static const char* const kPathSeparator;
 
   CommandLineInterface();
+  CommandLineInterface(const CommandLineInterface&) = delete;
+  CommandLineInterface& operator=(const CommandLineInterface&) = delete;
   ~CommandLineInterface();
 
   // Register a code generator for a language.
@@ -352,7 +356,11 @@ class PROTOC_EXPORT CommandLineInterface {
     CodeGenerator* generator;
     std::string help_text;
   };
-  typedef std::map<std::string, GeneratorInfo> GeneratorMap;
+
+  const GeneratorInfo* FindGeneratorByFlag(const std::string& name) const;
+  const GeneratorInfo* FindGeneratorByOption(const std::string& option) const;
+
+  using GeneratorMap = std::map<std::string, GeneratorInfo>;
   GeneratorMap generators_by_flag_name_;
   GeneratorMap generators_by_option_name_;
   // A map from generator names to the parameters specified using the option
@@ -451,14 +459,12 @@ class PROTOC_EXPORT CommandLineInterface {
 
   // When using --encode, this will be passed to SetSerializationDeterministic.
   bool deterministic_output_ = false;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CommandLineInterface);
 };
 
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_COMMAND_LINE_INTERFACE_H__

@@ -33,18 +33,16 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_STATUS_MACROS_H_
 #define GOOGLE_PROTOBUF_STUBS_STATUS_MACROS_H_
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/status.h>
-#include <google/protobuf/stubs/statusor.h>
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "google/protobuf/stubs/common.h"
 
-#include <google/protobuf/port_def.inc>
+// Needs to be last.
+#include "google/protobuf/port_def.inc"  // NOLINT
 
 namespace google {
 namespace protobuf {
 namespace util {
-namespace status_macros_internal {
-using PROTOBUF_NAMESPACE_ID::util::Status;
-}  // namespace status_macros_internal
 
 // Run a command that returns a util::Status.  If the called code returns an
 // error status, return that status up out of this method too.
@@ -54,8 +52,7 @@ using PROTOBUF_NAMESPACE_ID::util::Status;
 #define RETURN_IF_ERROR(expr)                                                \
   do {                                                                       \
     /* Using _status below to avoid capture problems if expr is "status". */ \
-    const ::google::protobuf::util::status_macros_internal::Status _status = \
-        (expr);                                                              \
+    const absl::Status _status = (expr);                                     \
     if (PROTOBUF_PREDICT_FALSE(!_status.ok())) return _status;               \
   } while (0)
 
@@ -64,15 +61,15 @@ using PROTOBUF_NAMESPACE_ID::util::Status;
 #define STATUS_MACROS_CONCAT_NAME(x, y) STATUS_MACROS_CONCAT_NAME_INNER(x, y)
 
 template <typename T>
-Status DoAssignOrReturn(T& lhs, StatusOr<T> result) {
+absl::Status DoAssignOrReturn(T& lhs, absl::StatusOr<T> result) {
   if (result.ok()) {
     lhs = result.value();
   }
   return result.status();
 }
 
-#define ASSIGN_OR_RETURN_IMPL(status, lhs, rexpr) \
-  Status status = DoAssignOrReturn(lhs, (rexpr)); \
+#define ASSIGN_OR_RETURN_IMPL(status, lhs, rexpr)       \
+  absl::Status status = DoAssignOrReturn(lhs, (rexpr)); \
   if (PROTOBUF_PREDICT_FALSE(!status.ok())) return status;
 
 // Executes an expression that returns a util::StatusOr, extracting its value
@@ -92,6 +89,6 @@ Status DoAssignOrReturn(T& lhs, StatusOr<T> result) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"  // NOLINT
 
 #endif  // GOOGLE_PROTOBUF_STUBS_STATUS_H_

@@ -42,12 +42,12 @@
 #include <utility>
 #include <vector>
 
-#include <google/protobuf/compiler/parser.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor_database.h>
+#include "google/protobuf/compiler/parser.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor_database.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -159,6 +159,8 @@ class PROTOBUF_EXPORT SourceTreeDescriptorDatabase : public DescriptorDatabase {
 class PROTOBUF_EXPORT Importer {
  public:
   Importer(SourceTree* source_tree, MultiFileErrorCollector* error_collector);
+  Importer(const Importer&) = delete;
+  Importer& operator=(const Importer&) = delete;
   ~Importer();
 
   // Import the given file and build a FileDescriptor representing it.  If
@@ -188,15 +190,15 @@ class PROTOBUF_EXPORT Importer {
  private:
   SourceTreeDescriptorDatabase database_;
   DescriptorPool pool_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Importer);
 };
 
 // If the importer encounters problems while trying to import the proto files,
 // it reports them to a MultiFileErrorCollector.
 class PROTOBUF_EXPORT MultiFileErrorCollector {
  public:
-  inline MultiFileErrorCollector() {}
+  MultiFileErrorCollector() {}
+  MultiFileErrorCollector(const MultiFileErrorCollector&) = delete;
+  MultiFileErrorCollector& operator=(const MultiFileErrorCollector&) = delete;
   virtual ~MultiFileErrorCollector();
 
   // Line and column numbers are zero-based.  A line number of -1 indicates
@@ -206,9 +208,6 @@ class PROTOBUF_EXPORT MultiFileErrorCollector {
 
   virtual void AddWarning(const std::string& /* filename */, int /* line */,
                           int /* column */, const std::string& /* message */) {}
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MultiFileErrorCollector);
 };
 
 // Abstract interface which represents a directory tree containing proto files.
@@ -217,14 +216,22 @@ class PROTOBUF_EXPORT MultiFileErrorCollector {
 // below.
 class PROTOBUF_EXPORT SourceTree {
  public:
-  inline SourceTree() {}
+  SourceTree() {}
+  SourceTree(const SourceTree&) = delete;
+  SourceTree& operator=(const SourceTree&) = delete;
   virtual ~SourceTree();
+
+  // This is a temporary typedef alias to allow migrating the argument type of
+  // Open in an atomic change without touching certain directories which are
+  // restricted for various reasons.  This must match the argument type used
+  // below.
+  using SourceTreeOpenArgumentType = absl::string_view;
 
   // Open the given file and return a stream that reads it, or NULL if not
   // found.  The caller takes ownership of the returned object.  The filename
   // must be a path relative to the root of the source tree and must not
   // contain "." or ".." components.
-  virtual io::ZeroCopyInputStream* Open(const std::string& filename) = 0;
+  virtual io::ZeroCopyInputStream* Open(absl::string_view filename) = 0;
 
   // If Open() returns NULL, calling this method immediately will return an
   // description of the error.
@@ -232,9 +239,6 @@ class PROTOBUF_EXPORT SourceTree {
   // better error reporting.
   // TODO(xiaofeng): change this to a pure virtual function.
   virtual std::string GetLastErrorMessage();
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SourceTree);
 };
 
 // An implementation of SourceTree which loads files from locations on disk.
@@ -243,6 +247,8 @@ class PROTOBUF_EXPORT SourceTree {
 class PROTOBUF_EXPORT DiskSourceTree : public SourceTree {
  public:
   DiskSourceTree();
+  DiskSourceTree(const DiskSourceTree&) = delete;
+  DiskSourceTree& operator=(const DiskSourceTree&) = delete;
   ~DiskSourceTree() override;
 
   // Map a path on disk to a location in the SourceTree.  The path may be
@@ -261,7 +267,7 @@ class PROTOBUF_EXPORT DiskSourceTree : public SourceTree {
   //
   // disk_path may be an absolute path or relative to the current directory,
   // just like a path you'd pass to open().
-  void MapPath(const std::string& virtual_path, const std::string& disk_path);
+  void MapPath(absl::string_view virtual_path, absl::string_view disk_path);
 
   // Return type for DiskFileToVirtualFile().
   enum DiskFileToVirtualFileResult {
@@ -292,17 +298,17 @@ class PROTOBUF_EXPORT DiskSourceTree : public SourceTree {
   // * NO_MAPPING: Indicates that no mapping was found which contains this
   //   file.
   DiskFileToVirtualFileResult DiskFileToVirtualFile(
-      const std::string& disk_file, std::string* virtual_file,
+      absl::string_view disk_file, std::string* virtual_file,
       std::string* shadowing_disk_file);
 
   // Given a virtual path, find the path to the file on disk.
   // Return true and update disk_file with the on-disk path if the file exists.
   // Return false and leave disk_file untouched if the file doesn't exist.
-  bool VirtualFileToDiskFile(const std::string& virtual_file,
+  bool VirtualFileToDiskFile(absl::string_view virtual_file,
                              std::string* disk_file);
 
   // implements SourceTree -------------------------------------------
-  io::ZeroCopyInputStream* Open(const std::string& filename) override;
+  io::ZeroCopyInputStream* Open(absl::string_view filename) override;
 
   std::string GetLastErrorMessage() override;
 
@@ -311,28 +317,26 @@ class PROTOBUF_EXPORT DiskSourceTree : public SourceTree {
     std::string virtual_path;
     std::string disk_path;
 
-    inline Mapping(const std::string& virtual_path_param,
-                   const std::string& disk_path_param)
-        : virtual_path(virtual_path_param), disk_path(disk_path_param) {}
+    inline Mapping(std::string virtual_path_param, std::string disk_path_param)
+        : virtual_path(std::move(virtual_path_param)),
+          disk_path(std::move(disk_path_param)) {}
   };
   std::vector<Mapping> mappings_;
   std::string last_error_message_;
 
   // Like Open(), but returns the on-disk path in disk_file if disk_file is
   // non-NULL and the file could be successfully opened.
-  io::ZeroCopyInputStream* OpenVirtualFile(const std::string& virtual_file,
+  io::ZeroCopyInputStream* OpenVirtualFile(absl::string_view virtual_file,
                                            std::string* disk_file);
 
   // Like Open() but given the actual on-disk path.
-  io::ZeroCopyInputStream* OpenDiskFile(const std::string& filename);
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DiskSourceTree);
+  io::ZeroCopyInputStream* OpenDiskFile(absl::string_view filename);
 };
 
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_IMPORTER_H__

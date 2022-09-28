@@ -31,9 +31,9 @@
 #include <map>
 #include <string>
 
-#include <google/protobuf/compiler/objectivec/objectivec_map_field.h>
-#include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
-#include <google/protobuf/io/printer.h>
+#include "google/protobuf/compiler/objectivec/objectivec_map_field.h"
+#include "google/protobuf/compiler/objectivec/objectivec_helpers.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {

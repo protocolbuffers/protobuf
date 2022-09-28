@@ -32,26 +32,26 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/wire_format_lite.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/wire_format.h"
+#include "google/protobuf/wire_format_lite.h"
 #include <gmock/gmock.h>
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/casts.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/test_util2.h>
-#include <google/protobuf/stubs/stl_util.h>
+#include "absl/base/casts.h"
+#include "google/protobuf/stubs/logging.h"
+#include "absl/strings/match.h"
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/test_util2.h"
+#include "google/protobuf/stubs/stl_util.h"
 
 // clang-format off
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 // clang-format on
 
 namespace google {
@@ -63,15 +63,15 @@ TEST(WireFormatTest, EnumsInSync) {
   // Verify that WireFormatLite::FieldType and WireFormatLite::CppType match
   // FieldDescriptor::Type and FieldDescriptor::CppType.
 
-  EXPECT_EQ(implicit_cast<int>(FieldDescriptor::MAX_TYPE),
-            implicit_cast<int>(WireFormatLite::MAX_FIELD_TYPE));
-  EXPECT_EQ(implicit_cast<int>(FieldDescriptor::MAX_CPPTYPE),
-            implicit_cast<int>(WireFormatLite::MAX_CPPTYPE));
+  EXPECT_EQ(absl::implicit_cast<int>(FieldDescriptor::MAX_TYPE),
+            absl::implicit_cast<int>(WireFormatLite::MAX_FIELD_TYPE));
+  EXPECT_EQ(absl::implicit_cast<int>(FieldDescriptor::MAX_CPPTYPE),
+            absl::implicit_cast<int>(WireFormatLite::MAX_CPPTYPE));
 
   for (int i = 1; i <= WireFormatLite::MAX_FIELD_TYPE; i++) {
-    EXPECT_EQ(implicit_cast<int>(FieldDescriptor::TypeToCppType(
+    EXPECT_EQ(absl::implicit_cast<int>(FieldDescriptor::TypeToCppType(
                   static_cast<FieldDescriptor::Type>(i))),
-              implicit_cast<int>(WireFormatLite::FieldTypeToCppType(
+              absl::implicit_cast<int>(WireFormatLite::FieldTypeToCppType(
                   static_cast<WireFormatLite::FieldType>(i))));
   }
 }
@@ -581,28 +581,54 @@ TEST(WireFormatTest, ParseMessageSet) {
   EXPECT_EQ(message_set.DebugString(), dynamic_message_set.DebugString());
 }
 
-TEST(WireFormatTest, ParseMessageSetWithReverseTagOrder) {
+namespace {
+std::string BuildMessageSetItemStart() {
   std::string data;
   {
-    UNITTEST::TestMessageSetExtension1 message;
-    message.set_i(123);
-    // Build a MessageSet manually with its message content put before its
-    // type_id.
     io::StringOutputStream output_stream(&data);
     io::CodedOutputStream coded_output(&output_stream);
     coded_output.WriteTag(WireFormatLite::kMessageSetItemStartTag);
+  }
+  return data;
+}
+std::string BuildMessageSetItemEnd() {
+  std::string data;
+  {
+    io::StringOutputStream output_stream(&data);
+    io::CodedOutputStream coded_output(&output_stream);
+    coded_output.WriteTag(WireFormatLite::kMessageSetItemEndTag);
+  }
+  return data;
+}
+std::string BuildMessageSetTestExtension1(int value = 123) {
+  std::string data;
+  {
+    UNITTEST::TestMessageSetExtension1 message;
+    message.set_i(value);
+    io::StringOutputStream output_stream(&data);
+    io::CodedOutputStream coded_output(&output_stream);
     // Write the message content first.
     WireFormatLite::WriteTag(WireFormatLite::kMessageSetMessageNumber,
                              WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
                              &coded_output);
     coded_output.WriteVarint32(message.ByteSizeLong());
     message.SerializeWithCachedSizes(&coded_output);
-    // Write the type id.
-    uint32_t type_id = message.GetDescriptor()->extension(0)->number();
-    WireFormatLite::WriteUInt32(WireFormatLite::kMessageSetTypeIdNumber,
-                                type_id, &coded_output);
-    coded_output.WriteTag(WireFormatLite::kMessageSetItemEndTag);
   }
+  return data;
+}
+std::string BuildMessageSetItemTypeId(int extension_number) {
+  std::string data;
+  {
+    io::StringOutputStream output_stream(&data);
+    io::CodedOutputStream coded_output(&output_stream);
+    WireFormatLite::WriteUInt32(WireFormatLite::kMessageSetTypeIdNumber,
+                                extension_number, &coded_output);
+  }
+  return data;
+}
+void ValidateTestMessageSet(const std::string& test_case,
+                            const std::string& data) {
+  SCOPED_TRACE(test_case);
   {
     PROTO2_WIREFORMAT_UNITTEST::TestMessageSet message_set;
     ASSERT_TRUE(message_set.ParseFromString(data));
@@ -612,6 +638,11 @@ TEST(WireFormatTest, ParseMessageSetWithReverseTagOrder) {
                   .GetExtension(
                       UNITTEST::TestMessageSetExtension1::message_set_extension)
                   .i());
+
+    // Make sure it does not contain anything else.
+    message_set.ClearExtension(
+        UNITTEST::TestMessageSetExtension1::message_set_extension);
+    EXPECT_EQ(message_set.SerializeAsString(), "");
   }
   {
     // Test parse the message via Reflection.
@@ -627,6 +658,61 @@ TEST(WireFormatTest, ParseMessageSetWithReverseTagOrder) {
                       UNITTEST::TestMessageSetExtension1::message_set_extension)
                   .i());
   }
+  {
+    // Test parse the message via DynamicMessage.
+    DynamicMessageFactory factory;
+    std::unique_ptr<Message> msg(
+        factory
+            .GetPrototype(
+                PROTO2_WIREFORMAT_UNITTEST::TestMessageSet::descriptor())
+            ->New());
+    msg->ParseFromString(data);
+    auto* reflection = msg->GetReflection();
+    std::vector<const FieldDescriptor*> fields;
+    reflection->ListFields(*msg, &fields);
+    ASSERT_EQ(fields.size(), 1);
+    const auto& sub = reflection->GetMessage(*msg, fields[0]);
+    reflection = sub.GetReflection();
+    EXPECT_EQ(123, reflection->GetInt32(
+                       sub, sub.GetDescriptor()->FindFieldByName("i")));
+  }
+}
+}  // namespace
+
+TEST(WireFormatTest, ParseMessageSetWithAnyTagOrder) {
+  std::string start = BuildMessageSetItemStart();
+  std::string end = BuildMessageSetItemEnd();
+  std::string id = BuildMessageSetItemTypeId(
+      UNITTEST::TestMessageSetExtension1::descriptor()->extension(0)->number());
+  std::string message = BuildMessageSetTestExtension1();
+
+  ValidateTestMessageSet("id + message", start + id + message + end);
+  ValidateTestMessageSet("message + id", start + message + id + end);
+}
+
+TEST(WireFormatTest, ParseMessageSetWithDuplicateTags) {
+  std::string start = BuildMessageSetItemStart();
+  std::string end = BuildMessageSetItemEnd();
+  std::string id = BuildMessageSetItemTypeId(
+      UNITTEST::TestMessageSetExtension1::descriptor()->extension(0)->number());
+  std::string other_id = BuildMessageSetItemTypeId(123456);
+  std::string message = BuildMessageSetTestExtension1();
+  std::string other_message = BuildMessageSetTestExtension1(321);
+
+  // Double id
+  ValidateTestMessageSet("id + other_id + message",
+                         start + id + other_id + message + end);
+  ValidateTestMessageSet("id + message + other_id",
+                         start + id + message + other_id + end);
+  ValidateTestMessageSet("message + id + other_id",
+                         start + message + id + other_id + end);
+  // Double message
+  ValidateTestMessageSet("id + message + other_message",
+                         start + id + message + other_message + end);
+  ValidateTestMessageSet("message + id + other_message",
+                         start + message + id + other_message + end);
+  ValidateTestMessageSet("message + other_message + id",
+                         start + message + other_message + id + end);
 }
 
 void SerializeReverseOrder(
@@ -1474,7 +1560,7 @@ TEST_F(Utf8ValidationTest, OldVerifyUTF8String) {
 #ifdef GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
   ASSERT_EQ(1, errors.size());
   EXPECT_TRUE(
-      HasPrefixString(errors[0],
+      absl::StartsWith(errors[0],
                        "String field contains invalid UTF-8 data when "
                        "serializing a protocol buffer. Use the "
                        "'bytes' type if you intend to send raw bytes."));
@@ -1620,4 +1706,4 @@ TEST(RepeatedVarint, Enum) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

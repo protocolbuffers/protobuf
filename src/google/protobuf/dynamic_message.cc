@@ -62,7 +62,7 @@
 // Item 8 of "More Effective C++" discusses this in more detail, though
 // I don't have the book on me right now so I'm not sure.
 
-#include <google/protobuf/dynamic_message.h>
+#include "google/protobuf/dynamic_message.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -70,23 +70,23 @@
 #include <new>
 #include <unordered_map>
 
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/generated_message_reflection.h>
-#include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/unknown_field_set.h>
-#include <google/protobuf/stubs/hash.h>
-#include <google/protobuf/arenastring.h>
-#include <google/protobuf/extension_set.h>
-#include <google/protobuf/map_field.h>
-#include <google/protobuf/map_field_inl.h>
-#include <google/protobuf/map_type_handler.h>
-#include <google/protobuf/reflection_ops.h>
-#include <google/protobuf/repeated_field.h>
-#include <google/protobuf/wire_format.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/generated_message_reflection.h"
+#include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/unknown_field_set.h"
+#include "google/protobuf/arenastring.h"
+#include "google/protobuf/extension_set.h"
+#include "google/protobuf/map_field.h"
+#include "google/protobuf/map_field_inl.h"
+#include "google/protobuf/map_type_handler.h"
+#include "google/protobuf/reflection_ops.h"
+#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/wire_format.h"
+
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -208,6 +208,8 @@ class DynamicMessage : public Message {
 
   // This should only be used by GetPrototypeNoLock() to avoid dead lock.
   DynamicMessage(DynamicMessageFactory::TypeInfo* type_info, bool lock_factory);
+  DynamicMessage(const DynamicMessage&) = delete;
+  DynamicMessage& operator=(const DynamicMessage&) = delete;
 
   ~DynamicMessage() override;
 
@@ -269,7 +271,6 @@ class DynamicMessage : public Message {
 
   const DynamicMessageFactory::TypeInfo* type_info_;
   mutable std::atomic<int> cached_byte_size_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DynamicMessage);
 };
 
 struct DynamicMessageFactory::TypeInfo {
@@ -297,7 +298,21 @@ struct DynamicMessageFactory::TypeInfo {
 
   TypeInfo() : prototype(nullptr) {}
 
-  ~TypeInfo() { delete prototype; }
+  ~TypeInfo() {
+    delete prototype;
+
+    // Scribble the payload to prevent unsanitized opt builds from silently
+    // allowing use-after-free bugs where the factory is destroyed but the
+    // DynamicMessage instances are still used.
+    // This is a common bug with DynamicMessageFactory.
+    // NOTE: This must happen after deleting the prototype.
+    if (offsets != nullptr) {
+      std::fill_n(offsets.get(), type->field_count(), 0xCDCDCDCDu);
+    }
+    if (has_bits_indices != nullptr) {
+      std::fill_n(has_bits_indices.get(), type->field_count(), 0xCDCDCDCDu);
+    }
+  }
 };
 
 DynamicMessage::DynamicMessage(const DynamicMessageFactory::TypeInfo* type_info)
@@ -810,4 +825,4 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>  // NOLINT
+#include "google/protobuf/port_undef.inc"  // NOLINT

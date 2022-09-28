@@ -61,7 +61,6 @@ public final class TextFormat {
 
   private static final String DEBUG_STRING_SILENT_MARKER = "\t ";
 
-
   /**
    * Outputs a textual representation of the Protocol Message supplied into the parameter output.
    * (This representation is the new version of the classic "ProtocolPrinter" output from the
@@ -739,9 +738,9 @@ public final class TextFormat {
           // Groups must be serialized with their original capitalization.
           generator.print(field.getMessageType().getName());
         } else {
-            generator.print(field.getName());
-          }
+          generator.print(field.getName());
         }
+      }
 
       if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
         generator.print(" {");
@@ -1836,16 +1835,16 @@ public final class TextFormat {
         extension = target.findExtensionByName(extensionRegistry, name);
 
         if (extension == null) {
-            String message =
-                (tokenizer.getPreviousLine() + 1)
-                    + ":"
-                    + (tokenizer.getPreviousColumn() + 1)
-                    + ":\t"
-                    + type.getFullName()
-                    + ".["
-                    + name
-                    + "]";
-            unknownFields.add(new UnknownField(message, UnknownField.Type.EXTENSION));
+          String message =
+              (tokenizer.getPreviousLine() + 1)
+                  + ":"
+                  + (tokenizer.getPreviousColumn() + 1)
+                  + ":\t"
+                  + type.getFullName()
+                  + ".["
+                  + name
+                  + "]";
+          unknownFields.add(new UnknownField(message, UnknownField.Type.EXTENSION));
         } else {
           if (extension.descriptor.getContainingType() != type) {
             throw tokenizer.parseExceptionPreviousToken(

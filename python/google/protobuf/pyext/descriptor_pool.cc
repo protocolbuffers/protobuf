@@ -30,19 +30,22 @@
 
 // Implements the DescriptorPool, which collects all descriptors.
 
+#include <string>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/pyext/descriptor.h>
-#include <google/protobuf/pyext/descriptor_database.h>
-#include <google/protobuf/pyext/descriptor_pool.h>
-#include <google/protobuf/pyext/message.h>
-#include <google/protobuf/pyext/message_factory.h>
-#include <google/protobuf/pyext/scoped_pyobject_ptr.h>
-#include <google/protobuf/stubs/hash.h>
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/pyext/descriptor.h"
+#include "google/protobuf/pyext/descriptor_database.h"
+#include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/pyext/message.h"
+#include "google/protobuf/pyext/message_factory.h"
+#include "google/protobuf/pyext/scoped_pyobject_ptr.h"
+#include "absl/strings/string_view.h"
 
 #define PyString_AsStringAndSize(ob, charpp, sizep)              \
   (PyUnicode_Check(ob)                                           \
@@ -246,7 +249,7 @@ static PyObject* FindMessageByName(PyObject* self, PyObject* arg) {
 
   const Descriptor* message_descriptor =
       reinterpret_cast<PyDescriptorPool*>(self)->pool->FindMessageTypeByName(
-          StringParam(name, name_size));
+          absl::string_view(name, name_size));
 
   if (message_descriptor == nullptr) {
     return SetErrorFromCollector(
@@ -270,7 +273,7 @@ static PyObject* FindFileByName(PyObject* self, PyObject* arg) {
 
   PyDescriptorPool* py_pool = reinterpret_cast<PyDescriptorPool*>(self);
   const FileDescriptor* file_descriptor =
-      py_pool->pool->FindFileByName(StringParam(name, name_size));
+      py_pool->pool->FindFileByName(absl::string_view(name, name_size));
 
   if (file_descriptor == nullptr) {
     return SetErrorFromCollector(py_pool->error_collector, name, "file");
@@ -286,7 +289,7 @@ PyObject* FindFieldByName(PyDescriptorPool* self, PyObject* arg) {
   }
 
   const FieldDescriptor* field_descriptor =
-      self->pool->FindFieldByName(StringParam(name, name_size));
+      self->pool->FindFieldByName(absl::string_view(name, name_size));
   if (field_descriptor == nullptr) {
     return SetErrorFromCollector(self->error_collector, name, "field");
   }
@@ -307,7 +310,7 @@ PyObject* FindExtensionByName(PyDescriptorPool* self, PyObject* arg) {
   }
 
   const FieldDescriptor* field_descriptor =
-      self->pool->FindExtensionByName(StringParam(name, name_size));
+      self->pool->FindExtensionByName(absl::string_view(name, name_size));
   if (field_descriptor == nullptr) {
     return SetErrorFromCollector(self->error_collector, name,
                                  "extension field");
@@ -329,7 +332,7 @@ PyObject* FindEnumTypeByName(PyDescriptorPool* self, PyObject* arg) {
   }
 
   const EnumDescriptor* enum_descriptor =
-      self->pool->FindEnumTypeByName(StringParam(name, name_size));
+      self->pool->FindEnumTypeByName(absl::string_view(name, name_size));
   if (enum_descriptor == nullptr) {
     return SetErrorFromCollector(self->error_collector, name, "enum");
   }
@@ -350,7 +353,7 @@ PyObject* FindOneofByName(PyDescriptorPool* self, PyObject* arg) {
   }
 
   const OneofDescriptor* oneof_descriptor =
-      self->pool->FindOneofByName(StringParam(name, name_size));
+      self->pool->FindOneofByName(absl::string_view(name, name_size));
   if (oneof_descriptor == nullptr) {
     return SetErrorFromCollector(self->error_collector, name, "oneof");
   }
@@ -372,7 +375,7 @@ static PyObject* FindServiceByName(PyObject* self, PyObject* arg) {
 
   const ServiceDescriptor* service_descriptor =
       reinterpret_cast<PyDescriptorPool*>(self)->pool->FindServiceByName(
-          StringParam(name, name_size));
+          absl::string_view(name, name_size));
   if (service_descriptor == nullptr) {
     return SetErrorFromCollector(
         reinterpret_cast<PyDescriptorPool*>(self)->error_collector, name,
@@ -392,7 +395,7 @@ static PyObject* FindMethodByName(PyObject* self, PyObject* arg) {
 
   const MethodDescriptor* method_descriptor =
       reinterpret_cast<PyDescriptorPool*>(self)->pool->FindMethodByName(
-          StringParam(name, name_size));
+          absl::string_view(name, name_size));
   if (method_descriptor == nullptr) {
     return SetErrorFromCollector(
         reinterpret_cast<PyDescriptorPool*>(self)->error_collector, name,
@@ -412,7 +415,7 @@ static PyObject* FindFileContainingSymbol(PyObject* self, PyObject* arg) {
 
   const FileDescriptor* file_descriptor =
       reinterpret_cast<PyDescriptorPool*>(self)->pool->FindFileContainingSymbol(
-          StringParam(name, name_size));
+          absl::string_view(name, name_size));
   if (file_descriptor == nullptr) {
     return SetErrorFromCollector(
         reinterpret_cast<PyDescriptorPool*>(self)->error_collector, name,

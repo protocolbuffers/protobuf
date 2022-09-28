@@ -32,15 +32,17 @@
 #define GOOGLE_PROTOBUF_STUBS_PORT_H_
 
 #include <assert.h>
-#include <cstdint>
 #include <stdlib.h>
-#include <cstddef>
-#include <string>
 #include <string.h>
 
-#include <google/protobuf/stubs/platform_macros.h>
+#include <cstddef>
+#include <cstdint>
+#include <string>
 
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/stubs/platform_macros.h"
+
+// Must be last.
+#include "google/protobuf/port_def.inc"  // NOLINT
 
 #undef PROTOBUF_LITTLE_ENDIAN
 #ifdef _WIN32
@@ -125,8 +127,6 @@
 
 namespace google {
 namespace protobuf {
-
-using ConstStringParam = const std::string &;
 
 typedef unsigned int uint;
 
@@ -231,69 +231,6 @@ static inline uint64_t bswap_64(uint64_t x) {
 #endif
 
 // ===================================================================
-// from google3/util/bits/bits.h
-
-class Bits {
- public:
-  static uint32_t Log2FloorNonZero(uint32_t n) {
-#if defined(__GNUC__)
-  return 31 ^ static_cast<uint32_t>(__builtin_clz(n));
-#elif defined(_MSC_VER)
-  unsigned long where;
-  _BitScanReverse(&where, n);
-  return where;
-#else
-  return Log2FloorNonZero_Portable(n);
-#endif
-  }
-
-  static uint32_t Log2FloorNonZero64(uint64_t n) {
-    // Older versions of clang run into an instruction-selection failure when
-    // it encounters __builtin_clzll:
-    // https://bugs.chromium.org/p/nativeclient/issues/detail?id=4395
-    // This includes arm-nacl-clang and clang in older Android NDK versions.
-    // To work around this, when we build with those we use the portable
-    // implementation instead.
-#if defined(__GNUC__) && !defined(GOOGLE_PROTOBUF_USE_PORTABLE_LOG2)
-  return 63 ^ static_cast<uint32_t>(__builtin_clzll(n));
-#elif defined(_MSC_VER) && defined(_M_X64)
-  unsigned long where;
-  _BitScanReverse64(&where, n);
-  return where;
-#else
-  return Log2FloorNonZero64_Portable(n);
-#endif
-  }
- private:
-  static int Log2FloorNonZero_Portable(uint32_t n) {
-    if (n == 0)
-      return -1;
-    int log = 0;
-    uint32_t value = n;
-    for (int i = 4; i >= 0; --i) {
-      int shift = (1 << i);
-      uint32_t x = value >> shift;
-      if (x != 0) {
-        value = x;
-        log += shift;
-      }
-    }
-    assert(value == 1);
-    return log;
-  }
-
-  static int Log2FloorNonZero64_Portable(uint64_t n) {
-    const uint32_t topbits = static_cast<uint32_t>(n >> 32);
-    if (topbits == 0) {
-      // Top bits are zero, so scan in bottom bits
-      return static_cast<int>(Log2FloorNonZero(static_cast<uint32_t>(n)));
-    } else {
-      return 32 + static_cast<int>(Log2FloorNonZero(topbits));
-    }
-  }
-};
-
-// ===================================================================
 // from google3/util/endian/endian.h
 PROTOBUF_EXPORT uint32_t ghtonl(uint32_t x);
 
@@ -356,6 +293,6 @@ class BigEndian {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_STUBS_PORT_H_

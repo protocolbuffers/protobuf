@@ -31,23 +31,25 @@
 // Author: anuraag@google.com (Anuraag Agrawal)
 // Author: tibell@google.com (Johan Tibell)
 
-#include <google/protobuf/pyext/extension_dict.h>
+#include "google/protobuf/pyext/extension_dict.h"
 
 #include <cstdint>
 #include <memory>
+#include <vector>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/message.h>
-#include <google/protobuf/pyext/descriptor.h>
-#include <google/protobuf/pyext/message.h>
-#include <google/protobuf/pyext/message_factory.h>
-#include <google/protobuf/pyext/repeated_composite_container.h>
-#include <google/protobuf/pyext/repeated_scalar_container.h>
-#include <google/protobuf/pyext/scoped_pyobject_ptr.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/pyext/descriptor.h"
+#include "google/protobuf/pyext/message.h"
+#include "google/protobuf/pyext/message_factory.h"
+#include "google/protobuf/pyext/repeated_composite_container.h"
+#include "google/protobuf/pyext/repeated_scalar_container.h"
+#include "google/protobuf/pyext/scoped_pyobject_ptr.h"
+#include "absl/strings/string_view.h"
 
 #define PyString_AsStringAndSize(ob, charpp, sizep)              \
   (PyUnicode_Check(ob)                                           \
@@ -239,11 +241,11 @@ PyObject* _FindExtensionByName(ExtensionDict* self, PyObject* arg) {
 
   PyDescriptorPool* pool = cmessage::GetFactoryForMessage(self->parent)->pool;
   const FieldDescriptor* message_extension =
-      pool->pool->FindExtensionByName(StringParam(name, name_size));
+      pool->pool->FindExtensionByName(absl::string_view(name, name_size));
   if (message_extension == nullptr) {
     // Is is the name of a message set extension?
     const Descriptor* message_descriptor =
-        pool->pool->FindMessageTypeByName(StringParam(name, name_size));
+        pool->pool->FindMessageTypeByName(absl::string_view(name, name_size));
     if (message_descriptor && message_descriptor->extension_count() > 0) {
       const FieldDescriptor* extension = message_descriptor->extension(0);
       if (extension->is_extension() &&

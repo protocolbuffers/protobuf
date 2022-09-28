@@ -30,12 +30,12 @@
 
 syntax = "proto2";
 
-import "unittest_import.proto";
+import "objectivec/Tests/unittest_import.proto";
 
-// We don't put this in a package within proto2 because we need to make sure
-// that the generated code doesn't depend on being in the proto2 namespace.
-// In map_test_util.h we do "using namespace unittest = objc.protobuf.tests".
 package objc.protobuf.tests;
+
+// Explicit empty prefix, tests some validations code paths also.
+option objc_class_prefix = "";
 
 enum Proto2MapEnum {
   PROTO2_MAP_ENUM_FOO   = 0;
@@ -61,7 +61,7 @@ message TestEnumMapPlusExtra {
 }
 
 message TestImportEnumMap {
-  map<int32, objc.protobuf.tests.import.ImportEnumForMap> import_enum_amp = 1;
+  map<int32, objc.protobuf.tests.import.EnumForMap> import_enum_amp = 1;
 }
 
 message TestIntIntMap {

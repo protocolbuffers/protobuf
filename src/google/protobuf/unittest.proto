@@ -359,6 +359,9 @@ message TestMixedFieldsAndExtensions {
 message TestGroup {
   optional group OptionalGroup = 16 {
     optional int32 a = 17;
+    optional int32 zz = 89;  // fast table size must be at least 16, for this
+                             // field to be parsed by the fast parser, since
+                             // 89 - 17 = 72 is a multiple of 8.
   }
   optional ForeignEnum optional_foreign_enum = 22;
 }
@@ -1552,5 +1555,14 @@ message BoolParseTester {
 
   // An arbitrary field we can append to to break the runs of repeated fields.
   optional int32 other_field = 99;
+};
+
+message StringParseTester {
+  optional string optional_string_lowfield = 1;
+  optional string optional_string_midfield = 1001;
+  optional string optional_string_hifield = 1000001;
+  repeated string repeated_string_lowfield = 2;
+  repeated string repeated_string_midfield = 1002;
+  repeated string repeated_string_hifield = 1000002;
 };
 

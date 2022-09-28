@@ -35,10 +35,10 @@
 
 #include <string>
 
-#include <google/protobuf/compiler/code_generator.h>
+#include "google/protobuf/compiler/code_generator.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -52,6 +52,8 @@ namespace java {
 class PROTOC_EXPORT KotlinGenerator : public CodeGenerator {
  public:
   KotlinGenerator();
+  KotlinGenerator(const KotlinGenerator&) = delete;
+  KotlinGenerator& operator=(const KotlinGenerator&) = delete;
   ~KotlinGenerator() override;
 
   // implements CodeGenerator ----------------------------------------
@@ -59,9 +61,6 @@ class PROTOC_EXPORT KotlinGenerator : public CodeGenerator {
                 GeneratorContext* context, std::string* error) const override;
 
   uint64_t GetSupportedFeatures() const override;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(KotlinGenerator);
 };
 
 }  // namespace java
@@ -69,6 +68,6 @@ class PROTOC_EXPORT KotlinGenerator : public CodeGenerator {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_KOTLIN_GENERATOR_H__

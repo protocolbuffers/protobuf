@@ -32,23 +32,23 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/importer.h>
+#include "google/protobuf/compiler/importer.h"
 
 #include <memory>
-#include <unordered_map>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/file.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/substitute.h>
-#include <google/protobuf/stubs/map_util.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/container/flat_hash_map.h"
+#include "absl/strings/substitute.h"
+
+#include "google/protobuf/stubs/strutil.h"
 
 namespace google {
 namespace protobuf {
@@ -74,13 +74,13 @@ class MockErrorCollector : public MultiFileErrorCollector {
   // implements ErrorCollector ---------------------------------------
   void AddError(const std::string& filename, int line, int column,
                 const std::string& message) override {
-    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
+    absl::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
                               message);
   }
 
   void AddWarning(const std::string& filename, int line, int column,
                   const std::string& message) override {
-    strings::SubstituteAndAppend(&warning_text_, "$0:$1:$2: $3\n", filename, line,
+    absl::SubstituteAndAppend(&warning_text_, "$0:$1:$2: $3\n", filename, line,
                               column, message);
   }
 };
@@ -93,24 +93,22 @@ class MockSourceTree : public SourceTree {
   MockSourceTree() {}
   ~MockSourceTree() override {}
 
-  void AddFile(const std::string& name, const char* contents) {
+  void AddFile(absl::string_view name, const char* contents) {
     files_[name] = contents;
   }
 
   // implements SourceTree -------------------------------------------
-  io::ZeroCopyInputStream* Open(const std::string& filename) override {
-    const char* contents = FindPtrOrNull(files_, filename);
-    if (contents == nullptr) {
-      return nullptr;
-    } else {
-      return new io::ArrayInputStream(contents, strlen(contents));
-    }
+  io::ZeroCopyInputStream* Open(absl::string_view filename) override {
+    auto it = files_.find(filename);
+    if (it == files_.end()) return nullptr;
+    return new io::ArrayInputStream(it->second,
+                                    static_cast<int>(strlen(it->second)));
   }
 
   std::string GetLastErrorMessage() override { return "File not found."; }
 
  private:
-  std::unordered_map<std::string, const char*> files_;
+  absl::flat_hash_map<std::string, const char*> files_;
 };
 
 // ===================================================================

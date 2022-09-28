@@ -41,11 +41,11 @@
 #include <set>
 #include <string>
 
-#include <google/protobuf/compiler/cpp/field.h>
-#include <google/protobuf/compiler/cpp/helpers.h>
-#include <google/protobuf/compiler/cpp/message_layout_helper.h>
-#include <google/protobuf/compiler/cpp/options.h>
-#include <google/protobuf/compiler/cpp/parse_function_generator.h>
+#include "google/protobuf/compiler/cpp/field.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/message_layout_helper.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/compiler/cpp/parse_function_generator.h"
 
 namespace google {
 namespace protobuf {
@@ -70,6 +70,8 @@ class MessageGenerator {
                    const std::map<std::string, std::string>& vars,
                    int index_in_file_messages, const Options& options,
                    MessageSCCAnalyzer* scc_analyzer);
+  MessageGenerator(const MessageGenerator&) = delete;
+  MessageGenerator& operator=(const MessageGenerator&) = delete;
   ~MessageGenerator();
 
   // Append the two types of nested generators to the corresponding vector.
@@ -221,7 +223,6 @@ class MessageGenerator {
   std::map<std::string, std::string> variables_;
 
   friend class FileGenerator;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MessageGenerator);
 };
 
 }  // namespace cpp

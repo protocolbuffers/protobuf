@@ -1,24 +1,29 @@
-name: Generated CMake File Lists
+name: Generate CMake File Lists
 
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - main
+      - '[0-9]+.x'
+      # The 21.x branch predates support for auto-generation of the CMake file
+      # lists, so we make sure to exclude it.
+      - '!21.x'
 
 jobs:
   cmake:
+    if: github.repository == 'protocolbuffers/protobuf'
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Bazel read-only caching
-        run: echo "BAZEL_CACHE_AUTH=--remote_upload_local_results=false" >> $GITHUB_ENV
-      - name: Generate CMake files
-        run: cd ${{ github.workspace }} && bazel build //pkg:gen_src_file_lists --test_output=errors $BAZEL_CACHE $BAZEL_CACHE_AUTH
-      - name: Compare to Golden file
-        run: diff -du bazel-bin/pkg/src_file_lists.cmake src/file_lists.cmake
-      - name: Report
-        run: echo "::error file=cmake/update_file_lists.sh::CMake files are stale, please run cmake/update_file_lists.sh"
-        if: failure()
+      - uses: actions/checkout@v3
+        with:
+          # Note: this token has an expiration date, so if the workflow starts
+          # failing then you may need to generate a fresh token.
+          token: ${{ secrets.BOT_ACCESS_TOKEN }}
+      - name: Configure name and email address in Git
+        run: cd ${{ github.workspace }} && git config user.name "Protobuf Team Bot" && git config user.email "protobuf-team-bot@google.com"
+      - name: Commit and push update
+        run: cd ${{ github.workspace }} && ./cmake/push_auto_update.sh

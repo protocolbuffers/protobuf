@@ -28,23 +28,24 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "google/protobuf/compiler/csharp/csharp_reflection_class.h"
+
 #include <sstream>
 
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/compiler/code_generator.h"
+#include "absl/strings/str_join.h"
+#include "google/protobuf/compiler/csharp/csharp_enum.h"
+#include "google/protobuf/compiler/csharp/csharp_field_base.h"
+#include "google/protobuf/compiler/csharp/csharp_helpers.h"
+#include "google/protobuf/compiler/csharp/csharp_message.h"
+#include "google/protobuf/compiler/csharp/names.h"
+#include "google/protobuf/compiler/csharp/csharp_options.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/printer.h"
 
-
-#include <google/protobuf/compiler/csharp/csharp_enum.h>
-#include <google/protobuf/compiler/csharp/csharp_helpers.h>
-#include <google/protobuf/compiler/csharp/csharp_field_base.h>
-#include <google/protobuf/compiler/csharp/csharp_message.h>
-#include <google/protobuf/compiler/csharp/csharp_names.h>
-#include <google/protobuf/compiler/csharp/csharp_options.h>
-#include <google/protobuf/compiler/csharp/csharp_reflection_class.h>
+// Must be last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -213,7 +214,7 @@ void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
     for (int i = 0; i < file_->extension_count(); i++) {
       extensions.push_back(GetFullExtensionName(file_->extension(i)));
     }
-    printer->Print("new pb::Extension[] { $extensions$ }, ", "extensions", Join(extensions, ", "));
+    printer->Print("new pb::Extension[] { $extensions$ }, ", "extensions", absl::StrJoin(extensions, ", "));
   }
   else {
     printer->Print("null, ");
@@ -265,7 +266,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
       for (int i = 0; i < descriptor->field_count(); i++) {
           fields.push_back(GetPropertyName(descriptor->field(i)));
       }
-      printer->Print("new[]{ \"$fields$\" }, ", "fields", Join(fields, "\", \""));
+      printer->Print("new[]{ \"$fields$\" }, ", "fields", absl::StrJoin(fields, "\", \""));
   }
   else {
       printer->Print("null, ");
@@ -278,7 +279,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
       for (int i = 0; i < descriptor->oneof_decl_count(); i++) {
           oneofs.push_back(UnderscoresToCamelCase(descriptor->oneof_decl(i)->name(), true));
       }
-      printer->Print("new[]{ \"$oneofs$\" }, ", "oneofs", Join(oneofs, "\", \""));
+      printer->Print("new[]{ \"$oneofs$\" }, ", "oneofs", absl::StrJoin(oneofs, "\", \""));
   }
   else {
       printer->Print("null, ");
@@ -291,7 +292,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
       for (int i = 0; i < descriptor->enum_type_count(); i++) {
           enums.push_back(GetClassName(descriptor->enum_type(i)));
       }
-      printer->Print("new[]{ typeof($enums$) }, ", "enums", Join(enums, "), typeof("));
+      printer->Print("new[]{ typeof($enums$) }, ", "enums", absl::StrJoin(enums, "), typeof("));
   }
   else {
       printer->Print("null, ");
@@ -303,7 +304,7 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
     for (int i = 0; i < descriptor->extension_count(); i++) {
       extensions.push_back(GetFullExtensionName(descriptor->extension(i)));
     }
-    printer->Print("new pb::Extension[] { $extensions$ }, ", "extensions", Join(extensions, ", "));
+    printer->Print("new pb::Extension[] { $extensions$ }, ", "extensions", absl::StrJoin(extensions, ", "));
   }
   else {
     printer->Print("null, ");
@@ -328,3 +329,5 @@ void ReflectionClassGenerator::WriteGeneratedCodeInfo(const Descriptor* descript
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

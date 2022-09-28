@@ -30,12 +30,13 @@
 
 // Author: kenton@google.com (Kenton Varda)
 
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/stubs/common.h"
+
+#include <errno.h>
+#include <stdio.h>
 
 #include <atomic>
-#include <errno.h>
 #include <sstream>
-#include <stdio.h>
 #include <vector>
 
 #ifdef _WIN32
@@ -49,15 +50,14 @@
 #include <android/log.h>
 #endif
 
-#include <google/protobuf/stubs/callback.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/once.h>
-#include <google/protobuf/stubs/status.h>
-#include <google/protobuf/stubs/stringpiece.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/int128.h>
+#include "absl/status/status.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/stubs/callback.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/strutil.h"
 
-#include <google/protobuf/port_def.inc>
+// Must be last.
+#include "google/protobuf/port_def.inc"  // NOLINT
 
 namespace google {
 namespace protobuf {
@@ -205,36 +205,29 @@ LogMessage& LogMessage::operator<<(const char* value) {
   return *this;
 }
 
-LogMessage& LogMessage::operator<<(const StringPiece& value) {
-  message_ += value.ToString();
+LogMessage& LogMessage::operator<<(absl::string_view value) {
+  absl::StrAppend(&message_, value);
   return *this;
 }
 
-LogMessage& LogMessage::operator<<(const util::Status& status) {
+LogMessage& LogMessage::operator<<(const absl::Status& status) {
   message_ += status.ToString();
   return *this;
 }
 
-LogMessage& LogMessage::operator<<(const uint128& value) {
-  std::ostringstream str;
-  str << value;
-  message_ += str.str();
-  return *this;
-}
-
 LogMessage& LogMessage::operator<<(char value) {
-  return *this << StringPiece(&value, 1);
+  return *this << absl::string_view(&value, 1);
 }
 
 LogMessage& LogMessage::operator<<(void* value) {
-  StrAppend(&message_, strings::Hex(reinterpret_cast<uintptr_t>(value)));
+  absl::StrAppend(&message_, strings::Hex(reinterpret_cast<uintptr_t>(value)));
   return *this;
 }
 
 #undef DECLARE_STREAM_OPERATOR
 #define DECLARE_STREAM_OPERATOR(TYPE)              \
   LogMessage& LogMessage::operator<<(TYPE value) { \
-    StrAppend(&message_, value);                   \
+    absl::StrAppend(&message_, value);             \
     return *this;                                  \
   }
 
@@ -336,4 +329,4 @@ const char* FatalException::what() const throw() {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"  // NOLINT

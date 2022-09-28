@@ -32,30 +32,30 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/wire_format.h>
+#include "google/protobuf/wire_format.h"
 
 #include <stack>
 #include <string>
 #include <vector>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/map_field.h>
-#include <google/protobuf/map_field_inl.h>
-#include <google/protobuf/message.h>
-#include <google/protobuf/message_lite.h>
-#include <google/protobuf/parse_context.h>
-#include <google/protobuf/unknown_field_set.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/map_field.h"
+#include "google/protobuf/map_field_inl.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/parse_context.h"
+#include "google/protobuf/unknown_field_set.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 const size_t kMapEntryTagByteSize = 2;
 
@@ -657,9 +657,11 @@ struct WireFormat::MessageSetParser {
   const char* _InternalParse(const char* ptr, internal::ParseContext* ctx) {
     // Parse a MessageSetItem
     auto metadata = reflection->MutableInternalMetadata(msg);
+    enum class State { kNoTag, kHasType, kHasPayload, kDone };
+    State state = State::kNoTag;
+
     std::string payload;
     uint32_t type_id = 0;
-    bool payload_read = false;
     while (!ctx->Done(&ptr)) {
       // We use 64 bit tags in order to allow typeid's that span the whole
       // range of 32 bit numbers.
@@ -668,8 +670,11 @@ struct WireFormat::MessageSetParser {
         uint64_t tmp;
         ptr = ParseBigVarint(ptr, &tmp);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-        type_id = tmp;
-        if (payload_read) {
+        if (state == State::kNoTag) {
+          type_id = tmp;
+          state = State::kHasType;
+        } else if (state == State::kHasPayload) {
+          type_id = tmp;
           const FieldDescriptor* field;
           if (ctx->data().pool == nullptr) {
             field = reflection->FindKnownExtensionByNumber(type_id);
@@ -696,17 +701,17 @@ struct WireFormat::MessageSetParser {
             GOOGLE_PROTOBUF_PARSER_ASSERT(value->_InternalParse(p, &tmp_ctx) &&
                                            tmp_ctx.EndedAtLimit());
           }
-          type_id = 0;
+          state = State::kDone;
         }
         continue;
       } else if (tag == WireFormatLite::kMessageSetMessageTag) {
-        if (type_id == 0) {
+        if (state == State::kNoTag) {
           int32_t size = ReadSize(&ptr);
           GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
           ptr = ctx->ReadString(ptr, size, &payload);
           GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
-          payload_read = true;
-        } else {
+          state = State::kHasPayload;
+        } else if (state == State::kHasType) {
           // We're now parsing the payload
           const FieldDescriptor* field = nullptr;
           if (descriptor->IsExtensionNumber(type_id)) {
@@ -720,7 +725,12 @@ struct WireFormat::MessageSetParser {
           ptr = WireFormat::_InternalParseAndMergeField(
               msg, ptr, ctx, static_cast<uint64_t>(type_id) * 8 + 2, reflection,
               field);
-          type_id = 0;
+          state = State::kDone;
+        } else {
+          int32_t size = ReadSize(&ptr);
+          GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+          ptr = ctx->Skip(ptr, size);
+          GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
         }
       } else {
         // An unknown field in MessageSetItem.
@@ -1755,4 +1765,4 @@ size_t ComputeUnknownFieldsSize(const InternalMetadata& metadata,
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

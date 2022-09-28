@@ -9,8 +9,8 @@ load("//build_defs:cpp_opts.bzl", "COPTS")
 
 package(
     default_visibility = [
-        "//src/google/protobuf/util:__pkg__",
         "//pkg:__pkg__",
+        "//src/google/protobuf/util:__pkg__",
     ],
 )
 
@@ -34,6 +34,7 @@ cc_library(
         ":utility",
         "//src/google/protobuf",
         "//src/google/protobuf/stubs",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -105,6 +106,8 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -209,6 +212,7 @@ cc_library(
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/util:type_resolver_util",
+        "@com_google_absl//absl/strings",
     ],
 )
 
@@ -265,6 +269,7 @@ cc_library(
         ":constants",
         "//src/google/protobuf",
         "//src/google/protobuf/stubs",
+        "@com_google_absl//absl/strings",
     ],
 )
 

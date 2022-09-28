@@ -36,14 +36,11 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-#include <google/protobuf/descriptor.h>
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {
 namespace python {
-
-// Should match the type of ConstStringParam.
-using StringParam = std::string;
 
 extern PyTypeObject PyMessageDescriptor_Type;
 extern PyTypeObject PyFieldDescriptor_Type;

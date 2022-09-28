@@ -39,8 +39,8 @@
 #include <set>
 #include <string>
 
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/compiler/cpp/options.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/compiler/cpp/options.h"
 
 namespace google {
 namespace protobuf {
@@ -61,6 +61,8 @@ class EnumGenerator {
   EnumGenerator(const EnumDescriptor* descriptor,
                 const std::map<std::string, std::string>& vars,
                 const Options& options);
+  EnumGenerator(const EnumGenerator&) = delete;
+  EnumGenerator& operator=(const EnumGenerator&) = delete;
   ~EnumGenerator();
 
   // Generate header code defining the enum.  This code should be placed
@@ -95,7 +97,6 @@ class EnumGenerator {
   std::map<std::string, std::string> variables_;
 
   friend class FileGenerator;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EnumGenerator);
 };
 
 }  // namespace cpp

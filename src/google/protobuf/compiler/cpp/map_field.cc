@@ -28,12 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/compiler/cpp/map_field.h>
+#include "google/protobuf/compiler/cpp/map_field.h"
 
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/compiler/cpp/helpers.h>
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/wire_format.h"
+#include "google/protobuf/stubs/strutil.h"
+#include "absl/strings/ascii.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
 
 
 namespace google {
@@ -61,12 +62,12 @@ void SetMessageVariables(const FieldDescriptor* descriptor,
       (*variables)["val_cpp"] = PrimitiveTypeName(options, val->cpp_type());
   }
   (*variables)["key_wire_type"] =
-      "TYPE_" + ToUpper(DeclaredTypeMethodName(key->type()));
+      "TYPE_" + absl::AsciiStrToUpper(DeclaredTypeMethodName(key->type()));
   (*variables)["val_wire_type"] =
-      "TYPE_" + ToUpper(DeclaredTypeMethodName(val->type()));
+      "TYPE_" + absl::AsciiStrToUpper(DeclaredTypeMethodName(val->type()));
   (*variables)["map_classname"] = ClassName(descriptor->message_type(), false);
-  (*variables)["number"] = StrCat(descriptor->number());
-  (*variables)["tag"] = StrCat(internal::WireFormat::MakeTag(descriptor));
+  (*variables)["number"] = absl::StrCat(descriptor->number());
+  (*variables)["tag"] = absl::StrCat(internal::WireFormat::MakeTag(descriptor));
 
   if (HasDescriptorMethods(descriptor->file(), options)) {
     (*variables)["lite"] = "";

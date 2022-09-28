@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/io/zero_copy_sink.h>
+#include "google/protobuf/io/zero_copy_sink.h"
 
 #include <algorithm>
 #include <array>
@@ -36,10 +36,12 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 
 namespace google {
 namespace protobuf {
@@ -49,11 +51,11 @@ namespace {
 
 class ChunkedString {
  public:
-  explicit ChunkedString(StringPiece data, size_t skipped_patterns)
+  explicit ChunkedString(absl::string_view data, size_t skipped_patterns)
       : data_(data), skipped_patterns_(skipped_patterns) {}
 
   // Returns the next chunk; empty if out of chunks.
-  StringPiece NextChunk() {
+  absl::string_view NextChunk() {
     if (pattern_bit_idx_ == data_.size()) {
       return "";
     }
@@ -83,11 +85,11 @@ class ChunkedString {
     for (size_t i = 0; i <= data_.size(); ++i) {
       if (i == data_.size() || (pattern_ >> start & 1) != 0) {
         if (!out.empty()) {
-          StrAppend(&out, " ");
+          absl::StrAppend(&out, " ");
         }
-        StrAppend(
+        absl::StrAppend(
             &out, "\"",
-            strings::CHexEscape(std::string{data_.substr(start, i - start)}),
+            absl::CHexEscape(std::string{data_.substr(start, i - start)}),
             "\"");
         start = i;
       }
@@ -96,7 +98,7 @@ class ChunkedString {
   }
 
  private:
-  StringPiece data_;
+  absl::string_view data_;
   size_t skipped_patterns_;
   // pattern_ is a bitset indicating at which indices we insert a seam.
   uint64_t pattern_ = 0;
@@ -108,7 +110,7 @@ class PatternedOutputStream : public io::ZeroCopyOutputStream {
   explicit PatternedOutputStream(ChunkedString data) : data_(data) {}
 
   bool Next(void** buffer, int* length) override {
-    StringPiece segment;
+    absl::string_view segment;
     if (!back_up_.empty()) {
       segment = back_up_.back();
       back_up_.pop_back();
@@ -144,16 +146,16 @@ class PatternedOutputStream : public io::ZeroCopyOutputStream {
 
  private:
   ChunkedString data_;
-  StringPiece segment_;
+  absl::string_view segment_;
 
-  std::vector<StringPiece> back_up_;
+  std::vector<absl::string_view> back_up_;
   int64_t byte_count_ = 0;
 };
 
 class ZeroCopyStreamByteSinkTest : public testing::Test {
  protected:
   std::array<char, 10> output_{};
-  StringPiece output_view_{output_.data(), output_.size()};
+  absl::string_view output_view_{output_.data(), output_.size()};
   ChunkedString output_chunks_{output_view_, 7};
 };
 
@@ -168,7 +170,7 @@ TEST_F(ZeroCopyStreamByteSinkTest, WriteExact) {
       PatternedOutputStream output_stream(output_chunks_);
       ZeroCopyStreamByteSink byte_sink(&output_stream);
       SCOPED_TRACE(input.PatternAsQuotedString());
-      StringPiece chunk;
+      absl::string_view chunk;
       while (!(chunk = input.NextChunk()).empty()) {
         byte_sink.Append(chunk.data(), chunk.size());
       }
@@ -189,13 +191,13 @@ TEST_F(ZeroCopyStreamByteSinkTest, WriteShort) {
       PatternedOutputStream output_stream(output_chunks_);
       ZeroCopyStreamByteSink byte_sink(&output_stream);
       SCOPED_TRACE(input.PatternAsQuotedString());
-      StringPiece chunk;
+      absl::string_view chunk;
       while (!(chunk = input.NextChunk()).empty()) {
         byte_sink.Append(chunk.data(), chunk.size());
       }
     } while (input.NextPattern());
 
-    ASSERT_EQ(output_view_, StringPiece("012345678\0", 10));
+    ASSERT_EQ(output_view_, absl::string_view("012345678\0", 10));
   } while (output_chunks_.NextPattern());
 }
 
@@ -210,7 +212,7 @@ TEST_F(ZeroCopyStreamByteSinkTest, WriteLong) {
       PatternedOutputStream output_stream(output_chunks_);
       ZeroCopyStreamByteSink byte_sink(&output_stream);
       SCOPED_TRACE(input.PatternAsQuotedString());
-      StringPiece chunk;
+      absl::string_view chunk;
       while (!(chunk = input.NextChunk()).empty()) {
         byte_sink.Append(chunk.data(), chunk.size());
       }

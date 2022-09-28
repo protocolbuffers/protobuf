@@ -49,36 +49,36 @@
 #include <memory>
 #include <vector>
 
-#include <google/protobuf/compiler/cpp/unittest.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/compiler/cpp/unittest.h"
+#include "absl/strings/string_view.h"
 #ifndef _MSC_VER
 // We exclude this large proto because it's too large for
 // visual studio to compile (report internal errors).
-#include <google/protobuf/unittest_enormous_descriptor.pb.h>
+#include "google/protobuf/unittest_enormous_descriptor.pb.h"
 #endif
-#include <google/protobuf/stubs/callback.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/compiler/cpp/helpers.h>
-#include <google/protobuf/unittest_no_generic_services.pb.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/stubs/callback.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/unittest_no_generic_services.pb.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/casts.h>
-#include <google/protobuf/stubs/substitute.h>
-#include <google/protobuf/arena.h>
-#include <google/protobuf/compiler/cpp/test_bad_identifiers.pb.h>
-#include <google/protobuf/compiler/importer.h>
-#include <google/protobuf/compiler/scc.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/test_util2.h>
-#include <google/protobuf/stubs/stl_util.h>
+#include "absl/base/casts.h"
+#include "absl/strings/substitute.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/compiler/cpp/test_bad_identifiers.pb.h"
+#include "google/protobuf/compiler/importer.h"
+#include "google/protobuf/compiler/scc.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/test_util2.h"
+#include "google/protobuf/stubs/stl_util.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -101,7 +101,7 @@ class MockErrorCollector : public MultiFileErrorCollector {
   // implements ErrorCollector ---------------------------------------
   void AddError(const std::string& filename, int line, int column,
                 const std::string& message) override {
-    strings::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
+    absl::SubstituteAndAppend(&text_, "$0:$1:$2: $3\n", filename, line, column,
                               message);
   }
 };
@@ -601,7 +601,7 @@ TEST(GENERATED_MESSAGE_TEST_NAME, UpcastCopyFrom) {
 
   TestUtil::SetAllFields(&message1);
 
-  const Message* source = implicit_cast<const Message*>(&message1);
+  const Message* source = absl::implicit_cast<const Message*>(&message1);
   message2.CopyFrom(*source);
 
   TestUtil::ExpectAllFieldsSet(message2);
@@ -1821,7 +1821,7 @@ TEST_F(OneofTest, UpcastCopyFrom) {
   message1.mutable_foogroup()->set_a(123);
   EXPECT_TRUE(message1.has_foogroup());
 
-  const Message* source = implicit_cast<const Message*>(&message1);
+  const Message* source = absl::implicit_cast<const Message*>(&message1);
   message2.CopyFrom(*source);
 
   EXPECT_TRUE(message2.has_foogroup());
@@ -2222,4 +2222,4 @@ TEST(DESCRIPTOR_INIT_TEST_NAME, Initialized) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

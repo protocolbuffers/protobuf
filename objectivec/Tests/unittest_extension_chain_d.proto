@@ -29,21 +29,23 @@
 
 syntax = "proto2";
 
-package objc.protobuf.tests;
+package objc.protobuf.tests.chain;
 
-import "unittest.proto";
+import "objectivec/Tests/unittest.proto";
 
-import "unittest_extension_chain_b.proto";
-import "unittest_extension_chain_c.proto";
+import "objectivec/Tests/unittest_extension_chain_b.proto";
+import "objectivec/Tests/unittest_extension_chain_c.proto";
+
+option objc_class_prefix = "Chain";
 
 // The root should end up needing to merge B (C will be merged into B, so it
 // doesn't need to be directly merged).
 
-message ChainDMessage {
-  optional ChainBMessage b = 1;
-  optional ChainCMessage c = 2;
+message DMessage {
+  optional BMessage b = 1;
+  optional CMessage c = 2;
 }
 
-extend TestAllExtensions {
+extend objc.protobuf.tests.TestAllExtensions {
   optional int32 chain_d_extension = 10004;
 }

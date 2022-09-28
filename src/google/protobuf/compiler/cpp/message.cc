@@ -32,7 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/cpp/message.h>
+#include "google/protobuf/compiler/cpp/message.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -45,28 +45,33 @@
 #include <utility>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/map_entry_lite.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/stubs/substitute.h>
-#include <google/protobuf/compiler/cpp/enum.h>
-#include <google/protobuf/compiler/cpp/extension.h>
-#include <google/protobuf/compiler/cpp/field.h>
-#include <google/protobuf/compiler/cpp/helpers.h>
-#include <google/protobuf/compiler/cpp/padding_optimizer.h>
-#include <google/protobuf/compiler/cpp/parse_function_generator.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/stubs/hash.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/map_entry_lite.h"
+#include "google/protobuf/wire_format.h"
+#include "google/protobuf/stubs/strutil.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/strings/ascii.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
+#include "absl/strings/str_join.h"
+#include "absl/strings/string_view.h"
+#include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/cpp/enum.h"
+#include "google/protobuf/compiler/cpp/extension.h"
+#include "google/protobuf/compiler/cpp/field.h"
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/padding_optimizer.h"
+#include "google/protobuf/compiler/cpp/parse_function_generator.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/generated_message_tctable_gen.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -88,21 +93,21 @@ static constexpr int kNoHasbit = -1;
 // masks must be non-zero.
 std::string ConditionalToCheckBitmasks(
     const std::vector<uint32_t>& masks, bool return_success = true,
-    StringPiece has_bits_var = "_impl_._has_bits_") {
+    absl::string_view has_bits_var = "_impl_._has_bits_") {
   std::vector<std::string> parts;
   for (int i = 0; i < masks.size(); i++) {
     if (masks[i] == 0) continue;
-    std::string m = StrCat("0x", strings::Hex(masks[i], strings::ZERO_PAD_8));
+    std::string m = absl::StrCat("0x", absl::Hex(masks[i], absl::kZeroPad8));
     // Each xor evaluates to 0 if the expected bits are present.
     parts.push_back(
-        StrCat("((", has_bits_var, "[", i, "] & ", m, ") ^ ", m, ")"));
+        absl::StrCat("((", has_bits_var, "[", i, "] & ", m, ") ^ ", m, ")"));
   }
   GOOGLE_CHECK(!parts.empty());
   // If we have multiple parts, each expected to be 0, then bitwise-or them.
   std::string result =
       parts.size() == 1
           ? parts[0]
-          : StrCat("(", Join(parts, "\n       | "), ")");
+          : absl::StrCat("(", absl::StrJoin(parts, "\n       | "), ")");
   return result + (return_success ? " == 0" : " != 0");
 }
 
@@ -116,7 +121,7 @@ void PrintPresenceCheck(const Formatter& format, const FieldDescriptor* field,
       format("cached_has_bits = $has_bits$[$1$];\n", *cached_has_word_index);
     }
     const std::string mask =
-        StrCat(strings::Hex(1u << (has_bit_index % 32), strings::ZERO_PAD_8));
+        absl::StrCat(absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
     format("if (cached_has_bits & 0x$1$u) {\n", mask);
   } else {
     format("if (has_$1$()) {\n", FieldName(field));
@@ -294,9 +299,9 @@ void CollectMapInfo(const Options& options, const Descriptor* descriptor,
       vars["val_cpp"] = PrimitiveTypeName(options, val->cpp_type());
   }
   vars["key_wire_type"] =
-      "TYPE_" + ToUpper(DeclaredTypeMethodName(key->type()));
+      "TYPE_" + absl::AsciiStrToUpper(DeclaredTypeMethodName(key->type()));
   vars["val_wire_type"] =
-      "TYPE_" + ToUpper(DeclaredTypeMethodName(val->type()));
+      "TYPE_" + absl::AsciiStrToUpper(DeclaredTypeMethodName(val->type()));
 }
 
 // Does the given field have a private (internal helper only) has_$name$()
@@ -305,14 +310,6 @@ bool HasPrivateHasMethod(const FieldDescriptor* field) {
   // Only for oneofs in message types with no field presence. has_$name$(),
   // based on the oneof case, is still useful internally for generated code.
   return IsProto3(field->file()) && field->real_containing_oneof();
-}
-
-// TODO(ckennelly):  Cull these exclusions if/when these protos do not have
-// their methods overridden by subclasses.
-
-bool ShouldMarkClassAsFinal(const Descriptor* descriptor,
-                            const Options& options) {
-  return true;
 }
 
 
@@ -415,7 +412,6 @@ class ColdChunkSkipper {
         has_bit_indices_(has_bit_indices),
         access_info_map_(options.access_info_map),
         cold_threshold_(cold_threshold) {
-    SetCommonVars(options, &variables_);
     SetCommonMessageDataVariables(descriptor, &variables_);
   }
 
@@ -478,8 +474,7 @@ void ColdChunkSkipper::OnStartChunk(int chunk, int cached_has_word_index,
   }
 
   // Emit has_bit check for each has_bit_dword index.
-  format("if (PROTOBUF_PREDICT_FALSE(");
-  int first_word = HasbitWord(chunk, 0);
+  format("if (PROTOBUF_PREDICT_FALSE(false");
   while (chunk < limit_chunk_) {
     uint32_t mask = 0;
     int this_word = HasbitWord(chunk, 0);
@@ -493,10 +488,8 @@ void ColdChunkSkipper::OnStartChunk(int chunk, int cached_has_word_index,
       }
     }
 
-    if (this_word != first_word) {
-      format(" ||\n    ");
-    }
-    format.Set("mask", strings::Hex(mask, strings::ZERO_PAD_8));
+    format(" ||\n    ");
+    format.Set("mask", absl::Hex(mask, absl::kZeroPad8));
     if (this_word == cached_has_word_index) {
       format("(cached_has_bits & 0x$mask$u) != 0");
     } else {
@@ -518,15 +511,15 @@ bool ColdChunkSkipper::OnEndChunk(int chunk, io::Printer* printer) {
 }
 
 void MaySetAnnotationVariable(const Options& options,
-                              StringPiece annotation_name,
-                              StringPiece injector_template_prefix,
-                              StringPiece injector_template_suffix,
+                              absl::string_view annotation_name,
+                              absl::string_view injector_template_prefix,
+                              absl::string_view injector_template_suffix,
                               std::map<std::string, std::string>* variables) {
   if (options.field_listener_options.forbidden_field_listener_events.count(
           std::string(annotation_name)))
     return;
-  (*variables)[StrCat("annotate_", annotation_name)] = strings::Substitute(
-      StrCat(injector_template_prefix, injector_template_suffix),
+  (*variables)[absl::StrCat("annotate_", annotation_name)] = absl::Substitute(
+      absl::StrCat(injector_template_prefix, injector_template_suffix),
       (*variables)["classtype"]);
 }
 
@@ -555,8 +548,8 @@ void GenerateExtensionAnnotations(
   if (!HasTracker(descriptor, options)) {
     return;
   }
-  StringPiece tracker = (*variables)["tracker"];
-  StringPiece extensions = (*variables)["extensions"];
+  absl::string_view tracker = (*variables)["tracker"];
+  absl::string_view extensions = (*variables)["extensions"];
   for (const auto& annotation : accessor_annotations_to_hooks) {
     const std::string& annotation_name = annotation.first;
     const std::string& listener_call = annotation.second;
@@ -565,7 +558,7 @@ void GenerateExtensionAnnotations(
         !StrContains(annotation_name, "clear")) {
       // Primitive fields accessors.
       // "Has" is here as users calling "has" on a repeated field is a mistake.
-      (*variables)[annotation_name] = StrCat(
+      (*variables)[annotation_name] = absl::StrCat(
           "  ", tracker, ".", listener_call,
           "(this, id.number(), _proto_TypeTraits::GetPtr(id.number(), ",
           extensions, ", id.default_value_ref()));");
@@ -575,17 +568,17 @@ void GenerateExtensionAnnotations(
       // Repeated index accessors.
       std::string str_index = "index";
       if (StrContains(annotation_name, "add")) {
-        str_index = StrCat(extensions, ".ExtensionSize(id.number()) - 1");
+        str_index = absl::StrCat(extensions, ".ExtensionSize(id.number()) - 1");
       }
       (*variables)[annotation_name] =
-          StrCat("  ", tracker, ".", listener_call,
+          absl::StrCat("  ", tracker, ".", listener_call,
                        "(this, id.number(), "
                        "_proto_TypeTraits::GetPtr(id.number(), ",
                        extensions, ", ", str_index, "));");
     } else if (StrContains(annotation_name, "list") ||
                StrContains(annotation_name, "size")) {
       // Repeated full accessors.
-      (*variables)[annotation_name] = StrCat(
+      (*variables)[annotation_name] = absl::StrCat(
           "  ", tracker, ".", listener_call,
           "(this, id.number(), _proto_TypeTraits::GetRepeatedPtr(id.number(), ",
           extensions, "));");
@@ -635,7 +628,7 @@ MessageGenerator::MessageGenerator(
 
   if (HasTracker(descriptor_, options_)) {
     const std::string injector_template =
-        StrCat("  ", variables_["tracker"], ".");
+        absl::StrCat("  ", variables_["tracker"], ".");
 
     MaySetAnnotationVariable(options, "serialize", injector_template,
                              "OnSerialize(this);\n", &variables_);
@@ -674,13 +667,46 @@ MessageGenerator::MessageGenerator(
   message_layout_helper_->OptimizeLayout(&optimized_order_, options_,
                                          scc_analyzer_);
 
-  // This message has hasbits iff one or more fields need one.
+  // Allocate has_bit_indices_ iff the message has a field that needs hasbits.
+  int has_bit_fields = 0;
   for (auto field : optimized_order_) {
     if (HasHasbit(field)) {
+      ++has_bit_fields;
       if (has_bit_indices_.empty()) {
         has_bit_indices_.resize(descriptor_->field_count(), kNoHasbit);
       }
-      has_bit_indices_[field->index()] = max_has_bit_index_++;
+    }
+  }
+  // For messages with more than 32 has bits, do a first pass which only
+  // allocates has bits to fields that might be in the fast table.
+  bool allocated_fast[32] = {};
+  if (has_bit_fields > 32) {
+    for (const auto* field : optimized_order_) {
+      if (HasHasbit(field)) {
+        if (!IsDescriptorEligibleForFastParsing(field)) continue;
+
+        // A fast-table with > 16 entries ends up incorporating
+        // the high-bit for VarInt encoding into the index for the table,
+        // so we have to incorporate it here also, when computing the
+        // index likely to be used for that table.
+        int fast_index = field->number();
+        if (fast_index >= 16) fast_index = 16 + (fast_index % 16);
+        GOOGLE_CHECK_GE(fast_index, 1);
+        GOOGLE_CHECK_LT(fast_index, 32);
+
+        if (allocated_fast[fast_index]) continue;
+        allocated_fast[fast_index] = true;
+
+        has_bit_indices_[field->index()] = max_has_bit_index_++;
+      }
+    }
+  }
+  // Then do a second pass which allocates all remaining has bits
+  for (const auto* field : optimized_order_) {
+    if (HasHasbit(field)) {
+      if (has_bit_indices_[field->index()] == kNoHasbit) {
+        has_bit_indices_[field->index()] = max_has_bit_index_++;
+      }
     }
     if (IsStringInlined(field, options_)) {
       if (inlined_string_indices_.empty()) {
@@ -692,6 +718,7 @@ MessageGenerator::MessageGenerator(
       inlined_string_indices_[field->index()] = max_inlined_string_index_++;
     }
   }
+  GOOGLE_CHECK_EQ(max_has_bit_index_, has_bit_fields);
 
   if (!has_bit_indices_.empty()) {
     field_generators_.SetHasBitIndices(has_bit_indices_);
@@ -797,38 +824,36 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* printer) {
 
     format.AddMap(vars);
 
-      if (field->is_repeated()) {
+    if (field->is_repeated()) {
+      format("$deprecated_attr$int ${1$$name$_size$}$() const$2$\n", field,
+             !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
+      if (!IsFieldStripped(field, options_)) {
         format(
-            "$deprecated_attr$int ${1$$name$_size$}$() const$2$\n", field,
-            !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
-        if (!IsFieldStripped(field, options_)) {
-          format(
-              "private:\n"
-              "int ${1$_internal_$name$_size$}$() const;\n"
-              "public:\n",
-              field);
-        }
-      } else if (HasHasMethod(field)) {
-        format(
-            "$deprecated_attr$bool ${1$has_$name$$}$() const$2$\n", field,
-            !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
-        if (!IsFieldStripped(field, options_)) {
-          format(
-              "private:\n"
-              "bool _internal_has_$name$() const;\n"
-              "public:\n");
-        }
-      } else if (HasPrivateHasMethod(field)) {
-        if (!IsFieldStripped(field, options_)) {
-          format(
-              "private:\n"
-              "bool ${1$_internal_has_$name$$}$() const;\n"
-              "public:\n",
-              field);
-        }
+            "private:\n"
+            "int ${1$_internal_$name$_size$}$() const;\n"
+            "public:\n",
+            field);
       }
-      format("$deprecated_attr$void ${1$clear_$name$$}$()$2$\n", field,
-             !IsFieldStripped(field, options_) ? ";" : "{__builtin_trap();}");
+    } else if (HasHasMethod(field)) {
+      format("$deprecated_attr$bool ${1$has_$name$$}$() const$2$\n", field,
+             !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
+      if (!IsFieldStripped(field, options_)) {
+        format(
+            "private:\n"
+            "bool _internal_has_$name$() const;\n"
+            "public:\n");
+      }
+    } else if (HasPrivateHasMethod(field)) {
+      if (!IsFieldStripped(field, options_)) {
+        format(
+            "private:\n"
+            "bool ${1$_internal_has_$name$$}$() const;\n"
+            "public:\n",
+            field);
+      }
+    }
+    format("$deprecated_attr$void ${1$clear_$name$$}$()$2$\n", field,
+           !IsFieldStripped(field, options_) ? ";" : "{__builtin_trap();}");
 
     // Generate type-specific accessor declarations.
     field_generators_.get(field).GenerateAccessorDeclarations(printer);
@@ -1079,7 +1104,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
 
     format.Set("has_array_index", has_bit_index / 32);
     format.Set("has_mask",
-               strings::Hex(1u << (has_bit_index % 32), strings::ZERO_PAD_8));
+               absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
     format(
         "inline bool $classname$::_internal_has_$name$() const {\n"
         "  bool value = "
@@ -1127,7 +1152,7 @@ void MessageGenerator::GenerateOneofHasBits(io::Printer* printer) {
   for (auto oneof : OneOfRange(descriptor_)) {
     format.Set("oneof_name", oneof->name());
     format.Set("oneof_index", oneof->index());
-    format.Set("cap_oneof_name", ToUpper(oneof->name()));
+    format.Set("cap_oneof_name", absl::AsciiStrToUpper(oneof->name()));
     format(
         "inline bool $classname$::has_$oneof_name$() const {\n"
         "  return $oneof_name$_case() != $cap_oneof_name$_NOT_SET;\n"
@@ -1216,7 +1241,7 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
       int has_bit_index = HasBitIndex(field);
       format.Set("has_array_index", has_bit_index / 32);
       format.Set("has_mask",
-                 strings::Hex(1u << (has_bit_index % 32), strings::ZERO_PAD_8));
+                 absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
       format("$has_bits$[$has_array_index$] &= ~0x$has_mask$u;\n");
     }
   }
@@ -1266,16 +1291,16 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
       format.Set("field_name", UnderscoresToCamelCase(field->name(), true));
       format.Set("oneof_name", field->containing_oneof()->name());
       format.Set("oneof_index",
-                 StrCat(field->containing_oneof()->index()));
+                 absl::StrCat(field->containing_oneof()->index()));
       GenerateOneofMemberHasBits(field, format);
     } else {
       // Singular field.
       GenerateSingularFieldHasBits(field, format);
     }
 
-      if (!IsCrossFileMaybeMap(field)) {
-        GenerateFieldClear(field, true, format);
-      }
+    if (!IsCrossFileMaybeMap(field)) {
+      GenerateFieldClear(field, true, format);
+    }
     // Generate type-specific accessors.
     if (!IsFieldStripped(field, options_)) {
       field_generators_.get(field).GenerateInlineAccessorDefinitions(printer);
@@ -1290,8 +1315,6 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* printer) {
 
 void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   Formatter format(printer, variables_);
-  format.Set("class_final",
-             ShouldMarkClassAsFinal(descriptor_, options_) ? "final" : "");
 
   if (IsMapEntryMessage(descriptor_)) {
     std::map<std::string, std::string> vars;
@@ -1393,7 +1416,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   }
 
   format(
-      "class $dllexport_decl $${1$$classname$$}$$ class_final$ :\n"
+      "class $dllexport_decl $${1$$classname$$}$ final :\n"
       "    public $superclass$ /* @@protoc_insertion_point("
       "class_definition:$full_name$) */ {\n",
       descriptor_);
@@ -1496,7 +1519,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       format("$1$ = $2$,\n", OneofCaseConstantName(field),  // 1
              field->number());                              // 2
     }
-    format("$1$_NOT_SET = 0,\n", ToUpper(oneof->name()));
+    format("$1$_NOT_SET = 0,\n", absl::AsciiStrToUpper(oneof->name()));
     format.Outdent();
     format(
         "};\n"
@@ -1525,8 +1548,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
           "  return $any_metadata$.PackFrom(GetArena(), message);\n"
           "}\n"
           "bool PackFrom(const ::$proto_ns$::Message& message,\n"
-          "              ::PROTOBUF_NAMESPACE_ID::ConstStringParam "
-          "type_url_prefix) {\n"
+          "              ::absl::string_view type_url_prefix) {\n"
           "  $DCHK$_NE(&message, this);\n"
           "  return $any_metadata$.PackFrom(GetArena(), message, "
           "type_url_prefix);\n"
@@ -1548,8 +1570,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
           "!std::is_convertible<T, const ::$proto_ns$::Message&>"
           "::value>::type>\n"
           "bool PackFrom(const T& message,\n"
-          "              ::PROTOBUF_NAMESPACE_ID::ConstStringParam "
-          "type_url_prefix) {\n"
+          "              ::absl::string_view type_url_prefix) {\n"
           "  return $any_metadata$.PackFrom<T>(GetArena(), message, "
           "type_url_prefix);"
           "}\n"
@@ -1567,8 +1588,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
           "}\n"
           "template <typename T>\n"
           "bool PackFrom(const T& message,\n"
-          "              ::PROTOBUF_NAMESPACE_ID::ConstStringParam "
-          "type_url_prefix) {\n"
+          "              ::absl::string_view type_url_prefix) {\n"
           "  return $any_metadata$.PackFrom(GetArena(), message, "
           "type_url_prefix);\n"
           "}\n"
@@ -1581,8 +1601,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
         "template<typename T> bool Is() const {\n"
         "  return $any_metadata$.Is<T>();\n"
         "}\n"
-        "static bool ParseAnyTypeUrl(::PROTOBUF_NAMESPACE_ID::ConstStringParam "
-        "type_url,\n"
+        "static bool ParseAnyTypeUrl(::absl::string_view type_url,\n"
         "                            std::string* full_type_name);\n");
   }
 
@@ -1700,11 +1719,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
       // Friend AnyMetadata so that it can call this FullMessageName() method.
       "\nprivate:\n"
       "friend class ::$proto_ns$::internal::AnyMetadata;\n"
-      "static $1$ FullMessageName() {\n"
+      "static ::absl::string_view FullMessageName() {\n"
       "  return \"$full_name$\";\n"
-      "}\n",
-      options_.opensource_runtime ? "::PROTOBUF_NAMESPACE_ID::StringPiece"
-                                  : "::StringPiece");
+      "}\n");
 
   format(
       // TODO(gerbens) Make this private! Currently people are deriving from
@@ -1859,7 +1876,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* printer) {
   const size_t sizeof_has_bits = HasBitsSize();
   const std::string has_bits_decl =
       sizeof_has_bits == 0 ? ""
-                           : StrCat("::$proto_ns$::internal::HasBits<",
+                           : absl::StrCat("::$proto_ns$::internal::HasBits<",
                                           sizeof_has_bits, "> _has_bits_;\n");
 
   format(
@@ -2092,7 +2109,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
     }
     format(
         "bool $classname$::ParseAnyTypeUrl(\n"
-        "    ::PROTOBUF_NAMESPACE_ID::ConstStringParam type_url,\n"
+        "    ::absl::string_view type_url,\n"
         "    std::string* full_type_name) {\n"
         "  return ::_pbi::ParseAnyTypeUrl(type_url, full_type_name);\n"
         "}\n"
@@ -2144,8 +2161,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* printer) {
   format("};\n\n");
   for (auto field : FieldRange(descriptor_)) {
     if (!IsFieldStripped(field, options_)) {
-      field_generators_.get(field).GenerateInternalAccessorDefinitions(
-          printer);
+      field_generators_.get(field).GenerateInternalAccessorDefinitions(printer);
     }
   }
 
@@ -2359,7 +2375,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
     entries += has_bit_indices_.size();
     for (int i = 0; i < has_bit_indices_.size(); i++) {
       const std::string index =
-          has_bit_indices_[i] >= 0 ? StrCat(has_bit_indices_[i]) : "~0u";
+          has_bit_indices_[i] >= 0 ? absl::StrCat(has_bit_indices_[i]) : "~0u";
       format("$1$,\n", index);
     }
   }
@@ -2368,7 +2384,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(
     for (int inlined_string_index : inlined_string_indices_) {
       const std::string index =
           inlined_string_index >= 0
-              ? StrCat(inlined_string_index, ",  // inlined_string_index")
+              ? absl::StrCat(inlined_string_index, ",  // inlined_string_index")
               : "~0u,";
       format("$1$\n", index);
     }
@@ -2691,8 +2707,7 @@ void MessageGenerator::GenerateConstexprConstructor(io::Printer* printer) {
       continue;
     }
     put_sep();
-    field_generators_.get(field).GenerateConstexprAggregateInitializer(
-        printer);
+    field_generators_.get(field).GenerateConstexprAggregateInitializer(printer);
   }
   if (ShouldSplit(descriptor_, options_)) {
     put_sep();
@@ -2946,7 +2961,7 @@ void MessageGenerator::GenerateStructors(io::Printer* printer) {
           "case $1$_NOT_SET: {\n"
           "  break;\n"
           "}\n",
-          ToUpper(oneof->name()));
+          absl::AsciiStrToUpper(oneof->name()));
       format.Outdent();
       format("}\n");
     }
@@ -3112,7 +3127,7 @@ void MessageGenerator::GenerateClear(io::Printer* printer) {
       // Emit an if() that will let us skip the whole chunk if none are set.
       uint32_t chunk_mask = GenChunkMask(chunk, has_bit_indices_);
       std::string chunk_mask_str =
-          StrCat(strings::Hex(chunk_mask, strings::ZERO_PAD_8));
+          absl::StrCat(absl::Hex(chunk_mask, absl::kZeroPad8));
 
       // Check (up to) 8 has_bits at a time if we have more than one field in
       // this chunk.  Due to field layout ordering, we may check
@@ -3243,12 +3258,12 @@ void MessageGenerator::GenerateOneofClear(io::Printer* printer) {
         "case $1$_NOT_SET: {\n"
         "  break;\n"
         "}\n",
-        ToUpper(oneof->name()));
+        absl::AsciiStrToUpper(oneof->name()));
     format.Outdent();
     format(
         "}\n"
         "$oneof_case$[$1$] = $2$_NOT_SET;\n",
-        i, ToUpper(oneof->name()));
+        i, absl::AsciiStrToUpper(oneof->name()));
     format.Outdent();
     format(
         "}\n"
@@ -3472,7 +3487,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* printer) {
       // Emit an if() that will let us skip the whole chunk if none are set.
       uint32_t chunk_mask = GenChunkMask(chunk, has_bit_indices_);
       std::string chunk_mask_str =
-          StrCat(strings::Hex(chunk_mask, strings::ZERO_PAD_8));
+          absl::StrCat(absl::Hex(chunk_mask, absl::kZeroPad8));
 
       // Check (up to) 8 has_bits at a time if we have more than one field in
       // this chunk.  Due to field layout ordering, we may check
@@ -3520,8 +3535,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* printer) {
         // Check hasbit, using cached bits.
         GOOGLE_CHECK(HasHasbit(field));
         int has_bit_index = has_bit_indices_[field->index()];
-        const std::string mask = StrCat(
-            strings::Hex(1u << (has_bit_index % 32), strings::ZERO_PAD_8));
+        const std::string mask = absl::StrCat(
+            absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
         format("if (cached_has_bits & 0x$1$u) {\n", mask);
         format.Indent();
 
@@ -3575,7 +3590,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* printer) {
         "case $1$_NOT_SET: {\n"
         "  break;\n"
         "}\n",
-        ToUpper(oneof->name()));
+        absl::AsciiStrToUpper(oneof->name()));
     format.Outdent();
     format("}\n");
   }
@@ -3710,7 +3725,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* printer,
     int has_bit_index = HasBitIndex(field);
     if (cached_has_bits_index == has_bit_index / 32) {
       const std::string mask =
-          StrCat(strings::Hex(1u << (has_bit_index % 32), strings::ZERO_PAD_8));
+          absl::StrCat(absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
 
       format("if (cached_has_bits & 0x$1$u) {\n", mask);
     } else {
@@ -3735,8 +3750,8 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* printer,
 void MessageGenerator::GenerateSerializeOneExtensionRange(
     io::Printer* printer, const Descriptor::ExtensionRange* range) {
   std::map<std::string, std::string> vars = variables_;
-  vars["start"] = StrCat(range->start);
-  vars["end"] = StrCat(range->end);
+  vars["start"] = absl::StrCat(range->start);
+  vars["end"] = absl::StrCat(range->end);
   Formatter format(printer, vars);
   format("// Extension range [$start$, $end$)\n");
   format(
@@ -4265,7 +4280,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
       // Emit an if() that will let us skip the whole chunk if none are set.
       uint32_t chunk_mask = GenChunkMask(chunk, has_bit_indices_);
       std::string chunk_mask_str =
-          StrCat(strings::Hex(chunk_mask, strings::ZERO_PAD_8));
+          absl::StrCat(absl::Hex(chunk_mask, absl::kZeroPad8));
 
       // Check (up to) 8 has_bits at a time if we have more than one field in
       // this chunk.  Due to field layout ordering, we may check
@@ -4348,7 +4363,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* printer) {
         "case $1$_NOT_SET: {\n"
         "  break;\n"
         "}\n",
-        ToUpper(oneof->name()));
+        absl::AsciiStrToUpper(oneof->name()));
     format.Outdent();
     format("}\n");
   }
@@ -4447,7 +4462,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
         "case $1$_NOT_SET: {\n"
         "  break;\n"
         "}\n",
-        ToUpper(oneof->name()));
+        absl::AsciiStrToUpper(oneof->name()));
     format.Outdent();
     format("}\n");
   }
@@ -4463,4 +4478,4 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* printer) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

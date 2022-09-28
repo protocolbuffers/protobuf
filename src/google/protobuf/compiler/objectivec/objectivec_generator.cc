@@ -28,16 +28,20 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "google/protobuf/compiler/objectivec/objectivec_generator.h"
+
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <unordered_set>
-#include <google/protobuf/compiler/objectivec/objectivec_generator.h>
-#include <google/protobuf/compiler/objectivec/objectivec_file.h>
-#include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/stubs/strutil.h>
+
+#include "absl/strings/ascii.h"
+#include "absl/strings/str_split.h"
+#include "absl/strings/strip.h"
+#include "google/protobuf/compiler/objectivec/objectivec_file.h"
+#include "google/protobuf/compiler/objectivec/objectivec_helpers.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 
 namespace google {
 namespace protobuf {
@@ -51,7 +55,7 @@ namespace {
 // invalid, `result` is unchanged.
 bool StringToBool(const std::string& value, bool* result) {
   std::string upper_value(value);
-  UpperString(&upper_value);
+  absl::AsciiStrToUpper(&upper_value);
   if (upper_value == "NO") {
     *result = false;
     return true;
@@ -95,11 +99,11 @@ bool ObjectiveCGenerator::GenerateAll(
   // e.g. protoc ... --objc_opt=expected_prefixes=file.txt,generate_for_named_framework=MyFramework
 
   Options validation_options;
-  FileGenerator::GenerationOptions generation_options;
+  GenerationOptions generation_options;
 
   std::vector<std::pair<std::string, std::string> > options;
   ParseGeneratorParameter(parameter, &options);
-  for (int i = 0; i < options.size(); i++) {
+  for (size_t i = 0; i < options.size(); i++) {
     if (options[i].first == "expected_prefixes_path") {
       // Path to find a file containing the expected prefixes
       // (objc_class_prefix "PREFIX") for proto packages (package NAME). The
@@ -122,8 +126,8 @@ bool ObjectiveCGenerator::GenerateAll(
       // A semicolon delimited string that lists the paths of .proto files to
       // exclude from the package prefix validations (expected_prefixes_path).
       // This is provided as an "out", to skip some files being checked.
-      for (StringPiece split_piece : Split(
-               options[i].second, ";", true)) {
+      for (absl::string_view split_piece : absl::StrSplit(
+               options[i].second, ";", absl::SkipEmpty())) {
         validation_options.expected_prefixes_suppressions.push_back(
             std::string(split_piece));
       }
@@ -189,7 +193,8 @@ bool ObjectiveCGenerator::GenerateAll(
       // generated files. When integrating ObjC protos into a build system,
       // this can be used to avoid having to add the runtime directory to the
       // header search path since the generate #import will be more complete.
-      generation_options.runtime_import_prefix = StripSuffixString(options[i].second, "/");
+      generation_options.runtime_import_prefix =
+          std::string(absl::StripSuffix(options[i].second, "/"));
     } else if (options[i].first == "package_to_prefix_mappings_path") {
       // Path to use for when loading the objc class prefix mappings to use.
       // The `objc_class_prefix` file option is always honored first if one is present.

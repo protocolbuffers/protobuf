@@ -43,11 +43,11 @@
 #include <utility>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/descriptor.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -74,6 +74,8 @@ class MergedDescriptorDatabase;
 class PROTOBUF_EXPORT DescriptorDatabase {
  public:
   inline DescriptorDatabase() {}
+  DescriptorDatabase(const DescriptorDatabase&) = delete;
+  DescriptorDatabase& operator=(const DescriptorDatabase&) = delete;
   virtual ~DescriptorDatabase();
 
   // Find a file by file name.  Fills in in *output and returns true if found.
@@ -136,9 +138,6 @@ class PROTOBUF_EXPORT DescriptorDatabase {
   // searching all message names, otherwise returns false and leaves output
   // unchanged.
   bool FindAllMessageNames(std::vector<std::string>* output);
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DescriptorDatabase);
 };
 
 // A DescriptorDatabase into which you can insert files manually.
@@ -165,6 +164,8 @@ class PROTOBUF_EXPORT DescriptorDatabase {
 class PROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
  public:
   SimpleDescriptorDatabase();
+  SimpleDescriptorDatabase(const SimpleDescriptorDatabase&) = delete;
+  SimpleDescriptorDatabase& operator=(const SimpleDescriptorDatabase&) = delete;
   ~SimpleDescriptorDatabase() override;
 
   // Adds the FileDescriptorProto to the database, making a copy.  The object
@@ -175,6 +176,10 @@ class PROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
 
   // Adds the FileDescriptorProto to the database and takes ownership of it.
   bool AddAndOwn(const FileDescriptorProto* file);
+
+  // Adds the FileDescriptorProto to the database and not take ownership of it.
+  // The owner must ensure file outlives the SimpleDescriptorDatabase.
+  bool AddUnowned(const FileDescriptorProto* file);
 
   // implements DescriptorDatabase -----------------------------------
   bool FindFileByName(const std::string& filename,
@@ -274,8 +279,6 @@ class PROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
   // If file is non-nullptr, copy it into *output and return true, otherwise
   // return false.
   bool MaybeCopy(const FileDescriptorProto* file, FileDescriptorProto* output);
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SimpleDescriptorDatabase);
 };
 
 // Very similar to SimpleDescriptorDatabase, but stores all the descriptors
@@ -286,6 +289,9 @@ class PROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
 class PROTOBUF_EXPORT EncodedDescriptorDatabase : public DescriptorDatabase {
  public:
   EncodedDescriptorDatabase();
+  EncodedDescriptorDatabase(const EncodedDescriptorDatabase&) = delete;
+  EncodedDescriptorDatabase& operator=(const EncodedDescriptorDatabase&) =
+      delete;
   ~EncodedDescriptorDatabase() override;
 
   // Adds the FileDescriptorProto to the database.  The descriptor is provided
@@ -327,14 +333,14 @@ class PROTOBUF_EXPORT EncodedDescriptorDatabase : public DescriptorDatabase {
   // return true, otherwise return false.
   bool MaybeParse(std::pair<const void*, int> encoded_file,
                   FileDescriptorProto* output);
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(EncodedDescriptorDatabase);
 };
 
 // A DescriptorDatabase that fetches files from a given pool.
 class PROTOBUF_EXPORT DescriptorPoolDatabase : public DescriptorDatabase {
  public:
   explicit DescriptorPoolDatabase(const DescriptorPool& pool);
+  DescriptorPoolDatabase(const DescriptorPoolDatabase&) = delete;
+  DescriptorPoolDatabase& operator=(const DescriptorPoolDatabase&) = delete;
   ~DescriptorPoolDatabase() override;
 
   // implements DescriptorDatabase -----------------------------------
@@ -350,7 +356,6 @@ class PROTOBUF_EXPORT DescriptorPoolDatabase : public DescriptorDatabase {
 
  private:
   const DescriptorPool& pool_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DescriptorPoolDatabase);
 };
 
 // A DescriptorDatabase that wraps two or more others.  It first searches the
@@ -365,6 +370,8 @@ class PROTOBUF_EXPORT MergedDescriptorDatabase : public DescriptorDatabase {
   // DescriptorDatabases need to stick around.
   explicit MergedDescriptorDatabase(
       const std::vector<DescriptorDatabase*>& sources);
+  MergedDescriptorDatabase(const MergedDescriptorDatabase&) = delete;
+  MergedDescriptorDatabase& operator=(const MergedDescriptorDatabase&) = delete;
   ~MergedDescriptorDatabase() override;
 
   // implements DescriptorDatabase -----------------------------------
@@ -387,12 +394,11 @@ class PROTOBUF_EXPORT MergedDescriptorDatabase : public DescriptorDatabase {
 
  private:
   std::vector<DescriptorDatabase*> sources_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MergedDescriptorDatabase);
 };
 
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_DESCRIPTOR_DATABASE_H__

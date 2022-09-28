@@ -28,16 +28,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "google/protobuf/compiler/objectivec/objectivec_field.h"
+
 #include <iostream>
 
-#include <google/protobuf/compiler/objectivec/objectivec_field.h>
-#include <google/protobuf/compiler/objectivec/objectivec_helpers.h>
-#include <google/protobuf/compiler/objectivec/objectivec_enum_field.h>
-#include <google/protobuf/compiler/objectivec/objectivec_map_field.h>
-#include <google/protobuf/compiler/objectivec/objectivec_message_field.h>
-#include <google/protobuf/compiler/objectivec/objectivec_primitive_field.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "absl/strings/str_cat.h"
+#include "google/protobuf/compiler/objectivec/objectivec_enum_field.h"
+#include "google/protobuf/compiler/objectivec/objectivec_helpers.h"
+#include "google/protobuf/compiler/objectivec/objectivec_map_field.h"
+#include "google/protobuf/compiler/objectivec/objectivec_message_field.h"
+#include "google/protobuf/compiler/objectivec/objectivec_primitive_field.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {
@@ -74,7 +75,7 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["raw_field_name"] = raw_field_name;
   (*variables)["field_number_name"] =
       classname + "_FieldNumber_" + capitalized_name;
-  (*variables)["field_number"] = StrCat(descriptor->number());
+  (*variables)["field_number"] = absl::StrCat(descriptor->number());
   (*variables)["field_type"] = GetCapitalizedType(descriptor);
   (*variables)["deprecated_attribute"] = GetOptionalDeprecatedAttribute(descriptor);
   std::vector<std::string> field_flags;
@@ -224,7 +225,7 @@ void FieldGenerator::GenerateFieldDescription(
 }
 
 void FieldGenerator::SetRuntimeHasBit(int has_index) {
-  variables_["has_index"] = StrCat(has_index);
+  variables_["has_index"] = absl::StrCat(has_index);
 }
 
 void FieldGenerator::SetNoHasBit(void) {
@@ -248,7 +249,7 @@ void FieldGenerator::SetOneofIndexBase(int index_base) {
   if (oneof != NULL) {
     int index = oneof->index() + index_base;
     // Flip the sign to mark it as a oneof.
-    variables_["has_index"] = StrCat(-index);
+    variables_["has_index"] = absl::StrCat(-index);
   }
 }
 

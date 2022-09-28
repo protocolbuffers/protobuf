@@ -32,8 +32,8 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CSHARP_DOC_COMMENT_H__
 #define GOOGLE_PROTOBUF_COMPILER_CSHARP_DOC_COMMENT_H__
 
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/descriptor.h>
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {

@@ -32,29 +32,31 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/java/message_builder.h>
+#include "google/protobuf/compiler/java/message_builder.h"
 
 #include <algorithm>
 #include <map>
 #include <memory>
 #include <vector>
 
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/substitute.h>
-#include <google/protobuf/compiler/java/context.h>
-#include <google/protobuf/compiler/java/doc_comment.h>
-#include <google/protobuf/compiler/java/enum.h>
-#include <google/protobuf/compiler/java/extension.h>
-#include <google/protobuf/compiler/java/generator_factory.h>
-#include <google/protobuf/compiler/java/helpers.h>
-#include <google/protobuf/compiler/java/name_resolver.h>
-#include <google/protobuf/descriptor.pb.h>
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/wire_format.h"
+#include "google/protobuf/stubs/strutil.h"
+#include "absl/strings/ascii.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/java/context.h"
+#include "google/protobuf/compiler/java/doc_comment.h"
+#include "google/protobuf/compiler/java/enum.h"
+#include "google/protobuf/compiler/java/extension.h"
+#include "google/protobuf/compiler/java/generator_factory.h"
+#include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/descriptor.pb.h"
 
 // Must be last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -127,7 +129,7 @@ void MessageBuilderGenerator::Generate(io::Printer* printer) {
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
     vars["oneof_capitalized_name"] =
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
-    vars["oneof_index"] = StrCat(oneof->index());
+    vars["oneof_index"] = absl::StrCat(oneof->index());
     // oneofCase_ and oneof_
     printer->Print(vars,
                    "private int $oneof_name$Case_ = 0;\n"
@@ -233,7 +235,7 @@ void MessageBuilderGenerator::GenerateDescriptorMethods(io::Printer* printer) {
       printer->Print(
           "case $number$:\n"
           "  return internalGet$capitalized_name$();\n",
-          "number", StrCat(field->number()), "capitalized_name",
+          "number", absl::StrCat(field->number()), "capitalized_name",
           info->capitalized_name);
     }
     printer->Print(
@@ -258,7 +260,7 @@ void MessageBuilderGenerator::GenerateDescriptorMethods(io::Printer* printer) {
       printer->Print(
           "case $number$:\n"
           "  return internalGetMutable$capitalized_name$();\n",
-          "number", StrCat(field->number()), "capitalized_name",
+          "number", absl::StrCat(field->number()), "capitalized_name",
           info->capitalized_name);
     }
     printer->Print(
@@ -558,7 +560,7 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
       for (int j = 0; j < oneof->field_count(); j++) {
         const FieldDescriptor* field = oneof->field(j);
         printer->Print("case $field_name$: {\n", "field_name",
-                       ToUpper(field->name()));
+                       absl::AsciiStrToUpper(field->name()));
         printer->Indent();
         field_generators_.get(field).GenerateMergingCode(printer);
         printer->Print("break;\n");
@@ -570,7 +572,7 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
           "  break;\n"
           "}\n",
           "cap_oneof_name",
-          ToUpper(context_->GetOneofGeneratorInfo(oneof)->name));
+          absl::AsciiStrToUpper(context_->GetOneofGeneratorInfo(oneof)->name));
       printer->Outdent();
       printer->Print("}\n");
     }
@@ -718,4 +720,4 @@ void MessageBuilderGenerator::GenerateIsInitialized(io::Printer* printer) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

@@ -32,29 +32,32 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/stubs/casts.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/unittest_mset.pb.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/arena.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/extension_set.h>
-#include <google/protobuf/text_format.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/extension_set.h"
+
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_mset.pb.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/text_format.h"
+#include "google/protobuf/wire_format.h"
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include <google/protobuf/test_util.h>
-#include <google/protobuf/test_util2.h>
-#include <google/protobuf/stubs/stl_util.h>
+#include "absl/base/casts.h"
+#include "absl/strings/match.h"
+#include "google/protobuf/test_util.h"
+#include "google/protobuf/test_util2.h"
+#include "google/protobuf/stubs/stl_util.h"
+
+#include "google/protobuf/stubs/strutil.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 
 namespace google {
@@ -62,6 +65,7 @@ namespace protobuf {
 namespace internal {
 namespace {
 
+using ::google::protobuf::internal::DownCast;
 using TestUtil::EqualsToSerialized;
 
 // This test closely mirrors third_party/protobuf/compiler/cpp/unittest.cc
@@ -852,8 +856,10 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
     const size_t old_capacity =                                                \
         message->GetRepeatedExtension(unittest::repeated_##type##_extension)   \
             .Capacity();                                                       \
-    EXPECT_GE(old_capacity,                                                    \
-              (RepeatedFieldLowerClampLimit<cpptype, sizeof(void*)>()));       \
+    EXPECT_GE(                                                                 \
+        old_capacity,                                                          \
+        (RepeatedFieldLowerClampLimit<cpptype, std::max(sizeof(cpptype),       \
+                                                        sizeof(void*))>()));   \
     for (int i = 0; i < 16; ++i) {                                             \
       message->AddExtension(unittest::repeated_##type##_extension, value);     \
     }                                                                          \
@@ -1229,7 +1235,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
     std::string prefix = "." + template_descriptor->full_name() + ".";
     if (extension->has_type_name()) {
       std::string* type_name = extension->mutable_type_name();
-      if (HasPrefixString(*type_name, prefix)) {
+      if (absl::StartsWith(*type_name, prefix)) {
         type_name->replace(0, prefix.size(), ".dynamic_extensions.");
       }
     }

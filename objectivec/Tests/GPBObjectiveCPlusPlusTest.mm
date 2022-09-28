@@ -28,9 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 #import "GPBTestUtilities.h"
-
 
 //
 // This is just a compile test (here to make sure things never regress).
@@ -43,19 +41,18 @@
 // The "well know types" should have cross file enums needing imports.
 #import "GPBProtocolBuffers.h"
 // Some of the tests explicitly use cross file enums also.
-#import "Unittest.pbobjc.h"
-#import "UnittestImport.pbobjc.h"
+#import "objectivec/Tests/Unittest.pbobjc.h"
+#import "objectivec/Tests/UnittestImport.pbobjc.h"
 
 // Sanity check the conditions of the test within the Xcode project.
 #if !__cplusplus
-  #error This isn't compiled as Objective C++?
+#error This isn't compiled as Objective C++?
 #elif __cplusplus >= 201103L
-  // If this trips, it means the Xcode default might have change (or someone
-  // edited the testing project) and it might be time to revisit the GPB_ENUM
-  // define in GPBBootstrap.h.
-  #warning Did the Xcode default for C++ spec change?
+// If this trips, it means the Xcode default might have change (or someone
+// edited the testing project) and it might be time to revisit the GPB_ENUM
+// define in GPBBootstrap.h.
+#warning Did the Xcode default for C++ spec change?
 #endif
-
 
 // Dummy XCTest.
 @interface GPBObjectiveCPlusPlusTests : GPBTestCase

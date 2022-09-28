@@ -33,10 +33,14 @@
 
 #include <memory>
 
-#include <google/protobuf/stubs/casts.h>
-#include <google/protobuf/map.h>
-#include <google/protobuf/map_field.h>
-#include <google/protobuf/map_type_handler.h>
+#include "absl/base/casts.h"
+#include "google/protobuf/map.h"
+#include "google/protobuf/map_field.h"
+#include "google/protobuf/map_type_handler.h"
+#include "google/protobuf/port.h"
+
+// must be last
+#include "google/protobuf/port_def.inc"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -278,7 +282,7 @@ template <typename Derived, typename Key, typename T,
 void MapField<Derived, Key, T, kKeyFieldType, kValueFieldType>::Swap(
     MapFieldBase* other) {
   MapFieldBase::Swap(other);
-  MapField* other_field = down_cast<MapField*>(other);
+  MapField* other_field = DownCast<MapField*>(other);
   impl_.Swap(&other_field->impl_);
 }
 
@@ -287,7 +291,7 @@ template <typename Derived, typename Key, typename T,
           WireFormatLite::FieldType kValueFieldType>
 void MapField<Derived, Key, T, kKeyFieldType,
               kValueFieldType>::UnsafeShallowSwap(MapFieldBase* other) {
-  InternalSwap(down_cast<MapField*>(other));
+  InternalSwap(DownCast<MapField*>(other));
 }
 
 template <typename Derived, typename Key, typename T,
@@ -325,7 +329,7 @@ void MapField<Derived, Key, T, kKeyFieldType,
   for (typename Map<Key, T>::const_iterator it = map.begin(); it != map.end();
        ++it) {
     EntryType* new_entry =
-        down_cast<EntryType*>(default_entry->New(this->MapFieldBase::arena_));
+        DownCast<EntryType*>(default_entry->New(this->MapFieldBase::arena_));
     repeated_field->AddAllocated(new_entry);
     (*new_entry->mutable_key()) = it->first;
     (*new_entry->mutable_value()) = it->second;
@@ -371,5 +375,7 @@ size_t MapField<Derived, Key, T, kKeyFieldType,
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_MAP_FIELD_INL_H__

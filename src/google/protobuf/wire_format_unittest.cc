@@ -32,12 +32,12 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/wire_format.h>
+#include "google/protobuf/wire_format.h"
 
-#include <google/protobuf/unittest.pb.h>
-#include <google/protobuf/unittest_mset.pb.h>
-#include <google/protobuf/unittest_mset_wire_format.pb.h>
-#include <google/protobuf/unittest_proto3_arena.pb.h>
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_mset.pb.h"
+#include "google/protobuf/unittest_mset_wire_format.pb.h"
+#include "google/protobuf/unittest_proto3_arena.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
@@ -49,12 +49,12 @@
 
 // Must include after defining UNITTEST, etc.
 // clang-format off
-#include <google/protobuf/test_util.inc>
-#include <google/protobuf/wire_format_unittest.inc>
+#include "google/protobuf/test_util.inc"
+#include "google/protobuf/wire_format_unittest.inc"
 // clang-format on
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -67,4 +67,4 @@ namespace {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

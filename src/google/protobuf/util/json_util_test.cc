@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/json_util.h>
+#include "google/protobuf/util/json_util.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -37,32 +37,33 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/duration.pb.h>
-#include <google/protobuf/field_mask.pb.h>
-#include <google/protobuf/struct.pb.h>
-#include <google/protobuf/timestamp.pb.h>
-#include <google/protobuf/wrappers.pb.h>
-#include <google/protobuf/unittest.pb.h>
+#include "google/protobuf/duration.pb.h"
+#include "google/protobuf/field_mask.pb.h"
+#include "google/protobuf/struct.pb.h"
+#include "google/protobuf/timestamp.pb.h"
+#include "google/protobuf/wrappers.pb.h"
+#include "google/protobuf/unittest.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/status.h>
-#include <google/protobuf/stubs/statusor.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/descriptor_database.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/util/internal/testdata/maps.pb.h>
-#include <google/protobuf/util/json_format.pb.h>
-#include <google/protobuf/util/json_format.pb.h>
-#include <google/protobuf/util/json_format_proto3.pb.h>
-#include <google/protobuf/util/json_format_proto3.pb.h>
-#include <google/protobuf/util/type_resolver.h>
-#include <google/protobuf/util/type_resolver_util.h>
-#include <google/protobuf/stubs/status_macros.h>
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor_database.h"
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/util/internal/testdata/maps.pb.h"
+#include "google/protobuf/util/json_format.pb.h"
+#include "google/protobuf/util/json_format.pb.h"
+#include "google/protobuf/util/json_format_proto3.pb.h"
+#include "google/protobuf/util/json_format_proto3.pb.h"
+#include "google/protobuf/util/type_resolver.h"
+#include "google/protobuf/util/type_resolver_util.h"
+#include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 bool IsJson2() {
   // Pay no attention to the person behind the curtain.
@@ -81,12 +82,14 @@ using ::proto3::TestOneof;
 using ::proto3::TestWrapper;
 using ::proto_util_converter::testing::MapIn;
 using ::testing::ElementsAre;
+using ::testing::IsEmpty;
 using ::testing::Not;
+using ::testing::Pair;
 using ::testing::SizeIs;
 
 // TODO(b/234474291): Use the gtest versions once that's available in OSS.
 MATCHER_P(IsOkAndHolds, inner,
-          StrCat("is OK and holds ", testing::PrintToString(inner))) {
+          absl::StrCat("is OK and holds ", testing::PrintToString(inner))) {
   if (!arg.ok()) {
     *result_listener << arg.status();
     return false;
@@ -94,19 +97,19 @@ MATCHER_P(IsOkAndHolds, inner,
   return testing::ExplainMatchResult(inner, *arg, result_listener);
 }
 
-util::Status GetStatus(const util::Status& s) { return s; }
+absl::Status GetStatus(const absl::Status& s) { return s; }
 template <typename T>
-util::Status GetStatus(const util::StatusOr<T>& s) {
+absl::Status GetStatus(const absl::StatusOr<T>& s) {
   return s.status();
 }
 
 MATCHER_P(StatusIs, status,
-          StrCat(".status() is ", testing::PrintToString(status))) {
+          absl::StrCat(".status() is ", testing::PrintToString(status))) {
   return GetStatus(arg).code() == status;
 }
 
-#define EXPECT_OK(x) EXPECT_THAT(x, StatusIs(util::StatusCode::kOk))
-#define ASSERT_OK(x) ASSERT_THAT(x, StatusIs(util::StatusCode::kOk))
+#define EXPECT_OK(x) EXPECT_THAT(x, StatusIs(absl::StatusCode::kOk))
+#define ASSERT_OK(x) ASSERT_THAT(x, StatusIs(absl::StatusCode::kOk))
 
 enum class Codec {
   kReflective,
@@ -115,7 +118,7 @@ enum class Codec {
 
 class JsonTest : public testing::TestWithParam<Codec> {
  protected:
-  util::StatusOr<std::string> ToJson(const Message& proto,
+  absl::StatusOr<std::string> ToJson(const Message& proto,
                                      JsonPrintOptions options = {}) {
     if (GetParam() == Codec::kReflective) {
       std::string result;
@@ -130,14 +133,14 @@ class JsonTest : public testing::TestWithParam<Codec> {
 
     RETURN_IF_ERROR(BinaryToJsonStream(
         resolver_.get(),
-        StrCat("type.googleapis.com/", proto.GetTypeName()), &in, &out,
+        absl::StrCat("type.googleapis.com/", proto.GetTypeName()), &in, &out,
         options));
     return result;
   }
 
   // The out parameter comes first since `json` tends to be a very long string,
   // and clang-format does a poor job if it is not the last parameter.
-  util::Status ToProto(Message& proto, StringPiece json,
+  absl::Status ToProto(Message& proto, absl::string_view json,
                        JsonParseOptions options = {}) {
     if (GetParam() == Codec::kReflective) {
       return JsonStringToMessage(json, &proto, options);
@@ -149,17 +152,17 @@ class JsonTest : public testing::TestWithParam<Codec> {
 
     RETURN_IF_ERROR(JsonToBinaryStream(
         resolver_.get(),
-        StrCat("type.googleapis.com/", proto.GetTypeName()), &in, &out,
+        absl::StrCat("type.googleapis.com/", proto.GetTypeName()), &in, &out,
         options));
 
     if (!proto.ParseFromString(result)) {
-      return util::InternalError("wire format parse failed");
+      return absl::InternalError("wire format parse failed");
     }
-    return util::OkStatus();
+    return absl::OkStatus();
   }
 
   template <typename Proto>
-  util::StatusOr<Proto> ToProto(StringPiece json,
+  absl::StatusOr<Proto> ToProto(absl::string_view json,
                                 JsonParseOptions options = {}) {
     Proto proto;
     RETURN_IF_ERROR(ToProto(proto, json, options));
@@ -506,6 +509,32 @@ TEST_P(JsonTest, FloatPrecision) {
               IsOkAndHolds("[0.99000000953674316,0.87999999523162842]"));
 }
 
+TEST_P(JsonTest, FloatMinMaxValue) {
+  // 3.4028235e38 is FLT_MAX to 8-significant-digits. The final digit (5)
+  // is rounded up; that means that when parsing this as a 64-bit FP number,
+  // the value ends up higher than FLT_MAX. We still want to accept it though,
+  // as a reasonable representation of FLT_MAX.
+  auto m = ToProto<TestMessage>(R"json(
+    {
+      "repeatedFloatValue": [3.4028235e38, -3.4028235e38],
+    }
+  )json");
+  ASSERT_OK(m);
+  EXPECT_THAT(m->repeated_float_value(), ElementsAre(FLT_MAX, -FLT_MAX));
+}
+
+TEST_P(JsonTest, FloatOutOfRange) {
+  // Check that the slightly-lenient parsing demonstrated in FloatMinMaxValue
+  // doesn't mean we allow all values. The value being parsed differs only
+  // in the least significant (represented) digit.
+  auto m = ToProto<TestMessage>(R"json(
+    {
+      "floatValue": 3.4028236e38
+    }
+  )json");
+  EXPECT_THAT(m, StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
 TEST_P(JsonTest, ParseLegacySingleRepeatedField) {
   auto m = ToProto<TestMessage>(R"json({
     "repeatedInt32Value": 1997,
@@ -546,7 +575,7 @@ TEST_P(JsonTest, RepeatedMapKey) {
       "twiceKey": 0,
       "twiceKey": 1
     }
-  })json"), StatusIs(util::StatusCode::kInvalidArgument));
+  })json"), StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 TEST_P(JsonTest, ParsePrimitiveMapIn) {
@@ -608,7 +637,7 @@ TEST_P(JsonTest, RepeatedOneofKeys) {
     "oneofInt32Value": 1,
     "oneofStringValue": "foo"
   })json"),
-              StatusIs(util::StatusCode::kInvalidArgument));
+              StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 TEST_P(JsonTest, TestParseIgnoreUnknownFields) {
@@ -627,10 +656,10 @@ TEST_P(JsonTest, TestParseIgnoreUnknownFields) {
 TEST_P(JsonTest, TestParseErrors) {
   // Parsing should fail if the field name can not be recognized.
   EXPECT_THAT(ToProto<TestMessage>(R"({"unknownName": 0})"),
-              StatusIs(util::StatusCode::kInvalidArgument));
+              StatusIs(absl::StatusCode::kInvalidArgument));
   // Parsing should fail if the value is invalid.
   EXPECT_THAT(ToProto<TestMessage>(R"("{"int32Value": 2147483648})"),
-              StatusIs(util::StatusCode::kInvalidArgument));
+              StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 TEST_P(JsonTest, TestDynamicMessage) {
@@ -792,14 +821,14 @@ TEST_P(JsonTest, TestParsingBrokenAny) {
       }
     }
   )json"),
-              StatusIs(util::StatusCode::kInvalidArgument));
+              StatusIs(absl::StatusCode::kInvalidArgument));
 
   TestAny m2;
   m2.mutable_value();
   EXPECT_THAT(ToJson(m2), IsOkAndHolds(R"({"value":{}})"));
   m2.mutable_value()->set_value("garbage");
   // The ESF parser does not return InvalidArgument for this error.
-  EXPECT_THAT(ToJson(m2), Not(StatusIs(util::StatusCode::kOk)));
+  EXPECT_THAT(ToJson(m2), Not(StatusIs(absl::StatusCode::kOk)));
 
   m2.Clear();
   m2.mutable_value()->set_type_url("type.googleapis.com/proto3.TestMessage");
@@ -871,7 +900,7 @@ TEST_P(JsonTest, ParseWrappers) {
 }
 
 TEST_P(JsonTest, TestParsingUnknownAnyFields) {
-  StringPiece input = R"json(
+  absl::string_view input = R"json(
     {
       "value": {
         "@type": "type.googleapis.com/proto3.TestMessage",
@@ -882,7 +911,7 @@ TEST_P(JsonTest, TestParsingUnknownAnyFields) {
   )json";
 
   EXPECT_THAT(ToProto<TestAny>(input),
-              StatusIs(util::StatusCode::kInvalidArgument));
+              StatusIs(absl::StatusCode::kInvalidArgument));
 
   JsonParseOptions options;
   options.ignore_unknown_fields = true;
@@ -903,10 +932,10 @@ TEST_P(JsonTest, TestHugeBareString) {
 }
 
 TEST_P(JsonTest, TestParsingUnknownEnumsProto2) {
-  StringPiece input = R"json({"ayuLmao": "UNKNOWN_VALUE"})json";
+  absl::string_view input = R"json({"ayuLmao": "UNKNOWN_VALUE"})json";
 
   EXPECT_THAT(ToProto<protobuf_unittest::TestNumbers>(input),
-              StatusIs(util::StatusCode::kInvalidArgument));
+              StatusIs(absl::StatusCode::kInvalidArgument));
 
   JsonParseOptions options;
   options.ignore_unknown_fields = true;
@@ -917,10 +946,10 @@ TEST_P(JsonTest, TestParsingUnknownEnumsProto2) {
 
 TEST_P(JsonTest, TestParsingUnknownEnumsProto3) {
   TestMessage m;
-  StringPiece input = R"json({"enum_value":"UNKNOWN_VALUE"})json";
+  absl::string_view input = R"json({"enum_value":"UNKNOWN_VALUE"})json";
 
   m.set_enum_value(proto3::BAR);
-  ASSERT_THAT(ToProto(m, input), StatusIs(util::StatusCode::kInvalidArgument));
+  ASSERT_THAT(ToProto(m, input), StatusIs(absl::StatusCode::kInvalidArgument));
   EXPECT_EQ(m.enum_value(), proto3::BAR);  // Keep previous value
 
   JsonParseOptions options;
@@ -931,7 +960,7 @@ TEST_P(JsonTest, TestParsingUnknownEnumsProto3) {
 
 TEST_P(JsonTest, TestParsingUnknownEnumsProto3FromInt) {
   TestMessage m;
-  StringPiece input = R"json({"enum_value":12345})json";
+  absl::string_view input = R"json({"enum_value":12345})json";
 
   m.set_enum_value(proto3::BAR);
   ASSERT_OK(ToProto(m, input));
@@ -946,34 +975,34 @@ TEST_P(JsonTest, TestParsingUnknownEnumsProto3FromInt) {
 // Trying to pass an object as an enum field value is always treated as an
 // error
 TEST_P(JsonTest, TestParsingUnknownEnumsProto3FromObject) {
-  StringPiece input = R"json({"enum_value": {}})json";
+  absl::string_view input = R"json({"enum_value": {}})json";
 
   EXPECT_THAT(ToProto<TestMessage>(input),
-              StatusIs(util::StatusCode::kInvalidArgument));
+              StatusIs(absl::StatusCode::kInvalidArgument));
 
   JsonParseOptions options;
   options.ignore_unknown_fields = true;
   EXPECT_THAT(ToProto<TestMessage>(input, options),
-              StatusIs(util::StatusCode::kInvalidArgument));
+              StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 TEST_P(JsonTest, TestParsingUnknownEnumsProto3FromArray) {
-  StringPiece input = R"json({"enum_value": []})json";
+  absl::string_view input = R"json({"enum_value": []})json";
 
   EXPECT_THAT(ToProto<TestMessage>(input),
-              StatusIs(util::StatusCode::kInvalidArgument));
+              StatusIs(absl::StatusCode::kInvalidArgument));
 
   JsonParseOptions options;
   options.ignore_unknown_fields = true;
   EXPECT_THAT(ToProto<TestMessage>(input, options),
-              StatusIs(util::StatusCode::kInvalidArgument));
+              StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 TEST_P(JsonTest, TestParsingEnumCaseSensitive) {
   TestMessage m;
   m.set_enum_value(proto3::FOO);
   EXPECT_THAT(ToProto(m, R"json({"enum_value": "bar"})json"),
-              StatusIs(util::StatusCode::kInvalidArgument));
+              StatusIs(absl::StatusCode::kInvalidArgument));
   // Default behavior is case-sensitive, so keep previous value.
   EXPECT_EQ(m.enum_value(), proto3::FOO);
 }
@@ -1230,7 +1259,7 @@ TEST_P(JsonTest, EmptyValue) {
 
 TEST_P(JsonTest, TrailingGarbage) {
   EXPECT_THAT(ToProto<TestMessage>("{}garbage"),
-              StatusIs(util::StatusCode::kInvalidArgument));
+              StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 TEST_P(JsonTest, ListList) {
@@ -1273,7 +1302,7 @@ TEST_P(JsonTest, HtmlEscape) {
 TEST_P(JsonTest, FieldOrder) {
   // $ protoscope -s <<< "3: 3 22: 2 1: 1 22: 2"
   std::string out;
-  util::Status s = BinaryToJsonString(
+  absl::Status s = BinaryToJsonString(
       resolver_.get(), "type.googleapis.com/proto3.TestMessage",
       "\x18\x03\xb0\x01\x02\x08\x01\xb0\x01\x02", &out);
   ASSERT_OK(s);
@@ -1286,6 +1315,20 @@ TEST_P(JsonTest, FieldOrder) {
         out,
         R"({"int64Value":"3","repeatedInt32Value":[2],"boolValue":true,"repeatedInt32Value":[2]})");
   }
+}
+
+// JSON values get special treatment when it comes to pre-existing values in
+// their repeated fields, when parsing through their dedicated syntax.
+TEST_P(JsonTest, ClearPreExistingRepeatedInJsonValues) {
+  google::protobuf::ListValue l;
+  l.add_values()->set_string_value("hello");
+  ASSERT_OK(JsonStringToMessage("[]", &l));
+  EXPECT_THAT(l.values(), IsEmpty());
+
+  google::protobuf::Struct s;
+  (*s.mutable_fields())["hello"].set_string_value("world");
+  ASSERT_OK(JsonStringToMessage("{}", &s));
+  EXPECT_THAT(s.fields(), IsEmpty());
 }
 
 }  // namespace

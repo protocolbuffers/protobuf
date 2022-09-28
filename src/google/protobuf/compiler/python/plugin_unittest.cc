@@ -33,15 +33,15 @@
 #include <memory>
 #include <string>
 
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/testing/file.h>
-#include <google/protobuf/compiler/command_line_interface.h>
-#include <google/protobuf/compiler/python/generator.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/file.h"
+#include "google/protobuf/compiler/command_line_interface.h"
+#include "google/protobuf/compiler/python/generator.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "absl/strings/str_split.h"
 
 namespace google {
 namespace protobuf {
@@ -107,7 +107,7 @@ TEST(PythonPluginTest, ImportTest) {
   std::string output;
   GOOGLE_CHECK_OK(File::GetContents(TestTempDir() + "/test1_pb2.py", &output,
                              true));
-  std::vector<std::string> lines = Split(output, "\n");
+  std::vector<std::string> lines = absl::StrSplit(output, "\n");
   std::string expected_import = "import test2_pb2";
   bool found_expected_import = false;
   for (int i = 0; i < lines.size(); ++i) {

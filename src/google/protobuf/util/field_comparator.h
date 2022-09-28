@@ -39,10 +39,11 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -63,6 +64,8 @@ class MessageDifferencer;
 class PROTOBUF_EXPORT FieldComparator {
  public:
   FieldComparator();
+  FieldComparator(const FieldComparator&) = delete;
+  FieldComparator& operator=(const FieldComparator&) = delete;
   virtual ~FieldComparator();
 
   enum ComparisonResult {
@@ -92,9 +95,6 @@ class PROTOBUF_EXPORT FieldComparator {
                                    const FieldDescriptor* field, int index_1,
                                    int index_2,
                                    const util::FieldContext* field_context) = 0;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FieldComparator);
 };
 
 // Basic implementation of FieldComparator.  Supports three modes of floating
@@ -113,6 +113,8 @@ class PROTOBUF_EXPORT SimpleFieldComparator : public FieldComparator {
 
   // Creates new comparator with float comparison set to EXACT.
   SimpleFieldComparator();
+  SimpleFieldComparator(const SimpleFieldComparator&) = delete;
+  SimpleFieldComparator& operator=(const SimpleFieldComparator&) = delete;
 
   ~SimpleFieldComparator() override;
 
@@ -257,8 +259,6 @@ class PROTOBUF_EXPORT SimpleFieldComparator : public FieldComparator {
   // Field-specific float/double tolerances, which override any default for
   // those particular fields.
   ToleranceMap map_tolerance_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(SimpleFieldComparator);
 };
 
 // Default field comparison: use the basic implementation of FieldComparator.
@@ -278,6 +278,6 @@ class PROTOBUF_EXPORT DefaultFieldComparator PROTOBUF_FUTURE_FINAL
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_UTIL_FIELD_COMPARATOR_H__

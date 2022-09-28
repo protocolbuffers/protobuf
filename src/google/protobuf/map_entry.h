@@ -31,16 +31,16 @@
 #ifndef GOOGLE_PROTOBUF_MAP_ENTRY_H__
 #define GOOGLE_PROTOBUF_MAP_ENTRY_H__
 
-#include <google/protobuf/port.h>
-#include <google/protobuf/generated_message_reflection.h>
-#include <google/protobuf/map_entry_lite.h>
-#include <google/protobuf/map_type_handler.h>
-#include <google/protobuf/reflection_ops.h>
-#include <google/protobuf/unknown_field_set.h>
-#include <google/protobuf/wire_format_lite.h>
+#include "google/protobuf/port.h"
+#include "google/protobuf/generated_message_reflection.h"
+#include "google/protobuf/map_entry_lite.h"
+#include "google/protobuf/map_type_handler.h"
+#include "google/protobuf/reflection_ops.h"
+#include "google/protobuf/unknown_field_set.h"
+#include "google/protobuf/wire_format_lite.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -98,6 +98,8 @@ class MapEntry : public MapEntryImpl<Derived, Message, Key, Value,
   explicit MapEntry(Arena* arena)
       : MapEntryImpl<Derived, Message, Key, Value, kKeyFieldType,
                      kValueFieldType>(arena) {}
+  MapEntry(const MapEntry&) = delete;
+  MapEntry& operator=(const MapEntry&) = delete;
   ~MapEntry() override {
     Message::_internal_metadata_.template Delete<UnknownFieldSet>();
   }
@@ -121,14 +123,12 @@ class MapEntry : public MapEntryImpl<Derived, Message, Key, Value,
   template <typename C, typename K, typename V,
             WireFormatLite::FieldType k_wire_type, WireFormatLite::FieldType>
   friend class internal::MapField;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapEntry);
 };
 
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_MAP_ENTRY_H__

@@ -30,20 +30,21 @@
 
 #include <cstdint>
 
-#include <google/protobuf/extension_set.h>
-#include <google/protobuf/generated_message_tctable_impl.h>
-#include <google/protobuf/message.h>
-#include <google/protobuf/parse_context.h>
-#include <google/protobuf/unknown_field_set.h>
-#include <google/protobuf/wire_format.h>
+#include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/unknown_field_set.h"
+#include "google/protobuf/wire_format.h"
 
-// clang-format off
-#include <google/protobuf/port_def.inc>
-// clang-format on
+// must be last
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
 namespace internal {
+using ::google::protobuf::internal::DownCast;
 
 const char* TcParser::GenericFallback(PROTOBUF_TC_PARAM_DECL) {
   return GenericFallbackImpl<Message, UnknownFieldSet>(PROTOBUF_TC_PARAM_PASS);
@@ -57,7 +58,7 @@ const char* TcParser::ReflectionFallback(PROTOBUF_TC_PARAM_DECL) {
     return ptr;
   }
 
-  auto* full_msg = down_cast<Message*>(msg);
+  auto* full_msg = DownCast<Message*>(msg);
   auto* descriptor = full_msg->GetDescriptor();
   auto* reflection = full_msg->GetReflection();
   int field_number = WireFormatLite::GetTagFieldNumber(tag);
@@ -81,7 +82,7 @@ const char* TcParser::ReflectionParseLoop(PROTOBUF_TC_PARAM_DECL) {
   (void)table;
   (void)hasbits;
   // Call into the wire format reflective parse loop.
-  return WireFormat::_InternalParse(down_cast<Message*>(msg), ptr, ctx);
+  return WireFormat::_InternalParse(DownCast<Message*>(msg), ptr, ctx);
 }
 
 }  // namespace internal

@@ -44,29 +44,29 @@
 #include <limits>
 #include <vector>
 
-#include <google/protobuf/message.h>
+#include "google/protobuf/message.h"
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
 #include <fstream>
 #include <sstream>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/descriptor.pb.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/substitute.h>
-#include <google/protobuf/arena.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/io/io_win32.h>
-#include <google/protobuf/generated_message_reflection.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/test_util2.h>
+#include "google/protobuf/stubs/logging.h"
+#include "absl/strings/substitute.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/generated_message_reflection.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/io_win32.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/test_util2.h"
 
 
 namespace google {
@@ -257,7 +257,7 @@ TEST(MESSAGE_TEST_NAME, ParseFailsIfExtensionNotInitialized) {
   }
 
   EXPECT_THAT(errors,
-              testing::ElementsAre(strings::Substitute(
+              testing::ElementsAre(absl::Substitute(
                   "Can't parse message of type \"$0.TestChildExtension\" "
                   "because it is missing required fields: "
                   "optional_extension.($0.TestRequired.single).a, "
@@ -1349,6 +1349,85 @@ TEST(MESSAGE_TEST_NAME, IsDefaultInstance) {
   const auto* r = msg.GetReflection();
   EXPECT_TRUE(r->IsDefaultInstance(default_msg));
   EXPECT_FALSE(r->IsDefaultInstance(msg));
+}
+
+std::string EncodeStringValue(int number, const std::string& value) {
+  uint8_t buf[100];
+  return std::string(
+      buf, internal::WireFormatLite::WriteStringToArray(number, value, buf));
+}
+
+class TestInputStream final : public io::ZeroCopyInputStream {
+ public:
+  explicit TestInputStream(absl::string_view payload, size_t break_pos)
+      : payload_(payload), break_pos_(break_pos) {}
+
+  bool Next(const void** data, int* size) override {
+    if (payload_.empty()) return false;
+    const auto to_consume = payload_.substr(0, break_pos_);
+    *data = to_consume.data();
+    *size = to_consume.size();
+    payload_.remove_prefix(to_consume.size());
+    // The next time will consume the rest.
+    break_pos_ = payload_.npos;
+
+    return true;
+  }
+
+  void BackUp(int) override { GOOGLE_CHECK(false); }
+  bool Skip(int) override {
+    GOOGLE_CHECK(false);
+    return false;
+  }
+  int64_t ByteCount() const override {
+    GOOGLE_CHECK(false);
+    return 0;
+  }
+
+ private:
+  absl::string_view payload_;
+  size_t break_pos_;
+};
+
+TEST(MESSAGE_TEST_NAME, TestRepeatedStringParsers) {
+  google::protobuf::Arena arena;
+
+  const std::string sample =
+      "abcdefghijklmnopqrstuvwxyz"
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+  const auto* const descriptor = UNITTEST::StringParseTester::descriptor();
+
+  static const size_t sso_capacity = std::string().capacity();
+  if (sso_capacity == 0) GTEST_SKIP();
+  // SSO, !SSO, and off-by-one just in case
+  for (size_t size :
+       {sso_capacity - 1, sso_capacity, sso_capacity + 1, sso_capacity + 2}) {
+    SCOPED_TRACE(size);
+    const std::string value = sample.substr(0, size);
+    for (int i = 0; i < descriptor->field_count(); ++i) {
+        const auto* field = descriptor->field(i);
+        SCOPED_TRACE(field->full_name());
+        const auto encoded = EncodeStringValue(field->number(), sample) +
+                             EncodeStringValue(field->number(), value);
+        // Check for different breaks in the input stream to test cases where
+        // the payload can be read and can't be read in one go.
+        for (size_t i = 1; i <= encoded.size(); ++i) {
+          TestInputStream input_stream(encoded, i);
+
+          auto& obj = *arena.CreateMessage<UNITTEST::StringParseTester>(&arena);
+          auto* ref = obj.GetReflection();
+          EXPECT_TRUE(obj.ParseFromZeroCopyStream(&input_stream));
+          if (field->is_repeated()) {
+            ASSERT_EQ(ref->FieldSize(obj, field), 2);
+            EXPECT_EQ(ref->GetRepeatedString(obj, field, 0), sample);
+            EXPECT_EQ(ref->GetRepeatedString(obj, field, 1), value);
+          } else {
+            EXPECT_EQ(ref->GetString(obj, field), value);
+          }
+        }
+    }
+  }
 }
 
 }  // namespace protobuf

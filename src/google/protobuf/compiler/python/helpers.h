@@ -33,14 +33,14 @@
 
 #include <string>
 
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
+#include "absl/strings/str_replace.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace python {
-
 
 std::string ModuleName(const std::string& filename);
 std::string StrippedModuleName(const std::string& filename);

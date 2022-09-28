@@ -32,11 +32,12 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/command_line_interface.h>
+#include "google/protobuf/compiler/command_line_interface.h"
 
-#include <google/protobuf/stubs/platform_macros.h>
+#include "google/protobuf/stubs/platform_macros.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #ifdef major
 #undef major
@@ -58,6 +59,10 @@
 #include <limits.h>  // For PATH_MAX
 
 #include <memory>
+#include <string>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
@@ -65,29 +70,31 @@
 #include <sys/sysctl.h>
 #endif
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/compiler/subprocess.h>
-#include <google/protobuf/compiler/plugin.pb.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/stringprintf.h>
-#include <google/protobuf/stubs/substitute.h>
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/compiler/importer.h>
-#include <google/protobuf/compiler/zip_writer.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/io/io_win32.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/text_format.h>
-#include <google/protobuf/stubs/map_util.h>
-#include <google/protobuf/stubs/stl_util.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/compiler/subprocess.h"
+#include "google/protobuf/compiler/plugin.pb.h"
+#include "google/protobuf/stubs/strutil.h"
+#include "absl/strings/match.h"
+#include "absl/strings/str_format.h"
+#include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
+#include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/importer.h"
+#include "google/protobuf/compiler/zip_writer.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/io_win32.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/text_format.h"
+#include "google/protobuf/stubs/stl_util.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -174,7 +181,7 @@ bool TryCreateParentDirectory(const std::string& prefix,
   // Recursively create parent directories to the output file.
   // On Windows, both '/' and '\' are valid path separators.
   std::vector<std::string> parts =
-      Split(filename, "/\\", true);
+      absl::StrSplit(filename, absl::ByAnyChar("/\\"), absl::SkipEmpty());
   std::string path_so_far = prefix;
   for (int i = 0; i < parts.size() - 1; i++) {
     path_so_far += parts[i];
@@ -817,7 +824,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
 
     // Find the insertion point.
     std::string magic_string =
-        strings::Substitute("@@protoc_insertion_point($0)", insertion_point_);
+        absl::Substitute("@@protoc_insertion_point($0)", insertion_point_);
     std::string::size_type pos = target->find(magic_string);
 
     if (pos == std::string::npos) {
@@ -1059,9 +1066,9 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   if (mode_ == MODE_COMPILE) {
     for (int i = 0; i < output_directives_.size(); i++) {
       std::string output_location = output_directives_[i].output_location;
-      if (!HasSuffixString(output_location, ".zip") &&
-          !HasSuffixString(output_location, ".jar") &&
-          !HasSuffixString(output_location, ".srcjar")) {
+      if (!absl::EndsWith(output_location, ".zip") &&
+          !absl::EndsWith(output_location, ".jar") &&
+          !absl::EndsWith(output_location, ".srcjar")) {
         AddTrailingSlash(&output_location);
       }
 
@@ -1082,12 +1089,12 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   for (const auto& pair : output_directories) {
     const std::string& location = pair.first;
     GeneratorContextImpl* directory = pair.second.get();
-    if (HasSuffixString(location, "/")) {
+    if (absl::EndsWith(location, "/")) {
       if (!directory->WriteAllToDisk(location)) {
         return 1;
       }
     } else {
-      if (HasSuffixString(location, ".jar")) {
+      if (absl::EndsWith(location, ".jar")) {
         directory->AddJarManifest();
       }
 
@@ -1297,9 +1304,9 @@ bool CommandLineInterface::ParseInputFiles(
             direct_dependencies_.end()) {
           indirect_imports = true;
           std::cerr << parsed_file->name() << ": "
-                    << StringReplace(direct_dependencies_violation_msg_, "%s",
-                                     parsed_file->dependency(i)->name(),
-                                     true /* replace_all */)
+                    << absl::StrReplaceAll(
+                           direct_dependencies_violation_msg_,
+                           {{"%s", parsed_file->dependency(i)->name()}})
                     << std::endl;
         }
       }
@@ -1702,9 +1709,9 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     // Java's -classpath (and some other languages) delimits path components
     // with colons.  Let's accept that syntax too just to make things more
     // intuitive.
-    std::vector<std::string> parts = Split(
-        value, CommandLineInterface::kPathSeparator,
-        true);
+    std::vector<std::string> parts = absl::StrSplit(
+        value, absl::ByAnyChar(CommandLineInterface::kPathSeparator),
+        absl::SkipEmpty());
 
     for (int i = 0; i < parts.size(); i++) {
       std::string virtual_path;
@@ -1758,7 +1765,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 
     direct_dependencies_explicitly_set_ = true;
     std::vector<std::string> direct =
-        Split(value, ":", true);
+        absl::StrSplit(value, ":", absl::SkipEmpty());
     GOOGLE_DCHECK(direct_dependencies_.empty());
     direct_dependencies_.insert(direct.begin(), direct.end());
 
@@ -1784,9 +1791,9 @@ CommandLineInterface::InterpretArgument(const std::string& name,
       return PARSE_ARGUMENT_FAIL;
     }
 
-    descriptor_set_in_names_ = Split(
-        value, CommandLineInterface::kPathSeparator,
-        true);
+    descriptor_set_in_names_ = absl::StrSplit(
+        value, absl::ByAnyChar(CommandLineInterface::kPathSeparator),
+        absl::SkipEmpty());
 
   } else if (name == "-o" || name == "--descriptor_set_out") {
     if (!descriptor_set_out_name_.empty()) {
@@ -1944,14 +1951,30 @@ CommandLineInterface::InterpretArgument(const std::string& name,
     }
     mode_ = MODE_PRINT;
     print_mode_ = PRINT_FREE_FIELDS;
+  } else if (name == "--enable_codegen_trace") {
+    // We use environment variables here so that subprocesses see this setting
+    // when we spawn them.
+    //
+    // Setting environment variables is more-or-less asking for a data race,
+    // because C got this wrong and did not mandate synchronization.
+    // In practice, this code path is "only" in the main thread of protoc, and
+    // it is common knowledge that touching setenv in a library is asking for
+    // life-ruining bugs *anyways*. As such, there is a reasonable probability
+    // that there isn't another thread kicking environment variables at this
+    // moment.
+
+#ifdef _WIN32
+    ::_putenv(absl::StrCat(io::Printer::kProtocCodegenTrace, "=yes").c_str());
+#else
+    ::setenv(io::Printer::kProtocCodegenTrace.data(), "yes", 0);
+#endif
   } else {
     // Some other flag.  Look it up in the generators list.
-    const GeneratorInfo* generator_info =
-        FindOrNull(generators_by_flag_name_, name);
+    const GeneratorInfo* generator_info = FindGeneratorByFlag(name);
     if (generator_info == nullptr &&
-        (plugin_prefix_.empty() || !HasSuffixString(name, "_out"))) {
+        (plugin_prefix_.empty() || !absl::EndsWith(name, "_out"))) {
       // Check if it's a generator option flag.
-      generator_info = FindOrNull(generators_by_option_name_, name);
+      generator_info = FindGeneratorByOption(name);
       if (generator_info != nullptr) {
         std::string* parameters =
             &generator_parameters_[generator_info->flag_name];
@@ -1959,7 +1982,7 @@ CommandLineInterface::InterpretArgument(const std::string& name,
           parameters->append(",");
         }
         parameters->append(value);
-      } else if (HasPrefixString(name, "--") && HasSuffixString(name, "_opt")) {
+      } else if (absl::StartsWith(name, "--") && absl::EndsWith(name, "_opt")) {
         std::string* parameters =
             &plugin_parameters_[PluginName(plugin_prefix_, name)];
         if (!parameters->empty()) {
@@ -2070,7 +2093,10 @@ Parse PROTO_FILES and generate output based on the options given:
                               defined in the given proto files. Groups share
                               the same field number space with the parent
                               message. Extension ranges are counted as
-                              occupied fields numbers.)";
+                              occupied fields numbers.
+  --enable_codegen_trace      Enables tracing which parts of protoc are
+                              responsible for what codegen output. Not supported
+                              by all backends or on all platforms.)";
   if (!plugin_prefix_.empty()) {
     std::cout << R"(
   --plugin=EXECUTABLE         Specifies a plugin executable to use.
@@ -2083,16 +2109,15 @@ Parse PROTO_FILES and generate output based on the options given:
                               the executable's own name differs.)";
   }
 
-  for (GeneratorMap::iterator iter = generators_by_flag_name_.begin();
-       iter != generators_by_flag_name_.end(); ++iter) {
+  for (const auto& kv : generators_by_flag_name_) {
     // FIXME(kenton):  If the text is long enough it will wrap, which is ugly,
     //   but fixing this nicely (e.g. splitting on spaces) is probably more
     //   trouble than it's worth.
     std::cout << std::endl
-              << "  " << iter->first << "=OUT_DIR "
-              << std::string(19 - iter->first.size(),
+              << "  " << kv.first << "=OUT_DIR "
+              << std::string(19 - kv.first.size(),
                              ' ')  // Spaces for alignment.
-              << iter->second.help_text;
+              << kv.second.help_text;
   }
   std::cout << R"(
   @<filename>                 Read options and filenames from file. If a
@@ -2141,8 +2166,8 @@ bool CommandLineInterface::GenerateOutput(
   std::string error;
   if (output_directive.generator == nullptr) {
     // This is a plugin.
-    GOOGLE_CHECK(HasPrefixString(output_directive.name, "--") &&
-          HasSuffixString(output_directive.name, "_out"))
+    GOOGLE_CHECK(absl::StartsWith(output_directive.name, "--") &&
+          absl::EndsWith(output_directive.name, "_out"))
         << "Bad name for plugin generator: " << output_directive.name;
 
     std::string plugin_name = PluginName(plugin_prefix_, output_directive.name);
@@ -2214,12 +2239,6 @@ bool CommandLineInterface::GenerateDependencyManifestFile(
   if (!descriptor_set_out_name_.empty()) {
     output_filenames.push_back(descriptor_set_out_name_);
   }
-
-  // Some consumers consider first output as the "primary output" (ninja)
-  // If this doesn't match their primary output it ignores the manifest.
-  // The unordered map for output_directories means we can't guarantee the order of files.
-  // Sorting here makes the "primary output" can be whichever is first alphabetically
-  std::sort(output_filenames.begin(), output_filenames.end());
 
   int fd;
   do {
@@ -2304,7 +2323,7 @@ bool CommandLineInterface::GeneratePluginOutput(
 
   std::string communicate_error;
   if (!subprocess.Communicate(request, &response, &communicate_error)) {
-    *error = strings::Substitute("$0: $1", plugin_name, communicate_error);
+    *error = absl::Substitute("$0: $1", plugin_name, communicate_error);
     return false;
   }
 
@@ -2331,7 +2350,7 @@ bool CommandLineInterface::GeneratePluginOutput(
       current_output.reset();
       current_output.reset(generator_context->Open(output_file.name()));
     } else if (current_output == nullptr) {
-      *error = strings::Substitute(
+      *error = absl::Substitute(
           "$0: First file chunk returned by plugin did not specify a file "
           "name.",
           plugin_name);
@@ -2514,6 +2533,20 @@ void CommandLineInterface::GetTransitiveDependencies(
   }
 }
 
+const CommandLineInterface::GeneratorInfo*
+CommandLineInterface::FindGeneratorByFlag(const std::string& name) const {
+  auto it = generators_by_flag_name_.find(name);
+  if (it == generators_by_flag_name_.end()) return nullptr;
+  return &it->second;
+}
+
+const CommandLineInterface::GeneratorInfo*
+CommandLineInterface::FindGeneratorByOption(const std::string& option) const {
+  auto it = generators_by_option_name_.find(option);
+  if (it == generators_by_option_name_.end()) return nullptr;
+  return &it->second;
+}
+
 namespace {
 
 // Utility function for PrintFreeFieldNumbers.
@@ -2585,7 +2618,7 @@ void GatherOccupiedFieldRanges(
 void FormatFreeFieldNumbers(const std::string& name,
                             const std::set<FieldRange>& ranges) {
   std::string output;
-  StringAppendF(&output, "%-35s free:", name.c_str());
+  absl::StrAppendFormat(&output, "%-35s free:", name.c_str());
   int next_free_number = 1;
   for (std::set<FieldRange>::const_iterator i = ranges.begin();
        i != ranges.end(); ++i) {
@@ -2596,17 +2629,17 @@ void FormatFreeFieldNumbers(const std::string& name,
     if (next_free_number < i->first) {
       if (next_free_number + 1 == i->first) {
         // Singleton
-        StringAppendF(&output, " %d", next_free_number);
+        absl::StrAppendFormat(&output, " %d", next_free_number);
       } else {
         // Range
-        StringAppendF(&output, " %d-%d", next_free_number,
+        absl::StrAppendFormat(&output, " %d-%d", next_free_number,
                               i->first - 1);
       }
     }
     next_free_number = i->second;
   }
   if (next_free_number <= FieldDescriptor::kMaxNumber) {
-    StringAppendF(&output, " %d-INF", next_free_number);
+    absl::StrAppendFormat(&output, " %d-INF", next_free_number);
   }
   std::cout << output << std::endl;
 }

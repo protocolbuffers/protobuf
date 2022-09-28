@@ -40,10 +40,10 @@
 #include <string>
 
 #include "absl/synchronization/mutex.h"
-#include <google/protobuf/compiler/code_generator.h>
+#include "google/protobuf/compiler/code_generator.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -63,6 +63,8 @@ namespace python {
 class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenerator {
  public:
   PyiGenerator();
+  PyiGenerator(const PyiGenerator&) = delete;
+  PyiGenerator& operator=(const PyiGenerator&) = delete;
   ~PyiGenerator() override;
 
   // CodeGenerator methods.
@@ -105,7 +107,6 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
   // import_map will be a mapping from filename to module alias, e.g.
   // "google3/foo/bar.py" -> "_bar"
   mutable std::map<std::string, std::string> import_map_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(PyiGenerator);
 };
 
 }  // namespace python
@@ -113,6 +114,6 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_PYTHON_PYI_GENERATOR_H__

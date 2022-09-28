@@ -33,17 +33,17 @@
 
 #include <string>
 
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/arena.h>
-#include <google/protobuf/message_lite.h>
-#include <google/protobuf/repeated_field.h>
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/repeated_field.h"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
 #endif
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 // This file is logically internal-only and should only be used by protobuf
 // generated code.
@@ -62,6 +62,8 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
       : data_(nullptr) {}
   explicit ImplicitWeakMessage(Arena* arena)
       : MessageLite(arena), data_(new std::string) {}
+  ImplicitWeakMessage(const ImplicitWeakMessage&) = delete;
+  ImplicitWeakMessage& operator=(const ImplicitWeakMessage&) = delete;
 
   ~ImplicitWeakMessage() override {
     // data_ will be null in the default instance, but we can safely call delete
@@ -115,7 +117,6 @@ class PROTOBUF_EXPORT ImplicitWeakMessage : public MessageLite {
   // the default instance can be constant-initialized. In the const methods, we
   // have to handle the possibility of data_ being null.
   std::string* data_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImplicitWeakMessage);
 };
 
 struct ImplicitWeakMessageDefaultType;
@@ -208,6 +209,6 @@ struct WeakRepeatedPtrField {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_IMPLICIT_WEAK_MESSAGE_H__

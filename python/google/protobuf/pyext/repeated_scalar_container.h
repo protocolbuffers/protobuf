@@ -37,8 +37,8 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/pyext/message.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/pyext/message.h"
 
 namespace google {
 namespace protobuf {

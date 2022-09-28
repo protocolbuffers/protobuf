@@ -40,7 +40,7 @@
 
 static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
                                         GPBCodedInputStream *input,
-                                        GPBExtensionRegistry *extensionRegistry,
+                                        id<GPBExtensionRegistry> extensionRegistry,
                                         GPBMessage *existingValue)
     __attribute__((ns_returns_retained));
 
@@ -65,11 +65,11 @@ GPB_INLINE size_t DataTypeSize(GPBDataType dataType) {
 }
 
 static size_t ComputePBSerializedSizeNoTagOfObject(GPBDataType dataType, id object) {
-#define FIELD_CASE(TYPE, ACCESSOR)                                     \
-  case GPBDataType##TYPE:                                              \
+#define FIELD_CASE(TYPE, ACCESSOR) \
+  case GPBDataType##TYPE:          \
     return GPBCompute##TYPE##SizeNoTag([(NSNumber *)object ACCESSOR]);
-#define FIELD_CASE2(TYPE)                                              \
-  case GPBDataType##TYPE:                                              \
+#define FIELD_CASE2(TYPE) \
+  case GPBDataType##TYPE: \
     return GPBCompute##TYPE##SizeNoTag(object);
   switch (dataType) {
     FIELD_CASE(Bool, boolValue)
@@ -95,14 +95,13 @@ static size_t ComputePBSerializedSizeNoTagOfObject(GPBDataType dataType, id obje
 #undef FIELD_CASE2
 }
 
-static size_t ComputeSerializedSizeIncludingTagOfObject(
-    GPBExtensionDescription *description, id object) {
-#define FIELD_CASE(TYPE, ACCESSOR)                                   \
-  case GPBDataType##TYPE:                                            \
-    return GPBCompute##TYPE##Size(description->fieldNumber,          \
-                                  [(NSNumber *)object ACCESSOR]);
-#define FIELD_CASE2(TYPE)                                            \
-  case GPBDataType##TYPE:                                            \
+static size_t ComputeSerializedSizeIncludingTagOfObject(GPBExtensionDescription *description,
+                                                        id object) {
+#define FIELD_CASE(TYPE, ACCESSOR) \
+  case GPBDataType##TYPE:          \
+    return GPBCompute##TYPE##Size(description->fieldNumber, [(NSNumber *)object ACCESSOR]);
+#define FIELD_CASE2(TYPE) \
+  case GPBDataType##TYPE: \
     return GPBCompute##TYPE##Size(description->fieldNumber, object);
   switch (description->dataType) {
     FIELD_CASE(Bool, boolValue)
@@ -124,8 +123,7 @@ static size_t ComputeSerializedSizeIncludingTagOfObject(
     FIELD_CASE2(Group)
     case GPBDataTypeMessage:
       if (GPBExtensionIsWireFormat(description)) {
-        return GPBComputeMessageSetExtensionSize(description->fieldNumber,
-                                                 object);
+        return GPBComputeMessageSetExtensionSize(description->fieldNumber, object);
       } else {
         return GPBComputeMessageSize(description->fieldNumber, object);
       }
@@ -134,8 +132,8 @@ static size_t ComputeSerializedSizeIncludingTagOfObject(
 #undef FIELD_CASE2
 }
 
-static size_t ComputeSerializedSizeIncludingTagOfArray(
-    GPBExtensionDescription *description, NSArray *values) {
+static size_t ComputeSerializedSizeIncludingTagOfArray(GPBExtensionDescription *description,
+                                                       NSArray *values) {
   if (GPBExtensionIsPacked(description)) {
     size_t size = 0;
     size_t typeSize = DataTypeSize(description->dataType);
@@ -143,8 +141,7 @@ static size_t ComputeSerializedSizeIncludingTagOfArray(
       size = values.count * typeSize;
     } else {
       for (id value in values) {
-        size +=
-            ComputePBSerializedSizeNoTagOfObject(description->dataType, value);
+        size += ComputePBSerializedSizeNoTagOfObject(description->dataType, value);
       }
     }
     return size + GPBComputeTagSize(description->fieldNumber) +
@@ -158,13 +155,12 @@ static size_t ComputeSerializedSizeIncludingTagOfArray(
   }
 }
 
-static void WriteObjectIncludingTagToCodedOutputStream(
-    id object, GPBExtensionDescription *description,
-    GPBCodedOutputStream *output) {
-#define FIELD_CASE(TYPE, ACCESSOR)                      \
-  case GPBDataType##TYPE:                               \
-    [output write##TYPE:description->fieldNumber        \
-                  value:[(NSNumber *)object ACCESSOR]]; \
+static void WriteObjectIncludingTagToCodedOutputStream(id object,
+                                                       GPBExtensionDescription *description,
+                                                       GPBCodedOutputStream *output) {
+#define FIELD_CASE(TYPE, ACCESSOR)                                                     \
+  case GPBDataType##TYPE:                                                              \
+    [output write##TYPE:description->fieldNumber value:[(NSNumber *)object ACCESSOR]]; \
     return;
 #define FIELD_CASE2(TYPE)                                       \
   case GPBDataType##TYPE:                                       \
@@ -200,9 +196,8 @@ static void WriteObjectIncludingTagToCodedOutputStream(
 #undef FIELD_CASE2
 }
 
-static void WriteObjectNoTagToCodedOutputStream(
-    id object, GPBExtensionDescription *description,
-    GPBCodedOutputStream *output) {
+static void WriteObjectNoTagToCodedOutputStream(id object, GPBExtensionDescription *description,
+                                                GPBCodedOutputStream *output) {
 #define FIELD_CASE(TYPE, ACCESSOR)                             \
   case GPBDataType##TYPE:                                      \
     [output write##TYPE##NoTag:[(NSNumber *)object ACCESSOR]]; \
@@ -237,20 +232,18 @@ static void WriteObjectNoTagToCodedOutputStream(
 #undef FIELD_CASE2
 }
 
-static void WriteArrayIncludingTagsToCodedOutputStream(
-    NSArray *values, GPBExtensionDescription *description,
-    GPBCodedOutputStream *output) {
+static void WriteArrayIncludingTagsToCodedOutputStream(NSArray *values,
+                                                       GPBExtensionDescription *description,
+                                                       GPBCodedOutputStream *output) {
   if (GPBExtensionIsPacked(description)) {
-    [output writeTag:description->fieldNumber
-              format:GPBWireFormatLengthDelimited];
+    [output writeTag:description->fieldNumber format:GPBWireFormatLengthDelimited];
     size_t dataSize = 0;
     size_t typeSize = DataTypeSize(description->dataType);
     if (typeSize != 0) {
       dataSize = values.count * typeSize;
     } else {
       for (id value in values) {
-        dataSize +=
-            ComputePBSerializedSizeNoTagOfObject(description->dataType, value);
+        dataSize += ComputePBSerializedSizeNoTagOfObject(description->dataType, value);
       }
     }
     [output writeRawVarintSizeTAs32:dataSize];
@@ -270,23 +263,18 @@ static void WriteArrayIncludingTagsToCodedOutputStream(
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdirect-ivar-access"
 
-void GPBExtensionMergeFromInputStream(GPBExtensionDescriptor *extension,
-                                      BOOL isPackedOnStream,
+void GPBExtensionMergeFromInputStream(GPBExtensionDescriptor *extension, BOOL isPackedOnStream,
                                       GPBCodedInputStream *input,
-                                      GPBExtensionRegistry *extensionRegistry,
+                                      id<GPBExtensionRegistry> extensionRegistry,
                                       GPBMessage *message) {
   GPBExtensionDescription *description = extension->description_;
   GPBCodedInputStreamState *state = &input->state_;
   if (isPackedOnStream) {
-    NSCAssert(GPBExtensionIsRepeated(description),
-              @"How was it packed if it isn't repeated?");
+    NSCAssert(GPBExtensionIsRepeated(description), @"How was it packed if it isn't repeated?");
     int32_t length = GPBCodedInputStreamReadInt32(state);
     size_t limit = GPBCodedInputStreamPushLimit(state, length);
     while (GPBCodedInputStreamBytesUntilLimit(state) > 0) {
-      id value = NewSingleValueFromInputStream(extension,
-                                               input,
-                                               extensionRegistry,
-                                               nil);
+      id value = NewSingleValueFromInputStream(extension, input, extensionRegistry, nil);
       [message addExtension:extension value:value];
       [value release];
     }
@@ -297,10 +285,7 @@ void GPBExtensionMergeFromInputStream(GPBExtensionDescriptor *extension,
     if (!isRepeated && GPBDataTypeIsMessage(description->dataType)) {
       existingValue = [message getExistingExtension:extension];
     }
-    id value = NewSingleValueFromInputStream(extension,
-                                             input,
-                                             extensionRegistry,
-                                             existingValue);
+    id value = NewSingleValueFromInputStream(extension, input, extensionRegistry, existingValue);
     if (isRepeated) {
       [message addExtension:extension value:value];
     } else {
@@ -310,8 +295,7 @@ void GPBExtensionMergeFromInputStream(GPBExtensionDescriptor *extension,
   }
 }
 
-void GPBWriteExtensionValueToOutputStream(GPBExtensionDescriptor *extension,
-                                          id value,
+void GPBWriteExtensionValueToOutputStream(GPBExtensionDescriptor *extension, id value,
                                           GPBCodedOutputStream *output) {
   GPBExtensionDescription *description = extension->description_;
   if (GPBExtensionIsRepeated(description)) {
@@ -321,8 +305,7 @@ void GPBWriteExtensionValueToOutputStream(GPBExtensionDescriptor *extension,
   }
 }
 
-size_t GPBComputeExtensionSerializedSizeIncludingTag(
-    GPBExtensionDescriptor *extension, id value) {
+size_t GPBComputeExtensionSerializedSizeIncludingTag(GPBExtensionDescriptor *extension, id value) {
   GPBExtensionDescription *description = extension->description_;
   if (GPBExtensionIsRepeated(description)) {
     return ComputeSerializedSizeIncludingTagOfArray(description, value);
@@ -334,27 +317,43 @@ size_t GPBComputeExtensionSerializedSizeIncludingTag(
 // Note that this returns a retained value intentionally.
 static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
                                         GPBCodedInputStream *input,
-                                        GPBExtensionRegistry *extensionRegistry,
+                                        id<GPBExtensionRegistry> extensionRegistry,
                                         GPBMessage *existingValue) {
   GPBExtensionDescription *description = extension->description_;
   GPBCodedInputStreamState *state = &input->state_;
   switch (description->dataType) {
-    case GPBDataTypeBool:     return [[NSNumber alloc] initWithBool:GPBCodedInputStreamReadBool(state)];
-    case GPBDataTypeFixed32:  return [[NSNumber alloc] initWithUnsignedInt:GPBCodedInputStreamReadFixed32(state)];
-    case GPBDataTypeSFixed32: return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadSFixed32(state)];
-    case GPBDataTypeFloat:    return [[NSNumber alloc] initWithFloat:GPBCodedInputStreamReadFloat(state)];
-    case GPBDataTypeFixed64:  return [[NSNumber alloc] initWithUnsignedLongLong:GPBCodedInputStreamReadFixed64(state)];
-    case GPBDataTypeSFixed64: return [[NSNumber alloc] initWithLongLong:GPBCodedInputStreamReadSFixed64(state)];
-    case GPBDataTypeDouble:   return [[NSNumber alloc] initWithDouble:GPBCodedInputStreamReadDouble(state)];
-    case GPBDataTypeInt32:    return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadInt32(state)];
-    case GPBDataTypeInt64:    return [[NSNumber alloc] initWithLongLong:GPBCodedInputStreamReadInt64(state)];
-    case GPBDataTypeSInt32:   return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadSInt32(state)];
-    case GPBDataTypeSInt64:   return [[NSNumber alloc] initWithLongLong:GPBCodedInputStreamReadSInt64(state)];
-    case GPBDataTypeUInt32:   return [[NSNumber alloc] initWithUnsignedInt:GPBCodedInputStreamReadUInt32(state)];
-    case GPBDataTypeUInt64:   return [[NSNumber alloc] initWithUnsignedLongLong:GPBCodedInputStreamReadUInt64(state)];
-    case GPBDataTypeBytes:    return GPBCodedInputStreamReadRetainedBytes(state);
-    case GPBDataTypeString:   return GPBCodedInputStreamReadRetainedString(state);
-    case GPBDataTypeEnum:     return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadEnum(state)];
+    case GPBDataTypeBool:
+      return [[NSNumber alloc] initWithBool:GPBCodedInputStreamReadBool(state)];
+    case GPBDataTypeFixed32:
+      return [[NSNumber alloc] initWithUnsignedInt:GPBCodedInputStreamReadFixed32(state)];
+    case GPBDataTypeSFixed32:
+      return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadSFixed32(state)];
+    case GPBDataTypeFloat:
+      return [[NSNumber alloc] initWithFloat:GPBCodedInputStreamReadFloat(state)];
+    case GPBDataTypeFixed64:
+      return [[NSNumber alloc] initWithUnsignedLongLong:GPBCodedInputStreamReadFixed64(state)];
+    case GPBDataTypeSFixed64:
+      return [[NSNumber alloc] initWithLongLong:GPBCodedInputStreamReadSFixed64(state)];
+    case GPBDataTypeDouble:
+      return [[NSNumber alloc] initWithDouble:GPBCodedInputStreamReadDouble(state)];
+    case GPBDataTypeInt32:
+      return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadInt32(state)];
+    case GPBDataTypeInt64:
+      return [[NSNumber alloc] initWithLongLong:GPBCodedInputStreamReadInt64(state)];
+    case GPBDataTypeSInt32:
+      return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadSInt32(state)];
+    case GPBDataTypeSInt64:
+      return [[NSNumber alloc] initWithLongLong:GPBCodedInputStreamReadSInt64(state)];
+    case GPBDataTypeUInt32:
+      return [[NSNumber alloc] initWithUnsignedInt:GPBCodedInputStreamReadUInt32(state)];
+    case GPBDataTypeUInt64:
+      return [[NSNumber alloc] initWithUnsignedLongLong:GPBCodedInputStreamReadUInt64(state)];
+    case GPBDataTypeBytes:
+      return GPBCodedInputStreamReadRetainedBytes(state);
+    case GPBDataTypeString:
+      return GPBCodedInputStreamReadRetainedString(state);
+    case GPBDataTypeEnum:
+      return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadEnum(state)];
     case GPBDataTypeGroup:
     case GPBDataTypeMessage: {
       GPBMessage *message;
@@ -367,15 +366,14 @@ static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
 
       if (description->dataType == GPBDataTypeGroup) {
         [input readGroup:description->fieldNumber
-                 message:message
+                      message:message
             extensionRegistry:extensionRegistry];
       } else {
         // description->dataType == GPBDataTypeMessage
         if (GPBExtensionIsWireFormat(description)) {
           // For MessageSet fields the message length will have already been
           // read.
-          [message mergeFromCodedInputStream:input
-                           extensionRegistry:extensionRegistry];
+          [message mergeFromCodedInputStream:input extensionRegistry:extensionRegistry];
         } else {
           [input readMessage:message extensionRegistry:extensionRegistry];
         }

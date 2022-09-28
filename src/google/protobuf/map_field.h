@@ -34,22 +34,22 @@
 #include <atomic>
 #include <functional>
 
-#include <google/protobuf/arena.h>
-#include <google/protobuf/port.h>
+#include "google/protobuf/arena.h"
+#include "google/protobuf/port.h"
 #include "absl/synchronization/mutex.h"
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/generated_message_reflection.h>
-#include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/map_entry.h>
-#include <google/protobuf/map_field_lite.h>
-#include <google/protobuf/map_type_handler.h>
-#include <google/protobuf/message.h>
-#include <google/protobuf/repeated_field.h>
-#include <google/protobuf/unknown_field_set.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/generated_message_reflection.h"
+#include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/map_entry.h"
+#include "google/protobuf/map_field_lite.h"
+#include "google/protobuf/map_type_handler.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/unknown_field_set.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -346,6 +346,8 @@ class PROTOBUF_EXPORT MapFieldBase {
         state_(STATE_MODIFIED_MAP) {}
   explicit MapFieldBase(Arena* arena)
       : arena_(arena), repeated_field_(nullptr), state_(STATE_MODIFIED_MAP) {}
+  MapFieldBase(const MapFieldBase&) = delete;
+  MapFieldBase& operator=(const MapFieldBase&) = delete;
 
  protected:
   ~MapFieldBase() {  // "protected" stops users from deleting a `MapFieldBase *`
@@ -483,8 +485,6 @@ class PROTOBUF_EXPORT MapFieldBase {
 
   // Swaps state_ with another MapFieldBase
   void SwapState(MapFieldBase* other);
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapFieldBase);
 };
 
 // This class provides common Map Reflection implementations for generated
@@ -493,6 +493,8 @@ template <typename Key, typename T>
 class TypeDefinedMapFieldBase : public MapFieldBase {
  public:
   TypeDefinedMapFieldBase() {}
+  TypeDefinedMapFieldBase(const TypeDefinedMapFieldBase&) = delete;
+  TypeDefinedMapFieldBase& operator=(const TypeDefinedMapFieldBase&) = delete;
 
   // This constructor is for constant initialized global instances.
   // It uses a linker initialized mutex, so it is not compatible with regular
@@ -528,7 +530,6 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
   void IncreaseIterator(MapIterator* map_iter) const override;
 
   virtual void SetMapIteratorValue(MapIterator* map_iter) const = 0;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(TypeDefinedMapFieldBase);
 };
 
 // This class provides access to map field using generated api. It is used for
@@ -561,6 +562,8 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
   typedef Map<Key, T> MapType;
 
   MapField() : impl_() {}
+  MapField(const MapField&) = delete;
+  MapField& operator=(const MapField&) = delete;
   virtual ~MapField() {}  // Destruct() must already have been called!
   void Destruct() {
     impl_.Destruct();
@@ -634,7 +637,6 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
 
   friend class ::PROTOBUF_NAMESPACE_ID::Arena;
   friend class MapFieldStateTest;  // For testing, it needs raw access to impl_
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapField);
 };
 
 template <typename Derived, typename Key, typename T,
@@ -663,6 +665,8 @@ class PROTOBUF_EXPORT DynamicMapField
  public:
   explicit DynamicMapField(const Message* default_entry);
   DynamicMapField(const Message* default_entry, Arena* arena);
+  DynamicMapField(const DynamicMapField&) = delete;
+  DynamicMapField& operator=(const DynamicMapField&) = delete;
   virtual ~DynamicMapField();
 
   // Implement MapFieldBase
@@ -693,7 +697,6 @@ class PROTOBUF_EXPORT DynamicMapField
   void SyncMapWithRepeatedFieldNoLock() const override;
   size_t SpaceUsedExcludingSelfNoLock() const override;
   void SetMapIteratorValue(MapIterator* map_iter) const override;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DynamicMapField);
 };
 
 }  // namespace internal
@@ -940,6 +943,6 @@ class PROTOBUF_EXPORT MapIterator {
 #pragma warning(pop)  // restore warning C4265
 #endif                // _MSC_VER
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_MAP_FIELD_H__

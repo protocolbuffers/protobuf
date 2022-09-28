@@ -49,11 +49,12 @@ using type_info = ::type_info;
 #endif
 
 #include <type_traits>
-#include <google/protobuf/arena_impl.h>
-#include <google/protobuf/port.h>
+#include "google/protobuf/arena_config.h"
+#include "google/protobuf/arena_impl.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -86,6 +87,7 @@ class InternalMetadata;      // defined in metadata_lite.h
 class LazyField;             // defined in lazy_field.h
 class EpsCopyInputStream;    // defined in parse_context.h
 class RepeatedPtrFieldBase;  // defined in repeated_ptr_field.h
+class TcParser;              // defined in generated_message_tctable_impl.h
 
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
@@ -142,7 +144,7 @@ struct ArenaOptions {
 
   ArenaOptions()
       : start_block_size(internal::AllocationPolicy::kDefaultStartBlockSize),
-        max_block_size(internal::AllocationPolicy::kDefaultMaxBlockSize),
+        max_block_size(internal::GetDefaultArenaMaxBlockSize()),
         initial_block(nullptr),
         initial_block_size(0),
         block_alloc(nullptr),
@@ -165,7 +167,6 @@ struct ArenaOptions {
     res.max_block_size = max_block_size;
     res.block_alloc = block_alloc;
     res.block_dealloc = block_dealloc;
-    res.metrics_collector = MetricsCollector();
     return res;
   }
 
@@ -174,14 +175,6 @@ struct ArenaOptions {
   friend class Arena;
   friend class ArenaOptionsTestFriend;
 };
-
-// Support for non-RTTI environments. (The metrics hooks API uses type
-// information.)
-#if PROTOBUF_RTTI
-#define RTTI_TYPE_ID(type) (&typeid(type))
-#else
-#define RTTI_TYPE_ID(type) (nullptr)
-#endif
 
 // Arena allocator. Arena allocation replaces ordinary (heap-based) allocation
 // with new/delete, and improves performance by aggregating allocations into
@@ -259,9 +252,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   inline ~Arena() {}
 
-  // TODO(protobuf-team): Fix callers to use constructor and delete this method.
-  void Init(const ArenaOptions&) {}
-
   // API to create proto2 message objects on the arena. If the arena passed in
   // is nullptr, then a heap allocated object is returned. Type T must be a
   // message defined in a .proto file with cc_enable_arenas set to true,
@@ -316,14 +306,14 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // Allocates memory with the specific size and alignment.
   void* AllocateAligned(size_t size, size_t align = 8) {
     if (align <= 8) {
-      return AllocateAlignedNoHook(internal::AlignUpTo8(size));
+      return Allocate(internal::AlignUpTo8(size));
     } else {
       // We are wasting space by over allocating align - 8 bytes. Compared
       // to a dedicated function that takes current alignment in consideration.
       // Such a scheme would only waste (align - 8)/2 bytes on average, but
       // requires a dedicated function in the outline arena allocation
       // functions. Possibly re-evaluate tradeoffs later.
-      return internal::AlignTo(AllocateAlignedNoHook(size + align - 8), align);
+      return internal::AlignTo(Allocate(size + align - 8), align);
     }
   }
 
@@ -438,7 +428,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
     template <typename U>
     static Arena* GetOwningArena(Rank1, const U* p) {
-      (void) p;
       return nullptr;
     }
 
@@ -469,7 +458,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
     template <typename U>
     static Arena* GetArenaForAllocation(Rank2, const U* p) {
-      (void) p;
       return nullptr;
     }
 
@@ -594,16 +582,13 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     }
   }
 
-  // Allocate and also optionally call collector with the allocated type info
-  // when allocation recording is enabled.
   PROTOBUF_NDEBUG_INLINE void* AllocateInternal(size_t size, size_t align,
-                                                void (*destructor)(void*),
-                                                const std::type_info* type) {
+                                                void (*destructor)(void*)) {
     // Monitor allocation if needed.
     if (destructor == nullptr) {
-      return AllocateAlignedWithHook(size, align, type);
+      return AllocateAligned(size, align);
     } else {
-      return AllocateAlignedWithCleanup(size, align, destructor, type);
+      return AllocateAlignedWithCleanup(size, align, destructor);
     }
   }
 
@@ -642,8 +627,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     // We count on compiler to realize that if sizeof(T) is a multiple of
     // 8 AlignUpTo can be elided.
     const size_t n = sizeof(T) * num_elements;
-    return static_cast<T*>(
-        AllocateAlignedWithHookForArray(n, alignof(T), RTTI_TYPE_ID(T)));
+    return static_cast<T*>(AllocateAlignedForArray(n, alignof(T)));
   }
 
   template <typename T, typename... Args>
@@ -652,8 +636,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
         AllocateInternal(sizeof(T), alignof(T),
                          internal::ObjectDestructor<
                              InternalHelper<T>::is_destructor_skippable::value,
-                             T>::destructor,
-                         RTTI_TYPE_ID(T)),
+                             T>::destructor),
         this, std::forward<Args>(args)...);
   }
 
@@ -704,9 +687,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
           internal::ObjectDestructor<std::is_trivially_destructible<T>::value,
                                      T>::destructor;
       T* result =
-          new (arena->AllocateInternal(sizeof(T), alignof(T), destructor,
-                                       RTTI_TYPE_ID(T)))
-          T(std::forward<Args>(args)...);
+          new (arena->AllocateInternal(sizeof(T), alignof(T), destructor))
+              T(std::forward<Args>(args)...);
       return result;
     }
   }
@@ -719,8 +701,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
       auto destructor =
           internal::ObjectDestructor<std::is_trivially_destructible<T>::value,
                                      T>::destructor;
-      return new (arena->AllocateInternal(sizeof(T), alignof(T), destructor,
-                                          RTTI_TYPE_ID(T)))
+      return new (arena->AllocateInternal(sizeof(T), alignof(T), destructor))
           T(std::forward<Args>(args)...);
     }
   }
@@ -751,48 +732,30 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     return InternalHelper<T>::GetArena(value);
   }
 
-  void* AllocateAlignedWithHookForArray(size_t n, size_t align,
-                                        const std::type_info* type) {
+  void* AllocateAlignedForArray(size_t n, size_t align) {
     if (align <= 8) {
-      return AllocateAlignedWithHookForArray(internal::AlignUpTo8(n), type);
+      return AllocateForArray(internal::AlignUpTo8(n));
     } else {
       // We are wasting space by over allocating align - 8 bytes. Compared
       // to a dedicated function that takes current alignment in consideration.
       // Such a scheme would only waste (align - 8)/2 bytes on average, but
       // requires a dedicated function in the outline arena allocation
       // functions. Possibly re-evaluate tradeoffs later.
-      return internal::AlignTo(
-          AllocateAlignedWithHookForArray(n + align - 8, type), align);
+      return internal::AlignTo(AllocateForArray(n + align - 8), align);
     }
   }
 
-  void* AllocateAlignedWithHook(size_t n, size_t align,
-                                const std::type_info* type) {
-    if (align <= 8) {
-      return AllocateAlignedWithHook(internal::AlignUpTo8(n), type);
-    } else {
-      // We are wasting space by over allocating align - 8 bytes. Compared
-      // to a dedicated function that takes current alignment in consideration.
-      // Such a scheme would only waste (align - 8)/2 bytes on average, but
-      // requires a dedicated function in the outline arena allocation
-      // functions. Possibly re-evaluate tradeoffs later.
-      return internal::AlignTo(AllocateAlignedWithHook(n + align - 8, type),
-                               align);
-    }
-  }
-
-  void* AllocateAlignedNoHook(size_t n);
-  void* AllocateAlignedWithHook(size_t n, const std::type_info* type);
-  void* AllocateAlignedWithHookForArray(size_t n, const std::type_info* type);
+  void* Allocate(size_t n);
+  void* AllocateForArray(size_t n);
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
-                                   void (*destructor)(void*),
-                                   const std::type_info* type);
+                                   void (*destructor)(void*));
 
   template <typename Type>
   friend class internal::GenericTypeHandler;
   friend class internal::InternalMetadata;  // For user_arena().
   friend class internal::LazyField;        // For CreateMaybeMessage.
   friend class internal::EpsCopyInputStream;  // For parser performance
+  friend class internal::TcParser;            // For parser performance
   friend class MessageLite;
   template <typename Key, typename T>
   friend class Map;
@@ -802,12 +765,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   friend struct internal::ArenaTestPeer;
 };
 
-// Defined above for supporting environments without RTTI.
-#undef RTTI_TYPE_ID
-
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_ARENA_H__

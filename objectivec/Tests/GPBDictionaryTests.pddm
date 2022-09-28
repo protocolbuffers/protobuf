@@ -70,8 +70,7 @@
 //%  XCTAssertNotNil(dict);
 //%  XCTAssertEqual(dict.count, 0U);
 //%VALUE_NOT_FOUND##VHELPER(VALUE_NAME, dict, KEY1)
-//%  [dict enumerateKeysAnd##VALUE_NAME$u##sUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE a##VNAME$u, BOOL *stop) {
-//%    #pragma unused(aKey, a##VNAME$u, stop)
+//%  [dict enumerateKeysAnd##VALUE_NAME$u##sUsingBlock:^(__unused KEY_TYPE KisP##aKey, __unused VALUE_TYPE a##VNAME$u, __unused BOOL *stop) {
 //%    XCTFail(@"Shouldn't get here!");
 //%  }];
 //%  [dict release];
@@ -131,8 +130,7 @@
 //%
 //%  // Stopping the enumeration.
 //%  idx = 0;
-//%  [dict enumerateKeysAnd##VALUE_NAME$u##sUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE a##VNAME$u, BOOL *stop) {
-//%    #pragma unused(aKey, a##VNAME$u)
+//%  [dict enumerateKeysAnd##VALUE_NAME$u##sUsingBlock:^(__unused KEY_TYPE KisP##aKey, __unused VALUE_TYPE a##VNAME$u, BOOL *stop) {
 //%    if (idx == 1) *stop = YES;
 //%    XCTAssertNotEqual(idx, 2U);
 //%    ++idx;
@@ -425,8 +423,7 @@
 //%
 //%  // Stopping the enumeration.
 //%  idx = 0;
-//%  [dict enumerateKeysAndRawValuesUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE aValue, BOOL *stop) {
-//%    #pragma unused(aKey, aValue)
+//%  [dict enumerateKeysAndRawValuesUsingBlock:^(__unused KEY_TYPE KisP##aKey, __unused VALUE_TYPE aValue, BOOL *stop) {
 //%    if (idx == 1) *stop = YES;
 //%    XCTAssertNotEqual(idx, 2U);
 //%    ++idx;
@@ -790,8 +787,7 @@
 //%  XCTAssertNotNil(dict);
 //%  XCTAssertEqual(dict.count, 0U);
 //%VALUE_NOT_FOUND##VHELPER(VALUE_NAME, dict, KEY1)
-//%  [dict enumerateKeysAnd##VALUE_NAME##sUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE a##VNAME$u##, BOOL *stop) {
-//%    #pragma unused(aKey, a##VNAME$u##, stop)
+//%  [dict enumerateKeysAnd##VALUE_NAME##sUsingBlock:^(__unused KEY_TYPE KisP##aKey, __unused VALUE_TYPE a##VNAME$u##, __unused BOOL *stop) {
 //%    XCTFail(@"Shouldn't get here!");
 //%  }];
 //%  [dict release];
@@ -849,8 +845,7 @@
 //%
 //%  // Stopping the enumeration.
 //%  idx = 0;
-//%  [dict enumerateKeysAnd##VALUE_NAME$u##sUsingBlock:^(KEY_TYPE KisP##aKey, VALUE_TYPE a##VNAME$u##, BOOL *stop) {
-//%    #pragma unused(aKey, a##VNAME$u)
+//%  [dict enumerateKeysAnd##VALUE_NAME$u##sUsingBlock:^(__unused KEY_TYPE KisP##aKey, __unused VALUE_TYPE a##VNAME$u##, BOOL *stop) {
 //%    if (idx == 0) *stop = YES;
 //%    XCTAssertNotEqual(idx, 2U);
 //%    ++idx;

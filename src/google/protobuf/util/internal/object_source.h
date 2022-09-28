@@ -31,13 +31,13 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_INTERNAL_OBJECT_SOURCE_H__
 #define GOOGLE_PROTOBUF_UTIL_INTERNAL_OBJECT_SOURCE_H__
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/status.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/status.h>
+#include "absl/status/status.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/port.h"
+
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -54,25 +54,23 @@ class ObjectWriter;
 // Derived classes could be thread-unsafe.
 class PROTOBUF_EXPORT ObjectSource {
  public:
+  ObjectSource(const ObjectSource&) = delete;
+  ObjectSource& operator=(const ObjectSource&) = delete;
   virtual ~ObjectSource() {}
 
   // Writes to the ObjectWriter
-  virtual util::Status WriteTo(ObjectWriter* ow) const {
+  virtual absl::Status WriteTo(ObjectWriter* ow) const {
     return NamedWriteTo("", ow);
   }
 
   // Writes to the ObjectWriter with a custom name for the message.
   // This is useful when you chain ObjectSource together by embedding one
   // within another.
-  virtual util::Status NamedWriteTo(StringPiece name,
+  virtual absl::Status NamedWriteTo(absl::string_view name,
                                     ObjectWriter* ow) const = 0;
 
  protected:
   ObjectSource() {}
-
- private:
-  // Do not add any data members to this class.
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ObjectSource);
 };
 
 }  // namespace converter
@@ -80,6 +78,6 @@ class PROTOBUF_EXPORT ObjectSource {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_OBJECT_SOURCE_H__

@@ -28,18 +28,20 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/map_field.h>
+#include "google/protobuf/map_field.h"
 
 #include <vector>
 
-#include <google/protobuf/map_field_inl.h>
+#include "google/protobuf/port.h"
+#include "google/protobuf/map_field_inl.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
 namespace internal {
+using ::google::protobuf::internal::DownCast;
 
 void MapFieldBase::Destruct() {
   if (arena_ == nullptr) {
@@ -427,7 +429,7 @@ void DynamicMapField::MergeFrom(const MapFieldBase& other) {
 }
 
 void DynamicMapField::Swap(MapFieldBase* other) {
-  DynamicMapField* other_field = down_cast<DynamicMapField*>(other);
+  DynamicMapField* other_field = DownCast<DynamicMapField*>(other);
   std::swap(this->MapFieldBase::repeated_field_, other_field->repeated_field_);
   map_.swap(other_field->map_);
   // a relaxed swap of the atomic
@@ -651,4 +653,4 @@ size_t DynamicMapField::SpaceUsedExcludingSelfNoLock() const {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

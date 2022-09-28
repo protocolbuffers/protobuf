@@ -33,9 +33,9 @@
 #import <objc/runtime.h>
 
 #import "GPBDescriptor_PackagePrivate.h"
-#import "Unittest.pbobjc.h"
-#import "UnittestObjc.pbobjc.h"
-#import "UnittestObjcOptions.pbobjc.h"
+#import "objectivec/Tests/Unittest.pbobjc.h"
+#import "objectivec/Tests/UnittestObjc.pbobjc.h"
+#import "objectivec/Tests/UnittestObjcOptions.pbobjc.h"
 
 @interface DescriptorTests : GPBTestCase
 @end
@@ -54,13 +54,15 @@
   GPBDescriptor *testAllTypesDesc = [TestAllTypes descriptor];
   XCTAssertEqualObjects(testAllTypesDesc.fullName, @"objc.protobuf.tests.TestAllTypes");
   GPBDescriptor *nestedMessageDesc = [TestAllTypes_NestedMessage descriptor];
-  XCTAssertEqualObjects(nestedMessageDesc.fullName, @"objc.protobuf.tests.TestAllTypes.NestedMessage");
+  XCTAssertEqualObjects(nestedMessageDesc.fullName,
+                        @"objc.protobuf.tests.TestAllTypes.NestedMessage");
 
   // Prefixes removed.
   GPBDescriptor *descDesc = [GPBTESTPrefixedParentMessage descriptor];
   XCTAssertEqualObjects(descDesc.fullName, @"objc.protobuf.tests.options.PrefixedParentMessage");
   GPBDescriptor *descExtRngDesc = [GPBTESTPrefixedParentMessage_Child descriptor];
-  XCTAssertEqualObjects(descExtRngDesc.fullName, @"objc.protobuf.tests.options.PrefixedParentMessage.Child");
+  XCTAssertEqualObjects(descExtRngDesc.fullName,
+                        @"objc.protobuf.tests.options.PrefixedParentMessage.Child");
 
   // Things that get "_Class" added.
   GPBDescriptor *pointDesc = [Point_Class descriptor];
@@ -73,16 +75,13 @@
   GPBDescriptor *descriptor = [TestAllTypes descriptor];
 
   // Nested Enum
-  GPBFieldDescriptor *fieldDescriptorWithName =
-      [descriptor fieldWithName:@"optionalNestedEnum"];
+  GPBFieldDescriptor *fieldDescriptorWithName = [descriptor fieldWithName:@"optionalNestedEnum"];
   XCTAssertNotNil(fieldDescriptorWithName);
-  GPBFieldDescriptor *fieldDescriptorWithNumber =
-      [descriptor fieldWithNumber:21];
+  GPBFieldDescriptor *fieldDescriptorWithNumber = [descriptor fieldWithNumber:21];
   XCTAssertNotNil(fieldDescriptorWithNumber);
   XCTAssertEqual(fieldDescriptorWithName, fieldDescriptorWithNumber);
   XCTAssertNotNil(fieldDescriptorWithNumber.enumDescriptor);
-  XCTAssertEqualObjects(fieldDescriptorWithNumber.enumDescriptor.name,
-                        @"TestAllTypes_NestedEnum");
+  XCTAssertEqualObjects(fieldDescriptorWithNumber.enumDescriptor.name, @"TestAllTypes_NestedEnum");
   XCTAssertEqual(fieldDescriptorWithName.number, fieldDescriptorWithNumber.number);
   XCTAssertEqual(fieldDescriptorWithName.dataType, GPBDataTypeEnum);
 
@@ -93,8 +92,7 @@
   XCTAssertNotNil(fieldDescriptorWithNumber);
   XCTAssertEqual(fieldDescriptorWithName, fieldDescriptorWithNumber);
   XCTAssertNotNil(fieldDescriptorWithNumber.enumDescriptor);
-  XCTAssertEqualObjects(fieldDescriptorWithNumber.enumDescriptor.name,
-                        @"ForeignEnum");
+  XCTAssertEqualObjects(fieldDescriptorWithNumber.enumDescriptor.name, @"ForeignEnum");
   XCTAssertEqual(fieldDescriptorWithName.number, fieldDescriptorWithNumber.number);
   XCTAssertEqual(fieldDescriptorWithName.dataType, GPBDataTypeEnum);
 
@@ -105,8 +103,7 @@
   XCTAssertNotNil(fieldDescriptorWithNumber);
   XCTAssertEqual(fieldDescriptorWithName, fieldDescriptorWithNumber);
   XCTAssertNotNil(fieldDescriptorWithNumber.enumDescriptor);
-  XCTAssertEqualObjects(fieldDescriptorWithNumber.enumDescriptor.name,
-                        @"ImportEnum");
+  XCTAssertEqualObjects(fieldDescriptorWithNumber.enumDescriptor.name, @"ImportEnum");
   XCTAssertEqual(fieldDescriptorWithName.number, fieldDescriptorWithNumber.number);
   XCTAssertEqual(fieldDescriptorWithName.dataType, GPBDataTypeEnum);
 
@@ -121,8 +118,7 @@
   XCTAssertEqual(fieldDescriptorWithName.dataType, GPBDataTypeMessage);
 
   // Foreign Message
-  fieldDescriptorWithName =
-      [descriptor fieldWithName:@"optionalForeignMessage"];
+  fieldDescriptorWithName = [descriptor fieldWithName:@"optionalForeignMessage"];
   XCTAssertNotNil(fieldDescriptorWithName);
   fieldDescriptorWithNumber = [descriptor fieldWithNumber:19];
   XCTAssertNotNil(fieldDescriptorWithNumber);
@@ -152,22 +148,18 @@
   NSString *enumName = [descriptor enumNameForValue:1];
   XCTAssertNotNil(enumName);
   int32_t value;
-  XCTAssertTrue(
-      [descriptor getValue:&value forEnumName:@"TestAllTypes_NestedEnum_Foo"]);
-  XCTAssertTrue(
-      [descriptor getValue:NULL forEnumName:@"TestAllTypes_NestedEnum_Foo"]);
+  XCTAssertTrue([descriptor getValue:&value forEnumName:@"TestAllTypes_NestedEnum_Foo"]);
+  XCTAssertTrue([descriptor getValue:NULL forEnumName:@"TestAllTypes_NestedEnum_Foo"]);
   XCTAssertEqual(value, TestAllTypes_NestedEnum_Foo);
 
   enumName = [descriptor enumNameForValue:2];
   XCTAssertNotNil(enumName);
-  XCTAssertTrue(
-      [descriptor getValue:&value forEnumName:@"TestAllTypes_NestedEnum_Bar"]);
+  XCTAssertTrue([descriptor getValue:&value forEnumName:@"TestAllTypes_NestedEnum_Bar"]);
   XCTAssertEqual(value, TestAllTypes_NestedEnum_Bar);
 
   enumName = [descriptor enumNameForValue:3];
   XCTAssertNotNil(enumName);
-  XCTAssertTrue(
-      [descriptor getValue:&value forEnumName:@"TestAllTypes_NestedEnum_Baz"]);
+  XCTAssertTrue([descriptor getValue:&value forEnumName:@"TestAllTypes_NestedEnum_Baz"]);
   XCTAssertEqual(value, TestAllTypes_NestedEnum_Baz);
 
   // TextFormat
@@ -182,10 +174,8 @@
   XCTAssertNil(enumName);
   XCTAssertFalse([descriptor getValue:&value forEnumName:@"Unknown"]);
   XCTAssertFalse([descriptor getValue:NULL forEnumName:@"Unknown"]);
-  XCTAssertFalse([descriptor getValue:&value
-                          forEnumName:@"TestAllTypes_NestedEnum_Unknown"]);
-  XCTAssertFalse([descriptor getValue:NULL
-                          forEnumName:@"TestAllTypes_NestedEnum_Unknown"]);
+  XCTAssertFalse([descriptor getValue:&value forEnumName:@"TestAllTypes_NestedEnum_Unknown"]);
+  XCTAssertFalse([descriptor getValue:NULL forEnumName:@"TestAllTypes_NestedEnum_Unknown"]);
   XCTAssertFalse([descriptor getValue:NULL forEnumTextFormatName:@"Unknown"]);
   XCTAssertFalse([descriptor getValue:&value forEnumTextFormatName:@"Unknown"]);
 }
@@ -194,17 +184,13 @@
   GPBEnumDescriptor *descriptor = TestAllTypes_NestedEnum_EnumDescriptor();
 
   XCTAssertEqual(descriptor.enumNameCount, 4U);
-  XCTAssertEqualObjects([descriptor getEnumNameForIndex:0],
-                        @"TestAllTypes_NestedEnum_Foo");
+  XCTAssertEqualObjects([descriptor getEnumNameForIndex:0], @"TestAllTypes_NestedEnum_Foo");
   XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:0], @"FOO");
-  XCTAssertEqualObjects([descriptor getEnumNameForIndex:1],
-                 @"TestAllTypes_NestedEnum_Bar");
+  XCTAssertEqualObjects([descriptor getEnumNameForIndex:1], @"TestAllTypes_NestedEnum_Bar");
   XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:1], @"BAR");
-  XCTAssertEqualObjects([descriptor getEnumNameForIndex:2],
-                 @"TestAllTypes_NestedEnum_Baz");
+  XCTAssertEqualObjects([descriptor getEnumNameForIndex:2], @"TestAllTypes_NestedEnum_Baz");
   XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:2], @"BAZ");
-  XCTAssertEqualObjects([descriptor getEnumNameForIndex:3],
-                 @"TestAllTypes_NestedEnum_Neg");
+  XCTAssertEqualObjects([descriptor getEnumNameForIndex:3], @"TestAllTypes_NestedEnum_Neg");
   XCTAssertEqualObjects([descriptor getEnumTextFormatNameForIndex:3], @"NEG");
 }
 
@@ -286,8 +272,7 @@
 
 - (void)testEnumValueValidator {
   GPBDescriptor *descriptor = [TestAllTypes descriptor];
-  GPBFieldDescriptor *fieldDescriptor =
-      [descriptor fieldWithName:@"optionalNestedEnum"];
+  GPBFieldDescriptor *fieldDescriptor = [descriptor fieldWithName:@"optionalNestedEnum"];
 
   // Valid values
   XCTAssertTrue([fieldDescriptor isValidEnumValue:1]);
@@ -325,12 +310,10 @@
 
   // Pointer comparisons against lookups from message.
 
-  XCTAssertEqual([oneofFoo fieldWithNumber:TestOneof2_FieldNumber_FooString],
-                 fooStringField);
+  XCTAssertEqual([oneofFoo fieldWithNumber:TestOneof2_FieldNumber_FooString], fooStringField);
   XCTAssertEqual([oneofFoo fieldWithName:@"fooString"], fooStringField);
 
-  XCTAssertEqual([oneofBar fieldWithNumber:TestOneof2_FieldNumber_BarString],
-                 barStringField);
+  XCTAssertEqual([oneofBar fieldWithNumber:TestOneof2_FieldNumber_BarString], barStringField);
   XCTAssertEqual([oneofBar fieldWithName:@"barString"], barStringField);
 
   // Unknown oneof not found.
@@ -354,8 +337,7 @@
   // (pointer comparisons)
   XCTAssertEqual(fooStringField.containingOneof, oneofFoo);
   XCTAssertEqual(barStringField.containingOneof, oneofBar);
-  GPBFieldDescriptor *bazString =
-      [descriptor fieldWithNumber:TestOneof2_FieldNumber_BazString];
+  GPBFieldDescriptor *bazString = [descriptor fieldWithNumber:TestOneof2_FieldNumber_BazString];
   XCTAssertNotNil(bazString);
   XCTAssertNil(bazString.containingOneof);
 }

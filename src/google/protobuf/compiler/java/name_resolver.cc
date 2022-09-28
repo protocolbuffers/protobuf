@@ -28,18 +28,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/compiler/java/name_resolver.h>
+#include "google/protobuf/compiler/java/name_resolver.h"
 
 #include <map>
 #include <string>
 
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/stubs/substitute.h>
-#include <google/protobuf/compiler/java/helpers.h>
-#include <google/protobuf/compiler/java/names.h>
+#include "google/protobuf/compiler/code_generator.h"
+#include "absl/strings/ascii.h"
+#include "absl/strings/str_replace.h"
+#include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/names.h"
+
 
 // Must be last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -108,7 +111,7 @@ std::string ClassNameWithoutPackage(const ServiceDescriptor* descriptor,
 
 // Return true if a and b are equals (case insensitive).
 NameEquality CheckNameEquality(const std::string& a, const std::string& b) {
-  if (ToUpper(a) == ToUpper(b)) {
+  if (absl::AsciiStrToUpper(a) == absl::AsciiStrToUpper(b)) {
     if (a == b) {
       return NameEquality::EXACT_EQUAL;
     }
@@ -314,7 +317,7 @@ std::string ClassNameResolver::GetJavaClassFullName(
     result = GetClassName(file, immutable, kotlin);
     if (!result.empty()) result += '$';
   }
-  result += StringReplace(name_without_package, ".", "$", true);
+  result += absl::StrReplaceAll(name_without_package, {{".", "$"}});
   return result;
 }
 
@@ -382,4 +385,4 @@ std::string ClassNameResolver::GetDowngradedClassName(
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

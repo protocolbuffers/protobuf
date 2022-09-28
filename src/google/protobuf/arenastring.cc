@@ -28,21 +28,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/arenastring.h>
+#include "google/protobuf/arenastring.h"
 
 #include <cstddef>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
-#include <google/protobuf/message_lite.h>
-#include <google/protobuf/parse_context.h>
-#include <google/protobuf/stubs/stl_util.h>
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/parse_context.h"
+#include "google/protobuf/stubs/stl_util.h"
 
 // clang-format off
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 // clang-format on
 
 namespace google {
@@ -98,7 +98,7 @@ class ScopedCheckPtrInvariants {
 #endif  // NDEBUG || !GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL
 
 // Creates a heap allocated std::string value.
-inline TaggedStringPtr CreateString(ConstStringParam value) {
+inline TaggedStringPtr CreateString(absl::string_view value) {
   TaggedStringPtr res;
   res.SetAllocated(new std::string(value.data(), value.length()));
   return res;
@@ -107,7 +107,7 @@ inline TaggedStringPtr CreateString(ConstStringParam value) {
 #ifndef GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL
 
 // Creates an arena allocated std::string value.
-TaggedStringPtr CreateArenaString(Arena& arena, ConstStringParam s) {
+TaggedStringPtr CreateArenaString(Arena& arena, absl::string_view s) {
   TaggedStringPtr res;
   res.SetMutableArena(Arena::Create<std::string>(&arena, s.data(), s.length()));
   return res;
@@ -117,7 +117,7 @@ TaggedStringPtr CreateArenaString(Arena& arena, ConstStringParam s) {
 
 }  // namespace
 
-void ArenaStringPtr::Set(ConstStringParam value, Arena* arena) {
+void ArenaStringPtr::Set(absl::string_view value, Arena* arena) {
   ScopedCheckPtrInvariants check(&tagged_ptr_);
   if (IsDefault()) {
     // If we're not on an arena, skip straight to a true string to avoid
@@ -277,4 +277,4 @@ const char* EpsCopyInputStream::ReadArenaString(const char* ptr,
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

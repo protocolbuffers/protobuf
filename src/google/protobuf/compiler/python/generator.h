@@ -38,10 +38,10 @@
 #include <string>
 
 #include "absl/synchronization/mutex.h"
-#include <google/protobuf/compiler/code_generator.h>
+#include "google/protobuf/compiler/code_generator.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -74,6 +74,8 @@ struct GeneratorOptions {
 class PROTOC_EXPORT Generator : public CodeGenerator {
  public:
   Generator();
+  Generator(const Generator&) = delete;
+  Generator& operator=(const Generator&) = delete;
   ~Generator() override;
 
   // CodeGenerator methods.
@@ -188,8 +190,6 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   mutable io::Printer* printer_;  // Set in Generate().  Under mutex_.
 
   bool opensource_runtime_ = true;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Generator);
 };
 
 }  // namespace python
@@ -197,6 +197,6 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_PYTHON_GENERATOR_H__

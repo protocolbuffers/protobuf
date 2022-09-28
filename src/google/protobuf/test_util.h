@@ -35,17 +35,17 @@
 #ifndef GOOGLE_PROTOBUF_TEST_UTIL_H__
 #define GOOGLE_PROTOBUF_TEST_UTIL_H__
 
-#include <google/protobuf/unittest.pb.h>
+#include "google/protobuf/unittest.pb.h"
 
 #define UNITTEST ::protobuf_unittest
 #define UNITTEST_IMPORT ::protobuf_unittest_import
 // Must be included when the preprocessor symbols above are defined.
-#include <google/protobuf/test_util.inc>
+#include "google/protobuf/test_util.inc"
 #undef UNITTEST
 #undef UNITTEST_IMPORT
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -63,6 +63,8 @@ class ReflectionTester {
   // the latter case, ReflectionTester searches for extension fields in
   // its file.
   explicit ReflectionTester(const Descriptor* base_descriptor);
+  ReflectionTester(const ReflectionTester&) = delete;
+  ReflectionTester& operator=(const ReflectionTester&) = delete;
 
   void SetAllFieldsViaReflection(Message* message);
   void ModifyRepeatedFieldsViaReflection(Message* message);
@@ -120,8 +122,6 @@ class ReflectionTester {
   void ExpectAllFieldsSetViaReflection1(const Message& message);
   void ExpectAllFieldsSetViaReflection2(const Message& message);
   void ExpectAllFieldsSetViaReflection3(const Message& message);
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ReflectionTester);
 };
 
 inline TestUtil::ReflectionTester::ReflectionTester(
@@ -1223,7 +1223,7 @@ inline void TestUtil::ReflectionTester::ExpectMessagesReleasedViaReflection(
       "optional_foreign_message",
       "optional_import_message",
   };
-  for (int i = 0; i < GOOGLE_ARRAYSIZE(fields); i++) {
+  for (int i = 0; i < ABSL_ARRAYSIZE(fields); i++) {
     Message* released = reflection->ReleaseMessage(message, F(fields[i]));
     switch (expected_release_state) {
       case IS_NULL:
@@ -1272,6 +1272,6 @@ inline void ExpectAllFieldsAndExtensionsInOrder(const std::string& serialized) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_TEST_UTIL_H__

@@ -36,17 +36,20 @@
 #include <string>
 #include <utility>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/any.pb.h>
-#include <google/protobuf/type.pb.h>
-#include <google/protobuf/repeated_field.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/statusor.h>
-#include <google/protobuf/stubs/status.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/any.pb.h"
+#include "google/protobuf/type.pb.h"
+#include "google/protobuf/repeated_field.h"
+#include "google/protobuf/stubs/strutil.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
+
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -61,25 +64,25 @@ static const int64_t kTypeUrlSize = 19;
 // When the option with the given name is not found, default_value is returned.
 PROTOBUF_EXPORT bool GetBoolOptionOrDefault(
     const RepeatedPtrField<google::protobuf::Option>& options,
-    StringPiece option_name, bool default_value);
+    absl::string_view option_name, bool default_value);
 
 // Returns int64 option value. If the option isn't found, returns the
 // default_value.
 PROTOBUF_EXPORT int64_t GetInt64OptionOrDefault(
     const RepeatedPtrField<google::protobuf::Option>& options,
-    StringPiece option_name, int64_t default_value);
+    absl::string_view option_name, int64_t default_value);
 
 // Returns double option value. If the option isn't found, returns the
 // default_value.
 PROTOBUF_EXPORT double GetDoubleOptionOrDefault(
     const RepeatedPtrField<google::protobuf::Option>& options,
-    StringPiece option_name, double default_value);
+    absl::string_view option_name, double default_value);
 
 // Returns string option value. If the option isn't found, returns the
 // default_value.
 PROTOBUF_EXPORT std::string GetStringOptionOrDefault(
     const RepeatedPtrField<google::protobuf::Option>& options,
-    StringPiece option_name, StringPiece default_value);
+    absl::string_view option_name, absl::string_view default_value);
 
 // Returns a boolean value contained in Any type.
 // TODO(skarvaje): Make these utilities dealing with Any types more generic,
@@ -98,8 +101,8 @@ PROTOBUF_EXPORT std::string GetStringFromAny(const google::protobuf::Any& any);
 
 // Returns the type string without the url prefix. e.g.: If the passed type is
 // 'type.googleapis.com/tech.type.Bool', the returned value is 'tech.type.Bool'.
-PROTOBUF_EXPORT StringPiece GetTypeWithoutUrl(
-    StringPiece type_url);
+PROTOBUF_EXPORT absl::string_view GetTypeWithoutUrl(
+    absl::string_view type_url);
 
 // Returns the simple_type with the base type url (kTypeServiceBaseUrl)
 // prefixed.
@@ -108,23 +111,23 @@ PROTOBUF_EXPORT StringPiece GetTypeWithoutUrl(
 // GetFullTypeWithUrl("google.protobuf.Timestamp") returns the string
 // "type.googleapis.com/google.protobuf.Timestamp".
 PROTOBUF_EXPORT std::string GetFullTypeWithUrl(
-    StringPiece simple_type);
+    absl::string_view simple_type);
 
 // Finds and returns option identified by name and option_name within the
 // provided map. Returns nullptr if none found.
 const google::protobuf::Option* FindOptionOrNull(
     const RepeatedPtrField<google::protobuf::Option>& options,
-    StringPiece option_name);
+    absl::string_view option_name);
 
 // Finds and returns the field identified by field_name in the passed tech Type
 // object. Returns nullptr if none found.
 const google::protobuf::Field* FindFieldInTypeOrNull(
-    const google::protobuf::Type* type, StringPiece field_name);
+    const google::protobuf::Type* type, absl::string_view field_name);
 
 // Similar to FindFieldInTypeOrNull, but this looks up fields with given
 // json_name.
 const google::protobuf::Field* FindJsonFieldInTypeOrNull(
-    const google::protobuf::Type* type, StringPiece json_name);
+    const google::protobuf::Type* type, absl::string_view json_name);
 
 // Similar to FindFieldInTypeOrNull, but this looks up fields by number.
 const google::protobuf::Field* FindFieldInTypeByNumberOrNull(
@@ -133,7 +136,7 @@ const google::protobuf::Field* FindFieldInTypeByNumberOrNull(
 // Finds and returns the EnumValue identified by enum_name in the passed tech
 // Enum object. Returns nullptr if none found.
 const google::protobuf::EnumValue* FindEnumValueByNameOrNull(
-    const google::protobuf::Enum* enum_type, StringPiece enum_name);
+    const google::protobuf::Enum* enum_type, absl::string_view enum_name);
 
 // Finds and returns the EnumValue identified by value in the passed tech
 // Enum object. Returns nullptr if none found.
@@ -145,23 +148,23 @@ const google::protobuf::EnumValue* FindEnumValueByNumberOrNull(
 // For Ex. if enum_name is ACTIONANDADVENTURE it can get accepted if
 // EnumValue's name is action_and_adventure or ACTION_AND_ADVENTURE.
 const google::protobuf::EnumValue* FindEnumValueByNameWithoutUnderscoreOrNull(
-    const google::protobuf::Enum* enum_type, StringPiece enum_name);
+    const google::protobuf::Enum* enum_type, absl::string_view enum_name);
 
 // Converts input to camel-case and returns it.
-PROTOBUF_EXPORT std::string ToCamelCase(const StringPiece input);
+PROTOBUF_EXPORT std::string ToCamelCase(const absl::string_view input);
 
 // Converts enum name string to camel-case and returns it.
-std::string EnumValueNameToLowerCamelCase(const StringPiece input);
+std::string EnumValueNameToLowerCamelCase(const absl::string_view input);
 
 // Converts input to snake_case and returns it.
-PROTOBUF_EXPORT std::string ToSnakeCase(StringPiece input);
+PROTOBUF_EXPORT std::string ToSnakeCase(absl::string_view input);
 
 // Returns true if type_name represents a well-known type.
 PROTOBUF_EXPORT bool IsWellKnownType(const std::string& type_name);
 
 // Returns true if 'bool_string' represents a valid boolean value. Only "true",
 // "false", "0" and "1" are allowed.
-PROTOBUF_EXPORT bool IsValidBoolString(StringPiece bool_string);
+PROTOBUF_EXPORT bool IsValidBoolString(absl::string_view bool_string);
 
 // Returns true if "field" is a protobuf map field based on its type.
 PROTOBUF_EXPORT bool IsMap(const google::protobuf::Field& field,
@@ -177,7 +180,7 @@ PROTOBUF_EXPORT std::string FloatAsString(float value);
 // Convert from int32, int64, uint32, uint64, double or float to string.
 template <typename T>
 std::string ValueAsString(T value) {
-  return StrCat(value);
+  return absl::StrCat(value);
 }
 
 template <>
@@ -192,13 +195,13 @@ inline std::string ValueAsString(double value) {
 
 // Converts a string to float. Unlike safe_strtof, conversion will fail if the
 // value fits into double but not float (e.g., DBL_MAX).
-PROTOBUF_EXPORT bool SafeStrToFloat(StringPiece str, float* value);
+PROTOBUF_EXPORT bool SafeStrToFloat(absl::string_view str, float* value);
 
 }  // namespace converter
 }  // namespace util
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_UTILITY_H__

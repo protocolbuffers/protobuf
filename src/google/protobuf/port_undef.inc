@@ -35,6 +35,8 @@
 #error "port_undef.inc must be included after port_def.inc"
 #endif
 
+#undef PROTOBUF_POISON_MEMORY_REGION
+#undef PROTOBUF_UNPOISON_MEMORY_REGION
 #undef PROTOBUF_BUILTIN_BSWAP16
 #undef PROTOBUF_BUILTIN_BSWAP32
 #undef PROTOBUF_BUILTIN_BSWAP64
@@ -55,7 +57,6 @@
 #undef PROTOBUF_DEPRECATED
 #undef PROTOBUF_DEPRECATED_ENUM
 #undef PROTOBUF_DEPRECATED_MSG
-#undef PROTOBUF_FUNC_ALIGN
 #undef PROTOBUF_RETURNS_NONNULL
 #undef PROTOBUF_ATTRIBUTE_REINITIALIZES
 #undef PROTOBUF_RTTI
@@ -122,7 +123,17 @@
 
 #undef PROTOBUF_FUTURE_FINAL
 
-// Restore macro that may have been #undef'd in port_def.inc.
+// Restore macros that may have been #undef'd in port_def.inc.
+
+#ifdef PROTOBUF_DID_UNDEF_PACKAGE
+#pragma pop_macro("PACKAGE")
+#undef PROTOBUF_DID_UNDEF_PACKAGE
+#endif
+
+#ifdef PROTOBUF_DID_UNDEF_LINUX
+#pragma pop_macro("linux")
+#endif
+
 #ifdef _WIN32
 #pragma pop_macro("CREATE_NEW")
 #pragma pop_macro("DELETE")
@@ -133,6 +144,7 @@
 #pragma pop_macro("ERROR_INSTALL_FAILED")
 #pragma pop_macro("ERROR_NOT_FOUND")
 #pragma pop_macro("GetClassName")
+#pragma pop_macro("GetCurrentTime")
 #pragma pop_macro("GetMessage")
 #pragma pop_macro("GetObject")
 #pragma pop_macro("IGNORE")

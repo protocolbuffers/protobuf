@@ -127,15 +127,15 @@
 #endif
 
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/port.h>
-#include <google/protobuf/stubs/port.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+#include "absl/numeric/bits.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/port.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -177,6 +177,8 @@ class PROTOBUF_EXPORT CodedInputStream {
   // faster than using an ArrayInputStream.  PushLimit(size) is implied by
   // this constructor.
   explicit CodedInputStream(const uint8_t* buffer, int size);
+  CodedInputStream(const CodedInputStream&) = delete;
+  CodedInputStream& operator=(const CodedInputStream&) = delete;
 
   // Destroy the CodedInputStream and position the underlying
   // ZeroCopyInputStream at the first unread byte.  If an error occurred while
@@ -517,8 +519,6 @@ class PROTOBUF_EXPORT CodedInputStream {
   MessageFactory* GetExtensionFactory();
 
  private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CodedInputStream);
-
   const uint8_t* buffer_;
   const uint8_t* buffer_end_;  // pointer to the end of the buffer.
   ZeroCopyInputStream* input_;
@@ -1060,6 +1060,8 @@ class PROTOBUF_EXPORT CodedOutputStream {
   template <class Stream, class = typename std::enable_if<std::is_base_of<
                               ZeroCopyOutputStream, Stream>::value>::type>
   CodedOutputStream(Stream* stream, bool eager_init);
+  CodedOutputStream(const CodedOutputStream&) = delete;
+  CodedOutputStream& operator=(const CodedOutputStream&) = delete;
 
   // Destroy the CodedOutputStream and position the underlying
   // ZeroCopyOutputStream immediately after the last byte written.
@@ -1287,7 +1289,6 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // REQUIRES: value >= 0x80, and that (value & 7f) has been written to *target.
   static uint8_t* WriteVarint32ToArrayOutOfLineHelper(uint32_t value,
                                                       uint8_t* target);
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CodedOutputStream);
 };
 
 // inline methods ====================================================
@@ -1728,15 +1729,16 @@ inline size_t CodedOutputStream::VarintSize32(uint32_t value) {
   // This computes value == 0 ? 1 : floor(log2(value)) / 7 + 1
   // Use an explicit multiplication to implement the divide of
   // a number in the 1..31 range.
-  // Explicit OR 0x1 to avoid calling Bits::Log2FloorNonZero(0), which is
-  // undefined.
-  uint32_t log2value = Bits::Log2FloorNonZero(value | 0x1);
+  //
+  // Explicit OR 0x1 to avoid calling absl::bit_width(0), which is
+  // requires a branch to check for on many platforms.
+  uint32_t log2value = absl::bit_width(value | 0x1) - 1;
   return static_cast<size_t>((log2value * 9 + 73) / 64);
 }
 
 inline size_t CodedOutputStream::VarintSize32PlusOne(uint32_t value) {
   // Same as above, but one more.
-  uint32_t log2value = Bits::Log2FloorNonZero(value | 0x1);
+  uint32_t log2value = absl::bit_width(value | 0x1) - 1;
   return static_cast<size_t>((log2value * 9 + 73 + 64) / 64);
 }
 
@@ -1744,15 +1746,16 @@ inline size_t CodedOutputStream::VarintSize64(uint64_t value) {
   // This computes value == 0 ? 1 : floor(log2(value)) / 7 + 1
   // Use an explicit multiplication to implement the divide of
   // a number in the 1..63 range.
-  // Explicit OR 0x1 to avoid calling Bits::Log2FloorNonZero(0), which is
-  // undefined.
-  uint32_t log2value = Bits::Log2FloorNonZero64(value | 0x1);
+  //
+  // Explicit OR 0x1 to avoid calling absl::bit_width(0), which is
+  // requires a branch to check for on many platforms.
+  uint32_t log2value = absl::bit_width(value | 0x1) - 1;
   return static_cast<size_t>((log2value * 9 + 73) / 64);
 }
 
 inline size_t CodedOutputStream::VarintSize64PlusOne(uint64_t value) {
   // Same as above, but one more.
-  uint32_t log2value = Bits::Log2FloorNonZero64(value | 0x1);
+  uint32_t log2value = absl::bit_width(value | 0x1) - 1;
   return static_cast<size_t>((log2value * 9 + 73 + 64) / 64);
 }
 
@@ -1793,6 +1796,6 @@ inline uint8_t* CodedOutputStream::WriteStringToArray(const std::string& str,
 #pragma runtime_checks("c", restore)
 #endif  // _MSC_VER && !defined(__INTEL_COMPILER)
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_IO_CODED_STREAM_H__

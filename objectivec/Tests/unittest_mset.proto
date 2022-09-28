@@ -28,67 +28,33 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: kenton@google.com (Kenton Varda)
-//  Based on original Protocol Buffers design by
-//  Sanjay Ghemawat, Jeff Dean, and others.
-//
-// This file is similar to unittest_mset_wire_format.proto, but does not
-// have a TestMessageSet, so it can be downgraded to proto1.
-
 syntax = "proto2";
 
-import "unittest_mset_wire_format.proto";
+package objc.protobuf.tests.mset;
 
-package objc.protobuf.tests;
+option objc_class_prefix = "MSet";
 
-message TestMessageSetContainer {
-  optional objc.protobuf.tests.wireformat.TestMessageSet message_set = 1;
+// A message with message_set_wire_format.
+message Message {
+  option message_set_wire_format = true;
+  extensions 4 to max;
 }
 
-message NestedTestMessageSetContainer {
-  optional TestMessageSetContainer container = 1;
-  optional NestedTestMessageSetContainer child = 2;
-}
-
-message NestedTestInt {
-  optional fixed32 a = 1;
-  optional int32 b = 3;
-  optional NestedTestInt child = 2;
-}
-
-message TestMessageSetExtension1 {
-  extend objc.protobuf.tests.wireformat.TestMessageSet {
-    optional TestMessageSetExtension1 message_set_extension = 1545008;
+message MessageExtension1 {
+  extend Message {
+    optional MessageExtension1 message_set_extension = 1545008;
   }
   optional int32 i = 15;
-  optional objc.protobuf.tests.wireformat.TestMessageSet recursive = 16;
+  optional Message recursive = 16;
   optional string test_aliasing = 17 [ctype = STRING_PIECE];
 }
 
-message TestMessageSetExtension2 {
-  extend objc.protobuf.tests.wireformat.TestMessageSet {
-    optional TestMessageSetExtension2 message_set_extension = 1547769;
+message MessageExtension2 {
+  extend Message {
+    optional MessageExtension2 message_set_extension = 1547769;
   }
   optional string str = 25;
 }
-
-message TestMessageSetExtension3 {
-  extend objc.protobuf.tests.wireformat.TestMessageSet {
-    optional TestMessageSetExtension3 message_set_extension = 195273129;
-  }
-  optional NestedTestInt msg = 35;
-}
-
-// This message was used to generate
-// //net/proto2/python/internal/testdata/message_set_message, but is commented
-// out since it must not actually exist in code, to simulate an "unknown"
-// extension.
-// message TestMessageSetUnknownExtension {
-//   extend TestMessageSet {
-//     optional TestMessageSetUnknownExtension message_set_extension = 56141421;
-//   }
-//   optional int64 a = 1;
-// }
 
 // MessageSet wire format is equivalent to this.
 message RawMessageSet {

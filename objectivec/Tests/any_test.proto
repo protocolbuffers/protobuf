@@ -30,11 +30,13 @@
 
 syntax = "proto3";
 
-package objc.protobuf.tests;
+package objc.protobuf.tests.any;
 
 import "google/protobuf/any.proto";
 
-message TestAny {
+option objc_class_prefix = "Any";
+
+message TestMessage {
   int32 int32_value = 1;
   google.protobuf.Any any_value = 2;
   repeated google.protobuf.Any repeated_any_value = 3;

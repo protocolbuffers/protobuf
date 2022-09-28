@@ -107,11 +107,12 @@
 #ifndef GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_H__
 #define GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_H__
 
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/port.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -126,6 +127,8 @@ class ZeroCopyOutputStream;
 class PROTOBUF_EXPORT ZeroCopyInputStream {
  public:
   ZeroCopyInputStream() {}
+  ZeroCopyInputStream(const ZeroCopyInputStream&) = delete;
+  ZeroCopyInputStream& operator=(const ZeroCopyInputStream&) = delete;
   virtual ~ZeroCopyInputStream() {}
 
   // Obtains a chunk of data from the stream.
@@ -180,9 +183,6 @@ class PROTOBUF_EXPORT ZeroCopyInputStream {
   // Returns the total number of bytes read since this object was created.
   virtual int64_t ByteCount() const = 0;
 
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ZeroCopyInputStream);
 };
 
 // Abstract interface similar to an output stream but designed to minimize
@@ -190,6 +190,8 @@ class PROTOBUF_EXPORT ZeroCopyInputStream {
 class PROTOBUF_EXPORT ZeroCopyOutputStream {
  public:
   ZeroCopyOutputStream() {}
+  ZeroCopyOutputStream(const ZeroCopyOutputStream&) = delete;
+  ZeroCopyOutputStream& operator=(const ZeroCopyOutputStream&) = delete;
   virtual ~ZeroCopyOutputStream() {}
 
   // Obtains a buffer into which data can be written.  Any data written
@@ -245,15 +247,12 @@ class PROTOBUF_EXPORT ZeroCopyOutputStream {
   virtual bool WriteAliasedRaw(const void* data, int size);
   virtual bool AllowsAliasing() const { return false; }
 
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ZeroCopyOutputStream);
 };
 
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_H__

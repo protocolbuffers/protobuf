@@ -31,10 +31,10 @@
 #ifndef GOOGLE_PROTOBUF_REFLECTION_TESTER_H__
 #define GOOGLE_PROTOBUF_REFLECTION_TESTER_H__
 
-#include <google/protobuf/message.h>
+#include "google/protobuf/message.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -117,6 +117,6 @@ class MapReflectionTester {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_REFLECTION_TESTER_H__

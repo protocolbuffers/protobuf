@@ -29,9 +29,11 @@
 
 syntax = "proto2";
 
-package objc.protobuf.tests;
+package objc.protobuf.tests.chain;
 
-import "unittest_extension_chain_g.proto";
+import "objectivec/Tests/unittest_extension_chain_g.proto";
+
+option objc_class_prefix = "Chain";
 
 // The Root for this file should just be merging in the extensions from C's
 // Root (because G doesn't define anything itself).
@@ -39,6 +41,6 @@ import "unittest_extension_chain_g.proto";
 // The generated source will also have to directly import C's .h file so it can
 // compile the reference to C's Root class.
 
-message ChainFMessage {
-  optional ChainGMessage g = 1;
+message FMessage {
+  optional GMessage g = 1;
 }

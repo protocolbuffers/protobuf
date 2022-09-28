@@ -40,11 +40,12 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -68,6 +69,8 @@ typedef int ColumnNumber;
 class PROTOBUF_EXPORT ErrorCollector {
  public:
   inline ErrorCollector() {}
+  ErrorCollector(const ErrorCollector&) = delete;
+  ErrorCollector& operator=(const ErrorCollector&) = delete;
   virtual ~ErrorCollector();
 
   // Indicates that there was an error in the input at the given line and
@@ -81,9 +84,6 @@ class PROTOBUF_EXPORT ErrorCollector {
   // 1 to each before printing them.
   virtual void AddWarning(int /* line */, ColumnNumber /* column */,
                           const std::string& /* message */) {}
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ErrorCollector);
 };
 
 // This class converts a stream of raw text into a stream of tokens for
@@ -98,6 +98,8 @@ class PROTOBUF_EXPORT Tokenizer {
   // input stream and writes errors to the given error_collector.
   // The caller keeps ownership of input and error_collector.
   Tokenizer(ZeroCopyInputStream* input, ErrorCollector* error_collector);
+  Tokenizer(const Tokenizer&) = delete;
+  Tokenizer& operator=(const Tokenizer&) = delete;
   ~Tokenizer();
 
   enum TokenType {
@@ -212,6 +214,10 @@ class PROTOBUF_EXPORT Tokenizer {
   // result is undefined (possibly an assert failure).
   static double ParseFloat(const std::string& text);
 
+  // Parses given text as if it were a TYPE_FLOAT token.  Returns false if the
+  // given text is not actually a valid float literal.
+  static bool TryParseFloat(const std::string& text, double* result);
+
   // Parses a TYPE_STRING token.  This never fails, so long as the text actually
   // comes from a TYPE_STRING token parsed by Tokenizer.  If it doesn't, the
   // result is undefined (possibly an assert failure).
@@ -275,8 +281,6 @@ class PROTOBUF_EXPORT Tokenizer {
 
   // -----------------------------------------------------------------
  private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Tokenizer);
-
   Token current_;   // Returned by current().
   Token previous_;  // Returned by previous().
 
@@ -436,6 +440,6 @@ inline void Tokenizer::ParseString(const std::string& text,
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_IO_TOKENIZER_H__

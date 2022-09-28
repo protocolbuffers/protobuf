@@ -28,17 +28,19 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/compiler/python/pyi_generator.h>
+#include "google/protobuf/compiler/python/pyi_generator.h"
 
 #include <string>
 #include <utility>
 
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/compiler/python/helpers.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
+#include "absl/strings/ascii.h"
+#include "absl/strings/match.h"
+#include "absl/strings/str_split.h"
+#include "google/protobuf/compiler/python/helpers.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 
 namespace google {
 namespace protobuf {
@@ -57,7 +59,7 @@ std::string PyiGenerator::ModuleLevelName(const DescriptorT& descriptor) const {
     std::string filename = descriptor.file()->name();
     if (import_map_.find(filename) == import_map_.end()) {
       std::string module_name = ModuleName(descriptor.file()->name());
-      std::vector<std::string> tokens = Split(module_name, ".");
+      std::vector<std::string> tokens = absl::StrSplit(module_name, ".");
       module_alias = "_" + tokens.back();
     } else {
       module_alias = import_map_.at(filename);
@@ -326,7 +328,7 @@ void PyiGenerator::PrintExtensions(const DescriptorT& descriptor) const {
   for (int i = 0; i < descriptor.extension_count(); ++i) {
     const FieldDescriptor* extension_field = descriptor.extension(i);
     std::string constant_name = extension_field->name() + "_FIELD_NUMBER";
-    ToUpper(&constant_name);
+    absl::AsciiStrToUpper(&constant_name);
     printer_->Print("$constant_name$: _ClassVar[int]\n",
                     "constant_name", constant_name);
     printer_->Print("$name$: _descriptor.FieldDescriptor\n",
@@ -435,7 +437,7 @@ void PyiGenerator::PrintMessage(
     const FieldDescriptor& field_des = *message_descriptor.field(i);
     printer_->Print(
       "$field_number_name$: _ClassVar[int]\n", "field_number_name",
-      ToUpper(field_des.name()) + "_FIELD_NUMBER");
+      absl::AsciiStrToUpper(field_des.name()) + "_FIELD_NUMBER");
   }
   // Prints field name and type
   for (int i = 0; i < message_descriptor.field_count(); ++i) {
@@ -489,6 +491,7 @@ void PyiGenerator::PrintMessage(
     }
     is_first = false;
     printer_->Print(", $field_name$: ", "field_name", field_name);
+    Annotate("field_name", field_des);
     if (field_des->is_repeated() ||
         field_des->cpp_type() != FieldDescriptor::CPPTYPE_BOOL) {
       printer_->Print("_Optional[");
@@ -574,7 +577,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
   for (const std::pair<std::string, std::string>& option : options) {
     if (option.first == "annotate_code") {
       annotate_code = true;
-    } else if (HasSuffixString(option.first, ".pyi")) {
+    } else if (absl::EndsWith(option.first, ".pyi")) {
       filename = option.first;
     } else {
       *error = "Unknown generator option: " + option.first;

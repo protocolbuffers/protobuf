@@ -43,12 +43,12 @@
 #include <iosfwd>
 #include <string>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -70,6 +70,8 @@ class PROTOBUF_EXPORT FileInputStream PROTOBUF_FUTURE_FINAL
   // should be read and returned with each call to Next().  Otherwise,
   // a reasonable default is used.
   explicit FileInputStream(int file_descriptor, int block_size = -1);
+  FileInputStream(const FileInputStream&) = delete;
+  FileInputStream& operator=(const FileInputStream&) = delete;
 
   // Flushes any buffers and closes the underlying file.  Returns false if
   // an error occurs during the process; use GetErrno() to examine the error.
@@ -100,6 +102,8 @@ class PROTOBUF_EXPORT FileInputStream PROTOBUF_FUTURE_FINAL
       : public CopyingInputStream {
    public:
     CopyingFileInputStream(int file_descriptor);
+    CopyingFileInputStream(const CopyingFileInputStream&) = delete;
+    CopyingFileInputStream& operator=(const CopyingFileInputStream&) = delete;
     ~CopyingFileInputStream() override;
 
     bool Close();
@@ -122,14 +126,10 @@ class PROTOBUF_EXPORT FileInputStream PROTOBUF_FUTURE_FINAL
     // Did we try to seek once and fail?  If so, we assume this file descriptor
     // doesn't support seeking and won't try again.
     bool previous_seek_failed_;
-
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CopyingFileInputStream);
   };
 
   CopyingFileInputStream copying_input_;
   CopyingInputStreamAdaptor impl_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileInputStream);
 };
 
 // ===================================================================
@@ -149,6 +149,8 @@ class PROTOBUF_EXPORT FileOutputStream PROTOBUF_FUTURE_FINAL
   // that should be returned by Next().  Otherwise, a reasonable default
   // is used.
   explicit FileOutputStream(int file_descriptor, int block_size = -1);
+  FileOutputStream(const FileOutputStream&) = delete;
+  FileOutputStream& operator=(const FileOutputStream&) = delete;
 
   ~FileOutputStream() override;
 
@@ -175,6 +177,8 @@ class PROTOBUF_EXPORT FileOutputStream PROTOBUF_FUTURE_FINAL
       : public CopyingOutputStream {
    public:
     CopyingFileOutputStream(int file_descriptor);
+    CopyingFileOutputStream(const CopyingFileOutputStream&) = delete;
+    CopyingFileOutputStream& operator=(const CopyingFileOutputStream&) = delete;
     ~CopyingFileOutputStream() override;
 
     bool Close();
@@ -192,13 +196,9 @@ class PROTOBUF_EXPORT FileOutputStream PROTOBUF_FUTURE_FINAL
 
     // The errno of the I/O error, if one has occurred.  Otherwise, zero.
     int errno_;
-
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CopyingFileOutputStream);
   };
 
   CopyingFileOutputStream copying_output_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(FileOutputStream);
 };
 
 // ===================================================================
@@ -215,6 +215,8 @@ class PROTOBUF_EXPORT IstreamInputStream PROTOBUF_FUTURE_FINAL
   // should be read and returned with each call to Next().  Otherwise,
   // a reasonable default is used.
   explicit IstreamInputStream(std::istream* stream, int block_size = -1);
+  IstreamInputStream(const IstreamInputStream&) = delete;
+  IstreamInputStream& operator=(const IstreamInputStream&) = delete;
 
   // implements ZeroCopyInputStream ----------------------------------
   bool Next(const void** data, int* size) override;
@@ -227,6 +229,9 @@ class PROTOBUF_EXPORT IstreamInputStream PROTOBUF_FUTURE_FINAL
       : public CopyingInputStream {
    public:
     CopyingIstreamInputStream(std::istream* input);
+    CopyingIstreamInputStream(const CopyingIstreamInputStream&) = delete;
+    CopyingIstreamInputStream& operator=(const CopyingIstreamInputStream&) =
+        delete;
     ~CopyingIstreamInputStream() override;
 
     // implements CopyingInputStream ---------------------------------
@@ -236,14 +241,10 @@ class PROTOBUF_EXPORT IstreamInputStream PROTOBUF_FUTURE_FINAL
    private:
     // The stream.
     std::istream* input_;
-
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CopyingIstreamInputStream);
   };
 
   CopyingIstreamInputStream copying_input_;
   CopyingInputStreamAdaptor impl_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(IstreamInputStream);
 };
 
 // ===================================================================
@@ -260,6 +261,8 @@ class PROTOBUF_EXPORT OstreamOutputStream PROTOBUF_FUTURE_FINAL
   // that should be returned by Next().  Otherwise, a reasonable default
   // is used.
   explicit OstreamOutputStream(std::ostream* stream, int block_size = -1);
+  OstreamOutputStream(const OstreamOutputStream&) = delete;
+  OstreamOutputStream& operator=(const OstreamOutputStream&) = delete;
   ~OstreamOutputStream() override;
 
   // implements ZeroCopyOutputStream ---------------------------------
@@ -272,6 +275,9 @@ class PROTOBUF_EXPORT OstreamOutputStream PROTOBUF_FUTURE_FINAL
       : public CopyingOutputStream {
    public:
     CopyingOstreamOutputStream(std::ostream* output);
+    CopyingOstreamOutputStream(const CopyingOstreamOutputStream&) = delete;
+    CopyingOstreamOutputStream& operator=(const CopyingOstreamOutputStream&) =
+        delete;
     ~CopyingOstreamOutputStream() override;
 
     // implements CopyingOutputStream --------------------------------
@@ -280,14 +286,10 @@ class PROTOBUF_EXPORT OstreamOutputStream PROTOBUF_FUTURE_FINAL
    private:
     // The stream.
     std::ostream* output_;
-
-    GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(CopyingOstreamOutputStream);
   };
 
   CopyingOstreamOutputStream copying_output_;
   CopyingOutputStreamAdaptor impl_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(OstreamOutputStream);
 };
 
 // ===================================================================
@@ -305,6 +307,8 @@ class PROTOBUF_EXPORT ConcatenatingInputStream PROTOBUF_FUTURE_FINAL
   // All streams passed in as well as the array itself must remain valid
   // until the ConcatenatingInputStream is destroyed.
   ConcatenatingInputStream(ZeroCopyInputStream* const streams[], int count);
+  ConcatenatingInputStream(const ConcatenatingInputStream&) = delete;
+  ConcatenatingInputStream& operator=(const ConcatenatingInputStream&) = delete;
   ~ConcatenatingInputStream() override = default;
 
   // implements ZeroCopyInputStream ----------------------------------
@@ -320,8 +324,6 @@ class PROTOBUF_EXPORT ConcatenatingInputStream PROTOBUF_FUTURE_FINAL
   ZeroCopyInputStream* const* streams_;
   int stream_count_;
   int64_t bytes_retired_;  // Bytes read from previous streams.
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ConcatenatingInputStream);
 };
 
 // ===================================================================
@@ -330,6 +332,6 @@ class PROTOBUF_EXPORT ConcatenatingInputStream PROTOBUF_FUTURE_FINAL
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_IMPL_H__

@@ -33,12 +33,12 @@
 
 #include <cstddef>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/bytestream.h>
-#include <google/protobuf/io/zero_copy_stream.h>
+#include "google/protobuf/stubs/bytestream.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/port.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -49,6 +49,8 @@ class PROTOBUF_EXPORT ZeroCopyStreamByteSink : public strings::ByteSink {
  public:
   explicit ZeroCopyStreamByteSink(io::ZeroCopyOutputStream* stream)
       : stream_(stream) {}
+  ZeroCopyStreamByteSink(const ZeroCopyStreamByteSink&) = delete;
+  ZeroCopyStreamByteSink& operator=(const ZeroCopyStreamByteSink&) = delete;
 
   ~ZeroCopyStreamByteSink() override {
     if (buffer_size_ > 0) {
@@ -57,18 +59,22 @@ class PROTOBUF_EXPORT ZeroCopyStreamByteSink : public strings::ByteSink {
   }
 
   void Append(const char* bytes, size_t len) override;
+  void Write(absl::string_view str) { Append(str.data(), str.size()); }
+
+  size_t bytes_written() { return bytes_written_; }
+  bool failed() { return failed_; }
 
  private:
   io::ZeroCopyOutputStream* stream_;
   void* buffer_ = nullptr;
-  int buffer_size_ = 0;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ZeroCopyStreamByteSink);
+  size_t buffer_size_ = 0;
+  size_t bytes_written_ = 0;
+  bool failed_ = false;
 };
 }  // namespace zc_sink_internal
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 #endif  // GOOGLE_PROTOBUF_UTIL_ZERO_COPY_SINK_H__

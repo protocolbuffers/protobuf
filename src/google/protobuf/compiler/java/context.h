@@ -31,12 +31,13 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_CONTEXT_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_CONTEXT_H__
 
-#include <map>
 #include <memory>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/compiler/java/options.h>
+#include "absl/container/flat_hash_map.h"
+#include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/options.h"
+#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {
@@ -65,6 +66,8 @@ struct OneofGeneratorInfo;
 class Context {
  public:
   Context(const FileDescriptor* file, const Options& options);
+  Context(const Context&) = delete;
+  Context& operator=(const Context&) = delete;
   ~Context();
 
   // Get the name resolver associated with this context. The resolver
@@ -97,13 +100,26 @@ class Context {
       const std::vector<const FieldDescriptor*>& fields);
 
   std::unique_ptr<ClassNameResolver> name_resolver_;
-  std::map<const FieldDescriptor*, FieldGeneratorInfo>
+  absl::flat_hash_map<const FieldDescriptor*, FieldGeneratorInfo>
       field_generator_info_map_;
-  std::map<const OneofDescriptor*, OneofGeneratorInfo>
+  absl::flat_hash_map<const OneofDescriptor*, OneofGeneratorInfo>
       oneof_generator_info_map_;
   Options options_;
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Context);
 };
+
+template <typename Descriptor>
+void MaybePrintGeneratedAnnotation(Context* context, io::Printer* printer,
+                                   Descriptor* descriptor, bool immutable,
+                                   const std::string& suffix = "") {
+  if (IsOwnFile(descriptor, immutable)) {
+    PrintGeneratedAnnotation(printer, '$',
+                             context->options().annotate_code
+                                 ? AnnotationFileName(descriptor, suffix)
+                                 : "",
+                             context->options());
+  }
+}
+
 
 }  // namespace java
 }  // namespace compiler

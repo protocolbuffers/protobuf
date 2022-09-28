@@ -35,8 +35,8 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_LITE_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_LITE_H__
 
-#include <google/protobuf/compiler/java/field.h>
-#include <google/protobuf/compiler/java/message.h>
+#include "google/protobuf/compiler/java/field.h"
+#include "google/protobuf/compiler/java/message.h"
 
 namespace google {
 namespace protobuf {
@@ -46,6 +46,9 @@ namespace java {
 class ImmutableMessageLiteGenerator : public MessageGenerator {
  public:
   ImmutableMessageLiteGenerator(const Descriptor* descriptor, Context* context);
+  ImmutableMessageLiteGenerator(const ImmutableMessageLiteGenerator&) = delete;
+  ImmutableMessageLiteGenerator& operator=(
+      const ImmutableMessageLiteGenerator&) = delete;
   ~ImmutableMessageLiteGenerator() override;
 
   void Generate(io::Printer* printer) override;
@@ -73,8 +76,6 @@ class ImmutableMessageLiteGenerator : public MessageGenerator {
   Context* context_;
   ClassNameResolver* name_resolver_;
   FieldGeneratorMap<ImmutableFieldLiteGenerator> field_generators_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(ImmutableMessageLiteGenerator);
 };
 
 }  // namespace java

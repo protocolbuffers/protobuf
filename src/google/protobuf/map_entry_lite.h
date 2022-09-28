@@ -37,19 +37,20 @@
 #include <string>
 #include <utility>
 
-#include <google/protobuf/stubs/casts.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/arena.h>
-#include <google/protobuf/port.h>
-#include <google/protobuf/arenastring.h>
-#include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/map.h>
-#include <google/protobuf/map_type_handler.h>
-#include <google/protobuf/parse_context.h>
-#include <google/protobuf/wire_format_lite.h>
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/arena.h"
+#include "absl/base/casts.h"
+#include "google/protobuf/arenastring.h"
+#include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/map.h"
+#include "google/protobuf/map_type_handler.h"
+#include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/wire_format_lite.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
+
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
 #endif
@@ -158,6 +159,9 @@ class MapEntryImpl : public Base {
         key_(KeyTypeHandler::Constinit()),
         value_(ValueTypeHandler::Constinit()),
         _has_bits_{} {}
+
+  MapEntryImpl(const MapEntryImpl&) = delete;
+  MapEntryImpl& operator=(const MapEntryImpl&) = delete;
 
   ~MapEntryImpl() override {
     if (Base::GetArenaForAllocation() != nullptr) return;
@@ -429,8 +433,6 @@ class MapEntryImpl : public Base {
   template <typename C, typename K, typename V, WireFormatLite::FieldType,
             WireFormatLite::FieldType>
   friend class internal::MapFieldLite;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapEntryImpl);
 };
 
 template <typename T, typename Key, typename Value,
@@ -443,14 +445,13 @@ class MapEntryLite : public MapEntryImpl<T, MessageLite, Key, Value,
                        kValueFieldType>
       SuperType;
   constexpr MapEntryLite() {}
+  MapEntryLite(const MapEntryLite&) = delete;
+  MapEntryLite& operator=(const MapEntryLite&) = delete;
   explicit MapEntryLite(Arena* arena) : SuperType(arena) {}
   ~MapEntryLite() override {
     MessageLite::_internal_metadata_.template Delete<std::string>();
   }
   void MergeFrom(const MapEntryLite& other) { MergeFromInternal(other); }
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(MapEntryLite);
 };
 
 // Helpers for deterministic serialization =============================
@@ -558,6 +559,6 @@ class MapSorterPtr {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_MAP_ENTRY_LITE_H__

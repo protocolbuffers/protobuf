@@ -29,15 +29,16 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <unordered_map>
+#include <utility>
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/pyext/descriptor.h>
-#include <google/protobuf/pyext/message.h>
-#include <google/protobuf/pyext/message_factory.h>
-#include <google/protobuf/pyext/scoped_pyobject_ptr.h>
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/pyext/descriptor.h"
+#include "google/protobuf/pyext/message.h"
+#include "google/protobuf/pyext/message_factory.h"
+#include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 
 #define PyString_AsStringAndSize(ob, charpp, sizep)              \
   (PyUnicode_Check(ob)                                           \

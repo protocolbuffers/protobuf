@@ -28,11 +28,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/generated_enum_util.h>
+#include "google/protobuf/generated_enum_util.h"
 
 #include <algorithm>
 
-#include <google/protobuf/generated_message_util.h>
+#include "google/protobuf/generated_message_util.h"
 
 namespace google {
 namespace protobuf {
@@ -40,7 +40,7 @@ namespace internal {
 namespace {
 
 bool EnumCompareByName(const EnumEntry& a, const EnumEntry& b) {
-  return StringPiece(a.name) < StringPiece(b.name);
+  return absl::string_view(a.name) < absl::string_view(b.name);
 }
 
 // Gets the numeric value of the EnumEntry at the given index, but returns a
@@ -57,7 +57,7 @@ int GetValue(const EnumEntry* enums, int i, int target) {
 }  // namespace
 
 bool LookUpEnumValue(const EnumEntry* enums, size_t size,
-                     StringPiece name, int* value) {
+                     absl::string_view name, int* value) {
   EnumEntry target{name, 0};
   auto it = std::lower_bound(enums, enums + size, target, EnumCompareByName);
   if (it != enums + size && it->name == name) {

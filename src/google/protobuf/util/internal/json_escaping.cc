@@ -28,12 +28,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/internal/json_escaping.h>
+#include "google/protobuf/util/internal/json_escaping.h"
 
 #include <cstdint>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
 
 namespace google {
 namespace protobuf {
@@ -127,7 +127,7 @@ inline uint16_t ToHighSurrogate(uint32_t cp) {
 // Returns false if we encounter an invalid UTF-8 string. Returns true
 // otherwise, including the case when we reach the end of the input (str)
 // before a complete unicode code point is read.
-bool ReadCodePoint(StringPiece str, int index, uint32_t* cp,
+bool ReadCodePoint(absl::string_view str, int index, uint32_t* cp,
                    int* num_left, int* num_read) {
   if (*num_left == 0) {
     // Last read was complete. Start reading a new unicode code point.
@@ -190,9 +190,9 @@ bool ReadCodePoint(StringPiece str, int index, uint32_t* cp,
 }
 
 // Stores the 16-bit unicode code point as its hexadecimal digits in buffer
-// and returns a StringPiece that points to this buffer. The input buffer needs
-// to be at least 6 bytes long.
-StringPiece ToHex(uint16_t cp, char* buffer) {
+// and returns an absl::string_view that points to this buffer. The input
+// buffer needs to be at least 6 bytes long.
+absl::string_view ToHex(uint16_t cp, char* buffer) {
   buffer[5] = kHex[cp & 0x0f];
   cp >>= 4;
   buffer[4] = kHex[cp & 0x0f];
@@ -200,13 +200,13 @@ StringPiece ToHex(uint16_t cp, char* buffer) {
   buffer[3] = kHex[cp & 0x0f];
   cp >>= 4;
   buffer[2] = kHex[cp & 0x0f];
-  return StringPiece(buffer, 6);
+  return absl::string_view(buffer, 6);
 }
 
 // Stores the 32-bit unicode code point as its hexadecimal digits in buffer
-// and returns a StringPiece that points to this buffer. The input buffer needs
-// to be at least 12 bytes long.
-StringPiece ToSurrogateHex(uint32_t cp, char* buffer) {
+// and returns an absl::string_view that points to this buffer. The input
+// buffer needs to be at least 12 bytes long.
+absl::string_view ToSurrogateHex(uint32_t cp, char* buffer) {
   uint16_t low = ToLowSurrogate(cp);
   uint16_t high = ToHighSurrogate(cp);
 
@@ -226,17 +226,17 @@ StringPiece ToSurrogateHex(uint32_t cp, char* buffer) {
   high >>= 4;
   buffer[2] = kHex[high & 0x0f];
 
-  return StringPiece(buffer, 12);
+  return absl::string_view(buffer, 12);
 }
 
-// If the given unicode code point needs escaping, then returns the
-// escaped form. The returned StringPiece either points to statically
-// pre-allocated char[] or to the given buffer. The input buffer needs
-// to be at least 12 bytes long.
+// If the given unicode code point needs escaping, then returns the escaped
+// form. The returned absl::string_view either points to statically
+// pre-allocated char[] or to the given buffer. The input buffer needs to be at
+// least 12 bytes long.
 //
-// If the given unicode code point does not need escaping, an empty
-// StringPiece is returned.
-StringPiece EscapeCodePoint(uint32_t cp, char* buffer) {
+// If the given unicode code point does not need escaping, an empty string is
+// returned.
+absl::string_view EscapeCodePoint(uint32_t cp, char* buffer) {
   if (cp < 0xa0) return kCommonEscapes[cp];
   switch (cp) {
     // These are not required by json spec
@@ -268,33 +268,33 @@ StringPiece EscapeCodePoint(uint32_t cp, char* buffer) {
         return ToSurrogateHex(cp, buffer);
       }
   }
-  return StringPiece();
+  return absl::string_view();
 }
 
 // Tries to escape the given code point first. If the given code point
 // does not need to be escaped, but force_output is true, then render
 // the given multi-byte code point in UTF8 in the buffer and returns it.
-StringPiece EscapeCodePoint(uint32_t cp, char* buffer,
+absl::string_view EscapeCodePoint(uint32_t cp, char* buffer,
                                   bool force_output) {
-  StringPiece sp = EscapeCodePoint(cp, buffer);
+  absl::string_view sp = EscapeCodePoint(cp, buffer);
   if (force_output && sp.empty()) {
     buffer[5] = (cp & 0x3f) | 0x80;
     cp >>= 6;
     if (cp <= 0x1f) {
       buffer[4] = cp | 0xc0;
-      sp = StringPiece(buffer + 4, 2);
+      sp = absl::string_view(buffer + 4, 2);
       return sp;
     }
     buffer[4] = (cp & 0x3f) | 0x80;
     cp >>= 6;
     if (cp <= 0x0f) {
       buffer[3] = cp | 0xe0;
-      sp = StringPiece(buffer + 3, 3);
+      sp = absl::string_view(buffer + 3, 3);
       return sp;
     }
     buffer[3] = (cp & 0x3f) | 0x80;
     buffer[2] = ((cp >> 6) & 0x07) | 0xf0;
-    sp = StringPiece(buffer + 2, 4);
+    sp = absl::string_view(buffer + 2, 4);
   }
   return sp;
 }
@@ -307,8 +307,8 @@ void JsonEscaping::Escape(strings::ByteSource* input,
   uint32_t cp = 0;   // Current unicode code point.
   int num_left = 0;  // Num of chars to read to complete the code point.
   while (input->Available() > 0) {
-    StringPiece str = input->Peek();
-    StringPiece escaped;
+    absl::string_view str = input->Peek();
+    absl::string_view escaped;
     int i = 0;
     int num_read;
     bool ok;
@@ -317,7 +317,7 @@ void JsonEscaping::Escape(strings::ByteSource* input,
     //   i) a code point that needs to be escaped; or
     //  ii) a split code point is completely read; or
     // iii) a character that is not a valid utf8; or
-    //  iv) end of the StringPiece str is reached.
+    //  iv) end of the string is reached.
     do {
       ok = ReadCodePoint(str, i, &cp, &num_left, &num_read);
       if (num_left > 0 || !ok) break;  // case iii or iv
@@ -344,7 +344,7 @@ void JsonEscaping::Escape(strings::ByteSource* input,
   }
 }
 
-void JsonEscaping::Escape(StringPiece input, strings::ByteSink* output) {
+void JsonEscaping::Escape(absl::string_view input, strings::ByteSink* output) {
   const size_t len = input.length();
   const char* p = input.data();
 

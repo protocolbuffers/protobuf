@@ -28,17 +28,18 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/internal/json_stream_parser.h>
+#include "google/protobuf/util/internal/json_stream_parser.h"
 
 #include <cstdint>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/util/internal/expecting_objectwriter.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/util/internal/expecting_objectwriter.h"
 #include <gtest/gtest.h>
-#include <google/protobuf/stubs/time.h>
-#include <google/protobuf/util/internal/object_writer.h>
-#include <google/protobuf/stubs/status.h>
+#include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
+#include "absl/time/time.h"
+#include "google/protobuf/util/internal/object_writer.h"
 
 
 namespace google {
@@ -87,7 +88,7 @@ class JsonStreamParserTest : public ::testing::Test {
   JsonStreamParserTest() : mock_(), ow_(&mock_) {}
   ~JsonStreamParserTest() override {}
 
-  util::Status RunTest(StringPiece json, int split,
+  absl::Status RunTest(absl::string_view json, int split,
                        std::function<void(JsonStreamParser*)> setup) {
     JsonStreamParser parser(&mock_);
     setup(&parser);
@@ -96,8 +97,8 @@ class JsonStreamParserTest : public ::testing::Test {
     if (split == json.length()) {
       GOOGLE_LOG(INFO) << "Testing split every char: " << json;
       for (int i = 0; i < json.length(); ++i) {
-        StringPiece single = json.substr(i, 1);
-        util::Status result = parser.Parse(single);
+        absl::string_view single = json.substr(i, 1);
+        absl::Status result = parser.Parse(single);
         if (!result.ok()) {
           return result;
         }
@@ -106,10 +107,10 @@ class JsonStreamParserTest : public ::testing::Test {
     }
 
     // Normal case, split at the split point and parse two substrings.
-    StringPiece first = json.substr(0, split);
-    StringPiece rest = json.substr(split);
+    absl::string_view first = json.substr(0, split);
+    absl::string_view rest = json.substr(split);
     GOOGLE_LOG(INFO) << "Testing split: " << first << "><" << rest;
-    util::Status result = parser.Parse(first);
+    absl::Status result = parser.Parse(first);
     if (result.ok()) {
       result = parser.Parse(rest);
       if (result.ok()) {
@@ -123,10 +124,10 @@ class JsonStreamParserTest : public ::testing::Test {
   }
 
   void DoTest(
-      StringPiece json, int split,
+      absl::string_view json, int split,
       std::function<void(JsonStreamParser*)> setup = [](JsonStreamParser* p) {
       }) {
-    util::Status result = RunTest(json, split, setup);
+    absl::Status result = RunTest(json, split, setup);
     if (!result.ok()) {
       GOOGLE_LOG(WARNING) << result;
     }
@@ -134,23 +135,23 @@ class JsonStreamParserTest : public ::testing::Test {
   }
 
   void DoErrorTest(
-      StringPiece json, int split, StringPiece error_prefix,
+      absl::string_view json, int split, absl::string_view error_prefix,
       std::function<void(JsonStreamParser*)> setup = [](JsonStreamParser* p) {
       }) {
-    util::Status result = RunTest(json, split, setup);
-    EXPECT_TRUE(util::IsInvalidArgument(result));
-    StringPiece error_message(result.message());
+    absl::Status result = RunTest(json, split, setup);
+    EXPECT_TRUE(absl::IsInvalidArgument(result));
+    absl::string_view error_message(result.message());
     EXPECT_EQ(error_prefix, error_message.substr(0, error_prefix.size()));
   }
 
   void DoErrorTest(
-      StringPiece json, int split, StringPiece error_prefix,
+      absl::string_view json, int split, absl::string_view error_prefix,
       ParseErrorType expected_parse_error_type,
       std::function<void(JsonStreamParser*)> setup = [](JsonStreamParser* p) {
       }) {
-    util::Status result = RunTest(json, split, setup);
-    EXPECT_TRUE(util::IsInvalidArgument(result));
-    StringPiece error_message(result.message());
+    absl::Status result = RunTest(json, split, setup);
+    EXPECT_TRUE(absl::IsInvalidArgument(result));
+    absl::string_view error_message(result.message());
     EXPECT_EQ(error_prefix, error_message.substr(0, error_prefix.size()));
   }
 
@@ -170,7 +171,7 @@ class JsonStreamParserTest : public ::testing::Test {
 
 // - true, false, null
 TEST_F(JsonStreamParserTest, SimpleTrue) {
-  StringPiece str = "true";
+  absl::string_view str = "true";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.RenderBool("", true);
     DoTest(str, i);
@@ -178,7 +179,7 @@ TEST_F(JsonStreamParserTest, SimpleTrue) {
 }
 
 TEST_F(JsonStreamParserTest, SimpleFalse) {
-  StringPiece str = "false";
+  absl::string_view str = "false";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.RenderBool("", false);
     DoTest(str, i);
@@ -186,7 +187,7 @@ TEST_F(JsonStreamParserTest, SimpleFalse) {
 }
 
 TEST_F(JsonStreamParserTest, SimpleNull) {
-  StringPiece str = "null";
+  absl::string_view str = "null";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.RenderNull("");
     DoTest(str, i);
@@ -195,7 +196,7 @@ TEST_F(JsonStreamParserTest, SimpleNull) {
 
 // - empty object and array.
 TEST_F(JsonStreamParserTest, EmptyObject) {
-  StringPiece str = "{}";
+  absl::string_view str = "{}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("")->EndObject();
     DoTest(str, i);
@@ -203,7 +204,7 @@ TEST_F(JsonStreamParserTest, EmptyObject) {
 }
 
 TEST_F(JsonStreamParserTest, EmptyList) {
-  StringPiece str = "[]";
+  absl::string_view str = "[]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("")->EndList();
     DoTest(str, i);
@@ -212,7 +213,7 @@ TEST_F(JsonStreamParserTest, EmptyList) {
 
 // - negative and positive double and int, unsigned int
 TEST_F(JsonStreamParserTest, SimpleDouble) {
-  StringPiece str = "42.5";
+  absl::string_view str = "42.5";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.RenderDouble("", 42.5);
     DoTest(str, i);
@@ -220,7 +221,7 @@ TEST_F(JsonStreamParserTest, SimpleDouble) {
 }
 
 TEST_F(JsonStreamParserTest, ScientificDouble) {
-  StringPiece str = "1.2345e-10";
+  absl::string_view str = "1.2345e-10";
   for (int i = 0; i < str.length(); ++i) {
     ow_.RenderDouble("", 1.2345e-10);
     DoTest(str, i);
@@ -228,7 +229,7 @@ TEST_F(JsonStreamParserTest, ScientificDouble) {
 }
 
 TEST_F(JsonStreamParserTest, SimpleNegativeDouble) {
-  StringPiece str = "-1045.235";
+  absl::string_view str = "-1045.235";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.RenderDouble("", -1045.235);
     DoTest(str, i);
@@ -236,7 +237,7 @@ TEST_F(JsonStreamParserTest, SimpleNegativeDouble) {
 }
 
 TEST_F(JsonStreamParserTest, SimpleInt) {
-  StringPiece str = "123456";
+  absl::string_view str = "123456";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.RenderUint64("", 123456);
     DoTest(str, i);
@@ -244,7 +245,7 @@ TEST_F(JsonStreamParserTest, SimpleInt) {
 }
 
 TEST_F(JsonStreamParserTest, SimpleNegativeInt) {
-  StringPiece str = "-79497823553162765";
+  absl::string_view str = "-79497823553162765";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.RenderInt64("", int64_t{-79497823553162765});
     DoTest(str, i);
@@ -252,7 +253,7 @@ TEST_F(JsonStreamParserTest, SimpleNegativeInt) {
 }
 
 TEST_F(JsonStreamParserTest, SimpleUnsignedInt) {
-  StringPiece str = "11779497823553162765";
+  absl::string_view str = "11779497823553162765";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.RenderUint64("", uint64_t{11779497823553162765u});
     DoTest(str, i);
@@ -260,7 +261,7 @@ TEST_F(JsonStreamParserTest, SimpleUnsignedInt) {
 }
 
 TEST_F(JsonStreamParserTest, OctalNumberIsInvalid) {
-  StringPiece str = "01234";
+  absl::string_view str = "01234";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Octal/hex numbers are not valid JSON values.",
                 ParseErrorType::OCTAL_OR_HEX_ARE_NOT_VALID_JSON_VALUES);
@@ -273,7 +274,7 @@ TEST_F(JsonStreamParserTest, OctalNumberIsInvalid) {
 }
 
 TEST_F(JsonStreamParserTest, HexNumberIsInvalid) {
-  StringPiece str = "0x1234";
+  absl::string_view str = "0x1234";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Octal/hex numbers are not valid JSON values.",
                 ParseErrorType::OCTAL_OR_HEX_ARE_NOT_VALID_JSON_VALUES);
@@ -292,7 +293,7 @@ TEST_F(JsonStreamParserTest, HexNumberIsInvalid) {
 
 // - single and double quoted strings
 TEST_F(JsonStreamParserTest, EmptyDoubleQuotedString) {
-  StringPiece str = "\"\"";
+  absl::string_view str = "\"\"";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.RenderString("", "");
     DoTest(str, i);
@@ -300,7 +301,7 @@ TEST_F(JsonStreamParserTest, EmptyDoubleQuotedString) {
 }
 
 TEST_F(JsonStreamParserTest, EmptySingleQuotedString) {
-  StringPiece str = "''";
+  absl::string_view str = "''";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.RenderString("", "");
     DoTest(str, i);
@@ -308,7 +309,7 @@ TEST_F(JsonStreamParserTest, EmptySingleQuotedString) {
 }
 
 TEST_F(JsonStreamParserTest, SimpleDoubleQuotedString) {
-  StringPiece str = "\"Some String\"";
+  absl::string_view str = "\"Some String\"";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.RenderString("", "Some String");
     DoTest(str, i);
@@ -316,7 +317,7 @@ TEST_F(JsonStreamParserTest, SimpleDoubleQuotedString) {
 }
 
 TEST_F(JsonStreamParserTest, SimpleSingleQuotedString) {
-  StringPiece str = "'Another String'";
+  absl::string_view str = "'Another String'";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.RenderString("", "Another String");
     DoTest(str, i);
@@ -325,7 +326,7 @@ TEST_F(JsonStreamParserTest, SimpleSingleQuotedString) {
 
 // - string key, unquoted key, numeric key
 TEST_F(JsonStreamParserTest, ObjectKeyTypes) {
-  StringPiece str =
+  absl::string_view str =
       "{'s': true, \"d\": false, key: null, snake_key: [], camelKey: {}}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("")
@@ -342,7 +343,7 @@ TEST_F(JsonStreamParserTest, ObjectKeyTypes) {
 }
 
 TEST_F(JsonStreamParserTest, UnquotedObjectKeyWithReservedPrefxes) {
-  StringPiece str = "{ nullkey: \"a\", truekey: \"b\", falsekey: \"c\"}";
+  absl::string_view str = "{ nullkey: \"a\", truekey: \"b\", falsekey: \"c\"}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("")
         ->RenderString("nullkey", "a")
@@ -354,7 +355,7 @@ TEST_F(JsonStreamParserTest, UnquotedObjectKeyWithReservedPrefxes) {
 }
 
 TEST_F(JsonStreamParserTest, UnquotedObjectKeyWithReservedKeyword) {
-  StringPiece str = "{ null: \"a\", true: \"b\", false: \"c\"}";
+  absl::string_view str = "{ null: \"a\", true: \"b\", false: \"c\"}";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Expected an object key or }.",
                 ParseErrorType::EXPECTED_OBJECT_KEY_OR_BRACES);
@@ -362,7 +363,7 @@ TEST_F(JsonStreamParserTest, UnquotedObjectKeyWithReservedKeyword) {
 }
 
 TEST_F(JsonStreamParserTest, UnquotedObjectKeyWithEmbeddedNonAlphanumeric) {
-  StringPiece str = "{ foo-bar-baz: \"a\"}";
+  absl::string_view str = "{ foo-bar-baz: \"a\"}";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Expected : between key:value pair.",
                 ParseErrorType::EXPECTED_COLON);
@@ -372,7 +373,7 @@ TEST_F(JsonStreamParserTest, UnquotedObjectKeyWithEmbeddedNonAlphanumeric) {
 
 // - array containing primitive values (true, false, null, num, string)
 TEST_F(JsonStreamParserTest, ArrayPrimitiveValues) {
-  StringPiece str = "[true, false, null, 'one', \"two\"]";
+  absl::string_view str = "[true, false, null, 'one', \"two\"]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("")
         ->RenderBool("", true)
@@ -387,7 +388,7 @@ TEST_F(JsonStreamParserTest, ArrayPrimitiveValues) {
 
 // - array containing array, object
 TEST_F(JsonStreamParserTest, ArrayComplexValues) {
-  StringPiece str =
+  absl::string_view str =
       "[[22, -127, 45.3, -1056.4, 11779497823553162765], {'key': true}]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("")
@@ -409,7 +410,7 @@ TEST_F(JsonStreamParserTest, ArrayComplexValues) {
 
 // - object containing array, object, value (true, false, null, num, string)
 TEST_F(JsonStreamParserTest, ObjectValues) {
-  StringPiece str =
+  absl::string_view str =
       "{t: true, f: false, n: null, s: 'a string', d: \"another string\", pi: "
       "22, ni: -127, pd: 45.3, nd: -1056.4, pl: 11779497823553162765, l: [[]], "
       "o: {'key': true}}";
@@ -439,7 +440,7 @@ TEST_F(JsonStreamParserTest, ObjectValues) {
 
 
 TEST_F(JsonStreamParserTest, RejectNonUtf8WhenNotCoerced) {
-  StringPiece json = "{\"address\":\xFF\"חרושת 23, רעננה, ישראל\"}";
+  absl::string_view json = "{\"address\":\xFF\"חרושת 23, רעננה, ישראל\"}";
   for (int i = 0; i <= json.length(); ++i) {
     DoErrorTest(json, i, "Encountered non UTF-8 code points.",
                 ParseErrorType::NON_UTF_8);
@@ -455,7 +456,7 @@ TEST_F(JsonStreamParserTest, RejectNonUtf8WhenNotCoerced) {
 
 // - unicode handling in strings
 TEST_F(JsonStreamParserTest, UnicodeEscaping) {
-  StringPiece str = "[\"\\u0639\\u0631\\u0628\\u0649\"]";
+  absl::string_view str = "[\"\\u0639\\u0631\\u0628\\u0649\"]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("")
         ->RenderString("", "\xD8\xB9\xD8\xB1\xD8\xA8\xD9\x89")
@@ -466,7 +467,7 @@ TEST_F(JsonStreamParserTest, UnicodeEscaping) {
 
 // - unicode UTF-16 surrogate pair handling in strings
 TEST_F(JsonStreamParserTest, UnicodeSurrogatePairEscaping) {
-  StringPiece str =
+  absl::string_view str =
       "[\"\\u0bee\\ud800\\uddf1\\uD80C\\uDDA4\\uD83d\\udC1D\\uD83C\\uDF6F\"]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("")
@@ -481,7 +482,7 @@ TEST_F(JsonStreamParserTest, UnicodeSurrogatePairEscaping) {
 
 TEST_F(JsonStreamParserTest, UnicodeEscapingInvalidCodePointWhenNotCoerced) {
   // A low surrogate alone.
-  StringPiece str = "[\"\\ude36\"]";
+  absl::string_view str = "[\"\\ude36\"]";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Invalid unicode code point.",
                 ParseErrorType::INVALID_UNICODE);
@@ -490,7 +491,7 @@ TEST_F(JsonStreamParserTest, UnicodeEscapingInvalidCodePointWhenNotCoerced) {
 
 TEST_F(JsonStreamParserTest, UnicodeEscapingMissingLowSurrogateWhenNotCoerced) {
   // A high surrogate alone.
-  StringPiece str = "[\"\\ud83d\"]";
+  absl::string_view str = "[\"\\ud83d\"]";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Missing low surrogate.",
                 ParseErrorType::MISSING_LOW_SURROGATE);
@@ -517,7 +518,7 @@ TEST_F(JsonStreamParserTest, UnicodeEscapingMissingLowSurrogateWhenNotCoerced) {
 
 // - ascii escaping (\b, \f, \n, \r, \t, \v)
 TEST_F(JsonStreamParserTest, AsciiEscaping) {
-  StringPiece str =
+  absl::string_view str =
       "[\"\\b\", \"\\ning\", \"test\\f\", \"\\r\\t\", \"test\\\\\\ving\"]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("")
@@ -533,7 +534,7 @@ TEST_F(JsonStreamParserTest, AsciiEscaping) {
 
 // - trailing commas, we support a single trailing comma but no internal commas.
 TEST_F(JsonStreamParserTest, TrailingCommas) {
-  StringPiece str = "[['a',true,], {b: null,},]";
+  absl::string_view str = "[['a',true,], {b: null,},]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("")
         ->StartList("")
@@ -552,7 +553,7 @@ TEST_F(JsonStreamParserTest, TrailingCommas) {
 
 // illegal literals
 TEST_F(JsonStreamParserTest, ExtraTextAfterTrue) {
-  StringPiece str = "truee";
+  absl::string_view str = "truee";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.RenderBool("", true);
     DoErrorTest(str, i, "Parsing terminated before end of input.",
@@ -561,7 +562,7 @@ TEST_F(JsonStreamParserTest, ExtraTextAfterTrue) {
 }
 
 TEST_F(JsonStreamParserTest, InvalidNumberDashOnly) {
-  StringPiece str = "-";
+  absl::string_view str = "-";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Unable to parse number.",
                 ParseErrorType::UNABLE_TO_PARSE_NUMBER);
@@ -569,7 +570,7 @@ TEST_F(JsonStreamParserTest, InvalidNumberDashOnly) {
 }
 
 TEST_F(JsonStreamParserTest, InvalidNumberDashName) {
-  StringPiece str = "-foo";
+  absl::string_view str = "-foo";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Unable to parse number.",
                 ParseErrorType::UNABLE_TO_PARSE_NUMBER);
@@ -577,7 +578,7 @@ TEST_F(JsonStreamParserTest, InvalidNumberDashName) {
 }
 
 TEST_F(JsonStreamParserTest, InvalidLiteralInArray) {
-  StringPiece str = "[nule]";
+  absl::string_view str = "[nule]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("");
     DoErrorTest(str, i, "Unexpected token.", ParseErrorType::UNEXPECTED_TOKEN);
@@ -585,7 +586,7 @@ TEST_F(JsonStreamParserTest, InvalidLiteralInArray) {
 }
 
 TEST_F(JsonStreamParserTest, InvalidLiteralInObject) {
-  StringPiece str = "{123false}";
+  absl::string_view str = "{123false}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("");
     DoErrorTest(str, i, "Expected an object key or }.",
@@ -595,7 +596,7 @@ TEST_F(JsonStreamParserTest, InvalidLiteralInObject) {
 
 // mismatched quotes failure on strings
 TEST_F(JsonStreamParserTest, MismatchedSingleQuotedLiteral) {
-  StringPiece str = "'Some str\"";
+  absl::string_view str = "'Some str\"";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Closing quote expected in string.",
                 ParseErrorType::EXPECTED_CLOSING_QUOTE);
@@ -603,7 +604,7 @@ TEST_F(JsonStreamParserTest, MismatchedSingleQuotedLiteral) {
 }
 
 TEST_F(JsonStreamParserTest, MismatchedDoubleQuotedLiteral) {
-  StringPiece str = "\"Another string that ends poorly!'";
+  absl::string_view str = "\"Another string that ends poorly!'";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Closing quote expected in string.",
                 ParseErrorType::EXPECTED_CLOSING_QUOTE);
@@ -612,7 +613,7 @@ TEST_F(JsonStreamParserTest, MismatchedDoubleQuotedLiteral) {
 
 // unterminated strings
 TEST_F(JsonStreamParserTest, UnterminatedLiteralString) {
-  StringPiece str = "\"Forgot the rest of i";
+  absl::string_view str = "\"Forgot the rest of i";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Closing quote expected in string.",
                 ParseErrorType::EXPECTED_CLOSING_QUOTE);
@@ -620,7 +621,7 @@ TEST_F(JsonStreamParserTest, UnterminatedLiteralString) {
 }
 
 TEST_F(JsonStreamParserTest, UnterminatedStringEscape) {
-  StringPiece str = "\"Forgot the rest of \\";
+  absl::string_view str = "\"Forgot the rest of \\";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Closing quote expected in string.",
                 ParseErrorType::EXPECTED_CLOSING_QUOTE);
@@ -628,7 +629,7 @@ TEST_F(JsonStreamParserTest, UnterminatedStringEscape) {
 }
 
 TEST_F(JsonStreamParserTest, UnterminatedStringInArray) {
-  StringPiece str = "[\"Forgot to close the string]";
+  absl::string_view str = "[\"Forgot to close the string]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("");
     DoErrorTest(str, i, "Closing quote expected in string.",
@@ -637,7 +638,7 @@ TEST_F(JsonStreamParserTest, UnterminatedStringInArray) {
 }
 
 TEST_F(JsonStreamParserTest, UnterminatedStringInObject) {
-  StringPiece str = "{f: \"Forgot to close the string}";
+  absl::string_view str = "{f: \"Forgot to close the string}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("");
     DoErrorTest(str, i, "Closing quote expected in string.",
@@ -646,7 +647,7 @@ TEST_F(JsonStreamParserTest, UnterminatedStringInObject) {
 }
 
 TEST_F(JsonStreamParserTest, UnterminatedObject) {
-  StringPiece str = "{";
+  absl::string_view str = "{";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("");
     DoErrorTest(str, i, "Unexpected end of string.",
@@ -657,7 +658,7 @@ TEST_F(JsonStreamParserTest, UnterminatedObject) {
 
 // mismatched object and array closing
 TEST_F(JsonStreamParserTest, MismatchedCloseObject) {
-  StringPiece str = "{'key': true]";
+  absl::string_view str = "{'key': true]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("")->RenderBool("key", true);
     DoErrorTest(str, i, "Expected , or } after key:value pair.",
@@ -666,7 +667,7 @@ TEST_F(JsonStreamParserTest, MismatchedCloseObject) {
 }
 
 TEST_F(JsonStreamParserTest, MismatchedCloseArray) {
-  StringPiece str = "[true, null}";
+  absl::string_view str = "[true, null}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("")->RenderBool("", true)->RenderNull("");
     DoErrorTest(str, i, "Expected , or ] after array value.",
@@ -676,7 +677,7 @@ TEST_F(JsonStreamParserTest, MismatchedCloseArray) {
 
 // Invalid object keys.
 TEST_F(JsonStreamParserTest, InvalidNumericObjectKey) {
-  StringPiece str = "{42: true}";
+  absl::string_view str = "{42: true}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("");
     DoErrorTest(str, i, "Expected an object key or }.",
@@ -685,7 +686,7 @@ TEST_F(JsonStreamParserTest, InvalidNumericObjectKey) {
 }
 
 TEST_F(JsonStreamParserTest, InvalidLiteralObjectInObject) {
-  StringPiece str = "{{bob: true}}";
+  absl::string_view str = "{{bob: true}}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("");
     DoErrorTest(str, i, "Expected an object key or }.",
@@ -694,7 +695,7 @@ TEST_F(JsonStreamParserTest, InvalidLiteralObjectInObject) {
 }
 
 TEST_F(JsonStreamParserTest, InvalidLiteralArrayInObject) {
-  StringPiece str = "{[null]}";
+  absl::string_view str = "{[null]}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("");
     DoErrorTest(str, i, "Expected an object key or }.",
@@ -703,7 +704,7 @@ TEST_F(JsonStreamParserTest, InvalidLiteralArrayInObject) {
 }
 
 TEST_F(JsonStreamParserTest, InvalidLiteralValueInObject) {
-  StringPiece str = "{false}";
+  absl::string_view str = "{false}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("");
     DoErrorTest(str, i, "Expected an object key or }.",
@@ -712,7 +713,7 @@ TEST_F(JsonStreamParserTest, InvalidLiteralValueInObject) {
 }
 
 TEST_F(JsonStreamParserTest, MissingColonAfterStringInObject) {
-  StringPiece str = "{\"key\"}";
+  absl::string_view str = "{\"key\"}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("");
     DoErrorTest(str, i, "Expected : between key:value pair.",
@@ -721,7 +722,7 @@ TEST_F(JsonStreamParserTest, MissingColonAfterStringInObject) {
 }
 
 TEST_F(JsonStreamParserTest, MissingColonAfterKeyInObject) {
-  StringPiece str = "{key}";
+  absl::string_view str = "{key}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("");
     DoErrorTest(str, i, "Expected : between key:value pair.",
@@ -730,7 +731,7 @@ TEST_F(JsonStreamParserTest, MissingColonAfterKeyInObject) {
 }
 
 TEST_F(JsonStreamParserTest, EndOfTextAfterKeyInObject) {
-  StringPiece str = "{key";
+  absl::string_view str = "{key";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("");
     DoErrorTest(str, i, "Unexpected end of string.",
@@ -739,7 +740,7 @@ TEST_F(JsonStreamParserTest, EndOfTextAfterKeyInObject) {
 }
 
 TEST_F(JsonStreamParserTest, MissingValueAfterColonInObject) {
-  StringPiece str = "{key:}";
+  absl::string_view str = "{key:}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("");
     DoErrorTest(str, i, "Unexpected token.", ParseErrorType::UNEXPECTED_TOKEN);
@@ -747,7 +748,7 @@ TEST_F(JsonStreamParserTest, MissingValueAfterColonInObject) {
 }
 
 TEST_F(JsonStreamParserTest, MissingCommaBetweenObjectEntries) {
-  StringPiece str = "{key:20 'hello': true}";
+  absl::string_view str = "{key:20 'hello': true}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("")->RenderUint64("key", 20);
     DoErrorTest(str, i, "Expected , or } after key:value pair.",
@@ -756,7 +757,7 @@ TEST_F(JsonStreamParserTest, MissingCommaBetweenObjectEntries) {
 }
 
 TEST_F(JsonStreamParserTest, InvalidLiteralAsObjectKey) {
-  StringPiece str = "{false: 20}";
+  absl::string_view str = "{false: 20}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("");
     DoErrorTest(str, i, "Expected an object key or }.",
@@ -765,7 +766,7 @@ TEST_F(JsonStreamParserTest, InvalidLiteralAsObjectKey) {
 }
 
 TEST_F(JsonStreamParserTest, ExtraCharactersAfterObject) {
-  StringPiece str = "{}}";
+  absl::string_view str = "{}}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("")->EndObject();
     DoErrorTest(str, i, "Parsing terminated before end of input.",
@@ -774,7 +775,7 @@ TEST_F(JsonStreamParserTest, ExtraCharactersAfterObject) {
 }
 
 TEST_F(JsonStreamParserTest, PositiveNumberTooBigIsDouble) {
-  StringPiece str = "18446744073709551616";  // 2^64
+  absl::string_view str = "18446744073709551616";  // 2^64
   for (int i = 0; i <= str.length(); ++i) {
     ow_.RenderDouble("", 18446744073709552000.0);
     DoTest(str, i);
@@ -782,7 +783,7 @@ TEST_F(JsonStreamParserTest, PositiveNumberTooBigIsDouble) {
 }
 
 TEST_F(JsonStreamParserTest, NegativeNumberTooBigIsDouble) {
-  StringPiece str = "-18446744073709551616";
+  absl::string_view str = "-18446744073709551616";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.RenderDouble("", -18446744073709551616.0);
     DoTest(str, i);
@@ -790,7 +791,7 @@ TEST_F(JsonStreamParserTest, NegativeNumberTooBigIsDouble) {
 }
 
 TEST_F(JsonStreamParserTest, DoubleTooBig) {
-  StringPiece str = "[1.89769e+308]";
+  absl::string_view str = "[1.89769e+308]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("");
     DoErrorTest(str, i, "Number exceeds the range of double.",
@@ -807,7 +808,7 @@ TEST_F(JsonStreamParserTest, DoubleTooBig) {
 
 // invalid bare backslash.
 TEST_F(JsonStreamParserTest, UnfinishedEscape) {
-  StringPiece str = "\"\\";
+  absl::string_view str = "\"\\";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Closing quote expected in string.",
                 ParseErrorType::EXPECTED_CLOSING_QUOTE);
@@ -816,7 +817,7 @@ TEST_F(JsonStreamParserTest, UnfinishedEscape) {
 
 // invalid bare backslash u.
 TEST_F(JsonStreamParserTest, UnfinishedUnicodeEscape) {
-  StringPiece str = "\"\\u";
+  absl::string_view str = "\"\\u";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Illegal hex string.",
                 ParseErrorType::ILLEGAL_HEX_STRING);
@@ -825,7 +826,7 @@ TEST_F(JsonStreamParserTest, UnfinishedUnicodeEscape) {
 
 // invalid unicode sequence.
 TEST_F(JsonStreamParserTest, UnicodeEscapeCutOff) {
-  StringPiece str = "\"\\u12";
+  absl::string_view str = "\"\\u12";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Illegal hex string.",
                 ParseErrorType::ILLEGAL_HEX_STRING);
@@ -834,7 +835,7 @@ TEST_F(JsonStreamParserTest, UnicodeEscapeCutOff) {
 
 // invalid unicode sequence (valid in modern EcmaScript but not in JSON).
 TEST_F(JsonStreamParserTest, BracketedUnicodeEscape) {
-  StringPiece str = "\"\\u{1f36f}\"";
+  absl::string_view str = "\"\\u{1f36f}\"";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Invalid escape sequence.",
                 ParseErrorType::INVALID_ESCAPE_SEQUENCE);
@@ -843,7 +844,7 @@ TEST_F(JsonStreamParserTest, BracketedUnicodeEscape) {
 
 
 TEST_F(JsonStreamParserTest, UnicodeEscapeInvalidCharacters) {
-  StringPiece str = "\"\\u12$4hello";
+  absl::string_view str = "\"\\u12$4hello";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Invalid escape sequence.",
                 ParseErrorType::INVALID_ESCAPE_SEQUENCE);
@@ -852,7 +853,7 @@ TEST_F(JsonStreamParserTest, UnicodeEscapeInvalidCharacters) {
 
 // invalid unicode sequence in low half surrogate: g is not a hex digit.
 TEST_F(JsonStreamParserTest, UnicodeEscapeLowHalfSurrogateInvalidCharacters) {
-  StringPiece str = "\"\\ud800\\udcfg\"";
+  absl::string_view str = "\"\\ud800\\udcfg\"";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Invalid escape sequence.",
                 ParseErrorType::INVALID_ESCAPE_SEQUENCE);
@@ -861,7 +862,7 @@ TEST_F(JsonStreamParserTest, UnicodeEscapeLowHalfSurrogateInvalidCharacters) {
 
 // Extra commas with an object or array.
 TEST_F(JsonStreamParserTest, ExtraCommaInObject) {
-  StringPiece str = "{'k1': true,,'k2': false}";
+  absl::string_view str = "{'k1': true,,'k2': false}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("")->RenderBool("k1", true);
     DoErrorTest(str, i, "Expected an object key or }.",
@@ -870,7 +871,7 @@ TEST_F(JsonStreamParserTest, ExtraCommaInObject) {
 }
 
 TEST_F(JsonStreamParserTest, ExtraCommaInArray) {
-  StringPiece str = "[true,,false}";
+  absl::string_view str = "[true,,false}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("")->RenderBool("", true);
     DoErrorTest(str, i, "Unexpected token.", ParseErrorType::UNEXPECTED_TOKEN);
@@ -879,7 +880,7 @@ TEST_F(JsonStreamParserTest, ExtraCommaInArray) {
 
 // Extra text beyond end of value.
 TEST_F(JsonStreamParserTest, ExtraTextAfterLiteral) {
-  StringPiece str = "'hello', 'world'";
+  absl::string_view str = "'hello', 'world'";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.RenderString("", "hello");
     DoErrorTest(str, i, "Parsing terminated before end of input.",
@@ -888,7 +889,7 @@ TEST_F(JsonStreamParserTest, ExtraTextAfterLiteral) {
 }
 
 TEST_F(JsonStreamParserTest, ExtraTextAfterObject) {
-  StringPiece str = "{'key': true} 'oops'";
+  absl::string_view str = "{'key': true} 'oops'";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("")->RenderBool("key", true)->EndObject();
     DoErrorTest(str, i, "Parsing terminated before end of input.",
@@ -897,7 +898,7 @@ TEST_F(JsonStreamParserTest, ExtraTextAfterObject) {
 }
 
 TEST_F(JsonStreamParserTest, ExtraTextAfterArray) {
-  StringPiece str = "[null] 'oops'";
+  absl::string_view str = "[null] 'oops'";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("")->RenderNull("")->EndList();
     DoErrorTest(str, i, "Parsing terminated before end of input.",
@@ -907,14 +908,14 @@ TEST_F(JsonStreamParserTest, ExtraTextAfterArray) {
 
 // Random unknown text in the value.
 TEST_F(JsonStreamParserTest, UnknownCharactersAsValue) {
-  StringPiece str = "*&#25";
+  absl::string_view str = "*&#25";
   for (int i = 0; i <= str.length(); ++i) {
     DoErrorTest(str, i, "Expected a value.", ParseErrorType::EXPECTED_VALUE);
   }
 }
 
 TEST_F(JsonStreamParserTest, UnknownCharactersInArray) {
-  StringPiece str = "[*&#25]";
+  absl::string_view str = "[*&#25]";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartList("");
     DoErrorTest(str, i, "Expected a value or ] within an array.",
@@ -923,7 +924,7 @@ TEST_F(JsonStreamParserTest, UnknownCharactersInArray) {
 }
 
 TEST_F(JsonStreamParserTest, UnknownCharactersInObject) {
-  StringPiece str = "{'key': *&#25}";
+  absl::string_view str = "{'key': *&#25}";
   for (int i = 0; i <= str.length(); ++i) {
     ow_.StartObject("");
     DoErrorTest(str, i, "Expected a value.", ParseErrorType::EXPECTED_VALUE);
@@ -934,11 +935,11 @@ TEST_F(JsonStreamParserTest, DeepNestJsonNotExceedLimit) {
   int count = 99;
   std::string str;
   for (int i = 0; i < count; ++i) {
-    StrAppend(&str, "{'a':");
+    absl::StrAppend(&str, "{'a':");
   }
-  StrAppend(&str, "{'nest64':'v1', 'nest64': false, 'nest64': ['v2']}");
+  absl::StrAppend(&str, "{'nest64':'v1', 'nest64': false, 'nest64': ['v2']}");
   for (int i = 0; i < count; ++i) {
-    StrAppend(&str, "}");
+    absl::StrAppend(&str, "}");
   }
   ow_.StartObject("");
   for (int i = 0; i < count; ++i) {
@@ -960,14 +961,14 @@ TEST_F(JsonStreamParserTest, DeepNestJsonExceedLimit) {
   int count = 98;
   std::string str;
   for (int i = 0; i < count; ++i) {
-    StrAppend(&str, "{'a':");
+    absl::StrAppend(&str, "{'a':");
   }
   // Supports trailing commas.
-  StrAppend(&str,
+  absl::StrAppend(&str,
                   "{'nest11' : [{'nest12' : null,},],"
                   "'nest21' : {'nest22' : {'nest23' : false}}}");
   for (int i = 0; i < count; ++i) {
-    StrAppend(&str, "}");
+    absl::StrAppend(&str, "}");
   }
   DoErrorTest(str, 0,
               "Message too deep. Max recursion depth reached for key 'nest22'");

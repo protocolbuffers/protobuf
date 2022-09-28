@@ -36,14 +36,15 @@
 #include <type_traits>
 #include <utility>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/arena.h>
-#include <google/protobuf/port.h>
-#include <google/protobuf/explicitly_constructed.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/port.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/explicitly_constructed.h"
 
 // must be last:
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -259,12 +260,12 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // instance known to not carry any heap allocated value.
   inline void InitAllocated(std::string* str, Arena* arena);
 
-  void Set(ConstStringParam value, Arena* arena);
+  void Set(absl::string_view value, Arena* arena);
   void Set(std::string&& value, Arena* arena);
   void Set(const char* s, Arena* arena);
   void Set(const char* s, size_t n, Arena* arena);
 
-  void SetBytes(ConstStringParam value, Arena* arena);
+  void SetBytes(absl::string_view value, Arena* arena);
   void SetBytes(std::string&& value, Arena* arena);
   void SetBytes(const char* s, Arena* arena);
   void SetBytes(const void* p, size_t n, Arena* arena);
@@ -406,14 +407,14 @@ inline void ArenaStringPtr::InitAllocated(std::string* str, Arena* arena) {
 }
 
 inline void ArenaStringPtr::Set(const char* s, Arena* arena) {
-  Set(ConstStringParam{s}, arena);
+  Set(absl::string_view{s}, arena);
 }
 
 inline void ArenaStringPtr::Set(const char* s, size_t n, Arena* arena) {
-  Set(ConstStringParam{s, n}, arena);
+  Set(absl::string_view{s, n}, arena);
 }
 
-inline void ArenaStringPtr::SetBytes(ConstStringParam value, Arena* arena) {
+inline void ArenaStringPtr::SetBytes(absl::string_view value, Arena* arena) {
   Set(value, arena);
 }
 
@@ -426,7 +427,7 @@ inline void ArenaStringPtr::SetBytes(const char* s, Arena* arena) {
 }
 
 inline void ArenaStringPtr::SetBytes(const void* p, size_t n, Arena* arena) {
-  Set(ConstStringParam{static_cast<const char*>(p), n}, arena);
+  Set(absl::string_view{static_cast<const char*>(p), n}, arena);
 }
 
 // Make sure rhs_arena allocated rhs, and lhs_arena allocated lhs.
@@ -475,6 +476,6 @@ inline std::string* ArenaStringPtr::UnsafeMutablePointer() {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_ARENASTRING_H__

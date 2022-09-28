@@ -52,10 +52,10 @@
 #include <functional>
 #include <string>
 
-#include <google/protobuf/port.h>
+#include "google/protobuf/port.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 // Compilers on Windows other than MSVC (e.g. Cygwin, MinGW32) define the
 // following functions already, except for mkdir.
@@ -134,7 +134,7 @@ PROTOBUF_EXPORT bool wcs_to_utf8(const wchar_t* input, std::string* out);
 #define STDOUT_FILENO 1
 #endif
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // defined(_WIN32)
 

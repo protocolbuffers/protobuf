@@ -42,10 +42,8 @@ OBJC_TEST_PROTO_FILES=(
   objectivec/Tests/unittest_extension_chain_e.proto
   objectivec/Tests/unittest_extension_chain_f.proto
   objectivec/Tests/unittest_extension_chain_g.proto
-  objectivec/Tests/unittest_import_public_lite.proto
   objectivec/Tests/unittest_import_public.proto
   objectivec/Tests/unittest_import.proto
-  objectivec/Tests/unittest_mset_wire_format.proto
   objectivec/Tests/unittest_mset.proto
   objectivec/Tests/unittest_objc_options.proto
   objectivec/Tests/unittest_objc_startup.proto
@@ -83,7 +81,7 @@ for PROTO_FILE in "${OBJC_TEST_PROTO_FILES[@]}"; do
   OBJC_NAME=$(echo "${BASE_NAME}" | awk -F _ '{for(i=1; i<=NF; i++) printf "%s", toupper(substr($i,1,1)) substr($i,2);}')
 
   for EXT in "${OBJC_EXTENSIONS[@]}"; do
-    if [[ ! -f "${OUTPUT_DIR}/${OBJC_NAME}${EXT}" ]]; then
+    if [[ ! -f "${OUTPUT_DIR}/${DIR}/${OBJC_NAME}${EXT}" ]]; then
       RUN_PROTOC=yes
     fi
   done
@@ -128,8 +126,11 @@ find "${OUTPUT_DIR}" \
 # -----------------------------------------------------------------------------
 # Generate the Objective C specific testing protos.
 
-"${PROTOC}"                                  \
-  --objc_out="${OUTPUT_DIR}"                 \
-  --proto_path=src                           \
-  --proto_path="objectivec/Tests"            \
+"${PROTOC}"                                                                 \
+  --objc_out="${OUTPUT_DIR}"                                                \
+  --objc_opt=expected_prefixes_path=objectivec/Tests/expected_prefixes.txt  \
+  --objc_opt=prefixes_must_be_registered=yes                                \
+  --objc_opt=require_prefixes=yes                                           \
+  --proto_path=.                                                            \
+  --proto_path=src                                                          \
   "${OBJC_TEST_PROTO_FILES[@]}"

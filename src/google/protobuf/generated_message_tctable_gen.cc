@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/generated_message_tctable_gen.h>
+#include "google/protobuf/generated_message_tctable_gen.h"
 
 #include <algorithm>
 #include <limits>
@@ -36,14 +36,14 @@
 #include <utility>
 #include <vector>
 
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/generated_message_tctable_decl.h>
-#include <google/protobuf/generated_message_tctable_impl.h>
-#include <google/protobuf/wire_format.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/wire_format.h"
 
 // Must come last:
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -179,30 +179,21 @@ bool IsFieldEligibleForFastParsing(
     const TailCallTableInfo::FieldEntryInfo& entry,
     const TailCallTableInfo::OptionProvider& option_provider) {
   const auto* field = entry.field;
+  // Conditions which exclude a field from being handled by fast parsing
+  // regardless of options should be considered in IsExcludedFromFastParsing.
+  if (!IsDescriptorEligibleForFastParsing(field)) return false;
+
   const auto options = option_provider.GetForField(field);
-  // Map, oneof, weak, and lazy fields are not handled on the fast path.
-  if (field->is_map() || field->real_containing_oneof() ||
-      field->options().weak() || options.is_implicitly_weak ||
-      options.is_lazy || options.should_split) {
-    return false;
-  }
+  // Weak, lazy, and split fields are not handled on the fast path.
+  if (options.is_implicitly_weak) return false;
+  if (options.is_lazy) return false;
+  if (options.should_split) return false;
 
   // We will check for a valid auxiliary index range later. However, we might
   // want to change the value we check for inlined string fields.
   int aux_idx = entry.aux_idx;
 
   switch (field->type()) {
-    case FieldDescriptor::TYPE_ENUM:
-      // If enum values are not validated at parse time, then this field can be
-      // handled on the fast path like an int32.
-      if (cpp::HasPreservingUnknownEnumSemantics(field)) {
-        break;
-      }
-      if (field->is_repeated() && field->is_packed()) {
-        return false;
-      }
-      break;
-
       // Some bytes fields can be handled on fast path.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES:
@@ -235,38 +226,45 @@ bool IsFieldEligibleForFastParsing(
     return false;
   }
 
-  // The largest tag that can be read by the tailcall parser is two bytes
-  // when varint-coded. This allows 14 bits for the numeric tag value:
-  //   byte 0   byte 1
-  //   1nnnnttt 0nnnnnnn
-  //    ^^^^^^^  ^^^^^^^
-  if (field->number() >= 1 << 11) return false;
-
   return true;
 }
 
+absl::optional<uint32_t> GetEndGroupTag(const Descriptor* descriptor) {
+  auto* parent = descriptor->containing_type();
+  if (parent == nullptr) return absl::nullopt;
+  for (int i = 0; i < parent->field_count(); ++i) {
+    auto* field = parent->field(i);
+    if (field->type() == field->TYPE_GROUP &&
+        field->message_type() == descriptor) {
+      return WireFormatLite::MakeTag(field->number(),
+                                     WireFormatLite::WIRETYPE_END_GROUP);
+    }
+  }
+  return absl::nullopt;
+}
+
+uint32_t RecodeTagForFastParsing(uint32_t tag) {
+  GOOGLE_DCHECK_LE(tag, 0x3FFF);
+  // Construct the varint-coded tag. If it is more than 7 bits, we need to
+  // shift the high bits and add a continue bit.
+  if (uint32_t hibits = tag & 0xFFFFFF80) {
+    // hi = tag & ~0x7F
+    // lo = tag & 0x7F
+    // This shifts hi to the left by 1 to the next byte and sets the
+    // continuation bit.
+    tag = tag + hibits + 128;
+  }
+  return tag;
+}
+
 std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
+    absl::optional<uint32_t> end_group_tag,
     const std::vector<TailCallTableInfo::FieldEntryInfo>& field_entries,
     int table_size_log2,
     const TailCallTableInfo::OptionProvider& option_provider) {
   std::vector<TailCallTableInfo::FastFieldInfo> result(1 << table_size_log2);
   const uint32_t idx_mask = static_cast<uint32_t>(result.size() - 1);
-
-  for (const auto& entry : field_entries) {
-    if (!IsFieldEligibleForFastParsing(entry, option_provider)) {
-      continue;
-    }
-
-    const auto* field = entry.field;
-    const auto options = option_provider.GetForField(field);
-    uint32_t tag = WireFormat::MakeTag(field);
-
-    // Construct the varint-coded tag. If it is more than 7 bits, we need to
-    // shift the high bits and add a continue bit.
-    if (uint32_t hibits = tag & 0xFFFFFF80) {
-      tag = tag + hibits + 128;  // tag = lobits + 2*hibits + 128
-    }
-
+  const auto tag_to_idx = [&](uint32_t tag) {
     // The field index is determined by the low bits of the field number, where
     // the table size determines the width of the mask. The largest table
     // supported is 32 entries. The parse loop uses these bits directly, so that
@@ -277,10 +275,33 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
     //         idx (table_size_log2=5)
     // This means that any field number that does not fit in the lower 4 bits
     // will always have the top bit of its table index asserted.
-    const uint32_t fast_idx = (tag >> 3) & idx_mask;
+    return (tag >> 3) & idx_mask;
+  };
+
+  if (end_group_tag.has_value() && (*end_group_tag >> 14) == 0) {
+    // Fits in 1 or 2 varint bytes.
+    const uint32_t tag = RecodeTagForFastParsing(*end_group_tag);
+    const uint32_t fast_idx = tag_to_idx(tag);
 
     TailCallTableInfo::FastFieldInfo& info = result[fast_idx];
-    if (info.field != nullptr) {
+    info.func_name = "::_pbi::TcParser::FastEndG";
+    info.func_name.append(*end_group_tag < 128 ? "1" : "2");
+    info.coded_tag = tag;
+    info.nonfield_info = *end_group_tag;
+  }
+
+  for (const auto& entry : field_entries) {
+    if (!IsFieldEligibleForFastParsing(entry, option_provider)) {
+      continue;
+    }
+
+    const auto* field = entry.field;
+    const auto options = option_provider.GetForField(field);
+    const uint32_t tag = RecodeTagForFastParsing(WireFormat::MakeTag(field));
+    const uint32_t fast_idx = tag_to_idx(tag);
+
+    TailCallTableInfo::FastFieldInfo& info = result[fast_idx];
+    if (!info.func_name.empty()) {
       // This field entry is already filled.
       continue;
     }
@@ -394,7 +415,7 @@ std::vector<uint8_t> GenerateFieldNames(
   std::string message_name = descriptor->full_name();
   if (message_name.size() > kMaxNameLength) {
     static constexpr int kNameHalfLength = (kMaxNameLength - 3) / 2;
-    message_name = StrCat(
+    message_name = absl::StrCat(
         message_name.substr(0, kNameHalfLength), "...",
         message_name.substr(message_name.size() - kNameHalfLength));
   }
@@ -731,10 +752,11 @@ TailCallTableInfo::TailCallTableInfo(
 
   table_size_log2 = 0;  // fallback value
   int num_fast_fields = -1;
+  auto end_group_tag = GetEndGroupTag(descriptor);
   for (int try_size_log2 : {0, 1, 2, 3, 4, 5}) {
     size_t try_size = 1 << try_size_log2;
-    auto split_fields =
-        SplitFastFieldsForSize(field_entries, try_size_log2, option_provider);
+    auto split_fields = SplitFastFieldsForSize(end_group_tag, field_entries,
+                                               try_size_log2, option_provider);
     GOOGLE_CHECK_EQ(split_fields.size(), try_size);
     int try_num_fast_fields = 0;
     for (const auto& info : split_fields) {
@@ -752,8 +774,17 @@ TailCallTableInfo::TailCallTableInfo(
     // cover more fields in certain cases, but a larger table in that case
     // would have mostly empty entries; so, we cap the size to avoid
     // pathologically sparse tables.
-    if (try_size > ordered_fields.size()) {
-      break;
+    if (end_group_tag.has_value()) {
+      // If this message uses group encoding, the tables are sometimes very
+      // sparse because the fields in the group avoid using the same field
+      // numbering as the parent message (even though currently, the proto
+      // compiler allows the overlap, and there is no possible conflict.)
+      // As such, this test produces a false negative as far as whether the
+      // large table will be worth it.  So we disable the test in this case.
+    } else {
+      if (try_size > ordered_fields.size()) {
+        break;
+      }
     }
   }
 
@@ -776,4 +807,4 @@ TailCallTableInfo::TailCallTableInfo(
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

@@ -35,7 +35,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_PADDING_OPTIMIZER_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_PADDING_OPTIMIZER_H__
 
-#include <google/protobuf/compiler/cpp/message_layout_helper.h>
+#include "google/protobuf/compiler/cpp/message_layout_helper.h"
 
 namespace google {
 namespace protobuf {

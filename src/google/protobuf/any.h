@@ -33,12 +33,12 @@
 
 #include <string>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/arenastring.h>
-#include <google/protobuf/message_lite.h>
+#include "google/protobuf/port.h"
+#include "google/protobuf/arenastring.h"
+#include "google/protobuf/message_lite.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -52,8 +52,8 @@ extern const char kAnyFullTypeName[];          // "google.protobuf.Any".
 extern const char kTypeGoogleApisComPrefix[];  // "type.googleapis.com/".
 extern const char kTypeGoogleProdComPrefix[];  // "type.googleprod.com/".
 
-std::string GetTypeUrl(StringPiece message_name,
-                       StringPiece type_url_prefix);
+std::string GetTypeUrl(absl::string_view message_name,
+                       absl::string_view type_url_prefix);
 
 // Helper class used to implement google::protobuf::Any.
 class PROTOBUF_EXPORT AnyMetadata {
@@ -63,6 +63,8 @@ class PROTOBUF_EXPORT AnyMetadata {
   // AnyMetadata does not take ownership of "type_url" and "value".
   constexpr AnyMetadata(UrlType* type_url, ValueType* value)
       : type_url_(type_url), value_(value) {}
+  AnyMetadata(const AnyMetadata&) = delete;
+  AnyMetadata& operator=(const AnyMetadata&) = delete;
 
   // Packs a message using the default type URL prefix: "type.googleapis.com".
   // The resulted type URL will be "type.googleapis.com/<message_full_name>".
@@ -84,13 +86,13 @@ class PROTOBUF_EXPORT AnyMetadata {
   // Returns false if serializing the message failed.
   template <typename T>
   bool PackFrom(Arena* arena, const T& message,
-                StringPiece type_url_prefix) {
+                absl::string_view type_url_prefix) {
     return InternalPackFrom(arena, message, type_url_prefix,
                             T::FullMessageName());
   }
 
   bool PackFrom(Arena* arena, const Message& message,
-                StringPiece type_url_prefix);
+                absl::string_view type_url_prefix);
 
   // Unpacks the payload into the given message. Returns false if the message's
   // type doesn't match the type specified in the type URL (i.e., the full
@@ -113,16 +115,14 @@ class PROTOBUF_EXPORT AnyMetadata {
 
  private:
   bool InternalPackFrom(Arena* arena, const MessageLite& message,
-                        StringPiece type_url_prefix,
-                        StringPiece type_name);
-  bool InternalUnpackTo(StringPiece type_name,
+                        absl::string_view type_url_prefix,
+                        absl::string_view type_name);
+  bool InternalUnpackTo(absl::string_view type_name,
                         MessageLite* message) const;
-  bool InternalIs(StringPiece type_name) const;
+  bool InternalIs(absl::string_view type_name) const;
 
   UrlType* type_url_;
   ValueType* value_;
-
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(AnyMetadata);
 };
 
 // Get the proto type name from Any::type_url value. For example, passing
@@ -132,14 +132,14 @@ class PROTOBUF_EXPORT AnyMetadata {
 //
 // NOTE: this function is available publicly as a static method on the
 // generated message type: google::protobuf::Any::ParseAnyTypeUrl()
-bool ParseAnyTypeUrl(StringPiece type_url, std::string* full_type_name);
+bool ParseAnyTypeUrl(absl::string_view type_url, std::string* full_type_name);
 
 // Get the proto type name and prefix from Any::type_url value. For example,
 // passing "type.googleapis.com/rpc.QueryOrigin" will return
 // "type.googleapis.com/" in *url_prefix and "rpc.QueryOrigin" in
 // *full_type_name. Returns false if the type_url does not have a "/" in the
 // type url separating the full type name.
-bool ParseAnyTypeUrl(StringPiece type_url, std::string* url_prefix,
+bool ParseAnyTypeUrl(absl::string_view type_url, std::string* url_prefix,
                      std::string* full_type_name);
 
 // See if message is of type google.protobuf.Any, if so, return the descriptors
@@ -152,6 +152,6 @@ bool GetAnyFieldDescriptors(const Message& message,
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_ANY_H__

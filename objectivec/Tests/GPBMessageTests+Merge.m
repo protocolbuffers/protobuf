@@ -34,11 +34,11 @@
 
 #import "GPBMessage.h"
 
-#import "MapUnittest.pbobjc.h"
-#import "Unittest.pbobjc.h"
-#import "UnittestPreserveUnknownEnum.pbobjc.h"
-#import "UnittestRuntimeProto2.pbobjc.h"
-#import "UnittestRuntimeProto3.pbobjc.h"
+#import "objectivec/Tests/MapUnittest.pbobjc.h"
+#import "objectivec/Tests/Unittest.pbobjc.h"
+#import "objectivec/Tests/UnittestPreserveUnknownEnum.pbobjc.h"
+#import "objectivec/Tests/UnittestRuntimeProto2.pbobjc.h"
+#import "objectivec/Tests/UnittestRuntimeProto3.pbobjc.h"
 
 @interface MessageMergeTests : GPBTestCase
 @end
@@ -197,9 +197,8 @@
   // Known value.
 
   src.e = UnknownEnumsMyEnum_Bar;
-  src.repeatedEArray =
-      [GPBEnumArray arrayWithValidationFunction:UnknownEnumsMyEnum_IsValidValue
-                                       rawValue:UnknownEnumsMyEnum_Bar];
+  src.repeatedEArray = [GPBEnumArray arrayWithValidationFunction:UnknownEnumsMyEnum_IsValidValue
+                                                        rawValue:UnknownEnumsMyEnum_Bar];
   src.repeatedPackedEArray =
       [GPBEnumArray arrayWithValidationFunction:UnknownEnumsMyEnum_IsValidValue
                                        rawValue:UnknownEnumsMyEnum_Bar];
@@ -211,8 +210,7 @@
   XCTAssertEqual(dst.repeatedEArray.count, 1U);
   XCTAssertEqual([dst.repeatedEArray valueAtIndex:0], UnknownEnumsMyEnum_Bar);
   XCTAssertEqual(dst.repeatedPackedEArray.count, 1U);
-  XCTAssertEqual([dst.repeatedPackedEArray valueAtIndex:0],
-                 UnknownEnumsMyEnum_Bar);
+  XCTAssertEqual([dst.repeatedPackedEArray valueAtIndex:0], UnknownEnumsMyEnum_Bar);
   XCTAssertEqual(dst.oneofE1, UnknownEnumsMyEnum_Bar);
 
   // Unknown value.
@@ -220,9 +218,8 @@
   const int32_t kUnknownValue = 666;
 
   SetUnknownEnumsMyMessage_E_RawValue(src, kUnknownValue);
-  src.repeatedEArray =
-      [GPBEnumArray arrayWithValidationFunction:UnknownEnumsMyEnum_IsValidValue
-                                       rawValue:kUnknownValue];
+  src.repeatedEArray = [GPBEnumArray arrayWithValidationFunction:UnknownEnumsMyEnum_IsValidValue
+                                                        rawValue:kUnknownValue];
   src.repeatedPackedEArray =
       [GPBEnumArray arrayWithValidationFunction:UnknownEnumsMyEnum_IsValidValue
                                        rawValue:kUnknownValue];
@@ -238,13 +235,11 @@
                  UnknownEnumsMyEnum_GPBUnrecognizedEnumeratorValue);
   XCTAssertEqual([dst.repeatedEArray rawValueAtIndex:1], kUnknownValue);
   XCTAssertEqual(dst.repeatedPackedEArray.count, 2U);
-  XCTAssertEqual([dst.repeatedPackedEArray valueAtIndex:0],
-                 UnknownEnumsMyEnum_Bar);
+  XCTAssertEqual([dst.repeatedPackedEArray valueAtIndex:0], UnknownEnumsMyEnum_Bar);
   XCTAssertEqual([dst.repeatedPackedEArray valueAtIndex:1],
                  UnknownEnumsMyEnum_GPBUnrecognizedEnumeratorValue);
   XCTAssertEqual([dst.repeatedPackedEArray rawValueAtIndex:1], kUnknownValue);
-  XCTAssertEqual(dst.oneofE1,
-                 UnknownEnumsMyEnum_GPBUnrecognizedEnumeratorValue);
+  XCTAssertEqual(dst.oneofE1, UnknownEnumsMyEnum_GPBUnrecognizedEnumeratorValue);
   XCTAssertEqual(UnknownEnumsMyMessage_OneofE1_RawValue(dst), kUnknownValue);
 }
 
@@ -258,6 +253,9 @@
 
   dst.oneofEnum = Message2_Enum_Bar;
 
+  // Disable clang-format for the macros.
+  // clang-format off
+
 //%PDDM-DEFINE MERGE2_TEST(SET_NAME, SET_VALUE, CLEARED_NAME, CLEARED_DEFAULT)
 //%  src.oneof##SET_NAME = SET_VALUE;
 //%  [dst mergeFrom:src];
@@ -267,7 +265,6 @@
 //%
 //%PDDM-EXPAND MERGE2_TEST(Int32, 10, Enum, Message2_Enum_Baz)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofInt32 = 10;
   [dst mergeFrom:src];
@@ -275,10 +272,8 @@
   XCTAssertEqual(dst.oneofInt32, 10);
   XCTAssertEqual(dst.oneofEnum, Message2_Enum_Baz);
 
-// clang-format on
 //%PDDM-EXPAND MERGE2_TEST(Int64, 11, Int32, 100)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofInt64 = 11;
   [dst mergeFrom:src];
@@ -286,10 +281,8 @@
   XCTAssertEqual(dst.oneofInt64, 11);
   XCTAssertEqual(dst.oneofInt32, 100);
 
-// clang-format on
 //%PDDM-EXPAND MERGE2_TEST(Uint32, 12U, Int64, 101)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofUint32 = 12U;
   [dst mergeFrom:src];
@@ -297,10 +290,8 @@
   XCTAssertEqual(dst.oneofUint32, 12U);
   XCTAssertEqual(dst.oneofInt64, 101);
 
-// clang-format on
 //%PDDM-EXPAND MERGE2_TEST(Uint64, 13U, Uint32, 102U)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofUint64 = 13U;
   [dst mergeFrom:src];
@@ -308,10 +299,8 @@
   XCTAssertEqual(dst.oneofUint64, 13U);
   XCTAssertEqual(dst.oneofUint32, 102U);
 
-// clang-format on
 //%PDDM-EXPAND MERGE2_TEST(Sint32, 14, Uint64, 103U)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofSint32 = 14;
   [dst mergeFrom:src];
@@ -319,10 +308,8 @@
   XCTAssertEqual(dst.oneofSint32, 14);
   XCTAssertEqual(dst.oneofUint64, 103U);
 
-// clang-format on
 //%PDDM-EXPAND MERGE2_TEST(Sint64, 15, Sint32, 104)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofSint64 = 15;
   [dst mergeFrom:src];
@@ -330,10 +317,8 @@
   XCTAssertEqual(dst.oneofSint64, 15);
   XCTAssertEqual(dst.oneofSint32, 104);
 
-// clang-format on
 //%PDDM-EXPAND MERGE2_TEST(Fixed32, 16U, Sint64, 105)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofFixed32 = 16U;
   [dst mergeFrom:src];
@@ -341,10 +326,8 @@
   XCTAssertEqual(dst.oneofFixed32, 16U);
   XCTAssertEqual(dst.oneofSint64, 105);
 
-// clang-format on
 //%PDDM-EXPAND MERGE2_TEST(Fixed64, 17U, Fixed32, 106U)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofFixed64 = 17U;
   [dst mergeFrom:src];
@@ -352,10 +335,8 @@
   XCTAssertEqual(dst.oneofFixed64, 17U);
   XCTAssertEqual(dst.oneofFixed32, 106U);
 
-// clang-format on
 //%PDDM-EXPAND MERGE2_TEST(Sfixed32, 18, Fixed64, 107U)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofSfixed32 = 18;
   [dst mergeFrom:src];
@@ -363,10 +344,8 @@
   XCTAssertEqual(dst.oneofSfixed32, 18);
   XCTAssertEqual(dst.oneofFixed64, 107U);
 
-// clang-format on
 //%PDDM-EXPAND MERGE2_TEST(Sfixed64, 19, Sfixed32, 108)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofSfixed64 = 19;
   [dst mergeFrom:src];
@@ -374,10 +353,8 @@
   XCTAssertEqual(dst.oneofSfixed64, 19);
   XCTAssertEqual(dst.oneofSfixed32, 108);
 
-// clang-format on
 //%PDDM-EXPAND MERGE2_TEST(Float, 20.0f, Sfixed64, 109)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofFloat = 20.0f;
   [dst mergeFrom:src];
@@ -385,10 +362,8 @@
   XCTAssertEqual(dst.oneofFloat, 20.0f);
   XCTAssertEqual(dst.oneofSfixed64, 109);
 
-// clang-format on
 //%PDDM-EXPAND MERGE2_TEST(Double, 21.0, Float, 110.0f)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofDouble = 21.0;
   [dst mergeFrom:src];
@@ -396,10 +371,8 @@
   XCTAssertEqual(dst.oneofDouble, 21.0);
   XCTAssertEqual(dst.oneofFloat, 110.0f);
 
-// clang-format on
 //%PDDM-EXPAND MERGE2_TEST(Bool, NO, Double, 111.0)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofBool = NO;
   [dst mergeFrom:src];
@@ -407,10 +380,8 @@
   XCTAssertEqual(dst.oneofBool, NO);
   XCTAssertEqual(dst.oneofDouble, 111.0);
 
-// clang-format on
 //%PDDM-EXPAND MERGE2_TEST(Enum, Message2_Enum_Bar, Bool, YES)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofEnum = Message2_Enum_Bar;
   [dst mergeFrom:src];
@@ -418,8 +389,9 @@
   XCTAssertEqual(dst.oneofEnum, Message2_Enum_Bar);
   XCTAssertEqual(dst.oneofBool, YES);
 
-// clang-format on
 //%PDDM-EXPAND-END (14 expansions)
+
+  // clang-format on
 
   NSString *oneofStringDefault = @"string";
   NSData *oneofBytesDefault = [@"data" dataUsingEncoding:NSUTF8StringEncoding];
@@ -433,8 +405,7 @@
   src.oneofBytes = [@"bar" dataUsingEncoding:NSUTF8StringEncoding];
   [dst mergeFrom:src];
   XCTAssertEqual(dst.oOneOfCase, Message2_O_OneOfCase_OneofBytes);
-  XCTAssertEqualObjects(dst.oneofBytes,
-                        [@"bar" dataUsingEncoding:NSUTF8StringEncoding]);
+  XCTAssertEqualObjects(dst.oneofBytes, [@"bar" dataUsingEncoding:NSUTF8StringEncoding]);
   XCTAssertEqualObjects(dst.oneofString, oneofStringDefault);
 
   Message2_OneofGroup *group = [Message2_OneofGroup message];
@@ -506,6 +477,9 @@
 
   dst.oneofEnum = Message3_Enum_Bar;
 
+  // Disable clang-format for the macros.
+  // clang-format off
+
 //%PDDM-DEFINE MERGE3_TEST(SET_NAME, SET_VALUE, CLEARED_NAME, CLEARED_DEFAULT)
 //%  src.oneof##SET_NAME = SET_VALUE;
 //%  [dst mergeFrom:src];
@@ -515,7 +489,6 @@
 //%
 //%PDDM-EXPAND MERGE3_TEST(Int32, 10, Enum, Message3_Enum_Foo)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofInt32 = 10;
   [dst mergeFrom:src];
@@ -523,10 +496,8 @@
   XCTAssertEqual(dst.oneofInt32, 10);
   XCTAssertEqual(dst.oneofEnum, Message3_Enum_Foo);
 
-// clang-format on
 //%PDDM-EXPAND MERGE3_TEST(Int64, 11, Int32, 0)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofInt64 = 11;
   [dst mergeFrom:src];
@@ -534,10 +505,8 @@
   XCTAssertEqual(dst.oneofInt64, 11);
   XCTAssertEqual(dst.oneofInt32, 0);
 
-// clang-format on
 //%PDDM-EXPAND MERGE3_TEST(Uint32, 12U, Int64, 0)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofUint32 = 12U;
   [dst mergeFrom:src];
@@ -545,10 +514,8 @@
   XCTAssertEqual(dst.oneofUint32, 12U);
   XCTAssertEqual(dst.oneofInt64, 0);
 
-// clang-format on
 //%PDDM-EXPAND MERGE3_TEST(Uint64, 13U, Uint32, 0U)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofUint64 = 13U;
   [dst mergeFrom:src];
@@ -556,10 +523,8 @@
   XCTAssertEqual(dst.oneofUint64, 13U);
   XCTAssertEqual(dst.oneofUint32, 0U);
 
-// clang-format on
 //%PDDM-EXPAND MERGE3_TEST(Sint32, 14, Uint64, 0U)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofSint32 = 14;
   [dst mergeFrom:src];
@@ -567,10 +532,8 @@
   XCTAssertEqual(dst.oneofSint32, 14);
   XCTAssertEqual(dst.oneofUint64, 0U);
 
-// clang-format on
 //%PDDM-EXPAND MERGE3_TEST(Sint64, 15, Sint32, 0)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofSint64 = 15;
   [dst mergeFrom:src];
@@ -578,10 +541,8 @@
   XCTAssertEqual(dst.oneofSint64, 15);
   XCTAssertEqual(dst.oneofSint32, 0);
 
-// clang-format on
 //%PDDM-EXPAND MERGE3_TEST(Fixed32, 16U, Sint64, 0)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofFixed32 = 16U;
   [dst mergeFrom:src];
@@ -589,10 +550,8 @@
   XCTAssertEqual(dst.oneofFixed32, 16U);
   XCTAssertEqual(dst.oneofSint64, 0);
 
-// clang-format on
 //%PDDM-EXPAND MERGE3_TEST(Fixed64, 17U, Fixed32, 0U)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofFixed64 = 17U;
   [dst mergeFrom:src];
@@ -600,10 +559,8 @@
   XCTAssertEqual(dst.oneofFixed64, 17U);
   XCTAssertEqual(dst.oneofFixed32, 0U);
 
-// clang-format on
 //%PDDM-EXPAND MERGE3_TEST(Sfixed32, 18, Fixed64, 0U)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofSfixed32 = 18;
   [dst mergeFrom:src];
@@ -611,10 +568,8 @@
   XCTAssertEqual(dst.oneofSfixed32, 18);
   XCTAssertEqual(dst.oneofFixed64, 0U);
 
-// clang-format on
 //%PDDM-EXPAND MERGE3_TEST(Sfixed64, 19, Sfixed32, 0)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofSfixed64 = 19;
   [dst mergeFrom:src];
@@ -622,10 +577,8 @@
   XCTAssertEqual(dst.oneofSfixed64, 19);
   XCTAssertEqual(dst.oneofSfixed32, 0);
 
-// clang-format on
 //%PDDM-EXPAND MERGE3_TEST(Float, 20.0f, Sfixed64, 0)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofFloat = 20.0f;
   [dst mergeFrom:src];
@@ -633,10 +586,8 @@
   XCTAssertEqual(dst.oneofFloat, 20.0f);
   XCTAssertEqual(dst.oneofSfixed64, 0);
 
-// clang-format on
 //%PDDM-EXPAND MERGE3_TEST(Double, 21.0, Float, 0.0f)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofDouble = 21.0;
   [dst mergeFrom:src];
@@ -644,10 +595,8 @@
   XCTAssertEqual(dst.oneofDouble, 21.0);
   XCTAssertEqual(dst.oneofFloat, 0.0f);
 
-// clang-format on
 //%PDDM-EXPAND MERGE3_TEST(Bool, YES, Double, 0.0)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofBool = YES;
   [dst mergeFrom:src];
@@ -655,10 +604,8 @@
   XCTAssertEqual(dst.oneofBool, YES);
   XCTAssertEqual(dst.oneofDouble, 0.0);
 
-// clang-format on
 //%PDDM-EXPAND MERGE3_TEST(Enum, Message3_Enum_Bar, Bool, NO)
 // This block of code is generated, do not edit it directly.
-// clang-format off
 
   src.oneofEnum = Message3_Enum_Bar;
   [dst mergeFrom:src];
@@ -666,8 +613,9 @@
   XCTAssertEqual(dst.oneofEnum, Message3_Enum_Bar);
   XCTAssertEqual(dst.oneofBool, NO);
 
-// clang-format on
 //%PDDM-EXPAND-END (14 expansions)
+
+  // clang-format on
 
   NSString *oneofStringDefault = @"";
   NSData *oneofBytesDefault = [NSData data];
@@ -681,10 +629,8 @@
   src.oneofBytes = [@"bar" dataUsingEncoding:NSUTF8StringEncoding];
   [dst mergeFrom:src];
   XCTAssertEqual(dst.oOneOfCase, Message3_O_OneOfCase_OneofBytes);
-  XCTAssertEqualObjects(dst.oneofBytes,
-                        [@"bar" dataUsingEncoding:NSUTF8StringEncoding]);
+  XCTAssertEqualObjects(dst.oneofBytes, [@"bar" dataUsingEncoding:NSUTF8StringEncoding]);
   XCTAssertEqualObjects(dst.oneofString, oneofStringDefault);
-
 
   Message3 *subMessage = [Message3 message];
   subMessage.optionalInt32 = 777;

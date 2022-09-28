@@ -38,14 +38,15 @@
 #include <cstdint>
 #include <string>
 
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/compiler/java/context.h>
-#include <google/protobuf/compiler/java/options.h>
-#include <google/protobuf/descriptor.pb.h>
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/descriptor.h"
+#include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/java/names.h"
+#include "google/protobuf/compiler/java/options.h"
+#include "google/protobuf/descriptor.pb.h"
 
 // Must be last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -57,7 +58,7 @@ namespace java {
 extern const char kThickSeparator[];
 extern const char kThinSeparator[];
 
-bool IsForbiddenKotlin(const std::string& field_name);
+bool IsForbiddenKotlin(absl::string_view field_name);
 
 // If annotation_file is non-empty, prints a javax.annotation.Generated
 // annotation to the given Printer. annotation_file will be referenced in the
@@ -82,25 +83,6 @@ void PrintEnumVerifierLogic(io::Printer* printer,
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
 // first letter.
 std::string ToCamelCase(const std::string& input, bool lower_first);
-
-char ToUpperCh(char ch);
-char ToLowerCh(char ch);
-
-// Converts a name to camel-case. If cap_first_letter is true, capitalize the
-// first letter.
-std::string UnderscoresToCamelCase(const std::string& name,
-                                   bool cap_first_letter);
-// Converts the field's name to camel-case, e.g. "foo_bar_baz" becomes
-// "fooBarBaz" or "FooBarBaz", respectively.
-std::string UnderscoresToCamelCase(const FieldDescriptor* field);
-std::string UnderscoresToCapitalizedCamelCase(const FieldDescriptor* field);
-
-// Similar, but for method names.  (Typically, this merely has the effect
-// of lower-casing the first letter of the name.)
-std::string UnderscoresToCamelCase(const MethodDescriptor* method);
-
-// Same as UnderscoresToCamelCase, but checks for reserved keywords
-std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field);
 
 // Similar to UnderscoresToCamelCase, but guarantees that the result is a
 // complete Java identifier by adding a _ if needed.
@@ -205,19 +187,6 @@ template <typename Descriptor>
 std::string AnnotationFileName(const Descriptor* descriptor,
                                const std::string& suffix) {
   return descriptor->name() + suffix + ".java.pb.meta";
-}
-
-template <typename Descriptor>
-void MaybePrintGeneratedAnnotation(Context* context, io::Printer* printer,
-                                   Descriptor* descriptor, bool immutable,
-                                   const std::string& suffix = "") {
-  if (IsOwnFile(descriptor, immutable)) {
-    PrintGeneratedAnnotation(printer, '$',
-                             context->options().annotate_code
-                                 ? AnnotationFileName(descriptor, suffix)
-                                 : "",
-                             context->options());
-  }
 }
 
 // Get the unqualified name that should be used for a field's field
@@ -484,5 +453,5 @@ std::pair<int, int> GetTableDrivenNumberOfEntriesAndLookUpStartFieldNumber(
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_HELPERS_H__

@@ -34,10 +34,12 @@
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_GENERATOR_H__
 
 #include <string>
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/descriptor.h>
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/descriptor.h"
 
-#include <google/protobuf/port_def.inc>
+// clang-format off
+#include "google/protobuf/port_def.inc"
+// clang-format on
 
 namespace google {
 namespace protobuf {
@@ -74,6 +76,6 @@ class PROTOC_EXPORT ObjectiveCGenerator : public CodeGenerator {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_GENERATOR_H__

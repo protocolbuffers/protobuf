@@ -102,15 +102,17 @@
 
 
 #include <string>
-#include <google/protobuf/stubs/callback.h>
-#include <google/protobuf/stubs/common.h>
+
+#include "google/protobuf/stubs/callback.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/port.h"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
 #endif
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -134,6 +136,8 @@ class Message;            // message.h
 class PROTOBUF_EXPORT Service {
  public:
   inline Service() {}
+  Service(const Service&) = delete;
+  Service& operator=(const Service&) = delete;
   virtual ~Service();
 
   // When constructing a stub, you may pass STUB_OWNS_CHANNEL as the second
@@ -190,9 +194,6 @@ class PROTOBUF_EXPORT Service {
       const MethodDescriptor* method) const = 0;
   virtual const Message& GetResponsePrototype(
       const MethodDescriptor* method) const = 0;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(Service);
 };
 
 // An RpcController mediates a single method call.  The primary purpose of
@@ -206,6 +207,8 @@ class PROTOBUF_EXPORT Service {
 class PROTOBUF_EXPORT RpcController {
  public:
   inline RpcController() {}
+  RpcController(const RpcController&) = delete;
+  RpcController& operator=(const RpcController&) = delete;
   virtual ~RpcController();
 
   // Client-side methods ---------------------------------------------
@@ -256,9 +259,6 @@ class PROTOBUF_EXPORT RpcController {
   //
   // NotifyOnCancel() must be called no more than once per request.
   virtual void NotifyOnCancel(Closure* callback) = 0;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RpcController);
 };
 
 // Abstract interface for an RPC channel.  An RpcChannel represents a
@@ -272,6 +272,8 @@ class PROTOBUF_EXPORT RpcController {
 class PROTOBUF_EXPORT RpcChannel {
  public:
   inline RpcChannel() {}
+  RpcChannel(const RpcChannel&) = delete;
+  RpcChannel& operator=(const RpcChannel&) = delete;
   virtual ~RpcChannel();
 
   // Call the given method of the remote service.  The signature of this
@@ -282,14 +284,11 @@ class PROTOBUF_EXPORT RpcChannel {
   virtual void CallMethod(const MethodDescriptor* method,
                           RpcController* controller, const Message* request,
                           Message* response, Closure* done) = 0;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(RpcChannel);
 };
 
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_SERVICE_H__

@@ -7,6 +7,19 @@ load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_library(
+    name = "names",
+    hdrs = ["names.h"],
+    srcs = ["names.cc"],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/csharp",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//src/google/protobuf:protobuf_nowkt",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
     name = "csharp",
     srcs = [
         "csharp_doc_comment.cc",
@@ -36,7 +49,6 @@ cc_library(
         "csharp_map_field.h",
         "csharp_message.h",
         "csharp_message_field.h",
-        "csharp_names.h",
         "csharp_options.h",
         "csharp_primitive_field.h",
         "csharp_reflection_class.h",
@@ -56,8 +68,11 @@ cc_library(
         "//src/google/protobuf/compiler:__pkg__",
     ],
     deps = [
-        "//:protobuf",
+        ":names",
+        "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/strings",
     ],
 )
 

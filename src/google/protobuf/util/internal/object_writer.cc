@@ -28,9 +28,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/internal/object_writer.h>
+#include "google/protobuf/util/internal/object_writer.h"
 
-#include <google/protobuf/util/internal/datapiece.h>
+#include "google/protobuf/util/internal/datapiece.h"
 
 namespace google {
 namespace protobuf {
@@ -39,7 +39,7 @@ namespace converter {
 
 // static
 void ObjectWriter::RenderDataPieceTo(const DataPiece& data,
-                                     StringPiece name, ObjectWriter* ow) {
+                                     absl::string_view name, ObjectWriter* ow) {
   switch (data.type()) {
     case DataPiece::TYPE_INT32: {
       ow->RenderInt32(name, data.ToInt32().value());

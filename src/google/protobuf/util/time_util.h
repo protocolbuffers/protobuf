@@ -50,11 +50,11 @@ struct timeval {
 #include <sys/time.h>
 #endif
 
-#include <google/protobuf/duration.pb.h>
-#include <google/protobuf/timestamp.pb.h>
+#include "google/protobuf/duration.pb.h"
+#include "google/protobuf/timestamp.pb.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -90,7 +90,9 @@ class PROTOBUF_EXPORT TimeUtil {
     return duration.seconds() <= kDurationMaxSeconds &&
            duration.seconds() >= kDurationMinSeconds &&
            duration.nanos() <= kDurationMaxNanoseconds &&
-           duration.nanos() >= kDurationMinNanoseconds;
+           duration.nanos() >= kDurationMinNanoseconds &&
+           !(duration.seconds() >= 1 && duration.nanos() < 0) &&
+           !(duration.seconds() <= -1 && duration.nanos() > 0);
   }
 
   // Converts Timestamp to/from RFC 3339 date string format.
@@ -120,9 +122,6 @@ class PROTOBUF_EXPORT TimeUtil {
   static std::string ToString(const Duration& duration);
   static bool FromString(const std::string& value, Duration* timestamp);
 
-#ifdef GetCurrentTime
-#undef GetCurrentTime  // Visual Studio has macro GetCurrentTime
-#endif
   // Gets the current UTC time.
   static Timestamp GetCurrentTime();
   // Returns the Time representing "1970-01-01 00:00:00".
@@ -327,6 +326,6 @@ inline std::ostream& operator<<(std::ostream& out, const Timestamp& t) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_UTIL_TIME_UTIL_H__
