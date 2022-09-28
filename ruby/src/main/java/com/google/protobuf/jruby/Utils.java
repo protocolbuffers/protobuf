@@ -347,22 +347,6 @@ public class Utils {
         String.format(INVALID_TYPE_ERROR_FORMAT, fieldType, fieldName, value.getMetaClass()));
   }
 
-  public static String fixEnumName(String name) {
-    if (name != null && name.length() > 0) {
-      int ch = name.codePointAt(0);
-      if (ch >= 'a' && ch <= 'z') {
-        // Protobuf enums can start with lowercase letters, while Ruby's constant should
-        // always start with uppercase letters. We tolerate this case by capitalizing
-        // the first character if possible.
-        return new StringBuilder()
-                .appendCodePoint(Character.toUpperCase(ch))
-                .append(name.substring(1))
-                .toString();
-      }
-    }
-    return name;
-  }
-
   protected static boolean isRubyNum(Object value) {
     return value instanceof RubyFixnum || value instanceof RubyFloat || value instanceof RubyBignum;
   }
