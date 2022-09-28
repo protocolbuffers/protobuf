@@ -673,7 +673,7 @@ void MessageBuilderGenerator::GenerateBuilderFieldParsingCase(
     io::Printer* printer, const FieldDescriptor* field) {
   uint32_t tag = WireFormatLite::MakeTag(
       field->number(), WireFormat::WireTypeForFieldType(field->type()));
-  std::string tagString = absl::StrCat(static_cast<int32_t>(tag));
+  std::string tagString = StrCat(static_cast<int32_t>(tag));
   printer->Print("case $tag$: {\n", "tag", tagString);
   printer->Indent();
 
@@ -692,7 +692,7 @@ void MessageBuilderGenerator::GenerateBuilderPackedFieldParsingCase(
   // packed version of this field regardless of field->options().packed().
   uint32_t tag = WireFormatLite::MakeTag(
       field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
-  std::string tagString = absl::StrCat(static_cast<int32_t>(tag));
+  std::string tagString = StrCat(static_cast<int32_t>(tag));
   printer->Print("case $tag$: {\n", "tag", tagString);
   printer->Indent();
 
