@@ -84,9 +84,7 @@ const upb_MiniTable_Extension* _upb_FieldDef_ExtensionMiniTable(
 bool _upb_FieldDef_IsClosedEnum(const upb_FieldDef* f);
 bool _upb_FieldDef_IsProto3Optional(const upb_FieldDef* f);
 int _upb_FieldDef_LayoutIndex(const upb_FieldDef* f);
-
-void _upb_FieldDef_MakeLayout(upb_DefBuilder* ctx, const upb_MessageDef* m);
-
+uint64_t _upb_FieldDef_Modifiers(const upb_FieldDef* f);
 void _upb_FieldDef_Resolve(upb_DefBuilder* ctx, const char* prefix,
                            upb_FieldDef* f);
 

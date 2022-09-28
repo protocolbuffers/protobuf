@@ -458,6 +458,18 @@ void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
   }
 }
 
+uint64_t _upb_MessageDef_Modifiers(const upb_MessageDef* m) {
+  uint64_t out = 0;
+  if (upb_FileDef_Syntax(m->file) == kUpb_Syntax_Proto3) {
+    out |= kUpb_MessageModifier_ValidateUtf8;
+    out |= kUpb_MessageModifier_DefaultIsPacked;
+  }
+  if (m->ext_range_count) {
+    out |= kUpb_MessageModifier_IsExtendable;
+  }
+  return out;
+}
+
 static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
                           const google_protobuf_DescriptorProto* msg_proto,
                           const upb_MessageDef* containing_type,

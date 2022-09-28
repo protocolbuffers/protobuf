@@ -161,6 +161,7 @@ bool _upb_MessageDef_IsSorted(const upb_MessageDef* m);
 bool _upb_MessageDef_IsValidExtensionNumber(const upb_MessageDef* m, int n);
 void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
                                    const upb_MessageDef* m);
+uint64_t _upb_MessageDef_Modifiers(const upb_MessageDef* m);
 void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m);
 
 // Allocate and initialize an array of |n| message defs.

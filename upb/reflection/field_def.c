@@ -268,6 +268,32 @@ bool _upb_FieldDef_IsProto3Optional(const upb_FieldDef* f) {
 
 int _upb_FieldDef_LayoutIndex(const upb_FieldDef* f) { return f->layout_index; }
 
+uint64_t _upb_FieldDef_Modifiers(const upb_FieldDef* f) {
+  uint64_t out = f->is_packed_ ? kUpb_FieldModifier_IsPacked : 0;
+
+  switch (f->label_) {
+    case kUpb_Label_Optional:
+      if (!upb_FieldDef_HasPresence(f)) {
+        out |= kUpb_FieldModifier_IsProto3Singular;
+      }
+      break;
+    case kUpb_Label_Repeated:
+      out |= kUpb_FieldModifier_IsRepeated;
+      break;
+    case kUpb_Label_Required:
+      out |= kUpb_FieldModifier_IsRequired;
+      break;
+  }
+
+  if (f->type_ == kUpb_FieldType_Enum) {
+    const upb_FileDef* file_def = upb_EnumDef_File(upb_FieldDef_EnumSubDef(f));
+    if (upb_FileDef_Syntax(file_def) == kUpb_Syntax_Proto2) {
+      out |= kUpb_FieldModifier_IsClosedEnum;
+    }
+  }
+  return out;
+}
+
 bool upb_FieldDef_HasDefault(const upb_FieldDef* f) { return f->has_default; }
 
 bool upb_FieldDef_HasPresence(const upb_FieldDef* f) {
@@ -295,12 +321,12 @@ bool upb_FieldDef_IsPrimitive(const upb_FieldDef* f) {
   return !upb_FieldDef_IsString(f) && !upb_FieldDef_IsSubMessage(f);
 }
 
-bool upb_FieldDef_IsRequired(const upb_FieldDef* f) {
-  return upb_FieldDef_Label(f) == kUpb_Label_Required;
-}
-
 bool upb_FieldDef_IsRepeated(const upb_FieldDef* f) {
   return upb_FieldDef_Label(f) == kUpb_Label_Repeated;
+}
+
+bool upb_FieldDef_IsRequired(const upb_FieldDef* f) {
+  return upb_FieldDef_Label(f) == kUpb_Label_Required;
 }
 
 bool upb_FieldDef_IsString(const upb_FieldDef* f) {

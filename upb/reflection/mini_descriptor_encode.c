@@ -82,45 +82,6 @@ static bool upb_DescState_Grow(DescState* d, upb_Arena* a) {
 
 /******************************************************************************/
 
-// Copied from upbc/protoc-gen-upb.cc TODO(salo): can we consolidate?
-static uint64_t upb_Field_Modifiers(const upb_FieldDef* f) {
-  uint64_t out = 0;
-  if (upb_FieldDef_IsRepeated(f)) {
-    out |= kUpb_FieldModifier_IsRepeated;
-  }
-  if (upb_FieldDef_IsPacked(f)) {
-    out |= kUpb_FieldModifier_IsPacked;
-  }
-  if (upb_FieldDef_Type(f) == kUpb_FieldType_Enum) {
-    const upb_FileDef* file_def = upb_EnumDef_File(upb_FieldDef_EnumSubDef(f));
-    if (upb_FileDef_Syntax(file_def) == kUpb_Syntax_Proto2) {
-      out |= kUpb_FieldModifier_IsClosedEnum;
-    }
-  }
-  if (upb_FieldDef_IsOptional(f) && !upb_FieldDef_HasPresence(f)) {
-    out |= kUpb_FieldModifier_IsProto3Singular;
-  }
-  if (upb_FieldDef_IsRequired(f)) {
-    out |= kUpb_FieldModifier_IsRequired;
-  }
-  return out;
-}
-
-static uint64_t upb_Message_Modifiers(const upb_MessageDef* m) {
-  uint64_t out = 0;
-  const upb_FileDef* file_def = upb_MessageDef_File(m);
-  if (upb_FileDef_Syntax(file_def) == kUpb_Syntax_Proto3) {
-    out |= kUpb_MessageModifier_ValidateUtf8;
-    out |= kUpb_MessageModifier_DefaultIsPacked;
-  }
-  if (upb_MessageDef_ExtensionRangeCount(m)) {
-    out |= kUpb_MessageModifier_IsExtendable;
-  }
-  return out;
-}
-
-/******************************************************************************/
-
 bool upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e, upb_Arena* a,
                                    upb_StringView* out) {
   DescState s;
@@ -174,7 +135,7 @@ bool upb_MiniDescriptor_EncodeField(const upb_FieldDef* f, upb_Arena* a,
 
   const upb_FieldType type = upb_FieldDef_Type(f);
   const int number = upb_FieldDef_Number(f);
-  const uint64_t modifiers = upb_Field_Modifiers(f);
+  const uint64_t modifiers = _upb_FieldDef_Modifiers(f);
 
   if (!upb_DescState_Grow(&s, a)) return false;
   s.ptr = upb_MtDataEncoder_PutField(&s.e, s.ptr, type, number, modifiers);
@@ -203,14 +164,15 @@ bool upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m, upb_Arena* a,
   }
 
   if (!upb_DescState_Grow(&s, a)) return false;
-  s.ptr = upb_MtDataEncoder_StartMessage(&s.e, s.ptr, upb_Message_Modifiers(m));
+  s.ptr =
+      upb_MtDataEncoder_StartMessage(&s.e, s.ptr, _upb_MessageDef_Modifiers(m));
 
   const int field_count = upb_MessageDef_FieldCount(m);
   for (int i = 0; i < field_count; i++) {
     const upb_FieldDef* f = sorted ? sorted[i] : upb_MessageDef_Field(m, i);
     const upb_FieldType type = upb_FieldDef_Type(f);
     const int number = upb_FieldDef_Number(f);
-    const uint64_t modifiers = upb_Field_Modifiers(f);
+    const uint64_t modifiers = _upb_FieldDef_Modifiers(f);
 
     if (!upb_DescState_Grow(&s, a)) return false;
     s.ptr = upb_MtDataEncoder_PutField(&s.e, s.ptr, type, number, modifiers);
