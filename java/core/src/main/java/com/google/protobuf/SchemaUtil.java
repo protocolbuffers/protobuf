@@ -904,7 +904,6 @@ final class SchemaUtil {
   }
 
   /** Filters unrecognized enum values in a list. */
-  @CanIgnoreReturnValue
   static <UT, UB> UB filterUnknownEnumList(
       Object containerMessage,
       int number,
@@ -950,7 +949,6 @@ final class SchemaUtil {
   }
 
   /** Filters unrecognized enum values in a list. */
-  @CanIgnoreReturnValue
   static <UT, UB> UB filterUnknownEnumList(
       Object containerMessage,
       int number,

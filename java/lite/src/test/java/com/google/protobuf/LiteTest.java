@@ -50,15 +50,6 @@ import com.google.protobuf.UnittestLite.TestAllTypesLite.RepeatedGroup;
 import com.google.protobuf.UnittestLite.TestAllTypesLiteOrBuilder;
 import com.google.protobuf.UnittestLite.TestHugeFieldNumbersLite;
 import com.google.protobuf.UnittestLite.TestNestedExtensionLite;
-import map_lite_test.MapTestProto.TestMap;
-import map_lite_test.MapTestProto.TestMap.MessageValue;
-import protobuf_unittest.NestedExtensionLite;
-import protobuf_unittest.NonNestedExtensionLite;
-import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Bar;
-import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.BarPrime;
-import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Foo;
-import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestOneofEquals;
-import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestRecursiveOneof;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -71,6 +62,15 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import junit.framework.TestCase;
+import map_lite_test.MapTestProto.TestMap;
+import map_lite_test.MapTestProto.TestMap.MessageValue;
+import protobuf_unittest.NestedExtensionLite;
+import protobuf_unittest.NonNestedExtensionLite;
+import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Bar;
+import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.BarPrime;
+import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.Foo;
+import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestOneofEquals;
+import protobuf_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestRecursiveOneof;
 
 /**
  * Test lite runtime.
@@ -180,28 +180,27 @@ public class LiteTest extends TestCase {
   }
 
   public void testMemoization() throws Exception {
-    GeneratedMessageLite<?, ?> message = TestUtilLite.getAllLiteExtensionsSet();
-
-    // This built message should not be mutable
-    assertThat(message.isMutable()).isFalse();
+    TestAllExtensionsLite message = TestUtilLite.getAllLiteExtensionsSet();
 
     // Test serialized size is memoized
-    assertThat(message.getMemoizedSerializedSize())
-        .isEqualTo(GeneratedMessageLite.UNINITIALIZED_SERIALIZED_SIZE);
+    assertEquals(
+      GeneratedMessageLite.UNINITIALIZED_SERIALIZED_SIZE,
+      message.getMemoizedSerializedSize());
     int size = message.getSerializedSize();
-    assertThat(size).isGreaterThan(0);
-    assertThat(message.getMemoizedSerializedSize()).isEqualTo(size);
+    assertTrue(size > 0);
+    assertEquals(size, message.getMemoizedSerializedSize());
     message.clearMemoizedSerializedSize();
-    assertThat(message.getMemoizedSerializedSize())
-        .isEqualTo(GeneratedMessageLite.UNINITIALIZED_SERIALIZED_SIZE);
+    assertEquals(
+      GeneratedMessageLite.UNINITIALIZED_SERIALIZED_SIZE,
+      message.getMemoizedSerializedSize());
 
     // Test hashCode is memoized
-    assertThat(message.hashCodeIsNotMemoized()).isTrue();
+    assertTrue(message.hashCodeIsNotMemoized());
     int hashCode = message.hashCode();
-    assertThat(message.hashCodeIsNotMemoized()).isFalse();
-    assertThat(message.getMemoizedHashCode()).isEqualTo(hashCode);
+    assertFalse(message.hashCodeIsNotMemoized());
+    assertEquals(hashCode, message.getMemoizedHashCode());
     message.clearMemoizedHashCode();
-    assertThat(message.hashCodeIsNotMemoized()).isTrue();
+    assertTrue(message.hashCodeIsNotMemoized());
 
     // Test isInitialized is memoized
     Field memo = message.getClass().getDeclaredField("memoizedIsInitialized");

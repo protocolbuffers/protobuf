@@ -498,7 +498,6 @@ public final class UnknownFieldSetLite {
     return this;
   }
 
-  @CanIgnoreReturnValue
   UnknownFieldSetLite mergeFrom(UnknownFieldSetLite other) {
     if (other.equals(getDefaultInstance())) {
       return this;
