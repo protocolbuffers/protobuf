@@ -60,11 +60,8 @@ int upb_EnumDef_ValueCount(const upb_EnumDef* e);
 
 upb_EnumDef* _upb_EnumDef_At(const upb_EnumDef* e, int i);
 bool _upb_EnumDef_Insert(upb_EnumDef* e, upb_EnumValueDef* v, upb_Arena* a);
+bool _upb_EnumDef_IsSorted(const upb_EnumDef* e);
 const upb_MiniTable_Enum* _upb_EnumDef_MiniTable(const upb_EnumDef* e);
-
-// Builds a mini descriptor, returns false if OOM.
-bool _upb_EnumDef_MiniDescriptor(const upb_EnumDef* e, upb_Arena* a,
-                                 upb_StringView* out);
 
 // Allocate and initialize an array of |n| enum defs.
 upb_EnumDef* _upb_EnumDefs_New(upb_DefBuilder* ctx, int n,

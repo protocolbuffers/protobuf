@@ -59,17 +59,19 @@ const char* _upb_DefBuilder_FullToShort(const char* fullname) {
   }
 }
 
+void _upb_DefBuilder_FailJmp(upb_DefBuilder* ctx) { UPB_LONGJMP(ctx->err, 1); }
+
 void _upb_DefBuilder_Errf(upb_DefBuilder* ctx, const char* fmt, ...) {
   va_list argp;
   va_start(argp, fmt);
   upb_Status_VSetErrorFormat(ctx->status, fmt, argp);
   va_end(argp);
-  UPB_LONGJMP(ctx->err, 1);
+  _upb_DefBuilder_FailJmp(ctx);
 }
 
 void _upb_DefBuilder_OomErr(upb_DefBuilder* ctx) {
   upb_Status_SetErrorMessage(ctx->status, "out of memory");
-  UPB_LONGJMP(ctx->err, 1);
+  _upb_DefBuilder_FailJmp(ctx);
 }
 
 const char* _upb_DefBuilder_MakeFullName(upb_DefBuilder* ctx,
@@ -114,7 +116,7 @@ const void* _upb_DefBuilder_ResolveAny(upb_DefBuilder* ctx,
   if (sym.data[0] == '.') {
     /* Symbols starting with '.' are absolute, so we do a single lookup.
      * Slice to omit the leading '.' */
-    if (!_upb_DefPool_LookupAny2(ctx->symtab, sym.data + 1, sym.size - 1, &v)) {
+    if (!_upb_DefPool_LookupSym(ctx->symtab, sym.data + 1, sym.size - 1, &v)) {
       goto notfound;
     }
   } else {
@@ -130,7 +132,7 @@ const void* _upb_DefBuilder_ResolveAny(upb_DefBuilder* ctx,
       }
       memcpy(p, sym.data, sym.size);
       p += sym.size;
-      if (_upb_DefPool_LookupAny2(ctx->symtab, tmp, p - tmp, &v)) {
+      if (_upb_DefPool_LookupSym(ctx->symtab, tmp, p - tmp, &v)) {
         break;
       }
       if (!remove_component(tmp, &baselen)) {

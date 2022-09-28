@@ -121,20 +121,17 @@ static uint64_t upb_Message_Modifiers(const upb_MessageDef* m) {
 
 /******************************************************************************/
 
-// Sort by field number.
-static int upb_MiniDescriptor_CompareFields(const void* a, const void* b) {
-  const upb_FieldDef* A = *(void**)a;
-  const upb_FieldDef* B = *(void**)b;
-  if (upb_FieldDef_Number(A) < upb_FieldDef_Number(B)) return -1;
-  if (upb_FieldDef_Number(A) > upb_FieldDef_Number(B)) return 1;
-  return 0;
-}
-
-bool _upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e,
-                                    const upb_EnumValueDef** sorted,
-                                    upb_Arena* a, upb_StringView* out) {
+bool upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e, upb_Arena* a,
+                                   upb_StringView* out) {
   DescState s;
   upb_DescState_Init(&s);
+
+  const upb_EnumValueDef** sorted = NULL;
+  if (!_upb_EnumDef_IsSorted(e)) {
+    sorted = _upb_EnumValueDefs_Sorted(upb_EnumDef_Value(e, 0),
+                                       upb_EnumDef_ValueCount(e), a);
+    if (!sorted) return false;
+  }
 
   upb_MtDataEncoder_StartEnum(&s.e);
 
@@ -165,8 +162,8 @@ bool _upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e,
   return true;
 }
 
-bool _upb_MiniDescriptor_EncodeField(const upb_FieldDef* f, upb_Arena* a,
-                                     upb_StringView* out) {
+bool upb_MiniDescriptor_EncodeField(const upb_FieldDef* f, upb_Arena* a,
+                                    upb_StringView* out) {
   UPB_ASSERT(upb_FieldDef_IsExtension(f));
 
   DescState s;
@@ -190,28 +187,27 @@ bool _upb_MiniDescriptor_EncodeField(const upb_FieldDef* f, upb_Arena* a,
   return true;
 }
 
-bool _upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m, upb_Arena* a,
-                                       upb_StringView* out) {
+// If the field numbers happen to be defined in ascending order then |sorted|
+// should be NULL. Otherwise it must point to an array containing pointers to
+// the field defs in sorted order.
+bool upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m, upb_Arena* a,
+                                      upb_StringView* out) {
   DescState s;
   upb_DescState_Init(&s);
 
-  // Make a copy.
-  const size_t field_count = upb_MessageDef_FieldCount(m);
-  const upb_FieldDef** sorted =
-      (const upb_FieldDef**)upb_Arena_Malloc(a, field_count * sizeof(void*));
-  if (!sorted) return false;
-
-  // Sort the copy.
-  for (size_t i = 0; i < field_count; i++) {
-    sorted[i] = upb_MessageDef_Field(m, i);
+  const upb_FieldDef** sorted = NULL;
+  if (!_upb_MessageDef_IsSorted(m)) {
+    sorted = _upb_FieldDefs_Sorted(upb_MessageDef_Field(m, 0),
+                                   upb_MessageDef_FieldCount(m), a);
+    if (!sorted) return false;
   }
-  qsort(sorted, field_count, sizeof(void*), upb_MiniDescriptor_CompareFields);
 
   if (!upb_DescState_Grow(&s, a)) return false;
   s.ptr = upb_MtDataEncoder_StartMessage(&s.e, s.ptr, upb_Message_Modifiers(m));
 
-  for (size_t i = 0; i < field_count; i++) {
-    const upb_FieldDef* f = sorted[i];
+  const int field_count = upb_MessageDef_FieldCount(m);
+  for (int i = 0; i < field_count; i++) {
+    const upb_FieldDef* f = sorted ? sorted[i] : upb_MessageDef_Field(m, i);
     const upb_FieldType type = upb_FieldDef_Type(f);
     const int number = upb_FieldDef_Number(f);
     const uint64_t modifiers = upb_Field_Modifiers(f);
@@ -241,21 +237,4 @@ bool _upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m, upb_Arena* a,
   out->data = s.buf;
   out->size = s.ptr - s.buf;
   return true;
-}
-
-/******************************************************************************/
-
-bool upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e, upb_Arena* a,
-                                   upb_StringView* out) {
-  return _upb_EnumDef_MiniDescriptor(e, a, out);
-}
-
-bool upb_MiniDescriptor_EncodeField(const upb_FieldDef* f, upb_Arena* a,
-                                    upb_StringView* out) {
-  return _upb_MiniDescriptor_EncodeField(f, a, out);
-}
-
-bool upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m, upb_Arena* a,
-                                      upb_StringView* out) {
-  return _upb_MiniDescriptor_EncodeMessage(m, a, out);
 }

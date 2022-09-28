@@ -46,6 +46,27 @@ upb_EnumValueDef* _upb_EnumValueDef_At(const upb_EnumValueDef* v, int i) {
   return (upb_EnumValueDef*)&v[i];
 }
 
+static int _upb_EnumValueDef_Compare(const void* p1, const void* p2) {
+  const uint32_t v1 = (*(const upb_EnumValueDef**)p1)->number;
+  const uint32_t v2 = (*(const upb_EnumValueDef**)p2)->number;
+  return (v1 < v2) ? -1 : (v1 > v2);
+}
+
+const upb_EnumValueDef** _upb_EnumValueDefs_Sorted(const upb_EnumValueDef* v,
+                                                   int n, upb_Arena* a) {
+  // TODO: Try to replace this arena alloc with a persistent scratch buffer.
+  upb_EnumValueDef** out =
+      (upb_EnumValueDef**)upb_Arena_Malloc(a, n * sizeof(void*));
+  if (!out) return NULL;
+
+  for (int i = 0; i < n; i++) {
+    out[i] = (upb_EnumValueDef*)&v[i];
+  }
+  qsort(out, n, sizeof(void*), _upb_EnumValueDef_Compare);
+
+  return (const upb_EnumValueDef**)out;
+}
+
 const google_protobuf_EnumValueOptions* upb_EnumValueDef_Options(
     const upb_EnumValueDef* v) {
   return v->opts;

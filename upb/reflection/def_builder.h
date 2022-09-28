@@ -69,6 +69,9 @@ struct upb_DefBuilder {
 
 extern const char* kUpbDefOptDefault;
 
+// ctx->status has already been set elsewhere so just fail/longjmp()
+UPB_NORETURN void _upb_DefBuilder_FailJmp(upb_DefBuilder* ctx);
+
 UPB_NORETURN void _upb_DefBuilder_Errf(upb_DefBuilder* ctx, const char* fmt,
                                        ...) UPB_PRINTF(2, 3);
 UPB_NORETURN void _upb_DefBuilder_OomErr(upb_DefBuilder* ctx);
@@ -105,13 +108,9 @@ UPB_INLINE void* _upb_DefBuilder_Alloc(upb_DefBuilder* ctx, size_t bytes) {
 // adding, so we know which entries to remove if building this file fails.
 UPB_INLINE void _upb_DefBuilder_Add(upb_DefBuilder* ctx, const char* name,
                                     upb_value v) {
-  // TODO: table should support an operation "tryinsert" to avoid the double
-  // lookup.
-  if (_upb_DefPool_Contains(ctx->symtab, name)) {
-    _upb_DefBuilder_Errf(ctx, "duplicate symbol '%s'", name);
-  }
-  bool ok = _upb_DefPool_Insert(ctx->symtab, name, v);
-  if (!ok) _upb_DefBuilder_OomErr(ctx);
+  upb_StringView sym = {.data = name, .size = strlen(name)};
+  bool ok = _upb_DefPool_InsertSym(ctx->symtab, sym, v, ctx->status);
+  if (!ok) _upb_DefBuilder_FailJmp(ctx);
 }
 
 UPB_INLINE upb_Arena* _upb_DefBuilder_Arena(const upb_DefBuilder* ctx) {

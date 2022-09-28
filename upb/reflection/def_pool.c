@@ -27,8 +27,6 @@
 
 #include "upb/reflection/def_pool.h"
 
-#include <stdio.h>
-
 #include "upb/reflection/def_builder.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/enum_def.h"
@@ -47,11 +45,14 @@ struct upb_DefPool {
   upb_strtable files;  // file_name -> (upb_FileDef*)
   upb_inttable exts;   // (upb_MiniTable_Extension*) -> (upb_FieldDef*)
   upb_ExtensionRegistry* extreg;
+  void* scratch_data;
+  size_t scratch_size;
   size_t bytes_loaded;
 };
 
 void upb_DefPool_Free(upb_DefPool* s) {
   upb_Arena_Free(s->arena);
+  upb_gfree(s->scratch_data);
   upb_gfree(s);
 }
 
@@ -61,6 +62,10 @@ upb_DefPool* upb_DefPool_New(void) {
 
   s->arena = upb_Arena_New();
   s->bytes_loaded = 0;
+
+  s->scratch_size = 240;
+  s->scratch_data = upb_gmalloc(s->scratch_size);
+  if (!s->scratch_data) goto err;
 
   if (!upb_strtable_init(&s->syms, 32, s->arena)) goto err;
   if (!upb_strtable_init(&s->files, 4, s->arena)) goto err;
@@ -72,45 +77,41 @@ upb_DefPool* upb_DefPool_New(void) {
   return s;
 
 err:
-  upb_Arena_Free(s->arena);
-  upb_gfree(s);
+  upb_DefPool_Free(s);
   return NULL;
 }
 
-bool _upb_DefPool_Contains(const upb_DefPool* s, const char* sym) {
-  return upb_strtable_lookup(&s->syms, sym, NULL);
-}
-
-bool _upb_DefPool_Insert(upb_DefPool* s, const char* sym, upb_value v) {
-  return _upb_DefPool_Insert2(s, sym, strlen(sym), v);
-}
-
-bool _upb_DefPool_Insert2(upb_DefPool* s, const char* sym, size_t size,
-                          upb_value v) {
-  return upb_strtable_insert(&s->syms, sym, size, v, s->arena);
-}
-
 bool _upb_DefPool_InsertExt(upb_DefPool* s, const upb_MiniTable_Extension* ext,
-                            upb_FieldDef* f, upb_Arena* a) {
+                            upb_FieldDef* f) {
   return upb_inttable_insert(&s->exts, (uintptr_t)ext, upb_value_constptr(f),
-                             a);
+                             s->arena);
 }
 
-static const void* _upb_DefPool_Lookup(const upb_DefPool* s, const char* sym,
-                                       upb_deftype_t type) {
-  return _upb_DefPool_Lookup2(s, sym, strlen(sym), type);
+bool _upb_DefPool_InsertSym(upb_DefPool* s, upb_StringView sym, upb_value v,
+                            upb_Status* status) {
+  // TODO: table should support an operation "tryinsert" to avoid the double
+  // lookup.
+  if (upb_strtable_lookup2(&s->syms, sym.data, sym.size, NULL)) {
+    upb_Status_SetErrorFormat(status, "duplicate symbol '%s'", sym.data);
+    return false;
+  }
+  if (!upb_strtable_insert(&s->syms, sym.data, sym.size, v, s->arena)) {
+    upb_Status_SetErrorMessage(status, "out of memory");
+    return false;
+  }
+  return true;
 }
 
-const void* _upb_DefPool_Lookup2(const upb_DefPool* s, const char* sym,
-                                 size_t size, upb_deftype_t type) {
+static const void* _upb_DefPool_Unpack(const upb_DefPool* s, const char* sym,
+                                       size_t size, upb_deftype_t type) {
   upb_value v;
   return upb_strtable_lookup2(&s->syms, sym, size, &v)
              ? _upb_DefType_Unpack(v, type)
              : NULL;
 }
 
-bool _upb_DefPool_LookupAny2(const upb_DefPool* s, const char* sym, size_t size,
-                             upb_value* v) {
+bool _upb_DefPool_LookupSym(const upb_DefPool* s, const char* sym, size_t size,
+                            upb_value* v) {
   return upb_strtable_lookup2(&s->syms, sym, size, v);
 }
 
@@ -118,24 +119,32 @@ upb_ExtensionRegistry* _upb_DefPool_ExtReg(const upb_DefPool* s) {
   return s->extreg;
 }
 
+void** _upb_DefPool_ScratchData(const upb_DefPool* s) {
+  return (void**)&s->scratch_data;
+}
+
+size_t* _upb_DefPool_ScratchSize(const upb_DefPool* s) {
+  return (size_t*)&s->scratch_size;
+}
+
 const upb_MessageDef* upb_DefPool_FindMessageByName(const upb_DefPool* s,
                                                     const char* sym) {
-  return _upb_DefPool_Lookup(s, sym, UPB_DEFTYPE_MSG);
+  return _upb_DefPool_Unpack(s, sym, strlen(sym), UPB_DEFTYPE_MSG);
 }
 
 const upb_MessageDef* upb_DefPool_FindMessageByNameWithSize(
     const upb_DefPool* s, const char* sym, size_t len) {
-  return _upb_DefPool_Lookup2(s, sym, len, UPB_DEFTYPE_MSG);
+  return _upb_DefPool_Unpack(s, sym, len, UPB_DEFTYPE_MSG);
 }
 
 const upb_EnumDef* upb_DefPool_FindEnumByName(const upb_DefPool* s,
                                               const char* sym) {
-  return _upb_DefPool_Lookup(s, sym, UPB_DEFTYPE_ENUM);
+  return _upb_DefPool_Unpack(s, sym, strlen(sym), UPB_DEFTYPE_ENUM);
 }
 
 const upb_EnumValueDef* upb_DefPool_FindEnumByNameval(const upb_DefPool* s,
                                                       const char* sym) {
-  return _upb_DefPool_Lookup(s, sym, UPB_DEFTYPE_ENUMVAL);
+  return _upb_DefPool_Unpack(s, sym, strlen(sym), UPB_DEFTYPE_ENUMVAL);
 }
 
 const upb_FileDef* upb_DefPool_FindFileByName(const upb_DefPool* s,
@@ -182,12 +191,12 @@ const upb_FieldDef* upb_DefPool_FindExtensionByName(const upb_DefPool* s,
 
 const upb_ServiceDef* upb_DefPool_FindServiceByName(const upb_DefPool* s,
                                                     const char* name) {
-  return _upb_DefPool_Lookup(s, name, UPB_DEFTYPE_SERVICE);
+  return _upb_DefPool_Unpack(s, name, strlen(name), UPB_DEFTYPE_SERVICE);
 }
 
 const upb_ServiceDef* upb_DefPool_FindServiceByNameWithSize(
     const upb_DefPool* s, const char* name, size_t size) {
-  return _upb_DefPool_Lookup2(s, name, size, UPB_DEFTYPE_SERVICE);
+  return _upb_DefPool_Unpack(s, name, size, UPB_DEFTYPE_SERVICE);
 }
 
 const upb_FileDef* upb_DefPool_FindFileContainingSymbol(const upb_DefPool* s,
@@ -274,6 +283,12 @@ static const upb_FileDef* _upb_DefPool_AddFile(
     upb_DefPool* s, const google_protobuf_FileDescriptorProto* file_proto,
     const upb_MiniTable_File* layout, upb_Status* status) {
   const upb_StringView name = google_protobuf_FileDescriptorProto_name(file_proto);
+
+  if (name.size == 0) {
+    upb_Status_SetErrorFormat(status,
+                              "missing name in google_protobuf_FileDescriptorProto");
+    return NULL;
+  }
 
   // Determine whether we already know about this file.
   {

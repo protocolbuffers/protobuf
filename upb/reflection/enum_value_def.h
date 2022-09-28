@@ -58,6 +58,9 @@ upb_EnumValueDef* _upb_EnumValueDefs_New(
     const google_protobuf_EnumValueDescriptorProto* const* protos, upb_EnumDef* e,
     bool* is_sorted);
 
+const upb_EnumValueDef** _upb_EnumValueDefs_Sorted(const upb_EnumValueDef* v,
+                                                   int n, upb_Arena* a);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

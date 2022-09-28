@@ -78,20 +78,28 @@ upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f);
 // EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
 upb_FieldDef* _upb_FieldDef_At(const upb_FieldDef* f, int i);
+
 const upb_MiniTable_Extension* _upb_FieldDef_ExtensionMiniTable(
     const upb_FieldDef* f);
+bool _upb_FieldDef_IsClosedEnum(const upb_FieldDef* f);
 bool _upb_FieldDef_IsProto3Optional(const upb_FieldDef* f);
+int _upb_FieldDef_LayoutIndex(const upb_FieldDef* f);
+
+void _upb_FieldDef_MakeLayout(upb_DefBuilder* ctx, const upb_MessageDef* m);
+
+void _upb_FieldDef_Resolve(upb_DefBuilder* ctx, const char* prefix,
+                           upb_FieldDef* f);
 
 // Allocate and initialize an array of |n| field defs.
 upb_FieldDef* _upb_FieldDefs_New(
     upb_DefBuilder* ctx, int n,
     const google_protobuf_FieldDescriptorProto* const* protos, const char* prefix,
-    upb_MessageDef* m, bool is_ext);
+    upb_MessageDef* m, bool* is_sorted);
 
-void _upb_FieldDef_Resolve(upb_DefBuilder* ctx, const char* prefix,
-                           upb_FieldDef* f);
-
-void _upb_FieldDef_MakeLayout(upb_DefBuilder* ctx, const upb_MessageDef* m);
+// Allocate and return a list of pointers to the |n| field defs in |ff|,
+// sorted by field number.
+const upb_FieldDef** _upb_FieldDefs_Sorted(const upb_FieldDef* f, int n,
+                                           upb_Arena* a);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -990,7 +990,7 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
 
 done:
   *buf = decoder.vec.data;
-  *buf_size = decoder.vec.capacity / sizeof(*decoder.vec.data);
+  *buf_size = decoder.vec.capacity * sizeof(*decoder.vec.data);
   return decoder.table;
 }
 

@@ -50,19 +50,6 @@ bool upb_MiniDescriptor_EncodeField(const upb_FieldDef* f, upb_Arena* a,
 bool upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m, upb_Arena* a,
                                       upb_StringView* out);
 
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
-
-// Creates and returns a mini descriptor string for an enum, or NULL on error.
-// If the values in the enum happen to be defined in ascending order (when cast
-// to uint32_t) then |sorted| should be NULL. Otherwise it must point to an
-// array containing pointers to the enum value defs in sorted order.
-bool _upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e,
-                                    const upb_EnumValueDef** sorted,
-                                    upb_Arena* a, upb_StringView* out);
-
-bool _upb_MiniDescriptor_EncodeField(const upb_FieldDef* f, upb_Arena* a,
-                                     upb_StringView* out);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

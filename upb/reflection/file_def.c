@@ -192,7 +192,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   const upb_StringView* strs;
   const int32_t* public_deps;
   const int32_t* weak_deps;
-  size_t i, n;
+  size_t n;
 
   file->symtab = ctx->symtab;
 
@@ -261,7 +261,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   file->dep_count = n;
   file->deps = _upb_DefBuilder_Alloc(ctx, sizeof(*file->deps) * n);
 
-  for (i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     upb_StringView str = strs[i];
     file->deps[i] =
         upb_DefPool_FindFileByNameWithSize(ctx->symtab, str.data, str.size);
@@ -278,7 +278,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   file->public_deps =
       _upb_DefBuilder_Alloc(ctx, sizeof(*file->public_deps) * n);
   int32_t* mutable_public_deps = (int32_t*)file->public_deps;
-  for (i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     if (public_deps[i] >= file->dep_count) {
       _upb_DefBuilder_Errf(ctx, "public_dep %d is out of range",
                            (int)public_deps[i]);
@@ -290,7 +290,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   file->weak_dep_count = n;
   file->weak_deps = _upb_DefBuilder_Alloc(ctx, sizeof(*file->weak_deps) * n);
   int32_t* mutable_weak_deps = (int32_t*)file->weak_deps;
-  for (i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; i++) {
     if (weak_deps[i] >= file->dep_count) {
       _upb_DefBuilder_Errf(ctx, "weak_dep %d is out of range",
                            (int)weak_deps[i]);
@@ -307,7 +307,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   exts = google_protobuf_FileDescriptorProto_extension(file_proto, &n);
   file->top_lvl_ext_count = n;
   file->top_lvl_exts =
-      _upb_FieldDefs_New(ctx, n, exts, file->package, NULL, true);
+      _upb_FieldDefs_New(ctx, n, exts, file->package, NULL, NULL);
 
   // Create messages.
   msgs = google_protobuf_FileDescriptorProto_message_type(file_proto, &n);
@@ -320,15 +320,22 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   file->services = _upb_ServiceDefs_New(ctx, n, services);
 
   // Now that all names are in the table, build layouts and resolve refs.
-  for (i = 0; i < (size_t)file->top_lvl_ext_count; i++) {
-    _upb_FieldDef_Resolve(
-        ctx, file->package,
-        (upb_FieldDef*)upb_FileDef_TopLevelExtension(file, i));
-  }
 
-  for (i = 0; i < (size_t)file->top_lvl_msg_count; i++) {
+  for (int i = 0; i < file->top_lvl_msg_count; i++) {
     upb_MessageDef* m = (upb_MessageDef*)upb_FileDef_TopLevelMessage(file, i);
     _upb_MessageDef_Resolve(ctx, m);
+  }
+
+  for (int i = 0; i < file->top_lvl_ext_count; i++) {
+    upb_FieldDef* f = (upb_FieldDef*)upb_FileDef_TopLevelExtension(file, i);
+    _upb_FieldDef_Resolve(ctx, file->package, f);
+  }
+
+  if (!ctx->layout) {
+    for (int i = 0; i < file->top_lvl_msg_count; i++) {
+      upb_MessageDef* m = (upb_MessageDef*)upb_FileDef_TopLevelMessage(file, i);
+      _upb_MessageDef_LinkMiniTable(ctx, m);
+    }
   }
 
   if (file->ext_count) {

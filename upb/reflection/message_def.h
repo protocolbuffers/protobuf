@@ -157,6 +157,10 @@ bool _upb_MessageDef_Insert(upb_MessageDef* m, const char* name, size_t size,
                             upb_value v, upb_Arena* a);
 void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
                                  const upb_FieldDef* f);
+bool _upb_MessageDef_IsSorted(const upb_MessageDef* m);
+bool _upb_MessageDef_IsValidExtensionNumber(const upb_MessageDef* m, int n);
+void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
+                                   const upb_MessageDef* m);
 void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m);
 
 // Allocate and initialize an array of |n| message defs.
