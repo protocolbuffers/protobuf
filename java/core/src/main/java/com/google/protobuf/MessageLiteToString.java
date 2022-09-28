@@ -32,12 +32,15 @@ package com.google.protobuf;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.TreeMap;
 
 /** Helps generate {@link String} representations of {@link MessageLite} protos. */
 final class MessageLiteToString {
@@ -46,6 +49,11 @@ final class MessageLiteToString {
   private static final String BUILDER_LIST_SUFFIX = "OrBuilderList";
   private static final String MAP_SUFFIX = "Map";
   private static final String BYTES_SUFFIX = "Bytes";
+  private static final char[] INDENT_BUFFER = new char[80];
+
+  static {
+    Arrays.fill(INDENT_BUFFER, ' ');
+  }
 
   private MessageLiteToString() {
     // Classes which are not intended to be instantiated should be made non-instantiable with a
@@ -76,37 +84,51 @@ final class MessageLiteToString {
     // Build a map of method name to method. We're looking for methods like getFoo(), hasFoo(),
     // getFooList() and getFooMap() which might be useful for building an object's string
     // representation.
-    Map<String, Method> nameToNoArgMethod = new HashMap<>();
-    Map<String, Method> nameToMethod = new HashMap<>();
-    Set<String> getters = new TreeSet<>();
+    Set<String> setters = new HashSet<>();
+    Map<String, Method> hazzers = new HashMap<>();
+    Map<String, Method> getters = new TreeMap<>();
     for (Method method : messageLite.getClass().getDeclaredMethods()) {
-      nameToMethod.put(method.getName(), method);
-      if (method.getParameterTypes().length == 0) {
-        nameToNoArgMethod.put(method.getName(), method);
+      if (Modifier.isStatic(method.getModifiers())) {
+        continue;
+      }
+      if (method.getName().length() < 3) {
+        continue;
+      }
 
-        if (method.getName().startsWith("get")) {
-          getters.add(method.getName());
-        }
+      if (method.getName().startsWith("set")) {
+        setters.add(method.getName());
+        continue;
+      }
+
+      if (!Modifier.isPublic(method.getModifiers())) {
+        continue;
+      }
+
+      if (method.getParameterTypes().length != 0) {
+        continue;
+      }
+
+      if (method.getName().startsWith("has")) {
+        hazzers.put(method.getName(), method);
+      } else if (method.getName().startsWith("get")) {
+        getters.put(method.getName(), method);
       }
     }
 
-    for (String getter : getters) {
-      String suffix = getter.startsWith("get") ? getter.substring(3) : getter;
+    for (Entry<String, Method> getter : getters.entrySet()) {
+      String suffix = getter.getKey().substring(3);
       if (suffix.endsWith(LIST_SUFFIX)
           && !suffix.endsWith(BUILDER_LIST_SUFFIX)
           // Sometimes people have fields named 'list' that aren't repeated.
           && !suffix.equals(LIST_SUFFIX)) {
-        String camelCase =
-            suffix.substring(0, 1).toLowerCase()
-                + suffix.substring(1, suffix.length() - LIST_SUFFIX.length());
         // Try to reflectively get the value and toString() the field as if it were repeated. This
         // only works if the method names have not been proguarded out or renamed.
-        Method listMethod = nameToNoArgMethod.get(getter);
+        Method listMethod = getter.getValue();
         if (listMethod != null && listMethod.getReturnType().equals(List.class)) {
           printField(
               buffer,
               indent,
-              camelCaseToSnakeCase(camelCase),
+              suffix.substring(0, suffix.length() - LIST_SUFFIX.length()),
               GeneratedMessageLite.invokeOrDie(listMethod, messageLite));
           continue;
         }
@@ -114,12 +136,9 @@ final class MessageLiteToString {
       if (suffix.endsWith(MAP_SUFFIX)
           // Sometimes people have fields named 'map' that aren't maps.
           && !suffix.equals(MAP_SUFFIX)) {
-        String camelCase =
-            suffix.substring(0, 1).toLowerCase()
-                + suffix.substring(1, suffix.length() - MAP_SUFFIX.length());
         // Try to reflectively get the value and toString() the field as if it were a map. This only
         // works if the method names have not been proguarded out or renamed.
-        Method mapMethod = nameToNoArgMethod.get(getter);
+        Method mapMethod = getter.getValue();
         if (mapMethod != null
             && mapMethod.getReturnType().equals(Map.class)
             // Skip the deprecated getter method with no prefix "Map" when the field name ends with
@@ -130,29 +149,25 @@ final class MessageLiteToString {
           printField(
               buffer,
               indent,
-              camelCaseToSnakeCase(camelCase),
+              suffix.substring(0, suffix.length() - MAP_SUFFIX.length()),
               GeneratedMessageLite.invokeOrDie(mapMethod, messageLite));
           continue;
         }
       }
 
-      Method setter = nameToMethod.get("set" + suffix);
-      if (setter == null) {
+      if (!setters.contains("set" + suffix)) {
         continue;
       }
       if (suffix.endsWith(BYTES_SUFFIX)
-          && nameToNoArgMethod.containsKey(
-              "get" + suffix.substring(0, suffix.length() - "Bytes".length()))) {
+          && getters.containsKey("get" + suffix.substring(0, suffix.length() - "Bytes".length()))) {
         // Heuristic to skip bytes based accessors for string fields.
         continue;
       }
 
-      String camelCase = suffix.substring(0, 1).toLowerCase() + suffix.substring(1);
-
       // Try to reflectively get the value and toString() the field as if it were optional. This
       // only works if the method names have not been proguarded out or renamed.
-      Method getMethod = nameToNoArgMethod.get("get" + suffix);
-      Method hasMethod = nameToNoArgMethod.get("has" + suffix);
+      Method getMethod = getter.getValue();
+      Method hasMethod = hazzers.get("has" + suffix);
       // TODO(dweis): Fix proto3 semantics.
       if (getMethod != null) {
         Object value = GeneratedMessageLite.invokeOrDie(getMethod, messageLite);
@@ -162,7 +177,7 @@ final class MessageLiteToString {
                 : (Boolean) GeneratedMessageLite.invokeOrDie(hasMethod, messageLite);
         // TODO(dweis): This doesn't stop printing oneof case twice: value and enum style.
         if (hasValue) {
-          printField(buffer, indent, camelCaseToSnakeCase(camelCase), value);
+          printField(buffer, indent, suffix, value);
         }
         continue;
       }
@@ -218,10 +233,10 @@ final class MessageLiteToString {
    *
    * @param buffer the buffer to write to
    * @param indent the number of spaces the proto should be indented by
-   * @param name the field name (in lower underscore case)
+   * @param name the field name (in PascalCase)
    * @param object the object value of the field
    */
-  static final void printField(StringBuilder buffer, int indent, String name, Object object) {
+  static void printField(StringBuilder buffer, int indent, String name, Object object) {
     if (object instanceof List<?>) {
       List<?> list = (List<?>) object;
       for (Object entry : list) {
@@ -238,10 +253,8 @@ final class MessageLiteToString {
     }
 
     buffer.append('\n');
-    for (int i = 0; i < indent; i++) {
-      buffer.append(' ');
-    }
-    buffer.append(name);
+    indent(indent, buffer);
+    buffer.append(pascalCaseToSnakeCase(name));
 
     if (object instanceof String) {
       buffer.append(": \"").append(TextFormatEscaper.escapeText((String) object)).append('"');
@@ -251,9 +264,7 @@ final class MessageLiteToString {
       buffer.append(" {");
       reflectivePrintWithIndent((GeneratedMessageLite<?, ?>) object, buffer, indent + 2);
       buffer.append("\n");
-      for (int i = 0; i < indent; i++) {
-        buffer.append(' ');
-      }
+      indent(indent, buffer);
       buffer.append("}");
     } else if (object instanceof Map.Entry<?, ?>) {
       buffer.append(" {");
@@ -261,19 +272,33 @@ final class MessageLiteToString {
       printField(buffer, indent + 2, "key", entry.getKey());
       printField(buffer, indent + 2, "value", entry.getValue());
       buffer.append("\n");
-      for (int i = 0; i < indent; i++) {
-        buffer.append(' ');
-      }
+      indent(indent, buffer);
       buffer.append("}");
     } else {
       buffer.append(": ").append(object);
     }
   }
 
-  private static final String camelCaseToSnakeCase(String camelCase) {
+  private static void indent(int indent, StringBuilder buffer) {
+    while (indent > 0) {
+      int partialIndent = indent;
+      if (partialIndent > INDENT_BUFFER.length) {
+        partialIndent = INDENT_BUFFER.length;
+      }
+      buffer.append(INDENT_BUFFER, 0, partialIndent);
+      indent -= partialIndent;
+    }
+  }
+
+  private static String pascalCaseToSnakeCase(String pascalCase) {
+    if (pascalCase.isEmpty()) {
+      return pascalCase;
+    }
+
     StringBuilder builder = new StringBuilder();
-    for (int i = 0; i < camelCase.length(); i++) {
-      char ch = camelCase.charAt(i);
+    builder.append(Character.toLowerCase(pascalCase.charAt(0)));
+    for (int i = 1; i < pascalCase.length(); i++) {
+      char ch = pascalCase.charAt(i);
       if (Character.isUpperCase(ch)) {
         builder.append("_");
       }

@@ -60,6 +60,7 @@ abstract class ExtensionSchema<T extends FieldSet.FieldDescriptorLite<T>> {
    *     or UnknownFieldSetLite in lite runtime.
    */
   abstract <UT, UB> UB parseExtension(
+      Object containerMessage,
       Reader reader,
       Object extension,
       ExtensionRegistryLite extensionRegistry,
