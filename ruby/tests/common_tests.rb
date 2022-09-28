@@ -331,13 +331,13 @@ module CommonTests
     l.push :A
     l.push :B
     l.push :C
-    l.push :V0
+    l.push :v0
     assert l.count == 4
     assert_raise RangeError do
       l.push :D
     end
     assert l[0] == :A
-    assert l[3] == :V0
+    assert l[3] == :v0
 
     l.push 5
     assert l[4] == 5
@@ -719,12 +719,12 @@ module CommonTests
     assert proto_module::TestEnum::lookup(1) == :A
     assert proto_module::TestEnum::lookup(2) == :B
     assert proto_module::TestEnum::lookup(3) == :C
-    assert proto_module::TestEnum::lookup(4) == :V0
+    assert proto_module::TestEnum::lookup(4) == :v0
 
     assert proto_module::TestEnum::resolve(:A) == 1
     assert proto_module::TestEnum::resolve(:B) == 2
     assert proto_module::TestEnum::resolve(:C) == 3
-    assert proto_module::TestEnum::resolve(:V0) == 4
+    assert proto_module::TestEnum::resolve(:v0) == 4
   end
 
   def test_enum_const_get_helpers

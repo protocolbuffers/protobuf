@@ -87,10 +87,6 @@ Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT32.UnpackedInput.Unpacked
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT64.PackedInput.UnpackedOutput.ProtobufOutput
 Recommended.Proto3.ProtobufInput.ValidDataRepeated.UINT64.UnpackedInput.UnpackedOutput.ProtobufOutput
 Required.Proto3.JsonInput.EnumFieldNotQuoted
-Required.Proto3.JsonInput.EnumFieldWithAliasDifferentCase.JsonOutput
-Required.Proto3.JsonInput.EnumFieldWithAliasDifferentCase.ProtobufOutput
-Required.Proto3.JsonInput.EnumFieldWithAliasLowerCase.JsonOutput
-Required.Proto3.JsonInput.EnumFieldWithAliasLowerCase.ProtobufOutput
 Required.Proto3.JsonInput.Int32FieldLeadingZero
 Required.Proto3.JsonInput.Int32FieldNegativeWithLeadingZero
 Required.Proto3.JsonInput.Int32FieldPlusSign
