@@ -413,7 +413,10 @@ public final class DynamicMessage extends AbstractMessage {
 
       DynamicMessage result =
           new DynamicMessage(
-              type, fields.build(), Arrays.copyOf(oneofCases, oneofCases.length), unknownFields);
+              type,
+              fields.buildPartial(),
+              Arrays.copyOf(oneofCases, oneofCases.length),
+              unknownFields);
       return result;
     }
 

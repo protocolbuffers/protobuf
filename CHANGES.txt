@@ -1,3 +1,14 @@
+2022-09-27 version 21.7 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+  Java
+  * Refactoring java full runtime to reuse sub-message builders and prepare to
+    migrate parsing logic from parse constructor to builder.
+  * Move proto wireformat parsing functionality from the private "parsing
+    constructor" to the Builder class.
+  * Change the Lite runtime to prefer merging from the wireformat into mutable
+    messages rather than building up a new immutable object before merging. This
+    way results in fewer allocations and copy operations.
+  * Make message-type extensions merge from wire-format instead of building up instances and merging afterwards. This has much better performance.
+
 2022-09-13 version 21.6 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
 
 C++
