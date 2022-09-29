@@ -592,7 +592,7 @@ public final class TextFormat {
 
         case MESSAGE:
         case GROUP:
-          print((Message) value, generator);
+          print((MessageOrBuilder) value, generator);
           break;
       }
     }

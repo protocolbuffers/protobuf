@@ -35,6 +35,7 @@ import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.FieldMask;
+import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import java.util.ArrayList;
 import java.util.List;
@@ -304,9 +305,12 @@ final class FieldMaskTree {
           // so we don't create unnecessary empty messages.
           continue;
         }
-        String childPath = path.isEmpty() ? entry.getKey() : path + "." + entry.getKey();
-        Message.Builder childBuilder = ((Message) destination.getField(field)).toBuilder();
-        merge(entry.getValue(), childPath, (Message) source.getField(field), childBuilder, options);
+        // This is a mess because of java proto API 1 still hanging around.
+        Message.Builder childBuilder =
+            destination instanceof GeneratedMessage.Builder
+                ? destination.getFieldBuilder(field)
+                : ((Message) destination.getField(field)).toBuilder();
+        merge(entry.getValue(), path, (Message) source.getField(field), childBuilder, options);
         destination.setField(field, childBuilder.buildPartial());
         continue;
       }
