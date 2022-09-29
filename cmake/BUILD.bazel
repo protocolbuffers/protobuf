@@ -40,6 +40,9 @@ py_library(
     name = "staleness_test_lib",
     testonly = 1,
     srcs = ["staleness_test_lib.py"],
+    # This is public only for use by the staleness_test() macro. Please do not
+    # depend on this target directly.
+    visibility = ["//visibility:public"],
 )
 
 py_binary(
