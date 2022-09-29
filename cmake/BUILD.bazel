@@ -25,7 +25,7 @@
 
 load(
     ":build_defs.bzl",
-    "generated_file_staleness_test",
+    "staleness_test",
 )
 load(
     "//bazel:build_defs.bzl",
@@ -68,7 +68,7 @@ genrule(
     cmd = "cp $(SRCS) $(@D)/generated-in/google/protobuf",
 )
 
-generated_file_staleness_test(
+staleness_test(
     name = "test_generated_files",
     outs = [
         "CMakeLists.txt",

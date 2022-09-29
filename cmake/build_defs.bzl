@@ -25,7 +25,7 @@
 
 """Bazel support functions related to CMake support."""
 
-def generated_file_staleness_test(name, outs, generated_pattern, **kwargs):
+def staleness_test(name, outs, generated_pattern, **kwargs):
     """Tests that checked-in file(s) match the contents of generated file(s).
 
     The resulting test will verify that all output files exist and have the
