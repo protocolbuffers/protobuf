@@ -32,7 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/descriptor.h>
+#include "google/protobuf/descriptor.h"
 
 #include <algorithm>
 #include <array>
@@ -46,9 +46,9 @@
 #include <type_traits>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/base/dynamic_annotations.h"
@@ -58,25 +58,25 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/stubs/stringprintf.h>
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
-#include <google/protobuf/any.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/descriptor_database.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/io/strtod.h>
-#include <google/protobuf/io/tokenizer.h>
-#include <google/protobuf/port.h>
-#include <google/protobuf/text_format.h>
-#include <google/protobuf/unknown_field_set.h>
+#include "google/protobuf/any.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/descriptor_database.h"
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/io/strtod.h"
+#include "google/protobuf/io/tokenizer.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/text_format.h"
+#include "google/protobuf/unknown_field_set.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -1633,7 +1633,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
     // EnumDescriptor (it's not a part of the enum as originally defined), but
     // we do insert it into the table so that we can return the same pointer
     // later.
-    std::string enum_value_name = StringPrintf(
+    std::string enum_value_name = absl::StrFormat(
         "UNKNOWN_ENUM_VALUE_%s_%d", parent->name().c_str(), number);
     auto* pool = DescriptorPool::generated_pool();
     auto* tables = const_cast<DescriptorPool::Tables*>(pool->tables_.get());
@@ -2505,12 +2505,7 @@ std::string FieldDescriptor::DefaultValueAsString(
 // CopyTo methods ====================================================
 
 void FileDescriptor::CopyTo(FileDescriptorProto* proto) const {
-  proto->set_name(name());
-  if (!package().empty()) proto->set_package(package());
-  // TODO(liujisi): Also populate when syntax="proto2".
-  if (syntax() == SYNTAX_PROTO3
-  ) proto->set_syntax(SyntaxName(syntax()));
-
+  CopyHeadingTo(proto);
 
   for (int i = 0; i < dependency_count(); i++) {
     proto->add_dependency(dependency(i)->name());
@@ -2539,6 +2534,19 @@ void FileDescriptor::CopyTo(FileDescriptorProto* proto) const {
 
   if (&options() != &FileOptions::default_instance()) {
     proto->mutable_options()->CopyFrom(options());
+  }
+}
+
+void FileDescriptor::CopyHeadingTo(FileDescriptorProto* proto) const {
+  proto->set_name(name());
+  if (!package().empty()) {
+    proto->set_package(package());
+  }
+
+  // TODO(liujisi): Also populate when syntax="proto2".
+  if (syntax() == SYNTAX_PROTO3
+  ) {
+    proto->set_syntax(SyntaxName(syntax()));
   }
 }
 
@@ -2900,7 +2908,7 @@ class SourceLocationCommentPrinter {
   // the DebugString() output.
   std::string FormatComment(const std::string& comment_text) {
     std::string stripped_comment = comment_text;
-    StripWhitespace(&stripped_comment);
+    absl::StripAsciiWhitespace(&stripped_comment);
     std::vector<std::string> lines = absl::StrSplit(stripped_comment, "\n");
     std::string output;
     for (const std::string& line : lines) {
@@ -4205,7 +4213,7 @@ void DescriptorBuilder::AddWarning(
 
 bool DescriptorBuilder::IsInPackage(const FileDescriptor* file,
                                     const std::string& package_name) {
-  return HasPrefixString(file->package(), package_name) &&
+  return absl::StartsWith(file->package(), package_name) &&
          (file->package().size() == package_name.size() ||
           file->package()[package_name.size()] == '.');
 }
@@ -7675,6 +7683,27 @@ bool DescriptorBuilder::OptionInterpreter::ExamineIfOptionIsSet(
   return true;
 }
 
+namespace {
+// Helpers for method below
+
+template <typename T> std::string ValueOutOfRange(
+    absl::string_view type_name, absl::string_view option_name) {
+  return absl::StrFormat(
+    "Value out of range, %d to %d, for %s option \"%s\".", \
+    std::numeric_limits<T>::min(), std::numeric_limits<T>::max(),
+    type_name, option_name);
+}
+
+template <typename T> std::string ValueMustBeInt(
+    absl::string_view type_name, absl::string_view option_name) {
+  return absl::StrFormat(
+    "Value must be integer, from %d to %d, for %s option \"%s\".", \
+    std::numeric_limits<T>::min(), std::numeric_limits<T>::max(),
+    type_name, option_name);
+}
+
+} // namespace
+
 bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
     const FieldDescriptor* option_field, UnknownFieldSet* unknown_fields) {
   // We switch on the CppType to validate.
@@ -7683,8 +7712,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       if (uninterpreted_option_->has_positive_int_value()) {
         if (uninterpreted_option_->positive_int_value() >
             static_cast<uint64_t>(std::numeric_limits<int32_t>::max())) {
-          return AddValueError("Value out of range for int32 option \"" +
-                               option_field->full_name() + "\".");
+          return AddValueError(ValueOutOfRange<int32_t>("int32", option_field->full_name()));
         } else {
           SetInt32(option_field->number(),
                    uninterpreted_option_->positive_int_value(),
@@ -7693,16 +7721,14 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       } else if (uninterpreted_option_->has_negative_int_value()) {
         if (uninterpreted_option_->negative_int_value() <
             static_cast<int64_t>(std::numeric_limits<int32_t>::min())) {
-          return AddValueError("Value out of range for int32 option \"" +
-                               option_field->full_name() + "\".");
+          return AddValueError(ValueOutOfRange<int32_t>("int32", option_field->full_name()));
         } else {
           SetInt32(option_field->number(),
                    uninterpreted_option_->negative_int_value(),
                    option_field->type(), unknown_fields);
         }
       } else {
-        return AddValueError("Value must be integer for int32 option \"" +
-                             option_field->full_name() + "\".");
+        return AddValueError(ValueMustBeInt<int32_t>("int32", option_field->full_name()));
       }
       break;
 
@@ -7710,8 +7736,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       if (uninterpreted_option_->has_positive_int_value()) {
         if (uninterpreted_option_->positive_int_value() >
             static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
-          return AddValueError("Value out of range for int64 option \"" +
-                               option_field->full_name() + "\".");
+          return AddValueError(ValueOutOfRange<int64_t>("int64", option_field->full_name()));
         } else {
           SetInt64(option_field->number(),
                    uninterpreted_option_->positive_int_value(),
@@ -7722,8 +7747,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
                  uninterpreted_option_->negative_int_value(),
                  option_field->type(), unknown_fields);
       } else {
-        return AddValueError("Value must be integer for int64 option \"" +
-                             option_field->full_name() + "\".");
+        return AddValueError(ValueMustBeInt<int64_t>("int64", option_field->full_name()));
       }
       break;
 
@@ -7731,18 +7755,14 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
       if (uninterpreted_option_->has_positive_int_value()) {
         if (uninterpreted_option_->positive_int_value() >
             std::numeric_limits<uint32_t>::max()) {
-          return AddValueError("Value out of range for uint32 option \"" +
-                               option_field->name() + "\".");
+          return AddValueError(ValueOutOfRange<uint32_t>("uint32", option_field->full_name()));
         } else {
           SetUInt32(option_field->number(),
                     uninterpreted_option_->positive_int_value(),
                     option_field->type(), unknown_fields);
         }
       } else {
-        return AddValueError(
-            "Value must be non-negative integer for uint32 "
-            "option \"" +
-            option_field->full_name() + "\".");
+        return AddValueError(ValueMustBeInt<uint32_t>("uint32", option_field->full_name()));
       }
       break;
 
@@ -7752,10 +7772,7 @@ bool DescriptorBuilder::OptionInterpreter::SetOptionValue(
                   uninterpreted_option_->positive_int_value(),
                   option_field->type(), unknown_fields);
       } else {
-        return AddValueError(
-            "Value must be non-negative integer for uint64 "
-            "option \"" +
-            option_field->full_name() + "\".");
+        return AddValueError(ValueMustBeInt<uint64_t>("uint64", option_field->full_name()));
       }
       break;
 
@@ -8323,4 +8340,4 @@ Utf8CheckMode GetUtf8CheckMode(const FieldDescriptor* field, bool is_lite) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

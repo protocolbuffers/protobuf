@@ -555,6 +555,21 @@ def internal_py_proto_library(
         **kargs
     )
 
+def py_proto_library(
+        *args,
+        **kwargs):
+    """Deprecated alias for use before Bazel 5.3.
+
+    Args:
+      *args: the name of the py_proto_library.
+      **kwargs: other keyword arguments that are passed to py_library.
+
+    Deprecated:
+      This is provided for backwards compatibility only.  Bazel 5.3 will
+      introduce support for py_proto_library, which should be used instead.
+    """
+    internal_py_proto_library(*args, **kwargs)
+
 def _source_proto_library(
         name,
         srcs = [],

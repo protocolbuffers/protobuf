@@ -888,5 +888,17 @@ namespace Google.Protobuf.Collections
             Assert.DoesNotThrow(() => list.Capacity = 0, "Can set Capacity to 0");
             Assert.AreEqual(0, list.Capacity);
         }
+
+        [Test]
+        public void Clear_CapacityUnaffected()
+        {
+            var list = new RepeatedField<int> { 1 };
+            Assert.AreEqual(1, list.Count);
+            Assert.AreEqual(8, list.Capacity);
+
+            list.Clear();
+            Assert.AreEqual(0, list.Count);
+            Assert.AreEqual(8, list.Capacity);
+        }
     }
 }

@@ -28,22 +28,23 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/internal/datapiece.h>
+#include "google/protobuf/util/internal/datapiece.h"
 
 #include <cmath>
 #include <cstdint>
 #include <limits>
 
-#include <google/protobuf/struct.pb.h>
-#include <google/protobuf/type.pb.h>
-#include <google/protobuf/descriptor.h>
+#include "google/protobuf/struct.pb.h"
+#include "google/protobuf/type.pb.h"
+#include "google/protobuf/descriptor.h"
 #include "absl/status/status.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include <google/protobuf/util/internal/utility.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/stubs/mathutil.h>
+#include "google/protobuf/util/internal/utility.h"
+#include "google/protobuf/stubs/strutil.h"
+#include "absl/strings/match.h"
+#include "google/protobuf/stubs/mathutil.h"
 
 namespace google {
 namespace protobuf {
@@ -222,6 +223,8 @@ absl::StatusOr<bool> DataPiece::ToBool() const {
     case TYPE_BOOL:
       return bool_;
     case TYPE_STRING:
+      // Calls out to absl::SimpleAtob, which supports "true"/"false",
+      // "yes"/"no", "y"/"n", "t"/"f", and "1"/"0".
       return StringToNumber<bool>(safe_strtob);
     default:
       break;
@@ -261,7 +264,7 @@ std::string DataPiece::ValueAsStringOrDefault(
     case TYPE_FLOAT:
       return FloatAsString(float_);
     case TYPE_BOOL:
-      return SimpleBtoa(bool_);
+      return bool_ ? "true" : "false";
     case TYPE_STRING:
       return absl::StrCat("\"", str_, "\"");
     case TYPE_BYTES: {
@@ -395,7 +398,7 @@ bool DataPiece::DecodeBase64(absl::string_view src, std::string* dest) const {
       absl::WebSafeBase64Escape(*dest, &encoded);
       // Remove trailing padding '=' characters before comparison.
       absl::string_view src_no_padding = absl::string_view(src).substr(
-          0, HasSuffixString(src, "=") ? src.find_last_not_of('=') + 1
+          0, absl::EndsWith(src, "=") ? src.find_last_not_of('=') + 1
                                       : src.length());
       return encoded == src_no_padding;
     }
@@ -407,7 +410,7 @@ bool DataPiece::DecodeBase64(absl::string_view src, std::string* dest) const {
       std::string encoded;
       strings::LegacyBase64EscapeWithoutPadding(*dest, &encoded);
       absl::string_view src_no_padding = absl::string_view(src).substr(
-          0, HasSuffixString(src, "=") ? src.find_last_not_of('=') + 1
+          0, absl::EndsWith(src, "=") ? src.find_last_not_of('=') + 1
                                       : src.length());
       return encoded == src_no_padding;
     }

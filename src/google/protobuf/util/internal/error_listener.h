@@ -36,14 +36,15 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/stubs/callback.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
+#include "google/protobuf/stubs/callback.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/util/internal/location_tracker.h>
+#include "google/protobuf/port.h"
+#include "google/protobuf/util/internal/location_tracker.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -101,6 +102,6 @@ class PROTOBUF_EXPORT NoopErrorListener : public ErrorListener {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_UTIL_INTERNAL_ERROR_LISTENER_H__

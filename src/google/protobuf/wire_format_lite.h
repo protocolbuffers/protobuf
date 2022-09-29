@@ -44,14 +44,15 @@
 #include <limits>
 #include <string>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/port.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/port.h"
 #include "absl/base/casts.h"
-#include <google/protobuf/arenastring.h>
-#include <google/protobuf/message_lite.h>
-#include <google/protobuf/repeated_field.h>
+#include "google/protobuf/arenastring.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/repeated_field.h"
 
 #ifndef NDEBUG
 #define GOOGLE_PROTOBUF_UTF8_VALIDATION_ENABLED
@@ -69,7 +70,7 @@
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -1833,6 +1834,9 @@ bool ParseMessageSetItemImpl(io::CodedInputStream* input, MS ms) {
   // we can parse it later.
   std::string message_data;
 
+  enum class State { kNoTag, kHasType, kHasPayload, kDone };
+  State state = State::kNoTag;
+
   while (true) {
     const uint32_t tag = input->ReadTagNoLastTag();
     if (tag == 0) return false;
@@ -1841,26 +1845,34 @@ bool ParseMessageSetItemImpl(io::CodedInputStream* input, MS ms) {
       case WireFormatLite::kMessageSetTypeIdTag: {
         uint32_t type_id;
         if (!input->ReadVarint32(&type_id)) return false;
-        last_type_id = type_id;
-
-        if (!message_data.empty()) {
+        if (state == State::kNoTag) {
+          last_type_id = type_id;
+          state = State::kHasType;
+        } else if (state == State::kHasPayload) {
           // We saw some message data before the type_id.  Have to parse it
           // now.
           io::CodedInputStream sub_input(
               reinterpret_cast<const uint8_t*>(message_data.data()),
               static_cast<int>(message_data.size()));
           sub_input.SetRecursionLimit(input->RecursionBudget());
-          if (!ms.ParseField(last_type_id, &sub_input)) {
+          if (!ms.ParseField(type_id, &sub_input)) {
             return false;
           }
           message_data.clear();
+          state = State::kDone;
         }
 
         break;
       }
 
       case WireFormatLite::kMessageSetMessageTag: {
-        if (last_type_id == 0) {
+        if (state == State::kHasType) {
+          // Already saw type_id, so we can parse this directly.
+          if (!ms.ParseField(last_type_id, input)) {
+            return false;
+          }
+          state = State::kDone;
+        } else if (state == State::kNoTag) {
           // We haven't seen a type_id yet.  Append this data to message_data.
           uint32_t length;
           if (!input->ReadVarint32(&length)) return false;
@@ -1871,11 +1883,9 @@ bool ParseMessageSetItemImpl(io::CodedInputStream* input, MS ms) {
           auto ptr = reinterpret_cast<uint8_t*>(&message_data[0]);
           ptr = io::CodedOutputStream::WriteVarint32ToArray(length, ptr);
           if (!input->ReadRaw(ptr, length)) return false;
+          state = State::kHasPayload;
         } else {
-          // Already saw type_id, so we can parse this directly.
-          if (!ms.ParseField(last_type_id, input)) {
-            return false;
-          }
+          if (!ms.SkipField(tag, input)) return false;
         }
 
         break;
@@ -1896,6 +1906,6 @@ bool ParseMessageSetItemImpl(io::CodedInputStream* input, MS ms) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_WIRE_FORMAT_LITE_H__

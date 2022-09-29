@@ -31,12 +31,13 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_PHP_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_PHP_GENERATOR_H__
 
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/descriptor.h>
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/php/names.h"
+#include "google/protobuf/descriptor.h"
 
 #include <string>
 
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -70,13 +71,6 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
       std::string* error) const;
 };
 
-// To skip reserved keywords in php, some generated classname are prefixed.
-// Other code generators may need following API to figure out the actual
-// classname.
-PROTOC_EXPORT std::string GeneratedClassName(const Descriptor* desc);
-PROTOC_EXPORT std::string GeneratedClassName(const EnumDescriptor* desc);
-PROTOC_EXPORT std::string GeneratedClassName(const ServiceDescriptor* desc);
-
 inline bool IsWrapperType(const FieldDescriptor* descriptor) {
   return descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
       descriptor->message_type()->file()->name() == "google/protobuf/wrappers.proto";
@@ -87,6 +81,6 @@ inline bool IsWrapperType(const FieldDescriptor* descriptor) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_PHP_GENERATOR_H__

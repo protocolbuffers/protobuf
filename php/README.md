@@ -65,6 +65,8 @@ sudo pecl install protobuf-{VERSION}
 Simply add "google/protobuf" to the 'require' section of composer.json in your
 project.
 
+To use the pure PHP implementation, you need to install bcmath.
+
 ### Protoc
 
 Once the extension or package is installed, if you wish to generate PHP code

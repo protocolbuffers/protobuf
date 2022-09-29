@@ -33,7 +33,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_GENERATOR_FACTORY_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_GENERATOR_FACTORY_H__
 
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/port.h"
 
 namespace google {
 namespace protobuf {

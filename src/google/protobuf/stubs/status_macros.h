@@ -33,13 +33,12 @@
 #ifndef GOOGLE_PROTOBUF_STUBS_STATUS_MACROS_H_
 #define GOOGLE_PROTOBUF_STUBS_STATUS_MACROS_H_
 
-#include <google/protobuf/stubs/common.h>
-
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
+#include "google/protobuf/stubs/common.h"
 
 // Needs to be last.
-#include <google/protobuf/port_def.inc>  // NOLINT
+#include "google/protobuf/port_def.inc"  // NOLINT
 
 namespace google {
 namespace protobuf {
@@ -90,6 +89,6 @@ absl::Status DoAssignOrReturn(T& lhs, absl::StatusOr<T> result) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>  // NOLINT
+#include "google/protobuf/port_undef.inc"  // NOLINT
 
 #endif  // GOOGLE_PROTOBUF_STUBS_STATUS_H_

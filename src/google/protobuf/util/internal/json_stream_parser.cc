@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/internal/json_stream_parser.h>
+#include "google/protobuf/util/internal/json_stream_parser.h"
 
 #include <algorithm>
 #include <cctype>
@@ -37,16 +37,17 @@
 #include <stack>
 #include <string>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/status/status.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/util/internal/object_writer.h>
-#include <google/protobuf/util/internal/json_escaping.h>
+#include "google/protobuf/util/internal/object_writer.h"
+#include "google/protobuf/util/internal/json_escaping.h"
 
 
 namespace google {
@@ -966,15 +967,15 @@ JsonStreamParser::TokenType JsonStreamParser::GetNextTokenType() {
     return BEGIN_NUMBER;
   }
   if (size >= kKeywordTrue.length() &&
-      HasPrefixString(data_view, kKeywordTrue)) {
+      absl::StartsWith(data_view, kKeywordTrue)) {
     return BEGIN_TRUE;
   }
   if (size >= kKeywordFalse.length() &&
-      HasPrefixString(data_view, kKeywordFalse)) {
+      absl::StartsWith(data_view, kKeywordFalse)) {
     return BEGIN_FALSE;
   }
   if (size >= kKeywordNull.length() &&
-      HasPrefixString(data_view, kKeywordNull)) {
+      absl::StartsWith(data_view, kKeywordNull)) {
     return BEGIN_NULL;
   }
   if (*data == '{') return BEGIN_OBJECT;

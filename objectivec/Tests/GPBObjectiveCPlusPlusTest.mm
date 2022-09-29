@@ -28,9 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 #import "GPBTestUtilities.h"
-
 
 //
 // This is just a compile test (here to make sure things never regress).
@@ -48,14 +46,13 @@
 
 // Sanity check the conditions of the test within the Xcode project.
 #if !__cplusplus
-  #error This isn't compiled as Objective C++?
+#error This isn't compiled as Objective C++?
 #elif __cplusplus >= 201103L
-  // If this trips, it means the Xcode default might have change (or someone
-  // edited the testing project) and it might be time to revisit the GPB_ENUM
-  // define in GPBBootstrap.h.
-  #warning Did the Xcode default for C++ spec change?
+// If this trips, it means the Xcode default might have change (or someone
+// edited the testing project) and it might be time to revisit the GPB_ENUM
+// define in GPBBootstrap.h.
+#warning Did the Xcode default for C++ spec change?
 #endif
-
 
 // Dummy XCTest.
 @interface GPBObjectiveCPlusPlusTests : GPBTestCase

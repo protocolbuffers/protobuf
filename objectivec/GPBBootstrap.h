@@ -42,7 +42,7 @@
 // Used in the generated code to give sizes to enums. int32_t was chosen based
 // on the fact that Protocol Buffers enums are limited to this range.
 #if !__has_feature(objc_fixed_enum)
- #error All supported Xcode versions should support objc_fixed_enum.
+#error All supported Xcode versions should support objc_fixed_enum.
 #endif
 
 // If the headers are imported into Objective-C++, we can run into an issue
@@ -52,9 +52,11 @@
 // providing a local definition. The default case has to use NS_ENUM for the
 // magic that is Swift bridging of enums.
 #if (defined(__cplusplus) && __cplusplus && __cplusplus < 201103L)
- #define GPB_ENUM(X) enum X : int32_t X; enum X : int32_t
+#define GPB_ENUM(X)   \
+  enum X : int32_t X; \
+  enum X : int32_t
 #else
- #define GPB_ENUM(X) NS_ENUM(int32_t, X)
+#define GPB_ENUM(X) NS_ENUM(int32_t, X)
 #endif
 
 /**
@@ -137,7 +139,6 @@
 // Minimum runtime version supported for compiling/running against.
 // - Gets changed when support for the older generated code is dropped.
 #define GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION 30001
-
 
 // This is a legacy constant now frozen in time for old generated code. If
 // GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION ever gets moved above 30001 then

@@ -32,7 +32,7 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/cpp/helpers.h>
+#include "google/protobuf/compiler/cpp/helpers.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -41,18 +41,21 @@
 #include <map>
 #include <memory>
 #include <queue>
+#include <set>
+#include <string>
+#include <utility>
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/compiler/scc.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/io/zero_copy_stream.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/compiler/scc.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/wire_format.h"
+#include "google/protobuf/wire_format_lite.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/ascii.h"
@@ -62,13 +65,13 @@
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
-#include <google/protobuf/compiler/cpp/names.h>
-#include <google/protobuf/compiler/cpp/options.h>
-#include <google/protobuf/descriptor.pb.h>
+#include "google/protobuf/compiler/cpp/names.h"
+#include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/descriptor.pb.h"
 
 
 // Must be last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -80,8 +83,8 @@ namespace {
 static const char kAnyMessageName[] = "Any";
 static const char kAnyProtoFile[] = "google/protobuf/any.proto";
 
-std::string DotsToColons(const std::string& name) {
-  return StringReplace(name, ".", "::", true);
+std::string DotsToColons(absl::string_view name) {
+  return absl::StrReplaceAll(name, {{".", "::"}});
 }
 
 static const char* const kKeywordList[] = {
@@ -199,16 +202,12 @@ std::string IntTypeName(const Options& options, const std::string& type) {
   return type + "_t";
 }
 
-void SetIntVar(const Options& options, const std::string& type,
-               std::map<std::string, std::string>* variables) {
-  (*variables)[type] = IntTypeName(options, type);
-}
-
 // Returns true if the message can potentially allocate memory for its field.
 // This is used to determine if message-owned arena will be useful.
 bool AllocExpected(const Descriptor* descriptor) {
   return false;
 }
+
 
 }  // namespace
 
@@ -234,43 +233,6 @@ bool IsEagerlyVerifiedLazy(const FieldDescriptor* field, const Options& options,
 bool IsLazilyVerifiedLazy(const FieldDescriptor* field,
                           const Options& options) {
   return false;
-}
-
-void SetCommonVars(const Options& options,
-                   std::map<std::string, std::string>* variables) {
-  (*variables)["proto_ns"] = ProtobufNamespace(options);
-
-  // Warning: there is some clever naming/splitting here to avoid extract script
-  // rewrites.  The names of these variables must not be things that the extract
-  // script will rewrite.  That's why we use "CHK" (for example) instead of
-  // "GOOGLE_CHECK".
-  if (options.opensource_runtime) {
-    (*variables)["GOOGLE_PROTOBUF"] = "GOOGLE_PROTOBUF";
-    (*variables)["CHK"] = "GOOGLE_CHECK";
-    (*variables)["DCHK"] = "GOOGLE_DCHECK";
-  } else {
-    // These values are things the extract script would rewrite if we did not
-    // split them.  It might not strictly matter since we don't generate google3
-    // code in open-source.  But it's good to prevent surprising things from
-    // happening.
-    (*variables)["GOOGLE_PROTOBUF"] =
-        "GOOGLE3"
-        "_PROTOBUF";
-    (*variables)["CHK"] =
-        "CH"
-        "ECK";
-    (*variables)["DCHK"] =
-        "DCH"
-        "ECK";
-  }
-
-  SetIntVar(options, "int8", variables);
-  SetIntVar(options, "uint8", variables);
-  SetIntVar(options, "uint32", variables);
-  SetIntVar(options, "uint64", variables);
-  SetIntVar(options, "int32", variables);
-  SetIntVar(options, "int64", variables);
-  (*variables)["string"] = "std::string";
 }
 
 void SetCommonMessageDataVariables(
@@ -840,8 +802,8 @@ std::string QualifiedFileLevelSymbol(const FileDescriptor* file,
 }
 
 // Escape C++ trigraphs by escaping question marks to \?
-std::string EscapeTrigraphs(const std::string& to_escape) {
-  return StringReplace(to_escape, "?", "\\?", true);
+std::string EscapeTrigraphs(absl::string_view to_escape) {
+  return absl::StrReplaceAll(to_escape, {{"?", "\\?"}});
 }
 
 // Escaped function name to eliminate naming conflict.
@@ -1126,6 +1088,46 @@ bool IsWellKnownMessage(const FileDescriptor* file) {
   return well_known_files->find(file->name()) != well_known_files->end();
 }
 
+void NamespaceOpener::ChangeTo(absl::string_view name) {
+  std::vector<std::string> new_stack =
+      absl::StrSplit(name, "::", absl::SkipEmpty());
+  size_t len = std::min(name_stack_.size(), new_stack.size());
+  size_t common_idx = 0;
+  while (common_idx < len) {
+    if (name_stack_[common_idx] != new_stack[common_idx]) {
+      break;
+    }
+    ++common_idx;
+  }
+
+  for (size_t i = name_stack_.size(); i > common_idx; i--) {
+    const auto& ns = name_stack_[i - 1];
+    if (ns == "PROTOBUF_NAMESPACE_ID") {
+      p_->Emit(R"cc(
+        PROTOBUF_NAMESPACE_CLOSE
+      )cc");
+    } else {
+      p_->Emit({{"ns", ns}}, R"(
+          }  // namespace $ns$
+        )");
+    }
+  }
+  for (size_t i = common_idx; i < new_stack.size(); ++i) {
+    const auto& ns = new_stack[i];
+    if (ns == "PROTOBUF_NAMESPACE_ID") {
+      p_->Emit(R"cc(
+        PROTOBUF_NAMESPACE_OPEN
+      )cc");
+    } else {
+      p_->Emit({{"ns", ns}}, R"(
+        namespace $ns$ {
+      )");
+    }
+  }
+
+  name_stack_ = std::move(new_stack);
+}
+
 static void GenerateUtf8CheckCode(const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
                                   const char* parameters,
@@ -1375,70 +1377,64 @@ bool MaybeBootstrap(const Options& options, GeneratorContext* generator_context,
     // Adjust basename, but don't abort code generation.
     *basename = bootstrap_basename;
     return false;
-  } else {
-    const std::string& forward_to_basename = bootstrap_basename;
-
-    // Generate forwarding headers and empty .pb.cc.
-    {
-      std::unique_ptr<io::ZeroCopyOutputStream> output(
-          generator_context->Open(*basename + ".pb.h"));
-      io::Printer printer(output.get(), '$', nullptr);
-      printer.Print(
-          "#ifndef PROTOBUF_INCLUDED_$filename_identifier$_FORWARD_PB_H\n"
-          "#define PROTOBUF_INCLUDED_$filename_identifier$_FORWARD_PB_H\n"
-          "#include \"$forward_to_basename$.pb.h\"  // IWYU pragma: export\n"
-          "#endif  // PROTOBUF_INCLUDED_$filename_identifier$_FORWARD_PB_H\n",
-          "forward_to_basename", forward_to_basename, "filename_identifier",
-          FilenameIdentifier(*basename));
-
-      if (!options.opensource_runtime) {
-        // HACK HACK HACK, tech debt from the deeps of proto1 and SWIG
-        // protocoltype is SWIG'ed and we need to forward
-        if (*basename == "net/proto/protocoltype") {
-          printer.Print(
-              "#ifdef SWIG\n"
-              "%include \"$forward_to_basename$.pb.h\"\n"
-              "#endif  // SWIG\n",
-              "forward_to_basename", forward_to_basename);
-        }
-      }
-    }
-
-    {
-      std::unique_ptr<io::ZeroCopyOutputStream> output(
-          generator_context->Open(*basename + ".proto.h"));
-      io::Printer printer(output.get(), '$', nullptr);
-      printer.Print(
-          "#ifndef PROTOBUF_INCLUDED_$filename_identifier$_FORWARD_PROTO_H\n"
-          "#define PROTOBUF_INCLUDED_$filename_identifier$_FORWARD_PROTO_H\n"
-          "#include \"$forward_to_basename$.proto.h\"  // IWYU pragma: "
-          "export\n"
-          "#endif  // "
-          "PROTOBUF_INCLUDED_$filename_identifier$_FORWARD_PROTO_H\n",
-          "forward_to_basename", forward_to_basename, "filename_identifier",
-          FilenameIdentifier(*basename));
-    }
-
-    {
-      std::unique_ptr<io::ZeroCopyOutputStream> output(
-          generator_context->Open(*basename + ".pb.cc"));
-      io::Printer printer(output.get(), '$', nullptr);
-      printer.Print("\n");
-    }
-
-    {
-      std::unique_ptr<io::ZeroCopyOutputStream> output(
-          generator_context->Open(*basename + ".pb.h.meta"));
-    }
-
-    {
-      std::unique_ptr<io::ZeroCopyOutputStream> output(
-          generator_context->Open(*basename + ".proto.h.meta"));
-    }
-
-    // Abort code generation.
-    return true;
   }
+
+  auto pb_h = absl::WrapUnique(
+      generator_context->Open(absl::StrCat(*basename, ".pb.h")));
+
+  io::Printer p(pb_h.get());
+  p.Emit(
+      {
+          {"fwd_to", bootstrap_basename},
+          {"file", FilenameIdentifier(*basename)},
+          {"fwd_to_suffix", options.opensource_runtime ? "pb" : "proto"},
+          {"swig_evil",
+           [&] {
+             if (options.opensource_runtime) {
+               return;
+             }
+             p.Emit(R"(
+               #ifdef SWIG
+               %include "$fwd_to$.pb.h"
+               #endif  // SWIG
+             )");
+           }},
+      },
+      R"(
+          #ifndef PROTOBUF_INCLUDED_$file$_FORWARD_PB_H
+          #define PROTOBUF_INCLUDED_$file$_FORWARD_PB_H
+          #include "$fwd_to$.$fwd_to_suffix$.h"  // IWYU pragma: export
+          #endif  // PROTOBUF_INCLUDED_$file$_FORWARD_PB_H
+          $swig_evil$;
+      )");
+
+  auto proto_h = absl::WrapUnique(
+      generator_context->Open(absl::StrCat(*basename, ".proto.h")));
+  io::Printer(proto_h.get())
+      .Emit(
+          {
+              {"fwd_to", bootstrap_basename},
+              {"file", FilenameIdentifier(*basename)},
+          },
+          R"(
+            #ifndef PROTOBUF_INCLUDED_$file$_FORWARD_PROTO_H
+            #define PROTOBUF_INCLUDED_$file$_FORWARD_PROTO_H
+            #include "$fwd_to$.proto.h"  // IWYU pragma: export
+            #endif // PROTOBUF_INCLUDED_$file$_FORWARD_PROTO_H
+          )");
+
+  auto pb_cc = absl::WrapUnique(
+      generator_context->Open(absl::StrCat(*basename, ".pb.cc")));
+  io::Printer(pb_cc.get()).PrintRaw("\n");
+
+  (void)absl::WrapUnique(
+      generator_context->Open(absl::StrCat(*basename, ".pb.h.meta")));
+
+  (void)absl::WrapUnique(
+      generator_context->Open(absl::StrCat(*basename, ".proto.h.meta")));
+
+  // Abort code generation.
+  return true;
 }
 
 static bool HasExtensionFromFile(const Message& msg, const FileDescriptor* file,

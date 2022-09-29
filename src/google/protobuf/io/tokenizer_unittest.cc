@@ -32,19 +32,19 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/io/tokenizer.h>
+#include "google/protobuf/io/tokenizer.h"
 
 #include <limits.h>
 #include <math.h>
 
 #include <vector>
 
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/logging.h>
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/substitute.h"
-#include <google/protobuf/io/zero_copy_stream_impl.h>
-#include <google/protobuf/testing/googletest.h>
+#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 
 namespace google {
@@ -651,10 +651,10 @@ DocCommentCase kDocCommentCases[] = {
      {},
      ""},
 
-    {"prev /* ignored */ next",
+    {"prev /* detached */ next",
 
      "",
-     {},
+     {" detached "},
      ""},
 
     {"prev // trailing comment\n"
@@ -663,6 +663,13 @@ DocCommentCase kDocCommentCases[] = {
      " trailing comment\n",
      {},
      ""},
+
+    {"prev\n"
+     "/* leading comment */ next",
+
+     "",
+     {},
+     " leading comment "},
 
     {"prev\n"
      "// leading comment\n"
@@ -763,6 +770,45 @@ DocCommentCase kDocCommentCases[] = {
      "",
      {},
      " leading comment\n"},
+
+    {"prev /* many comments*/ /* all inline */ /* will be handled */ next",
+
+     " many comments",
+     {" all inline "},
+     " will be handled "},
+
+    {R"pb(
+     prev /* a single block comment
+         that spans multiple lines
+         is detached if it ends
+         on the same line as next */ next"
+     )pb",
+
+     "",
+     {" a single block comment\n"
+      "that spans multiple lines\n"
+      "is detached if it ends\n"
+      "on the same line as next "},
+     ""},
+
+    {R"pb(
+     prev /* trailing */ /* leading */ next"
+     )pb",
+
+     " trailing ",
+     {},
+     " leading "},
+
+    {R"pb(
+     prev /* multi-line
+          trailing */ /* an oddly
+                      placed detached */ /* an oddly
+                                         placed leading */ next"
+     )pb",
+
+     " multi-line\ntrailing ",
+     {" an oddly\nplaced detached "},
+     " an oddly\nplaced leading "},
 };
 
 TEST_2D(TokenizerTest, DocComments, kDocCommentCases, kBlockSizes) {

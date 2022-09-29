@@ -42,13 +42,13 @@
 #include <string>
 #include <utility>
 
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/tokenizer.h>
-#include <google/protobuf/repeated_field.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/tokenizer.h"
+#include "google/protobuf/repeated_field.h"
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -180,6 +180,9 @@ class PROTOBUF_EXPORT Parser {
   // is greater than max_value, an error will be reported.
   bool ConsumeInteger64(uint64_t max_value, uint64_t* output,
                         const char* error);
+  // Try to consume a 64-bit integer and store its value in "output".  No
+  // error is reported on failure, allowing caller to consume token another way.
+  bool TryConsumeInteger64(uint64_t max_value, uint64_t* output);
   // Consume a number and store its value in "output".  This will accept
   // tokens of either INTEGER or FLOAT type.
   bool ConsumeNumber(double* output, const char* error);
@@ -212,6 +215,9 @@ class PROTOBUF_EXPORT Parser {
   // Invokes error_collector_->AddError() with the line and column number
   // of the current token.
   void AddError(const std::string& error);
+
+  // Invokes error_collector_->AddWarning(), if error_collector_ is not NULL.
+  void AddWarning(int line, int column, const std::string& warning);
 
   // Invokes error_collector_->AddWarning() with the line and column number
   // of the current token.
@@ -394,6 +400,7 @@ class PROTOBUF_EXPORT Parser {
                      const LocationRecorder& message_location);
   bool ParseReservedNames(DescriptorProto* message,
                           const LocationRecorder& parent_location);
+  bool ParseReservedName(std::string* name, const char* error_message);
   bool ParseReservedNumbers(DescriptorProto* message,
                             const LocationRecorder& parent_location);
   bool ParseReserved(EnumDescriptorProto* message,
@@ -597,6 +604,6 @@ class PROTOBUF_EXPORT SourceLocationTable {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_PARSER_H__

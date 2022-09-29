@@ -34,10 +34,10 @@
 #include <string>
 #include <set>
 #include <vector>
-#include <google/protobuf/compiler/objectivec/objectivec_field.h>
-#include <google/protobuf/compiler/objectivec/objectivec_oneof.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/io/printer.h>
+#include "google/protobuf/compiler/objectivec/objectivec_field.h"
+#include "google/protobuf/compiler/objectivec/objectivec_oneof.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {

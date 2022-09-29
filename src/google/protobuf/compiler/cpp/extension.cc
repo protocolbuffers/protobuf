@@ -32,16 +32,16 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/cpp/extension.h>
+#include "google/protobuf/compiler/cpp/extension.h"
 
 #include <map>
 
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/stubs/strutil.h>
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
-#include <google/protobuf/compiler/cpp/helpers.h>
-#include <google/protobuf/descriptor.pb.h>
+#include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/descriptor.pb.h"
 
 namespace google {
 namespace protobuf {
@@ -79,7 +79,6 @@ ExtensionGenerator::ExtensionGenerator(const FieldDescriptor* descriptor,
       type_traits_.append(" >");
       break;
   }
-  SetCommonVars(options, &variables_);
   SetCommonMessageDataVariables(descriptor_->containing_type(), &variables_);
   variables_["extendee"] =
       QualifiedClassName(descriptor_->containing_type(), options_);
@@ -161,7 +160,8 @@ void ExtensionGenerator::GenerateDefinition(io::Printer* printer) {
     // it in the header which would be annoying for other reasons.  So we
     // replace :: with _ in the name and declare it as a global.
     default_str =
-        StringReplace(variables_["scoped_name"], "::", "_", true) + "_default";
+        absl::StrReplaceAll(variables_["scoped_name"], {{"::", "_"}}) +
+        "_default";
     format("const std::string $1$($2$);\n", default_str,
            DefaultValue(options_, descriptor_));
   } else if (descriptor_->message_type()) {

@@ -89,9 +89,6 @@ for various native build systems.
 
 Of most interest to Windows programmers are the following:
 
-* [Makefile](http://www.cmake.org/cmake/help/latest/manual/cmake-generators.7.html#makefile-generators).
-  This generates NMake Makefiles for Visual Studio. These work, but they are rather slow.
-
 * [Visual Studio](http://www.cmake.org/cmake/help/latest/manual/cmake-generators.7.html#visual-studio-generators)
   This generates a Visual Studio solution for the project.
 
@@ -111,16 +108,6 @@ Create a temporary *build* folder and change your working directory to it:
 
 The *Makefile* and *Ninja* generators can build the project in only one configuration, so you need to build
 a separate folder for each configuration.
-
-To start using a *Release* configuration via the *NMmake* generator:
-
-     C:\Path\to\build\protobuf>mkdir release & cd release
-     C:\Path\to\build\protobuf\release>cmake -G "NMake Makefiles" ^
-     -DCMAKE_BUILD_TYPE=Release ^
-     -DCMAKE_INSTALL_PREFIX=C:\Path\to\install ^
-     C:\Path\to\src\protobuf
-
-It will generate a *NMake* *Makefile* in the current directory.
 
 To use *Debug* configuration using *Ninja*:
 
@@ -191,10 +178,6 @@ Note that if your generator supports multiple configurations, you will probably 
      cmake --build C:\Path\to\build\protobuf\solution --config Release
 
 You can also run directly the build tool you've configured:
-
-     C:\Path\to\build\protobuf\release>nmake
-
-or
 
      C:\Path\to\build\protobuf\debug>ninja
 
@@ -267,10 +250,6 @@ To install protobuf to the *install* folder you've specified in the configuratio
      cmake --build C:\Path\to\build\protobuf\solution --config Release --target install
 
 Or if you prefer:
-
-     C:\Path\to\build\protobuf\release>nmake install
-
-or
 
      C:\Path\to\build\protobuf\debug>ninja install
 

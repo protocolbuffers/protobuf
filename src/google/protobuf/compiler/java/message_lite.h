@@ -35,8 +35,8 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_LITE_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_LITE_H__
 
-#include <google/protobuf/compiler/java/field.h>
-#include <google/protobuf/compiler/java/message.h>
+#include "google/protobuf/compiler/java/field.h"
+#include "google/protobuf/compiler/java/message.h"
 
 namespace google {
 namespace protobuf {

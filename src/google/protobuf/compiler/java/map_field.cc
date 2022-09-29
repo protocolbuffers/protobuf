@@ -28,16 +28,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/compiler/java/map_field.h>
+#include "google/protobuf/compiler/java/map_field.h"
 
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/compiler/java/context.h>
-#include <google/protobuf/compiler/java/doc_comment.h>
-#include <google/protobuf/compiler/java/helpers.h>
-#include <google/protobuf/compiler/java/name_resolver.h>
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/compiler/java/context.h"
+#include "google/protobuf/compiler/java/doc_comment.h"
+#include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/name_resolver.h"
 
 // Must be last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -179,13 +179,6 @@ void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
                 " is deprecated\") "
           : "";
   (*variables)["on_changed"] = "onChanged();";
-
-  // For repeated fields, one bit is used for whether the array is immutable
-  // in the parsing constructor.
-  (*variables)["get_mutable_bit_parser"] =
-      GenerateGetBitMutableLocal(builderBitIndex);
-  (*variables)["set_mutable_bit_parser"] =
-      GenerateSetBitMutableLocal(builderBitIndex);
 
   (*variables)["default_entry"] =
       (*variables)["capitalized_name"] + "DefaultEntryHolder.defaultEntry";
@@ -727,13 +720,13 @@ void ImmutableMapFieldGenerator::GenerateKotlinDslMembers(
       " */\n"
       "@kotlin.OptIn"
       "(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)\n"
-      "class ${$$kt_capitalized_name$Proxy$}$ private constructor()"
+      "public class ${$$kt_capitalized_name$Proxy$}$ private constructor()"
       " : com.google.protobuf.kotlin.DslProxy()\n");
 
   WriteFieldDocComment(printer, descriptor_, /* kdoc */ true);
   printer->Print(
       variables_,
-      "$kt_deprecation$ val $kt_name$: "
+      "$kt_deprecation$ public val $kt_name$: "
       "com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  @kotlin.jvm.JvmSynthetic\n"
@@ -746,7 +739,7 @@ void ImmutableMapFieldGenerator::GenerateKotlinDslMembers(
   printer->Print(
       variables_,
       "@JvmName(\"put$kt_capitalized_name$\")\n"
-      "fun com.google.protobuf.kotlin.DslMap"
+      "public fun com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  .put(key: $kt_key_type$, value: $kt_value_type$) {\n"
       "     $kt_dsl_builder$.${$put$capitalized_name$$}$(key, value)\n"
@@ -758,7 +751,7 @@ void ImmutableMapFieldGenerator::GenerateKotlinDslMembers(
       "@kotlin.jvm.JvmSynthetic\n"
       "@JvmName(\"set$kt_capitalized_name$\")\n"
       "@Suppress(\"NOTHING_TO_INLINE\")\n"
-      "inline operator fun com.google.protobuf.kotlin.DslMap"
+      "public inline operator fun com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  .set(key: $kt_key_type$, value: $kt_value_type$) {\n"
       "     put(key, value)\n"
@@ -769,7 +762,7 @@ void ImmutableMapFieldGenerator::GenerateKotlinDslMembers(
       variables_,
       "@kotlin.jvm.JvmSynthetic\n"
       "@JvmName(\"remove$kt_capitalized_name$\")\n"
-      "fun com.google.protobuf.kotlin.DslMap"
+      "public fun com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  .remove(key: $kt_key_type$) {\n"
       "     $kt_dsl_builder$.${$remove$capitalized_name$$}$(key)\n"
@@ -780,7 +773,7 @@ void ImmutableMapFieldGenerator::GenerateKotlinDslMembers(
       variables_,
       "@kotlin.jvm.JvmSynthetic\n"
       "@JvmName(\"putAll$kt_capitalized_name$\")\n"
-      "fun com.google.protobuf.kotlin.DslMap"
+      "public fun com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  .putAll(map: kotlin.collections.Map<$kt_key_type$, $kt_value_type$>) "
       "{\n"
@@ -792,7 +785,7 @@ void ImmutableMapFieldGenerator::GenerateKotlinDslMembers(
       variables_,
       "@kotlin.jvm.JvmSynthetic\n"
       "@JvmName(\"clear$kt_capitalized_name$\")\n"
-      "fun com.google.protobuf.kotlin.DslMap"
+      "public fun com.google.protobuf.kotlin.DslMap"
       "<$kt_key_type$, $kt_value_type$, ${$$kt_capitalized_name$Proxy$}$>\n"
       "  .clear() {\n"
       "     $kt_dsl_builder$.${$clear$capitalized_name$$}$()\n"
@@ -829,27 +822,19 @@ void ImmutableMapFieldGenerator::GenerateBuildingCode(
                  "result.$name$_.makeImmutable();\n");
 }
 
-void ImmutableMapFieldGenerator::GenerateParsingCode(
+void ImmutableMapFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "if (!$get_mutable_bit_parser$) {\n"
-                 "  $name$_ = com.google.protobuf.MapField.newMapField(\n"
-                 "      $map_field_parameter$);\n"
-                 "  $set_mutable_bit_parser$;\n"
-                 "}\n");
   if (!SupportUnknownEnumValue(descriptor_->file()) &&
       GetJavaType(ValueField(descriptor_)) == JAVATYPE_ENUM) {
     printer->Print(
         variables_,
         "com.google.protobuf.ByteString bytes = input.readBytes();\n"
         "com.google.protobuf.MapEntry<$type_parameters$>\n"
-        "$name$__ = $default_entry$.getParserForType().parseFrom(bytes);\n");
-    printer->Print(
-        variables_,
+        "$name$__ = $default_entry$.getParserForType().parseFrom(bytes);\n"
         "if ($value_enum_type$.forNumber($name$__.getValue()) == null) {\n"
-        "  unknownFields.mergeLengthDelimitedField($number$, bytes);\n"
+        "  mergeUnknownLengthDelimitedField($number$, bytes);\n"
         "} else {\n"
-        "  $name$_.getMutableMap().put(\n"
+        "  internalGetMutable$capitalized_name$().getMutableMap().put(\n"
         "      $name$__.getKey(), $name$__.getValue());\n"
         "}\n");
   } else {
@@ -858,14 +843,9 @@ void ImmutableMapFieldGenerator::GenerateParsingCode(
         "com.google.protobuf.MapEntry<$type_parameters$>\n"
         "$name$__ = input.readMessage(\n"
         "    $default_entry$.getParserForType(), extensionRegistry);\n"
-        "$name$_.getMutableMap().put(\n"
+        "internalGetMutable$capitalized_name$().getMutableMap().put(\n"
         "    $name$__.getKey(), $name$__.getValue());\n");
   }
-}
-
-void ImmutableMapFieldGenerator::GenerateParsingDoneCode(
-    io::Printer* printer) const {
-  // Nothing to do here.
 }
 
 void ImmutableMapFieldGenerator::GenerateSerializationCode(
@@ -920,4 +900,4 @@ std::string ImmutableMapFieldGenerator::GetBoxedType() const {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"

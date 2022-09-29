@@ -37,13 +37,14 @@
 
 #include <string>
 
-#include <google/protobuf/compiler/code_generator.h>
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/port.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/port_def.inc>
-#include <google/protobuf/stubs/common.h>
+#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/csharp/names.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -72,15 +73,6 @@ enum CSharpType {
 // Converts field type to corresponding C# type.
 CSharpType GetCSharpType(FieldDescriptor::Type type);
 
-std::string StripDotProto(const std::string& proto_file);
-
-// Gets unqualified name of the reflection class
-std::string GetReflectionClassUnqualifiedName(const FileDescriptor* descriptor);
-// Gets unqualified name of the extension class
-std::string GetExtensionClassUnqualifiedName(const FileDescriptor* descriptor);
-
-std::string GetClassName(const EnumDescriptor* descriptor);
-
 std::string GetFieldName(const FieldDescriptor* descriptor);
 
 std::string GetFieldConstantName(const FieldDescriptor* field);
@@ -90,18 +82,6 @@ std::string GetPropertyName(const FieldDescriptor* descriptor);
 std::string GetOneofCaseName(const FieldDescriptor* descriptor);
 
 int GetFixedSize(FieldDescriptor::Type type);
-
-// Note that we wouldn't normally want to export this (we're not expecting
-// it to be used outside libprotoc itself) but this exposes it for testing.
-std::string PROTOC_EXPORT UnderscoresToCamelCase(const std::string& input,
-                                   bool cap_next_letter,
-                                   bool preserve_period);
-
-inline std::string UnderscoresToCamelCase(const std::string& input, bool cap_next_letter) {
-  return UnderscoresToCamelCase(input, cap_next_letter, false);
-}
-
-std::string UnderscoresToPascalCase(const std::string& input);
 
 // Note that we wouldn't normally want to export this (we're not expecting
 // it to be used outside libprotoc itself) but this exposes it for testing.
@@ -195,6 +175,6 @@ inline bool RequiresPresenceBit(const FieldDescriptor* descriptor) {
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_CSHARP_HELPERS_H__

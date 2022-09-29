@@ -37,15 +37,15 @@
 #include <type_traits>
 #include <utility>
 
-#include <google/protobuf/port.h>
-#include <google/protobuf/extension_set.h>
-#include <google/protobuf/generated_message_tctable_decl.h>
-#include <google/protobuf/metadata_lite.h>
-#include <google/protobuf/parse_context.h>
-#include <google/protobuf/wire_format_lite.h>
+#include "google/protobuf/port.h"
+#include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
+#include "google/protobuf/metadata_lite.h"
+#include "google/protobuf/parse_context.h"
+#include "google/protobuf/wire_format_lite.h"
 
 // Must come last:
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -345,10 +345,15 @@ class PROTOBUF_EXPORT TcParser final {
   // Manually unrolled and specialized Varint parsing.
   template <typename FieldType, int data_offset, int hasbit_idx>
   static const char* SpecializedUnrolledVImpl1(PROTOBUF_TC_PARAM_DECL);
+  template <int data_offset, int hasbit_idx>
+  static const char* SpecializedFastV8S1(PROTOBUF_TC_PARAM_DECL);
 
   template <typename FieldType, int data_offset, int hasbit_idx>
   static constexpr TailCallParseFunc SingularVarintNoZag1() {
     if (data_offset < 100) {
+      if (sizeof(FieldType) == 1) {
+        return &SpecializedFastV8S1<data_offset, hasbit_idx>;
+      }
       return &SpecializedUnrolledVImpl1<FieldType, data_offset, hasbit_idx>;
     } else if (sizeof(FieldType) == 1) {
       return &FastV8S1;
@@ -478,6 +483,9 @@ class PROTOBUF_EXPORT TcParser final {
   // parsing.
   static const char* MiniParse(PROTOBUF_TC_PARAM_DECL);
 
+  static const char* FastEndG1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastEndG2(PROTOBUF_TC_PARAM_DECL);
+
  private:
   friend class GeneratedTcTableLiteTest;
   static void* MaybeGetSplitBase(MessageLite* msg, const bool is_split,
@@ -488,6 +496,9 @@ class PROTOBUF_EXPORT TcParser final {
   static inline const char* SingularParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
   template <typename TagType, bool group_coding, bool aux_is_table>
   static inline const char* RepeatedParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
+
+  template <typename TagType>
+  static const char* FastEndGroupImpl(PROTOBUF_TC_PARAM_DECL);
 
   static inline PROTOBUF_ALWAYS_INLINE void SyncHasbits(
       MessageLite* msg, uint64_t hasbits, const TcParseTableBase* table) {
@@ -618,6 +629,55 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL);
   static const char* MpMap(PROTOBUF_TC_PARAM_DECL);
 };
+
+// Notes:
+// 1) if data_offset is negative, it's read from data.offset()
+// 2) if hasbit_idx is negative, it's read from data.hasbit_idx()
+template <int data_offset, int hasbit_idx>
+const char* TcParser::SpecializedFastV8S1(PROTOBUF_TC_PARAM_DECL) {
+  using TagType = uint8_t;
+
+  // Special case for a varint bool field with a tag of 1 byte:
+  // The coded_tag() field will actually contain the value too and we can check
+  // both at the same time.
+  auto coded_tag = data.coded_tag<uint16_t>();
+  if (PROTOBUF_PREDICT_TRUE(coded_tag == 0x0000 || coded_tag == 0x0100)) {
+    auto& field =
+        RefAt<bool>(msg, data_offset >= 0 ? data_offset : data.offset());
+    // Note: we use `data.data` because Clang generates suboptimal code when
+    // using coded_tag.
+    // In x86_64 this uses the CH register to read the second byte out of
+    // `data`.
+    uint8_t value = data.data >> 8;
+    // The assume allows using a mov instead of test+setne.
+    PROTOBUF_ASSUME(value <= 1);
+    field = static_cast<bool>(value);
+
+    ptr += sizeof(TagType) + 1;  // Consume the tag and the value.
+    if (hasbit_idx < 0) {
+      hasbits |= (uint64_t{1} << data.hasbit_idx());
+    } else {
+      if (hasbit_idx < 32) {
+        hasbits |= (uint64_t{1} << hasbit_idx);
+      } else {
+        static_assert(hasbit_idx == 63 || (hasbit_idx < 32),
+                      "hard-coded hasbit_idx should be 0-31, or the special"
+                      "value 63, which indicates the field has no has-bit.");
+        // TODO(jorg): investigate whether higher hasbit indices are worth
+        // supporting. Something like:
+        // auto& hasblock = TcParser::RefAt<uint32_t>(msg, hasbit_idx / 32 * 4);
+        // hasblock |= uint32_t{1} << (hasbit_idx % 32);
+      }
+    }
+
+    PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_PASS);
+  }
+
+  // If it didn't match above either the tag is wrong, or the value is encoded
+  // non-canonically.
+  // Jump to MiniParse as wrong tag is the most probable reason.
+  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_PASS);
+}
 
 template <typename FieldType, int data_offset, int hasbit_idx>
 const char* TcParser::SpecializedUnrolledVImpl1(PROTOBUF_TC_PARAM_DECL) {
@@ -752,6 +812,6 @@ inline PROTOBUF_ALWAYS_INLINE const char* TcParser::Error(
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_GENERATED_MESSAGE_TCTABLE_IMPL_H__

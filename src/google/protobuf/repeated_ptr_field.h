@@ -58,15 +58,16 @@
 #include <string>
 #include <type_traits>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/arena.h>
-#include <google/protobuf/port.h>
-#include <google/protobuf/message_lite.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
 
 
 // Must be included last.
-#include <google/protobuf/port_def.inc>
+#include "google/protobuf/port_def.inc"
 
 #ifdef SWIG
 #error "You cannot SWIG proto headers"
@@ -286,12 +287,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     const int n = current_size_;
     GOOGLE_DCHECK_GE(n, 0);
     if (n > 0) {
-      void* const* elements = rep_->elements;
-      int i = 0;
-      do {
-        TypeHandler::Clear(cast<TypeHandler>(elements[i++]));
-      } while (i < n);
-      ExchangeCurrentSize(0);
+      ClearNonEmpty<TypeHandler>();
     }
   }
 
@@ -705,12 +701,26 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     return reinterpret_cast<const typename TypeHandler::Type*>(element);
   }
 
+  // Out-of-line helper routine for Clear() once the inlined check has
+  // determined the container is non-empty
+  template <typename TypeHandler>
+  PROTOBUF_NOINLINE void ClearNonEmpty() {
+    const int n = current_size_;
+    void* const* elements = rep_->elements;
+    int i = 0;
+    GOOGLE_DCHECK_GT(n,
+              0);  // do/while loop to avoid initial test because we know n > 0
+    do {
+      TypeHandler::Clear(cast<TypeHandler>(elements[i++]));
+    } while (i < n);
+    ExchangeCurrentSize(0);
+  }
+
   // Non-templated inner function to avoid code duplication. Takes a function
   // pointer to the type-specific (templated) inner allocate/merge loop.
-  void MergeFromInternal(const RepeatedPtrFieldBase& other,
-                         void (RepeatedPtrFieldBase::*inner_loop)(void**,
-                                                                  void**, int,
-                                                                  int)) {
+  PROTOBUF_NOINLINE void MergeFromInternal(
+      const RepeatedPtrFieldBase& other,
+      void (RepeatedPtrFieldBase::*inner_loop)(void**, void**, int, int)) {
     // Note: wrapper has already guaranteed that other.rep_ != nullptr here.
     int other_size = other.current_size_;
     void** other_elements = other.rep_->elements;
@@ -871,10 +881,10 @@ class StringTypeHandler {
   typedef std::string Type;
   using Movable = IsMovable<Type>;
 
-  static inline std::string* New(Arena* arena) {
+  static PROTOBUF_NOINLINE std::string* New(Arena* arena) {
     return Arena::Create<std::string>(arena);
   }
-  static inline std::string* New(Arena* arena, std::string&& value) {
+  static PROTOBUF_NOINLINE std::string* New(Arena* arena, std::string&& value) {
     return Arena::Create<std::string>(arena, std::move(value));
   }
   static inline std::string* NewFromPrototype(const std::string*,
@@ -1326,7 +1336,7 @@ inline Element* RepeatedPtrField<Element>::Mutable(int index) {
 }
 
 template <typename Element>
-inline Element* RepeatedPtrField<Element>::Add() {
+PROTOBUF_NOINLINE Element* RepeatedPtrField<Element>::Add() {
   return RepeatedPtrFieldBase::Add<TypeHandler>();
 }
 
@@ -1341,7 +1351,7 @@ inline void RepeatedPtrField<Element>::Add(Iter begin, Iter end) {
   if (std::is_base_of<
           std::forward_iterator_tag,
           typename std::iterator_traits<Iter>::iterator_category>::value) {
-    int reserve = std::distance(begin, end);
+    int reserve = static_cast<int>(std::distance(begin, end));
     Reserve(size() + reserve);
   }
   for (; begin != end; ++begin) {
@@ -1486,8 +1496,8 @@ RepeatedPtrField<Element>::erase(const_iterator position) {
 template <typename Element>
 inline typename RepeatedPtrField<Element>::iterator
 RepeatedPtrField<Element>::erase(const_iterator first, const_iterator last) {
-  size_type pos_offset = std::distance(cbegin(), first);
-  size_type last_offset = std::distance(cbegin(), last);
+  size_type pos_offset = static_cast<size_type>(std::distance(cbegin(), first));
+  size_type last_offset = static_cast<size_type>(std::distance(cbegin(), last));
   DeleteSubrange(pos_offset, last_offset - pos_offset);
   return begin() + pos_offset;
 }
@@ -2021,6 +2031,6 @@ extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
 }  // namespace protobuf
 }  // namespace google
 
-#include <google/protobuf/port_undef.inc>
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_REPEATED_PTR_FIELD_H__

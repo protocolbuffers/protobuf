@@ -11,7 +11,7 @@ load(
 )
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
-load("//build_defs:cpp_opts.bzl", "COPTS")
+load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS", "PROTOC_LINK_OPTS")
 
 proto_library(
     name = "plugin_proto",
@@ -37,7 +37,7 @@ cc_library(
     include_prefix = "google/protobuf/compiler",
     visibility = ["//visibility:public"],
     deps = [
-        "//src/google/protobuf",
+        "//src/google/protobuf:protobuf_nowkt",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -59,7 +59,7 @@ cc_library(
     include_prefix = "google/protobuf/compiler",
     visibility = ["//visibility:public"],
     deps = [
-        "//:protobuf",
+        "//src/google/protobuf:protobuf_nowkt",
         "@com_google_absl//absl/strings",
     ],
 )
@@ -82,26 +82,23 @@ cc_library(
     deps = [
         ":code_generator",
         ":importer",
-        "//:protobuf",
+        "//src/google/protobuf:protobuf_nowkt",
         "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
 
 cc_library(
-    name = "protoc_lib",
+    name = "protoc_lib_nowkt",
     srcs = [
         "main.cc",
     ],
     copts = COPTS,
-    visibility = [
-        "//:__pkg__",
-        "//pkg:__pkg__",
-    ],
     deps = [
         ":code_generator",
         ":command_line_interface",
         ":importer",
-        "//:protobuf",
+        "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler/cpp",
         "//src/google/protobuf/compiler/csharp",
         "//src/google/protobuf/compiler/java",
@@ -109,6 +106,29 @@ cc_library(
         "//src/google/protobuf/compiler/php",
         "//src/google/protobuf/compiler/python",
         "//src/google/protobuf/compiler/ruby",
+    ],
+)
+
+cc_binary(
+    name = "protoc_nowkt",
+    copts = COPTS,
+    linkopts = LINK_OPTS + PROTOC_LINK_OPTS,
+    visibility = [
+        "//src/google/protobuf:__pkg__",
+    ],
+    deps = [":protoc_lib_nowkt"],
+)
+
+cc_library(
+    name = "protoc_lib",
+    copts = COPTS,
+    visibility = [
+        "//:__pkg__",
+        "//pkg:__pkg__",
+    ],
+    deps = [
+        ":protoc_lib_nowkt",
+        "//:protobuf",
     ],
 )
 
@@ -224,6 +244,7 @@ cc_test(
         ":command_line_interface",
         ":mock_code_generator",
         "//:protobuf",
+        "//src/google/protobuf/compiler/cpp:names",
         "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf:test_util2",
         "//src/google/protobuf/io",

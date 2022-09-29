@@ -38,7 +38,7 @@
 #include <map>
 #include <string>
 
-#include <google/protobuf/compiler/cpp/field.h>
+#include "google/protobuf/compiler/cpp/field.h"
 
 namespace google {
 namespace protobuf {

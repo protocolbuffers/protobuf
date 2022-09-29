@@ -42,9 +42,9 @@
 #include <string>
 #include <vector>
 
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/wire_format_lite.h>
-#include <google/protobuf/util/type_resolver.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/wire_format_lite.h"
+#include "google/protobuf/util/type_resolver.h"
 #include "conformance/conformance.pb.h"
 
 namespace conformance {
@@ -276,7 +276,7 @@ class ConformanceTestSuite {
   void ReportFailure(const std::string& test_name, ConformanceLevel level,
                      const conformance::ConformanceRequest& request,
                      const conformance::ConformanceResponse& response,
-                     const char* fmt, ...);
+                     absl::string_view message);
   void ReportSkip(const std::string& test_name,
                   const conformance::ConformanceRequest& request,
                   const conformance::ConformanceResponse& response);

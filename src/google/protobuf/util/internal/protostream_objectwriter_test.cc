@@ -28,36 +28,36 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <google/protobuf/util/internal/protostream_objectwriter.h>
+#include "google/protobuf/util/internal/protostream_objectwriter.h"
 
 #include <stddef.h>  // For size_t
 
-#include <google/protobuf/field_mask.pb.h>
-#include <google/protobuf/timestamp.pb.h>
-#include <google/protobuf/type.pb.h>
-#include <google/protobuf/wrappers.pb.h>
-#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
-#include <google/protobuf/descriptor.pb.h>
-#include <google/protobuf/message.h>
-#include <google/protobuf/util/internal/mock_error_listener.h>
-#include <google/protobuf/stubs/bytestream.h>
+#include "google/protobuf/field_mask.pb.h"
+#include "google/protobuf/timestamp.pb.h"
+#include "google/protobuf/type.pb.h"
+#include "google/protobuf/wrappers.pb.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/util/internal/mock_error_listener.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/stubs/bytestream.h"
 #include "absl/strings/string_view.h"
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/util/internal/constants.h>
-#include <google/protobuf/util/internal/testdata/anys.pb.h>
-#include <google/protobuf/util/internal/testdata/books.pb.h>
-#include <google/protobuf/util/internal/testdata/field_mask.pb.h>
-#include <google/protobuf/util/internal/testdata/maps.pb.h>
-#include <google/protobuf/util/internal/testdata/oneofs.pb.h>
-#include <google/protobuf/util/internal/testdata/proto3.pb.h>
-#include <google/protobuf/util/internal/testdata/struct.pb.h>
-#include <google/protobuf/util/internal/testdata/timestamp_duration.pb.h>
-#include <google/protobuf/util/internal/testdata/wrappers.pb.h>
-#include <google/protobuf/util/internal/type_info_test_helper.h>
-#include <google/protobuf/util/message_differencer.h>
-#include <google/protobuf/util/type_resolver_util.h>
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/util/internal/constants.h"
+#include "google/protobuf/util/internal/testdata/anys.pb.h"
+#include "google/protobuf/util/internal/testdata/books.pb.h"
+#include "google/protobuf/util/internal/testdata/field_mask.pb.h"
+#include "google/protobuf/util/internal/testdata/maps.pb.h"
+#include "google/protobuf/util/internal/testdata/oneofs.pb.h"
+#include "google/protobuf/util/internal/testdata/proto3.pb.h"
+#include "google/protobuf/util/internal/testdata/struct.pb.h"
+#include "google/protobuf/util/internal/testdata/timestamp_duration.pb.h"
+#include "google/protobuf/util/internal/testdata/wrappers.pb.h"
+#include "google/protobuf/util/internal/type_info_test_helper.h"
+#include "google/protobuf/util/message_differencer.h"
+#include "google/protobuf/util/type_resolver_util.h"
 
 
 namespace google {

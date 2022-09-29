@@ -40,7 +40,7 @@ NS_ASSUME_NONNULL_BEGIN
  * applies for files declared with the "proto2" syntax. Files declared with the
  * "proto3" syntax discard the unknown values.
  **/
-@interface GPBUnknownFieldSet : NSObject<NSCopying>
+@interface GPBUnknownFieldSet : NSObject <NSCopying>
 
 /**
  * Tests to see if the given field number has a value.
