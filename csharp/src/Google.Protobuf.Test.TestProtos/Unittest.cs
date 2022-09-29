@@ -792,11 +792,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ImportMessage> OptionalImportMessageExtension =
       new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ImportMessage>(20, pb::FieldCodec.ForMessage(162, global::Google.Protobuf.TestProtos.Proto2.ImportMessage.Parser));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum> OptionalNestedEnumExtension =
-      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum>(21, pb::FieldCodec.ForEnum(168, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum) x, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum.Foo));
+      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum>(21, pb::FieldCodec.ForEnum(168, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum.Foo));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum> OptionalForeignEnumExtension =
-      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum>(22, pb::FieldCodec.ForEnum(176, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.ForeignEnum) x, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum.ForeignFoo));
+      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum>(22, pb::FieldCodec.ForEnum(176, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum.ForeignFoo));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ImportEnum> OptionalImportEnumExtension =
-      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ImportEnum>(23, pb::FieldCodec.ForEnum(184, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.ImportEnum) x, global::Google.Protobuf.TestProtos.Proto2.ImportEnum.ImportFoo));
+      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ImportEnum>(23, pb::FieldCodec.ForEnum(184, global::Google.Protobuf.TestProtos.Proto2.ImportEnum.ImportFoo));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string> OptionalStringPieceExtension =
       new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string>(24, pb::FieldCodec.ForString(194, ""));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string> OptionalCordExtension =
@@ -847,11 +847,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public static readonly pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ImportMessage> RepeatedImportMessageExtension =
       new pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ImportMessage>(50, pb::FieldCodec.ForMessage(402, global::Google.Protobuf.TestProtos.Proto2.ImportMessage.Parser));
     public static readonly pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum> RepeatedNestedEnumExtension =
-      new pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum>(51, pb::FieldCodec.ForEnum(408, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum) x));
+      new pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum>(51, pb::FieldCodec.ForEnum(408);
     public static readonly pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum> RepeatedForeignEnumExtension =
-      new pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum>(52, pb::FieldCodec.ForEnum(416, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.ForeignEnum) x));
+      new pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum>(52, pb::FieldCodec.ForEnum(416);
     public static readonly pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ImportEnum> RepeatedImportEnumExtension =
-      new pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ImportEnum>(53, pb::FieldCodec.ForEnum(424, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.ImportEnum) x));
+      new pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ImportEnum>(53, pb::FieldCodec.ForEnum(424);
     public static readonly pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string> RepeatedStringPieceExtension =
       new pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string>(54, pb::FieldCodec.ForString(434));
     public static readonly pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string> RepeatedCordExtension =
@@ -892,11 +892,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, pb::ByteString> DefaultBytesExtension =
       new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, pb::ByteString>(75, pb::FieldCodec.ForBytes(602, pb::ByteString.FromBase64("d29ybGQ=")));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum> DefaultNestedEnumExtension =
-      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum>(81, pb::FieldCodec.ForEnum(648, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum) x, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum.Bar));
+      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum>(81, pb::FieldCodec.ForEnum(648, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum.Bar));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum> DefaultForeignEnumExtension =
-      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum>(82, pb::FieldCodec.ForEnum(656, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.ForeignEnum) x, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum.ForeignBar));
+      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum>(82, pb::FieldCodec.ForEnum(656, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum.ForeignBar));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ImportEnum> DefaultImportEnumExtension =
-      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ImportEnum>(83, pb::FieldCodec.ForEnum(664, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.ImportEnum) x, global::Google.Protobuf.TestProtos.Proto2.ImportEnum.ImportBar));
+      new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.ImportEnum>(83, pb::FieldCodec.ForEnum(664, global::Google.Protobuf.TestProtos.Proto2.ImportEnum.ImportBar));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string> DefaultStringPieceExtension =
       new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string>(84, pb::FieldCodec.ForString(674, global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("YWJj"), 0, 3)));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string> DefaultCordExtension =
@@ -943,7 +943,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public static readonly pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestPackedExtensions, bool> PackedBoolExtension =
       new pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestPackedExtensions, bool>(102, pb::FieldCodec.ForBool(818));
     public static readonly pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestPackedExtensions, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum> PackedEnumExtension =
-      new pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestPackedExtensions, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum>(103, pb::FieldCodec.ForEnum(826, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.ForeignEnum) x));
+      new pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestPackedExtensions, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum>(103, pb::FieldCodec.ForEnum(826);
     public static readonly pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestUnpackedExtensions, int> UnpackedInt32Extension =
       new pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestUnpackedExtensions, int>(90, pb::FieldCodec.ForInt32(720));
     public static readonly pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestUnpackedExtensions, long> UnpackedInt64Extension =
@@ -971,7 +971,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     public static readonly pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestUnpackedExtensions, bool> UnpackedBoolExtension =
       new pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestUnpackedExtensions, bool>(102, pb::FieldCodec.ForBool(816));
     public static readonly pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestUnpackedExtensions, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum> UnpackedEnumExtension =
-      new pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestUnpackedExtensions, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum>(103, pb::FieldCodec.ForEnum(824, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.ForeignEnum) x));
+      new pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestUnpackedExtensions, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum>(103, pb::FieldCodec.ForEnum(824);
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestHugeFieldNumbers, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes> TestAllTypes =
       new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestHugeFieldNumbers, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes>(536860000, pb::FieldCodec.ForMessage(4294880002, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Parser));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestExtensionInsideTable, int> TestExtensionInsideTableExtension =
@@ -2094,7 +2094,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     /// <summary>Field number for the "repeated_nested_enum" field.</summary>
     public const int RepeatedNestedEnumFieldNumber = 51;
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum> _repeated_repeatedNestedEnum_codec
-        = pb::FieldCodec.ForEnum(408, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum) x);
+        = pb::FieldCodec.ForEnum(408);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum> repeatedNestedEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedEnum>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -2105,7 +2105,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     /// <summary>Field number for the "repeated_foreign_enum" field.</summary>
     public const int RepeatedForeignEnumFieldNumber = 52;
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.Proto2.ForeignEnum> _repeated_repeatedForeignEnum_codec
-        = pb::FieldCodec.ForEnum(416, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.ForeignEnum) x);
+        = pb::FieldCodec.ForEnum(416);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.Proto2.ForeignEnum> repeatedForeignEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.Proto2.ForeignEnum>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -2116,7 +2116,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     /// <summary>Field number for the "repeated_import_enum" field.</summary>
     public const int RepeatedImportEnumFieldNumber = 53;
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.Proto2.ImportEnum> _repeated_repeatedImportEnum_codec
-        = pb::FieldCodec.ForEnum(424, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.ImportEnum) x);
+        = pb::FieldCodec.ForEnum(424);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.Proto2.ImportEnum> repeatedImportEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.Proto2.ImportEnum>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -8042,7 +8042,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestGroupExtension, global::Google.Protobuf.TestProtos.Proto2.TestNestedExtension.Types.OptionalGroup_extension> OptionalGroupExtension =
         new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestGroupExtension, global::Google.Protobuf.TestProtos.Proto2.TestNestedExtension.Types.OptionalGroup_extension>(16, pb::FieldCodec.ForGroup(131, 132, global::Google.Protobuf.TestProtos.Proto2.TestNestedExtension.Types.OptionalGroup_extension.Parser));
       public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestGroupExtension, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum> OptionalForeignEnumExtension =
-        new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestGroupExtension, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum>(22, pb::FieldCodec.ForEnum(176, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.ForeignEnum) x, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum.ForeignFoo));
+        new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestGroupExtension, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum>(22, pb::FieldCodec.ForEnum(176, global::Google.Protobuf.TestProtos.Proto2.ForeignEnum.ForeignFoo));
     }
     #endregion
 
@@ -15175,7 +15175,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     /// <summary>Field number for the "RepeatedEnumField" field.</summary>
     public const int RepeatedEnumFieldFieldNumber = 9;
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.Proto2.ForeignEnum> _repeated_repeatedEnumField_codec
-        = pb::FieldCodec.ForEnum(72, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.ForeignEnum) x);
+        = pb::FieldCodec.ForEnum(72);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.Proto2.ForeignEnum> repeatedEnumField_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.Proto2.ForeignEnum>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -24575,7 +24575,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     /// <summary>Field number for the "packed_enum" field.</summary>
     public const int PackedEnumFieldNumber = 103;
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.Proto2.ForeignEnum> _repeated_packedEnum_codec
-        = pb::FieldCodec.ForEnum(826, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.ForeignEnum) x);
+        = pb::FieldCodec.ForEnum(826);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.Proto2.ForeignEnum> packedEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.Proto2.ForeignEnum>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -25123,7 +25123,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     /// <summary>Field number for the "unpacked_enum" field.</summary>
     public const int UnpackedEnumFieldNumber = 103;
     private static readonly pb::FieldCodec<global::Google.Protobuf.TestProtos.Proto2.ForeignEnum> _repeated_unpackedEnum_codec
-        = pb::FieldCodec.ForEnum(824, x => (int) x, x => (global::Google.Protobuf.TestProtos.Proto2.ForeignEnum) x);
+        = pb::FieldCodec.ForEnum(824);
     private readonly pbc::RepeatedField<global::Google.Protobuf.TestProtos.Proto2.ForeignEnum> unpackedEnum_ = new pbc::RepeatedField<global::Google.Protobuf.TestProtos.Proto2.ForeignEnum>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

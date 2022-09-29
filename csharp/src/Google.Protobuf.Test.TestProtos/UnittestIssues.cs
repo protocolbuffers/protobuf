@@ -645,7 +645,7 @@ namespace UnitTest.Issues.TestProtos {
     /// <summary>Field number for the "values" field.</summary>
     public const int ValuesFieldNumber = 2;
     private static readonly pb::FieldCodec<global::UnitTest.Issues.TestProtos.NegativeEnum> _repeated_values_codec
-        = pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::UnitTest.Issues.TestProtos.NegativeEnum) x);
+        = pb::FieldCodec.ForEnum(16);
     private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> values_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -656,7 +656,7 @@ namespace UnitTest.Issues.TestProtos {
     /// <summary>Field number for the "packed_values" field.</summary>
     public const int PackedValuesFieldNumber = 3;
     private static readonly pb::FieldCodec<global::UnitTest.Issues.TestProtos.NegativeEnum> _repeated_packedValues_codec
-        = pb::FieldCodec.ForEnum(26, x => (int) x, x => (global::UnitTest.Issues.TestProtos.NegativeEnum) x);
+        = pb::FieldCodec.ForEnum(26);
     private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum> packedValues_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.NegativeEnum>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1097,7 +1097,7 @@ namespace UnitTest.Issues.TestProtos {
     /// <summary>Field number for the "EnumArray" field.</summary>
     public const int EnumArrayFieldNumber = 6;
     private static readonly pb::FieldCodec<global::UnitTest.Issues.TestProtos.DeprecatedEnum> _repeated_enumArray_codec
-        = pb::FieldCodec.ForEnum(50, x => (int) x, x => (global::UnitTest.Issues.TestProtos.DeprecatedEnum) x);
+        = pb::FieldCodec.ForEnum(50);
     private readonly pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedEnum> enumArray_ = new pbc::RepeatedField<global::UnitTest.Issues.TestProtos.DeprecatedEnum>();
     [global::System.ObsoleteAttribute]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

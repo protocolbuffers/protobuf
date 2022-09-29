@@ -954,7 +954,7 @@ namespace ProtobufTestMessages.Proto3 {
     /// <summary>Field number for the "repeated_nested_enum" field.</summary>
     public const int RepeatedNestedEnumFieldNumber = 51;
     private static readonly pb::FieldCodec<global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum> _repeated_repeatedNestedEnum_codec
-        = pb::FieldCodec.ForEnum(410, x => (int) x, x => (global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum) x);
+        = pb::FieldCodec.ForEnum(410);
     private readonly pbc::RepeatedField<global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum> repeatedNestedEnum_ = new pbc::RepeatedField<global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -965,7 +965,7 @@ namespace ProtobufTestMessages.Proto3 {
     /// <summary>Field number for the "repeated_foreign_enum" field.</summary>
     public const int RepeatedForeignEnumFieldNumber = 52;
     private static readonly pb::FieldCodec<global::ProtobufTestMessages.Proto3.ForeignEnum> _repeated_repeatedForeignEnum_codec
-        = pb::FieldCodec.ForEnum(418, x => (int) x, x => (global::ProtobufTestMessages.Proto3.ForeignEnum) x);
+        = pb::FieldCodec.ForEnum(418);
     private readonly pbc::RepeatedField<global::ProtobufTestMessages.Proto3.ForeignEnum> repeatedForeignEnum_ = new pbc::RepeatedField<global::ProtobufTestMessages.Proto3.ForeignEnum>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1144,7 +1144,7 @@ namespace ProtobufTestMessages.Proto3 {
     /// <summary>Field number for the "packed_nested_enum" field.</summary>
     public const int PackedNestedEnumFieldNumber = 88;
     private static readonly pb::FieldCodec<global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum> _repeated_packedNestedEnum_codec
-        = pb::FieldCodec.ForEnum(706, x => (int) x, x => (global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum) x);
+        = pb::FieldCodec.ForEnum(706);
     private readonly pbc::RepeatedField<global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum> packedNestedEnum_ = new pbc::RepeatedField<global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1301,7 +1301,7 @@ namespace ProtobufTestMessages.Proto3 {
     /// <summary>Field number for the "unpacked_nested_enum" field.</summary>
     public const int UnpackedNestedEnumFieldNumber = 102;
     private static readonly pb::FieldCodec<global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum> _repeated_unpackedNestedEnum_codec
-        = pb::FieldCodec.ForEnum(816, x => (int) x, x => (global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum) x);
+        = pb::FieldCodec.ForEnum(816);
     private readonly pbc::RepeatedField<global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum> unpackedNestedEnum_ = new pbc::RepeatedField<global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1502,7 +1502,7 @@ namespace ProtobufTestMessages.Proto3 {
     /// <summary>Field number for the "map_string_nested_enum" field.</summary>
     public const int MapStringNestedEnumFieldNumber = 73;
     private static readonly pbc::MapField<string, global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum>.Codec _map_mapStringNestedEnum_codec
-        = new pbc::MapField<string, global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum>.Codec(pb::FieldCodec.ForString(10, ""), pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum) x, global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum.Foo), 586);
+        = new pbc::MapField<string, global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum>.Codec(pb::FieldCodec.ForString(10, ""), pb::FieldCodec.ForEnum(16, global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum.Foo), 586);
     private readonly pbc::MapField<string, global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum> mapStringNestedEnum_ = new pbc::MapField<string, global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1513,7 +1513,7 @@ namespace ProtobufTestMessages.Proto3 {
     /// <summary>Field number for the "map_string_foreign_enum" field.</summary>
     public const int MapStringForeignEnumFieldNumber = 74;
     private static readonly pbc::MapField<string, global::ProtobufTestMessages.Proto3.ForeignEnum>.Codec _map_mapStringForeignEnum_codec
-        = new pbc::MapField<string, global::ProtobufTestMessages.Proto3.ForeignEnum>.Codec(pb::FieldCodec.ForString(10, ""), pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::ProtobufTestMessages.Proto3.ForeignEnum) x, global::ProtobufTestMessages.Proto3.ForeignEnum.ForeignFoo), 594);
+        = new pbc::MapField<string, global::ProtobufTestMessages.Proto3.ForeignEnum>.Codec(pb::FieldCodec.ForString(10, ""), pb::FieldCodec.ForEnum(16, global::ProtobufTestMessages.Proto3.ForeignEnum.ForeignFoo), 594);
     private readonly pbc::MapField<string, global::ProtobufTestMessages.Proto3.ForeignEnum> mapStringForeignEnum_ = new pbc::MapField<string, global::ProtobufTestMessages.Proto3.ForeignEnum>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]

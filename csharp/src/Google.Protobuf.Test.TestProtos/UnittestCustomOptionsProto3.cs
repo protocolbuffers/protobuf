@@ -181,7 +181,7 @@ namespace UnitTest.Issues.TestProtos {
     public static readonly pb::Extension<global::Google.Protobuf.Reflection.ServiceOptions, long> ServiceOpt1 =
       new pb::Extension<global::Google.Protobuf.Reflection.ServiceOptions, long>(7887650, pb::FieldCodec.ForSInt64(63101200, 0L));
     public static readonly pb::Extension<global::Google.Protobuf.Reflection.MethodOptions, global::UnitTest.Issues.TestProtos.MethodOpt1> MethodOpt1 =
-      new pb::Extension<global::Google.Protobuf.Reflection.MethodOptions, global::UnitTest.Issues.TestProtos.MethodOpt1>(7890860, pb::FieldCodec.ForEnum(63126880, x => (int) x, x => (global::UnitTest.Issues.TestProtos.MethodOpt1) x, global::UnitTest.Issues.TestProtos.MethodOpt1.Unspecified));
+      new pb::Extension<global::Google.Protobuf.Reflection.MethodOptions, global::UnitTest.Issues.TestProtos.MethodOpt1>(7890860, pb::FieldCodec.ForEnum(63126880, global::UnitTest.Issues.TestProtos.MethodOpt1.Unspecified));
     public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, bool> BoolOpt =
       new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, bool>(7706090, pb::FieldCodec.ForBool(61648720, false));
     public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, int> Int32Opt =
@@ -213,7 +213,7 @@ namespace UnitTest.Issues.TestProtos {
     public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, pb::ByteString> BytesOpt =
       new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, pb::ByteString>(7673238, pb::FieldCodec.ForBytes(61385906, pb::ByteString.Empty));
     public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.DummyMessageContainingEnum.Types.TestEnumType> EnumOpt =
-      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.DummyMessageContainingEnum.Types.TestEnumType>(7673233, pb::FieldCodec.ForEnum(61385864, x => (int) x, x => (global::UnitTest.Issues.TestProtos.DummyMessageContainingEnum.Types.TestEnumType) x, global::UnitTest.Issues.TestProtos.DummyMessageContainingEnum.Types.TestEnumType.TestOptionEnumUnspecified));
+      new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.DummyMessageContainingEnum.Types.TestEnumType>(7673233, pb::FieldCodec.ForEnum(61385864, global::UnitTest.Issues.TestProtos.DummyMessageContainingEnum.Types.TestEnumType.TestOptionEnumUnspecified));
     public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.DummyMessageInvalidAsOptionType> MessageTypeOpt =
       new pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.DummyMessageInvalidAsOptionType>(7665967, pb::FieldCodec.ForMessage(61327738, global::UnitTest.Issues.TestProtos.DummyMessageInvalidAsOptionType.Parser));
     public static readonly pb::Extension<global::Google.Protobuf.Reflection.MessageOptions, global::UnitTest.Issues.TestProtos.ComplexOptionType1> ComplexOpt1 =
