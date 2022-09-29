@@ -412,6 +412,12 @@ class MessageReflection {
 
     @Override
     public MergeTarget setField(Descriptors.FieldDescriptor field, Object value) {
+      if (!field.isRepeated() && value instanceof MessageLite.Builder) {
+        if (value != getFieldBuilder(field)) {
+          builder.setField(field, ((MessageLite.Builder) value).buildPartial());
+        }
+        return this;
+      }
       builder.setField(field, value);
       return this;
     }
@@ -425,12 +431,18 @@ class MessageReflection {
     @Override
     public MergeTarget setRepeatedField(
         Descriptors.FieldDescriptor field, int index, Object value) {
+      if (value instanceof MessageLite.Builder) {
+        value = ((MessageLite.Builder) value).buildPartial();
+      }
       builder.setRepeatedField(field, index, value);
       return this;
     }
 
     @Override
     public MergeTarget addRepeatedField(Descriptors.FieldDescriptor field, Object value) {
+      if (value instanceof MessageLite.Builder) {
+        value = ((MessageLite.Builder) value).buildPartial();
+      }
       builder.addRepeatedField(field, value);
       return this;
     }
@@ -614,11 +626,14 @@ class MessageReflection {
     public MergeTarget newMergeTargetForField(
         Descriptors.FieldDescriptor field, Message defaultInstance) {
       Message.Builder subBuilder;
-      if (defaultInstance != null) {
-        subBuilder = defaultInstance.newBuilderForType();
-      } else {
-        subBuilder = builder.newBuilderForField(field);
+      if (!field.isRepeated() && hasField(field)) {
+        subBuilder = getFieldBuilder(field);
+        if (subBuilder != null) {
+          return new BuilderAdapter(subBuilder);
+        }
       }
+
+      subBuilder = newMessageFieldInstance(field, defaultInstance);
       if (!field.isRepeated()) {
         Message originalMessage = (Message) getField(field);
         if (originalMessage != null) {
@@ -654,7 +669,7 @@ class MessageReflection {
 
     @Override
     public Object finish() {
-      return builder.buildPartial();
+      return builder;
     }
   }
 
