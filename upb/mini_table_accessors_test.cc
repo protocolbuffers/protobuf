@@ -289,7 +289,9 @@ TEST(GeneratedCode, SubMessage) {
   upb_Message* new_nested_message =
       protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_new(arena);
   upb_MiniTable_SetInt32(new_nested_message, nested_message_a_field, 123);
-  upb_MiniTable_SetMessage(msg, optional_message_field, new_nested_message);
+  upb_MiniTable_SetMessage(
+      msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init,
+      optional_message_field, new_nested_message);
 
   upb_Message* mutable_message = upb_MiniTable_GetMutableMessage(
       msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init,

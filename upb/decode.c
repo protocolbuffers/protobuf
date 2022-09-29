@@ -940,7 +940,8 @@ int _upb_Decoder_GetVarintOp(const upb_MiniTable_Field* field) {
   return kVarintOps[field->descriptortype];
 }
 
-int _upb_Decoder_GetDelimitedOp(const upb_MiniTable_Field* field) {
+int _upb_Decoder_GetDelimitedOp(const upb_MiniTable* mt,
+                                const upb_MiniTable_Field* field) {
   enum { kRepeatedBase = 19 };
 
   static const int8_t kDelimitedOps[] = {
@@ -991,13 +992,24 @@ int _upb_Decoder_GetDelimitedOp(const upb_MiniTable_Field* field) {
 
   int ndx = field->descriptortype;
   if (upb_FieldMode_Get(field) == kUpb_FieldMode_Array) ndx += kRepeatedBase;
-  return kDelimitedOps[ndx];
+  int op = kDelimitedOps[ndx];
+
+  // If sub-message is not linked, treat as unknown.
+  if (op == kUpb_DecodeOp_SubMessage &&
+      !(field->mode & kUpb_LabelFlags_IsExtension)) {
+    const upb_MiniTable_Sub* sub = &mt->subs[field->submsg_index];
+    if (!sub->submsg) {
+      op = kUpb_DecodeOp_UnknownField;
+    }
+  }
+
+  return op;
 }
 
 UPB_FORCEINLINE
 static const char* _upb_Decoder_DecodeWireValue(
-    upb_Decoder* d, const char* ptr, const upb_MiniTable_Field* field,
-    int wire_type, wireval* val, int* op) {
+    upb_Decoder* d, const char* ptr, const upb_MiniTable* mt,
+    const upb_MiniTable_Field* field, int wire_type, wireval* val, int* op) {
   static const unsigned kFixed32OkMask = (1 << kUpb_FieldType_Float) |
                                          (1 << kUpb_FieldType_Fixed32) |
                                          (1 << kUpb_FieldType_SFixed32);
@@ -1030,7 +1042,7 @@ static const char* _upb_Decoder_DecodeWireValue(
       return ptr + 8;
     case kUpb_WireType_Delimited:
       ptr = upb_Decoder_DecodeSize(d, ptr, &val->size);
-      *op = _upb_Decoder_GetDelimitedOp(field);
+      *op = _upb_Decoder_GetDelimitedOp(mt, field);
       return ptr;
     case kUpb_WireType_StartGroup:
       val->uint32_val = field->number;
@@ -1189,7 +1201,8 @@ static const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
     }
 
     field = _upb_Decoder_FindField(d, layout, field_number, &last_field_index);
-    ptr = _upb_Decoder_DecodeWireValue(d, ptr, field, wire_type, &val, &op);
+    ptr = _upb_Decoder_DecodeWireValue(d, ptr, layout, field, wire_type, &val,
+                                       &op);
 
     if (op >= 0) {
       ptr = _upb_Decoder_DecodeKnownField(d, ptr, msg, layout, field, op, &val);

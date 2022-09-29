@@ -183,6 +183,14 @@ bool upb_Message_Set(upb_Message* msg, const upb_FieldDef* f,
     memcpy(&ext->data, &val, sizeof(val));
   } else {
     const upb_MiniTable_Field* field = upb_FieldDef_MiniTable(f);
+
+    // Building reflection should always cause all sub-message types to be
+    // linked, but double-check here just for extra assurance.
+    UPB_ASSERT(!upb_FieldDef_IsSubMessage(f) ||
+               upb_MessageDef_MiniTable(upb_FieldDef_ContainingType(f))
+                   ->subs[field->submsg_index]
+                   .submsg);
+
     char* mem = UPB_PTR_AT(msg, field->offset, char);
     memcpy(mem, &val, get_field_size(field));
     if (field->presence > 0) {

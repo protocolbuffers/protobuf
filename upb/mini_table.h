@@ -135,9 +135,19 @@ typedef enum {
 upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
                                    upb_MiniTablePlatform platform,
                                    upb_Arena* arena, upb_Status* status);
+
+// Links a sub-message field to a MiniTable for that sub-message.  If a
+// sub-message field is not linked, it will be treated as an unknown field
+// during parsing, and setting the field will not be allowed.  It is possible
+// to link the message field later, at which point it will no longer be treated
+// as unknown.  However there is no synchronization for this operation, which
+// means parallel mutation requires external synchronization.
 void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
                                  upb_MiniTable_Field* field,
                                  const upb_MiniTable* sub);
+
+// Links an enum field to a MiniTable for that enum.  All enum fields must
+// be linked prior to parsing.
 void upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTable_Field* field,
                               const upb_MiniTable_Enum* sub);
 

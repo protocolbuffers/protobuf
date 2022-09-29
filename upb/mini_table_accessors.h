@@ -192,10 +192,12 @@ UPB_INLINE const upb_Message* upb_MiniTable_GetMessage(
 }
 
 UPB_INLINE void upb_MiniTable_SetMessage(upb_Message* msg,
+                                         const upb_MiniTable* mini_table,
                                          const upb_MiniTable_Field* field,
                                          upb_Message* sub_message) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
              field->descriptortype == kUpb_FieldType_Group);
+  UPB_ASSERT(mini_table->subs[field->submsg_index].submsg);
   _upb_MiniTable_SetPresence(msg, field);
   *UPB_PTR_AT(msg, field->offset, const upb_Message*) = sub_message;
 }
@@ -207,8 +209,10 @@ UPB_INLINE upb_Message* upb_MiniTable_GetMutableMessage(
              field->descriptortype == kUpb_FieldType_Group);
   upb_Message* sub_message = *UPB_PTR_AT(msg, field->offset, upb_Message*);
   if (!sub_message) {
-    sub_message =
-        _upb_Message_New(mini_table->subs[field->submsg_index].submsg, arena);
+    const upb_MiniTable* sub_mini_table =
+        mini_table->subs[field->submsg_index].submsg;
+    UPB_ASSERT(sub_mini_table);
+    sub_message = _upb_Message_New(sub_mini_table, arena);
     *UPB_PTR_AT(msg, field->offset, upb_Message*) = sub_message;
     _upb_MiniTable_SetPresence(msg, field);
   }
