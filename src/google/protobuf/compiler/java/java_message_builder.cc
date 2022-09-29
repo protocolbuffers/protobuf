@@ -58,6 +58,9 @@ namespace protobuf {
 namespace compiler {
 namespace java {
 
+using internal::WireFormat;
+using internal::WireFormatLite;
+
 namespace {
 std::string MapValueImmutableClassdName(const Descriptor* descriptor,
                                         ClassNameResolver* name_resolver) {
@@ -285,43 +288,63 @@ void MessageBuilderGenerator::GenerateDescriptorMethods(io::Printer* printer) {
 
 void MessageBuilderGenerator::GenerateCommonBuilderMethods(
     io::Printer* printer) {
+  // Decide if we really need to have the "maybeForceBuilderInitialization()"
+  // method.
+  // TODO(b/249158148): Remove the need for this entirely
+  bool need_maybe_force_builder_init = false;
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    if (descriptor_->field(i)->message_type() != nullptr &&
+        !IsRealOneof(descriptor_->field(i)) &&
+        HasHasbit(descriptor_->field(i))) {
+      need_maybe_force_builder_init = true;
+      break;
+    }
+  }
+
+  const char* force_builder_init = need_maybe_force_builder_init
+                                       ? "  maybeForceBuilderInitialization();"
+                                       : "";
+
   printer->Print(
       "// Construct using $classname$.newBuilder()\n"
       "private Builder() {\n"
-      "  maybeForceBuilderInitialization();\n"
+      "$force_builder_init$\n"
       "}\n"
       "\n",
-      "classname", name_resolver_->GetImmutableClassName(descriptor_));
+      "classname", name_resolver_->GetImmutableClassName(descriptor_),
+      "force_builder_init", force_builder_init);
 
   printer->Print(
       "private Builder(\n"
       "    com.google.protobuf.GeneratedMessage$ver$.BuilderParent parent) {\n"
       "  super(parent);\n"
-      "  maybeForceBuilderInitialization();\n"
+      "$force_builder_init$\n"
       "}\n",
       "classname", name_resolver_->GetImmutableClassName(descriptor_), "ver",
-      GeneratedCodeVersionSuffix());
+      GeneratedCodeVersionSuffix(), "force_builder_init", force_builder_init);
 
-  printer->Print(
-      "private void maybeForceBuilderInitialization() {\n"
-      "  if (com.google.protobuf.GeneratedMessage$ver$\n"
-      "          .alwaysUseFieldBuilders) {\n",
-      "ver", GeneratedCodeVersionSuffix());
+  if (need_maybe_force_builder_init) {
+    printer->Print(
+        "private void maybeForceBuilderInitialization() {\n"
+        "  if (com.google.protobuf.GeneratedMessage$ver$\n"
+        "          .alwaysUseFieldBuilders) {\n",
+        "ver", GeneratedCodeVersionSuffix());
 
-  printer->Indent();
-  printer->Indent();
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    if (!IsRealOneof(descriptor_->field(i))) {
-      field_generators_.get(descriptor_->field(i))
-          .GenerateFieldBuilderInitializationCode(printer);
+    printer->Indent();
+    printer->Indent();
+    for (int i = 0; i < descriptor_->field_count(); i++) {
+      if (!IsRealOneof(descriptor_->field(i))) {
+        field_generators_.get(descriptor_->field(i))
+            .GenerateFieldBuilderInitializationCode(printer);
+      }
     }
-  }
-  printer->Outdent();
-  printer->Outdent();
+    printer->Outdent();
+    printer->Outdent();
 
-  printer->Print(
-      "  }\n"
-      "}\n");
+    printer->Print(
+        "  }\n"
+        "}\n");
+  }
 
   printer->Print(
       "@java.lang.Override\n"
@@ -331,10 +354,8 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
   printer->Indent();
 
   for (int i = 0; i < descriptor_->field_count(); i++) {
-    if (!IsRealOneof(descriptor_->field(i))) {
-      field_generators_.get(descriptor_->field(i))
-          .GenerateBuilderClearCode(printer);
-    }
+    field_generators_.get(descriptor_->field(i))
+        .GenerateBuilderClearCode(printer);
   }
 
   for (auto oneof : oneofs_) {
@@ -575,7 +596,7 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
       printer->Print("  this.mergeExtensionFields(other);\n");
     }
 
-    printer->Print("  this.mergeUnknownFields(other.unknownFields);\n");
+    printer->Print("  this.mergeUnknownFields(other.getUnknownFields());\n");
 
     printer->Print("  onChanged();\n");
 
@@ -596,20 +617,92 @@ void MessageBuilderGenerator::GenerateBuilderParsingMethods(
       "    com.google.protobuf.CodedInputStream input,\n"
       "    com.google.protobuf.ExtensionRegistryLite extensionRegistry)\n"
       "    throws java.io.IOException {\n"
-      "  $classname$ parsedMessage = null;\n"
+      "  if (extensionRegistry == null) {\n"
+      "    throw new java.lang.NullPointerException();\n"
+      "  }\n"
       "  try {\n"
-      "    parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);\n"
+      "    boolean done = false;\n"
+      "    while (!done) {\n"
+      "      int tag = input.readTag();\n"
+      "      switch (tag) {\n"
+      "        case 0:\n"  // zero signals EOF / limit reached
+      "          done = true;\n"
+      "          break;\n");
+  printer->Indent();  // method
+  printer->Indent();  // try
+  printer->Indent();  // while
+  printer->Indent();  // switch
+  GenerateBuilderFieldParsingCases(printer);
+  printer->Outdent();  // switch
+  printer->Outdent();  // while
+  printer->Outdent();  // try
+  printer->Outdent();  // method
+  printer->Print(
+      "        default: {\n"
+      "          if (!super.parseUnknownField(input, extensionRegistry, tag)) "
+      "{\n"
+      "            done = true; // was an endgroup tag\n"
+      "          }\n"
+      "          break;\n"
+      "        } // default:\n"
+      "      } // switch (tag)\n"
+      "    } // while (!done)\n"
       "  } catch (com.google.protobuf.InvalidProtocolBufferException e) {\n"
-      "    parsedMessage = ($classname$) e.getUnfinishedMessage();\n"
       "    throw e.unwrapIOException();\n"
       "  } finally {\n"
-      "    if (parsedMessage != null) {\n"
-      "      mergeFrom(parsedMessage);\n"
-      "    }\n"
-      "  }\n"
+      "    onChanged();\n"
+      "  } // finally\n"
       "  return this;\n"
-      "}\n",
-      "classname", name_resolver_->GetImmutableClassName(descriptor_));
+      "}\n");
+}
+
+void MessageBuilderGenerator::GenerateBuilderFieldParsingCases(
+    io::Printer* printer) {
+  std::unique_ptr<const FieldDescriptor*[]> sorted_fields(
+      SortFieldsByNumber(descriptor_));
+  for (int i = 0; i < descriptor_->field_count(); i++) {
+    const FieldDescriptor* field = sorted_fields[i];
+    GenerateBuilderFieldParsingCase(printer, field);
+    if (field->is_packable()) {
+      GenerateBuilderPackedFieldParsingCase(printer, field);
+    }
+  }
+}
+
+void MessageBuilderGenerator::GenerateBuilderFieldParsingCase(
+    io::Printer* printer, const FieldDescriptor* field) {
+  uint32_t tag = WireFormatLite::MakeTag(
+      field->number(), WireFormat::WireTypeForFieldType(field->type()));
+  std::string tagString = StrCat(static_cast<int32_t>(tag));
+  printer->Print("case $tag$: {\n", "tag", tagString);
+  printer->Indent();
+
+  field_generators_.get(field).GenerateBuilderParsingCode(printer);
+
+  printer->Outdent();
+  printer->Print(
+      "  break;\n"
+      "} // case $tag$\n",
+      "tag", tagString);
+}
+
+void MessageBuilderGenerator::GenerateBuilderPackedFieldParsingCase(
+    io::Printer* printer, const FieldDescriptor* field) {
+  // To make packed = true wire compatible, we generate parsing code from a
+  // packed version of this field regardless of field->options().packed().
+  uint32_t tag = WireFormatLite::MakeTag(
+      field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
+  std::string tagString = StrCat(static_cast<int32_t>(tag));
+  printer->Print("case $tag$: {\n", "tag", tagString);
+  printer->Indent();
+
+  field_generators_.get(field).GenerateBuilderParsingCodeFromPacked(printer);
+
+  printer->Outdent();
+  printer->Print(
+      "  break;\n"
+      "} // case $tag$\n",
+      "tag", tagString);
 }
 
 // ===================================================================

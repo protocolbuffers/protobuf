@@ -85,6 +85,7 @@ final class ExtensionSchemaFull extends ExtensionSchema<FieldDescriptor> {
 
   @Override
   <UT, UB> UB parseExtension(
+      Object containerMessage,
       Reader reader,
       Object extensionObject,
       ExtensionRegistryLite extensionRegistry,
@@ -202,7 +203,7 @@ final class ExtensionSchemaFull extends ExtensionSchema<FieldDescriptor> {
               } else {
                 unknownFields =
                     SchemaUtil.storeUnknownEnum(
-                        fieldNumber, number, unknownFields, unknownFieldSchema);
+                        containerMessage, fieldNumber, number, unknownFields, unknownFieldSchema);
               }
             }
             value = enumList;
@@ -221,7 +222,7 @@ final class ExtensionSchemaFull extends ExtensionSchema<FieldDescriptor> {
         Object enumValue = extension.descriptor.getEnumType().findValueByNumber(number);
         if (enumValue == null) {
           return SchemaUtil.storeUnknownEnum(
-              fieldNumber, number, unknownFields, unknownFieldSchema);
+              containerMessage, fieldNumber, number, unknownFields, unknownFieldSchema);
         }
         value = enumValue;
       } else {
