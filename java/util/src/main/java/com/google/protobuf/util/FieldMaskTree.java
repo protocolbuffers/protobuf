@@ -310,7 +310,7 @@ final class FieldMaskTree {
             destination instanceof GeneratedMessage.Builder
                 ? destination.getFieldBuilder(field)
                 : ((Message) destination.getField(field)).toBuilder();
-        merge(entry.getValue(), (Message) source.getField(field), childBuilder, options);
+        merge(entry.getValue(), path, (Message) source.getField(field), childBuilder, options);
         destination.setField(field, childBuilder.buildPartial());
         continue;
       }
