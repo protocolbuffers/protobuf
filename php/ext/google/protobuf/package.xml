@@ -10,11 +10,11 @@
   <email>protobufpackages@google.com</email>
   <active>yes</active>
  </lead>
- <date>2022-09-14</date>
- <time>13:34:21</time>
+ <date>2022-09-29</date>
+ <time>10:38:52</time>
  <version>
-  <release>3.19.5</release>
-  <api>3.19.5</api>
+  <release>3.19.6</release>
+  <api>3.19.6</api>
  </version>
  <stability>
   <release>stable</release>
@@ -1214,6 +1214,21 @@ G  A release.
    </stability>
    <date>2022-09-14</date>
    <time>11:09:09</time>
+   <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
+   <notes>
+   </notes>
+  </release>
+  <release>
+   <version>
+    <release>3.19.6</release>
+    <api>3.19.6</api>
+   </version>
+   <stability>
+    <release>stable</release>
+    <api>stable</api>
+   </stability>
+   <date>2022-09-29</date>
+   <time>10:38:52</time>
    <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
    <notes>
    </notes>
