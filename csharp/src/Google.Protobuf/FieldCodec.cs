@@ -714,17 +714,17 @@ namespace Google.Protobuf
 
             internal override void ValueWriter(ref WriteContext ctx, T value)
             {
-                ctx.WriteEnum((int)(object)value);
+                ctx.WriteEnum((int) (object) value);
             }
 
             internal override int ValueSizeCalculator(T value)
             {
-                return CodedOutputStream.ComputeEnumSize((int)(object)value);
+                return CodedOutputStream.ComputeEnumSize((int) (object) value);
             }
 
             internal override T ValueReader(ref ParseContext ctx)
             {
-                return (T)(object)ctx.ReadEnum();
+                return (T) (object) ctx.ReadEnum();
             }
         }
 
@@ -1003,7 +1003,7 @@ namespace Google.Protobuf
                     return (ref ParseContext ctx) => Read(ref ctx, nestedCoded);
                 }
                 // Return optimized read for the wrapper type.
-                return (ValueReader<T?>)value;
+                return (ValueReader<T?>) value;
             }
 
             [SecuritySafeCritical]
