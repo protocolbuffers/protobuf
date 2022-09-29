@@ -218,7 +218,11 @@
 
 #undef UPB_FASTTABLE_SUPPORTED
 
-/* ASAN poisoning (for arena) *************************************************/
+/* ASAN poisoning (for arena).
+ * If using UPB from an interpreted language like Ruby, a build of the
+ * interpreter compiled with ASAN enbabled must be used in order to get sane and
+ * expected behavior.
+ */
 
 #if defined(__SANITIZE_ADDRESS__)
 #define UPB_ASAN 1
@@ -994,6 +998,31 @@ UPB_INLINE bool _upb_Array_Append_accessor(void* msg, size_t ofs,
 
 #endif /* UPB_INTERNAL_ARRAY_H_ */
 
+#ifndef UPB_INTERNAL_ATOI_H_
+#define UPB_INTERNAL_ATOI_H_
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// We use these hand-written routines instead of strto[u]l() because the "long
+// long" variants aren't in c89. Also our version allows setting a ptr limit.
+// Return the new position of the pointer after parsing the int, or NULL on
+// integer overflow.
+
+const char* upb_BufToUint64(const char* ptr, const char* end, uint64_t* val);
+const char* upb_BufToInt64(const char* ptr, const char* end, int64_t* val,
+                           bool* is_neg);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_INTERNAL_ATOI_H_ */
+
 #ifndef UPB_MAP_H_
 #define UPB_MAP_H_
 
@@ -1526,6 +1555,9 @@ UPB_INLINE uint64_t _upb_UInt64_FromULL(unsigned long long v) {
   return (uint64_t)v;
 }
 
+extern const float kUpb_FltInfinity;
+extern const double kUpb_Infinity;
+
 /** upb_MiniTable *************************************************************/
 
 /* upb_MiniTable represents the memory layout of a given upb_MessageDef.  The
@@ -1598,10 +1630,46 @@ typedef struct {
 } _upb_FastTable_Entry;
 
 typedef struct {
-  const int32_t* values;  // List of values <0 or >63
-  uint64_t mask;          // Bits are set for acceptable value 0 <= x < 64
-  int value_count;
+  uint32_t mask_limit;   // Limit enum value that can be tested with mask.
+  uint32_t value_count;  // Number of values after the bitfield.
+  uint32_t data[];       // Bitmask + enumerated values follow.
 } upb_MiniTable_Enum;
+
+typedef enum {
+  _kUpb_FastEnumCheck_ValueIsInEnum = 0,
+  _kUpb_FastEnumCheck_ValueIsNotInEnum = 1,
+  _kUpb_FastEnumCheck_CannotCheckFast = 2,
+} _kUpb_FastEnumCheck_Status;
+
+UPB_INLINE _kUpb_FastEnumCheck_Status
+_upb_MiniTable_CheckEnumValueFast(const upb_MiniTable_Enum* e, uint32_t val) {
+  if (UPB_UNLIKELY(val >= 64)) return _kUpb_FastEnumCheck_CannotCheckFast;
+  uint64_t mask = e->data[0] | ((uint64_t)e->data[1] << 32);
+  return (mask & (1ULL << val)) ? _kUpb_FastEnumCheck_ValueIsInEnum
+                                : _kUpb_FastEnumCheck_ValueIsNotInEnum;
+}
+
+UPB_INLINE bool _upb_MiniTable_CheckEnumValueSlow(const upb_MiniTable_Enum* e,
+                                                  uint32_t val) {
+  if (val < e->mask_limit) return e->data[val / 32] & (1ULL << (val % 32));
+  // OPT: binary search long lists?
+  const uint32_t* start = &e->data[e->mask_limit / 32];
+  const uint32_t* limit = &e->data[(e->mask_limit / 32) + e->value_count];
+  for (const uint32_t* p = start; p < limit; p++) {
+    if (*p == val) return true;
+  }
+  return false;
+}
+
+// Validates enum value against range defined by enum mini table.
+UPB_INLINE bool upb_MiniTable_Enum_CheckValue(const upb_MiniTable_Enum* e,
+                                              uint32_t val) {
+  _kUpb_FastEnumCheck_Status status = _upb_MiniTable_CheckEnumValueFast(e, val);
+  if (UPB_UNLIKELY(status == _kUpb_FastEnumCheck_CannotCheckFast)) {
+    return _upb_MiniTable_CheckEnumValueSlow(e, val);
+  }
+  return status == _kUpb_FastEnumCheck_ValueIsInEnum ? true : false;
+}
 
 typedef union {
   const struct upb_MiniTable* submsg;
@@ -2266,9 +2334,10 @@ struct upb_Decoder;
 
 // The fallback, generic parsing function that can handle any field type.
 // This just uses the regular (non-fast) parser to parse a single field.
-const char* fastdecode_generic(struct upb_Decoder* d, const char* ptr,
-                               upb_Message* msg, intptr_t table,
-                               uint64_t hasbits, uint64_t data);
+const char* _upb_FastDecoder_DecodeGeneric(struct upb_Decoder* d,
+                                           const char* ptr, upb_Message* msg,
+                                           intptr_t table, uint64_t hasbits,
+                                           uint64_t data);
 
 #define UPB_PARSE_PARAMS                                                    \
   struct upb_Decoder *d, const char *ptr, upb_Message *msg, intptr_t table, \
@@ -5710,12 +5779,12 @@ typedef struct upb_Decoder {
  * of our optimizations. That is also why we must declare it in a separate file,
  * otherwise the compiler will see that it calls longjmp() and deduce that it is
  * noreturn. */
-const char* fastdecode_err(upb_Decoder* d, int status);
+const char* _upb_FastDecoder_ErrorJmp(upb_Decoder* d, int status);
 
 extern const uint8_t upb_utf8_offsets[];
 
 UPB_INLINE
-bool decode_verifyutf8_inl(const char* ptr, int len) {
+bool _upb_Decoder_VerifyUtf8Inline(const char* ptr, int len) {
   const char* end = ptr + len;
 
   // Check 8 bytes at a time for any non-ASCII char.
@@ -5738,9 +5807,9 @@ non_ascii:
   return utf8_range2((const unsigned char*)ptr, end - ptr) == 0;
 }
 
-const char* decode_checkrequired(upb_Decoder* d, const char* ptr,
-                                 const upb_Message* msg,
-                                 const upb_MiniTable* l);
+const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
+                                       const upb_Message* msg,
+                                       const upb_MiniTable* l);
 
 /* x86-64 pointers always have the high 16 bits matching. So we can shift
  * left 8 and right 8 without loss of information. */
@@ -5753,8 +5822,8 @@ UPB_INLINE const upb_MiniTable* decode_totablep(intptr_t table) {
 }
 
 UPB_INLINE
-const char* decode_isdonefallback_inl(upb_Decoder* d, const char* ptr,
-                                      int overrun, int* status) {
+const char* _upb_Decoder_IsDoneFallbackInline(upb_Decoder* d, const char* ptr,
+                                              int overrun, int* status) {
   if (overrun < d->limit) {
     /* Need to copy remaining data into patch buffer. */
     UPB_ASSERT(overrun < 16);
@@ -5781,26 +5850,27 @@ const char* decode_isdonefallback_inl(upb_Decoder* d, const char* ptr,
   }
 }
 
-const char* decode_isdonefallback(upb_Decoder* d, const char* ptr, int overrun);
+const char* _upb_Decoder_IsDoneFallback(upb_Decoder* d, const char* ptr,
+                                        int overrun);
 
 UPB_INLINE
-bool decode_isdone(upb_Decoder* d, const char** ptr) {
+bool _upb_Decoder_IsDone(upb_Decoder* d, const char** ptr) {
   int overrun = *ptr - d->end;
   if (UPB_LIKELY(*ptr < d->limit_ptr)) {
     return false;
   } else if (UPB_LIKELY(overrun == d->limit)) {
     return true;
   } else {
-    *ptr = decode_isdonefallback(d, *ptr, overrun);
+    *ptr = _upb_Decoder_IsDoneFallback(d, *ptr, overrun);
     return false;
   }
 }
 
 #if UPB_FASTTABLE
 UPB_INLINE
-const char* fastdecode_tagdispatch(upb_Decoder* d, const char* ptr,
-                                   upb_Message* msg, intptr_t table,
-                                   uint64_t hasbits, uint64_t tag) {
+const char* _upb_FastDecoder_TagDispatch(upb_Decoder* d, const char* ptr,
+                                         upb_Message* msg, intptr_t table,
+                                         uint64_t hasbits, uint64_t tag) {
   const upb_MiniTable* table_p = decode_totablep(table);
   uint8_t mask = table;
   uint64_t data;
@@ -5813,33 +5883,34 @@ const char* fastdecode_tagdispatch(upb_Decoder* d, const char* ptr,
 }
 #endif
 
-UPB_INLINE uint32_t fastdecode_loadtag(const char* ptr) {
+UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
   uint16_t tag;
   memcpy(&tag, ptr, 2);
   return tag;
 }
 
-UPB_INLINE void decode_checklimit(upb_Decoder* d) {
+UPB_INLINE void _upb_Decoder_CheckLimit(upb_Decoder* d) {
   UPB_ASSERT(d->limit_ptr == d->end + UPB_MIN(0, d->limit));
 }
 
-UPB_INLINE int decode_pushlimit(upb_Decoder* d, const char* ptr, int size) {
+UPB_INLINE int _upb_Decoder_PushLimit(upb_Decoder* d, const char* ptr,
+                                      int size) {
   int limit = size + (int)(ptr - d->end);
   int delta = d->limit - limit;
-  decode_checklimit(d);
+  _upb_Decoder_CheckLimit(d);
   d->limit = limit;
   d->limit_ptr = d->end + UPB_MIN(0, limit);
-  decode_checklimit(d);
+  _upb_Decoder_CheckLimit(d);
   return delta;
 }
 
-UPB_INLINE void decode_poplimit(upb_Decoder* d, const char* ptr,
-                                int saved_delta) {
+UPB_INLINE void _upb_Decoder_PopLimit(upb_Decoder* d, const char* ptr,
+                                      int saved_delta) {
   UPB_ASSERT(ptr - d->end == d->limit);
-  decode_checklimit(d);
+  _upb_Decoder_CheckLimit(d);
   d->limit += saved_delta;
   d->limit_ptr = d->end + UPB_MIN(0, d->limit);
-  decode_checklimit(d);
+  _upb_Decoder_CheckLimit(d);
 }
 
 
@@ -6498,19 +6569,6 @@ UPB_INLINE const upb_MiniTable_Enum* upb_MiniTable_GetSubEnumTable(
   return mini_table->subs[field->submsg_index].subenum;
 }
 
-// Validates enum value against range defined by enum mini table.
-UPB_INLINE bool upb_MiniTable_Enum_CheckValue(const upb_MiniTable_Enum* e,
-                                              int32_t val) {
-  uint32_t uval = (uint32_t)val;
-  if (uval < 64) return e->mask & (1ULL << uval);
-  // OPT: binary search long lists?
-  int n = e->value_count;
-  for (int i = 0; i < n; i++) {
-    if (e->values[i] == val) return true;
-  }
-  return false;
-}
-
 /** upb_MtDataEncoder *********************************************************/
 
 // Functions to encode a string in a format that can be loaded by
@@ -6604,6 +6662,7 @@ void upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTable_Field* field,
 
 const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
                                          upb_MiniTable_Extension* ext,
+                                         const upb_MiniTable* extendee,
                                          upb_MiniTable_Sub sub,
                                          upb_Status* status);
 
