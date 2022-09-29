@@ -378,6 +378,7 @@ class MessageReflection {
   static class BuilderAdapter implements MergeTarget {
 
     private final Message.Builder builder;
+    private boolean hasNestedBuilders = true;
 
     @Override
     public Descriptors.Descriptor getDescriptorForType() {
@@ -393,6 +394,17 @@ class MessageReflection {
       return builder.getField(field);
     }
 
+    private Message.Builder getFieldBuilder(Descriptors.FieldDescriptor field) {
+      if (hasNestedBuilders) {
+        try {
+          return builder.getFieldBuilder(field);
+        } catch (UnsupportedOperationException e) {
+          hasNestedBuilders = false;
+        }
+      }
+      return null;
+    }
+
     @Override
     public boolean hasField(Descriptors.FieldDescriptor field) {
       return builder.hasField(field);
@@ -400,6 +412,12 @@ class MessageReflection {
 
     @Override
     public MergeTarget setField(Descriptors.FieldDescriptor field, Object value) {
+      if (!field.isRepeated() && value instanceof MessageLite.Builder) {
+        if (value != getFieldBuilder(field)) {
+          builder.setField(field, ((MessageLite.Builder) value).buildPartial());
+        }
+        return this;
+      }
       builder.setField(field, value);
       return this;
     }
@@ -413,12 +431,18 @@ class MessageReflection {
     @Override
     public MergeTarget setRepeatedField(
         Descriptors.FieldDescriptor field, int index, Object value) {
+      if (value instanceof MessageLite.Builder) {
+        value = ((MessageLite.Builder) value).buildPartial();
+      }
       builder.setRepeatedField(field, index, value);
       return this;
     }
 
     @Override
     public MergeTarget addRepeatedField(Descriptors.FieldDescriptor field, Object value) {
+      if (value instanceof MessageLite.Builder) {
+        value = ((MessageLite.Builder) value).buildPartial();
+      }
       builder.addRepeatedField(field, value);
       return this;
     }
@@ -536,11 +560,19 @@ class MessageReflection {
         Message defaultInstance)
         throws IOException {
       if (!field.isRepeated()) {
+        Message.Builder subBuilder;
         if (hasField(field)) {
-          input.readGroup(field.getNumber(), builder.getFieldBuilder(field), extensionRegistry);
-          return;
+          subBuilder = getFieldBuilder(field);
+          if (subBuilder != null) {
+            input.readGroup(field.getNumber(), subBuilder, extensionRegistry);
+            return;
+          } else {
+            subBuilder = newMessageFieldInstance(field, defaultInstance);
+            subBuilder.mergeFrom((Message) getField(field));
+          }
+        } else {
+          subBuilder = newMessageFieldInstance(field, defaultInstance);
         }
-        Message.Builder subBuilder = newMessageFieldInstance(field, defaultInstance);
         input.readGroup(field.getNumber(), subBuilder, extensionRegistry);
         Object unused = setField(field, subBuilder.buildPartial());
       } else {
@@ -558,11 +590,19 @@ class MessageReflection {
         Message defaultInstance)
         throws IOException {
       if (!field.isRepeated()) {
+        Message.Builder subBuilder;
         if (hasField(field)) {
-          input.readMessage(builder.getFieldBuilder(field), extensionRegistry);
-          return;
+          subBuilder = getFieldBuilder(field);
+          if (subBuilder != null) {
+            input.readMessage(subBuilder, extensionRegistry);
+            return;
+          } else {
+            subBuilder = newMessageFieldInstance(field, defaultInstance);
+            subBuilder.mergeFrom((Message) getField(field));
+          }
+        } else {
+          subBuilder = newMessageFieldInstance(field, defaultInstance);
         }
-        Message.Builder subBuilder = newMessageFieldInstance(field, defaultInstance);
         input.readMessage(subBuilder, extensionRegistry);
         Object unused = setField(field, subBuilder.buildPartial());
       } else {
@@ -586,11 +626,14 @@ class MessageReflection {
     public MergeTarget newMergeTargetForField(
         Descriptors.FieldDescriptor field, Message defaultInstance) {
       Message.Builder subBuilder;
-      if (defaultInstance != null) {
-        subBuilder = defaultInstance.newBuilderForType();
-      } else {
-        subBuilder = builder.newBuilderForField(field);
+      if (!field.isRepeated() && hasField(field)) {
+        subBuilder = getFieldBuilder(field);
+        if (subBuilder != null) {
+          return new BuilderAdapter(subBuilder);
+        }
       }
+
+      subBuilder = newMessageFieldInstance(field, defaultInstance);
       if (!field.isRepeated()) {
         Message originalMessage = (Message) getField(field);
         if (originalMessage != null) {
@@ -626,7 +669,7 @@ class MessageReflection {
 
     @Override
     public Object finish() {
-      return builder.buildPartial();
+      return builder;
     }
   }
 
