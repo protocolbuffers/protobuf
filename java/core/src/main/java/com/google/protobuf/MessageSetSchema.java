@@ -62,7 +62,13 @@ final class MessageSetSchema<T> implements Schema<T> {
   @SuppressWarnings("unchecked")
   @Override
   public T newInstance() {
-    return (T) defaultInstance.newBuilderForType().buildPartial();
+    // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle this
+    // better.
+    if (defaultInstance instanceof GeneratedMessageLite) {
+      return (T) ((GeneratedMessageLite<?, ?>) defaultInstance).newMutableInstance();
+    } else {
+      return (T) defaultInstance.newBuilderForType().buildPartial();
+    }
   }
 
   @Override
@@ -133,6 +139,8 @@ final class MessageSetSchema<T> implements Schema<T> {
   public void mergeFrom(
       T message, byte[] data, int position, int limit, ArrayDecoders.Registers registers)
       throws IOException {
+    // TODO(b/248560713) decide if we're keeping support for Full in schema classes and handle this
+    // better.
     UnknownFieldSetLite unknownFields = ((GeneratedMessageLite) message).unknownFields;
     if (unknownFields == UnknownFieldSetLite.getDefaultInstance()) {
       unknownFields = UnknownFieldSetLite.newInstance();
@@ -181,9 +189,12 @@ final class MessageSetSchema<T> implements Schema<T> {
             if (wireType == WireFormat.WIRETYPE_VARINT) {
               position = ArrayDecoders.decodeVarint32(data, position, registers);
               typeId = registers.int1;
+              // TODO(b/248560713) decide if we're keeping support for Full in schema classes and
+              // handle this better.
               extension =
-                  (GeneratedMessageLite.GeneratedExtension<?, ?>) extensionSchema
-                      .findExtensionByNumber(registers.extensionRegistry, defaultInstance, typeId);
+                  (GeneratedMessageLite.GeneratedExtension<?, ?>)
+                      extensionSchema.findExtensionByNumber(
+                          registers.extensionRegistry, defaultInstance, typeId);
               continue;
             }
             break;
