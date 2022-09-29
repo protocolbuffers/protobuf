@@ -42,7 +42,7 @@ def staleness_test(name, outs, generated_pattern, **kwargs):
     """
 
     script_name = name + ".py"
-    script_src = ":staleness_test.py"
+    script_src = Label("//cmake:staleness_test.py")
 
     # Filter out non-existing rules so Blaze doesn't error out before we even
     # run the test.
@@ -57,7 +57,7 @@ def staleness_test(name, outs, generated_pattern, **kwargs):
         outs = [script_name],
         srcs = [script_src],
         testonly = 1,
-        cmd = "cat $(location " + script_src + ") > $@; " +
+        cmd = "cp $< $@; " +
               "sed -i.bak -e 's|INSERT_FILE_LIST_HERE|" + "\\\n  ".join(file_list) + "|' $@",
     )
 
@@ -67,7 +67,7 @@ def staleness_test(name, outs, generated_pattern, **kwargs):
         data = existing_outs + [generated_pattern % file for file in outs],
         python_version = "PY3",
         deps = [
-            ":staleness_test_lib",
+            Label("//cmake:staleness_test_lib"),
         ],
         **kwargs
     )
