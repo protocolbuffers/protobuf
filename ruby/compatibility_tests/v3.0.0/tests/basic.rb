@@ -667,8 +667,8 @@ module BasicTest
       assert m["z"] == :C
       m["z"] = 2
       assert m["z"] == :B
-      m["z"] = 4
-      assert m["z"] == 4
+      m["z"] = 5
+      assert m["z"] == 5
       assert_raise RangeError do
         m["z"] = :Z
       end

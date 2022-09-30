@@ -318,6 +318,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_source_generator_base.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_wrapper_field.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/context.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/doc_comment.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/enum.cc
@@ -342,24 +343,26 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_serialization.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/name_resolver.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/primitive_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/primitive_field_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/service.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/shared_code_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/string_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/string_field_lite.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_enum.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_enum_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_extension.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_file.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_generator.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_helpers.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_map_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_message_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_oneof.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_primitive_field.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/php_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.cc
@@ -402,7 +405,6 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_map_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_message_field.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_options.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_primitive_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_reflection_class.h
@@ -411,6 +413,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_repeated_primitive_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_source_generator_base.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/csharp_wrapper_field.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/csharp/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/context.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/doc_comment.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/enum.h
@@ -443,6 +446,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/shared_code_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/string_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/string_field_lite.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_enum.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_enum_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_extension.h
@@ -457,6 +461,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_oneof.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_options.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/objectivec_primitive_field.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/php_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h

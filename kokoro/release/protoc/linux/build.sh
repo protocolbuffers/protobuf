@@ -18,12 +18,12 @@ git submodule update --init --recursive
 # directories afterward.
 
 
-protoc-artifacts/build-protoc.sh linux aarch_64 protoc
+kokoro/release/protoc/build-protoc.sh linux aarch_64 protoc
 
-protoc-artifacts/build-protoc.sh linux ppcle_64 protoc
+kokoro/release/protoc/build-protoc.sh linux ppcle_64 protoc
 
-protoc-artifacts/build-protoc.sh linux s390_64 protoc
+kokoro/release/protoc/build-protoc.sh linux s390_64 protoc
 
-protoc-artifacts/build-protoc.sh linux x86_64 protoc
+kokoro/release/protoc/build-protoc.sh linux x86_64 protoc
 
-protoc-artifacts/build-protoc.sh linux x86_32 protoc
+kokoro/release/protoc/build-protoc.sh linux x86_32 protoc

@@ -431,11 +431,6 @@ Parser::LocationRecorder::LocationRecorder(const LocationRecorder& parent) {
 }
 
 Parser::LocationRecorder::LocationRecorder(const LocationRecorder& parent,
-                                           SourceCodeInfo* source_code_info) {
-  Init(parent, source_code_info);
-}
-
-Parser::LocationRecorder::LocationRecorder(const LocationRecorder& parent,
                                            int path1,
                                            SourceCodeInfo* source_code_info) {
   Init(parent, source_code_info);
@@ -1264,22 +1259,13 @@ bool Parser::ParseDefaultAssignment(
     field->clear_default_value();
   }
 
-  LocationRecorder location(field_location,
-                            FieldDescriptorProto::kDefaultValueFieldNumber);
-
   DO(Consume("default"));
   DO(Consume("="));
 
-  // We don't need to create separate spans in source code info for name and value,
-  // since there's no way to represent them distinctly in a location path. But we will
-  // want a separate recorder for the value, just to have more precise location info
-  // in error messages. So we let it create a location in no_op, so it doesn't add a
-  // span to the file descriptor.
-  SourceCodeInfo no_op;
-  LocationRecorder value_location(location, &no_op);
-  value_location.RecordLegacyLocation(
-      field, DescriptorPool::ErrorCollector::DEFAULT_VALUE);
-
+  LocationRecorder location(field_location,
+                            FieldDescriptorProto::kDefaultValueFieldNumber);
+  location.RecordLegacyLocation(field,
+                                DescriptorPool::ErrorCollector::DEFAULT_VALUE);
   std::string* default_value = field->mutable_default_value();
 
   if (!field->has_type()) {
@@ -1413,23 +1399,13 @@ bool Parser::ParseJsonName(FieldDescriptorProto* field,
 
   LocationRecorder location(field_location,
                             FieldDescriptorProto::kJsonNameFieldNumber);
+  location.RecordLegacyLocation(field,
+                                DescriptorPool::ErrorCollector::OPTION_NAME);
 
-  // We don't need to create separate spans in source code info for name and value,
-  // since there's no way to represent them distinctly in a location path. But we will
-  // want a separate recorder for them, just to have more precise location info
-  // in error messages. So we let them create a location in no_op, so they don't
-  // add a span to the file descriptor.
-  SourceCodeInfo no_op;
-  {
-    LocationRecorder name_location(location, &no_op);
-    name_location.RecordLegacyLocation(
-        field, DescriptorPool::ErrorCollector::OPTION_NAME);
-
-    DO(Consume("json_name"));
-  }
+  DO(Consume("json_name"));
   DO(Consume("="));
 
-  LocationRecorder value_location(location, &no_op);
+  LocationRecorder value_location(location);
   value_location.RecordLegacyLocation(
       field, DescriptorPool::ErrorCollector::OPTION_VALUE);
 

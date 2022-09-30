@@ -19,6 +19,7 @@ def gen_file_lists(name, out_stem, **kwargs):
         srcs = [
             out_stem + ".cmake",
         ],
+        visibility = ["//src:__pkg__"],
     )
 
 ################################################################################

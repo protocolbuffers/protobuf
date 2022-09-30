@@ -190,13 +190,6 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   (*variables)["set_mutable_bit_builder"] = GenerateSetBit(builderBitIndex);
   (*variables)["clear_mutable_bit_builder"] = GenerateClearBit(builderBitIndex);
 
-  // For repeated fields, one bit is used for whether the array is immutable
-  // in the parsing constructor.
-  (*variables)["get_mutable_bit_parser"] =
-      GenerateGetBitMutableLocal(builderBitIndex);
-  (*variables)["set_mutable_bit_parser"] =
-      GenerateSetBitMutableLocal(builderBitIndex);
-
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
   (*variables)["set_has_field_bit_to_local"] =
@@ -405,16 +398,11 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuildingCode(
   }
 }
 
-void ImmutablePrimitiveFieldGenerator::GenerateParsingCode(
+void ImmutablePrimitiveFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "$set_has_field_bit_message$\n"
-                 "$name$_ = input.read$capitalized_type$();\n");
-}
-
-void ImmutablePrimitiveFieldGenerator::GenerateParsingDoneCode(
-    io::Printer* printer) const {
-  // noop for primitives.
+                 "$name$_ = input.read$capitalized_type$();\n"
+                 "$set_has_field_bit_builder$\n");
 }
 
 void ImmutablePrimitiveFieldGenerator::GenerateSerializationCode(
@@ -619,6 +607,12 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderMembers(
   printer->Annotate("{", "}", descriptor_);
 }
 
+void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderClearCode(
+    io::Printer* printer) const {
+  // No-Op: When a primitive field is in a oneof, clearing the oneof clears that
+  // field.
+}
+
 void ImmutablePrimitiveOneofFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
@@ -633,7 +627,7 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateMergingCode(
                  "set$capitalized_name$(other.get$capitalized_name$());\n");
 }
 
-void ImmutablePrimitiveOneofFieldGenerator::GenerateParsingCode(
+void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
                  "$oneof_name$_ = input.read$capitalized_type$();\n"
@@ -987,38 +981,24 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuildingCode(
                  "result.$name$_ = $name$_;\n");
 }
 
-void RepeatedImmutablePrimitiveFieldGenerator::GenerateParsingCode(
+void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "if (!$get_mutable_bit_parser$) {\n"
-                 "  $name$_ = $create_list$;\n"
-                 "  $set_mutable_bit_parser$;\n"
+                 "$type$ v = input.read$capitalized_type$();\n"
+                 "ensure$capitalized_name$IsMutable();\n"
+                 "$repeated_add$(v);\n");
+}
+
+void RepeatedImmutablePrimitiveFieldGenerator::
+    GenerateBuilderParsingCodeFromPacked(io::Printer* printer) const {
+  printer->Print(variables_,
+                 "int length = input.readRawVarint32();\n"
+                 "int limit = input.pushLimit(length);\n"
+                 "ensure$capitalized_name$IsMutable();\n"
+                 "while (input.getBytesUntilLimit() > 0) {\n"
+                 "  $repeated_add$(input.read$capitalized_type$());\n"
                  "}\n"
-                 "$repeated_add$(input.read$capitalized_type$());\n");
-}
-
-void RepeatedImmutablePrimitiveFieldGenerator::GenerateParsingCodeFromPacked(
-    io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "int length = input.readRawVarint32();\n"
-      "int limit = input.pushLimit(length);\n"
-      "if (!$get_mutable_bit_parser$ && input.getBytesUntilLimit() > 0) {\n"
-      "  $name$_ = $create_list$;\n"
-      "  $set_mutable_bit_parser$;\n"
-      "}\n"
-      "while (input.getBytesUntilLimit() > 0) {\n"
-      "  $repeated_add$(input.read$capitalized_type$());\n"
-      "}\n"
-      "input.popLimit(limit);\n");
-}
-
-void RepeatedImmutablePrimitiveFieldGenerator::GenerateParsingDoneCode(
-    io::Printer* printer) const {
-  printer->Print(variables_,
-                 "if ($get_mutable_bit_parser$) {\n"
-                 "  $name_make_immutable$; // C\n"
-                 "}\n");
+                 "input.popLimit(limit);\n");
 }
 
 void RepeatedImmutablePrimitiveFieldGenerator::GenerateSerializationCode(

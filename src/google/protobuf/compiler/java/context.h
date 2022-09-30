@@ -35,6 +35,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/port.h"
 
@@ -105,6 +106,20 @@ class Context {
       oneof_generator_info_map_;
   Options options_;
 };
+
+template <typename Descriptor>
+void MaybePrintGeneratedAnnotation(Context* context, io::Printer* printer,
+                                   Descriptor* descriptor, bool immutable,
+                                   const std::string& suffix = "") {
+  if (IsOwnFile(descriptor, immutable)) {
+    PrintGeneratedAnnotation(printer, '$',
+                             context->options().annotate_code
+                                 ? AnnotationFileName(descriptor, suffix)
+                                 : "",
+                             context->options());
+  }
+}
+
 
 }  // namespace java
 }  // namespace compiler

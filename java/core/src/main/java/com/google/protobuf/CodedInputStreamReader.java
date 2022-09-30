@@ -197,9 +197,15 @@ final class CodedInputStreamReader implements Reader {
     return readGroup(schema, extensionRegistry);
   }
 
-  // Should have the same semantics of CodedInputStream#readMessage()
-  private <T> T readMessage(Schema<T> schema, ExtensionRegistryLite extensionRegistry)
-      throws IOException {
+  @Override
+  public <T> void mergeMessageField(
+      T target, Schema<T> schema, ExtensionRegistryLite extensionRegistry) throws IOException {
+    requireWireType(WIRETYPE_LENGTH_DELIMITED);
+    mergeMessageFieldInternal(target, schema, extensionRegistry);
+  }
+
+  private <T> void mergeMessageFieldInternal(
+      T target, Schema<T> schema, ExtensionRegistryLite extensionRegistry) throws IOException {
     int size = input.readUInt32();
     if (input.recursionDepth >= input.recursionLimit) {
       throw InvalidProtocolBufferException.recursionLimitExceeded();
@@ -207,37 +213,52 @@ final class CodedInputStreamReader implements Reader {
 
     // Push the new limit.
     final int prevLimit = input.pushLimit(size);
-    // Allocate and read the message.
-    T message = schema.newInstance();
     ++input.recursionDepth;
-    schema.mergeFrom(message, this, extensionRegistry);
-    schema.makeImmutable(message);
+    schema.mergeFrom(target, this, extensionRegistry);
     input.checkLastTagWas(0);
     --input.recursionDepth;
     // Restore the previous limit.
     input.popLimit(prevLimit);
-    return message;
   }
 
-  private <T> T readGroup(Schema<T> schema, ExtensionRegistryLite extensionRegistry)
+  // Should have the same semantics of CodedInputStream#readMessage()
+  private <T> T readMessage(Schema<T> schema, ExtensionRegistryLite extensionRegistry)
       throws IOException {
+    T newInstance = schema.newInstance();
+    mergeMessageFieldInternal(newInstance, schema, extensionRegistry);
+    schema.makeImmutable(newInstance);
+    return newInstance;
+  }
+
+  @Override
+  public <T> void mergeGroupField(
+      T target, Schema<T> schema, ExtensionRegistryLite extensionRegistry) throws IOException {
+    requireWireType(WIRETYPE_START_GROUP);
+    mergeGroupFieldInternal(target, schema, extensionRegistry);
+  }
+
+  private <T> void mergeGroupFieldInternal(
+      T target, Schema<T> schema, ExtensionRegistryLite extensionRegistry) throws IOException {
     int prevEndGroupTag = endGroupTag;
     endGroupTag = WireFormat.makeTag(WireFormat.getTagFieldNumber(tag), WIRETYPE_END_GROUP);
 
     try {
-      // Allocate and read the message.
-      T message = schema.newInstance();
-      schema.mergeFrom(message, this, extensionRegistry);
-      schema.makeImmutable(message);
-
+      schema.mergeFrom(target, this, extensionRegistry);
       if (tag != endGroupTag) {
         throw InvalidProtocolBufferException.parseFailure();
       }
-      return message;
     } finally {
       // Restore the old end group tag.
       endGroupTag = prevEndGroupTag;
     }
+  }
+
+  private <T> T readGroup(Schema<T> schema, ExtensionRegistryLite extensionRegistry)
+      throws IOException {
+    T newInstance = schema.newInstance();
+    mergeGroupFieldInternal(newInstance, schema, extensionRegistry);
+    schema.makeImmutable(newInstance);
+    return newInstance;
   }
 
   @Override
