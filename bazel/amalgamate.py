@@ -36,42 +36,36 @@ def parse_include(line):
   return match.groups()[0] if match else None
 
 class Amalgamator:
-  def __init__(self, output_path, prefix):
+  def __init__(self, h_out, c_out):
     self.include_paths = ["."]
-    self.included = set(["upb/port_def.inc", "upb/port_undef.inc"])
-    self.output_h = open(output_path + prefix + "upb.h", "w")
-    self.output_c = open(output_path + prefix + "upb.c", "w")
+    self.included = set()
+    self.output_h = open(h_out, "w")
+    self.output_c = open(c_out, "w")
+    self.h_out = h_out.split("/")[-1]
 
+  def amalgamate(self, h_files, c_files):
+    self.h_files = set(h_files)
     self.output_c.write("/* Amalgamated source file */\n")
-    self.output_c.write('#include "%supb.h"\n' % (prefix))
-    if prefix == "ruby-":
+    self.output_c.write('#include "%s"\n' % (self.h_out))
+    if self.h_out == "ruby-upb.h":
       self.output_h.write("// Ruby is still using proto3 enum semantics for proto2\n")
       self.output_h.write("#define UPB_DISABLE_PROTO2_ENUM_CHECKING\n")
-    self.output_c.write(open("upb/port_def.inc").read())
 
     self.output_h.write("/* Amalgamated source file */\n")
-    self.output_h.write(open("upb/port_def.inc").read())
 
-  def add_include_path(self, path):
-      self.include_paths.append(path)
+    port_def = self._find_include_file("upb/port_def.inc")
+    port_undef = self._find_include_file("upb/port_undef.inc")
+    self._process_file(port_def, self.output_h)
+    self._process_file(port_def, self.output_c)
 
-  def finish(self):
-    self._add_header("upb/port_undef.inc")
-    self.add_src("upb/port_undef.inc")
+    for file in c_files:
+      self._process_file(file, self.output_c)
+
+    self._process_file(port_undef, self.output_h)
+    self._process_file(port_undef, self.output_c)
 
   def _process_file(self, infile_name, outfile):
-    file = None
-    for path in self.include_paths:
-        try:
-            full_path = os.path.join(path, infile_name)
-            file = open(full_path)
-            break
-        except IOError:
-            pass
-    if not file:
-        raise RuntimeError("Couldn't open file " + infile_name)
-
-    lines = file.readlines()
+    lines = open(infile_name).readlines()
 
     has_copyright = lines[1].startswith(" * Copyright")
     if has_copyright:
@@ -79,51 +73,52 @@ class Amalgamator:
         lines.pop(0)
       lines.pop(0)
 
-    lines.insert(0, "\n/** " + infile_name + " " + ("*" * 60) +"/");
-
     for line in lines:
-      if not self._process_include(line, outfile):
+      if not self._process_include(line):
         outfile.write(line)
 
-  def _process_include(self, line, outfile):
+  def _find_include_file(self, name):
+    for h_file in self.h_files:
+      if h_file.endswith(name):
+        return h_file
+
+  def _process_include(self, line):
     include = parse_include(line)
     if not include:
       return False
     if not (include.startswith("upb") or include.startswith("google")):
       return False
+    if include and (include.endswith("port_def.inc") or include.endswith("port_undef.inc")):
+      # Skip, we handle this separately
+      return True
     if include.endswith("hpp"):
       # Skip, we don't support the amalgamation from C++.
       return True
+    elif include in self.included:
+      return True
     else:
       # Include this upb header inline.
-      if include not in self.included:
+      h_file = self._find_include_file(include)
+      if h_file:
+        self.h_files.remove(h_file)
         self.included.add(include)
-        self._add_header(include)
-      return True
-
-  def _add_header(self, filename):
-    self._process_file(filename, self.output_h)
-
-  def add_src(self, filename):
-    self._process_file(filename, self.output_c)
+        self._process_file(h_file, self.output_h)
+        return True
+      raise RuntimeError("Couldn't find include: " + include + ", h_files=" + repr(self.h_files))
 
 # ---- main ----
 
-output_path = sys.argv[1]
-prefix = sys.argv[2]
-amalgamator = Amalgamator(output_path, prefix)
-files = []
+c_out = sys.argv[1]
+h_out = sys.argv[2]
+amalgamator = Amalgamator(h_out, c_out)
+c_files = []
+h_files = []
 
 for arg in sys.argv[3:]:
   arg = arg.strip()
-  if arg.startswith("-I"):
-    amalgamator.add_include_path(arg[2:])
-  elif arg.endswith(".h") or arg.endswith(".inc"):
-    pass
+  if arg.endswith(".h") or arg.endswith(".inc"):
+    h_files.append(arg)
   else:
-    files.append(arg)
+    c_files.append(arg)
 
-for filename in files:
-    amalgamator.add_src(filename)
-
-amalgamator.finish()
+amalgamator.amalgamate(h_files, c_files)

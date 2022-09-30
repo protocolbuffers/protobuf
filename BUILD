@@ -985,6 +985,7 @@ upb_amalgamation(
         ":mini_table",
         ":port",
         ":reflection",
+        ":table_internal",
         ":upb",
     ],
     prefix = "php-",
@@ -1019,10 +1020,12 @@ upb_amalgamation(
         ":mini_table",
         ":port",
         ":reflection",
+        ":table_internal",
         ":upb",
     ],
     prefix = "ruby-",
     strip_import_prefix = ["src"],
+    visibility = ["@com_google_protobuf//ruby:__pkg__"],
 )
 
 cc_library(

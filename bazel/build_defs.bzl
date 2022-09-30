@@ -25,7 +25,6 @@
 
 """Internal rules for building upb."""
 
-load("@bazel_skylib//lib:paths.bzl", "paths")
 load(":upb_proto_library.bzl", "GeneratedSrcsInfo")
 
 _DEFAULT_CPPOPTS = []
@@ -95,13 +94,6 @@ def _get_real_roots(files):
             roots[real_root] = True
     return roots.keys()
 
-def _get_includes(files, strip_import_prefix):
-    roots = _get_real_roots(files)
-    includes = ["-I" + root for root in roots]
-    for include in strip_import_prefix:
-        includes += ["-I" + paths.join(root, include) for root in roots]
-    return includes
-
 def make_shell_script(name, contents, out):
     contents = contents.replace("$", "$$")
     native.genrule(
@@ -140,11 +132,11 @@ def _upb_amalgamation(ctx):
     inputs = []
     for lib in ctx.attr.libs:
         inputs += lib[SrcList].srcs
-    srcs = [src for src in inputs if src.path.endswith("c")]
+    srcs = [src for src in inputs if not src.path.endswith("hpp")]
     ctx.actions.run(
         inputs = inputs,
         outputs = ctx.outputs.outs,
-        arguments = [ctx.bin_dir.path + "/", ctx.attr.prefix] + [f.path for f in srcs] + _get_includes(inputs, ctx.attr.strip_import_prefix),
+        arguments = [f.path for f in ctx.outputs.outs] + [f.path for f in srcs],
         progress_message = "Making amalgamation",
         executable = ctx.executable._amalgamator,
     )
