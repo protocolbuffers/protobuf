@@ -2,7 +2,20 @@ diff --git a/BUILD b/BUILD
 index a49327b2..7aaf58a7 100644
 --- BUILD
 +++ BUILD
-@@ -942,6 +942,7 @@ upb_amalgamation(
+@@ -985,6 +985,7 @@ upb_amalgamation(
+         ":mini_table",
+         ":port",
+         ":reflection",
++        ":table_internal",
+         ":upb",
+     ],
+     prefix = "php-",
+@@ -1019,10 +1020,12 @@ upb_amalgamation(
+         ":mini_table",
+         ":port",
+         ":reflection",
++        ":table_internal",
+         ":upb",
      ],
      prefix = "ruby-",
      strip_import_prefix = ["src"],
