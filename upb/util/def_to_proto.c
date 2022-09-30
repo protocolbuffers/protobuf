@@ -33,7 +33,7 @@
 #include <stdio.h>
 
 #include "upb/internal/vsnprintf_compat.h"
-#include "upb/reflection.h"
+#include "upb/reflection/message.h"
 
 /* Must be last. */
 #include "upb/port_def.inc"

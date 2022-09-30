@@ -25,7 +25,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""The py_test() script for generated_file_staleness_test() rules.
+"""The py_test() script for staleness_test() rules.
 
 Note that this file is preprocessed!  The INSERT_<...> text below is replaced
 with the actual list of files before we actually run the script.

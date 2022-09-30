@@ -1,7 +1,7 @@
 ---
 tasks:
   ubuntu:
-    platform: ubuntu1804
+    platform: ubuntu2004
     shell_commands:
     - "sudo apt -y update && sudo apt -y install libreadline-dev cmake rsync"
     test_targets:

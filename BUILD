@@ -168,6 +168,7 @@ cc_library(
     hdrs = [
         "upb/msg_internal.h",
     ],
+    visibility = ["//:__subpackages__"],
     deps = [
         ":extension_registry",
         ":port",
@@ -325,10 +326,24 @@ cc_library(
 
 cc_library(
     name = "generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
+    srcs = [
+        "upb/reflection/common.h",
+        "upb/reflection/def_pool.h",
+        "upb/reflection/def_type.h",
+        "upb/reflection/enum_def.h",
+        "upb/reflection/enum_value_def.h",
+        "upb/reflection/extension_range.h",
+        "upb/reflection/field_def.h",
+        "upb/reflection/file_def.h",
+        "upb/reflection/message_def.h",
+        "upb/reflection/method_def.h",
+        "upb/reflection/oneof_def.h",
+        "upb/reflection/service_def.h",
+    ],
     hdrs = [
-        "upb/def.h",
         "upb/port_def.inc",
         "upb/port_undef.inc",
+        "upb/reflection/def.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -372,22 +387,49 @@ cc_library(
     ],
 )
 
+# TODO(b/232091617): Once we can delete the deprecated forwarding headers
+# (= everything in upb/) we can move this build target down into reflection/
 cc_library(
     name = "reflection",
     srcs = [
-        "upb/def.c",
-        "upb/internal/mini_descriptor.c",
-        "upb/internal/mini_descriptor.h",
-        "upb/mini_descriptor.c",
-        "upb/msg.h",
-        "upb/reflection.c",
+        "upb/reflection/common.h",
+        "upb/reflection/def_builder.c",
+        "upb/reflection/def_builder.h",
+        "upb/reflection/def_pool.c",
+        "upb/reflection/def_pool.h",
+        "upb/reflection/def_type.c",
+        "upb/reflection/def_type.h",
+        "upb/reflection/enum_def.c",
+        "upb/reflection/enum_def.h",
+        "upb/reflection/enum_value_def.c",
+        "upb/reflection/enum_value_def.h",
+        "upb/reflection/extension_range.c",
+        "upb/reflection/extension_range.h",
+        "upb/reflection/field_def.c",
+        "upb/reflection/field_def.h",
+        "upb/reflection/file_def.c",
+        "upb/reflection/file_def.h",
+        "upb/reflection/message.c",
+        "upb/reflection/message_def.c",
+        "upb/reflection/message_def.h",
+        "upb/reflection/method_def.c",
+        "upb/reflection/method_def.h",
+        "upb/reflection/mini_descriptor_encode.c",
+        "upb/reflection/oneof_def.c",
+        "upb/reflection/oneof_def.h",
+        "upb/reflection/service_def.c",
+        "upb/reflection/service_def.h",
     ],
     hdrs = [
         "upb/def.h",
         "upb/def.hpp",
-        "upb/mini_descriptor.h",
         "upb/reflection.h",
         "upb/reflection.hpp",
+        "upb/reflection/def.h",
+        "upb/reflection/def.hpp",
+        "upb/reflection/message.h",
+        "upb/reflection/message.hpp",
+        "upb/reflection/mini_descriptor_encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -395,6 +437,7 @@ cc_library(
         ":collections",
         ":descriptor_upb_proto",
         ":mini_table",
+        ":mini_table_internal",
         ":port",
         ":table_internal",
         ":upb",
@@ -412,20 +455,24 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":collections",
         ":encode_internal",
         ":port",
         ":reflection",
-        ":table_internal",
     ],
 )
 
+# TODO(b/232091617): Once we can delete the deprecated forwarding headers
+# (= everything in upb/) we can move this build target down into json/
 cc_library(
     name = "json",
     srcs = [
-        "upb/json_decode.c",
-        "upb/json_encode.c",
+        "upb/json/decode.c",
+        "upb/json/encode.c",
     ],
     hdrs = [
+        "upb/json/decode.h",
+        "upb/json/encode.h",
         "upb/json_decode.h",
         "upb/json_encode.h",
     ],
@@ -433,6 +480,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":atoi_internal",
+        ":collections",
         ":encode_internal",
         ":port",
         ":reflection",
@@ -442,6 +490,25 @@ cc_library(
 )
 
 # Tests ########################################################################
+
+cc_test(
+    name = "def_builder_test",
+    srcs = [
+        "upb/reflection/common.h",
+        "upb/reflection/def_builder.h",
+        "upb/reflection/def_builder_test.cc",
+        "upb/reflection/def_pool.h",
+        "upb/reflection/def_type.h",
+    ],
+    deps = [
+        ":descriptor_upb_proto",
+        ":port",
+        ":reflection",
+        ":table_internal",
+        ":upb",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
 
 cc_test(
     name = "test_generated_code",
@@ -495,7 +562,7 @@ upb_proto_library(
 proto_library(
     name = "json_test_proto",
     testonly = 1,
-    srcs = ["upb/json_test.proto"],
+    srcs = ["upb/json/test.proto"],
     deps = ["@com_google_protobuf//:struct_proto"],
 )
 
@@ -512,8 +579,22 @@ upb_proto_reflection_library(
 )
 
 cc_test(
-    name = "json_test",
-    srcs = ["upb/json_test.cc"],
+    name = "json_decode_test",
+    srcs = ["upb/json/decode_test.cc"],
+    deps = [
+        ":json",
+        ":json_test_upb_proto",
+        ":json_test_upb_proto_reflection",
+        ":reflection",
+        ":struct_upb_proto",
+        ":upb",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "json_encode_test",
+    srcs = ["upb/json/encode_test.cc"],
     deps = [
         ":json",
         ":json_test_upb_proto",
@@ -606,14 +687,14 @@ cc_test(
     srcs = ["upb/test_cpp.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
+        ":json",
+        ":port",
+        ":reflection",
         ":test_cpp_upb_proto",
         ":test_cpp_upb_proto_reflection",
         ":timestamp_upb_proto",
         ":timestamp_upb_proto_reflection",
-        "//:json",
-        "//:port",
-        "//:reflection",
-        "//:upb",
+        ":upb",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -623,9 +704,9 @@ cc_test(
     srcs = ["upb/test_table.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
-        "//:port",
-        "//:table_internal",
-        "//:upb",
+        ":port",
+        ":table_internal",
+        ":upb",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -663,13 +744,13 @@ cc_binary(
     deps = [
         ":conformance_proto_upb",
         ":conformance_proto_upbdefs",
+        ":json",
+        ":port",
+        ":reflection",
         ":test_messages_proto2_upbdefs",
         ":test_messages_proto3_upbdefs",
-        "//:json",
-        "//:port",
-        "//:reflection",
-        "//:textformat",
-        "//:upb",
+        ":textformat",
+        ":upb",
     ],
 )
 
@@ -704,13 +785,13 @@ cc_binary(
     deps = [
         ":conformance_proto_upb",
         ":conformance_proto_upbdefs",
+        ":json",
+        ":port",
+        ":reflection",
         ":test_messages_proto2_upbdefs",
         ":test_messages_proto3_upbdefs",
-        "//:json",
-        "//:port",
-        "//:reflection",
-        "//:textformat",
-        "//:upb",
+        ":textformat",
+        ":upb",
     ],
 )
 
@@ -964,7 +1045,6 @@ exports_files(
 filegroup(
     name = "cmake_files",
     srcs = glob([
-        "upbc/**/*",
         "upb/**/*",
         "third_party/**/*",
     ]),

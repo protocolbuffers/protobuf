@@ -137,10 +137,46 @@ typedef struct {
 } _upb_FastTable_Entry;
 
 typedef struct {
-  const int32_t* values;  // List of values <0 or >63
-  uint64_t mask;          // Bits are set for acceptable value 0 <= x < 64
-  int value_count;
+  uint32_t mask_limit;   // Limit enum value that can be tested with mask.
+  uint32_t value_count;  // Number of values after the bitfield.
+  uint32_t data[];       // Bitmask + enumerated values follow.
 } upb_MiniTable_Enum;
+
+typedef enum {
+  _kUpb_FastEnumCheck_ValueIsInEnum = 0,
+  _kUpb_FastEnumCheck_ValueIsNotInEnum = 1,
+  _kUpb_FastEnumCheck_CannotCheckFast = 2,
+} _kUpb_FastEnumCheck_Status;
+
+UPB_INLINE _kUpb_FastEnumCheck_Status
+_upb_MiniTable_CheckEnumValueFast(const upb_MiniTable_Enum* e, uint32_t val) {
+  if (UPB_UNLIKELY(val >= 64)) return _kUpb_FastEnumCheck_CannotCheckFast;
+  uint64_t mask = e->data[0] | ((uint64_t)e->data[1] << 32);
+  return (mask & (1ULL << val)) ? _kUpb_FastEnumCheck_ValueIsInEnum
+                                : _kUpb_FastEnumCheck_ValueIsNotInEnum;
+}
+
+UPB_INLINE bool _upb_MiniTable_CheckEnumValueSlow(const upb_MiniTable_Enum* e,
+                                                  uint32_t val) {
+  if (val < e->mask_limit) return e->data[val / 32] & (1ULL << (val % 32));
+  // OPT: binary search long lists?
+  const uint32_t* start = &e->data[e->mask_limit / 32];
+  const uint32_t* limit = &e->data[(e->mask_limit / 32) + e->value_count];
+  for (const uint32_t* p = start; p < limit; p++) {
+    if (*p == val) return true;
+  }
+  return false;
+}
+
+// Validates enum value against range defined by enum mini table.
+UPB_INLINE bool upb_MiniTable_Enum_CheckValue(const upb_MiniTable_Enum* e,
+                                              uint32_t val) {
+  _kUpb_FastEnumCheck_Status status = _upb_MiniTable_CheckEnumValueFast(e, val);
+  if (UPB_UNLIKELY(status == _kUpb_FastEnumCheck_CannotCheckFast)) {
+    return _upb_MiniTable_CheckEnumValueSlow(e, val);
+  }
+  return status == _kUpb_FastEnumCheck_ValueIsInEnum ? true : false;
+}
 
 typedef union {
   const struct upb_MiniTable* submsg;

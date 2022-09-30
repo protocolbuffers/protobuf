@@ -28,7 +28,7 @@
 #ifndef UPB_TEXTENCODE_H_
 #define UPB_TEXTENCODE_H_
 
-#include "upb/def.h"
+#include "upb/reflection/def.h"
 
 // Must be last.
 #include "upb/port_def.inc"

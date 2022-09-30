@@ -28,7 +28,7 @@
 #ifndef UPB_UTIL_COMPARE_H_
 #define UPB_UTIL_COMPARE_H_
 
-#include "upb/def.h"
+#include "upb/reflection/def.h"
 
 #ifdef __cplusplus
 extern "C" {

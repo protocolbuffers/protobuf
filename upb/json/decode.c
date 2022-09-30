@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/json_decode.h"
+#include "upb/json/decode.h"
 
 #include <errno.h>
 #include <float.h>
@@ -38,7 +38,8 @@
 #include "upb/encode.h"
 #include "upb/internal/atoi.h"
 #include "upb/internal/unicode.h"
-#include "upb/reflection.h"
+#include "upb/map.h"
+#include "upb/reflection/message.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -744,11 +745,11 @@ static upb_MessageValue jsondec_double(jsondec* d, const upb_FieldDef* f) {
   }
 
   if (upb_FieldDef_CType(f) == kUpb_CType_Float) {
-    if (val.double_val != INFINITY && val.double_val != -INFINITY &&
-        (val.double_val > FLT_MAX || val.double_val < -FLT_MAX)) {
-      jsondec_err(d, "Float out of range");
+    float f = val.double_val;
+    if (val.double_val != INFINITY && val.double_val != -INFINITY) {
+      if (f == INFINITY || f == -INFINITY) jsondec_err(d, "Float out of range");
     }
-    val.float_val = val.double_val;
+    val.float_val = f;
   }
 
   return val;

@@ -170,6 +170,32 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
   EXPECT_EQ(0, table->required_count);
 }
 
+TEST_P(MiniTableTest, SizeOverflow) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  // upb can only handle messages up to UINT16_MAX.
+  size_t max_double_fields = UINT16_MAX / (sizeof(double) + 1);
+
+  // A bit under max_double_fields is ok.
+  ASSERT_TRUE(e.StartMessage(0));
+  for (size_t i = 1; i < max_double_fields; i++) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Double, i, 0));
+  }
+  upb::Status status;
+  upb_MiniTable* table = upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table) << status.error_message();
+
+  // A bit over max_double_fields fails.
+  ASSERT_TRUE(e.StartMessage(0));
+  for (size_t i = 1; i < max_double_fields + 2; i++) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Double, i, 0));
+  }
+  upb_MiniTable* table2 = upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  ASSERT_EQ(nullptr, table2) << status.error_message();
+}
+
 INSTANTIATE_TEST_SUITE_P(Platforms, MiniTableTest,
                          testing::Values(kUpb_MiniTablePlatform_32Bit,
                                          kUpb_MiniTablePlatform_64Bit));

@@ -33,9 +33,9 @@
 #define UPB_LUA_UPB_H_
 
 #include "lauxlib.h"
-#include "upb/def.h"
 #include "upb/msg.h"
-#include "upb/reflection.h"
+#include "upb/reflection/def.h"
+#include "upb/reflection/message.h"
 
 /* Lua changes its API in incompatible ways in every minor release.
  * This is some shim code to paper over the differences. */

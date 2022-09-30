@@ -289,7 +289,9 @@ TEST(GeneratedCode, SubMessage) {
   upb_Message* new_nested_message =
       protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_new(arena);
   upb_MiniTable_SetInt32(new_nested_message, nested_message_a_field, 123);
-  upb_MiniTable_SetMessage(msg, optional_message_field, new_nested_message);
+  upb_MiniTable_SetMessage(
+      msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init,
+      optional_message_field, new_nested_message);
 
   upb_Message* mutable_message = upb_MiniTable_GetMutableMessage(
       msg, &protobuf_test_messages_proto2_TestAllTypesProto2_msg_init,
@@ -446,10 +448,9 @@ TEST(GeneratedCode, Extensions) {
   // Get unknown extension bytes before promotion.
   const char* extension_data;
   size_t len;
-  upb_GetExtensionAsBytes_Status status = status =
-      upb_MiniTable_GetExtensionAsBytes(base_msg,
-                                        &upb_test_ModelExtension2_model_ext_ext,
-                                        0, arena, &extension_data, &len);
+  upb_GetExtensionAsBytes_Status status = upb_MiniTable_GetExtensionAsBytes(
+      base_msg, &upb_test_ModelExtension2_model_ext_ext, 0, arena,
+      &extension_data, &len);
   EXPECT_EQ(kUpb_GetExtensionAsBytes_Ok, status);
   EXPECT_EQ(0x48, extension_data[0]);
   EXPECT_EQ(5, extension_data[1]);

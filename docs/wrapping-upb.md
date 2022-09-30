@@ -178,7 +178,7 @@ To use reflection-based access:
 
 ### MiniTables
 
-MiniTables are a "lite" schema representation that are much smaller that
+MiniTables are a "lite" schema representation that are much smaller than
 reflection. MiniTables omit names, options, and almost everything else from the
 `.proto` file, retaining only enough information to parse and serialize binary
 format.

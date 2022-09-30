@@ -32,8 +32,8 @@
 #include "python/extension_dict.h"
 #include "python/map.h"
 #include "python/repeated.h"
-#include "upb/def.h"
-#include "upb/reflection.h"
+#include "upb/reflection/def.h"
+#include "upb/reflection/message.h"
 #include "upb/text_encode.h"
 #include "upb/util/required_fields.h"
 
@@ -1361,7 +1361,7 @@ static PyObject* PyUpb_Message_ClearField(PyObject* _self, PyObject* arg) {
   }
 
   if (o) f = upb_Message_WhichOneof(self->ptr.msg, o);
-  PyUpb_Message_DoClearField(_self, f);
+  if (f) PyUpb_Message_DoClearField(_self, f);
   Py_RETURN_NONE;
 }
 

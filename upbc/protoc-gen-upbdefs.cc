@@ -69,14 +69,14 @@ void WriteDefHeader(const protobuf::FileDescriptor* file, Output& output) {
   output(
       "#ifndef $0_UPBDEFS_H_\n"
       "#define $0_UPBDEFS_H_\n\n"
-      "#include \"upb/def.h\"\n"
+      "#include \"upb/reflection/def.h\"\n"
       "#include \"upb/port_def.inc\"\n"
       "#ifdef __cplusplus\n"
       "extern \"C\" {\n"
       "#endif\n\n",
       ToPreproc(file->name()));
 
-  output("#include \"upb/def.h\"\n");
+  output("#include \"upb/reflection/def.h\"\n");
   output("\n");
   output("#include \"upb/port_def.inc\"\n");
   output("\n");
@@ -102,7 +102,7 @@ void WriteDefHeader(const protobuf::FileDescriptor* file, Output& output) {
 void WriteDefSource(const protobuf::FileDescriptor* file, Output& output) {
   EmitFileWarning(file, output);
 
-  output("#include \"upb/def.h\"\n");
+  output("#include \"upb/reflection/def.h\"\n");
   output("#include \"$0\"\n", DefHeaderFilename(file->name()));
   output("#include \"$0\"\n", HeaderFilename(file));
   output("\n");

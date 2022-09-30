@@ -27,11 +27,11 @@
 
 #include "upb/util/required_fields.h"
 
-#include "absl/strings/string_view.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "upb/def.hpp"
+#include "absl/strings/string_view.h"
 #include "upb/json_decode.h"
+#include "upb/reflection/def.hpp"
 #include "upb/upb.hpp"
 #include "upb/util/required_fields_test.upb.h"
 #include "upb/util/required_fields_test.upbdefs.h"

@@ -69,6 +69,24 @@ static upb_Arena* arena_findroot(upb_Arena* a) {
   return a;
 }
 
+size_t upb_Arena_SpaceAllocated(upb_Arena* arena) {
+  arena = arena_findroot(arena);
+  size_t memsize = 0;
+
+  mem_block* block = arena->freelist;
+
+  while (block) {
+    memsize += sizeof(mem_block) + block->size;
+    block = block->next;
+  }
+
+  return memsize;
+}
+
+uint32_t upb_Arena_DebugRefCount(upb_Arena* arena) {
+  return arena_findroot(arena)->refcount;
+}
+
 static void upb_Arena_addblock(upb_Arena* a, upb_Arena* root, void* ptr,
                                size_t size) {
   mem_block* block = ptr;
@@ -168,6 +186,7 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   a->head.ptr = mem;
   a->head.end = UPB_PTR_AT(mem, n - sizeof(*a), char);
   a->freelist = NULL;
+  a->freelist_tail = NULL;
   a->cleanup_metadata = upb_cleanup_metadata(NULL, true);
 
   return a;

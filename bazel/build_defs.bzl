@@ -41,8 +41,6 @@ _DEFAULT_CPPOPTS.extend([
 ])
 _DEFAULT_COPTS.extend([
     "-std=c99",
-    "-pedantic",
-    "-Werror=pedantic",
     "-Wall",
     "-Wstrict-prototypes",
     # GCC (at least) emits spurious warnings for this that cannot be fixed

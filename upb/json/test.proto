@@ -17,4 +17,6 @@ message Box {
   optional Tag last_tag = 5;
   optional string name = 4;
   optional google.protobuf.Value val = 6;
+  optional float f = 7;
+  optional double d = 8;
 }

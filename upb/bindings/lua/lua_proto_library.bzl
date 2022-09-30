@@ -63,7 +63,7 @@ def _get_real_root(ctx, file):
 
 def _generate_output_file(ctx, src, extension):
     package = ctx.label.package
-    if not _is_google3 and ctx.rule.attr.strip_import_prefix:
+    if not _is_google3 and ctx.rule.attr.strip_import_prefix and ctx.rule.attr.strip_import_prefix != "/":
         package = package[len(ctx.rule.attr.strip_import_prefix):]
     real_short_path = _get_real_short_path(src)
     real_short_path = paths.relativize(real_short_path, package)

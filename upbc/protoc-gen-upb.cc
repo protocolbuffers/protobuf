@@ -896,7 +896,7 @@ void WriteHeader(const FileLayout& layout, Output& output) {
     if (i == 0) {
       output("/* Public Imports. */\n");
     }
-    output("#include \"$0\"\n", HeaderFilename(file));
+    output("#include \"$0\"\n", HeaderFilename(file->public_dependency(i)));
     if (i == file->public_dependency_count() - 1) {
       output("\n");
     }
@@ -1208,9 +1208,9 @@ std::vector<TableEntry> FastDecodeTable(const protobuf::Descriptor* message,
     }
     while ((size_t)slot >= table.size()) {
       size_t size = std::max(static_cast<size_t>(1), table.size() * 2);
-      table.resize(size, TableEntry{"fastdecode_generic", 0});
+      table.resize(size, TableEntry{"_upb_FastDecoder_DecodeGeneric", 0});
     }
-    if (table[slot].first != "fastdecode_generic") {
+    if (table[slot].first != "_upb_FastDecoder_DecodeGeneric") {
       // A hotter field already filled this slot.
       continue;
     }
@@ -1373,16 +1373,13 @@ void WriteMessage(const protobuf::Descriptor* message, const FileLayout& layout,
 
 void WriteEnum(const upb_MiniTable_Enum* mt, const protobuf::EnumDescriptor* e,
                Output& output) {
-  std::string values_init = "NULL";
-
-  if (mt->value_count) {
-    values_init = EnumInit(e) + "_values";
-    output("static const int32_t $0[$1] = {\n", values_init, mt->value_count);
-    for (int i = 0; i < mt->value_count; i++) {
-      output("  $0,\n", mt->values[i]);
-    }
-    output("};\n\n");
+  std::string values_init = "{\n";
+  uint32_t value_count = (mt->mask_limit / 32) + mt->value_count;
+  for (uint32_t i = 0; i < value_count; i++) {
+    absl::StrAppend(&values_init, "                0x", absl::Hex(mt->data[i]),
+                    ",\n");
   }
+  values_init += "    }";
 
   output(
       R"cc(
@@ -1392,8 +1389,7 @@ void WriteEnum(const upb_MiniTable_Enum* mt, const protobuf::EnumDescriptor* e,
             $3,
         };
       )cc",
-      EnumInit(e), values_init, absl::StrCat("0x", absl::Hex(mt->mask), "ULL"),
-      mt->value_count);
+      EnumInit(e), mt->mask_limit, mt->value_count, values_init);
   output("\n");
 }
 

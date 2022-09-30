@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/json_encode.h"
+#include "upb/json/encode.h"
 
 #include <ctype.h>
 #include <float.h>
@@ -38,7 +38,8 @@
 #include "upb/decode.h"
 #include "upb/internal/encode.h"
 #include "upb/internal/vsnprintf_compat.h"
-#include "upb/reflection.h"
+#include "upb/map.h"
+#include "upb/reflection/message.h"
 
 // Must be last.
 #include "upb/port_def.inc"

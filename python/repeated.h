@@ -31,7 +31,7 @@
 #include <stdbool.h>
 
 #include "python/python_api.h"
-#include "upb/def.h"
+#include "upb/reflection/def.h"
 
 // Creates a new repeated field stub for field `f` of message object `parent`.
 // Precondition: `parent` must be a stub.

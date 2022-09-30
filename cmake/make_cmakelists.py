@@ -152,7 +152,7 @@ class BuildFileFunctions(object):
   def cc_proto_library(self, **kwargs):
     pass
 
-  def generated_file_staleness_test(self, **kwargs):
+  def staleness_test(self, **kwargs):
     pass
 
   def upb_amalgamation(self, **kwargs):

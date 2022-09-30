@@ -29,7 +29,18 @@
 """
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
+
+# begin:google_only
+# load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain", "use_cpp_toolchain")
+# end:google_only
+
+# begin:github_only
+# Compatibility code for Bazel 4.x. Remove this when we drop support for Bazel 4.x.
+load("@bazel_tools//tools/cpp:toolchain_utils.bzl", "find_cpp_toolchain")
+
+def use_cpp_toolchain():
+    return ["@bazel_tools//tools/cpp:toolchain_type"]
+# end:github_only
 
 # Generic support code #########################################################
 
@@ -70,7 +81,7 @@ def _generate_output_file(ctx, src, extension):
     package = ctx.label.package
     if not _is_google3:
         strip_import_prefix = ctx.rule.attr.strip_import_prefix
-        if strip_import_prefix:
+        if strip_import_prefix and strip_import_prefix != "/":
             if not package.startswith(strip_import_prefix[1:]):
                 fail("%s does not begin with prefix %s" % (package, strip_import_prefix))
             package = package[len(strip_import_prefix):]

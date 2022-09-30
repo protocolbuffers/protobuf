@@ -30,9 +30,9 @@
 
 #include "google/protobuf/compiler/plugin.upb.h"
 #include "google/protobuf/compiler/plugin.upbdefs.h"
-#include "upb/json_decode.h"
-#include "upb/json_encode.h"
-#include "upb/mini_descriptor.h"
+#include "upb/json/decode.h"
+#include "upb/json/encode.h"
+#include "upb/reflection/def.h"
 #include "upb/upb.h"
 #include "upbc/code_generator_request.h"
 #include "upbc/code_generator_request.upb.h"

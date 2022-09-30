@@ -28,12 +28,12 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
-#include "upb/def.hpp"
 #include "upb/fuzz_test_util.h"
-#include "upb/json_decode.h"
-#include "upb/json_encode.h"
+#include "upb/json/decode.h"
+#include "upb/json/encode.h"
 #include "upb/msg_test.upb.h"
 #include "upb/msg_test.upbdefs.h"
+#include "upb/reflection/def.hpp"
 #include "upb/upb.hpp"
 
 // begin:google_only
@@ -532,6 +532,47 @@ TEST(MessageTest, MapField) {
 //        "_C-\236$*)C0C>",
 //        {4041515984, 2147483647, 1929379871, 0, 3715937258, 4294967295}},
 //       "\010\002", 342248070, -806315555);
+// }
+//
+// TEST(FuzzTest, DecodeExtendMessageSetWithNonMessage) {
+//   DecodeEncodeArbitrarySchemaAndPayload(
+//       {{"\n"}, {""}, ".\244", {}}, "\013\032\005\212a#\365\336\020\001\226",
+//       14803219, 670718349);
+// }
+//
+// TEST(FuzzTest, DecodeExtendMessageSetWithNonMessage2) {
+//   DecodeEncodeArbitrarySchemaAndPayload({{"\n", "G", "\n", "\274", ""},
+//                                          {"", "\030"},
+//                                          "_@",
+//                                          {4294967295, 2147483647}},
+//                                         std::string("\013\032\000\220", 4),
+//                                         279975758, 1647495141);
+// }
+//
+// TEST(FuzzTest, DecodeExtendMessageSetWithNonMessage3) {
+//   DecodeEncodeArbitrarySchemaAndPayload(
+//       {{"\n"}, {"B", ""}, "\212:b", {11141121}},
+//       "\013\032\004\357;7\363\020\001\346\240\200\201\271", 399842149,
+//       -452966025);
+// }
+//
+// TEST(FuzzTest, DecodeExtendMessageSetWithNonMessage4) {
+//   DecodeEncodeArbitrarySchemaAndPayload(
+//       {{"\n", "3\340", "\354"}, {}, "B}G", {4294967295, 4082331310}},
+//       "\013\032\004\244B\331\255\020\001\220\224\243\350\t", -561523015,
+//       1683327312);
+// }
+//
+// TEST(FuzzTest, DecodeExtendMessageSetWithNonMessage5) {
+//   DecodeEncodeArbitrarySchemaAndPayload(
+//       {{"\n"}, {""}, "kB", {0}},
+//       "x\203\251\006\013\032\002S\376\010\273\'\020\014\365\207\244\234",
+//       -696925610, -654590577);
+// }
+//
+// TEST(FuzzTest, ExtendMessageSetWithEmptyExtension) {
+//   DecodeEncodeArbitrarySchemaAndPayload({{"\n"}, {}, "_", {}}, std::string(), 0,
+//                                         0);
 // }
 //
 // end:google_only

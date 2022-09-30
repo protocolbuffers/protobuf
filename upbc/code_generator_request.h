@@ -28,7 +28,7 @@
 #ifndef UPBC_CODE_GENERATOR_REQUEST_H_
 #define UPBC_CODE_GENERATOR_REQUEST_H_
 
-#include "upb/def.h"
+#include "upb/reflection/def.h"
 #include "upb/upb.h"
 #include "upbc/code_generator_request.upb.h"
 

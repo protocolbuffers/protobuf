@@ -25,7 +25,7 @@ def upb_deps():
         name = "com_google_protobuf",
         repo = "https://github.com/protocolbuffers/protobuf",
         commit = "5407aa62af5f8d71c344ef10877806232a137991",
-        patches = ["//bazel:protobuf.patch"],
+        patches = ["@upb//bazel:protobuf.patch"],
     )
 
     rules_python_version = "0.12.0"  # Latest @ August 31, 2022
