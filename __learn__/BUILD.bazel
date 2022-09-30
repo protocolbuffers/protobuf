@@ -249,3 +249,14 @@ alias(
   actual = "//python:python_specific_test_protos",
   visibility = ["//visibility:public"],
 )
+
+proto_lang_toolchain(
+  name = "cc_toolchain",
+  blacklisted_protos = [
+    "@com_google_protobuf//:compiler_plugin_proto",
+    "@com_google_protobuf//:descriptor_proto",
+  ],
+  command_line = "--cpp_out=$(OUT)",
+  runtime = ":protobuf",
+  visibility = ["//visibility:public"],
+)
