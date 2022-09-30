@@ -115,6 +115,6 @@ def protobuf_deps():
         _github_archive(
             name = "upb",
             repo = "https://github.com/protocolbuffers/upb",
-            commit = "ce3a28f75c8a52a5ea31f6ecf72467a9d6461cb1",
-            sha256 = "716c0c0e6b0bbafa7e64a9184b248fcd100eebb01b0e1aded61c7bc3d81d837e",
+            commit = "a5477045acaa34586420942098f5fecd3570f577",
+            sha256 = "0d6af8c8c00b3d733721f8d890ef43dd40f537c2e815b529085c1a6c30a21084",
         )
