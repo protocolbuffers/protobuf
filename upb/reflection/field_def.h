@@ -31,6 +31,7 @@
 #define UPB_REFLECTION_FIELD_DEF_H_
 
 #include "upb/reflection/common.h"
+#include "upb/string_view.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -68,6 +69,11 @@ bool upb_FieldDef_IsSubMessage(const upb_FieldDef* f);
 const char* upb_FieldDef_JsonName(const upb_FieldDef* f);
 upb_Label upb_FieldDef_Label(const upb_FieldDef* f);
 const upb_MessageDef* upb_FieldDef_MessageSubDef(const upb_FieldDef* f);
+
+// Creates a mini descriptor string for a field, returns true on success.
+bool upb_FieldDef_MiniDescriptorEncode(const upb_FieldDef* f, upb_Arena* a,
+                                       upb_StringView* out);
+
 const upb_MiniTable_Field* upb_FieldDef_MiniTable(const upb_FieldDef* f);
 const char* upb_FieldDef_Name(const upb_FieldDef* f);
 uint32_t upb_FieldDef_Number(const upb_FieldDef* f);

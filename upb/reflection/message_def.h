@@ -31,6 +31,7 @@
 #define UPB_REFLECTION_MESSAGE_DEF_H_
 
 #include "upb/reflection/common.h"
+#include "upb/string_view.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -129,6 +130,11 @@ const char* upb_MessageDef_FullName(const upb_MessageDef* m);
 bool upb_MessageDef_HasOptions(const upb_MessageDef* m);
 bool upb_MessageDef_IsMapEntry(const upb_MessageDef* m);
 bool upb_MessageDef_IsMessageSet(const upb_MessageDef* m);
+
+// Creates a mini descriptor string for a message, returns true on success.
+bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
+                                         upb_StringView* out);
+
 const upb_MiniTable* upb_MessageDef_MiniTable(const upb_MessageDef* m);
 const char* upb_MessageDef_Name(const upb_MessageDef* m);
 
@@ -157,11 +163,9 @@ bool _upb_MessageDef_Insert(upb_MessageDef* m, const char* name, size_t size,
                             upb_value v, upb_Arena* a);
 void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
                                  const upb_FieldDef* f);
-bool _upb_MessageDef_IsSorted(const upb_MessageDef* m);
 bool _upb_MessageDef_IsValidExtensionNumber(const upb_MessageDef* m, int n);
 void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
                                    const upb_MessageDef* m);
-uint64_t _upb_MessageDef_Modifiers(const upb_MessageDef* m);
 void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m);
 
 // Allocate and initialize an array of |n| message defs.

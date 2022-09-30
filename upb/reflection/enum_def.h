@@ -31,6 +31,7 @@
 #define UPB_REFLECTION_ENUM_DEF_H_
 
 #include "upb/reflection/common.h"
+#include "upb/string_view.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -51,6 +52,11 @@ const upb_EnumValueDef* upb_EnumDef_FindValueByNumber(const upb_EnumDef* e,
                                                       int32_t num);
 const char* upb_EnumDef_FullName(const upb_EnumDef* e);
 bool upb_EnumDef_HasOptions(const upb_EnumDef* e);
+
+// Creates a mini descriptor string for an enum, returns true on success.
+bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
+                                      upb_StringView* out);
+
 const char* upb_EnumDef_Name(const upb_EnumDef* e);
 const google_protobuf_EnumOptions* upb_EnumDef_Options(const upb_EnumDef* e);
 const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i);
@@ -60,7 +66,6 @@ int upb_EnumDef_ValueCount(const upb_EnumDef* e);
 
 upb_EnumDef* _upb_EnumDef_At(const upb_EnumDef* e, int i);
 bool _upb_EnumDef_Insert(upb_EnumDef* e, upb_EnumValueDef* v, upb_Arena* a);
-bool _upb_EnumDef_IsSorted(const upb_EnumDef* e);
 const upb_MiniTable_Enum* _upb_EnumDef_MiniTable(const upb_EnumDef* e);
 
 // Allocate and initialize an array of |n| enum defs.

@@ -33,7 +33,6 @@
 #include "google/protobuf/compiler/plugin.upb.h"
 #include "upb/mini_table.h"
 #include "upb/reflection/def.h"
-#include "upb/reflection/mini_descriptor_encode.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -86,7 +85,7 @@ static void upbc_Scrape_Message(upbc_State*, const upb_MessageDef*);
 
 static void upbc_Scrape_Enum(upbc_State* s, const upb_EnumDef* e) {
   upb_StringView desc;
-  bool ok = upb_MiniDescriptor_EncodeEnum(e, s->arena, &desc);
+  bool ok = upb_EnumDef_MiniDescriptorEncode(e, s->arena, &desc);
   if (!ok) upbc_Error(s, __func__, "could not encode enum");
 
   upbc_State_Emit(s, upb_EnumDef_FullName(e), desc);
@@ -94,7 +93,7 @@ static void upbc_Scrape_Enum(upbc_State* s, const upb_EnumDef* e) {
 
 static void upbc_Scrape_Extension(upbc_State* s, const upb_FieldDef* f) {
   upb_StringView desc;
-  bool ok = upb_MiniDescriptor_EncodeField(f, s->arena, &desc);
+  bool ok = upb_FieldDef_MiniDescriptorEncode(f, s->arena, &desc);
   if (!ok) upbc_Error(s, __func__, "could not encode extension");
 
   upbc_State_Emit(s, upb_FieldDef_FullName(f), desc);
@@ -173,7 +172,7 @@ static void upbc_Scrape_NestedMessages(upbc_State* s, const upb_MessageDef* m) {
 
 static void upbc_Scrape_Message(upbc_State* s, const upb_MessageDef* m) {
   upb_StringView desc;
-  bool ok = upb_MiniDescriptor_EncodeMessage(m, s->arena, &desc);
+  bool ok = upb_MessageDef_MiniDescriptorEncode(m, s->arena, &desc);
   if (!ok) upbc_Error(s, __func__, "could not encode message");
 
   upbc_State_Emit(s, upb_MessageDef_FullName(m), desc);

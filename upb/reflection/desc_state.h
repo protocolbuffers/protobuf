@@ -25,30 +25,34 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_REFLECTION_MINI_DESCRIPTOR_ENCODE_H_
-#define UPB_REFLECTION_MINI_DESCRIPTOR_ENCODE_H_
+#ifndef UPB_REFLECTION_DESC_STATE_H_
+#define UPB_REFLECTION_DESC_STATE_H_
 
-#include "upb/reflection/common.h"
-#include "upb/string_view.h"
+#include "upb/mini_table.h"
 
 // Must be last.
 #include "upb/port_def.inc"
+
+// Manages the storage for mini descriptor strings as they are being encoded.
+// TODO(b/234740652): Move some of this state directly into the encoder, maybe.
+typedef struct {
+  upb_MtDataEncoder e;
+  size_t bufsize;
+  char* buf;
+  char* ptr;
+} upb_DescState;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// Creates a mini descriptor string for an enum, returns true on success.
-bool upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e, upb_Arena* a,
-                                   upb_StringView* out);
+UPB_INLINE void _upb_DescState_Init(upb_DescState* d) {
+  d->bufsize = kUpb_MtDataEncoder_MinSize * 2;
+  d->buf = NULL;
+  d->ptr = NULL;
+}
 
-// Creates a mini descriptor string for a field, returns true on success.
-bool upb_MiniDescriptor_EncodeField(const upb_FieldDef* f, upb_Arena* a,
-                                    upb_StringView* out);
-
-// Creates a mini descriptor string for a message, returns true on success.
-bool upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m, upb_Arena* a,
-                                      upb_StringView* out);
+bool _upb_DescState_Grow(upb_DescState* d, upb_Arena* a);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -56,4 +60,4 @@ bool upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m, upb_Arena* a,
 
 #include "upb/port_undef.inc"
 
-#endif /* UPB_REFLECTION_MINI_DESCRIPTOR_ENCODE_H_ */
+#endif /* UPB_REFLECTION_DESC_STATE_H_ */

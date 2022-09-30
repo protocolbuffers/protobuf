@@ -32,10 +32,10 @@
 #include "upb/mini_table.h"
 #include "upb/reflection/def_builder.h"
 #include "upb/reflection/def_type.h"
+#include "upb/reflection/desc_state.h"
 #include "upb/reflection/enum_value_def.h"
 #include "upb/reflection/file_def.h"
 #include "upb/reflection/message_def.h"
-#include "upb/reflection/mini_descriptor_encode.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -84,8 +84,6 @@ bool _upb_EnumDef_Insert(upb_EnumDef* e, upb_EnumValueDef* v, upb_Arena* a) {
   }
   return true;
 }
-
-bool _upb_EnumDef_IsSorted(const upb_EnumDef* e) { return e->is_sorted; }
 
 const google_protobuf_EnumOptions* upb_EnumDef_Options(const upb_EnumDef* e) {
   return e->opts;
@@ -145,10 +143,49 @@ const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i) {
   return _upb_EnumValueDef_At(e->values, i);
 }
 
+bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
+                                      upb_StringView* out) {
+  upb_DescState s;
+  _upb_DescState_Init(&s);
+
+  const upb_EnumValueDef** sorted = NULL;
+  if (!e->is_sorted) {
+    sorted = _upb_EnumValueDefs_Sorted(e->values, e->value_count, a);
+    if (!sorted) return false;
+  }
+
+  upb_MtDataEncoder_StartEnum(&s.e);
+
+  // Duplicate values are allowed but we only encode each value once.
+  uint32_t previous = 0;
+
+  for (size_t i = 0; i < e->value_count; i++) {
+    const uint32_t current =
+        upb_EnumValueDef_Number(sorted ? sorted[i] : upb_EnumDef_Value(e, i));
+    if (i != 0 && previous == current) continue;
+
+    if (!_upb_DescState_Grow(&s, a)) return false;
+    s.ptr = upb_MtDataEncoder_PutEnumValue(&s.e, s.ptr, current);
+    previous = current;
+  }
+
+  if (!_upb_DescState_Grow(&s, a)) return false;
+  s.ptr = upb_MtDataEncoder_EndEnum(&s.e, s.ptr);
+
+  // There will always be room for this '\0' in the encoder buffer because
+  // kUpb_MtDataEncoder_MinSize is overkill for upb_MtDataEncoder_EndEnum().
+  UPB_ASSERT(s.ptr < s.buf + s.bufsize);
+  *s.ptr = '\0';
+
+  out->data = s.buf;
+  out->size = s.ptr - s.buf;
+  return true;
+}
+
 static upb_MiniTable_Enum* create_enumlayout(upb_DefBuilder* ctx,
                                              const upb_EnumDef* e) {
   upb_StringView sv;
-  bool ok = upb_MiniDescriptor_EncodeEnum(e, ctx->tmp_arena, &sv);
+  bool ok = upb_EnumDef_MiniDescriptorEncode(e, ctx->tmp_arena, &sv);
   if (!ok) _upb_DefBuilder_Errf(ctx, "OOM while building enum MiniDescriptor");
 
   upb_Status status;

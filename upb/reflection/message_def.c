@@ -30,11 +30,11 @@
 #include "upb/mini_table.h"
 #include "upb/reflection/def_builder.h"
 #include "upb/reflection/def_type.h"
+#include "upb/reflection/desc_state.h"
 #include "upb/reflection/enum_def.h"
 #include "upb/reflection/extension_range.h"
 #include "upb/reflection/field_def.h"
 #include "upb/reflection/file_def.h"
-#include "upb/reflection/mini_descriptor_encode.h"
 #include "upb/reflection/oneof_def.h"
 
 // Must be last.
@@ -131,8 +131,6 @@ bool _upb_MessageDef_IsValidExtensionNumber(const upb_MessageDef* m, int n) {
   }
   return false;
 }
-
-bool _upb_MessageDef_IsSorted(const upb_MessageDef* m) { return m->is_sorted; }
 
 const google_protobuf_MessageOptions* upb_MessageDef_Options(
     const upb_MessageDef* m) {
@@ -344,7 +342,7 @@ static upb_MiniTable* _upb_MessageDef_MakeMiniTable(upb_DefBuilder* ctx,
   }
 
   upb_StringView desc;
-  bool ok = upb_MiniDescriptor_EncodeMessage(m, ctx->tmp_arena, &desc);
+  bool ok = upb_MessageDef_MiniDescriptorEncode(m, ctx->tmp_arena, &desc);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
   void** scratch_data = _upb_DefPool_ScratchData(ctx->symtab);
@@ -458,7 +456,7 @@ void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
   }
 }
 
-uint64_t _upb_MessageDef_Modifiers(const upb_MessageDef* m) {
+static uint64_t _upb_MessageDef_Modifiers(const upb_MessageDef* m) {
   uint64_t out = 0;
   if (upb_FileDef_Syntax(m->file) == kUpb_Syntax_Proto3) {
     out |= kUpb_MessageModifier_ValidateUtf8;
@@ -468,6 +466,53 @@ uint64_t _upb_MessageDef_Modifiers(const upb_MessageDef* m) {
     out |= kUpb_MessageModifier_IsExtendable;
   }
   return out;
+}
+
+bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
+                                         upb_StringView* out) {
+  upb_DescState s;
+  _upb_DescState_Init(&s);
+
+  const upb_FieldDef** sorted = NULL;
+  if (!m->is_sorted) {
+    sorted = _upb_FieldDefs_Sorted(m->fields, m->field_count, a);
+    if (!sorted) return false;
+  }
+
+  if (!_upb_DescState_Grow(&s, a)) return false;
+  s.ptr =
+      upb_MtDataEncoder_StartMessage(&s.e, s.ptr, _upb_MessageDef_Modifiers(m));
+
+  for (int i = 0; i < m->field_count; i++) {
+    const upb_FieldDef* f = sorted ? sorted[i] : upb_MessageDef_Field(m, i);
+    const upb_FieldType type = upb_FieldDef_Type(f);
+    const int number = upb_FieldDef_Number(f);
+    const uint64_t modifiers = _upb_FieldDef_Modifiers(f);
+
+    if (!_upb_DescState_Grow(&s, a)) return false;
+    s.ptr = upb_MtDataEncoder_PutField(&s.e, s.ptr, type, number, modifiers);
+  }
+
+  for (int i = 0; i < m->oneof_count; i++) {
+    if (!_upb_DescState_Grow(&s, a)) return false;
+    s.ptr = upb_MtDataEncoder_StartOneof(&s.e, s.ptr);
+
+    const upb_OneofDef* o = upb_MessageDef_Oneof(m, i);
+    const int field_count = upb_OneofDef_FieldCount(o);
+    for (int j = 0; j < field_count; j++) {
+      const int number = upb_FieldDef_Number(upb_OneofDef_Field(o, j));
+
+      if (!_upb_DescState_Grow(&s, a)) return false;
+      s.ptr = upb_MtDataEncoder_PutOneofField(&s.e, s.ptr, number);
+    }
+  }
+
+  if (!_upb_DescState_Grow(&s, a)) return false;
+  *s.ptr = '\0';
+
+  out->data = s.buf;
+  out->size = s.ptr - s.buf;
+  return true;
 }
 
 static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
