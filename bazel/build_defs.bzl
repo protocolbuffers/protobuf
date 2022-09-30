@@ -25,7 +25,6 @@
 
 """Internal rules for building upb."""
 
-load("@bazel_skylib//lib:paths.bzl", "paths")
 load(":upb_proto_library.bzl", "GeneratedSrcsInfo")
 
 _DEFAULT_CPPOPTS = []
