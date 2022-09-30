@@ -3,7 +3,7 @@
 # See also code generation logic under /src/google/protobuf/compiler/ruby.
 
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
-load("@upb//cmake:build_defs.bzl", "generated_file_staleness_test")
+load("@upb//cmake:build_defs.bzl", "staleness_test")
 load("//build_defs:internal_shell.bzl", "inline_sh_test")
 load("//conformance:defs.bzl", "conformance_test")
 load("//:protobuf.bzl", "internal_ruby_proto_library")
@@ -176,7 +176,7 @@ genrule(
     cmd = "cp $< $@",
 )
 
-generated_file_staleness_test(
+staleness_test(
     name = "test_amalgamation_staleness",
     outs = [
         "ext/google/protobuf_c/ruby-upb.h",

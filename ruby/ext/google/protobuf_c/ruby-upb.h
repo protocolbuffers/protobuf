@@ -410,6 +410,8 @@ void upb_Arena_Free(upb_Arena* a);
 bool upb_Arena_AddCleanup(upb_Arena* a, void* ud, upb_CleanupFunc* func);
 bool upb_Arena_Fuse(upb_Arena* a, upb_Arena* b);
 void* _upb_Arena_SlowMalloc(upb_Arena* a, size_t size);
+size_t upb_Arena_SpaceAllocated(upb_Arena* arena);
+uint32_t upb_Arena_DebugRefCount(upb_Arena* arena);
 
 UPB_INLINE upb_alloc* upb_Arena_Alloc(upb_Arena* a) { return (upb_alloc*)a; }
 
@@ -5916,12 +5918,203 @@ UPB_INLINE void _upb_Decoder_PopLimit(upb_Decoder* d, const char* ptr,
 
 #endif /* UPB_INTERNAL_DECODE_H_ */
 
-#ifndef UPB_JSONDECODE_H_
-#define UPB_JSONDECODE_H_
+#ifndef UPB_JSON_DECODE_H_
+#define UPB_JSON_DECODE_H_
 
 
-#ifndef UPB_DEF_H_
-#define UPB_DEF_H_
+#ifndef UPB_REFLECTION_DEF_H_
+#define UPB_REFLECTION_DEF_H_
+
+
+// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
+
+#ifndef UPB_REFLECTION_DEF_POOL_H_
+#define UPB_REFLECTION_DEF_POOL_H_
+
+
+// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
+
+// Declarations common to all public def types.
+
+#ifndef UPB_REFLECTION_COMMON_H_
+#define UPB_REFLECTION_COMMON_H_
+
+
+typedef enum { kUpb_Syntax_Proto2 = 2, kUpb_Syntax_Proto3 = 3 } upb_Syntax;
+
+// Forward declarations for circular references.
+typedef struct upb_DefPool upb_DefPool;
+typedef struct upb_EnumDef upb_EnumDef;
+typedef struct upb_EnumValueDef upb_EnumValueDef;
+typedef struct upb_ExtensionRange upb_ExtensionRange;
+typedef struct upb_FieldDef upb_FieldDef;
+typedef struct upb_FileDef upb_FileDef;
+typedef struct upb_MessageDef upb_MessageDef;
+typedef struct upb_MethodDef upb_MethodDef;
+typedef struct upb_OneofDef upb_OneofDef;
+typedef struct upb_ServiceDef upb_ServiceDef;
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+typedef struct upb_DefBuilder upb_DefBuilder;
+
+#endif /* UPB_REFLECTION_COMMON_H_ */
+
+#ifndef UPB_REFLECTION_DEF_TYPE_H_
+#define UPB_REFLECTION_DEF_TYPE_H_
+
+
+// Must be last.
+
+// Inside a symtab we store tagged pointers to specific def types.
+typedef enum {
+  UPB_DEFTYPE_MASK = 7,
+
+  // Only inside symtab table.
+  UPB_DEFTYPE_EXT = 0,
+  UPB_DEFTYPE_MSG = 1,
+  UPB_DEFTYPE_ENUM = 2,
+  UPB_DEFTYPE_ENUMVAL = 3,
+  UPB_DEFTYPE_SERVICE = 4,
+
+  // Only inside message table.
+  UPB_DEFTYPE_FIELD = 0,
+  UPB_DEFTYPE_ONEOF = 1,
+  UPB_DEFTYPE_FIELD_JSONNAME = 2,
+} upb_deftype_t;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Our 3-bit pointer tagging requires all pointers to be multiples of 8.
+// The arena will always yield 8-byte-aligned addresses, however we put
+// the defs into arrays. For each element in the array to be 8-byte-aligned,
+// the sizes of each def type must also be a multiple of 8.
+//
+// If any of these asserts fail, we need to add or remove padding on 32-bit
+// machines (64-bit machines will have 8-byte alignment already due to
+// pointers, which all of these structs have).
+UPB_INLINE void _upb_DefType_CheckPadding(size_t size) {
+  UPB_ASSERT((size & UPB_DEFTYPE_MASK) == 0);
+}
+
+upb_deftype_t _upb_DefType_Type(upb_value v);
+
+upb_value _upb_DefType_Pack(const void* ptr, upb_deftype_t type);
+
+const void* _upb_DefType_Unpack(upb_value v, upb_deftype_t type);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_DEF_TYPE_H_ */
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void upb_DefPool_Free(upb_DefPool* s);
+
+upb_DefPool* upb_DefPool_New(void);
+
+const upb_MessageDef* upb_DefPool_FindMessageByName(const upb_DefPool* s,
+                                                    const char* sym);
+
+const upb_MessageDef* upb_DefPool_FindMessageByNameWithSize(
+    const upb_DefPool* s, const char* sym, size_t len);
+
+const upb_EnumDef* upb_DefPool_FindEnumByName(const upb_DefPool* s,
+                                              const char* sym);
+
+const upb_EnumValueDef* upb_DefPool_FindEnumByNameval(const upb_DefPool* s,
+                                                      const char* sym);
+
+const upb_FileDef* upb_DefPool_FindFileByName(const upb_DefPool* s,
+                                              const char* name);
+
+const upb_FileDef* upb_DefPool_FindFileByNameWithSize(const upb_DefPool* s,
+                                                      const char* name,
+                                                      size_t len);
+
+const upb_FieldDef* upb_DefPool_FindExtensionByNameWithSize(
+    const upb_DefPool* s, const char* name, size_t size);
+
+const upb_FieldDef* upb_DefPool_FindExtensionByName(const upb_DefPool* s,
+                                                    const char* sym);
+
+const upb_ServiceDef* upb_DefPool_FindServiceByName(const upb_DefPool* s,
+                                                    const char* name);
+
+const upb_ServiceDef* upb_DefPool_FindServiceByNameWithSize(
+    const upb_DefPool* s, const char* name, size_t size);
+
+const upb_FileDef* upb_DefPool_FindFileContainingSymbol(const upb_DefPool* s,
+                                                        const char* name);
+
+const upb_FileDef* upb_DefPool_AddFile(
+    upb_DefPool* s, const google_protobuf_FileDescriptorProto* file_proto,
+    upb_Status* status);
+
+const upb_FieldDef* upb_DefPool_FindExtensionByNumber(const upb_DefPool* s,
+                                                      const upb_MessageDef* m,
+                                                      int32_t fieldnum);
+
+const upb_ExtensionRegistry* upb_DefPool_ExtensionRegistry(
+    const upb_DefPool* s);
+
+const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,
+                                                  const upb_MessageDef* m,
+                                                  size_t* count);
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+upb_Arena* _upb_DefPool_Arena(const upb_DefPool* s);
+size_t _upb_DefPool_BytesLoaded(const upb_DefPool* s);
+upb_ExtensionRegistry* _upb_DefPool_ExtReg(const upb_DefPool* s);
+const upb_FieldDef* _upb_DefPool_FindExtensionByMiniTable(
+    const upb_DefPool* s, const upb_MiniTable_Extension* ext);
+
+bool _upb_DefPool_InsertExt(upb_DefPool* s, const upb_MiniTable_Extension* ext,
+                            upb_FieldDef* f);
+bool _upb_DefPool_InsertSym(upb_DefPool* s, upb_StringView sym, upb_value v,
+                            upb_Status* status);
+bool _upb_DefPool_LookupSym(const upb_DefPool* s, const char* sym, size_t size,
+                            upb_value* v);
+
+void** _upb_DefPool_ScratchData(const upb_DefPool* s);
+size_t* _upb_DefPool_ScratchSize(const upb_DefPool* s);
+
+// For generated code only: loads a generated descriptor.
+typedef struct _upb_DefPool_Init {
+  struct _upb_DefPool_Init** deps;  // Dependencies of this file.
+  const upb_MiniTable_File* layout;
+  const char* filename;
+  upb_StringView descriptor;  // Serialized descriptor.
+} _upb_DefPool_Init;
+
+bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init);
+
+// Should only be directly called by tests. This variant lets us suppress
+// the use of compiled-in tables, forcing a rebuild of the tables at runtime.
+bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
+                                bool rebuild_minitable);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_DEF_POOL_H_ */
+
+// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
+
+#ifndef UPB_REFLECTION_ENUM_DEF_H_
+#define UPB_REFLECTION_ENUM_DEF_H_
 
 
 // Must be last.
@@ -5930,202 +6123,348 @@ UPB_INLINE void _upb_Decoder_PopLimit(upb_Decoder* d, const char* ptr,
 extern "C" {
 #endif
 
-struct upb_EnumDef;
-typedef struct upb_EnumDef upb_EnumDef;
-struct upb_EnumValueDef;
-typedef struct upb_EnumValueDef upb_EnumValueDef;
-struct upb_ExtensionRange;
-typedef struct upb_ExtensionRange upb_ExtensionRange;
-struct upb_FieldDef;
-typedef struct upb_FieldDef upb_FieldDef;
-struct upb_FileDef;
-typedef struct upb_FileDef upb_FileDef;
-struct upb_MethodDef;
-typedef struct upb_MethodDef upb_MethodDef;
-struct upb_MessageDef;
-typedef struct upb_MessageDef upb_MessageDef;
-struct upb_OneofDef;
-typedef struct upb_OneofDef upb_OneofDef;
-struct upb_ServiceDef;
-typedef struct upb_ServiceDef upb_ServiceDef;
-struct upb_streamdef;
-typedef struct upb_streamdef upb_streamdef;
-struct upb_DefPool;
-typedef struct upb_DefPool upb_DefPool;
+bool upb_EnumDef_CheckNumber(const upb_EnumDef* e, int32_t num);
+const upb_MessageDef* upb_EnumDef_ContainingType(const upb_EnumDef* e);
+int32_t upb_EnumDef_Default(const upb_EnumDef* e);
+const upb_FileDef* upb_EnumDef_File(const upb_EnumDef* e);
+const upb_EnumValueDef* upb_EnumDef_FindValueByName(const upb_EnumDef* e,
+                                                    const char* name);
+const upb_EnumValueDef* upb_EnumDef_FindValueByNameWithSize(
+    const upb_EnumDef* e, const char* name, size_t size);
+const upb_EnumValueDef* upb_EnumDef_FindValueByNumber(const upb_EnumDef* e,
+                                                      int32_t num);
+const char* upb_EnumDef_FullName(const upb_EnumDef* e);
+bool upb_EnumDef_HasOptions(const upb_EnumDef* e);
 
-typedef enum { kUpb_Syntax_Proto2 = 2, kUpb_Syntax_Proto3 = 3 } upb_Syntax;
+// Creates a mini descriptor string for an enum, returns true on success.
+bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
+                                      upb_StringView* out);
 
-/* All the different kind of well known type messages. For simplicity of check,
- * number wrappers and string wrappers are grouped together. Make sure the
- * order and merber of these groups are not changed.
- */
+const char* upb_EnumDef_Name(const upb_EnumDef* e);
+const google_protobuf_EnumOptions* upb_EnumDef_Options(const upb_EnumDef* e);
+const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i);
+int upb_EnumDef_ValueCount(const upb_EnumDef* e);
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+upb_EnumDef* _upb_EnumDef_At(const upb_EnumDef* e, int i);
+bool _upb_EnumDef_Insert(upb_EnumDef* e, upb_EnumValueDef* v, upb_Arena* a);
+const upb_MiniTable_Enum* _upb_EnumDef_MiniTable(const upb_EnumDef* e);
+
+// Allocate and initialize an array of |n| enum defs.
+upb_EnumDef* _upb_EnumDefs_New(upb_DefBuilder* ctx, int n,
+                               const google_protobuf_EnumDescriptorProto* const* protos,
+                               const upb_MessageDef* containing_type);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_ENUM_DEF_H_ */
+
+// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
+
+#ifndef UPB_REFLECTION_ENUM_VALUE_DEF_H_
+#define UPB_REFLECTION_ENUM_VALUE_DEF_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+const upb_EnumDef* upb_EnumValueDef_Enum(const upb_EnumValueDef* v);
+const char* upb_EnumValueDef_FullName(const upb_EnumValueDef* v);
+bool upb_EnumValueDef_HasOptions(const upb_EnumValueDef* v);
+uint32_t upb_EnumValueDef_Index(const upb_EnumValueDef* v);
+const char* upb_EnumValueDef_Name(const upb_EnumValueDef* v);
+int32_t upb_EnumValueDef_Number(const upb_EnumValueDef* v);
+const google_protobuf_EnumValueOptions* upb_EnumValueDef_Options(
+    const upb_EnumValueDef* v);
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+upb_EnumValueDef* _upb_EnumValueDef_At(const upb_EnumValueDef* v, int i);
+
+// Allocate and initialize an array of |n| enum value defs owned by |e|.
+upb_EnumValueDef* _upb_EnumValueDefs_New(
+    upb_DefBuilder* ctx, const char* prefix, int n,
+    const google_protobuf_EnumValueDescriptorProto* const* protos, upb_EnumDef* e,
+    bool* is_sorted);
+
+const upb_EnumValueDef** _upb_EnumValueDefs_Sorted(const upb_EnumValueDef* v,
+                                                   int n, upb_Arena* a);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_ENUM_VALUE_DEF_H_ */
+
+// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
+
+#ifndef UPB_REFLECTION_EXTENSION_RANGE_H_
+#define UPB_REFLECTION_EXTENSION_RANGE_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int32_t upb_ExtensionRange_Start(const upb_ExtensionRange* r);
+int32_t upb_ExtensionRange_End(const upb_ExtensionRange* r);
+
+bool upb_ExtensionRange_HasOptions(const upb_ExtensionRange* r);
+const google_protobuf_ExtensionRangeOptions* upb_ExtensionRange_Options(
+    const upb_ExtensionRange* r);
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+upb_ExtensionRange* _upb_ExtensionRange_At(const upb_ExtensionRange* r, int i);
+
+// Allocate and initialize an array of |n| extension ranges owned by |m|.
+upb_ExtensionRange* _upb_ExtensionRanges_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_DescriptorProto_ExtensionRange* const* protos,
+    const upb_MessageDef* m);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_EXTENSION_RANGE_H_ */
+
+// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
+
+#ifndef UPB_REFLECTION_FIELD_DEF_H_
+#define UPB_REFLECTION_FIELD_DEF_H_
+
+
+// Must be last.
+
+// Maximum field number allowed for FieldDefs.
+// This is an inherent limit of the protobuf wire format.
+#define kUpb_MaxFieldNumber ((1 << 29) - 1)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+const upb_OneofDef* upb_FieldDef_ContainingOneof(const upb_FieldDef* f);
+const upb_MessageDef* upb_FieldDef_ContainingType(const upb_FieldDef* f);
+upb_CType upb_FieldDef_CType(const upb_FieldDef* f);
+const upb_EnumDef* upb_FieldDef_EnumSubDef(const upb_FieldDef* f);
+const upb_MessageDef* upb_FieldDef_ExtensionScope(const upb_FieldDef* f);
+const upb_FileDef* upb_FieldDef_File(const upb_FieldDef* f);
+const char* upb_FieldDef_FullName(const upb_FieldDef* f);
+bool upb_FieldDef_HasDefault(const upb_FieldDef* f);
+bool upb_FieldDef_HasJsonName(const upb_FieldDef* f);
+bool upb_FieldDef_HasOptions(const upb_FieldDef* f);
+bool upb_FieldDef_HasPresence(const upb_FieldDef* f);
+bool upb_FieldDef_HasSubDef(const upb_FieldDef* f);
+uint32_t upb_FieldDef_Index(const upb_FieldDef* f);
+bool upb_FieldDef_IsExtension(const upb_FieldDef* f);
+bool upb_FieldDef_IsMap(const upb_FieldDef* f);
+bool upb_FieldDef_IsOptional(const upb_FieldDef* f);
+bool upb_FieldDef_IsPacked(const upb_FieldDef* f);
+bool upb_FieldDef_IsPrimitive(const upb_FieldDef* f);
+bool upb_FieldDef_IsRepeated(const upb_FieldDef* f);
+bool upb_FieldDef_IsRequired(const upb_FieldDef* f);
+bool upb_FieldDef_IsString(const upb_FieldDef* f);
+bool upb_FieldDef_IsSubMessage(const upb_FieldDef* f);
+const char* upb_FieldDef_JsonName(const upb_FieldDef* f);
+upb_Label upb_FieldDef_Label(const upb_FieldDef* f);
+const upb_MessageDef* upb_FieldDef_MessageSubDef(const upb_FieldDef* f);
+
+// Creates a mini descriptor string for a field, returns true on success.
+bool upb_FieldDef_MiniDescriptorEncode(const upb_FieldDef* f, upb_Arena* a,
+                                       upb_StringView* out);
+
+const upb_MiniTable_Field* upb_FieldDef_MiniTable(const upb_FieldDef* f);
+const char* upb_FieldDef_Name(const upb_FieldDef* f);
+uint32_t upb_FieldDef_Number(const upb_FieldDef* f);
+const google_protobuf_FieldOptions* upb_FieldDef_Options(const upb_FieldDef* f);
+const upb_OneofDef* upb_FieldDef_RealContainingOneof(const upb_FieldDef* f);
+upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f);
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+upb_FieldDef* _upb_FieldDef_At(const upb_FieldDef* f, int i);
+
+const upb_MiniTable_Extension* _upb_FieldDef_ExtensionMiniTable(
+    const upb_FieldDef* f);
+bool _upb_FieldDef_IsClosedEnum(const upb_FieldDef* f);
+bool _upb_FieldDef_IsProto3Optional(const upb_FieldDef* f);
+int _upb_FieldDef_LayoutIndex(const upb_FieldDef* f);
+uint64_t _upb_FieldDef_Modifiers(const upb_FieldDef* f);
+void _upb_FieldDef_Resolve(upb_DefBuilder* ctx, const char* prefix,
+                           upb_FieldDef* f);
+
+// Allocate and initialize an array of |n| field defs.
+upb_FieldDef* _upb_FieldDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_FieldDescriptorProto* const* protos, const char* prefix,
+    upb_MessageDef* m, bool* is_sorted);
+
+// Allocate and return a list of pointers to the |n| field defs in |ff|,
+// sorted by field number.
+const upb_FieldDef** _upb_FieldDefs_Sorted(const upb_FieldDef* f, int n,
+                                           upb_Arena* a);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_FIELD_DEF_H_ */
+
+// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
+
+#ifndef UPB_REFLECTION_FILE_DEF_H_
+#define UPB_REFLECTION_FILE_DEF_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+const upb_FileDef* upb_FileDef_Dependency(const upb_FileDef* f, int i);
+int upb_FileDef_DependencyCount(const upb_FileDef* f);
+bool upb_FileDef_HasOptions(const upb_FileDef* f);
+const char* upb_FileDef_Name(const upb_FileDef* f);
+const google_protobuf_FileOptions* upb_FileDef_Options(const upb_FileDef* f);
+const char* upb_FileDef_Package(const upb_FileDef* f);
+const upb_DefPool* upb_FileDef_Pool(const upb_FileDef* f);
+
+const upb_FileDef* upb_FileDef_PublicDependency(const upb_FileDef* f, int i);
+int upb_FileDef_PublicDependencyCount(const upb_FileDef* f);
+
+const upb_ServiceDef* upb_FileDef_Service(const upb_FileDef* f, int i);
+int upb_FileDef_ServiceCount(const upb_FileDef* f);
+
+upb_Syntax upb_FileDef_Syntax(const upb_FileDef* f);
+
+const upb_EnumDef* upb_FileDef_TopLevelEnum(const upb_FileDef* f, int i);
+int upb_FileDef_TopLevelEnumCount(const upb_FileDef* f);
+
+const upb_FieldDef* upb_FileDef_TopLevelExtension(const upb_FileDef* f, int i);
+int upb_FileDef_TopLevelExtensionCount(const upb_FileDef* f);
+
+const upb_MessageDef* upb_FileDef_TopLevelMessage(const upb_FileDef* f, int i);
+int upb_FileDef_TopLevelMessageCount(const upb_FileDef* f);
+
+const upb_FileDef* upb_FileDef_WeakDependency(const upb_FileDef* f, int i);
+int upb_FileDef_WeakDependencyCount(const upb_FileDef* f);
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+const upb_MiniTable_Extension* _upb_FileDef_ExtensionMiniTable(
+    const upb_FileDef* f, int i);
+const int32_t* _upb_FileDef_PublicDependencyIndexes(const upb_FileDef* f);
+const int32_t* _upb_FileDef_WeakDependencyIndexes(const upb_FileDef* f);
+
+// upb_FileDef_Package() returns "" if f->package is NULL, this does not.
+const char* _upb_FileDef_RawPackage(const upb_FileDef* f);
+
+void _upb_FileDef_Create(upb_DefBuilder* ctx,
+                         const google_protobuf_FileDescriptorProto* file_proto);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_FILE_DEF_H_ */
+
+// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
+
+#ifndef UPB_REFLECTION_MESSAGE_DEF_H_
+#define UPB_REFLECTION_MESSAGE_DEF_H_
+
+
+// Must be last.
+
+// Well-known field tag numbers for map-entry messages.
+#define kUpb_MapEntry_KeyFieldNumber 1
+#define kUpb_MapEntry_ValueFieldNumber 2
+
+// Well-known field tag numbers for Any messages.
+#define kUpb_Any_TypeFieldNumber 1
+#define kUpb_Any_ValueFieldNumber 2
+
+// Well-known field tag numbers for duration messages.
+#define kUpb_Duration_SecondsFieldNumber 1
+#define kUpb_Duration_NanosFieldNumber 2
+
+// Well-known field tag numbers for timestamp messages.
+#define kUpb_Timestamp_SecondsFieldNumber 1
+#define kUpb_Timestamp_NanosFieldNumber 2
+
+// All the different kind of well known type messages. For simplicity of check,
+// number wrappers and string wrappers are grouped together. Make sure the
+// order and number of these groups are not changed.
 typedef enum {
   kUpb_WellKnown_Unspecified,
   kUpb_WellKnown_Any,
   kUpb_WellKnown_FieldMask,
   kUpb_WellKnown_Duration,
   kUpb_WellKnown_Timestamp,
-  /* number wrappers */
+
+  // number wrappers
   kUpb_WellKnown_DoubleValue,
   kUpb_WellKnown_FloatValue,
   kUpb_WellKnown_Int64Value,
   kUpb_WellKnown_UInt64Value,
   kUpb_WellKnown_Int32Value,
   kUpb_WellKnown_UInt32Value,
-  /* string wrappers */
+
+  // string wrappers
   kUpb_WellKnown_StringValue,
   kUpb_WellKnown_BytesValue,
   kUpb_WellKnown_BoolValue,
   kUpb_WellKnown_Value,
   kUpb_WellKnown_ListValue,
-  kUpb_WellKnown_Struct
+  kUpb_WellKnown_Struct,
 } upb_WellKnown;
 
-/* upb_FieldDef ***************************************************************/
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/* Maximum field number allowed for FieldDefs.  This is an inherent limit of the
- * protobuf wire format. */
-#define kUpb_MaxFieldNumber ((1 << 29) - 1)
-
-const google_protobuf_FieldOptions* upb_FieldDef_Options(const upb_FieldDef* f);
-bool upb_FieldDef_HasOptions(const upb_FieldDef* f);
-const char* upb_FieldDef_FullName(const upb_FieldDef* f);
-upb_CType upb_FieldDef_CType(const upb_FieldDef* f);
-upb_FieldType upb_FieldDef_Type(const upb_FieldDef* f);
-upb_Label upb_FieldDef_Label(const upb_FieldDef* f);
-uint32_t upb_FieldDef_Number(const upb_FieldDef* f);
-const char* upb_FieldDef_Name(const upb_FieldDef* f);
-const char* upb_FieldDef_JsonName(const upb_FieldDef* f);
-bool upb_FieldDef_HasJsonName(const upb_FieldDef* f);
-bool upb_FieldDef_IsExtension(const upb_FieldDef* f);
-bool upb_FieldDef_IsPacked(const upb_FieldDef* f);
-const upb_FileDef* upb_FieldDef_File(const upb_FieldDef* f);
-const upb_MessageDef* upb_FieldDef_ContainingType(const upb_FieldDef* f);
-const upb_MessageDef* upb_FieldDef_ExtensionScope(const upb_FieldDef* f);
-const upb_OneofDef* upb_FieldDef_ContainingOneof(const upb_FieldDef* f);
-const upb_OneofDef* upb_FieldDef_RealContainingOneof(const upb_FieldDef* f);
-uint32_t upb_FieldDef_Index(const upb_FieldDef* f);
-bool upb_FieldDef_IsSubMessage(const upb_FieldDef* f);
-bool upb_FieldDef_IsString(const upb_FieldDef* f);
-bool upb_FieldDef_IsOptional(const upb_FieldDef* f);
-bool upb_FieldDef_IsRequired(const upb_FieldDef* f);
-bool upb_FieldDef_IsRepeated(const upb_FieldDef* f);
-bool upb_FieldDef_IsPrimitive(const upb_FieldDef* f);
-bool upb_FieldDef_IsMap(const upb_FieldDef* f);
-bool upb_FieldDef_HasDefault(const upb_FieldDef* f);
-bool upb_FieldDef_HasSubDef(const upb_FieldDef* f);
-bool upb_FieldDef_HasPresence(const upb_FieldDef* f);
-const upb_MessageDef* upb_FieldDef_MessageSubDef(const upb_FieldDef* f);
-const upb_EnumDef* upb_FieldDef_EnumSubDef(const upb_FieldDef* f);
-const upb_MiniTable_Field* upb_FieldDef_MiniTable(const upb_FieldDef* f);
-const upb_MiniTable_Extension* _upb_FieldDef_ExtensionMiniTable(
-    const upb_FieldDef* f);
-bool _upb_FieldDef_IsProto3Optional(const upb_FieldDef* f);
-
-/* upb_OneofDef ***************************************************************/
-
-const google_protobuf_OneofOptions* upb_OneofDef_Options(const upb_OneofDef* o);
-bool upb_OneofDef_HasOptions(const upb_OneofDef* o);
-const char* upb_OneofDef_Name(const upb_OneofDef* o);
-const upb_MessageDef* upb_OneofDef_ContainingType(const upb_OneofDef* o);
-uint32_t upb_OneofDef_Index(const upb_OneofDef* o);
-bool upb_OneofDef_IsSynthetic(const upb_OneofDef* o);
-int upb_OneofDef_FieldCount(const upb_OneofDef* o);
-const upb_FieldDef* upb_OneofDef_Field(const upb_OneofDef* o, int i);
-
-/* Oneof lookups:
- * - ntof:  look up a field by name.
- * - ntofz: look up a field by name (as a null-terminated string).
- * - itof:  look up a field by number. */
-const upb_FieldDef* upb_OneofDef_LookupNameWithSize(const upb_OneofDef* o,
-                                                    const char* name,
-                                                    size_t length);
-UPB_INLINE const upb_FieldDef* upb_OneofDef_LookupName(const upb_OneofDef* o,
-                                                       const char* name) {
-  return upb_OneofDef_LookupNameWithSize(o, name, strlen(name));
-}
-const upb_FieldDef* upb_OneofDef_LookupNumber(const upb_OneofDef* o,
-                                              uint32_t num);
-
-/* upb_MessageDef *************************************************************/
-
-/* Well-known field tag numbers for map-entry messages. */
-#define kUpb_MapEntry_KeyFieldNumber 1
-#define kUpb_MapEntry_ValueFieldNumber 2
-
-/* Well-known field tag numbers for Any messages. */
-#define kUpb_Any_TypeFieldNumber 1
-#define kUpb_Any_ValueFieldNumber 2
-
-/* Well-known field tag numbers for duration messages. */
-#define kUpb_Duration_SecondsFieldNumber 1
-#define kUpb_Duration_NanosFieldNumber 2
-
-/* Well-known field tag numbers for timestamp messages. */
-#define kUpb_Timestamp_SecondsFieldNumber 1
-#define kUpb_Timestamp_NanosFieldNumber 2
-
-const google_protobuf_MessageOptions* upb_MessageDef_Options(
-    const upb_MessageDef* m);
-bool upb_MessageDef_HasOptions(const upb_MessageDef* m);
-const char* upb_MessageDef_FullName(const upb_MessageDef* m);
-const upb_FileDef* upb_MessageDef_File(const upb_MessageDef* m);
 const upb_MessageDef* upb_MessageDef_ContainingType(const upb_MessageDef* m);
-const char* upb_MessageDef_Name(const upb_MessageDef* m);
-upb_Syntax upb_MessageDef_Syntax(const upb_MessageDef* m);
-upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m);
-int upb_MessageDef_ExtensionRangeCount(const upb_MessageDef* m);
-int upb_MessageDef_FieldCount(const upb_MessageDef* m);
-int upb_MessageDef_OneofCount(const upb_MessageDef* m);
+
 const upb_ExtensionRange* upb_MessageDef_ExtensionRange(const upb_MessageDef* m,
                                                         int i);
+int upb_MessageDef_ExtensionRangeCount(const upb_MessageDef* m);
+
 const upb_FieldDef* upb_MessageDef_Field(const upb_MessageDef* m, int i);
-const upb_OneofDef* upb_MessageDef_Oneof(const upb_MessageDef* m, int i);
-const upb_FieldDef* upb_MessageDef_FindFieldByNumber(const upb_MessageDef* m,
-                                                     uint32_t i);
-const upb_FieldDef* upb_MessageDef_FindFieldByNameWithSize(
-    const upb_MessageDef* m, const char* name, size_t len);
-const upb_OneofDef* upb_MessageDef_FindOneofByNameWithSize(
-    const upb_MessageDef* m, const char* name, size_t len);
-const upb_MiniTable* upb_MessageDef_MiniTable(const upb_MessageDef* m);
+int upb_MessageDef_FieldCount(const upb_MessageDef* m);
 
-UPB_INLINE const upb_OneofDef* upb_MessageDef_FindOneofByName(
+const upb_FileDef* upb_MessageDef_File(const upb_MessageDef* m);
+
+// Returns a field by either JSON name or regular proto name.
+const upb_FieldDef* upb_MessageDef_FindByJsonNameWithSize(
+    const upb_MessageDef* m, const char* name, size_t size);
+UPB_INLINE const upb_FieldDef* upb_MessageDef_FindByJsonName(
     const upb_MessageDef* m, const char* name) {
-  return upb_MessageDef_FindOneofByNameWithSize(m, name, strlen(name));
+  return upb_MessageDef_FindByJsonNameWithSize(m, name, strlen(name));
 }
 
-UPB_INLINE const upb_FieldDef* upb_MessageDef_FindFieldByName(
-    const upb_MessageDef* m, const char* name) {
-  return upb_MessageDef_FindFieldByNameWithSize(m, name, strlen(name));
-}
-
-UPB_INLINE bool upb_MessageDef_IsMapEntry(const upb_MessageDef* m) {
-  return google_protobuf_MessageOptions_map_entry(upb_MessageDef_Options(m));
-}
-
-UPB_INLINE bool upb_MessageDef_IsMessageSet(const upb_MessageDef* m) {
-  return google_protobuf_MessageOptions_message_set_wire_format(
-      upb_MessageDef_Options(m));
-}
-
-/* Nested entities. */
-int upb_MessageDef_NestedMessageCount(const upb_MessageDef* m);
-int upb_MessageDef_NestedEnumCount(const upb_MessageDef* m);
-int upb_MessageDef_NestedExtensionCount(const upb_MessageDef* m);
-const upb_MessageDef* upb_MessageDef_NestedMessage(const upb_MessageDef* m,
-                                                   int i);
-const upb_EnumDef* upb_MessageDef_NestedEnum(const upb_MessageDef* m, int i);
-const upb_FieldDef* upb_MessageDef_NestedExtension(const upb_MessageDef* m,
-                                                   int i);
-
-/* Lookup of either field or oneof by name.  Returns whether either was found.
- * If the return is true, then the found def will be set, and the non-found
- * one set to NULL. */
+// Lookup of either field or oneof by name. Returns whether either was found.
+// If the return is true, then the found def will be set, and the non-found
+// one set to NULL.
 bool upb_MessageDef_FindByNameWithSize(const upb_MessageDef* m,
-                                       const char* name, size_t len,
+                                       const char* name, size_t size,
                                        const upb_FieldDef** f,
                                        const upb_OneofDef** o);
-
 UPB_INLINE bool upb_MessageDef_FindByName(const upb_MessageDef* m,
                                           const char* name,
                                           const upb_FieldDef** f,
@@ -6133,180 +6472,199 @@ UPB_INLINE bool upb_MessageDef_FindByName(const upb_MessageDef* m,
   return upb_MessageDef_FindByNameWithSize(m, name, strlen(name), f, o);
 }
 
-/* Returns a field by either JSON name or regular proto name. */
-const upb_FieldDef* upb_MessageDef_FindByJsonNameWithSize(
-    const upb_MessageDef* m, const char* name, size_t len);
-UPB_INLINE const upb_FieldDef* upb_MessageDef_FindByJsonName(
-    const upb_MessageDef* m, const char* name) {
-  return upb_MessageDef_FindByJsonNameWithSize(m, name, strlen(name));
-}
+const upb_FieldDef* upb_MessageDef_FindFieldByName(const upb_MessageDef* m,
+                                                   const char* name);
+const upb_FieldDef* upb_MessageDef_FindFieldByNameWithSize(
+    const upb_MessageDef* m, const char* name, size_t size);
+const upb_FieldDef* upb_MessageDef_FindFieldByNumber(const upb_MessageDef* m,
+                                                     uint32_t i);
+const upb_OneofDef* upb_MessageDef_FindOneofByName(const upb_MessageDef* m,
+                                                   const char* name);
+const upb_OneofDef* upb_MessageDef_FindOneofByNameWithSize(
+    const upb_MessageDef* m, const char* name, size_t size);
+const char* upb_MessageDef_FullName(const upb_MessageDef* m);
+bool upb_MessageDef_HasOptions(const upb_MessageDef* m);
+bool upb_MessageDef_IsMapEntry(const upb_MessageDef* m);
+bool upb_MessageDef_IsMessageSet(const upb_MessageDef* m);
 
-/* upb_ExtensionRange *********************************************************/
+// Creates a mini descriptor string for a message, returns true on success.
+bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
+                                         upb_StringView* out);
 
-const google_protobuf_ExtensionRangeOptions* upb_ExtensionRange_Options(
-    const upb_ExtensionRange* r);
-bool upb_ExtensionRange_HasOptions(const upb_ExtensionRange* r);
-int32_t upb_ExtensionRange_Start(const upb_ExtensionRange* r);
-int32_t upb_ExtensionRange_End(const upb_ExtensionRange* r);
+const upb_MiniTable* upb_MessageDef_MiniTable(const upb_MessageDef* m);
+const char* upb_MessageDef_Name(const upb_MessageDef* m);
 
-/* upb_EnumDef ****************************************************************/
+const upb_EnumDef* upb_MessageDef_NestedEnum(const upb_MessageDef* m, int i);
+const upb_FieldDef* upb_MessageDef_NestedExtension(const upb_MessageDef* m,
+                                                   int i);
+const upb_MessageDef* upb_MessageDef_NestedMessage(const upb_MessageDef* m,
+                                                   int i);
 
-const google_protobuf_EnumOptions* upb_EnumDef_Options(const upb_EnumDef* e);
-bool upb_EnumDef_HasOptions(const upb_EnumDef* e);
-const char* upb_EnumDef_FullName(const upb_EnumDef* e);
-const char* upb_EnumDef_Name(const upb_EnumDef* e);
-const upb_FileDef* upb_EnumDef_File(const upb_EnumDef* e);
-const upb_MessageDef* upb_EnumDef_ContainingType(const upb_EnumDef* e);
-int32_t upb_EnumDef_Default(const upb_EnumDef* e);
-int upb_EnumDef_ValueCount(const upb_EnumDef* e);
-const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i);
+int upb_MessageDef_NestedEnumCount(const upb_MessageDef* m);
+int upb_MessageDef_NestedExtensionCount(const upb_MessageDef* m);
+int upb_MessageDef_NestedMessageCount(const upb_MessageDef* m);
 
-const upb_EnumValueDef* upb_EnumDef_FindValueByNameWithSize(
-    const upb_EnumDef* e, const char* name, size_t len);
-const upb_EnumValueDef* upb_EnumDef_FindValueByNumber(const upb_EnumDef* e,
-                                                      int32_t num);
-bool upb_EnumDef_CheckNumber(const upb_EnumDef* e, int32_t num);
+const upb_OneofDef* upb_MessageDef_Oneof(const upb_MessageDef* m, int i);
+int upb_MessageDef_OneofCount(const upb_MessageDef* m);
 
-// Convenience wrapper.
-UPB_INLINE const upb_EnumValueDef* upb_EnumDef_FindValueByName(
-    const upb_EnumDef* e, const char* name) {
-  return upb_EnumDef_FindValueByNameWithSize(e, name, strlen(name));
-}
+const google_protobuf_MessageOptions* upb_MessageDef_Options(const upb_MessageDef* m);
+upb_Syntax upb_MessageDef_Syntax(const upb_MessageDef* m);
+upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m);
 
-// Builds and returns a mini descriptor, or NULL if OOM.
-const char* _upb_EnumDef_MiniDescriptor(const upb_EnumDef* e, upb_Arena* a);
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
-/* upb_EnumValueDef ***********************************************************/
+upb_MessageDef* _upb_MessageDef_At(const upb_MessageDef* m, int i);
+bool _upb_MessageDef_InMessageSet(const upb_MessageDef* m);
+bool _upb_MessageDef_Insert(upb_MessageDef* m, const char* name, size_t size,
+                            upb_value v, upb_Arena* a);
+void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
+                                 const upb_FieldDef* f);
+bool _upb_MessageDef_IsValidExtensionNumber(const upb_MessageDef* m, int n);
+void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
+                                   const upb_MessageDef* m);
+void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m);
 
-const google_protobuf_EnumValueOptions* upb_EnumValueDef_Options(
-    const upb_EnumValueDef* e);
-bool upb_EnumValueDef_HasOptions(const upb_EnumValueDef* e);
-const char* upb_EnumValueDef_FullName(const upb_EnumValueDef* e);
-const char* upb_EnumValueDef_Name(const upb_EnumValueDef* e);
-int32_t upb_EnumValueDef_Number(const upb_EnumValueDef* e);
-uint32_t upb_EnumValueDef_Index(const upb_EnumValueDef* e);
-const upb_EnumDef* upb_EnumValueDef_Enum(const upb_EnumValueDef* e);
-
-/* upb_FileDef ****************************************************************/
-
-const google_protobuf_FileOptions* upb_FileDef_Options(const upb_FileDef* f);
-bool upb_FileDef_HasOptions(const upb_FileDef* f);
-const char* upb_FileDef_Name(const upb_FileDef* f);
-const char* upb_FileDef_Package(const upb_FileDef* f);
-upb_Syntax upb_FileDef_Syntax(const upb_FileDef* f);
-int upb_FileDef_DependencyCount(const upb_FileDef* f);
-int upb_FileDef_PublicDependencyCount(const upb_FileDef* f);
-int upb_FileDef_WeakDependencyCount(const upb_FileDef* f);
-int upb_FileDef_TopLevelMessageCount(const upb_FileDef* f);
-int upb_FileDef_TopLevelEnumCount(const upb_FileDef* f);
-int upb_FileDef_TopLevelExtensionCount(const upb_FileDef* f);
-int upb_FileDef_ServiceCount(const upb_FileDef* f);
-const upb_FileDef* upb_FileDef_Dependency(const upb_FileDef* f, int i);
-const upb_FileDef* upb_FileDef_PublicDependency(const upb_FileDef* f, int i);
-const upb_FileDef* upb_FileDef_WeakDependency(const upb_FileDef* f, int i);
-const upb_MessageDef* upb_FileDef_TopLevelMessage(const upb_FileDef* f, int i);
-const upb_EnumDef* upb_FileDef_TopLevelEnum(const upb_FileDef* f, int i);
-const upb_FieldDef* upb_FileDef_TopLevelExtension(const upb_FileDef* f, int i);
-const upb_ServiceDef* upb_FileDef_Service(const upb_FileDef* f, int i);
-const upb_DefPool* upb_FileDef_Pool(const upb_FileDef* f);
-const int32_t* _upb_FileDef_PublicDependencyIndexes(const upb_FileDef* f);
-const int32_t* _upb_FileDef_WeakDependencyIndexes(const upb_FileDef* f);
-
-/* upb_MethodDef **************************************************************/
-
-const google_protobuf_MethodOptions* upb_MethodDef_Options(
-    const upb_MethodDef* m);
-bool upb_MethodDef_HasOptions(const upb_MethodDef* m);
-const char* upb_MethodDef_FullName(const upb_MethodDef* m);
-int upb_MethodDef_Index(const upb_MethodDef* m);
-const char* upb_MethodDef_Name(const upb_MethodDef* m);
-const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
-const upb_MessageDef* upb_MethodDef_InputType(const upb_MethodDef* m);
-const upb_MessageDef* upb_MethodDef_OutputType(const upb_MethodDef* m);
-bool upb_MethodDef_ClientStreaming(const upb_MethodDef* m);
-bool upb_MethodDef_ServerStreaming(const upb_MethodDef* m);
-
-/* upb_ServiceDef *************************************************************/
-
-const google_protobuf_ServiceOptions* upb_ServiceDef_Options(
-    const upb_ServiceDef* s);
-bool upb_ServiceDef_HasOptions(const upb_ServiceDef* s);
-const char* upb_ServiceDef_FullName(const upb_ServiceDef* s);
-const char* upb_ServiceDef_Name(const upb_ServiceDef* s);
-int upb_ServiceDef_Index(const upb_ServiceDef* s);
-const upb_FileDef* upb_ServiceDef_File(const upb_ServiceDef* s);
-int upb_ServiceDef_MethodCount(const upb_ServiceDef* s);
-const upb_MethodDef* upb_ServiceDef_Method(const upb_ServiceDef* s, int i);
-const upb_MethodDef* upb_ServiceDef_FindMethodByName(const upb_ServiceDef* s,
-                                                     const char* name);
-
-/* upb_DefPool ****************************************************************/
-
-upb_DefPool* upb_DefPool_New(void);
-void upb_DefPool_Free(upb_DefPool* s);
-const upb_MessageDef* upb_DefPool_FindMessageByName(const upb_DefPool* s,
-                                                    const char* sym);
-const upb_MessageDef* upb_DefPool_FindMessageByNameWithSize(
-    const upb_DefPool* s, const char* sym, size_t len);
-const upb_EnumDef* upb_DefPool_FindEnumByName(const upb_DefPool* s,
-                                              const char* sym);
-const upb_EnumValueDef* upb_DefPool_FindEnumByNameval(const upb_DefPool* s,
-                                                      const char* sym);
-const upb_FieldDef* upb_DefPool_FindExtensionByName(const upb_DefPool* s,
-                                                    const char* sym);
-const upb_FieldDef* upb_DefPool_FindExtensionByNameWithSize(
-    const upb_DefPool* s, const char* sym, size_t len);
-const upb_FileDef* upb_DefPool_FindFileByName(const upb_DefPool* s,
-                                              const char* name);
-const upb_ServiceDef* upb_DefPool_FindServiceByName(const upb_DefPool* s,
-                                                    const char* name);
-const upb_ServiceDef* upb_DefPool_FindServiceByNameWithSize(
-    const upb_DefPool* s, const char* name, size_t size);
-const upb_FileDef* upb_DefPool_FindFileContainingSymbol(const upb_DefPool* s,
-                                                        const char* name);
-const upb_FileDef* upb_DefPool_FindFileByNameWithSize(const upb_DefPool* s,
-                                                      const char* name,
-                                                      size_t len);
-const upb_FileDef* upb_DefPool_AddFile(
-    upb_DefPool* s, const google_protobuf_FileDescriptorProto* file,
-    upb_Status* status);
-size_t _upb_DefPool_BytesLoaded(const upb_DefPool* s);
-upb_Arena* _upb_DefPool_Arena(const upb_DefPool* s);
-const upb_FieldDef* _upb_DefPool_FindExtensionByMiniTable(
-    const upb_DefPool* s, const upb_MiniTable_Extension* ext);
-const upb_FieldDef* upb_DefPool_FindExtensionByNumber(const upb_DefPool* s,
-                                                      const upb_MessageDef* m,
-                                                      int32_t fieldnum);
-const upb_ExtensionRegistry* upb_DefPool_ExtensionRegistry(
-    const upb_DefPool* s);
-const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,
-                                                  const upb_MessageDef* m,
-                                                  size_t* count);
-
-/* For generated code only: loads a generated descriptor. */
-typedef struct _upb_DefPool_Init {
-  struct _upb_DefPool_Init** deps; /* Dependencies of this file. */
-  const upb_MiniTable_File* layout;
-  const char* filename;
-  upb_StringView descriptor; /* Serialized descriptor. */
-} _upb_DefPool_Init;
-
-// Should only be directly called by tests.  This variant lets us suppress
-// the use of compiled-in tables, forcing a rebuild of the tables at runtime.
-bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
-                                bool rebuild_minitable);
-
-UPB_INLINE bool _upb_DefPool_LoadDefInit(upb_DefPool* s,
-                                         const _upb_DefPool_Init* init) {
-  return _upb_DefPool_LoadDefInitEx(s, init, false);
-}
+// Allocate and initialize an array of |n| message defs.
+upb_MessageDef* _upb_MessageDefs_New(
+    upb_DefBuilder* ctx, int n, const google_protobuf_DescriptorProto* const* protos,
+    const upb_MessageDef* containing_type);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
 
-#endif /* UPB_DEF_H_ */
+#endif /* UPB_REFLECTION_MESSAGE_DEF_H_ */
+
+// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
+
+#ifndef UPB_REFLECTION_METHOD_DEF_H_
+#define UPB_REFLECTION_METHOD_DEF_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+bool upb_MethodDef_ClientStreaming(const upb_MethodDef* m);
+const char* upb_MethodDef_FullName(const upb_MethodDef* m);
+bool upb_MethodDef_HasOptions(const upb_MethodDef* m);
+int upb_MethodDef_Index(const upb_MethodDef* m);
+const upb_MessageDef* upb_MethodDef_InputType(const upb_MethodDef* m);
+const char* upb_MethodDef_Name(const upb_MethodDef* m);
+const google_protobuf_MethodOptions* upb_MethodDef_Options(const upb_MethodDef* m);
+const upb_MessageDef* upb_MethodDef_OutputType(const upb_MethodDef* m);
+bool upb_MethodDef_ServerStreaming(const upb_MethodDef* m);
+const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+upb_MethodDef* _upb_MethodDef_At(const upb_MethodDef* m, int i);
+
+// Allocate and initialize an array of |n| method defs owned by |s|.
+upb_MethodDef* _upb_MethodDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_MethodDescriptorProto* const* protos, upb_ServiceDef* s);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_METHOD_DEF_H_ */
+
+// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
+
+#ifndef UPB_REFLECTION_ONEOF_DEF_H_
+#define UPB_REFLECTION_ONEOF_DEF_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+const upb_MessageDef* upb_OneofDef_ContainingType(const upb_OneofDef* o);
+const upb_FieldDef* upb_OneofDef_Field(const upb_OneofDef* o, int i);
+int upb_OneofDef_FieldCount(const upb_OneofDef* o);
+const char* upb_OneofDef_FullName(const upb_OneofDef* o);
+bool upb_OneofDef_HasOptions(const upb_OneofDef* o);
+uint32_t upb_OneofDef_Index(const upb_OneofDef* o);
+bool upb_OneofDef_IsSynthetic(const upb_OneofDef* o);
+const upb_FieldDef* upb_OneofDef_LookupName(const upb_OneofDef* o,
+                                            const char* name);
+const upb_FieldDef* upb_OneofDef_LookupNameWithSize(const upb_OneofDef* o,
+                                                    const char* name,
+                                                    size_t size);
+const upb_FieldDef* upb_OneofDef_LookupNumber(const upb_OneofDef* o,
+                                              uint32_t num);
+const char* upb_OneofDef_Name(const upb_OneofDef* o);
+int upb_OneofDef_numfields(const upb_OneofDef* o);
+const google_protobuf_OneofOptions* upb_OneofDef_Options(const upb_OneofDef* o);
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+upb_OneofDef* _upb_OneofDef_At(const upb_OneofDef* o, int i);
+bool _upb_OneofDef_Insert(upb_OneofDef* o, const upb_FieldDef* f,
+                          const char* name, size_t size, upb_Arena* a);
+
+// Allocate and initialize an array of |n| oneof defs owned by |m|.
+upb_OneofDef* _upb_OneofDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_OneofDescriptorProto* const* protos, upb_MessageDef* m);
+
+size_t _upb_OneofDefs_Finalize(upb_DefBuilder* ctx, upb_MessageDef* m);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_ONEOF_DEF_H_ */
+
+// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
+
+#ifndef UPB_REFLECTION_SERVICE_DEF_H_
+#define UPB_REFLECTION_SERVICE_DEF_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+const upb_FileDef* upb_ServiceDef_File(const upb_ServiceDef* s);
+const upb_MethodDef* upb_ServiceDef_FindMethodByName(const upb_ServiceDef* s,
+                                                     const char* name);
+const char* upb_ServiceDef_FullName(const upb_ServiceDef* s);
+bool upb_ServiceDef_HasOptions(const upb_ServiceDef* s);
+int upb_ServiceDef_Index(const upb_ServiceDef* s);
+const upb_MethodDef* upb_ServiceDef_Method(const upb_ServiceDef* s, int i);
+int upb_ServiceDef_MethodCount(const upb_ServiceDef* s);
+const char* upb_ServiceDef_Name(const upb_ServiceDef* s);
+const google_protobuf_ServiceOptions* upb_ServiceDef_Options(const upb_ServiceDef* s);
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+upb_ServiceDef* _upb_ServiceDef_At(const upb_ServiceDef* s, int i);
+
+// Allocate and initialize an array of |n| service defs.
+upb_ServiceDef* _upb_ServiceDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_ServiceDescriptorProto* const* protos);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_REFLECTION_SERVICE_DEF_H_ */
+
+#endif /* UPB_REFLECTION_DEF_H_ */
 
 // Must be last.
 
@@ -6376,8 +6734,8 @@ int upb_Unicode_ToUTF8(uint32_t cp, char* out);
 
 #endif /* UPB_INTERNAL_UNICODE_H_ */
 
-#ifndef UPB_REFLECTION_H_
-#define UPB_REFLECTION_H_
+#ifndef UPB_REFLECTION_MESSAGE_H_
+#define UPB_REFLECTION_MESSAGE_H_
 
 
 // Must be last.
@@ -6387,9 +6745,6 @@ extern "C" {
 #endif
 
 upb_MessageValue upb_FieldDef_Default(const upb_FieldDef* f);
-
-/** upb_Message
- * *******************************************************************/
 
 /* Creates a new message of the given type in the given arena. */
 upb_Message* upb_Message_New(const upb_MessageDef* m, upb_Arena* a);
@@ -6453,10 +6808,10 @@ bool upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
 #endif
 
 
-#endif /* UPB_REFLECTION_H_ */
+#endif /* UPB_REFLECTION_MESSAGE_H_ */
 
-#ifndef UPB_JSONENCODE_H_
-#define UPB_JSONENCODE_H_
+#ifndef UPB_JSON_ENCODE_H_
+#define UPB_JSON_ENCODE_H_
 
 
 // Must be last.
@@ -6654,9 +7009,19 @@ typedef enum {
 upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
                                    upb_MiniTablePlatform platform,
                                    upb_Arena* arena, upb_Status* status);
+
+// Links a sub-message field to a MiniTable for that sub-message.  If a
+// sub-message field is not linked, it will be treated as an unknown field
+// during parsing, and setting the field will not be allowed.  It is possible
+// to link the message field later, at which point it will no longer be treated
+// as unknown.  However there is no synchronization for this operation, which
+// means parallel mutation requires external synchronization.
 void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
                                  upb_MiniTable_Field* field,
                                  const upb_MiniTable* sub);
+
+// Links an enum field to a MiniTable for that enum.  All enum fields must
+// be linked prior to parsing.
 void upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTable_Field* field,
                               const upb_MiniTable_Enum* sub);
 
@@ -6702,65 +7067,181 @@ bool upb_IsTypePackable(upb_FieldType type);
 
 #endif /* UPB_MINI_TABLE_H_ */
 
-#ifndef UPB_INTERNAL_MINI_DESCRIPTOR_H_
-#define UPB_INTERNAL_MINI_DESCRIPTOR_H_
-
-
-#ifndef UPB_MINI_DESCRIPTOR_H_
-#define UPB_MINI_DESCRIPTOR_H_
+#ifndef UPB_REFLECTION_DEF_BUILDER_H_
+#define UPB_REFLECTION_DEF_BUILDER_H_
 
 
 // Must be last.
+
+// We want to copy the options verbatim into the destination options proto.
+// We use serialize+parse as our deep copy.
+#define UBP_DEF_SET_OPTIONS(target, desc_type, options_type, proto)          \
+  if (google_protobuf_##desc_type##_has_options(proto)) {                             \
+    size_t size;                                                             \
+    char* pb = google_protobuf_##options_type##_serialize(                            \
+        google_protobuf_##desc_type##_options(proto), ctx->tmp_arena, &size);         \
+    if (!pb) _upb_DefBuilder_OomErr(ctx);                                    \
+    target =                                                                 \
+        google_protobuf_##options_type##_parse(pb, size, _upb_DefBuilder_Arena(ctx)); \
+    if (!target) _upb_DefBuilder_OomErr(ctx);                                \
+  } else {                                                                   \
+    target = (const google_protobuf_##options_type*)kUpbDefOptDefault;                \
+  }
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// Creates and returns a mini descriptor string for an enum, or NULL on error.
-const char* upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e, upb_Arena* a);
+struct upb_DefBuilder {
+  upb_DefPool* symtab;
+  upb_FileDef* file;                 // File we are building.
+  upb_Arena* arena;                  // Allocate defs here.
+  upb_Arena* tmp_arena;              // For temporary allocations.
+  upb_Status* status;                // Record errors here.
+  const upb_MiniTable_File* layout;  // NULL if we should build layouts.
+  int enum_count;                    // Count of enums built so far.
+  int msg_count;                     // Count of messages built so far.
+  int ext_count;                     // Count of extensions built so far.
+  jmp_buf err;                       // longjmp() on error.
+};
 
-// Creates and returns a mini descriptor string for a field, or NULL on error.
-const char* upb_MiniDescriptor_EncodeField(const upb_FieldDef* f, upb_Arena* a);
+extern const char* kUpbDefOptDefault;
 
-// Creates and returns a mini descriptor string for a message, or NULL on error.
-const char* upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m,
-                                             upb_Arena* a);
+// ctx->status has already been set elsewhere so just fail/longjmp()
+UPB_NORETURN void _upb_DefBuilder_FailJmp(upb_DefBuilder* ctx);
+
+UPB_NORETURN void _upb_DefBuilder_Errf(upb_DefBuilder* ctx, const char* fmt,
+                                       ...) UPB_PRINTF(2, 3);
+UPB_NORETURN void _upb_DefBuilder_OomErr(upb_DefBuilder* ctx);
+
+const char* _upb_DefBuilder_MakeFullName(upb_DefBuilder* ctx,
+                                         const char* prefix,
+                                         upb_StringView name);
+
+// Given a symbol and the base symbol inside which it is defined,
+// find the symbol's definition.
+const void* _upb_DefBuilder_ResolveAny(upb_DefBuilder* ctx,
+                                       const char* from_name_dbg,
+                                       const char* base, upb_StringView sym,
+                                       upb_deftype_t* type);
+
+const void* _upb_DefBuilder_Resolve(upb_DefBuilder* ctx,
+                                    const char* from_name_dbg, const char* base,
+                                    upb_StringView sym, upb_deftype_t type);
+
+char _upb_DefBuilder_ParseEscape(upb_DefBuilder* ctx, const upb_FieldDef* f,
+                                 const char** src, const char* end);
+
+const char* _upb_DefBuilder_FullToShort(const char* fullname);
+
+UPB_INLINE void* _upb_DefBuilder_Alloc(upb_DefBuilder* ctx, size_t bytes) {
+  if (bytes == 0) return NULL;
+  void* ret = upb_Arena_Malloc(ctx->arena, bytes);
+  if (!ret) _upb_DefBuilder_OomErr(ctx);
+  return ret;
+}
+
+// Adds a symbol |v| to the symtab, which must be a def pointer previously
+// packed with pack_def(). The def's pointer to upb_FileDef* must be set before
+// adding, so we know which entries to remove if building this file fails.
+UPB_INLINE void _upb_DefBuilder_Add(upb_DefBuilder* ctx, const char* name,
+                                    upb_value v) {
+  upb_StringView sym = {.data = name, .size = strlen(name)};
+  bool ok = _upb_DefPool_InsertSym(ctx->symtab, sym, v, ctx->status);
+  if (!ok) _upb_DefBuilder_FailJmp(ctx);
+}
+
+UPB_INLINE upb_Arena* _upb_DefBuilder_Arena(const upb_DefBuilder* ctx) {
+  return ctx->arena;
+}
+
+UPB_INLINE upb_FileDef* _upb_DefBuilder_File(const upb_DefBuilder* ctx) {
+  return ctx->file;
+}
+
+// This version of CheckIdent() is only called by other, faster versions after
+// they detect a parsing error.
+void _upb_DefBuilder_CheckIdentSlow(upb_DefBuilder* ctx, upb_StringView name,
+                                    bool full);
+
+// Verify a relative identifier string. The loop is branchless for speed.
+UPB_INLINE void _upb_DefBuilder_CheckIdentNotFull(upb_DefBuilder* ctx,
+                                                  upb_StringView name) {
+  bool good = name.size > 0;
+
+  for (size_t i = 0; i < name.size; i++) {
+    const char c = name.data[i];
+    const char d = c | 0x20;  // force lowercase
+    const bool is_alpha = (('a' <= d) & (d <= 'z')) | (c == '_');
+    const bool is_numer = ('0' <= c) & (c <= '9') & (i != 0);
+
+    good &= is_alpha | is_numer;
+  }
+
+  if (!good) _upb_DefBuilder_CheckIdentSlow(ctx, name, false);
+}
+
+// Verify a full identifier string. This is slightly more complicated than
+// verifying a relative identifier string because we must track '.' chars.
+UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,
+                                               upb_StringView name) {
+  bool good = name.size > 0;
+  bool start = true;
+
+  for (size_t i = 0; i < name.size; i++) {
+    const char c = name.data[i];
+    const char d = c | 0x20;  // force lowercase
+    const bool is_alpha = (('a' <= d) & (d <= 'z')) | (c == '_');
+    const bool is_numer = ('0' <= c) & (c <= '9') & !start;
+    const bool is_dot = (c == '.') & !start;
+
+    good &= is_alpha | is_numer | is_dot;
+    start = is_dot;
+  }
+
+  if (!good) _upb_DefBuilder_CheckIdentSlow(ctx, name, true);
+}
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
 
-#endif /* UPB_MINI_DESCRIPTOR_H_ */
+#endif /* UPB_REFLECTION_DEF_BUILDER_H_ */
+
+#ifndef UPB_REFLECTION_DESC_STATE_H_
+#define UPB_REFLECTION_DESC_STATE_H_
+
 
 // Must be last.
+
+// Manages the storage for mini descriptor strings as they are being encoded.
+// TODO(b/234740652): Move some of this state directly into the encoder, maybe.
+typedef struct {
+  upb_MtDataEncoder e;
+  size_t bufsize;
+  char* buf;
+  char* ptr;
+} upb_DescState;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// Creates and returns a mini descriptor string for an enum, or NULL on error.
-// If the values in the enum happen to be defined in ascending order (when cast
-// to uint32_t) then |sorted| should be NULL. Otherwise it must point to an
-// array containing pointers to the enum value defs in sorted order.
-const char* _upb_MiniDescriptor_EncodeEnum(const upb_EnumDef* e,
-                                           const upb_EnumValueDef** sorted,
-                                           upb_Arena* a);
+UPB_INLINE void _upb_DescState_Init(upb_DescState* d) {
+  d->bufsize = kUpb_MtDataEncoder_MinSize * 2;
+  d->buf = NULL;
+  d->ptr = NULL;
+}
 
-// Creates and returns a mini descriptor string for a field, or NULL on error.
-const char* _upb_MiniDescriptor_EncodeField(const upb_FieldDef* f,
-                                            upb_Arena* a);
-
-// Creates and returns a mini descriptor string for a message, or NULL on error.
-const char* _upb_MiniDescriptor_EncodeMessage(const upb_MessageDef* m,
-                                              upb_Arena* a);
+bool _upb_DescState_Grow(upb_DescState* d, upb_Arena* a);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
 
-#endif /* UPB_INTERNAL_MINI_DESCRIPTOR_H_ */
+#endif /* UPB_REFLECTION_DESC_STATE_H_ */
 
 /* See port_def.inc.  This should #undef all macros #defined there. */
 
