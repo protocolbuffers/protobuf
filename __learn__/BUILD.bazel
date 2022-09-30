@@ -212,3 +212,40 @@ alias(
   actual = "//java/lite:toolchain",
   visibility = ["//visibility:public"],
 )
+
+# python
+alias(
+  name = "protobuf_python",
+  actual = "//python:protobuf_python",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "python_srcs",
+  actual = "//python:python_srcs",
+  visibility = ["@upb//:__subpackages__"],
+)
+
+alias(
+  name = "python_test_srcs",
+  actual = "//python:python_test_srcs",
+  visibility = ["@upb//:__subpackages__"],
+)
+
+alias(
+  name = "well_known_types_py_pb2",
+  actual = "//python:well_known_types_py_pb2",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "python_common_test_protos",
+  actual = "//python:python_common_test_protos",
+  visibility = ["//visibility:public"],
+)
+
+alias(
+  name = "python_specific_test_protos",
+  actual = "//python:python_specific_test_protos",
+  visibility = ["//visibility:public"],
+)
