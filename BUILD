@@ -1063,6 +1063,7 @@ filegroup(
 #     main = "update_check_runs.py",
 #     deps = [
 #         "//third_party/py/absl:app",
+#         "//third_party/py/absl/flags",
 #     ],
 # )
 #
