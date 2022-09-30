@@ -285,11 +285,8 @@ uint64_t _upb_FieldDef_Modifiers(const upb_FieldDef* f) {
       break;
   }
 
-  if (f->type_ == kUpb_FieldType_Enum) {
-    const upb_FileDef* file_def = upb_EnumDef_File(upb_FieldDef_EnumSubDef(f));
-    if (upb_FileDef_Syntax(file_def) == kUpb_Syntax_Proto2) {
-      out |= kUpb_FieldModifier_IsClosedEnum;
-    }
+  if (_upb_FieldDef_IsClosedEnum(f)) {
+    out |= kUpb_FieldModifier_IsClosedEnum;
   }
   return out;
 }
