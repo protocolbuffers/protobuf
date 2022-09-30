@@ -159,6 +159,14 @@ interface Reader {
   <T> T readGroupBySchemaWithCheck(Schema<T> schema, ExtensionRegistryLite extensionRegistry)
       throws IOException;
 
+  /** Read a message field from the wire format and merge the results into the given target. */
+  <T> void mergeMessageField(T target, Schema<T> schema, ExtensionRegistryLite extensionRegistry)
+      throws IOException;
+
+  /** Read a group field from the wire format and merge the results into the given target. */
+  <T> void mergeGroupField(T target, Schema<T> schema, ExtensionRegistryLite extensionRegistry)
+      throws IOException;
+
   /**
    * Reads and returns the next field of type {@code BYTES} and advances the reader to the next
    * field.

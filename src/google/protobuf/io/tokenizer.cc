@@ -746,6 +746,8 @@ class CommentCollector {
       : prev_trailing_comments_(prev_trailing_comments),
         detached_comments_(detached_comments),
         next_leading_comments_(next_leading_comments),
+        num_comments_(0),
+        has_trailing_comment_(false),
         has_comment_(false),
         is_line_comment_(false),
         can_attach_to_prev_(true) {
@@ -797,6 +799,7 @@ class CommentCollector {
         if (prev_trailing_comments_ != NULL) {
           prev_trailing_comments_->append(comment_buffer_);
         }
+        has_trailing_comment_ = true;
         can_attach_to_prev_ = false;
       } else {
         if (detached_comments_ != NULL) {
@@ -804,10 +807,30 @@ class CommentCollector {
         }
       }
       ClearBuffer();
+      num_comments_++;
     }
   }
 
   void DetachFromPrev() { can_attach_to_prev_ = false; }
+
+  void MaybeDetachComment() {
+    int count = num_comments_;
+    if (has_comment_) count++;
+
+    // If there's one comment, make sure it is detached.
+    if (count == 1) {
+      if (has_trailing_comment_ && prev_trailing_comments_ != NULL) {
+        std::string trail = *prev_trailing_comments_;
+        if (detached_comments_ != NULL) {
+          // push trailing comment to front of detached
+          detached_comments_->insert(detached_comments_->begin(), 1, trail);
+        }
+        prev_trailing_comments_->clear();
+      }
+      // flush pending comment so it's detached instead of leading
+      Flush();
+    }
+  }
 
  private:
   std::string* prev_trailing_comments_;
@@ -815,6 +838,8 @@ class CommentCollector {
   std::string* next_leading_comments_;
 
   std::string comment_buffer_;
+  int num_comments_;
+  bool has_trailing_comment_;
 
   // True if any comments were read into comment_buffer_.  This can be true even
   // if comment_buffer_ is empty, namely if the comment was "/**/".
@@ -836,6 +861,9 @@ bool Tokenizer::NextWithComments(std::string* prev_trailing_comments,
   CommentCollector collector(prev_trailing_comments, detached_comments,
                              next_leading_comments);
 
+  int prev_line = line_;
+  int trailing_comment_end_line = -1;
+
   if (current_.type == TYPE_START) {
     // Ignore unicode byte order mark(BOM) if it appears at the file
     // beginning. Only UTF-8 BOM (0xEF 0xBB 0xBF) is accepted.
@@ -849,12 +877,14 @@ bool Tokenizer::NextWithComments(std::string* prev_trailing_comments,
       }
     }
     collector.DetachFromPrev();
+    prev_line = -1;
   } else {
     // A comment appearing on the same line must be attached to the previous
     // declaration.
     ConsumeZeroOrMore<WhitespaceNoNewline>();
     switch (TryConsumeCommentStart()) {
       case LINE_COMMENT:
+        trailing_comment_end_line = line_;
         ConsumeLineComment(collector.GetBufferForLineComment());
 
         // Don't allow comments on subsequent lines to be attached to a trailing
@@ -863,14 +893,8 @@ bool Tokenizer::NextWithComments(std::string* prev_trailing_comments,
         break;
       case BLOCK_COMMENT:
         ConsumeBlockComment(collector.GetBufferForBlockComment());
-
+        trailing_comment_end_line = line_;
         ConsumeZeroOrMore<WhitespaceNoNewline>();
-        if (!TryConsume('\n')) {
-          // Oops, the next token is on the same line.  If we recorded a comment
-          // we really have no idea which token it should be attached to.
-          collector.ClearBuffer();
-          return Next();
-        }
 
         // Don't allow comments on subsequent lines to be attached to a trailing
         // comment.
@@ -917,6 +941,13 @@ bool Tokenizer::NextWithComments(std::string* prev_trailing_comments,
             // It looks like we're at the end of a scope.  In this case it
             // makes no sense to attach a comment to the following token.
             collector.Flush();
+          }
+          if (prev_line == line_ || trailing_comment_end_line == line_) {
+            // When previous token and this one are on the same line, or
+            // even if a multi-line trailing comment ends on the same line
+            // as this token, it's unclear to what token the comment
+            // should be attached. So we detach it.
+            collector.MaybeDetachComment();
           }
           return result;
         }

@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * A class which represents an arbitrary set of fields of some message type. This is used to
@@ -122,6 +123,12 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
   public void makeImmutable() {
     if (isImmutable) {
       return;
+    }
+    for (int i = 0; i < fields.getNumArrayEntries(); ++i) {
+      Entry<T, Object> entry = fields.getArrayEntryAt(i);
+      if (entry.getValue() instanceof GeneratedMessageLite) {
+        ((GeneratedMessageLite<?, ?>) entry.getValue()).makeImmutable();
+      }
     }
     fields.makeImmutable();
     isImmutable = true;
@@ -926,8 +933,27 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
       this.isMutable = true;
     }
 
-    /** Creates the FieldSet */
+    /**
+     * Creates the FieldSet
+     *
+     * @throws UninitializedMessageException if a message field is missing required fields.
+     */
     public FieldSet<T> build() {
+      return buildImpl(false);
+    }
+
+    /** Creates the FieldSet but does not validate that all required fields are present. */
+    public FieldSet<T> buildPartial() {
+      return buildImpl(true);
+    }
+
+    /**
+     * Creates the FieldSet.
+     *
+     * @param partial controls whether to do a build() or buildPartial() when converting submessage
+     *     builders to messages.
+     */
+    private FieldSet<T> buildImpl(boolean partial) {
       if (fields.isEmpty()) {
         return FieldSet.emptySet();
       }
@@ -936,7 +962,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
       if (hasNestedBuilders) {
         // Make a copy of the fields map with all Builders replaced by Message.
         fieldsForBuild = cloneAllFieldsMap(fields, /* copyList */ false);
-        replaceBuilders(fieldsForBuild);
+        replaceBuilders(fieldsForBuild, partial);
       }
       FieldSet<T> fieldSet = new FieldSet<>(fieldsForBuild);
       fieldSet.hasLazyField = hasLazyField;
@@ -944,22 +970,22 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
     }
 
     private static <T extends FieldDescriptorLite<T>> void replaceBuilders(
-        SmallSortedMap<T, Object> fieldMap) {
+        SmallSortedMap<T, Object> fieldMap, boolean partial) {
       for (int i = 0; i < fieldMap.getNumArrayEntries(); i++) {
-        replaceBuilders(fieldMap.getArrayEntryAt(i));
+        replaceBuilders(fieldMap.getArrayEntryAt(i), partial);
       }
       for (Map.Entry<T, Object> entry : fieldMap.getOverflowEntries()) {
-        replaceBuilders(entry);
+        replaceBuilders(entry, partial);
       }
     }
 
     private static <T extends FieldDescriptorLite<T>> void replaceBuilders(
-        Map.Entry<T, Object> entry) {
-      entry.setValue(replaceBuilders(entry.getKey(), entry.getValue()));
+        Map.Entry<T, Object> entry, boolean partial) {
+      entry.setValue(replaceBuilders(entry.getKey(), entry.getValue(), partial));
     }
 
     private static <T extends FieldDescriptorLite<T>> Object replaceBuilders(
-        T descriptor, Object value) {
+        T descriptor, Object value, boolean partial) {
       if (value == null) {
         return value;
       }
@@ -974,7 +1000,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
           List<Object> list = (List<Object>) value;
           for (int i = 0; i < list.size(); i++) {
             Object oldElement = list.get(i);
-            Object newElement = replaceBuilder(oldElement);
+            Object newElement = replaceBuilder(oldElement, partial);
             if (newElement != oldElement) {
               // If the list contains a Message.Builder, then make a copy of that list and then
               // modify the Message.Builder into a Message and return the new list. This way, the
@@ -988,14 +1014,21 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
           }
           return list;
         } else {
-          return replaceBuilder(value);
+          return replaceBuilder(value, partial);
         }
       }
       return value;
     }
 
-    private static Object replaceBuilder(Object value) {
-      return (value instanceof MessageLite.Builder) ? ((MessageLite.Builder) value).build() : value;
+    private static Object replaceBuilder(Object value, boolean partial) {
+      if (!(value instanceof MessageLite.Builder)) {
+        return value;
+      }
+      MessageLite.Builder builder = (MessageLite.Builder) value;
+      if (partial) {
+        return builder.buildPartial();
+      }
+      return builder.build();
     }
 
     /** Returns a new Builder using the fields from {@code fieldSet}. */
@@ -1014,7 +1047,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
         if (fields.isImmutable()) {
           result.makeImmutable();
         } else {
-          replaceBuilders(result);
+          replaceBuilders(result, true);
         }
         return result;
       }
@@ -1037,7 +1070,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
      */
     public Object getField(final T descriptor) {
       Object value = getFieldAllowBuilders(descriptor);
-      return replaceBuilders(descriptor, value);
+      return replaceBuilders(descriptor, value, true);
     }
 
     /** Same as {@link #getField(F)}, but allow a {@link MessageLite.Builder} to be returned. */
@@ -1123,7 +1156,7 @@ final class FieldSet<T extends FieldSet.FieldDescriptorLite<T>> {
         ensureIsMutable();
       }
       Object value = getRepeatedFieldAllowBuilders(descriptor, index);
-      return replaceBuilder(value);
+      return replaceBuilder(value, true);
     }
 
     /**

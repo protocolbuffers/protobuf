@@ -2069,107 +2069,13 @@ TEST_F(ParserValidationErrorTest, Proto3Default) {
 
 TEST_F(ParserValidationErrorTest, Proto3JsonConflictError) {
   ExpectHasValidationErrors(
-      R"pb(
-      syntax = 'proto3';
-      message TestMessage {
-        uint32 foo = 1;
-        uint32 Foo = 2;
-      }
-      )pb",
-      "4:15: The default JSON name of field \"Foo\" (\"Foo\") conflicts "
-      "with the default JSON name of field \"foo\" (\"foo\"). "
-      "This is not allowed in proto3.\n");
-}
-
-TEST_F(ParserValidationErrorTest, Proto2JsonConflictError) {
-  // conflicts with default JSON names are not errors in proto2
-  ExpectParsesTo(
-      R"pb(
-      syntax = "proto2";
-      message TestMessage {
-        optional uint32 foo = 1;
-        optional uint32 Foo = 2;
-      }
-      )pb",
-      R"pb(
-      syntax: 'proto2'
-      message_type {
-        name: 'TestMessage'
-        field {
-          label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'foo' number: 1
-        }
-        field {
-          label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'Foo' number: 2
-        }
-      }
-      )pb"
-      );
-}
-
-TEST_F(ParserValidationErrorTest, Proto3CustomJsonConflictWithDefaultError) {
-  ExpectHasValidationErrors(
-      R"pb(
-      syntax = 'proto3';
-      message TestMessage {
-        uint32 foo = 1 [json_name='bar'];
-        uint32 bar = 2;
-      }
-      )pb",
-      "4:15: The default JSON name of field \"bar\" (\"bar\") conflicts "
-      "with the custom JSON name of field \"foo\". "
-      "This is not allowed in proto3.\n");
-}
-
-TEST_F(ParserValidationErrorTest, Proto2CustomJsonConflictWithDefaultError) {
-  // conflicts with default JSON names are not errors in proto2
-  ExpectParsesTo(
-      R"pb(
-      syntax = 'proto2';
-      message TestMessage {
-        optional uint32 foo = 1 [json_name='bar'];
-        optional uint32 bar = 2;
-      }
-      )pb",
-      R"pb(
-      syntax: 'proto2'
-      message_type {
-        name: 'TestMessage'
-        field {
-          label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'foo' number: 1 json_name: 'bar'
-        }
-        field {
-          label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'bar' number: 2
-        }
-      }
-      )pb"
-      );
-}
-
-TEST_F(ParserValidationErrorTest, Proto3CustomJsonConflictError) {
-  ExpectHasValidationErrors(
-      R"pb(
-      syntax = 'proto3';
-      message TestMessage {
-        uint32 foo = 1 [json_name='baz'];
-        uint32 bar = 2 [json_name='baz'];
-      }
-      )pb",
-      "4:15: The custom JSON name of field \"bar\" (\"baz\") conflicts "
-      "with the custom JSON name of field \"foo\".\n");
-}
-
-TEST_F(ParserValidationErrorTest, Proto2CustomJsonConflictError) {
-  ExpectHasValidationErrors(
-      R"pb(
-      syntax = 'proto2';
-      message TestMessage {
-        optional uint32 foo = 1 [json_name='baz'];
-        optional uint32 bar = 2 [json_name='baz'];
-      }
-      )pb",
-      // fails in proto2 also: can't explicitly configure bad custom JSON names
-      "4:24: The custom JSON name of field \"bar\" (\"baz\") conflicts "
-      "with the custom JSON name of field \"foo\".\n");
+      "syntax = 'proto3';\n"
+      "message TestMessage {\n"
+      "  uint32 foo = 1;\n"
+      "  uint32 Foo = 2;\n"
+      "}\n",
+      "3:9: The JSON camel-case name of field \"Foo\" conflicts with field "
+      "\"foo\". This is not allowed in proto3.\n");
 }
 
 TEST_F(ParserValidationErrorTest, EnumNameError) {
@@ -3606,19 +3512,18 @@ TEST_F(SourceInfoTest, FieldOptions) {
   EXPECT_TRUE(
       Parse("message Foo {"
             "  optional int32 bar = 1 "
-            "$a$[$b$default=123$c$, $d$opt1=123$e$, "
-            "$f$opt2='hi'$g$, $h$json_name='barBar'$i$]$j$;"
+            "$a$[default=$b$123$c$,$d$opt1=123$e$,"
+            "$f$opt2='hi'$g$]$h$;"
             "}\n"));
 
   const FieldDescriptorProto& field = file_.message_type(0).field(0);
   const UninterpretedOption& option1 = field.options().uninterpreted_option(0);
   const UninterpretedOption& option2 = field.options().uninterpreted_option(1);
 
-  EXPECT_TRUE(HasSpan('a', 'j', field.options()));
+  EXPECT_TRUE(HasSpan('a', 'h', field.options()));
   EXPECT_TRUE(HasSpan('b', 'c', field, "default_value"));
   EXPECT_TRUE(HasSpan('d', 'e', option1));
   EXPECT_TRUE(HasSpan('f', 'g', option2));
-  EXPECT_TRUE(HasSpan('h', 'i', field, "json_name"));
 
   // Ignore these.
   EXPECT_TRUE(HasSpan(file_));
