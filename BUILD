@@ -1021,6 +1021,7 @@ upb_amalgamation(
         ":port",
         ":reflection",
         ":table_internal",
+        ":unicode_internal",
         ":upb",
     ],
     prefix = "ruby-",
