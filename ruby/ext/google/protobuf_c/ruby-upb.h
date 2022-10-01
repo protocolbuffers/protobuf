@@ -220,7 +220,7 @@
 
 /* ASAN poisoning (for arena).
  * If using UPB from an interpreted language like Ruby, a build of the
- * interpreter compiled with ASAN enbabled must be used in order to get sane and
+ * interpreter compiled with ASAN enabled must be used in order to get sane and
  * expected behavior.
  */
 

@@ -219,7 +219,7 @@
 
 /* ASAN poisoning (for arena).
  * If using UPB from an interpreted language like Ruby, a build of the
- * interpreter compiled with ASAN enbabled must be used in order to get sane and
+ * interpreter compiled with ASAN enabled must be used in order to get sane and
  * expected behavior.
  */
 
@@ -10035,6 +10035,35 @@ bool upb_inttable_iter_isequal(const upb_inttable_iter* i1,
 }
 
 
+// Must be last.
+
+int upb_Unicode_ToUTF8(uint32_t cp, char* out) {
+  if (cp <= 0x7f) {
+    out[0] = cp;
+    return 1;
+  }
+  if (cp <= 0x07ff) {
+    out[0] = (cp >> 6) | 0xc0;
+    out[1] = (cp & 0x3f) | 0x80;
+    return 2;
+  }
+  if (cp <= 0xffff) {
+    out[0] = (cp >> 12) | 0xe0;
+    out[1] = ((cp >> 6) & 0x3f) | 0x80;
+    out[2] = (cp & 0x3f) | 0x80;
+    return 3;
+  }
+  if (cp <= 0x10ffff) {
+    out[0] = (cp >> 18) | 0xf0;
+    out[1] = ((cp >> 12) & 0x3f) | 0x80;
+    out[2] = ((cp >> 6) & 0x3f) | 0x80;
+    out[3] = (cp & 0x3f) | 0x80;
+    return 4;
+  }
+  return 0;
+}
+
+
 #include <stdlib.h>
 
 // Must be last.
@@ -12604,35 +12633,6 @@ void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size) {
     assert(strtof(buf, NULL) == val);
   }
   upb_FixLocale(buf);
-}
-
-
-// Must be last.
-
-int upb_Unicode_ToUTF8(uint32_t cp, char* out) {
-  if (cp <= 0x7f) {
-    out[0] = cp;
-    return 1;
-  }
-  if (cp <= 0x07ff) {
-    out[0] = (cp >> 6) | 0xc0;
-    out[1] = (cp & 0x3f) | 0x80;
-    return 2;
-  }
-  if (cp <= 0xffff) {
-    out[0] = (cp >> 12) | 0xe0;
-    out[1] = ((cp >> 6) & 0x3f) | 0x80;
-    out[2] = (cp & 0x3f) | 0x80;
-    return 3;
-  }
-  if (cp <= 0x10ffff) {
-    out[0] = (cp >> 18) | 0xf0;
-    out[1] = ((cp >> 12) & 0x3f) | 0x80;
-    out[2] = ((cp >> 6) & 0x3f) | 0x80;
-    out[3] = (cp & 0x3f) | 0x80;
-    return 4;
-  }
-  return 0;
 }
 
 /* See port_def.inc.  This should #undef all macros #defined there. */
