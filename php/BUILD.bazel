@@ -3,6 +3,7 @@
 # See also code generation logic under /src/google/protobuf/compiler/php.
 
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@upb//cmake:build_defs.bzl", "staleness_test")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load("//conformance:defs.bzl", "conformance_test")
 
@@ -82,6 +83,29 @@ conformance_test(
         "@platforms//os:osx": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
+)
+
+genrule(
+    name = "copy_php_amalgamation_h",
+    srcs = ["@upb//:php-upb.h"],
+    outs = ["generated-in/ext/google/protobuf/php-upb.h"],
+    cmd = "cp $< $@",
+)
+
+genrule(
+    name = "copy_php_amalgamation_c",
+    srcs = ["@upb//:php-upb.c"],
+    outs = ["generated-in/ext/google/protobuf/php-upb.c"],
+    cmd = "cp $< $@",
+)
+
+staleness_test(
+    name = "test_amalgamation_staleness",
+    outs = [
+        "ext/google/protobuf/php-upb.h",
+        "ext/google/protobuf/php-upb.c",
+    ],
+    generated_pattern = "generated-in/%s",
 )
 
 ################################################################################

@@ -1,5 +1,18 @@
 --- BUILD
 +++ BUILD
+@@ -986,10 +986,12 @@ upb_amalgamation(
+         ":port",
+         ":reflection",
+         ":table_internal",
++        ":unicode_internal",
+         ":upb",
+     ],
+     prefix = "php-",
+     strip_import_prefix = ["src"],
++    visibility = ["@com_google_protobuf//php:__pkg__"],
+ )
+
+ cc_library(
 @@ -1022,6 +1022,7 @@ upb_amalgamation(
          ":reflection",
          ":table_internal",
