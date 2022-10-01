@@ -7,8 +7,8 @@ in C.
 
 upb is the core runtime for protobuf languages extensions in
 [Ruby](https://github.com/protocolbuffers/protobuf/tree/master/ruby),
-[PHP](https://github.com/protocolbuffers/protobuf/tree/master/php), and (soon)
-Python.
+[PHP](https://github.com/protocolbuffers/protobuf/tree/master/php), and
+[Python](https://github.com/protocolbuffers/upb/tree/main/python).
 
 While upb offers a C API, the C API & ABI **are not stable**. For this reason,
 upb is not generally offered as a C library for direct consumption, and there
@@ -55,6 +55,12 @@ For PHP, use [PECL](https://pecl.php.net/package/protobuf):
 
 ```
 $ sudo pecl install protobuf
+```
+
+For Python, use [PyPI](https://pypi.org/project/protobuf/):
+
+```
+$ sudo pip install protobuf
 ```
 
 Alternatively, you can build and install upb using
