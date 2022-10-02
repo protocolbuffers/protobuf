@@ -326,7 +326,7 @@ namespace Google.Protobuf.Reflection
         public T FindTypeByName<T>(string name)
             where T : class, IDescriptor
         {
-            if (Package.Length > 0)
+            if (Package.Length > 0) 
             {
                 name = Package + "." + name;
             }
