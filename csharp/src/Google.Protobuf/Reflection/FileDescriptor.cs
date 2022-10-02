@@ -326,12 +326,6 @@ namespace Google.Protobuf.Reflection
         public T FindTypeByName<T>(string name)
             where T : class, IDescriptor
         {
-            // Don't allow looking up nested types.  This will make optimization
-            // easier later.
-            if (name.IndexOf('.') != -1)
-            {
-                return null;
-            }
             if (Package.Length > 0)
             {
                 name = Package + "." + name;
