@@ -110,13 +110,13 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
 
   if (testMessage) {
     switch (request.requestedOutputFormat) {
-      case WireFormat_GPBUnrecognizedEnumeratorValue:
-      case WireFormat_Unspecified:
+      case ConformanceWireFormat_GPBUnrecognizedEnumeratorValue:
+      case ConformanceWireFormat_Unspecified:
         response.runtimeError =
             [NSString stringWithFormat:@"Unrecognized/unspecified output format: %@", request];
         break;
 
-      case WireFormat_Protobuf:
+      case ConformanceWireFormat_Protobuf:
         response.protobufPayload = testMessage.data;
         if (!response.protobufPayload) {
           response.serializeError =
@@ -124,17 +124,17 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
         }
         break;
 
-      case WireFormat_Json:
+      case ConformanceWireFormat_Json:
         response.skipped = @"ObjC doesn't support generating JSON";
         break;
 
-      case WireFormat_Jspb:
+      case ConformanceWireFormat_Jspb:
         response.skipped =
             @"ConformanceRequest had a requested_output_format of JSPB WireFormat; that"
             " isn't supposed to happen with opensource.";
         break;
 
-      case WireFormat_TextFormat:
+      case ConformanceWireFormat_TextFormat:
         // ObjC only has partial objc generation, so don't attempt any tests that need
         // support.
         response.skipped = @"ObjC doesn't support generating TextFormat";

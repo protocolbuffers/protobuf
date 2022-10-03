@@ -29,8 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 syntax = "proto3";
+
 package conformance;
+
 option java_package = "com.google.protobuf.conformance";
+option objc_class_prefix = "Conformance";
 
 // This defines the conformance testing protocol.  This protocol exists between
 // the conformance test suite itself and the code being tested.  For each test,
