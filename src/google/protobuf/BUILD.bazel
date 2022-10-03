@@ -189,7 +189,6 @@ cc_library(
     name = "protobuf_lite",
     srcs = [
         "any_lite.cc",
-        "arena_config.cc",
         "arenastring.cc",
         "arenaz_sampler.cc",
         "extension_set.cc",
