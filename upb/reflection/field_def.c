@@ -648,10 +648,6 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
 
     bool ok = _upb_OneofDef_Insert(oneof, f, name.data, name.size, ctx->arena);
     if (!ok) _upb_DefBuilder_OomErr(ctx);
-  } else if (f->proto3_optional_) {
-    _upb_DefBuilder_Errf(ctx,
-                         "field with proto3_optional was not in a oneof (%s)",
-                         f->full_name);
   }
 
   UBP_DEF_SET_OPTIONS(f->opts, FieldDescriptorProto, FieldOptions, field_proto);
@@ -693,6 +689,15 @@ static void _upb_FieldDef_CreateNotExt(
     upb_FieldDef* f) {
   _upb_FieldDef_Create(ctx, prefix, field_proto, m, f);
   f->is_extension_ = false;
+
+  if (!google_protobuf_FieldDescriptorProto_has_oneof_index(field_proto)) {
+    if (f->proto3_optional_) {
+      _upb_DefBuilder_Errf(
+          ctx,
+          "non-extension field (%s) with proto3_optional was not in a oneof",
+          f->full_name);
+    }
+  }
 
   _upb_MessageDef_InsertField(ctx, m, f);
 
