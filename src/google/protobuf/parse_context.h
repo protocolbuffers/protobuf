@@ -901,11 +901,13 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
     nbytes = static_cast<int>(buffer_end_ + kSlopBytes - ptr);
   }
   int num = size / sizeof(T);
+  int block_size = num * sizeof(T);
+  if(num == 0) return size == block_size ? ptr : nullptr;
   int old_entries = out->size();
   out->Reserve(old_entries + num);
-  int block_size = num * sizeof(T);
   auto dst = out->AddNAlreadyReserved(num);
 #ifdef PROTOBUF_LITTLE_ENDIAN
+  GOOGLE_CHECK(dst != nullptr) << out << "," << num;
   std::memcpy(dst, ptr, block_size);
 #else
   for (int i = 0; i < num; i++) dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
