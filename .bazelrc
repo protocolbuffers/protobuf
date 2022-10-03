@@ -3,6 +3,8 @@ build --cxxopt=-std=c++14 --host_cxxopt=-std=c++14
 build:dbg --compilation_mode=dbg
 build:opt --compilation_mode=opt
 build:asan --compilation_mode=dbg --copt=-fsanitize=address --linkopt=-fsanitize=address
+# ASAN hits ODR violations with shared linkage due to rules_proto.
+build:asan --dynamic_mode=off
 build:msan --compilation_mode=dbg --copt=-fsanitize=memory --linkopt=-fsanitize=memory
 build:tsan --compilation_mode=dbg --copt=-fsanitize=thread --linkopt=-fsanitize=thread
 build:ubsan --compilation_mode=dbg --copt=-fsanitize=undefined --linkopt=-fsanitize=undefined --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
