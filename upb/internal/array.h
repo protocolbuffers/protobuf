@@ -69,8 +69,8 @@ UPB_INLINE uintptr_t _upb_tag_arrptr(void* ptr, int elem_size_lg2) {
 
 UPB_INLINE upb_Array* _upb_Array_New(upb_Arena* a, size_t init_capacity,
                                      int elem_size_lg2) {
-  const size_t arr_size = UPB_ALIGN_UP(sizeof(upb_Array), 8);
-  const size_t bytes = sizeof(upb_Array) + (init_capacity << elem_size_lg2);
+  const size_t arr_size = UPB_ALIGN_UP(sizeof(upb_Array), UPB_MALLOC_ALIGN);
+  const size_t bytes = arr_size + (init_capacity << elem_size_lg2);
   upb_Array* arr = (upb_Array*)upb_Arena_Malloc(a, bytes);
   if (!arr) return NULL;
   arr->data = _upb_tag_arrptr(UPB_PTR_AT(arr, arr_size, void), elem_size_lg2);
