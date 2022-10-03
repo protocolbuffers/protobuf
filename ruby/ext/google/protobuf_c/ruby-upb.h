@@ -699,8 +699,10 @@ typedef enum {
   kUpb_FieldType_SFixed32 = 15,
   kUpb_FieldType_SFixed64 = 16,
   kUpb_FieldType_SInt32 = 17,
-  kUpb_FieldType_SInt64 = 18
+  kUpb_FieldType_SInt64 = 18,
 } upb_FieldType;
+
+#define kUpb_FieldType_SizeOf 19
 
 #define kUpb_Map_Begin ((size_t)-1)
 
@@ -842,7 +844,6 @@ struct upb_Array {
   uintptr_t data;  /* Tagged ptr: low 3 bits of ptr are lg2(elem size). */
   size_t size;     /* The number of elements in the array. */
   size_t capacity; /* Allocated storage. Measured in elements. */
-  uint64_t junk;
 };
 
 UPB_INLINE const void* _upb_array_constptr(const upb_Array* arr) {
@@ -867,8 +868,8 @@ UPB_INLINE uintptr_t _upb_tag_arrptr(void* ptr, int elem_size_lg2) {
 
 UPB_INLINE upb_Array* _upb_Array_New(upb_Arena* a, size_t init_capacity,
                                      int elem_size_lg2) {
-  const size_t arr_size = UPB_ALIGN_UP(sizeof(upb_Array), 8);
-  const size_t bytes = sizeof(upb_Array) + (init_capacity << elem_size_lg2);
+  const size_t arr_size = UPB_ALIGN_UP(sizeof(upb_Array), UPB_MALLOC_ALIGN);
+  const size_t bytes = arr_size + (init_capacity << elem_size_lg2);
   upb_Array* arr = (upb_Array*)upb_Arena_Malloc(a, bytes);
   if (!arr) return NULL;
   arr->data = _upb_tag_arrptr(UPB_PTR_AT(arr, arr_size, void), elem_size_lg2);
@@ -1170,12 +1171,29 @@ extern "C" {
  * reflection do not need to populate a upb_ExtensionRegistry directly.
  */
 
-struct upb_ExtensionRegistry;
 typedef struct upb_ExtensionRegistry upb_ExtensionRegistry;
 
-/* Creates a upb_ExtensionRegistry in the given arena.  The arena must outlive
- * any use of the extreg. */
+// Creates a upb_ExtensionRegistry in the given arena.
+// The arena must outlive any use of the extreg.
 upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena);
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+typedef struct upb_MiniTable upb_MiniTable;
+typedef struct upb_MiniTable_Extension upb_MiniTable_Extension;
+
+// Adds the given extension info for message type |l| and field number |num|
+// into the registry. Returns false if this message type and field number were
+// already in the map, or if memory allocation fails.
+bool _upb_extreg_add(upb_ExtensionRegistry* r,
+                     const upb_MiniTable_Extension** e, size_t count);
+
+// Looks up the extension (if any) defined for message type |l| and field
+// number |num|. If an extension was found, copies the field info into |*ext|
+// and returns true. Otherwise returns false.
+const upb_MiniTable_Extension* _upb_extreg_get(const upb_ExtensionRegistry* r,
+                                               const upb_MiniTable* l,
+                                               uint32_t num);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -1721,11 +1739,13 @@ struct upb_MiniTable {
   _upb_FastTable_Entry fasttable[];
 };
 
-typedef struct {
+typedef struct upb_MiniTable_Extension upb_MiniTable_Extension;
+
+struct upb_MiniTable_Extension {
   upb_MiniTable_Field field;
   const upb_MiniTable* extendee;
   upb_MiniTable_Sub sub; /* NULL unless submessage or proto2 enum */
-} upb_MiniTable_Extension;
+};
 
 typedef struct {
   const upb_MiniTable** msgs;
@@ -1747,21 +1767,6 @@ UPB_INLINE uint64_t upb_MiniTable_requiredmask(const upb_MiniTable* l) {
   assert(0 < n && n <= 63);
   return ((1ULL << n) - 1) << 1;
 }
-
-/** upb_ExtensionRegistry *****************************************************/
-
-/* Adds the given extension info for message type |l| and field number |num|
- * into the registry. Returns false if this message type and field number were
- * already in the map, or if memory allocation fails. */
-bool _upb_extreg_add(upb_ExtensionRegistry* r,
-                     const upb_MiniTable_Extension** e, size_t count);
-
-/* Looks up the extension (if any) defined for message type |l| and field
- * number |num|.  If an extension was found, copies the field info into |*ext|
- * and returns true. Otherwise returns false. */
-const upb_MiniTable_Extension* _upb_extreg_get(const upb_ExtensionRegistry* r,
-                                               const upb_MiniTable* l,
-                                               uint32_t num);
 
 /** upb_Message ***************************************************************/
 
@@ -2156,53 +2161,6 @@ UPB_INLINE void _upb_msg_map_set_value(void* msg, const void* val,
   } else {
     memcpy(&ent->val.val, val, size);
   }
-}
-
-/** _upb_mapsorter ************************************************************/
-
-/* _upb_mapsorter sorts maps and provides ordered iteration over the entries.
- * Since maps can be recursive (map values can be messages which contain other
- * maps). _upb_mapsorter can contain a stack of maps. */
-
-typedef struct {
-  upb_tabent const** entries;
-  int size;
-  int cap;
-} _upb_mapsorter;
-
-typedef struct {
-  int start;
-  int pos;
-  int end;
-} _upb_sortedmap;
-
-UPB_INLINE void _upb_mapsorter_init(_upb_mapsorter* s) {
-  s->entries = NULL;
-  s->size = 0;
-  s->cap = 0;
-}
-
-UPB_INLINE void _upb_mapsorter_destroy(_upb_mapsorter* s) {
-  if (s->entries) free(s->entries);
-}
-
-bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
-                            const upb_Map* map, _upb_sortedmap* sorted);
-
-UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
-                                      _upb_sortedmap* sorted) {
-  s->size = sorted->start;
-}
-
-UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s, const upb_Map* map,
-                                    _upb_sortedmap* sorted, upb_MapEntry* ent) {
-  if (sorted->pos == sorted->end) return false;
-  const upb_tabent* tabent = s->entries[sorted->pos++];
-  upb_StringView key = upb_tabstrview(tabent->key);
-  _upb_map_fromkey(key, &ent->k, map->key_size);
-  upb_value val = {tabent->val.val};
-  _upb_map_fromvalue(val, &ent->v, map->val_size);
-  return true;
 }
 
 #ifdef __cplusplus
@@ -7242,6 +7200,70 @@ bool _upb_DescState_Grow(upb_DescState* d, upb_Arena* a);
 
 
 #endif /* UPB_REFLECTION_DESC_STATE_H_ */
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+#ifndef UPB_MAP_SORTER_H_
+#define UPB_MAP_SORTER_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// _upb_mapsorter sorts maps and provides ordered iteration over the entries.
+// Since maps can be recursive (map values can be messages which contain other
+// maps), _upb_mapsorter can contain a stack of maps.
+
+typedef struct {
+  upb_tabent const** entries;
+  int size;
+  int cap;
+} _upb_mapsorter;
+
+typedef struct {
+  int start;
+  int pos;
+  int end;
+} _upb_sortedmap;
+
+UPB_INLINE void _upb_mapsorter_init(_upb_mapsorter* s) {
+  s->entries = NULL;
+  s->size = 0;
+  s->cap = 0;
+}
+
+UPB_INLINE void _upb_mapsorter_destroy(_upb_mapsorter* s) {
+  if (s->entries) free(s->entries);
+}
+
+UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s, const upb_Map* map,
+                                    _upb_sortedmap* sorted, upb_MapEntry* ent) {
+  if (sorted->pos == sorted->end) return false;
+  const upb_tabent* tabent = s->entries[sorted->pos++];
+  upb_StringView key = upb_tabstrview(tabent->key);
+  _upb_map_fromkey(key, &ent->k, map->key_size);
+  upb_value val = {tabent->val.val};
+  _upb_map_fromvalue(val, &ent->v, map->val_size);
+  return true;
+}
+
+UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
+                                      _upb_sortedmap* sorted) {
+  s->size = sorted->start;
+}
+
+bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
+                            const upb_Map* map, _upb_sortedmap* sorted);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MAP_SORTER_H_ */
 
 /* See port_def.inc.  This should #undef all macros #defined there. */
 
