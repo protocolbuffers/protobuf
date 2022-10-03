@@ -111,8 +111,10 @@ typedef enum {
   kUpb_FieldType_SFixed32 = 15,
   kUpb_FieldType_SFixed64 = 16,
   kUpb_FieldType_SInt32 = 17,
-  kUpb_FieldType_SInt64 = 18
+  kUpb_FieldType_SInt64 = 18,
 } upb_FieldType;
+
+#define kUpb_FieldType_SizeOf 19
 
 #define kUpb_Map_Begin ((size_t)-1)
 

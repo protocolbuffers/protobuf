@@ -109,6 +109,8 @@ cc_library(
         "upb/encode.c",
         "upb/internal/table.h",
         "upb/internal/unicode.h",
+        "upb/map_sorter.c",
+        "upb/map_sorter.h",
         "upb/msg.c",
         "upb/msg_internal.h",
         "upb/status.c",
@@ -375,6 +377,7 @@ cc_library(
     hdrs = [
         "upb/collections.h",
         "upb/map.h",
+        "upb/map_sorter.h",
         "upb/message_value.h",
     ],
     copts = UPB_DEFAULT_COPTS,

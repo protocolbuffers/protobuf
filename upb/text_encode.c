@@ -37,6 +37,7 @@
 #include "upb/internal/encode.h"
 #include "upb/internal/vsnprintf_compat.h"
 #include "upb/map.h"
+#include "upb/map_sorter.h"
 #include "upb/reflection/message.h"
 
 // Must be last.

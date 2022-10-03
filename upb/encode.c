@@ -33,6 +33,7 @@
 
 #include "upb/extension_registry.h"
 #include "upb/internal/array.h"
+#include "upb/map_sorter.h"
 #include "upb/msg_internal.h"
 #include "upb/upb.h"
 
