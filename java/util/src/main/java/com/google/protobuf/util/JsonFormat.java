@@ -115,7 +115,8 @@ public class JsonFormat {
         /* preservingProtoFieldNames */ false,
         /* omittingInsignificantWhitespace */ false,
         /* printingEnumsAsInts */ false,
-        /* sortingMapKeys */ false);
+        /* sortingMapKeys */ false,
+        /* ignoringUnresolvedAnyTypes */ false);
   }
 
   /**
@@ -138,6 +139,7 @@ public class JsonFormat {
     private final boolean omittingInsignificantWhitespace;
     private final boolean printingEnumsAsInts;
     private final boolean sortingMapKeys;
+    private final boolean ignoringUnresolvedAnyTypes;
 
     private Printer(
         com.google.protobuf.TypeRegistry registry,
@@ -147,7 +149,8 @@ public class JsonFormat {
         boolean preservingProtoFieldNames,
         boolean omittingInsignificantWhitespace,
         boolean printingEnumsAsInts,
-        boolean sortingMapKeys) {
+        boolean sortingMapKeys,
+        boolean ignoringUnresolvedAnyTypes) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
       this.alwaysOutputDefaultValueFields = alwaysOutputDefaultValueFields;
@@ -156,6 +159,7 @@ public class JsonFormat {
       this.omittingInsignificantWhitespace = omittingInsignificantWhitespace;
       this.printingEnumsAsInts = printingEnumsAsInts;
       this.sortingMapKeys = sortingMapKeys;
+      this.ignoringUnresolvedAnyTypes = ignoringUnresolvedAnyTypes;
     }
 
     /**
@@ -177,7 +181,8 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          ignoringUnresolvedAnyTypes);
     }
 
     /**
@@ -199,7 +204,8 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          ignoringUnresolvedAnyTypes);
     }
 
     /**
@@ -218,7 +224,8 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          ignoringUnresolvedAnyTypes);
     }
 
     /**
@@ -235,7 +242,8 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           true,
-          sortingMapKeys);
+          sortingMapKeys,
+          ignoringUnresolvedAnyTypes);
     }
 
     private void checkUnsetPrintingEnumsAsInts() {
@@ -265,7 +273,8 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          ignoringUnresolvedAnyTypes);
     }
 
     private void checkUnsetIncludingDefaultValueFields() {
@@ -290,7 +299,8 @@ public class JsonFormat {
           true,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          ignoringUnresolvedAnyTypes);
     }
 
 
@@ -319,7 +329,8 @@ public class JsonFormat {
           preservingProtoFieldNames,
           true,
           printingEnumsAsInts,
-          sortingMapKeys);
+          sortingMapKeys,
+          ignoringUnresolvedAnyTypes);
     }
 
     /**
@@ -342,6 +353,25 @@ public class JsonFormat {
           preservingProtoFieldNames,
           omittingInsignificantWhitespace,
           printingEnumsAsInts,
+          true,
+          ignoringUnresolvedAnyTypes);
+    }
+
+    /**
+     * Creates a new {@link Printer} that is configured to not throw a
+     * {@link InvalidProtocolBufferException} when trying to resolve an
+     * Any type that cannot be resolved.
+     */
+    public Printer ignoringUnresolvedAnyTypes() {
+      return new Printer(
+          registry,
+          oldRegistry,
+          alwaysOutputDefaultValueFields,
+          includingDefaultValueFields,
+          preservingProtoFieldNames,
+          omittingInsignificantWhitespace,
+          printingEnumsAsInts,
+          sortingMapKeys,
           true);
     }
 
@@ -364,7 +394,8 @@ public class JsonFormat {
               output,
               omittingInsignificantWhitespace,
               printingEnumsAsInts,
-              sortingMapKeys)
+              sortingMapKeys,
+              ignoringUnresolvedAnyTypes)
           .print(message);
     }
 
@@ -715,6 +746,7 @@ public class JsonFormat {
     private final boolean preservingProtoFieldNames;
     private final boolean printingEnumsAsInts;
     private final boolean sortingMapKeys;
+    private final boolean ignoringUnresolvedAnyTypes;
     private final TextGenerator generator;
     // We use Gson to help handle string escapes.
     private final Gson gson;
@@ -734,7 +766,8 @@ public class JsonFormat {
         Appendable jsonOutput,
         boolean omittingInsignificantWhitespace,
         boolean printingEnumsAsInts,
-        boolean sortingMapKeys) {
+        boolean sortingMapKeys,
+        boolean ignoringUnresolvedAnyTypes) {
       this.registry = registry;
       this.oldRegistry = oldRegistry;
       this.alwaysOutputDefaultValueFields = alwaysOutputDefaultValueFields;
@@ -742,6 +775,7 @@ public class JsonFormat {
       this.preservingProtoFieldNames = preservingProtoFieldNames;
       this.printingEnumsAsInts = printingEnumsAsInts;
       this.sortingMapKeys = sortingMapKeys;
+      this.ignoringUnresolvedAnyTypes = ignoringUnresolvedAnyTypes;
       this.gson = GsonHolder.DEFAULT_GSON;
       // json format related properties, determined by printerType
       if (omittingInsignificantWhitespace) {
@@ -872,14 +906,22 @@ public class JsonFormat {
           || valueField == null
           || typeUrlField.getType() != FieldDescriptor.Type.STRING
           || valueField.getType() != FieldDescriptor.Type.BYTES) {
-        throw new InvalidProtocolBufferException("Invalid Any type.");
+        if (!ignoringUnresolvedAnyTypes) {
+          throw new InvalidProtocolBufferException("Invalid Any type.");
+        } else {
+          return;
+        }
       }
       String typeUrl = (String) message.getField(typeUrlField);
       Descriptor type = registry.getDescriptorForTypeUrl(typeUrl);
       if (type == null) {
         type = oldRegistry.getDescriptorForTypeUrl(typeUrl);
         if (type == null) {
-          throw new InvalidProtocolBufferException("Cannot find type for url: " + typeUrl);
+          if (!ignoringUnresolvedAnyTypes) {
+            throw new InvalidProtocolBufferException("Cannot find type for url: " + typeUrl);
+          } else {
+            return;
+          }
         }
       }
       ByteString content = (ByteString) message.getField(valueField);

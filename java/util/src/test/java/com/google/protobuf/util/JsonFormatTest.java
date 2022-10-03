@@ -1062,6 +1062,16 @@ public class JsonFormatTest {
   }
 
   @Test
+  public void testAnyFieldsWithoutCustomAddedTypeRegistry() throws Exception {
+    TestAllTypes content = TestAllTypes.newBuilder().setOptionalInt32(1234).build();
+    TestAny message = TestAny.newBuilder().setAnyValue(Any.pack(content)).build();
+
+    JsonFormat.Printer printer = JsonFormat.printer().ignoringUnresolvedAnyTypes();
+
+    assertThat(printer.print(message)).isEqualTo("{}");
+  }
+
+  @Test
   public void testAnyFields() throws Exception {
     TestAllTypes content = TestAllTypes.newBuilder().setOptionalInt32(1234).build();
     TestAny message = TestAny.newBuilder().setAnyValue(Any.pack(content)).build();
