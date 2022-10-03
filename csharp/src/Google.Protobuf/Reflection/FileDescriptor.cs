@@ -345,7 +345,7 @@ namespace Google.Protobuf.Reflection
         }
 
         /// <summary>
-        /// Finds a type (message, enum, service or extension) in the file by qualifed name
+        /// Finds a type (message, enum, service or extension) in the file by qualified name
         /// </summary>
         /// <param name="name">The qualified type name to look for.</param>
         /// <typeparam name="T">The type of descriptor to look for</typeparam>
