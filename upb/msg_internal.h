@@ -226,11 +226,13 @@ struct upb_MiniTable {
   _upb_FastTable_Entry fasttable[];
 };
 
-typedef struct {
+typedef struct upb_MiniTable_Extension upb_MiniTable_Extension;
+
+struct upb_MiniTable_Extension {
   upb_MiniTable_Field field;
   const upb_MiniTable* extendee;
   upb_MiniTable_Sub sub; /* NULL unless submessage or proto2 enum */
-} upb_MiniTable_Extension;
+};
 
 typedef struct {
   const upb_MiniTable** msgs;
@@ -252,21 +254,6 @@ UPB_INLINE uint64_t upb_MiniTable_requiredmask(const upb_MiniTable* l) {
   assert(0 < n && n <= 63);
   return ((1ULL << n) - 1) << 1;
 }
-
-/** upb_ExtensionRegistry *****************************************************/
-
-/* Adds the given extension info for message type |l| and field number |num|
- * into the registry. Returns false if this message type and field number were
- * already in the map, or if memory allocation fails. */
-bool _upb_extreg_add(upb_ExtensionRegistry* r,
-                     const upb_MiniTable_Extension** e, size_t count);
-
-/* Looks up the extension (if any) defined for message type |l| and field
- * number |num|.  If an extension was found, copies the field info into |*ext|
- * and returns true. Otherwise returns false. */
-const upb_MiniTable_Extension* _upb_extreg_get(const upb_ExtensionRegistry* r,
-                                               const upb_MiniTable* l,
-                                               uint32_t num);
 
 /** upb_Message ***************************************************************/
 

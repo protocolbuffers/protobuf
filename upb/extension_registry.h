@@ -71,12 +71,29 @@ extern "C" {
  * reflection do not need to populate a upb_ExtensionRegistry directly.
  */
 
-struct upb_ExtensionRegistry;
 typedef struct upb_ExtensionRegistry upb_ExtensionRegistry;
 
-/* Creates a upb_ExtensionRegistry in the given arena.  The arena must outlive
- * any use of the extreg. */
+// Creates a upb_ExtensionRegistry in the given arena.
+// The arena must outlive any use of the extreg.
 upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena);
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+typedef struct upb_MiniTable upb_MiniTable;
+typedef struct upb_MiniTable_Extension upb_MiniTable_Extension;
+
+// Adds the given extension info for message type |l| and field number |num|
+// into the registry. Returns false if this message type and field number were
+// already in the map, or if memory allocation fails.
+bool _upb_extreg_add(upb_ExtensionRegistry* r,
+                     const upb_MiniTable_Extension** e, size_t count);
+
+// Looks up the extension (if any) defined for message type |l| and field
+// number |num|. If an extension was found, copies the field info into |*ext|
+// and returns true. Otherwise returns false.
+const upb_MiniTable_Extension* _upb_extreg_get(const upb_ExtensionRegistry* r,
+                                               const upb_MiniTable* l,
+                                               uint32_t num);
 
 #ifdef __cplusplus
 } /* extern "C" */
