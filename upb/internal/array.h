@@ -44,7 +44,6 @@ struct upb_Array {
   uintptr_t data;  /* Tagged ptr: low 3 bits of ptr are lg2(elem size). */
   size_t size;     /* The number of elements in the array. */
   size_t capacity; /* Allocated storage. Measured in elements. */
-  uint64_t junk;
 };
 
 UPB_INLINE const void* _upb_array_constptr(const upb_Array* arr) {

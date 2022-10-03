@@ -1143,7 +1143,7 @@ bool TryFillTableEntry(const FileLayout& layout,
     // No hasbit/oneof-related fields.
   }
   if (field->real_containing_oneof()) {
-    size_t case_offset = ~mt_f->presence;
+    uint64_t case_offset = ~mt_f->presence;
     if (case_offset > 0xffff) return false;
     assert(field->number() < 256);
     data |= field->number() << 24;

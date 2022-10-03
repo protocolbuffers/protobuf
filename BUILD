@@ -1020,10 +1020,12 @@ upb_amalgamation(
         ":port",
         ":reflection",
         ":table_internal",
+        ":unicode_internal",
         ":upb",
     ],
     prefix = "php-",
     strip_import_prefix = ["src"],
+    visibility = ["@com_google_protobuf//php:__pkg__"],
 )
 
 cc_library(

@@ -160,7 +160,7 @@ TEST(Cpp, TimestampEncoder) {
   google_protobuf_Timestamp* timestamp_upb_decoded =
       google_protobuf_Timestamp_new(arena.ptr());
 
-  long timestamps[] = {
+  int64_t timestamps[] = {
       253402300799,  // 9999-12-31T23:59:59Z
       1641006000,    // 2022-01-01T03:00:00Z
       0,             // 1970-01-01T00:00:00Z
@@ -169,7 +169,7 @@ TEST(Cpp, TimestampEncoder) {
       -62135596800,  // 0000-01-01T00:00:00Z
   };
 
-  for (long timestamp : timestamps) {
+  for (int64_t timestamp : timestamps) {
     google_protobuf_Timestamp_set_seconds(timestamp_upb, timestamp);
 
     char json[128];
@@ -177,7 +177,7 @@ TEST(Cpp, TimestampEncoder) {
                                  sizeof(json), NULL);
     bool result = upb_JsonDecode(json, size, timestamp_upb_decoded, md.ptr(),
                                  NULL, 0, arena.ptr(), NULL);
-    const long timestamp_decoded =
+    const int64_t timestamp_decoded =
         google_protobuf_Timestamp_seconds(timestamp_upb_decoded);
 
     ASSERT_TRUE(result);
