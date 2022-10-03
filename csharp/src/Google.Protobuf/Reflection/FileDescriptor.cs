@@ -326,10 +326,33 @@ namespace Google.Protobuf.Reflection
         public T FindTypeByName<T>(string name)
             where T : class, IDescriptor
         {
+            // Don't allow looking up nested types.  This will make optimization
+            // easier later.
+            if (name.IndexOf('.') != -1)
+            {
+                return null;
+            }
             if (Package.Length > 0)
             {
                 name = Package + "." + name;
             }
+            T result = DescriptorPool.FindSymbol<T>(name);
+            if (result != null && result.File == this)
+            {
+                return result;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Finds a type (message, enum, service or extension) in the file by qualifed name
+        /// </summary>
+        /// <param name="name">The qualified type name to look for.</param>
+        /// <typeparam name="T">The type of descriptor to look for</typeparam>
+        /// <returns>The type's descriptor, or null if not found.</returns>
+        public T FindTypeByQualifiedName<T>(string name)
+            where T : class, IDescriptor
+        {
             T result = DescriptorPool.FindSymbol<T>(name);
             if (result != null && result.File == this)
             {
