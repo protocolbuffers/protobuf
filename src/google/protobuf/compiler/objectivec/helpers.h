@@ -134,62 +134,6 @@ std::string GetOptionalDeprecatedAttribute(const TDescriptor* descriptor,
   }
 }
 
-// Generate decode data needed for ObjC's GPBDecodeTextFormatName() to transform
-// the input into the expected output.
-class TextFormatDecodeData {
- public:
-  TextFormatDecodeData();
-  ~TextFormatDecodeData();
-
-  TextFormatDecodeData(const TextFormatDecodeData&) = delete;
-  TextFormatDecodeData& operator=(const TextFormatDecodeData&) = delete;
-
-  void AddString(int32_t key, const std::string& input_for_decode,
-                 const std::string& desired_output);
-  size_t num_entries() const { return entries_.size(); }
-  std::string Data() const;
-
-  static std::string DecodeDataForString(const std::string& input_for_decode,
-                                         const std::string& desired_output);
-
- private:
-  typedef std::pair<int32_t, std::string> DataEntry;
-  std::vector<DataEntry> entries_;
-};
-
-// Helper class for parsing framework import mappings and generating
-// import statements.
-class ImportWriter {
- public:
-  ImportWriter(const std::string& generate_for_named_framework,
-               const std::string& named_framework_to_proto_path_mappings_path,
-               const std::string& runtime_import_prefix,
-               bool include_wkt_imports);
-  ~ImportWriter();
-
-  void AddFile(const FileDescriptor* file, const std::string& header_extension);
-  void Print(io::Printer* printer) const;
-
-  static void PrintRuntimeImports(io::Printer* printer,
-                                  const std::vector<std::string>& header_to_import,
-                                  const std::string& runtime_import_prefix,
-                                  bool default_cpp_symbol = false);
-
- private:
-  void ParseFrameworkMappings();
-
-  const std::string generate_for_named_framework_;
-  const std::string named_framework_to_proto_path_mappings_path_;
-  const std::string runtime_import_prefix_;
-  const bool include_wkt_imports_;
-  std::map<std::string, std::string> proto_file_to_framework_name_;
-  bool need_to_parse_mapping_file_;
-
-  std::vector<std::string> protobuf_imports_;
-  std::vector<std::string> other_framework_imports_;
-  std::vector<std::string> other_imports_;
-};
-
 
 }  // namespace objectivec
 }  // namespace compiler

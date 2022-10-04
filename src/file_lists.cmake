@@ -357,12 +357,14 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/file.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/helpers.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/import_writer.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/map_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/message_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/oneof.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/primitive_field.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/text_format_decode_data.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/php_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.cc
@@ -454,6 +456,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/file.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/helpers.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/import_writer.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/map_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/message_field.h
@@ -462,6 +465,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/oneof.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/options.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/primitive_field.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/text_format_decode_data.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/php_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.h
@@ -680,7 +684,7 @@ set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/doc_comment_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_serialization_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/plugin_unittest.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/helpers_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/text_format_decode_data_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/names_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/parser_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/plugin_unittest.cc

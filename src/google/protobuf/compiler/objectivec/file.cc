@@ -40,6 +40,7 @@
 #include "google/protobuf/compiler/objectivec/extension.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
+#include "google/protobuf/compiler/objectivec/import_writer.h"
 #include "google/protobuf/compiler/objectivec/message.h"
 #include "google/protobuf/io/printer.h"
 
