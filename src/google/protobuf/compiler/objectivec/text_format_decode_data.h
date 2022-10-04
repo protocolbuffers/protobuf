@@ -34,14 +34,20 @@
 #include <string>
 #include <vector>
 
+// Must be included last
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
+// TODO(b/250947994): PROTOC_EXPORT is only used to allow the CMake build to
+// find/link these in the unittest, this is not public api.
+
 // Generate decode data needed for ObjC's GPBDecodeTextFormatName() to transform
 // the input into the expected output.
-class TextFormatDecodeData {
+class PROTOC_EXPORT TextFormatDecodeData {
  public:
   TextFormatDecodeData();
   ~TextFormatDecodeData();
@@ -67,5 +73,7 @@ class TextFormatDecodeData {
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_TEXT_FORMAT_DECODE_DATA_H__

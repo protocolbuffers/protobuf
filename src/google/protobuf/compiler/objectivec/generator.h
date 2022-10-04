@@ -37,9 +37,8 @@
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.h"
 
-// clang-format off
+// Must be included last
 #include "google/protobuf/port_def.inc"
-// clang-format on
 
 namespace google {
 namespace protobuf {

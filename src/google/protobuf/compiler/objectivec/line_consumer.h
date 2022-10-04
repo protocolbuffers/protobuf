@@ -36,31 +36,39 @@
 
 #include "google/protobuf/io/zero_copy_stream.h"
 
+// Must be included last
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
+// TODO(b/250947994): PROTOC_EXPORT is only used to allow the CMake build to
+// find/link these in the unittest, this is not public api.
+
 // Helper for parsing simple files.
-class LineConsumer {
+class PROTOC_EXPORT LineConsumer {
  public:
   LineConsumer();
   virtual ~LineConsumer();
   virtual bool ConsumeLine(const absl::string_view& line, std::string* out_error) = 0;
 };
 
-bool ParseSimpleFile(const std::string& path,
-                     LineConsumer* line_consumer,
-                     std::string* out_error);
+bool PROTOC_EXPORT ParseSimpleFile(const std::string& path,
+                                   LineConsumer* line_consumer,
+                                   std::string* out_error);
 
-bool ParseSimpleStream(io::ZeroCopyInputStream& input_stream,
-                       const std::string& stream_name,
-                       LineConsumer* line_consumer,
-                       std::string* out_error);
+bool PROTOC_EXPORT ParseSimpleStream(io::ZeroCopyInputStream& input_stream,
+                                     const std::string& stream_name,
+                                     LineConsumer* line_consumer,
+                                     std::string* out_error);
 
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_LINE_CONSUMER_H__
