@@ -250,13 +250,6 @@ bool _upb_FieldDef_IsClosedEnum(const upb_FieldDef* f) {
   if (UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3) return false;
   if (f->type_ != kUpb_FieldType_Enum) return false;
 
-  // TODO(https://github.com/protocolbuffers/upb/issues/541):
-  // fix map enum values to check for unknown enum values and put
-  // them in the unknown field set.
-  if (upb_MessageDef_IsMapEntry(upb_FieldDef_ContainingType(f))) {
-    return false;
-  }
-
   // TODO: Maybe make is_proto2 a bool at creation?
   const upb_FileDef* file = upb_EnumDef_File(f->sub.enumdef);
   return upb_FileDef_Syntax(file) == kUpb_Syntax_Proto2;
