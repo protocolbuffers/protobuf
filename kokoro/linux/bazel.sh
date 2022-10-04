@@ -8,7 +8,6 @@ fi
 
 cd $(dirname $0)/../..
 GIT_REPO_ROOT=`pwd`
-rm -rf $GIT_REPO_ROOT/logs
 
 ENVS=()
 
@@ -30,6 +29,9 @@ function run {
   local BAZEL_CONFIG=$2
 
   tmpfile=$(mktemp -u)
+
+  bazel clean
+  rm -rf $GIT_REPO_ROOT/logs
 
   docker run \
     --cidfile $tmpfile \

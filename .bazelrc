@@ -1,10 +1,21 @@
 build --cxxopt=-std=c++14 --host_cxxopt=-std=c++14
 
 build:dbg --compilation_mode=dbg
+
 build:opt --compilation_mode=opt
-build:asan --compilation_mode=dbg --copt=-fsanitize=address --linkopt=-fsanitize=address
+
+build:asan --config=dbg --copt=-fsanitize=address --linkopt=-fsanitize=address
 # ASAN hits ODR violations with shared linkage due to rules_proto.
 build:asan --dynamic_mode=off
-build:msan --compilation_mode=dbg --copt=-fsanitize=memory --linkopt=-fsanitize=memory
-build:tsan --compilation_mode=dbg --copt=-fsanitize=thread --linkopt=-fsanitize=thread
-build:ubsan --compilation_mode=dbg --copt=-fsanitize=undefined --linkopt=-fsanitize=undefined --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
+
+build:msan --config=dbg --copt=-fsanitize=memory --linkopt=-fsanitize=memory
+build:msan --strip=never
+build:msan --copt=-O0
+build:msan --copt=-fsanitize-memory-track-origins
+build:msan --copt=-fsanitize-memory-use-after-dtor
+build:msan --copt=-fno-omit-frame-pointer
+build:msan --action_env=MSAN_OPTIONS=poison_in_dtor=1
+
+build:tsan --config=dbg --copt=-fsanitize=thread --linkopt=-fsanitize=thread
+
+build:ubsan --config=dbg --copt=-fsanitize=undefined --linkopt=-fsanitize=undefined --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
