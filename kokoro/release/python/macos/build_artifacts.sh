@@ -3,7 +3,7 @@
 set -ex
 
 # Remove any pre-existing protobuf installation.
-brew uninstall protobuf
+brew uninstall -f protobuf
 
 # change to repo root
 pushd $(dirname $0)/../../../..
