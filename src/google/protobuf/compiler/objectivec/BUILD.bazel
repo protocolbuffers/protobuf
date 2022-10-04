@@ -81,11 +81,21 @@ cc_library(
 )
 
 cc_test(
+    name = "names_unittest",
+    srcs = ["names_unittest.cc"],
+    deps = [
+        ":names",
+        "//src/google/protobuf/io",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "helpers_unittest",
     srcs = ["helpers_unittest.cc"],
     deps = [
         ":objectivec",
-        "//src/google/protobuf/io",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
