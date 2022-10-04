@@ -49,6 +49,11 @@ namespace compiler {
 namespace objectivec {
 
 namespace {
+
+bool IsMapEntryMessage(const Descriptor* descriptor) {
+  return descriptor->options().map_entry();
+}
+
 struct FieldOrderingByNumber {
   inline bool operator()(const FieldDescriptor* a,
                          const FieldDescriptor* b) const {
@@ -166,6 +171,7 @@ const FieldDescriptor** SortFieldsByStorageSize(const Descriptor* descriptor) {
        FieldOrderingByStorageSize());
   return fields;
 }
+
 }  // namespace
 
 MessageGenerator::MessageGenerator(const std::string& root_classname,

@@ -48,10 +48,6 @@ inline bool HasPreservingUnknownEnumSemantics(const FileDescriptor* file) {
   return file->syntax() == FileDescriptor::SYNTAX_PROTO3;
 }
 
-inline bool IsMapEntryMessage(const Descriptor* descriptor) {
-  return descriptor->options().map_entry();
-}
-
 // Escape C++ trigraphs by escaping question marks to "\?".
 std::string EscapeTrigraphs(absl::string_view to_escape);
 
@@ -83,14 +79,8 @@ inline ObjectiveCType GetObjectiveCType(const FieldDescriptor* field) {
   return GetObjectiveCType(field->type());
 }
 
-bool IsPrimitiveType(const FieldDescriptor* field);
-inline bool IsReferenceType(const FieldDescriptor* field) {
-  return !IsPrimitiveType(field);
-}
-
 std::string GPBGenericValueFieldName(const FieldDescriptor* field);
 std::string DefaultValue(const FieldDescriptor* field);
-bool HasNonZeroDefaultValue(const FieldDescriptor* field);
 
 std::string BuildFlagsString(const FlagType type, const std::vector<std::string>& strings);
 
