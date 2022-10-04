@@ -30,6 +30,20 @@ cc_library(
     include_prefix = "google/protobuf/compiler/objectivec",
     visibility = ["//pkg:__pkg__"],
     deps = [
+        ":line_consumer",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf:protobuf_nowkt",
+    ],
+)
+
+cc_library(
+    name = "line_consumer",
+    hdrs = ["line_consumer.h"],
+    srcs = ["line_consumer.cc"],
+    copts = COPTS,
+    include_prefix = "google/protobuf/compiler/objectivec",
+    visibility = ["//pkg:__pkg__"],
+    deps = [
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf:protobuf_nowkt",
     ],
@@ -77,10 +91,22 @@ cc_library(
         "//src/google/protobuf/compiler:__pkg__",
     ],
     deps = [
+        ":line_consumer",
         ":names",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
         "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "line_consumer_unittest",
+    srcs = ["line_consumer_unittest.cc"],
+    deps = [
+        ":line_consumer",
+        "//src/google/protobuf/io",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
