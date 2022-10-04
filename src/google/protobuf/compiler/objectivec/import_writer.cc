@@ -32,6 +32,7 @@
 #include "google/protobuf/compiler/objectivec/line_consumer.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/io/printer.h"
+#include "absl/strings/ascii.h"
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
 // error cases, so it seems to be ok to use as a back door for errors.
@@ -63,9 +64,8 @@ bool ProtoFrameworkCollector::ConsumeLine(
         std::string(line) + "'.";
     return false;
   }
-  absl::string_view framework_name = line.substr(0, offset);
-  absl::string_view proto_file_list = line.substr(offset + 1);
-  TrimWhitespace(&framework_name);
+  absl::string_view framework_name = absl::StripAsciiWhitespace(line.substr(0, offset));
+  absl::string_view proto_file_list = absl::StripAsciiWhitespace(line.substr(offset + 1));
 
   int start = 0;
   while (start < proto_file_list.length()) {
@@ -74,8 +74,8 @@ bool ProtoFrameworkCollector::ConsumeLine(
       offset = proto_file_list.length();
     }
 
-    absl::string_view proto_file = proto_file_list.substr(start, offset - start);
-    TrimWhitespace(&proto_file);
+    absl::string_view proto_file =
+        absl::StripAsciiWhitespace(proto_file_list.substr(start, offset - start));
     if (!proto_file.empty()) {
       std::map<std::string, std::string>::iterator existing_entry =
           map_->find(std::string(proto_file));

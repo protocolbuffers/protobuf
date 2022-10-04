@@ -41,6 +41,7 @@
 #include <sstream>
 #include <vector>
 
+#include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "google/protobuf/compiler/objectivec/line_consumer.h"
@@ -66,15 +67,6 @@ using ::open;
 }  // namespace posix
 
 namespace {
-
-void TrimWhitespace(absl::string_view* input) {
-  while (!input->empty() && absl::ascii_isspace(*input->data())) {
-    input->remove_prefix(1);
-  }
-  while (!input->empty() && absl::ascii_isspace((*input)[input->length() - 1])) {
-    input->remove_suffix(1);
-  }
-}
 
 bool ascii_isnewline(char c) {
   return c == '\n' || c == '\r';
@@ -134,7 +126,7 @@ bool Parser::ParseChunk(absl::string_view chunk, std::string* out_error) {
   while (ReadLine(&full_chunk, &line)) {
     ++line_;
     RemoveComment(&line);
-    TrimWhitespace(&line);
+    line = absl::StripAsciiWhitespace(line);
     if (!line.empty() && !line_consumer_->ConsumeLine(line, out_error)) {
       if (out_error->empty()) {
         *out_error = "ConsumeLine failed without setting an error.";
