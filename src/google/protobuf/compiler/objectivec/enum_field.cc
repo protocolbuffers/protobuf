@@ -32,6 +32,7 @@
 #include <string>
 
 #include "google/protobuf/compiler/objectivec/enum_field.h"
+#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/io/printer.h"
 

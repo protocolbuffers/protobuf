@@ -34,6 +34,7 @@
 #include <string>
 
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/io/printer.h"
 
