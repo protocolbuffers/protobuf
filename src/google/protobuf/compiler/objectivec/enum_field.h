@@ -28,29 +28,51 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_OPTIONS_H__
-#define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_OPTIONS_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ENUM_FIELD_H__
+#define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ENUM_FIELD_H__
 
+#include <map>
 #include <string>
+#include "google/protobuf/compiler/objectivec/field.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
-// Generation options, documented within objectivec_generator.cc.
-struct GenerationOptions {
-  std::string generate_for_named_framework;
-  std::string named_framework_to_proto_path_mappings_path;
-  std::string runtime_import_prefix;
-  // TODO(thomasvl): Eventually flip this default to false for better interop
-  // with Swift if proto usages span modules made from ObjC sources.
-  bool headers_use_forward_declarations = true;
+class EnumFieldGenerator : public SingleFieldGenerator {
+  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
+
+  EnumFieldGenerator(const EnumFieldGenerator&) = delete;
+  EnumFieldGenerator& operator=(const EnumFieldGenerator&) = delete;
+
+ public:
+  virtual void GenerateCFunctionDeclarations(
+      io::Printer* printer) const override;
+  virtual void GenerateCFunctionImplementations(
+      io::Printer* printer) const override;
+  virtual void DetermineForwardDeclarations(
+      std::set<std::string>* fwd_decls,
+      bool include_external_types) const override;
+
+ protected:
+  explicit EnumFieldGenerator(const FieldDescriptor* descriptor);
+  virtual ~EnumFieldGenerator();
+};
+
+class RepeatedEnumFieldGenerator : public RepeatedFieldGenerator {
+  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
+
+ public:
+  virtual void FinishInitialization() override;
+
+ protected:
+  explicit RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor);
+  virtual ~RepeatedEnumFieldGenerator();
 };
 
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_OPTIONS_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ENUM_FIELD_H__

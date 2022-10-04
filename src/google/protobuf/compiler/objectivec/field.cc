@@ -28,16 +28,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "google/protobuf/compiler/objectivec/objectivec_field.h"
+#include "google/protobuf/compiler/objectivec/field.h"
 
 #include <iostream>
 
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/compiler/objectivec/objectivec_enum_field.h"
-#include "google/protobuf/compiler/objectivec/objectivec_helpers.h"
-#include "google/protobuf/compiler/objectivec/objectivec_map_field.h"
-#include "google/protobuf/compiler/objectivec/objectivec_message_field.h"
-#include "google/protobuf/compiler/objectivec/objectivec_primitive_field.h"
+#include "google/protobuf/compiler/objectivec/enum_field.h"
+#include "google/protobuf/compiler/objectivec/helpers.h"
+#include "google/protobuf/compiler/objectivec/map_field.h"
+#include "google/protobuf/compiler/objectivec/message_field.h"
+#include "google/protobuf/compiler/objectivec/primitive_field.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {

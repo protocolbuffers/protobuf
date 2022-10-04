@@ -28,51 +28,60 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ENUM_FIELD_H__
-#define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ENUM_FIELD_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_PRIMITIVE_FIELD_H__
+#define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_PRIMITIVE_FIELD_H__
 
-#include <map>
-#include <string>
-#include "google/protobuf/compiler/objectivec/objectivec_field.h"
+#include "google/protobuf/compiler/objectivec/field.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
-class EnumFieldGenerator : public SingleFieldGenerator {
+class PrimitiveFieldGenerator : public SingleFieldGenerator {
   friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
-  EnumFieldGenerator(const EnumFieldGenerator&) = delete;
-  EnumFieldGenerator& operator=(const EnumFieldGenerator&) = delete;
-
- public:
-  virtual void GenerateCFunctionDeclarations(
-      io::Printer* printer) const override;
-  virtual void GenerateCFunctionImplementations(
-      io::Printer* printer) const override;
-  virtual void DetermineForwardDeclarations(
-      std::set<std::string>* fwd_decls,
-      bool include_external_types) const override;
-
  protected:
-  explicit EnumFieldGenerator(const FieldDescriptor* descriptor);
-  virtual ~EnumFieldGenerator();
+  explicit PrimitiveFieldGenerator(const FieldDescriptor* descriptor);
+  virtual ~PrimitiveFieldGenerator();
+
+  PrimitiveFieldGenerator(const PrimitiveFieldGenerator&) = delete;
+  PrimitiveFieldGenerator& operator=(const PrimitiveFieldGenerator&) = delete;
+
+  virtual void GenerateFieldStorageDeclaration(io::Printer* printer) const override;
+
+  virtual int ExtraRuntimeHasBitsNeeded(void) const override;
+  virtual void SetExtraRuntimeHasBitsBase(int index_base) override;
 };
 
-class RepeatedEnumFieldGenerator : public RepeatedFieldGenerator {
+class PrimitiveObjFieldGenerator : public ObjCObjFieldGenerator {
   friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
- public:
-  virtual void FinishInitialization() override;
+ protected:
+  explicit PrimitiveObjFieldGenerator(const FieldDescriptor* descriptor);
+  virtual ~PrimitiveObjFieldGenerator();
+
+  PrimitiveObjFieldGenerator(const PrimitiveObjFieldGenerator&) = delete;
+  PrimitiveObjFieldGenerator& operator=(const PrimitiveObjFieldGenerator&) =
+      delete;
+};
+
+class RepeatedPrimitiveFieldGenerator : public RepeatedFieldGenerator {
+  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
  protected:
-  explicit RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor);
-  virtual ~RepeatedEnumFieldGenerator();
+  explicit RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor);
+  virtual ~RepeatedPrimitiveFieldGenerator();
+
+  RepeatedPrimitiveFieldGenerator(const RepeatedPrimitiveFieldGenerator&) =
+      delete;
+  RepeatedPrimitiveFieldGenerator& operator=(
+      const RepeatedPrimitiveFieldGenerator&) = delete;
 };
 
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-#endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ENUM_FIELD_H__
+
+#endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_PRIMITIVE_FIELD_H__

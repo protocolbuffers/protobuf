@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "google/protobuf/compiler/objectivec/objectivec_enum.h"
+#include "google/protobuf/compiler/objectivec/enum.h"
 
 #include <algorithm>
 #include <map>
@@ -36,7 +36,7 @@
 
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/compiler/objectivec/objectivec_helpers.h"
+#include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
