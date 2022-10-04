@@ -36,6 +36,7 @@
 #include <vector>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "absl/strings/ascii.h"
 #include "absl/strings/str_split.h"
 #include "google/protobuf/compiler/objectivec/line_consumer.h"
 #include "google/protobuf/compiler/objectivec/names.h"
@@ -497,15 +498,6 @@ void MaybeUnQuote(absl::string_view* input) {
 
 }  // namespace
 
-void TrimWhitespace(absl::string_view* input) {
-  while (!input->empty() && absl::ascii_isspace(*input->data())) {
-    input->remove_prefix(1);
-  }
-  while (!input->empty() && absl::ascii_isspace((*input)[input->length() - 1])) {
-    input->remove_suffix(1);
-  }
-}
-
 bool IsRetainedName(const std::string& name) {
   // List of prefixes from
   // http://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmRules.html
@@ -865,10 +857,8 @@ bool PackageToPrefixesCollector::ConsumeLine(
     *out_error = usage_ + " file line without equal sign: '" + absl::StrCat(line) + "'.";
     return false;
   }
-  absl::string_view package = line.substr(0, offset);
-  absl::string_view prefix = line.substr(offset + 1);
-  TrimWhitespace(&package);
-  TrimWhitespace(&prefix);
+  absl::string_view package = absl::StripAsciiWhitespace(line.substr(0, offset));
+  absl::string_view prefix = absl::StripAsciiWhitespace(line.substr(offset + 1));
   MaybeUnQuote(&prefix);
   // Don't really worry about error checking the package/prefix for
   // being valid.  Assume the file is validated when it is created/edited.

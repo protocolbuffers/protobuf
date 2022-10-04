@@ -69,9 +69,6 @@ void PROTOC_EXPORT SetProtoPackagePrefixExceptionList(
 std::string PROTOC_EXPORT GetForcedPackagePrefix();
 void PROTOC_EXPORT SetForcedPackagePrefix(const std::string& prefix);
 
-// Remove white space from either end of a absl::string_view.
-void PROTOC_EXPORT TrimWhitespace(absl::string_view* input);
-
 // Returns true if the name requires a ns_returns_not_retained attribute applied
 // to it.
 bool PROTOC_EXPORT IsRetainedName(const std::string& name);
