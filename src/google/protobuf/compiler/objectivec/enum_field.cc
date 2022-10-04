@@ -31,8 +31,8 @@
 #include <map>
 #include <string>
 
-#include "google/protobuf/compiler/objectivec/objectivec_enum_field.h"
-#include "google/protobuf/compiler/objectivec/objectivec_helpers.h"
+#include "google/protobuf/compiler/objectivec/enum_field.h"
+#include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {

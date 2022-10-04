@@ -16,7 +16,7 @@ die() {
     exit 1
 }
 
-readonly GeneratorSrc="${ProtoRootDir}/src/google/protobuf/compiler/objectivec/objectivec_file.cc"
+readonly GeneratorSrc="${ProtoRootDir}/src/google/protobuf/compiler/objectivec/file.cc"
 readonly RuntimeSrc="${ProtoRootDir}/objectivec/GPBBootstrap.h"
 
 check_constant() {

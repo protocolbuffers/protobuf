@@ -28,7 +28,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "google/protobuf/compiler/objectivec/objectivec_file.h"
+#include "google/protobuf/compiler/objectivec/file.h"
 
 #include <algorithm>
 #include <iostream>
@@ -36,10 +36,10 @@
 
 #include "google/protobuf/compiler/code_generator.h"
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/compiler/objectivec/objectivec_enum.h"
-#include "google/protobuf/compiler/objectivec/objectivec_extension.h"
-#include "google/protobuf/compiler/objectivec/objectivec_helpers.h"
-#include "google/protobuf/compiler/objectivec/objectivec_message.h"
+#include "google/protobuf/compiler/objectivec/enum.h"
+#include "google/protobuf/compiler/objectivec/extension.h"
+#include "google/protobuf/compiler/objectivec/helpers.h"
+#include "google/protobuf/compiler/objectivec/message.h"
 #include "google/protobuf/io/printer.h"
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some

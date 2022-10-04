@@ -70,7 +70,7 @@ void PROTOC_EXPORT SetProtoPackagePrefixExceptionList(
 std::string PROTOC_EXPORT GetForcedPackagePrefix();
 void PROTOC_EXPORT SetForcedPackagePrefix(const std::string& prefix);
 
-// Generator Prefix Validation Options (see objectivec_generator.cc for a
+// Generator Prefix Validation Options (see generator.cc for a
 // description of each):
 struct Options {
   Options();

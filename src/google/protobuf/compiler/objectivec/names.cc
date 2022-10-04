@@ -50,7 +50,7 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/objectivec/names.h"
-#include "google/protobuf/compiler/objectivec/objectivec_nsobject_methods.h"
+#include "google/protobuf/compiler/objectivec/nsobject_methods.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/io_win32.h"
@@ -377,7 +377,7 @@ std::string UnderscoresToCamelCase(const std::string& input,
 
 const char* const kReservedWordList[] = {
   // Note NSObject Methods:
-  // These are brought in from objectivec_nsobject_methods.h that is generated
+  // These are brought in from nsobject_methods.h that is generated
   // using method_dump.sh. See kNSObjectMethods below.
 
   // Objective C "keywords" that aren't in C

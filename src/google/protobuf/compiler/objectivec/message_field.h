@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2015 Google Inc.  All rights reserved.
+// Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,40 +28,54 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MAP_FIELD_H__
-#define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MAP_FIELD_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MESSAGE_FIELD_H__
+#define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MESSAGE_FIELD_H__
 
 #include <map>
 #include <string>
 
-#include "google/protobuf/compiler/objectivec/objectivec_field.h"
+#include "google/protobuf/compiler/objectivec/field.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
-class MapFieldGenerator : public RepeatedFieldGenerator {
+class MessageFieldGenerator : public ObjCObjFieldGenerator {
   friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
- public:
-  virtual void FinishInitialization(void) override;
-
-  MapFieldGenerator(const MapFieldGenerator&) = delete;
-  MapFieldGenerator& operator=(const MapFieldGenerator&) = delete;
-
  protected:
-  explicit MapFieldGenerator(const FieldDescriptor* descriptor);
-  virtual ~MapFieldGenerator();
+  explicit MessageFieldGenerator(const FieldDescriptor* descriptor);
 
-  virtual void DetermineObjectiveCClassDefinitions(
-      std::set<std::string>* fwd_decls) const override;
+  MessageFieldGenerator(const MessageFieldGenerator&) = delete;
+  MessageFieldGenerator& operator=(const MessageFieldGenerator&) = delete;
+
+  virtual ~MessageFieldGenerator();
+
+ public:
   virtual void DetermineForwardDeclarations(
       std::set<std::string>* fwd_decls,
       bool include_external_types) const override;
+  virtual void DetermineObjectiveCClassDefinitions(
+      std::set<std::string>* fwd_decls) const override;
+};
 
- private:
-  std::unique_ptr<FieldGenerator> value_field_generator_;
+class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
+  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
+
+ protected:
+  explicit RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor);
+  virtual ~RepeatedMessageFieldGenerator();
+
+  RepeatedMessageFieldGenerator(const RepeatedMessageFieldGenerator&) = delete;
+  RepeatedMessageFieldGenerator operator=(const RepeatedMessageFieldGenerator&) = delete;
+
+ public:
+  virtual void DetermineForwardDeclarations(
+      std::set<std::string>* fwd_decls,
+      bool include_external_types) const override;
+  virtual void DetermineObjectiveCClassDefinitions(
+      std::set<std::string>* fwd_decls) const override;
 };
 
 }  // namespace objectivec
@@ -69,4 +83,4 @@ class MapFieldGenerator : public RepeatedFieldGenerator {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MAP_FIELD_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MESSAGE_FIELD_H__

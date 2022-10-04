@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2015 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,55 +28,40 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_PRIMITIVE_FIELD_H__
-#define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_PRIMITIVE_FIELD_H__
+#ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MAP_FIELD_H__
+#define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MAP_FIELD_H__
 
-#include "google/protobuf/compiler/objectivec/objectivec_field.h"
+#include <map>
+#include <string>
+
+#include "google/protobuf/compiler/objectivec/field.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
-class PrimitiveFieldGenerator : public SingleFieldGenerator {
+class MapFieldGenerator : public RepeatedFieldGenerator {
   friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
 
- protected:
-  explicit PrimitiveFieldGenerator(const FieldDescriptor* descriptor);
-  virtual ~PrimitiveFieldGenerator();
+ public:
+  virtual void FinishInitialization(void) override;
 
-  PrimitiveFieldGenerator(const PrimitiveFieldGenerator&) = delete;
-  PrimitiveFieldGenerator& operator=(const PrimitiveFieldGenerator&) = delete;
-
-  virtual void GenerateFieldStorageDeclaration(io::Printer* printer) const override;
-
-  virtual int ExtraRuntimeHasBitsNeeded(void) const override;
-  virtual void SetExtraRuntimeHasBitsBase(int index_base) override;
-};
-
-class PrimitiveObjFieldGenerator : public ObjCObjFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
+  MapFieldGenerator(const MapFieldGenerator&) = delete;
+  MapFieldGenerator& operator=(const MapFieldGenerator&) = delete;
 
  protected:
-  explicit PrimitiveObjFieldGenerator(const FieldDescriptor* descriptor);
-  virtual ~PrimitiveObjFieldGenerator();
+  explicit MapFieldGenerator(const FieldDescriptor* descriptor);
+  virtual ~MapFieldGenerator();
 
-  PrimitiveObjFieldGenerator(const PrimitiveObjFieldGenerator&) = delete;
-  PrimitiveObjFieldGenerator& operator=(const PrimitiveObjFieldGenerator&) =
-      delete;
-};
+  virtual void DetermineObjectiveCClassDefinitions(
+      std::set<std::string>* fwd_decls) const override;
+  virtual void DetermineForwardDeclarations(
+      std::set<std::string>* fwd_decls,
+      bool include_external_types) const override;
 
-class RepeatedPrimitiveFieldGenerator : public RepeatedFieldGenerator {
-  friend FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field);
-
- protected:
-  explicit RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor);
-  virtual ~RepeatedPrimitiveFieldGenerator();
-
-  RepeatedPrimitiveFieldGenerator(const RepeatedPrimitiveFieldGenerator&) =
-      delete;
-  RepeatedPrimitiveFieldGenerator& operator=(
-      const RepeatedPrimitiveFieldGenerator&) = delete;
+ private:
+  std::unique_ptr<FieldGenerator> value_field_generator_;
 };
 
 }  // namespace objectivec
@@ -84,4 +69,4 @@ class RepeatedPrimitiveFieldGenerator : public RepeatedFieldGenerator {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_PRIMITIVE_FIELD_H__
+#endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MAP_FIELD_H__

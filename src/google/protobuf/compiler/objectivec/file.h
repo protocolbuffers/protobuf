@@ -35,7 +35,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include "google/protobuf/compiler/objectivec/objectivec_options.h"
+#include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
