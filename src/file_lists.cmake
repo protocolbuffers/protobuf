@@ -356,6 +356,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/file.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/generator.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/helpers.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/map_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/message_field.cc

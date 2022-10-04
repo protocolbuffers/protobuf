@@ -33,25 +33,177 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_HELPERS_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_HELPERS_H__
 
-#include "google/protobuf/compiler/objectivec/names.h"
+#include <string>
+#include <vector>
 
-// clang-format off
-#include "google/protobuf/port_def.inc"
-// clang-format on
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
-// TODO(thomasvl) Move internal helpers in names.h back to here.  Currently
-// the dependencies are too interwoven to easily split up.
+inline bool HasPreservingUnknownEnumSemantics(const FileDescriptor* file) {
+  return file->syntax() == FileDescriptor::SYNTAX_PROTO3;
+}
+
+inline bool IsMapEntryMessage(const Descriptor* descriptor) {
+  return descriptor->options().map_entry();
+}
+
+// Escape C++ trigraphs by escaping question marks to "\?".
+std::string EscapeTrigraphs(absl::string_view to_escape);
+
+enum ObjectiveCType {
+  OBJECTIVECTYPE_INT32,
+  OBJECTIVECTYPE_UINT32,
+  OBJECTIVECTYPE_INT64,
+  OBJECTIVECTYPE_UINT64,
+  OBJECTIVECTYPE_FLOAT,
+  OBJECTIVECTYPE_DOUBLE,
+  OBJECTIVECTYPE_BOOLEAN,
+  OBJECTIVECTYPE_STRING,
+  OBJECTIVECTYPE_DATA,
+  OBJECTIVECTYPE_ENUM,
+  OBJECTIVECTYPE_MESSAGE
+};
+
+enum FlagType {
+  FLAGTYPE_DESCRIPTOR_INITIALIZATION,
+  FLAGTYPE_EXTENSION,
+  FLAGTYPE_FIELD
+};
+
+std::string GetCapitalizedType(const FieldDescriptor* field);
+
+ObjectiveCType GetObjectiveCType(FieldDescriptor::Type field_type);
+
+inline ObjectiveCType GetObjectiveCType(const FieldDescriptor* field) {
+  return GetObjectiveCType(field->type());
+}
+
+bool IsPrimitiveType(const FieldDescriptor* field);
+inline bool IsReferenceType(const FieldDescriptor* field) {
+  return !IsPrimitiveType(field);
+}
+
+std::string GPBGenericValueFieldName(const FieldDescriptor* field);
+std::string DefaultValue(const FieldDescriptor* field);
+bool HasNonZeroDefaultValue(const FieldDescriptor* field);
+
+std::string BuildFlagsString(const FlagType type, const std::vector<std::string>& strings);
+
+// Returns a symbol that can be used in C code to refer to an Objective C
+// class without initializing the class.
+std::string ObjCClass(const std::string& class_name);
+
+// Declares an Objective C class without initializing the class so that it can
+// be refrerred to by ObjCClass.
+std::string ObjCClassDeclaration(const std::string& class_name);
+
+// Builds HeaderDoc/appledoc style comments out of the comments in the .proto
+// file.
+std::string BuildCommentsString(const SourceLocation& location,
+                                bool prefer_single_line);
+
+template <class TDescriptor>
+std::string GetOptionalDeprecatedAttribute(const TDescriptor* descriptor,
+                                           const FileDescriptor* file = NULL,
+                                           bool preSpace = true,
+                                           bool postNewline = false) {
+  bool isDeprecated = descriptor->options().deprecated();
+  // The file is only passed when checking Messages & Enums, so those types
+  // get tagged. At the moment, it doesn't seem to make sense to tag every
+  // field or enum value with when the file is deprecated.
+  bool isFileLevelDeprecation = false;
+  if (!isDeprecated && file) {
+    isFileLevelDeprecation = file->options().deprecated();
+    isDeprecated = isFileLevelDeprecation;
+  }
+  if (isDeprecated) {
+    std::string message;
+    const FileDescriptor* sourceFile = descriptor->file();
+    if (isFileLevelDeprecation) {
+      message = sourceFile->name() + " is deprecated.";
+    } else {
+      message = descriptor->full_name() + " is deprecated (see " +
+                sourceFile->name() + ").";
+    }
+
+    std::string result = std::string("GPB_DEPRECATED_MSG(\"") + message + "\")";
+    if (preSpace) {
+      result.insert(0, " ");
+    }
+    if (postNewline) {
+      result.append("\n");
+    }
+    return result;
+  } else {
+    return "";
+  }
+}
+
+// Generate decode data needed for ObjC's GPBDecodeTextFormatName() to transform
+// the input into the expected output.
+class TextFormatDecodeData {
+ public:
+  TextFormatDecodeData();
+  ~TextFormatDecodeData();
+
+  TextFormatDecodeData(const TextFormatDecodeData&) = delete;
+  TextFormatDecodeData& operator=(const TextFormatDecodeData&) = delete;
+
+  void AddString(int32_t key, const std::string& input_for_decode,
+                 const std::string& desired_output);
+  size_t num_entries() const { return entries_.size(); }
+  std::string Data() const;
+
+  static std::string DecodeDataForString(const std::string& input_for_decode,
+                                         const std::string& desired_output);
+
+ private:
+  typedef std::pair<int32_t, std::string> DataEntry;
+  std::vector<DataEntry> entries_;
+};
+
+// Helper class for parsing framework import mappings and generating
+// import statements.
+class ImportWriter {
+ public:
+  ImportWriter(const std::string& generate_for_named_framework,
+               const std::string& named_framework_to_proto_path_mappings_path,
+               const std::string& runtime_import_prefix,
+               bool include_wkt_imports);
+  ~ImportWriter();
+
+  void AddFile(const FileDescriptor* file, const std::string& header_extension);
+  void Print(io::Printer* printer) const;
+
+  static void PrintRuntimeImports(io::Printer* printer,
+                                  const std::vector<std::string>& header_to_import,
+                                  const std::string& runtime_import_prefix,
+                                  bool default_cpp_symbol = false);
+
+ private:
+  void ParseFrameworkMappings();
+
+  const std::string generate_for_named_framework_;
+  const std::string named_framework_to_proto_path_mappings_path_;
+  const std::string runtime_import_prefix_;
+  const bool include_wkt_imports_;
+  std::map<std::string, std::string> proto_file_to_framework_name_;
+  bool need_to_parse_mapping_file_;
+
+  std::vector<std::string> protobuf_imports_;
+  std::vector<std::string> other_framework_imports_;
+  std::vector<std::string> other_imports_;
+};
+
 
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
-
-#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_HELPERS_H__
