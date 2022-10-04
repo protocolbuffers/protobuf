@@ -30,7 +30,7 @@ function run {
 
   tmpfile=$(mktemp -u)
 
-  bazel clean
+  rm -rf $GIT_REPO_ROOT/bazel-out $GIT_REPO_ROOT/bazel-bin
   rm -rf $GIT_REPO_ROOT/logs
 
   docker run \
