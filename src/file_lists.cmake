@@ -358,6 +358,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/helpers.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/import_writer.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/line_consumer.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/map_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/message_field.cc
@@ -457,6 +458,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/helpers.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/import_writer.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/line_consumer.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/map_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/message_field.h
@@ -684,8 +686,9 @@ set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/doc_comment_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_serialization_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/plugin_unittest.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/text_format_decode_data_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/line_consumer_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/names_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/text_format_decode_data_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/parser_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/plugin_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/ruby_generator_unittest.cc

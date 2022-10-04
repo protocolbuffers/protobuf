@@ -172,23 +172,6 @@ bool PROTOC_EXPORT ValidateObjCClassPrefixes(
 bool PROTOC_EXPORT ValidateObjCClassPrefixes(
     const std::vector<const FileDescriptor*>& files, std::string* out_error);
 
-// Helper for parsing simple files.
-class PROTOC_EXPORT LineConsumer {
- public:
-  LineConsumer();
-  virtual ~LineConsumer();
-  virtual bool ConsumeLine(const absl::string_view& line, std::string* out_error) = 0;
-};
-
-bool PROTOC_EXPORT ParseSimpleFile(const std::string& path,
-                                   LineConsumer* line_consumer,
-                                   std::string* out_error);
-
-bool PROTOC_EXPORT ParseSimpleStream(io::ZeroCopyInputStream& input_stream,
-                                     const std::string& stream_name,
-                                     LineConsumer* line_consumer,
-                                     std::string* out_error);
-
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf
