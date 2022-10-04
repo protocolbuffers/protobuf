@@ -45,11 +45,13 @@ cc_library(
         "file.cc",
         "generator.cc",
         "helpers.cc",
+        "import_writer.cc",
         "map_field.cc",
         "message.cc",
         "message_field.cc",
         "oneof.cc",
         "primitive_field.cc",
+        "text_format_decode_data.cc",
     ],
     hdrs = [
         "enum.h",
@@ -59,12 +61,14 @@ cc_library(
         "file.h",
         "generator.h",
         "helpers.h",
+        "import_writer.h",
         "map_field.h",
         "message.h",
         "message_field.h",
         "oneof.h",
         "options.h",
         "primitive_field.h",
+        "text_format_decode_data.h",
     ],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/objectivec",
@@ -92,8 +96,8 @@ cc_test(
 )
 
 cc_test(
-    name = "helpers_unittest",
-    srcs = ["helpers_unittest.cc"],
+    name = "text_format_decode_data_unittest",
+    srcs = ["text_format_decode_data_unittest.cc"],
     deps = [
         ":objectivec",
         "@com_google_googletest//:gtest",
