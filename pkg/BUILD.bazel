@@ -410,6 +410,7 @@ cc_dist_library(
         "//src/google/protobuf/compiler/java:names",
         "//src/google/protobuf/compiler/java:names_internal",
         "//src/google/protobuf/compiler/objectivec",
+        "//src/google/protobuf/compiler/objectivec:line_consumer",
         "//src/google/protobuf/compiler/objectivec:names",
         "//src/google/protobuf/compiler/objectivec:names_internal",
         "//src/google/protobuf/compiler/php",
