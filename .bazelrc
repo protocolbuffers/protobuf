@@ -7,7 +7,8 @@ build:opt --compilation_mode=opt
 build:san-common --config=dbg --strip=never --copt=-O0 --copt=-fno-omit-frame-pointer
 
 build:asan --config=san-common --copt=-fsanitize=address --linkopt=-fsanitize=address
-build:asan --action_env=ASAN_OPTIONS=detect_leaks=1:color=always
+build:asan --action_env=ASAN_OPTIONS=detect_leaks=1
+build:asan --action_env=LSAN_OPTIONS=verbosity=1
 # ASAN hits ODR violations with shared linkage due to rules_proto.
 build:asan --dynamic_mode=off
 

@@ -40,6 +40,7 @@ function run {
     test \
     --keep_going \
     --test_output=streamed \
+    --cap-add=SYS_PTRACE \
     ${ENVS[@]} \
     $PLATFORM_CONFIG \
     $BAZEL_CONFIG \
