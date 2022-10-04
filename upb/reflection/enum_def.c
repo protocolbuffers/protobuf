@@ -143,6 +143,11 @@ const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i) {
   return _upb_EnumValueDef_At(e->values, i);
 }
 
+bool upb_EnumDef_IsClosed(const upb_EnumDef* e) {
+  if (UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3) return false;
+  return upb_FileDef_Syntax(e->file) == kUpb_Syntax_Proto2;
+}
+
 bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
                                       upb_StringView* out) {
   upb_DescState s;
