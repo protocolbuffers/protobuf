@@ -22,9 +22,7 @@
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>
- * read_property() handler is not supposed to return NULL (#8362)
- * Changed parameter type from long to integer (#7613)
- * fix: README supported PHP version for C extension (#8236)
+ * See github.com/protocolbuffers/protobuf/releases for release notes.
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
