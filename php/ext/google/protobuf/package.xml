@@ -22,7 +22,7 @@
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">3-Clause BSD License</license>
  <notes>
- * No new changes in 3.18.2
+ * See github.com/protocolbuffers/protobuf/releases for release notes.
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">
