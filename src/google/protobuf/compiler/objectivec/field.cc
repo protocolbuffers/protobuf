@@ -117,6 +117,74 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["storage_attribute"] = "";
 }
 
+bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
+  // Repeated fields don't have defaults.
+  if (field->is_repeated()) {
+    return false;
+  }
+
+  // As much as checking field->has_default_value() seems useful, it isn't
+  // because of enums. proto2 syntax allows the first item in an enum (the
+  // default) to be non zero. So checking field->has_default_value() would
+  // result in missing this non zero default.  See MessageWithOneBasedEnum in
+  // objectivec/Tests/unittest_objc.proto for a test Message to confirm this.
+
+  // Some proto file set the default to the zero value, so make sure the value
+  // isn't the zero case.
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_INT32:
+      return field->default_value_int32() != 0;
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return field->default_value_uint32() != 0U;
+    case FieldDescriptor::CPPTYPE_INT64:
+      return field->default_value_int64() != 0LL;
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return field->default_value_uint64() != 0ULL;
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return field->default_value_double() != 0.0;
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return field->default_value_float() != 0.0f;
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return field->default_value_bool();
+    case FieldDescriptor::CPPTYPE_STRING: {
+      const std::string& default_string = field->default_value_string();
+      return default_string.length() != 0;
+    }
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return field->default_value_enum()->number() != 0;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return false;
+  }
+
+  // Some compilers report reaching end of function even though all cases of
+  // the enum are handed in the switch.
+  GOOGLE_LOG(FATAL) << "Can't get here.";
+  return false;
+}
+
+bool IsPrimitiveType(const FieldDescriptor* field) {
+  ObjectiveCType type = GetObjectiveCType(field);
+  switch (type) {
+    case OBJECTIVECTYPE_INT32:
+    case OBJECTIVECTYPE_UINT32:
+    case OBJECTIVECTYPE_INT64:
+    case OBJECTIVECTYPE_UINT64:
+    case OBJECTIVECTYPE_FLOAT:
+    case OBJECTIVECTYPE_DOUBLE:
+    case OBJECTIVECTYPE_BOOLEAN:
+    case OBJECTIVECTYPE_ENUM:
+      return true;
+      break;
+    default:
+      return false;
+  }
+}
+
+bool IsReferenceType(const FieldDescriptor* field) {
+  return !IsPrimitiveType(field);
+}
+
+
 }  // namespace
 
 FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field) {
