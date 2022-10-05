@@ -43,9 +43,22 @@ class Descriptor;
 class EnumDescriptor;
 class EnumValueDescriptor;
 class FieldDescriptor;
+class FileDescriptor;
 
 namespace compiler {
 namespace cpp {
+
+// Returns the fully qualified C++ namespace.
+//
+// For example, if you had:
+//   package foo.bar;
+//   message Baz { message Moo {} }
+// Then the qualified namespace for Moo would be:
+//   ::foo::bar
+std::string Namespace(const FileDescriptor* d);
+std::string Namespace(const Descriptor* d);
+std::string Namespace(const FieldDescriptor* d);
+std::string Namespace(const EnumDescriptor* d);
 
 // Returns the unqualified C++ name.
 //
