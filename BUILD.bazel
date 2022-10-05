@@ -348,6 +348,18 @@ alias(
     visibility = ["//:__subpackages__"],
 )
 
+alias(
+    name = "test_messages_proto2_proto",
+    actual = "//src/google/protobuf:test_messages_proto2_proto",  # proto_library
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "test_messages_proto3_proto",
+    actual = "//src/google/protobuf:test_messages_proto3_proto",  # proto_library
+    visibility = ["//visibility:public"],
+)
+
 # Validate generated proto source inputs:
 
 genrule(
@@ -471,7 +483,8 @@ internal_php_proto_library(
         "Protobuf_test_messages/Proto3/ForeignMessage.php",
         "Protobuf_test_messages/Proto3/NullHypothesisProto3.php",
         "Protobuf_test_messages/Proto3/TestAllTypesProto3.php",
-        "Protobuf_test_messages/Proto3/TestAllTypesProto3/AliasedEnum.php",
+        "Protobuf_test_messages/Proto3/TestAllTypesProto3/
+        edEnum.php",
         "Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedEnum.php",
         "Protobuf_test_messages/Proto3/TestAllTypesProto3/NestedMessage.php",
     ],
