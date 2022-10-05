@@ -226,8 +226,6 @@ struct upb_MiniTable {
   _upb_FastTable_Entry fasttable[];
 };
 
-typedef struct upb_MiniTable_Extension upb_MiniTable_Extension;
-
 struct upb_MiniTable_Extension {
   upb_MiniTable_Field field;
   const upb_MiniTable* extendee;

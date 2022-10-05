@@ -28,6 +28,7 @@
 #ifndef UPB_EXTENSION_REGISTRY_H_
 #define UPB_EXTENSION_REGISTRY_H_
 
+#include "upb/msg.h"
 #include "upb/upb.h"
 
 // Must be last.
@@ -79,7 +80,6 @@ upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena);
 
 // EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
-typedef struct upb_MiniTable upb_MiniTable;
 typedef struct upb_MiniTable_Extension upb_MiniTable_Extension;
 
 // Adds the given extension info for message type |l| and field number |num|
