@@ -25,17 +25,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/reflection/message_def.h"
-
 #include "upb/mini_table.h"
-#include "upb/reflection/def_builder.h"
+#include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_type.h"
-#include "upb/reflection/desc_state.h"
-#include "upb/reflection/enum_def.h"
-#include "upb/reflection/extension_range.h"
-#include "upb/reflection/field_def.h"
-#include "upb/reflection/file_def.h"
-#include "upb/reflection/oneof_def.h"
+#include "upb/reflection/desc_state_internal.h"
+#include "upb/reflection/enum_def_internal.h"
+#include "upb/reflection/extension_range_internal.h"
+#include "upb/reflection/field_def_internal.h"
+#include "upb/reflection/file_def_internal.h"
+#include "upb/reflection/message_def_internal.h"
+#include "upb/reflection/oneof_def_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -558,7 +557,7 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
         ctx, sizeof(*m->layout) + sizeof(_upb_FastTable_Entry));
   }
 
-  UBP_DEF_SET_OPTIONS(m->opts, DescriptorProto, MessageOptions, msg_proto);
+  UPB_DEF_SET_OPTIONS(m->opts, DescriptorProto, MessageOptions, msg_proto);
 
   m->oneof_count = n_oneof;
   m->oneofs = _upb_OneofDefs_New(ctx, n_oneof, oneofs, m);

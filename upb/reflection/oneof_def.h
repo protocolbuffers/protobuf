@@ -57,19 +57,6 @@ const char* upb_OneofDef_Name(const upb_OneofDef* o);
 int upb_OneofDef_numfields(const upb_OneofDef* o);
 const google_protobuf_OneofOptions* upb_OneofDef_Options(const upb_OneofDef* o);
 
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
-
-upb_OneofDef* _upb_OneofDef_At(const upb_OneofDef* o, int i);
-bool _upb_OneofDef_Insert(upb_OneofDef* o, const upb_FieldDef* f,
-                          const char* name, size_t size, upb_Arena* a);
-
-// Allocate and initialize an array of |n| oneof defs owned by |m|.
-upb_OneofDef* _upb_OneofDefs_New(
-    upb_DefBuilder* ctx, int n,
-    const google_protobuf_OneofDescriptorProto* const* protos, upb_MessageDef* m);
-
-size_t _upb_OneofDefs_Finalize(upb_DefBuilder* ctx, upb_MessageDef* m);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

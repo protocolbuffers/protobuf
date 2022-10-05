@@ -25,10 +25,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/reflection/method_def.h"
-
-#include "upb/reflection/def_builder.h"
+#include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_type.h"
+#include "upb/reflection/method_def_internal.h"
 #include "upb/reflection/service_def.h"
 
 // Must be last.
@@ -106,7 +105,7 @@ static void create_method(upb_DefBuilder* ctx,
       ctx, m->full_name, m->full_name,
       google_protobuf_MethodDescriptorProto_output_type(method_proto), UPB_DEFTYPE_MSG);
 
-  UBP_DEF_SET_OPTIONS(m->opts, MethodDescriptorProto, MethodOptions,
+  UPB_DEF_SET_OPTIONS(m->opts, MethodDescriptorProto, MethodOptions,
                       method_proto);
 }
 

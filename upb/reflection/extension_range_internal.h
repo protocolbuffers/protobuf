@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022, Google LLC
+ * Copyright (c) 2009-2021, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,34 +25,25 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_REFLECTION_DESC_STATE_H_
-#define UPB_REFLECTION_DESC_STATE_H_
+#ifndef UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_
+#define UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_
 
-#include "upb/mini_table.h"
+#include "upb/reflection/extension_range.h"
 
 // Must be last.
 #include "upb/port_def.inc"
-
-// Manages the storage for mini descriptor strings as they are being encoded.
-// TODO(b/234740652): Move some of this state directly into the encoder, maybe.
-typedef struct {
-  upb_MtDataEncoder e;
-  size_t bufsize;
-  char* buf;
-  char* ptr;
-} upb_DescState;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-UPB_INLINE void _upb_DescState_Init(upb_DescState* d) {
-  d->bufsize = kUpb_MtDataEncoder_MinSize * 2;
-  d->buf = NULL;
-  d->ptr = NULL;
-}
+upb_ExtensionRange* _upb_ExtensionRange_At(const upb_ExtensionRange* r, int i);
 
-bool _upb_DescState_Grow(upb_DescState* d, upb_Arena* a);
+// Allocate and initialize an array of |n| extension ranges owned by |m|.
+upb_ExtensionRange* _upb_ExtensionRanges_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_DescriptorProto_ExtensionRange* const* protos,
+    const upb_MessageDef* m);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -60,4 +51,4 @@ bool _upb_DescState_Grow(upb_DescState* d, upb_Arena* a);
 
 #include "upb/port_undef.inc"
 
-#endif /* UPB_REFLECTION_DESC_STATE_H_ */
+#endif /* UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_ */

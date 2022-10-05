@@ -25,10 +25,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/reflection/def_builder.h"
-
 #include <string.h>
 
+#include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/field_def.h"

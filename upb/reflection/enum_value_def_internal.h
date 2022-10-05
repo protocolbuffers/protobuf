@@ -25,12 +25,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
+#ifndef UPB_REFLECTION_ENUM_VALUE_DEF_INTERNAL_H_
+#define UPB_REFLECTION_ENUM_VALUE_DEF_INTERNAL_H_
 
-#ifndef UPB_REFLECTION_METHOD_DEF_H_
-#define UPB_REFLECTION_METHOD_DEF_H_
-
-#include "upb/reflection/common.h"
+#include "upb/reflection/enum_value_def.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -39,16 +37,16 @@
 extern "C" {
 #endif
 
-bool upb_MethodDef_ClientStreaming(const upb_MethodDef* m);
-const char* upb_MethodDef_FullName(const upb_MethodDef* m);
-bool upb_MethodDef_HasOptions(const upb_MethodDef* m);
-int upb_MethodDef_Index(const upb_MethodDef* m);
-const upb_MessageDef* upb_MethodDef_InputType(const upb_MethodDef* m);
-const char* upb_MethodDef_Name(const upb_MethodDef* m);
-const google_protobuf_MethodOptions* upb_MethodDef_Options(const upb_MethodDef* m);
-const upb_MessageDef* upb_MethodDef_OutputType(const upb_MethodDef* m);
-bool upb_MethodDef_ServerStreaming(const upb_MethodDef* m);
-const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
+upb_EnumValueDef* _upb_EnumValueDef_At(const upb_EnumValueDef* v, int i);
+
+// Allocate and initialize an array of |n| enum value defs owned by |e|.
+upb_EnumValueDef* _upb_EnumValueDefs_New(
+    upb_DefBuilder* ctx, const char* prefix, int n,
+    const google_protobuf_EnumValueDescriptorProto* const* protos, upb_EnumDef* e,
+    bool* is_sorted);
+
+const upb_EnumValueDef** _upb_EnumValueDefs_Sorted(const upb_EnumValueDef* v,
+                                                   int n, upb_Arena* a);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -56,4 +54,4 @@ const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
 
 #include "upb/port_undef.inc"
 
-#endif /* UPB_REFLECTION_METHOD_DEF_H_ */
+#endif /* UPB_REFLECTION_ENUM_VALUE_DEF_INTERNAL_H_ */

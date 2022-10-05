@@ -29,6 +29,7 @@
 
 #include "python/message.h"
 #include "python/protobuf.h"
+#include "upb/reflection/def_pool_internal.h"
 
 // -----------------------------------------------------------------------------
 // ExtensionDict

@@ -25,12 +25,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/reflection/enum_value_def.h"
-
-#include "upb/reflection/def_builder.h"
+#include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_type.h"
-#include "upb/reflection/enum_def.h"
-#include "upb/reflection/file_def.h"
+#include "upb/reflection/enum_def_internal.h"
+#include "upb/reflection/enum_value_def_internal.h"
+#include "upb/reflection/file_def_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -106,7 +105,7 @@ static void create_enumvaldef(upb_DefBuilder* ctx, const char* prefix,
   _upb_DefBuilder_Add(ctx, v->full_name,
                       _upb_DefType_Pack(v, UPB_DEFTYPE_ENUMVAL));
 
-  UBP_DEF_SET_OPTIONS(v->opts, EnumValueDescriptorProto, EnumValueOptions,
+  UPB_DEF_SET_OPTIONS(v->opts, EnumValueDescriptorProto, EnumValueOptions,
                       val_proto);
 
   bool ok = _upb_EnumDef_Insert(e, v, ctx->arena);

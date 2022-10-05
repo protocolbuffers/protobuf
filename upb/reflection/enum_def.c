@@ -25,17 +25,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/reflection/enum_def.h"
-
 #include <stdio.h>
 
 #include "upb/mini_table.h"
-#include "upb/reflection/def_builder.h"
+#include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_type.h"
-#include "upb/reflection/desc_state.h"
-#include "upb/reflection/enum_value_def.h"
-#include "upb/reflection/file_def.h"
-#include "upb/reflection/message_def.h"
+#include "upb/reflection/desc_state_internal.h"
+#include "upb/reflection/enum_def_internal.h"
+#include "upb/reflection/enum_value_def_internal.h"
+#include "upb/reflection/file_def_internal.h"
+#include "upb/reflection/message_def_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -235,7 +234,7 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
                          e->full_name);
   }
 
-  UBP_DEF_SET_OPTIONS(e->opts, EnumDescriptorProto, EnumOptions, enum_proto);
+  UPB_DEF_SET_OPTIONS(e->opts, EnumDescriptorProto, EnumOptions, enum_proto);
 
   upb_inttable_compact(&e->iton, ctx->arena);
 

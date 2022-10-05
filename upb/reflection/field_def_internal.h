@@ -25,12 +25,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
+#ifndef UPB_REFLECTION_FIELD_DEF_INTERNAL_H_
+#define UPB_REFLECTION_FIELD_DEF_INTERNAL_H_
 
-#ifndef UPB_REFLECTION_METHOD_DEF_H_
-#define UPB_REFLECTION_METHOD_DEF_H_
-
-#include "upb/reflection/common.h"
+#include "upb/reflection/field_def.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -39,16 +37,27 @@
 extern "C" {
 #endif
 
-bool upb_MethodDef_ClientStreaming(const upb_MethodDef* m);
-const char* upb_MethodDef_FullName(const upb_MethodDef* m);
-bool upb_MethodDef_HasOptions(const upb_MethodDef* m);
-int upb_MethodDef_Index(const upb_MethodDef* m);
-const upb_MessageDef* upb_MethodDef_InputType(const upb_MethodDef* m);
-const char* upb_MethodDef_Name(const upb_MethodDef* m);
-const google_protobuf_MethodOptions* upb_MethodDef_Options(const upb_MethodDef* m);
-const upb_MessageDef* upb_MethodDef_OutputType(const upb_MethodDef* m);
-bool upb_MethodDef_ServerStreaming(const upb_MethodDef* m);
-const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
+upb_FieldDef* _upb_FieldDef_At(const upb_FieldDef* f, int i);
+
+const upb_MiniTable_Extension* _upb_FieldDef_ExtensionMiniTable(
+    const upb_FieldDef* f);
+bool _upb_FieldDef_IsClosedEnum(const upb_FieldDef* f);
+bool _upb_FieldDef_IsProto3Optional(const upb_FieldDef* f);
+int _upb_FieldDef_LayoutIndex(const upb_FieldDef* f);
+uint64_t _upb_FieldDef_Modifiers(const upb_FieldDef* f);
+void _upb_FieldDef_Resolve(upb_DefBuilder* ctx, const char* prefix,
+                           upb_FieldDef* f);
+
+// Allocate and initialize an array of |n| field defs.
+upb_FieldDef* _upb_FieldDefs_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_FieldDescriptorProto* const* protos, const char* prefix,
+    upb_MessageDef* m, bool* is_sorted);
+
+// Allocate and return a list of pointers to the |n| field defs in |ff|,
+// sorted by field number.
+const upb_FieldDef** _upb_FieldDefs_Sorted(const upb_FieldDef* f, int n,
+                                           upb_Arena* a);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -56,4 +65,4 @@ const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
 
 #include "upb/port_undef.inc"
 
-#endif /* UPB_REFLECTION_METHOD_DEF_H_ */
+#endif /* UPB_REFLECTION_FIELD_DEF_INTERNAL_H_ */

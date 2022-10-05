@@ -16,6 +16,7 @@ cc_library(
     deps = [
         "//:port",
         "//:reflection",
+        "//:reflection_internal",
     ],
 )
 

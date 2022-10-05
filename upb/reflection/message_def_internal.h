@@ -25,12 +25,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
+#ifndef UPB_REFLECTION_MESSAGE_DEF_INTERNAL_H_
+#define UPB_REFLECTION_MESSAGE_DEF_INTERNAL_H_
 
-#ifndef UPB_REFLECTION_METHOD_DEF_H_
-#define UPB_REFLECTION_METHOD_DEF_H_
-
-#include "upb/reflection/common.h"
+#include "upb/reflection/message_def.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -39,16 +37,21 @@
 extern "C" {
 #endif
 
-bool upb_MethodDef_ClientStreaming(const upb_MethodDef* m);
-const char* upb_MethodDef_FullName(const upb_MethodDef* m);
-bool upb_MethodDef_HasOptions(const upb_MethodDef* m);
-int upb_MethodDef_Index(const upb_MethodDef* m);
-const upb_MessageDef* upb_MethodDef_InputType(const upb_MethodDef* m);
-const char* upb_MethodDef_Name(const upb_MethodDef* m);
-const google_protobuf_MethodOptions* upb_MethodDef_Options(const upb_MethodDef* m);
-const upb_MessageDef* upb_MethodDef_OutputType(const upb_MethodDef* m);
-bool upb_MethodDef_ServerStreaming(const upb_MethodDef* m);
-const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
+upb_MessageDef* _upb_MessageDef_At(const upb_MessageDef* m, int i);
+bool _upb_MessageDef_InMessageSet(const upb_MessageDef* m);
+bool _upb_MessageDef_Insert(upb_MessageDef* m, const char* name, size_t size,
+                            upb_value v, upb_Arena* a);
+void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
+                                 const upb_FieldDef* f);
+bool _upb_MessageDef_IsValidExtensionNumber(const upb_MessageDef* m, int n);
+void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
+                                   const upb_MessageDef* m);
+void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m);
+
+// Allocate and initialize an array of |n| message defs.
+upb_MessageDef* _upb_MessageDefs_New(
+    upb_DefBuilder* ctx, int n, const google_protobuf_DescriptorProto* const* protos,
+    const upb_MessageDef* containing_type);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -56,4 +59,4 @@ const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
 
 #include "upb/port_undef.inc"
 
-#endif /* UPB_REFLECTION_METHOD_DEF_H_ */
+#endif /* UPB_REFLECTION_MESSAGE_DEF_INTERNAL_H_ */

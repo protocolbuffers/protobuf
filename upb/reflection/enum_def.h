@@ -63,17 +63,6 @@ const google_protobuf_EnumOptions* upb_EnumDef_Options(const upb_EnumDef* e);
 const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i);
 int upb_EnumDef_ValueCount(const upb_EnumDef* e);
 
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
-
-upb_EnumDef* _upb_EnumDef_At(const upb_EnumDef* e, int i);
-bool _upb_EnumDef_Insert(upb_EnumDef* e, upb_EnumValueDef* v, upb_Arena* a);
-const upb_MiniTable_Enum* _upb_EnumDef_MiniTable(const upb_EnumDef* e);
-
-// Allocate and initialize an array of |n| enum defs.
-upb_EnumDef* _upb_EnumDefs_New(upb_DefBuilder* ctx, int n,
-                               const google_protobuf_EnumDescriptorProto* const* protos,
-                               const upb_MessageDef* containing_type);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

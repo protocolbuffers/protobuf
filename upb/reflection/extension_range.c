@@ -25,11 +25,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/reflection/extension_range.h"
-
-#include "upb/reflection/def_builder.h"
-#include "upb/reflection/field_def.h"
-#include "upb/reflection/message_def.h"
+#include "upb/reflection/def_builder_internal.h"
+#include "upb/reflection/extension_range_internal.h"
+#include "upb/reflection/field_def_internal.h"
+#include "upb/reflection/message_def_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -86,7 +85,7 @@ upb_ExtensionRange* _upb_ExtensionRanges_New(
 
     r[i].start = start;
     r[i].end = end;
-    UBP_DEF_SET_OPTIONS(r[i].opts, DescriptorProto_ExtensionRange,
+    UPB_DEF_SET_OPTIONS(r[i].opts, DescriptorProto_ExtensionRange,
                         ExtensionRangeOptions, protos[i]);
   }
 

@@ -32,10 +32,9 @@
 #include "upb/internal/table.h"
 #include "upb/map.h"
 #include "upb/msg.h"
-#include "upb/reflection/def_builder.h"
-#include "upb/reflection/def_pool.h"
+#include "upb/reflection/def_pool_internal.h"
 #include "upb/reflection/def_type.h"
-#include "upb/reflection/field_def.h"
+#include "upb/reflection/field_def_internal.h"
 #include "upb/reflection/message_def.h"
 #include "upb/reflection/oneof_def.h"
 

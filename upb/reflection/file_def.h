@@ -67,19 +67,6 @@ int upb_FileDef_TopLevelMessageCount(const upb_FileDef* f);
 const upb_FileDef* upb_FileDef_WeakDependency(const upb_FileDef* f, int i);
 int upb_FileDef_WeakDependencyCount(const upb_FileDef* f);
 
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
-
-const upb_MiniTable_Extension* _upb_FileDef_ExtensionMiniTable(
-    const upb_FileDef* f, int i);
-const int32_t* _upb_FileDef_PublicDependencyIndexes(const upb_FileDef* f);
-const int32_t* _upb_FileDef_WeakDependencyIndexes(const upb_FileDef* f);
-
-// upb_FileDef_Package() returns "" if f->package is NULL, this does not.
-const char* _upb_FileDef_RawPackage(const upb_FileDef* f);
-
-void _upb_FileDef_Create(upb_DefBuilder* ctx,
-                         const google_protobuf_FileDescriptorProto* file_proto);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

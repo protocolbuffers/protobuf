@@ -25,12 +25,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/reflection/service_def.h"
-
-#include "upb/reflection/def_builder.h"
+#include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_type.h"
-#include "upb/reflection/file_def.h"
-#include "upb/reflection/method_def.h"
+#include "upb/reflection/file_def_internal.h"
+#include "upb/reflection/method_def_internal.h"
+#include "upb/reflection/service_def_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -111,7 +110,7 @@ static void create_service(upb_DefBuilder* ctx,
   s->method_count = n;
   s->methods = _upb_MethodDefs_New(ctx, n, methods, s);
 
-  UBP_DEF_SET_OPTIONS(s->opts, ServiceDescriptorProto, ServiceOptions,
+  UPB_DEF_SET_OPTIONS(s->opts, ServiceDescriptorProto, ServiceOptions,
                       svc_proto);
 }
 

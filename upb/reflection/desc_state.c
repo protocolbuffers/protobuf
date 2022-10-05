@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/reflection/desc_state.h"
+#include "upb/reflection/desc_state_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"

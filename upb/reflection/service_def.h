@@ -50,15 +50,6 @@ int upb_ServiceDef_MethodCount(const upb_ServiceDef* s);
 const char* upb_ServiceDef_Name(const upb_ServiceDef* s);
 const google_protobuf_ServiceOptions* upb_ServiceDef_Options(const upb_ServiceDef* s);
 
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
-
-upb_ServiceDef* _upb_ServiceDef_At(const upb_ServiceDef* s, int i);
-
-// Allocate and initialize an array of |n| service defs.
-upb_ServiceDef* _upb_ServiceDefs_New(
-    upb_DefBuilder* ctx, int n,
-    const google_protobuf_ServiceDescriptorProto* const* protos);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

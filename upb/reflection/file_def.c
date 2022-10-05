@@ -25,14 +25,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/reflection/file_def.h"
-
-#include "upb/reflection/def_builder.h"
+#include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_pool.h"
-#include "upb/reflection/enum_def.h"
-#include "upb/reflection/field_def.h"
-#include "upb/reflection/message_def.h"
-#include "upb/reflection/service_def.h"
+#include "upb/reflection/enum_def_internal.h"
+#include "upb/reflection/field_def_internal.h"
+#include "upb/reflection/file_def_internal.h"
+#include "upb/reflection/message_def_internal.h"
+#include "upb/reflection/service_def_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -254,7 +253,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   }
 
   // Read options.
-  UBP_DEF_SET_OPTIONS(file->opts, FileDescriptorProto, FileOptions, file_proto);
+  UPB_DEF_SET_OPTIONS(file->opts, FileDescriptorProto, FileOptions, file_proto);
 
   // Verify dependencies.
   strs = google_protobuf_FileDescriptorProto_dependency(file_proto, &n);

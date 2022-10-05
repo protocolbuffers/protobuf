@@ -25,22 +25,21 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/reflection/field_def.h"
-
 #include <ctype.h>
 #include <errno.h>
 
 #include "upb/mini_table.h"
-#include "upb/reflection/def_builder.h"
+#include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/def_type.h"
-#include "upb/reflection/desc_state.h"
-#include "upb/reflection/enum_def.h"
-#include "upb/reflection/enum_value_def.h"
-#include "upb/reflection/extension_range.h"
-#include "upb/reflection/file_def.h"
-#include "upb/reflection/message_def.h"
-#include "upb/reflection/oneof_def.h"
+#include "upb/reflection/desc_state_internal.h"
+#include "upb/reflection/enum_def_internal.h"
+#include "upb/reflection/enum_value_def_internal.h"
+#include "upb/reflection/extension_range_internal.h"
+#include "upb/reflection/field_def_internal.h"
+#include "upb/reflection/file_def_internal.h"
+#include "upb/reflection/message_def_internal.h"
+#include "upb/reflection/oneof_def_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -643,7 +642,7 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
     if (!ok) _upb_DefBuilder_OomErr(ctx);
   }
 
-  UBP_DEF_SET_OPTIONS(f->opts, FieldDescriptorProto, FieldOptions, field_proto);
+  UPB_DEF_SET_OPTIONS(f->opts, FieldDescriptorProto, FieldOptions, field_proto);
 
   if (google_protobuf_FieldOptions_has_packed(f->opts)) {
     f->is_packed_ = google_protobuf_FieldOptions_packed(f->opts);

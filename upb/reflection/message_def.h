@@ -155,24 +155,6 @@ const google_protobuf_MessageOptions* upb_MessageDef_Options(const upb_MessageDe
 upb_Syntax upb_MessageDef_Syntax(const upb_MessageDef* m);
 upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m);
 
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
-
-upb_MessageDef* _upb_MessageDef_At(const upb_MessageDef* m, int i);
-bool _upb_MessageDef_InMessageSet(const upb_MessageDef* m);
-bool _upb_MessageDef_Insert(upb_MessageDef* m, const char* name, size_t size,
-                            upb_value v, upb_Arena* a);
-void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
-                                 const upb_FieldDef* f);
-bool _upb_MessageDef_IsValidExtensionNumber(const upb_MessageDef* m, int n);
-void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
-                                   const upb_MessageDef* m);
-void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m);
-
-// Allocate and initialize an array of |n| message defs.
-upb_MessageDef* _upb_MessageDefs_New(
-    upb_DefBuilder* ctx, int n, const google_protobuf_DescriptorProto* const* protos,
-    const upb_MessageDef* containing_type);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

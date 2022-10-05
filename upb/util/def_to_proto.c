@@ -33,6 +33,8 @@
 #include <stdio.h>
 
 #include "upb/internal/vsnprintf_compat.h"
+#include "upb/reflection/field_def_internal.h"
+#include "upb/reflection/file_def_internal.h"
 #include "upb/reflection/message.h"
 
 /* Must be last. */

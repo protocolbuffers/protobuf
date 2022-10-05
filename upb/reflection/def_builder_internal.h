@@ -25,11 +25,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_REFLECTION_DEF_BUILDER_H_
-#define UPB_REFLECTION_DEF_BUILDER_H_
+#ifndef UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_
+#define UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_
 
 #include "upb/reflection/common.h"
-#include "upb/reflection/def_pool.h"
+#include "upb/reflection/def_pool_internal.h"
 #include "upb/reflection/def_type.h"
 
 // Must be last.
@@ -37,7 +37,7 @@
 
 // We want to copy the options verbatim into the destination options proto.
 // We use serialize+parse as our deep copy.
-#define UBP_DEF_SET_OPTIONS(target, desc_type, options_type, proto)          \
+#define UPB_DEF_SET_OPTIONS(target, desc_type, options_type, proto)          \
   if (google_protobuf_##desc_type##_has_options(proto)) {                             \
     size_t size;                                                             \
     char* pb = google_protobuf_##options_type##_serialize(                            \
@@ -170,4 +170,4 @@ UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,
 
 #include "upb/port_undef.inc"
 
-#endif /* UPB_REFLECTION_DEF_BUILDER_H_ */
+#endif /* UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_ */

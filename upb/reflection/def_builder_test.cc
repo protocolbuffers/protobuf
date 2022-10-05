@@ -25,10 +25,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/reflection/def_builder.h"
-
 #include "gtest/gtest.h"
 #include "upb/reflection/def.hpp"
+#include "upb/reflection/def_builder_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"

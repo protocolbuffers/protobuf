@@ -25,12 +25,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
+#ifndef UPB_REFLECTION_DEF_POOL_INTERNAL_H_
+#define UPB_REFLECTION_DEF_POOL_INTERNAL_H_
 
-#ifndef UPB_REFLECTION_METHOD_DEF_H_
-#define UPB_REFLECTION_METHOD_DEF_H_
-
-#include "upb/reflection/common.h"
+#include "upb/reflection/def_pool.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -39,16 +37,36 @@
 extern "C" {
 #endif
 
-bool upb_MethodDef_ClientStreaming(const upb_MethodDef* m);
-const char* upb_MethodDef_FullName(const upb_MethodDef* m);
-bool upb_MethodDef_HasOptions(const upb_MethodDef* m);
-int upb_MethodDef_Index(const upb_MethodDef* m);
-const upb_MessageDef* upb_MethodDef_InputType(const upb_MethodDef* m);
-const char* upb_MethodDef_Name(const upb_MethodDef* m);
-const google_protobuf_MethodOptions* upb_MethodDef_Options(const upb_MethodDef* m);
-const upb_MessageDef* upb_MethodDef_OutputType(const upb_MethodDef* m);
-bool upb_MethodDef_ServerStreaming(const upb_MethodDef* m);
-const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
+upb_Arena* _upb_DefPool_Arena(const upb_DefPool* s);
+size_t _upb_DefPool_BytesLoaded(const upb_DefPool* s);
+upb_ExtensionRegistry* _upb_DefPool_ExtReg(const upb_DefPool* s);
+const upb_FieldDef* _upb_DefPool_FindExtensionByMiniTable(
+    const upb_DefPool* s, const upb_MiniTable_Extension* ext);
+
+bool _upb_DefPool_InsertExt(upb_DefPool* s, const upb_MiniTable_Extension* ext,
+                            upb_FieldDef* f);
+bool _upb_DefPool_InsertSym(upb_DefPool* s, upb_StringView sym, upb_value v,
+                            upb_Status* status);
+bool _upb_DefPool_LookupSym(const upb_DefPool* s, const char* sym, size_t size,
+                            upb_value* v);
+
+void** _upb_DefPool_ScratchData(const upb_DefPool* s);
+size_t* _upb_DefPool_ScratchSize(const upb_DefPool* s);
+
+// For generated code only: loads a generated descriptor.
+typedef struct _upb_DefPool_Init {
+  struct _upb_DefPool_Init** deps;  // Dependencies of this file.
+  const upb_MiniTable_File* layout;
+  const char* filename;
+  upb_StringView descriptor;  // Serialized descriptor.
+} _upb_DefPool_Init;
+
+bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init);
+
+// Should only be directly called by tests. This variant lets us suppress
+// the use of compiled-in tables, forcing a rebuild of the tables at runtime.
+bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
+                                bool rebuild_minitable);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -56,4 +74,4 @@ const upb_ServiceDef* upb_MethodDef_Service(const upb_MethodDef* m);
 
 #include "upb/port_undef.inc"
 
-#endif /* UPB_REFLECTION_METHOD_DEF_H_ */
+#endif /* UPB_REFLECTION_DEF_POOL_INTERNAL_H_ */

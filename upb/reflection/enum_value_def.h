@@ -48,19 +48,6 @@ int32_t upb_EnumValueDef_Number(const upb_EnumValueDef* v);
 const google_protobuf_EnumValueOptions* upb_EnumValueDef_Options(
     const upb_EnumValueDef* v);
 
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
-
-upb_EnumValueDef* _upb_EnumValueDef_At(const upb_EnumValueDef* v, int i);
-
-// Allocate and initialize an array of |n| enum value defs owned by |e|.
-upb_EnumValueDef* _upb_EnumValueDefs_New(
-    upb_DefBuilder* ctx, const char* prefix, int n,
-    const google_protobuf_EnumValueDescriptorProto* const* protos, upb_EnumDef* e,
-    bool* is_sorted);
-
-const upb_EnumValueDef** _upb_EnumValueDefs_Sorted(const upb_EnumValueDef* v,
-                                                   int n, upb_Arena* a);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

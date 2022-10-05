@@ -25,17 +25,16 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/reflection/oneof_def.h"
-
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "upb/mini_table.h"
-#include "upb/reflection/def_builder.h"
+#include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_type.h"
-#include "upb/reflection/field_def.h"
-#include "upb/reflection/message_def.h"
+#include "upb/reflection/field_def_internal.h"
+#include "upb/reflection/message_def_internal.h"
+#include "upb/reflection/oneof_def_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -175,7 +174,7 @@ static void create_oneofdef(upb_DefBuilder* ctx, upb_MessageDef* m,
   o->field_count = 0;
   o->synthetic = false;
 
-  UBP_DEF_SET_OPTIONS(o->opts, OneofDescriptorProto, OneofOptions, oneof_proto);
+  UPB_DEF_SET_OPTIONS(o->opts, OneofDescriptorProto, OneofOptions, oneof_proto);
 
   if (upb_MessageDef_FindByNameWithSize(m, name.data, name.size, NULL, NULL)) {
     _upb_DefBuilder_Errf(ctx, "duplicate oneof name (%s)", o->full_name);

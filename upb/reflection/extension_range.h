@@ -46,16 +46,6 @@ bool upb_ExtensionRange_HasOptions(const upb_ExtensionRange* r);
 const google_protobuf_ExtensionRangeOptions* upb_ExtensionRange_Options(
     const upb_ExtensionRange* r);
 
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
-
-upb_ExtensionRange* _upb_ExtensionRange_At(const upb_ExtensionRange* r, int i);
-
-// Allocate and initialize an array of |n| extension ranges owned by |m|.
-upb_ExtensionRange* _upb_ExtensionRanges_New(
-    upb_DefBuilder* ctx, int n,
-    const google_protobuf_DescriptorProto_ExtensionRange* const* protos,
-    const upb_MessageDef* m);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

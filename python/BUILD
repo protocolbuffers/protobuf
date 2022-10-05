@@ -207,6 +207,7 @@ py_extension(
         "//:descriptor_upb_proto_reflection",
         "//:port",
         "//:reflection",
+        "//:reflection_internal",
         "//:table_internal",
         "//:textformat",
         "//:upb",
