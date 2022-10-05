@@ -320,6 +320,13 @@ py_test(
 )
 
 py_test(
+    name = "numpy_test",
+    srcs = ["google/protobuf/internal/numpy_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
     name = "proto_builder_test",
     srcs = ["google/protobuf/internal/proto_builder_test.py"],
     imports = ["."],
