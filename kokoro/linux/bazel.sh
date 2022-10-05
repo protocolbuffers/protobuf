@@ -35,12 +35,12 @@ function run {
 
   docker run \
     --cidfile $tmpfile \
+    --cap-add=SYS_PTRACE \
     -v $GIT_REPO_ROOT:/workspace \
     $CONTAINER_IMAGE \
     test \
     --keep_going \
     --test_output=streamed \
-    --cap-add=SYS_PTRACE \
     ${ENVS[@]} \
     $PLATFORM_CONFIG \
     $BAZEL_CONFIG \
