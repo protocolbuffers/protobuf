@@ -866,21 +866,16 @@ static void resolve_extension(upb_DefBuilder* ctx, const char* prefix,
     }
 
     upb_MiniTable_Extension* mut_ext = (upb_MiniTable_Extension*)ext;
-    upb_MiniTable_Sub sub;
-    sub.submsg = NULL;
-    sub.subenum = NULL;
+    upb_MiniTable_Sub sub = {NULL};
+    if (upb_FieldDef_IsSubMessage(f)) {
+      sub.submsg = upb_MessageDef_MiniTable(f->sub.msgdef);
+    } else if (_upb_FieldDef_IsClosedEnum(f)) {
+      sub.subenum = _upb_EnumDef_MiniTable(f->sub.enumdef);
+    }
     bool ok2 = upb_MiniTable_BuildExtension(desc.data, desc.size, mut_ext,
                                             upb_MessageDef_MiniTable(m), sub,
                                             ctx->status);
     if (!ok2) _upb_DefBuilder_Errf(ctx, "Could not build extension mini table");
-
-    assert(mut_ext->field.number == f->number_);
-    mut_ext->extendee = upb_MessageDef_MiniTable(m);
-    if (upb_FieldDef_IsSubMessage(f)) {
-      mut_ext->sub.submsg = upb_MessageDef_MiniTable(f->sub.msgdef);
-    } else if (mut_ext->field.descriptortype == kUpb_FieldType_Enum) {
-      mut_ext->sub.subenum = _upb_EnumDef_MiniTable(f->sub.enumdef);
-    }
   }
 
   bool ok = _upb_DefPool_InsertExt(ctx->symtab, ext, f);
