@@ -136,7 +136,6 @@ cc_test(
     data = [
         "//src/google/protobuf:testdata",
     ],
-    size = "large",
     deps = [
         ":gzip_stream",
         ":io",
