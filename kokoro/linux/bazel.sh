@@ -41,6 +41,7 @@ function run {
     test \
     --keep_going \
     --test_output=streamed \
+    --verbose_failures \
     ${ENVS[@]} \
     $PLATFORM_CONFIG \
     $BAZEL_CONFIG \
