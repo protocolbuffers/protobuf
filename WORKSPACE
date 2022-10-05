@@ -59,6 +59,7 @@ load("@rules_python//python:pip.bzl", "pip_install")
 
 # For `numpy_test.py`
 pip_install(
+    name="pip_deps",
     requirements = "//python:requirements.txt"
 )
 
