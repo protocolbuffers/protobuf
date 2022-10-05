@@ -48,6 +48,13 @@ pinned_maven_install()
 # For `cc_proto_blacklist_test` and `build_test`.
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
+load("@rules_python//python:pip.bzl", "pip_install")
+
+pip_install(
+    name="pip_deps",
+    requirements = "//python:requirements.txt"
+)
+
 bazel_skylib_workspace()
 
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
