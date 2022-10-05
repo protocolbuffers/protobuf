@@ -30,3 +30,6 @@ build:tsan --copt=-DTHREAD_SANITIZER=1
 build:ubsan --config=san-common --copt=-fsanitize=undefined --linkopt=-fsanitize=undefined
 build:ubsan --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
 build:ubsan --copt=-DUNDEFINED_SANITIZER=1
+# Workaround for the fact that Bazel links with $CC, not $CXX
+# https://github.com/bazelbuild/bazel/issues/11122#issuecomment-613746748
+build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
