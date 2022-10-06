@@ -29,8 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 syntax = "proto3";
+
 package conformance;
+
 option java_package = "com.google.protobuf.conformance";
+option objc_class_prefix = "Conformance";
 
 // This defines the conformance testing protocol.  This protocol exists between
 // the conformance test suite itself and the code being tested.  For each test,
@@ -69,7 +72,8 @@ enum TestCategory {
   // https://developers.google.com/protocol-buffers/docs/proto3#json_options
   // for more detail.
   JSON_IGNORE_UNKNOWN_PARSING_TEST = 3;
-  // Test jspb wire format. Google internal only. Opensource testees just skip it.
+  // Test jspb wire format. Google internal only. Opensource testees just skip
+  // it.
   JSPB_TEST = 4;
   // Test text format. For cpp, java and python, testees can already deal with
   // this type. Testees of other languages can simply skip it.
@@ -109,8 +113,8 @@ message ConformanceRequest {
   string message_type = 4;
 
   // Each test is given a specific test category. Some category may need
-  // specific support in testee programs. Refer to the definition of TestCategory
-  // for more information.
+  // specific support in testee programs. Refer to the definition of
+  // TestCategory for more information.
   TestCategory test_category = 5;
 
   // Specify details for how to encode jspb.
@@ -135,6 +139,11 @@ message ConformanceResponse {
     // serializing it to the requested output format, set the error message in
     // this field.
     string serialize_error = 6;
+
+    // This should be set if the test program timed out.  The string should
+    // provide more information about what the child process was doing when it
+    // was killed.
+    string timeout_error = 9;
 
     // This should be set if some other error occurred.  This will always
     // indicate that the test failed.  The string can provide more information
@@ -169,4 +178,3 @@ message JspbEncodingConfig {
   // Encode the value field of Any as jspb array if true, otherwise binary.
   bool use_jspb_array_any_format = 1;
 }
-

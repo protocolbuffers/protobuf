@@ -3,6 +3,7 @@
 # See also code generation logic under /src/google/protobuf/compiler/ruby.
 
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@upb//cmake:build_defs.bzl", "staleness_test")
 load("//build_defs:internal_shell.bzl", "inline_sh_test")
 load("//conformance:defs.bzl", "conformance_test")
 load("//:protobuf.bzl", "internal_ruby_proto_library")
@@ -159,6 +160,29 @@ conformance_test(
         ":java_ruby": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
+)
+
+genrule(
+    name = "copy_ruby_amalgamation_h",
+    srcs = ["@upb//:ruby-upb.h"],
+    outs = ["generated-in/ext/google/protobuf_c/ruby-upb.h"],
+    cmd = "cp $< $@",
+)
+
+genrule(
+    name = "copy_ruby_amalgamation_c",
+    srcs = ["@upb//:ruby-upb.c"],
+    outs = ["generated-in/ext/google/protobuf_c/ruby-upb.c"],
+    cmd = "cp $< $@",
+)
+
+staleness_test(
+    name = "test_amalgamation_staleness",
+    outs = [
+        "ext/google/protobuf_c/ruby-upb.h",
+        "ext/google/protobuf_c/ruby-upb.c",
+    ],
+    generated_pattern = "generated-in/%s",
 )
 
 ################################################################################

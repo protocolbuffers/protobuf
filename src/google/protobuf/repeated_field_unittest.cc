@@ -50,11 +50,12 @@
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/stubs/strutil.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/numeric/bits.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/stubs/strutil.h"
 #include "google/protobuf/stubs/stl_util.h"
 
 // Must be included last.

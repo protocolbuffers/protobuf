@@ -41,7 +41,6 @@
 
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/googletest.h"
-#include "google/protobuf/stubs/strutil.h"
 #include <gtest/gtest.h>
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"

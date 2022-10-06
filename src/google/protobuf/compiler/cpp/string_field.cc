@@ -35,11 +35,11 @@
 #include "google/protobuf/compiler/cpp/string_field.h"
 
 #include "google/protobuf/io/printer.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.pb.h"
 
+#include "google/protobuf/stubs/strutil.h"
 
 namespace google {
 namespace protobuf {
@@ -313,12 +313,20 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
   format(
       "}\n"
       "inline void $classname$::set_allocated_$name$(std::string* $name$) {\n"
-      "$maybe_prepare_split_message$"
-      "  if ($name$ != nullptr) {\n"
-      "    $set_hasbit$\n"
-      "  } else {\n"
-      "    $clear_hasbit$\n"
-      "  }\n");
+      "$maybe_prepare_split_message$");
+
+  auto nonempty = [this](const char* fn) {
+    auto var_it = variables_.find(fn);
+    return var_it != variables_.end() && !var_it->second.empty();
+  };
+  if (nonempty("set_hasbit") || nonempty("clear_hasbit")) {
+    format(
+        "  if ($name$ != nullptr) {\n"
+        "    $set_hasbit$\n"
+        "  } else {\n"
+        "    $clear_hasbit$\n"
+        "  }\n");
+  }
   if (!inlined_) {
     format("  $field$.SetAllocated($name$, GetArenaForAllocation());\n");
     if (descriptor_->default_value_string().empty()) {

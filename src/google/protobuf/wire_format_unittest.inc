@@ -45,6 +45,7 @@
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
 #include "google/protobuf/stubs/logging.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/match.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/test_util2.h"

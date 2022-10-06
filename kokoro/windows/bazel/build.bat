@@ -10,7 +10,7 @@ fsutil 8dot3name set 0
 
 @rem Reinstall Bazel due to corrupt installation in kokoro.
 bazel version
-choco install bazel -y -i
+choco install bazel -y -i --version 5.1.0
 bazel version
 
 @rem Make paths as short as possible to avoid long path issues.

@@ -681,7 +681,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   }
 
   // The logic here has to match SetCommonFieldVariables() from
-  // objectivec_field.cc in the proto compiler.
+  // objectivec/field.cc in the proto compiler.
   NSString *name = self.name;
   NSUInteger len = [name length];
 
@@ -918,7 +918,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   if (extraTextFormatInfo_) {
     result = GPBDecodeTextFormatName(extraTextFormatInfo_, (int32_t)index, shortName);
   }
-  // Logic here needs to match what objectivec_enum.cc does in the proto
+  // Logic here needs to match what objectivec/enum.cc does in the proto
   // compiler.
   if (result == nil) {
     NSUInteger len = [shortName length];

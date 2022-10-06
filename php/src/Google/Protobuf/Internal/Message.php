@@ -54,6 +54,7 @@ use Google\Protobuf\NullValue;
  * or extend this class or its child classes by their own.  See the comment of
  * specific functions for more details.
  */
+#[\AllowDynamicProperties]
 class Message
 {
 
@@ -1980,8 +1981,12 @@ class Message
                 $size += 9;
                 $size += $value_msg->jsonByteSize();
             } else {
-                // Size for value. +1 for comma, -2 for "{}".
-                $size += $value_msg->jsonByteSize() -1;
+                $value_size = $value_msg->jsonByteSize();
+                // size === 2 it's empty message {} which is not serialized inside any
+                if ($value_size !== 2) {
+                    // Size for value. +1 for comma, -2 for "{}".
+                    $size += $value_size -1;
+                }
             }
         } elseif (get_class($this) === 'Google\Protobuf\FieldMask') {
             $field_mask = GPBUtil::formatFieldMask($this);

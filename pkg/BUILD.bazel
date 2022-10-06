@@ -6,13 +6,8 @@ load(
     "pkg_files",
     "strip_prefix",
 )
-load("//:protobuf_release.bzl", "package_naming")
 load(":build_systems.bzl", "gen_file_lists")
 load(":cc_dist_library.bzl", "cc_dist_library")
-
-package_naming(
-    name = "protobuf_pkg_naming",
-)
 
 pkg_files(
     name = "wkt_protos_files",
@@ -375,6 +370,7 @@ cc_dist_library(
         "//src/google/protobuf/io:printer",
         "//src/google/protobuf/io:tokenizer",
         "//src/google/protobuf/io:zero_copy_sink",
+        "//src/google/protobuf/json",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/stubs:lite",
         "//src/google/protobuf/util:delimited_message_util",
@@ -383,15 +379,6 @@ cc_dist_library(
         "//src/google/protobuf/util:json_util",
         "//src/google/protobuf/util:time_util",
         "//src/google/protobuf/util:type_resolver_util",
-        "//src/google/protobuf/util/internal:constants",
-        "//src/google/protobuf/util/internal:datapiece",
-        "//src/google/protobuf/util/internal:default_value",
-        "//src/google/protobuf/util/internal:field_mask_utility",
-        "//src/google/protobuf/util/internal:json",
-        "//src/google/protobuf/util/internal:object_writer",
-        "//src/google/protobuf/util/internal:protostream",
-        "//src/google/protobuf/util/internal:type_info",
-        "//src/google/protobuf/util/internal:utility",
     ],
 )
 
@@ -410,6 +397,7 @@ cc_dist_library(
         "//src/google/protobuf/compiler/java:names",
         "//src/google/protobuf/compiler/java:names_internal",
         "//src/google/protobuf/compiler/objectivec",
+        "//src/google/protobuf/compiler/objectivec:line_consumer",
         "//src/google/protobuf/compiler/objectivec:names",
         "//src/google/protobuf/compiler/objectivec:names_internal",
         "//src/google/protobuf/compiler/php",
@@ -433,9 +421,6 @@ cc_dist_library(
     deps = [
         "//src/google/protobuf:test_util",
         "//src/google/protobuf:test_util2",
-        "//src/google/protobuf/util/internal:expecting_objectwriter",
-        "//src/google/protobuf/util/internal:mock_error_listener",
-        "//src/google/protobuf/util/internal:type_info_test_helper",
         "//src/google/protobuf/compiler:annotation_test_util",
         "//src/google/protobuf/compiler/cpp:unittest_lib",
     ],

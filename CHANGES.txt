@@ -41,14 +41,6 @@
   * More thoroughly annotate public generated code in Java lite protocol buffers.
   * Fixed Bug in proto3 java lite repeated enum fields. Failed to call copyOnWrite before modifying previously built message. Causes modification to already "built" messages that should be immutable.
   * Fix Java reflection serialization of empty packed fields.
-  * Refactoring java full runtime to reuse sub-message builders and prepare to
-    migrate parsing logic from parse constructor to builder.
-  * Move proto wireformat parsing functionality from the private "parsing
-    constructor" to the Builder class.
-  * Change the Lite runtime to prefer merging from the wireformat into mutable
-    messages rather than building up a new immutable object before merging. This
-    way results in fewer allocations and copy operations.
-  * Make message-type extensions merge from wire-format instead of building up instances and merging afterwards. This has much better performance.
 
   Python
   * Changes ordering of printed fields in .pyi files from lexicographic to the same ordering found in the proto descriptor.
@@ -57,6 +49,21 @@
 
   Compiler
   * Print full path name of source .proto file on error
+
+2022-09-29 version 21.7 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+  Java
+  * Refactoring java full runtime to reuse sub-message builders and prepare to
+    migrate parsing logic from parse constructor to builder.
+  * Move proto wireformat parsing functionality from the private "parsing
+    constructor" to the Builder class.
+  * Change the Lite runtime to prefer merging from the wireformat into mutable
+    messages rather than building up a new immutable object before merging. This
+    way results in fewer allocations and copy operations.
+  * Make message-type extensions merge from wire-format instead of building up
+    instances and merging afterwards. This has much better performance.
+  * Fix TextFormat parser to build up recurring (but supposedly not repeated)
+    sub-messages directly from text rather than building a new sub-message and
+    merging the fully formed message into the existing field.
 
 2022-09-13 version 21.6 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
 

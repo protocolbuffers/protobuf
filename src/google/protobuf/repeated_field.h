@@ -716,7 +716,7 @@ inline void RepeatedField<Element>::Add(Iter begin, Iter end) {
   if (std::is_base_of<
           std::forward_iterator_tag,
           typename std::iterator_traits<Iter>::iterator_category>::value) {
-    int additional = std::distance(begin, end);
+    int additional = static_cast<int>(std::distance(begin, end));
     if (additional == 0) return;
 
     int new_size = current_size_ + additional;

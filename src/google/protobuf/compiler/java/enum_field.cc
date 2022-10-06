@@ -674,6 +674,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   printer->Print(
       variables_,
+      "@SuppressWarnings(\"serial\")\n"
       "private java.util.List<java.lang.Integer> $name$_;\n"
       "private static final "
       "com.google.protobuf.Internal.ListAdapter.Converter<\n"
@@ -986,7 +987,6 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderParsingCodeFromPacked(
                  "}\n"
                  "input.popLimit(oldLimit);\n");
 }
-
 void RepeatedImmutableEnumFieldGenerator::GenerateSerializationCode(
     io::Printer* printer) const {
   if (descriptor_->is_packed()) {

@@ -44,7 +44,6 @@
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/wire_format.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/substitute.h"
@@ -438,6 +437,7 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
     // oneofCase_ and oneof_
     printer->Print(vars,
                    "private int $oneof_name$Case_ = 0;\n"
+                   "@SuppressWarnings(\"serial\")\n"
                    "private java.lang.Object $oneof_name$_;\n");
     // OneofCase enum
     printer->Print(
@@ -1587,6 +1587,7 @@ void ImmutableMessageGenerator::GenerateAnyMethods(io::Printer* printer) {
       "      defaultInstance.getDescriptorForType().getFullName());\n"
       "}\n"
       "\n"
+      "@SuppressWarnings(\"serial\")\n"
       "private volatile com.google.protobuf.Message cachedUnpackValue;\n"
       "\n"
       "@java.lang.SuppressWarnings(\"unchecked\")\n"

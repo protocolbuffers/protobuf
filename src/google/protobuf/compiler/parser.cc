@@ -1590,7 +1590,7 @@ bool Parser::ParseOption(Message* options,
 
       case io::Tokenizer::TYPE_FLOAT: {
         value_location.AddPath(UninterpretedOption::kDoubleValueFieldNumber);
-        double value;
+        double value = 0.0;
         DO(ConsumeNumber(&value, "Expected number."));
         uninterpreted_option->set_double_value(is_negative ? -value : value);
         break;
