@@ -103,10 +103,9 @@ typedef enum {
   kUpb_FieldRep_1Byte = 0,
   kUpb_FieldRep_4Byte = 1,
   kUpb_FieldRep_StringView = 2,
-  kUpb_FieldRep_Pointer = 3,
-  kUpb_FieldRep_8Byte = 4,
+  kUpb_FieldRep_8Byte = 3,
 
-  kUpb_FieldRep_Shift = 5,  // Bit offset of the rep in upb_MiniTable_Field.mode
+  kUpb_FieldRep_Shift = 6,  // Bit offset of the rep in upb_MiniTable_Field.mode
   kUpb_FieldRep_Max = kUpb_FieldRep_8Byte,
 } upb_FieldRep;
 

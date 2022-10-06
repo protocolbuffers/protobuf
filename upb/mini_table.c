@@ -499,8 +499,6 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
       [kUpb_EncodedType_Fixed32] = kUpb_FieldRep_4Byte,
       [kUpb_EncodedType_Bool] = kUpb_FieldRep_1Byte,
       [kUpb_EncodedType_String] = kUpb_FieldRep_StringView,
-      [kUpb_EncodedType_Group] = kUpb_FieldRep_Pointer,
-      [kUpb_EncodedType_Message] = kUpb_FieldRep_Pointer,
       [kUpb_EncodedType_Bytes] = kUpb_FieldRep_StringView,
       [kUpb_EncodedType_UInt32] = kUpb_FieldRep_4Byte,
       [kUpb_EncodedType_Enum] = kUpb_FieldRep_4Byte,
@@ -531,20 +529,27 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
       [kUpb_EncodedType_SInt64] = kUpb_FieldType_SInt64,
   };
 
+  char pointer_rep = d->platform == kUpb_MiniTablePlatform_32Bit
+                         ? kUpb_FieldRep_4Byte
+                         : kUpb_FieldRep_8Byte;
+
   int8_t type = upb_FromBase92(ch);
   if (ch >= upb_ToBase92(kUpb_EncodedType_RepeatedBase)) {
     type -= kUpb_EncodedType_RepeatedBase;
     field->mode = kUpb_FieldMode_Array;
-    field->mode |= kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift;
+    field->mode |= pointer_rep << kUpb_FieldRep_Shift;
     field->offset = kNoPresence;
   } else {
-    if (type >= sizeof(kUpb_EncodedToFieldRep)) {
+    field->mode = kUpb_FieldMode_Scalar;
+    field->offset = kHasbitPresence;
+    if (type == kUpb_EncodedType_Group || type == kUpb_EncodedType_Message) {
+      field->mode |= pointer_rep << kUpb_FieldRep_Shift;
+    } else if (type >= sizeof(kUpb_EncodedToFieldRep)) {
       upb_MtDecoder_ErrorFormat(d, "Invalid field type: %d", (int)type);
       UPB_UNREACHABLE();
+    } else {
+      field->mode |= kUpb_EncodedToFieldRep[type] << kUpb_FieldRep_Shift;
     }
-    field->mode = kUpb_FieldMode_Scalar;
-    field->mode |= kUpb_EncodedToFieldRep[type] << kUpb_FieldRep_Shift;
-    field->offset = kHasbitPresence;
   }
   if (type >= sizeof(kUpb_EncodedToType)) {
     upb_MtDecoder_ErrorFormat(d, "Invalid field type: %d", (int)type);
@@ -619,13 +624,15 @@ static void upb_MtDecoder_PushOneof(upb_MtDecoder* d, upb_LayoutItem item) {
 size_t upb_MtDecoder_SizeOfRep(upb_FieldRep rep,
                                upb_MiniTablePlatform platform) {
   static const uint8_t kRepToSize32[] = {
-      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_Pointer] = 4, [kUpb_FieldRep_StringView] = 8,
+      [kUpb_FieldRep_1Byte] = 1,
+      [kUpb_FieldRep_4Byte] = 4,
+      [kUpb_FieldRep_StringView] = 8,
       [kUpb_FieldRep_8Byte] = 8,
   };
   static const uint8_t kRepToSize64[] = {
-      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_Pointer] = 8, [kUpb_FieldRep_StringView] = 16,
+      [kUpb_FieldRep_1Byte] = 1,
+      [kUpb_FieldRep_4Byte] = 4,
+      [kUpb_FieldRep_StringView] = 16,
       [kUpb_FieldRep_8Byte] = 8,
   };
   UPB_ASSERT(sizeof(upb_StringView) ==
@@ -637,13 +644,15 @@ size_t upb_MtDecoder_SizeOfRep(upb_FieldRep rep,
 size_t upb_MtDecoder_AlignOfRep(upb_FieldRep rep,
                                 upb_MiniTablePlatform platform) {
   static const uint8_t kRepToAlign32[] = {
-      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_Pointer] = 4, [kUpb_FieldRep_StringView] = 4,
+      [kUpb_FieldRep_1Byte] = 1,
+      [kUpb_FieldRep_4Byte] = 4,
+      [kUpb_FieldRep_StringView] = 4,
       [kUpb_FieldRep_8Byte] = 8,
   };
   static const uint8_t kRepToAlign64[] = {
-      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_Pointer] = 8, [kUpb_FieldRep_StringView] = 8,
+      [kUpb_FieldRep_1Byte] = 1,
+      [kUpb_FieldRep_4Byte] = 4,
+      [kUpb_FieldRep_StringView] = 8,
       [kUpb_FieldRep_8Byte] = 8,
   };
   UPB_ASSERT(UPB_ALIGN_OF(upb_StringView) ==
@@ -1197,8 +1206,7 @@ void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
              (uintptr_t)field <
                  (uintptr_t)(table->fields + table->field_count));
   if (sub->ext & kUpb_ExtMode_IsMapEntry) {
-    field->mode =
-        (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift) | kUpb_FieldMode_Map;
+    field->mode = (field->mode & ~kUpb_FieldMode_Mask) | kUpb_FieldMode_Map;
   }
   upb_MiniTable_Sub* table_sub = (void*)&table->subs[field->submsg_index];
   table_sub->submsg = sub;

@@ -454,17 +454,11 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
         memcpy(&ch, mem, 1);
         return ch != 0;
       }
-#if UINTPTR_MAX == 0xffffffff
-      case kUpb_FieldRep_Pointer:
-#endif
       case kUpb_FieldRep_4Byte: {
         uint32_t u32;
         memcpy(&u32, mem, 4);
         return u32 != 0;
       }
-#if UINTPTR_MAX != 0xffffffff
-      case kUpb_FieldRep_Pointer:
-#endif
       case kUpb_FieldRep_8Byte: {
         uint64_t u64;
         memcpy(&u64, mem, 8);

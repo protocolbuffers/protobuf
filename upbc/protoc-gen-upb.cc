@@ -32,10 +32,8 @@
 #include "google/protobuf/wire_format.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
-#include "absl/strings/ascii.h"
 #include "absl/strings/substitute.h"
 #include "upb/mini_table.hpp"
-#include "upb/upb.hpp"
 #include "upbc/common.h"
 #include "upbc/file_layout.h"
 #include "upbc/names.h"
@@ -1224,9 +1222,9 @@ std::vector<TableEntry> FastDecodeTable(const protobuf::Descriptor* message,
 // We could just emit this as a number (and we may yet go in that direction) but
 // for now emitting symbolic constants gives this better readability and
 // debuggability.
-std::string GetModeInit(uint8_t mode) {
+std::string GetModeInit(uint8_t mode32, uint8_t mode64) {
   std::string ret;
-  switch (mode & kUpb_FieldMode_Mask) {
+  switch (mode32 & kUpb_FieldMode_Mask) {
     case kUpb_FieldMode_Map:
       ret = "kUpb_FieldMode_Map";
       break;
@@ -1240,24 +1238,26 @@ std::string GetModeInit(uint8_t mode) {
       break;
   }
 
-  if (mode & kUpb_LabelFlags_IsPacked) {
+  if (mode32 & kUpb_LabelFlags_IsPacked) {
     absl::StrAppend(&ret, " | kUpb_LabelFlags_IsPacked");
   }
 
-  if (mode & kUpb_LabelFlags_IsExtension) {
+  if (mode32 & kUpb_LabelFlags_IsExtension) {
     absl::StrAppend(&ret, " | kUpb_LabelFlags_IsExtension");
   }
 
   std::string rep;
-  switch (mode >> kUpb_FieldRep_Shift) {
+  switch (mode32 >> kUpb_FieldRep_Shift) {
     case kUpb_FieldRep_1Byte:
       rep = "kUpb_FieldRep_1Byte";
       break;
     case kUpb_FieldRep_4Byte:
-      rep = "kUpb_FieldRep_4Byte";
-      break;
-    case kUpb_FieldRep_Pointer:
-      rep = "kUpb_FieldRep_Pointer";
+      if (mode64 >> kUpb_FieldRep_Shift == kUpb_FieldRep_4Byte) {
+        rep = "kUpb_FieldRep_4Byte";
+      } else {
+        assert(mode64 >> kUpb_FieldRep_Shift == kUpb_FieldRep_8Byte);
+        rep = "UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte)";
+      }
       break;
     case kUpb_FieldRep_StringView:
       rep = "kUpb_FieldRep_StringView";
@@ -1279,7 +1279,7 @@ void WriteField(const upb_MiniTable_Field* field64,
          field64->submsg_index == kUpb_NoSub
              ? "kUpb_NoSub"
              : absl::StrCat(field64->submsg_index).c_str(),
-         field64->descriptortype, GetModeInit(field64->mode));
+         field64->descriptortype, GetModeInit(field32->mode, field64->mode));
 }
 
 // Writes a single field into a .upb.c source file.
