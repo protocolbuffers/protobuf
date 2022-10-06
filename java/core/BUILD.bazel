@@ -8,6 +8,7 @@ load("//:protobuf.bzl", "internal_gen_well_known_protos_java")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
 load("//java/internal:testing.bzl", "junit_tests")
 
+# TODO(mkruskal) Touch this file for experimentation.
 LITE_SRCS = [
     # Keep in sync with `//java/lite:pom.xml`.
     "src/main/java/com/google/protobuf/AbstractMessageLite.java",

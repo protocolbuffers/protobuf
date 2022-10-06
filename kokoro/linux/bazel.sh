@@ -10,7 +10,7 @@ fi
 cd $(dirname $0)/../..
 GIT_REPO_ROOT=`pwd`
 
-kokoro/common/affected.sh
+kokoro/common/affected.sh || exit 0
 
 ENVS=()
 
