@@ -1246,6 +1246,10 @@ std::string GetModeInit(uint8_t mode32, uint8_t mode64) {
     absl::StrAppend(&ret, " | kUpb_LabelFlags_IsExtension");
   }
 
+  if (mode32 & kUpb_LabelFlags_IsAlternate) {
+    absl::StrAppend(&ret, " | kUpb_LabelFlags_IsAlternate");
+  }
+
   std::string rep;
   switch (mode32 >> kUpb_FieldRep_Shift) {
     case kUpb_FieldRep_1Byte:

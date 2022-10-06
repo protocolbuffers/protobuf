@@ -40,6 +40,8 @@ extern "C" {
 const upb_MiniTable_Field* upb_MiniTable_FindFieldByNumber(
     const upb_MiniTable* table, uint32_t number);
 
+upb_FieldType upb_MiniTableField_Type(const upb_MiniTable_Field* field);
+
 UPB_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
     const upb_MiniTable* mini_table, const upb_MiniTable_Field* field) {
   return mini_table->subs[field->submsg_index].submsg;

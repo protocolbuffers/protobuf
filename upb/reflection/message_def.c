@@ -364,6 +364,15 @@ void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m) {
     if (!m->layout) _upb_DefBuilder_OomErr(ctx);
   }
 
+#ifndef NDEBUG
+  for (int i = 0; i < m->field_count; i++) {
+    const upb_FieldDef* f = upb_MessageDef_Field(m, i);
+    const upb_MiniTable_Field* mt_f =
+        &m->layout->fields[_upb_FieldDef_LayoutIndex(f)];
+    UPB_ASSERT(upb_FieldDef_Type(f) == upb_MiniTableField_Type(mt_f));
+  }
+#endif
+
   m->in_message_set = false;
   for (int i = 0; i < upb_MessageDef_NestedExtensionCount(m); i++) {
     upb_FieldDef* ext = (upb_FieldDef*)upb_MessageDef_NestedExtension(m, i);

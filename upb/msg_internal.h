@@ -96,6 +96,12 @@ typedef enum {
 typedef enum {
   kUpb_LabelFlags_IsPacked = 4,
   kUpb_LabelFlags_IsExtension = 8,
+  // Indicates that this descriptor type is an "alternate type":
+  //   - for Int32, this indicates that the actual type is Enum (but was
+  //     rewritten to Int32 because it is an open enum that requires no check).
+  //   - for Bytes, this indicates that the actual type is String (but does
+  //     not require any UTF-8 check).
+  kUpb_LabelFlags_IsAlternate = 16,
 } upb_LabelFlags;
 
 // Note: we sort by this number when calculating layout order.

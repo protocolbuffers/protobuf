@@ -56,13 +56,13 @@ typedef enum {
   kUpb_EncodedType_String = 15,
   kUpb_EncodedType_Group = 16,
   kUpb_EncodedType_Message = 17,
+  kUpb_EncodedType_ClosedEnum = 18,
 
   kUpb_EncodedType_RepeatedBase = 20,
 } upb_EncodedType;
 
 typedef enum {
   kUpb_EncodedFieldModifier_FlipPacked = 1 << 0,
-  kUpb_EncodedFieldModifier_IsClosedEnum = 1 << 1,
   // upb only.
   kUpb_EncodedFieldModifier_IsProto3Singular = 1 << 2,
   kUpb_EncodedFieldModifier_IsRequired = 1 << 3,
@@ -236,12 +236,11 @@ char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
   uint32_t encoded_modifiers = 0;
 
   // Put field type.
-  if (type == kUpb_FieldType_Enum &&
-      !(field_mod & kUpb_FieldModifier_IsClosedEnum)) {
-    type = kUpb_FieldType_Int32;
-  }
-
   int encoded_type = kUpb_TypeToEncoded[type];
+  if (field_mod & kUpb_FieldModifier_IsClosedEnum) {
+    UPB_ASSERT(type == kUpb_FieldType_Enum);
+    encoded_type = kUpb_EncodedType_ClosedEnum;
+  }
   if (field_mod & kUpb_FieldModifier_IsRepeated) {
     // Repeated fields shift the type number up (unlike other modifiers which
     // are bit flags).
@@ -352,6 +351,19 @@ const upb_MiniTable_Field* upb_MiniTable_FindFieldByNumber(
   return NULL;
 }
 
+upb_FieldType upb_MiniTableField_Type(const upb_MiniTable_Field* field) {
+  if (field->mode & kUpb_LabelFlags_IsAlternate) {
+    if (field->descriptortype == kUpb_FieldType_Int32) {
+      return kUpb_FieldType_Enum;
+    } else if (field->descriptortype == kUpb_FieldType_Bytes) {
+      return kUpb_FieldType_String;
+    } else {
+      UPB_ASSERT(false);
+    }
+  }
+  return field->descriptortype;
+}
+
 /** Data decoder **************************************************************/
 
 // Note: we sort by this number when calculating layout order.
@@ -457,6 +469,7 @@ static bool upb_MiniTable_HasSub(upb_MiniTable_Field* field,
     case kUpb_FieldType_String:
       if (!(msg_modifiers & kUpb_MessageModifier_ValidateUtf8)) {
         field->descriptortype = kUpb_FieldType_Bytes;
+        field->mode |= kUpb_LabelFlags_IsAlternate;
       }
       return false;
     default:
@@ -471,8 +484,16 @@ static bool upb_MtDecoder_FieldIsPackable(upb_MiniTable_Field* field) {
 
 static void upb_MiniTable_SetTypeAndSub(upb_MiniTable_Field* field,
                                         upb_FieldType type, uint32_t* sub_count,
-                                        uint64_t msg_modifiers) {
+                                        uint64_t msg_modifiers,
+                                        bool is_proto3_enum) {
   field->descriptortype = type;
+
+  if (is_proto3_enum) {
+    UPB_ASSERT(field->descriptortype == kUpb_FieldType_Enum);
+    field->descriptortype = kUpb_FieldType_Int32;
+    field->mode |= kUpb_LabelFlags_IsAlternate;
+  }
+
   if (upb_MiniTable_HasSub(field, msg_modifiers)) {
     field->submsg_index = sub_count ? (*sub_count)++ : 0;
   } else {
@@ -506,6 +527,7 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
       [kUpb_EncodedType_SFixed64] = kUpb_FieldRep_8Byte,
       [kUpb_EncodedType_SInt32] = kUpb_FieldRep_4Byte,
       [kUpb_EncodedType_SInt64] = kUpb_FieldRep_8Byte,
+      [kUpb_EncodedType_ClosedEnum] = kUpb_FieldRep_4Byte,
   };
 
   static const char kUpb_EncodedToType[] = {
@@ -527,6 +549,7 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
       [kUpb_EncodedType_SFixed64] = kUpb_FieldType_SFixed64,
       [kUpb_EncodedType_SInt32] = kUpb_FieldType_SInt32,
       [kUpb_EncodedType_SInt64] = kUpb_FieldType_SInt64,
+      [kUpb_EncodedType_ClosedEnum] = kUpb_FieldType_Enum,
   };
 
   char pointer_rep = d->platform == kUpb_MiniTablePlatform_32Bit
@@ -556,7 +579,7 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
     UPB_UNREACHABLE();
   }
   upb_MiniTable_SetTypeAndSub(field, kUpb_EncodedToType[type], sub_count,
-                              msg_modifiers);
+                              msg_modifiers, type == kUpb_EncodedType_Enum);
 }
 
 static void upb_MtDecoder_ModifyField(upb_MtDecoder* d,
@@ -1027,11 +1050,18 @@ upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
   if (!ret || !fields) return NULL;
 
   upb_MiniTable_Sub* subs = NULL;
-  if (value_is_proto3_enum) value_type = kUpb_FieldType_Int32;
-  if (value_type == kUpb_FieldType_Message ||
-      value_type == kUpb_FieldType_Group || value_type == kUpb_FieldType_Enum) {
+  uint64_t value_modifiers = 0;
+  if (value_is_proto3_enum) {
+    UPB_ASSERT(value_type == kUpb_FieldType_Enum);
+    // No sub needed.
+  } else if (value_type == kUpb_FieldType_Message ||
+             value_type == kUpb_FieldType_Group ||
+             value_type == kUpb_FieldType_Enum) {
     subs = upb_Arena_Malloc(arena, sizeof(*subs));
     if (!subs) return NULL;
+    if (value_type == kUpb_FieldType_Enum) {
+      value_modifiers |= kUpb_FieldModifier_IsClosedEnum;
+    }
   }
 
   size_t field_size =
@@ -1046,8 +1076,9 @@ upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
   fields[0].offset = 0;
   fields[1].offset = field_size;
 
-  upb_MiniTable_SetTypeAndSub(&fields[0], key_type, NULL, 0);
-  upb_MiniTable_SetTypeAndSub(&fields[1], value_type, NULL, 0);
+  upb_MiniTable_SetTypeAndSub(&fields[0], key_type, NULL, 0, false);
+  upb_MiniTable_SetTypeAndSub(&fields[1], value_type, NULL, 0,
+                              value_is_proto3_enum);
 
   ret->size = UPB_ALIGN_UP(2 * field_size, 8);
   ret->field_count = 2;
