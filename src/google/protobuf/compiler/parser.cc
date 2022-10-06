@@ -1336,19 +1336,19 @@ bool Parser::ParseDefaultAssignment(
     }
 
     case FieldDescriptorProto::TYPE_FLOAT:
-    case FieldDescriptorProto::TYPE_DOUBLE:
+    case FieldDescriptorProto::TYPE_DOUBLE: {
       // These types can be negative.
       if (TryConsume("-")) {
         default_value->append("-");
       }
       // Parse the integer because we have to convert hex integers to decimal
       // floats.
-      double value;
+      double value = 0.0;
       DO(ConsumeNumber(&value, "Expected number."));
       // And stringify it again.
       default_value->append(SimpleDtoa(value));
       break;
-
+    }
     case FieldDescriptorProto::TYPE_BOOL:
       if (TryConsume("true")) {
         default_value->assign("true");

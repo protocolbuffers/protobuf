@@ -8,7 +8,6 @@ fi
 
 cd $(dirname $0)/../..
 GIT_REPO_ROOT=`pwd`
-rm -rf $GIT_REPO_ROOT/logs
 
 ENVS=()
 
@@ -25,20 +24,38 @@ if [ -n "$BAZEL_ENV" ]; then
   done
 fi
 
-tmpfile=$(mktemp -u)
+function run {
+  local CONFIG=$1
+  local BAZEL_CONFIG=$2
 
-docker run \
-  --cidfile $tmpfile \
-  -v $GIT_REPO_ROOT:/workspace \
-  $CONTAINER_IMAGE \
-  test \
-  --keep_going \
-  --test_output=streamed \
-  ${ENVS[@]} \
-  $PLATFORM_CONFIG \
-  $BAZEL_EXTRA_FLAGS \
-  $BAZEL_TARGETS
+  tmpfile=$(mktemp -u)
 
-# Save logs for Kokoro
-docker cp \
-  `cat $tmpfile`:/workspace/logs $KOKORO_ARTIFACTS_DIR
+  rm -rf $GIT_REPO_ROOT/bazel-out $GIT_REPO_ROOT/bazel-bin
+  rm -rf $GIT_REPO_ROOT/logs
+
+  docker run \
+    --cidfile $tmpfile \
+    --cap-add=SYS_PTRACE \
+    -v $GIT_REPO_ROOT:/workspace \
+    $CONTAINER_IMAGE \
+    test \
+    --keep_going \
+    --test_output=streamed \
+    ${ENVS[@]} \
+    $PLATFORM_CONFIG \
+    $BAZEL_CONFIG \
+    $BAZEL_EXTRA_FLAGS \
+    $BAZEL_TARGETS
+
+  # Save logs for Kokoro
+  docker cp \
+    `cat $tmpfile`:/workspace/logs $KOKORO_ARTIFACTS_DIR/$CONFIG
+}
+
+if [ -n "$BAZEL_CONFIGS" ]; then
+  for config in $BAZEL_CONFIGS; do
+    run $config "--config=$config"
+  done
+else
+    run
+fi
