@@ -112,6 +112,24 @@ const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len) {
   }
 }
 
+void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len) {
+  upb_Message_Internal* in = upb_Message_Getinternal(msg);
+  const char* internal_unknown_end =
+      UPB_PTR_AT(in->internal, in->internal->unknown_end, char);
+#ifndef NDEBUG
+  size_t full_unknown_size;
+  const char* full_unknown = upb_Message_GetUnknown(msg, &full_unknown_size);
+  UPB_ASSERT((uintptr_t)data >= (uintptr_t)full_unknown);
+  UPB_ASSERT((uintptr_t)data < (uintptr_t)(full_unknown + full_unknown_size));
+  UPB_ASSERT((uintptr_t)(data + len) > (uintptr_t)data);
+  UPB_ASSERT((uintptr_t)(data + len) <= (uintptr_t)internal_unknown_end);
+#endif
+  if ((data + len) != internal_unknown_end) {
+    memmove((char*)data, data + len, internal_unknown_end - data - len);
+  }
+  in->internal->unknown_end -= len;
+}
+
 const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
                                                   size_t* count) {
   const upb_Message_Internal* in = upb_Message_Getinternal_const(msg);

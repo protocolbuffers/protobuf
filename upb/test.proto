@@ -72,3 +72,9 @@ message ModelExtension2 {
   }
   optional int32 i = 9;
 }
+
+message ModelWithSubMessages {
+  optional int32 id = 4;
+  optional ModelWithExtensions optional_child = 5;
+  repeated ModelWithExtensions items = 6;
+}

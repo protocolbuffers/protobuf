@@ -31,7 +31,6 @@
 #include "upb/array.h"
 #include "upb/internal/mini_table_accessors.h"
 #include "upb/mini_table.h"
-#include "upb/msg_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -279,8 +278,40 @@ typedef struct {
   size_t len;
 } upb_FindUnknownRet;
 
+// Finds first occurrence of unknown data by tag id in message.
 upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
                                              uint32_t field_number);
+
+typedef enum {
+  kUpb_UnknownToMessage_Ok,
+  kUpb_UnknownToMessage_ParseError,
+  kUpb_UnknownToMessage_OutOfMemory,
+  kUpb_UnknownToMessage_NotFound,
+} upb_UnknownToMessage_Status;
+
+typedef struct {
+  upb_UnknownToMessage_Status status;
+  upb_Message* message;
+} upb_UnknownToMessageRet;
+
+// Promotes unknown data inside message to a upb_Message parsing the unknown.
+//
+// The unknown data is removed from message after field value is set
+// using upb_MiniTable_SetMessage.
+upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
+    upb_Message* msg, const upb_MiniTable* mini_table,
+    const upb_MiniTable_Field* field, const upb_MiniTable* sub_mini_table,
+    int decode_options, upb_Arena* arena);
+
+// Promotes all unknown data that matches field tag id to repeated messages
+// in upb_Array.
+//
+// The unknown data is removed from message after upb_Array is populated.
+// Since repeated messages can't be packed we remove each unknown that
+// contains the target tag id.
+upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
+    upb_Message* msg, const upb_MiniTable_Field* field,
+    const upb_MiniTable* mini_table, int decode_options, upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */

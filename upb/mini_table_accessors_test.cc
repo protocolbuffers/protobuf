@@ -37,8 +37,11 @@
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/array.h"
+#include "upb/decode.h"
 #include "upb/mini_table.h"
+#include "upb/msg_internal.h"
 #include "upb/test.upb.h"
+#include "upb/upb.h"
 
 namespace {
 
@@ -471,6 +474,79 @@ TEST(GeneratedCode, Extensions) {
   EXPECT_EQ(0x48, extension_data[0]);
   EXPECT_EQ(5, extension_data[1]);
 
+  upb_Arena_Free(arena);
+}
+
+// Create a minitable to mimic ModelWithSubMessages with unlinked subs
+// to lazily promote unknowns after parsing.
+upb_MiniTable* CreateMiniTableWithEmptySubTables(upb_Arena* arena) {
+  upb_MtDataEncoder e;
+  const size_t kBufferSize = 256;
+  char buf[kBufferSize];
+  char* ptr = buf;
+  e.end = ptr + kBufferSize;
+  ptr = upb_MtDataEncoder_StartMessage(&e, ptr, /* msg_mod= */ 0);
+  EXPECT_TRUE(ptr != nullptr);
+  ptr = upb_MtDataEncoder_PutField(&e, ptr, kUpb_FieldType_Int32, 4, 0);
+  ptr = upb_MtDataEncoder_PutField(&e, ptr, kUpb_FieldType_Message, 5, 0);
+  ptr = upb_MtDataEncoder_PutField(&e, ptr, kUpb_FieldType_Message, 6,
+                                   kUpb_FieldModifier_IsRepeated);
+
+  upb_Status status;
+  upb_Status_Clear(&status);
+  upb_MiniTable* table = upb_MiniTable_Build(
+      buf, ptr - buf, kUpb_MiniTablePlatform_Native, arena, &status);
+  EXPECT_EQ(status.ok, true);
+  // Initialize sub table to null. Not using upb_MiniTable_SetSubMessage
+  // since it checks ->ext on parameter.
+  upb_MiniTable_Sub* sub = const_cast<upb_MiniTable_Sub*>(
+      &table->subs[table->fields[1].submsg_index]);
+  sub->submsg = nullptr;
+  sub = const_cast<upb_MiniTable_Sub*>(
+      &table->subs[table->fields[2].submsg_index]);
+  sub->submsg = nullptr;
+  return table;
+}
+
+TEST(GeneratedCode, PromoteUnknownMessage) {
+  upb_Arena* arena = upb_Arena_New();
+  upb_test_ModelWithSubMessages* input_msg =
+      upb_test_ModelWithSubMessages_new(arena);
+  upb_test_ModelWithExtensions* sub_message =
+      upb_test_ModelWithExtensions_new(arena);
+  upb_test_ModelWithSubMessages_set_id(input_msg, 11);
+  upb_test_ModelWithExtensions_set_random_int32(sub_message, 12);
+  upb_test_ModelWithSubMessages_set_optional_child(input_msg, sub_message);
+  size_t serialized_size;
+  char* serialized = upb_test_ModelWithSubMessages_serialize(input_msg, arena,
+                                                             &serialized_size);
+
+  upb_MiniTable* mini_table = CreateMiniTableWithEmptySubTables(arena);
+  upb_Message* msg = _upb_Message_New(mini_table, arena);
+  upb_DecodeStatus decode_status = upb_Decode(serialized, serialized_size, msg,
+                                              mini_table, nullptr, 0, arena);
+  EXPECT_EQ(decode_status, kUpb_DecodeStatus_Ok);
+  int32_t val = upb_MiniTable_GetInt32(
+      msg, upb_MiniTable_FindFieldByNumber(mini_table, 4));
+  EXPECT_EQ(val, 11);
+  upb_FindUnknownRet unknown = upb_MiniTable_FindUnknown(msg, 5);
+  EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
+  // Update mini table and promote unknown to a message.
+  upb_MiniTable_SetSubMessage(mini_table,
+                              (upb_MiniTable_Field*)&mini_table->fields[1],
+                              &upb_test_ModelWithExtensions_msg_init);
+  const int decode_options =
+      UPB_DECODE_MAXDEPTH(100);  // UPB_DECODE_ALIAS disabled.
+  upb_UnknownToMessageRet promote_result =
+      upb_MiniTable_PromoteUnknownToMessage(
+          msg, mini_table, &mini_table->fields[1],
+          &upb_test_ModelWithExtensions_msg_init, decode_options, arena);
+  EXPECT_EQ(promote_result.status, kUpb_UnknownToMessage_Ok);
+  const upb_Message* promoted_message =
+      upb_MiniTable_GetMessage(msg, &mini_table->fields[1]);
+  EXPECT_EQ(upb_test_ModelWithExtensions_random_int32(
+                (upb_test_ModelWithExtensions*)promoted_message),
+            12);
   upb_Arena_Free(arena);
 }
 

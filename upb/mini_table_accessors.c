@@ -33,6 +33,7 @@
 #include "upb/mini_table.h"
 
 // Must be last.
+#include "upb/msg.h"
 #include "upb/port_def.inc"
 
 size_t upb_MiniTable_Field_GetSize(const upb_MiniTable_Field* f) {
@@ -172,6 +173,37 @@ static const char* decode_tag(const char* ptr, uint32_t* val) {
   }
 }
 
+// Parses unknown data by merging into existing base_message or creating a
+// new message usingg mini_table.
+static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
+    const char* unknown_data, size_t unknown_size,
+    const upb_MiniTable* mini_table, upb_Message* base_message,
+    int decode_options, upb_Arena* arena) {
+  upb_UnknownToMessageRet ret;
+  ret.message =
+      base_message ? base_message : _upb_Message_New(mini_table, arena);
+  if (!ret.message) {
+    ret.status = kUpb_UnknownToMessage_OutOfMemory;
+    return ret;
+  }
+  // Decode sub message using unknown field contents.
+  const char* data = unknown_data;
+  uint32_t tag;
+  uint64_t message_len = 0;
+  data = decode_tag(data, &tag);
+  data = decode_varint64(data, &message_len);
+  upb_DecodeStatus status = upb_Decode(data, message_len, ret.message,
+                                       mini_table, NULL, decode_options, arena);
+  if (status == kUpb_DecodeStatus_OutOfMemory) {
+    ret.status = kUpb_UnknownToMessage_OutOfMemory;
+  } else if (status == kUpb_DecodeStatus_Ok) {
+    ret.status = kUpb_UnknownToMessage_Ok;
+  } else {
+    ret.status = kUpb_UnknownToMessage_ParseError;
+  }
+  return ret;
+}
+
 upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTable_Extension* ext_table,
     int decode_options, upb_Arena* arena,
@@ -190,22 +222,20 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
   }
   // Decode and promote from unknown.
   const upb_MiniTable* extension_table = ext_table->sub.submsg;
-  upb_Message* extension_msg = _upb_Message_New(extension_table, arena);
-  if (!extension_msg) {
-    return kUpb_GetExtension_OutOfMemory;
+  upb_UnknownToMessageRet parse_result = upb_MiniTable_ParseUnknownMessage(
+      result.ptr, result.len, extension_table,
+      /* base_message= */ NULL, decode_options, arena);
+  switch (parse_result.status) {
+    case kUpb_UnknownToMessage_OutOfMemory:
+      return kUpb_GetExtension_OutOfMemory;
+    case kUpb_UnknownToMessage_ParseError:
+      return kUpb_GetExtension_ParseError;
+    case kUpb_UnknownToMessage_NotFound:
+      return kUpb_GetExtension_NotPresent;
+    case kUpb_UnknownToMessage_Ok:
+      break;
   }
-  const char* data = result.ptr;
-  uint32_t tag;
-  uint64_t message_len = 0;
-  data = decode_tag(data, &tag);
-  data = decode_varint64(data, &message_len);
-  upb_DecodeStatus status =
-      upb_Decode(data, message_len, extension_msg, extension_table, NULL,
-                 decode_options, arena);
-  if (status == kUpb_DecodeStatus_OutOfMemory) {
-    return kUpb_GetExtension_OutOfMemory;
-  }
-  if (status != kUpb_DecodeStatus_Ok) return kUpb_GetExtension_ParseError;
+  upb_Message* extension_msg = parse_result.message;
   // Add to extensions.
   upb_Message_Extension* ext =
       _upb_Message_GetOrCreateExtension(msg, ext_table, arena);
@@ -214,15 +244,7 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
   }
   memcpy(&ext->data, &extension_msg, sizeof(extension_msg));
   *extension = ext;
-  // Remove unknown field.
-  upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  const char* internal_unknown_end =
-      UPB_PTR_AT(in->internal, in->internal->unknown_end, char);
-  if ((result.ptr + result.len) != internal_unknown_end) {
-    memmove((char*)result.ptr, result.ptr + result.len,
-            internal_unknown_end - result.ptr - result.len);
-  }
-  in->internal->unknown_end -= result.len;
+  upb_Message_DeleteUnknown(msg, result.ptr, result.len);
   return kUpb_GetExtension_Ok;
 }
 
@@ -381,4 +403,80 @@ upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
   ret.ptr = NULL;
   ret.len = 0;
   return ret;
+}
+
+upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
+    upb_Message* msg, const upb_MiniTable* mini_table,
+    const upb_MiniTable_Field* field, const upb_MiniTable* sub_mini_table,
+    int decode_options, upb_Arena* arena) {
+  upb_FindUnknownRet unknown;
+  // We need to loop and merge unknowns that have matching tag field->number.
+  upb_Message* message = NULL;
+  // Callers should check that message is not set first before calling
+  // PromotoUnknownToMessage.
+  UPB_ASSERT(upb_MiniTable_GetMessage(msg, field) == NULL);
+  upb_UnknownToMessageRet ret;
+  ret.status = kUpb_UnknownToMessage_Ok;
+  do {
+    unknown = upb_MiniTable_FindUnknown(msg, field->number);
+    switch (unknown.status) {
+      case kUpb_FindUnknown_Ok: {
+        const char* unknown_data = unknown.ptr;
+        size_t unknown_size = unknown.len;
+        ret = upb_MiniTable_ParseUnknownMessage(unknown_data, unknown_size,
+                                                sub_mini_table, message,
+                                                decode_options, arena);
+        if (ret.status == kUpb_UnknownToMessage_Ok) {
+          message = ret.message;
+          upb_Message_DeleteUnknown(msg, unknown_data, unknown_size);
+        }
+      } break;
+      case kUpb_FindUnknown_ParseError:
+        ret.status = kUpb_UnknownToMessage_ParseError;
+        break;
+      case kUpb_FindUnknown_NotPresent:
+        // If we parsed at least one unknown, we are done.
+        ret.status =
+            message ? kUpb_UnknownToMessage_Ok : kUpb_UnknownToMessage_NotFound;
+        break;
+    }
+  } while (unknown.status == kUpb_FindUnknown_Ok);
+  if (message) {
+    upb_MiniTable_SetMessage(msg, mini_table, field, message);
+    ret.message = message;
+  }
+  return ret;
+}
+
+// Moves repeated messages in unknowns to a upb_Array.
+//
+// Since the repeated field is not a scalar type we don't check for
+// kUpb_LabelFlags_IsPacked.
+// TODO(b/251007554): Optimize. Instead of converting messages one at a time,
+// scan all unknown data once and compact.
+upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
+    upb_Message* msg, const upb_MiniTable_Field* field,
+    const upb_MiniTable* mini_table, int decode_options, upb_Arena* arena) {
+  upb_Array* repeated_messages = upb_MiniTable_GetMutableArray(msg, field);
+  // Find all unknowns with given field number and parse.
+  upb_FindUnknownRet unknown;
+  do {
+    unknown = upb_MiniTable_FindUnknown(msg, field->number);
+    if (unknown.status == kUpb_FindUnknown_Ok) {
+      upb_UnknownToMessageRet ret = upb_MiniTable_ParseUnknownMessage(
+          unknown.ptr, unknown.len, mini_table,
+          /* base_message= */ NULL, decode_options, arena);
+      if (ret.status == kUpb_UnknownToMessage_Ok) {
+        upb_MessageValue value;
+        value.msg_val = ret.message;
+        if (!upb_Array_Append(repeated_messages, value, arena)) {
+          return kUpb_UnknownToMessage_OutOfMemory;
+        }
+        upb_Message_DeleteUnknown(msg, unknown.ptr, unknown.len);
+      } else {
+        return ret.status;
+      }
+    }
+  } while (unknown.status == kUpb_FindUnknown_Ok);
+  return kUpb_UnknownToMessage_Ok;
 }
