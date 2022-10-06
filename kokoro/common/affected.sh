@@ -1,6 +1,6 @@
 set -ex
 
-git --no-pager log
+echo $KOKORO_JOB_NAME
 
 AFFECTED=$(git log --name-only --pretty=format: main..HEAD)
 
