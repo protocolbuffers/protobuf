@@ -6,8 +6,11 @@ if [[ -z "${CONTAINER_IMAGE}" ]]; then
   CONTAINER_IMAGE=gcr.io/protobuf-build/bazel/linux@sha256:2bfd061284eff8234f2fcca16d71d43c69ccf3a22206628b54c204a6a9aac277
 fi
 
+
 cd $(dirname $0)/../..
 GIT_REPO_ROOT=`pwd`
+
+kokoro/common/affected.sh
 
 ENVS=()
 
