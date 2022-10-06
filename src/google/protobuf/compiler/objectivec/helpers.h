@@ -79,6 +79,28 @@ inline ObjectiveCType GetObjectiveCType(const FieldDescriptor* field) {
   return GetObjectiveCType(field->type());
 }
 
+inline bool IsPrimitiveType(const FieldDescriptor* field) {
+  ObjectiveCType type = GetObjectiveCType(field);
+  switch (type) {
+    case OBJECTIVECTYPE_INT32:
+    case OBJECTIVECTYPE_UINT32:
+    case OBJECTIVECTYPE_INT64:
+    case OBJECTIVECTYPE_UINT64:
+    case OBJECTIVECTYPE_FLOAT:
+    case OBJECTIVECTYPE_DOUBLE:
+    case OBJECTIVECTYPE_BOOLEAN:
+    case OBJECTIVECTYPE_ENUM:
+      return true;
+      break;
+    default:
+      return false;
+  }
+}
+
+inline bool IsReferenceType(const FieldDescriptor* field) {
+  return !IsPrimitiveType(field);
+}
+
 std::string GPBGenericValueFieldName(const FieldDescriptor* field);
 std::string DefaultValue(const FieldDescriptor* field);
 
