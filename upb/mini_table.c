@@ -768,7 +768,9 @@ static const char* upb_MtDecoder_ParseModifier(upb_MtDecoder* d,
 
 static void upb_MtDecoder_AllocateSubs(upb_MtDecoder* d, uint32_t sub_count) {
   size_t subs_bytes = sizeof(*d->table->subs) * sub_count;
-  d->table->subs = upb_Arena_Malloc(d->arena, subs_bytes);
+  void* subs = upb_Arena_Malloc(d->arena, subs_bytes);
+  memset(subs, 0, subs_bytes);
+  d->table->subs = subs;
   upb_MtDecoder_CheckOutOfMemory(d, d->table->subs);
 }
 
