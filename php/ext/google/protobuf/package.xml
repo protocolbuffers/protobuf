@@ -43,6 +43,7 @@
     <file baseinstalldir="/" name="names.h" role="src"/>
     <file baseinstalldir="/" name="php-upb.c" role="src"/>
     <file baseinstalldir="/" name="php-upb.h" role="src"/>
+    <file baseinstalldir="/" name="php_protobuf.h" role="src"/>
     <file baseinstalldir="/" name="protobuf.c" role="src"/>
     <file baseinstalldir="/" name="protobuf.h" role="src"/>
     <file baseinstalldir="/" name="wkt.inc" role="src"/>
