@@ -2,7 +2,7 @@
 
 set -e
 
-if [[ "$KOKORO_JOB_NAME" =~ "java" ]]; then
+if [[ $KOKORO_JOB_NAME =~ java ]]; then
   FILTER="^java/.*"
 else
   FILTER="^src/.*"
@@ -14,13 +14,18 @@ if [ "$BRANCH" = "master" ]; then
   BRANCH="main"
 fi
 
+echo "Checking affected files on branch $BRANCH"
+echo "Kokoro job affected by: $FILTER"
+
 # Find the set of affected files.
 AFFECTED_FILES=$(git log --name-only --pretty=format: $BRANCH..HEAD)
 
 for FILE in $AFFECTED_FILES; do
-  if [[ "$FILE" =~ "$FILTER" ]]; then
+  if [[ $FILE =~ $FILTER ]]; then
     echo "Found file affecting $KOKORO_JOB_NAME: $FILE"
     AFFECTED=1
+  else
+    echo "Found file not affecting $KOKORO_JOB_NAME: $FILE"
   fi
 done
 
