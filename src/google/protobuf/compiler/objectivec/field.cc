@@ -34,10 +34,10 @@
 
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/enum_field.h"
-#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/map_field.h"
 #include "google/protobuf/compiler/objectivec/message_field.h"
+#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/primitive_field.h"
 #include "google/protobuf/io/printer.h"
 
@@ -78,7 +78,8 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
       classname + "_FieldNumber_" + capitalized_name;
   (*variables)["field_number"] = absl::StrCat(descriptor->number());
   (*variables)["field_type"] = GetCapitalizedType(descriptor);
-  (*variables)["deprecated_attribute"] = GetOptionalDeprecatedAttribute(descriptor);
+  (*variables)["deprecated_attribute"] =
+      GetOptionalDeprecatedAttribute(descriptor);
   std::vector<std::string> field_flags;
   if (descriptor->is_repeated()) field_flags.push_back("GPBFieldRepeated");
   if (descriptor->is_required()) field_flags.push_back("GPBFieldRequired");
@@ -109,8 +110,8 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
   (*variables)["dataTypeSpecific_name"] = "clazz";
   (*variables)["dataTypeSpecific_value"] = "Nil";
 
-  (*variables)["storage_offset_value"] =
-      "(uint32_t)offsetof(" + classname + "__storage_, " + camel_case_name + ")";
+  (*variables)["storage_offset_value"] = "(uint32_t)offsetof(" + classname +
+                                         "__storage_, " + camel_case_name + ")";
   (*variables)["storage_offset_comment"] = "";
 
   // Clear some common things so they can be set just when needed.
@@ -213,13 +214,10 @@ FieldGenerator::FieldGenerator(const FieldDescriptor* descriptor)
 FieldGenerator::~FieldGenerator() {}
 
 void FieldGenerator::GenerateFieldNumberConstant(io::Printer* printer) const {
-  printer->Print(
-      variables_,
-      "$field_number_name$ = $field_number$,\n");
+  printer->Print(variables_, "$field_number_name$ = $field_number$,\n");
 }
 
-void FieldGenerator::GenerateCFunctionDeclarations(
-    io::Printer* printer) const {
+void FieldGenerator::GenerateCFunctionDeclarations(io::Printer* printer) const {
   // Nothing
 }
 
@@ -229,8 +227,7 @@ void FieldGenerator::GenerateCFunctionImplementations(
 }
 
 void FieldGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls,
-    bool include_external_types) const {
+    std::set<std::string>* fwd_decls, bool include_external_types) const {
   // Nothing
 }
 
@@ -239,8 +236,8 @@ void FieldGenerator::DetermineObjectiveCClassDefinitions(
   // Nothing
 }
 
-void FieldGenerator::GenerateFieldDescription(
-    io::Printer* printer, bool include_default) const {
+void FieldGenerator::GenerateFieldDescription(io::Printer* printer,
+                                              bool include_default) const {
   // Printed in the same order as the structure decl.
   if (include_default) {
     // clang-format off
@@ -282,14 +279,13 @@ void FieldGenerator::SetNoHasBit(void) {
   variables_["has_index"] = "GPBNoHasBit";
 }
 
-int FieldGenerator::ExtraRuntimeHasBitsNeeded(void) const {
-  return 0;
-}
+int FieldGenerator::ExtraRuntimeHasBitsNeeded(void) const { return 0; }
 
 void FieldGenerator::SetExtraRuntimeHasBitsBase(int index_base) {
   // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
   // error cases, so it seems to be ok to use as a back door for errors.
-  std::cerr << "Error: should have overridden SetExtraRuntimeHasBitsBase()." << std::endl;
+  std::cerr << "Error: should have overridden SetExtraRuntimeHasBitsBase()."
+            << std::endl;
   std::cerr.flush();
   abort();
 }
@@ -379,7 +375,6 @@ void ObjCObjFieldGenerator::GenerateFieldStorageDeclaration(
 
 void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
     io::Printer* printer) const {
-
   // Differs from SingleFieldGenerator::GeneratePropertyDeclaration() in that
   // it uses pointers and deals with Objective C's rules around storage name
   // conventions (init*, new*, etc.)
@@ -402,7 +397,8 @@ void ObjCObjFieldGenerator::GeneratePropertyDeclaration(
     // If property name starts with init we need to annotate it to get past ARC.
     // http://stackoverflow.com/questions/18723226/how-do-i-annotate-an-objective-c-property-with-an-objc-method-family/18723227#18723227
     printer->Print(variables_,
-                   "- ($property_type$ *)$name$ GPB_METHOD_FAMILY_NONE$deprecated_attribute$;\n");
+                   "- ($property_type$ *)$name$ "
+                   "GPB_METHOD_FAMILY_NONE$deprecated_attribute$;\n");
   }
   printer->Print("\n");
 }
@@ -435,7 +431,6 @@ void RepeatedFieldGenerator::GeneratePropertyImplementation(
 
 void RepeatedFieldGenerator::GeneratePropertyDeclaration(
     io::Printer* printer) const {
-
   // Repeated fields don't need the has* properties, but they do expose a
   // *Count (to check without autocreation).  So for the field property we need
   // the same logic as ObjCObjFieldGenerator::GeneratePropertyDeclaration() for
@@ -472,8 +467,7 @@ FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor)
       extension_generators_(descriptor->extension_count()) {
   // Construct all the FieldGenerators.
   for (int i = 0; i < descriptor->field_count(); i++) {
-    field_generators_[i].reset(
-        FieldGenerator::Make(descriptor->field(i)));
+    field_generators_[i].reset(FieldGenerator::Make(descriptor->field(i)));
   }
   for (int i = 0; i < descriptor->extension_count(); i++) {
     extension_generators_[i].reset(

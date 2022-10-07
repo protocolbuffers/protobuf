@@ -39,8 +39,8 @@
 #include "absl/strings/str_split.h"
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/objectivec/file.h"
-#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
+#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
@@ -75,9 +75,7 @@ ObjectiveCGenerator::ObjectiveCGenerator() {}
 
 ObjectiveCGenerator::~ObjectiveCGenerator() {}
 
-bool ObjectiveCGenerator::HasGenerateAll() const {
-  return true;
-}
+bool ObjectiveCGenerator::HasGenerateAll() const { return true; }
 
 bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
                                    const std::string& parameter,
@@ -97,7 +95,8 @@ bool ObjectiveCGenerator::GenerateAll(
   // options along with their values. If the option appears multiple times, only
   // the last value will be considered.
   //
-  // e.g. protoc ... --objc_opt=expected_prefixes=file.txt,generate_for_named_framework=MyFramework
+  // e.g. protoc ...
+  // --objc_opt=expected_prefixes=file.txt,generate_for_named_framework=MyFramework
 
   Options validation_options;
   GenerationOptions generation_options;
@@ -127,8 +126,8 @@ bool ObjectiveCGenerator::GenerateAll(
       // A semicolon delimited string that lists the paths of .proto files to
       // exclude from the package prefix validations (expected_prefixes_path).
       // This is provided as an "out", to skip some files being checked.
-      for (absl::string_view split_piece : absl::StrSplit(
-               options[i].second, ";", absl::SkipEmpty())) {
+      for (absl::string_view split_piece :
+           absl::StrSplit(options[i].second, ";", absl::SkipEmpty())) {
         validation_options.expected_prefixes_suppressions.push_back(
             std::string(split_piece));
       }
@@ -142,7 +141,8 @@ bool ObjectiveCGenerator::GenerateAll(
       // Default is "no".
       if (!StringToBool(options[i].second,
                         &validation_options.prefixes_must_be_registered)) {
-        *error = "error: Unknown value for prefixes_must_be_registered: " + options[i].second;
+        *error = "error: Unknown value for prefixes_must_be_registered: " +
+                 options[i].second;
         return false;
       }
     } else if (options[i].first == "require_prefixes") {
@@ -154,7 +154,8 @@ bool ObjectiveCGenerator::GenerateAll(
       // Default is "no".
       if (!StringToBool(options[i].second,
                         &validation_options.require_prefixes)) {
-        *error = "error: Unknown value for require_prefixes: " + options[i].second;
+        *error =
+            "error: Unknown value for require_prefixes: " + options[i].second;
         return false;
       }
     } else if (options[i].first == "generate_for_named_framework") {
@@ -167,7 +168,8 @@ bool ObjectiveCGenerator::GenerateAll(
       // the "default" framework name used for everything that wasn't mapped by
       // the mapping file.
       generation_options.generate_for_named_framework = options[i].second;
-    } else if (options[i].first == "named_framework_to_proto_path_mappings_path") {
+    } else if (options[i].first ==
+               "named_framework_to_proto_path_mappings_path") {
       // Path to find a file containing the list of framework names and proto
       // files. The generator uses this to decide if a proto file
       // referenced should use a framework style import vs. a user level import
@@ -188,7 +190,8 @@ bool ObjectiveCGenerator::GenerateAll(
       // mappings file, it will use the default framework name if one was passed
       // with generate_for_named_framework, or the relative path to it's include
       // path otherwise.
-      generation_options.named_framework_to_proto_path_mappings_path = options[i].second;
+      generation_options.named_framework_to_proto_path_mappings_path =
+          options[i].second;
     } else if (options[i].first == "runtime_import_prefix") {
       // Path to use as a prefix on #imports of runtime provided headers in the
       // generated files. When integrating ObjC protos into a build system,
@@ -198,8 +201,9 @@ bool ObjectiveCGenerator::GenerateAll(
           std::string(absl::StripSuffix(options[i].second, "/"));
     } else if (options[i].first == "package_to_prefix_mappings_path") {
       // Path to use for when loading the objc class prefix mappings to use.
-      // The `objc_class_prefix` file option is always honored first if one is present.
-      // This option also has precedent over the use_package_as_prefix option.
+      // The `objc_class_prefix` file option is always honored first if one is
+      // present. This option also has precedent over the use_package_as_prefix
+      // option.
       //
       // The format of the file is:
       //   - An entry is a line of "package=prefix".
@@ -243,7 +247,8 @@ bool ObjectiveCGenerator::GenerateAll(
     } else if (options[i].first == "headers_use_forward_declarations") {
       if (!StringToBool(options[i].second,
                         &generation_options.headers_use_forward_declarations)) {
-        *error = "error: Unknown value for headers_use_forward_declarations: " + options[i].second;
+        *error = "error: Unknown value for headers_use_forward_declarations: " +
+                 options[i].second;
         return false;
       }
     } else {

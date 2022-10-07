@@ -34,8 +34,8 @@
 #include <string>
 
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
+#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -71,22 +71,16 @@ void OneofGenerator::SetOneofIndexBase(int index_base) {
 }
 
 void OneofGenerator::GenerateCaseEnum(io::Printer* printer) {
-  printer->Print(
-      variables_,
-      "typedef GPB_ENUM($enum_name$) {\n");
+  printer->Print(variables_, "typedef GPB_ENUM($enum_name$) {\n");
   printer->Indent();
-  printer->Print(
-      variables_,
-      "$enum_name$_GPBUnsetOneOfCase = 0,\n");
+  printer->Print(variables_, "$enum_name$_GPBUnsetOneOfCase = 0,\n");
   std::string enum_name = variables_["enum_name"];
   for (int j = 0; j < descriptor_->field_count(); j++) {
     const FieldDescriptor* field = descriptor_->field(j);
     std::string field_name = FieldNameCapitalized(field);
-    printer->Print(
-        "$enum_name$_$field_name$ = $field_number$,\n",
-        "enum_name", enum_name,
-        "field_name", field_name,
-        "field_number", absl::StrCat(field->number()));
+    printer->Print("$enum_name$_$field_name$ = $field_number$,\n", "enum_name",
+                   enum_name, "field_name", field_name, "field_number",
+                   absl::StrCat(field->number()));
   }
   printer->Outdent();
   // clang-format off
@@ -119,9 +113,7 @@ void OneofGenerator::GenerateClearFunctionDeclaration(io::Printer* printer) {
 }
 
 void OneofGenerator::GeneratePropertyImplementation(io::Printer* printer) {
-  printer->Print(
-      variables_,
-      "@dynamic $name$OneOfCase;\n");
+  printer->Print(variables_, "@dynamic $name$OneOfCase;\n");
 }
 
 void OneofGenerator::GenerateClearFunctionImplementation(io::Printer* printer) {

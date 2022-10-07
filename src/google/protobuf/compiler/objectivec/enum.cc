@@ -36,8 +36,8 @@
 
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
+#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/text_format_decode_data.h"
 #include "google/protobuf/io/printer.h"
 
@@ -58,8 +58,7 @@ std::string SafelyPrintIntToCode(int v) {
 }  // namespace
 
 EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor)
-    : descriptor_(descriptor),
-      name_(EnumName(descriptor_)) {
+    : descriptor_(descriptor), name_(EnumName(descriptor_)) {
   // Track the names for the enum values, and if an alias overlaps a base
   // value, skip making a name for it. Likewise if two alias overlap, the
   // first one wins.
@@ -121,10 +120,11 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
   // doesn't have to bother with the `enum_extensibility` attribute, as the
   // default will be what is needed.
 
-  printer->Print("$comments$typedef$deprecated_attribute$ GPB_ENUM($name$) {\n",
-                 "comments", enum_comments,
-                 "deprecated_attribute", GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file()),
-                 "name", name_);
+  printer->Print(
+      "$comments$typedef$deprecated_attribute$ GPB_ENUM($name$) {\n",
+      "comments", enum_comments, "deprecated_attribute",
+      GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file()), "name",
+      name_);
   printer->Indent();
 
   if (HasPreservingUnknownEnumSemantics(descriptor_->file())) {
@@ -141,7 +141,8 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
         "name", name_);
   }
   for (int i = 0; i < all_values_.size(); i++) {
-    if (alias_values_to_skip_.find(all_values_[i]) != alias_values_to_skip_.end()) {
+    if (alias_values_to_skip_.find(all_values_[i]) !=
+        alias_values_to_skip_.end()) {
       continue;
     }
     if (all_values_[i]->GetSourceLocation(&location)) {
@@ -154,11 +155,10 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
       }
     }
 
-    printer->Print(
-        "$name$$deprecated_attribute$ = $value$,\n",
-        "name", EnumValueName(all_values_[i]),
-        "deprecated_attribute", GetOptionalDeprecatedAttribute(all_values_[i]),
-        "value", SafelyPrintIntToCode(all_values_[i]->number()));
+    printer->Print("$name$$deprecated_attribute$ = $value$,\n", "name",
+                   EnumValueName(all_values_[i]), "deprecated_attribute",
+                   GetOptionalDeprecatedAttribute(all_values_[i]), "value",
+                   SafelyPrintIntToCode(all_values_[i]->number()));
   }
   printer->Outdent();
   printer->Print(
@@ -211,18 +211,17 @@ void EnumGenerator::GenerateSource(io::Printer* printer) {
       "name", name_);
 
   static const int kBytesPerLine = 40;  // allow for escaping
-  printer->Print(
-      "    static const char *valueNames =");
+  printer->Print("    static const char *valueNames =");
   for (int i = 0; i < text_blob.size(); i += kBytesPerLine) {
     printer->Print(
-        "\n        \"$data$\"",
-        "data", EscapeTrigraphs(absl::CEscape(text_blob.substr(i, kBytesPerLine))));
+        "\n        \"$data$\"", "data",
+        EscapeTrigraphs(absl::CEscape(text_blob.substr(i, kBytesPerLine))));
   }
   printer->Print(
       ";\n"
       "    static const int32_t values[] = {\n");
   for (int i = 0; i < all_values_.size(); i++) {
-    printer->Print("        $name$,\n",  "name", EnumValueName(all_values_[i]));
+    printer->Print("        $name$,\n", "name", EnumValueName(all_values_[i]));
   }
   printer->Print("    };\n");
 
@@ -249,8 +248,8 @@ void EnumGenerator::GenerateSource(io::Printer* printer) {
         "                                     enumVerifier:$name$_IsValidValue\n"
         "                              extraTextFormatInfo:extraTextFormatInfo];\n",
         // clang-format on
-        "name", name_,
-        "extraTextFormatInfo", absl::CEscape(text_format_decode_data.Data()));
+        "name", name_, "extraTextFormatInfo",
+        absl::CEscape(text_format_decode_data.Data()));
   }
   // clang-format off
   printer->Print(
@@ -271,9 +270,8 @@ void EnumGenerator::GenerateSource(io::Printer* printer) {
       "name", name_);
 
   for (int i = 0; i < base_values_.size(); i++) {
-    printer->Print(
-        "    case $name$:\n",
-        "name", EnumValueName(base_values_[i]));
+    printer->Print("    case $name$:\n", "name",
+                   EnumValueName(base_values_[i]));
   }
 
   // clang-format off

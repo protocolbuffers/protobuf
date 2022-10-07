@@ -33,8 +33,8 @@
 #include <iostream>
 
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
+#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 
@@ -52,7 +52,7 @@ ExtensionGenerator::ExtensionGenerator(const std::string& root_class_name,
     // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
     // error cases, so it seems to be ok to use as a back door for errors.
     std::cerr << "error: Extension is a map<>!"
-         << " That used to be blocked by the compiler." << std::endl;
+              << " That used to be blocked by the compiler." << std::endl;
     std::cerr.flush();
     abort();
   }
@@ -76,7 +76,8 @@ void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) {
   }
   // Unlike normal message fields, check if the file for the extension was
   // deprecated.
-  vars["deprecated_attribute"] = GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file());
+  vars["deprecated_attribute"] =
+      GetOptionalDeprecatedAttribute(descriptor_, descriptor_->file());
   // clang-format off
   printer->Print(
       vars,
@@ -120,7 +121,7 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
 
   if (objc_type == OBJECTIVECTYPE_ENUM) {
     vars["enum_desc_func_name"] =
-         EnumName(descriptor_->enum_type()) + "_EnumDescriptor";
+        EnumName(descriptor_->enum_type()) + "_EnumDescriptor";
   } else {
     vars["enum_desc_func_name"] = "NULL";
   }

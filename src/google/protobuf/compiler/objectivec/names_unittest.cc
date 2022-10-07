@@ -29,9 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "google/protobuf/compiler/objectivec/names.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 #include <gtest/gtest.h>
+
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace google {
 namespace protobuf {
