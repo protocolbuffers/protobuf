@@ -9,6 +9,7 @@ if (NOT EXISTS "${protobuf_SOURCE_DIR}/third_party/jsoncpp/CMakeLists.txt")
           "  cmake -Dprotobuf_BUILD_CONFORMANCE=OFF\n")
 endif()
 
+set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Disable tests")
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp third_party/jsoncpp)
 
 add_custom_command(
@@ -80,9 +81,9 @@ target_link_libraries(conformance_cpp ${protobuf_LIB_PROTOBUF})
 target_link_libraries(conformance_cpp ${protobuf_ABSL_USED_TARGETS})
 
 add_test(NAME conformance_cpp_test
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/conformance_test_runner
+  COMMAND conformance_test_runner
     --failure_list ${protobuf_SOURCE_DIR}/conformance/failure_list_cpp.txt
     --text_format_failure_list ${protobuf_SOURCE_DIR}/conformance/text_format_failure_list_cpp.txt
     --output_dir ${protobuf_TEST_XML_OUTDIR}
-    ${CMAKE_CURRENT_BINARY_DIR}/conformance_cpp
+    conformance_cpp
   DEPENDS conformance_test_runner conformance_cpp)
