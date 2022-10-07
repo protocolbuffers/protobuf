@@ -104,7 +104,8 @@ inline bool IsReferenceType(const FieldDescriptor* field) {
 std::string GPBGenericValueFieldName(const FieldDescriptor* field);
 std::string DefaultValue(const FieldDescriptor* field);
 
-std::string BuildFlagsString(const FlagType type, const std::vector<std::string>& strings);
+std::string BuildFlagsString(const FlagType type,
+                             const std::vector<std::string>& strings);
 
 // Returns a symbol that can be used in C code to refer to an Objective C
 // class without initializing the class.
@@ -155,7 +156,6 @@ std::string GetOptionalDeprecatedAttribute(const TDescriptor* descriptor,
     return "";
   }
 }
-
 
 }  // namespace objectivec
 }  // namespace compiler

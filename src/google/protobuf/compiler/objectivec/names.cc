@@ -28,6 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "google/protobuf/compiler/objectivec/names.h"
+
 #include <climits>
 #include <fstream>
 #include <iostream>
@@ -35,11 +37,10 @@
 #include <unordered_set>
 #include <vector>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_split.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/objectivec/line_consumer.h"
-#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/nsobject_methods.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -67,7 +68,8 @@ class SimpleLineCollector : public LineConsumer {
   explicit SimpleLineCollector(std::unordered_set<std::string>* inout_set)
       : set_(inout_set) {}
 
-  virtual bool ConsumeLine(const absl::string_view& line, std::string* out_error) override {
+  virtual bool ConsumeLine(const absl::string_view& line,
+                           std::string* out_error) override {
     set_->insert(std::string(line));
     return true;
   }
@@ -78,11 +80,13 @@ class SimpleLineCollector : public LineConsumer {
 
 class PackageToPrefixesCollector : public LineConsumer {
  public:
-  PackageToPrefixesCollector(const std::string &usage,
-                             std::map<std::string, std::string>* inout_package_to_prefix_map)
+  PackageToPrefixesCollector(
+      const std::string& usage,
+      std::map<std::string, std::string>* inout_package_to_prefix_map)
       : usage_(usage), prefix_map_(inout_package_to_prefix_map) {}
 
-  virtual bool ConsumeLine(const absl::string_view& line, std::string* out_error) override;
+  virtual bool ConsumeLine(const absl::string_view& line,
+                           std::string* out_error) override;
 
  private:
   const std::string usage_;
@@ -93,7 +97,9 @@ class PrefixModeStorage {
  public:
   PrefixModeStorage();
 
-  std::string package_to_prefix_mappings_path() const { return package_to_prefix_mappings_path_; }
+  std::string package_to_prefix_mappings_path() const {
+    return package_to_prefix_mappings_path_;
+  }
   void set_package_to_prefix_mappings_path(const std::string& path) {
     package_to_prefix_mappings_path_ = path;
     package_to_prefix_map_.clear();
@@ -115,7 +121,9 @@ class PrefixModeStorage {
   // When using a proto package as the prefix, this should be added as the
   // prefix in front of it.
   const std::string& forced_package_prefix() const { return forced_prefix_; }
-  void set_forced_package_prefix(const std::string& prefix) { forced_prefix_ = prefix; }
+  void set_forced_package_prefix(const std::string& prefix) {
+    forced_prefix_ = prefix;
+  }
 
  private:
   bool use_package_name_;
@@ -132,7 +140,8 @@ PrefixModeStorage::PrefixModeStorage() {
 
   use_package_name_ = BoolFromEnvVar("GPB_OBJC_USE_PACKAGE_AS_PREFIX", false);
 
-  const char* exception_path = getenv("GPB_OBJC_PACKAGE_PREFIX_EXCEPTIONS_PATH");
+  const char* exception_path =
+      getenv("GPB_OBJC_PACKAGE_PREFIX_EXCEPTIONS_PATH");
   if (exception_path) {
     exception_path_ = exception_path;
   }
@@ -143,21 +152,25 @@ PrefixModeStorage::PrefixModeStorage() {
   }
 }
 
-std::string PrefixModeStorage::prefix_from_proto_package_mappings(const FileDescriptor* file) {
+std::string PrefixModeStorage::prefix_from_proto_package_mappings(
+    const FileDescriptor* file) {
   if (!file) {
     return "";
   }
 
-  if (package_to_prefix_map_.empty() && !package_to_prefix_mappings_path_.empty()) {
+  if (package_to_prefix_map_.empty() &&
+      !package_to_prefix_mappings_path_.empty()) {
     std::string error_str;
-    // Re use the same collector as we use for expected_prefixes_path since the file
-    // format is the same.
-    PackageToPrefixesCollector collector("Package to prefixes", &package_to_prefix_map_);
-    if (!ParseSimpleFile(package_to_prefix_mappings_path_, &collector, &error_str)) {
+    // Re use the same collector as we use for expected_prefixes_path since the
+    // file format is the same.
+    PackageToPrefixesCollector collector("Package to prefixes",
+                                         &package_to_prefix_map_);
+    if (!ParseSimpleFile(package_to_prefix_mappings_path_, &collector,
+                         &error_str)) {
       if (error_str.empty()) {
-        error_str = std::string("protoc:0: warning: Failed to parse")
-           + std::string(" prefix to proto package mappings file: ")
-           + package_to_prefix_mappings_path_;
+        error_str = std::string("protoc:0: warning: Failed to parse") +
+                    std::string(" prefix to proto package mappings file: ") +
+                    package_to_prefix_mappings_path_;
       }
       std::cerr << error_str << std::endl;
       std::cerr.flush();
@@ -169,7 +182,8 @@ std::string PrefixModeStorage::prefix_from_proto_package_mappings(const FileDesc
   // For files without packages, the can be registered as "no_package:PATH",
   // allowing the expected prefixes file.
   static const std::string no_package_prefix("no_package:");
-  const std::string lookup_key = package.empty() ? no_package_prefix + file->name() : package;
+  const std::string lookup_key =
+      package.empty() ? no_package_prefix + file->name() : package;
 
   std::map<std::string, std::string>::const_iterator prefix_lookup =
       package_to_prefix_map_.find(lookup_key);
@@ -187,9 +201,9 @@ bool PrefixModeStorage::is_package_exempted(const std::string& package) {
     SimpleLineCollector collector(&exceptions_);
     if (!ParseSimpleFile(exception_path_, &collector, &error_str)) {
       if (error_str.empty()) {
-        error_str = std::string("protoc:0: warning: Failed to parse")
-           + std::string(" package prefix exceptions file: ")
-           + exception_path_;
+        error_str = std::string("protoc:0: warning: Failed to parse") +
+                    std::string(" package prefix exceptions file: ") +
+                    exception_path_;
       }
       std::cerr << error_str << std::endl;
       std::cerr.flush();
@@ -320,8 +334,7 @@ std::string UnderscoresToCamelCase(const std::string& input,
     }
     result += value;
   }
-  if ((result.length() != 0) &&
-      !first_capitalized &&
+  if ((result.length() != 0) && !first_capitalized &&
       !first_segment_forces_upper) {
     result[0] = absl::ascii_tolower(result[0]);
   }
@@ -329,72 +342,193 @@ std::string UnderscoresToCamelCase(const std::string& input,
 }
 
 const char* const kReservedWordList[] = {
-  // Note NSObject Methods:
-  // These are brought in from nsobject_methods.h that is generated
-  // using method_dump.sh. See kNSObjectMethods below.
+    // Note NSObject Methods:
+    // These are brought in from nsobject_methods.h that is generated
+    // using method_dump.sh. See kNSObjectMethods below.
 
-  // Objective C "keywords" that aren't in C
-  // From
-  // http://stackoverflow.com/questions/1873630/reserved-keywords-in-objective-c
-  // with some others added on.
-  "id", "_cmd", "super", "in", "out", "inout", "bycopy", "byref", "oneway",
-  "self", "instancetype", "nullable", "nonnull", "nil", "Nil",
-  "YES", "NO", "weak",
+    // Objective C "keywords" that aren't in C
+    // From
+    // http://stackoverflow.com/questions/1873630/reserved-keywords-in-objective-c
+    // with some others added on.
+    "id",
+    "_cmd",
+    "super",
+    "in",
+    "out",
+    "inout",
+    "bycopy",
+    "byref",
+    "oneway",
+    "self",
+    "instancetype",
+    "nullable",
+    "nonnull",
+    "nil",
+    "Nil",
+    "YES",
+    "NO",
+    "weak",
 
-  // C/C++ keywords (Incl C++ 0x11)
-  // From http://en.cppreference.com/w/cpp/keywords
-  "and", "and_eq", "alignas", "alignof", "asm", "auto", "bitand", "bitor",
-  "bool", "break", "case", "catch", "char", "char16_t", "char32_t", "class",
-  "compl", "const", "constexpr", "const_cast", "continue", "decltype",
-  "default", "delete", "double", "dynamic_cast", "else", "enum", "explicit",
-  "export", "extern ", "false", "float", "for", "friend", "goto", "if",
-  "inline", "int", "long", "mutable", "namespace", "new", "noexcept", "not",
-  "not_eq", "nullptr", "operator", "or", "or_eq", "private", "protected",
-  "public", "register", "reinterpret_cast", "return", "short", "signed",
-  "sizeof", "static", "static_assert", "static_cast", "struct", "switch",
-  "template", "this", "thread_local", "throw", "true", "try", "typedef",
-  "typeid", "typename", "union", "unsigned", "using", "virtual", "void",
-  "volatile", "wchar_t", "while", "xor", "xor_eq",
+    // C/C++ keywords (Incl C++ 0x11)
+    // From http://en.cppreference.com/w/cpp/keywords
+    "and",
+    "and_eq",
+    "alignas",
+    "alignof",
+    "asm",
+    "auto",
+    "bitand",
+    "bitor",
+    "bool",
+    "break",
+    "case",
+    "catch",
+    "char",
+    "char16_t",
+    "char32_t",
+    "class",
+    "compl",
+    "const",
+    "constexpr",
+    "const_cast",
+    "continue",
+    "decltype",
+    "default",
+    "delete",
+    "double",
+    "dynamic_cast",
+    "else",
+    "enum",
+    "explicit",
+    "export",
+    "extern ",
+    "false",
+    "float",
+    "for",
+    "friend",
+    "goto",
+    "if",
+    "inline",
+    "int",
+    "long",
+    "mutable",
+    "namespace",
+    "new",
+    "noexcept",
+    "not",
+    "not_eq",
+    "nullptr",
+    "operator",
+    "or",
+    "or_eq",
+    "private",
+    "protected",
+    "public",
+    "register",
+    "reinterpret_cast",
+    "return",
+    "short",
+    "signed",
+    "sizeof",
+    "static",
+    "static_assert",
+    "static_cast",
+    "struct",
+    "switch",
+    "template",
+    "this",
+    "thread_local",
+    "throw",
+    "true",
+    "try",
+    "typedef",
+    "typeid",
+    "typename",
+    "union",
+    "unsigned",
+    "using",
+    "virtual",
+    "void",
+    "volatile",
+    "wchar_t",
+    "while",
+    "xor",
+    "xor_eq",
 
-  // C99 keywords
-  // From
-  // http://publib.boulder.ibm.com/infocenter/lnxpcomp/v8v101/index.jsp?topic=%2Fcom.ibm.xlcpp8l.doc%2Flanguage%2Fref%2Fkeyw.htm
-  "restrict",
+    // C99 keywords
+    // From
+    // http://publib.boulder.ibm.com/infocenter/lnxpcomp/v8v101/index.jsp?topic=%2Fcom.ibm.xlcpp8l.doc%2Flanguage%2Fref%2Fkeyw.htm
+    "restrict",
 
-  // GCC/Clang extension
-  "typeof",
+    // GCC/Clang extension
+    "typeof",
 
-  // Not a keyword, but will break you
-  "NULL",
+    // Not a keyword, but will break you
+    "NULL",
 
-  // C88+ specs call for these to be macros, so depending on what they are
-  // defined to be it can lead to odd errors for some Xcode/SDK versions.
-  "stdin", "stdout", "stderr",
+    // C88+ specs call for these to be macros, so depending on what they are
+    // defined to be it can lead to odd errors for some Xcode/SDK versions.
+    "stdin",
+    "stdout",
+    "stderr",
 
-  // Objective-C Runtime typedefs
-  // From <obc/runtime.h>
-  "Category", "Ivar", "Method", "Protocol",
+    // Objective-C Runtime typedefs
+    // From <obc/runtime.h>
+    "Category",
+    "Ivar",
+    "Method",
+    "Protocol",
 
-  // GPBMessage Methods
-  // Only need to add instance methods that may conflict with
-  // method declared in protos. The main cases are methods
-  // that take no arguments, or setFoo:/hasFoo: type methods.
-  "clear", "data", "delimitedData", "descriptor", "extensionRegistry",
-  "extensionsCurrentlySet", "initialized", "isInitialized", "serializedSize",
-  "sortedExtensionsInUse", "unknownFields",
+    // GPBMessage Methods
+    // Only need to add instance methods that may conflict with
+    // method declared in protos. The main cases are methods
+    // that take no arguments, or setFoo:/hasFoo: type methods.
+    "clear",
+    "data",
+    "delimitedData",
+    "descriptor",
+    "extensionRegistry",
+    "extensionsCurrentlySet",
+    "initialized",
+    "isInitialized",
+    "serializedSize",
+    "sortedExtensionsInUse",
+    "unknownFields",
 
-  // MacTypes.h names
-  "Fixed", "Fract", "Size", "LogicalAddress", "PhysicalAddress", "ByteCount",
-  "ByteOffset", "Duration", "AbsoluteTime", "OptionBits", "ItemCount",
-  "PBVersion", "ScriptCode", "LangCode", "RegionCode", "OSType",
-  "ProcessSerialNumber", "Point", "Rect", "FixedPoint", "FixedRect", "Style",
-  "StyleParameter", "StyleField", "TimeScale", "TimeBase", "TimeRecord",
+    // MacTypes.h names
+    "Fixed",
+    "Fract",
+    "Size",
+    "LogicalAddress",
+    "PhysicalAddress",
+    "ByteCount",
+    "ByteOffset",
+    "Duration",
+    "AbsoluteTime",
+    "OptionBits",
+    "ItemCount",
+    "PBVersion",
+    "ScriptCode",
+    "LangCode",
+    "RegionCode",
+    "OSType",
+    "ProcessSerialNumber",
+    "Point",
+    "Rect",
+    "FixedPoint",
+    "FixedRect",
+    "Style",
+    "StyleParameter",
+    "StyleField",
+    "TimeScale",
+    "TimeBase",
+    "TimeRecord",
 };
 
 // returns true is input starts with __ or _[A-Z] which are reserved identifiers
-// in C/ C++. All calls should go through UnderscoresToCamelCase before getting here
-// but this verifies and allows for future expansion if we decide to redefine what a
-// reserved C identifier is (for example the GNU list
+// in C/ C++. All calls should go through UnderscoresToCamelCase before getting
+// here but this verifies and allows for future expansion if we decide to
+// redefine what a reserved C identifier is (for example the GNU list
 // https://www.gnu.org/software/libc/manual/html_node/Reserved-Names.html )
 bool IsReservedCIdentifier(const std::string& input) {
   if (input.length() > 2) {
@@ -422,7 +556,8 @@ std::string SanitizeNameForObjC(const std::string& prefix,
   // b) Isn't equivalent to the prefix or
   // c) Has the prefix, but the letter after the prefix is lowercase
   if (absl::StartsWith(input, prefix)) {
-    if (input.length() == prefix.length() || !absl::ascii_isupper(input[prefix.length()])) {
+    if (input.length() == prefix.length() ||
+        !absl::ascii_isupper(input[prefix.length()])) {
       sanitized = prefix + input;
     } else {
       sanitized = input;
@@ -469,8 +604,7 @@ void PathSplit(const std::string& path, std::string* directory,
 }
 
 bool IsSpecialNamePrefix(const std::string& name,
-                         const std::string* special_names,
-                         size_t count) {
+                         const std::string* special_names, size_t count) {
   for (size_t i = 0; i < count; ++i) {
     const size_t length = special_names[i].length();
     if (name.compare(0, length, special_names[i]) == 0) {
@@ -503,8 +637,8 @@ bool IsRetainedName(const std::string& name) {
   // http://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmRules.html
   static const std::string retained_names[] = {"new", "alloc", "copy",
                                                "mutableCopy"};
-  return IsSpecialNamePrefix(name, retained_names,
-                             sizeof(retained_names) / sizeof(retained_names[0]));
+  return IsSpecialNamePrefix(
+      name, retained_names, sizeof(retained_names) / sizeof(retained_names[0]));
 }
 
 bool IsInitName(const std::string& name) {
@@ -557,8 +691,10 @@ std::string FileClassPrefix(const FileDescriptor* file) {
     return file->options().objc_class_prefix();
   }
 
-  // If package prefix is specified in an prefix to proto mappings file then use that.
-  std::string objc_class_prefix = g_prefix_mode.prefix_from_proto_package_mappings(file);
+  // If package prefix is specified in an prefix to proto mappings file then use
+  // that.
+  std::string objc_class_prefix =
+      g_prefix_mode.prefix_from_proto_package_mappings(file);
   if (!objc_class_prefix.empty()) {
     return objc_class_prefix;
   }
@@ -577,7 +713,8 @@ std::string FileClassPrefix(const FileDescriptor* file) {
   // camelcase each one and then join them with underscores, and add an
   // underscore at the end.
   std::string result;
-  const std::vector<std::string> segments = absl::StrSplit(file->package(), ".", absl::SkipEmpty());
+  const std::vector<std::string> segments =
+      absl::StrSplit(file->package(), ".", absl::SkipEmpty());
   for (const auto& segment : segments) {
     const std::string part = UnderscoresToCamelCase(segment, true);
     if (part.empty()) {
@@ -780,7 +917,8 @@ std::string OneofNameCapitalized(const OneofDescriptor* descriptor) {
   return result;
 }
 
-std::string UnCamelCaseFieldName(const std::string& name, const FieldDescriptor* field) {
+std::string UnCamelCaseFieldName(const std::string& name,
+                                 const FieldDescriptor* field) {
   absl::string_view worker(name);
   if (absl::EndsWith(worker, "_p")) {
     worker = absl::StripSuffix(worker, "_p");
@@ -850,15 +988,18 @@ bool IsProtobufLibraryBundledProtoFile(const FileDescriptor* file) {
 
 namespace {
 
-bool PackageToPrefixesCollector::ConsumeLine(
-    const absl::string_view& line, std::string* out_error) {
+bool PackageToPrefixesCollector::ConsumeLine(const absl::string_view& line,
+                                             std::string* out_error) {
   int offset = line.find('=');
   if (offset == absl::string_view::npos) {
-    *out_error = usage_ + " file line without equal sign: '" + absl::StrCat(line) + "'.";
+    *out_error =
+        usage_ + " file line without equal sign: '" + absl::StrCat(line) + "'.";
     return false;
   }
-  absl::string_view package = absl::StripAsciiWhitespace(line.substr(0, offset));
-  absl::string_view prefix = absl::StripAsciiWhitespace(line.substr(offset + 1));
+  absl::string_view package =
+      absl::StripAsciiWhitespace(line.substr(0, offset));
+  absl::string_view prefix =
+      absl::StripAsciiWhitespace(line.substr(offset + 1));
   MaybeUnQuote(&prefix);
   // Don't really worry about error checking the package/prefix for
   // being valid.  Assume the file is validated when it is created/edited.
@@ -874,8 +1015,7 @@ bool LoadExpectedPackagePrefixes(const std::string& expected_prefixes_path,
   }
 
   PackageToPrefixesCollector collector("Expected prefixes", prefix_map);
-  return ParseSimpleFile(
-      expected_prefixes_path, &collector, out_error);
+  return ParseSimpleFile(expected_prefixes_path, &collector, out_error);
 }
 
 bool ValidateObjCClassPrefix(
@@ -929,9 +1069,9 @@ bool ValidateObjCClassPrefix(
   // If there was no prefix option, we're done at this point.
   if (!has_prefix) {
     if (require_prefixes) {
-      *out_error =
-        "error: '" + file->name() + "' does not have a required 'option" +
-        " objc_class_prefix'.";
+      *out_error = "error: '" + file->name() +
+                   "' does not have a required 'option" +
+                   " objc_class_prefix'.";
       return false;
     }
     return true;
@@ -958,9 +1098,9 @@ bool ValidateObjCClassPrefix(
     // package (overlap is allowed, but it has to be listed as an expected
     // overlap).
     if (!other_package_for_prefix.empty()) {
-      *out_error =
-          "error: Found 'option objc_class_prefix = \"" + prefix +
-          "\";' in '" + file->name() + "'; that prefix is already used for ";
+      *out_error = "error: Found 'option objc_class_prefix = \"" + prefix +
+                   "\";' in '" + file->name() +
+                   "'; that prefix is already used for ";
       if (absl::StartsWith(other_package_for_prefix, no_package_prefix)) {
         absl::StrAppend(
             out_error, "file '",
@@ -976,26 +1116,24 @@ bool ValidateObjCClassPrefix(
                       expected_prefixes_path, ").");
       return false;  // Only report first usage of the prefix.
     }
-  } // !prefix.empty() && have_expected_prefix_file
+  }  // !prefix.empty() && have_expected_prefix_file
 
   // Check: Warning - Make sure the prefix is is a reasonable value according
   // to Apple's rules (the checks above implicitly whitelist anything that
   // doesn't meet these rules).
   if (!prefix.empty() && !absl::ascii_isupper(prefix[0])) {
-    std::cerr
-         << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
-         << prefix << "\";' in '" << file->name() << "';"
-         << " it should start with a capital letter." << std::endl;
+    std::cerr << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
+              << prefix << "\";' in '" << file->name() << "';"
+              << " it should start with a capital letter." << std::endl;
     std::cerr.flush();
   }
   if (!prefix.empty() && prefix.length() < 3) {
     // Apple reserves 2 character prefixes for themselves. They do use some
     // 3 character prefixes, but they haven't updated the rules/docs.
-    std::cerr
-         << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
-         << prefix << "\";' in '" << file->name() << "';"
-         << " Apple recommends they should be at least 3 characters long."
-         << std::endl;
+    std::cerr << "protoc:0: warning: Invalid 'option objc_class_prefix = \""
+              << prefix << "\";' in '" << file->name() << "';"
+              << " Apple recommends they should be at least 3 characters long."
+              << std::endl;
     std::cerr.flush();
   }
 
@@ -1004,19 +1142,19 @@ bool ValidateObjCClassPrefix(
   if (have_expected_prefix_file) {
     if (prefixes_must_be_registered) {
       *out_error =
-        "error: '" + file->name() + "' has 'option objc_class_prefix = \"" +
-        prefix + "\";', but it is not registered. Add '" + lookup_key + " = " +
-        (prefix.empty() ? "\"\"" : prefix) +
-        "' to the expected prefixes file (" + expected_prefixes_path + ").";
+          "error: '" + file->name() + "' has 'option objc_class_prefix = \"" +
+          prefix + "\";', but it is not registered. Add '" + lookup_key +
+          " = " + (prefix.empty() ? "\"\"" : prefix) +
+          "' to the expected prefixes file (" + expected_prefixes_path + ").";
       return false;
     }
 
     std::cerr
-         << "protoc:0: warning: Found unexpected 'option objc_class_prefix = \""
-         << prefix << "\";' in '" << file->name() << "'; consider adding '"
-         << lookup_key << " = " << (prefix.empty() ? "\"\"" : prefix)
-         << "' to the expected prefixes file (" << expected_prefixes_path
-         << ")." << std::endl;
+        << "protoc:0: warning: Found unexpected 'option objc_class_prefix = \""
+        << prefix << "\";' in '" << file->name() << "'; consider adding '"
+        << lookup_key << " = " << (prefix.empty() ? "\"\"" : prefix)
+        << "' to the expected prefixes file (" << expected_prefixes_path << ")."
+        << std::endl;
     std::cerr.flush();
   }
 
@@ -1033,7 +1171,8 @@ Options::Options() {
   if (file_path) {
     expected_prefixes_path = file_path;
   }
-  const char* suppressions = getenv("GPB_OBJC_EXPECTED_PACKAGE_PREFIXES_SUPPRESSIONS");
+  const char* suppressions =
+      getenv("GPB_OBJC_EXPECTED_PACKAGE_PREFIXES_SUPPRESSIONS");
   if (suppressions) {
     expected_prefixes_suppressions =
         absl::StrSplit(suppressions, ";", absl::SkipEmpty());
@@ -1045,9 +1184,9 @@ Options::Options() {
 
 bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
                                std::string* out_error) {
-    // Options's ctor load from the environment.
-    Options options;
-    return ValidateObjCClassPrefixes(files, options, out_error);
+  // Options's ctor load from the environment.
+  Options options;
+  return ValidateObjCClassPrefixes(files, options, out_error);
 }
 
 bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
@@ -1062,28 +1201,25 @@ bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
   // Load the expected package prefixes, if available, to validate against.
   std::map<std::string, std::string> expected_package_prefixes;
   if (!LoadExpectedPackagePrefixes(generation_options.expected_prefixes_path,
-                                   &expected_package_prefixes,
-                                   out_error)) {
+                                   &expected_package_prefixes, out_error)) {
     return false;
   }
 
   for (int i = 0; i < files.size(); i++) {
     bool should_skip =
-      (std::find(generation_options.expected_prefixes_suppressions.begin(),
-                 generation_options.expected_prefixes_suppressions.end(),
-                 files[i]->name())
-          != generation_options.expected_prefixes_suppressions.end());
+        (std::find(generation_options.expected_prefixes_suppressions.begin(),
+                   generation_options.expected_prefixes_suppressions.end(),
+                   files[i]->name()) !=
+         generation_options.expected_prefixes_suppressions.end());
     if (should_skip) {
       continue;
     }
 
-    bool is_valid =
-        ValidateObjCClassPrefix(files[i],
-                                generation_options.expected_prefixes_path,
-                                expected_package_prefixes,
-                                generation_options.prefixes_must_be_registered,
-                                generation_options.require_prefixes,
-                                out_error);
+    bool is_valid = ValidateObjCClassPrefix(
+        files[i], generation_options.expected_prefixes_path,
+        expected_package_prefixes,
+        generation_options.prefixes_must_be_registered,
+        generation_options.require_prefixes, out_error);
     if (!is_valid) {
       return false;
     }

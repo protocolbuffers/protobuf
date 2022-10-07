@@ -29,10 +29,11 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "google/protobuf/compiler/objectivec/import_writer.h"
+
+#include "absl/strings/ascii.h"
 #include "google/protobuf/compiler/objectivec/line_consumer.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/io/printer.h"
-#include "absl/strings/ascii.h"
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
 // error cases, so it seems to be ok to use as a back door for errors.
@@ -46,17 +47,19 @@ namespace {
 
 class ProtoFrameworkCollector : public LineConsumer {
  public:
-  ProtoFrameworkCollector(std::map<std::string, std::string>* inout_proto_file_to_framework_name)
+  ProtoFrameworkCollector(
+      std::map<std::string, std::string>* inout_proto_file_to_framework_name)
       : map_(inout_proto_file_to_framework_name) {}
 
-  virtual bool ConsumeLine(const absl::string_view& line, std::string* out_error) override;
+  virtual bool ConsumeLine(const absl::string_view& line,
+                           std::string* out_error) override;
 
  private:
   std::map<std::string, std::string>* map_;
 };
 
-bool ProtoFrameworkCollector::ConsumeLine(
-    const absl::string_view& line, std::string* out_error) {
+bool ProtoFrameworkCollector::ConsumeLine(const absl::string_view& line,
+                                          std::string* out_error) {
   int offset = line.find(':');
   if (offset == absl::string_view::npos) {
     *out_error =
@@ -64,8 +67,10 @@ bool ProtoFrameworkCollector::ConsumeLine(
         std::string(line) + "'.";
     return false;
   }
-  absl::string_view framework_name = absl::StripAsciiWhitespace(line.substr(0, offset));
-  absl::string_view proto_file_list = absl::StripAsciiWhitespace(line.substr(offset + 1));
+  absl::string_view framework_name =
+      absl::StripAsciiWhitespace(line.substr(0, offset));
+  absl::string_view proto_file_list =
+      absl::StripAsciiWhitespace(line.substr(offset + 1));
 
   int start = 0;
   while (start < proto_file_list.length()) {
@@ -74,16 +79,17 @@ bool ProtoFrameworkCollector::ConsumeLine(
       offset = proto_file_list.length();
     }
 
-    absl::string_view proto_file =
-        absl::StripAsciiWhitespace(proto_file_list.substr(start, offset - start));
+    absl::string_view proto_file = absl::StripAsciiWhitespace(
+        proto_file_list.substr(start, offset - start));
     if (!proto_file.empty()) {
       std::map<std::string, std::string>::iterator existing_entry =
           map_->find(std::string(proto_file));
       if (existing_entry != map_->end()) {
         std::cerr << "warning: duplicate proto file reference, replacing "
                      "framework entry for '"
-                  << std::string(proto_file) << "' with '" << std::string(framework_name)
-                  << "' (was '" << existing_entry->second << "')." << std::endl;
+                  << std::string(proto_file) << "' with '"
+                  << std::string(framework_name) << "' (was '"
+                  << existing_entry->second << "')." << std::endl;
         std::cerr.flush();
       }
 
@@ -141,15 +147,14 @@ void ImportWriter::AddFile(const FileDescriptor* file,
       proto_file_to_framework_name_.find(file->name());
   if (proto_lookup != proto_file_to_framework_name_.end()) {
     other_framework_imports_.push_back(
-        proto_lookup->second + "/" +
-        FilePathBasename(file) + header_extension);
+        proto_lookup->second + "/" + FilePathBasename(file) + header_extension);
     return;
   }
 
   if (!generate_for_named_framework_.empty()) {
-    other_framework_imports_.push_back(
-        generate_for_named_framework_ + "/" +
-        FilePathBasename(file) + header_extension);
+    other_framework_imports_.push_back(generate_for_named_framework_ + "/" +
+                                       FilePathBasename(file) +
+                                       header_extension);
     return;
   }
 
@@ -172,9 +177,7 @@ void ImportWriter::Print(io::Printer* printer) const {
     for (std::vector<std::string>::const_iterator iter =
              other_framework_imports_.begin();
          iter != other_framework_imports_.end(); ++iter) {
-      printer->Print(
-          "#import <$header$>\n",
-          "header", *iter);
+      printer->Print("#import <$header$>\n", "header", *iter);
     }
 
     add_blank_line = true;
@@ -187,9 +190,7 @@ void ImportWriter::Print(io::Printer* printer) const {
 
     for (std::vector<std::string>::const_iterator iter = other_imports_.begin();
          iter != other_imports_.end(); ++iter) {
-      printer->Print(
-          "#import \"$header$\"\n",
-          "header", *iter);
+      printer->Print("#import \"$header$\"\n", "header", *iter);
     }
   }
 }
@@ -200,10 +201,8 @@ void ImportWriter::PrintRuntimeImports(
   // Given an override, use that.
   if (!runtime_import_prefix.empty()) {
     for (const auto& header : header_to_import) {
-      printer->Print(
-          " #import \"$import_prefix$/$header$\"\n",
-          "import_prefix", runtime_import_prefix,
-          "header", header);
+      printer->Print(" #import \"$import_prefix$/$header$\"\n", "import_prefix",
+                     runtime_import_prefix, "header", header);
     }
     return;
   }
@@ -213,33 +212,27 @@ void ImportWriter::PrintRuntimeImports(
 
   if (default_cpp_symbol) {
     printer->Print(
+        // clang-format off
         "// This CPP symbol can be defined to use imports that match up to the framework\n"
         "// imports needed when using CocoaPods.\n"
         "#if !defined($cpp_symbol$)\n"
         " #define $cpp_symbol$ 0\n"
         "#endif\n"
         "\n",
+        // clang-format on
         "cpp_symbol", cpp_symbol);
   }
 
-  printer->Print(
-      "#if $cpp_symbol$\n",
-      "cpp_symbol", cpp_symbol);
+  printer->Print("#if $cpp_symbol$\n", "cpp_symbol", cpp_symbol);
   for (const auto& header : header_to_import) {
-    printer->Print(
-        " #import <$framework_name$/$header$>\n",
-        "framework_name", framework_name,
-        "header", header);
+    printer->Print(" #import <$framework_name$/$header$>\n", "framework_name",
+                   framework_name, "header", header);
   }
-  printer->Print(
-      "#else\n");
+  printer->Print("#else\n");
   for (const auto& header : header_to_import) {
-    printer->Print(
-        " #import \"$header$\"\n",
-        "header", header);
+    printer->Print(" #import \"$header$\"\n", "header", header);
   }
-  printer->Print(
-      "#endif\n");
+  printer->Print("#endif\n");
 }
 
 void ImportWriter::ParseFrameworkMappings() {
@@ -250,10 +243,11 @@ void ImportWriter::ParseFrameworkMappings() {
 
   ProtoFrameworkCollector collector(&proto_file_to_framework_name_);
   std::string parse_error;
-  if (!ParseSimpleFile(named_framework_to_proto_path_mappings_path_,
-                       &collector, &parse_error)) {
-    std::cerr << "error parsing " << named_framework_to_proto_path_mappings_path_
-         << " : " << parse_error << std::endl;
+  if (!ParseSimpleFile(named_framework_to_proto_path_mappings_path_, &collector,
+                       &parse_error)) {
+    std::cerr << "error parsing "
+              << named_framework_to_proto_path_mappings_path_ << " : "
+              << parse_error << std::endl;
     std::cerr.flush();
   }
 }

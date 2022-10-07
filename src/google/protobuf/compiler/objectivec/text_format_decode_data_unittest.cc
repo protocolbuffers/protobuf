@@ -212,7 +212,6 @@ TEST(ObjCHelper, TextFormatDecodeData_ByteCodes) {
   EXPECT_EQ(expected, decode_data.Data());
 }
 
-
 // Death tests do not work on Windows as of yet.
 #ifdef PROTOBUF_HAS_DEATH_TEST
 TEST(ObjCHelperDeathTest, TextFormatDecodeData_Failures) {

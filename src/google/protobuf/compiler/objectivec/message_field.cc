@@ -28,12 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "google/protobuf/compiler/objectivec/message_field.h"
+
 #include <map>
 #include <string>
 
-#include "google/protobuf/compiler/objectivec/message_field.h"
-#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
+#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -66,15 +67,14 @@ MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor)
 MessageFieldGenerator::~MessageFieldGenerator() {}
 
 void MessageFieldGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls,
-    bool include_external_types) const {
-  ObjCObjFieldGenerator::DetermineForwardDeclarations(
-      fwd_decls, include_external_types);
+    std::set<std::string>* fwd_decls, bool include_external_types) const {
+  ObjCObjFieldGenerator::DetermineForwardDeclarations(fwd_decls,
+                                                      include_external_types);
   // Within a file there is no requirement on the order of the messages, so
   // local references need a forward declaration. External files (not WKTs),
   // need one when requested.
-  if ((include_external_types &&
-       !IsProtobufLibraryBundledProtoFile(descriptor_->message_type()->file())) ||
+  if ((include_external_types && !IsProtobufLibraryBundledProtoFile(
+                                     descriptor_->message_type()->file())) ||
       descriptor_->file() == descriptor_->message_type()->file()) {
     // Class name is already in "storage_type".
     fwd_decls->insert("@class " + variable("storage_type"));
@@ -98,15 +98,14 @@ RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
 RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {}
 
 void RepeatedMessageFieldGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls,
-    bool include_external_types) const {
-  RepeatedFieldGenerator::DetermineForwardDeclarations(
-      fwd_decls, include_external_types);
+    std::set<std::string>* fwd_decls, bool include_external_types) const {
+  RepeatedFieldGenerator::DetermineForwardDeclarations(fwd_decls,
+                                                       include_external_types);
   // Within a file there is no requirement on the order of the messages, so
   // local references need a forward declaration. External files (not WKTs),
   // need one when requested.
-  if ((include_external_types &&
-       !IsProtobufLibraryBundledProtoFile(descriptor_->message_type()->file())) ||
+  if ((include_external_types && !IsProtobufLibraryBundledProtoFile(
+                                     descriptor_->message_type()->file())) ||
       descriptor_->file() == descriptor_->message_type()->file()) {
     // Class name is already in "storage_type".
     fwd_decls->insert("@class " + variable("storage_type"));
