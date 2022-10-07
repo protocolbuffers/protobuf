@@ -1,7 +1,1 @@
 BasedOnStyle: Google
-
-# Ignore pddm directives.
-CommentPragmas: '^%'
-
-# Following the rest of the protobuf code.
-ColumnLimit: 80
