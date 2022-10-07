@@ -38,8 +38,8 @@
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/enum.h"
 #include "google/protobuf/compiler/objectivec/extension.h"
-#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
+#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/text_format_decode_data.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -152,11 +152,12 @@ struct ExtensionRangeOrdering {
 // and return it.
 const FieldDescriptor** SortFieldsByNumber(const Descriptor* descriptor) {
   const FieldDescriptor** fields =
-      new const FieldDescriptor* [descriptor->field_count()];
+      new const FieldDescriptor*[descriptor->field_count()];
   for (int i = 0; i < descriptor->field_count(); i++) {
     fields[i] = descriptor->field(i);
   }
-  std::sort(fields, fields + descriptor->field_count(), FieldOrderingByNumber());
+  std::sort(fields, fields + descriptor->field_count(),
+            FieldOrderingByNumber());
   return fields;
 }
 
@@ -164,12 +165,12 @@ const FieldDescriptor** SortFieldsByNumber(const Descriptor* descriptor) {
 // array and return it.
 const FieldDescriptor** SortFieldsByStorageSize(const Descriptor* descriptor) {
   const FieldDescriptor** fields =
-      new const FieldDescriptor* [descriptor->field_count()];
+      new const FieldDescriptor*[descriptor->field_count()];
   for (int i = 0; i < descriptor->field_count(); i++) {
     fields[i] = descriptor->field(i);
   }
   std::sort(fields, fields + descriptor->field_count(),
-       FieldOrderingByStorageSize());
+            FieldOrderingByStorageSize());
   return fields;
 }
 
@@ -200,8 +201,7 @@ MessageGenerator::MessageGenerator(const std::string& root_classname,
 
   for (int i = 0; i < descriptor_->nested_type_count(); i++) {
     MessageGenerator* generator =
-        new MessageGenerator(root_classname_,
-                             descriptor_->nested_type(i));
+        new MessageGenerator(root_classname_, descriptor_->nested_type(i));
     nested_message_generators_.emplace_back(generator);
   }
 }
@@ -220,8 +220,7 @@ void MessageGenerator::GenerateStaticVariablesInitialization(
 }
 
 void MessageGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls,
-    bool include_external_types) {
+    std::set<std::string>* fwd_decls, bool include_external_types) {
   if (!IsMapEntryMessage(descriptor_)) {
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
@@ -315,8 +314,8 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) {
     std::unique_ptr<const FieldDescriptor*[]> sorted_fields(
         SortFieldsByNumber(descriptor_));
 
-    printer->Print("typedef GPB_ENUM($classname$_FieldNumber) {\n",
-                   "classname", class_name_);
+    printer->Print("typedef GPB_ENUM($classname$_FieldNumber) {\n", "classname",
+                   class_name_);
     printer->Indent();
 
     for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -344,8 +343,7 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) {
       // clang-format off
       "$comments$$deprecated_attribute$GPB_FINAL @interface $classname$ : GPBMessage\n\n",
       // clang-format on
-      "classname", class_name_,
-      "deprecated_attribute", deprecated_attribute_,
+      "classname", class_name_, "deprecated_attribute", deprecated_attribute_,
       "comments", message_comments);
 
   std::vector<char> seen_oneofs(oneof_generators_.size(), 0);
@@ -378,8 +376,8 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) {
   }
 
   if (descriptor_->extension_count() > 0) {
-    printer->Print("@interface $classname$ (DynamicMethods)\n\n",
-                   "classname", class_name_);
+    printer->Print("@interface $classname$ (DynamicMethods)\n\n", "classname",
+                   class_name_);
     for (const auto& generator : extension_generators_) {
       generator->GenerateMembersHeader(printer);
     }
@@ -410,8 +408,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
       // clang-format on
     }
 
-    printer->Print("@implementation $classname$\n\n",
-                   "classname", class_name_);
+    printer->Print("@implementation $classname$\n\n", "classname", class_name_);
 
     for (const auto& generator : oneof_generators_) {
       generator->GeneratePropertyImplementation(printer);
@@ -434,7 +431,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
     }
 
     std::sort(sorted_extensions.begin(), sorted_extensions.end(),
-         ExtensionRangeOrdering());
+              ExtensionRangeOrdering());
 
     // Assign has bits:
     // 1. FieldGeneratorMap::CalculateHasBits() loops through the fields seeing
@@ -465,8 +462,8 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
         "typedef struct $classname$__storage_ {\n"
         "  uint32_t _has_storage_[$sizeof_has_storage$];\n",
         // clang-format on
-        "classname", class_name_,
-        "sizeof_has_storage", absl::StrCat(sizeof_has_storage));
+        "classname", class_name_, "sizeof_has_storage",
+        absl::StrCat(sizeof_has_storage));
     printer->Indent();
 
     for (int i = 0; i < descriptor_->field_count(); i++) {
@@ -476,7 +473,6 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
     printer->Outdent();
 
     printer->Print("} $classname$__storage_;\n\n", "classname", class_name_);
-
 
     // clang-format off
     printer->Print(
@@ -499,23 +495,21 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
     if (has_fields) {
       printer->Indent();
       printer->Indent();
-      printer->Print(
-          "static $field_description_type$ fields[] = {\n",
-          "field_description_type", field_description_type);
+      printer->Print("static $field_description_type$ fields[] = {\n",
+                     "field_description_type", field_description_type);
       printer->Indent();
       for (int i = 0; i < descriptor_->field_count(); ++i) {
         const FieldGenerator& field_generator =
             field_generators_.get(sorted_fields[i]);
         field_generator.GenerateFieldDescription(printer, need_defaults);
         if (field_generator.needs_textformat_name_support()) {
-          text_format_decode_data.AddString(sorted_fields[i]->number(),
-                                            field_generator.generated_objc_name(),
-                                            field_generator.raw_field_name());
+          text_format_decode_data.AddString(
+              sorted_fields[i]->number(), field_generator.generated_objc_name(),
+              field_generator.raw_field_name());
         }
       }
       printer->Outdent();
-      printer->Print(
-          "};\n");
+      printer->Print("};\n");
       printer->Outdent();
       printer->Outdent();
     }
@@ -540,8 +534,8 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
     if (descriptor_->options().message_set_wire_format()) {
       init_flags.push_back("GPBDescriptorInitializationFlag_WireFormat");
     }
-    vars["init_flags"] = BuildFlagsString(FLAGTYPE_DESCRIPTOR_INITIALIZATION,
-                                          init_flags);
+    vars["init_flags"] =
+        BuildFlagsString(FLAGTYPE_DESCRIPTOR_INITIALIZATION, init_flags);
 
     // clang-format off
     printer->Print(
@@ -556,8 +550,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
         "                                         flags:$init_flags$];\n");
     // clang-format on
     if (!oneof_generators_.empty()) {
-      printer->Print(
-          "    static const char *oneofs[] = {\n");
+      printer->Print("    static const char *oneofs[] = {\n");
       for (const auto& generator : oneof_generators_) {
         printer->Print("      \"$name$\",\n", "name",
                        generator->DescriptorName());
@@ -580,10 +573,9 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
       // clang-format on
       static const int kBytesPerLine = 40;  // allow for escaping
       for (int i = 0; i < text_format_data_str.size(); i += kBytesPerLine) {
-        printer->Print(
-            "\n        \"$data$\"",
-            "data", EscapeTrigraphs(
-                absl::CEscape(text_format_data_str.substr(i, kBytesPerLine))));
+        printer->Print("\n        \"$data$\"", "data",
+                       EscapeTrigraphs(absl::CEscape(
+                           text_format_data_str.substr(i, kBytesPerLine))));
       }
       // clang-format off
       printer->Print(
@@ -593,12 +585,11 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
       // clang-format on
     }
     if (!sorted_extensions.empty()) {
-      printer->Print(
-          "    static const GPBExtensionRange ranges[] = {\n");
+      printer->Print("    static const GPBExtensionRange ranges[] = {\n");
       for (int i = 0; i < sorted_extensions.size(); i++) {
-        printer->Print("      { .start = $start$, .end = $end$ },\n",
-                       "start", absl::StrCat(sorted_extensions[i]->start),
-                       "end", absl::StrCat(sorted_extensions[i]->end));
+        printer->Print("      { .start = $start$, .end = $end$ },\n", "start",
+                       absl::StrCat(sorted_extensions[i]->start), "end",
+                       absl::StrCat(sorted_extensions[i]->end));
       }
       // clang-format off
       printer->Print(

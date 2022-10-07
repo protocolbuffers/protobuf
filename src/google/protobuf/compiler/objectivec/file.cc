@@ -34,14 +34,14 @@
 #include <iostream>
 #include <sstream>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/objectivec/enum.h"
 #include "google/protobuf/compiler/objectivec/extension.h"
-#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/import_writer.h"
 #include "google/protobuf/compiler/objectivec/message.h"
+#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/io/printer.h"
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
@@ -137,7 +137,7 @@ struct FileDescriptorsOrderedByName {
 
 }  // namespace
 
-FileGenerator::CommonState::CommonState() { }
+FileGenerator::CommonState::CommonState() {}
 
 const FileGenerator::CommonState::MinDepsEntry&
 FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
@@ -156,20 +156,24 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
         CollectMinimalFileDepsContainingExtensionsInternal(dep);
 
     // Everything the dep covered, this file will also cover.
-    covered_deps_collector.insert(dep_info.covered_deps.begin(), dep_info.covered_deps.end());
+    covered_deps_collector.insert(dep_info.covered_deps.begin(),
+                                  dep_info.covered_deps.end());
     // Prune everything from the dep's covered list in case another dep lists it
     // as a min dep.
     to_prune.insert(dep_info.covered_deps.begin(), dep_info.covered_deps.end());
 
     // Does the dep have any extensions...
     if (dep_info.has_extensions) {
-      // Yes -> Add this file, prune its min_deps and add them to the covered deps.
+      // Yes -> Add this file, prune its min_deps and add them to the covered
+      // deps.
       min_deps_collector.insert(dep);
       to_prune.insert(dep_info.min_deps.begin(), dep_info.min_deps.end());
-      covered_deps_collector.insert(dep_info.min_deps.begin(), dep_info.min_deps.end());
+      covered_deps_collector.insert(dep_info.min_deps.begin(),
+                                    dep_info.min_deps.end());
     } else {
       // No -> Just use its min_deps.
-      min_deps_collector.insert(dep_info.min_deps.begin(), dep_info.min_deps.end());
+      min_deps_collector.insert(dep_info.min_deps.begin(),
+                                dep_info.min_deps.end());
     }
   }
 
@@ -178,22 +182,25 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
   // Fast path: if nothing to prune or there was only one dep, the prune work is
   // a waste, skip it.
   if (to_prune.empty() || file->dependency_count() == 1) {
-    return deps_info_cache_.insert(
-        {file, {file_has_exts, min_deps_collector, covered_deps_collector}}).first->second;
+    return deps_info_cache_
+        .insert(
+            {file, {file_has_exts, min_deps_collector, covered_deps_collector}})
+        .first->second;
   }
 
   std::unordered_set<const FileDescriptor*> min_deps;
   std::copy_if(min_deps_collector.begin(), min_deps_collector.end(),
                std::inserter(min_deps, min_deps.end()),
-               [&](const FileDescriptor* value){
-    return to_prune.find(value) == to_prune.end();
-  });
-  return deps_info_cache_.insert(
-      {file, {file_has_exts, min_deps, covered_deps_collector}}).first->second;
+               [&](const FileDescriptor* value) {
+                 return to_prune.find(value) == to_prune.end();
+               });
+  return deps_info_cache_
+      .insert({file, {file_has_exts, min_deps, covered_deps_collector}})
+      .first->second;
 }
 
-// Collect the deps of the given file that contain extensions. This can be used to
-// create the chain of roots that need to be wired together.
+// Collect the deps of the given file that contain extensions. This can be used
+// to create the chain of roots that need to be wired together.
 //
 // NOTE: If any changes are made to this and the supporting functions, you will
 // need to manually validate what the generated code is for the test files:
@@ -205,7 +212,7 @@ const std::vector<const FileDescriptor*>
 FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensions(
     const FileDescriptor* file) {
   std::unordered_set<const FileDescriptor*> min_deps =
-    CollectMinimalFileDepsContainingExtensionsInternal(file).min_deps;
+      CollectMinimalFileDepsContainingExtensionsInternal(file).min_deps;
   // Sort the list since pointer order isn't stable across runs.
   std::vector<const FileDescriptor*> result(min_deps.begin(), min_deps.end());
   std::sort(result.begin(), result.end(), FileDescriptorsOrderedByName());
@@ -275,7 +282,8 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
 
   // The bundled protos (WKTs) don't use of forward declarations.
   bool headers_use_forward_declarations =
-      generation_options_.headers_use_forward_declarations && !is_bundled_proto_;
+      generation_options_.headers_use_forward_declarations &&
+      !is_bundled_proto_;
 
   {
     ImportWriter import_writer(
@@ -409,11 +417,12 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
   }
 
   std::vector<const FileDescriptor*> deps_with_extensions =
-    common_state_.CollectMinimalFileDepsContainingExtensions(file_);
+      common_state_.CollectMinimalFileDepsContainingExtensions(file_);
 
   // The bundled protos (WKTs) don't use of forward declarations.
   bool headers_use_forward_declarations =
-      generation_options_.headers_use_forward_declarations && !is_bundled_proto_;
+      generation_options_.headers_use_forward_declarations &&
+      !is_bundled_proto_;
 
   {
     ImportWriter import_writer(
@@ -434,7 +443,7 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
         public_import_names.insert(file_->public_dependency(i)->name());
       }
       for (int i = 0; i < file_->dependency_count(); i++) {
-        const FileDescriptor *dep = file_->dependency(i);
+        const FileDescriptor* dep = file_->dependency(i);
         bool public_import = (public_import_names.count(dep->name()) != 0);
         if (!public_import) {
           import_writer.AddFile(dep, header_extension);
@@ -499,8 +508,7 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
         "#pragma clang diagnostic ignored \"-Wdollar-in-identifier-extension\"\n");
     // clang-format on
   }
-  printer->Print(
-      "\n");
+  printer->Print("\n");
   if (!fwd_decls.empty()) {
     // clang-format off
     printer->Print(
@@ -544,8 +552,7 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
     printer->Indent();
 
     if (file_contains_extensions) {
-      printer->Print(
-          "static GPBExtensionDescription descriptions[] = {\n");
+      printer->Print("static GPBExtensionDescription descriptions[] = {\n");
       printer->Indent();
       for (const auto& generator : extension_generators_) {
         generator->GenerateStaticVariablesInitialization(printer);
@@ -710,14 +717,13 @@ void FileGenerator::PrintFileRuntimePreamble(
       import_prefix += "/";
     }
     for (const auto& header : headers_to_import) {
-      printer->Print(
-          "#import \"$import_prefix$$header$\"\n",
-          "import_prefix", import_prefix,
-          "header", header);
+      printer->Print("#import \"$import_prefix$$header$\"\n", "import_prefix",
+                     import_prefix, "header", header);
     }
   } else {
-    ImportWriter::PrintRuntimeImports(
-        printer, headers_to_import, generation_options_.runtime_import_prefix, true);
+    ImportWriter::PrintRuntimeImports(printer, headers_to_import,
+                                      generation_options_.runtime_import_prefix,
+                                      true);
   }
 
   printer->Print("\n");
