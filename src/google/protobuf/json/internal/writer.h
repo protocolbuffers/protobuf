@@ -80,7 +80,9 @@ struct WriterOptions {
 
 template <typename Tuple, typename F, size_t... i>
 void EachInner(const Tuple& value, F f, std::index_sequence<i...>) {
-  (void)(int[]){(f(std::get<i>(value)), 0)...};  // NOLINT(readability/braces)
+  int ignored[] =
+    {(f(std::get<i>(value)), 0)...};  // NOLINT(readability/braces)
+  (void)ignored;
 }
 
 // Executes f on each element of value.
@@ -157,7 +159,7 @@ class JsonWriter {
   template <typename... Ts>
   void Write(Quoted<Ts...> val) {
     Write('"');
-    Each(val.value, [this](auto x) { WriteQuoted(x); });
+    Each(val.value, [this](auto x) { this->WriteQuoted(x); });
     Write('"');
   }
 
@@ -166,7 +168,7 @@ class JsonWriter {
       // This bit of SFINAE avoids this function being called with one argument,
       // so the other overloads of Write() can be picked up instead.
       typename std::enable_if<sizeof...(Ts) != 1, void>::type {
-    Each(std::make_tuple(args...), [this](auto x) { Write(x); });
+    Each(std::make_tuple(args...), [this](auto x) { this->Write(x); });
   }
 
   void Whitespace(absl::string_view ws) {

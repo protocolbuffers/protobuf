@@ -24,6 +24,8 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_align.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_config.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/importer.cc
@@ -53,6 +55,13 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream_impl.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream_impl_lite.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/lexer.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/message_path.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/parser.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/unparser.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/untyped_message.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/writer.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/zero_copy_buffered_stream.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/json/json.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_field.cc
@@ -93,6 +102,9 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_align.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_allocation_policy.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_cleanup.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_config.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_impl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.h
@@ -129,6 +141,16 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream_impl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream_impl_lite.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/descriptor_traits.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/lexer.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/message_path.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/parser.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/parser_traits.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/unparser.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/unparser_traits.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/untyped_message.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/writer.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/json/internal/zero_copy_buffered_stream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/json/json.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_entry.h
@@ -179,6 +201,8 @@ set(libprotobuf_hdrs
 set(libprotobuf_lite_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_align.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_config.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/extension_set.cc
@@ -208,6 +232,9 @@ set(libprotobuf_lite_srcs
 set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_align.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_allocation_policy.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_cleanup.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_config.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_impl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring.h
