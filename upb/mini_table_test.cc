@@ -236,22 +236,6 @@ TEST(MiniTableEnumTest, Enum) {
   }
 }
 
-TEST_P(MiniTableTest, SubsInitializedToNull) {
-  upb::Arena arena;
-  upb::MtDataEncoder e;
-  // Create mini table with 2 message fields.
-  ASSERT_TRUE(e.StartMessage(0));
-  ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 15, 0));
-  ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 16, 0));
-  upb::Status status;
-  upb_MiniTable* table = upb_MiniTable_Build(
-      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
-  ASSERT_NE(nullptr, table);
-  EXPECT_EQ(table->field_count, 2);
-  EXPECT_EQ(table->subs[0].submsg, nullptr);
-  EXPECT_EQ(table->subs[1].submsg, nullptr);
-}
-
 TEST(MiniTableEnumTest, PositiveAndNegative) {
   upb::Arena arena;
   upb::MtDataEncoder e;
