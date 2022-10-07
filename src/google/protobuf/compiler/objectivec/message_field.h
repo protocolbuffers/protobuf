@@ -68,7 +68,8 @@ class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
   virtual ~RepeatedMessageFieldGenerator();
 
   RepeatedMessageFieldGenerator(const RepeatedMessageFieldGenerator&) = delete;
-  RepeatedMessageFieldGenerator operator=(const RepeatedMessageFieldGenerator&) = delete;
+  RepeatedMessageFieldGenerator operator=(
+      const RepeatedMessageFieldGenerator&) = delete;
 
  public:
   virtual void DetermineForwardDeclarations(

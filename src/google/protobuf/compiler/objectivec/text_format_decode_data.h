@@ -68,7 +68,6 @@ class PROTOC_EXPORT TextFormatDecodeData {
   std::vector<DataEntry> entries_;
 };
 
-
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf

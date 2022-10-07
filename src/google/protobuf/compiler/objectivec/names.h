@@ -49,8 +49,7 @@ namespace objectivec {
 
 // Get/Set the path to a file to load for objc class prefix lookups.
 std::string PROTOC_EXPORT GetPackageToPrefixMappingsPath();
-void PROTOC_EXPORT SetPackageToPrefixMappingsPath(
-    const std::string& file_path);
+void PROTOC_EXPORT SetPackageToPrefixMappingsPath(const std::string& file_path);
 // Get/Set if the proto package should be used to make the default prefix for
 // symbols. This will then impact most of the type naming apis below. It is done
 // as a global to not break any other generator reusing the methods since they
@@ -61,8 +60,8 @@ void PROTOC_EXPORT SetUseProtoPackageAsDefaultPrefix(bool on_or_off);
 // `UseProtoPackageAsDefaultPrefix()` is `true`. An empty string means there
 // should be no exceptions.
 std::string PROTOC_EXPORT GetProtoPackagePrefixExceptionList();
-void PROTOC_EXPORT SetProtoPackagePrefixExceptionList(
-    const std::string& file_path);
+void PROTOC_EXPORT
+SetProtoPackagePrefixExceptionList(const std::string& file_path);
 // Get/Set a prefix to add before the prefix generated from the package name.
 // This is only used when UseProtoPackageAsDefaultPrefix() is True.
 std::string PROTOC_EXPORT GetForcedPackagePrefix();
@@ -108,14 +107,16 @@ std::string PROTOC_EXPORT EnumName(const EnumDescriptor* descriptor);
 std::string PROTOC_EXPORT EnumValueName(const EnumValueDescriptor* descriptor);
 
 // Returns the name of the enum value corresponding to the descriptor.
-std::string PROTOC_EXPORT EnumValueShortName(const EnumValueDescriptor* descriptor);
+std::string PROTOC_EXPORT
+EnumValueShortName(const EnumValueDescriptor* descriptor);
 
 // Reverse what an enum does.
 std::string PROTOC_EXPORT UnCamelCaseEnumShortName(const std::string& name);
 
 // Returns the name to use for the extension (used as the method off the file's
 // Root class).
-std::string PROTOC_EXPORT ExtensionMethodName(const FieldDescriptor* descriptor);
+std::string PROTOC_EXPORT
+ExtensionMethodName(const FieldDescriptor* descriptor);
 
 // Returns the transformed field name.
 std::string PROTOC_EXPORT FieldName(const FieldDescriptor* field);
@@ -124,7 +125,8 @@ std::string PROTOC_EXPORT FieldNameCapitalized(const FieldDescriptor* field);
 // Returns the transformed oneof name.
 std::string PROTOC_EXPORT OneofEnumName(const OneofDescriptor* descriptor);
 std::string PROTOC_EXPORT OneofName(const OneofDescriptor* descriptor);
-std::string PROTOC_EXPORT OneofNameCapitalized(const OneofDescriptor* descriptor);
+std::string PROTOC_EXPORT
+OneofNameCapitalized(const OneofDescriptor* descriptor);
 
 // Reverse of the above.
 std::string PROTOC_EXPORT UnCamelCaseFieldName(const std::string& name,
