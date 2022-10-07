@@ -30,7 +30,7 @@
 
 // This file provides alignment utilities for use in arenas.
 //
-// `ArenaAlign` constains a single `align` data member and provides
+// `ArenaAlign` contains a single `align` data member and provides
 // the below functions which operate on the given alignment.
 //
 //   Ceil(size_t n)      - rounds `n` up to the nearest `align` boundary.

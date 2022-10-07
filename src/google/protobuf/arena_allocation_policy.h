@@ -41,7 +41,7 @@ namespace protobuf {
 namespace internal {
 
 // `AllocationPolicy` defines `Arena` allocation policies. Applications can
-// customize the inital and maximum sizes for arena allocation, as well as set
+// customize the initial and maximum sizes for arena allocation, as well as set
 // custom allocation and deallocation functions. `AllocationPolicy` is for
 // protocol buffer internal use only, and typically created from a user facing
 // public configuration class such as `ArenaOptions`.

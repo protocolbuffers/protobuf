@@ -1907,6 +1907,7 @@ class ValueProductMapKeyComparator
  public:
   typedef util::MessageDifferencer::SpecificField SpecificField;
   bool IsMatch(const Message& message1, const Message& message2,
+               int unpacked_any,
                const std::vector<SpecificField>& parent_fields) const override {
     const Reflection* reflection1 = message1.GetReflection();
     const Reflection* reflection2 = message2.GetReflection();
@@ -1968,6 +1969,7 @@ class OffsetByOneMapKeyComparator
  public:
   typedef util::MessageDifferencer::SpecificField SpecificField;
   bool IsMatch(const Message& message1, const Message& message2,
+               int unpacked_any,
                const std::vector<SpecificField>& parent_fields) const override {
     return parent_fields.back().index + 1 == parent_fields.back().new_index;
   }
@@ -3402,6 +3404,7 @@ class LengthMapKeyComparator
  public:
   typedef util::MessageDifferencer::SpecificField SpecificField;
   bool IsMatch(const Message& message1, const Message& message2,
+               int unpacked_any,
                const std::vector<SpecificField>& parent_fields) const override {
     const Reflection* reflection1 = message1.GetReflection();
     const Reflection* reflection2 = message2.GetReflection();
