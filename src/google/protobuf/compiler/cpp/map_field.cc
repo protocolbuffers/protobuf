@@ -32,10 +32,10 @@
 
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/ascii.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 
+#include "google/protobuf/stubs/strutil.h"
 
 namespace google {
 namespace protobuf {

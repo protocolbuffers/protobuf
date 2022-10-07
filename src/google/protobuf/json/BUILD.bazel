@@ -1,0 +1,268 @@
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+package(default_visibility = [
+    "//src/google/protobuf/json:__pkg__",
+    "//pkg:__pkg__",
+])
+
+licenses(["notice"])
+
+cc_library(
+    name = "json",
+    srcs = ["json.cc"],
+    hdrs = ["json.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":parser",
+        ":unparser",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port_def",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:zero_copy_sink",
+        "//src/google/protobuf/util:type_resolver_util",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "json_test",
+    srcs = ["json_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":json",
+        "//src/google/protobuf",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:port_def",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/util:json_format_cc_proto",
+        "//src/google/protobuf/util:json_format_proto3_cc_proto",
+        "//src/google/protobuf/util:type_resolver_util",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "test_input_stream",
+    testonly = True,
+    hdrs = ["internal/test_input_stream.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//src/google/protobuf/io",
+        "@com_google_absl//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "zero_copy_buffered_stream",
+    srcs = ["internal/zero_copy_buffered_stream.cc"],
+    hdrs = ["internal/zero_copy_buffered_stream.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        "//src/google/protobuf:port_def",
+        "//src/google/protobuf/io",
+        "@com_google_absl//absl/algorithm:container",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "zero_copy_buffered_stream_test",
+    srcs = ["internal/zero_copy_buffered_stream_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":test_input_stream",
+        ":zero_copy_buffered_stream",
+        "@com_google_absl//absl/strings",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "untyped_message",
+    srcs = ["internal/untyped_message.cc"],
+    hdrs = ["internal/untyped_message.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:port_def",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/util:type_resolver_util",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/types:span",
+        "@com_google_absl//absl/types:variant",
+    ],
+)
+
+cc_library(
+    name = "lexer",
+    srcs = ["internal/lexer.cc"],
+    hdrs = ["internal/lexer.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":message_path",
+        ":zero_copy_buffered_stream",
+        "//src/google/protobuf:port_def",
+        "//src/google/protobuf/io",
+        "@com_google_absl//absl/algorithm:container",
+        "@com_google_absl//absl/numeric:bits",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "lexer_test",
+    srcs = ["internal/lexer_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":lexer",
+        ":test_input_stream",
+        "//src/google/protobuf/io",
+        "@com_google_absl//absl/algorithm:container",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/types:variant",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "writer",
+    srcs = ["internal/writer.cc"],
+    hdrs = ["internal/writer.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        "//src/google/protobuf:port_def",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:zero_copy_sink",
+        "@com_google_absl//absl/algorithm:container",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+    ],
+)
+
+cc_library(
+    name = "descriptor_traits",
+    hdrs = ["internal/descriptor_traits.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":lexer",
+        ":untyped_message",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port_def",
+        "//src/google/protobuf/util:type_resolver_util",
+        "@com_google_absl//absl/algorithm:container",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/types:optional",
+    ],
+)
+
+cc_library(
+    name = "parser",
+    srcs = [
+        "internal/parser.cc",
+    ],
+    hdrs = [
+        "internal/parser.h",
+        "internal/parser_traits.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":descriptor_traits",
+        ":lexer",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port_def",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:zero_copy_sink",
+        "//src/google/protobuf/util:type_resolver_util",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/base:core_headers",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/status:statusor",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/types:span",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "unparser",
+    srcs = [
+        "internal/unparser.cc",
+    ],
+    hdrs = [
+        "internal/unparser.h",
+        "internal/unparser_traits.h",
+    ],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        ":descriptor_traits",
+        ":untyped_message",
+        ":writer",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port_def",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/util:type_resolver_util",
+        "@com_google_absl//absl/container:flat_hash_map",
+        "@com_google_absl//absl/status",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
+        "@com_google_absl//absl/types:optional",
+        "@com_google_absl//absl/types:variant",
+    ],
+)
+
+cc_library(
+    name = "message_path",
+    srcs = ["internal/message_path.cc"],
+    hdrs = ["internal/message_path.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    deps = [
+        "//src/google/protobuf",
+        "@com_google_absl//absl/cleanup",
+        "@com_google_absl//absl/strings",
+    ],
+)

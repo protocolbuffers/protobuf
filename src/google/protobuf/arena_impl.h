@@ -43,11 +43,12 @@
 #include "google/protobuf/stubs/logging.h"
 #include "absl/numeric/bits.h"
 #include "absl/synchronization/mutex.h"
-#include "google/protobuf/port.h"
-
-
+#include "google/protobuf/arena_allocation_policy.h"
+#include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_config.h"
 #include "google/protobuf/arenaz_sampler.h"
+#include "google/protobuf/port.h"
+
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -87,176 +88,32 @@ inline PROTOBUF_ALWAYS_INLINE void* AlignTo(void* p, size_t a) {
   }
 }
 
-// Wraps std::atomic<T> to avoid accidentally accessing the atomic variable via
-// a default memory order (std::memory_order_seq_cst).
-template <typename T>
-struct Atomic {
-  PROTOBUF_CONSTEXPR explicit Atomic(T v) : val(v) {}
-
-  T relaxed_get() const { return val.load(std::memory_order_relaxed); }
-  T relaxed_get() { return val.load(std::memory_order_relaxed); }
-  void relaxed_set(T v) { val.store(v, std::memory_order_relaxed); }
-
-  T atomic_get() const { return val.load(std::memory_order_acquire); }
-  T atomic_get() { return val.load(std::memory_order_acquire); }
-  void atomic_set(T v) { val.store(v, std::memory_order_release); }
-
-  T relaxed_fetch_add(T v) {
-    return val.fetch_add(v, std::memory_order_relaxed);
-  }
-
- private:
-  std::atomic<T> val;
-};
-
 // Arena blocks are variable length malloc-ed objects.  The following structure
 // describes the common header for all blocks.
 struct ArenaBlock {
   // For the sentry block with zero-size where ptr_, limit_, cleanup_nodes all
   // point to "this".
-  PROTOBUF_CONSTEXPR ArenaBlock()
-      : next(nullptr), cleanup_nodes(this), relaxed_size(0) {}
+  constexpr ArenaBlock()
+      : next(nullptr), cleanup_nodes(this), size(0) {}
 
   ArenaBlock(ArenaBlock* next, size_t size)
-      : next(next), cleanup_nodes(nullptr), relaxed_size(size) {
+      : next(next), cleanup_nodes(nullptr), size(size) {
     GOOGLE_DCHECK_GT(size, sizeof(ArenaBlock));
   }
 
   char* Pointer(size_t n) {
-    GOOGLE_DCHECK_LE(n, size());
+    GOOGLE_DCHECK_LE(n, size);
     return reinterpret_cast<char*>(this) + n;
   }
-  char* Limit() { return Pointer(size() & static_cast<size_t>(-8)); }
+  char* Limit() { return Pointer(size & static_cast<size_t>(-8)); }
 
-  size_t size() const { return relaxed_size.relaxed_get(); }
-  bool IsSentry() const { return size() == 0; }
+  bool IsSentry() const { return size == 0; }
 
   ArenaBlock* const next;
   void* cleanup_nodes;
-
- private:
-  const Atomic<size_t> relaxed_size;
+  const size_t size;
   // data follows
 };
-
-namespace cleanup {
-
-template <typename T>
-void arena_destruct_object(void* object) {
-  reinterpret_cast<T*>(object)->~T();
-}
-
-enum class Tag : uintptr_t {
-  kDynamic = 0,  // {void* elem, void (*destructor)(void*)}
-  kString = 1,   // std::string* | kString
-};
-
-constexpr bool EnableSpecializedTags() {
-  return alignof(std::string) >= 8
-      ;
-}
-
-// All node types must start with a `uintptr_t` that stores `Tag` in its low
-// two bits.
-struct DynamicNode {
-  uintptr_t elem;
-  void (*destructor)(void*);
-};
-
-struct StringNode {
-  uintptr_t elem;
-};
-
-
-inline PROTOBUF_ALWAYS_INLINE void CreateNode(Tag tag, void* pos,
-                                              const void* elem,
-                                              void (*destructor)(void*)) {
-  if (EnableSpecializedTags()) {
-    switch (tag) {
-      case Tag::kString: {
-        StringNode n = {reinterpret_cast<uintptr_t>(elem) |
-                        static_cast<uintptr_t>(Tag::kString)};
-        memcpy(pos, &n, sizeof(n));
-        return;
-      }
-      default:
-        break;
-    }
-  }
-  DynamicNode n = {reinterpret_cast<uintptr_t>(elem), destructor};
-  memcpy(pos, &n, sizeof(n));
-}
-
-inline PROTOBUF_ALWAYS_INLINE void PrefetchNode(const void* elem_address) {
-  (void)elem_address;
-}
-
-inline PROTOBUF_ALWAYS_INLINE void DestroyNode(Tag tag, const void* pos) {
-  if (EnableSpecializedTags()) {
-    switch (tag) {
-      case Tag::kString: {
-        StringNode n;
-        memcpy(&n, pos, sizeof(n));
-        auto* s = reinterpret_cast<std::string*>(n.elem & ~0x7ULL);
-        // Some compilers don't like fully qualified explicit dtor calls,
-        // so use an alias to avoid having to type `::`.
-        using string_type = std::string;
-        s->~string_type();
-        return;
-      }
-      default:
-        break;
-    }
-  }
-  DynamicNode n;
-  memcpy(&n, pos, sizeof(n));
-  n.destructor(reinterpret_cast<void*>(n.elem));
-}
-
-inline PROTOBUF_ALWAYS_INLINE Tag Type(void (*destructor)(void*)) {
-  if (EnableSpecializedTags()) {
-    if (destructor == &arena_destruct_object<std::string>) {
-      return Tag::kString;
-    }
-  }
-  return Tag::kDynamic;
-}
-
-inline PROTOBUF_ALWAYS_INLINE Tag Type(void* raw) {
-  if (!EnableSpecializedTags()) return Tag::kDynamic;
-
-  uintptr_t elem;
-  memcpy(&elem, raw, sizeof(elem));
-  switch (static_cast<Tag>(elem & 0x7ULL)) {
-    case Tag::kDynamic:
-      return Tag::kDynamic;
-    case Tag::kString:
-      return Tag::kString;
-    default:
-      GOOGLE_LOG(FATAL) << "Corrupted cleanup tag: " << (elem & 0x7ULL);
-      return Tag::kDynamic;
-  }
-}
-
-inline PROTOBUF_ALWAYS_INLINE size_t Size(Tag tag) {
-  if (!EnableSpecializedTags()) return sizeof(DynamicNode);
-
-  switch (tag) {
-    case Tag::kDynamic:
-      return sizeof(DynamicNode);
-    case Tag::kString:
-      return sizeof(StringNode);
-    default:
-      GOOGLE_LOG(FATAL) << "Corrupted cleanup tag: " << static_cast<int>(tag);
-      return sizeof(DynamicNode);
-  }
-}
-
-inline PROTOBUF_ALWAYS_INLINE size_t Size(void (*destructor)(void*)) {
-  return destructor == nullptr ? 0 : Size(Type(destructor));
-}
-
-}  // namespace cleanup
 
 using LifecycleIdAtomic = uint64_t;
 
@@ -293,79 +150,6 @@ class PROTOBUF_EXPORT ArenaMetricsCollector {
   const bool record_allocs_;
 };
 
-struct AllocationPolicy {
-  static constexpr size_t kDefaultStartBlockSize = 256;
-
-  size_t start_block_size = kDefaultStartBlockSize;
-  size_t max_block_size = GetDefaultArenaMaxBlockSize();
-  void* (*block_alloc)(size_t) = nullptr;
-  void (*block_dealloc)(void*, size_t) = nullptr;
-
-  bool IsDefault() const {
-    return start_block_size == kDefaultStartBlockSize &&
-           max_block_size == GetDefaultArenaMaxBlockSize() &&
-           block_alloc == nullptr && block_dealloc == nullptr;
-  }
-};
-
-// Tagged pointer to an AllocationPolicy.
-class TaggedAllocationPolicyPtr {
- public:
-  constexpr TaggedAllocationPolicyPtr() : policy_(0) {}
-
-  explicit TaggedAllocationPolicyPtr(AllocationPolicy* policy)
-      : policy_(reinterpret_cast<uintptr_t>(policy)) {}
-
-  void set_policy(AllocationPolicy* policy) {
-    auto bits = policy_ & kTagsMask;
-    policy_ = reinterpret_cast<uintptr_t>(policy) | bits;
-  }
-
-  AllocationPolicy* get() {
-    return reinterpret_cast<AllocationPolicy*>(policy_ & kPtrMask);
-  }
-  const AllocationPolicy* get() const {
-    return reinterpret_cast<const AllocationPolicy*>(policy_ & kPtrMask);
-  }
-
-  AllocationPolicy& operator*() { return *get(); }
-  const AllocationPolicy& operator*() const { return *get(); }
-
-  AllocationPolicy* operator->() { return get(); }
-  const AllocationPolicy* operator->() const { return get(); }
-
-  bool is_user_owned_initial_block() const {
-    return static_cast<bool>(get_mask<kUserOwnedInitialBlock>());
-  }
-  void set_is_user_owned_initial_block(bool v) {
-    set_mask<kUserOwnedInitialBlock>(v);
-  }
-
-  uintptr_t get_raw() const { return policy_; }
-
- private:
-  enum : uintptr_t {
-    kUserOwnedInitialBlock = 1,
-  };
-
-  static constexpr uintptr_t kTagsMask = 7;
-  static constexpr uintptr_t kPtrMask = ~kTagsMask;
-
-  template <uintptr_t kMask>
-  uintptr_t get_mask() const {
-    return policy_ & kMask;
-  }
-  template <uintptr_t kMask>
-  void set_mask(bool v) {
-    if (v) {
-      policy_ |= kMask;
-    } else {
-      policy_ &= ~kMask;
-    }
-  }
-  uintptr_t policy_;
-};
-
 enum class AllocationClient { kDefault, kArray };
 
 class ThreadSafeArena;
@@ -394,7 +178,9 @@ class PROTOBUF_EXPORT SerialArena {
   };
 
   void CleanupList();
-  uint64_t SpaceAllocated() const { return space_allocated_.relaxed_get(); }
+  uint64_t SpaceAllocated() const {
+    return space_allocated_.load(std::memory_order_relaxed);
+  }
   uint64_t SpaceUsed() const;
 
   bool HasSpace(size_t n) const {
@@ -542,8 +328,7 @@ class PROTOBUF_EXPORT SerialArena {
   }
 
   PROTOBUF_ALWAYS_INLINE
-  void AddCleanup(void* elem, void (*destructor)(void*),
-                  const AllocationPolicy* policy, ThreadSafeArenaStats* stats) {
+  void AddCleanup(void* elem, void (*destructor)(void*)) {
     size_t required = cleanup::Size(destructor);
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(required))) {
       return AddCleanupFallback(elem, destructor);
@@ -592,13 +377,13 @@ class PROTOBUF_EXPORT SerialArena {
   // Next pointer to allocate from.  Always 8-byte aligned.  Points inside
   // head_ (and head_->pos will always be non-canonical).  We keep these
   // here to reduce indirection.
-  Atomic<char*> ptr_{nullptr};
+  std::atomic<char*> ptr_{nullptr};
   // Limiting address up to which memory can be allocated from the head block.
   char* limit_ = nullptr;
 
-  Atomic<ArenaBlock*> head_{nullptr};  // Head of linked list of blocks.
-  Atomic<size_t> space_used_{0};       // Necessary for metrics.
-  Atomic<size_t> space_allocated_{0};
+  std::atomic<ArenaBlock*> head_{nullptr};  // Head of linked list of blocks.
+  std::atomic<size_t> space_used_{0};       // Necessary for metrics.
+  std::atomic<size_t> space_allocated_{0};
   ThreadSafeArena& parent_;
 
   // Repeated*Field and Arena play together to reduce memory consumption by
@@ -616,13 +401,14 @@ class PROTOBUF_EXPORT SerialArena {
   CachedBlock** cached_blocks_ = nullptr;
 
   // Helper getters/setters to handle relaxed operations on atomic variables.
-  ArenaBlock* head() { return head_.relaxed_get(); }
-  const ArenaBlock* head() const { return head_.relaxed_get(); }
-  void set_head(ArenaBlock* head) { return head_.relaxed_set(head); }
+  ArenaBlock* head() { return head_.load(std::memory_order_relaxed); }
+  const ArenaBlock* head() const {
+    return head_.load(std::memory_order_relaxed);
+  }
 
-  char* ptr() { return ptr_.relaxed_get(); }
-  const char* ptr() const { return ptr_.relaxed_get(); }
-  void set_ptr(char* ptr) { return ptr_.relaxed_set(ptr); }
+  char* ptr() { return ptr_.load(std::memory_order_relaxed); }
+  const char* ptr() const { return ptr_.load(std::memory_order_relaxed); }
+  void set_ptr(char* ptr) { return ptr_.store(ptr, std::memory_order_relaxed); }
 
   // Constructor is private as only New() should be used.
   inline SerialArena(ArenaBlock* b, ThreadSafeArena& parent);
@@ -763,7 +549,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Adding a new chunk to head_ must be protected by mutex_.
   absl::Mutex mutex_;
   // Pointer to a linked list of SerialArenaChunk.
-  Atomic<SerialArenaChunk*> head_{nullptr};
+  std::atomic<SerialArenaChunk*> head_{nullptr};
 
   void* first_owner_;
   // Must be declared after alloc_policy_; otherwise, it may lose info on
@@ -805,8 +591,9 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     return false;
   }
 
-  // Finds SerialArena or creates one if not found.
-  SerialArena* GetSerialArenaFallback();
+  // Finds SerialArena or creates one if not found. When creating a new one,
+  // create a big enough block to accommodate n bytes.
+  SerialArena* GetSerialArenaFallback(size_t n);
 
   template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAlignedFallback(size_t n);
@@ -865,9 +652,9 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 #pragma warning(disable : 4324)
 #endif
   struct alignas(kCacheAlignment) CacheAlignedLifecycleIdGenerator {
-    PROTOBUF_CONSTEXPR CacheAlignedLifecycleIdGenerator() : id{0} {}
+    constexpr CacheAlignedLifecycleIdGenerator() : id{0} {}
 
-    Atomic<LifecycleIdAtomic> id;
+    std::atomic<LifecycleIdAtomic> id;
   };
   static CacheAlignedLifecycleIdGenerator lifecycle_id_generator_;
 #if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
@@ -891,6 +678,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
       (sizeof(SerialArena) + 7) & static_cast<size_t>(-8);
   static constexpr size_t kAllocPolicySize =
       AlignUpTo8(sizeof(AllocationPolicy));
+  static constexpr size_t kMaxCleanupNodeSize = 16;
   static_assert(kBlockHeaderSize % 8 == 0,
                 "kBlockHeaderSize must be a multiple of 8.");
   static_assert(kSerialArenaSize % 8 == 0,

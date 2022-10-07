@@ -38,6 +38,7 @@
 #include <typeinfo>
 
 #include "absl/synchronization/mutex.h"
+#include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_impl.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
@@ -55,13 +56,26 @@ namespace protobuf {
 namespace internal {
 namespace {
 
-PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT ArenaBlock
-    kSentryArenaBlock = {};
+#if defined(__GNUC__) && __GNUC__ >= 5
+// kSentryArenaBlock is used for arenas which can be referenced pre-main. So,
+// constexpr is required.
+constexpr ArenaBlock kSentryArenaBlock;
 
 ArenaBlock* SentryArenaBlock() {
   // const_cast<> is okay as kSentryArenaBlock will never be mutated.
   return const_cast<ArenaBlock*>(&kSentryArenaBlock);
 }
+#else
+// TODO(b/248322260) Remove this once we're not using GCC 4.9 for tests.
+// There is a compiler bug in this version that causes the above constexpr to
+// fail.  This version is no longer in our support window, but we use it in
+// some of our aarch64 docker images.
+ArenaBlock* SentryArenaBlock() {
+  static const ArenaBlock kSentryArenaBlock;
+  // const_cast<> is okay as kSentryArenaBlock will never be mutated.
+  return const_cast<ArenaBlock*>(&kSentryArenaBlock);
+}
+#endif
 
 }  // namespace
 
@@ -122,7 +136,7 @@ SerialArena::SerialArena(ArenaBlock* b, ThreadSafeArena& parent)
     : ptr_{b->Pointer(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize)},
       limit_{b->Limit()},
       head_{b},
-      space_allocated_{b->size()},
+      space_allocated_{b->size},
       parent_{parent} {
   GOOGLE_DCHECK(!b->IsSentry());
 }
@@ -135,7 +149,7 @@ SerialArena::SerialArena(ThreadSafeArena& parent)
 // provided or newly allocated to store AllocationPolicy.
 SerialArena::SerialArena(FirstSerialArena, ArenaBlock* b,
                          ThreadSafeArena& parent)
-    : head_{b}, space_allocated_{b->size()}, parent_{parent} {
+    : head_{b}, space_allocated_{b->size}, parent_{parent} {
   if (b->IsSentry()) return;
 
   set_ptr(b->Pointer(kBlockHeaderSize));
@@ -145,9 +159,9 @@ SerialArena::SerialArena(FirstSerialArena, ArenaBlock* b,
 void SerialArena::Init(ArenaBlock* b, size_t offset) {
   set_ptr(b->Pointer(offset));
   limit_ = b->Limit();
-  set_head(b);
-  space_used_.relaxed_set(0);
-  space_allocated_.relaxed_set(b->size());
+  head_.store(b, std::memory_order_relaxed);
+  space_used_.store(0, std::memory_order_relaxed);
+  space_allocated_.store(b->size, std::memory_order_relaxed);
   cached_block_length_ = 0;
   cached_blocks_ = nullptr;
 }
@@ -164,11 +178,11 @@ SerialArena* SerialArena::New(Memory mem, ThreadSafeArena& parent) {
 template <typename Deallocator>
 SerialArena::Memory SerialArena::Free(Deallocator deallocator) {
   ArenaBlock* b = head();
-  Memory mem = {b, b->size()};
+  Memory mem = {b, b->size};
   while (b->next) {
     b = b->next;  // We must first advance before deleting this block
     deallocator(mem);
-    mem = {b, b->size()};
+    mem = {b, b->size};
   }
   return mem;
 }
@@ -204,8 +218,9 @@ void SerialArena::AllocateNewBlock(size_t n) {
 
     // Record how much used in this block.
     used = static_cast<size_t>(ptr() - old_head->Pointer(kBlockHeaderSize));
-    wasted = old_head->size() - used;
-    space_used_.relaxed_set(space_used_.relaxed_get() + used);
+    wasted = old_head->size - used;
+    space_used_.store(space_used_.load(std::memory_order_relaxed) + used,
+                      std::memory_order_relaxed);
   }
 
   // TODO(sbenza): Evaluate if pushing unused space into the cached blocks is a
@@ -213,18 +228,21 @@ void SerialArena::AllocateNewBlock(size_t n) {
   // but with a CPU regression. The regression might have been an artifact of
   // the microbenchmark.
 
-  auto mem = AllocateMemory(parent_.AllocPolicy(), old_head->size(), n);
+  auto mem = AllocateMemory(parent_.AllocPolicy(), old_head->size, n);
   // We don't want to emit an expensive RMW instruction that requires
   // exclusive access to a cacheline. Hence we write it in terms of a
   // regular add.
-  space_allocated_.relaxed_set(space_allocated_.relaxed_get() + mem.size);
+  space_allocated_.store(
+      space_allocated_.load(std::memory_order_relaxed) + mem.size,
+      std::memory_order_relaxed);
   ThreadSafeArenaStats::RecordAllocateStats(parent_.arena_stats_.MutableStats(),
                                             /*used=*/used,
                                             /*allocated=*/mem.size, wasted);
   auto* new_head = new (mem.ptr) ArenaBlock{old_head, mem.size};
-  set_head(new_head);
   set_ptr(new_head->Pointer(kBlockHeaderSize));
   limit_ = new_head->Limit();
+  // Previous writes must take effect before writing new head.
+  head_.store(new_head, std::memory_order_release);
 
 #ifdef ADDRESS_SANITIZER
   ASAN_POISON_MEMORY_REGION(ptr(), limit_ - ptr());
@@ -239,15 +257,15 @@ uint64_t SerialArena::SpaceUsed() const {
   // usage of the *current* block.
   // TODO(mkruskal) Consider eliminating this race in exchange for a possible
   // performance hit on ARM (see cl/455186837).
-  const ArenaBlock* h = head();
+  const ArenaBlock* h = head_.load(std::memory_order_acquire);
   if (h->IsSentry()) return 0;
 
-  const uint64_t current_block_size = h->size();
+  const uint64_t current_block_size = h->size;
   uint64_t current_space_used = std::min(
       static_cast<uint64_t>(
           ptr() - const_cast<ArenaBlock*>(h)->Pointer(kBlockHeaderSize)),
       current_block_size);
-  return current_space_used + space_used_.relaxed_get();
+  return current_space_used + space_used_.load(std::memory_order_relaxed);
 }
 
 void SerialArena::CleanupList() {
@@ -308,21 +326,21 @@ void SerialArena::CleanupList() {
 //   struct SerialArenaChunkHeader {
 //     SerialArenaChunk* next_chunk;
 //     uint32_t capacity;
-//     Atomic<uint32_t> size;
+//     std::atomic<uint32_t> size;
 //   } header;
-//   Atomic<void*> ids[];
-//   Atomic<SerialArena*> arenas[];
+//   std::atomic<void*> ids[];
+//   std::atomic<SerialArena*> arenas[];
 // };
 //
 // where the size of "ids" and "arenas" is determined at runtime; hence the use
 // of Layout.
 struct SerialArenaChunkHeader {
-  PROTOBUF_CONSTEXPR SerialArenaChunkHeader(uint32_t capacity, uint32_t size)
+  constexpr SerialArenaChunkHeader(uint32_t capacity, uint32_t size)
       : next_chunk(nullptr), capacity(capacity), size(size) {}
 
   ThreadSafeArena::SerialArenaChunk* next_chunk;
   uint32_t capacity;
-  Atomic<uint32_t> size;
+  std::atomic<uint32_t> size;
 };
 
 class ThreadSafeArena::SerialArenaChunk {
@@ -330,14 +348,14 @@ class ThreadSafeArena::SerialArenaChunk {
   SerialArenaChunk(uint32_t capacity, void* me, SerialArena* serial) {
     new (&header()) SerialArenaChunkHeader{capacity, 1};
 
-    new (&id(0)) Atomic<void*>{me};
+    new (&id(0)) std::atomic<void*>{me};
     for (uint32_t i = 1; i < capacity; ++i) {
-      new (&id(i)) Atomic<void*>{nullptr};
+      new (&id(i)) std::atomic<void*>{nullptr};
     }
 
-    new (&arena(0)) Atomic<SerialArena*>{serial};
+    new (&arena(0)) std::atomic<SerialArena*>{serial};
     for (uint32_t i = 1; i < capacity; ++i) {
-      new (&arena(i)) Atomic<void*>{nullptr};
+      new (&arena(i)) std::atomic<void*>{nullptr};
     }
   }
 
@@ -355,29 +373,29 @@ class ThreadSafeArena::SerialArenaChunk {
   void set_capacity(uint32_t capacity) { header().capacity = capacity; }
 
   // ids: returns up to size().
-  absl::Span<const Atomic<void*>> ids() const {
+  absl::Span<const std::atomic<void*>> ids() const {
     return Layout(capacity()).Slice<kIds>(ptr()).first(safe_size());
   }
-  absl::Span<Atomic<void*>> ids() {
+  absl::Span<std::atomic<void*>> ids() {
     return Layout(capacity()).Slice<kIds>(ptr()).first(safe_size());
   }
-  Atomic<void*>& id(uint32_t i) {
+  std::atomic<void*>& id(uint32_t i) {
     GOOGLE_DCHECK_LT(i, capacity());
     return Layout(capacity()).Pointer<kIds>(ptr())[i];
   }
 
   // arenas: returns up to size().
-  absl::Span<const Atomic<SerialArena*>> arenas() const {
+  absl::Span<const std::atomic<SerialArena*>> arenas() const {
     return Layout(capacity()).Slice<kArenas>(ptr()).first(safe_size());
   }
-  absl::Span<Atomic<SerialArena*>> arenas() {
+  absl::Span<std::atomic<SerialArena*>> arenas() {
     return Layout(capacity()).Slice<kArenas>(ptr()).first(safe_size());
   }
-  const Atomic<SerialArena*>& arena(uint32_t i) const {
+  const std::atomic<SerialArena*>& arena(uint32_t i) const {
     GOOGLE_DCHECK_LT(i, capacity());
     return Layout(capacity()).Pointer<kArenas>(ptr())[i];
   }
-  Atomic<SerialArena*>& arena(uint32_t i) {
+  std::atomic<SerialArena*>& arena(uint32_t i) {
     GOOGLE_DCHECK_LT(i, capacity());
     return Layout(capacity()).Pointer<kArenas>(ptr())[i];
   }
@@ -391,16 +409,16 @@ class ThreadSafeArena::SerialArenaChunk {
   // other paths, either race is not possible (GetSerialArenaFallback) or must
   // be prevented by users (CleanupList, Free).
   bool insert(void* me, SerialArena* serial) {
-    uint32_t idx = size().relaxed_fetch_add(1);
+    uint32_t idx = size().fetch_add(1, std::memory_order_relaxed);
     // Bail out if this chunk is full.
     if (idx >= capacity()) {
       // Write old value back to avoid potential overflow.
-      size().relaxed_set(capacity());
+      size().store(capacity(), std::memory_order_relaxed);
       return false;
     }
 
-    id(idx).relaxed_set(me);
-    arena(idx).relaxed_set(serial);
+    id(idx).store(me, std::memory_order_relaxed);
+    arena(idx).store(serial, std::memory_order_release);
     return true;
   }
 
@@ -411,9 +429,8 @@ class ThreadSafeArena::SerialArenaChunk {
   constexpr static int kIds = 1;
   constexpr static int kArenas = 2;
 
-  using layout_type =
-      absl::container_internal::Layout<SerialArenaChunkHeader, Atomic<void*>,
-                                       Atomic<SerialArena*>>;
+  using layout_type = absl::container_internal::Layout<
+      SerialArenaChunkHeader, std::atomic<void*>, std::atomic<SerialArena*>>;
 
   const char* ptr() const { return reinterpret_cast<const char*>(this); }
   char* ptr() { return reinterpret_cast<char*>(this); }
@@ -425,13 +442,13 @@ class ThreadSafeArena::SerialArenaChunk {
     return *layout_type::Partial().Pointer<kHeader>(ptr());
   }
 
-  Atomic<uint32_t>& size() { return header().size; }
-  const Atomic<uint32_t>& size() const { return header().size; }
+  std::atomic<uint32_t>& size() { return header().size; }
+  const std::atomic<uint32_t>& size() const { return header().size; }
 
   // Returns the size capped by the capacity as fetch_add may result in a size
   // greater than capacity.
   uint32_t safe_size() const {
-    return std::min(capacity(), size().relaxed_get());
+    return std::min(capacity(), size().load(std::memory_order_relaxed));
   }
 
   constexpr static layout_type Layout(size_t n) {
@@ -442,7 +459,7 @@ class ThreadSafeArena::SerialArenaChunk {
   }
 };
 
-PROTOBUF_CONSTEXPR SerialArenaChunkHeader kSentryArenaChunk = {0, 0};
+constexpr SerialArenaChunkHeader kSentryArenaChunk = {0, 0};
 
 ThreadSafeArena::SerialArenaChunk* ThreadSafeArena::SentrySerialArenaChunk() {
   // const_cast is okay because the sentry chunk is never mutated. Also,
@@ -562,7 +579,8 @@ uint64_t ThreadSafeArena::GetNextLifeCycleId() {
     // On platforms that don't support uint64_t atomics we can certainly not
     // afford to increment by large intervals and expect uniqueness due to
     // wrapping, hence we only add by 1.
-    id = lifecycle_id_generator_.id.relaxed_fetch_add(1) * kInc;
+    id = lifecycle_id_generator_.id.fetch_add(1, std::memory_order_relaxed) *
+         kInc;
   }
   tc.next_lifecycle_id = id + kDelta;
   return id;
@@ -597,7 +615,7 @@ ThreadSafeArena::SerialArenaChunk* ThreadSafeArena::NewSerialArenaChunk(
 // Tries to reserve an entry by atomic fetch_add. If the head chunk is already
 // full (size >= capacity), acquires the mutex and adds a new head.
 void ThreadSafeArena::AddSerialArena(void* id, SerialArena* serial) {
-  SerialArenaChunk* head = head_.atomic_get();
+  SerialArenaChunk* head = head_.load(std::memory_order_acquire);
   // Fast path without acquiring mutex.
   if (!head->IsSentry() && head->insert(id, serial)) {
     return;
@@ -607,7 +625,7 @@ void ThreadSafeArena::AddSerialArena(void* id, SerialArena* serial) {
   absl::MutexLock lock(&mutex_);
 
   // Refetch and if someone else installed a new head, try allocating on that!
-  SerialArenaChunk* new_head = head_.atomic_get();
+  SerialArenaChunk* new_head = head_.load(std::memory_order_acquire);
   if (new_head != head) {
     if (new_head->insert(id, serial)) return;
     // Update head to link to the latest one.
@@ -619,7 +637,7 @@ void ThreadSafeArena::AddSerialArena(void* id, SerialArena* serial) {
 
   // Use "std::memory_order_release" to make sure prior stores are visible after
   // this one.
-  head_.atomic_set(new_head);
+  head_.store(new_head, std::memory_order_release);
 }
 
 void ThreadSafeArena::Init() {
@@ -631,7 +649,7 @@ void ThreadSafeArena::Init() {
     GOOGLE_DCHECK_EQ(tag_and_id_, kMessageOwnedArena);
   }
   arena_stats_ = Sample();
-  head_.relaxed_set(SentrySerialArenaChunk());
+  head_.store(SentrySerialArenaChunk(), std::memory_order_relaxed);
   GOOGLE_DCHECK_EQ(message_owned, IsMessageOwned());
   first_owner_ = &thread_cache();
 
@@ -668,12 +686,12 @@ SerialArena::Memory ThreadSafeArena::Free(size_t* space_allocated) {
   auto deallocator = GetDeallocator(alloc_policy_.get(), space_allocated);
 
   WalkSerialArenaChunk([deallocator](SerialArenaChunk* chunk) {
-    absl::Span<Atomic<SerialArena*>> span = chunk->arenas();
+    absl::Span<std::atomic<SerialArena*>> span = chunk->arenas();
     // Walks arenas backward to handle the first serial arena the last. Freeing
     // in reverse-order to the order in which objects were created may not be
     // necessary to Free and we should revisit this. (b/247560530)
     for (auto it = span.rbegin(); it != span.rend(); ++it) {
-      SerialArena* serial = it->relaxed_get();
+      SerialArena* serial = it->load(std::memory_order_relaxed);
       GOOGLE_DCHECK_NE(serial, nullptr);
       // Always frees the first block of "serial" as it cannot be user-provided.
       SerialArena::Memory mem = serial->Free(deallocator);
@@ -734,21 +752,21 @@ void* ThreadSafeArena::AllocateAlignedWithCleanup(size_t n, size_t align,
 void ThreadSafeArena::AddCleanup(void* elem, void (*cleanup)(void*)) {
   SerialArena* arena;
   if (PROTOBUF_PREDICT_FALSE(!GetSerialArenaFast(&arena))) {
-    arena = GetSerialArenaFallback();
+    arena = GetSerialArenaFallback(kMaxCleanupNodeSize);
   }
-  arena->AddCleanup(elem, cleanup, AllocPolicy(), arena_stats_.MutableStats());
+  arena->AddCleanup(elem, cleanup);
 }
 
 PROTOBUF_NOINLINE
 void* ThreadSafeArena::AllocateAlignedWithCleanupFallback(
     size_t n, size_t align, void (*destructor)(void*)) {
-  return GetSerialArenaFallback()->AllocateAlignedWithCleanup(n, align,
-                                                              destructor);
+  return GetSerialArenaFallback(n + kMaxCleanupNodeSize)
+      ->AllocateAlignedWithCleanup(n, align, destructor);
 }
 
 template <typename Functor>
 void ThreadSafeArena::WalkConstSerialArenaChunk(Functor fn) const {
-  const SerialArenaChunk* chunk = head_.atomic_get();
+  const SerialArenaChunk* chunk = head_.load(std::memory_order_acquire);
 
   for (; !chunk->IsSentry(); chunk = chunk->next_chunk()) {
     fn(chunk);
@@ -760,7 +778,7 @@ void ThreadSafeArena::WalkSerialArenaChunk(Functor fn) {
   // By omitting an Acquire barrier we help the sanitizer that any user code
   // that doesn't properly synchronize Reset() or the destructor will throw a
   // TSAN warning.
-  SerialArenaChunk* chunk = head_.relaxed_get();
+  SerialArenaChunk* chunk = head_.load(std::memory_order_relaxed);
 
   while (!chunk->IsSentry()) {
     // Cache next chunk in case this chunk is destroyed.
@@ -774,7 +792,7 @@ template <typename Functor>
 void ThreadSafeArena::PerConstSerialArenaInChunk(Functor fn) const {
   WalkConstSerialArenaChunk([&fn](const SerialArenaChunk* chunk) {
     for (const auto& each : chunk->arenas()) {
-      const SerialArena* serial = each.relaxed_get();
+      const SerialArena* serial = each.load(std::memory_order_acquire);
       // It is possible that newly added SerialArena is not updated although
       // size was. This is acceptable for SpaceAllocated and SpaceUsed.
       if (serial == nullptr) continue;
@@ -805,7 +823,7 @@ uint64_t ThreadSafeArena::SpaceUsed() const {
 
 template <AllocationClient alloc_client>
 PROTOBUF_NOINLINE void* ThreadSafeArena::AllocateAlignedFallback(size_t n) {
-  return GetSerialArenaFallback()->AllocateAligned<alloc_client>(n);
+  return GetSerialArenaFallback(n)->AllocateAligned<alloc_client>(n);
 }
 
 template void* ThreadSafeArena::AllocateAlignedFallback<
@@ -815,12 +833,12 @@ template void*
 
 void ThreadSafeArena::CleanupList() {
   WalkSerialArenaChunk([](SerialArenaChunk* chunk) {
-    absl::Span<Atomic<SerialArena*>> span = chunk->arenas();
+    absl::Span<std::atomic<SerialArena*>> span = chunk->arenas();
     // Walks arenas backward to handle the first serial arena the last.
     // Destroying in reverse-order to the construction is often assumed by users
     // and required not to break inter-object dependencies. (b/247560530)
     for (auto it = span.rbegin(); it != span.rend(); ++it) {
-      SerialArena* serial = it->relaxed_get();
+      SerialArena* serial = it->load(std::memory_order_relaxed);
       GOOGLE_DCHECK_NE(serial, nullptr);
       serial->CleanupList();
     }
@@ -830,7 +848,7 @@ void ThreadSafeArena::CleanupList() {
 }
 
 PROTOBUF_NOINLINE
-SerialArena* ThreadSafeArena::GetSerialArenaFallback() {
+SerialArena* ThreadSafeArena::GetSerialArenaFallback(size_t n) {
   void* const id = &thread_cache();
   if (id == first_owner_) {
     CacheSerialArena(&first_arena_);
@@ -840,10 +858,10 @@ SerialArena* ThreadSafeArena::GetSerialArenaFallback() {
   // Search matching SerialArena.
   SerialArena* serial = nullptr;
   WalkConstSerialArenaChunk([&serial, id](const SerialArenaChunk* chunk) {
-    absl::Span<const Atomic<void*>> ids = chunk->ids();
+    absl::Span<const std::atomic<void*>> ids = chunk->ids();
     for (uint32_t i = 0; i < ids.size(); ++i) {
-      if (ids[i].relaxed_get() == id) {
-        serial = chunk->arena(i).relaxed_get();
+      if (ids[i].load(std::memory_order_relaxed) == id) {
+        serial = chunk->arena(i).load(std::memory_order_relaxed);
         GOOGLE_DCHECK_NE(serial, nullptr);
         break;
       }
@@ -852,9 +870,10 @@ SerialArena* ThreadSafeArena::GetSerialArenaFallback() {
 
   if (!serial) {
     // This thread doesn't have any SerialArena, which also means it doesn't
-    // have any blocks yet.  So we'll allocate its first block now.
+    // have any blocks yet.  So we'll allocate its first block now. It must be
+    // big enough to host SerialArena and the pending request.
     serial = SerialArena::New(
-        AllocateMemory(alloc_policy_.get(), 0, kSerialArenaSize), *this);
+        AllocateMemory(alloc_policy_.get(), 0, n + kSerialArenaSize), *this);
 
     AddSerialArena(id, serial);
   }

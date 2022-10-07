@@ -50,6 +50,7 @@
 #include <vector>
 
 #include "google/protobuf/compiler/cpp/unittest.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #ifndef _MSC_VER
 // We exclude this large proto because it's too large for

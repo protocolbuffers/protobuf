@@ -48,7 +48,6 @@
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "google/protobuf/compiler/cpp/enum_field.h"
 #include "google/protobuf/compiler/cpp/map_field.h"
 #include "google/protobuf/compiler/cpp/message_field.h"
@@ -233,37 +232,72 @@ void AddAccessorAnnotations(const FieldDescriptor* descriptor,
                            "OnAddMutable", variables);
 }
 
+absl::flat_hash_map<std::string, std::string> FieldVars(
+    const FieldDescriptor* desc, const Options& opts) {
+  bool split = ShouldSplit(desc, opts);
+  absl::flat_hash_map<std::string, std::string> vars = {
+      {"ns", Namespace(desc, opts)},
+      {"name", FieldName(desc)},
+      {"index", absl::StrCat(desc->index())},
+      {"number", absl::StrCat(desc->number())},
+      {"classname", ClassName(FieldScope(desc), false)},
+      {"declared_type", DeclaredTypeMethodName(desc->type())},
+      {"field", FieldMemberName(desc, split)},
+      {"tag_size",
+       absl::StrCat(WireFormat::TagSize(desc->number(), desc->type()))},
+      {"deprecated_attr", DeprecatedAttribute(opts, desc)},
+      {"set_hasbit", ""},
+      {"clear_hasbit", ""},
+      {"maybe_prepare_split_message",
+       split ? "PrepareSplitMessageForWrite();" : ""},
+
+      // These variables are placeholders to pick out the beginning and ends of
+      // identifiers for annotations (when doing so with existing variables
+      // would be ambiguous or impossible). They should never be set to anything
+      // but the empty string.
+      {"{", ""},
+      {"}", ""},
+  };
+
+  // TODO(b/245791219): Refactor AddAccessorAnnotations to avoid this
+  // workaround.
+  std::map<std::string, std::string> workaround = {
+      {"field", vars["field"]},
+      {"tracker", "Impl_::_tracker_"},
+  };
+  AddAccessorAnnotations(desc, opts, &workaround);
+  for (auto& pair : workaround) {
+    vars.emplace(pair);
+  }
+
+  return vars;
+}
+
 void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              std::map<std::string, std::string>* variables,
                              const Options& options) {
   SetCommonMessageDataVariables(descriptor->containing_type(), variables);
 
-  (*variables)["ns"] = Namespace(descriptor, options);
-  (*variables)["name"] = FieldName(descriptor);
-  (*variables)["index"] = absl::StrCat(descriptor->index());
-  (*variables)["number"] = absl::StrCat(descriptor->number());
-  (*variables)["classname"] = ClassName(FieldScope(descriptor), false);
-  (*variables)["declared_type"] = DeclaredTypeMethodName(descriptor->type());
-  bool split = ShouldSplit(descriptor, options);
-  (*variables)["field"] = FieldMemberName(descriptor, split);
+  for (auto& pair : FieldVars(descriptor, options)) {
+    variables->emplace(pair);
+  }
+}
 
-  (*variables)["tag_size"] = absl::StrCat(
-      WireFormat::TagSize(descriptor->number(), descriptor->type()));
-  (*variables)["deprecated_attr"] = DeprecatedAttribute(options, descriptor);
+absl::flat_hash_map<std::string, std::string> OneofFieldVars(
+    const FieldDescriptor* descriptor) {
+  if (descriptor->containing_oneof() == nullptr) {
+    return {};
+  }
 
-  (*variables)["set_hasbit"] = "";
-  (*variables)["clear_hasbit"] = "";
-  (*variables)["maybe_prepare_split_message"] =
-      split ? "  PrepareSplitMessageForWrite();\n" : "";
+  return {{"oneof_name", descriptor->containing_oneof()->name()}};
+}
 
-  AddAccessorAnnotations(descriptor, options, variables);
-
-  // These variables are placeholders to pick out the beginning and ends of
-  // identifiers for annotations (when doing so with existing variables would
-  // be ambiguous or impossible). They should never be set to anything but the
-  // empty string.
-  (*variables)["{"] = "";
-  (*variables)["}"] = "";
+void SetCommonOneofFieldVariables(
+    const FieldDescriptor* descriptor,
+    std::map<std::string, std::string>* variables) {
+  for (auto& pair : OneofFieldVars(descriptor)) {
+    variables->emplace(pair);
+  }
 }
 
 void FieldGenerator::SetHasBitIndex(int32_t has_bit_index) {
@@ -328,13 +362,6 @@ void FieldGenerator::GenerateCopyConstructorCode(io::Printer* printer) const {
     Formatter format(printer, variables_);
     format("$field$ = from.$field$;\n");
   }
-}
-
-void SetCommonOneofFieldVariables(
-    const FieldDescriptor* descriptor,
-    std::map<std::string, std::string>* variables) {
-  const std::string prefix = descriptor->containing_oneof()->name() + "_.";
-  (*variables)["oneof_name"] = descriptor->containing_oneof()->name();
 }
 
 FieldGenerator::~FieldGenerator() {}

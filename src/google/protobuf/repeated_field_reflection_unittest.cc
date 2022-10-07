@@ -38,6 +38,7 @@
 #include "google/protobuf/reflection.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
+#include "absl/strings/cord.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_util.h"
 

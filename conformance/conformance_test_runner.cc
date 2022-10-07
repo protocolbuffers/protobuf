@@ -54,12 +54,15 @@
 //   4. testee sends M bytes representing a ConformanceResponse proto
 
 #include <errno.h>
+#include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
 #include <algorithm>
+#include <cstdlib>
 #include <fstream>
+#include <future>
 #include <vector>
 
 #include "absl/strings/str_format.h"
@@ -149,7 +152,6 @@ void ForkPipeRunner::RunTest(const std::string &test_name,
   if (child_pid_ < 0) {
     SpawnTestProgram();
   }
-
   current_test_name_ = test_name;
 
   uint32_t len = request.size();
@@ -164,9 +166,18 @@ void ForkPipeRunner::RunTest(const std::string &test_name,
     waitpid(child_pid_, &status, WEXITED);
 
     string error_msg;
+    conformance::ConformanceResponse response_obj;
     if (WIFEXITED(status)) {
-      absl::StrAppendFormat(&error_msg, "child exited, status=%d",
-                            WEXITSTATUS(status));
+      if (WEXITSTATUS(status) == 0) {
+        absl::StrAppendFormat(&error_msg,
+                              "child timed out, killed by signal %d",
+                              WTERMSIG(status));
+        response_obj.set_timeout_error(error_msg);
+      } else {
+        absl::StrAppendFormat(&error_msg, "child exited, status=%d",
+                              WEXITSTATUS(status));
+        response_obj.set_runtime_error(error_msg);
+      }
     } else if (WIFSIGNALED(status)) {
       absl::StrAppendFormat(&error_msg, "child killed by signal %d",
                             WTERMSIG(status));
@@ -174,8 +185,6 @@ void ForkPipeRunner::RunTest(const std::string &test_name,
     GOOGLE_LOG(INFO) << error_msg;
     child_pid_ = -1;
 
-    conformance::ConformanceResponse response_obj;
-    response_obj.set_runtime_error(error_msg);
     response_obj.SerializeToString(response);
     return;
   }
@@ -197,11 +206,15 @@ int ForkPipeRunner::Run(int argc, char *argv[],
     string failure_list_filename;
     conformance::FailureSet failure_list;
 
+    bool performance = false;
     for (int arg = 1; arg < argc; ++arg) {
       if (strcmp(argv[arg], suite->GetFailureListFlagName().c_str()) == 0) {
         if (++arg == argc) UsageError();
         failure_list_filename = argv[arg];
         ParseFailureList(argv[arg], &failure_list);
+      } else if (strcmp(argv[arg], "--performance") == 0) {
+        performance = true;
+        suite->SetPerformance(true);
       } else if (strcmp(argv[arg], "--verbose") == 0) {
         suite->SetVerbose(true);
       } else if (strcmp(argv[arg], "--enforce_recommended") == 0) {
@@ -230,7 +243,7 @@ int ForkPipeRunner::Run(int argc, char *argv[],
       }
     }
 
-    ForkPipeRunner runner(program, program_args);
+    ForkPipeRunner runner(program, program_args, performance);
 
     std::string output;
     all_ok = all_ok && suite->RunSuite(&runner, &output, failure_list_filename,
@@ -319,8 +332,36 @@ void ForkPipeRunner::CheckedWrite(int fd, const void *buf, size_t len) {
 bool ForkPipeRunner::TryRead(int fd, void *buf, size_t len) {
   size_t ofs = 0;
   while (len > 0) {
-    ssize_t bytes_read = read(fd, (char *)buf + ofs, len);
-
+    std::future<ssize_t> future = std::async(
+        std::launch::async,
+        [](int fd, void *buf, size_t ofs, size_t len) {
+          return read(fd, (char *)buf + ofs, len);
+        },
+        fd, buf, ofs, len);
+    std::future_status status;
+    if (performance_) {
+      status = future.wait_for(std::chrono::seconds(5));
+      if (status == std::future_status::timeout) {
+        GOOGLE_LOG(ERROR) << current_test_name_ << ": timeout from test program";
+        kill(child_pid_, SIGQUIT);
+        // TODO(sandyzhang): Only log in flag-guarded mode, since reading output
+        // from SIGQUIT is slow and verbose.
+        std::vector<char> err;
+        err.resize(5000);
+        ssize_t err_bytes_read;
+        size_t err_ofs = 0;
+        do {
+          err_bytes_read =
+              read(fd, (void *)&err[err_ofs], err.size() - err_ofs);
+          err_ofs += err_bytes_read;
+        } while (err_bytes_read > 0 && err_ofs < err.size());
+        GOOGLE_LOG(ERROR) << "child_pid_=" << child_pid_ << " SIGQUIT: \n" << &err[0];
+        return false;
+      }
+    } else {
+      future.wait();
+    }
+    ssize_t bytes_read = future.get();
     if (bytes_read == 0) {
       GOOGLE_LOG(ERROR) << current_test_name_ << ": unexpected EOF from test program";
       return false;

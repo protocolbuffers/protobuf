@@ -914,8 +914,7 @@ class PROTOBUF_EXPORT Reflection final {
 
   // Try to find an extension of this message type by fully-qualified field
   // name.  Returns nullptr if no extension is known for this name or number.
-  const FieldDescriptor* FindKnownExtensionByName(
-      const std::string& name) const;
+  const FieldDescriptor* FindKnownExtensionByName(absl::string_view name) const;
 
   // Try to find an extension of this message type by field number.
   // Returns nullptr if no extension is known for this name or number.

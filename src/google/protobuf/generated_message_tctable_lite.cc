@@ -256,7 +256,9 @@ absl::string_view TcParser::FieldName(const TcParseTableBase* table,
 const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
   uint32_t tag;
   ptr = ReadTagInlined(ptr, &tag);
-  if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) return nullptr;
+  if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
+    return Error(PROTOBUF_TC_PARAM_PASS);
+  }
 
   auto* entry = FindFieldEntry(table, tag >> 3);
   if (entry == nullptr) {
@@ -850,7 +852,7 @@ PROTOBUF_NOINLINE const char* TcParser::SingularVarBigint(
 }
 
 const char* TcParser::FastV8S1(PROTOBUF_TC_PARAM_DECL) {
-  return SpecializedFastV8S1<-1, -1>(PROTOBUF_TC_PARAM_PASS);
+  PROTOBUF_MUSTTAIL return SpecializedFastV8S1<-1, -1>(PROTOBUF_TC_PARAM_PASS);
 }
 const char* TcParser::FastV8S2(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return SingularVarint<bool, uint16_t>(
@@ -1284,7 +1286,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularString(
 #endif
       return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
     default:
-      if (PROTOBUF_PREDICT_TRUE(IsStructurallyValidUTF8(field.Get()))) {
+      if (PROTOBUF_PREDICT_TRUE(::google::protobuf::internal::IsStructurallyValidUTF8(field.Get()))) {
         return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
       }
       ReportFastUtf8Error(FastDecodeTag(saved_tag), table);
@@ -1357,7 +1359,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
         return true;
       default:
         if (PROTOBUF_PREDICT_TRUE(
-                IsStructurallyValidUTF8(field[field.size() - 1]))) {
+                ::google::protobuf::internal::IsStructurallyValidUTF8(field[field.size() - 1]))) {
           return true;
         }
         ReportFastUtf8Error(FastDecodeTag(expected_tag), table);
@@ -1477,8 +1479,7 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
   } else if (current_kind == field_layout::kFkMessage) {
     switch (current_rep) {
       case field_layout::kRepMessage:
-      case field_layout::kRepGroup:
-      case field_layout::kRepIWeak: {
+      case field_layout::kRepGroup: {
         auto& field = RefAt<MessageLite*>(msg, current_entry->offset);
         if (!msg->GetArenaForAllocation()) {
           delete field;
@@ -1825,7 +1826,7 @@ bool TcParser::MpVerifyUtf8(absl::string_view wire_bytes,
                             const TcParseTableBase* table,
                             const FieldEntry& entry, uint16_t xform_val) {
   if (xform_val == field_layout::kTvUtf8) {
-    if (!IsStructurallyValidUTF8(wire_bytes)) {
+    if (!::google::protobuf::internal::IsStructurallyValidUTF8(wire_bytes)) {
       PrintUTF8ErrorLog(MessageName(table), FieldName(table, &entry), "parsing",
                         false);
       return false;
@@ -1834,7 +1835,7 @@ bool TcParser::MpVerifyUtf8(absl::string_view wire_bytes,
   }
 #ifndef NDEBUG
   if (xform_val == field_layout::kTvUtf8Debug) {
-    if (!IsStructurallyValidUTF8(wire_bytes)) {
+    if (!::google::protobuf::internal::IsStructurallyValidUTF8(wire_bytes)) {
       PrintUTF8ErrorLog(MessageName(table), FieldName(table, &entry), "parsing",
                         false);
     }
@@ -2035,8 +2036,14 @@ const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
     return ctx->ParseMessage<TcParser>(field, ptr, inner_table);
   } else {
     if (need_init || field == nullptr) {
-      field = table->field_aux(&entry)->message_default()->New(
-          msg->GetArenaForAllocation());
+      const MessageLite* def;
+      if ((type_card & field_layout::kTvMask) == field_layout::kTvDefault) {
+        def = table->field_aux(&entry)->message_default();
+      } else {
+        GOOGLE_DCHECK_EQ(type_card & field_layout::kTvMask, +field_layout::kTvWeakPtr);
+        def = table->field_aux(&entry)->message_default_weak();
+      }
+      field = def->New(msg->GetArenaForAllocation());
     }
     if (is_group) {
       return ctx->ParseGroup(field, ptr, decoded_tag);
@@ -2076,8 +2083,10 @@ const char* TcParser::MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL) {
   }
 
   SyncHasbits(msg, hasbits, table);
+  auto& field = RefAt<RepeatedPtrFieldBase>(msg, entry.offset);
+  const auto aux = *table->field_aux(&entry);
   if ((type_card & field_layout::kTvMask) == field_layout::kTvTable) {
-    auto* inner_table = table->field_aux(&entry)->table;
+    auto* inner_table = aux.table;
     auto& field = RefAt<RepeatedPtrFieldBase>(msg, entry.offset);
     MessageLite* value = field.Add<GenericTypeHandler<MessageLite>>(
         inner_table->default_instance);
@@ -2086,9 +2095,14 @@ const char* TcParser::MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL) {
     }
     return ctx->ParseMessage<TcParser>(value, ptr, inner_table);
   } else {
-    auto& field = RefAt<RepeatedPtrFieldBase>(msg, entry.offset);
-    MessageLite* value = field.Add<GenericTypeHandler<MessageLite>>(
-        table->field_aux(&entry)->message_default());
+    const MessageLite* def;
+    if ((type_card & field_layout::kTvMask) == field_layout::kTvDefault) {
+      def = aux.message_default();
+    } else {
+      GOOGLE_DCHECK_EQ(type_card & field_layout::kTvMask, +field_layout::kTvWeakPtr);
+      def = aux.message_default_weak();
+    }
+    MessageLite* value = field.Add<GenericTypeHandler<MessageLite>>(def);
     if (is_group) {
       return ctx->ParseGroup(value, ptr, decoded_tag);
     }

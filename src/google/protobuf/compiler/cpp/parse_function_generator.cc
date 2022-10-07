@@ -585,6 +585,11 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
                        QualifiedClassName(aux_entry.field->message_type(),
                                           options_));
                 break;
+              case TailCallTableInfo::kSubMessageWeak:
+                format("{::_pbi::FieldAuxDefaultMessage{}, &$1$},\n",
+                       QualifiedDefaultInstancePtr(
+                           aux_entry.field->message_type(), options_));
+                break;
               case TailCallTableInfo::kEnumRange:
                 format("{$1$, $2$},\n", aux_entry.enum_range.start,
                        aux_entry.enum_range.size);
@@ -628,24 +633,26 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
       GOOGLE_CHECK(!ShouldSplit(info.field, options_));
 
       std::string func_name = info.func_name;
-      // For 1-byte tags we have a more optimized version of the varint parser
-      // that can hardcode the offset and has bit.
-      if (absl::EndsWith(func_name, "V8S1") ||
-          absl::EndsWith(func_name, "V32S1") ||
-          absl::EndsWith(func_name, "V64S1")) {
-        std::string field_type = absl::EndsWith(func_name, "V8S1") ? "bool"
-                                 : absl::EndsWith(func_name, "V32S1")
-                                     ? "uint32_t"
-                                     : "uint64_t";
-        func_name =
-            absl::StrCat("::_pbi::TcParser::SingularVarintNoZag1<", field_type,
-                         ", offsetof(",                                 //
-                         ClassName(info.field->containing_type()),      //
-                         ", ",                                          //
-                         FieldMemberName(info.field, /*split=*/false),  //
-                         "), ",                                         //
-                         info.hasbit_idx,                               //
-                         ">()");
+      if (GetOptimizeFor(info.field->file(), options_) == FileOptions::SPEED) {
+        // For 1-byte tags we have a more optimized version of the varint parser
+        // that can hardcode the offset and has bit.
+        if (absl::EndsWith(func_name, "V8S1") ||
+            absl::EndsWith(func_name, "V32S1") ||
+            absl::EndsWith(func_name, "V64S1")) {
+          std::string field_type = absl::EndsWith(func_name, "V8S1") ? "bool"
+                                   : absl::EndsWith(func_name, "V32S1")
+                                       ? "uint32_t"
+                                       : "uint64_t";
+          func_name = absl::StrCat(
+              "::_pbi::TcParser::SingularVarintNoZag1<", field_type,
+              ", offsetof(",                                 //
+              ClassName(info.field->containing_type()),      //
+              ", ",                                          //
+              FieldMemberName(info.field, /*split=*/false),  //
+              "), ",                                         //
+              info.hasbit_idx,                               //
+              ">()");
+        }
       }
 
       format(
@@ -708,20 +715,19 @@ static void FormatFieldKind(Formatter& format,
     case fl::kFkMessage: {
       format(" | ::_fl::kMessage");
 
-      static constexpr const char* kRepNames[] = {nullptr, "Group", "Lazy",
-                                                  "IWeak"};
+      static constexpr const char* kRepNames[] = {nullptr, "Group", "Lazy"};
       static_assert((fl::kRepGroup >> fl::kRepShift) == 1, "");
       static_assert((fl::kRepLazy >> fl::kRepShift) == 2, "");
-      static_assert((fl::kRepIWeak >> fl::kRepShift) == 3, "");
 
       if (auto* rep = kRepNames[rep_index]) {
         format(" | ::_fl::kRep$1$", rep);
       }
 
-      static constexpr const char* kXFormNames[] = {nullptr, "Default",
-                                                    "Table"};
+      static constexpr const char* kXFormNames[] = {nullptr, "Default", "Table",
+                                                    "WeakPtr"};
       static_assert((fl::kTvDefault >> fl::kTvShift) == 1, "");
       static_assert((fl::kTvTable >> fl::kTvShift) == 2, "");
+      static_assert((fl::kTvWeakPtr >> fl::kTvShift) == 3, "");
 
       if (auto* xform = kXFormNames[tv_index]) {
         format(" | ::_fl::kTv$1$", xform);

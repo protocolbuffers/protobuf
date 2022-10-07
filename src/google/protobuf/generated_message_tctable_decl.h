@@ -287,6 +287,9 @@ struct alignas(uint64_t) TcParseTableBase {
     const MessageLite* message_default() const {
       return static_cast<const MessageLite*>(message_default_p);
     }
+    const MessageLite* message_default_weak() const {
+      return *static_cast<const MessageLite* const*>(message_default_p);
+    }
   };
   const FieldAux* field_aux(uint32_t idx) const {
     return reinterpret_cast<const FieldAux*>(reinterpret_cast<uintptr_t>(this) +

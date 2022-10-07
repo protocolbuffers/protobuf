@@ -235,46 +235,66 @@ bool IsLazilyVerifiedLazy(const FieldDescriptor* field,
   return false;
 }
 
+absl::flat_hash_map<std::string, std::string> MessageVars(
+    const Descriptor* desc) {
+  absl::string_view prefix = IsMapEntryMessage(desc) ? "" : "_impl_.";
+  return {
+      {"any_metadata", absl::StrCat(prefix, "_any_metadata_")},
+      {"cached_size", absl::StrCat(prefix, "_cached_size_")},
+      {"extensions", absl::StrCat(prefix, "_extensions_")},
+      {"has_bits", absl::StrCat(prefix, "_has_bits_")},
+      {"inlined_string_donated_array",
+       absl::StrCat(prefix, "_inlined_string_donated_")},
+      {"oneof_case", absl::StrCat(prefix, "_oneof_case_")},
+      {"tracker", "Impl_::_tracker_"},
+      {"weak_field_map", absl::StrCat(prefix, "_weak_field_map_")},
+      {"split", absl::StrCat(prefix, "_split_")},
+      {"cached_split_ptr", "cached_split_ptr"},
+  };
+}
+
 void SetCommonMessageDataVariables(
     const Descriptor* descriptor,
     std::map<std::string, std::string>* variables) {
-  std::string prefix = IsMapEntryMessage(descriptor) ? "" : "_impl_.";
-  (*variables)["any_metadata"] = prefix + "_any_metadata_";
-  (*variables)["cached_size"] = prefix + "_cached_size_";
-  (*variables)["extensions"] = prefix + "_extensions_";
-  (*variables)["has_bits"] = prefix + "_has_bits_";
-  (*variables)["inlined_string_donated_array"] =
-      prefix + "_inlined_string_donated_";
-  (*variables)["oneof_case"] = prefix + "_oneof_case_";
-  (*variables)["tracker"] = "Impl_::_tracker_";
-  (*variables)["weak_field_map"] = prefix + "_weak_field_map_";
-  (*variables)["split"] = prefix + "_split_";
-  (*variables)["cached_split_ptr"] = "cached_split_ptr";
+  for (auto& pair : MessageVars(descriptor)) {
+    variables->emplace(pair);
+  }
+}
+
+absl::flat_hash_map<std::string, std::string> UnknownFieldsVars(
+    const Descriptor* desc, const Options& opts) {
+  std::string proto_ns = ProtobufNamespace(opts);
+
+  std::string unknown_fields_type;
+  std::string default_instance;
+  if (UseUnknownFieldSet(desc->file(), opts)) {
+    unknown_fields_type = absl::StrCat("::", proto_ns, "::UnknownFieldSet");
+    default_instance = absl::StrCat(unknown_fields_type, "::default_instance");
+  } else {
+    unknown_fields_type =
+        PrimitiveTypeName(opts, FieldDescriptor::CPPTYPE_STRING);
+    default_instance =
+        absl::StrCat("::", proto_ns, "::internal::GetEmptyString");
+  }
+
+  return {
+      {"unknown_fields",
+       absl::Substitute("_internal_metadata_.unknown_fields<$0>($1)",
+                        unknown_fields_type, default_instance)},
+      {"unknown_fields_type", unknown_fields_type},
+      {"have_unknown_fields", "_internal_metadata_.have_unknown_fields()"},
+      {"mutable_unknown_fields",
+       absl::Substitute("_internal_metadata_.mutable_unknown_fields<$0>()",
+                        unknown_fields_type)},
+  };
 }
 
 void SetUnknownFieldsVariable(const Descriptor* descriptor,
                               const Options& options,
                               std::map<std::string, std::string>* variables) {
-  std::string proto_ns = ProtobufNamespace(options);
-  std::string unknown_fields_type;
-  if (UseUnknownFieldSet(descriptor->file(), options)) {
-    unknown_fields_type = "::" + proto_ns + "::UnknownFieldSet";
-    (*variables)["unknown_fields"] =
-        "_internal_metadata_.unknown_fields<" + unknown_fields_type + ">(" +
-        unknown_fields_type + "::default_instance)";
-  } else {
-    unknown_fields_type =
-        PrimitiveTypeName(options, FieldDescriptor::CPPTYPE_STRING);
-    (*variables)["unknown_fields"] = "_internal_metadata_.unknown_fields<" +
-                                     unknown_fields_type + ">(::" + proto_ns +
-                                     "::internal::GetEmptyString)";
+  for (auto& pair : UnknownFieldsVars(descriptor, options)) {
+    variables->emplace(pair);
   }
-  (*variables)["unknown_fields_type"] = unknown_fields_type;
-  (*variables)["have_unknown_fields"] =
-      "_internal_metadata_.have_unknown_fields()";
-  (*variables)["mutable_unknown_fields"] =
-      "_internal_metadata_.mutable_unknown_fields<" + unknown_fields_type +
-      ">()";
 }
 
 std::string UnderscoresToCamelCase(const std::string& input,

@@ -41,62 +41,60 @@
 
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/compiler/cpp/options.h"
-
-namespace google {
-namespace protobuf {
-namespace io {
-class Printer;  // printer.h
-}
-}  // namespace protobuf
-}  // namespace google
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-
 class EnumGenerator {
  public:
-  // See generator.cc for the meaning of dllexport_decl.
-  EnumGenerator(const EnumDescriptor* descriptor,
-                const std::map<std::string, std::string>& vars,
-                const Options& options);
+  EnumGenerator(const EnumDescriptor* descriptor, const Options& options);
+
   EnumGenerator(const EnumGenerator&) = delete;
   EnumGenerator& operator=(const EnumGenerator&) = delete;
-  ~EnumGenerator();
+
+  ~EnumGenerator() = default;
 
   // Generate header code defining the enum.  This code should be placed
   // within the enum's package namespace, but NOT within any class, even for
   // nested enums.
-  void GenerateDefinition(io::Printer* printer);
+  void GenerateDefinition(io::Printer* p);
 
   // Generate specialization of GetEnumDescriptor<MyEnum>().
   // Precondition: in ::google::protobuf namespace.
-  void GenerateGetEnumDescriptorSpecializations(io::Printer* printer);
+  void GenerateGetEnumDescriptorSpecializations(io::Printer* p);
 
   // For enums nested within a message, generate code to import all the enum's
   // symbols (e.g. the enum type name, all its values, etc.) into the class's
   // namespace.  This should be placed inside the class definition in the
   // header.
-  void GenerateSymbolImports(io::Printer* printer) const;
+  void GenerateSymbolImports(io::Printer* p) const;
 
   // Source file stuff.
 
   // Generate non-inline methods related to the enum, such as IsValidValue().
   // Goes in the .cc file. EnumDescriptors are stored in an array, idx is
   // the index in this array that corresponds with this enum.
-  void GenerateMethods(int idx, io::Printer* printer);
+  void GenerateMethods(int idx, io::Printer* p);
 
  private:
-  const EnumDescriptor* descriptor_;
-  const std::string classname_;
-  const Options& options_;
-  // whether to generate the *_ARRAYSIZE constant.
-  const bool generate_array_size_;
-
-  std::map<std::string, std::string> variables_;
-
   friend class FileGenerator;
+
+  struct ValueLimits {
+    const EnumValueDescriptor* min;
+    const EnumValueDescriptor* max;
+
+    static ValueLimits FromEnum(const EnumDescriptor* descriptor);
+  };
+
+  const EnumDescriptor* enum_;
+  Options options_;
+
+  bool generate_array_size_;
+  bool should_cache_;
+  bool has_reflection_;
+  ValueLimits limits_;
 };
 
 }  // namespace cpp

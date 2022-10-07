@@ -6,13 +6,8 @@ load(
     "pkg_files",
     "strip_prefix",
 )
-load("//:protobuf_release.bzl", "package_naming")
 load(":build_systems.bzl", "gen_file_lists")
 load(":cc_dist_library.bzl", "cc_dist_library")
-
-package_naming(
-    name = "protobuf_pkg_naming",
-)
 
 pkg_files(
     name = "wkt_protos_files",
@@ -345,6 +340,10 @@ cc_dist_library(
     tags = ["manual"],
     deps = [
         "//src/google/protobuf:arena",
+        "//src/google/protobuf:arena_align",
+        "//src/google/protobuf:arena_allocation_policy",
+        "//src/google/protobuf:arena_cleanup",
+        "//src/google/protobuf:arena_config",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:io_win32",
@@ -366,6 +365,10 @@ cc_dist_library(
         "//src/google/protobuf:wkt_cc_proto",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf:arena",
+        "//src/google/protobuf:arena_align",
+        "//src/google/protobuf:arena_allocation_policy",
+        "//src/google/protobuf:arena_cleanup",
+        "//src/google/protobuf:arena_config",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf:port_def",
         "//src/google/protobuf/compiler:importer",
@@ -375,6 +378,15 @@ cc_dist_library(
         "//src/google/protobuf/io:printer",
         "//src/google/protobuf/io:tokenizer",
         "//src/google/protobuf/io:zero_copy_sink",
+        "//src/google/protobuf/json",
+        "//src/google/protobuf/json:descriptor_traits",
+        "//src/google/protobuf/json:lexer",
+        "//src/google/protobuf/json:message_path",
+        "//src/google/protobuf/json:parser",
+        "//src/google/protobuf/json:unparser",
+        "//src/google/protobuf/json:untyped_message",
+        "//src/google/protobuf/json:writer",
+        "//src/google/protobuf/json:zero_copy_buffered_stream",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/stubs:lite",
         "//src/google/protobuf/util:delimited_message_util",
@@ -383,15 +395,6 @@ cc_dist_library(
         "//src/google/protobuf/util:json_util",
         "//src/google/protobuf/util:time_util",
         "//src/google/protobuf/util:type_resolver_util",
-        "//src/google/protobuf/util/internal:constants",
-        "//src/google/protobuf/util/internal:datapiece",
-        "//src/google/protobuf/util/internal:default_value",
-        "//src/google/protobuf/util/internal:field_mask_utility",
-        "//src/google/protobuf/util/internal:json",
-        "//src/google/protobuf/util/internal:object_writer",
-        "//src/google/protobuf/util/internal:protostream",
-        "//src/google/protobuf/util/internal:type_info",
-        "//src/google/protobuf/util/internal:utility",
     ],
 )
 
@@ -434,9 +437,6 @@ cc_dist_library(
     deps = [
         "//src/google/protobuf:test_util",
         "//src/google/protobuf:test_util2",
-        "//src/google/protobuf/util/internal:expecting_objectwriter",
-        "//src/google/protobuf/util/internal:mock_error_listener",
-        "//src/google/protobuf/util/internal:type_info_test_helper",
         "//src/google/protobuf/compiler:annotation_test_util",
         "//src/google/protobuf/compiler/cpp:unittest_lib",
     ],

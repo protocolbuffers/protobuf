@@ -217,6 +217,12 @@ alias(
     visibility = ["//visibility:public"],
 )
 
+alias(
+    name = "json",
+    actual = "//src/google/protobuf/json",
+    visibility = ["//visibility:public"],
+)
+
 ################################################################################
 # Java support
 ################################################################################

@@ -191,12 +191,19 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
   } else {
     format("  $field$ = $name$;\n");
   }
+  auto nonempty = [this](const char* fn) {
+    auto var_it = variables_.find(fn);
+    return var_it != variables_.end() && !var_it->second.empty();
+  };
+  if (nonempty("set_hasbit") || nonempty("clear_hasbit")) {
+    format(
+        "  if ($name$) {\n"
+        "    $set_hasbit$\n"
+        "  } else {\n"
+        "    $clear_hasbit$\n"
+        "  }\n");
+  }
   format(
-      "  if ($name$) {\n"
-      "    $set_hasbit$\n"
-      "  } else {\n"
-      "    $clear_hasbit$\n"
-      "  }\n"
       "$annotate_set$"
       "  // @@protoc_insertion_point(field_unsafe_arena_set_allocated"
       ":$full_name$)\n"

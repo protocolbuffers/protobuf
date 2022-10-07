@@ -50,7 +50,7 @@ def junit_tests(name, srcs, data = [], deps = [], package_name = "com.google.pro
         if not test_name.endswith("Test") or test_name.startswith("Abstract"):
             continue
         if test_prefix:
-            test_name = "%s%s" % (test_prefix, test_name)  
+            test_name = "%s%s" % (test_prefix, test_name)
         test_names = test_names + [test_name]
         suite_name = prefix + '_' + test_name
         _gen_suite(
