@@ -9,9 +9,6 @@ if (NOT EXISTS "${protobuf_SOURCE_DIR}/third_party/jsoncpp/CMakeLists.txt")
           "  cmake -Dprotobuf_BUILD_CONFORMANCE=OFF\n")
 endif()
 
-set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Disable tests")
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp third_party/jsoncpp)
-
 add_custom_command(
   OUTPUT
     ${protobuf_SOURCE_DIR}/conformance/conformance.pb.h
@@ -70,20 +67,23 @@ target_include_directories(
   conformance_cpp
   PUBLIC ${protobuf_SOURCE_DIR})
 
-target_include_directories(conformance_test_runner PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp/include)
 target_include_directories(conformance_test_runner PRIVATE ${ABSL_ROOT_DIR})
 target_include_directories(conformance_cpp PRIVATE ${ABSL_ROOT_DIR})
 
-target_link_libraries(conformance_test_runner jsoncpp_lib)
 target_link_libraries(conformance_test_runner ${protobuf_LIB_PROTOBUF})
 target_link_libraries(conformance_test_runner ${protobuf_ABSL_USED_TARGETS})
 target_link_libraries(conformance_cpp ${protobuf_LIB_PROTOBUF})
 target_link_libraries(conformance_cpp ${protobuf_ABSL_USED_TARGETS})
 
 add_test(NAME conformance_cpp_test
-  COMMAND conformance_test_runner
+  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/conformance_test_runner
     --failure_list ${protobuf_SOURCE_DIR}/conformance/failure_list_cpp.txt
     --text_format_failure_list ${protobuf_SOURCE_DIR}/conformance/text_format_failure_list_cpp.txt
     --output_dir ${protobuf_TEST_XML_OUTDIR}
-    conformance_cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/conformance_cpp
   DEPENDS conformance_test_runner conformance_cpp)
+
+set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Disable tests")
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp third_party/jsoncpp)
+target_include_directories(conformance_test_runner PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/jsoncpp/include)
+target_link_libraries(conformance_test_runner jsoncpp_lib)
