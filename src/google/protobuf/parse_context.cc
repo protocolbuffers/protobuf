@@ -382,7 +382,7 @@ void PrintUTF8ErrorLog(absl::string_view message_name,
                        bool emit_stacktrace);
 
 bool VerifyUTF8(absl::string_view str, const char* field_name) {
-  if (!IsStructurallyValidUTF8(str)) {
+  if (!::google::protobuf::internal::IsStructurallyValidUTF8(str)) {
     PrintUTF8ErrorLog("", field_name, "parsing", false);
     return false;
   }

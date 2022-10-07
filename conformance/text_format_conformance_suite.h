@@ -42,14 +42,28 @@ class TextFormatConformanceTestSuite : public ConformanceTestSuite {
 
  private:
   void RunSuiteImpl() override;
+  void RunTextFormatPerformanceTests();
   void RunValidTextFormatTest(const std::string& test_name,
                               ConformanceLevel level, const std::string& input);
   void RunValidTextFormatTestProto2(const std::string& test_name,
                                     ConformanceLevel level,
                                     const std::string& input);
+  void RunValidTextFormatTestWithExpected(const std::string& test_name,
+                                          ConformanceLevel level,
+                                          const std::string& input,
+                                          const std::string& expected);
+  void RunValidTextFormatTestProto2WithExpected(const std::string& test_name,
+                                                ConformanceLevel level,
+                                                const std::string& input,
+                                                const std::string& expected);
   void RunValidTextFormatTestWithMessage(const std::string& test_name,
                                          ConformanceLevel level,
                                          const std::string& input_text,
+                                         const Message& prototype);
+  void RunValidTextFormatTestWithMessage(const std::string& test_name,
+                                         ConformanceLevel level,
+                                         const std::string& input_text,
+                                         const std::string& expected_text,
                                          const Message& prototype);
   void RunValidUnknownTextFormatTest(const std::string& test_name,
                                      const Message& message);
@@ -61,6 +75,8 @@ class TextFormatConformanceTestSuite : public ConformanceTestSuite {
   bool ParseResponse(const conformance::ConformanceResponse& response,
                      const ConformanceRequestSetting& setting,
                      Message* test_message) override;
+  void TestTextFormatPerformanceMergeMessageWithRepeatedField(
+      const std::string& test_type_name, const std::string& message_field);
 };
 
 }  // namespace protobuf

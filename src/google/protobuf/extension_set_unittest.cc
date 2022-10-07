@@ -49,6 +49,7 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/match.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"

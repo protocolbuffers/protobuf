@@ -21,7 +21,9 @@ COPTS = select({
         "-Wno-sign-compare",
         "-Werror",
     ],
-})
+}) + [
+    "-std=c++14",  # Protobuf requires C++14.
+]
 
 # Android and MSVC builds do not need to link in a separate pthread library.
 LINK_OPTS = select({

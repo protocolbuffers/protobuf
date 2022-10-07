@@ -54,7 +54,6 @@
 #include "google/protobuf/unittest_proto3.pb.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/stubs/strutil.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
@@ -66,17 +65,13 @@
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 
+#include "google/protobuf/stubs/strutil.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
-
-namespace internal {
-// Controls insertion of DEBUG_STRING_SILENT_MARKER.
-extern PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_format_marker;
-}  // namespace internal
 
 // Can't use an anonymous namespace here due to brokenness of Tru64 compiler.
 namespace text_format_unittest {

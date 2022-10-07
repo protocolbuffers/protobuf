@@ -57,6 +57,12 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
+absl::flat_hash_map<std::string, std::string> FieldVars(
+    const FieldDescriptor* desc, const Options& opts);
+
+absl::flat_hash_map<std::string, std::string> OneofFieldVars(
+    const FieldDescriptor* descriptor);
+
 // Helper function: set variables in the map that are the same for all
 // field code generators.
 // ['name', 'index', 'number', 'classname', 'declared_type', 'tag_size',

@@ -156,6 +156,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       }
     } else if (key == "proto_h") {
       file_options.proto_h = true;
+    } else if (key == "proto_static_reflection_h") {
     } else if (key == "annotate_accessor") {
       file_options.annotate_accessor = true;
     } else if (key == "inject_field_listener_events") {
@@ -208,6 +209,17 @@ bool CppGenerator::Generate(const FileDescriptor* file,
 
 
   std::string basename = StripProto(file->name());
+
+  auto generate_reserved_static_reflection_header = [&basename,
+                                                     &generator_context]() {
+    auto output = absl::WrapUnique(generator_context->Open(
+        absl::StrCat(basename, ".proto.static_reflection.h")));
+    io::Printer(output.get()).Emit(R"cc(
+      // Reserved for future use.
+    )cc");
+  };
+  // Suppress maybe unused warning.
+  (void)generate_reserved_static_reflection_header;
 
   if (MaybeBootstrap(file_options, generator_context, file_options.bootstrap,
                      &basename)) {

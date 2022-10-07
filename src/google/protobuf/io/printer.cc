@@ -595,7 +595,6 @@ void Printer::PrintImpl(absl::string_view format,
           prefix.empty() && suffix.empty(), opts,
           "substitution that resolves to callback cannot contain whitespace");
 
-      IndentIfAtStart();
       range_start = sink_.bytes_written();
       (*fnc)();
       range_end = sink_.bytes_written();

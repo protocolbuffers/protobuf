@@ -179,21 +179,30 @@ bool IsFieldEligibleForFastParsing(
     const TailCallTableInfo::FieldEntryInfo& entry,
     const TailCallTableInfo::OptionProvider& option_provider) {
   const auto* field = entry.field;
-  // Conditions which exclude a field from being handled by fast parsing
-  // regardless of options should be considered in IsExcludedFromFastParsing.
-  if (!IsDescriptorEligibleForFastParsing(field)) return false;
-
   const auto options = option_provider.GetForField(field);
-  // Weak, lazy, and split fields are not handled on the fast path.
-  if (options.is_implicitly_weak) return false;
-  if (options.is_lazy) return false;
-  if (options.should_split) return false;
+  // Map, oneof, weak, and lazy fields are not handled on the fast path.
+  if (field->is_map() || field->real_containing_oneof() ||
+      field->options().weak() || options.is_implicitly_weak ||
+      options.is_lazy || options.should_split) {
+    return false;
+  }
 
   // We will check for a valid auxiliary index range later. However, we might
   // want to change the value we check for inlined string fields.
   int aux_idx = entry.aux_idx;
 
   switch (field->type()) {
+    case FieldDescriptor::TYPE_ENUM:
+      // If enum values are not validated at parse time, then this field can be
+      // handled on the fast path like an int32.
+      if (cpp::HasPreservingUnknownEnumSemantics(field)) {
+        break;
+      }
+      if (field->is_repeated() && field->is_packed()) {
+        return false;
+      }
+      break;
+
       // Some bytes fields can be handled on fast path.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES:
@@ -225,6 +234,13 @@ bool IsFieldEligibleForFastParsing(
   if (aux_idx > std::numeric_limits<uint8_t>::max()) {
     return false;
   }
+
+  // The largest tag that can be read by the tailcall parser is two bytes
+  // when varint-coded. This allows 14 bits for the numeric tag value:
+  //   byte 0   byte 1
+  //   1nnnnttt 0nnnnnnn
+  //    ^^^^^^^  ^^^^^^^
+  if (field->number() >= 1 << 11) return false;
 
   return true;
 }
@@ -375,8 +391,7 @@ std::vector<const FieldDescriptor*> FilterMiniParsedFields(
       case FieldDescriptor::TYPE_MESSAGE:
       case FieldDescriptor::TYPE_GROUP:
         // TODO(b/210762816): support remaining field types.
-        if (field->is_map() || field->options().weak() ||
-            options.is_implicitly_weak || options.is_lazy) {
+        if (field->is_map() || field->options().weak() || options.is_lazy) {
           handled = false;
         } else {
           handled = true;
@@ -393,9 +408,27 @@ std::vector<const FieldDescriptor*> FilterMiniParsedFields(
   return generated_fallback_fields;
 }
 
+// We only need field names for reporting UTF-8 parsing errors, so we only
+// emit them for string fields with Utf8 transform specified.
+absl::string_view FieldNameForTable(
+    const TailCallTableInfo::FieldEntryInfo& entry) {
+  const auto* field = entry.field;
+  if (field->type() == FieldDescriptor::TYPE_STRING) {
+    const uint16_t xform_val = entry.type_card & field_layout::kTvMask;
+
+    switch (xform_val) {
+      case field_layout::kTvUtf8:
+      case field_layout::kTvUtf8Debug:
+        return field->name();
+        break;
+    }
+  }
+  return "?";
+}
+
 std::vector<uint8_t> GenerateFieldNames(
     const Descriptor* descriptor,
-    const std::vector<const FieldDescriptor*>& fields) {
+    const std::vector<TailCallTableInfo::FieldEntryInfo>& entries) {
   static constexpr int kMaxNameLength = 255;
   std::vector<uint8_t> out;
   // First, we output the size of each string, as an unsigned byte. The first
@@ -403,8 +436,8 @@ std::vector<uint8_t> GenerateFieldNames(
   int count = 1;
   out.push_back(std::min(static_cast<int>(descriptor->full_name().size()),
                          kMaxNameLength));
-  for (const auto* field : fields) {
-    out.push_back(field->name().size());
+  for (const auto& entry : entries) {
+    out.push_back(FieldNameForTable(entry).size());
     ++count;
   }
   while (count & 7) {  // align to an 8-byte boundary
@@ -421,8 +454,9 @@ std::vector<uint8_t> GenerateFieldNames(
   }
   out.insert(out.end(), message_name.begin(), message_name.end());
   // Then we output the actual field names
-  for (const auto* field : fields) {
-    out.insert(out.end(), field->name().begin(), field->name().end());
+  for (const auto& entry : entries) {
+    const auto& field_name = FieldNameForTable(entry);
+    out.insert(out.end(), field_name.begin(), field_name.end());
   }
 
   return out;
@@ -611,7 +645,9 @@ uint16_t MakeTypeCardForField(
 
     case FieldDescriptor::TYPE_GROUP:
       type_card |= 0 | fl::kMessage | fl::kRepGroup;
-      if (options.use_direct_tcparser_table) {
+      if (options.is_implicitly_weak) {
+        type_card |= fl::kTvWeakPtr;
+      } else if (options.use_direct_tcparser_table) {
         type_card |= fl::kTvTable;
       } else {
         type_card |= fl::kTvDefault;
@@ -624,11 +660,11 @@ uint16_t MakeTypeCardForField(
         type_card |= fl::kMessage;
         if (options.is_lazy) {
           type_card |= fl::kRepLazy;
-        } else if (options.is_implicitly_weak) {
-          type_card |= fl::kRepIWeak;
         }
 
-        if (options.use_direct_tcparser_table) {
+        if (options.is_implicitly_weak) {
+          type_card |= fl::kTvWeakPtr;
+        } else if (options.use_direct_tcparser_table) {
           type_card |= fl::kTvTable;
         } else {
           type_card |= fl::kTvDefault;
@@ -698,15 +734,15 @@ TailCallTableInfo::TailCallTableInfo(
       } else if (field->options().weak()) {
         // Don't generate anything for weak fields. They are handled by the
         // generated fallback.
-      } else if (options.is_implicitly_weak) {
-        // Implicit weak fields don't need to store a default instance pointer.
       } else if (options.is_lazy) {
         // Lazy fields are handled by the generated fallback function.
       } else {
         field_entries.back().aux_idx = aux_entries.size();
-        aux_entries.push_back(
-            {options.use_direct_tcparser_table ? kSubTable : kSubMessage,
-             {field}});
+        aux_entries.push_back({options.is_implicitly_weak ? kSubMessageWeak
+                               : options.use_direct_tcparser_table
+                                   ? kSubTable
+                                   : kSubMessage,
+                               {field}});
       }
     } else if (field->type() == FieldDescriptor::TYPE_ENUM &&
                !cpp::HasPreservingUnknownEnumSemantics(field)) {
@@ -794,7 +830,8 @@ TailCallTableInfo::TailCallTableInfo(
   );
 
   num_to_entry_table = MakeNumToEntryTable(ordered_fields);
-  field_name_data = GenerateFieldNames(descriptor, ordered_fields);
+  GOOGLE_CHECK_EQ(field_entries.size(), ordered_fields.size());
+  field_name_data = GenerateFieldNames(descriptor, field_entries);
 
   // If there are no fallback fields, and at most one extension range, the
   // parser can use a generic fallback function. Otherwise, a message-specific

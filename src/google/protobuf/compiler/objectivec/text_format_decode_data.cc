@@ -29,11 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
-#include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/str_replace.h"
 #include "google/protobuf/compiler/objectivec/text_format_decode_data.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/io/coded_stream.h"

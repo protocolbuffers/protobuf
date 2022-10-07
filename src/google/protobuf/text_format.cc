@@ -93,6 +93,12 @@ namespace internal {
 const char kDebugStringSilentMarker[] = "";
 const char kDebugStringSilentMarkerForDetection[] = "\t ";
 
+// Controls insertion of a marker making debug strings non-parseable.
+PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_redaction_marker;
+
+// Controls insertion of a randomized marker in debug strings.
+PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_random_marker;
+
 // Controls insertion of kDebugStringSilentMarker.
 PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_format_marker;
 }  // namespace internal
@@ -104,6 +110,12 @@ std::string Message::DebugString() const {
   printer.SetExpandAny(true);
   printer.SetInsertSilentMarker(internal::enable_debug_text_format_marker.load(
       std::memory_order_relaxed));
+  printer.SetRedactDebugString(
+      internal::enable_debug_text_redaction_marker.load(
+          std::memory_order_relaxed));
+  printer.SetRandomizeDebugString(
+      internal::enable_debug_text_random_marker.load(
+          std::memory_order_relaxed));
 
   printer.PrintToString(*this, &debug_string);
 
@@ -118,6 +130,12 @@ std::string Message::ShortDebugString() const {
   printer.SetExpandAny(true);
   printer.SetInsertSilentMarker(internal::enable_debug_text_format_marker.load(
       std::memory_order_relaxed));
+  printer.SetRedactDebugString(
+      internal::enable_debug_text_redaction_marker.load(
+          std::memory_order_relaxed));
+  printer.SetRandomizeDebugString(
+      internal::enable_debug_text_random_marker.load(
+          std::memory_order_relaxed));
 
   printer.PrintToString(*this, &debug_string);
   // Single line mode currently might have an extra space at the end.
@@ -136,6 +154,12 @@ std::string Message::Utf8DebugString() const {
   printer.SetExpandAny(true);
   printer.SetInsertSilentMarker(internal::enable_debug_text_format_marker.load(
       std::memory_order_relaxed));
+  printer.SetRedactDebugString(
+      internal::enable_debug_text_redaction_marker.load(
+          std::memory_order_relaxed));
+  printer.SetRandomizeDebugString(
+      internal::enable_debug_text_random_marker.load(
+          std::memory_order_relaxed));
 
   printer.PrintToString(*this, &debug_string);
 
@@ -494,7 +518,7 @@ class TextFormat::Parser::ParserImpl {
       TryConsumeWhitespace();
 
       int32_t field_number;
-      if (allow_field_number_ && safe_strto32(field_name, &field_number)) {
+      if (allow_field_number_ && absl::SimpleAtoi(field_name, &field_number)) {
         if (descriptor->IsExtensionNumber(field_number)) {
           field = finder_
                       ? finder_->FindExtensionByNumber(descriptor, field_number)
@@ -2005,6 +2029,8 @@ TextFormat::Printer::Printer()
       use_field_number_(false),
       use_short_repeated_primitives_(false),
       insert_silent_marker_(false),
+      redact_debug_string_(false),
+      randomize_debug_string_(false),
       hide_unknown_fields_(false),
       print_message_fields_in_index_order_(false),
       expand_any_(false),
