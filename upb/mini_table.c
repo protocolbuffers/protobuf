@@ -70,7 +70,7 @@ typedef enum {
 
 enum {
   kUpb_EncodedValue_MinField = ' ',
-  kUpb_EncodedValue_MaxField = 'K',
+  kUpb_EncodedValue_MaxField = 'I',
   kUpb_EncodedValue_MinModifier = 'L',
   kUpb_EncodedValue_MaxModifier = '[',
   kUpb_EncodedValue_End = '^',
@@ -822,6 +822,9 @@ static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
                                              kUpb_EncodedValue_MaxSkip, &skip);
       last_field_number += skip;
       last_field_number--;  // Next field seen will increment.
+    } else {
+      upb_MtDecoder_ErrorFormat(d, "Invalid char: %c", ch);
+      UPB_UNREACHABLE();
     }
   }
 
