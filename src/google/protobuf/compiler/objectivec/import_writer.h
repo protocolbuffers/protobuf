@@ -55,10 +55,10 @@ class ImportWriter {
   void AddFile(const FileDescriptor* file, const std::string& header_extension);
   void Print(io::Printer* printer) const;
 
-  static void PrintRuntimeImports(io::Printer* printer,
-                                  const std::vector<std::string>& header_to_import,
-                                  const std::string& runtime_import_prefix,
-                                  bool default_cpp_symbol = false);
+  static void PrintRuntimeImports(
+      io::Printer* printer, const std::vector<std::string>& header_to_import,
+      const std::string& runtime_import_prefix,
+      bool default_cpp_symbol = false);
 
  private:
   void ParseFrameworkMappings();
@@ -74,7 +74,6 @@ class ImportWriter {
   std::vector<std::string> other_framework_imports_;
   std::vector<std::string> other_imports_;
 };
-
 
 }  // namespace objectivec
 }  // namespace compiler

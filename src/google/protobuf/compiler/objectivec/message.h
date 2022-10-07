@@ -31,9 +31,10 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MESSAGE_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MESSAGE_H__
 
-#include <string>
 #include <set>
+#include <string>
 #include <vector>
+
 #include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/oneof.h"
 #include "google/protobuf/descriptor.h"

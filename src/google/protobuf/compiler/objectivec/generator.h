@@ -34,6 +34,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_GENERATOR_H__
 
 #include <string>
+
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.h"
 
