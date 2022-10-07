@@ -24,6 +24,9 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 load(":pyproto_test_wrapper.bzl", "pyproto_test_wrapper")
+# begin:github_only
+load("@pip_deps//:requirements.bzl", "requirement")
+# end:github_only
 
 licenses(["notice"])
 
@@ -44,6 +47,13 @@ pyproto_test_wrapper(name = "keywords_test")
 pyproto_test_wrapper(name = "message_factory_test")
 
 pyproto_test_wrapper(name = "message_test")
+
+# begin:github_only
+pyproto_test_wrapper(
+    name = "numpy_test",
+    deps = [requirement("numpy")],
+)
+# end:github_only
 
 # begin:google_only
 # pyproto_test_wrapper(name = "numpy_test")

@@ -1,6 +1,6 @@
 # begin:github_only
 
-def pyproto_test_wrapper(name):
+def pyproto_test_wrapper(name, deps = []):
     src = name + "_wrapper.py"
     native.py_test(
         name = name,
@@ -14,7 +14,7 @@ def pyproto_test_wrapper(name):
             "@com_google_protobuf//:python_specific_test_protos",
             "@com_google_protobuf//:python_test_srcs",
             "@com_google_protobuf//:python_srcs",
-        ],
+        ] + deps,
     )
 
 # end:github_only

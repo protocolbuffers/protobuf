@@ -62,5 +62,7 @@ jobs:
       - name: Install dependencies
         run: sudo apt update && sudo apt install -y ${{ matrix.install }}
         if: matrix.install != ''
+      - name: Install numpy
+        run: pip install numpy
       - name: Run tests
         run: cd ${{ github.workspace }} && PATH=/tmp/venv/bin:$PATH CC=${{ matrix.CC }} ${{ matrix.BAZEL }} test --test_output=errors $BAZEL_CACHE $BAZEL_CACHE_AUTH ... ${{ matrix.flags }}
