@@ -40,14 +40,13 @@
 #include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/stubs/status_macros.h"
 
-
 // Must be included last.
 #include "google/protobuf/port_def.inc"
-
 
 namespace google {
 namespace protobuf {
 namespace json {
+
 absl::Status BinaryToJsonStream(google::protobuf::util::TypeResolver* resolver,
                                 const std::string& type_url,
                                 io::ZeroCopyInputStream* binary_input,
