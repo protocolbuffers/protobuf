@@ -49,9 +49,9 @@
  */
 
 #if !((defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || \
-      (defined(__cplusplus) && __cplusplus >= 201103L) ||           \
+      (defined(__cplusplus) && __cplusplus >= 201402L) ||           \
       (defined(_MSC_VER) && _MSC_VER >= 1900))
-#error upb requires C99 or C++11 or MSVC >= 2015.
+#error upb requires C99 or C++14 or MSVC >= 2015.
 #endif
 
 // Portable check for GCC minimum version:

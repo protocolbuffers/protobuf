@@ -169,7 +169,7 @@ static void BM_LoadAdsDescriptor_Proto2(benchmark::State& state) {
     protobuf::Arena arena;
     protobuf::DescriptorPool pool;
     for (auto file : serialized_files) {
-      protobuf::StringPiece input(file.data, file.size);
+      absl::string_view input(file.data, file.size);
       auto proto =
           protobuf::Arena::CreateMessage<protobuf::FileDescriptorProto>(&arena);
       bool ok = proto->ParseFrom<protobuf::MessageLite::kMergePartial>(input) &&
@@ -284,7 +284,7 @@ void BM_Parse_Proto2(benchmark::State& state) {
   for (auto _ : state) {
     Proto2Factory<AMode, P> proto_factory;
     auto proto = proto_factory.GetProto();
-    protobuf::StringPiece input(descriptor.data, descriptor.size);
+    absl::string_view input(descriptor.data, descriptor.size);
     bool ok = proto->template ParseFrom<kParseFlags>(input);
     if (!ok) {
       printf("Failed to parse.\n");

@@ -610,13 +610,13 @@ upb_proto_reflection_library(
 upb_proto_library(
     name = "test_messages_proto2_proto_upb",
     testonly = 1,
-    deps = ["@com_google_protobuf//:test_messages_proto2_proto"],
+    deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto2_proto"],
 )
 
 upb_proto_library(
     name = "test_messages_proto3_proto_upb",
     testonly = 1,
-    deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
+    deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto3_proto"],
 )
 
 proto_library(
@@ -685,7 +685,7 @@ proto_library(
     name = "msg_test_proto",
     testonly = 1,
     srcs = ["upb/msg_test.proto"],
-    deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
+    deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto3_proto"],
 )
 
 upb_proto_library(
@@ -817,13 +817,13 @@ upb_proto_reflection_library(
 upb_proto_reflection_library(
     name = "test_messages_proto2_upbdefs",
     testonly = 1,
-    deps = ["@com_google_protobuf//:test_messages_proto2_proto"],
+    deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto2_proto"],
 )
 
 upb_proto_reflection_library(
     name = "test_messages_proto3_upbdefs",
     testonly = 1,
-    deps = ["@com_google_protobuf//:test_messages_proto3_proto"],
+    deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto3_proto"],
 )
 
 cc_binary(

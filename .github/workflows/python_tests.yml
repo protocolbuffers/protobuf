@@ -129,6 +129,8 @@ jobs:
           python -m venv env
           source env/bin/activate
           echo "VIRTUAL ENV:" $VIRTUAL_ENV
+      - name: Install numpy
+        run: pip install numpy
       - name: Install Protobuf Wheels
         run: pip install -vvv --no-index --find-links wheels protobuf protobuftests
       - name: Run the unit tests

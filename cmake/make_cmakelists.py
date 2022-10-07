@@ -227,6 +227,9 @@ class WorkspaceFileFunctions(object):
   def protobuf_deps(self):
     pass
 
+  def pip_install(self, **kwargs):
+    pass
+
   def rules_fuzzing_dependencies(self):
     pass
 

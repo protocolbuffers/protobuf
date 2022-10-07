@@ -3,6 +3,9 @@ build --features=-debug_prefix_map_pwd_is_dot
 
 build --extra_toolchains=@system_python//:python_toolchain
 
+# Pin to C++14
+build --cxxopt=-std=c++14 --host_cxxopt=-std=c++14
+
 # Use our custom-configured c++ toolchain.
 
 build:m32 --copt=-m32 --linkopt=-m32
