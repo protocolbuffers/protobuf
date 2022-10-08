@@ -36,7 +36,7 @@
 #include "google/protobuf/util/type_resolver_util.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
-#include "third_party/jsoncpp/json.h"
+#include "json/json.h"
 #include "conformance/conformance.pb.h"
 #include "conformance_test.h"
 #include "google/protobuf/test_messages_proto2.pb.h"

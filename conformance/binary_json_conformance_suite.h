@@ -32,7 +32,7 @@
 #define CONFORMANCE_BINARY_JSON_CONFORMANCE_SUITE_H
 
 #include "google/protobuf/descriptor.h"
-#include "third_party/jsoncpp/json.h"
+#include "json/json.h"
 #include "conformance_test.h"
 
 namespace google {
