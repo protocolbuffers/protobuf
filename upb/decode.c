@@ -207,6 +207,7 @@ static upb_Message* _upb_Decoder_NewSubMessage(
     upb_Decoder* d, const upb_MiniTable_Sub* subs,
     const upb_MiniTable_Field* field) {
   const upb_MiniTable* subl = subs[field->submsg_index].submsg;
+  UPB_ASSERT(subl);
   upb_Message* msg = _upb_Message_New_inl(subl, &d->arena);
   if (!msg) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   return msg;
@@ -258,6 +259,7 @@ static const char* _upb_Decoder_DecodeSubMessage(
     const upb_MiniTable_Sub* subs, const upb_MiniTable_Field* field, int size) {
   int saved_delta = _upb_Decoder_PushLimit(d, ptr, size);
   const upb_MiniTable* subl = subs[field->submsg_index].submsg;
+  UPB_ASSERT(subl);
   ptr = _upb_Decoder_RecurseSubMessage(d, ptr, submsg, subl, DECODE_NOGROUP);
   _upb_Decoder_PopLimit(d, ptr, saved_delta);
   return ptr;
@@ -288,6 +290,7 @@ static const char* _upb_Decoder_DecodeKnownGroup(
     upb_Decoder* d, const char* ptr, upb_Message* submsg,
     const upb_MiniTable_Sub* subs, const upb_MiniTable_Field* field) {
   const upb_MiniTable* subl = subs[field->submsg_index].submsg;
+  UPB_ASSERT(subl);
   return _upb_Decoder_DecodeGroup(d, ptr, submsg, subl, field->number);
 }
 
