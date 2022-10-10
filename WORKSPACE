@@ -80,6 +80,12 @@ upb_deps()
 load("@upb//bazel:system_python.bzl", "system_python")
 system_python(name = "local_config_python")
 
+load("@utf8_range//:workspace_deps.bzl", "utf8_range_deps")
+utf8_range_deps()
+
+load("@rules_fuzzing//fuzzing:repositories.bzl", "rules_fuzzing_dependencies")
+rules_fuzzing_dependencies()
+
 bind(
     name = "python_headers",
     actual = "@local_config_python//:python_headers",
