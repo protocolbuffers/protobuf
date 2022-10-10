@@ -15,7 +15,7 @@ brew uninstall protobuf
 
 ##
 # Select Xcode version
-export DEVELOPER_DIR=/Applications/Xcode_13.3.1.app/Contents/Developer
+export DEVELOPER_DIR=/Applications/Xcode_14.app/Contents/Developer
 sudo xcode-select -s "${DEVELOPER_DIR}"
 
 ##
