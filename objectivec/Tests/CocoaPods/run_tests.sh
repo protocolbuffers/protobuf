@@ -128,7 +128,7 @@ do_test() {
     # errors.
     xcodebuild_args+=(
         -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO
-        -destination "platform=iOS Simulator,name=iPad Air (5th generation),OS=15.4"
+        -destination "platform=iOS Simulator,name=iPad Air (5th generation),OS=16.0"
     )
   fi
 
