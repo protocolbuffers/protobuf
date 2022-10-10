@@ -1045,6 +1045,8 @@ TEST_F(TokenizerTest, ParseString) {
   EXPECT_EQ("\1x\1\123\739\52\334n\3", output);
   Tokenizer::ParseString("'\\x20\\x4'", &output);
   EXPECT_EQ("\x20\x4", output);
+  Tokenizer::ParseString("'\\X20\\X4'", &output);
+  EXPECT_EQ("\x20\x4", output);
 
   // Test invalid strings that may still be tokenized as strings.
   Tokenizer::ParseString("\"\\a\\l\\v\\t", &output);  // \l is invalid
@@ -1110,7 +1112,7 @@ inline std::ostream& operator<<(std::ostream& out, const ErrorCase& test_case) {
 ErrorCase kErrorCases[] = {
     // String errors.
     {"'\\l' foo", true, "0:2: Invalid escape sequence in string literal.\n"},
-    {"'\\X' foo", true, "0:2: Invalid escape sequence in string literal.\n"},
+    {"'\\X' foo", true, "0:3: Expected hex digits for escape sequence.\n"},
     {"'\\x' foo", true, "0:3: Expected hex digits for escape sequence.\n"},
     {"'foo", false, "0:4: Unexpected end of string.\n"},
     {"'bar\nfoo", true,
