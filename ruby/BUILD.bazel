@@ -71,7 +71,7 @@ filegroup(
     name = "protobuf",
     srcs = [
         ":srcs",
-        "//third_party/utf8_range:all_files",
+        "@utf8_range//:utf8_range_srcs",
     ] + select({
         ":java_ruby": [":protobuf_java"],
         "@bazel_tools//src/conditions:darwin": [":protobuf_c_mac"],

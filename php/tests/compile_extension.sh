@@ -4,6 +4,9 @@ set -ex
 
 cd $(dirname $0)/..
 
+# Pull in dependencies.
+git submodule update --init --recursive
+
 # utf8_range has to live in the base third_party directory.
 # We copy it into the ext/google/protobuf directory for the build
 # (and for the release to PECL).
