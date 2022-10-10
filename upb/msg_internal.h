@@ -369,9 +369,6 @@ const upb_Message_Extension* _upb_Message_Getext(
 void _upb_Message_Clearext(upb_Message* msg,
                            const upb_MiniTable_Extension* ext);
 
-void _upb_Message_Clearext(upb_Message* msg,
-                           const upb_MiniTable_Extension* ext);
-
 /** Hasbit access *************************************************************/
 
 UPB_INLINE bool _upb_hasbit(const upb_Message* msg, size_t idx) {

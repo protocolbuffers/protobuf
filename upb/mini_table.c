@@ -1055,7 +1055,6 @@ upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
   if (!ret || !fields) return NULL;
 
   upb_MiniTable_Sub* subs = NULL;
-  uint64_t value_modifiers = 0;
   if (value_is_proto3_enum) {
     UPB_ASSERT(value_type == kUpb_FieldType_Enum);
     // No sub needed.
@@ -1064,9 +1063,6 @@ upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
              value_type == kUpb_FieldType_Enum) {
     subs = upb_Arena_Malloc(arena, sizeof(*subs));
     if (!subs) return NULL;
-    if (value_type == kUpb_FieldType_Enum) {
-      value_modifiers |= kUpb_FieldModifier_IsClosedEnum;
-    }
   }
 
   size_t field_size =
