@@ -55,11 +55,12 @@ def protobuf_deps():
         )
 
     if not native.existing_rule("jsoncpp"):
-        _github_archive(
+        http_archive(
             name = "jsoncpp",
-            repo = "https://github.com/open-source-parsers/jsoncpp",
-            commit = "5defb4ed1a4293b8e2bf641e16b156fb9de498cc",
-            sha256 = "a03d3136ff6dd092143bba8d3ded641e87b44e6c0b1f632b368f6cc8587524b5",
+            build_file = "@com_google_protobuf//:third_party/jsoncpp.BUILD",
+            sha256 = "e34a628a8142643b976c7233ef381457efad79468c67cb1ae0b83a33d7493999",
+            strip_prefix = "jsoncpp-1.9.4",
+            urls = ["https://github.com/open-source-parsers/jsoncpp/archive/refs/tags/1.9.4.tar.gz"],
         )
 
     if not native.existing_rule("rules_cc"):
