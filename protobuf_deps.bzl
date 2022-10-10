@@ -63,6 +63,14 @@ def protobuf_deps():
             urls = ["https://github.com/open-source-parsers/jsoncpp/archive/refs/tags/1.9.4.tar.gz"],
         )
 
+    if not native.existing_rule("utf8_range"):
+        _github_archive(
+            name = "utf8_range",
+            repo = "https://github.com/protocolbuffers/utf8_range",
+            commit = "77f787ec84cce7c4c7059a614e3147eac23d511e",
+            sha256 = "e9ece5beebe0949cb4a4768b7fc9ca85b64fec41b3175b0c898bdd3f848c4ed1",
+        )
+
     if not native.existing_rule("rules_cc"):
         _github_archive(
             name = "rules_cc",
