@@ -44,8 +44,9 @@ static const upb_Message_Internal* upb_Message_Getinternal_const(
   return (upb_Message_Internal*)((char*)msg - size);
 }
 
-upb_Message* _upb_Message_New(const upb_MiniTable* l, upb_Arena* a) {
-  return _upb_Message_New_inl(l, a);
+upb_Message* upb_Message_New(const upb_MiniTable* mini_table,
+                             upb_Arena* arena) {
+  return _upb_Message_New(mini_table, arena);
 }
 
 void _upb_Message_Clear(upb_Message* msg, const upb_MiniTable* l) {

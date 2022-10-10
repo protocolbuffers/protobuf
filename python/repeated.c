@@ -577,7 +577,8 @@ static PyObject* PyUpb_RepeatedCompositeContainer_AppendNew(PyObject* _self) {
   const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
   upb_Arena* arena = PyUpb_Arena_Get(self->arena);
   const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
-  upb_Message* msg = upb_Message_New(m, arena);
+  const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
+  upb_Message* msg = upb_Message_New(layout, arena);
   upb_MessageValue msgval = {.msg_val = msg};
   upb_Array_Append(arr, msgval, arena);
   return PyUpb_Message_Get(msg, m, self->arena);
@@ -631,7 +632,8 @@ static PyObject* PyUpb_RepeatedContainer_Insert(PyObject* _self,
   if (upb_FieldDef_IsSubMessage(f)) {
     // Create message.
     const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
-    upb_Message* msg = upb_Message_New(m, arena);
+    const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
+    upb_Message* msg = upb_Message_New(layout, arena);
     PyObject* py_msg = PyUpb_Message_Get(msg, m, self->arena);
     PyObject* ret = PyUpb_Message_MergeFrom(py_msg, value);
     Py_DECREF(py_msg);

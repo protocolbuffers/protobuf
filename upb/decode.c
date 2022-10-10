@@ -208,7 +208,7 @@ static upb_Message* _upb_Decoder_NewSubMessage(
     const upb_MiniTable_Field* field) {
   const upb_MiniTable* subl = subs[field->submsg_index].submsg;
   UPB_ASSERT(subl);
-  upb_Message* msg = _upb_Message_New_inl(subl, &d->arena);
+  upb_Message* msg = _upb_Message_New(subl, &d->arena);
   if (!msg) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   return msg;
 }

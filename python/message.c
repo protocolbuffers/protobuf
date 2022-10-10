@@ -251,10 +251,11 @@ upb_Message* PyUpb_Message_GetIfReified(PyObject* _self) {
 static PyObject* PyUpb_Message_New(PyObject* cls, PyObject* unused_args,
                                    PyObject* unused_kwargs) {
   const upb_MessageDef* msgdef = PyUpb_MessageMeta_GetMsgdef(cls);
+  const upb_MiniTable* layout = upb_MessageDef_MiniTable(msgdef);
   PyUpb_Message* msg = (void*)PyType_GenericAlloc((PyTypeObject*)cls, 0);
   msg->def = (uintptr_t)msgdef;
   msg->arena = PyUpb_Arena_New();
-  msg->ptr.msg = upb_Message_New(msgdef, PyUpb_Arena_Get(msg->arena));
+  msg->ptr.msg = upb_Message_New(layout, PyUpb_Arena_Get(msg->arena));
   msg->unset_subobj_map = NULL;
   msg->ext_dict = NULL;
   msg->version = 0;
@@ -596,8 +597,9 @@ static bool PyUpb_Message_IsEqual(PyUpb_Message* m1, PyObject* _m2) {
 static const upb_FieldDef* PyUpb_Message_InitAsMsg(PyUpb_Message* m,
                                                    upb_Arena* arena) {
   const upb_FieldDef* f = PyUpb_Message_GetFieldDef(m);
-  m->ptr.msg = upb_Message_New(upb_FieldDef_MessageSubDef(f), arena);
-  m->def = (uintptr_t)upb_FieldDef_MessageSubDef(f);
+  const upb_MessageDef* m2 = upb_FieldDef_MessageSubDef(f);
+  m->ptr.msg = upb_Message_New(upb_MessageDef_MiniTable(m2), arena);
+  m->def = (uintptr_t)m2;
   PyUpb_ObjCache_Add(m->ptr.msg, &m->ob_base);
   return f;
 }
@@ -671,7 +673,8 @@ static void PyUpb_Message_Reify(PyUpb_Message* self, const upb_FieldDef* f,
   assert(f == PyUpb_Message_GetFieldDef(self));
   if (!msg) {
     const upb_MessageDef* msgdef = PyUpb_Message_GetMsgdef((PyObject*)self);
-    msg = upb_Message_New(msgdef, PyUpb_Arena_Get(self->arena));
+    const upb_MiniTable* layout = upb_MessageDef_MiniTable(msgdef);
+    msg = upb_Message_New(layout, PyUpb_Arena_Get(self->arena));
   }
   PyUpb_ObjCache_Add(msg, &self->ob_base);
   Py_DECREF(&self->ptr.parent->ob_base);

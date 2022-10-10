@@ -506,7 +506,7 @@ TEST(MessageTest, MapField) {
 //       upb::fuzz::BuildMiniTable(input, &exts, arena.ptr());
 //   if (!mini_table) return;
 //   upb::Status status;
-//   upb_Message* msg = _upb_Message_New(mini_table, arena.ptr());
+//   upb_Message* msg = upb_Message_New(mini_table, arena.ptr());
 //   upb_Decode(proto_payload.data(), proto_payload.size(), msg, mini_table, exts,
 //              decode_options, arena.ptr());
 //   char* ptr;

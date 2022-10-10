@@ -301,19 +301,16 @@ UPB_INLINE size_t upb_msg_sizeof(const upb_MiniTable* l) {
   return l->size + sizeof(upb_Message_Internal);
 }
 
-UPB_INLINE upb_Message* _upb_Message_New_inl(const upb_MiniTable* l,
-                                             upb_Arena* a) {
-  size_t size = upb_msg_sizeof(l);
-  void* mem = upb_Arena_Malloc(a, size + sizeof(upb_Message_Internal));
-  upb_Message* msg;
+/* Inline version upb_Message_New(), for internal use */
+UPB_INLINE upb_Message* _upb_Message_New(const upb_MiniTable* mini_table,
+                                         upb_Arena* arena) {
+  size_t size = upb_msg_sizeof(mini_table);
+  void* mem = upb_Arena_Malloc(arena, size + sizeof(upb_Message_Internal));
   if (UPB_UNLIKELY(!mem)) return NULL;
-  msg = UPB_PTR_AT(mem, sizeof(upb_Message_Internal), upb_Message);
+  upb_Message* msg = UPB_PTR_AT(mem, sizeof(upb_Message_Internal), upb_Message);
   memset(mem, 0, size);
   return msg;
 }
-
-/* Creates a new messages with the given layout on the given arena. */
-upb_Message* _upb_Message_New(const upb_MiniTable* l, upb_Arena* a);
 
 UPB_INLINE upb_Message_Internal* upb_Message_Getinternal(upb_Message* msg) {
   ptrdiff_t size = sizeof(upb_Message_Internal);

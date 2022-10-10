@@ -680,7 +680,7 @@ upb_Message* lupb_msg_pushnew(lua_State* L, int narg) {
   lua_pushvalue(L, 1);
   lua_setiuservalue(L, -2, LUPB_MSGDEF_INDEX);
 
-  lmsg->msg = upb_Message_New(m, arena);
+  lmsg->msg = upb_Message_New(upb_MessageDef_MiniTable(m), arena);
   lupb_cacheset(L, lmsg->msg);
   return lmsg->msg;
 }

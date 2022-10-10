@@ -66,10 +66,6 @@ static size_t get_field_size(const upb_MiniTable_Field* f) {
   return upb_IsRepeatedOrMap(f) ? sizeof(void*) : sizes[f->descriptortype];
 }
 
-upb_Message* upb_Message_New(const upb_MessageDef* m, upb_Arena* a) {
-  return _upb_Message_New(upb_MessageDef_MiniTable(m), a);
-}
-
 static bool in_oneof(const upb_MiniTable_Field* field) {
   return field->presence < 0;
 }
@@ -164,7 +160,8 @@ make:
     ret.array = upb_Array_New(a, upb_FieldDef_CType(f));
   } else {
     UPB_ASSERT(upb_FieldDef_IsSubMessage(f));
-    ret.msg = upb_Message_New(upb_FieldDef_MessageSubDef(f), a);
+    const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
+    ret.msg = upb_Message_New(upb_MessageDef_MiniTable(m), a);
   }
 
   val.array_val = ret.array;

@@ -51,6 +51,9 @@ typedef void upb_Message;
  * upb_MessageDef_MiniTable() but users cannot access any of the members. */
 typedef struct upb_MiniTable upb_MiniTable;
 
+/* Creates a new message with the given mini_table on the given arena. */
+upb_Message* upb_Message_New(const upb_MiniTable* mini_table, upb_Arena* arena);
+
 /* Adds unknown data (serialized protobuf data) to the given message.  The data
  * is copied into the message instance. */
 void upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,

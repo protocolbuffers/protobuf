@@ -522,7 +522,7 @@ TEST(GeneratedCode, PromoteUnknownMessage) {
                                                              &serialized_size);
 
   upb_MiniTable* mini_table = CreateMiniTableWithEmptySubTables(arena);
-  upb_Message* msg = _upb_Message_New(mini_table, arena);
+  upb_Message* msg = upb_Message_New(mini_table, arena);
   upb_DecodeStatus decode_status = upb_Decode(serialized, serialized_size, msg,
                                               mini_table, nullptr, 0, arena);
   EXPECT_EQ(decode_status, kUpb_DecodeStatus_Ok);

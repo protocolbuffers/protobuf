@@ -872,7 +872,8 @@ static void jsondec_tomsg(jsondec* d, upb_Message* msg,
 
 static upb_MessageValue jsondec_msg(jsondec* d, const upb_FieldDef* f) {
   const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
-  upb_Message* msg = upb_Message_New(m, d->arena);
+  const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
+  upb_Message* msg = upb_Message_New(layout, d->arena);
   upb_MessageValue val;
 
   jsondec_tomsg(d, msg, m);
@@ -1134,11 +1135,12 @@ static void jsondec_listvalue(jsondec* d, upb_Message* msg,
                               const upb_MessageDef* m) {
   const upb_FieldDef* values_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_MessageDef* value_m = upb_FieldDef_MessageSubDef(values_f);
+  const upb_MiniTable* value_layout = upb_MessageDef_MiniTable(value_m);
   upb_Array* values = upb_Message_Mutable(msg, values_f, d->arena).array;
 
   jsondec_arrstart(d);
   while (jsondec_arrnext(d)) {
-    upb_Message* value_msg = upb_Message_New(value_m, d->arena);
+    upb_Message* value_msg = upb_Message_New(value_layout, d->arena);
     upb_MessageValue value;
     value.msg_val = value_msg;
     upb_Array_Append(values, value, d->arena);
@@ -1153,12 +1155,13 @@ static void jsondec_struct(jsondec* d, upb_Message* msg,
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(fields_f);
   const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(entry_m, 2);
   const upb_MessageDef* value_m = upb_FieldDef_MessageSubDef(value_f);
+  const upb_MiniTable* value_layout = upb_MessageDef_MiniTable(value_m);
   upb_Map* fields = upb_Message_Mutable(msg, fields_f, d->arena).map;
 
   jsondec_objstart(d);
   while (jsondec_objnext(d)) {
     upb_MessageValue key, value;
-    upb_Message* value_msg = upb_Message_New(value_m, d->arena);
+    upb_Message* value_msg = upb_Message_New(value_layout, d->arena);
     key.str_val = jsondec_string(d);
     value.msg_val = value_msg;
     upb_Map_Set(fields, key, value, d->arena);
@@ -1360,7 +1363,8 @@ static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
     jsondec_err(d, "Any object didn't contain a '@type' field");
   }
 
-  any_msg = upb_Message_New(any_m, d->arena);
+  const upb_MiniTable* any_layout = upb_MessageDef_MiniTable(any_m);
+  any_msg = upb_Message_New(any_layout, d->arena);
 
   if (pre_type_data) {
     size_t len = pre_type_end - pre_type_data + 1;

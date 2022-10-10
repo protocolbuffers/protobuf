@@ -399,7 +399,7 @@ static void jsonenc_any(jsonenc* e, const upb_Message* msg,
   const upb_MessageDef* any_m = jsonenc_getanymsg(e, type_url);
   const upb_MiniTable* any_layout = upb_MessageDef_MiniTable(any_m);
   upb_Arena* arena = jsonenc_arena(e);
-  upb_Message* any = upb_Message_New(any_m, arena);
+  upb_Message* any = upb_Message_New(any_layout, arena);
 
   if (upb_Decode(value.data, value.size, any, any_layout, NULL, 0, arena) !=
       kUpb_DecodeStatus_Ok) {

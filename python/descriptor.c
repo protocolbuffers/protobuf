@@ -126,10 +126,11 @@ static PyObject* PyUpb_DescriptorBase_GetOptions(PyUpb_DescriptorBase* self,
     char* pb;
     // TODO(b/235839510): Need to correctly handle failed return codes.
     (void)upb_Encode(opts, layout, 0, arena, &pb, &size);
-    upb_Message* opts2 = upb_Message_New(m, arena);
+    const upb_MiniTable* opts2_layout = upb_MessageDef_MiniTable(m);
+    upb_Message* opts2 = upb_Message_New(opts2_layout, arena);
     assert(opts2);
     upb_DecodeStatus ds =
-        upb_Decode(pb, size, opts2, upb_MessageDef_MiniTable(m),
+        upb_Decode(pb, size, opts2, opts2_layout,
                    upb_DefPool_ExtensionRegistry(symtab), 0, arena);
     (void)ds;
     assert(ds == kUpb_DecodeStatus_Ok);

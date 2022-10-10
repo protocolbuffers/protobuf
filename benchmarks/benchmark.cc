@@ -40,8 +40,9 @@
 upb_StringView descriptor = benchmarks_descriptor_proto_upbdefinit.descriptor;
 namespace protobuf = ::google::protobuf;
 
-/* A buffer big enough to parse descriptor.proto without going to heap. */
-char buf[65535];
+// A buffer big enough to parse descriptor.proto without going to heap.
+// We use 64-bit ints here to force alignment.
+int64_t buf[8191];
 
 void CollectFileDescriptors(
     const _upb_DefPool_Init* file,
@@ -264,7 +265,7 @@ struct Proto2Factory<InitBlock, P> {
  private:
   protobuf::ArenaOptions GetOptions() {
     protobuf::ArenaOptions opts;
-    opts.initial_block = buf;
+    opts.initial_block = (char*)buf;
     opts.initial_block_size = sizeof(buf);
     return opts;
   }
