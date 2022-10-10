@@ -457,7 +457,6 @@ pkg_files(
         "release.sh",
         "setup.cfg",
         "setup.py",
-        "stubout.py",
         "tox.ini",
     ],
     strip_prefix = strip_prefix.from_root(""),
