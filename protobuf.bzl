@@ -1,8 +1,7 @@
 load("@bazel_skylib//lib:versions.bzl", "versions")
-load("@bazel_skylib//lib:collections.bzl", "collections")
-load("@rules_cc//cc:defs.bzl", "cc_library", "objc_library")
+load("@rules_cc//cc:defs.bzl", "objc_library")
 load("@rules_proto//proto:defs.bzl", "ProtoInfo")
-load("@rules_python//python:defs.bzl", "py_library", "py_test")
+load("@rules_python//python:defs.bzl", "py_library")
 
 def _GetPath(ctx, path):
     if ctx.label.workspace_root:
