@@ -10,6 +10,9 @@ bazel build //:protoc
 cp bazel-bin/protoc .
 export PROTOC=$PWD/protoc
 
+# Pull in dependencies.
+git submodule update --init --recursive
+
 umask 0022
 pushd ruby
 gem install bundler -v 2.1.4
