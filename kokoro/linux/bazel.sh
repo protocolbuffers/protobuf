@@ -50,7 +50,7 @@ function bazel_wrapper::kokoro_flags() {
     --bes_results_url=https://source.cloud.google.com/results/invocations/
     --invocation_id=$(bazel_wrapper::gen_invocation_id)
     --project_id=${KOKORO_BES_PROJECT_ID}  # --bes_instance_name in Bazel 5+
-    --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache
+    --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/protobuf/${KOKORO_JOB_NAME}
   )
   if [[ -n ${KOKORO_BAZEL_AUTH_CREDENTIAL:-} ]]; then
     _flags+=( --google_credentials=${KOKORO_BAZEL_AUTH_CREDENTIAL} )

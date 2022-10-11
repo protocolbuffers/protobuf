@@ -32,14 +32,10 @@ function bazel_wrapper::gen_invocation_id() {
 
 # Prints flags to use on Kokoro.
 function bazel_wrapper::kokoro_flags() {
-  [[ -n ${KOKORO_BES_PROJECT_ID:-} ]] || return
 
   local -a _flags
   _flags+=(
-    --bes_backend=${KOKORO_BES_BACKEND_ADDRESS:-buildeventservice.googleapis.com}
-    --bes_results_url=https://source.cloud.google.com/results/invocations/
     --invocation_id=$(bazel_wrapper::gen_invocation_id)
-    --project_id=${KOKORO_BES_PROJECT_ID}  # --bes_instance_name in Bazel 5+
     --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache
   )
   if [[ -n ${KOKORO_BAZEL_AUTH_CREDENTIAL:-} ]]; then
