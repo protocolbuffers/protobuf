@@ -37,6 +37,13 @@ load(
     "upb_proto_reflection_library",
 )
 
+# begin:google_only
+# load(
+#     "//third_party/bazel_rules/rules_kotlin/kotlin/native:native_interop_hint.bzl",
+#     "kt_native_interop_hint",
+# )
+# end:google_only
+
 # begin:github_only
 load(
     "//bazel:build_defs.bzl",
@@ -1162,6 +1169,24 @@ filegroup(
 #         "//third_party/py/absl:app",
 #         "//third_party/py/absl/flags",
 #     ],
+# )
+#
+# kt_native_interop_hint(
+#     name = "upb_kotlin_native_hint",
+#     compatible_with = ["//buildenv/target:non_prod"],
+#     headers_to_exclude = glob([
+#         "**/*.hpp",
+#     ]) + [
+#         "upb/extension_registry.h",
+#     ],
+#     no_string_conversion = ["upb_MiniTable_Build"],
+#     strict_enums = ["upb_FieldType"],
+# )
+#
+# kt_native_interop_hint(
+#     name = "suppress_kotlin_interop",
+#     compatible_with = ["//buildenv/target:non_prod"],
+#     suppressed = True,
 # )
 #
 # end:google_only
