@@ -31,10 +31,7 @@ function bazel_flags::kokoro_flags() {
 
   local -a _flags
   _flags+=(
-    --bes_backend=${KOKORO_BES_BACKEND_ADDRESS:-buildeventservice.googleapis.com}
-    --bes_results_url=https://source.cloud.google.com/results/invocations/
     --invocation_id=$(bazel_flags::gen_invocation_id)
-    --project_id=${KOKORO_BES_PROJECT_ID}  # --bes_instance_name in Bazel 5+
     --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/${KOKORO_JOB_NAME}
   )
   if [[ -n ${KOKORO_BAZEL_AUTH_CREDENTIAL:-} ]]; then
