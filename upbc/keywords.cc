@@ -117,7 +117,6 @@ static const char* const kKeywordList[] = {
     "while",
     "xor",
     "xor_eq",
-#ifdef PROTOBUF_FUTURE_CPP20_KEYWORDS  // C++20 keywords.
     "char8_t",
     "char16_t",
     "char32_t",
@@ -128,7 +127,6 @@ static const char* const kKeywordList[] = {
     "co_return",
     "co_yield",
     "requires",
-#endif  // !PROTOBUF_FUTURE_BREAKING_CHANGES
 };
 
 static std::unordered_set<std::string>* MakeKeywordsMap() {
