@@ -12,7 +12,7 @@ git submodule update --init --recursive
 # (and for the release to PECL).
 rm -rf ext/google/protobuf/third_party
 mkdir -p ext/google/protobuf/third_party/utf8_range
-cp ../third_party/utf8_range/* ext/google/protobuf/third_party/utf8_range
+cp -r ../third_party/utf8_range/* ext/google/protobuf/third_party/utf8_range
 
 echo "Copied utf8_range from ../third_party -> ext/google/protobuf/third_party"
 
