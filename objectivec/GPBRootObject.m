@@ -97,14 +97,13 @@ static CFHashCode GPBRootExtensionKeyHash(const void *value) {
   return jenkins_one_at_a_time_hash(key);
 }
 
-// Long ago, this was a OSSpinLock, but then it came to light that there were issues for that on
+// Long ago, this was an OSSpinLock, but then it came to light that there were issues for that on
 // iOS:
 //   http://mjtsai.com/blog/2015/12/16/osspinlock-is-unsafe/
 //   https://lists.swift.org/pipermail/swift-dev/Week-of-Mon-20151214/000372.html
-// So it was a dispatch_semaphore_t, but that has issues with priority inversion if developer code
-// uses queue for different things. But the minOS versions are now high enough, os_unfair_lock and
-// be used, and should provide all the support needed. For more information in the
-// concurrence/locking space see:
+// It was changed to a dispatch_semaphore_t, but that has potential for priority inversion issues.
+// The minOS versions are now high enough that os_unfair_lock can be used, and should provide 
+// all the support we need. For more information in the concurrency/locking space see:
 //   https://gist.github.com/tclementdev/6af616354912b0347cdf6db159c37057
 //   https://developer.apple.com/library/archive/documentation/Performance/Conceptual/EnergyGuide-iOS/PrioritizeWorkWithQoS.html
 //   https://developer.apple.com/videos/play/wwdc2017/706/
