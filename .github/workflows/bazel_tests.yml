@@ -14,7 +14,7 @@ jobs:
   ubuntu:
     runs-on: ${{ matrix.os }}
     env:
-      BAZEL_CACHE: --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache
+      BAZEL_CACHE: --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/upb
 
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
