@@ -5,16 +5,20 @@ on:
   push:
     branches:
       - main
+      - '[0-9]+.x'
 
 jobs:
   generate:
-    runs-on: ubuntu-20.04
+    if: github.repository == 'protocolbuffers/upb'
+    runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Merge generated branch with main
-        run: cd ${{ github.workspace }} && (git checkout generated || git checkout -b generated) && git merge --no-edit main
-      - name: Rebuild generated CMake files
-        run: cd ${{ github.workspace }} && bazel test cmake:test_generated_files || bazel-bin/cmake/test_generated_files --fix
-      - name: Commit and push changes to generated files
-        run: cd ${{ github.workspace }} && git add -A && (git diff --staged --quiet || git commit -am "Regenerated files") && git push
+      - uses: actions/checkout@v3
+        with:
+          # Note: this token has an expiration date, so if the workflow starts
+          # failing then you may need to generate a fresh token.
+          token: ${{ secrets.BOT_ACCESS_TOKEN }}
+      - name: Configure name and email address in Git
+        run: cd ${{ github.workspace }} && git config user.name "Protobuf Team Bot" && git config user.email "protobuf-team-bot@google.com"
+      - name: Commit and push update
+        run: cd ${{ github.workspace }} && ./cmake/push_auto_update.sh
