@@ -51,7 +51,6 @@
 #include "google/protobuf/compiler/importer.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/stubs/stl_util.h"
 
 namespace google {
 namespace protobuf {

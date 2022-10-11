@@ -268,11 +268,6 @@ inline std::string* SourceContext::release_file_name() {
   return _impl_.file_name_.Release();
 }
 inline void SourceContext::set_allocated_file_name(std::string* file_name) {
-  if (file_name != nullptr) {
-
-  } else {
-
-  }
   _impl_.file_name_.SetAllocated(file_name, GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (_impl_.file_name_.IsDefault()) {

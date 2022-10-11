@@ -35,7 +35,6 @@
 #include <gtest/gtest.h>
 #include <locale.h>
 
-#include "google/protobuf/stubs/stl_util.h"
 #include "google/protobuf/testing/googletest.h"
 
 #ifdef _WIN32

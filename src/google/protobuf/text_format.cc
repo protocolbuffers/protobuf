@@ -67,7 +67,6 @@
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format_lite.h"
-#include "google/protobuf/stubs/stl_util.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

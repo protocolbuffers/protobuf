@@ -320,11 +320,6 @@ inline std::string* Any::release_type_url() {
   return _impl_.type_url_.Release();
 }
 inline void Any::set_allocated_type_url(std::string* type_url) {
-  if (type_url != nullptr) {
-
-  } else {
-
-  }
   _impl_.type_url_.SetAllocated(type_url, GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (_impl_.type_url_.IsDefault()) {
@@ -370,11 +365,6 @@ inline std::string* Any::release_value() {
   return _impl_.value_.Release();
 }
 inline void Any::set_allocated_value(std::string* value) {
-  if (value != nullptr) {
-
-  } else {
-
-  }
   _impl_.value_.SetAllocated(value, GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (_impl_.value_.IsDefault()) {

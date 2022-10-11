@@ -1657,11 +1657,6 @@ inline std::string* StringValue::release_value() {
   return _impl_.value_.Release();
 }
 inline void StringValue::set_allocated_value(std::string* value) {
-  if (value != nullptr) {
-
-  } else {
-
-  }
   _impl_.value_.SetAllocated(value, GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (_impl_.value_.IsDefault()) {
@@ -1711,11 +1706,6 @@ inline std::string* BytesValue::release_value() {
   return _impl_.value_.Release();
 }
 inline void BytesValue::set_allocated_value(std::string* value) {
-  if (value != nullptr) {
-
-  } else {
-
-  }
   _impl_.value_.SetAllocated(value, GetArenaForAllocation());
 #ifdef PROTOBUF_FORCE_COPY_DEFAULT_STRING
   if (_impl_.value_.IsDefault()) {

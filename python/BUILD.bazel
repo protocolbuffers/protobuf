@@ -276,6 +276,13 @@ py_test(
 )
 
 py_test(
+    name = "field_mask_test",
+    srcs = ["google/protobuf/internal/field_mask_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
     name = "generator_test",
     srcs = ["google/protobuf/internal/generator_test.py"],
     imports = ["."],

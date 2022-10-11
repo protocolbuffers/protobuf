@@ -271,6 +271,12 @@ struct NumToEntryTable {
 static NumToEntryTable MakeNumToEntryTable(
     const std::vector<const FieldDescriptor*>& field_descriptors);
 
+static int FieldNameDataSize(const std::vector<uint8_t>& data) {
+  // We add a +1 here to allow for a NUL termination character. It makes the
+  // codegen nicer.
+  return data.empty() ? 0 : data.size() + 1;
+}
+
 void ParseFunctionGenerator::GenerateDataDecls(io::Printer* printer) {
   if (!should_generate_tctable()) {
     return;
@@ -288,9 +294,7 @@ void ParseFunctionGenerator::GenerateDataDecls(io::Printer* printer) {
       "TcParseTable<$1$, $2$, $3$, $4$, $5$> _table_;\n",
       tc_table_info_->table_size_log2, ordered_fields_.size(),
       tc_table_info_->aux_entries.size(),
-      // We add a +1 here to allow for a NUL termination character. It makes the
-      // codegen nicer.
-      tc_table_info_->field_name_data.size() + 1,
+      FieldNameDataSize(tc_table_info_->field_name_data),
       field_num_to_entry_table.size16());
   if (should_generate_guarded_tctable()) {
     format.Outdent();
@@ -450,7 +454,7 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
       "{\n",
       tc_table_info_->table_size_log2, ordered_fields_.size(),
       tc_table_info_->aux_entries.size(),
-      tc_table_info_->field_name_data.size() + 1,  // See above for why +1
+      FieldNameDataSize(tc_table_info_->field_name_data),
       field_num_to_entry_table.size16());
   {
     auto table_scope = format.ScopedIndent();
@@ -608,12 +612,12 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
         format("}}, {{\n");
       }
     }  // ordered_fields_.empty()
-    {
-      // field_names[]
-      auto field_name_scope = format.ScopedIndent();
-      GenerateFieldNames(format);
-    }
-    format("}},\n");
+      {
+        // field_names[]
+        auto field_name_scope = format.ScopedIndent();
+        GenerateFieldNames(format);
+      }
+      format("}},\n");
   }
   format("};\n\n");  // _table_
 }
@@ -832,6 +836,11 @@ void ParseFunctionGenerator::GenerateFieldEntries(Formatter& format) {
 }
 
 void ParseFunctionGenerator::GenerateFieldNames(Formatter& format) {
+  if (tc_table_info_->field_name_data.empty()) {
+    // No names to output.
+    return;
+  }
+
   // We could just output the bytes directly, but we want it to look better than
   // that in the source code. Also, it is more efficient for compilation time to
   // have a literal string than an initializer list of chars.
@@ -854,8 +863,8 @@ void ParseFunctionGenerator::GenerateFieldNames(Formatter& format) {
   format("\"\n");
 
   // Then print each name in a line of its own
-  for (; sizes < sizes_end && sizes[0] != 0; p += *sizes++) {
-    format("\"$1$\"\n", std::string(p, p + *sizes));
+  for (; sizes < sizes_end; p += *sizes++) {
+    if (*sizes != 0) format("\"$1$\"\n", std::string(p, p + *sizes));
   }
 }
 
