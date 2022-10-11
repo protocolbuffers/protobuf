@@ -1606,8 +1606,6 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   // Keep this class private to avoid deadlocks in classloading across threads as ByteString's
   // static initializer loads LiteralByteString and another thread loads BoundedByteString.
   private static final class BoundedByteString extends LiteralByteString {
-    private static final long serialVersionUID = 1L;
-
     private final int bytesOffset;
     private final int bytesLength;
 
