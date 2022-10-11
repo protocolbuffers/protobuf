@@ -15,7 +15,9 @@ bazel version
 
 @rem Make paths as short as possible to avoid long path issues.
 set BAZEL_STARTUP=--output_user_root=C:/tmp --windows_enable_symlinks
-set BAZEL_FLAGS=--enable_runfiles --keep_going --test_output=streamed --verbose_failures
+set BAZEL_FLAGS=--enable_runfiles --keep_going --test_output=errors ^
+  --verbose_failures ^
+  --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/%KOKORO_JOB_NAME%
 
 @rem Build libraries first.
 bazel %BAZEL_STARTUP% build //:protoc //:protobuf //:protobuf_lite %BAZEL_FLAGS% || goto :error

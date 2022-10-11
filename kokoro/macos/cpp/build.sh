@@ -14,4 +14,4 @@ source kokoro/macos/prepare_build_macos_rc
 #
 # Run build
 #
-bazel test //src/... -k --test_output=streamed
+bazel test $(kokoro/common/bazel_flags.sh) //src/...
