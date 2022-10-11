@@ -3095,7 +3095,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTableForMessageSet()
   // Create a dummy table that only exists to make TcParser::ParseLoop jump
   // into the reflective parse loop.
 
-  using Table = internal::TcParseTable<0, 0, 0, 1, 1>;
+  using Table = internal::TcParseTable<0, 0, 0, 0, 1>;
   // We use `operator new` here because the destruction will be done with
   // `operator delete` unconditionally.
   void* p = ::operator new(sizeof(Table));

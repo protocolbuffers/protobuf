@@ -181,7 +181,6 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/platform_macros.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/port.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/status_macros.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/stl_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unknown_field_set.h
@@ -273,7 +272,6 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/platform_macros.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/port.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/status_macros.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/stl_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_lite.h
 )

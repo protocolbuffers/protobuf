@@ -39,7 +39,6 @@
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
-#include "google/protobuf/stubs/stl_util.h"
 
 // clang-format off
 #include "google/protobuf/port_def.inc"

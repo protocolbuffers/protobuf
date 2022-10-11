@@ -47,7 +47,6 @@
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/stubs/stl_util.h"
 
 
 namespace google {

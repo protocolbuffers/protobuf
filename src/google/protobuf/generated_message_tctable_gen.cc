@@ -420,10 +420,9 @@ absl::string_view FieldNameForTable(
       case field_layout::kTvUtf8:
       case field_layout::kTvUtf8Debug:
         return field->name();
-        break;
     }
   }
-  return "?";
+  return "";
 }
 
 std::vector<uint8_t> GenerateFieldNames(
@@ -431,6 +430,20 @@ std::vector<uint8_t> GenerateFieldNames(
     const std::vector<TailCallTableInfo::FieldEntryInfo>& entries) {
   static constexpr int kMaxNameLength = 255;
   std::vector<uint8_t> out;
+
+  bool found_needed_name = false;
+  for (const auto& entry : entries) {
+    if (!FieldNameForTable(entry).empty()) {
+      found_needed_name = true;
+      break;
+    }
+  }
+
+  // No names needed. Omit the whole table.
+  if (!found_needed_name) {
+    return out;
+  }
+
   // First, we output the size of each string, as an unsigned byte. The first
   // string is the message name.
   int count = 1;

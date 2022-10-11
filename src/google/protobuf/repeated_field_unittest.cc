@@ -56,7 +56,6 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/stubs/strutil.h"
-#include "google/protobuf/stubs/stl_util.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

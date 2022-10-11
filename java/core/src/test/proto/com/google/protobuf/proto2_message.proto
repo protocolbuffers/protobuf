@@ -36,7 +36,6 @@ package protobuf.experimental;
 option java_package = "com.google.protobuf.testing";
 option java_outer_classname = "Proto2Testing";
 
-
 message Proto2SpecialFieldName {
   optional double regular_name = 1;
   optional int32 cached_size = 2;
