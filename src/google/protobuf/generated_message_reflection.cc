@@ -3320,8 +3320,10 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   PopulateTcParseFieldAux(table_info, res->field_aux(0u));
 
   // Copy the name data.
-  memcpy(res->name_data(), table_info.field_name_data.data(),
-         table_info.field_name_data.size());
+  if (!table_info.field_name_data.empty()) {
+    memcpy(res->name_data(), table_info.field_name_data.data(),
+           table_info.field_name_data.size());
+  }
   // Validation to make sure we used all the bytes correctly.
   GOOGLE_CHECK_EQ(res->name_data() + table_info.field_name_data.size() -
                reinterpret_cast<char*>(res),
