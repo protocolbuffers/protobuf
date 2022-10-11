@@ -3,13 +3,10 @@
 # Exit on any error.
 set -ex
 
-cd $(dirname $0)/..
-GIT_REPO_ROOT=`pwd`
-
 test_version() {
   version=$1
   bazel_args="\
-    $(${GIT_REPO_ROOT}/kokoro/common/bazel_flags.sh) \
+    $(../kokoro/common/bazel_flags.sh) \
     --action_env=PATH \
     --action_env=GEM_PATH \
     --action_env=GEM_HOME \
