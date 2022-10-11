@@ -32,7 +32,7 @@
 #include "upb/internal/table.h"
 #include "upb/map.h"
 #include "upb/msg.h"
-#include "upb/reflection/def_pool_internal.h"
+#include "upb/reflection/def_pool.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/field_def_internal.h"
 #include "upb/reflection/message_def.h"
@@ -267,7 +267,7 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
     if (i - n < count) {
       ext += count - 1 - (i - n);
       memcpy(out_val, &ext->data, sizeof(*out_val));
-      *out_f = _upb_DefPool_FindExtensionByMiniTable(ext_pool, ext->ext);
+      *out_f = upb_DefPool_FindExtensionByMiniTable(ext_pool, ext->ext);
       *iter = i;
       return true;
     }

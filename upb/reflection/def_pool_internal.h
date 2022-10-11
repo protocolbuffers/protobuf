@@ -40,8 +40,6 @@ extern "C" {
 upb_Arena* _upb_DefPool_Arena(const upb_DefPool* s);
 size_t _upb_DefPool_BytesLoaded(const upb_DefPool* s);
 upb_ExtensionRegistry* _upb_DefPool_ExtReg(const upb_DefPool* s);
-const upb_FieldDef* _upb_DefPool_FindExtensionByMiniTable(
-    const upb_DefPool* s, const upb_MiniTable_Extension* ext);
 
 bool _upb_DefPool_InsertExt(upb_DefPool* s, const upb_MiniTable_Extension* ext,
                             upb_FieldDef* f);
