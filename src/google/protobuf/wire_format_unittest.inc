@@ -49,7 +49,6 @@
 #include "absl/strings/match.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/test_util2.h"
-#include "google/protobuf/stubs/stl_util.h"
 
 // clang-format off
 #include "google/protobuf/port_def.inc"
@@ -494,16 +493,14 @@ TEST(WireFormatTest, SerializeMessageSetVariousWaysAreEqual) {
 
   // Serialize to flat array
   {
-    uint8_t* target =
-        reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&flat_data));
+    uint8_t* target = reinterpret_cast<uint8_t*>(&flat_data[0]);
     uint8_t* end = message_set.SerializeWithCachedSizesToArray(target);
     EXPECT_EQ(size, end - target);
   }
 
   // Serialize to buffer
   {
-    io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&stream_data), size,
-                                       1);
+    io::ArrayOutputStream array_stream(&stream_data[0], size, 1);
     io::CodedOutputStream output_stream(&array_stream);
     message_set.SerializeWithCachedSizes(&output_stream);
     ASSERT_FALSE(output_stream.HadError());

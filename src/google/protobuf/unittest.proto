@@ -889,7 +889,6 @@ message TestRequiredOneof {
   }
 }
 
-
 // Test messages for packed fields
 
 message TestPackedTypes {
@@ -1070,7 +1069,6 @@ message TestMessageSize {
   optional int64 m6 = 6;
 }
 
-
 // Test that RPC services work.
 message FooRequest  {}
 message FooResponse {}
@@ -1082,7 +1080,6 @@ service TestService {
   rpc Foo(FooRequest) returns (FooResponse);
   rpc Bar(BarRequest) returns (BarResponse);
 }
-
 
 message BarRequest  {}
 message BarResponse {}
@@ -1437,7 +1434,6 @@ message TestVerifyBigFieldNumberUint32 {
   optional Nested optional_nested = 1;
 }
 
-
 // This message contains different kind of enums to exercise the different
 // parsers in table-driven.
 message EnumParseTester {
@@ -1565,4 +1561,3 @@ message StringParseTester {
   repeated string repeated_string_midfield = 1002;
   repeated string repeated_string_hifield = 1000002;
 };
-

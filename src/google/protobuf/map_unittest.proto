@@ -76,7 +76,6 @@ message TestSameTypeMap {
   map<int32, int32> map2 = 2;
 }
 
-
 enum MapEnum {
   MAP_ENUM_FOO = 0;
   MAP_ENUM_BAR = 1;

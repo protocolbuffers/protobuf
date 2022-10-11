@@ -96,7 +96,6 @@
 #include "absl/strings/str_format.h"
 #include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/stubs/stl_util.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

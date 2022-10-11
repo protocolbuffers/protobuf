@@ -28,12 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/objectivec/text_format_decode_data.h"
+
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
-#include "absl/strings/str_split.h"
 #include "absl/strings/str_replace.h"
-#include "google/protobuf/compiler/objectivec/text_format_decode_data.h"
+#include "absl/strings/str_split.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/printer.h"
@@ -166,9 +167,9 @@ std::string DirectDecodeString(const std::string& str) {
 
 }  // namespace
 
-TextFormatDecodeData::TextFormatDecodeData() { }
+TextFormatDecodeData::TextFormatDecodeData() {}
 
-TextFormatDecodeData::~TextFormatDecodeData() { }
+TextFormatDecodeData::~TextFormatDecodeData() {}
 
 void TextFormatDecodeData::AddString(int32_t key,
                                      const std::string& input_for_decode,
@@ -177,8 +178,8 @@ void TextFormatDecodeData::AddString(int32_t key,
        i != entries_.end(); ++i) {
     if (i->first == key) {
       std::cerr << "error: duplicate key (" << key
-           << ") making TextFormat data, input: \"" << input_for_decode
-           << "\", desired: \"" << desired_output << "\"." << std::endl;
+                << ") making TextFormat data, input: \"" << input_for_decode
+                << "\", desired: \"" << desired_output << "\"." << std::endl;
       std::cerr.flush();
       abort();
     }
@@ -213,16 +214,17 @@ std::string TextFormatDecodeData::DecodeDataForString(
     const std::string& input_for_decode, const std::string& desired_output) {
   if (input_for_decode.empty() || desired_output.empty()) {
     std::cerr << "error: got empty string for making TextFormat data, input: \""
-         << input_for_decode << "\", desired: \"" << desired_output << "\"."
-         << std::endl;
+              << input_for_decode << "\", desired: \"" << desired_output
+              << "\"." << std::endl;
     std::cerr.flush();
     abort();
   }
   if ((input_for_decode.find('\0') != std::string::npos) ||
       (desired_output.find('\0') != std::string::npos)) {
-    std::cerr << "error: got a null char in a string for making TextFormat data,"
-         << " input: \"" << absl::CEscape(input_for_decode) << "\", desired: \""
-         << absl::CEscape(desired_output) << "\"." << std::endl;
+    std::cerr
+        << "error: got a null char in a string for making TextFormat data,"
+        << " input: \"" << absl::CEscape(input_for_decode) << "\", desired: \""
+        << absl::CEscape(desired_output) << "\"." << std::endl;
     std::cerr.flush();
     abort();
   }
@@ -258,7 +260,6 @@ std::string TextFormatDecodeData::DecodeDataForString(
   // Add the end marker.
   return builder.Finish() + (char)'\0';
 }
-
 
 }  // namespace objectivec
 }  // namespace compiler

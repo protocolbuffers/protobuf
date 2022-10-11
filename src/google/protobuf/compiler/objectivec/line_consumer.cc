@@ -61,16 +61,14 @@ namespace objectivec {
 namespace posix {
 #ifdef _WIN32
 using google::protobuf::io::win32::open;
-#else  // !_WIN32
+#else   // !_WIN32
 using ::open;
 #endif  // _WIN32
 }  // namespace posix
 
 namespace {
 
-bool ascii_isnewline(char c) {
-  return c == '\n' || c == '\r';
-}
+bool ascii_isnewline(char c) { return c == '\n' || c == '\r'; }
 
 bool ReadLine(absl::string_view* input, absl::string_view* line) {
   for (int len = 0; len < input->size(); ++len) {
@@ -149,7 +147,8 @@ bool Parser::Finish(std::string* out_error) {
   if (!leftover_.empty() && !ParseChunk("\n", out_error)) {
     return false;
   }
-  // This really should never fail if ParseChunk succeeded, but check to be sure.
+  // This really should never fail if ParseChunk succeeded, but check to be
+  // sure.
   if (!leftover_.empty()) {
     *out_error = "ParseSimple Internal error: finished with pending data.";
     return false;
@@ -157,8 +156,10 @@ bool Parser::Finish(std::string* out_error) {
   return true;
 }
 
-std::string FullErrorString(const std::string& name, int line_num, const std::string& msg) {
-  return std::string("error: ") + name + " Line " + absl::StrCat(line_num) + ", " + msg;
+std::string FullErrorString(const std::string& name, int line_num,
+                            const std::string& msg) {
+  return std::string("error: ") + name + " Line " + absl::StrCat(line_num) +
+         ", " + msg;
 }
 
 }  // namespace
@@ -186,8 +187,7 @@ bool ParseSimpleFile(const std::string& path, LineConsumer* line_consumer,
 
 bool ParseSimpleStream(io::ZeroCopyInputStream& input_stream,
                        const std::string& stream_name,
-                       LineConsumer* line_consumer,
-                       std::string* out_error) {
+                       LineConsumer* line_consumer, std::string* out_error) {
   std::string local_error;
   Parser parser(line_consumer);
   const void* buf;
@@ -197,9 +197,11 @@ bool ParseSimpleStream(io::ZeroCopyInputStream& input_stream,
       continue;
     }
 
-    if (!parser.ParseChunk(absl::string_view(static_cast<const char*>(buf), buf_len),
-                           &local_error)) {
-      *out_error = FullErrorString(stream_name, parser.last_line(), local_error);
+    if (!parser.ParseChunk(
+            absl::string_view(static_cast<const char*>(buf), buf_len),
+            &local_error)) {
+      *out_error =
+          FullErrorString(stream_name, parser.last_line(), local_error);
       return false;
     }
   }

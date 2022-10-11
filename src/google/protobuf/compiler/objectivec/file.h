@@ -35,6 +35,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
 #include "google/protobuf/compiler/objectivec/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
@@ -66,7 +67,8 @@ class FileGenerator {
       // have extensions.
       std::unordered_set<const FileDescriptor*> covered_deps;
     };
-    const MinDepsEntry& CollectMinimalFileDepsContainingExtensionsInternal(const FileDescriptor* file);
+    const MinDepsEntry& CollectMinimalFileDepsContainingExtensionsInternal(
+        const FileDescriptor* file);
     std::unordered_map<const FileDescriptor*, MinDepsEntry> deps_info_cache_;
   };
 

@@ -53,7 +53,6 @@
 #include "absl/strings/match.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
-#include "google/protobuf/stubs/stl_util.h"
 
 #include "google/protobuf/stubs/strutil.h"
 
@@ -552,7 +551,7 @@ TEST(ExtensionSetTest, SerializationToArray) {
   size_t size = source.ByteSizeLong();
   std::string data;
   data.resize(size);
-  uint8_t* target = reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&data));
+  uint8_t* target = reinterpret_cast<uint8_t*>(&data[0]);
   uint8_t* end = source.SerializeWithCachedSizesToArray(target);
   EXPECT_EQ(size, end - target);
   EXPECT_TRUE(destination.ParseFromString(data));
@@ -574,7 +573,7 @@ TEST(ExtensionSetTest, SerializationToStream) {
   std::string data;
   data.resize(size);
   {
-    io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), size, 1);
+    io::ArrayOutputStream array_stream(&data[0], size, 1);
     io::CodedOutputStream output_stream(&array_stream);
     source.SerializeWithCachedSizes(&output_stream);
     ASSERT_FALSE(output_stream.HadError());
@@ -596,7 +595,7 @@ TEST(ExtensionSetTest, PackedSerializationToArray) {
   size_t size = source.ByteSizeLong();
   std::string data;
   data.resize(size);
-  uint8_t* target = reinterpret_cast<uint8_t*>(::google::protobuf::string_as_array(&data));
+  uint8_t* target = reinterpret_cast<uint8_t*>(&data[0]);
   uint8_t* end = source.SerializeWithCachedSizesToArray(target);
   EXPECT_EQ(size, end - target);
   EXPECT_TRUE(destination.ParseFromString(data));
@@ -618,7 +617,7 @@ TEST(ExtensionSetTest, PackedSerializationToStream) {
   std::string data;
   data.resize(size);
   {
-    io::ArrayOutputStream array_stream(::google::protobuf::string_as_array(&data), size, 1);
+    io::ArrayOutputStream array_stream(&data[0], size, 1);
     io::CodedOutputStream output_stream(&array_stream);
     source.SerializeWithCachedSizes(&output_stream);
     ASSERT_FALSE(output_stream.HadError());

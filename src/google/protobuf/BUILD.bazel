@@ -604,6 +604,7 @@ proto_library(
     visibility = [
         "//:__pkg__",
         "//conformance:__pkg__",
+        "@upb//:__subpackages__",
     ],
 )
 
@@ -614,6 +615,7 @@ proto_library(
     visibility = [
         "//:__pkg__",
         "//conformance:__pkg__",
+        "@upb//:__subpackages__",
     ],
     deps = [
         ":any_proto",

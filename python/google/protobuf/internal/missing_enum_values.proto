@@ -30,7 +30,6 @@
 
 syntax = "proto2";
 
-
 package google.protobuf.python.internal;
 
 message TestEnumValues {
@@ -53,4 +52,3 @@ message TestMissingEnumValues {
 message JustString {
   required string dummy = 1;
 }
-

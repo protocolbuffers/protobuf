@@ -28,12 +28,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "google/protobuf/compiler/objectivec/enum_field.h"
+
 #include <map>
 #include <string>
 
-#include "google/protobuf/compiler/objectivec/enum_field.h"
-#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
+#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -78,6 +79,7 @@ void EnumFieldGenerator::GenerateCFunctionDeclarations(
     return;
   }
 
+  // clang-format off
   printer->Print(
       variables_,
       "/**\n"
@@ -92,12 +94,14 @@ void EnumFieldGenerator::GenerateCFunctionDeclarations(
       " **/\n"
       "void Set$owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message, int32_t value);\n"
       "\n");
+  // clang-format on
 }
 
 void EnumFieldGenerator::GenerateCFunctionImplementations(
     io::Printer* printer) const {
   if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) return;
 
+  // clang-format off
   printer->Print(
       variables_,
       "int32_t $owning_message_class$_$capitalized_name$_RawValue($owning_message_class$ *message) {\n"
@@ -112,13 +116,13 @@ void EnumFieldGenerator::GenerateCFunctionImplementations(
       "  GPBSetMessageRawEnumField(message, field, value);\n"
       "}\n"
       "\n");
+  // clang-format on
 }
 
 void EnumFieldGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls,
-    bool include_external_types) const {
-  SingleFieldGenerator::DetermineForwardDeclarations(
-      fwd_decls, include_external_types);
+    std::set<std::string>* fwd_decls, bool include_external_types) const {
+  SingleFieldGenerator::DetermineForwardDeclarations(fwd_decls,
+                                                     include_external_types);
   // If it is an enum defined in a different file (and not a WKT), then we'll
   // need a forward declaration for it.  When it is in our file, all the enums
   // are output before the message, so it will be declared before it is needed.
@@ -142,8 +146,8 @@ RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {}
 
 void RepeatedEnumFieldGenerator::FinishInitialization(void) {
   RepeatedFieldGenerator::FinishInitialization();
-  variables_["array_comment"] =
-      "// |" + variables_["name"] + "| contains |" + variables_["storage_type"] + "|\n";
+  variables_["array_comment"] = "// |" + variables_["name"] + "| contains |" +
+                                variables_["storage_type"] + "|\n";
 }
 
 }  // namespace objectivec

@@ -2,7 +2,8 @@ load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 package(default_visibility = [
-    "//src/google/protobuf/util:__subpackages__",
+    "//src/google/protobuf/json:__pkg__",
+    "//pkg:__pkg__",
 ])
 
 licenses(["notice"])
@@ -70,7 +71,6 @@ cc_library(
     hdrs = ["internal/zero_copy_buffered_stream.h"],
     copts = COPTS,
     strip_include_prefix = "/src",
-    visibility = ["//visibility:private"],
     deps = [
         "//src/google/protobuf:port_def",
         "//src/google/protobuf/io",
@@ -101,7 +101,6 @@ cc_library(
     hdrs = ["internal/untyped_message.h"],
     copts = COPTS,
     strip_include_prefix = "/src",
-    visibility = ["//visibility:private"],
     deps = [
         "//src/google/protobuf",
         "//src/google/protobuf:port_def",
@@ -124,7 +123,6 @@ cc_library(
     hdrs = ["internal/lexer.h"],
     copts = COPTS,
     strip_include_prefix = "/src",
-    visibility = ["//visibility:private"],
     deps = [
         ":message_path",
         ":zero_copy_buffered_stream",
@@ -164,7 +162,6 @@ cc_library(
     hdrs = ["internal/writer.h"],
     copts = COPTS,
     strip_include_prefix = "/src",
-    visibility = ["//visibility:private"],
     deps = [
         "//src/google/protobuf:port_def",
         "//src/google/protobuf/io",
@@ -180,7 +177,6 @@ cc_library(
     hdrs = ["internal/descriptor_traits.h"],
     copts = COPTS,
     strip_include_prefix = "/src",
-    visibility = ["//visibility:private"],
     deps = [
         ":lexer",
         ":untyped_message",
@@ -207,7 +203,6 @@ cc_library(
     ],
     copts = COPTS,
     strip_include_prefix = "/src",
-    visibility = ["//visibility:private"],
     deps = [
         ":descriptor_traits",
         ":lexer",
@@ -242,7 +237,6 @@ cc_library(
     ],
     copts = COPTS,
     strip_include_prefix = "/src",
-    visibility = ["//visibility:private"],
     deps = [
         ":descriptor_traits",
         ":untyped_message",
@@ -266,7 +260,6 @@ cc_library(
     hdrs = ["internal/message_path.h"],
     copts = COPTS,
     strip_include_prefix = "/src",
-    visibility = ["//visibility:private"],
     deps = [
         "//src/google/protobuf",
         "@com_google_absl//absl/cleanup",

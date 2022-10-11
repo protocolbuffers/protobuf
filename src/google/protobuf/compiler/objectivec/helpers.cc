@@ -28,16 +28,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include "google/protobuf/compiler/objectivec/helpers.h"
+
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/str_replace.h"
-#include "google/protobuf/compiler/objectivec/helpers.h"
-#include "google/protobuf/compiler/objectivec/names.h"
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/stubs/common.h"
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
@@ -55,7 +56,7 @@ std::string EscapeTrigraphs(absl::string_view to_escape) {
 namespace {
 
 std::string GetZeroEnumNameForFlagType(const FlagType flag_type) {
-  switch(flag_type) {
+  switch (flag_type) {
     case FLAGTYPE_DESCRIPTOR_INITIALIZATION:
       return "GPBDescriptorInitializationFlag_None";
     case FLAGTYPE_EXTENSION:
@@ -69,7 +70,7 @@ std::string GetZeroEnumNameForFlagType(const FlagType flag_type) {
 }
 
 std::string GetEnumNameForFlagType(const FlagType flag_type) {
-  switch(flag_type) {
+  switch (flag_type) {
     case FLAGTYPE_DESCRIPTOR_INITIALIZATION:
       return "GPBDescriptorInitializationFlags";
     case FLAGTYPE_EXTENSION:
@@ -82,8 +83,7 @@ std::string GetEnumNameForFlagType(const FlagType flag_type) {
   }
 }
 
-std::string HandleExtremeFloatingPoint(std::string val,
-                                       bool add_float_suffix) {
+std::string HandleExtremeFloatingPoint(std::string val, bool add_float_suffix) {
   if (val == "nan") {
     return "NAN";
   } else if (val == "inf") {
@@ -202,7 +202,7 @@ std::string GPBGenericValueFieldName(const FieldDescriptor* field) {
   // Returns the field within the GPBGenericValue union to use for the given
   // field.
   if (field->is_repeated()) {
-      return "valueMessage";
+    return "valueMessage";
   }
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32:
@@ -236,7 +236,6 @@ std::string GPBGenericValueFieldName(const FieldDescriptor* field) {
   GOOGLE_LOG(FATAL) << "Can't get here.";
   return std::string();
 }
-
 
 std::string DefaultValue(const FieldDescriptor* field) {
   // Repeated fields don't have defaults.
@@ -336,10 +335,10 @@ std::string ObjCClassDeclaration(const std::string& class_name) {
 }
 
 std::string BuildCommentsString(const SourceLocation& location,
-                           bool prefer_single_line) {
+                                bool prefer_single_line) {
   const std::string& comments = location.leading_comments.empty()
-                               ? location.trailing_comments
-                               : location.leading_comments;
+                                    ? location.trailing_comments
+                                    : location.leading_comments;
   std::vector<std::string> lines;
   lines = absl::StrSplit(comments, "\n", absl::AllowEmpty());
   while (!lines.empty() && lines.back().empty()) {
@@ -387,7 +386,6 @@ std::string BuildCommentsString(const SourceLocation& location,
   final_comments += epilogue;
   return final_comments;
 }
-
 
 }  // namespace objectivec
 }  // namespace compiler
