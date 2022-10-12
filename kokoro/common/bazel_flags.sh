@@ -43,4 +43,4 @@ function bazel_flags::kokoro_flags() {
   echo "${_flags[@]}"
 }
 
-echo $(bazel_flags::kokoro_flags) --keep_going --test_output=errors
+echo "$(bazel_flags::kokoro_flags) --keep_going --test_output=errors"
