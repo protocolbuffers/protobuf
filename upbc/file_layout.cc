@@ -260,9 +260,8 @@ void FilePlatformLayout::BuildExtensions(const protobuf::FileDescriptor* fd) {
   upb::Status status;
   for (const auto* f : sorted) {
     upb::MtDataEncoder e;
-    e.StartMessage(0);
-    e.PutField(static_cast<upb_FieldType>(f->type()), f->number(),
-               GetFieldModifiers(f));
+    e.EncodeExtension(static_cast<upb_FieldType>(f->type()), f->number(),
+                      GetFieldModifiers(f));
     upb_MiniTable_Extension& ext = extension_map_[f];
     upb_MiniTable_Sub sub;
     // The extendee may be from another file, so we build a temporary MiniTable

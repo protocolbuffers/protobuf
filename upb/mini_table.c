@@ -188,6 +188,16 @@ char* upb_MtDataEncoder_PutModifier(upb_MtDataEncoder* e, char* ptr,
   return ptr;
 }
 
+char* upb_MtDataEncoder_EncodeExtension(upb_MtDataEncoder* e, char* ptr,
+                                        upb_FieldType type, uint32_t field_num,
+                                        uint64_t field_mod) {
+  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
+  in->state.msg_state.msg_modifiers = 0;
+  in->state.msg_state.last_field_num = 0;
+  in->state.msg_state.oneof_state = kUpb_OneofState_NotStarted;
+  return upb_MtDataEncoder_PutField(e, ptr, type, field_num, field_mod);
+}
+
 char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* ptr,
                                      uint64_t msg_mod) {
   upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);

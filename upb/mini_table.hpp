@@ -80,6 +80,14 @@ class MtDataEncoder {
 
   const std::string& data() const { return appender_.data(); }
 
+  bool EncodeExtension(upb_FieldType type, uint32_t field_num,
+                       uint64_t field_mod) {
+    return appender_([=](char* buf) {
+      return upb_MtDataEncoder_EncodeExtension(&encoder_, buf, type, field_num,
+                                               field_mod);
+    });
+  }
+
  private:
   class StringAppender {
    public:

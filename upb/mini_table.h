@@ -121,6 +121,11 @@ char* upb_MtDataEncoder_PutEnumValue(upb_MtDataEncoder* e, char* ptr,
                                      uint32_t val);
 char* upb_MtDataEncoder_EndEnum(upb_MtDataEncoder* e, char* ptr);
 
+// Encodes an entire mini descriptor for one extension.
+char* upb_MtDataEncoder_EncodeExtension(upb_MtDataEncoder* e, char* ptr,
+                                        upb_FieldType type, uint32_t field_num,
+                                        uint64_t field_mod);
+
 /** upb_MiniTable *************************************************************/
 
 typedef enum {

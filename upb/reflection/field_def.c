@@ -818,16 +818,12 @@ bool upb_FieldDef_MiniDescriptorEncode(const upb_FieldDef* f, upb_Arena* a,
   upb_DescState s;
   _upb_DescState_Init(&s);
 
-  if (!_upb_DescState_Grow(&s, a)) return false;
-  s.ptr = upb_MtDataEncoder_StartMessage(&s.e, s.ptr, 0);
-
   const int number = upb_FieldDef_Number(f);
   const uint64_t modifiers = _upb_FieldDef_Modifiers(f);
 
   if (!_upb_DescState_Grow(&s, a)) return false;
-  s.ptr = upb_MtDataEncoder_PutField(&s.e, s.ptr, f->type_, number, modifiers);
-
-  if (!_upb_DescState_Grow(&s, a)) return false;
+  s.ptr = upb_MtDataEncoder_EncodeExtension(&s.e, s.ptr, f->type_, number,
+                                            modifiers);
   *s.ptr = '\0';
 
   out->data = s.buf;
