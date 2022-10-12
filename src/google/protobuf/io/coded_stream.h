@@ -634,6 +634,12 @@ class PROTOBUF_EXPORT CodedInputStream {
 // use of this class, ie. keep ptr a local variable, eliminates the need to
 // for the compiler to sync the ptr value between register and memory.
 class PROTOBUF_EXPORT EpsCopyOutputStream {
+#if defined(__BMI2__) && defined(__LZCNT__)
+#define UnsafeVarint UnsafeVarintBMI2
+#else
+#define UnsafeVarint UnsafeVarintNoneBMI2
+#endif
+
  public:
   enum { kSlopBytes = 16 };
 
@@ -895,7 +901,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   }
 
   template <typename T>
-  PROTOBUF_ALWAYS_INLINE static uint8_t* UnsafeVarint(T value, uint8_t* ptr) {
+  PROTOBUF_ALWAYS_INLINE static uint8_t* UnsafeVarintNoneBMI2(T value, uint8_t* ptr) {
     static_assert(std::is_unsigned<T>::value,
                   "Varint serialization must be unsigned");
     ptr[0] = static_cast<uint8_t>(value);
@@ -919,6 +925,122 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     } while (value >= 0x80);
     return ptr;
   }
+
+#if defined(__BMI2__) && defined(__LZCNT__)
+
+#ifdef __cpp_lib_hardware_interference_size
+  using std::hardware_constructive_interference_size;
+#else
+  // 64 bytes on x86-64 │ L1_CACHE_BYTES │ L1_CACHE_SHIFT │ __cacheline_aligned
+  // │ ...
+  constexpr static const std::size_t hardware_constructive_interference_size =
+      64;
+#endif
+
+  constexpr const PROTOBUF_ALWAYS_INLINE static uint8_t Number7Bits alignas(
+      alignof(hardware_constructive_interference_size))[]{
+      1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3,
+      4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 7,
+      7, 7, 7, 7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 9, 9, 9, 9, 9, 9, 9, 10};
+
+  constexpr const PROTOBUF_ALWAYS_INLINE static uint64_t
+      ExtendedBitsMask alignas(alignof(
+          hardware_constructive_interference_size))[]{0x0,
+                                                      0x0,
+                                                      0x80,
+                                                      0x8080,
+                                                      0x808080,
+                                                      0x80808080,
+                                                      0x8080808080,
+                                                      0x808080808080,
+                                                      0x80808080808080,
+                                                      0x8080808080808080};
+
+  constexpr const PROTOBUF_ALWAYS_INLINE static uint16_t ShiftMasks alignas(
+      alignof(hardware_constructive_interference_size))[]{
+      0b1,      0b1,       0b11,       0b111,       0b1111,      0b11111,
+      0b111111, 0b1111111, 0b11111111, 0b111111111, 0b1111111111};
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE static uint8_t* UnsafeVarintBMI2(T value,
+                                                          uint8_t* ptr) {
+    ptr[0] = static_cast<uint8_t>(value);
+    if (value < (1 << 7)) {
+      return ptr + 1;
+    }
+
+    if (value < 0x4000) {
+      ptr[0] = static_cast<uint8_t>(value) | 0x80;
+      ptr[1] = value >> 7;
+      return ptr + 2;
+    }
+
+    if (value < 0x200000) {
+      ptr[0] = static_cast<uint8_t>(value) | 0x80;
+      value >>= 7;
+      ptr[1] = static_cast<uint8_t>(value) | 0x80;
+      ptr[2] = value >> 7;
+      return ptr + 3;
+    }
+
+    if constexpr (std::is_same<T, uint32_t>::value) {
+      return UnsafeVarint32BMI2(value, ptr);
+    }
+
+    if constexpr (std::is_same<T, uint64_t>::value) {
+      return UnsafeVarint64BMI2(value, ptr);
+    }
+
+    return ptr;
+  }
+
+  PROTOBUF_ALWAYS_INLINE static uint8_t* UnsafeVarint32BMI2(uint32_t value,
+                                                            uint8_t* ptr) {
+    size_t efftiveBitCounts = 32 - _lzcnt_u32(value);
+    auto numberOf7Bits = Number7Bits[efftiveBitCounts];
+
+    constexpr const uint32_t mask = 0x7f7f7f7f;
+    uint32_t* pdata = reinterpret_cast<uint32_t*>(ptr);
+    if (efftiveBitCounts <= 28) {
+      *pdata = _pdep_u32(value, mask);
+      *pdata |= ExtendedBitsMask[numberOf7Bits];
+      ptr += numberOf7Bits;
+      return ptr;
+    }
+
+    *pdata = _pdep_u32(value & 0xfffffff, mask);
+    *pdata |= 0x80808080;
+    ptr += 5;
+    ptr[-1] = static_cast<uint8_t>(value >> 28);
+    return ptr;
+  }
+
+  PROTOBUF_ALWAYS_INLINE static uint8_t* UnsafeVarint64BMI2(uint64_t value,
+                                                            uint8_t* ptr) {
+    size_t efftiveBitCounts = 64 - _lzcnt_u64(value);
+    auto numberOf7Bits = Number7Bits[efftiveBitCounts];
+
+    constexpr const uint64_t mask = 0x7f7f7f7f7f7f7f7f;
+    uint64_t* pdata = reinterpret_cast<uint64_t*>(ptr);
+    if (efftiveBitCounts <= 56) {
+      *pdata = _pdep_u64(value, mask);
+      *pdata |= ExtendedBitsMask[numberOf7Bits];
+      ptr += numberOf7Bits;
+      return ptr;
+    }
+
+    *pdata = _pdep_u64(value & 0xffffffffffffff, mask);
+    *pdata |= 0x8080808080808080;
+    ptr += 8;
+    if (value < (1ull << 63)) {
+      ptr[0] = static_cast<uint8_t>(value >> 56);
+      return ptr + 1;
+    }
+    ptr[0] = static_cast<uint8_t>(value >> 56);
+    ptr[0] |= 0x80;
+    ptr[1] = 1;
+    return ptr + 2;
+  }
+#endif  /// __BMI2__ && __LZCNT__
 
   PROTOBUF_ALWAYS_INLINE static uint8_t* UnsafeWriteSize(uint32_t value,
                                                          uint8_t* ptr) {
