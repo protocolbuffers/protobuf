@@ -5534,12 +5534,11 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
   for (const FieldDescriptorProto& field : message.field()) {
     JsonNameDetails details = GetJsonNameDetails(&field, use_custom_names);
     std::string lowercase_name = absl::AsciiStrToLower(details.orig_name);
-    auto existing = name_to_field.find(lowercase_name);
-    if (existing == name_to_field.end()) {
-      name_to_field[lowercase_name] = details;
+    auto it_inserted = name_to_field.try_emplace(lowercase_name, details);
+    if (it_inserted.second) {
       continue;
     }
-    JsonNameDetails& match = existing->second;
+    JsonNameDetails& match = it_inserted.first->second;
     if (use_custom_names && !details.is_custom && !match.is_custom) {
       // if this pass is considering custom JSON names, but neither of the
       // names involved in the conflict are custom, don't bother with a
@@ -5551,7 +5550,7 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     absl::string_view existing_type = match.is_custom ? "custom" : "default";
     // If the matched name differs (which it can only differ in case), include
     // it in the error message, for maximum clarity to user.
-    absl::string_view name_suffix = "";
+    std::string name_suffix = "";
     if (details.orig_name != match.orig_name) {
       name_suffix = absl::StrCat(" (\"", match.orig_name, "\")");
     }
@@ -5987,7 +5986,7 @@ void DescriptorBuilder::CheckEnumValueUniqueness(
     const EnumValueDescriptor* value = result->value(i);
     std::string stripped =
         EnumValueToPascalCase(remover.MaybeRemove(value->name()));
-    auto insert_result = values.insert(std::make_pair(stripped, value));
+    auto insert_result = values.try_emplace(stripped, value);
     bool inserted = insert_result.second;
 
     // We don't throw the error if the two conflicting symbols are identical, or
