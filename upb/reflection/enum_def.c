@@ -158,7 +158,8 @@ bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
     if (!sorted) return false;
   }
 
-  upb_MtDataEncoder_StartEnum(&s.e);
+  if (!_upb_DescState_Grow(&s, a)) return false;
+  s.ptr = upb_MtDataEncoder_StartEnum(&s.e, s.ptr);
 
   // Duplicate values are allowed but we only encode each value once.
   uint32_t previous = 0;

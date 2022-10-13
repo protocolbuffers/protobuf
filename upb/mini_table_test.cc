@@ -218,7 +218,7 @@ TEST(MiniTableEnumTest, Enum) {
   upb::Arena arena;
   upb::MtDataEncoder e;
 
-  e.StartEnum();
+  ASSERT_TRUE(e.StartEnum());
   absl::flat_hash_set<int32_t> values;
   for (int i = 0; i < 256; i++) {
     values.insert(i * 2);
@@ -256,7 +256,7 @@ TEST(MiniTableEnumTest, PositiveAndNegative) {
   upb::Arena arena;
   upb::MtDataEncoder e;
 
-  e.StartEnum();
+  ASSERT_TRUE(e.StartEnum());
   absl::flat_hash_set<int32_t> values;
   for (int i = 0; i < 100; i++) {
     values.insert(i);

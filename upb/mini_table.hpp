@@ -65,7 +65,10 @@ class MtDataEncoder {
     });
   }
 
-  void StartEnum() { upb_MtDataEncoder_StartEnum(&encoder_); }
+  bool StartEnum() {
+    return appender_(
+        [=](char* buf) { return upb_MtDataEncoder_StartEnum(&encoder_, buf); });
+  }
 
   bool PutEnumValue(uint32_t enum_value) {
     return appender_([=](char* buf) {

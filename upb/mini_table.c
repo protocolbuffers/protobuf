@@ -83,6 +83,12 @@ enum {
   kUpb_EncodedValue_MaxEnumMask = 'A',
 };
 
+enum {
+  kUpb_EncodedVersion_EnumV1 = '!',
+  kUpb_EncodedVersion_ExtensionV1 = '#',
+  kUpb_EncodedVersion_MessageV1 = '$',
+};
+
 char upb_ToBase92(int8_t ch) {
   static const char kUpb_ToBase92[] = {
       ' ', '!', '#', '$', '%', '&', '(', ')', '*', '+', ',', '-', '.', '/',
@@ -156,12 +162,17 @@ static upb_MtDataEncoderInternal* upb_MtDataEncoder_GetInternal(
   return ret;
 }
 
-static char* upb_MtDataEncoder_Put(upb_MtDataEncoder* e, char* ptr, char ch) {
+static char* upb_MtDataEncoder_PutRaw(upb_MtDataEncoder* e, char* ptr,
+                                      char ch) {
   upb_MtDataEncoderInternal* in = (upb_MtDataEncoderInternal*)e->internal;
   UPB_ASSERT(ptr - in->buf_start < kUpb_MtDataEncoder_MinSize);
   if (ptr == e->end) return NULL;
-  *ptr++ = upb_ToBase92(ch);
+  *ptr++ = ch;
   return ptr;
+}
+
+static char* upb_MtDataEncoder_Put(upb_MtDataEncoder* e, char* ptr, char ch) {
+  return upb_MtDataEncoder_PutRaw(e, ptr, upb_ToBase92(ch));
 }
 
 static char* upb_MtDataEncoder_PutBase92Varint(upb_MtDataEncoder* e, char* ptr,
@@ -195,6 +206,10 @@ char* upb_MtDataEncoder_EncodeExtension(upb_MtDataEncoder* e, char* ptr,
   in->state.msg_state.msg_modifiers = 0;
   in->state.msg_state.last_field_num = 0;
   in->state.msg_state.oneof_state = kUpb_OneofState_NotStarted;
+
+  ptr = upb_MtDataEncoder_PutRaw(e, ptr, kUpb_EncodedVersion_ExtensionV1);
+  if (!ptr) return NULL;
+
   return upb_MtDataEncoder_PutField(e, ptr, type, field_num, field_mod);
 }
 
@@ -204,6 +219,10 @@ char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* ptr,
   in->state.msg_state.msg_modifiers = msg_mod;
   in->state.msg_state.last_field_num = 0;
   in->state.msg_state.oneof_state = kUpb_OneofState_NotStarted;
+
+  ptr = upb_MtDataEncoder_PutRaw(e, ptr, kUpb_EncodedVersion_MessageV1);
+  if (!ptr) return NULL;
+
   return upb_MtDataEncoder_PutModifier(e, ptr, msg_mod);
 }
 
@@ -303,10 +322,12 @@ char* upb_MtDataEncoder_PutOneofField(upb_MtDataEncoder* e, char* ptr,
   return ptr;
 }
 
-void upb_MtDataEncoder_StartEnum(upb_MtDataEncoder* e) {
-  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, NULL);
+char* upb_MtDataEncoder_StartEnum(upb_MtDataEncoder* e, char* ptr) {
+  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
   in->state.enum_state.present_values_mask = 0;
   in->state.enum_state.last_written_value = 0;
+
+  return upb_MtDataEncoder_PutRaw(e, ptr, kUpb_EncodedVersion_EnumV1);
 }
 
 static char* upb_MtDataEncoder_FlushDenseEnumMask(upb_MtDataEncoder* e,
@@ -1021,6 +1042,16 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
     goto done;
   }
 
+  // If the string is non-empty then it must begin with a version tag.
+  if (len) {
+    if (*data != kUpb_EncodedVersion_MessageV1) {
+      upb_MtDecoder_ErrorFormat(&decoder, "Invalid message version: %c", *data);
+      UPB_UNREACHABLE();
+    }
+    data++;
+    len--;
+  }
+
   upb_MtDecoder_CheckOutOfMemory(&decoder, decoder.table);
 
   decoder.table->size = 0;
@@ -1141,7 +1172,7 @@ static void upb_MiniTable_BuildEnumValue(upb_MtDecoder* d, uint32_t val) {
 upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
                                             upb_Arena* arena,
                                             upb_Status* status) {
-  upb_MtDecoder d = {
+  upb_MtDecoder decoder = {
       .enum_table = upb_Arena_Malloc(arena, upb_MiniTable_EnumSize(2)),
       .enum_value_count = 0,
       .enum_data_count = 0,
@@ -1151,33 +1182,41 @@ upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
       .arena = arena,
   };
 
-  if (UPB_SETJMP(d.err)) {
-    return NULL;
+  if (UPB_SETJMP(decoder.err)) return NULL;
+
+  // If the string is non-empty then it must begin with a version tag.
+  if (len) {
+    if (*data != kUpb_EncodedVersion_EnumV1) {
+      upb_MtDecoder_ErrorFormat(&decoder, "Invalid enum version: %c", *data);
+      UPB_UNREACHABLE();
+    }
+    data++;
+    len--;
   }
 
-  upb_MtDecoder_CheckOutOfMemory(&d, d.enum_table);
+  upb_MtDecoder_CheckOutOfMemory(&decoder, decoder.enum_table);
 
   // Guarantee at least 64 bits of mask without checking mask size.
-  d.enum_table->mask_limit = 64;
-  d.enum_table = _upb_MiniTable_AddEnumDataMember(&d, 0);
-  d.enum_table = _upb_MiniTable_AddEnumDataMember(&d, 0);
+  decoder.enum_table->mask_limit = 64;
+  decoder.enum_table = _upb_MiniTable_AddEnumDataMember(&decoder, 0);
+  decoder.enum_table = _upb_MiniTable_AddEnumDataMember(&decoder, 0);
 
-  d.enum_table->value_count = 0;
+  decoder.enum_table->value_count = 0;
 
   const char* ptr = data;
   uint32_t base = 0;
 
-  while (ptr < d.end) {
+  while (ptr < decoder.end) {
     char ch = *ptr++;
     if (ch <= kUpb_EncodedValue_MaxEnumMask) {
       uint32_t mask = upb_FromBase92(ch);
       for (int i = 0; i < 5; i++, base++, mask >>= 1) {
-        if (mask & 1) upb_MiniTable_BuildEnumValue(&d, base);
+        if (mask & 1) upb_MiniTable_BuildEnumValue(&decoder, base);
       }
     } else if (kUpb_EncodedValue_MinSkip <= ch &&
                ch <= kUpb_EncodedValue_MaxSkip) {
       uint32_t skip;
-      ptr = upb_MiniTable_DecodeBase92Varint(&d, ptr, ch,
+      ptr = upb_MiniTable_DecodeBase92Varint(&decoder, ptr, ch,
                                              kUpb_EncodedValue_MinSkip,
                                              kUpb_EncodedValue_MaxSkip, &skip);
       base += skip;
@@ -1187,7 +1226,7 @@ upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
     }
   }
 
-  return d.enum_table;
+  return decoder.enum_table;
 }
 
 const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
@@ -1201,8 +1240,16 @@ const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
       .table = NULL,
   };
 
-  if (UPB_SETJMP(decoder.err)) {
-    return NULL;
+  if (UPB_SETJMP(decoder.err)) return NULL;
+
+  // If the string is non-empty then it must begin with a version tag.
+  if (len) {
+    if (*data != kUpb_EncodedVersion_ExtensionV1) {
+      upb_MtDecoder_ErrorFormat(&decoder, "Invalid ext version: %c", *data);
+      UPB_UNREACHABLE();
+    }
+    data++;
+    len--;
   }
 
   uint16_t count = 0;

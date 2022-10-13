@@ -114,9 +114,9 @@ char* upb_MtDataEncoder_StartOneof(upb_MtDataEncoder* e, char* ptr);
 char* upb_MtDataEncoder_PutOneofField(upb_MtDataEncoder* e, char* ptr,
                                       uint32_t field_num);
 
-// Encodes the set of values for a given enum.  The values must be given in
+// Encodes the set of values for a given enum. The values must be given in
 // order (after casting to uint32_t), and repeats are not allowed.
-void upb_MtDataEncoder_StartEnum(upb_MtDataEncoder* e);
+char* upb_MtDataEncoder_StartEnum(upb_MtDataEncoder* e, char* ptr);
 char* upb_MtDataEncoder_PutEnumValue(upb_MtDataEncoder* e, char* ptr,
                                      uint32_t val);
 char* upb_MtDataEncoder_EndEnum(upb_MtDataEncoder* e, char* ptr);
