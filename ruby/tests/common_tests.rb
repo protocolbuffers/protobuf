@@ -331,14 +331,16 @@ module CommonTests
     l.push :A
     l.push :B
     l.push :C
-    assert l.count == 3
+    l.push :v0
+    assert l.count == 4
     assert_raise RangeError do
       l.push :D
     end
     assert l[0] == :A
+    assert l[3] == :v0
 
-    l.push 4
-    assert l[3] == 4
+    l.push 5
+    assert l[4] == 5
   end
 
   def test_rptfield_initialize
@@ -542,8 +544,8 @@ module CommonTests
     assert m["z"] == :C
     m["z"] = 2
     assert m["z"] == :B
-    m["z"] = 4
-    assert m["z"] == 4
+    m["z"] = 5
+    assert m["z"] == 5
     assert_raise RangeError do
       m["z"] = :Z
     end
@@ -712,14 +714,17 @@ module CommonTests
     assert proto_module::TestEnum::A == 1
     assert proto_module::TestEnum::B == 2
     assert proto_module::TestEnum::C == 3
+    assert proto_module::TestEnum::V0 == 4
 
     assert proto_module::TestEnum::lookup(1) == :A
     assert proto_module::TestEnum::lookup(2) == :B
     assert proto_module::TestEnum::lookup(3) == :C
+    assert proto_module::TestEnum::lookup(4) == :v0
 
     assert proto_module::TestEnum::resolve(:A) == 1
     assert proto_module::TestEnum::resolve(:B) == 2
     assert proto_module::TestEnum::resolve(:C) == 3
+    assert proto_module::TestEnum::resolve(:v0) == 4
   end
 
   def test_enum_const_get_helpers
@@ -788,7 +793,7 @@ module CommonTests
     assert_raise(NoMethodError) { m.a }
     assert_raise(NoMethodError) { m.a_const_const }
   end
-  
+
   def test_repeated_push
     m = proto_module::TestMessage.new
 
@@ -1762,7 +1767,7 @@ module CommonTests
     assert_raise(FrozenErrorType) { m.repeated_msg = proto_module::TestMessage2.new }
     assert_raise(FrozenErrorType) { m.repeated_enum = :A }
   end
-  
+
   def test_eq
     m1 = proto_module::TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
     m2 = proto_module::TestMessage.new(:optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
