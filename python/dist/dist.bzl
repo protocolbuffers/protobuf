@@ -27,6 +27,7 @@ def _get_suffix(limited_api, python_version, cpu):
             python_version += "m"
         abis = {
             "darwin": "darwin",
+            "darwin_arm64": "darwin",
             "osx-x86_64": "darwin",
             "osx-aarch_64": "darwin",
             "linux-aarch_64": "aarch64-linux-gnu",
