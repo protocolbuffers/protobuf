@@ -4448,13 +4448,11 @@ void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* other) {
       &other->_impl_.json_name_, rhs_arena
   );
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.proto3_optional_)
-      + sizeof(FieldDescriptorProto::_impl_.proto3_optional_)
+      PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.type_)
+      + sizeof(FieldDescriptorProto::_impl_.type_)
       - PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.options_)>(
           reinterpret_cast<char*>(&_impl_.options_),
           reinterpret_cast<char*>(&other->_impl_.options_));
-  swap(_impl_.label_, other->_impl_.label_);
-  swap(_impl_.type_, other->_impl_.type_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FieldDescriptorProto::GetMetadata() const {
@@ -7619,13 +7617,11 @@ void FileOptions::InternalSwap(FileOptions* other) {
       &other->_impl_.ruby_package_, rhs_arena
   );
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.deprecated_)
-      + sizeof(FileOptions::_impl_.deprecated_)
+      PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.cc_enable_arenas_)
+      + sizeof(FileOptions::_impl_.cc_enable_arenas_)
       - PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.java_multiple_files_)>(
           reinterpret_cast<char*>(&_impl_.java_multiple_files_),
           reinterpret_cast<char*>(&other->_impl_.java_multiple_files_));
-  swap(_impl_.optimize_for_, other->_impl_.optimize_for_);
-  swap(_impl_.cc_enable_arenas_, other->_impl_.cc_enable_arenas_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FileOptions::GetMetadata() const {
