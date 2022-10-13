@@ -144,9 +144,10 @@ void Builder::BuildExtensions(upb_ExtensionRegistry** exts) {
                                          status.ptr());
       if (!ptr) break;
       if (!LinkExtension(ext)) continue;
-      if (_upb_extreg_get(*exts, ext->extendee, ext->field.number)) continue;
-      _upb_extreg_add(*exts, const_cast<const upb_MiniTable_Extension**>(&ext),
-                      1);
+      if (upb_ExtensionRegistry_Lookup(*exts, ext->extendee, ext->field.number))
+        continue;
+      upb_ExtensionRegistry_AddArray(
+          *exts, const_cast<const upb_MiniTable_Extension**>(&ext), 1);
     }
   }
 }

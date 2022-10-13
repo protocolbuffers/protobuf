@@ -73,27 +73,23 @@ extern "C" {
  */
 
 typedef struct upb_ExtensionRegistry upb_ExtensionRegistry;
+typedef struct upb_MiniTable_Extension upb_MiniTable_Extension;
 
 // Creates a upb_ExtensionRegistry in the given arena.
 // The arena must outlive any use of the extreg.
 upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena);
 
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+// Adds the given extension info for the array |e| of size |count| into the
+// registry. If there are any errors, the entire array is backed out.
+// The extensions must outlive the registry.
+bool upb_ExtensionRegistry_AddArray(upb_ExtensionRegistry* r,
+                                    const upb_MiniTable_Extension** e,
+                                    size_t count);
 
-typedef struct upb_MiniTable_Extension upb_MiniTable_Extension;
-
-// Adds the given extension info for message type |l| and field number |num|
-// into the registry. Returns false if this message type and field number were
-// already in the map, or if memory allocation fails.
-bool _upb_extreg_add(upb_ExtensionRegistry* r,
-                     const upb_MiniTable_Extension** e, size_t count);
-
-// Looks up the extension (if any) defined for message type |l| and field
-// number |num|. If an extension was found, copies the field info into |*ext|
-// and returns true. Otherwise returns false.
-const upb_MiniTable_Extension* _upb_extreg_get(const upb_ExtensionRegistry* r,
-                                               const upb_MiniTable* l,
-                                               uint32_t num);
+// Looks up the extension (if any) defined for message type |t| and field
+// number |num|. Returns the extension if found, otherwise NULL.
+const upb_MiniTable_Extension* upb_ExtensionRegistry_Lookup(
+    const upb_ExtensionRegistry* r, const upb_MiniTable* t, uint32_t num);
 
 #ifdef __cplusplus
 } /* extern "C" */

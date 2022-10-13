@@ -411,8 +411,9 @@ const upb_FieldDef* upb_DefPool_FindExtensionByMiniTable(
 const upb_FieldDef* upb_DefPool_FindExtensionByNumber(const upb_DefPool* s,
                                                       const upb_MessageDef* m,
                                                       int32_t fieldnum) {
-  const upb_MiniTable* l = upb_MessageDef_MiniTable(m);
-  const upb_MiniTable_Extension* ext = _upb_extreg_get(s->extreg, l, fieldnum);
+  const upb_MiniTable* t = upb_MessageDef_MiniTable(m);
+  const upb_MiniTable_Extension* ext =
+      upb_ExtensionRegistry_Lookup(s->extreg, t, fieldnum);
   return ext ? upb_DefPool_FindExtensionByMiniTable(s, ext) : NULL;
 }
 

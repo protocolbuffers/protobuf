@@ -54,8 +54,9 @@ upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena) {
   return r;
 }
 
-bool _upb_extreg_add(upb_ExtensionRegistry* r,
-                     const upb_MiniTable_Extension** e, size_t count) {
+bool upb_ExtensionRegistry_AddArray(upb_ExtensionRegistry* r,
+                                    const upb_MiniTable_Extension** e,
+                                    size_t count) {
   char buf[EXTREG_KEY_SIZE];
   const upb_MiniTable_Extension** start = e;
   const upb_MiniTable_Extension** end = UPB_PTRADD(e, count);
@@ -81,12 +82,11 @@ failure:
   return false;
 }
 
-const upb_MiniTable_Extension* _upb_extreg_get(const upb_ExtensionRegistry* r,
-                                               const upb_MiniTable* l,
-                                               uint32_t num) {
+const upb_MiniTable_Extension* upb_ExtensionRegistry_Lookup(
+    const upb_ExtensionRegistry* r, const upb_MiniTable* t, uint32_t num) {
   char buf[EXTREG_KEY_SIZE];
   upb_value v;
-  extreg_key(buf, l, num);
+  extreg_key(buf, t, num);
   if (upb_strtable_lookup2(&r->exts, buf, EXTREG_KEY_SIZE, &v)) {
     return upb_value_getconstptr(v);
   } else {

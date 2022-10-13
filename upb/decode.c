@@ -795,11 +795,11 @@ static void upb_Decoder_AddUnknownMessageSetItem(upb_Decoder* d,
 }
 
 static void upb_Decoder_AddMessageSetItem(upb_Decoder* d, upb_Message* msg,
-                                          const upb_MiniTable* layout,
+                                          const upb_MiniTable* t,
                                           uint32_t type_id, const char* data,
                                           uint32_t size) {
   const upb_MiniTable_Extension* item_mt =
-      _upb_extreg_get(d->extreg, layout, type_id);
+      upb_ExtensionRegistry_Lookup(d->extreg, t, type_id);
   if (item_mt) {
     upb_Decoder_AddKnownMessageSetItem(d, msg, item_mt, data, size);
   } else {
@@ -861,40 +861,40 @@ static const char* upb_Decoder_DecodeMessageSetItem(
 }
 
 static const upb_MiniTable_Field* _upb_Decoder_FindField(
-    upb_Decoder* d, const upb_MiniTable* l, uint32_t field_number,
+    upb_Decoder* d, const upb_MiniTable* t, uint32_t field_number,
     int* last_field_index) {
   static upb_MiniTable_Field none = {
       0, 0, 0, 0, kUpb_FakeFieldType_FieldNotFound, 0};
-  if (l == NULL) return &none;
+  if (t == NULL) return &none;
 
   size_t idx = ((size_t)field_number) - 1;  // 0 wraps to SIZE_MAX
-  if (idx < l->dense_below) {
+  if (idx < t->dense_below) {
     /* Fastest case: index into dense fields. */
     goto found;
   }
 
-  if (l->dense_below < l->field_count) {
+  if (t->dense_below < t->field_count) {
     /* Linear search non-dense fields. Resume scanning from last_field_index
      * since fields are usually in order. */
     int last = *last_field_index;
-    for (idx = last; idx < l->field_count; idx++) {
-      if (l->fields[idx].number == field_number) {
+    for (idx = last; idx < t->field_count; idx++) {
+      if (t->fields[idx].number == field_number) {
         goto found;
       }
     }
 
-    for (idx = l->dense_below; idx < last; idx++) {
-      if (l->fields[idx].number == field_number) {
+    for (idx = t->dense_below; idx < last; idx++) {
+      if (t->fields[idx].number == field_number) {
         goto found;
       }
     }
   }
 
   if (d->extreg) {
-    switch (l->ext) {
+    switch (t->ext) {
       case kUpb_ExtMode_Extendable: {
         const upb_MiniTable_Extension* ext =
-            _upb_extreg_get(d->extreg, l, field_number);
+            upb_ExtensionRegistry_Lookup(d->extreg, t, field_number);
         if (ext) return &ext->field;
         break;
       }
@@ -911,9 +911,9 @@ static const upb_MiniTable_Field* _upb_Decoder_FindField(
   return &none; /* Unknown field. */
 
 found:
-  UPB_ASSERT(l->fields[idx].number == field_number);
+  UPB_ASSERT(t->fields[idx].number == field_number);
   *last_field_index = idx;
-  return &l->fields[idx];
+  return &t->fields[idx];
 }
 
 int _upb_Decoder_GetVarintOp(const upb_MiniTable_Field* field) {

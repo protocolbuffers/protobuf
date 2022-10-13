@@ -338,8 +338,8 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   }
 
   if (file->ext_count) {
-    bool ok = _upb_extreg_add(_upb_DefPool_ExtReg(ctx->symtab),
-                              file->ext_layouts, file->ext_count);
+    bool ok = upb_ExtensionRegistry_AddArray(
+        _upb_DefPool_ExtReg(ctx->symtab), file->ext_layouts, file->ext_count);
     if (!ok) _upb_DefBuilder_OomErr(ctx);
   }
 }
