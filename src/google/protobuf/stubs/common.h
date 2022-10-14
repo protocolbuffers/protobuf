@@ -47,8 +47,15 @@
 #include "google/protobuf/stubs/platform_macros.h"
 #include "google/protobuf/stubs/port.h"
 
-#if __cplusplus < 201402L || (defined(_MSVC_LANG) && _MSVC_LANG < 201402L)
-#error "Protobuf requires at least C++14"
+// Enforce C++14 as the minimum.
+#if defined(_MSVC_LANG)
+#if _MSVC_LANG < 201402L
+#error "C++ versions less than C++14 are not supported."
+#endif  // _MSVC_LANG < 201402L
+#elif defined(__cplusplus)
+#if __cplusplus < 201402L
+#error "C++ versions less than C++14 are not supported."
+#endif  // __cplusplus < 201402L
 #endif
 
 #ifndef PROTOBUF_USE_EXCEPTIONS
