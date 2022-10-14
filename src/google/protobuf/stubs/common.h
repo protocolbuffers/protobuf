@@ -53,9 +53,16 @@
 #error "C++ versions less than C++14 are not supported."
 #endif  // _MSVC_LANG < 201402L
 #elif defined(__cplusplus)
+// Special-case GCC < 5.0, as it has a strange __cplusplus value for C++14
+#if defined(__GNUC__) && __GNUC__ < 5
+#if __cplusplus < 201300L
+#error "C++ versions less than C++14 are not supported."
+#endif  // __cplusplus < 201300L
+#else // defined(__GNUC__) && __GNUC__ < 5
 #if __cplusplus < 201402L
 #error "C++ versions less than C++14 are not supported."
 #endif  // __cplusplus < 201402L
+#endif // defined(__GNUC__) && __GNUC__ < 5
 #endif
 
 #ifndef PROTOBUF_USE_EXCEPTIONS
