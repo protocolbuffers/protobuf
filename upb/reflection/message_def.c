@@ -326,18 +326,24 @@ static upb_MiniTable* _upb_MessageDef_MakeMiniTable(upb_DefBuilder* ctx,
       _upb_DefBuilder_Errf(ctx, "invalid map (%s)", m->full_name);
     }
 
-    const upb_FieldDef* f0 = upb_MessageDef_Field(m, 0);
-    const upb_FieldDef* f1 = upb_MessageDef_Field(m, 1);
-    const upb_FieldType t0 = upb_FieldDef_Type(f0);
-    const upb_FieldType t1 = upb_FieldDef_Type(f1);
+    const upb_FieldDef* key_f = upb_MessageDef_Field(m, 0);
+    const upb_FieldDef* val_f = upb_MessageDef_Field(m, 1);
+    if (key_f == NULL || val_f == NULL) {
+      _upb_DefBuilder_Errf(ctx, "Malformed map entry from message: %s",
+                           upb_MessageDef_FullName(m));
+    }
+
+    const upb_FieldType key_t = upb_FieldDef_Type(key_f);
+    const upb_FieldType val_t = upb_FieldDef_Type(val_f);
 
     const bool is_proto3_enum =
-        (t1 == kUpb_FieldType_Enum) && !_upb_FieldDef_IsClosedEnum(f1);
-    UPB_ASSERT(_upb_FieldDef_LayoutIndex(f0) == 0);
-    UPB_ASSERT(_upb_FieldDef_LayoutIndex(f1) == 1);
+        (val_t == kUpb_FieldType_Enum) && !_upb_FieldDef_IsClosedEnum(val_f);
+    UPB_ASSERT(_upb_FieldDef_LayoutIndex(key_f) == 0);
+    UPB_ASSERT(_upb_FieldDef_LayoutIndex(val_f) == 1);
 
-    return upb_MiniTable_BuildMapEntry(
-        t0, t1, is_proto3_enum, kUpb_MiniTablePlatform_Native, ctx->arena);
+    return upb_MiniTable_BuildMapEntry(key_t, val_t, is_proto3_enum,
+                                       kUpb_MiniTablePlatform_Native,
+                                       ctx->arena);
   }
 
   upb_StringView desc;
