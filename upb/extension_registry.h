@@ -82,6 +82,8 @@ upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena);
 // Adds the given extension info for the array |e| of size |count| into the
 // registry. If there are any errors, the entire array is backed out.
 // The extensions must outlive the registry.
+// Possible errors include OOM or an extension number that already exists.
+// TODO: There is currently no way to determine the exact reason for failure.
 bool upb_ExtensionRegistry_AddArray(upb_ExtensionRegistry* r,
                                     const upb_MiniTable_Extension** e,
                                     size_t count);

@@ -61,10 +61,12 @@ bool upb_ExtensionRegistry_AddArray(upb_ExtensionRegistry* r,
   const upb_MiniTable_Extension** start = e;
   const upb_MiniTable_Extension** end = UPB_PTRADD(e, count);
   for (; e < end; e++) {
-    // TODO: we should gracefully handle the case where this already exists.
-    // Right now we're only checking for out of memory.
     const upb_MiniTable_Extension* ext = *e;
     extreg_key(buf, ext->extendee, ext->field.number);
+    upb_value v;
+    if (upb_strtable_lookup2(&r->exts, buf, EXTREG_KEY_SIZE, &v)) {
+      goto failure;
+    }
     if (!upb_strtable_insert(&r->exts, buf, EXTREG_KEY_SIZE,
                              upb_value_constptr(ext), r->arena)) {
       goto failure;
