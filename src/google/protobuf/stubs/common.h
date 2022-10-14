@@ -47,6 +47,10 @@
 #include "google/protobuf/stubs/platform_macros.h"
 #include "google/protobuf/stubs/port.h"
 
+#if __cplusplus < 201402L || (defined(_MSVC_LANG) && _MSVC_LANG < 201402L)
+#error "Protobuf requires at least C++14"
+#endif
+
 #ifndef PROTOBUF_USE_EXCEPTIONS
 #if defined(_MSC_VER) && defined(_CPPUNWIND)
   #define PROTOBUF_USE_EXCEPTIONS 1
