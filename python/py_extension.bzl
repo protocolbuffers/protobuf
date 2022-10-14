@@ -18,10 +18,10 @@ def py_extension(name, srcs, copts, deps = []):
         copts = copts + ["-fvisibility=hidden"],
         linkopts = selects.with_or({
             (
-                "//python/dist:osx-x86_64_cpu",
-                "//python/dist:osx-aarch64_cpu",
+                "//python/dist:osx_x86_64",
+                "//python/dist:osx_aarch64",
             ): ["-undefined", "dynamic_lookup"],
-            "//python/dist:win32_cpu": ["-static-libgcc"],
+            "//python/dist:windows_x86_32": ["-static-libgcc"],
             "//conditions:default": [],
         }),
         linkshared = True,

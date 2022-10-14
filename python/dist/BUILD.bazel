@@ -57,38 +57,134 @@ py_proto_library(
 )
 
 config_setting(
-    name = "aarch64_cpu",
+    name = "linux_aarch64_release",
     values = {"cpu": "linux-aarch_64"},
 )
 
 config_setting(
-    name = "x86_64_cpu",
+    name = "linux_aarch64_local",
+    constraint_values = [
+        "@bazel_tools//platforms:linux",
+        "@bazel_tools//platforms:aarch64",
+    ],
+)
+
+selects.config_setting_group(
+    name = "linux_aarch64",
+    match_any = [
+        ":linux_aarch64_release",
+        ":linux_aarch64_local",
+    ],
+)
+
+config_setting(
+    name = "linux_x86_64_release",
     values = {"cpu": "linux-x86_64"},
 )
 
 config_setting(
-    name = "osx-x86_64_cpu",
+    name = "linux_x86_64_local",
+    constraint_values = [
+        "@bazel_tools//platforms:linux",
+        "@bazel_tools//platforms:x86_64",
+    ],
+)
+
+selects.config_setting_group(
+    name = "linux_x86_64",
+    match_any = [
+        ":linux_x86_64_release",
+        ":linux_x86_64_local",
+    ],
+)
+
+config_setting(
+    name = "osx_x86_64_release",
     values = {"cpu": "osx-x86_64"},
 )
 
 config_setting(
-    name = "osx-aarch64_cpu",
+    name = "osx_x86_64_local",
+    constraint_values = [
+        "@bazel_tools//platforms:osx",
+        "@bazel_tools//platforms:x86_64",
+    ],
+)
+
+selects.config_setting_group(
+    name = "osx_x86_64",
+    match_any = [
+        ":osx_x86_64_release",
+        ":osx_x86_64_local",
+    ],
+)
+
+config_setting(
+    name = "osx_aarch64_release",
     values = {"cpu": "osx-aarch_64"},
 )
 
 config_setting(
-    name = "osx-universal2_cpu",
+    name = "osx_aarch64_local",
+    constraint_values = [
+        "@bazel_tools//platforms:osx",
+        "@bazel_tools//platforms:aarch64",
+    ],
+)
+
+selects.config_setting_group(
+    name = "osx_aarch64",
+    match_any = [
+        ":osx_aarch64_release",
+        ":osx_aarch64_local",
+    ],
+)
+
+config_setting(
+    name = "osx_universal2",
     values = {"cpu": "osx-universal2"},
 )
 
 config_setting(
-    name = "win32_cpu",
+    name = "windows_x86_32_release",
     values = {"cpu": "win32"},
 )
 
 config_setting(
-    name = "win64_cpu",
+    name = "windows_x86_32_local",
+    constraint_values = [
+        "@bazel_tools//platforms:windows",
+        "@bazel_tools//platforms:x86_32",
+    ],
+)
+
+selects.config_setting_group(
+    name = "windows_x86_32",
+    match_any = [
+        ":windows_x86_32_release",
+        ":windows_x86_32_local",
+    ],
+)
+
+config_setting(
+    name = "windows_x86_64_release",
     values = {"cpu": "win64"},
+)
+
+config_setting(
+    name = "windows_x86_64_local",
+    constraint_values = [
+        "@bazel_tools//platforms:windows",
+        "@bazel_tools//platforms:x86_64",
+    ],
+)
+
+selects.config_setting_group(
+    name = "windows_x86_64",
+    match_any = [
+        ":windows_x86_64_release",
+        ":windows_x86_64_local",
+    ],
 )
 
 py_wheel(
@@ -113,11 +209,12 @@ py_wheel(
     homepage = "https://developers.google.com/protocol-buffers/",
     license = "3-Clause BSD License",
     platform = select({
-        ":x86_64_cpu": "manylinux2014_x86_64",
-        ":aarch64_cpu": "manylinux2014_aarch64",
-        ":osx-universal2_cpu": "macosx_10_9_universal2",
-        ":win32_cpu": "win32",
-        ":win64_cpu": "win_amd64",
+        ":linux_x86_64": "linux_x86_64",
+        ":linux_aarch64": "linux_aarch64",
+        ":osx_universal2": "macosx_10_9_universal2",
+        ":osx_aarch64": "macosx_11_0_arm64",
+        ":windows_x86_32": "win32",
+        ":windows_x86_64": "win_amd64",
         "//conditions:default": "any",
     }),
     python_requires = ">=3.7",

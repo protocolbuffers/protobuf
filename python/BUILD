@@ -45,7 +45,7 @@ LIMITED_API_FLAG_SELECT = {
 
 bool_flag(
     name = "limited_api",
-    build_setting_default = False,
+    build_setting_default = True,
 )
 
 string_flag(
