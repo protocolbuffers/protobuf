@@ -1,3 +1,5 @@
+echo on
+
 @rem enter repo root
 cd /d %~dp0\..\..\..
 

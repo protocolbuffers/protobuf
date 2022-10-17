@@ -1,3 +1,5 @@
+echo on
+
 @rem Update Chocolatey
 choco upgrade -y --no-progress chocolatey
 choco install -y --no-progress --pre cmake
