@@ -1,9 +1,9 @@
-echo on
-
 @rem enter repo root
 cd /d %~dp0\..\..\..
 
 call kokoro\windows\prepare_build_win64.bat || goto :error
+
+echo on
 
 @rem Allow Bazel to create short paths.
 fsutil 8dot3name set 0
