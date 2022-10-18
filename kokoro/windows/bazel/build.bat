@@ -15,10 +15,15 @@ bazel version
 choco install bazel -y -i --version 5.1.0
 bazel version
 
+@REM Set invocation ID so that bazel run is known to kokoro
+uuidgen > %KOKORO_ARTIFACTS_DIR%\bazel_invocation_ids
+SET /p BAZEL_INTERNAL_INVOCATION_ID=<%KOKORO_ARTIFACTS_DIR%\bazel_invocation_ids
+
 @rem Make paths as short as possible to avoid long path issues.
 set BAZEL_STARTUP=--output_user_root=C:/tmp --windows_enable_symlinks
 set BAZEL_FLAGS=--enable_runfiles --keep_going --test_output=errors ^
   --verbose_failures ^
+  --invocation_id=%BAZEL_INTERNAL_INVOCATION_ID% ^
   --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/%KOKORO_JOB_NAME%
 
 @rem Build libraries first.
