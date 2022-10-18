@@ -2,10 +2,13 @@
 #
 # See also code generation logic under /src/google/protobuf/compiler/ruby.
 
+load("@rules_jvm_external//:defs.bzl", "java_export")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_ruby//ruby:defs.bzl", "ruby_library")
 load("//:protobuf.bzl", "internal_ruby_proto_library")
 load("//conformance:defs.bzl", "conformance_test")
+load("//:protobuf_version.bzl", "PROTOBUF_RUBY_VERSION")
+load(":internal.bzl", "internal_ruby_extension")
 
 ################################################################################
 # Ruby Runtime
@@ -16,6 +19,35 @@ ruby_library(
     deps = ["//ruby/lib/google:protobuf_lib"],
     visibility = [
         "//visibility:public",
+    ],
+)
+
+java_export(
+    name = "protobuf_java_release",
+    maven_coordinates = "com.google.protobuf:protobuf-jruby:%s" % PROTOBUF_RUBY_VERSION,
+    srcs = glob(["src/main/java/com/google/protobuf/jruby/*"]),
+    deps = [
+        "@maven//:org_jruby_jruby_complete",
+        "@com_google_protobuf//java/util",
+    ],
+)
+
+filegroup(
+  name = "protobuf_java_jar",
+  srcs = [":protobuf_java_release-project"],
+)
+
+sh_binary(
+    name = "release",
+    data = [
+      ":protobuf_java_jar",
+      ":protobuf_java_release-pom",
+      "@utf8_range//:utf8_range_srcs",
+      "@utf8_range//:LICENSE",
+      "//:well_known_ruby_protos",
+    ],
+    srcs = [
+      "build_release.sh",
     ],
 )
 
