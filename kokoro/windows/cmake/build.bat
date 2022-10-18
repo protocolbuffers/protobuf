@@ -3,8 +3,6 @@ cd /d %~dp0\..\..\..
 
 call kokoro\windows\prepare_build_win64.bat || goto :error
 
-echo ON
-
 @rem TODO(b/241475022) Use docker to guarantee better stability.
 @rem TODO(b/241484899) Run conformance tests in windows.
 

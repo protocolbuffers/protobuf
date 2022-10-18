@@ -3,8 +3,6 @@ cd /d %~dp0\..\..\..
 
 call kokoro\windows\prepare_build_win64.bat || goto :error
 
-echo ON
-
 @rem Allow Bazel to create short paths.
 fsutil 8dot3name set 0
 
@@ -24,9 +22,8 @@ set BAZEL_STARTUP=--output_user_root=C:/tmp --windows_enable_symlinks
 set BAZEL_FLAGS=--enable_runfiles --keep_going --test_output=errors ^
   --verbose_failures ^
   --invocation_id=%BAZEL_INTERNAL_INVOCATION_ID% ^
+  --google_credentials=%KOKORO_BAZEL_AUTH_CREDENTIAL%  ^
   --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/%KOKORO_JOB_NAME%
-
-echo %BAZEL_FLAGS%
 
 @rem Build libraries first.
 bazel %BAZEL_STARTUP% build //:protoc //:protobuf //:protobuf_lite %BAZEL_FLAGS% || goto :error
