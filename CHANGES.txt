@@ -37,6 +37,12 @@
   * Introduce the Printer::{SetRedactDebugString,SetRandomizeDebugString} private flags.
   * Introduce global flags to control Printer::{SetRedactDebugString, SetRandomizeDebugString}.
   * proto3 string fields no longer trigger clang-tidy warning bugprone-branch-clone.
+  * Fix the API of DescriptorUpgrader::set_allow_unknown_dependencies to set to True always, and to populate into the DescriptorPool as well.
+  * Report line numbers consistently in text-format deprecated-field warnings.
+  * Reserve C++20 keywords
+  * Fixed C++ code generation for protos that use int32_t, uint32_t, int64_t, uint64_t, size_t as field names.
+  * Annotate generated C++ public aliases for enum types.
+  * Change default arena max block size from 8K to 32K.
 
 
   Kotlin
@@ -57,6 +63,12 @@
   * Make message-type extensions merge from wire-format instead of building up instances and merging afterwards. This has much better performance.
   * Change the Lite runtime to prefer merging from the wireformat into mutable messages rather than building up a new immutable object before merging. This way results in fewer allocations and copy operations.
   * Move proto wireformat parsing functionality from the private "parsing constructor" to the Builder class.
+  * Refactoring java full runtime to reuse sub-message builders and prepare to migrate parsing logic from parse constructor to builder.
+  * Move proto wireformat parsing functionality from the private "parsing constructor" to the Builder class.
+  * Change the Lite runtime to prefer merging from the wireformat into mutable messages rather than building up a new immutable object before merging. This way results in fewer allocations and copy operations.
+  * Make message-type extensions merge from wire-format instead of building up instances and merging afterwards. This has much better performance.
+  * Fix TextFormat parser to build up recurring (but supposedly not repeated) sub-messages directly from text rather than building a new sub-message and merging the fully formed message into the existing field.
+  * Fix bug in nested builder caching logic where cleared sub-field builders would remain dirty after a clear and build in a parent layer. https://github.com/protocolbuffers/protobuf/issues/10624
 
   Python
   * Changes ordering of printed fields in .pyi files from lexicographic to the same ordering found in the proto descriptor.
@@ -66,6 +78,7 @@
 
   Compiler
   * Print full path name of source .proto file on error
+  * Include proto message type in the annotation comments.
 
 2022-10-18 version 21.8 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
 
