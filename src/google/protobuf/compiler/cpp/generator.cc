@@ -34,16 +34,14 @@
 
 #include "google/protobuf/compiler/cpp/generator.h"
 
+#include <cstdlib>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/strutil.h"
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/io/zero_copy_stream.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_replace.h"
 #include "google/protobuf/compiler/cpp/file.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -63,12 +61,12 @@ absl::flat_hash_map<std::string, std::string> CommonVars(
   return {
       {"proto_ns", ProtobufNamespace(options)},
       {"string", "std::string"},
-      {"int8", "int8_t"},
-      {"int32", "int32_t"},
-      {"int64", "int64_t"},
-      {"uint8", "uint8_t"},
-      {"uint32", "uint32_t"},
-      {"uint64", "uint64_t"},
+      {"int8", "::int8_t"},
+      {"int32", "::int32_t"},
+      {"int64", "::int64_t"},
+      {"uint8", "::uint8_t"},
+      {"uint32", "::uint32_t"},
+      {"uint64", "::uint64_t"},
 
       {"hrule_thick", kThickSeparator},
       {"hrule_thin", kThinSeparator},
@@ -152,7 +150,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       file_options.enforce_mode = EnforceOptimizeMode::kLiteRuntime;
       file_options.lite_implicit_weak_fields = true;
       if (!value.empty()) {
-        file_options.num_cc_files = strto32(value.c_str(), nullptr, 10);
+        file_options.num_cc_files = std::strtol(value.c_str(), nullptr, 10);
       }
     } else if (key == "proto_h") {
       file_options.proto_h = true;

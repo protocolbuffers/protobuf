@@ -35,13 +35,13 @@ package com.google.protobuf.kotlin
  * extension methods.
  *
  * <p>This class is used by Kotlin protocol buffer extensions, and its constructor is public only
- * because generated message code is in a different compilation unit.  Others should not use this
+ * because generated message code is in a different compilation unit. Others should not use this
  * class directly in any way.
  */
 @Suppress("unused") // the unused type parameter
-class DslList<E, P : DslProxy> @OnlyForUseByGeneratedProtoCode constructor(
-  private val delegate: List<E>
-) : List<E> by delegate {
+class DslList<E, P : DslProxy>
+@OnlyForUseByGeneratedProtoCode
+constructor(private val delegate: List<E>) : List<E> by delegate {
   override fun iterator(): Iterator<E> = UnmodifiableIterator(delegate.iterator())
 
   override fun listIterator(): ListIterator<E> = UnmodifiableListIterator(delegate.listIterator())

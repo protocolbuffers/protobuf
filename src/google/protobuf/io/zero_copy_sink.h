@@ -33,7 +33,6 @@
 
 #include <cstddef>
 
-#include "google/protobuf/stubs/bytestream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/port.h"
 
@@ -44,21 +43,22 @@ namespace google {
 namespace protobuf {
 namespace io {
 namespace zc_sink_internal {
+
 // Internal helper class, for turning a ZeroCopyOutputStream into a sink.
-class PROTOBUF_EXPORT ZeroCopyStreamByteSink : public strings::ByteSink {
+class PROTOBUF_EXPORT ZeroCopyStreamByteSink {
  public:
   explicit ZeroCopyStreamByteSink(io::ZeroCopyOutputStream* stream)
       : stream_(stream) {}
   ZeroCopyStreamByteSink(const ZeroCopyStreamByteSink&) = delete;
   ZeroCopyStreamByteSink& operator=(const ZeroCopyStreamByteSink&) = delete;
 
-  ~ZeroCopyStreamByteSink() override {
+  ~ZeroCopyStreamByteSink() {
     if (buffer_size_ > 0) {
       stream_->BackUp(buffer_size_);
     }
   }
 
-  void Append(const char* bytes, size_t len) override;
+  void Append(const char* bytes, size_t len);
   void Write(absl::string_view str) { Append(str.data(), str.size()); }
 
   size_t bytes_written() { return bytes_written_; }

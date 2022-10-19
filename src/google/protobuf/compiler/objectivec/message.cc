@@ -32,7 +32,12 @@
 
 #include <algorithm>
 #include <iostream>
+#include <map>
+#include <memory>
+#include <set>
 #include <sstream>
+#include <string>
+#include <vector>
 
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -206,8 +211,6 @@ MessageGenerator::MessageGenerator(const std::string& root_classname,
   }
 }
 
-MessageGenerator::~MessageGenerator() {}
-
 void MessageGenerator::GenerateStaticVariablesInitialization(
     io::Printer* printer) {
   for (const auto& generator : extension_generators_) {
@@ -253,7 +256,7 @@ void MessageGenerator::DetermineObjectiveCClassDefinitions(
   }
 
   const Descriptor* containing_descriptor = descriptor_->containing_type();
-  if (containing_descriptor != NULL) {
+  if (containing_descriptor != nullptr) {
     std::string containing_class = ClassName(containing_descriptor);
     fwd_decls->insert(ObjCClassDeclaration(containing_class));
   }
@@ -598,7 +601,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
           "                                    count:(uint32_t)(sizeof(ranges) / sizeof(GPBExtensionRange))];\n");
       // clang-format on
     }
-    if (descriptor_->containing_type() != NULL) {
+    if (descriptor_->containing_type() != nullptr) {
       std::string containing_class = ClassName(descriptor_->containing_type());
       std::string parent_class_ref = ObjCClass(containing_class);
       printer->Print(

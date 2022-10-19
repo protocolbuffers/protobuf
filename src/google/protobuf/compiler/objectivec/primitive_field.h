@@ -43,16 +43,15 @@ class PrimitiveFieldGenerator : public SingleFieldGenerator {
 
  protected:
   explicit PrimitiveFieldGenerator(const FieldDescriptor* descriptor);
-  virtual ~PrimitiveFieldGenerator();
+  ~PrimitiveFieldGenerator() override = default;
 
   PrimitiveFieldGenerator(const PrimitiveFieldGenerator&) = delete;
   PrimitiveFieldGenerator& operator=(const PrimitiveFieldGenerator&) = delete;
 
-  virtual void GenerateFieldStorageDeclaration(
-      io::Printer* printer) const override;
+  void GenerateFieldStorageDeclaration(io::Printer* printer) const override;
 
-  virtual int ExtraRuntimeHasBitsNeeded(void) const override;
-  virtual void SetExtraRuntimeHasBitsBase(int index_base) override;
+  int ExtraRuntimeHasBitsNeeded() const override;
+  void SetExtraRuntimeHasBitsBase(int index_base) override;
 };
 
 class PrimitiveObjFieldGenerator : public ObjCObjFieldGenerator {
@@ -60,7 +59,7 @@ class PrimitiveObjFieldGenerator : public ObjCObjFieldGenerator {
 
  protected:
   explicit PrimitiveObjFieldGenerator(const FieldDescriptor* descriptor);
-  virtual ~PrimitiveObjFieldGenerator();
+  ~PrimitiveObjFieldGenerator() override = default;
 
   PrimitiveObjFieldGenerator(const PrimitiveObjFieldGenerator&) = delete;
   PrimitiveObjFieldGenerator& operator=(const PrimitiveObjFieldGenerator&) =
@@ -72,7 +71,7 @@ class RepeatedPrimitiveFieldGenerator : public RepeatedFieldGenerator {
 
  protected:
   explicit RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor);
-  virtual ~RepeatedPrimitiveFieldGenerator();
+  ~RepeatedPrimitiveFieldGenerator() override = default;
 
   RepeatedPrimitiveFieldGenerator(const RepeatedPrimitiveFieldGenerator&) =
       delete;

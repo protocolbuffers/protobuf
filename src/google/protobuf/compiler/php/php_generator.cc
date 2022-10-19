@@ -37,12 +37,11 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-
-#include "google/protobuf/stubs/strutil.h"  // for StringReplace.
 
 const std::string kDescriptorFile = "google/protobuf/descriptor.proto";
 const std::string kEmptyFile = "google/protobuf/empty.proto";
@@ -109,12 +108,17 @@ void GenerateServiceMethodDocComment(io::Printer* printer,
 
 template <typename DescriptorType>
 std::string DescriptorFullName(const DescriptorType* desc, bool is_internal) {
+  absl::string_view full_name = desc->full_name();
   if (is_internal) {
-    return StringReplace(desc->full_name(), "google.protobuf",
-                         "google.protobuf.internal", false);
-  } else {
-    return desc->full_name();
+    constexpr absl::string_view replace = "google.protobuf";
+    size_t index = full_name.find(replace);
+    if (index != std::string::npos) {
+      return absl::StrCat(full_name.substr(0, index),
+                          "google.protobuf.internal",
+                          full_name.substr(index + replace.size()));
+    }
   }
+  return std::string(full_name);
 }
 
 template <typename DescriptorType>

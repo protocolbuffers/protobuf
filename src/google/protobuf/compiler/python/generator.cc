@@ -54,7 +54,6 @@
 
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -67,6 +66,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
 namespace google {
@@ -134,7 +134,7 @@ std::string StringifyDefaultValue(const FieldDescriptor& field) {
         // infinity * 0 = nan
         return "(1e10000 * 0)";
       } else {
-        return "float(" + SimpleDtoa(value) + ")";
+        return "float(" + io::SimpleDtoa(value) + ")";
       }
     }
     case FieldDescriptor::CPPTYPE_FLOAT: {
@@ -150,7 +150,7 @@ std::string StringifyDefaultValue(const FieldDescriptor& field) {
         // infinity - infinity = nan
         return "(1e10000 * 0)";
       } else {
-        return "float(" + SimpleFtoa(value) + ")";
+        return "float(" + io::SimpleFtoa(value) + ")";
       }
     }
     case FieldDescriptor::CPPTYPE_BOOL:

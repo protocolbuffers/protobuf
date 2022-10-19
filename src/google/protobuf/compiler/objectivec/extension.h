@@ -31,6 +31,8 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_EXTENSION_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_EXTENSION_H__
 
+#include <string>
+
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -43,7 +45,7 @@ class ExtensionGenerator {
  public:
   ExtensionGenerator(const std::string& root_class_name,
                      const FieldDescriptor* descriptor);
-  ~ExtensionGenerator();
+  ~ExtensionGenerator() = default;
 
   ExtensionGenerator(const ExtensionGenerator&) = delete;
   ExtensionGenerator& operator=(const ExtensionGenerator&) = delete;

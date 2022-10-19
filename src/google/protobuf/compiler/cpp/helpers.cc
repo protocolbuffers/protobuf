@@ -49,13 +49,10 @@
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/compiler/scc.h"
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/ascii.h"
@@ -63,11 +60,13 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
+#include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/strtod.h"
 
 
 // Must be last.
@@ -172,7 +171,6 @@ static const char* const kKeywordList[] = {
     "while",
     "xor",
     "xor_eq",
-#ifdef PROTOBUF_FUTURE_CPP20_KEYWORDS  // C++20 keywords.
     "char8_t",
     "char16_t",
     "char32_t",
@@ -183,12 +181,11 @@ static const char* const kKeywordList[] = {
     "co_return",
     "co_yield",
     "requires",
-#endif  // !PROTOBUF_FUTURE_BREAKING_CHANGES
 };
 
-const absl::flat_hash_set<std::string>& Keywords() {
+const absl::flat_hash_set<absl::string_view>& Keywords() {
   static const auto* keywords = [] {
-    auto* keywords = new absl::flat_hash_set<std::string>();
+    auto* keywords = new absl::flat_hash_set<absl::string_view>();
 
     for (const auto keyword : kKeywordList) {
       keywords->emplace(keyword);
@@ -199,7 +196,7 @@ const absl::flat_hash_set<std::string>& Keywords() {
 }
 
 std::string IntTypeName(const Options& options, const std::string& type) {
-  return type + "_t";
+  return absl::StrCat("::", type, "_t");
 }
 
 // Returns true if the message can potentially allocate memory for its field.
@@ -409,16 +406,18 @@ std::string Namespace(const std::string& package) {
 }
 
 std::string Namespace(const FileDescriptor* d, const Options& options) {
-  std::string ret = Namespace(d->package());
+  std::string ns = Namespace(d->package());
   if (IsWellKnownMessage(d) && options.opensource_runtime) {
     // Written with string concatenation to prevent rewriting of
     // ::google::protobuf.
-    ret = StringReplace(ret,
-                        "::google::"
-                        "protobuf",
-                        "::PROTOBUF_NAMESPACE_ID", false);
+    constexpr absl::string_view prefix =
+        "::google::"  // prevent clang-format reflowing
+        "protobuf";
+    absl::string_view new_ns(ns);
+    absl::ConsumePrefix(&new_ns, prefix);
+    return absl::StrCat("::PROTOBUF_NAMESPACE_ID", new_ns);
   }
-  return ret;
+  return ns;
 }
 
 std::string Namespace(const Descriptor* d, const Options& options) {
@@ -591,13 +590,13 @@ std::string StripProto(const std::string& filename) {
 const char* PrimitiveTypeName(FieldDescriptor::CppType type) {
   switch (type) {
     case FieldDescriptor::CPPTYPE_INT32:
-      return "int32_t";
+      return "::int32_t";
     case FieldDescriptor::CPPTYPE_INT64:
-      return "int64_t";
+      return "::int64_t";
     case FieldDescriptor::CPPTYPE_UINT32:
-      return "uint32_t";
+      return "::uint32_t";
     case FieldDescriptor::CPPTYPE_UINT64:
-      return "uint64_t";
+      return "::uint64_t";
     case FieldDescriptor::CPPTYPE_DOUBLE:
       return "double";
     case FieldDescriptor::CPPTYPE_FLOAT:
@@ -713,13 +712,13 @@ static std::string Int64ToString(int64_t number) {
   if (number == std::numeric_limits<int64_t>::min()) {
     // This needs to be special-cased, see explanation here:
     // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52661
-    return absl::StrCat("int64_t{", number + 1, "} - 1");
+    return absl::StrCat("::int64_t{", number + 1, "} - 1");
   }
-  return absl::StrCat("int64_t{", number, "}");
+  return absl::StrCat("::int64_t{", number, "}");
 }
 
 static std::string UInt64ToString(uint64_t number) {
-  return absl::StrCat("uint64_t{", number, "u}");
+  return absl::StrCat("::uint64_t{", number, "u}");
 }
 
 std::string DefaultValue(const FieldDescriptor* field) {
@@ -745,7 +744,7 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
       } else if (value != value) {
         return "std::numeric_limits<double>::quiet_NaN()";
       } else {
-        return SimpleDtoa(value);
+        return io::SimpleDtoa(value);
       }
     }
     case FieldDescriptor::CPPTYPE_FLOAT: {
@@ -757,7 +756,7 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
       } else if (value != value) {
         return "std::numeric_limits<float>::quiet_NaN()";
       } else {
-        std::string float_value = SimpleFtoa(value);
+        std::string float_value = io::SimpleFtoa(value);
         // If floating point value contains a period (.) or an exponent
         // (either E or e), then append suffix 'f' to make it a float
         // literal.

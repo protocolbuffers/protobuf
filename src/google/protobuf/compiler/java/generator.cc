@@ -37,18 +37,14 @@
 
 #include <memory>
 
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/io/zero_copy_stream.h"
 #include "absl/strings/str_format.h"
 #include "google/protobuf/compiler/java/file.h"
-#include "google/protobuf/compiler/java/generator_factory.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/compiler/java/shared_code_generator.h"
 #include "google/protobuf/descriptor.pb.h"
 
-#include "google/protobuf/stubs/strutil.h"
 
 namespace google {
 namespace protobuf {

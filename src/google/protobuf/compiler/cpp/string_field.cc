@@ -34,12 +34,9 @@
 
 #include "google/protobuf/compiler/cpp/string_field.h"
 
-#include "google/protobuf/io/printer.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.pb.h"
-
-#include "google/protobuf/stubs/strutil.h"
 
 namespace google {
 namespace protobuf {
@@ -729,7 +726,7 @@ void RepeatedStringFieldGenerator::GenerateAccessorDeclarations(
   }
   format(
       "$deprecated_attr$void ${1$set_$name$$}$("
-      "int index, const $pointer_type$* value, size_t size);\n"
+      "int index, const $pointer_type$* value, ::size_t size);\n"
       "$deprecated_attr$std::string* ${1$add_$name$$}$();\n"
       "$deprecated_attr$void ${1$add_$name$$}$(const std::string& value);\n"
       "$deprecated_attr$void ${1$add_$name$$}$(std::string&& value);\n"
@@ -742,7 +739,7 @@ void RepeatedStringFieldGenerator::GenerateAccessorDeclarations(
   }
   format(
       "$deprecated_attr$void ${1$add_$name$$}$(const $pointer_type$* "
-      "value, size_t size)"
+      "value, ::size_t size)"
       ";\n"
       "$deprecated_attr$const ::$proto_ns$::RepeatedPtrField<std::string>& "
       "${1$$name$$}$() "
@@ -828,7 +825,7 @@ void RepeatedStringFieldGenerator::GenerateInlineAccessorDefinitions(
   format(
       "inline void "
       "$classname$::set_$name$"
-      "(int index, const $pointer_type$* value, size_t size) {\n"
+      "(int index, const $pointer_type$* value, ::size_t size) {\n"
       "  $field$.Mutable(index)->assign(\n"
       "    reinterpret_cast<const char*>(value), size);\n"
       "$annotate_set$"
@@ -863,7 +860,7 @@ void RepeatedStringFieldGenerator::GenerateInlineAccessorDefinitions(
   }
   format(
       "inline void "
-      "$classname$::add_$name$(const $pointer_type$* value, size_t size) {\n"
+      "$classname$::add_$name$(const $pointer_type$* value, ::size_t size) {\n"
       "  $field$.Add()->assign(reinterpret_cast<const char*>(value), size);\n"
       "$annotate_add$"
       "  // @@protoc_insertion_point(field_add_pointer:$full_name$)\n"

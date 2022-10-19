@@ -71,8 +71,6 @@
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
-#include "google/protobuf/stubs/strutil.h"
-
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 

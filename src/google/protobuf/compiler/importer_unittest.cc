@@ -46,9 +46,8 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
+#include "absl/status/status.h"
 #include "absl/strings/substitute.h"
-
-#include "google/protobuf/stubs/strutil.h"
 
 namespace google {
 namespace protobuf {

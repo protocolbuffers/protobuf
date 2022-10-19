@@ -385,7 +385,7 @@ void RepeatedEnumFieldGenerator::GenerateByteSize(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
       "{\n"
-      "  size_t data_size = 0;\n"
+      "  ::size_t data_size = 0;\n"
       "  unsigned int count = static_cast<unsigned "
       "int>(this->_internal_$name$_size());");
   format.Indent();

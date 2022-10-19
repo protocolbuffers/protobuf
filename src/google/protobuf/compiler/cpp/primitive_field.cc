@@ -467,13 +467,13 @@ void RepeatedPrimitiveFieldGenerator::GenerateByteSize(
   int fixed_size = FixedSize(descriptor_->type());
   if (fixed_size == -1) {
     format(
-        "size_t data_size = ::_pbi::WireFormatLite::\n"
+        "::size_t data_size = ::_pbi::WireFormatLite::\n"
         "  $declared_type$Size(this->$field$);\n");
   } else {
     format(
         "unsigned int count = static_cast<unsigned "
         "int>(this->_internal_$name$_size());\n"
-        "size_t data_size = $fixed_size$UL * count;\n");
+        "::size_t data_size = $fixed_size$UL * count;\n");
   }
 
   if (descriptor_->is_packed()) {

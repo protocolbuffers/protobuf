@@ -31,11 +31,11 @@
 #include "google/protobuf/compiler/objectivec/message_field.h"
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
-#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {
@@ -63,8 +63,6 @@ MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor)
     : ObjCObjFieldGenerator(descriptor) {
   SetMessageVariables(descriptor, &variables_);
 }
-
-MessageFieldGenerator::~MessageFieldGenerator() {}
 
 void MessageFieldGenerator::DetermineForwardDeclarations(
     std::set<std::string>* fwd_decls, bool include_external_types) const {
@@ -94,8 +92,6 @@ RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
   variables_["array_property_type"] =
       "NSMutableArray<" + variables_["storage_type"] + "*>";
 }
-
-RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {}
 
 void RepeatedMessageFieldGenerator::DetermineForwardDeclarations(
     std::set<std::string>* fwd_decls, bool include_external_types) const {

@@ -42,7 +42,6 @@
 #include <map>
 #include <memory>
 #include <type_traits>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -62,6 +61,7 @@
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/padding_optimizer.h"
 #include "google/protobuf/compiler/cpp/parse_function_generator.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -195,7 +195,7 @@ bool CanBeManipulatedAsRawBytes(const FieldDescriptor* field,
 // RunMap maps from fields that start each run to the number of fields in that
 // run.  This is optimized for the common case that there are very few runs in
 // a message and that most of the eligible fields appear together.
-using RunMap = std::unordered_map<const FieldDescriptor*, size_t>;
+using RunMap = absl::flat_hash_map<const FieldDescriptor*, size_t>;
 RunMap FindRuns(const std::vector<const FieldDescriptor*>& fields,
                 const std::function<bool(const FieldDescriptor*)>& predicate) {
   RunMap runs;
@@ -237,18 +237,18 @@ bool EmitFieldNonDefaultCondition(io::Printer* p, const std::string& prefix,
       format("if ($prefix$_internal_has_$name$()) {\n");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_FLOAT) {
       format(
-          "static_assert(sizeof(uint32_t) == sizeof(float), \"Code assumes "
-          "uint32_t and float are the same size.\");\n"
+          "static_assert(sizeof(::uint32_t) == sizeof(float), \"Code assumes "
+          "::uint32_t and float are the same size.\");\n"
           "float tmp_$name$ = $prefix$_internal_$name$();\n"
-          "uint32_t raw_$name$;\n"
+          "::uint32_t raw_$name$;\n"
           "memcpy(&raw_$name$, &tmp_$name$, sizeof(tmp_$name$));\n"
           "if (raw_$name$ != 0) {\n");
     } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_DOUBLE) {
       format(
-          "static_assert(sizeof(uint64_t) == sizeof(double), \"Code assumes "
-          "uint64_t and double are the same size.\");\n"
+          "static_assert(sizeof(::uint64_t) == sizeof(double), \"Code assumes "
+          "::uint64_t and double are the same size.\");\n"
           "double tmp_$name$ = $prefix$_internal_$name$();\n"
-          "uint64_t raw_$name$;\n"
+          "::uint64_t raw_$name$;\n"
           "memcpy(&raw_$name$, &tmp_$name$, sizeof(tmp_$name$));\n"
           "if (raw_$name$ != 0) {\n");
     } else {
@@ -1661,7 +1661,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           "PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;\n"
           "bool IsInitialized() const final;\n"
           "\n"
-          "size_t ByteSizeLong() const final;\n");
+          "::size_t ByteSizeLong() const final;\n");
 
       parse_function_generator_->GenerateMethodDecls(p);
 
@@ -1833,7 +1833,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       num_required_fields_ > 1) {
     format(
         "// helper for ByteSizeLong()\n"
-        "size_t RequiredFieldsByteSizeFallback() const;\n\n");
+        "::size_t RequiredFieldsByteSizeFallback() const;\n\n");
   }
 
   if (HasGeneratedMethods(descriptor_->file(), options_)) {
@@ -2103,12 +2103,12 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     format(
         "using HasBits = "
         "decltype(std::declval<$classname$>().$has_bits$);\n"
-        "static constexpr int32_t kHasBitsOffset =\n"
+        "static constexpr ::int32_t kHasBitsOffset =\n"
         "  8 * PROTOBUF_FIELD_OFFSET($classname$, _impl_._has_bits_);\n");
   }
   if (descriptor_->real_oneof_decl_count() > 0) {
     format(
-        "static constexpr int32_t kOneofCaseOffset =\n"
+        "static constexpr ::int32_t kOneofCaseOffset =\n"
         "  PROTOBUF_FIELD_OFFSET($classtype$, $oneof_case$);\n");
   }
   for (auto field : FieldRange(descriptor_)) {
@@ -2731,7 +2731,7 @@ void MessageGenerator::GenerateCopyConstructorBody(io::Printer* p) const {
 
   std::string pod_template =
       "::memcpy(&$first$, &from.$first$,\n"
-      "  static_cast<size_t>(reinterpret_cast<char*>(&$last$) -\n"
+      "  static_cast<::size_t>(reinterpret_cast<char*>(&$last$) -\n"
       "  reinterpret_cast<char*>(&$first$)) + sizeof($last$));\n";
 
   if (ShouldForceAllocationOnConstruction(descriptor_, options_)) {
@@ -3159,7 +3159,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
         GOOGLE_CHECK_EQ(chunk_is_split, ShouldSplit(memset_start, options_));
         GOOGLE_CHECK_EQ(chunk_is_split, ShouldSplit(memset_end, options_));
         format(
-            "::memset(&$1$, 0, static_cast<size_t>(\n"
+            "::memset(&$1$, 0, static_cast<::size_t>(\n"
             "    reinterpret_cast<char*>(&$2$) -\n"
             "    reinterpret_cast<char*>(&$1$)) + sizeof($2$));\n",
             FieldMemberName(memset_start, chunk_is_split),
@@ -3656,7 +3656,7 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
       format("FailIfCopyFromDescendant(*this, from);\n");
     } else {
-      format("size_t from_size = from.ByteSizeLong();\n");
+      format("::size_t from_size = from.ByteSizeLong();\n");
     }
     format(
         "#endif\n"
@@ -4137,10 +4137,10 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
   if (descriptor_->options().message_set_wire_format()) {
     // Special-case MessageSet.
     format(
-        "size_t $classname$::ByteSizeLong() const {\n"
+        "::size_t $classname$::ByteSizeLong() const {\n"
         "$annotate_bytesize$"
         "// @@protoc_insertion_point(message_set_byte_size_start:$full_name$)\n"
-        "  size_t total_size = $extensions$.MessageSetByteSize();\n"
+        "  ::size_t total_size = $extensions$.MessageSetByteSize();\n"
         "  if ($have_unknown_fields$) {\n"
         "    total_size += ::_pbi::\n"
         "        ComputeUnknownMessageSetItemsSize($unknown_fields$);\n"
@@ -4157,11 +4157,11 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     // Emit a function (rarely used, we hope) that handles the required fields
     // by checking for each one individually.
     format(
-        "size_t $classname$::RequiredFieldsByteSizeFallback() const {\n"
+        "::size_t $classname$::RequiredFieldsByteSizeFallback() const {\n"
         "// @@protoc_insertion_point(required_fields_byte_size_fallback_start:"
         "$full_name$)\n");
     format.Indent();
-    format("size_t total_size = 0;\n");
+    format("::size_t total_size = 0;\n");
     for (auto field : optimized_order_) {
       if (field->is_required()) {
         format(
@@ -4183,12 +4183,12 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
   }
 
   format(
-      "size_t $classname$::ByteSizeLong() const {\n"
+      "::size_t $classname$::ByteSizeLong() const {\n"
       "$annotate_bytesize$"
       "// @@protoc_insertion_point(message_byte_size_start:$full_name$)\n");
   format.Indent();
   format(
-      "size_t total_size = 0;\n"
+      "::size_t total_size = 0;\n"
       "\n");
 
   if (descriptor_->extension_range_count() > 0) {

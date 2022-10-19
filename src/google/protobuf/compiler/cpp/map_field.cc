@@ -30,12 +30,10 @@
 
 #include "google/protobuf/compiler/cpp/map_field.h"
 
-#include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
 #include "absl/strings/ascii.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
-
-#include "google/protobuf/stubs/strutil.h"
+#include "absl/strings/str_cat.h"
 
 namespace google {
 namespace protobuf {

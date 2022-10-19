@@ -39,14 +39,17 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <string>
 #include <vector>
 
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_split.h"
 #include "google/protobuf/compiler/objectivec/line_consumer.h"
-#include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+
+#ifdef _WIN32
+#include "google/protobuf/io/io_win32.h"
+#endif
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
 // error cases, so it seems to be ok to use as a back door for errors.
@@ -91,7 +94,7 @@ void RemoveComment(absl::string_view* input) {
 
 class Parser {
  public:
-  Parser(LineConsumer* line_consumer)
+  explicit Parser(LineConsumer* line_consumer)
       : line_consumer_(line_consumer), line_(0) {}
 
   // Feeds in some input, parse what it can, returning success/failure. Calling
@@ -156,17 +159,7 @@ bool Parser::Finish(std::string* out_error) {
   return true;
 }
 
-std::string FullErrorString(const std::string& name, int line_num,
-                            const std::string& msg) {
-  return std::string("error: ") + name + " Line " + absl::StrCat(line_num) +
-         ", " + msg;
-}
-
 }  // namespace
-
-LineConsumer::LineConsumer() {}
-
-LineConsumer::~LineConsumer() {}
 
 bool ParseSimpleFile(const std::string& path, LineConsumer* line_consumer,
                      std::string* out_error) {
@@ -175,8 +168,8 @@ bool ParseSimpleFile(const std::string& path, LineConsumer* line_consumer,
     fd = posix::open(path.c_str(), O_RDONLY);
   } while (fd < 0 && errno == EINTR);
   if (fd < 0) {
-    *out_error = std::string("error: Unable to open \"") + path + "\", " +
-                 strerror(errno);
+    *out_error =
+        absl::StrCat("error: Unable to open \"", path, "\", ", strerror(errno));
     return false;
   }
   io::FileInputStream file_stream(fd);
@@ -200,13 +193,14 @@ bool ParseSimpleStream(io::ZeroCopyInputStream& input_stream,
     if (!parser.ParseChunk(
             absl::string_view(static_cast<const char*>(buf), buf_len),
             &local_error)) {
-      *out_error =
-          FullErrorString(stream_name, parser.last_line(), local_error);
+      *out_error = absl::StrCat("error: ", stream_name, " Line ",
+                                parser.last_line(), ", ", local_error);
       return false;
     }
   }
   if (!parser.Finish(&local_error)) {
-    *out_error = FullErrorString(stream_name, parser.last_line(), local_error);
+    *out_error = absl::StrCat("error: ", stream_name, " Line ",
+                              parser.last_line(), ", ", local_error);
     return false;
   }
   return true;

@@ -53,7 +53,6 @@
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/port.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/str_cat.h"
 
 // Must be included last.

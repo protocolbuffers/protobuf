@@ -34,10 +34,10 @@
 #include "google/protobuf/wrappers.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "absl/status/status.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/io/strtod.h"
 #include "google/protobuf/util/type_resolver.h"
 
 // clang-format off
@@ -329,10 +329,10 @@ class DescriptorPoolTypeResolver : public TypeResolver {
         return absl::StrCat(descriptor->default_value_uint64());
         break;
       case FieldDescriptor::CPPTYPE_FLOAT:
-        return SimpleFtoa(descriptor->default_value_float());
+        return io::SimpleFtoa(descriptor->default_value_float());
         break;
       case FieldDescriptor::CPPTYPE_DOUBLE:
-        return SimpleDtoa(descriptor->default_value_double());
+        return io::SimpleDtoa(descriptor->default_value_double());
         break;
       case FieldDescriptor::CPPTYPE_BOOL:
         return descriptor->default_value_bool() ? "true" : "false";

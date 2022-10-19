@@ -40,7 +40,6 @@
 #include <vector>
 
 #include "google/protobuf/wire_format.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
@@ -52,6 +51,7 @@
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/strtod.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -479,7 +479,7 @@ std::string DefaultValue(const FieldDescriptor* field, bool immutable,
       } else if (value != value) {
         return "Double.NaN";
       } else {
-        return SimpleDtoa(value) + "D";
+        return io::SimpleDtoa(value) + "D";
       }
     }
     case FieldDescriptor::CPPTYPE_FLOAT: {
@@ -491,7 +491,7 @@ std::string DefaultValue(const FieldDescriptor* field, bool immutable,
       } else if (value != value) {
         return "Float.NaN";
       } else {
-        return SimpleFtoa(value) + "F";
+        return io::SimpleFtoa(value) + "F";
       }
     }
     case FieldDescriptor::CPPTYPE_BOOL:

@@ -30,7 +30,14 @@
 
 #include "google/protobuf/compiler/objectivec/import_writer.h"
 
+#include <iostream>
+#include <map>
+#include <ostream>
+#include <string>
+#include <vector>
+
 #include "absl/strings/ascii.h"
+#include "absl/strings/match.h"
 #include "google/protobuf/compiler/objectivec/line_consumer.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/io/printer.h"
@@ -47,18 +54,17 @@ namespace {
 
 class ProtoFrameworkCollector : public LineConsumer {
  public:
-  ProtoFrameworkCollector(
+  explicit ProtoFrameworkCollector(
       std::map<std::string, std::string>* inout_proto_file_to_framework_name)
       : map_(inout_proto_file_to_framework_name) {}
 
-  virtual bool ConsumeLine(const absl::string_view& line,
-                           std::string* out_error) override;
+  bool ConsumeLine(absl::string_view line, std::string* out_error) override;
 
  private:
   std::map<std::string, std::string>* map_;
 };
 
-bool ProtoFrameworkCollector::ConsumeLine(const absl::string_view& line,
+bool ProtoFrameworkCollector::ConsumeLine(absl::string_view line,
                                           std::string* out_error) {
   int offset = line.find(':');
   if (offset == absl::string_view::npos) {
@@ -93,7 +99,7 @@ bool ProtoFrameworkCollector::ConsumeLine(const absl::string_view& line,
         std::cerr.flush();
       }
 
-      if (proto_file.find(' ') != absl::string_view::npos) {
+      if (absl::StrContains(proto_file, ' ')) {
         std::cerr << "note: framework mapping file had a proto file with a "
                      "space in, hopefully that isn't a missing comma: '"
                   << std::string(proto_file) << "'" << std::endl;
@@ -121,8 +127,6 @@ ImportWriter::ImportWriter(
       runtime_import_prefix_(runtime_import_prefix),
       include_wkt_imports_(include_wkt_imports),
       need_to_parse_mapping_file_(true) {}
-
-ImportWriter::~ImportWriter() {}
 
 void ImportWriter::AddFile(const FileDescriptor* file,
                            const std::string& header_extension) {

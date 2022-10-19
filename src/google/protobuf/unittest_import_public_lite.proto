@@ -35,7 +35,6 @@ syntax = "proto2";
 package protobuf_unittest_import;
 
 option optimize_for = LITE_RUNTIME;
-
 option java_package = "com.google.protobuf";
 
 message PublicImportMessageLite {
