@@ -188,7 +188,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
     // if the original message packs another Any, then unpacked_any=2, assuming
     // the differencer unpacked both of them.
     //
-    // When an Any object packes a non-Any proto object whose field includes
+    // When an Any object packs a non-Any proto object whose field includes
     // Any, then unpacked_any=1. Thus, in most practical applications,
     // unpacked_any will be 0 or 1.
     const Message* message1 = nullptr;
@@ -330,14 +330,13 @@ class PROTOBUF_EXPORT MessageDifferencer {
     MapKeyComparator& operator=(const MapKeyComparator&) = delete;
     virtual ~MapKeyComparator();
 
-
     // This method should be overridden by every implementation.  The arg
     // unmapped_any is nonzero the original messages provided by the user are of
     // type google.protobuf.Any.
     //
     // More precisely, unpacked_any defines the nesting level of Any.  For
     // example, if Any packs another Any then unpacked_any=2, assuming the
-    // patcher unpacked both.  Note that when an Any object packes a non-Any
+    // patcher unpacked both.  Note that when an Any object packs a non-Any
     // proto object whose field includes Any, then unpacked_any=1. Thus, in most
     // practical applications, unpacked_any will be 0 or 1.
     virtual bool IsMatch(const Message& message1, const Message& message2,

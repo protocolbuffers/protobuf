@@ -330,6 +330,7 @@ set_property(CACHE protobuf_ABSL_PROVIDER PROPERTY STRINGS "module" "package")
 include(${protobuf_SOURCE_DIR}/cmake/abseil-cpp.cmake)
 
 if (protobuf_BUILD_PROTOBUF_BINARIES)
+  include(${protobuf_SOURCE_DIR}/cmake/utf8_range.cmake)
   include(${protobuf_SOURCE_DIR}/cmake/libprotobuf-lite.cmake)
   if (NOT DEFINED protobuf_LIB_PROTOBUF_LITE)
     set(protobuf_LIB_PROTOBUF_LITE libprotobuf-lite)

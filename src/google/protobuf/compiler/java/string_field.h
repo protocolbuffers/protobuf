@@ -91,7 +91,7 @@ class ImmutableStringFieldGenerator : public ImmutableFieldGenerator {
 
  protected:
   const FieldDescriptor* descriptor_;
-  std::map<std::string, std::string> variables_;
+  absl::flat_hash_map<std::string, std::string> variables_;
   ClassNameResolver* name_resolver_;
 };
 
@@ -152,7 +152,7 @@ class RepeatedImmutableStringFieldGenerator : public ImmutableFieldGenerator {
 
  private:
   const FieldDescriptor* descriptor_;
-  std::map<std::string, std::string> variables_;
+  absl::flat_hash_map<std::string, std::string> variables_;
   ClassNameResolver* name_resolver_;
 };
 

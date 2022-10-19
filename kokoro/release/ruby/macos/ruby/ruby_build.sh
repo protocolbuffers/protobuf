@@ -6,6 +6,9 @@ set -ex
 bazel build //:protoc
 export PROTOC=$PWD/bazel-bin/protoc
 
+# Pull in dependencies.
+git submodule update --init --recursive
+
 umask 0022
 pushd ruby
 bundle update && bundle exec rake gem:native

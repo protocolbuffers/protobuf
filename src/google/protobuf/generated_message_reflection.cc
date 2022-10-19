@@ -3030,18 +3030,26 @@ static internal::TailCallParseFunc GetFastParseFunction(
           {"::_pbi::TcParser::FastErS2", internal::TcParser::FastErS2},
           {"::_pbi::TcParser::FastErR1", internal::TcParser::FastErR1},
           {"::_pbi::TcParser::FastErR2", internal::TcParser::FastErR2},
+          {"::_pbi::TcParser::FastErP1", internal::TcParser::FastErP1},
+          {"::_pbi::TcParser::FastErP2", internal::TcParser::FastErP2},
           {"::_pbi::TcParser::FastEr0S1", internal::TcParser::FastEr0S1},
           {"::_pbi::TcParser::FastEr0S2", internal::TcParser::FastEr0S2},
           {"::_pbi::TcParser::FastEr0R1", internal::TcParser::FastEr0R1},
           {"::_pbi::TcParser::FastEr0R2", internal::TcParser::FastEr0R2},
+          {"::_pbi::TcParser::FastEr0P1", internal::TcParser::FastEr0P1},
+          {"::_pbi::TcParser::FastEr0P2", internal::TcParser::FastEr0P2},
           {"::_pbi::TcParser::FastEr1S1", internal::TcParser::FastEr1S1},
           {"::_pbi::TcParser::FastEr1S2", internal::TcParser::FastEr1S2},
           {"::_pbi::TcParser::FastEr1R1", internal::TcParser::FastEr1R1},
           {"::_pbi::TcParser::FastEr1R2", internal::TcParser::FastEr1R2},
+          {"::_pbi::TcParser::FastEr1P1", internal::TcParser::FastEr1P1},
+          {"::_pbi::TcParser::FastEr1P2", internal::TcParser::FastEr1P2},
           {"::_pbi::TcParser::FastEvS1", internal::TcParser::FastEvS1},
           {"::_pbi::TcParser::FastEvS2", internal::TcParser::FastEvS2},
           {"::_pbi::TcParser::FastEvR1", internal::TcParser::FastEvR1},
           {"::_pbi::TcParser::FastEvR2", internal::TcParser::FastEvR2},
+          {"::_pbi::TcParser::FastEvP1", internal::TcParser::FastEvP1},
+          {"::_pbi::TcParser::FastEvP2", internal::TcParser::FastEvP2},
           {"::_pbi::TcParser::FastBS1", internal::TcParser::FastBS1},
           {"::_pbi::TcParser::FastBS2", internal::TcParser::FastBS2},
           {"::_pbi::TcParser::FastBR1", internal::TcParser::FastBR1},
@@ -3060,6 +3068,12 @@ static internal::TailCallParseFunc GetFastParseFunction(
           {"::_pbi::TcParser::FastSiS2", internal::TcParser::FastSiS2},
           {"::_pbi::TcParser::FastUiS1", internal::TcParser::FastUiS1},
           {"::_pbi::TcParser::FastUiS2", internal::TcParser::FastUiS2},
+          {"::_pbi::TcParser::FastBcS1", internal::TcParser::FastBcS1},
+          {"::_pbi::TcParser::FastBcS2", internal::TcParser::FastBcS2},
+          {"::_pbi::TcParser::FastScS1", internal::TcParser::FastScS1},
+          {"::_pbi::TcParser::FastScS2", internal::TcParser::FastScS2},
+          {"::_pbi::TcParser::FastUcS1", internal::TcParser::FastUcS1},
+          {"::_pbi::TcParser::FastUcS2", internal::TcParser::FastUcS2},
           {"::_pbi::TcParser::FastMdS1", internal::TcParser::FastMdS1},
           {"::_pbi::TcParser::FastMdS2", internal::TcParser::FastMdS2},
           {"::_pbi::TcParser::FastGdS1", internal::TcParser::FastGdS1},
@@ -3320,8 +3334,10 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   PopulateTcParseFieldAux(table_info, res->field_aux(0u));
 
   // Copy the name data.
-  memcpy(res->name_data(), table_info.field_name_data.data(),
-         table_info.field_name_data.size());
+  if (!table_info.field_name_data.empty()) {
+    memcpy(res->name_data(), table_info.field_name_data.data(),
+           table_info.field_name_data.size());
+  }
   // Validation to make sure we used all the bytes correctly.
   GOOGLE_CHECK_EQ(res->name_data() + table_info.field_name_data.size() -
                reinterpret_cast<char*>(res),

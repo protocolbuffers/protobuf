@@ -75,20 +75,20 @@ namespace {
 // convert it into some form of proto.
 //
 // This semantic layer is duplicated: proto2-ish code can deserialize directly
-// into a message, wheras proto3-ish code deserializes into a byte stream, using
-// TypeResolvers instead of Descriptors.
+// into a message, whereas proto3-ish code deserializes into a byte stream,
+// using TypeResolvers instead of Descriptors.
 //
 // The parsing code is templated over which of these two reflection + output
 // combinations is used. The traits types that collect the per-instantiation
 // functionality can be found in json_util2_parser_traits-inl.h.
 
-// This table maps an unsigned `char` value, intepreted as an ASCII character,
+// This table maps an unsigned `char` value, interpreted as an ASCII character,
 // to a corresponding value in the base64 alphabet (both traditional and
 // "web-safe" characters are included).
 //
 // If a character is not valid base64, it maps to -1; this is used by the bit
 // operations that assemble a base64-encoded word to determine if an error
-// occured, by checking the sign bit.
+// occurred, by checking the sign bit.
 constexpr signed char kBase64Table[256] = {
     -1,       -1,       -1,       -1,       -1,       -1,        -1,
     -1,       -1,       -1,       -1,       -1,       -1,        -1,
@@ -226,7 +226,7 @@ absl::StatusOr<LocationWith<T>> ParseIntInner(JsonLexer& lex, double lo,
       absl::StatusOr<LocationWith<MaybeOwnedString>> str = lex.ParseUtf8();
       RETURN_IF_ERROR(str.status());
       // SimpleAtoi will ignore leading and trailing whitespace, so we need
-      // to check for it outselves.
+      // to check for it ourselves.
       for (char c : str->value.AsView()) {
         if (absl::ascii_isspace(c)) {
           return lex.Invalid("non-number characters in quoted number");
@@ -1209,7 +1209,7 @@ absl::Status ParseField(JsonLexer& lex, const Desc<Traits>& desc,
 
   if (Traits::IsRepeated(*field)) {
     if (lex.options().allow_legacy_syntax && !lex.Peek(JsonLexer::kArr)) {
-      // The original ESF parser premits a single element in place of an array
+      // The original ESF parser permits a single element in place of an array
       // thereof.
       return ParseSingular<Traits>(lex, *field, msg);
     }

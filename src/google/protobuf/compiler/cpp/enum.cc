@@ -97,7 +97,7 @@ EnumGenerator::ValueLimits EnumGenerator::ValueLimits::FromEnum(
     }
   }
 
-  return {min_desc, max_desc};
+  return EnumGenerator::ValueLimits{min_desc, max_desc};
 }
 
 EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
@@ -165,9 +165,9 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
                                     p->LookupVar("Msg_Enum_"))}},
                      R"cc(
                        $Msg_Enum_Msg_Enum_$INT_MIN_SENTINEL_DO_NOT_USE_ =
-                           std::numeric_limits<int32_t>::min(),
+                           std::numeric_limits<::int32_t>::min(),
                        $Msg_Enum_Msg_Enum_$INT_MAX_SENTINEL_DO_NOT_USE_ =
-                           std::numeric_limits<int32_t>::max(),
+                           std::numeric_limits<::int32_t>::max(),
                      )cc");
            }},
       },
@@ -289,9 +289,12 @@ void EnumGenerator::GenerateGetEnumDescriptorSpecializations(io::Printer* p) {
 void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
   auto v = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
 
-  p->Emit(R"cc(
-    using $Enum_$ = $Msg_Enum$;
-  )cc");
+  {
+    auto a = p->WithVars({{"Enum_annotated", p->LookupVar("Enum_"), enum_}});
+    p->Emit(R"cc(
+      using $Enum_annotated$ = $Msg_Enum$;
+    )cc");
+  }
 
   for (int j = 0; j < enum_->value_count(); ++j) {
     const auto* value = enum_->value(j);

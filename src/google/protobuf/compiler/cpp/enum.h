@@ -82,8 +82,8 @@ class EnumGenerator {
   friend class FileGenerator;
 
   struct ValueLimits {
-    const EnumValueDescriptor* min = nullptr;
-    const EnumValueDescriptor* max = nullptr;
+    const EnumValueDescriptor* min;
+    const EnumValueDescriptor* max;
 
     static ValueLimits FromEnum(const EnumDescriptor* descriptor);
   };

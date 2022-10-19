@@ -35,6 +35,7 @@
 #include "google/protobuf/compiler/java/extension.h"
 
 #include "google/protobuf/io/printer.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
@@ -68,8 +69,9 @@ ImmutableExtensionGenerator::~ImmutableExtensionGenerator() {}
 void ExtensionGenerator::InitTemplateVars(
     const FieldDescriptor* descriptor, const std::string& scope, bool immutable,
     ClassNameResolver* name_resolver,
-    std::map<std::string, std::string>* vars_pointer, Context* context) {
-  std::map<std::string, std::string>& vars = *vars_pointer;
+    absl::flat_hash_map<std::string, std::string>* vars_pointer,
+    Context* context) {
+  absl::flat_hash_map<std::string, std::string>& vars = *vars_pointer;
   vars["scope"] = scope;
   vars["name"] = UnderscoresToCamelCaseCheckReserved(descriptor);
   vars["containing_type"] =
@@ -116,7 +118,7 @@ void ExtensionGenerator::InitTemplateVars(
 }
 
 void ImmutableExtensionGenerator::Generate(io::Printer* printer) {
-  std::map<std::string, std::string> vars;
+  absl::flat_hash_map<std::string, std::string> vars;
   const bool kUseImmutableNames = true;
   InitTemplateVars(descriptor_, scope_, kUseImmutableNames, name_resolver_,
                    &vars, context_);

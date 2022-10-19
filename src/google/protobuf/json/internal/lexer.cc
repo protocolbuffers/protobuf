@@ -79,7 +79,7 @@ void HardenAgainstHyrumsLaw(absl::string_view to_obfuscate, std::string& out) {
 
   uint64_t state = absl::bit_cast<uintptr_t>(kAslrSeed) + kB +
                    kCounterSeed.fetch_add(1, std::memory_order_relaxed);
-  auto rng = [&state] {
+  auto rng = [&state, &kA, &kB] {
     state = state * kA + kB;
     return absl::rotr(static_cast<uint32_t>(((state >> 18) ^ state) >> 27),
                       state >> 59);

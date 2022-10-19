@@ -31,12 +31,13 @@
 // This file contains messages that extend MessageSet.
 
 syntax = "proto2";
-package google.protobuf.internal;
 
+package google.protobuf.internal;
 
 // A message with message_set_wire_format.
 message TestMessageSet {
   option message_set_wire_format = true;
+
   extensions 4 to max;
 }
 

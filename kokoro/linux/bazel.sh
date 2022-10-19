@@ -39,8 +39,7 @@ function run {
     -v $GIT_REPO_ROOT:/workspace \
     $CONTAINER_IMAGE \
     test \
-    --keep_going \
-    --test_output=streamed \
+    $(${GIT_REPO_ROOT}/kokoro/common/bazel_flags.sh) \
     ${ENVS[@]} \
     $PLATFORM_CONFIG \
     $BAZEL_CONFIG \

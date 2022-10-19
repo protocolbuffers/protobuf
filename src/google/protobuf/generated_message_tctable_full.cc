@@ -58,6 +58,10 @@ const char* TcParser::ReflectionFallback(PROTOBUF_TC_PARAM_DECL) {
     return ptr;
   }
 
+  if (MustFallbackToGeneric(PROTOBUF_TC_PARAM_PASS)) {
+    PROTOBUF_MUSTTAIL return GenericFallback(PROTOBUF_TC_PARAM_PASS);
+  }
+
   auto* full_msg = DownCast<Message*>(msg);
   auto* descriptor = full_msg->GetDescriptor();
   auto* reflection = full_msg->GetReflection();

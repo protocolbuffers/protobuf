@@ -67,6 +67,20 @@
   Compiler
   * Print full path name of source .proto file on error
 
+2022-10-18 version 21.8 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+  Other
+  * Fix for grpc.tools #17995 & protobuf #7474 (handle UTF-8 paths in argumentfile) (#10721)
+
+  C++
+  * 21.x No longer define no_threadlocal on OpenBSD (#10743)
+
+  Java
+  * Mark default instance as immutable first to avoid race during static initialization of default instances (#10771)
+
+  Ruby
+  * Auto capitalize enums name in Ruby (#10454) (#10763)
+
 2022-09-29 version 21.7 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
   Java
   * Refactoring java full runtime to reuse sub-message builders and prepare to

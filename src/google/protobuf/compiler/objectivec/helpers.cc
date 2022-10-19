@@ -30,15 +30,17 @@
 
 #include "google/protobuf/compiler/objectivec/helpers.h"
 
+#include <string>
+#include <vector>
+
 #include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/compiler/objectivec/names.h"
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
-#include "absl/strings/str_split.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_replace.h"
+#include "absl/strings/str_split.h"
+#include "google/protobuf/compiler/objectivec/names.h"
+#include "google/protobuf/io/strtod.h"
 #include "google/protobuf/stubs/common.h"
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
@@ -92,9 +94,9 @@ std::string HandleExtremeFloatingPoint(std::string val, bool add_float_suffix) {
     return "-INFINITY";
   } else {
     // float strings with ., e or E need to have f appended
-    if (add_float_suffix && (val.find('.') != std::string::npos ||
-                             val.find('e') != std::string::npos ||
-                             val.find('E') != std::string::npos)) {
+    if (add_float_suffix &&
+        (absl::StrContains(val, '.') || absl::StrContains(val, 'e') ||
+         absl::StrContains(val, 'E'))) {
       val += "f";
     }
     return val;
@@ -264,10 +266,10 @@ std::string DefaultValue(const FieldDescriptor* field) {
       return absl::StrCat(field->default_value_uint64()) + "ULL";
     case FieldDescriptor::CPPTYPE_DOUBLE:
       return HandleExtremeFloatingPoint(
-          SimpleDtoa(field->default_value_double()), false);
+          io::SimpleDtoa(field->default_value_double()), false);
     case FieldDescriptor::CPPTYPE_FLOAT:
       return HandleExtremeFloatingPoint(
-          SimpleFtoa(field->default_value_float()), true);
+          io::SimpleFtoa(field->default_value_float()), true);
     case FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool() ? "YES" : "NO";
     case FieldDescriptor::CPPTYPE_STRING: {
@@ -340,7 +342,7 @@ std::string BuildCommentsString(const SourceLocation& location,
                                     ? location.trailing_comments
                                     : location.leading_comments;
   std::vector<std::string> lines;
-  lines = absl::StrSplit(comments, "\n", absl::AllowEmpty());
+  lines = absl::StrSplit(comments, '\n', absl::AllowEmpty());
   while (!lines.empty() && lines.back().empty()) {
     lines.pop_back();
   }

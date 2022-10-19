@@ -32,8 +32,8 @@ package com.google.protobuf.kotlin
 
 /**
  * Opt-in annotation to make it difficult to accidentally use APIs only intended for use by proto
- * generated code.  See https://kotlinlang.org/docs/reference/opt-in-requirements.html for details
- * on how this API works.
+ * generated code. See https://kotlinlang.org/docs/reference/opt-in-requirements.html for details on
+ * how this API works.
  */
 @RequiresOptIn(
   message =

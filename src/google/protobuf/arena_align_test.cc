@@ -68,7 +68,7 @@ TEST(ArenaAlignDefault, Ceil) {
 }
 
 TEST(ArenaAlignDefault, CeilPtr) {
-  char p[17] = {0};
+  alignas(8) char p[17] = {0};
   auto align_default = ArenaAlignDefault();
   EXPECT_THAT(align_default.Ceil(p + 0), Eq(p + 0));
   EXPECT_THAT(align_default.Ceil(p + 1), Eq(p + 8));
@@ -80,7 +80,7 @@ TEST(ArenaAlignDefault, CeilPtr) {
 }
 
 TEST(ArenaAlignDefault, CheckAligned) {
-  char p[17] = {0};
+  alignas(8) char p[17] = {0};
   auto align_default = ArenaAlignDefault();
   EXPECT_THAT(align_default.CheckAligned(p + 0), Eq(p + 0));
   EXPECT_THAT(align_default.CheckAligned(p + 8), Eq(p + 8));
@@ -95,7 +95,7 @@ TEST(ArenaAlignDefault, CheckAligned) {
 }
 
 TEST(ArenaAlignDefault, CeilDefaultAligned) {
-  char p[17] = {0};
+  alignas(8) char p[17] = {0};
   auto align_default = ArenaAlignDefault();
   EXPECT_THAT(align_default.CeilDefaultAligned(p + 0), Eq(p + 0));
   EXPECT_THAT(align_default.CeilDefaultAligned(p + 8), Eq(p + 8));

@@ -42,7 +42,9 @@
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_join.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/helpers.h"
@@ -68,13 +70,13 @@ bool EnableExperimentalRuntimeForLite() {
 void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
                       int builderBitIndex, const FieldGeneratorInfo* info,
                       ClassNameResolver* name_resolver,
-                      std::map<std::string, std::string>* variables,
+                      absl::flat_hash_map<std::string, std::string>* variables,
                       Context* context) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["type"] =
       name_resolver->GetImmutableClassName(descriptor->enum_type());
-  (*variables)["kt_type"] = EscapeKotlinKeywords((*variables)["type"]);
+  variables->emplace("kt_type", EscapeKotlinKeywords((*variables)["type"]));
   (*variables)["mutable_type"] =
       name_resolver->GetMutableClassName(descriptor->enum_type());
   (*variables)["default"] =
@@ -89,11 +91,12 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   // by the proto compiler
   (*variables)["deprecation"] =
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
-  (*variables)["kt_deprecation"] =
+  variables->emplace(
+      "kt_deprecation",
       descriptor->options().deprecated()
-          ? "@kotlin.Deprecated(message = \"Field " + (*variables)["name"] +
-                " is deprecated\") "
-          : "";
+          ? absl::StrCat("@kotlin.Deprecated(message = \"Field ",
+                         (*variables)["name"], " is deprecated\") ")
+          : "");
   (*variables)["required"] = descriptor->is_required() ? "true" : "false";
 
   if (HasHasbit(descriptor)) {
@@ -117,9 +120,9 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
     (*variables)["set_has_field_bit_message"] = "";
     (*variables)["clear_has_field_bit_message"] = "";
 
-    (*variables)["is_field_present_message"] =
-        (*variables)["name"] + "_ != " + (*variables)["default"] +
-        ".getNumber()";
+    variables->emplace("is_field_present_message",
+                       absl::StrCat((*variables)["name"], "_ != ",
+                                    (*variables)["default"], ".getNumber()"));
   }
 
   (*variables)["get_has_field_bit_from_local"] =
@@ -128,9 +131,10 @@ void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
       GenerateSetBitToLocal(messageBitIndex);
 
   if (SupportUnknownEnumValue(descriptor->file())) {
-    (*variables)["unknown"] = (*variables)["type"] + ".UNRECOGNIZED";
+    variables->emplace("unknown",
+                       absl::StrCat((*variables)["type"], ".UNRECOGNIZED"));
   } else {
-    (*variables)["unknown"] = (*variables)["default"];
+    variables->emplace("unknown", (*variables)["default"]);
   }
 
   // We use `x.getClass()` as a null check because it generates less bytecode

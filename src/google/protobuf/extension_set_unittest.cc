@@ -54,7 +54,6 @@
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 
-#include "google/protobuf/stubs/strutil.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

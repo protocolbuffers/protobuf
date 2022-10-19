@@ -99,7 +99,6 @@ typedef GPB_ENUM(GPBAny_FieldNumber) {
  * in the type URL, for example "foo.bar.com/x/y.z" will yield type
  * name "y.z".
  *
- *
  * JSON
  *
  * The JSON representation of an `Any` value uses the regular

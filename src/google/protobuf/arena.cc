@@ -56,14 +56,26 @@ namespace protobuf {
 namespace internal {
 namespace {
 
+#if defined(__GNUC__) && __GNUC__ >= 5
 // kSentryArenaBlock is used for arenas which can be referenced pre-main. So,
 // constexpr is required.
-constexpr ArenaBlock kSentryArenaBlock = {};
+constexpr ArenaBlock kSentryArenaBlock;
 
 ArenaBlock* SentryArenaBlock() {
   // const_cast<> is okay as kSentryArenaBlock will never be mutated.
   return const_cast<ArenaBlock*>(&kSentryArenaBlock);
 }
+#else
+// TODO(b/248322260) Remove this once we're not using GCC 4.9 for tests.
+// There is a compiler bug in this version that causes the above constexpr to
+// fail.  This version is no longer in our support window, but we use it in
+// some of our aarch64 docker images.
+ArenaBlock* SentryArenaBlock() {
+  static const ArenaBlock kSentryArenaBlock;
+  // const_cast<> is okay as kSentryArenaBlock will never be mutated.
+  return const_cast<ArenaBlock*>(&kSentryArenaBlock);
+}
+#endif
 
 }  // namespace
 

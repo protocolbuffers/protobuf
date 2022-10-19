@@ -30,20 +30,20 @@
 
 #include "google/protobuf/compiler/cpp/map_field.h"
 
-#include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
-
-#include "google/protobuf/stubs/strutil.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-void SetMessageVariables(const FieldDescriptor* descriptor,
-                         std::map<std::string, std::string>* variables,
-                         const Options& options) {
+void SetMessageVariables(
+    const FieldDescriptor* descriptor,
+    absl::flat_hash_map<std::string, std::string>* variables,
+    const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = ClassName(descriptor->message_type(), false);
   (*variables)["full_name"] = descriptor->full_name();

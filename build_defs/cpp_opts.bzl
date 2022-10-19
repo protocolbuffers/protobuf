@@ -14,16 +14,16 @@ COPTS = select({
         "/wd4506",  # no definition for inline function 'function'
         "/wd4800",  # 'type' : forcing value to bool 'true' or 'false' (performance warning)
         "/wd4996",  # The compiler encountered a deprecated declaration.
+        "/std:c++14",  # Use C++14
     ],
     "//conditions:default": [
         "-DHAVE_ZLIB",
         "-Woverloaded-virtual",
         "-Wno-sign-compare",
         "-Werror",
+        "-std=c++14",  # Protobuf requires C++14.
     ],
-}) + [
-    "-std=c++14",  # Protobuf requires C++14.
-]
+})
 
 # Android and MSVC builds do not need to link in a separate pthread library.
 LINK_OPTS = select({

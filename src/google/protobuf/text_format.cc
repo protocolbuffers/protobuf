@@ -50,7 +50,6 @@
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/numbers.h"
@@ -591,6 +590,11 @@ class TextFormat::Parser::ParserImpl {
       return SkipFieldMessage();
     }
 
+    if (field->options().deprecated()) {
+      ReportWarning("text format contains deprecated field \"" + field_name +
+                    "\"");
+    }
+
     if (singular_overwrite_policy_ == FORBID_SINGULAR_OVERWRITES) {
       // Fail if the field is not repeated and it has already been specified.
       if (!field->is_repeated() && reflection->HasField(*message, field)) {
@@ -665,11 +669,6 @@ class TextFormat::Parser::ParserImpl {
     // For historical reasons, fields may optionally be separated by commas or
     // semicolons.
     TryConsume(";") || TryConsume(",");
-
-    if (field->options().deprecated()) {
-      ReportWarning("text format contains deprecated field \"" + field_name +
-                    "\"");
-    }
 
     // If a parse info tree exists, add the location for the parsed
     // field.
@@ -1866,11 +1865,11 @@ void TextFormat::FastFieldValuePrinter::PrintUInt64(
 }
 void TextFormat::FastFieldValuePrinter::PrintFloat(
     float val, BaseTextGenerator* generator) const {
-  generator->PrintString(!std::isnan(val) ? SimpleFtoa(val) : "nan");
+  generator->PrintString(!std::isnan(val) ? io::SimpleFtoa(val) : "nan");
 }
 void TextFormat::FastFieldValuePrinter::PrintDouble(
     double val, BaseTextGenerator* generator) const {
-  generator->PrintString(!std::isnan(val) ? SimpleDtoa(val) : "nan");
+  generator->PrintString(!std::isnan(val) ? io::SimpleDtoa(val) : "nan");
 }
 void TextFormat::FastFieldValuePrinter::PrintEnum(
     int32_t /*val*/, const std::string& name,
@@ -2121,6 +2120,13 @@ bool TextFormat::Printer::PrintUnknownFieldsToString(
 bool TextFormat::Printer::Print(const Message& message,
                                 io::ZeroCopyOutputStream* output) const {
   TextGenerator generator(output, insert_silent_marker_, initial_indent_level_);
+
+#ifndef PROTO2_OPENSOURCE
+#ifdef SUPPORT_EXPLICIT_DEBUG_STRING
+  internal::PrintTextMarker(&generator, redact_debug_string_,
+                            randomize_debug_string_, single_line_mode_);
+#endif
+#endif
 
   Print(message, &generator);
 

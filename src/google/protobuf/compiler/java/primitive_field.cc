@@ -57,54 +57,55 @@ using internal::WireFormat;
 
 namespace {
 
-void SetPrimitiveVariables(const FieldDescriptor* descriptor,
-                           int messageBitIndex, int builderBitIndex,
-                           const FieldGeneratorInfo* info,
-                           ClassNameResolver* name_resolver,
-                           std::map<std::string, std::string>* variables,
-                           Context* context) {
+void SetPrimitiveVariables(
+    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
+    const FieldGeneratorInfo* info, ClassNameResolver* name_resolver,
+    absl::flat_hash_map<std::string, std::string>* variables,
+    Context* context) {
   SetCommonFieldVariables(descriptor, info, variables);
   JavaType javaType = GetJavaType(descriptor);
 
   (*variables)["type"] = PrimitiveTypeName(javaType);
   (*variables)["boxed_type"] = BoxedPrimitiveTypeName(javaType);
   (*variables)["kt_type"] = KotlinTypeName(javaType);
-  (*variables)["field_type"] = (*variables)["type"];
+  variables->emplace("field_type", (*variables)["type"]);
 
+  std::string name = (*variables)["name"];
   if (javaType == JAVATYPE_BOOLEAN || javaType == JAVATYPE_DOUBLE ||
       javaType == JAVATYPE_FLOAT || javaType == JAVATYPE_INT ||
       javaType == JAVATYPE_LONG) {
     std::string capitalized_type = UnderscoresToCamelCase(
         PrimitiveTypeName(javaType), /*cap_first_letter=*/true);
     (*variables)["field_list_type"] =
-        "com.google.protobuf.Internal." + capitalized_type + "List";
-    (*variables)["empty_list"] = "empty" + capitalized_type + "List()";
-    (*variables)["create_list"] = "new" + capitalized_type + "List()";
-    (*variables)["mutable_copy_list"] =
-        "mutableCopy(" + (*variables)["name"] + "_)";
-    (*variables)["name_make_immutable"] =
-        (*variables)["name"] + "_.makeImmutable()";
-    (*variables)["repeated_get"] =
-        (*variables)["name"] + "_.get" + capitalized_type;
-    (*variables)["repeated_add"] =
-        (*variables)["name"] + "_.add" + capitalized_type;
-    (*variables)["repeated_set"] =
-        (*variables)["name"] + "_.set" + capitalized_type;
-  } else {
-    (*variables)["field_list_type"] =
-        "java.util.List<" + (*variables)["boxed_type"] + ">";
+        absl::StrCat("com.google.protobuf.Internal.", capitalized_type, "List");
+    (*variables)["empty_list"] =
+        absl::StrCat("empty", capitalized_type, "List()");
     (*variables)["create_list"] =
-        "new java.util.ArrayList<" + (*variables)["boxed_type"] + ">()";
-    (*variables)["mutable_copy_list"] = "new java.util.ArrayList<" +
-                                        (*variables)["boxed_type"] + ">(" +
-                                        (*variables)["name"] + "_)";
-    (*variables)["empty_list"] = "java.util.Collections.emptyList()";
+        absl::StrCat("new", capitalized_type, "List()");
+    (*variables)["mutable_copy_list"] =
+        absl::StrCat("mutableCopy(", name, "_)");
     (*variables)["name_make_immutable"] =
-        (*variables)["name"] + "_ = java.util.Collections.unmodifiableList(" +
-        (*variables)["name"] + "_)";
-    (*variables)["repeated_get"] = (*variables)["name"] + "_.get";
-    (*variables)["repeated_add"] = (*variables)["name"] + "_.add";
-    (*variables)["repeated_set"] = (*variables)["name"] + "_.set";
+        absl::StrCat(name, "_.makeImmutable()");
+    (*variables)["repeated_get"] =
+        absl::StrCat(name, "_.get", capitalized_type);
+    (*variables)["repeated_add"] =
+        absl::StrCat(name, "_.add", capitalized_type);
+    (*variables)["repeated_set"] =
+        absl::StrCat(name, "_.set", capitalized_type);
+  } else {
+    std::string boxed_type = (*variables)["boxed_type"];
+    (*variables)["field_list_type"] =
+        absl::StrCat("java.util.List<", boxed_type, ">");
+    (*variables)["create_list"] =
+        absl::StrCat("new java.util.ArrayList<", boxed_type, ">()");
+    (*variables)["mutable_copy_list"] =
+        absl::StrCat("new java.util.ArrayList<", boxed_type, ">(", name, "_)");
+    (*variables)["empty_list"] = "java.util.Collections.emptyList()";
+    (*variables)["name_make_immutable"] = absl::StrCat(
+        name, "_ = java.util.Collections.unmodifiableList(", name, "_)");
+    (*variables)["repeated_get"] = absl::StrCat(name, "_.get");
+    (*variables)["repeated_add"] = absl::StrCat(name, "_.add");
+    (*variables)["repeated_set"] = absl::StrCat(name, "_.set");
   }
 
   (*variables)["default"] =
@@ -134,8 +135,8 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
   (*variables)["kt_deprecation"] =
       descriptor->options().deprecated()
-          ? "@kotlin.Deprecated(message = \"Field " + (*variables)["name"] +
-                " is deprecated\") "
+          ? absl::StrCat("@kotlin.Deprecated(message = \"Field ", name,
+                         " is deprecated\") ")
           : "";
   int fixed_size = FixedSize(GetType(descriptor));
   if (fixed_size != -1) {
@@ -165,21 +166,20 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
     switch (descriptor->type()) {
       case FieldDescriptor::TYPE_BYTES:
         (*variables)["is_field_present_message"] =
-            "!" + (*variables)["name"] + "_.isEmpty()";
+            absl::StrCat("!", name, "_.isEmpty()");
         break;
       case FieldDescriptor::TYPE_FLOAT:
         (*variables)["is_field_present_message"] =
-            "java.lang.Float.floatToRawIntBits(" + (*variables)["name"] +
-            "_) != 0";
+            absl::StrCat("java.lang.Float.floatToRawIntBits(", name, "_) != 0");
         break;
       case FieldDescriptor::TYPE_DOUBLE:
-        (*variables)["is_field_present_message"] =
-            "java.lang.Double.doubleToRawLongBits(" + (*variables)["name"] +
-            "_) != 0";
+        (*variables)["is_field_present_message"] = absl::StrCat(
+            "java.lang.Double.doubleToRawLongBits(", name, "_) != 0");
         break;
       default:
-        (*variables)["is_field_present_message"] =
-            (*variables)["name"] + "_ != " + (*variables)["default"];
+        variables->emplace(
+            "is_field_present_message",
+            absl::StrCat(name, "_ != ", (*variables)["default"]));
         break;
     }
   }

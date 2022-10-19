@@ -42,6 +42,7 @@
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
@@ -61,7 +62,7 @@ namespace {
 void SetEnumVariables(const FieldDescriptor* descriptor, int messageBitIndex,
                       int builderBitIndex, const FieldGeneratorInfo* info,
                       ClassNameResolver* name_resolver,
-                      std::map<std::string, std::string>* variables,
+                      absl::flat_hash_map<std::string, std::string>* variables,
                       Context* context) {
   SetCommonFieldVariables(descriptor, info, variables);
 

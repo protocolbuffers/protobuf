@@ -39,8 +39,6 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -53,7 +51,6 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/cpp/enum.h"
@@ -65,8 +62,6 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
-
-#include "google/protobuf/stubs/strutil.h"  // for StringReplace.
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -379,7 +374,7 @@ void FileGenerator::GeneratePBHeader(io::Printer* p,
 
 void FileGenerator::DoIncludeFile(absl::string_view google3_name,
                                   bool do_export, io::Printer* p) {
-  absl::string_view prefix = "net/proto2/";
+  constexpr absl::string_view prefix = "net/proto2/";
   GOOGLE_CHECK(absl::StartsWith(google3_name, prefix)) << google3_name;
 
   auto v = p->WithVars(
@@ -387,18 +382,24 @@ void FileGenerator::DoIncludeFile(absl::string_view google3_name,
 
   if (options_.opensource_runtime) {
     absl::ConsumePrefix(&google3_name, prefix);
-    std::string path(google3_name);
+    absl::ConsumePrefix(&google3_name, "internal/");
+    absl::ConsumePrefix(&google3_name, "proto/");
+    absl::ConsumePrefix(&google3_name, "public/");
 
-    path = StringReplace(path, "internal/", "", false);
-    path = StringReplace(path, "proto/", "", false);
-    path = StringReplace(path, "public/", "", false);
+    std::string path;
+    if (absl::ConsumePrefix(&google3_name, "io/public/")) {
+      path = absl::StrCat("io/", google3_name);
+    } else {
+      path = std::string(google3_name);
+    }
 
     if (options_.runtime_include_base.empty()) {
       p->Emit({{"path", path}}, R"(
         #include "google/protobuf/$path$"$  export_suffix$
       )");
     } else {
-      p->Emit({{"base", options_.runtime_include_base}, {"path", path}}, R"(
+      p->Emit({{"base", options_.runtime_include_base}, {"path", path}},
+              R"(
         #include "$base$google/protobuf/$path$"$  export_suffix$
       )");
     }
@@ -407,8 +408,10 @@ void FileGenerator::DoIncludeFile(absl::string_view google3_name,
     // The bootstrapped proto generated code needs to use the
     // third_party/protobuf header paths to avoid circular dependencies.
     if (options_.bootstrap) {
-      path = StringReplace(path, "net/proto2/public", "third_party/protobuf",
-                           false);
+      constexpr absl::string_view bootstrap_prefix = "net/proto2/public";
+      if (absl::ConsumePrefix(&google3_name, bootstrap_prefix)) {
+        path = absl::StrCat("third_party/protobuf", google3_name);
+      }
     }
 
     p->Emit({{"path", path}}, R"(
@@ -928,7 +931,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
              }},
         },
         R"cc(
-          const uint32_t $tablename$::offsets[] PROTOBUF_SECTION_VARIABLE(
+          const ::uint32_t $tablename$::offsets[] PROTOBUF_SECTION_VARIABLE(
               protodesc_cold) = {
               $offsets$,
           };
@@ -947,7 +950,7 @@ void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
     //
     // MSVC doesn't like empty arrays, so we add a dummy.
     p->Emit(R"cc(
-      const uint32_t $tablename$::offsets[1] = {};
+      const ::uint32_t $tablename$::offsets[1] = {};
       static constexpr ::_pbi::MigrationSchema* schemas = nullptr;
       static constexpr ::_pb::Message* const* file_default_instances = nullptr;
     )cc");
@@ -1406,7 +1409,7 @@ void FileGenerator::GenerateGlobalStateFunctionDeclarations(io::Printer* p) {
   p->Emit(R"cc(
     // Internal implementation detail -- do not use these members.
     struct $dllexport_decl $$tablename$ {
-      static const uint32_t offsets[];
+      static const ::uint32_t offsets[];
     };
   )cc");
 

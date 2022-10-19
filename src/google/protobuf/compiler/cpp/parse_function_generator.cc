@@ -32,10 +32,13 @@
 
 #include <algorithm>
 #include <limits>
+#include <map>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "google/protobuf/wire_format.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
@@ -59,7 +62,7 @@ bool UseDirectTcParserTable(const FieldDescriptor* field,
   return !m->options().message_set_wire_format() &&
          m->file()->options().optimize_for() != FileOptions::CODE_SIZE &&
          !HasSimpleBaseClass(m, options) && !HasTracker(m, options)
-      ;
+      ;  // NOLINT(whitespace/semicolon)
 }
 
 std::vector<const FieldDescriptor*> GetOrderedFields(
@@ -107,7 +110,7 @@ ParseFunctionGenerator::ParseFunctionGenerator(
     const std::vector<int>& has_bit_indices,
     const std::vector<int>& inlined_string_indices, const Options& options,
     MessageSCCAnalyzer* scc_analyzer,
-    const std::map<std::string, std::string>& vars)
+    const absl::flat_hash_map<std::string, std::string>& vars)
     : descriptor_(descriptor),
       scc_analyzer_(scc_analyzer),
       options_(options),
@@ -215,6 +218,17 @@ void ParseFunctionGenerator::GenerateTailcallParseFunction(Formatter& format) {
       "}\n\n");
 }
 
+static bool NeedsUnknownEnumSupport(const Descriptor* descriptor) {
+  for (int i = 0; i < descriptor->field_count(); ++i) {
+    auto* field = descriptor->field(i);
+    if (field->is_repeated() && field->cpp_type() == field->CPPTYPE_ENUM &&
+        !internal::cpp::HasPreservingUnknownEnumSemantics(field)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void ParseFunctionGenerator::GenerateTailcallFallbackFunction(
     Formatter& format) {
   GOOGLE_CHECK(should_generate_tctable());
@@ -224,11 +238,27 @@ void ParseFunctionGenerator::GenerateTailcallFallbackFunction(
   format.Indent();
   format("auto* typed_msg = static_cast<$classname$*>(msg);\n");
 
+  // If we need a side channel, generate the check to jump to the generic
+  // handler to deal with the side channel data.
+  if (NeedsUnknownEnumSupport(descriptor_)) {
+    format(
+        "if (PROTOBUF_PREDICT_FALSE(\n"
+        "    _pbi::TcParser::MustFallbackToGeneric(PROTOBUF_TC_PARAM_PASS))) "
+        "{\n"
+        "  PROTOBUF_MUSTTAIL return "
+        "::_pbi::TcParser::GenericFallback$1$(PROTOBUF_TC_PARAM_PASS);\n"
+        "}\n",
+        GetOptimizeFor(descriptor_->file(), options_) ==
+                FileOptions::LITE_RUNTIME
+            ? "Lite"
+            : "");
+  }
+
   if (num_hasbits_ > 0) {
     // Sync hasbits
     format("typed_msg->_impl_._has_bits_[0] |= hasbits;\n");
   }
-  format("uint32_t tag = data.tag();\n");
+  format("::uint32_t tag = data.tag();\n");
 
   format.Set("msg", "typed_msg->");
   format.Set("this", "typed_msg");
@@ -343,7 +373,7 @@ void ParseFunctionGenerator::GenerateLoopingParseFunction(Formatter& format) {
   format.Indent();
 
   format(
-      "uint32_t tag;\n"
+      "::uint32_t tag;\n"
       "ptr = ::_pbi::ReadTag(ptr, &tag);\n");
   GenerateParseIterationBody(format, descriptor_, ordered_fields_);
 
@@ -645,8 +675,8 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(Formatter& format) {
             absl::EndsWith(func_name, "V64S1")) {
           std::string field_type = absl::EndsWith(func_name, "V8S1") ? "bool"
                                    : absl::EndsWith(func_name, "V32S1")
-                                       ? "uint32_t"
-                                       : "uint64_t";
+                                       ? "::uint32_t"
+                                       : "::uint64_t";
           func_name = absl::StrCat(
               "::_pbi::TcParser::SingularVarintNoZag1<", field_type,
               ", offsetof(",                                 //
@@ -1352,8 +1382,9 @@ void ParseFunctionGenerator::GenerateFieldSwitch(
       format.Outdent();
     }
     format(
-        "} else\n"
+        "} else {\n"
         "  goto handle_unusual;\n"
+        "}\n"
         "$next_tag$;\n");
     format.Outdent();
   }  // for loop over ordered fields
@@ -1382,21 +1413,21 @@ void PopulateFastFieldEntry(const Descriptor* descriptor,
         ">()");
   } else if (name == "V32S1") {
     info.func_name = absl::StrCat(
-        "::_pbi::TcParser::SingularVarintNoZag1<uint32_t, offsetof(",  //
-        ClassName(descriptor),                                         //
-        ", ",                                                          //
-        FieldMemberName(field, /*split=*/false),                       //
-        "), ",                                                         //
-        HasHasbit(field) ? entry.hasbit_idx : 63,                      //
+        "::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(",  //
+        ClassName(descriptor),                                           //
+        ", ",                                                            //
+        FieldMemberName(field, /*split=*/false),                         //
+        "), ",                                                           //
+        HasHasbit(field) ? entry.hasbit_idx : 63,                        //
         ">()");
   } else if (name == "V64S1") {
     info.func_name = absl::StrCat(
-        "::_pbi::TcParser::SingularVarintNoZag1<uint64_t, offsetof(",  //
-        ClassName(descriptor),                                         //
-        ", ",                                                          //
-        FieldMemberName(field, /*split=*/false),                       //
-        "), ",                                                         //
-        HasHasbit(field) ? entry.hasbit_idx : 63,                      //
+        "::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(",  //
+        ClassName(descriptor),                                           //
+        ", ",                                                            //
+        FieldMemberName(field, /*split=*/false),                         //
+        "), ",                                                           //
+        HasHasbit(field) ? entry.hasbit_idx : 63,                        //
         ">()");
   } else {
     info.func_name = absl::StrCat("::_pbi::TcParser::Fast", name);

@@ -31,6 +31,7 @@
 #include "google/protobuf/compiler/java/map_field.h"
 
 #include "google/protobuf/io/printer.h"
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/helpers.h"
@@ -88,10 +89,10 @@ std::string WireType(const FieldDescriptor* field) {
          std::string(FieldTypeName(field->type()));
 }
 
-void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
-                         int builderBitIndex, const FieldGeneratorInfo* info,
-                         Context* context,
-                         std::map<std::string, std::string>* variables) {
+void SetMessageVariables(
+    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
+    const FieldGeneratorInfo* info, Context* context,
+    absl::flat_hash_map<std::string, std::string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
   ClassNameResolver* name_resolver = context->GetNameResolver();
 
@@ -133,8 +134,8 @@ void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   if (valueJavaType == JAVATYPE_ENUM) {
     // We store enums as Integers internally.
     (*variables)["value_type"] = "int";
-    (*variables)["value_type_pass_through_nullness"] =
-        (*variables)["value_type"];
+    variables->emplace("value_type_pass_through_nullness",
+                       (*variables)["value_type"]);
     (*variables)["boxed_value_type"] = "java.lang.Integer";
     (*variables)["value_wire_type"] = WireType(value);
     (*variables)["value_default_value"] =
@@ -143,13 +144,15 @@ void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
 
     (*variables)["value_enum_type"] = TypeName(value, name_resolver, false);
 
-    (*variables)["value_enum_type_pass_through_nullness"] =
-        pass_through_nullness + (*variables)["value_enum_type"];
+    variables->emplace(
+        "value_enum_type_pass_through_nullness",
+        absl::StrCat(pass_through_nullness, (*variables)["value_enum_type"]));
 
     if (SupportUnknownEnumValue(descriptor->file())) {
       // Map unknown values to a special UNRECOGNIZED value if supported.
-      (*variables)["unrecognized_value"] =
-          (*variables)["value_enum_type"] + ".UNRECOGNIZED";
+      variables->emplace(
+          "unrecognized_value",
+          absl::StrCat((*variables)["value_enum_type"], ".UNRECOGNIZED"));
     } else {
       // Map unknown values to the default value if we don't have UNRECOGNIZED.
       (*variables)["unrecognized_value"] =
@@ -158,31 +161,36 @@ void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   } else {
     (*variables)["value_type"] = TypeName(value, name_resolver, false);
 
-    (*variables)["value_type_pass_through_nullness"] =
-        (IsReferenceType(valueJavaType) ? pass_through_nullness : "") +
-        (*variables)["value_type"];
+    variables->emplace(
+        "value_type_pass_through_nullness",
+        absl::StrCat(
+            (IsReferenceType(valueJavaType) ? pass_through_nullness : ""),
+            (*variables)["value_type"]));
 
     (*variables)["boxed_value_type"] = TypeName(value, name_resolver, true);
     (*variables)["value_wire_type"] = WireType(value);
     (*variables)["value_default_value"] =
         DefaultValue(value, true, name_resolver, context->options());
   }
-  (*variables)["type_parameters"] =
-      (*variables)["boxed_key_type"] + ", " + (*variables)["boxed_value_type"];
+  variables->emplace("type_parameters",
+                     absl::StrCat((*variables)["boxed_key_type"], ", ",
+                                  (*variables)["boxed_value_type"]));
   // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
   // by the proto compiler
   (*variables)["deprecation"] =
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
-  (*variables)["kt_deprecation"] =
+  variables->emplace(
+      "kt_deprecation",
       descriptor->options().deprecated()
-          ? "@kotlin.Deprecated(message = \"Field " + (*variables)["name"] +
-                " is deprecated\") "
-          : "";
+          ? absl::StrCat("@kotlin.Deprecated(message = \"Field ",
+                         (*variables)["name"], " is deprecated\") ")
+          : "");
   (*variables)["on_changed"] = "onChanged();";
 
-  (*variables)["default_entry"] =
-      (*variables)["capitalized_name"] + "DefaultEntryHolder.defaultEntry";
-  (*variables)["map_field_parameter"] = (*variables)["default_entry"];
+  variables->emplace("default_entry",
+                     absl::StrCat((*variables)["capitalized_name"],
+                                  "DefaultEntryHolder.defaultEntry"));
+  variables->emplace("map_field_parameter", (*variables)["default_entry"]);
   (*variables)["descriptor"] =
       name_resolver->GetImmutableClassName(descriptor->file()) + ".internal_" +
       UniqueFileScopeIdentifier(descriptor->message_type()) + "_descriptor, ";

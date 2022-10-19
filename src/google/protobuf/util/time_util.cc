@@ -31,8 +31,8 @@
 #include "google/protobuf/util/time_util.h"
 
 #include <cstdint>
+#include <cstdlib>
 
-#include "google/protobuf/stubs/strutil.h"
 #include "google/protobuf/duration.pb.h"
 #include "google/protobuf/timestamp.pb.h"
 #include "absl/numeric/int128.h"
@@ -268,11 +268,13 @@ bool TimeUtil::FromString(const std::string& value, Duration* duration) {
     nanos_part = value.substr(pos + 1, value.length() - pos - 2);
   }
   char* end;
-  int64_t seconds = strto64(seconds_part.c_str(), &end, 10);
+  static_assert(sizeof(int64_t) == sizeof(long long),
+                "sizeof int64_t is not sizeof long long");
+  int64_t seconds = std::strtoll(seconds_part.c_str(), &end, 10);
   if (end != seconds_part.c_str() + seconds_part.length()) {
     return false;
   }
-  int64_t nanos = strto64(nanos_part.c_str(), &end, 10);
+  int64_t nanos = std::strtoll(nanos_part.c_str(), &end, 10);
   if (end != nanos_part.c_str() + nanos_part.length()) {
     return false;
   }

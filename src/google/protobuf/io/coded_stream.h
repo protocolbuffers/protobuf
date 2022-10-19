@@ -898,25 +898,12 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   PROTOBUF_ALWAYS_INLINE static uint8_t* UnsafeVarint(T value, uint8_t* ptr) {
     static_assert(std::is_unsigned<T>::value,
                   "Varint serialization must be unsigned");
-    ptr[0] = static_cast<uint8_t>(value);
-    if (value < 0x80) {
-      return ptr + 1;
-    }
-    // Turn on continuation bit in the byte we just wrote.
-    ptr[0] |= static_cast<uint8_t>(0x80);
-    value >>= 7;
-    ptr[1] = static_cast<uint8_t>(value);
-    if (value < 0x80) {
-      return ptr + 2;
-    }
-    ptr += 2;
-    do {
-      // Turn on continuation bit in the byte we just wrote.
-      ptr[-1] |= static_cast<uint8_t>(0x80);
+    while (PROTOBUF_PREDICT_FALSE(value >= 0x80)) {
+      *ptr = static_cast<uint8_t>(value | 0x80);
       value >>= 7;
-      *ptr = static_cast<uint8_t>(value);
       ++ptr;
-    } while (value >= 0x80);
+    }
+    *ptr++ = static_cast<uint8_t>(value);
     return ptr;
   }
 
@@ -1159,10 +1146,12 @@ class PROTOBUF_EXPORT CodedOutputStream {
   void WriteVarint32(uint32_t value);
   // Like WriteVarint32()  but writing directly to the target array.
   static uint8_t* WriteVarint32ToArray(uint32_t value, uint8_t* target);
-  // Like WriteVarint32()  but writing directly to the target array, and with
-  // the less common-case paths being out of line rather than inlined.
+  // Like WriteVarint32ToArray()
+  PROTOBUF_DEPRECATED_MSG("Please use WriteVarint32ToArray() instead")
   static uint8_t* WriteVarint32ToArrayOutOfLine(uint32_t value,
-                                                uint8_t* target);
+                                                uint8_t* target) {
+    return WriteVarint32ToArray(value, target);
+  }
   // Write an unsigned integer with Varint encoding.
   void WriteVarint64(uint64_t value);
   // Like WriteVarint64()  but writing directly to the target array.
@@ -1286,9 +1275,6 @@ class PROTOBUF_EXPORT CodedOutputStream {
   static void SetDefaultSerializationDeterministic() {
     default_serialization_deterministic_.store(true, std::memory_order_relaxed);
   }
-  // REQUIRES: value >= 0x80, and that (value & 7f) has been written to *target.
-  static uint8_t* WriteVarint32ToArrayOutOfLineHelper(uint32_t value,
-                                                      uint8_t* target);
 };
 
 // inline methods ====================================================
@@ -1645,16 +1631,6 @@ inline void CodedOutputStream::InitEagerly(Stream* stream) {
 inline uint8_t* CodedOutputStream::WriteVarint32ToArray(uint32_t value,
                                                         uint8_t* target) {
   return EpsCopyOutputStream::UnsafeVarint(value, target);
-}
-
-inline uint8_t* CodedOutputStream::WriteVarint32ToArrayOutOfLine(
-    uint32_t value, uint8_t* target) {
-  target[0] = static_cast<uint8_t>(value);
-  if (value < 0x80) {
-    return target + 1;
-  } else {
-    return WriteVarint32ToArrayOutOfLineHelper(value, target);
-  }
 }
 
 inline uint8_t* CodedOutputStream::WriteVarint64ToArray(uint64_t value,
