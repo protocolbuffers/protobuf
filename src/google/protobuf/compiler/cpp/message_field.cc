@@ -35,10 +35,10 @@
 #include "google/protobuf/compiler/cpp/message_field.h"
 
 #include "google/protobuf/io/printer.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
-
-#include "google/protobuf/stubs/strutil.h"
 
 namespace google {
 namespace protobuf {
@@ -56,9 +56,10 @@ std::string ReinterpretCast(const std::string& type,
   }
 }
 
-void SetMessageVariables(const FieldDescriptor* descriptor,
-                         const Options& options, bool implicit_weak,
-                         std::map<std::string, std::string>* variables) {
+void SetMessageVariables(
+    const FieldDescriptor* descriptor, const Options& options,
+    bool implicit_weak,
+    absl::flat_hash_map<std::string, std::string>* variables) {
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = FieldMessageTypeName(descriptor, options);
   (*variables)["casted_member"] = ReinterpretCast(

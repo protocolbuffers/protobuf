@@ -35,9 +35,10 @@
 // A proto file which imports a proto file that uses optimize_for = CODE_SIZE.
 
 syntax = "proto2";
-import "google/protobuf/unittest_optimize_for.proto";
 
 package protobuf_unittest;
+
+import "google/protobuf/unittest_optimize_for.proto";
 
 // We optimize for speed here, but we are importing a proto that is optimized
 // for code size.

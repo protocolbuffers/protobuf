@@ -40,7 +40,6 @@
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
-#include <map>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -535,10 +534,10 @@ class PROTOBUF_EXPORT Printer {
   // Pushes a new variable lookup frame that stores `vars` by reference.
   //
   // Returns an RAII object that pops the lookup frame.
-  template <typename Map>
+  template <typename Map, typename StringType = absl::string_view>
   auto WithVars(const Map* vars) {
     var_lookups_.emplace_back([vars](absl::string_view var) -> LookupResult {
-      auto it = vars->find(std::string(var));
+      auto it = vars->find(StringType(var));
       if (it == vars->end()) {
         return absl::nullopt;
       }
@@ -554,11 +553,12 @@ class PROTOBUF_EXPORT Printer {
   //
   // Returns an RAII object that pops the lookup frame.
   template <typename Map = absl::flat_hash_map<std::string, std::string>,
+            typename StringType = absl::string_view,
             std::enable_if_t<!std::is_pointer<Map>::value, int> = 0>
   auto WithVars(Map&& vars) {
     var_lookups_.emplace_back([vars = std::forward<Map>(vars)](
                                   absl::string_view var) -> LookupResult {
-      auto it = vars.find(std::string(var));
+      auto it = vars.find(StringType(var));
       if (it == vars.end()) {
         return absl::nullopt;
       }
@@ -581,11 +581,11 @@ class PROTOBUF_EXPORT Printer {
   // Pushes a new annotation lookup frame that stores `vars` by reference.
   //
   // Returns an RAII object that pops the lookup frame.
-  template <typename Map>
+  template <typename Map, typename StringType = absl::string_view>
   auto WithAnnotations(const Map* vars) {
     annotation_lookups_.emplace_back(
         [vars](absl::string_view var) -> absl::optional<AnnotationRecord> {
-          auto it = vars->find(std::string(var));
+          auto it = vars->find(StringType(var));
           if (it == vars->end()) {
             return absl::nullopt;
           }
@@ -605,7 +605,7 @@ class PROTOBUF_EXPORT Printer {
     annotation_lookups_.emplace_back(
         [vars = std::forward<Map>(vars)](
             absl::string_view var) -> absl::optional<AnnotationRecord> {
-          auto it = vars.find(std::string(var));
+          auto it = vars.find(var);
           if (it == vars.end()) {
             return absl::nullopt;
           }
@@ -671,6 +671,19 @@ class PROTOBUF_EXPORT Printer {
     PrintImpl(text, {}, opts);
   }
 
+  // TODO(b/243140651) Delete this once migrating callers to containers with
+  // heterogeneous lookup.
+  void Print(const std::map<std::string, std::string>& vars,
+             absl::string_view text) {
+    PrintOptions opts;
+    opts.checks_are_debug_only = true;
+    opts.use_substitution_map = true;
+    opts.allow_digit_substitions = false;
+
+    auto pop = WithVars<std::map<std::string, std::string>, std::string>(&vars);
+    PrintImpl(text, {}, opts);
+  }
+
   template <typename... Args>
   void Print(absl::string_view text, const Args&... args) {
     static_assert(sizeof...(args) % 2 == 0, "");
@@ -678,10 +691,10 @@ class PROTOBUF_EXPORT Printer {
     // Include an extra arg, since a zero-length array is ill-formed, and
     // MSVC complains.
     absl::string_view vars[] = {args..., ""};
-    absl::flat_hash_map<std::string, std::string> map;
+    absl::flat_hash_map<absl::string_view, absl::string_view> map;
     map.reserve(sizeof...(args) / 2);
     for (size_t i = 0; i < sizeof...(args); i += 2) {
-      map.emplace(std::string(vars[i]), std::string(vars[i + 1]));
+      map.emplace(vars[i], vars[i + 1]);
     }
 
     Print(map, text);
@@ -738,7 +751,7 @@ class PROTOBUF_EXPORT Printer {
   // FormatInternal is a helper function not meant to use directly, use
   // compiler::cpp::Formatter instead.
   void FormatInternal(absl::Span<const std::string> args,
-                      const std::map<std::string, std::string>& vars,
+                      const absl::flat_hash_map<std::string, std::string>& vars,
                       absl::string_view format) {
     PrintOptions opts;
     opts.use_curly_brace_substitutions = true;

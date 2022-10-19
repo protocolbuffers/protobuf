@@ -44,11 +44,11 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
 
@@ -216,8 +216,8 @@ class PROTOC_EXPORT CommandLineInterface {
   class ErrorPrinter;
   class GeneratorContextImpl;
   class MemoryOutputStream;
-  typedef std::unordered_map<std::string, std::unique_ptr<GeneratorContextImpl>>
-      GeneratorContextMap;
+  using GeneratorContextMap =
+      absl::flat_hash_map<std::string, std::unique_ptr<GeneratorContextImpl>>;
 
   // Clear state from previous Run().
   void Clear();
@@ -367,9 +367,9 @@ class PROTOC_EXPORT CommandLineInterface {
   // flag. For example, if the user invokes the compiler with:
   //   protoc --foo_out=outputdir --foo_opt=enable_bar ...
   // Then there will be an entry ("--foo_out", "enable_bar") in this map.
-  std::map<std::string, std::string> generator_parameters_;
+  absl::flat_hash_map<std::string, std::string> generator_parameters_;
   // Similar to generator_parameters_, but stores the parameters for plugins.
-  std::map<std::string, std::string> plugin_parameters_;
+  absl::flat_hash_map<std::string, std::string> plugin_parameters_;
 
   // See AllowPlugins().  If this is empty, plugins aren't allowed.
   std::string plugin_prefix_;
@@ -377,7 +377,7 @@ class PROTOC_EXPORT CommandLineInterface {
   // Maps specific plugin names to files.  When executing a plugin, this map
   // is searched first to find the plugin executable.  If not found here, the
   // PATH (or other OS-specific search strategy) is searched.
-  std::map<std::string, std::string> plugins_;
+  absl::flat_hash_map<std::string, std::string> plugins_;
 
   // Stuff parsed from command line.
   enum Mode {

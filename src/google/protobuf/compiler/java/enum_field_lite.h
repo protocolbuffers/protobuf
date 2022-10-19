@@ -39,6 +39,7 @@
 #include <map>
 #include <string>
 
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/java/field.h"
 
 namespace google {
@@ -83,7 +84,7 @@ class ImmutableEnumFieldLiteGenerator : public ImmutableFieldLiteGenerator {
 
  protected:
   const FieldDescriptor* descriptor_;
-  std::map<std::string, std::string> variables_;
+  absl::flat_hash_map<std::string, std::string> variables_;
   const int messageBitIndex_;
   Context* context_;
   ClassNameResolver* name_resolver_;
@@ -131,7 +132,7 @@ class RepeatedImmutableEnumFieldLiteGenerator
 
  private:
   const FieldDescriptor* descriptor_;
-  std::map<std::string, std::string> variables_;
+  absl::flat_hash_map<std::string, std::string> variables_;
   Context* context_;
   ClassNameResolver* name_resolver_;
 };

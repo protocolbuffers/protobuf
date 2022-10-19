@@ -824,6 +824,16 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
         >
       >
       field {
+        name: "deprecated_message"
+        number: 3
+        label: LABEL_OPTIONAL
+        type: TYPE_MESSAGE
+        type_name: ".protobuf_unittest.TestAllTypes.NestedMessage"
+        options {
+          deprecated: true
+        }
+      }
+      field {
         name: "deprecated_int32_in_oneof"
         number: 2
         label: LABEL_OPTIONAL

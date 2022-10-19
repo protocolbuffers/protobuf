@@ -40,7 +40,7 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-PROTOBUF_CONSTINIT const size_t kDefaultDefaultArenaMaxBlockSize = 8 << 10;
+PROTOBUF_CONSTINIT const size_t kDefaultDefaultArenaMaxBlockSize = 32 << 10;
 
 namespace arena_config_internal {
 

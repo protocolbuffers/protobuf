@@ -82,7 +82,7 @@ MessageBuilderLiteGenerator::~MessageBuilderLiteGenerator() {}
 
 void MessageBuilderLiteGenerator::Generate(io::Printer* printer) {
   WriteMessageDocComment(printer, descriptor_);
-  std::map<std::string, std::string> vars = {
+  absl::flat_hash_map<std::string, std::string> vars = {
       {"{", ""},
       {"}", ""},
       {"classname", name_resolver_->GetImmutableClassName(descriptor_)},

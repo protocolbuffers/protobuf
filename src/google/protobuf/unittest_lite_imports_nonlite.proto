@@ -33,6 +33,7 @@
 // Tests that a "lite" message can import a regular message.
 
 syntax = "proto2";
+
 package protobuf_unittest;
 
 import "google/protobuf/unittest.proto";

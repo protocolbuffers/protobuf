@@ -32,13 +32,18 @@
 
 #include <algorithm>
 #include <iostream>
+#include <iterator>
+#include <map>
+#include <set>
 #include <sstream>
+#include <string>
+#include <vector>
 
-#include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/enum.h"
 #include "google/protobuf/compiler/objectivec/extension.h"
-#include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/import_writer.h"
 #include "google/protobuf/compiler/objectivec/message.h"
 #include "google/protobuf/compiler/objectivec/names.h"
@@ -137,19 +142,17 @@ struct FileDescriptorsOrderedByName {
 
 }  // namespace
 
-FileGenerator::CommonState::CommonState() {}
-
 const FileGenerator::CommonState::MinDepsEntry&
 FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
     const FileDescriptor* file) {
-  auto it = deps_info_cache_.find(file);
-  if (it != deps_info_cache_.end()) {
+  auto it = deps_info_cache.find(file);
+  if (it != deps_info_cache.end()) {
     return it->second;
   }
 
-  std::unordered_set<const FileDescriptor*> min_deps_collector;
-  std::unordered_set<const FileDescriptor*> covered_deps_collector;
-  std::unordered_set<const FileDescriptor*> to_prune;
+  absl::flat_hash_set<const FileDescriptor*> min_deps_collector;
+  absl::flat_hash_set<const FileDescriptor*> covered_deps_collector;
+  absl::flat_hash_set<const FileDescriptor*> to_prune;
   for (int i = 0; i < file->dependency_count(); i++) {
     const FileDescriptor* dep = file->dependency(i);
     MinDepsEntry dep_info =
@@ -182,19 +185,19 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
   // Fast path: if nothing to prune or there was only one dep, the prune work is
   // a waste, skip it.
   if (to_prune.empty() || file->dependency_count() == 1) {
-    return deps_info_cache_
+    return deps_info_cache
         .insert(
             {file, {file_has_exts, min_deps_collector, covered_deps_collector}})
         .first->second;
   }
 
-  std::unordered_set<const FileDescriptor*> min_deps;
+  absl::flat_hash_set<const FileDescriptor*> min_deps;
   std::copy_if(min_deps_collector.begin(), min_deps_collector.end(),
                std::inserter(min_deps, min_deps.end()),
                [&](const FileDescriptor* value) {
                  return to_prune.find(value) == to_prune.end();
                });
-  return deps_info_cache_
+  return deps_info_cache
       .insert({file, {file_has_exts, min_deps, covered_deps_collector}})
       .first->second;
 }
@@ -211,7 +214,7 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
 const std::vector<const FileDescriptor*>
 FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensions(
     const FileDescriptor* file) {
-  std::unordered_set<const FileDescriptor*> min_deps =
+  absl::flat_hash_set<const FileDescriptor*> min_deps =
       CollectMinimalFileDepsContainingExtensionsInternal(file).min_deps;
   // Sort the list since pointer order isn't stable across runs.
   std::vector<const FileDescriptor*> result(min_deps.begin(), min_deps.end());
@@ -242,8 +245,6 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
     extension_generators_.emplace_back(generator);
   }
 }
-
-FileGenerator::~FileGenerator() {}
 
 void FileGenerator::GenerateHeader(io::Printer* printer) {
   std::vector<std::string> headers;
@@ -625,7 +626,7 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
 
   // File descriptor only needed if there are messages to use it.
   if (!message_generators_.empty()) {
-    std::map<std::string, std::string> vars;
+    absl::flat_hash_map<std::string, std::string> vars;
     vars["root_class_name"] = root_class_name_;
     vars["package"] = file_->package();
     vars["objc_prefix"] = FileClassPrefix(file_);

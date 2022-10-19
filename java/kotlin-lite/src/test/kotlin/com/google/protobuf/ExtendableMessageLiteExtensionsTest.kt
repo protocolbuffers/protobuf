@@ -48,31 +48,27 @@ class ExtendableMessageLiteExtensionsTest {
 
   @Test
   fun getOnBuilder() {
-    val builder = ExampleExtensibleMessage.newBuilder()
-      .setExtension(TestProto.int32Extension, 6)
+    val builder = ExampleExtensibleMessage.newBuilder().setExtension(TestProto.int32Extension, 6)
     assertThat(builder[TestProto.int32Extension]).isEqualTo(6)
   }
 
   @Test
   fun getOnMessage() {
-    val message = ExampleExtensibleMessage.newBuilder()
-      .setExtension(TestProto.int32Extension, 6)
-      .build()
+    val message =
+      ExampleExtensibleMessage.newBuilder().setExtension(TestProto.int32Extension, 6).build()
     assertThat(message[TestProto.int32Extension]).isEqualTo(6)
   }
 
   @Test
   fun containsPositiveOnMessage() {
-    val message = ExampleExtensibleMessage.newBuilder()
-      .setExtension(TestProto.int32Extension, 6)
-      .build()
+    val message =
+      ExampleExtensibleMessage.newBuilder().setExtension(TestProto.int32Extension, 6).build()
     assertThat(TestProto.int32Extension in message).isTrue()
   }
 
   @Test
   fun containsPositiveOnBuilder() {
-    val builder = ExampleExtensibleMessage.newBuilder()
-      .setExtension(TestProto.int32Extension, 6)
+    val builder = ExampleExtensibleMessage.newBuilder().setExtension(TestProto.int32Extension, 6)
     assertThat(TestProto.int32Extension in builder).isTrue()
   }
 

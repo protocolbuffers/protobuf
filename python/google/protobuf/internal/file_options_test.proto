@@ -30,9 +30,9 @@
 
 syntax = "proto2";
 
-import "google/protobuf/descriptor.proto";
-
 package google.protobuf.python.internal;
+
+import "google/protobuf/descriptor.proto";
 
 message FooOptions {
   optional string foo_name = 1;

@@ -31,8 +31,10 @@
 #include "google/protobuf/compiler/objectivec/enum_field.h"
 
 #include <map>
+#include <set>
 #include <string>
 
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/io/printer.h"
@@ -44,8 +46,9 @@ namespace objectivec {
 
 namespace {
 
-void SetEnumVariables(const FieldDescriptor* descriptor,
-                      std::map<std::string, std::string>* variables) {
+void SetEnumVariables(
+    const FieldDescriptor* descriptor,
+    absl::flat_hash_map<std::string, std::string>* variables) {
   std::string type = EnumName(descriptor->enum_type());
   (*variables)["storage_type"] = type;
   // For non repeated fields, if it was defined in a different file, the
@@ -70,8 +73,6 @@ EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor)
     : SingleFieldGenerator(descriptor) {
   SetEnumVariables(descriptor, &variables_);
 }
-
-EnumFieldGenerator::~EnumFieldGenerator() {}
 
 void EnumFieldGenerator::GenerateCFunctionDeclarations(
     io::Printer* printer) const {
@@ -142,9 +143,7 @@ RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
   variables_["array_storage_type"] = "GPBEnumArray";
 }
 
-RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {}
-
-void RepeatedEnumFieldGenerator::FinishInitialization(void) {
+void RepeatedEnumFieldGenerator::FinishInitialization() {
   RepeatedFieldGenerator::FinishInitialization();
   variables_["array_comment"] = "// |" + variables_["name"] + "| contains |" +
                                 variables_["storage_type"] + "|\n";

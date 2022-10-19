@@ -56,16 +56,16 @@ namespace java {
 
 namespace {
 
-void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
-                         int builderBitIndex, const FieldGeneratorInfo* info,
-                         ClassNameResolver* name_resolver,
-                         std::map<std::string, std::string>* variables,
-                         Context* context) {
+void SetMessageVariables(
+    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
+    const FieldGeneratorInfo* info, ClassNameResolver* name_resolver,
+    absl::flat_hash_map<std::string, std::string>* variables,
+    Context* context) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["type"] =
       name_resolver->GetImmutableClassName(descriptor->message_type());
-  (*variables)["kt_type"] = EscapeKotlinKeywords((*variables)["type"]);
+  variables->emplace("kt_type", EscapeKotlinKeywords((*variables)["type"]));
   (*variables)["mutable_type"] =
       name_resolver->GetMutableClassName(descriptor->message_type());
   (*variables)["group_or_message"] =
@@ -75,11 +75,12 @@ void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
   // by the proto compiler
   (*variables)["deprecation"] =
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
-  (*variables)["kt_deprecation"] =
+  variables->emplace(
+      "kt_deprecation",
       descriptor->options().deprecated()
-          ? "@kotlin.Deprecated(message = \"Field " + (*variables)["name"] +
-                " is deprecated\") "
-          : "";
+          ? absl::StrCat("@kotlin.Deprecated(message = \"Field ",
+                         (*variables)["name"], " is deprecated\") ")
+          : "");
   (*variables)["required"] = descriptor->is_required() ? "true" : "false";
 
   if (HasHasbit(descriptor)) {
@@ -98,7 +99,7 @@ void SetMessageVariables(const FieldDescriptor* descriptor, int messageBitIndex,
     (*variables)["clear_has_field_bit_message"] = "";
 
     (*variables)["is_field_present_message"] =
-        (*variables)["name"] + "_ != null";
+        absl::StrCat((*variables)["name"], "_ != null");
   }
 
   (*variables)["get_has_field_bit_from_local"] =
