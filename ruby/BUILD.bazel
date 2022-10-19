@@ -38,10 +38,19 @@ filegroup(
 )
 
 sh_binary(
-    name = "release",
+    name = "jruby_release",
     data = [
       ":protobuf_java_jar",
-      ":protobuf_java_release-pom",
+      "//:well_known_ruby_protos",
+    ],
+    srcs = [
+      "build_jruby_release.sh",
+    ],
+)
+
+sh_binary(
+    name = "release",
+    data = [
       "@utf8_range//:utf8_range_srcs",
       "@utf8_range//:LICENSE",
       "//:well_known_ruby_protos",
