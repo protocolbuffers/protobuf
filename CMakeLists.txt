@@ -23,6 +23,10 @@ endif()
 if(POLICY CMP0063)
   cmake_policy(SET CMP0063 NEW)
 endif()
+# option() honor variables
+if (POLICY CMP0077)
+  cmake_policy(SET CMP0077 NEW)
+endif (POLICY CMP0077)
 
 # Project
 project(protobuf C CXX)

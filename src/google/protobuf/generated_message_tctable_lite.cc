@@ -297,23 +297,31 @@ const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
       &Error,             // kSplitMask | FieldKind::kFkMap
   };
   // Just to be sure we got the order right, above.
-  static_assert(0 == FieldKind::kFkNone);
-  static_assert(1 == FieldKind::kFkVarint);
-  static_assert(2 == FieldKind::kFkPackedVarint);
-  static_assert(3 == FieldKind::kFkFixed);
-  static_assert(4 == FieldKind::kFkPackedFixed);
-  static_assert(5 == FieldKind::kFkString);
-  static_assert(6 == FieldKind::kFkMessage);
-  static_assert(7 == FieldKind::kFkMap);
+  static_assert(0 == FieldKind::kFkNone, "Invalid table order");
+  static_assert(1 == FieldKind::kFkVarint, "Invalid table order");
+  static_assert(2 == FieldKind::kFkPackedVarint, "Invalid table order");
+  static_assert(3 == FieldKind::kFkFixed, "Invalid table order");
+  static_assert(4 == FieldKind::kFkPackedFixed, "Invalid table order");
+  static_assert(5 == FieldKind::kFkString, "Invalid table order");
+  static_assert(6 == FieldKind::kFkMessage, "Invalid table order");
+  static_assert(7 == FieldKind::kFkMap, "Invalid table order");
 
-  static_assert(8 == (+field_layout::kSplitMask | FieldKind::kFkNone));
-  static_assert(9 == (+field_layout::kSplitMask | FieldKind::kFkVarint));
-  static_assert(10 == (+field_layout::kSplitMask | FieldKind::kFkPackedVarint));
-  static_assert(11 == (+field_layout::kSplitMask | FieldKind::kFkFixed));
-  static_assert(12 == (+field_layout::kSplitMask | FieldKind::kFkPackedFixed));
-  static_assert(13 == (+field_layout::kSplitMask | FieldKind::kFkString));
-  static_assert(14 == (+field_layout::kSplitMask | FieldKind::kFkMessage));
-  static_assert(15 == (+field_layout::kSplitMask | FieldKind::kFkMap));
+  static_assert(8 == (+field_layout::kSplitMask | FieldKind::kFkNone),
+    "Invalid table order");
+  static_assert(9 == (+field_layout::kSplitMask | FieldKind::kFkVarint),
+    "Invalid table order");
+  static_assert(10 == (+field_layout::kSplitMask | FieldKind::kFkPackedVarint),
+    "Invalid table order");
+  static_assert(11 == (+field_layout::kSplitMask | FieldKind::kFkFixed),
+    "Invalid table order");
+  static_assert(12 == (+field_layout::kSplitMask | FieldKind::kFkPackedFixed),
+    "Invalid table order");
+  static_assert(13 == (+field_layout::kSplitMask | FieldKind::kFkString),
+    "Invalid table order");
+  static_assert(14 == (+field_layout::kSplitMask | FieldKind::kFkMessage),
+    "Invalid table order");
+  static_assert(15 == (+field_layout::kSplitMask | FieldKind::kFkMap),
+    "Invalid table order");
 
   TailCallParseFunc parse_fn = kMiniParseTable[field_type];
   PROTOBUF_MUSTTAIL return parse_fn(PROTOBUF_TC_PARAM_PASS);
