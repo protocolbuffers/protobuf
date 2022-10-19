@@ -52,7 +52,7 @@ namespace compiler {
 namespace csharp {
 
 void FieldGeneratorBase::SetCommonFieldVariables(
-    absl::flat_hash_map<std::string, std::string>* variables) {
+    std::map<std::string, std::string>* variables) {
   // Note: this will be valid even though the tag emitted for packed and unpacked versions of
   // repeated fields varies by wire format. The wire format is encoded in the bottom 3 bits, which
   // never effects the tag size.
@@ -124,7 +124,7 @@ void FieldGeneratorBase::SetCommonFieldVariables(
 }
 
 void FieldGeneratorBase::SetCommonOneofFieldVariables(
-    absl::flat_hash_map<std::string, std::string>* variables) {
+    std::map<std::string, std::string>* variables) {
   (*variables)["oneof_name"] = oneof_name();
   if (SupportsPresenceApi(descriptor_)) {
     (*variables)["has_property_check"] = "Has" + property_name();

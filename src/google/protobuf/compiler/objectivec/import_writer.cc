@@ -36,7 +36,6 @@
 #include <string>
 #include <vector>
 
-#include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "google/protobuf/compiler/objectivec/line_consumer.h"
@@ -56,14 +55,13 @@ namespace {
 class ProtoFrameworkCollector : public LineConsumer {
  public:
   explicit ProtoFrameworkCollector(
-      absl::flat_hash_map<std::string, std::string>*
-          inout_proto_file_to_framework_name)
+      std::map<std::string, std::string>* inout_proto_file_to_framework_name)
       : map_(inout_proto_file_to_framework_name) {}
 
   bool ConsumeLine(absl::string_view line, std::string* out_error) override;
 
  private:
-  absl::flat_hash_map<std::string, std::string>* map_;
+  std::map<std::string, std::string>* map_;
 };
 
 bool ProtoFrameworkCollector::ConsumeLine(absl::string_view line,
@@ -90,7 +88,7 @@ bool ProtoFrameworkCollector::ConsumeLine(absl::string_view line,
     absl::string_view proto_file = absl::StripAsciiWhitespace(
         proto_file_list.substr(start, offset - start));
     if (!proto_file.empty()) {
-      absl::flat_hash_map<std::string, std::string>::iterator existing_entry =
+      std::map<std::string, std::string>::iterator existing_entry =
           map_->find(std::string(proto_file));
       if (existing_entry != map_->end()) {
         std::cerr << "warning: duplicate proto file reference, replacing "
@@ -149,7 +147,7 @@ void ImportWriter::AddFile(const FileDescriptor* file,
     ParseFrameworkMappings();
   }
 
-  absl::flat_hash_map<std::string, std::string>::iterator proto_lookup =
+  std::map<std::string, std::string>::iterator proto_lookup =
       proto_file_to_framework_name_.find(file->name());
   if (proto_lookup != proto_file_to_framework_name_.end()) {
     other_framework_imports_.push_back(

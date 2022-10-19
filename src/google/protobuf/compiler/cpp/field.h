@@ -41,7 +41,6 @@
 #include <string>
 
 #include "google/protobuf/descriptor.h"
-#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 
@@ -68,14 +67,13 @@ absl::flat_hash_map<std::string, std::string> OneofFieldVars(
 // field code generators.
 // ['name', 'index', 'number', 'classname', 'declared_type', 'tag_size',
 // 'deprecation'].
-void SetCommonFieldVariables(
-    const FieldDescriptor* descriptor,
-    absl::flat_hash_map<std::string, std::string>* variables,
-    const Options& options);
+void SetCommonFieldVariables(const FieldDescriptor* descriptor,
+                             std::map<std::string, std::string>* variables,
+                             const Options& options);
 
 void SetCommonOneofFieldVariables(
     const FieldDescriptor* descriptor,
-    absl::flat_hash_map<std::string, std::string>* variables);
+    std::map<std::string, std::string>* variables);
 
 class FieldGenerator {
  public:
@@ -228,7 +226,7 @@ class FieldGenerator {
  protected:
   const FieldDescriptor* descriptor_;
   const Options& options_;
-  absl::flat_hash_map<std::string, std::string> variables_;
+  std::map<std::string, std::string> variables_;
 };
 
 // Convenience class which constructs FieldGenerators for a Descriptor.

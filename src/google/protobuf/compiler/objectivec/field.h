@@ -37,7 +37,6 @@
 #include <string>
 #include <vector>
 
-#include "absl/container/flat_hash_map.h"
 #include "absl/strings/match.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
@@ -105,7 +104,7 @@ class FieldGenerator {
   bool WantsHasProperty() const;
 
   const FieldDescriptor* descriptor_;
-  absl::flat_hash_map<std::string, std::string> variables_;
+  std::map<std::string, std::string> variables_;
 };
 
 class SingleFieldGenerator : public FieldGenerator {

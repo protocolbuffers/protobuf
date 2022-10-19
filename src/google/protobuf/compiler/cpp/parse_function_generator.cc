@@ -38,7 +38,6 @@
 #include <vector>
 
 #include "google/protobuf/wire_format.h"
-#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
@@ -110,7 +109,7 @@ ParseFunctionGenerator::ParseFunctionGenerator(
     const std::vector<int>& has_bit_indices,
     const std::vector<int>& inlined_string_indices, const Options& options,
     MessageSCCAnalyzer* scc_analyzer,
-    const absl::flat_hash_map<std::string, std::string>& vars)
+    const std::map<std::string, std::string>& vars)
     : descriptor_(descriptor),
       scc_analyzer_(scc_analyzer),
       options_(options),

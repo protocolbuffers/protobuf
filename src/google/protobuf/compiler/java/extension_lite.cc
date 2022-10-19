@@ -31,7 +31,6 @@
 #include "google/protobuf/compiler/java/extension_lite.h"
 
 #include "google/protobuf/io/printer.h"
-#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/helpers.h"
@@ -61,7 +60,7 @@ ImmutableExtensionLiteGenerator::ImmutableExtensionLiteGenerator(
 ImmutableExtensionLiteGenerator::~ImmutableExtensionLiteGenerator() {}
 
 void ImmutableExtensionLiteGenerator::Generate(io::Printer* printer) {
-  absl::flat_hash_map<std::string, std::string> vars;
+  std::map<std::string, std::string> vars;
   const bool kUseImmutableNames = true;
   InitTemplateVars(descriptor_, scope_, kUseImmutableNames, name_resolver_,
                    &vars, context_);

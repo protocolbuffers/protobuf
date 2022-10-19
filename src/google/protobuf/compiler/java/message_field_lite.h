@@ -83,7 +83,7 @@ class ImmutableMessageFieldLiteGenerator : public ImmutableFieldLiteGenerator {
 
  protected:
   const FieldDescriptor* descriptor_;
-  absl::flat_hash_map<std::string, std::string> variables_;
+  std::map<std::string, std::string> variables_;
   const int messageBitIndex_;
   ClassNameResolver* name_resolver_;
   Context* context_;
@@ -136,7 +136,7 @@ class RepeatedImmutableMessageFieldLiteGenerator
 
  protected:
   const FieldDescriptor* descriptor_;
-  absl::flat_hash_map<std::string, std::string> variables_;
+  std::map<std::string, std::string> variables_;
   ClassNameResolver* name_resolver_;
   Context* context_;
 };

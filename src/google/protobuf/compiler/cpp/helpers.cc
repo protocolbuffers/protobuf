@@ -252,7 +252,7 @@ absl::flat_hash_map<std::string, std::string> MessageVars(
 
 void SetCommonMessageDataVariables(
     const Descriptor* descriptor,
-    absl::flat_hash_map<std::string, std::string>* variables) {
+    std::map<std::string, std::string>* variables) {
   for (auto& pair : MessageVars(descriptor)) {
     variables->emplace(pair);
   }
@@ -286,9 +286,9 @@ absl::flat_hash_map<std::string, std::string> UnknownFieldsVars(
   };
 }
 
-void SetUnknownFieldsVariable(
-    const Descriptor* descriptor, const Options& options,
-    absl::flat_hash_map<std::string, std::string>* variables) {
+void SetUnknownFieldsVariable(const Descriptor* descriptor,
+                              const Options& options,
+                              std::map<std::string, std::string>* variables) {
   for (auto& pair : UnknownFieldsVars(descriptor, options)) {
     variables->emplace(pair);
   }

@@ -626,7 +626,7 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
 
   // File descriptor only needed if there are messages to use it.
   if (!message_generators_.empty()) {
-    absl::flat_hash_map<std::string, std::string> vars;
+    std::map<std::string, std::string> vars;
     vars["root_class_name"] = root_class_name_;
     vars["package"] = file_->package();
     vars["objc_prefix"] = FileClassPrefix(file_);

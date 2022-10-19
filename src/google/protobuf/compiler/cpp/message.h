@@ -61,7 +61,7 @@ namespace cpp {
 class MessageGenerator {
  public:
   MessageGenerator(const Descriptor* descriptor,
-                   const absl::flat_hash_map<std::string, std::string>& ignored,
+                   const std::map<std::string, std::string>& ignored,
                    int index_in_file_messages, const Options& options,
                    MessageSCCAnalyzer* scc_analyzer);
 
@@ -214,7 +214,7 @@ class MessageGenerator {
 
   MessageSCCAnalyzer* scc_analyzer_;
 
-  absl::flat_hash_map<std::string, std::string> variables_;
+  std::map<std::string, std::string> variables_;
 
 };
 

@@ -35,14 +35,13 @@
 #include <sstream>
 
 #include "google/protobuf/compiler/code_generator.h"
-#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/csharp/csharp_doc_comment.h"
 #include "google/protobuf/compiler/csharp/csharp_enum.h"
 #include "google/protobuf/compiler/csharp/csharp_field_base.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
-#include "google/protobuf/compiler/csharp/csharp_options.h"
 #include "google/protobuf/compiler/csharp/names.h"
+#include "google/protobuf/compiler/csharp/csharp_options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -115,7 +114,7 @@ void MessageGenerator::AddSerializableAttribute(io::Printer* printer) {
 }
 
 void MessageGenerator::Generate(io::Printer* printer) {
-  absl::flat_hash_map<std::string, std::string> vars;
+  std::map<std::string, std::string> vars;
   vars["class_name"] = class_name();
   vars["access_level"] = class_access_level();
 
@@ -377,7 +376,7 @@ bool MessageGenerator::HasNestedGeneratedTypes()
 }
 
 void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
-  absl::flat_hash_map<std::string, std::string> vars;
+  std::map<std::string, std::string> vars;
   WriteGeneratedCodeAttributes(printer);
   vars["class_name"] = class_name();
     printer->Print(
@@ -441,30 +440,32 @@ void MessageGenerator::GenerateFreezingCode(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
-  absl::flat_hash_map<std::string, std::string> vars;
-  vars["class_name"] = class_name();
+    std::map<std::string, std::string> vars;
+    vars["class_name"] = class_name();
 
-  // Equality
-  WriteGeneratedCodeAttributes(printer);
-  printer->Print(vars,
-                 "public override bool Equals(object other) {\n"
-                 "  return Equals(other as $class_name$);\n"
-                 "}\n\n");
-  WriteGeneratedCodeAttributes(printer);
-  printer->Print(vars,
-                 "public bool Equals($class_name$ other) {\n"
-                 "  if (ReferenceEquals(other, null)) {\n"
-                 "    return false;\n"
-                 "  }\n"
-                 "  if (ReferenceEquals(other, this)) {\n"
-                 "    return true;\n"
-                 "  }\n");
-  printer->Indent();
-  for (int i = 0; i < descriptor_->field_count(); i++) {
-    std::unique_ptr<FieldGeneratorBase> generator(
-        CreateFieldGeneratorInternal(descriptor_->field(i)));
-    generator->WriteEquals(printer);
-  }
+    // Equality
+    WriteGeneratedCodeAttributes(printer);
+    printer->Print(
+        vars,
+        "public override bool Equals(object other) {\n"
+        "  return Equals(other as $class_name$);\n"
+        "}\n\n");
+    WriteGeneratedCodeAttributes(printer);
+    printer->Print(
+        vars,
+        "public bool Equals($class_name$ other) {\n"
+        "  if (ReferenceEquals(other, null)) {\n"
+        "    return false;\n"
+        "  }\n"
+        "  if (ReferenceEquals(other, this)) {\n"
+        "    return true;\n"
+        "  }\n");
+    printer->Indent();
+    for (int i = 0; i < descriptor_->field_count(); i++) {
+      std::unique_ptr<FieldGeneratorBase> generator(
+            CreateFieldGeneratorInternal(descriptor_->field(i)));
+        generator->WriteEquals(printer);
+    }
     for (int i = 0; i < descriptor_->real_oneof_decl_count(); i++) {
       printer->Print("if ($property_name$Case != other.$property_name$Case) return false;\n",
           "property_name", UnderscoresToCamelCase(descriptor_->oneof_decl(i)->name(), true));
@@ -606,7 +607,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   // Note:  These are separate from GenerateMessageSerializationMethods()
   //   because they need to be generated even for messages that are optimized
   //   for code size.
-  absl::flat_hash_map<std::string, std::string> vars;
+  std::map<std::string, std::string> vars;
   vars["class_name"] = class_name();
 
   WriteGeneratedCodeAttributes(printer);
@@ -686,7 +687,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateMainParseLoop(io::Printer* printer, bool use_parse_context) {
-  absl::flat_hash_map<std::string, std::string> vars;
+  std::map<std::string, std::string> vars;
   vars["maybe_ref_input"] = use_parse_context ? "ref input" : "input";
 
   printer->Print(

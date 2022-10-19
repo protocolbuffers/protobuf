@@ -38,7 +38,6 @@
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/wire_format_lite.h"
-#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
@@ -52,12 +51,12 @@ namespace cpp {
 // (and any associated supporting members).
 class ParseFunctionGenerator {
  public:
-  ParseFunctionGenerator(
-      const Descriptor* descriptor, int max_has_bit_index,
-      const std::vector<int>& has_bit_indices,
-      const std::vector<int>& inlined_string_indices, const Options& options,
-      MessageSCCAnalyzer* scc_analyzer,
-      const absl::flat_hash_map<std::string, std::string>& vars);
+  ParseFunctionGenerator(const Descriptor* descriptor, int max_has_bit_index,
+                         const std::vector<int>& has_bit_indices,
+                         const std::vector<int>& inlined_string_indices,
+                         const Options& options,
+                         MessageSCCAnalyzer* scc_analyzer,
+                         const std::map<std::string, std::string>& vars);
 
   // Emits class-level method declarations to `printer`:
   void GenerateMethodDecls(io::Printer* printer);
@@ -127,7 +126,7 @@ class ParseFunctionGenerator {
   const Descriptor* descriptor_;
   MessageSCCAnalyzer* scc_analyzer_;
   const Options& options_;
-  absl::flat_hash_map<std::string, std::string> variables_;
+  std::map<std::string, std::string> variables_;
   std::unique_ptr<internal::TailCallTableInfo> tc_table_info_;
   std::vector<int> inlined_string_indices_;
   const std::vector<const FieldDescriptor*> ordered_fields_;

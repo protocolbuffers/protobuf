@@ -34,7 +34,6 @@
 
 #include "google/protobuf/compiler/cpp/string_field.h"
 
-#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -46,10 +45,9 @@ namespace cpp {
 
 namespace {
 
-void SetStringVariables(
-    const FieldDescriptor* descriptor,
-    absl::flat_hash_map<std::string, std::string>* variables,
-    const Options& options) {
+void SetStringVariables(const FieldDescriptor* descriptor,
+                        std::map<std::string, std::string>* variables,
+                        const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
 
   const std::string kNS = "::" + ProtobufNamespace(options) + "::internal::";

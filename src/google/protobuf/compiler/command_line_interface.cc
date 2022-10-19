@@ -425,7 +425,7 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
   // The files_ field maps from path keys to file content values. It's a map
   // instead of an unordered_map so that files are written in order (good when
   // writing zips).
-  absl::flat_hash_map<std::string, std::string> files_;
+  std::map<std::string, std::string> files_;
   const std::vector<const FileDescriptor*>& parsed_files_;
   bool had_error_;
 };
@@ -1493,7 +1493,7 @@ CommandLineInterface::ParseArgumentStatus CommandLineInterface::ParseArguments(
 
   // Make sure each plugin option has a matching plugin output.
   bool foundUnknownPluginOption = false;
-  for (absl::flat_hash_map<std::string, std::string>::const_iterator i =
+  for (std::map<std::string, std::string>::const_iterator i =
            plugin_parameters_.begin();
        i != plugin_parameters_.end(); ++i) {
     if (plugins_.find(i->first) != plugins_.end()) {

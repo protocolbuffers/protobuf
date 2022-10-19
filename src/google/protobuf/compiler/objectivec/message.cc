@@ -39,7 +39,6 @@
 #include <string>
 #include <vector>
 
-#include "absl/container/flat_hash_map.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/enum.h"
@@ -518,7 +517,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
       printer->Outdent();
     }
 
-    absl::flat_hash_map<std::string, std::string> vars;
+    std::map<std::string, std::string> vars;
     vars["classname"] = class_name_;
     vars["rootclassname"] = root_classname_;
     vars["fields"] = has_fields ? "fields" : "NULL";

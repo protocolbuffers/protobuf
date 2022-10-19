@@ -34,7 +34,6 @@
 #include <set>
 #include <string>
 
-#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/io/printer.h"
@@ -46,9 +45,8 @@ namespace objectivec {
 
 namespace {
 
-void SetEnumVariables(
-    const FieldDescriptor* descriptor,
-    absl::flat_hash_map<std::string, std::string>* variables) {
+void SetEnumVariables(const FieldDescriptor* descriptor,
+                      std::map<std::string, std::string>* variables) {
   std::string type = EnumName(descriptor->enum_type());
   (*variables)["storage_type"] = type;
   // For non repeated fields, if it was defined in a different file, the

@@ -41,7 +41,6 @@
 #include <vector>
 
 #include "google/protobuf/compiler/code_generator.h"
-#include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
@@ -84,16 +83,16 @@ class SimpleLineCollector : public LineConsumer {
 
 class PackageToPrefixesCollector : public LineConsumer {
  public:
-  PackageToPrefixesCollector(const std::string& usage,
-                             absl::flat_hash_map<std::string, std::string>*
-                                 inout_package_to_prefix_map)
+  PackageToPrefixesCollector(
+      const std::string& usage,
+      std::map<std::string, std::string>* inout_package_to_prefix_map)
       : usage_(usage), prefix_map_(inout_package_to_prefix_map) {}
 
   bool ConsumeLine(absl::string_view line, std::string* out_error) override;
 
  private:
   const std::string usage_;
-  absl::flat_hash_map<std::string, std::string>* prefix_map_;
+  std::map<std::string, std::string>* prefix_map_;
 };
 
 class PrefixModeStorage {
@@ -130,7 +129,7 @@ class PrefixModeStorage {
 
  private:
   bool use_package_name_;
-  absl::flat_hash_map<std::string, std::string> package_to_prefix_map_;
+  std::map<std::string, std::string> package_to_prefix_map_;
   std::string package_to_prefix_mappings_path_;
   std::string exception_path_;
   std::string forced_prefix_;
@@ -188,7 +187,7 @@ std::string PrefixModeStorage::prefix_from_proto_package_mappings(
   const std::string lookup_key =
       package.empty() ? no_package_prefix + file->name() : package;
 
-  absl::flat_hash_map<std::string, std::string>::const_iterator prefix_lookup =
+  std::map<std::string, std::string>::const_iterator prefix_lookup =
       package_to_prefix_map_.find(lookup_key);
 
   if (prefix_lookup != package_to_prefix_map_.end()) {
@@ -1022,10 +1021,9 @@ bool PackageToPrefixesCollector::ConsumeLine(absl::string_view line,
   return true;
 }
 
-bool LoadExpectedPackagePrefixes(
-    const std::string& expected_prefixes_path,
-    absl::flat_hash_map<std::string, std::string>* prefix_map,
-    std::string* out_error) {
+bool LoadExpectedPackagePrefixes(const std::string& expected_prefixes_path,
+                                 std::map<std::string, std::string>* prefix_map,
+                                 std::string* out_error) {
   if (expected_prefixes_path.empty()) {
     return true;
   }
@@ -1036,8 +1034,7 @@ bool LoadExpectedPackagePrefixes(
 
 bool ValidateObjCClassPrefix(
     const FileDescriptor* file, const std::string& expected_prefixes_path,
-    const absl::flat_hash_map<std::string, std::string>&
-        expected_package_prefixes,
+    const std::map<std::string, std::string>& expected_package_prefixes,
     bool prefixes_must_be_registered, bool require_prefixes,
     std::string* out_error) {
   // Reminder: An explicit prefix option of "" is valid in case the default
@@ -1060,7 +1057,7 @@ bool ValidateObjCClassPrefix(
 
   // Check: Error - See if there was an expected prefix for the package and
   // report if it doesn't match (wrong or missing).
-  absl::flat_hash_map<std::string, std::string>::const_iterator package_match =
+  std::map<std::string, std::string>::const_iterator package_match =
       expected_package_prefixes.find(lookup_key);
   if (package_match != expected_package_prefixes.end()) {
     // There was an entry, and...
@@ -1098,7 +1095,7 @@ bool ValidateObjCClassPrefix(
   if (!prefix.empty() && have_expected_prefix_file) {
     // For a non empty prefix, look for any other package that uses the prefix.
     std::string other_package_for_prefix;
-    for (absl::flat_hash_map<std::string, std::string>::const_iterator i =
+    for (std::map<std::string, std::string>::const_iterator i =
              expected_package_prefixes.begin();
          i != expected_package_prefixes.end(); ++i) {
       if (i->second == prefix) {
@@ -1216,7 +1213,7 @@ bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
   }
 
   // Load the expected package prefixes, if available, to validate against.
-  absl::flat_hash_map<std::string, std::string> expected_package_prefixes;
+  std::map<std::string, std::string> expected_package_prefixes;
   if (!LoadExpectedPackagePrefixes(validation_options.expected_prefixes_path,
                                    &expected_package_prefixes, out_error)) {
     return false;

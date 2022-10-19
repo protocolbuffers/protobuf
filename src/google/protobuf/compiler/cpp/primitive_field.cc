@@ -36,7 +36,6 @@
 
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
-#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 
@@ -99,10 +98,9 @@ int FixedSize(FieldDescriptor::Type type) {
   return -1;
 }
 
-void SetPrimitiveVariables(
-    const FieldDescriptor* descriptor,
-    absl::flat_hash_map<std::string, std::string>* variables,
-    const Options& options) {
+void SetPrimitiveVariables(const FieldDescriptor* descriptor,
+                           std::map<std::string, std::string>* variables,
+                           const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = PrimitiveTypeName(options, descriptor->cpp_type());
   (*variables)["default"] = DefaultValue(options, descriptor);

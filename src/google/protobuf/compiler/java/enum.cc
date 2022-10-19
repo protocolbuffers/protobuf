@@ -38,7 +38,6 @@
 #include <string>
 
 #include "google/protobuf/io/printer.h"
-#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
@@ -104,7 +103,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
   }
 
   for (int i = 0; i < canonical_values_.size(); i++) {
-    absl::flat_hash_map<std::string, std::string> vars;
+    std::map<std::string, std::string> vars;
     vars["name"] = canonical_values_[i]->name();
     vars["index"] = absl::StrCat(canonical_values_[i]->index());
     vars["number"] = absl::StrCat(canonical_values_[i]->number());
@@ -136,7 +135,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
   // -----------------------------------------------------------------
 
   for (int i = 0; i < aliases_.size(); i++) {
-    absl::flat_hash_map<std::string, std::string> vars;
+    std::map<std::string, std::string> vars;
     vars["classname"] = descriptor_->name();
     vars["name"] = aliases_[i].value->name();
     vars["canonical_name"] = aliases_[i].canonical_value->name();
@@ -147,7 +146,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
   }
 
   for (int i = 0; i < descriptor_->value_count(); i++) {
-    absl::flat_hash_map<std::string, std::string> vars;
+    std::map<std::string, std::string> vars;
     vars["name"] = descriptor_->value(i)->name();
     vars["number"] = absl::StrCat(descriptor_->value(i)->number());
     vars["{"] = "";

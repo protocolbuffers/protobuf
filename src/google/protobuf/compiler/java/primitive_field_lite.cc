@@ -66,17 +66,18 @@ bool EnableExperimentalRuntimeForLite() {
 #endif  // !PROTOBUF_EXPERIMENT
 }
 
-void SetPrimitiveVariables(
-    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
-    const FieldGeneratorInfo* info, ClassNameResolver* name_resolver,
-    absl::flat_hash_map<std::string, std::string>* variables,
-    Context* context) {
+void SetPrimitiveVariables(const FieldDescriptor* descriptor,
+                           int messageBitIndex, int builderBitIndex,
+                           const FieldGeneratorInfo* info,
+                           ClassNameResolver* name_resolver,
+                           std::map<std::string, std::string>* variables,
+                           Context* context) {
   SetCommonFieldVariables(descriptor, info, variables);
   JavaType javaType = GetJavaType(descriptor);
   (*variables)["type"] = PrimitiveTypeName(javaType);
   (*variables)["boxed_type"] = BoxedPrimitiveTypeName(javaType);
   (*variables)["kt_type"] = KotlinTypeName(javaType);
-  variables->emplace("field_type", (*variables)["type"]);
+  (*variables)["field_type"] = (*variables)["type"];
   (*variables)["default"] =
       ImmutableDefaultValue(descriptor, name_resolver, context->options());
   (*variables)["capitalized_type"] = GetCapitalizedType(
@@ -89,47 +90,43 @@ void SetPrimitiveVariables(
 
   std::string capitalized_type = UnderscoresToCamelCase(
       PrimitiveTypeName(javaType), true /* cap_next_letter */);
-  std::string name = (*variables)["name"];
   switch (javaType) {
     case JAVATYPE_INT:
     case JAVATYPE_LONG:
     case JAVATYPE_FLOAT:
     case JAVATYPE_DOUBLE:
     case JAVATYPE_BOOLEAN:
-      (*variables)["field_list_type"] = absl::StrCat(
-          "com.google.protobuf.Internal.", capitalized_type, "List");
-      (*variables)["empty_list"] =
-          absl::StrCat("empty", capitalized_type, "List()");
+      (*variables)["field_list_type"] =
+          "com.google.protobuf.Internal." + capitalized_type + "List";
+      (*variables)["empty_list"] = "empty" + capitalized_type + "List()";
       (*variables)["make_name_unmodifiable"] =
-          absl::StrCat(name, "_.makeImmutable()");
+          (*variables)["name"] + "_.makeImmutable()";
       (*variables)["repeated_get"] =
-          absl::StrCat(name, "_.get", capitalized_type);
+          (*variables)["name"] + "_.get" + capitalized_type;
       (*variables)["repeated_add"] =
-          absl::StrCat(name, "_.add", capitalized_type);
+          (*variables)["name"] + "_.add" + capitalized_type;
       (*variables)["repeated_set"] =
-          absl::StrCat(name, "_.set", capitalized_type);
+          (*variables)["name"] + "_.set" + capitalized_type;
       (*variables)["visit_type"] = capitalized_type;
-      (*variables)["visit_type_list"] =
-          absl::StrCat("visit", capitalized_type, "List");
+      (*variables)["visit_type_list"] = "visit" + capitalized_type + "List";
       break;
     default:
-      variables->emplace(
-          "field_list_type",
-          absl::StrCat("com.google.protobuf.Internal.ProtobufList<",
-                       (*variables)["boxed_type"], ">"));
+      (*variables)["field_list_type"] =
+          "com.google.protobuf.Internal.ProtobufList<" +
+          (*variables)["boxed_type"] + ">";
       (*variables)["empty_list"] = "emptyProtobufList()";
       (*variables)["make_name_unmodifiable"] =
-          absl::StrCat(name, "_.makeImmutable()");
-      (*variables)["repeated_get"] = absl::StrCat(name, "_.get");
-      (*variables)["repeated_add"] = absl::StrCat(name, "_.add");
-      (*variables)["repeated_set"] = absl::StrCat(name, "_.set");
+          (*variables)["name"] + "_.makeImmutable()";
+      (*variables)["repeated_get"] = (*variables)["name"] + "_.get";
+      (*variables)["repeated_add"] = (*variables)["name"] + "_.add";
+      (*variables)["repeated_set"] = (*variables)["name"] + "_.set";
       (*variables)["visit_type"] = "ByteString";
       (*variables)["visit_type_list"] = "visitList";
   }
 
   if (javaType == JAVATYPE_BYTES) {
     (*variables)["bytes_default"] =
-        absl::AsciiStrToUpper(name) + "_DEFAULT_VALUE";
+        absl::AsciiStrToUpper((*variables)["name"]) + "_DEFAULT_VALUE";
   }
 
   if (IsReferenceType(javaType)) {
@@ -146,8 +143,8 @@ void SetPrimitiveVariables(
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
   (*variables)["kt_deprecation"] =
       descriptor->options().deprecated()
-          ? absl::StrCat("@kotlin.Deprecated(message = \"Field ", name,
-                         " is deprecated\") ")
+          ? "@kotlin.Deprecated(message = \"Field " + (*variables)["name"] +
+                " is deprecated\") "
           : "";
   int fixed_size = FixedSize(GetType(descriptor));
   if (fixed_size != -1) {
@@ -172,20 +169,21 @@ void SetPrimitiveVariables(
     switch (descriptor->type()) {
       case FieldDescriptor::TYPE_BYTES:
         (*variables)["is_field_present_message"] =
-            absl::StrCat("!", name, "_.isEmpty()");
+            "!" + (*variables)["name"] + "_.isEmpty()";
         break;
       case FieldDescriptor::TYPE_FLOAT:
         (*variables)["is_field_present_message"] =
-            absl::StrCat("java.lang.Float.floatToRawIntBits(", name, "_) != 0");
+            "java.lang.Float.floatToRawIntBits(" + (*variables)["name"] +
+            "_) != 0";
         break;
       case FieldDescriptor::TYPE_DOUBLE:
-        (*variables)["is_field_present_message"] = absl::StrCat(
-            "java.lang.Double.doubleToRawLongBits(", name, "_) != 0");
+        (*variables)["is_field_present_message"] =
+            "java.lang.Double.doubleToRawLongBits(" + (*variables)["name"] +
+            "_) != 0";
         break;
       default:
-        variables->emplace(
-            "is_field_present_message",
-            absl::StrCat(name, "_ != " + (*variables)["default"]));
+        (*variables)["is_field_present_message"] =
+            (*variables)["name"] + "_ != " + (*variables)["default"];
         break;
     }
   }
@@ -195,8 +193,7 @@ void SetPrimitiveVariables(
   (*variables)["set_has_field_bit_to_local"] =
       GenerateSetBitToLocal(messageBitIndex);
   // Annotations often use { and } variables to denote ranges.
-  (*variables)["{"] = "";
-  (*variables)["}"] = "";
+  (*variables)["{"] = (*variables)["}"] = "";
 }
 
 }  // namespace

@@ -44,7 +44,6 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/compiler/scc.h"
-#include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
@@ -196,7 +195,7 @@ class FileGenerator {
   // This member is unused and should be deleted once all old-style variable
   // maps are gone.
   // TODO(b/245791219)
-  absl::flat_hash_map<std::string, std::string> variables_;
+  std::map<std::string, std::string> variables_;
 
   // Contains the post-order walk of all the messages (and child messages) in
   // this file. If you need a pre-order walk just reverse iterate.

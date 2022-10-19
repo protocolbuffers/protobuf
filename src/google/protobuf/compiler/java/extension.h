@@ -38,7 +38,6 @@
 #include <map>
 #include <string>
 
-#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/port.h"
 
 namespace google {
@@ -82,11 +81,11 @@ class ExtensionGenerator {
   virtual int GenerateRegistrationCode(io::Printer* printer) = 0;
 
  protected:
-  static void InitTemplateVars(
-      const FieldDescriptor* descriptor, const std::string& scope,
-      bool immutable, ClassNameResolver* name_resolver,
-      absl::flat_hash_map<std::string, std::string>* vars_pointer,
-      Context* context);
+  static void InitTemplateVars(const FieldDescriptor* descriptor,
+                               const std::string& scope, bool immutable,
+                               ClassNameResolver* name_resolver,
+                               std::map<std::string, std::string>* vars_pointer,
+                               Context* context);
 };
 
 class ImmutableExtensionGenerator : public ExtensionGenerator {
