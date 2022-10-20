@@ -115,11 +115,6 @@ static const upb_FieldDef *get_field(Message *msg, PROTO_STR *member) {
   const upb_FieldDef *f =
       upb_MessageDef_FindFieldByNameWithSize(m, PROTO_STRVAL_P(member), PROTO_STRLEN_P(member));
 
-  if (!f) {
-    zend_throw_exception_ex(NULL, 0, "No such property %s.",
-                            ZSTR_VAL(msg->desc->class_entry->name));
-  }
-
   return f;
 }
 
