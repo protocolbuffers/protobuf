@@ -1,8 +1,7 @@
 load("@bazel_skylib//lib:versions.bzl", "versions")
-load("@bazel_skylib//lib:collections.bzl", "collections")
-load("@rules_cc//cc:defs.bzl", "cc_library", "objc_library")
+load("@rules_cc//cc:defs.bzl", "objc_library")
 load("@rules_proto//proto:defs.bzl", "ProtoInfo")
-load("@rules_python//python:defs.bzl", "py_library", "py_test")
+load("@rules_python//python:defs.bzl", "py_library")
 
 def _GetPath(ctx, path):
     if ctx.label.workspace_root:
@@ -41,13 +40,14 @@ def _SourceDir(ctx):
 def _ObjcBase(srcs):
     return [
         "".join([token.capitalize() for token in src[:-len(".proto")].split("_")])
-    for src in srcs]
+        for src in srcs
+    ]
 
 def _ObjcHdrs(srcs):
-    return[src + ".pbobjc.h" for src in _ObjcBase(srcs)]
+    return [src + ".pbobjc.h" for src in _ObjcBase(srcs)]
 
 def _ObjcSrcs(srcs):
-    return[src + ".pbobjc.m" for src in _ObjcBase(srcs)]
+    return [src + ".pbobjc.m" for src in _ObjcBase(srcs)]
 
 def _ObjcOuts(srcs, out_type):
     if out_type == "hdrs":
@@ -68,7 +68,8 @@ def _RubyOuts(srcs):
 def _CsharpOuts(srcs):
     return [
         "".join([token.capitalize() for token in src[:-len(".proto")].split("_")]) + ".cs"
-    for src in srcs]
+        for src in srcs
+    ]
 
 ProtoGenInfo = provider(
     fields = ["srcs", "import_flags", "deps"],
@@ -97,7 +98,7 @@ def _proto_gen_impl(ctx):
 
     if ctx.attr.includes:
         for include in ctx.attr.includes:
-            import_flags += ["-I"+_GetPath(ctx,include)]
+            import_flags += ["-I" + _GetPath(ctx, include)]
 
     import_flags = depset(direct = import_flags)
 
@@ -150,6 +151,7 @@ def _proto_gen_impl(ctx):
                 outs.extend(_PyOuts([src.basename], use_grpc_plugin = use_grpc_plugin))
             elif lang == "ruby":
                 outs.extend(_RubyOuts([src.basename]))
+
             # Otherwise, rely on user-supplied outs.
             args += [("--%s_out=" + path_tpl) % (lang, gen_dir)]
 
@@ -262,7 +264,7 @@ _proto_gen = rule(
         "langs": attr.string_list(),
         "outs": attr.string_list(),
         "out_type": attr.string(
-            default = "all"
+            default = "all",
         ),
     },
     output_to_genfiles = True,
@@ -642,7 +644,7 @@ def _source_proto_library(
 
     native.filegroup(
         name = name,
-        srcs = [":%s_genproto"%name],
+        srcs = [":%s_genproto" % name],
         testonly = testonly,
         visibility = visibility,
         **kwargs

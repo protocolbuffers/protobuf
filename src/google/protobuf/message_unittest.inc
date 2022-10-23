@@ -45,6 +45,7 @@
 #include <vector>
 
 #include "google/protobuf/message.h"
+#include "absl/strings/cord.h"
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
@@ -1427,6 +1428,50 @@ TEST(MESSAGE_TEST_NAME, TestRepeatedStringParsers) {
           }
         }
     }
+  }
+}
+
+TEST(MESSAGE_TEST_NAME, TestRegressionOnParseFailureNotSettingHasBits) {
+  std::string single_field;
+  // We use blocks because we want fully new instances of the proto. We are
+  // testing .Clear(), so we can't use it to set up the test.
+  {
+    UNITTEST::TestAllTypes message;
+    message.set_optional_int32(17);
+    single_field = message.SerializeAsString();
+  }
+  const auto validate_message = [] (auto& message) {
+    if (!message.has_optional_int32()) {
+      EXPECT_EQ(message.optional_int32(), 0);
+    }
+    message.Clear();
+    EXPECT_FALSE(message.has_optional_int32());
+    EXPECT_EQ(message.optional_int32(), 0);
+  };
+  {
+    // Verify the setup is correct.
+    UNITTEST::TestAllTypes message;
+    EXPECT_FALSE(message.has_optional_int32());
+    EXPECT_EQ(message.optional_int32(), 0);
+    EXPECT_TRUE(message.ParseFromString(single_field));
+    validate_message(message);
+  }
+  {
+    // Run the regression.
+    // These are the steps:
+    // - The stream contains a fast field, and then a failure in MiniParse
+    // - The parsing fails.
+    // - We call clear.
+    // - The fast field should be reset.
+    UNITTEST::TestAllTypes message;
+    EXPECT_FALSE(message.has_optional_int32());
+    EXPECT_EQ(message.optional_int32(), 0);
+    // The second tag will fail to parse because it has too many continuation
+    // bits.
+    auto with_error =
+        absl::StrCat(single_field, std::string(100, static_cast<char>(0x80)));
+    EXPECT_FALSE(message.ParseFromString(with_error));
+    validate_message(message);
   }
 }
 

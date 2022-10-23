@@ -2531,10 +2531,6 @@ void FileDescriptor::CopyTo(FileDescriptorProto* proto) const {
   for (int i = 0; i < extension_count(); i++) {
     extension(i)->CopyTo(proto->add_extension());
   }
-
-  if (&options() != &FileOptions::default_instance()) {
-    proto->mutable_options()->CopyFrom(options());
-  }
 }
 
 void FileDescriptor::CopyHeadingTo(FileDescriptorProto* proto) const {
@@ -2547,6 +2543,9 @@ void FileDescriptor::CopyHeadingTo(FileDescriptorProto* proto) const {
   if (syntax() == SYNTAX_PROTO3
   ) {
     proto->set_syntax(SyntaxName(syntax()));
+  }
+  if (&options() != &FileOptions::default_instance()) {
+    *proto->mutable_options() = options();
   }
 }
 

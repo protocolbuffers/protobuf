@@ -118,45 +118,11 @@ cc_test(
 
 cc_library(
     name = "json_util",
-    srcs = ["json_util.cc"],
     hdrs = ["json_util.h"],
     copts = COPTS,
     strip_include_prefix = "/src",
     visibility = ["//:__subpackages__"],
-    deps = [
-        ":type_resolver_util",
-        "//src/google/protobuf",
-        "//src/google/protobuf/io",
-        "//src/google/protobuf/io:zero_copy_sink",
-        "//src/google/protobuf/stubs",
-        "//src/google/protobuf/util/internal:default_value",
-        "//src/google/protobuf/util/internal:json",
-        "//src/google/protobuf/util/internal:protostream",
-        "//src/google/protobuf/util/internal:utility",
-        "@com_google_absl//absl/status",
-    ],
-)
-
-cc_test(
-    name = "json_util_test",
-    srcs = ["json_util_test.cc"],
-    copts = COPTS,
-    data = [
-        "//src/google/protobuf:testdata",
-    ],
-    deps = [
-        ":json_format_cc_proto",
-        ":json_format_proto3_cc_proto",
-        ":json_util",
-        "//src/google/protobuf",
-        "//src/google/protobuf:cc_test_protos",
-        "//src/google/protobuf:test_util",
-        "//src/google/protobuf/testing",
-        "//src/google/protobuf/util/internal:maps_cc_proto",
-        "@com_google_absl//absl/status",
-        "@com_google_googletest//:gtest",
-        "@com_google_googletest//:gtest_main",
-    ],
+    deps = ["//src/google/protobuf/json"],
 )
 
 cc_library(
@@ -197,7 +163,6 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
-        "//src/google/protobuf/util/internal:utility",
         "@com_google_absl//absl/status",
     ],
 )
@@ -227,7 +192,6 @@ filegroup(
         "json_format.proto",
         "json_format_proto3.proto",
         "message_differencer_unittest.proto",
-        "//src/google/protobuf/util/internal:test_proto_srcs",
     ],
     visibility = [
         "//pkg:__pkg__",
@@ -240,11 +204,21 @@ proto_library(
     testonly = 1,
     srcs = ["json_format.proto"],
     strip_import_prefix = "/src",
+    deps = [
+        "//:any_proto",
+        "//:duration_proto",
+        "//:field_mask_proto",
+        "//:struct_proto",
+        "//:test_protos",
+        "//:timestamp_proto",
+        "//:wrappers_proto",
+    ],
 )
 
 cc_proto_library(
     name = "json_format_cc_proto",
     testonly = 1,
+    visibility = ["//:__subpackages__"],
     deps = [":json_format_proto"],
 )
 
@@ -267,6 +241,7 @@ proto_library(
 cc_proto_library(
     name = "json_format_proto3_cc_proto",
     testonly = 1,
+    visibility = ["//:__subpackages__"],
     deps = [":json_format_proto3_proto"],
 )
 
@@ -300,8 +275,6 @@ filegroup(
     srcs = glob([
         "*_test.cc",
         "*unittest.cc",
-    ]) + [
-        "//src/google/protobuf/util/internal:test_srcs",
-    ],
+    ]),
     visibility = ["//pkg:__pkg__"],
 )

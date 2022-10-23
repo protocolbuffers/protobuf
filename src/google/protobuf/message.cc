@@ -61,7 +61,6 @@
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
-#include "google/protobuf/stubs/stl_util.h"
 
 
 // Must be included last.

@@ -39,7 +39,6 @@
 
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/helpers.h"
@@ -887,7 +886,8 @@ void RepeatedImmutableMessageFieldGenerator::GenerateInterfaceMembers(
 
 void RepeatedImmutableMessageFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
-  printer->Print(variables_, "private java.util.List<$type$> $name$_;\n");
+  printer->Print(variables_, "@SuppressWarnings(\"serial\")\n"
+                             "private java.util.List<$type$> $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
   WriteFieldDocComment(printer, descriptor_);
   printer->Print(variables_,

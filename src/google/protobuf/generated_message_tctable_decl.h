@@ -287,6 +287,9 @@ struct alignas(uint64_t) TcParseTableBase {
     const MessageLite* message_default() const {
       return static_cast<const MessageLite*>(message_default_p);
     }
+    const MessageLite* message_default_weak() const {
+      return *static_cast<const MessageLite* const*>(message_default_p);
+    }
   };
   const FieldAux* field_aux(uint32_t idx) const {
     return reinterpret_cast<const FieldAux*>(reinterpret_cast<uintptr_t>(this) +
@@ -344,7 +347,7 @@ struct TcParseTable {
   // Entries for all fields:
   std::array<TcParseTableBase::FieldEntry, kNumFieldEntries> field_entries;
   std::array<TcParseTableBase::FieldAux, kNumFieldAux> aux_entries;
-  std::array<char, kNameTableSize> field_names;
+  std::array<char, kNameTableSize == 0 ? 1 : kNameTableSize> field_names;
 };
 
 // Partial specialization: if there are no aux entries, there will be no array.
@@ -360,7 +363,7 @@ struct TcParseTable<kFastTableSizeLog2, kNumFieldEntries, 0, kNameTableSize,
       fast_entries;
   std::array<uint16_t, kFieldLookupSize> field_lookup_table;
   std::array<TcParseTableBase::FieldEntry, kNumFieldEntries> field_entries;
-  std::array<char, kNameTableSize> field_names;
+  std::array<char, kNameTableSize == 0 ? 1 : kNameTableSize> field_names;
 };
 
 // Partial specialization: if there are no fields at all, then we can save space
@@ -372,7 +375,7 @@ struct TcParseTable<0, 0, 0, kNameTableSize, kFieldLookupSize> {
   // The fast parsing loop will always use this entry, so it must be present.
   std::array<TcParseTableBase::FastFieldEntry, 1> fast_entries;
   std::array<uint16_t, kFieldLookupSize> field_lookup_table;
-  std::array<char, kNameTableSize> field_names;
+  std::array<char, kNameTableSize == 0 ? 1 : kNameTableSize> field_names;
 };
 
 static_assert(std::is_standard_layout<TcParseTable<1>>::value,

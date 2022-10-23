@@ -646,6 +646,25 @@ PHP_METHOD(Message, clear) {
   upb_Message_Clear(intern->msg, intern->desc->msgdef);
 }
 
+static bool Message_checkEncodeStatus(upb_EncodeStatus status) {
+  switch (status) {
+    case kUpb_EncodeStatus_Ok:
+      return true;
+    case kUpb_EncodeStatus_OutOfMemory:
+      zend_throw_exception_ex(NULL, 0, "Out of memory");
+      return false;
+    case kUpb_EncodeStatus_MaxDepthExceeded:
+      zend_throw_exception_ex(NULL, 0, "Max nesting exceeded");
+      return false;
+    case kUpb_EncodeStatus_MissingRequired:
+      zend_throw_exception_ex(NULL, 0, "Missing required field");
+      return false;
+    default:
+      zend_throw_exception_ex(NULL, 0, "Unknown error encoding");
+      return false;
+  }
+}
+
 /**
  * Message::mergeFrom()
  *
@@ -673,14 +692,9 @@ PHP_METHOD(Message, mergeFrom) {
   // zend_parse_parameters().
   PBPHP_ASSERT(from->desc == intern->desc);
 
-  // TODO(haberman): use a temp arena for this once we can make upb_decode()
-  // copy strings.
-  pb = upb_Encode(from->msg, l, 0, arena, &size);
-
-  if (!pb) {
-    zend_throw_exception_ex(NULL, 0, "Max nesting exceeded");
-    return;
-  }
+  // TODO(haberman): use a temp arena for this.
+  upb_EncodeStatus status = upb_Encode(from->msg, l, 0, arena, &pb, &size);
+  if (!Message_checkEncodeStatus(status)) return;
 
   ok = upb_Decode(pb, size, intern->msg, l, NULL, 0, arena) ==
        kUpb_DecodeStatus_Ok;
@@ -730,7 +744,9 @@ PHP_METHOD(Message, serializeToString) {
   char *data;
   size_t size;
 
-  data = upb_Encode(intern->msg, l, 0, tmp_arena, &size);
+  upb_EncodeStatus status =
+      upb_Encode(intern->msg, l, 0, tmp_arena, &data, &size);
+  if (!Message_checkEncodeStatus(status)) return;
 
   if (!data) {
     zend_throw_exception_ex(NULL, 0, "Error occurred during serialization");
@@ -1232,8 +1248,12 @@ PHP_METHOD(google_protobuf_Any, pack) {
   msg = (Message*)Z_OBJ_P(val);
 
   // Serialize and set value.
-  value.data = upb_Encode(msg->msg, upb_MessageDef_MiniTable(msg->desc->msgdef),
-                          0, arena, &value.size);
+  char* pb;
+  upb_EncodeStatus status =
+      upb_Encode(msg->msg, upb_MessageDef_MiniTable(msg->desc->msgdef), 0,
+                 arena, &pb, &value.size);
+  if (!Message_checkEncodeStatus(status)) return;
+  value.data = pb;
   Message_setval(intern, "value", StringVal(value));
 
   // Set type url: type_url_prefix + fully_qualified_name

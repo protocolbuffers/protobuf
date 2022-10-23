@@ -43,7 +43,6 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/java/context.h"

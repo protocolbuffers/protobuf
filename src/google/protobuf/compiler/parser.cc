@@ -1336,19 +1336,19 @@ bool Parser::ParseDefaultAssignment(
     }
 
     case FieldDescriptorProto::TYPE_FLOAT:
-    case FieldDescriptorProto::TYPE_DOUBLE:
+    case FieldDescriptorProto::TYPE_DOUBLE: {
       // These types can be negative.
       if (TryConsume("-")) {
         default_value->append("-");
       }
       // Parse the integer because we have to convert hex integers to decimal
       // floats.
-      double value;
+      double value = 0.0;
       DO(ConsumeNumber(&value, "Expected number."));
       // And stringify it again.
       default_value->append(SimpleDtoa(value));
       break;
-
+    }
     case FieldDescriptorProto::TYPE_BOOL:
       if (TryConsume("true")) {
         default_value->assign("true");
@@ -1585,11 +1585,12 @@ bool Parser::ParseOption(Message* options,
           break;
         }
         // value too large for an integer; fall through below to treat as floating point
+        ABSL_FALLTHROUGH_INTENDED;
       }
 
       case io::Tokenizer::TYPE_FLOAT: {
         value_location.AddPath(UninterpretedOption::kDoubleValueFieldNumber);
-        double value;
+        double value = 0.0;
         DO(ConsumeNumber(&value, "Expected number."));
         uninterpreted_option->set_double_value(is_negative ? -value : value);
         break;

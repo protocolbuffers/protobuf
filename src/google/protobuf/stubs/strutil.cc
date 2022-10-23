@@ -44,7 +44,6 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/stl_util.h"
 
 #ifdef _WIN32
 // MSVC has only _snprintf, not snprintf.
@@ -671,9 +670,8 @@ void Base64EscapeInternal(const unsigned char *src, int szsrc,
                           const absl::string_view base64_chars) {
   const int calc_escaped_size = CalculateBase64EscapedLen(szsrc, do_padding);
   dest->resize(calc_escaped_size);
-  const int escaped_len =
-      Base64EscapeInternal(src, szsrc, string_as_array(dest), dest->size(),
-                           base64_chars, do_padding);
+  const int escaped_len = Base64EscapeInternal(
+      src, szsrc, &(*dest)[0], dest->size(), base64_chars, do_padding);
   GOOGLE_DCHECK_EQ(calc_escaped_size, escaped_len);
   dest->erase(escaped_len);
 }

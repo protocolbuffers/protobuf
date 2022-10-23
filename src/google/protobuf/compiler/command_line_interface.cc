@@ -74,7 +74,6 @@
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/compiler/subprocess.h"
 #include "google/protobuf/compiler/plugin.pb.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
@@ -90,7 +89,6 @@
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/text_format.h"
-#include "google/protobuf/stubs/stl_util.h"
 
 
 // Must be included last.
@@ -873,7 +871,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
 
       // Now copy in the data.
       std::string::size_type data_pos = 0;
-      char* target_ptr = ::google::protobuf::string_as_array(target) + pos;
+      char* target_ptr = &(*target)[pos];
       while (data_pos < data_.size()) {
         // Copy indent.
         memcpy(target_ptr, indent_.data(), indent_.size());
@@ -890,8 +888,7 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
       }
       UpdateMetadata(data_, pos, data_.size() + indent_size, indent_.size());
 
-      GOOGLE_CHECK_EQ(target_ptr,
-               ::google::protobuf::string_as_array(target) + pos + data_.size() + indent_size);
+      GOOGLE_CHECK_EQ(target_ptr, &(*target)[pos] + data_.size() + indent_size);
     }
   }
 }

@@ -82,7 +82,6 @@ message Api {
   // be omitted. Zero major versions must only be used for
   // experimental, non-GA interfaces.
   //
-  //
   string version = 4;
 
   // Source context for the protocol buffer service represented by this

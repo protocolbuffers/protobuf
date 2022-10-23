@@ -43,6 +43,9 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/compiler/java/options.h"
 
+// Must be last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 
@@ -122,8 +125,11 @@ std::string UnderscoresToCamelCase(const MethodDescriptor* method);
 //   Same as UnderscoresToCamelCase, but checks for reserved keywords
 std::string UnderscoresToCamelCaseCheckReserved(const FieldDescriptor* field);
 
+
 }  // namespace java
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 #endif  // GOOGLE_PROTOBUF_COMPILER_JAVA_NAMES_H__

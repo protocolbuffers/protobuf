@@ -127,13 +127,6 @@ internal_ruby_proto_library(
 )
 
 cc_library(
-    name = "jsoncpp",
-    srcs = ["third_party/jsoncpp/jsoncpp.cpp"],
-    hdrs = ["third_party/jsoncpp/json.h"],
-    includes = ["."],
-)
-
-cc_library(
     name = "conformance_test",
     srcs = [
         "conformance_test.cc",
@@ -156,7 +149,7 @@ cc_library(
     hdrs = ["binary_json_conformance_suite.h"],
     deps = [
         ":conformance_test",
-        ":jsoncpp",
+        "@jsoncpp//:jsoncpp",
         ":test_messages_proto2_proto_cc",
         ":test_messages_proto3_proto_cc",
         "@com_google_absl//absl/status",
@@ -368,19 +361,10 @@ pkg_files(
     visibility = ["//pkg:__pkg__"],
 )
 
-pkg_files(
-    name = "dist_scripts",
-    srcs = ["conformance_test_runner.sh"],
-    attributes = pkg_attributes(mode = "0555"),
-    strip_prefix = strip_prefix.from_root(""),
-    visibility = ["//pkg:__pkg__"],
-)
-
 pkg_filegroup(
     name = "all_dist_files",
     srcs = [
         ":dist_files",
-        ":dist_scripts",
     ],
     visibility = ["//pkg:__pkg__"],
 )

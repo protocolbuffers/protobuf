@@ -8,6 +8,7 @@
 
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
+load("@pip_deps//:requirements.bzl", "requirement")
 load("//:protobuf.bzl", "internal_py_proto_library")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 load("//conformance:defs.bzl", "conformance_test")
@@ -275,6 +276,13 @@ py_test(
 )
 
 py_test(
+    name = "field_mask_test",
+    srcs = ["google/protobuf/internal/field_mask_test.py"],
+    imports = ["."],
+    deps = [":python_test_lib"],
+)
+
+py_test(
     name = "generator_test",
     srcs = ["google/protobuf/internal/generator_test.py"],
     imports = ["."],
@@ -317,6 +325,16 @@ py_test(
     ],
     imports = ["."],
     deps = [":python_test_lib"],
+)
+
+py_test(
+    name = "numpy_test",
+    srcs = ["google/protobuf/internal/numpy_test.py"],
+    imports = ["."],
+    deps = [
+        ":python_test_lib",
+        requirement("numpy"),
+    ],
 )
 
 py_test(
@@ -442,12 +460,10 @@ pkg_files(
         "google/protobuf/pyext/README",
         "google/protobuf/python_protobuf.h",
         "internal.bzl",
-        "mox.py",
         "python_version.py",
         "release.sh",
         "setup.cfg",
         "setup.py",
-        "stubout.py",
         "tox.ini",
     ],
     strip_prefix = strip_prefix.from_root(""),

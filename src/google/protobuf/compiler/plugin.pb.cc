@@ -254,14 +254,17 @@ bool CodeGeneratorResponse_Feature_IsValid(int value) {
       return false;
   }
 }
+#if (__cplusplus < 201703) && \
+  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 
-#if (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::FEATURE_NONE;
 constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::FEATURE_PROTO3_OPTIONAL;
 constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::Feature_MIN;
 constexpr CodeGeneratorResponse_Feature CodeGeneratorResponse::Feature_MAX;
 constexpr int CodeGeneratorResponse::Feature_ARRAYSIZE;
-#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
+
+#endif  // (__cplusplus < 201703) &&
+        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 // ===================================================================
 
 class Version::_Internal {
@@ -371,6 +374,7 @@ void Version::Clear() {
 }
 
 const char* Version::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -442,6 +446,7 @@ failure:
 
 uint8_t* Version::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.Version)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -484,6 +489,7 @@ uint8_t* Version::_InternalSerialize(
 }
 
 size_t Version::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.Version)
   size_t total_size = 0;
 
@@ -529,6 +535,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Version::GetClassData() const 
 void Version::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<Version*>(&to_msg);
   auto& from = static_cast<const Version&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.Version)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -583,6 +590,7 @@ void Version::InternalSwap(Version* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Version::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[0]);
@@ -704,6 +712,7 @@ void CodeGeneratorRequest::Clear() {
 }
 
 const char* CodeGeneratorRequest::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -786,6 +795,7 @@ failure:
 
 uint8_t* CodeGeneratorRequest::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorRequest)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -835,6 +845,7 @@ uint8_t* CodeGeneratorRequest::_InternalSerialize(
 }
 
 size_t CodeGeneratorRequest::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.CodeGeneratorRequest)
   size_t total_size = 0;
 
@@ -887,6 +898,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*CodeGeneratorRequest::GetClass
 void CodeGeneratorRequest::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<CodeGeneratorRequest*>(&to_msg);
   auto& from = static_cast<const CodeGeneratorRequest&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorRequest)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -936,6 +948,7 @@ void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata CodeGeneratorRequest::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[1]);
@@ -1092,6 +1105,7 @@ void CodeGeneratorResponse_File::Clear() {
 }
 
 const char* CodeGeneratorResponse_File::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -1168,6 +1182,7 @@ failure:
 
 uint8_t* CodeGeneratorResponse_File::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorResponse.File)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1219,6 +1234,7 @@ uint8_t* CodeGeneratorResponse_File::_InternalSerialize(
 }
 
 size_t CodeGeneratorResponse_File::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.CodeGeneratorResponse.File)
   size_t total_size = 0;
 
@@ -1270,6 +1286,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*CodeGeneratorResponse_File::Ge
 void CodeGeneratorResponse_File::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<CodeGeneratorResponse_File*>(&to_msg);
   auto& from = static_cast<const CodeGeneratorResponse_File&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse.File)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -1327,6 +1344,7 @@ void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* other)
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata CodeGeneratorResponse_File::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[2]);
@@ -1428,6 +1446,7 @@ void CodeGeneratorResponse::Clear() {
 }
 
 const char* CodeGeneratorResponse::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -1494,6 +1513,7 @@ failure:
 
 uint8_t* CodeGeneratorResponse::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.compiler.CodeGeneratorResponse)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1532,6 +1552,7 @@ uint8_t* CodeGeneratorResponse::_InternalSerialize(
 }
 
 size_t CodeGeneratorResponse::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.compiler.CodeGeneratorResponse)
   size_t total_size = 0;
 
@@ -1574,6 +1595,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*CodeGeneratorResponse::GetClas
 void CodeGeneratorResponse::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<CodeGeneratorResponse*>(&to_msg);
   auto& from = static_cast<const CodeGeneratorResponse&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -1619,6 +1641,7 @@ void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata CodeGeneratorResponse::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_getter, &descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fcompiler_2fplugin_2eproto[3]);

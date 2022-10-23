@@ -16,6 +16,13 @@ http_archive(
     ],
 )
 
+http_archive(
+    name = "com_googlesource_code_re2",
+    sha256 = "906d0df8ff48f8d3a00a808827f009a840190f404559f649cb8e4d7143255ef9",
+    strip_prefix = "re2-a276a8c738735a0fe45a6ee590fe2df69bcf4502",
+    urls = ["https://github.com/google/re2/archive/a276a8c738735a0fe45a6ee590fe2df69bcf4502.zip"],  # 2022-04-08
+)
+
 # Bazel platform rules.
 http_archive(
     name = "platforms",
@@ -48,6 +55,13 @@ pinned_maven_install()
 # For `cc_proto_blacklist_test` and `build_test`.
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
+load("@rules_python//python:pip.bzl", "pip_install")
+
+pip_install(
+    name="pip_deps",
+    requirements = "//python:requirements.txt"
+)
+
 bazel_skylib_workspace()
 
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
@@ -65,6 +79,9 @@ upb_deps()
 
 load("@upb//bazel:system_python.bzl", "system_python")
 system_python(name = "local_config_python")
+
+load("@utf8_range//:workspace_deps.bzl", "utf8_range_deps")
+utf8_range_deps()
 
 bind(
     name = "python_headers",

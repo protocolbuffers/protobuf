@@ -5,6 +5,7 @@ require_once('test_util.php');
 
 use Google\Protobuf\RepeatedField;
 use Google\Protobuf\GPBType;
+use Foo\EmptyAnySerialization;
 use Foo\TestInt32Value;
 use Foo\TestInt64Value;
 use Foo\TestUInt32Value;
@@ -1512,5 +1513,23 @@ class EncodeDecodeTest extends TestBase
             [TestInt32Value::class, 1, "1", 0, "0"],
             [TestStringValue::class, "a", "\"a\"", "", "\"\""],
         ];
+    }
+
+    public function testEmptyAnySerialization()
+    {
+        $m = new EmptyAnySerialization();
+
+        $any = new Any();
+        $any->pack($m);
+
+        $data = $any->serializeToJsonString();
+        $this->assertEquals('{"@type":"type.googleapis.com/foo.EmptyAnySerialization"}', $data);
+
+        $any = new Any();
+        $any->mergeFromJsonString($data);
+
+        $m = $any->unpack();
+        $this->assertInstanceOf(EmptyAnySerialization::class, $m);
+        $this->assertEquals('', $m->getA());
     }
 }

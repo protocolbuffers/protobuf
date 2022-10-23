@@ -328,6 +328,7 @@ void ImmutableMapFieldGenerator::GenerateMembers(io::Printer* printer) const {
       "              $value_default_value$);\n"
       "}\n");
   printer->Print(variables_,
+                 "@SuppressWarnings(\"serial\")\n"
                  "private com.google.protobuf.MapField<\n"
                  "    $type_parameters$> $name$_;\n"
                  "private com.google.protobuf.MapField<$type_parameters$>\n"
@@ -847,7 +848,6 @@ void ImmutableMapFieldGenerator::GenerateBuilderParsingCode(
         "    $name$__.getKey(), $name$__.getValue());\n");
   }
 }
-
 void ImmutableMapFieldGenerator::GenerateSerializationCode(
     io::Printer* printer) const {
   printer->Print(variables_,

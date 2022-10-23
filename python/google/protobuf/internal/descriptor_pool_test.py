@@ -414,6 +414,20 @@ class DescriptorPoolTestBase(object):
     field = file_json.message_types_by_name['class'].fields_by_name['int_field']
     self.assertEqual(field.json_name, 'json_int')
 
+  def testAddSerializedFileTwice(self):
+    if isinstance(self, SecondaryDescriptorFromDescriptorDB):
+      if api_implementation.Type() != 'python':
+        # Cpp extension cannot call Add on a DescriptorPool
+        # that uses a DescriptorDatabase.
+        # TODO(jieluo): Fix python and cpp extension diff.
+        return
+    self.pool = descriptor_pool.DescriptorPool()
+    file1_first = self.pool.AddSerializedFile(
+        self.factory_test1_fd.SerializeToString())
+    file1_again = self.pool.AddSerializedFile(
+        self.factory_test1_fd.SerializeToString())
+    self.assertIs(file1_first, file1_again)
+
   def testEnumDefaultValue(self):
     """Test the default value of enums which don't start at zero."""
     def _CheckDefaultValue(file_descriptor):
