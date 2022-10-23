@@ -53,7 +53,6 @@
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/port.h"
-#include "google/protobuf/stubs/stl_util.h"
 
 
 // Must be included last.
@@ -387,24 +386,10 @@ class PROTOBUF_EXPORT LimitingInputStream PROTOBUF_FUTURE_FINAL
 
 // ===================================================================
 
-// mutable_string_data() and as_string_data() are workarounds to improve
-// the performance of writing new data to an existing string.  Unfortunately
-// the methods provided by the string class are suboptimal, and using memcpy()
-// is mildly annoying because it requires its pointer args to be non-NULL even
-// if we ask it to copy 0 bytes.  Furthermore, string_as_array() has the
-// property that it always returns NULL if its arg is the empty string, exactly
-// what we want to avoid if we're using it in conjunction with memcpy()!
-// With C++11, the desired memcpy() boils down to memcpy(..., &(*s)[0], size),
-// where s is a string*.  Without C++11, &(*s)[0] is not guaranteed to be safe,
-// so we use string_as_array(), and live with the extra logic that tests whether
-// *s is empty.
-
 // Return a pointer to mutable characters underlying the given string.  The
 // return value is valid until the next time the string is resized.  We
 // trust the caller to treat the return value as an array of length s->size().
 inline char* mutable_string_data(std::string* s) {
-  // This should be simpler & faster than string_as_array() because the latter
-  // is guaranteed to return NULL when *s is empty, so it has to check for that.
   return &(*s)[0];
 }
 

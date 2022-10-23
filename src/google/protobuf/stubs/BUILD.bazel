@@ -26,7 +26,6 @@ cc_library(
         "platform_macros.h",
         "port.h",
         "status_macros.h",
-        "stl_util.h",
         "strutil.h",
     ],
     copts = COPTS,
@@ -56,7 +55,6 @@ cc_library(
         "platform_macros.h",
         "port.h",
         "status_macros.h",
-        "stl_util.h",
         "strutil.h",
     ],
     deps = [

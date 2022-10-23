@@ -32,6 +32,7 @@
 
 #import <objc/message.h>
 #import <objc/runtime.h>
+#import <os/lock.h>
 #import <stdatomic.h>
 
 #import "GPBArray_PackagePrivate.h"
@@ -70,8 +71,7 @@ static NSString *const kGPBDataCoderKey = @"GPBData";
  @package
   GPBUnknownFieldSet *unknownFields_;
   NSMutableDictionary *extensionMap_;
-  // Readonly access to autocreatedExtensionMap_ is protected via
-  // readOnlySemaphore_.
+  // Readonly access to autocreatedExtensionMap_ is protected via readOnlyLock_.
   NSMutableDictionary *autocreatedExtensionMap_;
 
   // If the object was autocreated, we remember the creator so that if we get
@@ -80,19 +80,21 @@ static NSString *const kGPBDataCoderKey = @"GPBData";
   GPBFieldDescriptor *autocreatorField_;
   GPBExtensionDescriptor *autocreatorExtension_;
 
-  // Message can only be mutated from one thread. But some *readonly* operations
-  // modify internal state because they autocreate things. The
-  // autocreatedExtensionMap_ is one such structure. Access during readonly
-  // operations is protected via this semaphore.
-  // NOTE: OSSpinLock may seem like a good fit here but Apple engineers have
-  // pointed out that they are vulnerable to live locking on iOS in cases of
-  // priority inversion:
+  // Messages can only be mutated from one thread. But some *readonly* operations modify internal
+  // state because they autocreate things. The autocreatedExtensionMap_ is one such structure.
+  // Access during readonly operations is protected via this lock.
+  //
+  // Long ago, this was an OSSpinLock, but then it came to light that there were issues for that on
+  // iOS:
   //   http://mjtsai.com/blog/2015/12/16/osspinlock-is-unsafe/
   //   https://lists.swift.org/pipermail/swift-dev/Week-of-Mon-20151214/000372.html
-  // Use of readOnlySemaphore_ must be prefaced by a call to
-  // GPBPrepareReadOnlySemaphore to ensure it has been created. This allows
-  // readOnlySemaphore_ to be only created when actually needed.
-  _Atomic(dispatch_semaphore_t) readOnlySemaphore_;
+  // It was changed to a dispatch_semaphore_t, but that has potential for priority inversion issues.
+  // The minOS versions are now high enough that os_unfair_lock can be used, and should provide 
+  // all the support we need. For more information in the concurrency/locking space see:
+  //   https://gist.github.com/tclementdev/6af616354912b0347cdf6db159c37057
+  //   https://developer.apple.com/library/archive/documentation/Performance/Conceptual/EnergyGuide-iOS/PrioritizeWorkWithQoS.html
+  //   https://developer.apple.com/videos/play/wwdc2017/706/
+  os_unfair_lock readOnlyLock_;
 }
 @end
 
@@ -746,33 +748,6 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
   self->autocreatorExtension_ = nil;
 }
 
-// Call this before using the readOnlySemaphore_. This ensures it is created only once.
-void GPBPrepareReadOnlySemaphore(GPBMessage *self) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdirect-ivar-access"
-
-  // Create the semaphore on demand (rather than init) as developers might not cause them
-  // to be needed, and the heap usage can add up.  The atomic swap is used to avoid needing
-  // another lock around creating it.
-  if (self->readOnlySemaphore_ == nil) {
-    dispatch_semaphore_t worker = dispatch_semaphore_create(1);
-    dispatch_semaphore_t expected = nil;
-    if (!atomic_compare_exchange_strong(&self->readOnlySemaphore_, &expected, worker)) {
-      dispatch_release(worker);
-    }
-#if defined(__clang_analyzer__)
-    // The static analyzer thinks worker is leaked (doesn't seem to know about
-    // atomic_compare_exchange_strong); so just for the analyzer, let it think
-    // worker is also released in this case.
-    else {
-      dispatch_release(worker);
-    }
-#endif
-  }
-
-#pragma clang diagnostic pop
-}
-
 static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   if (!self->unknownFields_) {
     self->unknownFields_ = [[GPBUnknownFieldSet alloc] init];
@@ -845,6 +820,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   if ((self = [super init])) {
     messageStorage_ =
         (GPBMessage_StoragePtr)(((uint8_t *)self) + class_getInstanceSize([self class]));
+    readOnlyLock_ = OS_UNFAIR_LOCK_INIT;
   }
 
   return self;
@@ -915,9 +891,6 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 - (void)dealloc {
   [self internalClear:NO];
   NSCAssert(!autocreator_, @"Autocreator was not cleared before dealloc.");
-  if (readOnlySemaphore_) {
-    dispatch_release(readOnlySemaphore_);
-  }
   [super dealloc];
 }
 
@@ -1741,8 +1714,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
   }
 
   // Check for an autocreated value.
-  GPBPrepareReadOnlySemaphore(self);
-  dispatch_semaphore_wait(readOnlySemaphore_, DISPATCH_TIME_FOREVER);
+  os_unfair_lock_lock(&readOnlyLock_);
   value = [autocreatedExtensionMap_ objectForKey:extension];
   if (!value) {
     // Auto create the message extensions to match normal fields.
@@ -1759,7 +1731,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
     [value release];
   }
 
-  dispatch_semaphore_signal(readOnlySemaphore_);
+  os_unfair_lock_unlock(&readOnlyLock_);
   return value;
 }
 

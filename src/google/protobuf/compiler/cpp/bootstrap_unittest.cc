@@ -56,7 +56,6 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
-#include "google/protobuf/stubs/stl_util.h"
 
 namespace google {
 namespace protobuf {

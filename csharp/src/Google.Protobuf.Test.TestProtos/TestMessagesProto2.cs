@@ -218,8 +218,9 @@ namespace ProtobufTestMessages.Proto2 {
             "GAIgASgJEhAKCHJlcXVpcmVzGAMgAygJKkYKEUZvcmVpZ25FbnVtUHJvdG8y",
             "Eg8KC0ZPUkVJR05fRk9PEAASDwoLRk9SRUlHTl9CQVIQARIPCgtGT1JFSUdO",
             "X0JBWhACOkoKD2V4dGVuc2lvbl9pbnQzMhIxLnByb3RvYnVmX3Rlc3RfbWVz",
-            "c2FnZXMucHJvdG8yLlRlc3RBbGxUeXBlc1Byb3RvMhh4IAEoBUIvCihjb20u",
-            "Z29vZ2xlLnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8ySAH4AQE="));
+            "c2FnZXMucHJvdG8yLlRlc3RBbGxUeXBlc1Byb3RvMhh4IAEoBUI4Cihjb20u",
+            "Z29vZ2xlLnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMucHJvdG8ySAH4AQGiAgZQ",
+            "cm90bzI="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Proto2.ForeignEnumProto2), }, new pb::Extension[] { TestMessagesProto2Extensions.ExtensionInt32 }, new pbr::GeneratedClrTypeInfo[] {

@@ -386,7 +386,7 @@ PROTOBUF_EXPORT const std::string& NameOfDenseEnumSlow(int v,
 // very fast. This assumes all the enums fall in the range [min_val .. max_val].
 template <const EnumDescriptor* (*descriptor_fn)(), int min_val, int max_val>
 const std::string& NameOfDenseEnum(int v) {
-  static_assert(max_val - min_val >= 0, "Too mamny enums between min and max.");
+  static_assert(max_val - min_val >= 0, "Too many enums between min and max.");
   static DenseEnumCacheInfo deci = {/* atomic ptr */ {}, min_val, max_val,
                                     descriptor_fn};
   const std::string** cache = deci.cache.load(std::memory_order_acquire );

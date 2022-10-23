@@ -221,12 +221,6 @@ class PROTOBUF_EXPORT SourceTree {
   SourceTree& operator=(const SourceTree&) = delete;
   virtual ~SourceTree();
 
-  // This is a temporary typedef alias to allow migrating the argument type of
-  // Open in an atomic change without touching certain directories which are
-  // restricted for various reasons.  This must match the argument type used
-  // below.
-  using SourceTreeOpenArgumentType = absl::string_view;
-
   // Open the given file and return a stream that reads it, or NULL if not
   // found.  The caller takes ownership of the returned object.  The filename
   // must be a path relative to the root of the source tree and must not

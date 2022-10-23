@@ -90,7 +90,6 @@ option objc_class_prefix = "GPB";
 //     Timestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000)
 //         .setNanos((int) ((millis % 1000) * 1000000)).build();
 //
-//
 // Example 5: Compute Timestamp from Java `Instant.now()`.
 //
 //     Instant now = Instant.now();
@@ -98,7 +97,6 @@ option objc_class_prefix = "GPB";
 //     Timestamp timestamp =
 //         Timestamp.newBuilder().setSeconds(now.getEpochSecond())
 //             .setNanos(now.getNano()).build();
-//
 //
 // Example 6: Compute Timestamp from current time in Python.
 //
@@ -131,7 +129,6 @@ option objc_class_prefix = "GPB";
 // the Joda Time's [`ISODateTimeFormat.dateTime()`](
 // http://www.joda.org/joda-time/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime%2D%2D
 // ) to obtain a formatter capable of generating timestamps in this format.
-//
 //
 message Timestamp {
   // Represents seconds of UTC time since Unix epoch

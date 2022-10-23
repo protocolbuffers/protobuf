@@ -2491,7 +2491,7 @@ int Reflection::MapSize(const Message& message,
 // -----------------------------------------------------------------------------
 
 const FieldDescriptor* Reflection::FindKnownExtensionByName(
-    const std::string& name) const {
+    absl::string_view name) const {
   if (!schema_.HasExtensionSet()) return nullptr;
   return descriptor_pool_->FindExtensionByPrintableName(descriptor_, name);
 }
@@ -3095,7 +3095,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTableForMessageSet()
   // Create a dummy table that only exists to make TcParser::ParseLoop jump
   // into the reflective parse loop.
 
-  using Table = internal::TcParseTable<0, 0, 0, 1, 1>;
+  using Table = internal::TcParseTable<0, 0, 0, 0, 1>;
   // We use `operator new` here because the destruction will be done with
   // `operator delete` unconditionally.
   void* p = ::operator new(sizeof(Table));
@@ -3203,6 +3203,7 @@ void Reflection::PopulateTcParseFieldAux(
         field_aux++->offset = schema_.SizeofSplit();
         break;
       case internal::TailCallTableInfo::kSubTable:
+      case internal::TailCallTableInfo::kSubMessageWeak:
         GOOGLE_LOG(FATAL) << "Not supported";
         break;
       case internal::TailCallTableInfo::kSubMessage:
@@ -3319,8 +3320,10 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
   PopulateTcParseFieldAux(table_info, res->field_aux(0u));
 
   // Copy the name data.
-  memcpy(res->name_data(), table_info.field_name_data.data(),
-         table_info.field_name_data.size());
+  if (!table_info.field_name_data.empty()) {
+    memcpy(res->name_data(), table_info.field_name_data.data(),
+           table_info.field_name_data.size());
+  }
   // Validation to make sure we used all the bytes correctly.
   GOOGLE_CHECK_EQ(res->name_data() + table_info.field_name_data.size() -
                reinterpret_cast<char*>(res),

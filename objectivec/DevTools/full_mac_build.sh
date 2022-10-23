@@ -8,7 +8,8 @@ set -eu
 # Some base locations.
 readonly ScriptDir=$(dirname "$(echo $0 | sed -e "s,^\([^/]\),$(pwd)/\1,")")
 readonly ProtoRootDir="${ScriptDir}/../.."
-readonly BazelFlags="-k --announce_rc --test_output=errors --macos_minimum_os=10.9"
+readonly BazelFlags="--announce_rc --macos_minimum_os=10.9 \
+  $(${ScriptDir}/../../kokoro/common/bazel_flags.sh)"
 
 # Invoke with BAZEL=bazelisk to use that instead.
 readonly BazelBin="${BAZEL:=bazel}"

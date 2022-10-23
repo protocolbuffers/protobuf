@@ -42,7 +42,6 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_replace.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/stubs/stl_util.h"
 
 
 namespace google {

@@ -44,6 +44,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "conformance/conformance.pb.h"
+#include "conformance/conformance.pb.h"
 
 using conformance::ConformanceRequest;
 using conformance::ConformanceResponse;
@@ -176,6 +177,59 @@ string ConformanceTestSuite::ConformanceRequestSetting::
   return "";
 }
 
+void ConformanceTestSuite::TruncateDebugPayload(string* payload) {
+  if (payload != nullptr && payload->size() > 200) {
+    payload->resize(200);
+    payload->append("...(truncated)");
+  }
+}
+
+const ConformanceRequest ConformanceTestSuite::TruncateRequest(
+    const ConformanceRequest& request) {
+  ConformanceRequest debug_request(request);
+  switch (debug_request.payload_case()) {
+    case ConformanceRequest::kProtobufPayload:
+      TruncateDebugPayload(debug_request.mutable_protobuf_payload());
+      break;
+    case ConformanceRequest::kJsonPayload:
+      TruncateDebugPayload(debug_request.mutable_json_payload());
+      break;
+    case ConformanceRequest::kTextPayload:
+      TruncateDebugPayload(debug_request.mutable_text_payload());
+      break;
+    case ConformanceRequest::kJspbPayload:
+      TruncateDebugPayload(debug_request.mutable_jspb_payload());
+      break;
+    default:
+      // Do nothing.
+      break;
+  }
+  return debug_request;
+}
+
+const ConformanceResponse ConformanceTestSuite::TruncateResponse(
+    const ConformanceResponse& response) {
+  ConformanceResponse debug_response(response);
+  switch (debug_response.result_case()) {
+    case ConformanceResponse::kProtobufPayload:
+      TruncateDebugPayload(debug_response.mutable_protobuf_payload());
+      break;
+    case ConformanceResponse::kJsonPayload:
+      TruncateDebugPayload(debug_response.mutable_json_payload());
+      break;
+    case ConformanceResponse::kTextPayload:
+      TruncateDebugPayload(debug_response.mutable_text_payload());
+      break;
+    case ConformanceResponse::kJspbPayload:
+      TruncateDebugPayload(debug_response.mutable_jspb_payload());
+      break;
+    default:
+      // Do nothing.
+      break;
+  }
+  return debug_response;
+}
+
 void ConformanceTestSuite::ReportSuccess(const string& test_name) {
   if (expected_to_fail_.erase(test_name) != 0) {
     absl::StrAppendFormat(
@@ -203,9 +257,10 @@ void ConformanceTestSuite::ReportFailure(const string& test_name,
     absl::StrAppendFormat(&output_, "ERROR, test=%s: ", test_name);
     unexpected_failing_tests_.insert(test_name);
   }
-  absl::StrAppendFormat(&output_, "%s request=%s, response=%s\n", message,
-                        request.ShortDebugString(),
-                        response.ShortDebugString());
+
+  absl::StrAppendFormat(&output_, "%s, request=%s, response=%s\n", message,
+                        TruncateRequest(request).ShortDebugString(),
+                        TruncateResponse(response).ShortDebugString());
 }
 
 void ConformanceTestSuite::ReportSkip(const string& test_name,
@@ -261,6 +316,7 @@ void ConformanceTestSuite::VerifyResponse(
       return;
 
     case ConformanceResponse::kParseError:
+    case ConformanceResponse::kTimeoutError:
     case ConformanceResponse::kRuntimeError:
     case ConformanceResponse::kSerializeError:
       ReportFailure(test_name, level, request, response,
@@ -327,7 +383,8 @@ void ConformanceTestSuite::RunTest(const string& test_name,
   if (verbose_) {
     absl::StrAppendFormat(
         &output_, "conformance test: name=%s, request=%s, response=%s\n",
-        test_name, request.ShortDebugString(), response->ShortDebugString());
+        test_name, TruncateRequest(request).ShortDebugString(),
+        TruncateResponse(*response).ShortDebugString());
   }
 }
 

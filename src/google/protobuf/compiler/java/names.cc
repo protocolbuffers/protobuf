@@ -140,7 +140,6 @@ std::string ClassName(const FileDescriptor* descriptor) {
   return name_resolver.GetClassName(descriptor, true);
 }
 
-
 std::string FileJavaPackage(const FileDescriptor* file, bool immutable,
                             Options options) {
   std::string result;

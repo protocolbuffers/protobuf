@@ -559,6 +559,7 @@ TEST_F(FileDescriptorTest, CopyHeadingTo) {
   proto.set_name("foo.proto");
   proto.set_package("foo.bar.baz");
   proto.set_syntax("proto3");
+  proto.mutable_options()->set_java_package("foo.bar.baz");
 
   // Won't be copied.
   proto.add_message_type()->set_name("Foo");
@@ -572,6 +573,7 @@ TEST_F(FileDescriptorTest, CopyHeadingTo) {
   EXPECT_EQ(other.name(), "foo.proto");
   EXPECT_EQ(other.package(), "foo.bar.baz");
   EXPECT_EQ(other.syntax(), "proto3");
+  EXPECT_EQ(other.options().java_package(), "foo.bar.baz");
   EXPECT_TRUE(other.message_type().empty());
 }
 
@@ -2773,15 +2775,19 @@ TEST_F(MiscTest, DefaultValues) {
       ->set_default_value("hello");
   AddField(message_proto, "data", 9, label, FD::TYPE_BYTES)
       ->set_default_value("\\001\\002\\003");
+  AddField(message_proto, "data2", 10, label, FD::TYPE_BYTES)
+      ->set_default_value("\\X01\\X2\\X3");
+  AddField(message_proto, "data3", 11, label, FD::TYPE_BYTES)
+      ->set_default_value("\\x01\\x2\\x3");
 
   FieldDescriptorProto* enum_field =
-      AddField(message_proto, "enum", 10, label, FD::TYPE_ENUM);
+      AddField(message_proto, "enum", 12, label, FD::TYPE_ENUM);
   enum_field->set_type_name("DummyEnum");
   enum_field->set_default_value("B");
 
   // Strings are allowed to have empty defaults.  (At one point, due to
   // a bug, empty defaults for strings were rejected.  Oops.)
-  AddField(message_proto, "empty_string", 11, label, FD::TYPE_STRING)
+  AddField(message_proto, "empty_string", 13, label, FD::TYPE_STRING)
       ->set_default_value("");
 
   // Add a second set of fields with implicit default values.
@@ -2811,7 +2817,7 @@ TEST_F(MiscTest, DefaultValues) {
   ASSERT_EQ(1, file->message_type_count());
   const Descriptor* message = file->message_type(0);
 
-  ASSERT_EQ(21, message->field_count());
+  ASSERT_EQ(23, message->field_count());
 
   // Check the default values.
   ASSERT_TRUE(message->field(0)->has_default_value());
@@ -2825,6 +2831,8 @@ TEST_F(MiscTest, DefaultValues) {
   ASSERT_TRUE(message->field(8)->has_default_value());
   ASSERT_TRUE(message->field(9)->has_default_value());
   ASSERT_TRUE(message->field(10)->has_default_value());
+  ASSERT_TRUE(message->field(11)->has_default_value());
+  ASSERT_TRUE(message->field(12)->has_default_value());
 
   EXPECT_EQ(-1, message->field(0)->default_value_int32());
   EXPECT_EQ(int64_t{-1000000000000}, message->field(1)->default_value_int64());
@@ -2835,11 +2843,11 @@ TEST_F(MiscTest, DefaultValues) {
   EXPECT_TRUE(message->field(6)->default_value_bool());
   EXPECT_EQ("hello", message->field(7)->default_value_string());
   EXPECT_EQ("\001\002\003", message->field(8)->default_value_string());
-  EXPECT_EQ(enum_value_b, message->field(9)->default_value_enum());
-  EXPECT_EQ("", message->field(10)->default_value_string());
+  EXPECT_EQ("\001\002\003", message->field(9)->default_value_string());
+  EXPECT_EQ("\001\002\003", message->field(10)->default_value_string());
+  EXPECT_EQ(enum_value_b, message->field(11)->default_value_enum());
+  EXPECT_EQ("", message->field(12)->default_value_string());
 
-  ASSERT_FALSE(message->field(11)->has_default_value());
-  ASSERT_FALSE(message->field(12)->has_default_value());
   ASSERT_FALSE(message->field(13)->has_default_value());
   ASSERT_FALSE(message->field(14)->has_default_value());
   ASSERT_FALSE(message->field(15)->has_default_value());
@@ -2848,17 +2856,19 @@ TEST_F(MiscTest, DefaultValues) {
   ASSERT_FALSE(message->field(18)->has_default_value());
   ASSERT_FALSE(message->field(19)->has_default_value());
   ASSERT_FALSE(message->field(20)->has_default_value());
+  ASSERT_FALSE(message->field(21)->has_default_value());
+  ASSERT_FALSE(message->field(22)->has_default_value());
 
-  EXPECT_EQ(0, message->field(11)->default_value_int32());
-  EXPECT_EQ(0, message->field(12)->default_value_int64());
-  EXPECT_EQ(0, message->field(13)->default_value_uint32());
-  EXPECT_EQ(0, message->field(14)->default_value_uint64());
-  EXPECT_EQ(0.0f, message->field(15)->default_value_float());
-  EXPECT_EQ(0.0, message->field(16)->default_value_double());
-  EXPECT_FALSE(message->field(17)->default_value_bool());
-  EXPECT_EQ("", message->field(18)->default_value_string());
-  EXPECT_EQ("", message->field(19)->default_value_string());
-  EXPECT_EQ(enum_value_a, message->field(20)->default_value_enum());
+  EXPECT_EQ(0, message->field(13)->default_value_int32());
+  EXPECT_EQ(0, message->field(14)->default_value_int64());
+  EXPECT_EQ(0, message->field(15)->default_value_uint32());
+  EXPECT_EQ(0, message->field(16)->default_value_uint64());
+  EXPECT_EQ(0.0f, message->field(17)->default_value_float());
+  EXPECT_EQ(0.0, message->field(18)->default_value_double());
+  EXPECT_FALSE(message->field(19)->default_value_bool());
+  EXPECT_EQ("", message->field(20)->default_value_string());
+  EXPECT_EQ("", message->field(21)->default_value_string());
+  EXPECT_EQ(enum_value_a, message->field(22)->default_value_enum());
 }
 
 TEST_F(MiscTest, FieldOptions) {
@@ -5361,8 +5371,7 @@ TEST_F(ValidationErrorTest, InputTypeNotDefined) {
       "  method { name: \"A\" input_type: \"Bar\" output_type: \"Foo\" }"
       "}",
 
-      "foo.proto: TestService.A: INPUT_TYPE: \"Bar\" is not defined.\n"
-  );
+      "foo.proto: TestService.A: INPUT_TYPE: \"Bar\" is not defined.\n");
 }
 
 TEST_F(ValidationErrorTest, InputTypeNotAMessage) {
@@ -5375,8 +5384,7 @@ TEST_F(ValidationErrorTest, InputTypeNotAMessage) {
       "  method { name: \"A\" input_type: \"Bar\" output_type: \"Foo\" }"
       "}",
 
-      "foo.proto: TestService.A: INPUT_TYPE: \"Bar\" is not a message type.\n"
-  );
+      "foo.proto: TestService.A: INPUT_TYPE: \"Bar\" is not a message type.\n");
 }
 
 TEST_F(ValidationErrorTest, OutputTypeNotDefined) {
@@ -5388,8 +5396,7 @@ TEST_F(ValidationErrorTest, OutputTypeNotDefined) {
       "  method { name: \"A\" input_type: \"Foo\" output_type: \"Bar\" }"
       "}",
 
-      "foo.proto: TestService.A: OUTPUT_TYPE: \"Bar\" is not defined.\n"
-  );
+      "foo.proto: TestService.A: OUTPUT_TYPE: \"Bar\" is not defined.\n");
 }
 
 TEST_F(ValidationErrorTest, OutputTypeNotAMessage) {
@@ -5402,8 +5409,8 @@ TEST_F(ValidationErrorTest, OutputTypeNotAMessage) {
       "  method { name: \"A\" input_type: \"Foo\" output_type: \"Bar\" }"
       "}",
 
-      "foo.proto: TestService.A: OUTPUT_TYPE: \"Bar\" is not a message type.\n"
-  );
+      "foo.proto: TestService.A: OUTPUT_TYPE: \"Bar\" is not a message "
+      "type.\n");
 }
 
 
@@ -6035,8 +6042,8 @@ TEST_F(ValidationErrorTest, RollbackAfterError) {
       "  }"
       "}",
 
-      "foo.proto: TestService.Baz: INPUT_TYPE: \"NoSuchType\" is not defined.\n"
-  );
+      "foo.proto: TestService.Baz: INPUT_TYPE: \"NoSuchType\" is not "
+      "defined.\n");
 
   // Make sure that if we build the same file again with the error fixed,
   // it works.  If the above rollback was incomplete, then some symbols will

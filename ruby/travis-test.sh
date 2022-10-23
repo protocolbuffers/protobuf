@@ -5,8 +5,8 @@ set -ex
 
 test_version() {
   version=$1
-  bazel_args=" \
-    -k --test_output=streamed \
+  bazel_args="\
+    $(../kokoro/common/bazel_flags.sh) \
     --action_env=PATH \
     --action_env=GEM_PATH \
     --action_env=GEM_HOME \

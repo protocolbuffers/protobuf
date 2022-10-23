@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_REFLECTION_INTERNAL_H__
 #define GOOGLE_PROTOBUF_REFLECTION_INTERNAL_H__
 
+#include "absl/strings/cord.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/reflection.h"
 #include "google/protobuf/repeated_field.h"

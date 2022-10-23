@@ -34,14 +34,18 @@
 
 #include "google/protobuf/compiler/cpp/enum.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <limits>
-#include <map>
-#include <unordered_set>
+#include <string>
 #include <utility>
+#include <vector>
 
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/stubs/strutil.h"
+#include "google/protobuf/descriptor.h"
+#include "absl/container/btree_map.h"
+#include "absl/container/btree_set.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/names.h"
 
@@ -49,8 +53,23 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-
 namespace {
+absl::flat_hash_map<std::string, std::string> EnumVars(
+    const EnumDescriptor* enum_, const Options& options,
+    const EnumValueDescriptor* min, const EnumValueDescriptor* max) {
+  auto classname = ClassName(enum_, false);
+  return {
+      {"Enum", enum_->name()},
+      {"Enum_", ResolveKeyword(enum_->name())},
+      {"Msg_Enum", classname},
+      {"::Msg_Enum", QualifiedClassName(enum_, options)},
+      {"Msg_Enum_",
+       enum_->containing_type() == nullptr ? "" : absl::StrCat(classname, "_")},
+      {"kMin", absl::StrCat(min->number())},
+      {"kMax", absl::StrCat(max->number())},
+  };
+}
+
 // The ARRAYSIZE constant is the max enum value plus 1. If the max enum value
 // is kint32max, ARRAYSIZE will overflow. In such cases we should omit the
 // generation of the ARRAYSIZE constant.
@@ -63,22 +82,9 @@ bool ShouldGenerateArraySize(const EnumDescriptor* descriptor) {
   }
   return max_value != std::numeric_limits<int32_t>::max();
 }
-
-// Returns the number of unique numeric enum values. This is less than
-// descriptor->value_count() when there are aliased values.
-int CountUniqueValues(const EnumDescriptor* descriptor) {
-  std::unordered_set<int> values;
-  for (int i = 0; i < descriptor->value_count(); ++i) {
-    values.insert(descriptor->value(i)->number());
-  }
-  return values.size();
-}
-
-struct MinMaxEnumDescriptors {
-  const EnumValueDescriptor* min;
-  const EnumValueDescriptor* max;
-};
-MinMaxEnumDescriptors EnumLimits(const EnumDescriptor* descriptor) {
+}  // namespace
+EnumGenerator::ValueLimits EnumGenerator::ValueLimits::FromEnum(
+    const EnumDescriptor* descriptor) {
   const EnumValueDescriptor* min_desc = descriptor->value(0);
   const EnumValueDescriptor* max_desc = descriptor->value(0);
 
@@ -90,266 +96,303 @@ MinMaxEnumDescriptors EnumLimits(const EnumDescriptor* descriptor) {
       max_desc = descriptor->value(i);
     }
   }
-  return {min_desc, max_desc};
-}
 
-// Assumes that HasDescriptorMethods is true.
-bool ShouldCacheDenseEnum(const EnumDescriptor* descriptor,
-                          MinMaxEnumDescriptors limits) {
-  // The conditions here for what is "sparse" are not rigorously
-  // chosen.  We use unsigned values in case the subtraction of min from max
-  // exceeds the bounds of int.
-  const unsigned values_range = static_cast<unsigned>(limits.max->number()) -
-                                static_cast<unsigned>(limits.min->number());
-  return (values_range < 16u ||
-          values_range < static_cast<unsigned>(descriptor->value_count()) * 2u);
+  return EnumGenerator::ValueLimits{min_desc, max_desc};
 }
-
-}  // namespace
 
 EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
-                             const std::map<std::string, std::string>& vars,
                              const Options& options)
-    : descriptor_(descriptor),
-      classname_(ClassName(descriptor, false)),
+    : enum_(descriptor),
       options_(options),
       generate_array_size_(ShouldGenerateArraySize(descriptor)),
-      variables_(vars) {
-  variables_["classname"] = classname_;
-  variables_["classtype"] = QualifiedClassName(descriptor_, options);
-  variables_["short_name"] = descriptor_->name();
-  variables_["nested_name"] = descriptor_->name();
-  variables_["resolved_name"] = ResolveKeyword(descriptor_->name());
-  variables_["prefix"] =
-      (descriptor_->containing_type() == nullptr) ? "" : classname_ + "_";
+      has_reflection_(HasDescriptorMethods(enum_->file(), options_)),
+      limits_(ValueLimits::FromEnum(enum_)) {
+  // The conditions here for what is "sparse" are not rigorously
+  // chosen.
+  size_t values_range = static_cast<size_t>(limits_.max->number()) -
+                        static_cast<size_t>(limits_.min->number());
+  size_t total_values = static_cast<size_t>(enum_->value_count());
+  should_cache_ = has_reflection_ &&
+                  (values_range < 16u || values_range < total_values * 2u);
 }
 
-EnumGenerator::~EnumGenerator() {}
+void EnumGenerator::GenerateDefinition(io::Printer* p) {
+  auto v1 = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
 
-void EnumGenerator::GenerateDefinition(io::Printer* printer) {
-  Formatter format(printer, variables_);
-  format("enum ${1$$classname$$}$ : int {\n", descriptor_);
-  format.Indent();
+  auto v2 = p->WithVars({
+      {"Msg_Enum_Enum_MIN",
+       absl::StrCat(p->LookupVar("Msg_Enum_"), enum_->name(), "_MIN"), enum_},
+      {"Msg_Enum_Enum_MAX",
+       absl::StrCat(p->LookupVar("Msg_Enum_"), enum_->name(), "_MAX"), enum_},
+  });
+  p->Emit(
+      {
+          {"values",
+           [&] {
+             for (int i = 0; i < enum_->value_count(); ++i) {
+               const auto* value = enum_->value(i);
+               p->Emit(
+                   {
+                       {
+                           "Msg_Enum_VALUE",
+                           absl::StrCat(p->LookupVar("Msg_Enum_"),
+                                        EnumValueName(value)),
+                           value,
+                       },
+                       {"kNumber", Int32ToString(value->number())},
+                       {"DEPRECATED", value->options().deprecated()
+                                          ? "PROTOBUF_DEPRECATED_ENUM"
+                                          : ""},
+                   },
+                   R"cc(
+                     $Msg_Enum_VALUE$$ DEPRECATED$ = $kNumber$,
+                   )cc");
+             }
+           }},
+          // Only emit annotations for the $Msg_Enum$ used in the `enum`
+          // definition.
+          {"Msg_Enum_annotated", p->LookupVar("Msg_Enum"), enum_},
+          {"open_enum_sentinels",
+           [&] {
+             if (enum_->is_closed()) {
+               return;
+             }
 
-  for (int i = 0; i < descriptor_->value_count(); i++) {
-    auto format_value = format;
-    format_value.Set("name", EnumValueName(descriptor_->value(i)));
-    // In C++, an value of -2147483648 gets interpreted as the negative of
-    // 2147483648, and since 2147483648 can't fit in an integer, this produces a
-    // compiler warning.  This works around that issue.
-    format_value.Set("number", Int32ToString(descriptor_->value(i)->number()));
-    format_value.Set("deprecation",
-                     DeprecatedAttribute(options_, descriptor_->value(i)));
+             // For open enum semantics: generate min and max sentinel values
+             // equal to INT32_MIN and INT32_MAX
+             p->Emit({{"Msg_Enum_Msg_Enum_",
+                       absl::StrCat(p->LookupVar("Msg_Enum"), "_",
+                                    p->LookupVar("Msg_Enum_"))}},
+                     R"cc(
+                       $Msg_Enum_Msg_Enum_$INT_MIN_SENTINEL_DO_NOT_USE_ =
+                           std::numeric_limits<int32_t>::min(),
+                       $Msg_Enum_Msg_Enum_$INT_MAX_SENTINEL_DO_NOT_USE_ =
+                           std::numeric_limits<int32_t>::max(),
+                     )cc");
+           }},
+      },
+      R"cc(
+        enum $Msg_Enum_annotated$ : int {
+          $values$,
+          $open_enum_sentinels$,
+        };
 
-    if (i > 0) format_value(",\n");
-    format_value("${1$$prefix$$name$$}$ $deprecation$= $number$",
-                 descriptor_->value(i));
-  }
-
-  if (descriptor_->file()->syntax() == FileDescriptor::SYNTAX_PROTO3) {
-    // For new enum semantics: generate min and max sentinel values equal to
-    // INT32_MIN and INT32_MAX
-    if (descriptor_->value_count() > 0) format(",\n");
-    format(
-        "$classname$_$prefix$INT_MIN_SENTINEL_DO_NOT_USE_ = "
-        "std::numeric_limits<$int32$>::min(),\n"
-        "$classname$_$prefix$INT_MAX_SENTINEL_DO_NOT_USE_ = "
-        "std::numeric_limits<$int32$>::max()");
-  }
-
-  format.Outdent();
-  format("\n};\n");
-
-  MinMaxEnumDescriptors enum_limits = EnumLimits(descriptor_);
-  format(
-      "$dllexport_decl $bool $classname$_IsValid(int value);\n"
-      "constexpr $classname$ ${1$$prefix$$short_name$_MIN$}$ = "
-      "$prefix$$2$;\n"
-      "constexpr $classname$ ${1$$prefix$$short_name$_MAX$}$ = "
-      "$prefix$$3$;\n",
-      descriptor_, EnumValueName(enum_limits.min),
-      EnumValueName(enum_limits.max));
+        $dllexport_decl $bool $Msg_Enum$_IsValid(int value);
+        constexpr $Msg_Enum$ $Msg_Enum_Enum_MIN$ = static_cast<$Msg_Enum$>($kMin$);
+        constexpr $Msg_Enum$ $Msg_Enum_Enum_MAX$ = static_cast<$Msg_Enum$>($kMax$);
+      )cc");
 
   if (generate_array_size_) {
-    format(
-        "constexpr int ${1$$prefix$$short_name$_ARRAYSIZE$}$ = "
-        "$prefix$$short_name$_MAX + 1;\n\n",
-        descriptor_);
+    p->Emit(
+        {{"Msg_Enum_Enum_ARRAYSIZE",
+          absl::StrCat(p->LookupVar("Msg_Enum_"), enum_->name(), "_ARRAYSIZE"),
+          enum_}},
+        R"cc(
+          constexpr int $Msg_Enum_Enum_ARRAYSIZE$ = $kMax$ + 1;
+        )cc");
   }
 
-  if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    format(
-        "$dllexport_decl $const ::$proto_ns$::EnumDescriptor* "
-        "$classname$_descriptor();\n");
+  if (has_reflection_) {
+    p->Emit(R"cc(
+      $dllexport_decl $const ::$proto_ns$::EnumDescriptor*
+      $Msg_Enum$_descriptor();
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      const std::string& $Msg_Enum$_Name($Msg_Enum$ value);
+    )cc");
   }
 
-  // The _Name and _Parse functions. The lite implementation is table-based, so
-  // we make sure to keep the tables hidden in the .cc file.
-  if (!HasDescriptorMethods(descriptor_->file(), options_)) {
-    format("const std::string& $classname$_Name($classname$ value);\n");
-  }
-  // The _Name() function accepts the enum type itself but also any integral
-  // type.
-  format(
-      "template<typename T>\n"
-      "inline const std::string& $classname$_Name(T enum_t_value) {\n"
-      "  static_assert(::std::is_same<T, $classname$>::value ||\n"
-      "    ::std::is_integral<T>::value,\n"
-      "    \"Incorrect type passed to function $classname$_Name.\");\n");
-  if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    if (ShouldCacheDenseEnum(descriptor_, enum_limits)) {
+  // There are three possible implementations of $Enum$_Name() and
+  // $Msg_Enum$_Parse(), depending on whether we are using a dense enum name
+  // cache or not, and whether or not we have reflection. Very little code is
+  // shared between the three, so it is split into three Emit() calls.
+
+  // Can't use WithVars here, since callbacks can only be passed to Emit()
+  // directly. Because this includes $Enum$, it must be a callback.
+  auto write_assert = [&] {
+    p->Emit(R"cc(
+      static_assert(std::is_same<T, $Msg_Enum$>::value ||
+                        std::is_integral<T>::value,
+                    "Incorrect type passed to $Enum$_Name().");
+    )cc");
+  };
+
+  if (should_cache_ || !has_reflection_) {
+    p->Emit({{"static_assert", write_assert}}, R"cc(
+      template <typename T>
+      const std::string& $Msg_Enum$_Name(T value) {
+        $static_assert$;
+        return $Msg_Enum$_Name(static_cast<$Msg_Enum$>(value));
+      }
+    )cc");
+    if (should_cache_) {
       // Using the NameOfEnum routine can be slow, so we create a small
       // cache of pointers to the std::string objects that reflection
       // stores internally.  This cache is a simple contiguous array of
       // pointers, so if the enum values are sparse, it's not worth it.
-      format(
-          "  return "
-          "$classname$_Name(static_cast<$classname$>(enum_t_value));\n");
+      p->Emit(R"cc(
+        template <>
+        inline const std::string& $Msg_Enum$_Name($Msg_Enum$ value) {
+          return ::$proto_ns$::internal::NameOfDenseEnum<$Msg_Enum$_descriptor,
+                                                         $kMin$, $kMax$>(
+              static_cast<int>(value));
+        }
+      )cc");
     } else {
-      format(
-          "  return ::$proto_ns$::internal::NameOfEnum(\n"
-          "    $classname$_descriptor(), enum_t_value);\n");
+      p->Emit(R"cc(
+        const std::string& $Msg_Enum$_Name($Msg_Enum$ value);
+      )cc");
     }
   } else {
-    format(
-        "  return $classname$_Name(static_cast<$classname$>(enum_t_value));\n");
+    p->Emit({{"static_assert", write_assert}}, R"cc(
+      template <typename T>
+      const std::string& $Msg_Enum$_Name(T value) {
+        $static_assert$;
+        return ::$proto_ns$::internal::NameOfEnum($Msg_Enum$_descriptor(), value);
+      }
+    )cc");
   }
-  format("}\n");
 
-  if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    if (ShouldCacheDenseEnum(descriptor_, enum_limits)) {
-      format(
-          "template<>\n"
-          "inline const std::string& $classname$_Name($classname$ value) {\n"
-          "  return ::$proto_ns$::internal::NameOfDenseEnum\n"
-          "    <$classname$_descriptor, $1$, $2$>(static_cast<int>(value));\n"
-          "}\n",
-          enum_limits.min->number(), enum_limits.max->number());
-    }
-    format(
-        "inline bool $classname$_Parse(\n"
-        "    ::absl::string_view name, $classname$* "
-        "value) "
-        "{\n"
-        "  return ::$proto_ns$::internal::ParseNamedEnum<$classname$>(\n"
-        "    $classname$_descriptor(), name, value);\n"
-        "}\n");
+  if (has_reflection_) {
+    p->Emit(R"cc(
+      inline bool $Msg_Enum$_Parse(absl::string_view name, $Msg_Enum$* value) {
+        return ::$proto_ns$::internal::ParseNamedEnum<$Msg_Enum$>(
+            $Msg_Enum$_descriptor(), name, value);
+      }
+    )cc");
   } else {
-    format(
-        "bool $classname$_Parse(\n"
-        "    ::absl::string_view name, $classname$* "
-        "value);\n");
+    p->Emit(R"cc(
+      bool $Msg_Enum$_Parse(absl::string_view name, $Msg_Enum$* value);
+    )cc");
   }
 }
 
-void EnumGenerator::GenerateGetEnumDescriptorSpecializations(
-    io::Printer* printer) {
-  Formatter format(printer, variables_);
-  format(
-      "template <> struct is_proto_enum< $classtype$> : ::std::true_type "
-      "{};\n");
-  if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    format(
-        "template <>\n"
-        "inline const EnumDescriptor* GetEnumDescriptor< $classtype$>() {\n"
-        "  return $classtype$_descriptor();\n"
-        "}\n");
+void EnumGenerator::GenerateGetEnumDescriptorSpecializations(io::Printer* p) {
+  auto v = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
+
+  p->Emit(R"cc(
+    template <>
+    struct is_proto_enum<$::Msg_Enum$> : std::true_type {};
+  )cc");
+  if (!has_reflection_) {
+    return;
   }
+  p->Emit(R"cc(
+    template <>
+    inline const EnumDescriptor* GetEnumDescriptor<$::Msg_Enum$>() {
+      return $::Msg_Enum$_descriptor();
+    }
+  )cc");
 }
 
-void EnumGenerator::GenerateSymbolImports(io::Printer* printer) const {
-  Formatter format(printer, variables_);
-  format("typedef $classname$ $resolved_name$;\n");
+void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
+  auto v = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
 
-  for (int j = 0; j < descriptor_->value_count(); j++) {
-    std::string deprecated_attr =
-        DeprecatedAttribute(options_, descriptor_->value(j));
-    format(
-        "$1$static constexpr $resolved_name$ ${2$$3$$}$ =\n"
-        "  $classname$_$3$;\n",
-        deprecated_attr, descriptor_->value(j),
-        EnumValueName(descriptor_->value(j)));
+  p->Emit(R"cc(
+    using $Enum_$ = $Msg_Enum$;
+  )cc");
+
+  for (int j = 0; j < enum_->value_count(); ++j) {
+    const auto* value = enum_->value(j);
+    p->Emit(
+        {
+            {"VALUE", EnumValueName(enum_->value(j)), value},
+            {"DEPRECATED",
+             value->options().deprecated() ? "PROTOBUF_DEPRECATED_ENUM" : ""},
+        },
+        R"cc(
+          $DEPRECATED $static constexpr $Enum_$ $VALUE$ = $Msg_Enum$_$VALUE$;
+        )cc");
   }
 
-  format(
-      "static inline bool $nested_name$_IsValid(int value) {\n"
-      "  return $classname$_IsValid(value);\n"
-      "}\n"
-      "static constexpr $resolved_name$ ${1$$nested_name$_MIN$}$ =\n"
-      "  $classname$_$nested_name$_MIN;\n"
-      "static constexpr $resolved_name$ ${1$$nested_name$_MAX$}$ =\n"
-      "  $classname$_$nested_name$_MAX;\n",
-      descriptor_);
+  p->Emit(
+      {
+          {"Enum_MIN", absl::StrCat(enum_->name(), "_MIN"), enum_},
+          {"Enum_MAX", absl::StrCat(enum_->name(), "_MAX"), enum_},
+      },
+      R"cc(
+        static inline bool $Enum$_IsValid(int value) {
+          return $Msg_Enum$_IsValid(value);
+        }
+        static constexpr $Enum_$ $Enum_MIN$ = $Msg_Enum$_$Enum$_MIN;
+        static constexpr $Enum_$ $Enum_MAX$ = $Msg_Enum$_$Enum$_MAX;
+      )cc");
+
   if (generate_array_size_) {
-    format(
-        "static constexpr int ${1$$nested_name$_ARRAYSIZE$}$ =\n"
-        "  $classname$_$nested_name$_ARRAYSIZE;\n",
-        descriptor_);
+    p->Emit(
+        {{"Enum_ARRAYSIZE", absl::StrCat(enum_->name(), "_ARRAYSIZE"), enum_}},
+        R"cc(
+          static constexpr int $Enum_ARRAYSIZE$ = $Msg_Enum$_$Enum$_ARRAYSIZE;
+        )cc");
   }
 
-  if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    format(
-        "static inline const ::$proto_ns$::EnumDescriptor*\n"
-        "$nested_name$_descriptor() {\n"
-        "  return $classname$_descriptor();\n"
-        "}\n");
+  if (has_reflection_) {
+    p->Emit(R"cc(
+      static inline const ::$proto_ns$::EnumDescriptor* $Enum$_descriptor() {
+        return $Msg_Enum$_descriptor();
+      }
+    )cc");
   }
 
-  format(
-      "template<typename T>\n"
-      "static inline const std::string& $nested_name$_Name(T enum_t_value) {\n"
-      "  static_assert(::std::is_same<T, $resolved_name$>::value ||\n"
-      "    ::std::is_integral<T>::value,\n"
-      "    \"Incorrect type passed to function $nested_name$_Name.\");\n"
-      "  return $classname$_Name(enum_t_value);\n"
-      "}\n");
-  format(
-      "static inline bool "
-      "$nested_name$_Parse(::absl::string_view name,\n"
-      "    $resolved_name$* value) {\n"
-      "  return $classname$_Parse(name, value);\n"
-      "}\n");
+  p->Emit(R"cc(
+    template <typename T>
+    static inline const std::string& $Enum$_Name(T value) {
+      return $Msg_Enum$_Name(value);
+    }
+    static inline bool $Enum$_Parse(absl::string_view name, $Enum_$* value) {
+      return $Msg_Enum$_Parse(name, value);
+    }
+  )cc");
 }
 
-void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
-  Formatter format(printer, variables_);
-  if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    format(
-        "const ::$proto_ns$::EnumDescriptor* $classname$_descriptor() {\n"
-        "  ::$proto_ns$::internal::AssignDescriptors(&$desc_table$);\n"
-        "  return $file_level_enum_descriptors$[$1$];\n"
-        "}\n",
-        idx);
+void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
+  auto v = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
+
+  if (has_reflection_) {
+    p->Emit({{"idx", idx}}, R"cc(
+      const ::$proto_ns$::EnumDescriptor* $Msg_Enum$_descriptor() {
+        ::$proto_ns$::internal::AssignDescriptors(&$desc_table$);
+        return $file_level_enum_descriptors$[$idx$];
+      }
+    )cc");
   }
 
-  format(
-      "bool $classname$_IsValid(int value) {\n"
-      "  switch (value) {\n");
+  p->Emit({{"cases",
+            [&] {
+              // Multiple values may have the same number.  Make sure we only
+              // cover each number once by first constructing a set containing
+              // all valid numbers, then printing a case statement for each
+              // element.
 
-  // Multiple values may have the same number.  Make sure we only cover
-  // each number once by first constructing a set containing all valid
-  // numbers, then printing a case statement for each element.
+              std::vector<int> numbers;
+              numbers.reserve(enum_->value_count());
+              for (int i = 0; i < enum_->value_count(); ++i) {
+                numbers.push_back(enum_->value(i)->number());
+              }
+              // Sort and deduplicate `numbers`.
+              absl::c_sort(numbers);
+              numbers.erase(std::unique(numbers.begin(), numbers.end()),
+                            numbers.end());
 
-  std::set<int> numbers;
-  for (int j = 0; j < descriptor_->value_count(); j++) {
-    const EnumValueDescriptor* value = descriptor_->value(j);
-    numbers.insert(value->number());
-  }
+              for (int n : numbers) {
+                p->Emit({{"n", n}}, R"cc(
+                  case $n$:
+                )cc");
+              }
+            }}},
+          R"(
+            bool $Msg_Enum$_IsValid(int value) {
+              switch (value) {
+                $cases$;
+                  return true;
+                default:
+                  return false;
+              }
+            }
+          )");
 
-  for (std::set<int>::iterator iter = numbers.begin(); iter != numbers.end();
-       ++iter) {
-    format("    case $1$:\n", Int32ToString(*iter));
-  }
-
-  format(
-      "      return true;\n"
-      "    default:\n"
-      "      return false;\n"
-      "  }\n"
-      "}\n"
-      "\n");
-
-  if (!HasDescriptorMethods(descriptor_->file(), options_)) {
+  if (!has_reflection_) {
     // In lite mode (where descriptors are unavailable), we generate separate
     // tables for mapping between enum names and numbers. The _entries table
     // contains the bulk of the data and is sorted by name, while
@@ -363,119 +406,168 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* printer) {
     // numerical value. In cases where there are multiple names for the same
     // number, we treat the first name appearing in the .proto file as the
     // canonical one.
-    std::map<std::string, int> name_to_number;
-    std::map<int, std::string> number_to_canonical_name;
-    for (int i = 0; i < descriptor_->value_count(); i++) {
-      const EnumValueDescriptor* value = descriptor_->value(i);
+
+    absl::btree_map<std::string, int> name_to_number;
+    absl::flat_hash_map<int, std::string> number_to_canonical_name;
+    for (int i = 0; i < enum_->value_count(); ++i) {
+      const auto* value = enum_->value(i);
       name_to_number.emplace(value->name(), value->number());
+
       // The same number may appear with multiple names, so we use emplace() to
       // let the first name win.
       number_to_canonical_name.emplace(value->number(), value->name());
     }
 
-    format(
-        "static ::$proto_ns$::internal::ExplicitlyConstructed<std::string> "
-        "$classname$_strings[$1$] = {};\n\n",
-        CountUniqueValues(descriptor_));
-
-    // We concatenate all the names for a given enum into one big string
-    // literal. If instead we store an array of string literals, the linker
-    // seems to put all enum strings for a given .proto file in the same
-    // section, which hinders its ability to strip out unused strings.
-    format("static const char $classname$_names[] =");
-    for (const auto& p : name_to_number) {
-      format("\n  \"$1$\"", p.first);
+    // Build the offset table for the strings table.
+    struct Offset {
+      int number;
+      size_t index, byte_offset, len;
+    };
+    std::vector<Offset> offsets;
+    size_t index = 0;
+    size_t offset = 0;
+    for (const auto& e : name_to_number) {
+      offsets.push_back(Offset{e.second, index, offset, e.first.size()});
+      ++index;
+      offset += e.first.size();
     }
-    format(";\n\n");
+    absl::c_sort(offsets, [](const auto& a, const auto& b) {
+      return a.byte_offset < b.byte_offset;
+    });
 
-    format(
-        "static const ::$proto_ns$::internal::EnumEntry $classname$_entries[] "
-        "= {\n");
-    int i = 0;
-    std::map<int, int> number_to_index;
-    int data_index = 0;
-    for (const auto& p : name_to_number) {
-      format("  { {$classname$_names + $1$, $2$}, $3$ },\n", data_index,
-             p.first.size(), p.second);
-      if (number_to_canonical_name[p.second] == p.first) {
-        number_to_index.emplace(p.second, i);
-      }
-      ++i;
-      data_index += p.first.size();
-    }
+    std::vector<Offset> offsets_by_number = offsets;
+    absl::c_sort(offsets_by_number, [](const auto& a, const auto& b) {
+      return a.number < b.number;
+    });
 
-    format(
-        "};\n"
-        "\n"
-        "static const int $classname$_entries_by_number[] = {\n");
-    for (const auto& p : number_to_index) {
-      format("  $1$, // $2$ -> $3$\n", p.second, p.first,
-             number_to_canonical_name[p.first]);
-    }
-    format(
-        "};\n"
-        "\n");
+    offsets_by_number.erase(
+        std::unique(
+            offsets_by_number.begin(), offsets_by_number.end(),
+            [](const auto& a, const auto& b) { return a.number == b.number; }),
+        offsets_by_number.end());
 
-    format(
-        "const std::string& $classname$_Name(\n"
-        "    $classname$ value) {\n"
-        "  static const bool dummy =\n"
-        "      ::$proto_ns$::internal::InitializeEnumStrings(\n"
-        "          $classname$_entries,\n"
-        "          $classname$_entries_by_number,\n"
-        "          $1$, $classname$_strings);\n"
-        "  (void) dummy;\n"
-        "  int idx = ::$proto_ns$::internal::LookUpEnumName(\n"
-        "      $classname$_entries,\n"
-        "      $classname$_entries_by_number,\n"
-        "      $1$, value);\n"
-        "  return idx == -1 ? ::$proto_ns$::internal::GetEmptyString() :\n"
-        "                     $classname$_strings[idx].get();\n"
-        "}\n",
-        CountUniqueValues(descriptor_));
-    format(
-        "bool $classname$_Parse(\n"
-        "    ::absl::string_view name, $classname$* "
-        "value) "
-        "{\n"
-        "  int int_value;\n"
-        "  bool success = ::$proto_ns$::internal::LookUpEnumValue(\n"
-        "      $classname$_entries, $1$, name, &int_value);\n"
-        "  if (success) {\n"
-        "    *value = static_cast<$classname$>(int_value);\n"
-        "  }\n"
-        "  return success;\n"
-        "}\n",
-        descriptor_->value_count());
+    p->Emit(
+        {
+            {"num_unique", number_to_canonical_name.size()},
+            {"num_declared", enum_->value_count()},
+            {"names",
+             // We concatenate all the names for a given enum into one big
+             // string literal. If instead we store an array of string
+             // literals, the linker seems to put all enum strings for a given
+             // .proto file in the same section, which hinders its ability to
+             // strip out unused strings.
+             [&] {
+               for (const auto& e : name_to_number) {
+                 p->Emit({{"name", e.first}}, R"cc(
+                   "$name$"
+                 )cc");
+               }
+             }},
+            {"entries",
+             [&] {
+               for (const auto& offset : offsets) {
+                 p->Emit({{"number", offset.number},
+                          {"offset", offset.byte_offset},
+                          {"len", offset.len}},
+                         R"cc(
+                           {{&$Msg_Enum$_names[$offset$], $len$}, $number$},
+                         )cc");
+               }
+             }},
+            {"entries_by_number",
+             [&] {
+               for (const auto& offset : offsets_by_number) {
+                 p->Emit({{"number", offset.number},
+                          {"index", offset.index},
+                          {"name", number_to_canonical_name[offset.number]}},
+                         R"cc(
+                           $index$,  // $number$ -> $name$
+                         )cc");
+               }
+             }},
+        },
+        R"cc(
+          static ::$proto_ns$::internal::ExplicitlyConstructed<std::string>
+              $Msg_Enum$_strings[$num_unique$] = {};
+
+          static const char $Msg_Enum$_names[] = {
+              $names$,
+          };
+
+          static const ::$proto_ns$::internal::EnumEntry $Msg_Enum$_entries[] =
+              {
+                  $entries$,
+          };
+
+          static const int $Msg_Enum$_entries_by_number[] = {
+              $entries_by_number$,
+          };
+
+          const std::string& $Msg_Enum$_Name($Msg_Enum$ value) {
+            static const bool kDummy =
+                ::$proto_ns$::internal::InitializeEnumStrings(
+                    $Msg_Enum$_entries, $Msg_Enum$_entries_by_number,
+                    $num_unique$, $Msg_Enum$_strings);
+            (void)kDummy;
+
+            int idx = ::$proto_ns$::internal::LookUpEnumName(
+                $Msg_Enum$_entries, $Msg_Enum$_entries_by_number, $num_unique$,
+                value);
+            return idx == -1 ? ::$proto_ns$::internal::GetEmptyString()
+                             : $Msg_Enum$_strings[idx].get();
+          }
+
+          bool $Msg_Enum$_Parse(absl::string_view name, $Msg_Enum$* value) {
+            int int_value;
+            bool success = ::$proto_ns$::internal::LookUpEnumValue(
+                $Msg_Enum$_entries, $num_declared$, name, &int_value);
+            if (success) {
+              *value = static_cast<$Msg_Enum$>(int_value);
+            }
+            return success;
+          }
+        )cc");
   }
 
-  if (descriptor_->containing_type() != nullptr) {
-    std::string parent = ClassName(descriptor_->containing_type(), false);
+  if (enum_->containing_type() != nullptr) {
     // Before C++17, we must define the static constants which were
     // declared in the header, to give the linker a place to put them.
     // But MSVC++ pre-2015 and post-2017 (version 15.5+) insists that we not.
-    format(
-        "#if (__cplusplus < 201703) && "
-        "(!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))\n");
+    p->Emit(
+        {
+            {"Msg_", ClassName(enum_->containing_type(), false)},
+            {"constexpr_storage",
+             [&] {
+               for (int i = 0; i < enum_->value_count(); i++) {
+                 p->Emit({{"VALUE", EnumValueName(enum_->value(i))}},
+                         R"cc(
+                           constexpr $Msg_Enum$ $Msg_$::$VALUE$;
+                         )cc");
+               }
+             }},
+            {"array_size",
+             [&] {
+               if (generate_array_size_) {
+                 p->Emit(R"cc(
+                   constexpr int $Msg_$::$Enum$_ARRAYSIZE;
+                 )cc");
+               }
+             }},
+        },
+        R"(
+          #if (__cplusplus < 201703) && \
+            (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
+          
+          $constexpr_storage$;
+          constexpr $Msg_Enum$ $Msg_$::$Enum$_MIN;
+          constexpr $Msg_Enum$ $Msg_$::$Enum$_MAX;
+          $array_size$;
 
-    for (int i = 0; i < descriptor_->value_count(); i++) {
-      format("constexpr $classname$ $1$::$2$;\n", parent,
-             EnumValueName(descriptor_->value(i)));
-    }
-    format(
-        "constexpr $classname$ $1$::$nested_name$_MIN;\n"
-        "constexpr $classname$ $1$::$nested_name$_MAX;\n",
-        parent);
-    if (generate_array_size_) {
-      format("constexpr int $1$::$nested_name$_ARRAYSIZE;\n", parent);
-    }
-
-    format(
-        "#endif  // (__cplusplus < 201703) && "
-        "(!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))\n");
+          #endif  // (__cplusplus < 201703) &&
+                  // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
+        )");
   }
 }
-
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

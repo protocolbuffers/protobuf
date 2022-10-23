@@ -324,14 +324,9 @@ DoubleValue::DoubleValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DoubleValue)
 }
 DoubleValue::DoubleValue(const DoubleValue& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message() {
-  DoubleValue* const _this = this; (void)_this;
-  new (&_impl_) Impl_{
-      decltype(_impl_.value_){}
-    , /*decltype(_impl_._cached_size_)*/{}};
-
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _this->_impl_.value_ = from._impl_.value_;
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(
+      from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DoubleValue)
 }
 
@@ -373,6 +368,7 @@ void DoubleValue::Clear() {
 }
 
 const char* DoubleValue::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
@@ -411,6 +407,7 @@ failure:
 
 uint8_t* DoubleValue::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DoubleValue)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -434,6 +431,7 @@ uint8_t* DoubleValue::_InternalSerialize(
 }
 
 size_t DoubleValue::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.DoubleValue)
   size_t total_size = 0;
 
@@ -463,6 +461,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*DoubleValue::GetClassData() co
 void DoubleValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<DoubleValue*>(&to_msg);
   auto& from = static_cast<const DoubleValue&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DoubleValue)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -496,6 +495,7 @@ void DoubleValue::InternalSwap(DoubleValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata DoubleValue::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[0]);
@@ -513,14 +513,9 @@ FloatValue::FloatValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FloatValue)
 }
 FloatValue::FloatValue(const FloatValue& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message() {
-  FloatValue* const _this = this; (void)_this;
-  new (&_impl_) Impl_{
-      decltype(_impl_.value_){}
-    , /*decltype(_impl_._cached_size_)*/{}};
-
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _this->_impl_.value_ = from._impl_.value_;
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(
+      from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FloatValue)
 }
 
@@ -562,6 +557,7 @@ void FloatValue::Clear() {
 }
 
 const char* FloatValue::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
@@ -600,6 +596,7 @@ failure:
 
 uint8_t* FloatValue::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FloatValue)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -623,6 +620,7 @@ uint8_t* FloatValue::_InternalSerialize(
 }
 
 size_t FloatValue::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FloatValue)
   size_t total_size = 0;
 
@@ -652,6 +650,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*FloatValue::GetClassData() con
 void FloatValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<FloatValue*>(&to_msg);
   auto& from = static_cast<const FloatValue&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FloatValue)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -685,6 +684,7 @@ void FloatValue::InternalSwap(FloatValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FloatValue::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[1]);
@@ -702,14 +702,9 @@ Int64Value::Int64Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Int64Value)
 }
 Int64Value::Int64Value(const Int64Value& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message() {
-  Int64Value* const _this = this; (void)_this;
-  new (&_impl_) Impl_{
-      decltype(_impl_.value_){}
-    , /*decltype(_impl_._cached_size_)*/{}};
-
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _this->_impl_.value_ = from._impl_.value_;
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(
+      from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Int64Value)
 }
 
@@ -751,6 +746,7 @@ void Int64Value::Clear() {
 }
 
 const char* Int64Value::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
@@ -789,6 +785,7 @@ failure:
 
 uint8_t* Int64Value::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Int64Value)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -808,6 +805,7 @@ uint8_t* Int64Value::_InternalSerialize(
 }
 
 size_t Int64Value::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Int64Value)
   size_t total_size = 0;
 
@@ -833,6 +831,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Int64Value::GetClassData() con
 void Int64Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<Int64Value*>(&to_msg);
   auto& from = static_cast<const Int64Value&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int64Value)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -862,6 +861,7 @@ void Int64Value::InternalSwap(Int64Value* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Int64Value::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[2]);
@@ -879,14 +879,9 @@ UInt64Value::UInt64Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UInt64Value)
 }
 UInt64Value::UInt64Value(const UInt64Value& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message() {
-  UInt64Value* const _this = this; (void)_this;
-  new (&_impl_) Impl_{
-      decltype(_impl_.value_){}
-    , /*decltype(_impl_._cached_size_)*/{}};
-
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _this->_impl_.value_ = from._impl_.value_;
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(
+      from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UInt64Value)
 }
 
@@ -928,6 +923,7 @@ void UInt64Value::Clear() {
 }
 
 const char* UInt64Value::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
@@ -966,6 +962,7 @@ failure:
 
 uint8_t* UInt64Value::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UInt64Value)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -985,6 +982,7 @@ uint8_t* UInt64Value::_InternalSerialize(
 }
 
 size_t UInt64Value::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.UInt64Value)
   size_t total_size = 0;
 
@@ -1010,6 +1008,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*UInt64Value::GetClassData() co
 void UInt64Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<UInt64Value*>(&to_msg);
   auto& from = static_cast<const UInt64Value&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt64Value)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -1039,6 +1038,7 @@ void UInt64Value::InternalSwap(UInt64Value* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata UInt64Value::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[3]);
@@ -1056,14 +1056,9 @@ Int32Value::Int32Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Int32Value)
 }
 Int32Value::Int32Value(const Int32Value& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message() {
-  Int32Value* const _this = this; (void)_this;
-  new (&_impl_) Impl_{
-      decltype(_impl_.value_){}
-    , /*decltype(_impl_._cached_size_)*/{}};
-
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _this->_impl_.value_ = from._impl_.value_;
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(
+      from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Int32Value)
 }
 
@@ -1105,6 +1100,7 @@ void Int32Value::Clear() {
 }
 
 const char* Int32Value::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
@@ -1143,6 +1139,7 @@ failure:
 
 uint8_t* Int32Value::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Int32Value)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1162,6 +1159,7 @@ uint8_t* Int32Value::_InternalSerialize(
 }
 
 size_t Int32Value::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Int32Value)
   size_t total_size = 0;
 
@@ -1187,6 +1185,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Int32Value::GetClassData() con
 void Int32Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<Int32Value*>(&to_msg);
   auto& from = static_cast<const Int32Value&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Int32Value)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -1216,6 +1215,7 @@ void Int32Value::InternalSwap(Int32Value* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Int32Value::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[4]);
@@ -1233,14 +1233,9 @@ UInt32Value::UInt32Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UInt32Value)
 }
 UInt32Value::UInt32Value(const UInt32Value& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message() {
-  UInt32Value* const _this = this; (void)_this;
-  new (&_impl_) Impl_{
-      decltype(_impl_.value_){}
-    , /*decltype(_impl_._cached_size_)*/{}};
-
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _this->_impl_.value_ = from._impl_.value_;
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(
+      from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UInt32Value)
 }
 
@@ -1282,6 +1277,7 @@ void UInt32Value::Clear() {
 }
 
 const char* UInt32Value::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
@@ -1320,6 +1316,7 @@ failure:
 
 uint8_t* UInt32Value::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UInt32Value)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1339,6 +1336,7 @@ uint8_t* UInt32Value::_InternalSerialize(
 }
 
 size_t UInt32Value::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.UInt32Value)
   size_t total_size = 0;
 
@@ -1364,6 +1362,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*UInt32Value::GetClassData() co
 void UInt32Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<UInt32Value*>(&to_msg);
   auto& from = static_cast<const UInt32Value&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UInt32Value)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -1393,6 +1392,7 @@ void UInt32Value::InternalSwap(UInt32Value* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata UInt32Value::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[5]);
@@ -1410,14 +1410,9 @@ BoolValue::BoolValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
   // @@protoc_insertion_point(arena_constructor:google.protobuf.BoolValue)
 }
 BoolValue::BoolValue(const BoolValue& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message() {
-  BoolValue* const _this = this; (void)_this;
-  new (&_impl_) Impl_{
-      decltype(_impl_.value_){}
-    , /*decltype(_impl_._cached_size_)*/{}};
-
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  _this->_impl_.value_ = from._impl_.value_;
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(
+      from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.BoolValue)
 }
 
@@ -1459,6 +1454,7 @@ void BoolValue::Clear() {
 }
 
 const char* BoolValue::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
@@ -1497,6 +1493,7 @@ failure:
 
 uint8_t* BoolValue::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.BoolValue)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1516,6 +1513,7 @@ uint8_t* BoolValue::_InternalSerialize(
 }
 
 size_t BoolValue::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.BoolValue)
   size_t total_size = 0;
 
@@ -1541,6 +1539,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*BoolValue::GetClassData() cons
 void BoolValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<BoolValue*>(&to_msg);
   auto& from = static_cast<const BoolValue&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BoolValue)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -1570,6 +1569,7 @@ void BoolValue::InternalSwap(BoolValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata BoolValue::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[6]);
@@ -1648,6 +1648,7 @@ void StringValue::Clear() {
 }
 
 const char* StringValue::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
@@ -1688,6 +1689,7 @@ failure:
 
 uint8_t* StringValue::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.StringValue)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1711,6 +1713,7 @@ uint8_t* StringValue::_InternalSerialize(
 }
 
 size_t StringValue::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.StringValue)
   size_t total_size = 0;
 
@@ -1738,6 +1741,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*StringValue::GetClassData() co
 void StringValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<StringValue*>(&to_msg);
   auto& from = static_cast<const StringValue&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.StringValue)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -1772,6 +1776,7 @@ void StringValue::InternalSwap(StringValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata StringValue::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[7]);
@@ -1850,6 +1855,7 @@ void BytesValue::Clear() {
 }
 
 const char* BytesValue::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
@@ -1889,6 +1895,7 @@ failure:
 
 uint8_t* BytesValue::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.BytesValue)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1908,6 +1915,7 @@ uint8_t* BytesValue::_InternalSerialize(
 }
 
 size_t BytesValue::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.BytesValue)
   size_t total_size = 0;
 
@@ -1935,6 +1943,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*BytesValue::GetClassData() con
 void BytesValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<BytesValue*>(&to_msg);
   auto& from = static_cast<const BytesValue&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.BytesValue)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -1969,6 +1978,7 @@ void BytesValue::InternalSwap(BytesValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata BytesValue::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_getter, &descriptor_table_google_2fprotobuf_2fwrappers_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fwrappers_2eproto[8]);

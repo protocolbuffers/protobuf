@@ -221,7 +221,7 @@
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 3021006
+#define PROTOBUF_VERSION 3021008
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
@@ -822,15 +822,11 @@
 #  endif
 #endif
 
-// Tail call table-driven parsing can be enabled by defining
-// PROTOBUF_EXPERIMENTAL_USE_TAIL_CALL_TABLE_PARSER at compilation time.
-// We hope to turn on table-driven parsing by default in Q4 2022.
+// Tail call table-driven parsing is enabled by default.
 #ifdef PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED
 #error PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED was previously declared
 #endif
-#if defined(PROTOBUF_EXPERIMENTAL_USE_TAIL_CALL_TABLE_PARSER)
 #define PROTOBUF_TAIL_CALL_TABLE_PARSER_ENABLED 1
-#endif
 
 #ifdef PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION
 #error PROTOBUF_USE_TABLE_PARSER_ON_REFLECTION was previously defined
@@ -978,13 +974,29 @@
 #undef DEBUG
 #endif // defined(__clang__) || PROTOBUF_GNUC_MIN(3, 0) || defined(_MSC_VER)
 
-#if PROTOBUF_GNUC_MIN(3, 0)
+// Protobuf does not support building with a number of warnings that are noisy
+// (and of variable quality across compiler versions) or impossible to implement
+// effectively but which people turn on anyways.
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+// Some of the warnings below only exist in some GCC versions; those version
+// ranges are poorly documented.
+#pragma GCC diagnostic ignored "-Wpragmas"
 // GCC does not allow disabling diagnostics within an expression:
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60875, so we disable this one
 // globally even though it's only used for PROTOBUF_FIELD_OFFSET.
-#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
-#endif
+// This warning verifies that non-void-returning functions return a value in
+// all paths. However, this warning is noisy, and requires adding unnecessary
+// returns in unreachable positions.
+#pragma GCC diagnostic ignored "-Wreturn-type"
+// Some versions of GCC seem to think that
+//  [this] { Foo(); }
+// leaves `this` unused, even though `Foo();` is a member function of the
+// captured `this`.
+// https://bugzilla.mozilla.org/show_bug.cgi?id=1373625
+#pragma GCC diagnostic ignored "-Wunused-lambda-capture"
+#endif  // __GNUC__
 
 // Silence some MSVC warnings in all our code.
 #ifdef _MSC_VER

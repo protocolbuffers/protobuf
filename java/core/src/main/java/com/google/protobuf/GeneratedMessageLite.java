@@ -412,8 +412,13 @@ public abstract class GeneratedMessageLite<
 
   protected static <T extends GeneratedMessageLite<?, ?>> void registerDefaultInstance(
       Class<T> clazz, T defaultInstance) {
+    // Default instances must be immutable.
+    // Marking immutable here to avoid extra bytecode in every generated message class.
+    // Only calling "markImmutable" rather than "makeImmutable" because for Default Instances:
+    // 1. All sub-messages are initialized to null / default instances and thus immutable
+    // 2. All lists are initialized to default instance empty lists which are also immutable.
+    defaultInstance.markImmutable();
     defaultInstanceMap.put(clazz, defaultInstance);
-    defaultInstance.makeImmutable();
   }
 
   protected static Object newMessageInfo(

@@ -48,6 +48,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/arena.h"
 #include "absl/base/dynamic_annotations.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"

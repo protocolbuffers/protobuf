@@ -1292,8 +1292,9 @@ bool FieldDescriptorProto_Type_IsValid(int value) {
       return false;
   }
 }
+#if (__cplusplus < 201703) && \
+  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 
-#if (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_DOUBLE;
 constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_FLOAT;
 constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_INT64;
@@ -1315,7 +1316,9 @@ constexpr FieldDescriptorProto_Type FieldDescriptorProto::TYPE_SINT64;
 constexpr FieldDescriptorProto_Type FieldDescriptorProto::Type_MIN;
 constexpr FieldDescriptorProto_Type FieldDescriptorProto::Type_MAX;
 constexpr int FieldDescriptorProto::Type_ARRAYSIZE;
-#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
+
+#endif  // (__cplusplus < 201703) &&
+        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FieldDescriptorProto_Label_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[1];
@@ -1330,15 +1333,18 @@ bool FieldDescriptorProto_Label_IsValid(int value) {
       return false;
   }
 }
+#if (__cplusplus < 201703) && \
+  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 
-#if (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 constexpr FieldDescriptorProto_Label FieldDescriptorProto::LABEL_OPTIONAL;
 constexpr FieldDescriptorProto_Label FieldDescriptorProto::LABEL_REQUIRED;
 constexpr FieldDescriptorProto_Label FieldDescriptorProto::LABEL_REPEATED;
 constexpr FieldDescriptorProto_Label FieldDescriptorProto::Label_MIN;
 constexpr FieldDescriptorProto_Label FieldDescriptorProto::Label_MAX;
 constexpr int FieldDescriptorProto::Label_ARRAYSIZE;
-#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
+
+#endif  // (__cplusplus < 201703) &&
+        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FileOptions_OptimizeMode_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[2];
@@ -1353,15 +1359,18 @@ bool FileOptions_OptimizeMode_IsValid(int value) {
       return false;
   }
 }
+#if (__cplusplus < 201703) && \
+  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 
-#if (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 constexpr FileOptions_OptimizeMode FileOptions::SPEED;
 constexpr FileOptions_OptimizeMode FileOptions::CODE_SIZE;
 constexpr FileOptions_OptimizeMode FileOptions::LITE_RUNTIME;
 constexpr FileOptions_OptimizeMode FileOptions::OptimizeMode_MIN;
 constexpr FileOptions_OptimizeMode FileOptions::OptimizeMode_MAX;
 constexpr int FileOptions::OptimizeMode_ARRAYSIZE;
-#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
+
+#endif  // (__cplusplus < 201703) &&
+        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FieldOptions_CType_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[3];
@@ -1376,15 +1385,18 @@ bool FieldOptions_CType_IsValid(int value) {
       return false;
   }
 }
+#if (__cplusplus < 201703) && \
+  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 
-#if (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 constexpr FieldOptions_CType FieldOptions::STRING;
 constexpr FieldOptions_CType FieldOptions::CORD;
 constexpr FieldOptions_CType FieldOptions::STRING_PIECE;
 constexpr FieldOptions_CType FieldOptions::CType_MIN;
 constexpr FieldOptions_CType FieldOptions::CType_MAX;
 constexpr int FieldOptions::CType_ARRAYSIZE;
-#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
+
+#endif  // (__cplusplus < 201703) &&
+        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FieldOptions_JSType_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[4];
@@ -1399,15 +1411,18 @@ bool FieldOptions_JSType_IsValid(int value) {
       return false;
   }
 }
+#if (__cplusplus < 201703) && \
+  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 
-#if (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 constexpr FieldOptions_JSType FieldOptions::JS_NORMAL;
 constexpr FieldOptions_JSType FieldOptions::JS_STRING;
 constexpr FieldOptions_JSType FieldOptions::JS_NUMBER;
 constexpr FieldOptions_JSType FieldOptions::JSType_MIN;
 constexpr FieldOptions_JSType FieldOptions::JSType_MAX;
 constexpr int FieldOptions::JSType_ARRAYSIZE;
-#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
+
+#endif  // (__cplusplus < 201703) &&
+        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* MethodOptions_IdempotencyLevel_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[5];
@@ -1422,15 +1437,18 @@ bool MethodOptions_IdempotencyLevel_IsValid(int value) {
       return false;
   }
 }
+#if (__cplusplus < 201703) && \
+  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 
-#if (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 constexpr MethodOptions_IdempotencyLevel MethodOptions::IDEMPOTENCY_UNKNOWN;
 constexpr MethodOptions_IdempotencyLevel MethodOptions::NO_SIDE_EFFECTS;
 constexpr MethodOptions_IdempotencyLevel MethodOptions::IDEMPOTENT;
 constexpr MethodOptions_IdempotencyLevel MethodOptions::IdempotencyLevel_MIN;
 constexpr MethodOptions_IdempotencyLevel MethodOptions::IdempotencyLevel_MAX;
 constexpr int MethodOptions::IdempotencyLevel_ARRAYSIZE;
-#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
+
+#endif  // (__cplusplus < 201703) &&
+        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* GeneratedCodeInfo_Annotation_Semantic_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[6];
@@ -1445,15 +1463,18 @@ bool GeneratedCodeInfo_Annotation_Semantic_IsValid(int value) {
       return false;
   }
 }
+#if (__cplusplus < 201703) && \
+  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 
-#if (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::NONE;
 constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::SET;
 constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::ALIAS;
 constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::Semantic_MIN;
 constexpr GeneratedCodeInfo_Annotation_Semantic GeneratedCodeInfo_Annotation::Semantic_MAX;
 constexpr int GeneratedCodeInfo_Annotation::Semantic_ARRAYSIZE;
-#endif  // (__cplusplus < 201703) && (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
+
+#endif  // (__cplusplus < 201703) &&
+        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 // ===================================================================
 
 class FileDescriptorSet::_Internal {
@@ -1516,6 +1537,7 @@ void FileDescriptorSet::Clear() {
 }
 
 const char* FileDescriptorSet::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
@@ -1559,6 +1581,7 @@ failure:
 
 uint8_t* FileDescriptorSet::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FileDescriptorSet)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1580,6 +1603,7 @@ uint8_t* FileDescriptorSet::_InternalSerialize(
 }
 
 size_t FileDescriptorSet::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FileDescriptorSet)
   size_t total_size = 0;
 
@@ -1607,6 +1631,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*FileDescriptorSet::GetClassDat
 void FileDescriptorSet::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<FileDescriptorSet*>(&to_msg);
   auto& from = static_cast<const FileDescriptorSet&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileDescriptorSet)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -1636,6 +1661,7 @@ void FileDescriptorSet::InternalSwap(FileDescriptorSet* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FileDescriptorSet::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[0]);
@@ -1855,6 +1881,7 @@ void FileDescriptorProto::Clear() {
 }
 
 const char* FileDescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -2052,6 +2079,7 @@ failure:
 
 uint8_t* FileDescriptorProto::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FileDescriptorProto)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -2174,6 +2202,7 @@ uint8_t* FileDescriptorProto::_InternalSerialize(
 }
 
 size_t FileDescriptorProto::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FileDescriptorProto)
   size_t total_size = 0;
 
@@ -2293,6 +2322,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*FileDescriptorProto::GetClassD
 void FileDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<FileDescriptorProto*>(&to_msg);
   auto& from = static_cast<const FileDescriptorProto&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileDescriptorProto)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -2391,6 +2421,7 @@ void FileDescriptorProto::InternalSwap(FileDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FileDescriptorProto::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[1]);
@@ -2496,6 +2527,7 @@ void DescriptorProto_ExtensionRange::Clear() {
 }
 
 const char* DescriptorProto_ExtensionRange::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -2554,6 +2586,7 @@ failure:
 
 uint8_t* DescriptorProto_ExtensionRange::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DescriptorProto.ExtensionRange)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -2587,6 +2620,7 @@ uint8_t* DescriptorProto_ExtensionRange::_InternalSerialize(
 }
 
 size_t DescriptorProto_ExtensionRange::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.DescriptorProto.ExtensionRange)
   size_t total_size = 0;
 
@@ -2627,6 +2661,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*DescriptorProto_ExtensionRange
 void DescriptorProto_ExtensionRange::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<DescriptorProto_ExtensionRange*>(&to_msg);
   auto& from = static_cast<const DescriptorProto_ExtensionRange&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto.ExtensionRange)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -2676,6 +2711,7 @@ void DescriptorProto_ExtensionRange::InternalSwap(DescriptorProto_ExtensionRange
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata DescriptorProto_ExtensionRange::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[2]);
@@ -2702,18 +2738,9 @@ DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::PROTOBUF_NAMESPAC
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto.ReservedRange)
 }
 DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(const DescriptorProto_ReservedRange& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message() {
-  DescriptorProto_ReservedRange* const _this = this; (void)_this;
-  new (&_impl_) Impl_{
-      decltype(_impl_._has_bits_){from._impl_._has_bits_}
-    , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.start_){}
-    , decltype(_impl_.end_){}};
-
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  ::memcpy(&_impl_.start_, &from._impl_.start_,
-    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.end_) -
-    reinterpret_cast<char*>(&_impl_.start_)) + sizeof(_impl_.end_));
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(
+      from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto.ReservedRange)
 }
 
@@ -2763,6 +2790,7 @@ void DescriptorProto_ReservedRange::Clear() {
 }
 
 const char* DescriptorProto_ReservedRange::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -2813,6 +2841,7 @@ failure:
 
 uint8_t* DescriptorProto_ReservedRange::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DescriptorProto.ReservedRange)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -2839,6 +2868,7 @@ uint8_t* DescriptorProto_ReservedRange::_InternalSerialize(
 }
 
 size_t DescriptorProto_ReservedRange::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.DescriptorProto.ReservedRange)
   size_t total_size = 0;
 
@@ -2872,6 +2902,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*DescriptorProto_ReservedRange:
 void DescriptorProto_ReservedRange::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<DescriptorProto_ReservedRange*>(&to_msg);
   auto& from = static_cast<const DescriptorProto_ReservedRange&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto.ReservedRange)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -2914,6 +2945,7 @@ void DescriptorProto_ReservedRange::InternalSwap(DescriptorProto_ReservedRange* 
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata DescriptorProto_ReservedRange::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[3]);
@@ -3056,6 +3088,7 @@ void DescriptorProto::Clear() {
 }
 
 const char* DescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -3216,6 +3249,7 @@ failure:
 
 uint8_t* DescriptorProto::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.DescriptorProto)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -3313,6 +3347,7 @@ uint8_t* DescriptorProto::_InternalSerialize(
 }
 
 size_t DescriptorProto::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.DescriptorProto)
   size_t total_size = 0;
 
@@ -3407,6 +3442,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*DescriptorProto::GetClassData(
 void DescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<DescriptorProto*>(&to_msg);
   auto& from = static_cast<const DescriptorProto&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -3481,6 +3517,7 @@ void DescriptorProto::InternalSwap(DescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata DescriptorProto::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[4]);
@@ -3552,6 +3589,7 @@ void ExtensionRangeOptions::Clear() {
 }
 
 const char* ExtensionRangeOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
@@ -3600,6 +3638,7 @@ failure:
 
 uint8_t* ExtensionRangeOptions::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ExtensionRangeOptions)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -3625,6 +3664,7 @@ uint8_t* ExtensionRangeOptions::_InternalSerialize(
 }
 
 size_t ExtensionRangeOptions::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ExtensionRangeOptions)
   size_t total_size = 0;
 
@@ -3654,6 +3694,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*ExtensionRangeOptions::GetClas
 void ExtensionRangeOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<ExtensionRangeOptions*>(&to_msg);
   auto& from = static_cast<const ExtensionRangeOptions&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ExtensionRangeOptions)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -3689,6 +3730,7 @@ void ExtensionRangeOptions::InternalSwap(ExtensionRangeOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata ExtensionRangeOptions::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[5]);
@@ -3921,6 +3963,7 @@ void FieldDescriptorProto::Clear() {
 }
 
 const char* FieldDescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -4074,6 +4117,7 @@ failure:
 
 uint8_t* FieldDescriptorProto::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldDescriptorProto)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -4177,6 +4221,7 @@ uint8_t* FieldDescriptorProto::_InternalSerialize(
 }
 
 size_t FieldDescriptorProto::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldDescriptorProto)
   size_t total_size = 0;
 
@@ -4271,6 +4316,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*FieldDescriptorProto::GetClass
 void FieldDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<FieldDescriptorProto*>(&to_msg);
   auto& from = static_cast<const FieldDescriptorProto&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldDescriptorProto)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -4371,6 +4417,7 @@ void FieldDescriptorProto::InternalSwap(FieldDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FieldDescriptorProto::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[6]);
@@ -4481,6 +4528,7 @@ void OneofDescriptorProto::Clear() {
 }
 
 const char* OneofDescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -4533,6 +4581,7 @@ failure:
 
 uint8_t* OneofDescriptorProto::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.OneofDescriptorProto)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -4564,6 +4613,7 @@ uint8_t* OneofDescriptorProto::_InternalSerialize(
 }
 
 size_t OneofDescriptorProto::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.OneofDescriptorProto)
   size_t total_size = 0;
 
@@ -4601,6 +4651,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*OneofDescriptorProto::GetClass
 void OneofDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<OneofDescriptorProto*>(&to_msg);
   auto& from = static_cast<const OneofDescriptorProto&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.OneofDescriptorProto)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -4647,6 +4698,7 @@ void OneofDescriptorProto::InternalSwap(OneofDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata OneofDescriptorProto::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[7]);
@@ -4673,18 +4725,9 @@ EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::P
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
 }
 EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(const EnumDescriptorProto_EnumReservedRange& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message() {
-  EnumDescriptorProto_EnumReservedRange* const _this = this; (void)_this;
-  new (&_impl_) Impl_{
-      decltype(_impl_._has_bits_){from._impl_._has_bits_}
-    , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.start_){}
-    , decltype(_impl_.end_){}};
-
-  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  ::memcpy(&_impl_.start_, &from._impl_.start_,
-    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.end_) -
-    reinterpret_cast<char*>(&_impl_.start_)) + sizeof(_impl_.end_));
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _impl_(from._impl_) {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(
+      from._internal_metadata_);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
 }
 
@@ -4734,6 +4777,7 @@ void EnumDescriptorProto_EnumReservedRange::Clear() {
 }
 
 const char* EnumDescriptorProto_EnumReservedRange::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -4784,6 +4828,7 @@ failure:
 
 uint8_t* EnumDescriptorProto_EnumReservedRange::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -4810,6 +4855,7 @@ uint8_t* EnumDescriptorProto_EnumReservedRange::_InternalSerialize(
 }
 
 size_t EnumDescriptorProto_EnumReservedRange::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   size_t total_size = 0;
 
@@ -4843,6 +4889,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*EnumDescriptorProto_EnumReserv
 void EnumDescriptorProto_EnumReservedRange::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<EnumDescriptorProto_EnumReservedRange*>(&to_msg);
   auto& from = static_cast<const EnumDescriptorProto_EnumReservedRange&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -4885,6 +4932,7 @@ void EnumDescriptorProto_EnumReservedRange::InternalSwap(EnumDescriptorProto_Enu
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EnumDescriptorProto_EnumReservedRange::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[8]);
@@ -5007,6 +5055,7 @@ void EnumDescriptorProto::Clear() {
 }
 
 const char* EnumDescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -5102,6 +5151,7 @@ failure:
 
 uint8_t* EnumDescriptorProto::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumDescriptorProto)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -5159,6 +5209,7 @@ uint8_t* EnumDescriptorProto::_InternalSerialize(
 }
 
 size_t EnumDescriptorProto::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumDescriptorProto)
   size_t total_size = 0;
 
@@ -5218,6 +5269,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*EnumDescriptorProto::GetClassD
 void EnumDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<EnumDescriptorProto*>(&to_msg);
   auto& from = static_cast<const EnumDescriptorProto&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumDescriptorProto)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -5272,6 +5324,7 @@ void EnumDescriptorProto::InternalSwap(EnumDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EnumDescriptorProto::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[9]);
@@ -5389,6 +5442,7 @@ void EnumValueDescriptorProto::Clear() {
 }
 
 const char* EnumValueDescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -5450,6 +5504,7 @@ failure:
 
 uint8_t* EnumValueDescriptorProto::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumValueDescriptorProto)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -5487,6 +5542,7 @@ uint8_t* EnumValueDescriptorProto::_InternalSerialize(
 }
 
 size_t EnumValueDescriptorProto::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumValueDescriptorProto)
   size_t total_size = 0;
 
@@ -5529,6 +5585,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*EnumValueDescriptorProto::GetC
 void EnumValueDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<EnumValueDescriptorProto*>(&to_msg);
   auto& from = static_cast<const EnumValueDescriptorProto&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValueDescriptorProto)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -5584,6 +5641,7 @@ void EnumValueDescriptorProto::InternalSwap(EnumValueDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EnumValueDescriptorProto::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[10]);
@@ -5698,6 +5756,7 @@ void ServiceDescriptorProto::Clear() {
 }
 
 const char* ServiceDescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -5763,6 +5822,7 @@ failure:
 
 uint8_t* ServiceDescriptorProto::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ServiceDescriptorProto)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -5802,6 +5862,7 @@ uint8_t* ServiceDescriptorProto::_InternalSerialize(
 }
 
 size_t ServiceDescriptorProto::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ServiceDescriptorProto)
   size_t total_size = 0;
 
@@ -5846,6 +5907,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*ServiceDescriptorProto::GetCla
 void ServiceDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<ServiceDescriptorProto*>(&to_msg);
   auto& from = static_cast<const ServiceDescriptorProto&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ServiceDescriptorProto)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -5896,6 +5958,7 @@ void ServiceDescriptorProto::InternalSwap(ServiceDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata ServiceDescriptorProto::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[11]);
@@ -6064,6 +6127,7 @@ void MethodDescriptorProto::Clear() {
 }
 
 const char* MethodDescriptorProto::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -6158,6 +6222,7 @@ failure:
 
 uint8_t* MethodDescriptorProto::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.MethodDescriptorProto)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -6221,6 +6286,7 @@ uint8_t* MethodDescriptorProto::_InternalSerialize(
 }
 
 size_t MethodDescriptorProto::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.MethodDescriptorProto)
   size_t total_size = 0;
 
@@ -6282,6 +6348,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*MethodDescriptorProto::GetClas
 void MethodDescriptorProto::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<MethodDescriptorProto*>(&to_msg);
   auto& from = static_cast<const MethodDescriptorProto&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MethodDescriptorProto)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -6354,6 +6421,7 @@ void MethodDescriptorProto::InternalSwap(MethodDescriptorProto* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata MethodDescriptorProto::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[12]);
@@ -6711,6 +6779,7 @@ void FileOptions::Clear() {
 }
 
 const char* FileOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -6975,6 +7044,7 @@ failure:
 
 uint8_t* FileOptions::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FileOptions)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -7162,6 +7232,7 @@ uint8_t* FileOptions::_InternalSerialize(
 }
 
 size_t FileOptions::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FileOptions)
   size_t total_size = 0;
 
@@ -7319,6 +7390,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*FileOptions::GetClassData() co
 void FileOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<FileOptions*>(&to_msg);
   auto& from = static_cast<const FileOptions&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileOptions)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -7474,6 +7546,7 @@ void FileOptions::InternalSwap(FileOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FileOptions::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[13]);
@@ -7577,6 +7650,7 @@ void MessageOptions::Clear() {
 }
 
 const char* MessageOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -7663,6 +7737,7 @@ failure:
 
 uint8_t* MessageOptions::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.MessageOptions)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -7713,6 +7788,7 @@ uint8_t* MessageOptions::_InternalSerialize(
 }
 
 size_t MessageOptions::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.MessageOptions)
   size_t total_size = 0;
 
@@ -7765,6 +7841,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*MessageOptions::GetClassData()
 void MessageOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<MessageOptions*>(&to_msg);
   auto& from = static_cast<const MessageOptions&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MessageOptions)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -7823,6 +7900,7 @@ void MessageOptions::InternalSwap(MessageOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata MessageOptions::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[14]);
@@ -7944,6 +8022,7 @@ void FieldOptions::Clear() {
 }
 
 const char* FieldOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -8065,6 +8144,7 @@ failure:
 
 uint8_t* FieldOptions::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.FieldOptions)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -8135,6 +8215,7 @@ uint8_t* FieldOptions::_InternalSerialize(
 }
 
 size_t FieldOptions::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.FieldOptions)
   size_t total_size = 0;
 
@@ -8204,6 +8285,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*FieldOptions::GetClassData() c
 void FieldOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<FieldOptions*>(&to_msg);
   auto& from = static_cast<const FieldOptions&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldOptions)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -8271,6 +8353,7 @@ void FieldOptions::InternalSwap(FieldOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata FieldOptions::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[15]);
@@ -8342,6 +8425,7 @@ void OneofOptions::Clear() {
 }
 
 const char* OneofOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
@@ -8390,6 +8474,7 @@ failure:
 
 uint8_t* OneofOptions::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.OneofOptions)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -8415,6 +8500,7 @@ uint8_t* OneofOptions::_InternalSerialize(
 }
 
 size_t OneofOptions::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.OneofOptions)
   size_t total_size = 0;
 
@@ -8444,6 +8530,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*OneofOptions::GetClassData() c
 void OneofOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<OneofOptions*>(&to_msg);
   auto& from = static_cast<const OneofOptions&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.OneofOptions)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -8479,6 +8566,7 @@ void OneofOptions::InternalSwap(OneofOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata OneofOptions::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[16]);
@@ -8572,6 +8660,7 @@ void EnumOptions::Clear() {
 }
 
 const char* EnumOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -8640,6 +8729,7 @@ failure:
 
 uint8_t* EnumOptions::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumOptions)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -8678,6 +8768,7 @@ uint8_t* EnumOptions::_InternalSerialize(
 }
 
 size_t EnumOptions::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumOptions)
   size_t total_size = 0;
 
@@ -8720,6 +8811,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*EnumOptions::GetClassData() co
 void EnumOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<EnumOptions*>(&to_msg);
   auto& from = static_cast<const EnumOptions&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumOptions)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -8772,6 +8864,7 @@ void EnumOptions::InternalSwap(EnumOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EnumOptions::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[17]);
@@ -8856,6 +8949,7 @@ void EnumValueOptions::Clear() {
 }
 
 const char* EnumValueOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -8915,6 +9009,7 @@ failure:
 
 uint8_t* EnumValueOptions::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumValueOptions)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -8947,6 +9042,7 @@ uint8_t* EnumValueOptions::_InternalSerialize(
 }
 
 size_t EnumValueOptions::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumValueOptions)
   size_t total_size = 0;
 
@@ -8982,6 +9078,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*EnumValueOptions::GetClassData
 void EnumValueOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<EnumValueOptions*>(&to_msg);
   auto& from = static_cast<const EnumValueOptions&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValueOptions)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -9022,6 +9119,7 @@ void EnumValueOptions::InternalSwap(EnumValueOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EnumValueOptions::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[18]);
@@ -9106,6 +9204,7 @@ void ServiceOptions::Clear() {
 }
 
 const char* ServiceOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -9165,6 +9264,7 @@ failure:
 
 uint8_t* ServiceOptions::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ServiceOptions)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -9197,6 +9297,7 @@ uint8_t* ServiceOptions::_InternalSerialize(
 }
 
 size_t ServiceOptions::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ServiceOptions)
   size_t total_size = 0;
 
@@ -9232,6 +9333,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*ServiceOptions::GetClassData()
 void ServiceOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<ServiceOptions*>(&to_msg);
   auto& from = static_cast<const ServiceOptions&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ServiceOptions)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -9272,6 +9374,7 @@ void ServiceOptions::InternalSwap(ServiceOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata ServiceOptions::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[19]);
@@ -9368,6 +9471,7 @@ void MethodOptions::Clear() {
 }
 
 const char* MethodOptions::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -9440,6 +9544,7 @@ failure:
 
 uint8_t* MethodOptions::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.MethodOptions)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -9479,6 +9584,7 @@ uint8_t* MethodOptions::_InternalSerialize(
 }
 
 size_t MethodOptions::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.MethodOptions)
   size_t total_size = 0;
 
@@ -9522,6 +9628,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*MethodOptions::GetClassData() 
 void MethodOptions::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<MethodOptions*>(&to_msg);
   auto& from = static_cast<const MethodOptions&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MethodOptions)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -9574,6 +9681,7 @@ void MethodOptions::InternalSwap(MethodOptions* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata MethodOptions::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[20]);
@@ -9674,6 +9782,7 @@ void UninterpretedOption_NamePart::Clear() {
 }
 
 const char* UninterpretedOption_NamePart::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -9727,6 +9836,7 @@ failure:
 
 uint8_t* UninterpretedOption_NamePart::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UninterpretedOption.NamePart)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -9775,6 +9885,7 @@ size_t UninterpretedOption_NamePart::RequiredFieldsByteSizeFallback() const {
   return total_size;
 }
 size_t UninterpretedOption_NamePart::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.UninterpretedOption.NamePart)
   size_t total_size = 0;
 
@@ -9807,6 +9918,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*UninterpretedOption_NamePart::
 void UninterpretedOption_NamePart::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<UninterpretedOption_NamePart*>(&to_msg);
   auto& from = static_cast<const UninterpretedOption_NamePart&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UninterpretedOption.NamePart)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -9851,6 +9963,7 @@ void UninterpretedOption_NamePart::InternalSwap(UninterpretedOption_NamePart* ot
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata UninterpretedOption_NamePart::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[21]);
@@ -10012,6 +10125,7 @@ void UninterpretedOption::Clear() {
 }
 
 const char* UninterpretedOption::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -10117,6 +10231,7 @@ failure:
 
 uint8_t* UninterpretedOption::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.UninterpretedOption)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -10183,6 +10298,7 @@ uint8_t* UninterpretedOption::_InternalSerialize(
 }
 
 size_t UninterpretedOption::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.UninterpretedOption)
   size_t total_size = 0;
 
@@ -10249,6 +10365,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*UninterpretedOption::GetClassD
 void UninterpretedOption::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<UninterpretedOption*>(&to_msg);
   auto& from = static_cast<const UninterpretedOption&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UninterpretedOption)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -10321,6 +10438,7 @@ void UninterpretedOption::InternalSwap(UninterpretedOption* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata UninterpretedOption::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[22]);
@@ -10450,6 +10568,7 @@ void SourceCodeInfo_Location::Clear() {
 }
 
 const char* SourceCodeInfo_Location::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -10545,6 +10664,7 @@ failure:
 
 uint8_t* SourceCodeInfo_Location::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.SourceCodeInfo.Location)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -10607,6 +10727,7 @@ uint8_t* SourceCodeInfo_Location::_InternalSerialize(
 }
 
 size_t SourceCodeInfo_Location::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.SourceCodeInfo.Location)
   size_t total_size = 0;
 
@@ -10678,6 +10799,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*SourceCodeInfo_Location::GetCl
 void SourceCodeInfo_Location::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<SourceCodeInfo_Location*>(&to_msg);
   auto& from = static_cast<const SourceCodeInfo_Location&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceCodeInfo.Location)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -10729,6 +10851,7 @@ void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata SourceCodeInfo_Location::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[23]);
@@ -10795,6 +10918,7 @@ void SourceCodeInfo::Clear() {
 }
 
 const char* SourceCodeInfo::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
@@ -10838,6 +10962,7 @@ failure:
 
 uint8_t* SourceCodeInfo::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.SourceCodeInfo)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -10859,6 +10984,7 @@ uint8_t* SourceCodeInfo::_InternalSerialize(
 }
 
 size_t SourceCodeInfo::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.SourceCodeInfo)
   size_t total_size = 0;
 
@@ -10886,6 +11012,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*SourceCodeInfo::GetClassData()
 void SourceCodeInfo::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<SourceCodeInfo*>(&to_msg);
   auto& from = static_cast<const SourceCodeInfo&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceCodeInfo)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -10913,6 +11040,7 @@ void SourceCodeInfo::InternalSwap(SourceCodeInfo* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata SourceCodeInfo::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[24]);
@@ -11032,6 +11160,7 @@ void GeneratedCodeInfo_Annotation::Clear() {
 }
 
 const char* GeneratedCodeInfo_Annotation::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   _Internal::HasBits has_bits{};
   while (!ctx->Done(&ptr)) {
@@ -11118,6 +11247,7 @@ failure:
 
 uint8_t* GeneratedCodeInfo_Annotation::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.GeneratedCodeInfo.Annotation)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -11170,6 +11300,7 @@ uint8_t* GeneratedCodeInfo_Annotation::_InternalSerialize(
 }
 
 size_t GeneratedCodeInfo_Annotation::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.GeneratedCodeInfo.Annotation)
   size_t total_size = 0;
 
@@ -11229,6 +11360,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GeneratedCodeInfo_Annotation::
 void GeneratedCodeInfo_Annotation::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<GeneratedCodeInfo_Annotation*>(&to_msg);
   auto& from = static_cast<const GeneratedCodeInfo_Annotation&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.GeneratedCodeInfo.Annotation)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -11285,6 +11417,7 @@ void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* ot
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata GeneratedCodeInfo_Annotation::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[25]);
@@ -11351,6 +11484,7 @@ void GeneratedCodeInfo::Clear() {
 }
 
 const char* GeneratedCodeInfo::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
@@ -11394,6 +11528,7 @@ failure:
 
 uint8_t* GeneratedCodeInfo::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.GeneratedCodeInfo)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -11415,6 +11550,7 @@ uint8_t* GeneratedCodeInfo::_InternalSerialize(
 }
 
 size_t GeneratedCodeInfo::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.GeneratedCodeInfo)
   size_t total_size = 0;
 
@@ -11442,6 +11578,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*GeneratedCodeInfo::GetClassDat
 void GeneratedCodeInfo::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<GeneratedCodeInfo*>(&to_msg);
   auto& from = static_cast<const GeneratedCodeInfo&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.GeneratedCodeInfo)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -11469,6 +11606,7 @@ void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata GeneratedCodeInfo::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_getter, &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[26]);

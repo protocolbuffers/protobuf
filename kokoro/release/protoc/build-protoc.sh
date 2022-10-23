@@ -233,7 +233,7 @@ TARGET_FILE="target/$OS/$ARCH/$BAZEL_TARGET.exe"
 DOCKER_IMAGE=gcr.io/protobuf-build/bazel/linux@sha256:2bfd061284eff8234f2fcca16d71d43c69ccf3a22206628b54c204a6a9aac277
 
 tmpfile=$(mktemp -u) &&
-docker run --cidfile $tmpfile -v $WORKING_DIR/..:/workspace $DOCKER_IMAGE \
+docker run --cidfile $tmpfile -v $WORKING_DIR/../../..:/workspace $DOCKER_IMAGE \
     build //:$BAZEL_TARGET "${BAZEL_ARGS[@]}" &&
 mkdir -p $(dirname $TARGET_FILE) &&
 docker cp \

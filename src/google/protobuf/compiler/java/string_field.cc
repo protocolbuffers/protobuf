@@ -43,7 +43,6 @@
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
@@ -211,7 +210,8 @@ void ImmutableStringFieldGenerator::GenerateInterfaceMembers(
 
 void ImmutableStringFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
-  printer->Print(variables_, "private volatile java.lang.Object $name$_;\n");
+  printer->Print(variables_, "@SuppressWarnings(\"serial\")\n"
+                             "private volatile java.lang.Object $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
 
   if (HasHazzer(descriptor_)) {
@@ -792,6 +792,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateInterfaceMembers(
 void RepeatedImmutableStringFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
   printer->Print(variables_,
+                 "@SuppressWarnings(\"serial\")\n"
                  "private com.google.protobuf.LazyStringList $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Updates objectivec_nsobject_methods.h by generating a list of all of the properties
-# and methods on NSObject that Protobufs should not overload from iOS and macOS combined.
+# Updates nsobject_methods.h by generating a list of all of the properties and
+# methods on NSObject that Protobufs should not overload from iOS and macOS combined.
 #
 # The rules:
 #   - No property should ever be overloaded.
@@ -82,9 +82,9 @@ int main(int argc, const char * argv[]) {
     for (NSString *item in array) {
       // Some items with _ in them get returned in quotes, so do not add more.
       if ([item hasPrefix:@"\""]) {
-        printf("\t%s,\n", item.UTF8String);
+        printf("    %s,\n", item.UTF8String);
       } else {
-        printf("\t\"%s\",\n", item.UTF8String);
+        printf("    \"%s\",\n", item.UTF8String);
       }
     }
   }
@@ -110,7 +110,7 @@ END_FOOTER
 )
 
 # Check to make sure we are updating the correct file.
-if [[ ! -e "objectivec_nsobject_methods.h" ]]; then
+if [[ ! -e "nsobject_methods.h" ]]; then
   echo "error: Must be run in the src/google/protobuf/compiler/objectivec directory"
   exit 1
 fi
@@ -154,7 +154,7 @@ echo $"$file_footer" >> "$temp_dir"/methods_sorted.txt
 # Check for differences. Turn off error checking because we expect diff to fail when
 # there are no differences.
 set +e
-diff_out=$(diff -I "^//.*$" "$temp_dir"/methods_sorted.txt objectivec_nsobject_methods.h)
+diff_out=$(diff -I "^//.*$" "$temp_dir"/methods_sorted.txt nsobject_methods.h)
 removed_methods=$(echo "$diff_out" | grep '^>.*$')
 set -e
 if [[ -n "$removed_methods" ]]; then
@@ -168,12 +168,12 @@ if [[ -n "$removed_methods" ]]; then
   echo "$removed_methods"
   echo ""
   echo "New Version: $temp_dir/methods_sorted.txt"
-  echo "Old Version: objectivec_nsobject_methods.h"
+  echo "Old Version: nsobject_methods.h"
   exit 1
 fi
 if [[ -n "$diff_out" ]]; then
   echo "Added Methods:"
   echo "$(echo "$diff_out" | grep '^<.*$' | sed -e 's/^< "\(.*\)",$/  \1/')"
 fi;
-cp "$temp_dir"/methods_sorted.txt objectivec_nsobject_methods.h
+cp "$temp_dir"/methods_sorted.txt nsobject_methods.h
 rm -rf "$temp_dir"

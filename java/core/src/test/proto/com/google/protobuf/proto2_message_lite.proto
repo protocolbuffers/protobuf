@@ -36,7 +36,6 @@ package protobuf.experimental.lite;
 option java_package = "com.google.protobuf.testing";
 option java_outer_classname = "Proto2TestingLite";
 
-
 message Proto2MessageLite {
 
   enum TestEnum {

@@ -179,6 +179,7 @@ void SourceContext::Clear() {
 }
 
 const char* SourceContext::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
+
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     uint32_t tag;
@@ -219,6 +220,7 @@ failure:
 
 uint8_t* SourceContext::_InternalSerialize(
     uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.SourceContext)
   uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -242,6 +244,7 @@ uint8_t* SourceContext::_InternalSerialize(
 }
 
 size_t SourceContext::ByteSizeLong() const {
+
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.SourceContext)
   size_t total_size = 0;
 
@@ -269,6 +272,7 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*SourceContext::GetClassData() 
 void SourceContext::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<SourceContext*>(&to_msg);
   auto& from = static_cast<const SourceContext&>(from_msg);
+
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceContext)
   GOOGLE_DCHECK_NE(&from, _this);
   uint32_t cached_has_bits = 0;
@@ -303,6 +307,7 @@ void SourceContext::InternalSwap(SourceContext* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata SourceContext::GetMetadata() const {
+
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto_getter, &descriptor_table_google_2fprotobuf_2fsource_5fcontext_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fsource_5fcontext_2eproto[0]);
