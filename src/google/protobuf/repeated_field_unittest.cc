@@ -1092,9 +1092,40 @@ TEST(RepeatedField, TestSAddFromSelf) {
   }
 }
 
+}  // namespace
+
+// SFINAE + decltype to test internal::InternalVisibility is always explicitly
+// constructed. See also ExplicitInternallyVisible.
+template <typename T>
+std::true_type TestConstructImplicit(
+    decltype(T({}, static_cast<Arena*>(nullptr)))*) {
+  return std::true_type{};
+}
+template <typename T>
+std::false_type TestConstructImplicit(...) {
+  return std::false_type{};
+}
+
+template <typename T>
+std::true_type TestConstructExplicit(decltype(T(
+    internal::InternalVisibility{}, static_cast<Arena*>(nullptr)))*) {
+  return std::true_type{};
+}
+template <typename T>
+std::false_type TestConstructExplicit(...) {
+  return std::false_type{};
+}
+
+namespace {
+
 // ===================================================================
 // RepeatedPtrField tests.  These pretty much just mirror the RepeatedField
 // tests above.
+
+TEST(RepeatedPtrField, ExplicitInternallyVisible) {
+  EXPECT_FALSE(TestConstructImplicit<RepeatedPtrField<std::string>>(nullptr));
+  EXPECT_TRUE(TestConstructExplicit<RepeatedPtrField<std::string>>(nullptr));
+}
 
 TEST(RepeatedPtrField, ConstInit) {
   PROTOBUF_CONSTINIT static RepeatedPtrField<std::string> field{};  // NOLINT

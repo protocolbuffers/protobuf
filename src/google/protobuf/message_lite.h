@@ -51,6 +51,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/explicitly_constructed.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/port.h"
@@ -470,6 +471,11 @@ class PROTOBUF_EXPORT MessageLite {
   // Returns the arena, used for allocating internal objects(e.g., child
   // messages, etc), or owning incoming objects (e.g., set allocated).
   Arena* GetArenaForAllocation() const { return _internal_metadata_.arena(); }
+
+  PROTOBUF_ALWAYS_INLINE static constexpr internal::InternalVisibility
+  InternallyVisible() {
+    return internal::InternalVisibility{};
+  }
 
   internal::InternalMetadata _internal_metadata_;
 

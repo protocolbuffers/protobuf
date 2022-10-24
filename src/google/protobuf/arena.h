@@ -50,6 +50,7 @@ using type_info = ::type_info;
 #include "absl/meta/type_traits.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_config.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
 #include "google/protobuf/thread_safe_arena.h"
@@ -482,14 +483,34 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                                              sizeof(char)>
         is_arena_constructable;
 
+    // Returns a function based on "select".
+    template <int select, typename... F>
+    static auto Select(F... f) {
+      return std::get<select>(std::make_tuple(f...));
+    }
 
     template <typename... Args>
     static T* Construct(void* ptr, Args&&... args) {
-      return new (ptr) T(static_cast<Args&&>(args)...);
+      // Prefer construct with InternalVisibility if it's supported.
+      return Select<
+          std::is_constructible_v<T, internal::InternalVisibility, Args&&...>>(
+          [&](auto&&... args) {
+            return new (ptr) T(static_cast<decltype(args)>(args)...);
+          },
+          [&](auto&&... args) {
+            return new (ptr) T(internal::InternalVisibility{},
+                               static_cast<decltype(args)>(args)...);
+          })(static_cast<Args&&>(args)...);
     }
 
     static inline PROTOBUF_ALWAYS_INLINE T* New() {
-      return new T(nullptr);
+      // Prefer construct with InternalVisibility if it's supported.
+      return Select<std::is_constructible_v<T, internal::InternalVisibility,
+                                            std::nullptr_t>>(
+          [&](auto null_v) { return new T(null_v); },
+          [&](auto null_v) {
+            return new T(internal::InternalVisibility{}, null_v);
+          })(nullptr);
     }
 
     friend class Arena;

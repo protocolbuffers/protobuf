@@ -650,7 +650,7 @@ inline void CodeGeneratorRequest::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.file_to_generate_){arena}
+    , decltype(_impl_.file_to_generate_){InternallyVisible(), arena}
     , decltype(_impl_.proto_file_){arena}
     , decltype(_impl_.parameter_){}
     , decltype(_impl_.compiler_version_){nullptr}

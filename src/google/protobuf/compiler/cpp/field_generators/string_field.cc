@@ -166,6 +166,7 @@ class RepeatedStringFieldGenerator : public FieldGeneratorBase {
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
   void GenerateByteSize(io::Printer* printer) const override;
+  void GenerateAggregateInitializer(io::Printer* printer) const override;
 };
 
 StringFieldGenerator::StringFieldGenerator(const FieldDescriptor* descriptor,
@@ -991,6 +992,16 @@ void RepeatedStringFieldGenerator::GenerateByteSize(
       "::$proto_ns$::internal::WireFormatLite::$declared_type$Size(\n"
       "    $field$.Get(i));\n"
       "}\n");
+}
+
+void RepeatedStringFieldGenerator::GenerateAggregateInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  if (ShouldSplit(descriptor_, options_)) {
+    format("decltype(Impl_::Split::$name$_){InternallyVisible(), arena}");
+    return;
+  }
+  format("decltype($field$){InternallyVisible(), arena}");
 }
 }  // namespace
 
