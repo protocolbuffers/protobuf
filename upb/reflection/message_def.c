@@ -75,7 +75,7 @@ struct upb_MessageDef {
 };
 
 static void assign_msg_wellknowntype(upb_MessageDef* m) {
-  const char* name = upb_MessageDef_FullName(m);
+  const char* name = m->full_name;
   if (name == NULL) {
     m->well_known_type = kUpb_WellKnown_Unspecified;
     return;
@@ -317,6 +317,9 @@ bool upb_MessageDef_IsMessageSet(const upb_MessageDef* m) {
 static upb_MiniTable* _upb_MessageDef_MakeMiniTable(upb_DefBuilder* ctx,
                                                     const upb_MessageDef* m) {
   if (google_protobuf_MessageOptions_message_set_wire_format(m->opts)) {
+    if (m->field_count > 0) {
+      _upb_DefBuilder_Errf(ctx, "invalid message set (%s)", m->full_name);
+    }
     return upb_MiniTable_BuildMessageSet(kUpb_MiniTablePlatform_Native,
                                          ctx->arena);
   }
@@ -330,7 +333,7 @@ static upb_MiniTable* _upb_MessageDef_MakeMiniTable(upb_DefBuilder* ctx,
     const upb_FieldDef* val_f = upb_MessageDef_Field(m, 1);
     if (key_f == NULL || val_f == NULL) {
       _upb_DefBuilder_Errf(ctx, "Malformed map entry from message: %s",
-                           upb_MessageDef_FullName(m));
+                           m->full_name);
     }
 
     const upb_FieldType key_t = upb_FieldDef_Type(key_f);
@@ -362,7 +365,7 @@ static upb_MiniTable* _upb_MessageDef_MakeMiniTable(upb_DefBuilder* ctx,
 void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m) {
   for (int i = 0; i < m->field_count; i++) {
     upb_FieldDef* f = (upb_FieldDef*)upb_MessageDef_Field(m, i);
-    _upb_FieldDef_Resolve(ctx, upb_MessageDef_FullName(m), f);
+    _upb_FieldDef_Resolve(ctx, m->full_name, f);
   }
 
   if (!ctx->layout) {
@@ -373,8 +376,9 @@ void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m) {
 #ifndef NDEBUG
   for (int i = 0; i < m->field_count; i++) {
     const upb_FieldDef* f = upb_MessageDef_Field(m, i);
-    const upb_MiniTable_Field* mt_f =
-        &m->layout->fields[_upb_FieldDef_LayoutIndex(f)];
+    const int layout_index = _upb_FieldDef_LayoutIndex(f);
+    UPB_ASSERT(layout_index < m->layout->field_count);
+    const upb_MiniTable_Field* mt_f = &m->layout->fields[layout_index];
     UPB_ASSERT(upb_FieldDef_Type(f) == upb_MiniTableField_Type(mt_f));
   }
 #endif
@@ -382,7 +386,7 @@ void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m) {
   m->in_message_set = false;
   for (int i = 0; i < upb_MessageDef_NestedExtensionCount(m); i++) {
     upb_FieldDef* ext = (upb_FieldDef*)upb_MessageDef_NestedExtension(m, i);
-    _upb_FieldDef_Resolve(ctx, upb_MessageDef_FullName(m), ext);
+    _upb_FieldDef_Resolve(ctx, m->full_name, ext);
     if (upb_FieldDef_Type(ext) == kUpb_FieldType_Message &&
         upb_FieldDef_Label(ext) == kUpb_Label_Optional &&
         upb_FieldDef_MessageSubDef(ext) == m &&
