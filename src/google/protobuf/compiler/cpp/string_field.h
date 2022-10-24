@@ -125,6 +125,7 @@ class RepeatedStringFieldGenerator : public FieldGenerator {
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
   void GenerateByteSize(io::Printer* printer) const override;
+  void GenerateAggregateInitializer(io::Printer* printer) const override;
 };
 
 }  // namespace cpp

@@ -69,18 +69,19 @@
 #include <memory>
 #include <new>
 
+#include "google/protobuf/arenastring.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_reflection.h"
 #include "google/protobuf/generated_message_util.h"
-#include "google/protobuf/unknown_field_set.h"
-#include "google/protobuf/arenastring.h"
-#include "google/protobuf/extension_set.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/map_field_inl.h"
 #include "google/protobuf/map_type_handler.h"
 #include "google/protobuf/reflection_ops.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format.h"
 
 
@@ -417,8 +418,8 @@ void DynamicMessage::SharedCtor(bool lock_factory) {
               ArenaStringPtr* asp = new (field_ptr) ArenaStringPtr();
               asp->InitDefault();
             } else {
-              new (field_ptr)
-                  RepeatedPtrField<std::string>(GetArenaForAllocation());
+              new (field_ptr) RepeatedPtrField<std::string>(
+                  internal::InternalVisibility{}, GetArenaForAllocation());
             }
             break;
         }

@@ -1779,7 +1779,7 @@ inline void FileDescriptorProto::SharedCtor(
   new (&_impl_) Impl_{
       decltype(_impl_._has_bits_){}
     , /*decltype(_impl_._cached_size_)*/{}
-    , decltype(_impl_.dependency_){arena}
+    , decltype(_impl_.dependency_){InternallyVisible(), arena}
     , decltype(_impl_.message_type_){arena}
     , decltype(_impl_.enum_type_){arena}
     , decltype(_impl_.service_){arena}
@@ -3041,7 +3041,7 @@ inline void DescriptorProto::SharedCtor(
     , decltype(_impl_.extension_){arena}
     , decltype(_impl_.oneof_decl_){arena}
     , decltype(_impl_.reserved_range_){arena}
-    , decltype(_impl_.reserved_name_){arena}
+    , decltype(_impl_.reserved_name_){InternallyVisible(), arena}
     , decltype(_impl_.name_){}
     , decltype(_impl_.options_){nullptr}
   };
@@ -5044,7 +5044,7 @@ inline void EnumDescriptorProto::SharedCtor(
     , /*decltype(_impl_._cached_size_)*/{}
     , decltype(_impl_.value_){arena}
     , decltype(_impl_.reserved_range_){arena}
-    , decltype(_impl_.reserved_name_){arena}
+    , decltype(_impl_.reserved_name_){InternallyVisible(), arena}
     , decltype(_impl_.name_){}
     , decltype(_impl_.options_){nullptr}
   };
@@ -10625,7 +10625,7 @@ inline void SourceCodeInfo_Location::SharedCtor(
     , /*decltype(_impl_._path_cached_byte_size_)*/{0}
     , decltype(_impl_.span_){arena}
     , /*decltype(_impl_._span_cached_byte_size_)*/{0}
-    , decltype(_impl_.leading_detached_comments_){arena}
+    , decltype(_impl_.leading_detached_comments_){InternallyVisible(), arena}
     , decltype(_impl_.leading_comments_){}
     , decltype(_impl_.trailing_comments_){}
   };

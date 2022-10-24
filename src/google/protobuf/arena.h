@@ -51,6 +51,7 @@ using type_info = ::type_info;
 #include <type_traits>
 #include "google/protobuf/arena_config.h"
 #include "google/protobuf/arena_impl.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.
@@ -463,14 +464,35 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                                              sizeof(char)>
         is_arena_constructable;
 
+    // Selects and calls functions based on Selector::value, which is typically
+    // false (0) or true (1).
+    template <typename Selector, typename... F>
+    static auto Select(Selector, F... f) {
+      return std::get<Selector::value>(std::make_tuple(f...))();
+    }
 
     template <typename... Args>
     static T* Construct(void* ptr, Args&&... args) {
-      return new (ptr) T(static_cast<Args&&>(args)...);
+      // Prefer construct with InternalVisibility if it's supported.
+      return Select(
+          std::is_constructible<T, internal::InternalVisibility, Args...>{},
+          [&](auto... delay) {
+            return new (ptr) T(static_cast<Args&&>(args)..., delay...);
+          },
+          [&](auto... delay) {
+            return new (ptr) T(internal::InternalVisibility{},
+                               static_cast<Args&&>(args)..., delay...);
+          });
     }
 
     static inline PROTOBUF_ALWAYS_INLINE T* New() {
-      return new T(nullptr);
+      // Prefer construct with InternalVisibility if it's supported.
+      return Select(
+          std::is_constructible<T, internal::InternalVisibility, Arena*>{},
+          [&](auto... delay) { return new T(nullptr, delay...); },
+          [&](auto... delay) {
+            return new T(internal::InternalVisibility{}, nullptr, delay...);
+          });
     }
 
     friend class Arena;

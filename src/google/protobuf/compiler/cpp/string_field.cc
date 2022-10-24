@@ -941,6 +941,16 @@ void RepeatedStringFieldGenerator::GenerateByteSize(
       "}\n");
 }
 
+void RepeatedStringFieldGenerator::GenerateAggregateInitializer(
+    io::Printer* printer) const {
+  Formatter format(printer, variables_);
+  if (ShouldSplit(descriptor_, options_)) {
+    format("decltype(Impl_::Split::$name$_){InternallyVisible(), arena}");
+    return;
+  }
+  format("decltype($field$){InternallyVisible(), arena}");
+}
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
