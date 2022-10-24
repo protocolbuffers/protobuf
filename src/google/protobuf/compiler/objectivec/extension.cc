@@ -31,6 +31,11 @@
 #include "google/protobuf/compiler/objectivec/extension.h"
 
 #include <iostream>
+#include <map>
+#include <ostream>
+#include <set>
+#include <string>
+#include <vector>
 
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
@@ -57,8 +62,6 @@ ExtensionGenerator::ExtensionGenerator(const std::string& root_class_name,
     abort();
   }
 }
-
-ExtensionGenerator::~ExtensionGenerator() {}
 
 void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) {
   std::map<std::string, std::string> vars;

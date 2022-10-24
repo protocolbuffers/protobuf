@@ -30,20 +30,24 @@
 
 #include "google/protobuf/compiler/objectivec/names.h"
 
+#include <algorithm>
 #include <climits>
 #include <fstream>
 #include <iostream>
+#include <map>
+#include <ostream>
 #include <sstream>
-#include <unordered_set>
+#include <string>
 #include <vector>
 
-#include "absl/strings/ascii.h"
-#include "absl/strings/str_split.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/strings/ascii.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_split.h"
 #include "google/protobuf/compiler/objectivec/line_consumer.h"
 #include "google/protobuf/compiler/objectivec/nsobject_methods.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 
 // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
 // error cases, so it seems to be ok to use as a back door for errors.
@@ -65,17 +69,16 @@ bool BoolFromEnvVar(const char* env_var, bool default_value) {
 
 class SimpleLineCollector : public LineConsumer {
  public:
-  explicit SimpleLineCollector(std::unordered_set<std::string>* inout_set)
+  explicit SimpleLineCollector(absl::flat_hash_set<std::string>* inout_set)
       : set_(inout_set) {}
 
-  virtual bool ConsumeLine(const absl::string_view& line,
-                           std::string* out_error) override {
+  bool ConsumeLine(absl::string_view line, std::string* out_error) override {
     set_->insert(std::string(line));
     return true;
   }
 
  private:
-  std::unordered_set<std::string>* set_;
+  absl::flat_hash_set<std::string>* set_;
 };
 
 class PackageToPrefixesCollector : public LineConsumer {
@@ -85,8 +88,7 @@ class PackageToPrefixesCollector : public LineConsumer {
       std::map<std::string, std::string>* inout_package_to_prefix_map)
       : usage_(usage), prefix_map_(inout_package_to_prefix_map) {}
 
-  virtual bool ConsumeLine(const absl::string_view& line,
-                           std::string* out_error) override;
+  bool ConsumeLine(absl::string_view line, std::string* out_error) override;
 
  private:
   const std::string usage_;
@@ -131,7 +133,7 @@ class PrefixModeStorage {
   std::string package_to_prefix_mappings_path_;
   std::string exception_path_;
   std::string forced_prefix_;
-  std::unordered_set<std::string> exceptions_;
+  absl::flat_hash_set<std::string> exceptions_;
 };
 
 PrefixModeStorage::PrefixModeStorage() {
@@ -181,7 +183,7 @@ std::string PrefixModeStorage::prefix_from_proto_package_mappings(
   const std::string package = file->package();
   // For files without packages, the can be registered as "no_package:PATH",
   // allowing the expected prefixes file.
-  static const std::string no_package_prefix("no_package:");
+  const std::string no_package_prefix("no_package:");
   const std::string lookup_key =
       package.empty() ? no_package_prefix + file->name() : package;
 
@@ -220,7 +222,7 @@ bool PrefixModeStorage::is_package_exempted(const std::string& package) {
   return exceptions_.count(package) != 0;
 }
 
-PrefixModeStorage g_prefix_mode;
+PrefixModeStorage& g_prefix_mode = *new PrefixModeStorage();
 
 }  // namespace
 
@@ -258,19 +260,19 @@ void SetForcedPackagePrefix(const std::string& prefix) {
 
 namespace {
 
-std::unordered_set<std::string> MakeWordsMap(const char* const words[],
-                                             size_t num_words) {
-  std::unordered_set<std::string> result;
-  for (int i = 0; i < num_words; i++) {
-    result.insert(words[i]);
-  }
-  return result;
-}
-
 const char* const kUpperSegmentsList[] = {"url", "http", "https"};
 
-std::unordered_set<std::string> kUpperSegments =
-    MakeWordsMap(kUpperSegmentsList, ABSL_ARRAYSIZE(kUpperSegmentsList));
+const absl::flat_hash_set<absl::string_view>& UpperSegments() {
+  static const auto* words = [] {
+    auto* words = new absl::flat_hash_set<absl::string_view>();
+
+    for (const auto word : kUpperSegmentsList) {
+      words->emplace(word);
+    }
+    return words;
+  }();
+  return *words;
+}
 
 // Internal helper for name handing.
 // Do not expose this outside of helpers, stick to having functions for specific
@@ -318,19 +320,15 @@ std::string UnderscoresToCamelCase(const std::string& input,
 
   std::string result;
   bool first_segment_forces_upper = false;
-  for (std::vector<std::string>::iterator i = values.begin(); i != values.end();
-       ++i) {
-    std::string value = *i;
-    bool all_upper = (kUpperSegments.count(value) > 0);
+  for (auto& value : values) {
+    bool all_upper = (UpperSegments().count(value) > 0);
     if (all_upper && (result.length() == 0)) {
       first_segment_forces_upper = true;
     }
-    for (int j = 0; j < value.length(); j++) {
-      if (j == 0 || all_upper) {
-        value[j] = absl::ascii_toupper(value[j]);
-      } else {
-        // Nothing, already in lower.
-      }
+    if (all_upper) {
+      absl::AsciiStrToUpper(&value);
+    } else {
+      value[0] = absl::ascii_toupper(value[0]);
     }
     result += value;
   }
@@ -525,6 +523,30 @@ const char* const kReservedWordList[] = {
     "TimeRecord",
 };
 
+const absl::flat_hash_set<absl::string_view>& ReservedWords() {
+  static const auto* words = [] {
+    auto* words = new absl::flat_hash_set<absl::string_view>();
+
+    for (const auto word : kReservedWordList) {
+      words->emplace(word);
+    }
+    return words;
+  }();
+  return *words;
+}
+
+const absl::flat_hash_set<absl::string_view>& NSObjectMethods() {
+  static const auto* words = [] {
+    auto* words = new absl::flat_hash_set<absl::string_view>();
+
+    for (const auto word : kNSObjectMethodsList) {
+      words->emplace(word);
+    }
+    return words;
+  }();
+  return *words;
+}
+
 // returns true is input starts with __ or _[A-Z] which are reserved identifiers
 // in C/ C++. All calls should go through UnderscoresToCamelCase before getting
 // here but this verifies and allows for future expansion if we decide to
@@ -545,10 +567,6 @@ std::string SanitizeNameForObjC(const std::string& prefix,
                                 const std::string& input,
                                 const std::string& extension,
                                 std::string* out_suffix_added) {
-  static const std::unordered_set<std::string> kReservedWords =
-      MakeWordsMap(kReservedWordList, ABSL_ARRAYSIZE(kReservedWordList));
-  static const std::unordered_set<std::string> kNSObjectMethods =
-      MakeWordsMap(kNSObjectMethodsList, ABSL_ARRAYSIZE(kNSObjectMethodsList));
   std::string sanitized;
   // We add the prefix in the cases where the string is missing a prefix.
   // We define "missing a prefix" as where 'input':
@@ -566,8 +584,8 @@ std::string SanitizeNameForObjC(const std::string& prefix,
     sanitized = prefix + input;
   }
   if (IsReservedCIdentifier(sanitized) ||
-      (kReservedWords.count(sanitized) > 0) ||
-      (kNSObjectMethods.count(sanitized) > 0)) {
+      (ReservedWords().count(sanitized) > 0) ||
+      (NSObjectMethods().count(sanitized) > 0)) {
     if (out_suffix_added) *out_suffix_added = extension;
     return sanitized + extension;
   }
@@ -604,14 +622,13 @@ void PathSplit(const std::string& path, std::string* directory,
 }
 
 bool IsSpecialNamePrefix(const std::string& name,
-                         const std::string* special_names, size_t count) {
-  for (size_t i = 0; i < count; ++i) {
-    const size_t length = special_names[i].length();
-    if (name.compare(0, length, special_names[i]) == 0) {
+                         const std::vector<std::string>& special_names) {
+  for (const auto& special_name : special_names) {
+    const size_t length = special_name.length();
+    if (name.compare(0, length, special_name) == 0) {
       if (name.length() > length) {
-        // If name is longer than the special_names[i] that it matches
-        // the next character must be not lower case (newton vs newTon vs
-        // new_ton).
+        // If name is longer than the special_name that it matches the next
+        // character must be not lower case (newton vs newTon vs new_ton).
         return !absl::ascii_islower(name[length]);
       } else {
         return true;
@@ -635,27 +652,26 @@ void MaybeUnQuote(absl::string_view* input) {
 bool IsRetainedName(const std::string& name) {
   // List of prefixes from
   // http://developer.apple.com/library/mac/#documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmRules.html
-  static const std::string retained_names[] = {"new", "alloc", "copy",
-                                               "mutableCopy"};
-  return IsSpecialNamePrefix(
-      name, retained_names, sizeof(retained_names) / sizeof(retained_names[0]));
+  static const std::vector<std::string>* retained_names =
+      new std::vector<std::string>({"new", "alloc", "copy", "mutableCopy"});
+  return IsSpecialNamePrefix(name, *retained_names);
 }
 
 bool IsInitName(const std::string& name) {
-  static const std::string init_names[] = {"init"};
-  return IsSpecialNamePrefix(name, init_names,
-                             sizeof(init_names) / sizeof(init_names[0]));
+  static const std::vector<std::string>* init_names =
+      new std::vector<std::string>({"init"});
+  return IsSpecialNamePrefix(name, *init_names);
 }
 
 bool IsCreateName(const std::string& name) {
   // List of segments from
   // https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFMemoryMgmt/Concepts/Ownership.html#//apple_ref/doc/uid/20001148-103029
-  static const std::string create_names[] = {"Create", "Copy"};
-  const size_t count = sizeof(create_names) / sizeof(create_names[0]);
+  static const std::vector<std::string>* create_names =
+      new std::vector<std::string>({"Create", "Copy"});
 
-  for (size_t i = 0; i < count; ++i) {
-    const size_t length = create_names[i].length();
-    size_t pos = name.find(create_names[i]);
+  for (const auto& create_name : *create_names) {
+    const size_t length = create_name.length();
+    size_t pos = name.find(create_name);
     if (pos != std::string::npos) {
       // The above docs don't actually call out anything about the characters
       // before the special words. So it's not clear if something like
@@ -681,7 +697,7 @@ bool IsCreateName(const std::string& name) {
 
 std::string BaseFileName(const FileDescriptor* file) {
   std::string basename;
-  PathSplit(file->name(), NULL, &basename);
+  PathSplit(file->name(), nullptr, &basename);
   return basename;
 }
 
@@ -714,7 +730,7 @@ std::string FileClassPrefix(const FileDescriptor* file) {
   // underscore at the end.
   std::string result;
   const std::vector<std::string> segments =
-      absl::StrSplit(file->package(), ".", absl::SkipEmpty());
+      absl::StrSplit(file->package(), '.', absl::SkipEmpty());
   for (const auto& segment : segments) {
     const std::string part = UnderscoresToCamelCase(segment, true);
     if (part.empty()) {
@@ -767,12 +783,12 @@ std::string FileClassName(const FileDescriptor* file) {
       UnderscoresToCamelCase(StripProto(BaseFileName(file)), true) + "Root";
   // There aren't really any reserved words that end in "Root", but playing
   // it safe and checking.
-  return SanitizeNameForObjC(prefix, name, "_RootClass", NULL);
+  return SanitizeNameForObjC(prefix, name, "_RootClass", nullptr);
 }
 
 std::string ClassNameWorker(const Descriptor* descriptor) {
   std::string name;
-  if (descriptor->containing_type() != NULL) {
+  if (descriptor->containing_type() != nullptr) {
     name = ClassNameWorker(descriptor->containing_type());
     name += "_";
   }
@@ -781,7 +797,7 @@ std::string ClassNameWorker(const Descriptor* descriptor) {
 
 std::string ClassNameWorker(const EnumDescriptor* descriptor) {
   std::string name;
-  if (descriptor->containing_type() != NULL) {
+  if (descriptor->containing_type() != nullptr) {
     name = ClassNameWorker(descriptor->containing_type());
     name += "_";
   }
@@ -789,7 +805,7 @@ std::string ClassNameWorker(const EnumDescriptor* descriptor) {
 }
 
 std::string ClassName(const Descriptor* descriptor) {
-  return ClassName(descriptor, NULL);
+  return ClassName(descriptor, nullptr);
 }
 
 std::string ClassName(const Descriptor* descriptor,
@@ -812,7 +828,7 @@ std::string EnumName(const EnumDescriptor* descriptor) {
   //    yields Fixed_Class, Fixed_Size.
   const std::string prefix = FileClassPrefix(descriptor->file());
   const std::string name = ClassNameWorker(descriptor);
-  return SanitizeNameForObjC(prefix, name, "_Enum", NULL);
+  return SanitizeNameForObjC(prefix, name, "_Enum", nullptr);
 }
 
 std::string EnumValueName(const EnumValueDescriptor* descriptor) {
@@ -828,7 +844,7 @@ std::string EnumValueName(const EnumValueDescriptor* descriptor) {
   const std::string name = class_name + "_" + value_str;
   // There aren't really any reserved words with an underscore and a leading
   // capital letter, but playing it safe and checking.
-  return SanitizeNameForObjC("", name, "_Value", NULL);
+  return SanitizeNameForObjC("", name, "_Value", nullptr);
 }
 
 std::string EnumValueShortName(const EnumValueDescriptor* descriptor) {
@@ -865,7 +881,7 @@ std::string UnCamelCaseEnumShortName(const std::string& name) {
 std::string ExtensionMethodName(const FieldDescriptor* descriptor) {
   const std::string name = NameFromFieldDescriptor(descriptor);
   const std::string result = UnderscoresToCamelCase(name, false);
-  return SanitizeNameForObjC("", result, "_Extension", NULL);
+  return SanitizeNameForObjC("", result, "_Extension", nullptr);
 }
 
 std::string FieldName(const FieldDescriptor* field) {
@@ -880,7 +896,7 @@ std::string FieldName(const FieldDescriptor* field) {
       result += "_p";
     }
   }
-  return SanitizeNameForObjC("", result, "_p", NULL);
+  return SanitizeNameForObjC("", result, "_p", nullptr);
 }
 
 std::string FieldNameCapitalized(const FieldDescriptor* field) {
@@ -960,10 +976,8 @@ const char* const ProtobufLibraryFrameworkName = "Protobuf";
 
 std::string ProtobufFrameworkImportSymbol(const std::string& framework_name) {
   // GPB_USE_[framework_name]_FRAMEWORK_IMPORTS
-  std::string result = std::string("GPB_USE_");
-  result += absl::AsciiStrToUpper(framework_name);
-  result += "_FRAMEWORK_IMPORTS";
-  return result;
+  return absl::StrCat("GPB_USE_", absl::AsciiStrToUpper(framework_name),
+                      "_FRAMEWORK_IMPORTS");
 }
 
 bool IsProtobufLibraryBundledProtoFile(const FileDescriptor* file) {
@@ -988,12 +1002,12 @@ bool IsProtobufLibraryBundledProtoFile(const FileDescriptor* file) {
 
 namespace {
 
-bool PackageToPrefixesCollector::ConsumeLine(const absl::string_view& line,
+bool PackageToPrefixesCollector::ConsumeLine(absl::string_view line,
                                              std::string* out_error) {
   int offset = line.find('=');
   if (offset == absl::string_view::npos) {
     *out_error =
-        usage_ + " file line without equal sign: '" + absl::StrCat(line) + "'.";
+        absl::StrCat(usage_, " file line without equal sign: '", line, "'.");
     return false;
   }
   absl::string_view package =
@@ -1034,7 +1048,7 @@ bool ValidateObjCClassPrefix(
   const std::string package = file->package();
   // For files without packages, the can be registered as "no_package:PATH",
   // allowing the expected prefixes file.
-  static const std::string no_package_prefix("no_package:");
+  const std::string no_package_prefix("no_package:");
   const std::string lookup_key =
       package.empty() ? no_package_prefix + file->name() : package;
 
@@ -1175,7 +1189,7 @@ Options::Options() {
       getenv("GPB_OBJC_EXPECTED_PACKAGE_PREFIXES_SUPPRESSIONS");
   if (suppressions) {
     expected_prefixes_suppressions =
-        absl::StrSplit(suppressions, ";", absl::SkipEmpty());
+        absl::StrSplit(suppressions, ';', absl::SkipEmpty());
   }
   prefixes_must_be_registered =
       BoolFromEnvVar("GPB_OBJC_PREFIXES_MUST_BE_REGISTERED", false);
@@ -1190,36 +1204,36 @@ bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
 }
 
 bool ValidateObjCClassPrefixes(const std::vector<const FileDescriptor*>& files,
-                               const Options& generation_options,
+                               const Options& validation_options,
                                std::string* out_error) {
   // Allow a '-' as the path for the expected prefixes to completely disable
   // even the most basic of checks.
-  if (generation_options.expected_prefixes_path == "-") {
+  if (validation_options.expected_prefixes_path == "-") {
     return true;
   }
 
   // Load the expected package prefixes, if available, to validate against.
   std::map<std::string, std::string> expected_package_prefixes;
-  if (!LoadExpectedPackagePrefixes(generation_options.expected_prefixes_path,
+  if (!LoadExpectedPackagePrefixes(validation_options.expected_prefixes_path,
                                    &expected_package_prefixes, out_error)) {
     return false;
   }
 
-  for (int i = 0; i < files.size(); i++) {
+  for (auto file : files) {
     bool should_skip =
-        (std::find(generation_options.expected_prefixes_suppressions.begin(),
-                   generation_options.expected_prefixes_suppressions.end(),
-                   files[i]->name()) !=
-         generation_options.expected_prefixes_suppressions.end());
+        (std::find(validation_options.expected_prefixes_suppressions.begin(),
+                   validation_options.expected_prefixes_suppressions.end(),
+                   file->name()) !=
+         validation_options.expected_prefixes_suppressions.end());
     if (should_skip) {
       continue;
     }
 
-    bool is_valid = ValidateObjCClassPrefix(
-        files[i], generation_options.expected_prefixes_path,
-        expected_package_prefixes,
-        generation_options.prefixes_must_be_registered,
-        generation_options.require_prefixes, out_error);
+    bool is_valid =
+        ValidateObjCClassPrefix(file, validation_options.expected_prefixes_path,
+                                expected_package_prefixes,
+                                validation_options.prefixes_must_be_registered,
+                                validation_options.require_prefixes, out_error);
     if (!is_valid) {
       return false;
     }

@@ -44,11 +44,11 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
 
@@ -216,8 +216,8 @@ class PROTOC_EXPORT CommandLineInterface {
   class ErrorPrinter;
   class GeneratorContextImpl;
   class MemoryOutputStream;
-  typedef std::unordered_map<std::string, std::unique_ptr<GeneratorContextImpl>>
-      GeneratorContextMap;
+  using GeneratorContextMap =
+      absl::flat_hash_map<std::string, std::unique_ptr<GeneratorContextImpl>>;
 
   // Clear state from previous Run().
   void Clear();

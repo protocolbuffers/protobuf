@@ -50,10 +50,9 @@ namespace objectivec {
 // Helper for parsing simple files.
 class PROTOC_EXPORT LineConsumer {
  public:
-  LineConsumer();
-  virtual ~LineConsumer();
-  virtual bool ConsumeLine(const absl::string_view& line,
-                           std::string* out_error) = 0;
+  LineConsumer() = default;
+  virtual ~LineConsumer() = default;
+  virtual bool ConsumeLine(absl::string_view line, std::string* out_error) = 0;
 };
 
 bool PROTOC_EXPORT ParseSimpleFile(const std::string& path,

@@ -210,10 +210,6 @@
 // Owner: mkruskal@
 #define PROTOBUF_FUTURE_REMOVE_CLEARED_API 1
 
-// Used to escape C++20 keywords.
-// TODO(mkruskal): ping b/238664698 when this lands in opensource.
-// Owner: mkruskal@
-#define PROTOBUF_FUTURE_CPP20_KEYWORDS 1
 #else
 #define PROTOBUF_FUTURE_FINAL
 #endif

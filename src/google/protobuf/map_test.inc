@@ -42,8 +42,6 @@
 #include <random>
 #include <set>
 #include <sstream>
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 #include "google/protobuf/stubs/logging.h"
@@ -54,6 +52,8 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
@@ -571,8 +571,8 @@ static void StressTestIterators(int n) {
   ASSERT_EQ(n, m.size());
   // Create maps of pointers and iterators.
   // These should remain valid even if we modify m.
-  std::unordered_map<int, Map<int, int>::value_type*> mp(n);
-  std::unordered_map<int, Map<int, int>::iterator> mi(n);
+  absl::flat_hash_map<int, Map<int, int>::value_type*> mp(n);
+  absl::flat_hash_map<int, Map<int, int>::iterator> mi(n);
   for (Map<int, int>::iterator it = m.begin(); it != m.end(); ++it) {
     mp[it->first] = &*it;
     mi[it->first] = it;
@@ -1941,10 +1941,8 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
   // Test iterators.
   {
     int index = 0;
-    std::unordered_map<int32_t, int32_t> result;
-    for (RepeatedFieldRef<Message>::iterator it = mf_int32_int32.begin();
-         it != mf_int32_int32.end(); ++it) {
-      const Message& message = *it;
+    absl::flat_hash_map<int32_t, int32_t> result;
+    for (const auto& message : mf_int32_int32) {
       int32_t key =
           message.GetReflection()->GetInt32(message, fd_map_int32_in32_key);
       int32_t value =
@@ -1953,19 +1951,15 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
       ++index;
     }
     EXPECT_EQ(10, index);
-    for (std::unordered_map<int32_t, int32_t>::const_iterator it =
-             result.begin();
-         it != result.end(); ++it) {
-      EXPECT_EQ(message.map_int32_int32().at(it->first), it->second);
+    for (const auto& kv : result) {
+      EXPECT_EQ(message.map_int32_int32().at(kv.first), kv.second);
     }
   }
 
   {
     int index = 0;
-    std::unordered_map<int32_t, double> result;
-    for (RepeatedFieldRef<Message>::iterator it = mf_int32_double.begin();
-         it != mf_int32_double.end(); ++it) {
-      const Message& message = *it;
+    absl::flat_hash_map<int32_t, double> result;
+    for (const auto& message : mf_int32_double) {
       int32_t key =
           message.GetReflection()->GetInt32(message, fd_map_int32_double_key);
       double value = message.GetReflection()->GetDouble(
@@ -1974,19 +1968,15 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
       ++index;
     }
     EXPECT_EQ(10, index);
-    for (std::unordered_map<int32_t, double>::const_iterator it =
-             result.begin();
-         it != result.end(); ++it) {
-      EXPECT_EQ(message.map_int32_double().at(it->first), it->second);
+    for (const auto& kv : result) {
+      EXPECT_EQ(message.map_int32_double().at(kv.first), kv.second);
     }
   }
 
   {
     int index = 0;
-    std::unordered_map<std::string, std::string> result;
-    for (RepeatedFieldRef<Message>::iterator it = mf_string_string.begin();
-         it != mf_string_string.end(); ++it) {
-      const Message& message = *it;
+    absl::flat_hash_map<std::string, std::string> result;
+    for (const auto& message : mf_string_string) {
       std::string key =
           message.GetReflection()->GetString(message, fd_map_string_string_key);
       std::string value = message.GetReflection()->GetString(
@@ -1995,10 +1985,8 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
       ++index;
     }
     EXPECT_EQ(10, index);
-    for (std::unordered_map<std::string, std::string>::const_iterator it =
-             result.begin();
-         it != result.end(); ++it) {
-      EXPECT_EQ(message.map_string_string().at(it->first), it->second);
+    for (const auto& kv : result) {
+      EXPECT_EQ(message.map_string_string().at(kv.first), kv.second);
     }
   }
 

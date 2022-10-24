@@ -693,6 +693,7 @@ class PROTOBUF_EXPORT TextFormat {
                                             const FieldDescriptor* field);
 };
 
+
 inline void TextFormat::RecordLocation(ParseInfoTree* info_tree,
                                        const FieldDescriptor* field,
                                        ParseLocationRange location) {

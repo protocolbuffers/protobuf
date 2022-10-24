@@ -42,9 +42,9 @@
 #include <type_traits>
 #include <utility>
 
-#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_sink.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/stubs/status_macros.h"
@@ -80,8 +80,8 @@ struct WriterOptions {
 
 template <typename Tuple, typename F, size_t... i>
 void EachInner(const Tuple& value, F f, std::index_sequence<i...>) {
-  int ignored[] =
-    {(f(std::get<i>(value)), 0)...};  // NOLINT(readability/braces)
+  int ignored[] = {
+      (f(std::get<i>(value)), 0)...};  // NOLINT(readability/braces)
   (void)ignored;
 }
 
@@ -129,13 +129,13 @@ class JsonWriter {
   // in an attempt to match the behavior of the ESF parser.
   void Write(double val) {
     if (!MaybeWriteSpecialFp(val)) {
-      Write(SimpleDtoa(val));
+      Write(io::SimpleDtoa(val));
     }
   }
 
   void Write(float val) {
     if (!MaybeWriteSpecialFp(val)) {
-      Write(SimpleFtoa(val));
+      Write(io::SimpleFtoa(val));
     }
   }
 

@@ -92,6 +92,8 @@ cc_library(
     deps = [
         ":io",
         "//src/google/protobuf/stubs",
+        "@com_google_absl//absl/strings",
+        "@com_google_absl//absl/strings:str_format",
     ],
 )
 

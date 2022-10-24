@@ -34,3 +34,6 @@ set_target_properties(libprotobuf-lite PROPERTIES
     OUTPUT_NAME ${LIB_PREFIX}protobuf-lite
     DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")
 add_library(protobuf::libprotobuf-lite ALIAS libprotobuf-lite)
+
+target_include_directories(libprotobuf-lite PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/utf8_range)
+target_link_libraries(libprotobuf-lite PRIVATE utf8_validity)

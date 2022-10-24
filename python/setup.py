@@ -297,6 +297,8 @@ if __name__ == '__main__':
           extra_objects = ['../bazel-bin/src/google/protobuf/libprotobuf.a']
         else:
           extra_objects = ['../libprotobuf.a']
+          extra_objects += list(
+              glob.iglob('../third_party/utf8_range/*.a'))
           # Repeat all of these enough times to eliminate order-dependence.
           extra_objects += list(
               glob.iglob('../third_party/abseil-cpp/absl/**/*.a'))
