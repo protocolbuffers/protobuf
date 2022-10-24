@@ -121,10 +121,15 @@ char* upb_MtDataEncoder_PutEnumValue(upb_MtDataEncoder* e, char* ptr,
                                      uint32_t val);
 char* upb_MtDataEncoder_EndEnum(upb_MtDataEncoder* e, char* ptr);
 
-// Encodes an entire mini descriptor for one extension.
+// Encodes an entire mini descriptor for an extension.
 char* upb_MtDataEncoder_EncodeExtension(upb_MtDataEncoder* e, char* ptr,
                                         upb_FieldType type, uint32_t field_num,
                                         uint64_t field_mod);
+
+// Encodes an entire mini descriptor for a map.
+char* upb_MtDataEncoder_EncodeMap(upb_MtDataEncoder* e, char* ptr,
+                                  upb_FieldType key_type,
+                                  upb_FieldType value_type, uint64_t value_mod);
 
 /** upb_MiniTable *************************************************************/
 
@@ -167,11 +172,6 @@ const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
 // Special-case functions for MessageSet layout and map entries.
 upb_MiniTable* upb_MiniTable_BuildMessageSet(upb_MiniTablePlatform platform,
                                              upb_Arena* arena);
-upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
-                                           upb_FieldType value_type,
-                                           bool value_is_proto3_enum,
-                                           upb_MiniTablePlatform platform,
-                                           upb_Arena* arena);
 
 upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
                                             upb_Arena* arena,

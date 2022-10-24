@@ -28,7 +28,6 @@
 #include "upb/mini_table.h"
 
 #include <inttypes.h>
-#include <setjmp.h>
 
 #include "upb/arena.h"
 #include "upb/msg_internal.h"
@@ -86,6 +85,7 @@ enum {
 enum {
   kUpb_EncodedVersion_EnumV1 = '!',
   kUpb_EncodedVersion_ExtensionV1 = '#',
+  kUpb_EncodedVersion_MapV1 = '%',
   kUpb_EncodedVersion_MessageV1 = '$',
 };
 
@@ -211,6 +211,24 @@ char* upb_MtDataEncoder_EncodeExtension(upb_MtDataEncoder* e, char* ptr,
   if (!ptr) return NULL;
 
   return upb_MtDataEncoder_PutField(e, ptr, type, field_num, field_mod);
+}
+
+char* upb_MtDataEncoder_EncodeMap(upb_MtDataEncoder* e, char* ptr,
+                                  upb_FieldType key_type,
+                                  upb_FieldType value_type,
+                                  uint64_t value_mod) {
+  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
+  in->state.msg_state.msg_modifiers = 0;
+  in->state.msg_state.last_field_num = 0;
+  in->state.msg_state.oneof_state = kUpb_OneofState_NotStarted;
+
+  ptr = upb_MtDataEncoder_PutRaw(e, ptr, kUpb_EncodedVersion_MapV1);
+  if (!ptr) return NULL;
+
+  ptr = upb_MtDataEncoder_PutField(e, ptr, key_type, 1, 0);
+  if (!ptr) return NULL;
+
+  return upb_MtDataEncoder_PutField(e, ptr, value_type, 2, value_mod);
 }
 
 char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* ptr,
@@ -537,6 +555,28 @@ static void upb_MiniTable_SetTypeAndSub(upb_MiniTable_Field* field,
   }
 }
 
+static const char kUpb_EncodedToType[] = {
+    [kUpb_EncodedType_Double] = kUpb_FieldType_Double,
+    [kUpb_EncodedType_Float] = kUpb_FieldType_Float,
+    [kUpb_EncodedType_Int64] = kUpb_FieldType_Int64,
+    [kUpb_EncodedType_UInt64] = kUpb_FieldType_UInt64,
+    [kUpb_EncodedType_Int32] = kUpb_FieldType_Int32,
+    [kUpb_EncodedType_Fixed64] = kUpb_FieldType_Fixed64,
+    [kUpb_EncodedType_Fixed32] = kUpb_FieldType_Fixed32,
+    [kUpb_EncodedType_Bool] = kUpb_FieldType_Bool,
+    [kUpb_EncodedType_String] = kUpb_FieldType_String,
+    [kUpb_EncodedType_Group] = kUpb_FieldType_Group,
+    [kUpb_EncodedType_Message] = kUpb_FieldType_Message,
+    [kUpb_EncodedType_Bytes] = kUpb_FieldType_Bytes,
+    [kUpb_EncodedType_UInt32] = kUpb_FieldType_UInt32,
+    [kUpb_EncodedType_OpenEnum] = kUpb_FieldType_Enum,
+    [kUpb_EncodedType_SFixed32] = kUpb_FieldType_SFixed32,
+    [kUpb_EncodedType_SFixed64] = kUpb_FieldType_SFixed64,
+    [kUpb_EncodedType_SInt32] = kUpb_FieldType_SInt32,
+    [kUpb_EncodedType_SInt64] = kUpb_FieldType_SInt64,
+    [kUpb_EncodedType_ClosedEnum] = kUpb_FieldType_Enum,
+};
+
 static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
                                    upb_MiniTable_Field* field,
                                    uint64_t msg_modifiers,
@@ -559,28 +599,6 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
       [kUpb_EncodedType_SInt32] = kUpb_FieldRep_4Byte,
       [kUpb_EncodedType_SInt64] = kUpb_FieldRep_8Byte,
       [kUpb_EncodedType_ClosedEnum] = kUpb_FieldRep_4Byte,
-  };
-
-  static const char kUpb_EncodedToType[] = {
-      [kUpb_EncodedType_Double] = kUpb_FieldType_Double,
-      [kUpb_EncodedType_Float] = kUpb_FieldType_Float,
-      [kUpb_EncodedType_Int64] = kUpb_FieldType_Int64,
-      [kUpb_EncodedType_UInt64] = kUpb_FieldType_UInt64,
-      [kUpb_EncodedType_Int32] = kUpb_FieldType_Int32,
-      [kUpb_EncodedType_Fixed64] = kUpb_FieldType_Fixed64,
-      [kUpb_EncodedType_Fixed32] = kUpb_FieldType_Fixed32,
-      [kUpb_EncodedType_Bool] = kUpb_FieldType_Bool,
-      [kUpb_EncodedType_String] = kUpb_FieldType_String,
-      [kUpb_EncodedType_Group] = kUpb_FieldType_Group,
-      [kUpb_EncodedType_Message] = kUpb_FieldType_Message,
-      [kUpb_EncodedType_Bytes] = kUpb_FieldType_Bytes,
-      [kUpb_EncodedType_UInt32] = kUpb_FieldType_UInt32,
-      [kUpb_EncodedType_OpenEnum] = kUpb_FieldType_Enum,
-      [kUpb_EncodedType_SFixed32] = kUpb_FieldType_SFixed32,
-      [kUpb_EncodedType_SFixed64] = kUpb_FieldType_SFixed64,
-      [kUpb_EncodedType_SInt32] = kUpb_FieldType_SInt32,
-      [kUpb_EncodedType_SInt64] = kUpb_FieldType_SInt64,
-      [kUpb_EncodedType_ClosedEnum] = kUpb_FieldType_Enum,
   };
 
   char pointer_rep = d->platform == kUpb_MiniTablePlatform_32Bit
@@ -1019,6 +1037,79 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
   d->table->size = UPB_ALIGN_UP(d->table->size, 8);
 }
 
+static void upb_MiniTable_BuildMapEntry(upb_MtDecoder* d,
+                                        upb_FieldType key_type,
+                                        upb_FieldType value_type,
+                                        bool value_is_proto3_enum) {
+  upb_MiniTable_Field* fields = upb_Arena_Malloc(d->arena, sizeof(*fields) * 2);
+  if (!fields) {
+    upb_MtDecoder_ErrorFormat(d, "OOM while building map mini table field");
+    UPB_UNREACHABLE();
+  }
+
+  upb_MiniTable_Sub* subs = NULL;
+  if (value_is_proto3_enum) {
+    UPB_ASSERT(value_type == kUpb_FieldType_Enum);
+    // No sub needed.
+  } else if (value_type == kUpb_FieldType_Message ||
+             value_type == kUpb_FieldType_Group ||
+             value_type == kUpb_FieldType_Enum) {
+    subs = upb_Arena_Malloc(d->arena, sizeof(*subs));
+    if (!subs) {
+      upb_MtDecoder_ErrorFormat(d, "OOM while building map mini table sub");
+      UPB_UNREACHABLE();
+    }
+  }
+
+  size_t field_size =
+      upb_MtDecoder_SizeOfRep(kUpb_FieldRep_StringView, d->platform);
+
+  fields[0].number = 1;
+  fields[1].number = 2;
+  fields[0].mode = kUpb_FieldMode_Scalar;
+  fields[1].mode = kUpb_FieldMode_Scalar;
+  fields[0].presence = 0;
+  fields[1].presence = 0;
+  fields[0].offset = 0;
+  fields[1].offset = field_size;
+
+  upb_MiniTable_SetTypeAndSub(&fields[0], key_type, NULL, 0, false);
+  upb_MiniTable_SetTypeAndSub(&fields[1], value_type, NULL, 0,
+                              value_is_proto3_enum);
+
+  upb_MiniTable* ret = d->table;
+  ret->size = UPB_ALIGN_UP(2 * field_size, 8);
+  ret->field_count = 2;
+  ret->ext = kUpb_ExtMode_NonExtendable | kUpb_ExtMode_IsMapEntry;
+  ret->dense_below = 2;
+  ret->table_mask = -1;
+  ret->required_count = 0;
+  ret->subs = subs;
+  ret->fields = fields;
+}
+
+static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
+                                   size_t len) {
+  if (len < 2) {
+    upb_MtDecoder_ErrorFormat(d, "Invalid map encoding length: %zu", len);
+    UPB_UNREACHABLE();
+  }
+  const int e0 = upb_FromBase92(data[0]);
+  const int e1 = upb_FromBase92(data[1]);
+  if (e0 >= sizeof(kUpb_EncodedToType)) {
+    upb_MtDecoder_ErrorFormat(d, "Invalid field type: %d", e0);
+    UPB_UNREACHABLE();
+  }
+  if (e1 >= sizeof(kUpb_EncodedToType)) {
+    upb_MtDecoder_ErrorFormat(d, "Invalid field type: %d", e1);
+    UPB_UNREACHABLE();
+  }
+  const upb_FieldType key_type = kUpb_EncodedToType[e0];
+  const upb_FieldType val_type = kUpb_EncodedToType[e1];
+  const bool value_is_proto3_enum = (e1 == kUpb_EncodedType_OpenEnum);
+  upb_MiniTable_BuildMapEntry(d, key_type, val_type, value_is_proto3_enum);
+}
+
 upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
                                           upb_MiniTablePlatform platform,
                                           upb_Arena* arena, void** buf,
@@ -1042,16 +1133,6 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
     goto done;
   }
 
-  // If the string is non-empty then it must begin with a version tag.
-  if (len) {
-    if (*data != kUpb_EncodedVersion_MessageV1) {
-      upb_MtDecoder_ErrorFormat(&decoder, "Invalid message version: %c", *data);
-      UPB_UNREACHABLE();
-    }
-    data++;
-    len--;
-  }
-
   upb_MtDecoder_CheckOutOfMemory(&decoder, decoder.table);
 
   decoder.table->size = 0;
@@ -1061,10 +1142,26 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
   decoder.table->table_mask = -1;
   decoder.table->required_count = 0;
 
-  upb_MtDecoder_ParseMessage(&decoder, data, len);
-  upb_MtDecoder_AssignHasbits(decoder.table);
-  upb_MtDecoder_SortLayoutItems(&decoder);
-  upb_MtDecoder_AssignOffsets(&decoder);
+  // Strip off and verify the version tag.
+  if (!len--) goto done;
+  const char vers = *data++;
+
+  switch (vers) {
+    case kUpb_EncodedVersion_MapV1:
+      upb_MtDecoder_ParseMap(&decoder, data, len);
+      break;
+
+    case kUpb_EncodedVersion_MessageV1:
+      upb_MtDecoder_ParseMessage(&decoder, data, len);
+      upb_MtDecoder_AssignHasbits(decoder.table);
+      upb_MtDecoder_SortLayoutItems(&decoder);
+      upb_MtDecoder_AssignOffsets(&decoder);
+      break;
+
+    default:
+      upb_MtDecoder_ErrorFormat(&decoder, "Invalid message version: %c", vers);
+      UPB_UNREACHABLE();
+  }
 
 done:
   *buf = decoder.vec.data;
@@ -1083,53 +1180,6 @@ upb_MiniTable* upb_MiniTable_BuildMessageSet(upb_MiniTablePlatform platform,
   ret->dense_below = 0;
   ret->table_mask = -1;
   ret->required_count = 0;
-  return ret;
-}
-
-upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
-                                           upb_FieldType value_type,
-                                           bool value_is_proto3_enum,
-                                           upb_MiniTablePlatform platform,
-                                           upb_Arena* arena) {
-  upb_MiniTable* ret = upb_Arena_Malloc(arena, sizeof(*ret));
-  upb_MiniTable_Field* fields = upb_Arena_Malloc(arena, sizeof(*fields) * 2);
-  if (!ret || !fields) return NULL;
-
-  upb_MiniTable_Sub* subs = NULL;
-  if (value_is_proto3_enum) {
-    UPB_ASSERT(value_type == kUpb_FieldType_Enum);
-    // No sub needed.
-  } else if (value_type == kUpb_FieldType_Message ||
-             value_type == kUpb_FieldType_Group ||
-             value_type == kUpb_FieldType_Enum) {
-    subs = upb_Arena_Malloc(arena, sizeof(*subs));
-    if (!subs) return NULL;
-  }
-
-  size_t field_size =
-      upb_MtDecoder_SizeOfRep(kUpb_FieldRep_StringView, platform);
-
-  fields[0].number = 1;
-  fields[1].number = 2;
-  fields[0].mode = kUpb_FieldMode_Scalar;
-  fields[1].mode = kUpb_FieldMode_Scalar;
-  fields[0].presence = 0;
-  fields[1].presence = 0;
-  fields[0].offset = 0;
-  fields[1].offset = field_size;
-
-  upb_MiniTable_SetTypeAndSub(&fields[0], key_type, NULL, 0, false);
-  upb_MiniTable_SetTypeAndSub(&fields[1], value_type, NULL, 0,
-                              value_is_proto3_enum);
-
-  ret->size = UPB_ALIGN_UP(2 * field_size, 8);
-  ret->field_count = 2;
-  ret->ext = kUpb_ExtMode_NonExtendable | kUpb_ExtMode_IsMapEntry;
-  ret->dense_below = 2;
-  ret->table_mask = -1;
-  ret->required_count = 0;
-  ret->subs = subs;
-  ret->fields = fields;
   return ret;
 }
 

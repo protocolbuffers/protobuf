@@ -324,31 +324,6 @@ static upb_MiniTable* _upb_MessageDef_MakeMiniTable(upb_DefBuilder* ctx,
                                          ctx->arena);
   }
 
-  if (upb_MessageDef_IsMapEntry(m)) {
-    if (m->field_count != 2) {
-      _upb_DefBuilder_Errf(ctx, "invalid map (%s)", m->full_name);
-    }
-
-    const upb_FieldDef* key_f = upb_MessageDef_Field(m, 0);
-    const upb_FieldDef* val_f = upb_MessageDef_Field(m, 1);
-    if (key_f == NULL || val_f == NULL) {
-      _upb_DefBuilder_Errf(ctx, "Malformed map entry from message: %s",
-                           m->full_name);
-    }
-
-    const upb_FieldType key_t = upb_FieldDef_Type(key_f);
-    const upb_FieldType val_t = upb_FieldDef_Type(val_f);
-
-    const bool is_proto3_enum =
-        (val_t == kUpb_FieldType_Enum) && !_upb_FieldDef_IsClosedEnum(val_f);
-    UPB_ASSERT(_upb_FieldDef_LayoutIndex(key_f) == 0);
-    UPB_ASSERT(_upb_FieldDef_LayoutIndex(val_f) == 1);
-
-    return upb_MiniTable_BuildMapEntry(key_t, val_t, is_proto3_enum,
-                                       kUpb_MiniTablePlatform_Native,
-                                       ctx->arena);
-  }
-
   upb_StringView desc;
   bool ok = upb_MessageDef_MiniDescriptorEncode(m, ctx->tmp_arena, &desc);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
@@ -486,20 +461,42 @@ static uint64_t _upb_MessageDef_Modifiers(const upb_MessageDef* m) {
   return out;
 }
 
-bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
-                                         upb_StringView* out) {
-  upb_DescState s;
-  _upb_DescState_Init(&s);
+static bool _upb_MessageDef_EncodeMap(upb_DescState* s, const upb_MessageDef* m,
+                                      upb_Arena* a) {
+  if (m->field_count != 2) return false;
 
+  const upb_FieldDef* key_field = upb_MessageDef_Field(m, 0);
+  const upb_FieldDef* val_field = upb_MessageDef_Field(m, 1);
+  if (key_field == NULL || val_field == NULL) return false;
+
+  UPB_ASSERT(_upb_FieldDef_LayoutIndex(key_field) == 0);
+  UPB_ASSERT(_upb_FieldDef_LayoutIndex(val_field) == 1);
+
+  const upb_FieldType key_type = upb_FieldDef_Type(key_field);
+  const upb_FieldType val_type = upb_FieldDef_Type(val_field);
+
+  const uint64_t val_mod = _upb_FieldDef_IsClosedEnum(val_field)
+                               ? kUpb_FieldModifier_IsClosedEnum
+                               : 0;
+
+  if (!_upb_DescState_Grow(s, a)) return false;
+  s->ptr =
+      upb_MtDataEncoder_EncodeMap(&s->e, s->ptr, key_type, val_type, val_mod);
+  return true;
+}
+
+static bool _upb_MessageDef_EncodeMessage(upb_DescState* s,
+                                          const upb_MessageDef* m,
+                                          upb_Arena* a) {
   const upb_FieldDef** sorted = NULL;
   if (!m->is_sorted) {
     sorted = _upb_FieldDefs_Sorted(m->fields, m->field_count, a);
     if (!sorted) return false;
   }
 
-  if (!_upb_DescState_Grow(&s, a)) return false;
-  s.ptr =
-      upb_MtDataEncoder_StartMessage(&s.e, s.ptr, _upb_MessageDef_Modifiers(m));
+  if (!_upb_DescState_Grow(s, a)) return false;
+  s->ptr = upb_MtDataEncoder_StartMessage(&s->e, s->ptr,
+                                          _upb_MessageDef_Modifiers(m));
 
   for (int i = 0; i < m->field_count; i++) {
     const upb_FieldDef* f = sorted ? sorted[i] : upb_MessageDef_Field(m, i);
@@ -507,22 +504,36 @@ bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
     const int number = upb_FieldDef_Number(f);
     const uint64_t modifiers = _upb_FieldDef_Modifiers(f);
 
-    if (!_upb_DescState_Grow(&s, a)) return false;
-    s.ptr = upb_MtDataEncoder_PutField(&s.e, s.ptr, type, number, modifiers);
+    if (!_upb_DescState_Grow(s, a)) return false;
+    s->ptr = upb_MtDataEncoder_PutField(&s->e, s->ptr, type, number, modifiers);
   }
 
   for (int i = 0; i < m->oneof_count; i++) {
-    if (!_upb_DescState_Grow(&s, a)) return false;
-    s.ptr = upb_MtDataEncoder_StartOneof(&s.e, s.ptr);
+    if (!_upb_DescState_Grow(s, a)) return false;
+    s->ptr = upb_MtDataEncoder_StartOneof(&s->e, s->ptr);
 
     const upb_OneofDef* o = upb_MessageDef_Oneof(m, i);
     const int field_count = upb_OneofDef_FieldCount(o);
     for (int j = 0; j < field_count; j++) {
       const int number = upb_FieldDef_Number(upb_OneofDef_Field(o, j));
 
-      if (!_upb_DescState_Grow(&s, a)) return false;
-      s.ptr = upb_MtDataEncoder_PutOneofField(&s.e, s.ptr, number);
+      if (!_upb_DescState_Grow(s, a)) return false;
+      s->ptr = upb_MtDataEncoder_PutOneofField(&s->e, s->ptr, number);
     }
+  }
+
+  return true;
+}
+
+bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
+                                         upb_StringView* out) {
+  upb_DescState s;
+  _upb_DescState_Init(&s);
+
+  if (upb_MessageDef_IsMapEntry(m)) {
+    if (!_upb_MessageDef_EncodeMap(&s, m, a)) return false;
+  } else {
+    if (!_upb_MessageDef_EncodeMessage(&s, m, a)) return false;
   }
 
   if (!_upb_DescState_Grow(&s, a)) return false;

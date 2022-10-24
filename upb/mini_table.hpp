@@ -81,8 +81,6 @@ class MtDataEncoder {
         [=](char* buf) { return upb_MtDataEncoder_EndEnum(&encoder_, buf); });
   }
 
-  const std::string& data() const { return appender_.data(); }
-
   bool EncodeExtension(upb_FieldType type, uint32_t field_num,
                        uint64_t field_mod) {
     return appender_([=](char* buf) {
@@ -90,6 +88,16 @@ class MtDataEncoder {
                                                field_mod);
     });
   }
+
+  bool EncodeMap(upb_FieldType key_type, upb_FieldType val_type,
+                 uint64_t val_mod) {
+    return appender_([=](char* buf) {
+      return upb_MtDataEncoder_EncodeMap(&encoder_, buf, key_type, val_type,
+                                         val_mod);
+    });
+  }
+
+  const std::string& data() const { return appender_.data(); }
 
  private:
   class StringAppender {

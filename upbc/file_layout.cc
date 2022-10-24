@@ -287,16 +287,34 @@ upb_MiniTable* FilePlatformLayout::MakeMiniTable(
   if (m->options().message_set_wire_format()) {
     return upb_MiniTable_BuildMessageSet(platform_, arena_.ptr());
   } else if (m->options().map_entry()) {
-    return upb_MiniTable_BuildMapEntry(
-        static_cast<upb_FieldType>(m->map_key()->type()),
-        static_cast<upb_FieldType>(m->map_value()->type()),
-        m->map_value()->enum_type() &&
-            m->map_value()->enum_type()->file()->syntax() ==
-                protobuf::FileDescriptor::SYNTAX_PROTO3,
-        platform_, arena_.ptr());
+    return MakeMapMiniTable(m);
   } else {
     return MakeRegularMiniTable(m);
   }
+}
+
+upb_MiniTable* FilePlatformLayout::MakeMapMiniTable(
+    const protobuf::Descriptor* m) {
+  const auto key_type = static_cast<upb_FieldType>(m->map_key()->type());
+  const auto val_type = static_cast<upb_FieldType>(m->map_value()->type());
+  const uint64_t val_mod = (m->map_value()->enum_type() &&
+                            m->map_value()->enum_type()->file()->syntax() ==
+                                protobuf::FileDescriptor::SYNTAX_PROTO2)
+                               ? kUpb_FieldModifier_IsClosedEnum
+                               : 0;
+
+  upb::MtDataEncoder e;
+  e.EncodeMap(key_type, val_type, val_mod);
+
+  const absl::string_view str = e.data();
+  upb::Status status;
+  upb_MiniTable* ret = upb_MiniTable_Build(str.data(), str.size(), platform_,
+                                           arena_.ptr(), status.ptr());
+  if (!ret) {
+    fprintf(stderr, "Error building mini-table: %s\n", status.error_message());
+  }
+  assert(ret);
+  return ret;
 }
 
 upb_MiniTable* FilePlatformLayout::MakeRegularMiniTable(
