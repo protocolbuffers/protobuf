@@ -324,7 +324,6 @@ public class DescriptorsTest {
     assertThat(service.getFullName()).isEqualTo("protobuf_unittest.TestService");
     assertThat(service.getFile()).isEqualTo(UnittestProto.getDescriptor());
 
-
     MethodDescriptor fooMethod = service.getMethods().get(0);
     assertThat(fooMethod.getName()).isEqualTo("Foo");
     assertThat(fooMethod.getInputType()).isEqualTo(UnittestProto.FooRequest.getDescriptor());
@@ -337,14 +336,12 @@ public class DescriptorsTest {
     assertThat(barMethod.getOutputType()).isEqualTo(UnittestProto.BarResponse.getDescriptor());
     assertThat(service.findMethodByName("Bar")).isEqualTo(barMethod);
 
-
     assertThat(service.findMethodByName("NoSuchMethod")).isNull();
 
     for (int i = 0; i < service.getMethods().size(); i++) {
       assertThat(service.getMethods().get(i).getIndex()).isEqualTo(i);
     }
   }
-
 
   @Test
   public void testCustomOptions() throws Exception {

@@ -49,9 +49,12 @@ def protobuf_deps():
         http_archive(
             name = "zlib",
             build_file = "@com_google_protobuf//:third_party/zlib.BUILD",
-            sha256 = "d8688496ea40fb61787500e863cc63c9afcbc524468cedeb478068924eb54932",
-            strip_prefix = "zlib-1.2.12",
-            urls = ["https://github.com/madler/zlib/archive/v1.2.12.tar.gz"],
+            sha256 = "d14c38e313afc35a9a8760dadf26042f51ea0f5d154b0630a31da0540107fb98",
+            strip_prefix = "zlib-1.2.13",
+            urls = [
+                "https://github.com/madler/zlib/releases/download/v1.2.13/zlib-1.2.13.tar.xz",
+                "https://zlib.net/zlib-1.2.13.tar.xz",
+            ],
         )
 
     if not native.existing_rule("jsoncpp"):
@@ -67,8 +70,8 @@ def protobuf_deps():
         _github_archive(
             name = "utf8_range",
             repo = "https://github.com/protocolbuffers/utf8_range",
-            commit = "a67b76f9f40107f2c78a5aa860bb6ce37ed83d85",
-            sha256 = "de5f99318f3b5073dd99f3d4ca31e00e90a86cc400fb375e2147ae1fd41711ed",
+            commit = "de0b4a8ff9b5d4c98108bdfe723291a33c52c54f",
+            sha256 = "5da960e5e5d92394c809629a03af3c7709d2d3d0ca731dacb3a9fb4bf28f7702",
         )
 
     if not native.existing_rule("rules_cc"):
@@ -132,6 +135,6 @@ def protobuf_deps():
         _github_archive(
             name = "upb",
             repo = "https://github.com/protocolbuffers/upb",
-            commit = "32c6e9baab03d584b85390fdba789118f20613fc",
-            #sha256 = "4c82bff4f790dbb5a11ec40b1fac44e7c95d9a63fd215a13aaf44cb27b10ac27",
+            commit = "9e2d7f02da5440bfb0dfb069f61baa278aa2fbf6",
+            sha256 = "9eb13368a136af314855e1497838cf3124846b6a73a7e7c882455a52b8c04662",
         )

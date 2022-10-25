@@ -6,8 +6,13 @@ load(
     "pkg_files",
     "strip_prefix",
 )
+load("//:protobuf_release.bzl", "package_naming")
 load(":build_systems.bzl", "gen_file_lists")
 load(":cc_dist_library.bzl", "cc_dist_library")
+
+package_naming(
+    name = "protobuf_pkg_naming",
+)
 
 pkg_files(
     name = "wkt_protos_files",

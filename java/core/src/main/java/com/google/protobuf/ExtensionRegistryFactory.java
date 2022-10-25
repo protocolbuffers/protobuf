@@ -70,7 +70,6 @@ final class ExtensionRegistryFactory {
     return result != null ? result : EMPTY_REGISTRY_LITE;
   }
 
-
   static boolean isFullRegistry(ExtensionRegistryLite registry) {
     return EXTENSION_REGISTRY_CLASS != null
         && EXTENSION_REGISTRY_CLASS.isAssignableFrom(registry.getClass());

@@ -217,7 +217,7 @@
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 3021007
+#define PROTOBUF_VERSION 3021008
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
@@ -973,6 +973,13 @@
 // Protobuf does not support building with a number of warnings that are noisy
 // (and of variable quality across compiler versions) or impossible to implement
 // effectively but which people turn on anyways.
+#ifdef __clang__
+#pragma clang diagnostic push
+// -Wshorten-64-to-32 is a typical pain where we diff pointers.
+//   char* p = strchr(s, '\n');
+//   return p ? p - s : -1;
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
+#endif
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 // Some of the warnings below only exist in some GCC versions; those version
@@ -982,16 +989,20 @@
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60875, so we disable this one
 // globally even though it's only used for PROTOBUF_FIELD_OFFSET.
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
-// This warning verifies that non-void-returning functions return a value in
-// all paths. However, this warning is noisy, and requires adding unnecessary
-// returns in unreachable positions.
-#pragma GCC diagnostic ignored "-Wreturn-type"
+#ifdef __clang__
+// TODO(b/255348263): Upgrade our kokoro Ubuntu to use clang 6, then change th 5 to a 6
+static_assert(PROTOBUF_CLANG_MIN(5, 0), "Protobuf only supports Clang 6.0 and newer.");
+#endif
 // Some versions of GCC seem to think that
 //  [this] { Foo(); }
 // leaves `this` unused, even though `Foo();` is a member function of the
 // captured `this`.
 // https://bugzilla.mozilla.org/show_bug.cgi?id=1373625
 #pragma GCC diagnostic ignored "-Wunused-lambda-capture"
+// -Wsign-conversion causes a lot of warnings on mostly code like:
+//   int index = ...
+//   int value = vec[index];
+#pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif  // __GNUC__
 
 // Silence some MSVC warnings in all our code.
