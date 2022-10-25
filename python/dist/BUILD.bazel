@@ -64,8 +64,8 @@ config_setting(
 config_setting(
     name = "linux_aarch64_local",
     constraint_values = [
-        "@bazel_tools//platforms:linux",
-        "@bazel_tools//platforms:aarch64",
+        "@platforms//os:linux",
+        "@platforms//cpu:aarch64",
     ],
 )
 
@@ -85,8 +85,8 @@ config_setting(
 config_setting(
     name = "linux_x86_64_local",
     constraint_values = [
-        "@bazel_tools//platforms:linux",
-        "@bazel_tools//platforms:x86_64",
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
     ],
 )
 
@@ -106,8 +106,8 @@ config_setting(
 config_setting(
     name = "osx_x86_64_local",
     constraint_values = [
-        "@bazel_tools//platforms:osx",
-        "@bazel_tools//platforms:x86_64",
+        "@platforms//os:osx",
+        "@platforms//cpu:x86_64",
     ],
 )
 
@@ -127,8 +127,8 @@ config_setting(
 config_setting(
     name = "osx_aarch64_local",
     constraint_values = [
-        "@bazel_tools//platforms:osx",
-        "@bazel_tools//platforms:aarch64",
+        "@platforms//os:osx",
+        "@platforms//cpu:aarch64",
     ],
 )
 
@@ -153,8 +153,8 @@ config_setting(
 config_setting(
     name = "windows_x86_32_local",
     constraint_values = [
-        "@bazel_tools//platforms:windows",
-        "@bazel_tools//platforms:x86_32",
+        "@platforms//os:windows",
+        "@platforms//cpu:x86_32",
     ],
 )
 
@@ -174,8 +174,8 @@ config_setting(
 config_setting(
     name = "windows_x86_64_local",
     constraint_values = [
-        "@bazel_tools//platforms:windows",
-        "@bazel_tools//platforms:x86_64",
+        "@platforms//os:windows",
+        "@platforms//cpu:x86_64",
     ],
 )
 
