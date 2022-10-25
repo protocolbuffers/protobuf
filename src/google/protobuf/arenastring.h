@@ -423,6 +423,7 @@ inline void ArenaStringPtr::SetBytes(absl::string_view value, Arena* arena) {
 }
 
 template <>
+PROTOBUF_EXPORT
 void ArenaStringPtr::Set(const std::string& value, Arena* arena);
 
 template <>
