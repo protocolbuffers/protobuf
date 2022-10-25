@@ -1530,7 +1530,6 @@ class Proto2Test(unittest.TestCase):
     self.assertEqual(100, msg.optional_int32)
     self.assertEqual(200, msg.optional_fixed32)
 
-
   def test_documentation(self):
     # Also used by the interactive help() function.
     doc = pydoc.html.document(unittest_pb2.TestAllTypes, 'message')
@@ -2488,8 +2487,6 @@ class Proto3Test(unittest.TestCase):
     self.assertEqual(
         unittest_proto3_arena_pb2.TestAllTypes().optional_nested_message,
         unittest_proto3_arena_pb2.TestAllTypes().optional_nested_message)
-
-
 
 
 @testing_refleaks.TestCase

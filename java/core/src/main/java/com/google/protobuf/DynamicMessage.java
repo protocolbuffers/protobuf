@@ -86,7 +86,6 @@ public final class DynamicMessage extends AbstractMessage {
         UnknownFieldSet.getDefaultInstance());
   }
 
-
   /** Parse a message of the given type from the given input stream. */
   public static DynamicMessage parseFrom(Descriptor type, CodedInputStream input)
       throws IOException {

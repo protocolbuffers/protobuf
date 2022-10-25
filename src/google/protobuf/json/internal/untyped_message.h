@@ -222,6 +222,7 @@ class UntypedMessage final {
     } else {
       GOOGLE_CHECK(false) << "wrong type for UntypedMessage::Get(" << field_number
                    << ")";
+      return {};  // avoid compiler warning.
     }
   }
 

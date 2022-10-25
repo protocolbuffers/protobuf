@@ -254,7 +254,7 @@ absl::string_view TcParser::FieldName(const TcParseTableBase* table,
                   field_index + 1);
 }
 
-const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
+PROTOBUF_NOINLINE const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
   uint32_t tag;
   ptr = ReadTagInlined(ptr, &tag);
   if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {

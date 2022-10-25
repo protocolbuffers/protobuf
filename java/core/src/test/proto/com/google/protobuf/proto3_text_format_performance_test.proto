@@ -28,41 +28,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package com.google.protobuf;
+syntax = "proto3";
 
-import static com.google.common.truth.Truth.assertThat;
+package protobuf.testing.textformat.performance.proto3;
 
-import com.google.protobuf.Descriptors.Descriptor;
-import protobuf_unittest.UnittestProto;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+option java_package = "com.google.protobuf.testing.textformat.performance.proto3";
+option java_outer_classname = "Proto3TextFormatPerformanceProto";
 
-@RunWith(JUnit4.class)
-public final class TypeRegistryTest {
+message ContainsSubMessageWithRepeatedInt32 {
+  optional RepeatedInt32 sub_msg = 1;
+}
 
-  @Test
-  public void findDescriptorByFullName() throws Exception {
-    Descriptor descriptor = UnittestProto.TestAllTypes.getDescriptor();
-    assertThat(TypeRegistry.getEmptyTypeRegistry().find(descriptor.getFullName())).isNull();
-
-    assertThat(TypeRegistry.newBuilder().add(descriptor).build().find(descriptor.getFullName()))
-        .isSameInstanceAs(descriptor);
-  }
-
-  @Test
-  public void findDescriptorByTypeUrl() throws Exception {
-    Descriptor descriptor = UnittestProto.TestAllTypes.getDescriptor();
-    assertThat(
-            TypeRegistry.getEmptyTypeRegistry()
-                .getDescriptorForTypeUrl("type.googleapis.com/" + descriptor.getFullName()))
-        .isNull();
-
-    assertThat(
-            TypeRegistry.newBuilder()
-                .add(descriptor)
-                .build()
-                .getDescriptorForTypeUrl("type.googleapis.com/" + descriptor.getFullName()))
-        .isSameInstanceAs(descriptor);
-  }
+message RepeatedInt32 {
+  repeated int32 value = 2;
 }

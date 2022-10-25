@@ -673,7 +673,6 @@ class MessageReflection {
     }
   }
 
-
   static class ExtensionAdapter implements MergeTarget {
 
     private final FieldSet<Descriptors.FieldDescriptor> extensions;

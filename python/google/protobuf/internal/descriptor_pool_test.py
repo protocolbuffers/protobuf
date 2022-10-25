@@ -56,7 +56,6 @@ from google.protobuf import message_factory
 from google.protobuf import symbol_database
 
 
-
 warnings.simplefilter('error', DeprecationWarning)
 
 

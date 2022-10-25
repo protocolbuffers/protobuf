@@ -229,6 +229,7 @@
                     <exclude>TestBadIdentifiers.java</exclude>
                     <exclude>TextFormatParseInfoTreeTest.java</exclude>
                     <exclude>TextFormatParseLocationTest.java</exclude>
+                    <exclude>TextFormatPerformanceTest.java</exclude>
                     <exclude>TextFormatTest.java</exclude>
                     <exclude>TestUtil.java</exclude>
                     <exclude>TypeRegistryTest.java</exclude>

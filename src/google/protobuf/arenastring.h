@@ -262,11 +262,15 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
 
   void Set(absl::string_view value, Arena* arena);
   void Set(std::string&& value, Arena* arena);
+  template <typename... OverloadDisambiguator>
+  void Set(const std::string& value, Arena* arena);
   void Set(const char* s, Arena* arena);
   void Set(const char* s, size_t n, Arena* arena);
 
   void SetBytes(absl::string_view value, Arena* arena);
   void SetBytes(std::string&& value, Arena* arena);
+  template <typename... OverloadDisambiguator>
+  void SetBytes(const std::string& value, Arena* arena);
   void SetBytes(const char* s, Arena* arena);
   void SetBytes(const void* p, size_t n, Arena* arena);
 
@@ -415,6 +419,15 @@ inline void ArenaStringPtr::Set(const char* s, size_t n, Arena* arena) {
 }
 
 inline void ArenaStringPtr::SetBytes(absl::string_view value, Arena* arena) {
+  Set(value, arena);
+}
+
+template <>
+PROTOBUF_EXPORT
+void ArenaStringPtr::Set(const std::string& value, Arena* arena);
+
+template <>
+inline void ArenaStringPtr::SetBytes(const std::string& value, Arena* arena) {
   Set(value, arena);
 }
 

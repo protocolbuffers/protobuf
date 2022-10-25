@@ -3220,7 +3220,6 @@ class OptionsTest(unittest.TestCase):
                        field_descriptor.label)
 
 
-
 @testing_refleaks.TestCase
 class ClassAPITest(unittest.TestCase):
 
