@@ -994,6 +994,14 @@ message TestDynamicExtensions {
   repeated sint32 packed_extension = 2006 [packed = true];
 }
 
+message TestRepeatedString {
+  repeated string repeated_string1 = 1;
+  repeated string repeated_string2 = 2;
+
+  repeated bytes repeated_bytes11 = 11;
+  repeated bytes repeated_bytes12 = 12;
+}
+
 message TestRepeatedScalarDifferentTagSizes {
   // Parsing repeated fixed size values used to fail. This message needs to be
   // used in order to get a tag of the right size; all of the repeated fields

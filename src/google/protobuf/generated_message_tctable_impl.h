@@ -662,6 +662,7 @@ class PROTOBUF_EXPORT TcParser final {
   // For FindFieldEntry tests:
   friend class FindFieldEntryTest;
   friend struct ParseFunctionGeneratorTestPeer;
+  friend struct FuzzPeer;
   static constexpr const uint32_t kMtSmallScanSize = 4;
 
   // Mini parsing:

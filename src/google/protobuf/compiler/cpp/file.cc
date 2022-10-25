@@ -112,7 +112,7 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
   std::vector<const Descriptor*> msgs = FlattenMessagesInFile(file);
 
   for (int i = 0; i < msgs.size(); ++i) {
-    message_generators_.push_back(absl::make_unique<MessageGenerator>(
+    message_generators_.push_back(std::make_unique<MessageGenerator>(
         msgs[i], variables_, i, options, &scc_analyzer_));
     message_generators_.back()->AddGenerators(&enum_generators_,
                                               &extension_generators_);
@@ -120,11 +120,11 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
 
   for (int i = 0; i < file->enum_type_count(); ++i) {
     enum_generators_.push_back(
-        absl::make_unique<EnumGenerator>(file->enum_type(i), options));
+        std::make_unique<EnumGenerator>(file->enum_type(i), options));
   }
 
   for (int i = 0; i < file->service_count(); ++i) {
-    service_generators_.push_back(absl::make_unique<ServiceGenerator>(
+    service_generators_.push_back(std::make_unique<ServiceGenerator>(
         file->service(i), variables_, options));
   }
   if (HasGenericServices(file_, options_)) {
@@ -134,7 +134,7 @@ FileGenerator::FileGenerator(const FileDescriptor* file, const Options& options)
   }
 
   for (int i = 0; i < file->extension_count(); ++i) {
-    extension_generators_.push_back(absl::make_unique<ExtensionGenerator>(
+    extension_generators_.push_back(std::make_unique<ExtensionGenerator>(
         file->extension(i), options, &scc_analyzer_));
   }
 

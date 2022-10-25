@@ -191,8 +191,8 @@ java_export(
     maven_coordinates = "com.google.protobuf:protobuf-java:%s" % PROTOBUF_JAVA_VERSION,
     pom_template = "pom_template.xml",
     resources = [
-        "//src/google/protobuf:descriptor_proto_srcs",
         "//:well_known_type_protos",
+        "//src/google/protobuf:descriptor_proto_srcs",
     ],
     tags = ["manual"],
     runtime_deps = [":core"],
@@ -442,6 +442,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/TestBadIdentifiers.java",
     "src/test/java/com/google/protobuf/TextFormatParseInfoTreeTest.java",
     "src/test/java/com/google/protobuf/TextFormatParseLocationTest.java",
+    "src/test/java/com/google/protobuf/TextFormatPerformanceTest.java",
     "src/test/java/com/google/protobuf/TextFormatTest.java",
     "src/test/java/com/google/protobuf/TestUtil.java",
     "src/test/java/com/google/protobuf/TestUtilLite.java",

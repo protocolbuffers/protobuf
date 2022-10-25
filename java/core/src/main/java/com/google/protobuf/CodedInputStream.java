@@ -254,7 +254,6 @@ public abstract class CodedInputStream {
    */
   public abstract void skipMessage(CodedOutputStream output) throws IOException;
 
-
   // -----------------------------------------------------------------
 
   /** Read a {@code double} field value from the stream. */
@@ -300,7 +299,6 @@ public abstract class CodedInputStream {
       final ExtensionRegistryLite extensionRegistry)
       throws IOException;
 
-
   /** Read a {@code group} field value from the stream. */
   public abstract <T extends MessageLite> T readGroup(
       final int fieldNumber, final Parser<T> parser, final ExtensionRegistryLite extensionRegistry)
@@ -321,7 +319,6 @@ public abstract class CodedInputStream {
   public abstract void readMessage(
       final MessageLite.Builder builder, final ExtensionRegistryLite extensionRegistry)
       throws IOException;
-
 
   /** Read an embedded message field value from the stream. */
   public abstract <T extends MessageLite> T readMessage(
@@ -745,7 +742,6 @@ public abstract class CodedInputStream {
       }
     }
 
-
     // -----------------------------------------------------------------
 
     @Override
@@ -839,7 +835,6 @@ public abstract class CodedInputStream {
       --recursionDepth;
     }
 
-
     @Override
     public <T extends MessageLite> T readGroup(
         final int fieldNumber,
@@ -877,7 +872,6 @@ public abstract class CodedInputStream {
       }
       popLimit(oldLimit);
     }
-
 
     @Override
     public <T extends MessageLite> T readMessage(
@@ -1460,7 +1454,6 @@ public abstract class CodedInputStream {
       }
     }
 
-
     // -----------------------------------------------------------------
 
     @Override
@@ -1559,7 +1552,6 @@ public abstract class CodedInputStream {
       --recursionDepth;
     }
 
-
     @Override
     public <T extends MessageLite> T readGroup(
         final int fieldNumber,
@@ -1597,7 +1589,6 @@ public abstract class CodedInputStream {
       }
       popLimit(oldLimit);
     }
-
 
     @Override
     public <T extends MessageLite> T readMessage(
@@ -2253,7 +2244,6 @@ public abstract class CodedInputStream {
       }
     }
 
-
     // -----------------------------------------------------------------
 
     @Override
@@ -2359,7 +2349,6 @@ public abstract class CodedInputStream {
       --recursionDepth;
     }
 
-
     @Override
     public <T extends MessageLite> T readGroup(
         final int fieldNumber,
@@ -2397,7 +2386,6 @@ public abstract class CodedInputStream {
       }
       popLimit(oldLimit);
     }
-
 
     @Override
     public <T extends MessageLite> T readMessage(
@@ -3454,7 +3442,6 @@ public abstract class CodedInputStream {
       --recursionDepth;
     }
 
-
     @Override
     public <T extends MessageLite> T readGroup(
         final int fieldNumber,
@@ -3492,7 +3479,6 @@ public abstract class CodedInputStream {
       }
       popLimit(oldLimit);
     }
-
 
     @Override
     public <T extends MessageLite> T readMessage(

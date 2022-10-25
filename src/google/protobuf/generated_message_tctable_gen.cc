@@ -191,17 +191,6 @@ bool IsFieldEligibleForFastParsing(
   int aux_idx = entry.aux_idx;
 
   switch (field->type()) {
-    case FieldDescriptor::TYPE_ENUM:
-      // If enum values are not validated at parse time, then this field can be
-      // handled on the fast path like an int32.
-      if (cpp::HasPreservingUnknownEnumSemantics(field)) {
-        break;
-      }
-      if (field->is_repeated() && field->is_packed()) {
-        return false;
-      }
-      break;
-
       // Some bytes fields can be handled on fast path.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES:

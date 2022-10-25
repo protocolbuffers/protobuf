@@ -1296,7 +1296,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         HasDescriptorMethods(descriptor_->file(), options_) ? "" : "Lite";
     auto v = p->WithVars(std::move(vars));
     format(
-        "class $classname$ : public "
+        "class $classname$ final : public "
         "::$proto_ns$::internal::MapEntry$lite$<$classname$, \n"
         "    $key_cpp$, $val_cpp$,\n"
         "    ::$proto_ns$::internal::WireFormatLite::$key_wire_type$,\n"
