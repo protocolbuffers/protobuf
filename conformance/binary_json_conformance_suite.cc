@@ -1766,6 +1766,7 @@ void BinaryAndJsonConformanceSuite::RunJsonTests() {
   RunJsonTestsForStruct();
   RunJsonTestsForValue();
   RunJsonTestsForAny();
+  RunJsonTestsForDefaultValues();
 
   RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonNumber", REQUIRED,
                                 R"({
@@ -3473,6 +3474,60 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForAny() {
           }
         }
       )");
+}
+
+void BinaryAndJsonConformanceSuite::RunJsonTestsForDefaultValues() {
+  // proto2
+  // Empty message serialized to JSON yeilds an empty JSON object.
+  // We don't recommend any fields to be set to explicit 'null' value.
+  RunValidJsonTestWithValidator(
+      "EmptyMessageNoNulls", RECOMMENDED,
+      R"({
+      })",
+      [](const Json::Value& value) {
+        return value.empty();
+      },
+      false);
+
+  // proto3
+  // Empty message serialized to JSON yeilds an empty JSON object.
+  // We don't recommend any fields to be set to explicit 'null' value.
+  RunValidJsonTestWithValidator(
+      "EmptyMessageNoNulls", RECOMMENDED,
+      R"({
+      })",
+      [](const Json::Value& value) {
+        return value.empty();
+      },
+      true);
+
+  // proto2
+  // Although 'FOO' is the default value, for a field with explicit presence we
+  // still serialize this default value on the wire.
+  RunValidJsonTestWithValidator(
+      "DefaultEnumValue", RECOMMENDED,
+      R"({
+        "optionalNestedEnum": "FOO"
+      })",
+      [](const Json::Value& value) {
+        return value.isMember("optionalNestedEnum") &&
+          value["optionalNestedEnum"].type() == Json::stringValue &&
+          value["optionalNestedEnum"].asString() == "FOO";
+      },
+      false);
+
+  // proto3
+  // Since 'FOO' is the default value and optional_nested_enum doesn't have explicit
+  // presence, this value will not be serialized to the wire.
+  RunValidJsonTestWithValidator(
+      "DefaultEnumValue", RECOMMENDED,
+      R"({
+        "optionalNestedEnum": "FOO"
+      })",
+      [](const Json::Value& value) {
+        return value.empty();
+      },
+      true);
 }
 
 }  // namespace protobuf
