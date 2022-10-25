@@ -134,12 +134,16 @@ CcFileList = provider(
 )
 
 def _flatten_target_files(targets):
-    return depset(transitive = [target.files for target in targets])
+    return depset(transitive = [
+        target.files
+        for target in targets
+        # Filter out targets from external workspaces
+        if target.label.workspace_name == "" or
+           target.label.workspace_name == "com_google_protobuf"
+    ])
 
-    files = []
-    for target in targets:
-        files.extend(target.files.to_list())
-    return files
+def _get_transitive_sources(targets, attr, deps):
+    return depset(targets, transitive = [getattr(dep[CcFileList], attr) for dep in deps if CcFileList in dep])
 
 def _cc_file_list_aspect_impl(target, ctx):
     # Extract sources from a `cc_library` (or similar):
@@ -165,14 +169,22 @@ def _cc_file_list_aspect_impl(target, ctx):
             internal_hdrs.append(src)
 
     return [CcFileList(
-        hdrs = _flatten_target_files(getattr(rule_attr, "hdrs", depset())),
-        textual_hdrs = _flatten_target_files(getattr(
-            rule_attr,
+        hdrs = _get_transitive_sources(
+            _flatten_target_files(rule_attr.hdrs).to_list(),
+            "hdrs",
+            rule_attr.deps,
+        ),
+        textual_hdrs = _get_transitive_sources(
+            _flatten_target_files(rule_attr.textual_hdrs).to_list(),
             "textual_hdrs",
-            depset(),
-        )),
-        internal_hdrs = depset(internal_hdrs),
-        srcs = depset(srcs),
+            rule_attr.deps,
+        ),
+        internal_hdrs = _get_transitive_sources(
+            internal_hdrs,
+            "internal_hdrs",
+            rule_attr.deps,
+        ),
+        srcs = _get_transitive_sources(srcs, "srcs", rule_attr.deps),
     )]
 
 cc_file_list_aspect = aspect(
@@ -198,7 +210,9 @@ Output is CcFileList. Example:
   #     srcs = depset([File("foo.cc")]),
   # )
 """,
+    required_providers = [CcInfo],
     implementation = _cc_file_list_aspect_impl,
+    attr_aspects = ["deps"],
 )
 
 ################################################################################
@@ -206,10 +220,10 @@ Output is CcFileList. Example:
 ################################################################################
 
 def _collect_inputs(deps):
-    """Collects files from a list of immediate deps.
+    """Collects files from a list of deps.
 
-    This rule collects source files and linker inputs for C++ deps. Only
-    these immediate deps are considered, not transitive deps.
+    This rule collects source files and linker inputs transitively for C++
+    deps.
 
     The return value is a struct with object files (linker inputs),
     partitioned by PIC and non-pic, and the rules' source and header files:
@@ -221,9 +235,8 @@ def _collect_inputs(deps):
         )
 
     Args:
-      deps: Iterable of immediate deps. These will be treated as the "inputs,"
-          but not the transitive deps.
-
+      deps: Iterable of immediate deps, which will be treated as roots to
+            recurse transitively.
     Returns:
       A struct with linker inputs, source files, and header files.
     """
@@ -265,6 +278,27 @@ def _collect_inputs(deps):
         ),
     )
 
+# Given structs a and b returned from _collect_inputs(), returns a copy of a
+# but with all files from b subtracted out.
+def _subtract_files(a, b):
+    result_args = {}
+
+    top_level_fields = ["objects", "pic_objects"]
+    for field in top_level_fields:
+        to_remove = {e: None for e in getattr(b, field)}
+        result_args[field] = [e for e in getattr(a, field) if not e in to_remove]
+
+    cc_file_list_args = {}
+    file_list_fields = ["srcs", "hdrs", "internal_hdrs", "textual_hdrs"]
+    for field in file_list_fields:
+        to_remove = {e: None for e in getattr(b.cc_file_list, field).to_list()}
+        cc_file_list_args[field] = depset(
+            [e for e in getattr(a.cc_file_list, field).to_list() if not e in to_remove],
+        )
+    result_args["cc_file_list"] = CcFileList(**cc_file_list_args)
+
+    return struct(**result_args)
+
 # Implementation for cc_dist_library rule.
 def _cc_dist_library_impl(ctx):
     cc_toolchain_info = find_cc_toolchain(ctx)
@@ -274,7 +308,7 @@ def _cc_dist_library_impl(ctx):
         cc_toolchain = cc_toolchain_info,
     )
 
-    inputs = _collect_inputs(ctx.attr.deps)
+    inputs = _subtract_files(_collect_inputs(ctx.attr.deps), _collect_inputs(ctx.attr.dist_deps))
 
     # For static libraries, build separately with and without pic.
 
@@ -346,20 +380,17 @@ Create libraries suitable for distribution.
 This rule creates static and dynamic libraries from the libraries listed in
 'deps'. The resulting libraries are suitable for distributing all of 'deps'
 in a single logical library, for example, in an installable binary package.
-Only the targets listed in 'deps' are included in the result (i.e., the
-output does not include transitive dependencies), allowing precise control
-over the library boundary.
+The result includes all transitive dependencies, excluding those reachable
+from 'dist_deps' or defined in a separate repository (e.g. Abseil).
 
 The outputs of this rule are a dynamic library and a static library. (If
 the build produces both PIC and non-PIC object files, then there is also a
 second static library.) The example below illustrates additional details.
 
-This rule is different from Bazel's experimental `shared_cc_library` in
-several ways. First, this rule ignores transitive dependencies, which means
-that dynamic library dependencies generally need to be specified via
-'linkopts'. Second, this rule produces a static archive library in addition
-to the dynamic shared library. Third, this rule is not directly usable as a
-C++ dependency (although the outputs could be used, e.g., by `cc_import`).
+This rule is different from Bazel's experimental `shared_cc_library` in two
+ways. First, this rule produces a static archive library in addition to the
+dynamic shared library. Second, this rule is not directly usable as a C++
+dependency (although the outputs could be used, e.g., by `cc_import`).
 
 Example:
 
@@ -372,15 +403,18 @@ Example:
     cc_dist_library(
         name = "dist",
         linkopts = ["-la"],   # libdist.so dynamically links against liba.so.
-        deps = [":b", ":c"],  # Output contains b.o and c.o, but not a.o.
+        deps = [":b", ":c"],  # Output contains a.o, b.o, and c.o.
     )
 """,
     attrs = {
         "deps": attr.label_list(
-            doc = ("The list of libraries to be included in the outputs. " +
-                   "Only these targets' compilation outputs will be " +
-                   "included (i.e., the transitive dependencies are not " +
-                   "included in the output)."),
+            doc = ("The list of libraries to be included in the outputs, " +
+                   "along with their transitive dependencies."),
+            aspects = [cc_file_list_aspect],
+        ),
+        "dist_deps": attr.label_list(
+            doc = ("The list of cc_dist_library dependencies that " +
+                   "should be excluded."),
             aspects = [cc_file_list_aspect],
         ),
         "linkopts": attr.string_list(
