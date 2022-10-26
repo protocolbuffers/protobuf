@@ -14,20 +14,34 @@ namespace UnitTest.Issues.TestProtos {
   /// <summary>Holder for reflection information generated from unittest_issue6936_b.proto</summary>
   public static partial class UnittestIssue6936BReflection {
 
+    internal const string ConstProtocVersion = "3.21.9";
+    /// <summary>Version of protoc used to generate this code.</summary>
+    public static global::System.Version ProtocVersion {
+      get { return protocVersion; }
+    }
+    private static readonly global::System.Version protocVersion = new global::System.Version(ConstProtocVersion);
+
+    /// <summary>Minimum version of Google.Protobuf which is compatible with this generated code.</summary>
+    public static global::System.Version MinimumRuntimeVersion {
+      get { return minimumRuntimeVersion; }
+    }
+    private static readonly global::System.Version minimumRuntimeVersion = new global::System.Version(3, 21, 9);
+
     #region Descriptor
+    private static readonly global::System.Lazy<pbr::FileDescriptor> descriptor = new global::System.Lazy<pbr::FileDescriptor>(CreateFileDescriptor);
     /// <summary>File descriptor for unittest_issue6936_b.proto</summary>
     public static pbr::FileDescriptor Descriptor {
-      get { return descriptor; }
+      get { return descriptor.Value; }
     }
-    private static pbr::FileDescriptor descriptor;
 
-    static UnittestIssue6936BReflection() {
+    private static pbr::FileDescriptor CreateFileDescriptor() {
+      pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Chp1bml0dGVzdF9pc3N1ZTY5MzZfYi5wcm90bxIPdW5pdHRlc3RfaXNzdWVz",
             "Ghp1bml0dGVzdF9pc3N1ZTY5MzZfYS5wcm90byIOCgNGb286B4K1GANmb29C",
             "HaoCGlVuaXRUZXN0Lklzc3Vlcy5UZXN0UHJvdG9zYgZwcm90bzM="));
-      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
+      return pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::UnitTest.Issues.TestProtos.UnittestIssue6936AReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::UnitTest.Issues.TestProtos.Foo), global::UnitTest.Issues.TestProtos.Foo.Parser, null, null, null, null, null)
@@ -42,26 +56,30 @@ namespace UnitTest.Issues.TestProtos {
       , pb::IBufferMessage
   #endif
   {
+    static Foo() {
+        pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.MinimumRuntimeVersion);
+    }
+
     private static readonly pb::MessageParser<Foo> _parser = new pb::MessageParser<Foo>(() => new Foo());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.ConstProtocVersion)]
     public static pb::MessageParser<Foo> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.ConstProtocVersion)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.ConstProtocVersion)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.ConstProtocVersion)]
     public Foo() {
       OnConstruction();
     }
@@ -69,25 +87,25 @@ namespace UnitTest.Issues.TestProtos {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.ConstProtocVersion)]
     public Foo(Foo other) : this() {
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.ConstProtocVersion)]
     public Foo Clone() {
       return new Foo(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.ConstProtocVersion)]
     public override bool Equals(object other) {
       return Equals(other as Foo);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.ConstProtocVersion)]
     public bool Equals(Foo other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -99,7 +117,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.ConstProtocVersion)]
     public override int GetHashCode() {
       int hash = 1;
       if (_unknownFields != null) {
@@ -109,13 +127,13 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.ConstProtocVersion)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.ConstProtocVersion)]
     public void WriteTo(pb::CodedOutputStream output) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
@@ -128,7 +146,7 @@ namespace UnitTest.Issues.TestProtos {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.ConstProtocVersion)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -137,7 +155,7 @@ namespace UnitTest.Issues.TestProtos {
     #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.ConstProtocVersion)]
     public int CalculateSize() {
       int size = 0;
       if (_unknownFields != null) {
@@ -147,7 +165,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.ConstProtocVersion)]
     public void MergeFrom(Foo other) {
       if (other == null) {
         return;
@@ -156,7 +174,7 @@ namespace UnitTest.Issues.TestProtos {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.ConstProtocVersion)]
     public void MergeFrom(pb::CodedInputStream input) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
@@ -174,7 +192,7 @@ namespace UnitTest.Issues.TestProtos {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssue6936BReflection.ConstProtocVersion)]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {

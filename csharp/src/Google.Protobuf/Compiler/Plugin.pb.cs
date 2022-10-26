@@ -14,14 +14,28 @@ namespace Google.Protobuf.Compiler {
   /// <summary>Holder for reflection information generated from google/protobuf/compiler/plugin.proto</summary>
   public static partial class PluginReflection {
 
+    internal const string ConstProtocVersion = "3.21.9";
+    /// <summary>Version of protoc used to generate this code.</summary>
+    public static global::System.Version ProtocVersion {
+      get { return protocVersion; }
+    }
+    private static readonly global::System.Version protocVersion = new global::System.Version(ConstProtocVersion);
+
+    /// <summary>Minimum version of Google.Protobuf which is compatible with this generated code.</summary>
+    public static global::System.Version MinimumRuntimeVersion {
+      get { return minimumRuntimeVersion; }
+    }
+    private static readonly global::System.Version minimumRuntimeVersion = new global::System.Version(3, 21, 9);
+
     #region Descriptor
+    private static readonly global::System.Lazy<pbr::FileDescriptor> descriptor = new global::System.Lazy<pbr::FileDescriptor>(CreateFileDescriptor);
     /// <summary>File descriptor for google/protobuf/compiler/plugin.proto</summary>
     public static pbr::FileDescriptor Descriptor {
-      get { return descriptor; }
+      get { return descriptor.Value; }
     }
-    private static pbr::FileDescriptor descriptor;
 
-    static PluginReflection() {
+    private static pbr::FileDescriptor CreateFileDescriptor() {
+      pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "CiVnb29nbGUvcHJvdG9idWYvY29tcGlsZXIvcGx1Z2luLnByb3RvEhhnb29n",
@@ -42,7 +56,7 @@ namespace Google.Protobuf.Compiler {
             "UFRJT05BTBABQlcKHGNvbS5nb29nbGUucHJvdG9idWYuY29tcGlsZXJCDFBs",
             "dWdpblByb3Rvc1opZ29vZ2xlLmdvbGFuZy5vcmcvcHJvdG9idWYvdHlwZXMv",
             "cGx1Z2lucGI="));
-      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
+      return pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Compiler.Version), global::Google.Protobuf.Compiler.Version.Parser, new[]{ "Major", "Minor", "Patch", "Suffix" }, null, null, null, null),
@@ -62,27 +76,31 @@ namespace Google.Protobuf.Compiler {
       , pb::IBufferMessage
   #endif
   {
+    static Version() {
+        pbr::RuntimeVersion.Validate(global::Google.Protobuf.Compiler.PluginReflection.MinimumRuntimeVersion);
+    }
+
     private static readonly pb::MessageParser<Version> _parser = new pb::MessageParser<Version>(() => new Version());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public static pb::MessageParser<Version> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.Compiler.PluginReflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public Version() {
       OnConstruction();
     }
@@ -90,7 +108,7 @@ namespace Google.Protobuf.Compiler {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public Version(Version other) : this() {
       _hasBits0 = other._hasBits0;
       major_ = other.major_;
@@ -101,7 +119,7 @@ namespace Google.Protobuf.Compiler {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public Version Clone() {
       return new Version(this);
     }
@@ -112,7 +130,7 @@ namespace Google.Protobuf.Compiler {
 
     private int major_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public int Major {
       get { if ((_hasBits0 & 1) != 0) { return major_; } else { return MajorDefaultValue; } }
       set {
@@ -122,13 +140,13 @@ namespace Google.Protobuf.Compiler {
     }
     /// <summary>Gets whether the "major" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public bool HasMajor {
       get { return (_hasBits0 & 1) != 0; }
     }
     /// <summary>Clears the value of the "major" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public void ClearMajor() {
       _hasBits0 &= ~1;
     }
@@ -139,7 +157,7 @@ namespace Google.Protobuf.Compiler {
 
     private int minor_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public int Minor {
       get { if ((_hasBits0 & 2) != 0) { return minor_; } else { return MinorDefaultValue; } }
       set {
@@ -149,13 +167,13 @@ namespace Google.Protobuf.Compiler {
     }
     /// <summary>Gets whether the "minor" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public bool HasMinor {
       get { return (_hasBits0 & 2) != 0; }
     }
     /// <summary>Clears the value of the "minor" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public void ClearMinor() {
       _hasBits0 &= ~2;
     }
@@ -166,7 +184,7 @@ namespace Google.Protobuf.Compiler {
 
     private int patch_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public int Patch {
       get { if ((_hasBits0 & 4) != 0) { return patch_; } else { return PatchDefaultValue; } }
       set {
@@ -176,13 +194,13 @@ namespace Google.Protobuf.Compiler {
     }
     /// <summary>Gets whether the "patch" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public bool HasPatch {
       get { return (_hasBits0 & 4) != 0; }
     }
     /// <summary>Clears the value of the "patch" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public void ClearPatch() {
       _hasBits0 &= ~4;
     }
@@ -197,7 +215,7 @@ namespace Google.Protobuf.Compiler {
     /// be empty for mainline stable releases.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public string Suffix {
       get { return suffix_ ?? SuffixDefaultValue; }
       set {
@@ -206,25 +224,25 @@ namespace Google.Protobuf.Compiler {
     }
     /// <summary>Gets whether the "suffix" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public bool HasSuffix {
       get { return suffix_ != null; }
     }
     /// <summary>Clears the value of the "suffix" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public void ClearSuffix() {
       suffix_ = null;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public override bool Equals(object other) {
       return Equals(other as Version);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public bool Equals(Version other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -240,7 +258,7 @@ namespace Google.Protobuf.Compiler {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public override int GetHashCode() {
       int hash = 1;
       if (HasMajor) hash ^= Major.GetHashCode();
@@ -254,13 +272,13 @@ namespace Google.Protobuf.Compiler {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public void WriteTo(pb::CodedOutputStream output) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
@@ -289,7 +307,7 @@ namespace Google.Protobuf.Compiler {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       if (HasMajor) {
         output.WriteRawTag(8);
@@ -314,7 +332,7 @@ namespace Google.Protobuf.Compiler {
     #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public int CalculateSize() {
       int size = 0;
       if (HasMajor) {
@@ -336,7 +354,7 @@ namespace Google.Protobuf.Compiler {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public void MergeFrom(Version other) {
       if (other == null) {
         return;
@@ -357,7 +375,7 @@ namespace Google.Protobuf.Compiler {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public void MergeFrom(pb::CodedInputStream input) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
@@ -391,7 +409,7 @@ namespace Google.Protobuf.Compiler {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -430,26 +448,30 @@ namespace Google.Protobuf.Compiler {
       , pb::IBufferMessage
   #endif
   {
+    static CodeGeneratorRequest() {
+        pbr::RuntimeVersion.Validate(global::Google.Protobuf.Compiler.PluginReflection.MinimumRuntimeVersion);
+    }
+
     private static readonly pb::MessageParser<CodeGeneratorRequest> _parser = new pb::MessageParser<CodeGeneratorRequest>(() => new CodeGeneratorRequest());
     private pb::UnknownFieldSet _unknownFields;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public static pb::MessageParser<CodeGeneratorRequest> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.Compiler.PluginReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public CodeGeneratorRequest() {
       OnConstruction();
     }
@@ -457,7 +479,7 @@ namespace Google.Protobuf.Compiler {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public CodeGeneratorRequest(CodeGeneratorRequest other) : this() {
       fileToGenerate_ = other.fileToGenerate_.Clone();
       parameter_ = other.parameter_;
@@ -467,7 +489,7 @@ namespace Google.Protobuf.Compiler {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public CodeGeneratorRequest Clone() {
       return new CodeGeneratorRequest(this);
     }
@@ -483,7 +505,7 @@ namespace Google.Protobuf.Compiler {
     /// descriptor will be included in proto_file, below.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public pbc::RepeatedField<string> FileToGenerate {
       get { return fileToGenerate_; }
     }
@@ -497,7 +519,7 @@ namespace Google.Protobuf.Compiler {
     /// The generator parameter passed on the command-line.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public string Parameter {
       get { return parameter_ ?? ParameterDefaultValue; }
       set {
@@ -506,13 +528,13 @@ namespace Google.Protobuf.Compiler {
     }
     /// <summary>Gets whether the "parameter" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public bool HasParameter {
       get { return parameter_ != null; }
     }
     /// <summary>Clears the value of the "parameter" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public void ClearParameter() {
       parameter_ = null;
     }
@@ -539,7 +561,7 @@ namespace Google.Protobuf.Compiler {
     /// fully qualified.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.FileDescriptorProto> ProtoFile {
       get { return protoFile_; }
     }
@@ -551,7 +573,7 @@ namespace Google.Protobuf.Compiler {
     /// The version number of protocol compiler.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public global::Google.Protobuf.Compiler.Version CompilerVersion {
       get { return compilerVersion_; }
       set {
@@ -560,13 +582,13 @@ namespace Google.Protobuf.Compiler {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public override bool Equals(object other) {
       return Equals(other as CodeGeneratorRequest);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public bool Equals(CodeGeneratorRequest other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -582,7 +604,7 @@ namespace Google.Protobuf.Compiler {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public override int GetHashCode() {
       int hash = 1;
       hash ^= fileToGenerate_.GetHashCode();
@@ -596,13 +618,13 @@ namespace Google.Protobuf.Compiler {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public void WriteTo(pb::CodedOutputStream output) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
@@ -625,7 +647,7 @@ namespace Google.Protobuf.Compiler {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       fileToGenerate_.WriteTo(ref output, _repeated_fileToGenerate_codec);
       if (HasParameter) {
@@ -644,7 +666,7 @@ namespace Google.Protobuf.Compiler {
     #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public int CalculateSize() {
       int size = 0;
       size += fileToGenerate_.CalculateSize(_repeated_fileToGenerate_codec);
@@ -662,7 +684,7 @@ namespace Google.Protobuf.Compiler {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public void MergeFrom(CodeGeneratorRequest other) {
       if (other == null) {
         return;
@@ -682,7 +704,7 @@ namespace Google.Protobuf.Compiler {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public void MergeFrom(pb::CodedInputStream input) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
@@ -719,7 +741,7 @@ namespace Google.Protobuf.Compiler {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -761,27 +783,31 @@ namespace Google.Protobuf.Compiler {
       , pb::IBufferMessage
   #endif
   {
+    static CodeGeneratorResponse() {
+        pbr::RuntimeVersion.Validate(global::Google.Protobuf.Compiler.PluginReflection.MinimumRuntimeVersion);
+    }
+
     private static readonly pb::MessageParser<CodeGeneratorResponse> _parser = new pb::MessageParser<CodeGeneratorResponse>(() => new CodeGeneratorResponse());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public static pb::MessageParser<CodeGeneratorResponse> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.Compiler.PluginReflection.Descriptor.MessageTypes[2]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public CodeGeneratorResponse() {
       OnConstruction();
     }
@@ -789,7 +815,7 @@ namespace Google.Protobuf.Compiler {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public CodeGeneratorResponse(CodeGeneratorResponse other) : this() {
       _hasBits0 = other._hasBits0;
       error_ = other.error_;
@@ -799,7 +825,7 @@ namespace Google.Protobuf.Compiler {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public CodeGeneratorResponse Clone() {
       return new CodeGeneratorResponse(this);
     }
@@ -820,7 +846,7 @@ namespace Google.Protobuf.Compiler {
     /// exiting with a non-zero status code.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public string Error {
       get { return error_ ?? ErrorDefaultValue; }
       set {
@@ -829,13 +855,13 @@ namespace Google.Protobuf.Compiler {
     }
     /// <summary>Gets whether the "error" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public bool HasError {
       get { return error_ != null; }
     }
     /// <summary>Clears the value of the "error" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public void ClearError() {
       error_ = null;
     }
@@ -850,7 +876,7 @@ namespace Google.Protobuf.Compiler {
     /// This is a bitwise "or" of values from the Feature enum.
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public ulong SupportedFeatures {
       get { if ((_hasBits0 & 1) != 0) { return supportedFeatures_; } else { return SupportedFeaturesDefaultValue; } }
       set {
@@ -860,13 +886,13 @@ namespace Google.Protobuf.Compiler {
     }
     /// <summary>Gets whether the "supported_features" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public bool HasSupportedFeatures {
       get { return (_hasBits0 & 1) != 0; }
     }
     /// <summary>Clears the value of the "supported_features" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public void ClearSupportedFeatures() {
       _hasBits0 &= ~1;
     }
@@ -877,19 +903,19 @@ namespace Google.Protobuf.Compiler {
         = pb::FieldCodec.ForMessage(122, global::Google.Protobuf.Compiler.CodeGeneratorResponse.Types.File.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Compiler.CodeGeneratorResponse.Types.File> file_ = new pbc::RepeatedField<global::Google.Protobuf.Compiler.CodeGeneratorResponse.Types.File>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public pbc::RepeatedField<global::Google.Protobuf.Compiler.CodeGeneratorResponse.Types.File> File {
       get { return file_; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public override bool Equals(object other) {
       return Equals(other as CodeGeneratorResponse);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public bool Equals(CodeGeneratorResponse other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -904,7 +930,7 @@ namespace Google.Protobuf.Compiler {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public override int GetHashCode() {
       int hash = 1;
       if (HasError) hash ^= Error.GetHashCode();
@@ -917,13 +943,13 @@ namespace Google.Protobuf.Compiler {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public void WriteTo(pb::CodedOutputStream output) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
@@ -945,7 +971,7 @@ namespace Google.Protobuf.Compiler {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       if (HasError) {
         output.WriteRawTag(10);
@@ -963,7 +989,7 @@ namespace Google.Protobuf.Compiler {
     #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public int CalculateSize() {
       int size = 0;
       if (HasError) {
@@ -980,7 +1006,7 @@ namespace Google.Protobuf.Compiler {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public void MergeFrom(CodeGeneratorResponse other) {
       if (other == null) {
         return;
@@ -996,7 +1022,7 @@ namespace Google.Protobuf.Compiler {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public void MergeFrom(pb::CodedInputStream input) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
@@ -1026,7 +1052,7 @@ namespace Google.Protobuf.Compiler {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -1054,7 +1080,7 @@ namespace Google.Protobuf.Compiler {
     #region Nested types
     /// <summary>Container for nested types declared in the CodeGeneratorResponse message type.</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public static partial class Types {
       /// <summary>
       /// Sync with code_generator.h.
@@ -1072,26 +1098,30 @@ namespace Google.Protobuf.Compiler {
           , pb::IBufferMessage
       #endif
       {
+        static File() {
+            pbr::RuntimeVersion.Validate(global::Google.Protobuf.Compiler.PluginReflection.MinimumRuntimeVersion);
+        }
+
         private static readonly pb::MessageParser<File> _parser = new pb::MessageParser<File>(() => new File());
         private pb::UnknownFieldSet _unknownFields;
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public static pb::MessageParser<File> Parser { get { return _parser; } }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public static pbr::MessageDescriptor Descriptor {
           get { return global::Google.Protobuf.Compiler.CodeGeneratorResponse.Descriptor.NestedTypes[0]; }
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         pbr::MessageDescriptor pb::IMessage.Descriptor {
           get { return Descriptor; }
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public File() {
           OnConstruction();
         }
@@ -1099,7 +1129,7 @@ namespace Google.Protobuf.Compiler {
         partial void OnConstruction();
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public File(File other) : this() {
           name_ = other.name_;
           insertionPoint_ = other.insertionPoint_;
@@ -1109,7 +1139,7 @@ namespace Google.Protobuf.Compiler {
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public File Clone() {
           return new File(this);
         }
@@ -1133,7 +1163,7 @@ namespace Google.Protobuf.Compiler {
         /// CodeGeneratorResponse before writing files to disk.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public string Name {
           get { return name_ ?? NameDefaultValue; }
           set {
@@ -1142,13 +1172,13 @@ namespace Google.Protobuf.Compiler {
         }
         /// <summary>Gets whether the "name" field is set</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public bool HasName {
           get { return name_ != null; }
         }
         /// <summary>Clears the value of the "name" field</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public void ClearName() {
           name_ = null;
         }
@@ -1198,7 +1228,7 @@ namespace Google.Protobuf.Compiler {
         /// If |insertion_point| is present, |name| must also be present.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public string InsertionPoint {
           get { return insertionPoint_ ?? InsertionPointDefaultValue; }
           set {
@@ -1207,13 +1237,13 @@ namespace Google.Protobuf.Compiler {
         }
         /// <summary>Gets whether the "insertion_point" field is set</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public bool HasInsertionPoint {
           get { return insertionPoint_ != null; }
         }
         /// <summary>Clears the value of the "insertion_point" field</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public void ClearInsertionPoint() {
           insertionPoint_ = null;
         }
@@ -1227,7 +1257,7 @@ namespace Google.Protobuf.Compiler {
         /// The file contents.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public string Content {
           get { return content_ ?? ContentDefaultValue; }
           set {
@@ -1236,13 +1266,13 @@ namespace Google.Protobuf.Compiler {
         }
         /// <summary>Gets whether the "content" field is set</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public bool HasContent {
           get { return content_ != null; }
         }
         /// <summary>Clears the value of the "content" field</summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public void ClearContent() {
           content_ = null;
         }
@@ -1256,7 +1286,7 @@ namespace Google.Protobuf.Compiler {
         /// into the code generation metadata for the generated files.
         /// </summary>
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public global::Google.Protobuf.Reflection.GeneratedCodeInfo GeneratedCodeInfo {
           get { return generatedCodeInfo_; }
           set {
@@ -1265,13 +1295,13 @@ namespace Google.Protobuf.Compiler {
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public override bool Equals(object other) {
           return Equals(other as File);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public bool Equals(File other) {
           if (ReferenceEquals(other, null)) {
             return false;
@@ -1287,7 +1317,7 @@ namespace Google.Protobuf.Compiler {
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public override int GetHashCode() {
           int hash = 1;
           if (HasName) hash ^= Name.GetHashCode();
@@ -1301,13 +1331,13 @@ namespace Google.Protobuf.Compiler {
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public override string ToString() {
           return pb::JsonFormatter.ToDiagnosticString(this);
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public void WriteTo(pb::CodedOutputStream output) {
         #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           output.WriteRawMessage(this);
@@ -1336,7 +1366,7 @@ namespace Google.Protobuf.Compiler {
 
         #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
           if (HasName) {
             output.WriteRawTag(10);
@@ -1361,7 +1391,7 @@ namespace Google.Protobuf.Compiler {
         #endif
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public int CalculateSize() {
           int size = 0;
           if (HasName) {
@@ -1383,7 +1413,7 @@ namespace Google.Protobuf.Compiler {
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public void MergeFrom(File other) {
           if (other == null) {
             return;
@@ -1407,7 +1437,7 @@ namespace Google.Protobuf.Compiler {
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public void MergeFrom(pb::CodedInputStream input) {
         #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
           input.ReadRawMessage(this);
@@ -1444,7 +1474,7 @@ namespace Google.Protobuf.Compiler {
 
         #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-        [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+        [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
           uint tag;
           while ((tag = input.ReadTag()) != 0) {

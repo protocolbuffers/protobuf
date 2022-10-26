@@ -14,21 +14,35 @@ namespace UnitTest.Issues.TestProtos {
   /// <summary>Holder for reflection information generated from unittest_issue6936_a.proto</summary>
   public static partial class UnittestIssue6936AReflection {
 
+    internal const string ConstProtocVersion = "3.21.9";
+    /// <summary>Version of protoc used to generate this code.</summary>
+    public static global::System.Version ProtocVersion {
+      get { return protocVersion; }
+    }
+    private static readonly global::System.Version protocVersion = new global::System.Version(ConstProtocVersion);
+
+    /// <summary>Minimum version of Google.Protobuf which is compatible with this generated code.</summary>
+    public static global::System.Version MinimumRuntimeVersion {
+      get { return minimumRuntimeVersion; }
+    }
+    private static readonly global::System.Version minimumRuntimeVersion = new global::System.Version(3, 21, 9);
+
     #region Descriptor
+    private static readonly global::System.Lazy<pbr::FileDescriptor> descriptor = new global::System.Lazy<pbr::FileDescriptor>(CreateFileDescriptor);
     /// <summary>File descriptor for unittest_issue6936_a.proto</summary>
     public static pbr::FileDescriptor Descriptor {
-      get { return descriptor; }
+      get { return descriptor.Value; }
     }
-    private static pbr::FileDescriptor descriptor;
 
-    static UnittestIssue6936AReflection() {
+    private static pbr::FileDescriptor CreateFileDescriptor() {
+      pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Chp1bml0dGVzdF9pc3N1ZTY5MzZfYS5wcm90bxIPdW5pdHRlc3RfaXNzdWVz",
             "GiBnb29nbGUvcHJvdG9idWYvZGVzY3JpcHRvci5wcm90bzouCgNvcHQSHy5n",
             "b29nbGUucHJvdG9idWYuTWVzc2FnZU9wdGlvbnMY0IYDIAEoCUIdqgIaVW5p",
             "dFRlc3QuSXNzdWVzLlRlc3RQcm90b3NiBnByb3RvMw=="));
-      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
+      return pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.Reflection.DescriptorReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(null, new pb::Extension[] { UnittestIssue6936AExtensions.Opt }, null));
     }

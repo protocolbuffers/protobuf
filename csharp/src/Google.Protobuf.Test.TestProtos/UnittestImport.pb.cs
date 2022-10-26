@@ -14,14 +14,28 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   /// <summary>Holder for reflection information generated from unittest_import.proto</summary>
   public static partial class UnittestImportReflection {
 
+    internal const string ConstProtocVersion = "3.21.9";
+    /// <summary>Version of protoc used to generate this code.</summary>
+    public static global::System.Version ProtocVersion {
+      get { return protocVersion; }
+    }
+    private static readonly global::System.Version protocVersion = new global::System.Version(ConstProtocVersion);
+
+    /// <summary>Minimum version of Google.Protobuf which is compatible with this generated code.</summary>
+    public static global::System.Version MinimumRuntimeVersion {
+      get { return minimumRuntimeVersion; }
+    }
+    private static readonly global::System.Version minimumRuntimeVersion = new global::System.Version(3, 21, 9);
+
     #region Descriptor
+    private static readonly global::System.Lazy<pbr::FileDescriptor> descriptor = new global::System.Lazy<pbr::FileDescriptor>(CreateFileDescriptor);
     /// <summary>File descriptor for unittest_import.proto</summary>
     public static pbr::FileDescriptor Descriptor {
-      get { return descriptor; }
+      get { return descriptor.Value; }
     }
-    private static pbr::FileDescriptor descriptor;
 
-    static UnittestImportReflection() {
+    private static pbr::FileDescriptor CreateFileDescriptor() {
+      pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "ChV1bml0dGVzdF9pbXBvcnQucHJvdG8SH3Byb3RvYnVmX3VuaXR0ZXN0X2lt",
@@ -31,7 +45,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             "SW1wb3J0RW51bUZvck1hcBILCgdVTktOT1dOEAASBwoDRk9PEAESBwoDQkFS",
             "EAJCKUgB+AEBqgIhR29vZ2xlLlByb3RvYnVmLlRlc3RQcm90b3MuUHJvdG8y",
             "UAA="));
-      descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
+      return pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.TestProtos.Proto2.UnittestImportPublicReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Google.Protobuf.TestProtos.Proto2.ImportEnum), typeof(global::Google.Protobuf.TestProtos.Proto2.ImportEnumForMap), }, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.TestProtos.Proto2.ImportMessage), global::Google.Protobuf.TestProtos.Proto2.ImportMessage.Parser, new[]{ "D" }, null, null, null, null)
@@ -64,27 +78,31 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
+    static ImportMessage() {
+        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.MinimumRuntimeVersion);
+    }
+
     private static readonly pb::MessageParser<ImportMessage> _parser = new pb::MessageParser<ImportMessage>(() => new ImportMessage());
     private pb::UnknownFieldSet _unknownFields;
     private int _hasBits0;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     public static pb::MessageParser<ImportMessage> Parser { get { return _parser; } }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     public ImportMessage() {
       OnConstruction();
     }
@@ -92,7 +110,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     partial void OnConstruction();
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     public ImportMessage(ImportMessage other) : this() {
       _hasBits0 = other._hasBits0;
       d_ = other.d_;
@@ -100,7 +118,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     public ImportMessage Clone() {
       return new ImportMessage(this);
     }
@@ -111,7 +129,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     private int d_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     public int D {
       get { if ((_hasBits0 & 1) != 0) { return d_; } else { return DDefaultValue; } }
       set {
@@ -121,25 +139,25 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     }
     /// <summary>Gets whether the "d" field is set</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     public bool HasD {
       get { return (_hasBits0 & 1) != 0; }
     }
     /// <summary>Clears the value of the "d" field</summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     public void ClearD() {
       _hasBits0 &= ~1;
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     public override bool Equals(object other) {
       return Equals(other as ImportMessage);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     public bool Equals(ImportMessage other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -152,7 +170,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     public override int GetHashCode() {
       int hash = 1;
       if (HasD) hash ^= D.GetHashCode();
@@ -163,13 +181,13 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     public void WriteTo(pb::CodedOutputStream output) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       output.WriteRawMessage(this);
@@ -186,7 +204,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {
       if (HasD) {
         output.WriteRawTag(8);
@@ -199,7 +217,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     #endif
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     public int CalculateSize() {
       int size = 0;
       if (HasD) {
@@ -212,7 +230,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     public void MergeFrom(ImportMessage other) {
       if (other == null) {
         return;
@@ -224,7 +242,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     public void MergeFrom(pb::CodedInputStream input) {
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
       input.ReadRawMessage(this);
@@ -246,7 +264,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
     #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
-    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestImportReflection.ConstProtocVersion)]
     void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
