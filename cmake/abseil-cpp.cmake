@@ -29,30 +29,42 @@ elseif(protobuf_ABSL_PROVIDER STREQUAL "package")
 endif()
 set(_protobuf_FIND_ABSL "if(NOT TARGET absl::strings)\n  find_package(absl CONFIG)\nendif()")
 
-set(protobuf_ABSL_USED_TARGETS
-  absl::algorithm
-  absl::base
-  absl::bind_front
-  absl::bits
-  absl::cleanup
-  absl::cord
-  absl::core_headers
-  absl::debugging
-  absl::dynamic_annotations
-  absl::flags
-  absl::flat_hash_map
-  absl::flat_hash_set
-  absl::function_ref
-  absl::hash
-  absl::layout
-  absl::memory
-  absl::optional
-  absl::span
-  absl::status
-  absl::statusor
-  absl::strings
-  absl::synchronization
-  absl::time
-  absl::utility
-  absl::variant
-)
+if (BUILD_SHARED_LIBS AND MSVC)
+  # On MSVC Abseil is bundled into a single DLL.
+  set(protobuf_ABSL_USED_TARGETS abseil_dll)
+
+  # As a workaround for https://github.com/abseil/abseil-cpp/issues/1118,
+  # make sure ABSL_CONSUME_DLL gets set for all subsequent builds.
+  add_definitions(-DABSL_CONSUME_DLL)
+else()
+  set(protobuf_ABSL_USED_TARGETS
+    absl::algorithm
+    absl::base
+    absl::bind_front
+    absl::bits
+    absl::btree
+    absl::cleanup
+    absl::cord
+    absl::core_headers
+    absl::debugging
+    absl::dynamic_annotations
+    absl::flags
+    absl::flat_hash_map
+    absl::flat_hash_set
+    absl::function_ref
+    absl::hash
+    absl::layout
+    absl::memory
+    absl::node_hash_map
+    absl::node_hash_set
+    absl::optional
+    absl::span
+    absl::status
+    absl::statusor
+    absl::strings
+    absl::synchronization
+    absl::time
+    absl::utility
+    absl::variant
+  )
+endif ()

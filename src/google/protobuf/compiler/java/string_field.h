@@ -36,7 +36,6 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_STRING_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_STRING_FIELD_H__
 
-#include <map>
 #include <string>
 
 #include "google/protobuf/compiler/java/field.h"

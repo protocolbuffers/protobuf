@@ -37,7 +37,6 @@
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_STRING_FIELD_LITE_H__
 
 #include <cstdint>
-#include <map>
 #include <string>
 
 #include "google/protobuf/compiler/java/field.h"

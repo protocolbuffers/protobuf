@@ -76,7 +76,7 @@ target_link_libraries(conformance_cpp ${protobuf_LIB_PROTOBUF})
 target_link_libraries(conformance_cpp ${protobuf_ABSL_USED_TARGETS})
 
 add_test(NAME conformance_cpp_test
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/conformance_test_runner
+  COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/conformance_test_runner
     --failure_list ${protobuf_SOURCE_DIR}/conformance/failure_list_cpp.txt
     --text_format_failure_list ${protobuf_SOURCE_DIR}/conformance/text_format_failure_list_cpp.txt
     --output_dir ${protobuf_TEST_XML_OUTDIR}

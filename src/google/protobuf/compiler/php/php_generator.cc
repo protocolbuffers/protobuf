@@ -33,6 +33,8 @@
 #include <sstream>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_replace.h"
@@ -991,9 +993,10 @@ void GenerateAddFileToPool(const FileDescriptor* file, const Options& options,
 
 static void AnalyzeDependencyForFile(
     const FileDescriptor* file,
-    std::set<const FileDescriptor*>* nodes_without_dependency,
-    std::map<const FileDescriptor*, std::set<const FileDescriptor*>>* deps,
-    std::map<const FileDescriptor*, int>* dependency_count) {
+    absl::flat_hash_set<const FileDescriptor*>* nodes_without_dependency,
+    absl::flat_hash_map<const FileDescriptor*,
+                        absl::flat_hash_set<const FileDescriptor*>>* deps,
+    absl::flat_hash_map<const FileDescriptor*, int>* dependency_count) {
   int count = file->dependency_count();
   for (int i = 0; i < file->dependency_count(); i++) {
       const FileDescriptor* dependency = file->dependency(i);
@@ -1013,7 +1016,7 @@ static void AnalyzeDependencyForFile(
         continue;
       }
       if (deps->find(dependency) == deps->end()) {
-        (*deps)[dependency] = std::set<const FileDescriptor*>();
+        (*deps)[dependency] = {};
       }
       (*deps)[dependency].insert(file);
       AnalyzeDependencyForFile(
@@ -1049,9 +1052,11 @@ void GenerateAddFilesToPool(const FileDescriptor* file, const Options& options,
       "}\n");
 
   // Sort files according to dependency
-  std::map<const FileDescriptor*, std::set<const FileDescriptor*>> deps;
-  std::map<const FileDescriptor*, int> dependency_count;
-  std::set<const FileDescriptor*> nodes_without_dependency;
+  absl::flat_hash_map<const FileDescriptor*,
+                      absl::flat_hash_set<const FileDescriptor*>>
+      deps;
+  absl::flat_hash_map<const FileDescriptor*, int> dependency_count;
+  absl::flat_hash_set<const FileDescriptor*> nodes_without_dependency;
   FileDescriptorSet sorted_file_set;
 
   AnalyzeDependencyForFile(
