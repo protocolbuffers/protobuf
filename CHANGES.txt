@@ -1,3 +1,14 @@
+2022-10-26 version 21.9 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+  C++
+  * Update zlib to 1.2.13 (#10819)
+
+  Python
+  * Target MacOS 10.9 to fix #10799 (#10807)
+
+  Ruby
+  * Replace libc strdup usage with internal impl to restore musl compat (#10818)
+
 2022-10-18 version 21.8 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
 
   Other
