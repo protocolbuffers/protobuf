@@ -45,7 +45,9 @@ namespace csharp {
 
 class ReflectionClassGenerator : public SourceGeneratorBase {
  public:
-  ReflectionClassGenerator(const FileDescriptor* file, const Options* options);
+  ReflectionClassGenerator(const FileDescriptor* file,
+                           const Options* options,
+                           const Version& compiler_version);
   ~ReflectionClassGenerator();
 
   ReflectionClassGenerator(const ReflectionClassGenerator&) = delete;
@@ -55,12 +57,15 @@ class ReflectionClassGenerator : public SourceGeneratorBase {
 
  private:
   const FileDescriptor* file_;
+  const Version& compiler_version_;
 
   std::string namespace_;
   std::string reflectionClassname_;
   std::string extensionClassname_;
 
   void WriteIntroduction(io::Printer* printer);
+  void WriteCompilerVersion(io::Printer* printer);
+  void WriteMinimumRuntimeVersion(io::Printer* printer);
   void WriteDescriptor(io::Printer* printer);
   void WriteGeneratedCodeInfo(const Descriptor* descriptor,
                               io::Printer* printer,

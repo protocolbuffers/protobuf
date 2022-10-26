@@ -33,6 +33,7 @@
 #include <sstream>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"
@@ -55,8 +56,8 @@ uint64_t Generator::GetSupportedFeatures() const {
 }
 
 void GenerateFile(const FileDescriptor* file, io::Printer* printer,
-                  const Options* options) {
-  ReflectionClassGenerator reflectionClassGenerator(file, options);
+                  const Options* options, const Version& compiler_version) {
+  ReflectionClassGenerator reflectionClassGenerator(file, options, compiler_version);
   reflectionClassGenerator.Generate(printer);
 }
 
@@ -98,9 +99,10 @@ bool Generator::Generate(const FileDescriptor* file,
   }
   std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(filename));
-  io::Printer printer(output.get(), '$');
-
-  GenerateFile(file, &printer, &cli_options);
+  io::Printer printer(output.get());
+  Version compiler_version;
+  generator_context->GetCompilerVersion(&compiler_version);
+  GenerateFile(file, &printer, &cli_options, compiler_version);
 
   return true;
 }

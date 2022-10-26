@@ -44,6 +44,15 @@ namespace protobuf {
 namespace compiler {
 namespace csharp {
 
+// This specifies the current major version of the C# runtime (the Google.Protobuf package).
+// Code generated with this compiler is expected to be compatible with a "same or later"
+// version of Google.Protobuf within the same major version. So if code is generated when
+// the current Google.Protobuf version is 3.22.3, it is compatible with 3.22.3, 3.22.4 and 3.23.0,
+// but incompatible with 2.0.0, 3.21.5, 3.33.2, and 4.0.0.
+// The minor and patch versions of the runtime are taken from the overall protobuf version,
+// but each language has an independent major version for their runtime.
+#define CSHARP_RUNTIME_MAJOR_VERSION 3
+
 // CodeGenerator implementation which generates a C# source file and
 // header.  If you create your own protocol compiler binary and you want
 // it to support C# output, you can do so by registering an instance of this

@@ -200,7 +200,7 @@ void FieldGeneratorBase::AddDeprecatedFlag(io::Printer* printer) {
 
 void FieldGeneratorBase::AddPublicMemberAttributes(io::Printer* printer) {
   AddDeprecatedFlag(printer);
-  WriteGeneratedCodeAttributes(printer);
+  WriteGeneratedCodeAttributes(printer, descriptor_->file());
 }
 
 std::string FieldGeneratorBase::oneof_case_name() {

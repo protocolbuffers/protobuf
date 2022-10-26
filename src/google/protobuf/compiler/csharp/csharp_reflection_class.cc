@@ -36,6 +36,7 @@
 #include "absl/strings/str_join.h"
 #include "google/protobuf/compiler/csharp/csharp_enum.h"
 #include "google/protobuf/compiler/csharp/csharp_field_base.h"
+#include "google/protobuf/compiler/csharp/csharp_generator.h"
 #include "google/protobuf/compiler/csharp/csharp_helpers.h"
 #include "google/protobuf/compiler/csharp/csharp_message.h"
 #include "google/protobuf/compiler/csharp/csharp_options.h"
@@ -53,9 +54,11 @@ namespace compiler {
 namespace csharp {
 
 ReflectionClassGenerator::ReflectionClassGenerator(const FileDescriptor* file,
-                                                   const Options* options)
+                                                   const Options* options,
+                                                   const Version& compiler_version)
     : SourceGeneratorBase(options),
-      file_(file) {
+      file_(file),
+      compiler_version_(compiler_version) {
   namespace_ = GetFileNamespace(file);
   reflectionClassname_ = GetReflectionClassUnqualifiedName(file);
   extensionClassname_ = GetExtensionClassUnqualifiedName(file);
@@ -66,7 +69,8 @@ ReflectionClassGenerator::~ReflectionClassGenerator() {
 
 void ReflectionClassGenerator::Generate(io::Printer* printer) {
   WriteIntroduction(printer);
-
+  WriteCompilerVersion(printer);
+  WriteMinimumRuntimeVersion(printer);
   WriteDescriptor(printer);
   // Close the class declaration.
   printer->Outdent();
@@ -154,20 +158,49 @@ void ReflectionClassGenerator::WriteIntroduction(io::Printer* printer) {
   printer->Indent();
 }
 
+void ReflectionClassGenerator::WriteCompilerVersion(io::Printer* printer) {
+  printer->Print(
+    "internal const string ConstProtocVersion = \"$major$.$minor$.$patch$\";\n",
+    "major", absl::StrCat(compiler_version_.major()),
+    "minor", absl::StrCat(compiler_version_.minor()),
+    "patch", absl::StrCat(compiler_version_.patch()));
+  printer->Print(
+    "/// <summary>Version of protoc used to generate this code.</summary>\n"
+    "public static global::System.Version ProtocVersion {\n"
+    "  get { return protocVersion; }\n"
+    "}\n"
+    "private static readonly global::System.Version protocVersion = new global::System.Version(ConstProtocVersion);\n"
+    "\n");
+}
+
+void ReflectionClassGenerator::WriteMinimumRuntimeVersion(io::Printer* printer) {
+  printer->Print(
+    "/// <summary>Minimum version of Google.Protobuf which is compatible with this generated code.</summary>\n"
+    "public static global::System.Version MinimumRuntimeVersion {\n"
+    "  get { return minimumRuntimeVersion; }\n"
+    "}\n"
+    "private static readonly global::System.Version minimumRuntimeVersion = new global::System.Version($major$, $minor$, $patch$);\n"
+    "\n",
+    "major", absl::StrCat(CSHARP_RUNTIME_MAJOR_VERSION),
+    "minor", absl::StrCat(compiler_version_.minor()),
+    "patch", absl::StrCat(compiler_version_.patch()));
+}
+
 void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
   printer->Print(
     "#region Descriptor\n"
+    "private static readonly global::System.Lazy<pbr::FileDescriptor> descriptor = new global::System.Lazy<pbr::FileDescriptor>(CreateFileDescriptor);\n"
     "/// <summary>File descriptor for $file_name$</summary>\n"
     "public static pbr::FileDescriptor Descriptor {\n"
-    "  get { return descriptor; }\n"
+    "  get { return descriptor.Value; }\n"
     "}\n"
-    "private static pbr::FileDescriptor descriptor;\n"
     "\n"
-    "static $reflection_class_name$() {\n",
+    "private static pbr::FileDescriptor CreateFileDescriptor() {\n",
     "file_name", file_->name(),
     "reflection_class_name", reflectionClassname_);
   printer->Indent();
   printer->Print(
+    "pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);\n"
     "byte[] descriptorData = global::System.Convert.FromBase64String(\n");
   printer->Indent();
   printer->Indent();
@@ -188,7 +221,7 @@ void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
   // -----------------------------------------------------------------
   // Invoke InternalBuildGeneratedFileFrom() to build the file.
   printer->Print(
-      "descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,\n");
+      "return pbr::FileDescriptor.FromGeneratedCode(descriptorData,\n");
   printer->Print("    new pbr::FileDescriptor[] { ");
   for (int i = 0; i < file_->dependency_count(); i++) {
       printer->Print(

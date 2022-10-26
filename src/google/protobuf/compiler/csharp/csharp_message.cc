@@ -117,6 +117,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["class_name"] = class_name();
   vars["access_level"] = class_access_level();
+  vars["reflection_class"] = GetReflectionClassName(descriptor_->file());
 
   WriteMessageDocComment(printer, descriptor_);
   AddDeprecatedFlag(printer);
@@ -137,6 +138,15 @@ void MessageGenerator::Generate(io::Printer* printer) {
   printer->Print("#endif\n");
   printer->Print("{\n");
   printer->Indent();
+
+  // Static constructor to validate the runtime version against the protoc version
+  printer->Print(
+      vars,
+      "static $class_name$() {\n"
+      "    pbr::RuntimeVersion.Validate($reflection_class$.MinimumRuntimeVersion);\n"
+      "}\n"
+      "\n"
+  );
 
   // All static fields and properties
   printer->Print(
@@ -166,7 +176,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
     printer->Print("private int _hasBits$i$;\n", "i", absl::StrCat(i));
   }
 
-  WriteGeneratedCodeAttributes(printer);
+  WriteGeneratedCodeAttributes(printer, descriptor_->file());
 
   printer->Print(
       vars,
@@ -181,14 +191,14 @@ void MessageGenerator::Generate(io::Printer* printer) {
         + ".Descriptor.NestedTypes[" + absl::StrCat(descriptor_->index()) + "]";
   }
 
-  WriteGeneratedCodeAttributes(printer);
+  WriteGeneratedCodeAttributes(printer, descriptor_->file());
   printer->Print(
     vars,
     "public static pbr::MessageDescriptor Descriptor {\n"
     "  get { return $descriptor_accessor$; }\n"
     "}\n"
     "\n");
-  WriteGeneratedCodeAttributes(printer);
+  WriteGeneratedCodeAttributes(printer, descriptor_->file());
   printer->Print(
     vars,
     "pbr::MessageDescriptor pb::IMessage.Descriptor {\n"
@@ -197,7 +207,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
     "\n");
 
   // Parameterless constructor and partial OnConstruction method.
-  WriteGeneratedCodeAttributes(printer);
+  WriteGeneratedCodeAttributes(printer, descriptor_->file());
   printer->Print(
     vars,
     "public $class_name$() {\n"
@@ -251,13 +261,13 @@ void MessageGenerator::Generate(io::Printer* printer) {
     printer->Print(
       vars,
       "private $property_name$OneofCase $name$Case_ = $property_name$OneofCase.None;\n");
-    WriteGeneratedCodeAttributes(printer);
+    WriteGeneratedCodeAttributes(printer, descriptor_->file());
     printer->Print(
       vars,
       "public $property_name$OneofCase $property_name$Case {\n"
       "  get { return $name$Case_; }\n"
       "}\n\n");
-    WriteGeneratedCodeAttributes(printer);
+    WriteGeneratedCodeAttributes(printer, descriptor_->file());
     printer->Print(
       vars,
       "public void Clear$property_name$() {\n"
@@ -314,7 +324,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
       vars,
       "#region Nested types\n"
       "/// <summary>Container for nested types declared in the $class_name$ message type.</summary>\n");
-    WriteGeneratedCodeAttributes(printer);
+    WriteGeneratedCodeAttributes(printer, descriptor_->file());
     printer->Print("public static partial class Types {\n");
     printer->Indent();
     for (int i = 0; i < descriptor_->enum_type_count(); i++) {
@@ -340,7 +350,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
       vars,
       "#region Extensions\n"
       "/// <summary>Container for extensions for other messages declared in the $class_name$ message type.</summary>\n");
-    WriteGeneratedCodeAttributes(printer);
+    WriteGeneratedCodeAttributes(printer, descriptor_->file());
     printer->Print("public static partial class Extensions {\n");
     printer->Indent();
     for (int i = 0; i < descriptor_->extension_count(); i++) {
@@ -377,7 +387,7 @@ bool MessageGenerator::HasNestedGeneratedTypes()
 
 void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
   absl::flat_hash_map<absl::string_view, std::string> vars;
-  WriteGeneratedCodeAttributes(printer);
+  WriteGeneratedCodeAttributes(printer, descriptor_->file());
   vars["class_name"] = class_name();
     printer->Print(
     vars,
@@ -428,7 +438,7 @@ void MessageGenerator::GenerateCloningCode(io::Printer* printer) {
   printer->Outdent();
   printer->Print("}\n\n");
 
-  WriteGeneratedCodeAttributes(printer);
+  WriteGeneratedCodeAttributes(printer, descriptor_->file());
   printer->Print(
     vars,
     "public $class_name$ Clone() {\n"
@@ -444,12 +454,12 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
   vars["class_name"] = class_name();
 
   // Equality
-  WriteGeneratedCodeAttributes(printer);
+  WriteGeneratedCodeAttributes(printer, descriptor_->file());
   printer->Print(vars,
                  "public override bool Equals(object other) {\n"
                  "  return Equals(other as $class_name$);\n"
                  "}\n\n");
-  WriteGeneratedCodeAttributes(printer);
+  WriteGeneratedCodeAttributes(printer, descriptor_->file());
   printer->Print(vars,
                  "public bool Equals($class_name$ other) {\n"
                  "  if (ReferenceEquals(other, null)) {\n"
@@ -481,7 +491,7 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
 
     // GetHashCode
     // Start with a non-zero value to easily distinguish between null and "empty" messages.
-    WriteGeneratedCodeAttributes(printer);
+    WriteGeneratedCodeAttributes(printer, descriptor_->file());
     printer->Print(
         "public override int GetHashCode() {\n"
         "  int hash = 1;\n");
@@ -509,7 +519,7 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
     printer->Outdent();
     printer->Print("}\n\n");
 
-    WriteGeneratedCodeAttributes(printer);
+    WriteGeneratedCodeAttributes(printer, descriptor_->file());
     printer->Print(
         "public override string ToString() {\n"
         "  return pb::JsonFormatter.ToDiagnosticString(this);\n"
@@ -517,7 +527,7 @@ void MessageGenerator::GenerateFrameworkMethods(io::Printer* printer) {
 }
 
 void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer) {
-  WriteGeneratedCodeAttributes(printer);
+  WriteGeneratedCodeAttributes(printer, descriptor_->file());
   printer->Print(
       "public void WriteTo(pb::CodedOutputStream output) {\n");
   printer->Print("#if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE\n");
@@ -532,7 +542,7 @@ void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer)
   printer->Print("}\n\n");
 
   printer->Print("#if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE\n");
-  WriteGeneratedCodeAttributes(printer);
+  WriteGeneratedCodeAttributes(printer, descriptor_->file());
   printer->Print("void pb::IBufferMessage.InternalWriteTo(ref pb::WriteContext output) {\n");
   printer->Indent();
   GenerateWriteToBody(printer, true);
@@ -540,7 +550,7 @@ void MessageGenerator::GenerateMessageSerializationMethods(io::Printer* printer)
   printer->Print("}\n");
   printer->Print("#endif\n\n");
 
-  WriteGeneratedCodeAttributes(printer);
+  WriteGeneratedCodeAttributes(printer, descriptor_->file());
   printer->Print(
     "public int CalculateSize() {\n");
   printer->Indent();
@@ -608,7 +618,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["class_name"] = class_name();
 
-  WriteGeneratedCodeAttributes(printer);
+  WriteGeneratedCodeAttributes(printer, descriptor_->file());
   printer->Print(
     vars,
     "public void MergeFrom($class_name$ other) {\n");
@@ -660,7 +670,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   printer->Outdent();
   printer->Print("}\n\n");
 
-  WriteGeneratedCodeAttributes(printer);
+  WriteGeneratedCodeAttributes(printer, descriptor_->file());
   printer->Print("public void MergeFrom(pb::CodedInputStream input) {\n");
   printer->Print("#if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE\n");
   printer->Indent();
@@ -674,7 +684,7 @@ void MessageGenerator::GenerateMergingMethods(io::Printer* printer) {
   printer->Print("}\n\n");
 
   printer->Print("#if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE\n");
-  WriteGeneratedCodeAttributes(printer);
+  WriteGeneratedCodeAttributes(printer, descriptor_->file());
   printer->Print("void pb::IBufferMessage.InternalMergeFrom(ref pb::ParseContext input) {\n");
   printer->Indent();
   GenerateMainParseLoop(printer, true);

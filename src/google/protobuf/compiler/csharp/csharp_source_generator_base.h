@@ -34,6 +34,7 @@
 #include <string>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
@@ -55,8 +56,11 @@ class SourceGeneratorBase {
   const Options* options();
 
   // Write any attributes used to decorate generated function members (methods and properties).
-  // Should not be used to decorate types.
-  void WriteGeneratedCodeAttributes(io::Printer* printer);
+  // Should not be used to decorate types, as per https://tinyurl.com/generated-code-guidance:
+  // "Nor should it be applied at the type level if the type being generated is
+  // a partial class. In this situation, it should be applied only against the
+  // individual members that are contained within the generated part of the type."
+  void WriteGeneratedCodeAttributes(io::Printer* printer, const FileDescriptor* descriptor);
 
  private:
   const Options *options_;
