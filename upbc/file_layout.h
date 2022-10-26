@@ -91,6 +91,7 @@ class FilePlatformLayout {
   void BuildExtensions(const protobuf::FileDescriptor* fd);
   upb_MiniTable* MakeMiniTable(const protobuf::Descriptor* m);
   upb_MiniTable* MakeMapMiniTable(const protobuf::Descriptor* m);
+  upb_MiniTable* MakeMessageSetMiniTable(const protobuf::Descriptor* m);
   upb_MiniTable* MakeRegularMiniTable(const protobuf::Descriptor* m);
   upb_MiniTable_Enum* MakeMiniTableEnum(const protobuf::EnumDescriptor* d);
   uint64_t GetMessageModifiers(const protobuf::Descriptor* m);

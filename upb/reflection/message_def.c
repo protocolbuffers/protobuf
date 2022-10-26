@@ -131,8 +131,7 @@ bool _upb_MessageDef_IsValidExtensionNumber(const upb_MessageDef* m, int n) {
   return false;
 }
 
-const google_protobuf_MessageOptions* upb_MessageDef_Options(
-    const upb_MessageDef* m) {
+const google_protobuf_MessageOptions* upb_MessageDef_Options(const upb_MessageDef* m) {
   return m->opts;
 }
 
@@ -306,24 +305,15 @@ const upb_OneofDef* upb_MessageDef_FindOneofByName(const upb_MessageDef* m,
 }
 
 bool upb_MessageDef_IsMapEntry(const upb_MessageDef* m) {
-  return google_protobuf_MessageOptions_map_entry(upb_MessageDef_Options(m));
+  return google_protobuf_MessageOptions_map_entry(m->opts);
 }
 
 bool upb_MessageDef_IsMessageSet(const upb_MessageDef* m) {
-  return google_protobuf_MessageOptions_message_set_wire_format(
-      upb_MessageDef_Options(m));
+  return google_protobuf_MessageOptions_message_set_wire_format(m->opts);
 }
 
 static upb_MiniTable* _upb_MessageDef_MakeMiniTable(upb_DefBuilder* ctx,
                                                     const upb_MessageDef* m) {
-  if (google_protobuf_MessageOptions_message_set_wire_format(m->opts)) {
-    if (m->field_count > 0) {
-      _upb_DefBuilder_Errf(ctx, "invalid message set (%s)", m->full_name);
-    }
-    return upb_MiniTable_BuildMessageSet(kUpb_MiniTablePlatform_Native,
-                                         ctx->arena);
-  }
-
   upb_StringView desc;
   bool ok = upb_MessageDef_MiniDescriptorEncode(m, ctx->tmp_arena, &desc);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
@@ -479,7 +469,6 @@ static bool _upb_MessageDef_EncodeMap(upb_DescState* s, const upb_MessageDef* m,
                                ? kUpb_FieldModifier_IsClosedEnum
                                : 0;
 
-  if (!_upb_DescState_Grow(s, a)) return false;
   s->ptr =
       upb_MtDataEncoder_EncodeMap(&s->e, s->ptr, key_type, val_type, val_mod);
   return true;
@@ -494,7 +483,6 @@ static bool _upb_MessageDef_EncodeMessage(upb_DescState* s,
     if (!sorted) return false;
   }
 
-  if (!_upb_DescState_Grow(s, a)) return false;
   s->ptr = upb_MtDataEncoder_StartMessage(&s->e, s->ptr,
                                           _upb_MessageDef_Modifiers(m));
 
@@ -525,13 +513,25 @@ static bool _upb_MessageDef_EncodeMessage(upb_DescState* s,
   return true;
 }
 
+static bool _upb_MessageDef_EncodeMessageSet(upb_DescState* s,
+                                             const upb_MessageDef* m,
+                                             upb_Arena* a) {
+  s->ptr = upb_MtDataEncoder_EncodeMessageSet(&s->e, s->ptr);
+
+  return true;
+}
+
 bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
                                          upb_StringView* out) {
   upb_DescState s;
   _upb_DescState_Init(&s);
 
+  if (!_upb_DescState_Grow(&s, a)) return false;
+
   if (upb_MessageDef_IsMapEntry(m)) {
     if (!_upb_MessageDef_EncodeMap(&s, m, a)) return false;
+  } else if (google_protobuf_MessageOptions_message_set_wire_format(m->opts)) {
+    if (!_upb_MessageDef_EncodeMessageSet(&s, m, a)) return false;
   } else {
     if (!_upb_MessageDef_EncodeMessage(&s, m, a)) return false;
   }
@@ -595,6 +595,13 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   m->field_count = n_field;
   m->fields =
       _upb_FieldDefs_New(ctx, n_field, fields, m->full_name, m, &m->is_sorted);
+
+  // Message Sets may not contain fields.
+  if (UPB_UNLIKELY(google_protobuf_MessageOptions_message_set_wire_format(m->opts))) {
+    if (UPB_UNLIKELY(n_field > 0)) {
+      _upb_DefBuilder_Errf(ctx, "invalid message set (%s)", m->full_name);
+    }
+  }
 
   m->ext_range_count = n_ext_range;
   m->ext_ranges = _upb_ExtensionRanges_New(ctx, n_ext_range, ext_ranges, m);

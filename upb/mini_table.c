@@ -87,6 +87,7 @@ enum {
   kUpb_EncodedVersion_ExtensionV1 = '#',
   kUpb_EncodedVersion_MapV1 = '%',
   kUpb_EncodedVersion_MessageV1 = '$',
+  kUpb_EncodedVersion_MessageSetV1 = '&',
 };
 
 char upb_ToBase92(int8_t ch) {
@@ -229,6 +230,11 @@ char* upb_MtDataEncoder_EncodeMap(upb_MtDataEncoder* e, char* ptr,
   if (!ptr) return NULL;
 
   return upb_MtDataEncoder_PutField(e, ptr, value_type, 2, value_mod);
+}
+
+char* upb_MtDataEncoder_EncodeMessageSet(upb_MtDataEncoder* e, char* ptr) {
+  (void)upb_MtDataEncoder_GetInternal(e, ptr);
+  return upb_MtDataEncoder_PutRaw(e, ptr, kUpb_EncodedVersion_MessageSetV1);
 }
 
 char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* ptr,
@@ -1091,7 +1097,7 @@ static void upb_MiniTable_BuildMapEntry(upb_MtDecoder* d,
 static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
                                    size_t len) {
   if (len < 2) {
-    upb_MtDecoder_ErrorFormat(d, "Invalid map encoding length: %zu", len);
+    upb_MtDecoder_ErrorFormat(d, "Invalid map encode length: %zu", len);
     UPB_UNREACHABLE();
   }
   const upb_EncodedType e0 = upb_FromBase92(data[0]);
@@ -1123,6 +1129,22 @@ static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
   const upb_FieldType val_type = kUpb_EncodedToType[e1];
   const bool value_is_proto3_enum = (e1 == kUpb_EncodedType_OpenEnum);
   upb_MiniTable_BuildMapEntry(d, key_type, val_type, value_is_proto3_enum);
+}
+
+static void upb_MtDecoder_ParseMessageSet(upb_MtDecoder* d, const char* data,
+                                          size_t len) {
+  if (len > 0) {
+    upb_MtDecoder_ErrorFormat(d, "Invalid message set encode length: %zu", len);
+    UPB_UNREACHABLE();
+  }
+
+  upb_MiniTable* ret = d->table;
+  ret->size = 0;
+  ret->field_count = 0;
+  ret->ext = kUpb_ExtMode_IsMessageSet;
+  ret->dense_below = 0;
+  ret->table_mask = -1;
+  ret->required_count = 0;
 }
 
 upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
@@ -1173,6 +1195,10 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
       upb_MtDecoder_AssignOffsets(&decoder);
       break;
 
+    case kUpb_EncodedVersion_MessageSetV1:
+      upb_MtDecoder_ParseMessageSet(&decoder, data, len);
+      break;
+
     default:
       upb_MtDecoder_ErrorFormat(&decoder, "Invalid message version: %c", vers);
       UPB_UNREACHABLE();
@@ -1182,20 +1208,6 @@ done:
   *buf = decoder.vec.data;
   *buf_size = decoder.vec.capacity * sizeof(*decoder.vec.data);
   return decoder.table;
-}
-
-upb_MiniTable* upb_MiniTable_BuildMessageSet(upb_MiniTablePlatform platform,
-                                             upb_Arena* arena) {
-  upb_MiniTable* ret = upb_Arena_Malloc(arena, sizeof(*ret));
-  if (!ret) return NULL;
-
-  ret->size = 0;
-  ret->field_count = 0;
-  ret->ext = kUpb_ExtMode_IsMessageSet;
-  ret->dense_below = 0;
-  ret->table_mask = -1;
-  ret->required_count = 0;
-  return ret;
 }
 
 static size_t upb_MiniTable_EnumSize(size_t count) {

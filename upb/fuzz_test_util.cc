@@ -85,16 +85,9 @@ void Builder::BuildMessages() {
   mini_tables_.reserve(input_->mini_descriptors.size());
   for (const auto& d : input_->mini_descriptors) {
     upb_MiniTable* table;
-    if (d == "\n") {
-      // We special-case this input string, which is not a valid
-      // mini-descriptor, to mean message set.
-      table =
-          upb_MiniTable_BuildMessageSet(kUpb_MiniTablePlatform_Native, arena_);
-    } else {
-      table =
-          upb_MiniTable_Build(d.data(), d.size(), kUpb_MiniTablePlatform_Native,
-                              arena_, status.ptr());
-    }
+    table =
+        upb_MiniTable_Build(d.data(), d.size(), kUpb_MiniTablePlatform_Native,
+                            arena_, status.ptr());
     if (table) mini_tables_.push_back(table);
   }
 }

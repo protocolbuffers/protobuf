@@ -131,6 +131,9 @@ char* upb_MtDataEncoder_EncodeMap(upb_MtDataEncoder* e, char* ptr,
                                   upb_FieldType key_type,
                                   upb_FieldType value_type, uint64_t value_mod);
 
+// Encodes an entire mini descriptor for a message set.
+char* upb_MtDataEncoder_EncodeMessageSet(upb_MtDataEncoder* e, char* ptr);
+
 /** upb_MiniTable *************************************************************/
 
 typedef enum {
@@ -168,10 +171,6 @@ const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
                                          const upb_MiniTable* extendee,
                                          upb_MiniTable_Sub sub,
                                          upb_Status* status);
-
-// Special-case functions for MessageSet layout and map entries.
-upb_MiniTable* upb_MiniTable_BuildMessageSet(upb_MiniTablePlatform platform,
-                                             upb_Arena* arena);
 
 upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
                                             upb_Arena* arena,

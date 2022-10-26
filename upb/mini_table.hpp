@@ -97,6 +97,12 @@ class MtDataEncoder {
     });
   }
 
+  bool EncodeMessageSet() {
+    return appender_([=](char* buf) {
+      return upb_MtDataEncoder_EncodeMessageSet(&encoder_, buf);
+    });
+  }
+
   const std::string& data() const { return appender_.data(); }
 
  private:

@@ -285,7 +285,7 @@ void FilePlatformLayout::BuildExtensions(const protobuf::FileDescriptor* fd) {
 upb_MiniTable* FilePlatformLayout::MakeMiniTable(
     const protobuf::Descriptor* m) {
   if (m->options().message_set_wire_format()) {
-    return upb_MiniTable_BuildMessageSet(platform_, arena_.ptr());
+    return MakeMessageSetMiniTable(m);
   } else if (m->options().map_entry()) {
     return MakeMapMiniTable(m);
   } else {
@@ -305,6 +305,22 @@ upb_MiniTable* FilePlatformLayout::MakeMapMiniTable(
 
   upb::MtDataEncoder e;
   e.EncodeMap(key_type, val_type, val_mod);
+
+  const absl::string_view str = e.data();
+  upb::Status status;
+  upb_MiniTable* ret = upb_MiniTable_Build(str.data(), str.size(), platform_,
+                                           arena_.ptr(), status.ptr());
+  if (!ret) {
+    fprintf(stderr, "Error building mini-table: %s\n", status.error_message());
+  }
+  assert(ret);
+  return ret;
+}
+
+upb_MiniTable* FilePlatformLayout::MakeMessageSetMiniTable(
+    const protobuf::Descriptor* m) {
+  upb::MtDataEncoder e;
+  e.EncodeMessageSet();
 
   const absl::string_view str = e.data();
   upb::Status status;
