@@ -2,10 +2,12 @@
 #
 # See also code generation logic under /src/google/protobuf/compiler/php.
 
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "pkg_filegroup", "strip_prefix")
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@upb//cmake:build_defs.bzl", "staleness_test")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load("//conformance:defs.bzl", "conformance_test")
+load("//:protobuf_version.bzl", "PROTOBUF_PHP_VERSION")
 
 filegroup(
     name = "source_files",
@@ -137,3 +139,48 @@ pkg_files(
     strip_prefix = strip_prefix.from_pkg(""),
     visibility = ["//pkg:__pkg__"],
 )
+
+################################################################################
+# PECL .tgz Release
+################################################################################
+
+pkg_files(
+  name = "utf8_range_files",
+  srcs = [
+    "@utf8_range//:utf8_range_srcs",
+    "@utf8_range//:LICENSE",
+  ],
+  prefix = "third_party/utf8_range",
+)
+
+pkg_files(
+  name = "protobuf_files",
+  srcs = glob([
+    "ext/google/protobuf/*.h",
+    "ext/google/protobuf/*.c",
+  ]) + [
+    "//:LICENSE",
+    "ext/google/protobuf/config.m4",
+    "ext/google/protobuf/wkt.inc",
+  ],
+)
+
+pkg_filegroup(
+  name = "release_files",
+  srcs = [
+    ":protobuf_files",
+    ":utf8_range_files",
+  ],
+  prefix = "protobuf-%s" % PROTOBUF_PHP_VERSION,
+)
+
+pkg_tar(
+  name = "release",
+  extension = "tgz",
+  srcs = [
+    ":release_files",
+    "ext/google/protobuf/package.xml",
+  ],
+  package_file_name = "protobuf-%s.tgz" % PROTOBUF_PHP_VERSION,
+)
+
