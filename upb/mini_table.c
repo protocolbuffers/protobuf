@@ -1094,14 +1094,29 @@ static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
     upb_MtDecoder_ErrorFormat(d, "Invalid map encoding length: %zu", len);
     UPB_UNREACHABLE();
   }
-  const int e0 = upb_FromBase92(data[0]);
-  const int e1 = upb_FromBase92(data[1]);
-  if (e0 >= sizeof(kUpb_EncodedToType)) {
-    upb_MtDecoder_ErrorFormat(d, "Invalid field type: %d", e0);
-    UPB_UNREACHABLE();
+  const upb_EncodedType e0 = upb_FromBase92(data[0]);
+  const upb_EncodedType e1 = upb_FromBase92(data[1]);
+  switch (e0) {
+    case kUpb_EncodedType_Fixed32:
+    case kUpb_EncodedType_Fixed64:
+    case kUpb_EncodedType_SFixed32:
+    case kUpb_EncodedType_SFixed64:
+    case kUpb_EncodedType_Int32:
+    case kUpb_EncodedType_UInt32:
+    case kUpb_EncodedType_SInt32:
+    case kUpb_EncodedType_Int64:
+    case kUpb_EncodedType_UInt64:
+    case kUpb_EncodedType_SInt64:
+    case kUpb_EncodedType_Bool:
+    case kUpb_EncodedType_String:
+      break;
+
+    default:
+      upb_MtDecoder_ErrorFormat(d, "Invalid map key field type: %d", e0);
+      UPB_UNREACHABLE();
   }
   if (e1 >= sizeof(kUpb_EncodedToType)) {
-    upb_MtDecoder_ErrorFormat(d, "Invalid field type: %d", e1);
+    upb_MtDecoder_ErrorFormat(d, "Invalid map value field type: %d", e1);
     UPB_UNREACHABLE();
   }
   const upb_FieldType key_type = kUpb_EncodedToType[e0];

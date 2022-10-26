@@ -575,4 +575,19 @@ TEST(MessageTest, MapField) {
 //                                         0);
 // }
 //
+// TEST(FuzzTest, DecodeEncodeArbitrarySchemaAndPayloadRegression) {
+//   DecodeEncodeArbitrarySchemaAndPayload(
+//       {{"\320", "\320", "\320", "\320", "\320", "%2%%%%%"},
+//        {"", "", "", "", "", "", "", "", "", "", "", "",
+//         "", "", "", "", "", "", "", "", "", "", ""},
+//        "\226\226\226\226\226\226\350\351\350\350\350\350\350\350\350\314",
+//        {4026531839}},
+//       std::string("\n\n\n\n\272\n======@@%%%%%%%%%%%%%%%@@@(("
+//                   "qqqqqqqq5555555555qqqqqffq((((((((((((\335@@>"
+//                   "\ru\360ncppppxxxxxxxxx\025\025\025xxxxxppppppp<="
+//                   "\2165\275\275\315\217\361\010\t\000\016\013in\n\n\n\256\263",
+//                   130),
+//       901979906, 65537);
+// }
+//
 // end:google_only
