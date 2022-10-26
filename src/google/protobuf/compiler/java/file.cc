@@ -35,12 +35,13 @@
 #include "google/protobuf/compiler/java/file.h"
 
 #include <memory>
-#include <set>
+#include <vector>
 
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/dynamic_message.h"
+#include "absl/container/btree_set.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/enum.h"
@@ -76,8 +77,8 @@ struct FieldDescriptorCompare {
   }
 };
 
-typedef std::set<const FieldDescriptor*, FieldDescriptorCompare>
-    FieldDescriptorSet;
+using FieldDescriptorSet =
+    absl::btree_set<const FieldDescriptor*, FieldDescriptorCompare>;
 
 // Recursively searches the given message to collect extensions.
 // Returns true if all the extensions can be recognized. The extensions will be
@@ -456,16 +457,16 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
   FieldDescriptorSet extensions;
   CollectExtensions(file_proto, *file_->pool(), &extensions, file_data);
 
-  if (extensions.size() > 0) {
+  if (!extensions.empty()) {
     // Must construct an ExtensionRegistry containing all existing extensions
     // and use it to parse the descriptor data again to recognize extensions.
     printer->Print(
         "com.google.protobuf.ExtensionRegistry registry =\n"
         "    com.google.protobuf.ExtensionRegistry.newInstance();\n");
     FieldDescriptorSet::iterator it;
-    for (it = extensions.begin(); it != extensions.end(); it++) {
+    for (const FieldDescriptor* field : extensions) {
       std::unique_ptr<ExtensionGenerator> generator(
-          generator_factory_->NewExtensionGenerator(*it));
+          generator_factory_->NewExtensionGenerator(field));
       bytecode_estimate += generator->GenerateRegistrationCode(printer);
       MaybeRestartJavaMethod(
           printer, &bytecode_estimate, &method_num,
@@ -525,7 +526,7 @@ void FileGenerator::GenerateDescriptorInitializationCodeForMutable(
   FieldDescriptorSet extensions;
   CollectExtensions(file_proto, *file_->pool(), &extensions, file_data);
 
-  if (extensions.size() > 0) {
+  if (!extensions.empty()) {
     // Try to load immutable messages' outer class. Its initialization code
     // will take care of interpreting custom options.
     printer->Print(
@@ -546,9 +547,8 @@ void FileGenerator::GenerateDescriptorInitializationCodeForMutable(
         "com.google.protobuf.ExtensionRegistry registry =\n"
         "    com.google.protobuf.ExtensionRegistry.newInstance();\n"
         "com.google.protobuf.MessageLite defaultExtensionInstance = null;\n");
-    FieldDescriptorSet::iterator it;
-    for (it = extensions.begin(); it != extensions.end(); it++) {
-      const FieldDescriptor* field = *it;
+
+    for (const FieldDescriptor* field : extensions) {
       std::string scope;
       if (field->extension_scope() != NULL) {
         scope = name_resolver_->GetMutableClassName(field->extension_scope()) +

@@ -598,7 +598,7 @@ bool Parser::ValidateEnum(const EnumDescriptorProto* proto) {
     return false;
   }
 
-  std::set<int> used_values;
+  absl::flat_hash_set<int> used_values;
   bool has_duplicates = false;
   for (int i = 0; i < proto->value_size(); ++i) {
     const EnumValueDescriptorProto& enum_value = proto->value(i);

@@ -84,7 +84,8 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor)
     : descriptor_(descriptor) {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (IsRealOneof(descriptor_->field(i))) {
-      oneofs_.insert(descriptor_->field(i)->containing_oneof());
+      const OneofDescriptor* oneof = descriptor_->field(i)->containing_oneof();
+      GOOGLE_CHECK(oneofs_.emplace(oneof->index(), oneof).first->second == oneof);
     }
   }
 }
@@ -294,13 +295,14 @@ void ImmutableMessageGenerator::GenerateInterface(io::Printer* printer) {
     field_generators_.get(descriptor_->field(i))
         .GenerateInterfaceMembers(printer);
   }
-  for (auto oneof : oneofs_) {
+  for (auto& kv : oneofs_) {
     printer->Print(
         "\n"
         "$classname$.$oneof_capitalized_name$Case "
         "get$oneof_capitalized_name$Case();\n",
         "oneof_capitalized_name",
-        context_->GetOneofGeneratorInfo(oneof)->capitalized_name, "classname",
+        context_->GetOneofGeneratorInfo(kv.second)->capitalized_name,
+        "classname",
         context_->GetNameResolver()->GetImmutableClassName(descriptor_));
   }
   printer->Outdent();
@@ -426,7 +428,8 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
 
   // oneof
   absl::flat_hash_map<absl::string_view, std::string> vars;
-  for (auto oneof : oneofs_) {
+  for (auto& kv : oneofs_) {
+    const OneofDescriptor* oneof = kv.second;
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
     vars["oneof_capitalized_name"] =
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
@@ -1033,7 +1036,8 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
   }
 
   // Compare oneofs.
-  for (auto oneof : oneofs_) {
+  for (auto& kv : oneofs_) {
+    const OneofDescriptor* oneof = kv.second;
     printer->Print(
         "if (!get$oneof_capitalized_name$Case().equals("
         "other.get$oneof_capitalized_name$Case())) return false;\n",
@@ -1113,7 +1117,8 @@ void ImmutableMessageGenerator::GenerateEqualsAndHashCode(
   }
 
   // hashCode oneofs.
-  for (auto oneof : oneofs_) {
+  for (auto& kv : oneofs_) {
+    const OneofDescriptor* oneof = kv.second;
     printer->Print("switch ($oneof_name$Case_) {\n", "oneof_name",
                    context_->GetOneofGeneratorInfo(oneof)->name);
     printer->Indent();
@@ -1279,7 +1284,8 @@ void ImmutableMessageGenerator::GenerateKotlinDsl(io::Printer* printer) const {
         .GenerateKotlinDslMembers(printer);
   }
 
-  for (auto oneof : oneofs_) {
+  for (auto& kv : oneofs_) {
+    const OneofDescriptor* oneof = kv.second;
     printer->Print(
         "public val $oneof_name$Case: $message$.$oneof_capitalized_name$Case\n"
         "  @JvmName(\"get$oneof_capitalized_name$Case\")\n"

@@ -31,9 +31,9 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ENUM_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ENUM_FIELD_H__
 
-#include <set>
 #include <string>
 
+#include "absl/container/btree_set.h"
 #include "google/protobuf/compiler/objectivec/field.h"
 
 namespace google {
@@ -50,7 +50,7 @@ class EnumFieldGenerator : public SingleFieldGenerator {
  public:
   void GenerateCFunctionDeclarations(io::Printer* printer) const override;
   void GenerateCFunctionImplementations(io::Printer* printer) const override;
-  void DetermineForwardDeclarations(std::set<std::string>* fwd_decls,
+  void DetermineForwardDeclarations(absl::btree_set<std::string>* fwd_decls,
                                     bool include_external_types) const override;
 
  protected:

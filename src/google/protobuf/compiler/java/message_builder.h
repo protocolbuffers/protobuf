@@ -37,6 +37,7 @@
 
 #include <string>
 
+#include "absl/container/btree_map.h"
 #include "google/protobuf/compiler/java/field.h"
 
 namespace google {
@@ -83,7 +84,7 @@ class MessageBuilderGenerator {
   Context* context_;
   ClassNameResolver* name_resolver_;
   FieldGeneratorMap<ImmutableFieldGenerator> field_generators_;
-  std::set<const OneofDescriptor*> oneofs_;
+  absl::btree_map<int, const OneofDescriptor*> oneofs_;
 };
 
 }  // namespace java
