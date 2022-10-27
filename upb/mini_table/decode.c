@@ -25,401 +25,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/mini_table.h"
+#include "upb/mini_table/decode.h"
 
 #include <inttypes.h>
 
 #include "upb/arena.h"
-#include "upb/msg_internal.h"
+#include "upb/mini_table/common.h"
+#include "upb/mini_table/common_internal.h"
 #include "upb/upb.h"
 
 // Must be last.
 #include "upb/port_def.inc"
-
-typedef enum {
-  kUpb_EncodedType_Double = 0,
-  kUpb_EncodedType_Float = 1,
-  kUpb_EncodedType_Fixed32 = 2,
-  kUpb_EncodedType_Fixed64 = 3,
-  kUpb_EncodedType_SFixed32 = 4,
-  kUpb_EncodedType_SFixed64 = 5,
-  kUpb_EncodedType_Int32 = 6,
-  kUpb_EncodedType_UInt32 = 7,
-  kUpb_EncodedType_SInt32 = 8,
-  kUpb_EncodedType_Int64 = 9,
-  kUpb_EncodedType_UInt64 = 10,
-  kUpb_EncodedType_SInt64 = 11,
-  kUpb_EncodedType_OpenEnum = 12,
-  kUpb_EncodedType_Bool = 13,
-  kUpb_EncodedType_Bytes = 14,
-  kUpb_EncodedType_String = 15,
-  kUpb_EncodedType_Group = 16,
-  kUpb_EncodedType_Message = 17,
-  kUpb_EncodedType_ClosedEnum = 18,
-
-  kUpb_EncodedType_RepeatedBase = 20,
-} upb_EncodedType;
-
-typedef enum {
-  kUpb_EncodedFieldModifier_FlipPacked = 1 << 0,
-  // upb only.
-  kUpb_EncodedFieldModifier_IsProto3Singular = 1 << 2,
-  kUpb_EncodedFieldModifier_IsRequired = 1 << 3,
-} upb_EncodedFieldModifier;
-
-enum {
-  kUpb_EncodedValue_MinField = ' ',
-  kUpb_EncodedValue_MaxField = 'I',
-  kUpb_EncodedValue_MinModifier = 'L',
-  kUpb_EncodedValue_MaxModifier = '[',
-  kUpb_EncodedValue_End = '^',
-  kUpb_EncodedValue_MinSkip = '_',
-  kUpb_EncodedValue_MaxSkip = '~',
-  kUpb_EncodedValue_OneofSeparator = '~',
-  kUpb_EncodedValue_FieldSeparator = '|',
-  kUpb_EncodedValue_MinOneofField = ' ',
-  kUpb_EncodedValue_MaxOneofField = 'b',
-  kUpb_EncodedValue_MaxEnumMask = 'A',
-};
-
-enum {
-  kUpb_EncodedVersion_EnumV1 = '!',
-  kUpb_EncodedVersion_ExtensionV1 = '#',
-  kUpb_EncodedVersion_MapV1 = '%',
-  kUpb_EncodedVersion_MessageV1 = '$',
-  kUpb_EncodedVersion_MessageSetV1 = '&',
-};
-
-char upb_ToBase92(int8_t ch) {
-  static const char kUpb_ToBase92[] = {
-      ' ', '!', '#', '$', '%', '&', '(', ')', '*', '+', ',', '-', '.', '/',
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=',
-      '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K',
-      'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y',
-      'Z', '[', ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-      'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-      'w', 'x', 'y', 'z', '{', '|', '}', '~',
-  };
-
-  UPB_ASSERT(0 <= ch && ch < 92);
-  return kUpb_ToBase92[ch];
-}
-
-char upb_FromBase92(uint8_t ch) {
-  static const int8_t kUpb_FromBase92[] = {
-      0,  1,  -1, 2,  3,  4,  5,  -1, 6,  7,  8,  9,  10, 11, 12, 13,
-      14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
-      30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45,
-      46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, -1, 58, 59, 60,
-      61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76,
-      77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91,
-  };
-
-  if (' ' > ch || ch > '~') return -1;
-  return kUpb_FromBase92[ch - ' '];
-}
-
-bool upb_IsTypePackable(upb_FieldType type) {
-  // clang-format off
-  static const unsigned kUnpackableTypes =
-      (1 << kUpb_FieldType_String) |
-      (1 << kUpb_FieldType_Bytes) |
-      (1 << kUpb_FieldType_Message) |
-      (1 << kUpb_FieldType_Group);
-  // clang-format on
-  return (1 << type) & ~kUnpackableTypes;
-}
-
-/** upb_MtDataEncoder *********************************************************/
-
-typedef struct {
-  uint64_t present_values_mask;
-  uint32_t last_written_value;
-} upb_MtDataEncoderInternal_EnumState;
-
-typedef struct {
-  uint64_t msg_modifiers;
-  uint32_t last_field_num;
-  enum {
-    kUpb_OneofState_NotStarted,
-    kUpb_OneofState_StartedOneof,
-    kUpb_OneofState_EmittedOneofField,
-  } oneof_state;
-} upb_MtDataEncoderInternal_MsgState;
-
-typedef struct {
-  char* buf_start;  // Only for checking kUpb_MtDataEncoder_MinSize.
-  union {
-    upb_MtDataEncoderInternal_EnumState enum_state;
-    upb_MtDataEncoderInternal_MsgState msg_state;
-  } state;
-} upb_MtDataEncoderInternal;
-
-static upb_MtDataEncoderInternal* upb_MtDataEncoder_GetInternal(
-    upb_MtDataEncoder* e, char* buf_start) {
-  UPB_ASSERT(sizeof(upb_MtDataEncoderInternal) <= sizeof(e->internal));
-  upb_MtDataEncoderInternal* ret = (upb_MtDataEncoderInternal*)e->internal;
-  ret->buf_start = buf_start;
-  return ret;
-}
-
-static char* upb_MtDataEncoder_PutRaw(upb_MtDataEncoder* e, char* ptr,
-                                      char ch) {
-  upb_MtDataEncoderInternal* in = (upb_MtDataEncoderInternal*)e->internal;
-  UPB_ASSERT(ptr - in->buf_start < kUpb_MtDataEncoder_MinSize);
-  if (ptr == e->end) return NULL;
-  *ptr++ = ch;
-  return ptr;
-}
-
-static char* upb_MtDataEncoder_Put(upb_MtDataEncoder* e, char* ptr, char ch) {
-  return upb_MtDataEncoder_PutRaw(e, ptr, upb_ToBase92(ch));
-}
-
-static char* upb_MtDataEncoder_PutBase92Varint(upb_MtDataEncoder* e, char* ptr,
-                                               uint32_t val, int min, int max) {
-  int shift = _upb_Log2Ceiling(upb_FromBase92(max) - upb_FromBase92(min) + 1);
-  UPB_ASSERT(shift <= 6);
-  uint32_t mask = (1 << shift) - 1;
-  do {
-    uint32_t bits = val & mask;
-    ptr = upb_MtDataEncoder_Put(e, ptr, bits + upb_FromBase92(min));
-    if (!ptr) return NULL;
-    val >>= shift;
-  } while (val);
-  return ptr;
-}
-
-char* upb_MtDataEncoder_PutModifier(upb_MtDataEncoder* e, char* ptr,
-                                    uint64_t mod) {
-  if (mod) {
-    ptr = upb_MtDataEncoder_PutBase92Varint(e, ptr, mod,
-                                            kUpb_EncodedValue_MinModifier,
-                                            kUpb_EncodedValue_MaxModifier);
-  }
-  return ptr;
-}
-
-char* upb_MtDataEncoder_EncodeExtension(upb_MtDataEncoder* e, char* ptr,
-                                        upb_FieldType type, uint32_t field_num,
-                                        uint64_t field_mod) {
-  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
-  in->state.msg_state.msg_modifiers = 0;
-  in->state.msg_state.last_field_num = 0;
-  in->state.msg_state.oneof_state = kUpb_OneofState_NotStarted;
-
-  ptr = upb_MtDataEncoder_PutRaw(e, ptr, kUpb_EncodedVersion_ExtensionV1);
-  if (!ptr) return NULL;
-
-  return upb_MtDataEncoder_PutField(e, ptr, type, field_num, field_mod);
-}
-
-char* upb_MtDataEncoder_EncodeMap(upb_MtDataEncoder* e, char* ptr,
-                                  upb_FieldType key_type,
-                                  upb_FieldType value_type,
-                                  uint64_t value_mod) {
-  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
-  in->state.msg_state.msg_modifiers = 0;
-  in->state.msg_state.last_field_num = 0;
-  in->state.msg_state.oneof_state = kUpb_OneofState_NotStarted;
-
-  ptr = upb_MtDataEncoder_PutRaw(e, ptr, kUpb_EncodedVersion_MapV1);
-  if (!ptr) return NULL;
-
-  ptr = upb_MtDataEncoder_PutField(e, ptr, key_type, 1, 0);
-  if (!ptr) return NULL;
-
-  return upb_MtDataEncoder_PutField(e, ptr, value_type, 2, value_mod);
-}
-
-char* upb_MtDataEncoder_EncodeMessageSet(upb_MtDataEncoder* e, char* ptr) {
-  (void)upb_MtDataEncoder_GetInternal(e, ptr);
-  return upb_MtDataEncoder_PutRaw(e, ptr, kUpb_EncodedVersion_MessageSetV1);
-}
-
-char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* ptr,
-                                     uint64_t msg_mod) {
-  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
-  in->state.msg_state.msg_modifiers = msg_mod;
-  in->state.msg_state.last_field_num = 0;
-  in->state.msg_state.oneof_state = kUpb_OneofState_NotStarted;
-
-  ptr = upb_MtDataEncoder_PutRaw(e, ptr, kUpb_EncodedVersion_MessageV1);
-  if (!ptr) return NULL;
-
-  return upb_MtDataEncoder_PutModifier(e, ptr, msg_mod);
-}
-
-char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
-                                 upb_FieldType type, uint32_t field_num,
-                                 uint64_t field_mod) {
-  static const char kUpb_TypeToEncoded[] = {
-      [kUpb_FieldType_Double] = kUpb_EncodedType_Double,
-      [kUpb_FieldType_Float] = kUpb_EncodedType_Float,
-      [kUpb_FieldType_Int64] = kUpb_EncodedType_Int64,
-      [kUpb_FieldType_UInt64] = kUpb_EncodedType_UInt64,
-      [kUpb_FieldType_Int32] = kUpb_EncodedType_Int32,
-      [kUpb_FieldType_Fixed64] = kUpb_EncodedType_Fixed64,
-      [kUpb_FieldType_Fixed32] = kUpb_EncodedType_Fixed32,
-      [kUpb_FieldType_Bool] = kUpb_EncodedType_Bool,
-      [kUpb_FieldType_String] = kUpb_EncodedType_String,
-      [kUpb_FieldType_Group] = kUpb_EncodedType_Group,
-      [kUpb_FieldType_Message] = kUpb_EncodedType_Message,
-      [kUpb_FieldType_Bytes] = kUpb_EncodedType_Bytes,
-      [kUpb_FieldType_UInt32] = kUpb_EncodedType_UInt32,
-      [kUpb_FieldType_Enum] = kUpb_EncodedType_OpenEnum,
-      [kUpb_FieldType_SFixed32] = kUpb_EncodedType_SFixed32,
-      [kUpb_FieldType_SFixed64] = kUpb_EncodedType_SFixed64,
-      [kUpb_FieldType_SInt32] = kUpb_EncodedType_SInt32,
-      [kUpb_FieldType_SInt64] = kUpb_EncodedType_SInt64,
-  };
-
-  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
-  if (field_num <= in->state.msg_state.last_field_num) return NULL;
-  if (in->state.msg_state.last_field_num + 1 != field_num) {
-    // Put skip.
-    UPB_ASSERT(field_num > in->state.msg_state.last_field_num);
-    uint32_t skip = field_num - in->state.msg_state.last_field_num;
-    ptr = upb_MtDataEncoder_PutBase92Varint(
-        e, ptr, skip, kUpb_EncodedValue_MinSkip, kUpb_EncodedValue_MaxSkip);
-    if (!ptr) return NULL;
-  }
-  in->state.msg_state.last_field_num = field_num;
-
-  uint32_t encoded_modifiers = 0;
-
-  // Put field type.
-  int encoded_type = kUpb_TypeToEncoded[type];
-  if (field_mod & kUpb_FieldModifier_IsClosedEnum) {
-    UPB_ASSERT(type == kUpb_FieldType_Enum);
-    encoded_type = kUpb_EncodedType_ClosedEnum;
-  }
-  if (field_mod & kUpb_FieldModifier_IsRepeated) {
-    // Repeated fields shift the type number up (unlike other modifiers which
-    // are bit flags).
-    encoded_type += kUpb_EncodedType_RepeatedBase;
-
-    if (upb_IsTypePackable(type)) {
-      bool field_is_packed = field_mod & kUpb_FieldModifier_IsPacked;
-      bool default_is_packed = in->state.msg_state.msg_modifiers &
-                               kUpb_MessageModifier_DefaultIsPacked;
-      if (field_is_packed != default_is_packed) {
-        encoded_modifiers |= kUpb_EncodedFieldModifier_FlipPacked;
-      }
-    }
-  }
-  ptr = upb_MtDataEncoder_Put(e, ptr, encoded_type);
-  if (!ptr) return NULL;
-
-  if (field_mod & kUpb_FieldModifier_IsProto3Singular) {
-    encoded_modifiers |= kUpb_EncodedFieldModifier_IsProto3Singular;
-  }
-  if (field_mod & kUpb_FieldModifier_IsRequired) {
-    encoded_modifiers |= kUpb_EncodedFieldModifier_IsRequired;
-  }
-  return upb_MtDataEncoder_PutModifier(e, ptr, encoded_modifiers);
-}
-
-char* upb_MtDataEncoder_StartOneof(upb_MtDataEncoder* e, char* ptr) {
-  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
-  if (in->state.msg_state.oneof_state == kUpb_OneofState_NotStarted) {
-    ptr = upb_MtDataEncoder_Put(e, ptr, upb_FromBase92(kUpb_EncodedValue_End));
-  } else {
-    ptr = upb_MtDataEncoder_Put(
-        e, ptr, upb_FromBase92(kUpb_EncodedValue_OneofSeparator));
-  }
-  in->state.msg_state.oneof_state = kUpb_OneofState_StartedOneof;
-  return ptr;
-}
-
-char* upb_MtDataEncoder_PutOneofField(upb_MtDataEncoder* e, char* ptr,
-                                      uint32_t field_num) {
-  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
-  if (in->state.msg_state.oneof_state == kUpb_OneofState_EmittedOneofField) {
-    ptr = upb_MtDataEncoder_Put(
-        e, ptr, upb_FromBase92(kUpb_EncodedValue_FieldSeparator));
-    if (!ptr) return NULL;
-  }
-  ptr = upb_MtDataEncoder_PutBase92Varint(e, ptr, field_num, upb_ToBase92(0),
-                                          upb_ToBase92(63));
-  in->state.msg_state.oneof_state = kUpb_OneofState_EmittedOneofField;
-  return ptr;
-}
-
-char* upb_MtDataEncoder_StartEnum(upb_MtDataEncoder* e, char* ptr) {
-  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
-  in->state.enum_state.present_values_mask = 0;
-  in->state.enum_state.last_written_value = 0;
-
-  return upb_MtDataEncoder_PutRaw(e, ptr, kUpb_EncodedVersion_EnumV1);
-}
-
-static char* upb_MtDataEncoder_FlushDenseEnumMask(upb_MtDataEncoder* e,
-                                                  char* ptr) {
-  upb_MtDataEncoderInternal* in = (upb_MtDataEncoderInternal*)e->internal;
-  ptr = upb_MtDataEncoder_Put(e, ptr, in->state.enum_state.present_values_mask);
-  in->state.enum_state.present_values_mask = 0;
-  in->state.enum_state.last_written_value += 5;
-  return ptr;
-}
-
-char* upb_MtDataEncoder_PutEnumValue(upb_MtDataEncoder* e, char* ptr,
-                                     uint32_t val) {
-  // TODO(b/229641772): optimize this encoding.
-  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
-  UPB_ASSERT(val >= in->state.enum_state.last_written_value);
-  uint32_t delta = val - in->state.enum_state.last_written_value;
-  if (delta >= 5 && in->state.enum_state.present_values_mask) {
-    ptr = upb_MtDataEncoder_FlushDenseEnumMask(e, ptr);
-    if (!ptr) {
-      return NULL;
-    }
-    delta -= 5;
-  }
-
-  if (delta >= 5) {
-    ptr = upb_MtDataEncoder_PutBase92Varint(
-        e, ptr, delta, kUpb_EncodedValue_MinSkip, kUpb_EncodedValue_MaxSkip);
-    in->state.enum_state.last_written_value += delta;
-    delta = 0;
-  }
-
-  UPB_ASSERT((in->state.enum_state.present_values_mask >> delta) == 0);
-  in->state.enum_state.present_values_mask |= 1ULL << delta;
-  return ptr;
-}
-
-char* upb_MtDataEncoder_EndEnum(upb_MtDataEncoder* e, char* ptr) {
-  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
-  if (!in->state.enum_state.present_values_mask) return ptr;
-  return upb_MtDataEncoder_FlushDenseEnumMask(e, ptr);
-}
-
-const upb_MiniTable_Field* upb_MiniTable_FindFieldByNumber(
-    const upb_MiniTable* table, uint32_t number) {
-  int n = table->field_count;
-  for (int i = 0; i < n; i++) {
-    if (table->fields[i].number == number) {
-      return &table->fields[i];
-    }
-  }
-  return NULL;
-}
-
-upb_FieldType upb_MiniTableField_Type(const upb_MiniTable_Field* field) {
-  if (field->mode & kUpb_LabelFlags_IsAlternate) {
-    if (field->descriptortype == kUpb_FieldType_Int32) {
-      return kUpb_FieldType_Enum;
-    } else if (field->descriptortype == kUpb_FieldType_Bytes) {
-      return kUpb_FieldType_String;
-    } else {
-      UPB_ASSERT(false);
-    }
-  }
-  return field->descriptortype;
-}
-
-/** Data decoder **************************************************************/
 
 // Note: we sort by this number when calculating layout order.
 typedef enum {
@@ -499,10 +115,10 @@ static const char* upb_MiniTable_DecodeBase92Varint(upb_MtDecoder* d,
   uint32_t val = 0;
   uint32_t shift = 0;
   const int bits_per_char =
-      _upb_Log2Ceiling(upb_FromBase92(max) - upb_FromBase92(min));
+      _upb_Log2Ceiling(_upb_FromBase92(max) - _upb_FromBase92(min));
   char ch = first_ch;
   while (1) {
-    uint32_t bits = upb_FromBase92(ch) - upb_FromBase92(min);
+    uint32_t bits = _upb_FromBase92(ch) - _upb_FromBase92(min);
     val |= bits << shift;
     if (ptr == d->end || *ptr < min || max < *ptr) {
       *out_val = val;
@@ -534,7 +150,7 @@ static bool upb_MiniTable_HasSub(upb_MiniTable_Field* field,
 
 static bool upb_MtDecoder_FieldIsPackable(upb_MiniTable_Field* field) {
   return (field->mode & kUpb_FieldMode_Array) &&
-         upb_IsTypePackable(field->descriptortype);
+         _upb_FieldType_IsPackable(field->descriptortype);
 }
 
 static void upb_MiniTable_SetTypeAndSub(upb_MiniTable_Field* field,
@@ -611,8 +227,8 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
                          ? kUpb_FieldRep_4Byte
                          : kUpb_FieldRep_8Byte;
 
-  int8_t type = upb_FromBase92(ch);
-  if (ch >= upb_ToBase92(kUpb_EncodedType_RepeatedBase)) {
+  int8_t type = _upb_FromBase92(ch);
+  if (ch >= _upb_ToBase92(kUpb_EncodedType_RepeatedBase)) {
     type -= kUpb_EncodedType_RepeatedBase;
     field->mode = kUpb_FieldMode_Array;
     field->mode |= pointer_rep << kUpb_FieldRep_Shift;
@@ -1100,8 +716,8 @@ static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
     upb_MtDecoder_ErrorFormat(d, "Invalid map encode length: %zu", len);
     UPB_UNREACHABLE();
   }
-  const upb_EncodedType e0 = upb_FromBase92(data[0]);
-  const upb_EncodedType e1 = upb_FromBase92(data[1]);
+  const upb_EncodedType e0 = _upb_FromBase92(data[0]);
+  const upb_EncodedType e1 = _upb_FromBase92(data[1]);
   switch (e0) {
     case kUpb_EncodedType_Fixed32:
     case kUpb_EncodedType_Fixed64:
@@ -1286,7 +902,7 @@ upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
   while (ptr < decoder.end) {
     char ch = *ptr++;
     if (ch <= kUpb_EncodedValue_MaxEnumMask) {
-      uint32_t mask = upb_FromBase92(ch);
+      uint32_t mask = _upb_FromBase92(ch);
       for (int i = 0; i < 5; i++, base++, mask >>= 1) {
         if (mask & 1) upb_MiniTable_BuildEnumValue(&decoder, base);
       }

@@ -29,7 +29,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "upb/mini_table.h"
 #include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/field_def_internal.h"

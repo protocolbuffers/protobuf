@@ -25,18 +25,17 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/mini_table_accessors.h"
+#include "upb/mini_table/accessors.h"
 
 #include "upb/decode.h"
 #include "upb/encode.h"
 #include "upb/internal/array.h"
-#include "upb/mini_table.h"
 
 // Must be last.
 #include "upb/msg.h"
 #include "upb/port_def.inc"
 
-size_t upb_MiniTable_Field_GetSize(const upb_MiniTable_Field* f) {
+static size_t _upb_MiniTable_Field_GetSize(const upb_MiniTable_Field* f) {
   static unsigned char sizes[] = {
       0,                      /* 0 */
       8,                      /* kUpb_FieldType_Double */
@@ -62,7 +61,7 @@ size_t upb_MiniTable_Field_GetSize(const upb_MiniTable_Field* f) {
 }
 
 // Maps descriptor type to elem_size_lg2.
-int upb_MiniTable_Field_CTypeLg2Size(const upb_MiniTable_Field* f) {
+static int _upb_MiniTable_Field_CTypeLg2Size(const upb_MiniTable_Field* f) {
   static const uint8_t sizes[] = {
       -1,             /* invalid descriptor type */
       3,              /* DOUBLE */
@@ -110,14 +109,14 @@ void upb_MiniTable_ClearField(upb_Message* msg,
     if (*oneof_case != field->number) return;
     *oneof_case = 0;
   }
-  memset(mem, 0, upb_MiniTable_Field_GetSize(field));
+  memset(mem, 0, _upb_MiniTable_Field_GetSize(field));
 }
 
 void* upb_MiniTable_ResizeArray(upb_Message* msg,
                                 const upb_MiniTable_Field* field, size_t len,
                                 upb_Arena* arena) {
   return _upb_Array_Resize_accessor2(
-      msg, field->offset, len, upb_MiniTable_Field_CTypeLg2Size(field), arena);
+      msg, field->offset, len, _upb_MiniTable_Field_CTypeLg2Size(field), arena);
 }
 
 typedef struct {

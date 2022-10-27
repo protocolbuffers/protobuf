@@ -25,29 +25,45 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_INTERNAL_MINI_TABLE_ACCESSORS_H_
-#define UPB_INTERNAL_MINI_TABLE_ACCESSORS_H_
+#ifndef UPB_MINI_TABLE_COMMON_H_
+#define UPB_MINI_TABLE_COMMON_H_
 
 #include "upb/msg_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"
 
+typedef enum {
+  kUpb_FieldModifier_IsRepeated = 1 << 0,
+  kUpb_FieldModifier_IsPacked = 1 << 1,
+  kUpb_FieldModifier_IsClosedEnum = 1 << 2,
+  kUpb_FieldModifier_IsProto3Singular = 1 << 3,
+  kUpb_FieldModifier_IsRequired = 1 << 4,
+} kUpb_FieldModifier;
+
+typedef enum {
+  kUpb_MessageModifier_ValidateUtf8 = 1 << 0,
+  kUpb_MessageModifier_DefaultIsPacked = 1 << 1,
+  kUpb_MessageModifier_IsExtendable = 1 << 2,
+} kUpb_MessageModifier;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-UPB_INLINE bool _upb_MiniTable_Field_InOneOf(const upb_MiniTable_Field* field) {
-  return field->presence < 0;
+const upb_MiniTable_Field* upb_MiniTable_FindFieldByNumber(
+    const upb_MiniTable* table, uint32_t number);
+
+upb_FieldType upb_MiniTableField_Type(const upb_MiniTable_Field* field);
+
+UPB_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
+    const upb_MiniTable* mini_table, const upb_MiniTable_Field* field) {
+  return mini_table->subs[field->submsg_index].submsg;
 }
 
-UPB_INLINE void _upb_MiniTable_SetPresence(upb_Message* msg,
-                                           const upb_MiniTable_Field* field) {
-  if (field->presence > 0) {
-    _upb_sethas_field(msg, field);
-  } else if (_upb_MiniTable_Field_InOneOf(field)) {
-    *_upb_oneofcase_field(msg, field) = field->number;
-  }
+UPB_INLINE const upb_MiniTable_Enum* upb_MiniTable_GetSubEnumTable(
+    const upb_MiniTable* mini_table, const upb_MiniTable_Field* field) {
+  return mini_table->subs[field->submsg_index].subenum;
 }
 
 #ifdef __cplusplus
@@ -56,4 +72,4 @@ UPB_INLINE void _upb_MiniTable_SetPresence(upb_Message* msg,
 
 #include "upb/port_undef.inc"
 
-#endif  // UPB_INTERNAL_MINI_TABLE_ACCESSORS_H_
+#endif /* UPB_MINI_TABLE_COMMON_H_ */

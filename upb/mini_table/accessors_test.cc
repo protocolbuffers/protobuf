@@ -31,15 +31,15 @@
  * accessed through reflective APIs exposed through mini table accessors.
  */
 
-#include "upb/mini_table_accessors.h"
+#include "upb/mini_table/accessors.h"
 
 #include "gtest/gtest.h"
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/array.h"
 #include "upb/decode.h"
-#include "upb/mini_table.h"
-#include "upb/msg_internal.h"
+#include "upb/mini_table/decode.h"
+#include "upb/mini_table/encode.h"
 #include "upb/test.upb.h"
 #include "upb/upb.h"
 
@@ -522,7 +522,7 @@ TEST(GeneratedCode, PromoteUnknownMessage) {
                                                              &serialized_size);
 
   upb_MiniTable* mini_table = CreateMiniTableWithEmptySubTables(arena);
-  upb_Message* msg = upb_Message_New(mini_table, arena);
+  upb_Message* msg = _upb_Message_New(mini_table, arena);
   upb_DecodeStatus decode_status = upb_Decode(serialized, serialized_size, msg,
                                               mini_table, nullptr, 0, arena);
   EXPECT_EQ(decode_status, kUpb_DecodeStatus_Ok);

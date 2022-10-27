@@ -25,15 +25,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/mini_table.hpp"
-
 #include "google/protobuf/descriptor.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/container/flat_hash_set.h"
 #include "upb/decode.h"
-#include "upb/mini_table.h"
-#include "upb/msg_internal.h"
+#include "upb/mini_table.hpp"
+#include "upb/mini_table/common_internal.h"
+#include "upb/mini_table/decode.h"
 #include "upb/upb.h"
 #include "upb/upb.hpp"
 
@@ -202,13 +201,13 @@ INSTANTIATE_TEST_SUITE_P(Platforms, MiniTableTest,
 
 TEST(MiniTablePlatformIndependentTest, Base92Roundtrip) {
   for (char i = 0; i < 92; i++) {
-    EXPECT_EQ(i, upb_FromBase92(upb_ToBase92(i)));
+    EXPECT_EQ(i, _upb_FromBase92(_upb_ToBase92(i)));
   }
 }
 
 TEST(MiniTablePlatformIndependentTest, IsTypePackable) {
   for (int i = 1; i <= protobuf::FieldDescriptor::MAX_TYPE; i++) {
-    EXPECT_EQ(upb_IsTypePackable(static_cast<upb_FieldType>(i)),
+    EXPECT_EQ(_upb_FieldType_IsPackable(static_cast<upb_FieldType>(i)),
               protobuf::FieldDescriptor::IsTypePackable(
                   static_cast<protobuf::FieldDescriptor::Type>(i)));
   }

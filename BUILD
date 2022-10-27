@@ -174,8 +174,12 @@ cc_library(
 
 cc_library(
     name = "mini_table_internal",
-    hdrs = [
+    srcs = [
+        "upb/mini_table/common.h",
         "upb/msg_internal.h",
+    ],
+    hdrs = [
+        "upb/mini_table/common_internal.h",
     ],
     visibility = ["//:__subpackages__"],
     deps = [
@@ -189,11 +193,18 @@ cc_library(
 cc_library(
     name = "mini_table",
     srcs = [
-        "upb/mini_table.c",
+        "upb/mini_table/common.c",
+        "upb/mini_table/common.h",
+        "upb/mini_table/common_internal.h",
+        "upb/mini_table/decode.c",
+        "upb/mini_table/encode.c",
+        "upb/msg_internal.h",
     ],
     hdrs = [
         "upb/mini_table.h",
         "upb/mini_table.hpp",
+        "upb/mini_table/decode.h",
+        "upb/mini_table/encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -201,6 +212,7 @@ cc_library(
         ":extension_registry",
         ":mini_table_internal",
         ":port",
+        ":table_internal",
         ":upb",
     ],
 )
@@ -208,11 +220,12 @@ cc_library(
 cc_library(
     name = "mini_table_accessors",
     srcs = [
-        "upb/internal/mini_table_accessors.h",
-        "upb/mini_table_accessors.c",
+        "upb/mini_table/accessors.c",
+        "upb/mini_table/common.h",
+        "upb/msg_internal.h",
     ],
     hdrs = [
-        "upb/mini_table_accessors.h",
+        "upb/mini_table/accessors.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -222,15 +235,16 @@ cc_library(
         ":mini_table",
         ":mini_table_internal",
         ":port",
+        ":table_internal",
         ":upb",
     ],
 )
 
 cc_test(
-    name = "mini_table_test",
+    name = "mini_table_encode_test",
     srcs = [
         "upb/internal/table.h",
-        "upb/mini_table_test.cc",
+        "upb/mini_table/encode_test.cc",
     ],
     deps = [
         ":extension_registry",
@@ -246,7 +260,7 @@ cc_test(
 
 cc_test(
     name = "mini_table_accessors_test",
-    srcs = ["upb/mini_table_accessors_test.cc"],
+    srcs = ["upb/mini_table/accessors_test.cc"],
     deps = [
         ":collections",
         ":mini_table",
@@ -920,6 +934,7 @@ cc_library(
     hdrs = ["upb/fuzz_test_util.h"],
     deps = [
         ":mini_table",
+        ":mini_table_internal",
         ":upb",
     ],
 )

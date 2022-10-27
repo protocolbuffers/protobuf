@@ -28,10 +28,8 @@
 #include "upbc/code_generator_request.h"
 
 #include <inttypes.h>
-#include <stdio.h>
 
 #include "google/protobuf/compiler/plugin.upb.h"
-#include "upb/mini_table.h"
 #include "upb/reflection/def.h"
 
 // Must be last.
