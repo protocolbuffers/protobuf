@@ -36,10 +36,10 @@
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstdint>
 #include <functional>
 #include <limits>
-#include <map>
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -52,6 +52,7 @@
 #include "google/protobuf/wire_format.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_join.h"
@@ -277,10 +278,11 @@ bool HasHasMethod(const FieldDescriptor* field) {
 }
 
 // Collects map entry message type information.
-void CollectMapInfo(const Options& options, const Descriptor* descriptor,
-                    std::map<std::string, std::string>* variables) {
+void CollectMapInfo(
+    const Options& options, const Descriptor* descriptor,
+    absl::flat_hash_map<absl::string_view, std::string>* variables) {
   GOOGLE_CHECK(IsMapEntryMessage(descriptor));
-  std::map<std::string, std::string>& vars = *variables;
+  absl::flat_hash_map<absl::string_view, std::string>& vars = *variables;
   const FieldDescriptor* key = descriptor->map_key();
   const FieldDescriptor* val = descriptor->map_value();
   vars["key_cpp"] = PrimitiveTypeName(options, key->cpp_type());
@@ -429,7 +431,7 @@ class ColdChunkSkipper {
   const std::vector<int>& has_bit_indices_;
   const AccessInfoMap* access_info_map_;
   const double cold_threshold_;
-  std::map<std::string, std::string> variables_;
+  absl::flat_hash_map<absl::string_view, std::string> variables_;
   int limit_chunk_ = -1;
 };
 
@@ -509,7 +511,7 @@ bool ColdChunkSkipper::OnEndChunk(int chunk, io::Printer* p) {
 }
 
 void AnnotationVar(const Descriptor* desc, const Options& options,
-                   absl::flat_hash_map<std::string, std::string>& vars,
+                   absl::flat_hash_map<absl::string_view, std::string>& vars,
                    absl::string_view name, absl::string_view val) {
   if (!HasTracker(desc, options) ||
       options.field_listener_options.forbidden_field_listener_events.count(
@@ -520,9 +522,9 @@ void AnnotationVar(const Descriptor* desc, const Options& options,
   vars.emplace(name, absl::StrCat(absl::StripAsciiWhitespace(val), "\n"));
 }
 
-absl::flat_hash_map<std::string, std::string> ClassVars(const Descriptor* desc,
-                                                        Options opts) {
-  absl::flat_hash_map<std::string, std::string> vars = MessageVars(desc);
+absl::flat_hash_map<absl::string_view, std::string> ClassVars(
+    const Descriptor* desc, Options opts) {
+  absl::flat_hash_map<absl::string_view, std::string> vars = MessageVars(desc);
   vars.emplace("classname", ClassName(desc, false));
   vars.emplace("classtype", QualifiedClassName(desc, opts));
   vars.emplace("full_name", desc->full_name());
@@ -640,11 +642,11 @@ absl::flat_hash_map<std::string, std::string> ClassVars(const Descriptor* desc,
 
 // ===================================================================
 
-MessageGenerator::MessageGenerator(const Descriptor* descriptor,
-                                   const std::map<std::string, std::string>&,
-                                   int index_in_file_messages,
-                                   const Options& options,
-                                   MessageSCCAnalyzer* scc_analyzer)
+MessageGenerator::MessageGenerator(
+    const Descriptor* descriptor,
+    const absl::flat_hash_map<absl::string_view, std::string>&,
+    int index_in_file_messages, const Options& options,
+    MessageSCCAnalyzer* scc_analyzer)
     : descriptor_(descriptor),
       index_in_file_messages_(index_in_file_messages),
       options_(options),
@@ -779,7 +781,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
     for (auto field : ordered_fields) {
       Formatter::SaveState save(&format);
 
-      std::map<std::string, std::string> vars;
+      absl::flat_hash_map<absl::string_view, std::string> vars;
       SetCommonFieldVariables(field, &vars, options_);
       auto v = p->WithVars(std::move(vars));
       format("  ${1$$2$$}$ = $number$,\n", field, FieldConstantName(field));
@@ -1290,7 +1292,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
   Formatter format(p);
 
   if (IsMapEntryMessage(descriptor_)) {
-    std::map<std::string, std::string> vars;
+    absl::flat_hash_map<absl::string_view, std::string> vars;
     CollectMapInfo(options_, descriptor_, &vars);
     vars["lite"] =
         HasDescriptorMethods(descriptor_->file(), options_) ? "" : "Lite";
@@ -3749,7 +3751,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
 
 void MessageGenerator::GenerateSerializeOneExtensionRange(
     io::Printer* p, const Descriptor::ExtensionRange* range) {
-  std::map<std::string, std::string> vars = variables_;
+  absl::flat_hash_map<absl::string_view, std::string> vars = variables_;
   vars["start"] = absl::StrCat(range->start);
   vars["end"] = absl::StrCat(range->end);
   Formatter format(p, vars);

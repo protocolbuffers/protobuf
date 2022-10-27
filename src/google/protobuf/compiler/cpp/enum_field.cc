@@ -34,8 +34,10 @@
 
 #include "google/protobuf/compiler/cpp/enum_field.h"
 
-#include "google/protobuf/io/printer.h"
+#include <string>
+
 #include "google/protobuf/wire_format.h"
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 
@@ -46,9 +48,10 @@ namespace cpp {
 
 namespace {
 
-void SetEnumVariables(const FieldDescriptor* descriptor,
-                      std::map<std::string, std::string>* variables,
-                      const Options& options) {
+void SetEnumVariables(
+    const FieldDescriptor* descriptor,
+    absl::flat_hash_map<absl::string_view, std::string>* variables,
+    const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
   const EnumValueDescriptor* default_value = descriptor->default_value_enum();
   (*variables)["type"] = QualifiedClassName(descriptor->enum_type(), options);

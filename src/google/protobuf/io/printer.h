@@ -479,6 +479,27 @@ class PROTOBUF_EXPORT Printer {
     }
   };
 
+  // Provide a helper to use heterogeneous lookup when it's available.
+  template <class...>
+  using void_t = void;
+  template <typename Map, typename = void>
+  struct has_heterogeneous_lookup : std::false_type {};
+  template <typename Map>
+  struct has_heterogeneous_lookup<Map, void_t<decltype(std::declval<Map>().find(
+                                           std::declval<absl::string_view>()))>>
+      : std::true_type {};
+
+  template <typename Map,
+            std::enable_if_t<has_heterogeneous_lookup<Map>::value, int> = 0>
+  static absl::string_view ToStringKey(absl::string_view x) {
+    return x;
+  }
+  template <typename Map,
+            std::enable_if_t<!has_heterogeneous_lookup<Map>::value, int> = 0>
+  static std::string ToStringKey(absl::string_view x) {
+    return std::string(x);
+  }
+
  public:
   static constexpr char kDefaultVariableDelimiter = '$';
   static constexpr absl::string_view kProtocCodegenTrace =
@@ -538,7 +559,7 @@ class PROTOBUF_EXPORT Printer {
   template <typename Map>
   auto WithVars(const Map* vars) {
     var_lookups_.emplace_back([vars](absl::string_view var) -> LookupResult {
-      auto it = vars->find(std::string(var));
+      auto it = vars->find(ToStringKey<Map>(var));
       if (it == vars->end()) {
         return absl::nullopt;
       }
@@ -558,7 +579,7 @@ class PROTOBUF_EXPORT Printer {
   auto WithVars(Map&& vars) {
     var_lookups_.emplace_back([vars = std::forward<Map>(vars)](
                                   absl::string_view var) -> LookupResult {
-      auto it = vars.find(std::string(var));
+      auto it = vars.find(ToStringKey<Map>(var));
       if (it == vars.end()) {
         return absl::nullopt;
       }
@@ -585,7 +606,7 @@ class PROTOBUF_EXPORT Printer {
   auto WithAnnotations(const Map* vars) {
     annotation_lookups_.emplace_back(
         [vars](absl::string_view var) -> absl::optional<AnnotationRecord> {
-          auto it = vars->find(std::string(var));
+          auto it = vars->find(ToStringKey<Map>(var));
           if (it == vars->end()) {
             return absl::nullopt;
           }
@@ -605,7 +626,7 @@ class PROTOBUF_EXPORT Printer {
     annotation_lookups_.emplace_back(
         [vars = std::forward<Map>(vars)](
             absl::string_view var) -> absl::optional<AnnotationRecord> {
-          auto it = vars.find(std::string(var));
+          auto it = vars.find(ToStringKey<Map>(var));
           if (it == vars.end()) {
             return absl::nullopt;
           }
@@ -665,7 +686,7 @@ class PROTOBUF_EXPORT Printer {
     PrintOptions opts;
     opts.checks_are_debug_only = true;
     opts.use_substitution_map = true;
-    opts.allow_digit_substitions = false;
+    opts.allow_digit_substitutions = false;
 
     auto pop = WithVars(&vars);
     PrintImpl(text, {}, opts);
@@ -678,10 +699,10 @@ class PROTOBUF_EXPORT Printer {
     // Include an extra arg, since a zero-length array is ill-formed, and
     // MSVC complains.
     absl::string_view vars[] = {args..., ""};
-    absl::flat_hash_map<std::string, std::string> map;
+    absl::flat_hash_map<absl::string_view, absl::string_view> map;
     map.reserve(sizeof...(args) / 2);
     for (size_t i = 0; i < sizeof...(args); i += 2) {
-      map.emplace(std::string(vars[i]), std::string(vars[i + 1]));
+      map.emplace(vars[i], vars[i + 1]);
     }
 
     Print(map, text);
@@ -737,8 +758,8 @@ class PROTOBUF_EXPORT Printer {
 
   // FormatInternal is a helper function not meant to use directly, use
   // compiler::cpp::Formatter instead.
-  void FormatInternal(absl::Span<const std::string> args,
-                      const std::map<std::string, std::string>& vars,
+  template <typename Map = absl::flat_hash_map<std::string, std::string>>
+  void FormatInternal(absl::Span<const std::string> args, const Map& vars,
                       absl::string_view format) {
     PrintOptions opts;
     opts.use_curly_brace_substitutions = true;
@@ -764,7 +785,7 @@ class PROTOBUF_EXPORT Printer {
     bool use_curly_brace_substitutions = false;
     // If set, the $n$ forms will be substituted, pulling from the `args`
     // argument to PrintImpl().
-    bool allow_digit_substitions = true;
+    bool allow_digit_substitutions = true;
     // If set, when a variable substitution with spaces in it, such as $ var$,
     // is encountered, the spaces are stripped, so that it is as if it was
     // $var$. If $var$ substitutes to a non-empty string, the removed spaces are

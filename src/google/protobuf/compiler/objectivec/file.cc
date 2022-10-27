@@ -33,13 +33,13 @@
 #include <algorithm>
 #include <iostream>
 #include <iterator>
-#include <map>
 #include <set>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/enum.h"
@@ -626,7 +626,7 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
 
   // File descriptor only needed if there are messages to use it.
   if (!message_generators_.empty()) {
-    std::map<std::string, std::string> vars;
+    absl::flat_hash_map<absl::string_view, std::string> vars;
     vars["root_class_name"] = root_class_name_;
     vars["package"] = file_->package();
     vars["objc_prefix"] = FileClassPrefix(file_);

@@ -30,7 +30,6 @@
 
 #include "google/protobuf/compiler/objectivec/oneof.h"
 
-#include <map>
 #include <string>
 
 #include "absl/strings/str_cat.h"

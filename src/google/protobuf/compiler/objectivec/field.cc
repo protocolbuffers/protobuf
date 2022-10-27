@@ -31,12 +31,12 @@
 #include "google/protobuf/compiler/objectivec/field.h"
 
 #include <iostream>
-#include <map>
 #include <ostream>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/enum_field.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
@@ -53,8 +53,9 @@ namespace objectivec {
 
 namespace {
 
-void SetCommonFieldVariables(const FieldDescriptor* descriptor,
-                             std::map<std::string, std::string>* variables) {
+void SetCommonFieldVariables(
+    const FieldDescriptor* descriptor,
+    absl::flat_hash_map<absl::string_view, std::string>* variables) {
   std::string camel_case_name = FieldName(descriptor);
   std::string raw_field_name;
   if (descriptor->type() == FieldDescriptor::TYPE_GROUP) {

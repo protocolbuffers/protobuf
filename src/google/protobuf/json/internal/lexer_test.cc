@@ -160,6 +160,7 @@ struct Value {
         return Value{std::move(obj)};
       }
     }
+    return absl::InternalError("Unrecognized kind in lexer");
   }
 
   friend std::ostream& operator<<(std::ostream& os, const Value& v) {

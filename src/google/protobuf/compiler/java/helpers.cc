@@ -84,11 +84,10 @@ void PrintGeneratedAnnotation(io::Printer* printer, char delimiter,
   printer->Print(ptemplate.c_str(), "annotation_file", annotation_file);
 }
 
-void PrintEnumVerifierLogic(io::Printer* printer,
-                            const FieldDescriptor* descriptor,
-                            const std::map<std::string, std::string>& variables,
-                            const char* var_name,
-                            const char* terminating_string, bool enforce_lite) {
+void PrintEnumVerifierLogic(
+    io::Printer* printer, const FieldDescriptor* descriptor,
+    const absl::flat_hash_map<absl::string_view, std::string>& variables,
+    const char* var_name, const char* terminating_string, bool enforce_lite) {
   std::string enum_verifier_string =
       enforce_lite ? absl::StrCat(var_name, ".internalGetVerifier()")
                    : absl::StrCat(

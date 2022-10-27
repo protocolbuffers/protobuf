@@ -432,7 +432,10 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     return copyFrom(bytes, 0, bytes.length);
   }
 
-  /** Wraps the given bytes into a {@code ByteString}. Intended for internal only usage. */
+  /**
+   * Wraps the given bytes into a {@code ByteString}. Intended for internal usage within the
+   * library.
+   */
   static ByteString wrap(ByteBuffer buffer) {
     if (buffer.hasArray()) {
       final int offset = buffer.arrayOffset();
@@ -443,8 +446,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   }
 
   /**
-   * Wraps the given bytes into a {@code ByteString}. Intended for internal only usage to force a
-   * classload of ByteString before LiteralByteString.
+   * Wraps the given bytes into a {@code ByteString}. Intended for internal usage within the library
+   * to force a classload of ByteString before LiteralByteString.
    */
   static ByteString wrap(byte[] bytes) {
     // TODO(dweis): Return EMPTY when bytes are empty to reduce allocations?
@@ -452,8 +455,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   }
 
   /**
-   * Wraps the given bytes into a {@code ByteString}. Intended for internal only usage to force a
-   * classload of ByteString before BoundedByteString and LiteralByteString.
+   * Wraps the given bytes into a {@code ByteString}. Intended for internal usage within the library
+   * to force a classload of ByteString before BoundedByteString and LiteralByteString.
    */
   static ByteString wrap(byte[] bytes, int offset, int length) {
     return new BoundedByteString(bytes, offset, length);
