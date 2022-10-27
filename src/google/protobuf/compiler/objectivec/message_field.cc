@@ -30,10 +30,10 @@
 
 #include "google/protobuf/compiler/objectivec/message_field.h"
 
-#include <map>
 #include <set>
 #include <string>
 
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 
@@ -44,8 +44,9 @@ namespace objectivec {
 
 namespace {
 
-void SetMessageVariables(const FieldDescriptor* descriptor,
-                         std::map<std::string, std::string>* variables) {
+void SetMessageVariables(
+    const FieldDescriptor* descriptor,
+    absl::flat_hash_map<absl::string_view, std::string>* variables) {
   const std::string& message_type = ClassName(descriptor->message_type());
   const std::string& containing_class =
       ClassName(descriptor->containing_type());

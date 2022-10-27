@@ -30,9 +30,9 @@
 
 #include "google/protobuf/compiler/objectivec/primitive_field.h"
 
-#include <map>
 #include <string>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/io/printer.h"
@@ -111,8 +111,9 @@ const char* PrimitiveArrayTypeName(const FieldDescriptor* descriptor) {
   return nullptr;
 }
 
-void SetPrimitiveVariables(const FieldDescriptor* descriptor,
-                           std::map<std::string, std::string>* variables) {
+void SetPrimitiveVariables(
+    const FieldDescriptor* descriptor,
+    absl::flat_hash_map<absl::string_view, std::string>* variables) {
   std::string primitive_name = PrimitiveTypeName(descriptor);
   (*variables)["type"] = primitive_name;
   (*variables)["storage_type"] = primitive_name;

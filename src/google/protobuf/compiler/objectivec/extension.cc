@@ -31,12 +31,12 @@
 #include "google/protobuf/compiler/objectivec/extension.h"
 
 #include <iostream>
-#include <map>
 #include <ostream>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
@@ -64,7 +64,7 @@ ExtensionGenerator::ExtensionGenerator(const std::string& root_class_name,
 }
 
 void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) {
-  std::map<std::string, std::string> vars;
+  absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["method_name"] = method_name_;
   if (IsRetainedName(method_name_)) {
     vars["storage_attribute"] = " NS_RETURNS_NOT_RETAINED";
@@ -91,7 +91,7 @@ void ExtensionGenerator::GenerateMembersHeader(io::Printer* printer) {
 
 void ExtensionGenerator::GenerateStaticVariablesInitialization(
     io::Printer* printer) {
-  std::map<std::string, std::string> vars;
+  absl::flat_hash_map<absl::string_view, std::string> vars;
   vars["root_class_and_method_name"] = root_class_and_method_name_;
   const std::string containing_type = ClassName(descriptor_->containing_type());
   vars["extended_type"] = ObjCClass(containing_type);

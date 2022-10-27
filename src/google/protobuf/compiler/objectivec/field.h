@@ -31,12 +31,12 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FIELD_H__
 
-#include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/match.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
@@ -104,7 +104,7 @@ class FieldGenerator {
   bool WantsHasProperty() const;
 
   const FieldDescriptor* descriptor_;
-  std::map<std::string, std::string> variables_;
+  absl::flat_hash_map<absl::string_view, std::string> variables_;
 };
 
 class SingleFieldGenerator : public FieldGenerator {

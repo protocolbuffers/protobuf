@@ -63,7 +63,7 @@ namespace compiler {
 namespace cpp {
 namespace {
 std::string FindWithDefault(
-    const absl::flat_hash_map<std::string, std::string>& m,
+    const absl::flat_hash_map<absl::string_view, std::string>& m,
     const std::string& k, const std::string& v) {
   auto it = m.find(k);
   if (it == m.end()) return v;
@@ -138,8 +138,8 @@ const char* test_protos[][2] = {
 TEST(BootstrapTest, GeneratedFilesMatch) {
   // We need a mapping from the actual file to virtual and actual path
   // of the data to compare to.
-  absl::flat_hash_map<std::string, std::string> vpath_map;
-  absl::flat_hash_map<std::string, std::string> rpath_map;
+  absl::flat_hash_map<absl::string_view, std::string> vpath_map;
+  absl::flat_hash_map<absl::string_view, std::string> rpath_map;
   rpath_map["third_party/protobuf/test_messages_proto2"] =
       "net/proto2/z_generated_example/test_messages_proto2";
   rpath_map["third_party/protobuf/test_messages_proto3"] =

@@ -34,7 +34,6 @@
 
 #include "google/protobuf/compiler/cpp/service.h"
 
-#include <map>
 #include <string>
 
 #include "absl/strings/str_cat.h"
@@ -85,7 +84,7 @@ void ServiceGenerator::GenerateDeclarations(io::Printer* printer) {
               const ::$proto_ns$::MethodDescriptor* method) const override;
         };
 
-        class $dllexport_decl $$classname$_Stub : public $classname$ {
+        class $dllexport_decl $$classname$_Stub final : public $classname$ {
          public:
           $classname$_Stub(::$proto_ns$::RpcChannel* channel);
           $classname$_Stub(::$proto_ns$::RpcChannel* channel,

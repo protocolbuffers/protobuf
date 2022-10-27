@@ -88,20 +88,20 @@ inline std::string DeprecatedAttribute(const Options& /* options */,
 extern const char kThickSeparator[];
 extern const char kThinSeparator[];
 
-absl::flat_hash_map<std::string, std::string> MessageVars(
+absl::flat_hash_map<absl::string_view, std::string> MessageVars(
     const Descriptor* desc);
 
 // Variables to access message data from the message scope.
 void SetCommonMessageDataVariables(
     const Descriptor* descriptor,
-    std::map<std::string, std::string>* variables);
+    absl::flat_hash_map<absl::string_view, std::string>* variables);
 
-absl::flat_hash_map<std::string, std::string> UnknownFieldsVars(
+absl::flat_hash_map<absl::string_view, std::string> UnknownFieldsVars(
     const Descriptor* desc, const Options& opts);
 
-void SetUnknownFieldsVariable(const Descriptor* descriptor,
-                              const Options& options,
-                              std::map<std::string, std::string>* variables);
+void SetUnknownFieldsVariable(
+    const Descriptor* descriptor, const Options& options,
+    absl::flat_hash_map<absl::string_view, std::string>* variables);
 
 bool GetBootstrapBasename(const Options& options, const std::string& basename,
                           std::string* bootstrap_basename);
@@ -794,15 +794,15 @@ class PROTOC_EXPORT Formatter {
  public:
   explicit Formatter(io::Printer* printer) : printer_(printer) {}
   Formatter(io::Printer* printer,
-            const std::map<std::string, std::string>& vars)
+            const absl::flat_hash_map<absl::string_view, std::string>& vars)
       : printer_(printer), vars_(vars) {}
 
   template <typename T>
-  void Set(const std::string& key, const T& value) {
+  void Set(absl::string_view key, const T& value) {
     vars_[key] = ToString(value);
   }
 
-  void AddMap(const std::map<std::string, std::string>& vars) {
+  void AddMap(const absl::flat_hash_map<absl::string_view, std::string>& vars) {
     for (const auto& keyval : vars) vars_[keyval.first] = keyval.second;
   }
 
@@ -844,12 +844,12 @@ class PROTOC_EXPORT Formatter {
 
    private:
     Formatter* format_;
-    std::map<std::string, std::string> vars_;
+    absl::flat_hash_map<absl::string_view, std::string> vars_;
   };
 
  private:
   io::Printer* printer_;
-  std::map<std::string, std::string> vars_;
+  absl::flat_hash_map<absl::string_view, std::string> vars_;
 
   // Convenience overloads to accept different types as arguments.
   static std::string ToString(const std::string& s) { return s; }

@@ -58,7 +58,7 @@ enum WireFormat {
   UNSPECIFIED = 0;
   PROTOBUF = 1;
   JSON = 2;
-  JSPB = 3;  // Google internal only. Opensource testees just skip it.
+  JSPB = 3;  // Only used inside Google. Opensource testees just skip it.
   TEXT_FORMAT = 4;
 }
 
@@ -72,8 +72,8 @@ enum TestCategory {
   // https://developers.google.com/protocol-buffers/docs/proto3#json_options
   // for more detail.
   JSON_IGNORE_UNKNOWN_PARSING_TEST = 3;
-  // Test jspb wire format. Google internal only. Opensource testees just skip
-  // it.
+  // Test jspb wire format. Only used inside Google. Opensource testees just
+  // skip it.
   JSPB_TEST = 4;
   // Test text format. For cpp, java and python, testees can already deal with
   // this type. Testees of other languages can simply skip it.
@@ -99,7 +99,7 @@ message ConformanceRequest {
   oneof payload {
     bytes protobuf_payload = 1;
     string json_payload = 2;
-    // Google internal only.  Opensource testees just skip it.
+    // Only used inside Google.  Opensource testees just skip it.
     string jspb_payload = 7;
     string text_payload = 8;
   }
@@ -163,8 +163,8 @@ message ConformanceResponse {
     string skipped = 5;
 
     // If the input was successfully parsed and the requested output was JSPB,
-    // serialize to JSPB and set it in this field. JSPB is google internal only
-    // format. Opensource testees can just skip it.
+    // serialize to JSPB and set it in this field. JSPB is only used inside
+    // Google. Opensource testees can just skip it.
     string jspb_payload = 7;
 
     // If the input was successfully parsed and the requested output was

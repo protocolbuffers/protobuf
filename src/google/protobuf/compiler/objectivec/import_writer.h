@@ -35,6 +35,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
@@ -68,7 +69,7 @@ class ImportWriter {
   const std::string named_framework_to_proto_path_mappings_path_;
   const std::string runtime_import_prefix_;
   const bool include_wkt_imports_;
-  std::map<std::string, std::string> proto_file_to_framework_name_;
+  absl::flat_hash_map<std::string, std::string> proto_file_to_framework_name_;
   bool need_to_parse_mapping_file_;
 
   std::vector<std::string> protobuf_imports_;

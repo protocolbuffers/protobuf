@@ -32,13 +32,13 @@
 
 #include <algorithm>
 #include <iostream>
-#include <map>
 #include <memory>
 #include <set>
 #include <sstream>
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/enum.h"
@@ -517,13 +517,13 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
       printer->Outdent();
     }
 
-    std::map<std::string, std::string> vars;
+    absl::flat_hash_map<absl::string_view, std::string> vars;
     vars["classname"] = class_name_;
     vars["rootclassname"] = root_classname_;
     vars["fields"] = has_fields ? "fields" : "NULL";
     if (has_fields) {
-      vars["fields_count"] =
-          "(uint32_t)(sizeof(fields) / sizeof(" + field_description_type + "))";
+      vars["fields_count"] = absl::StrCat("(uint32_t)(sizeof(fields) / sizeof(",
+                                          field_description_type, "))");
     } else {
       vars["fields_count"] = "0";
     }

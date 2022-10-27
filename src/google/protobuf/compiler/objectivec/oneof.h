@@ -31,11 +31,11 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ONEOF_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ONEOF_H__
 
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -67,7 +67,7 @@ class OneofGenerator {
 
  private:
   const OneofDescriptor* descriptor_;
-  std::map<std::string, std::string> variables_;
+  absl::flat_hash_map<absl::string_view, std::string> variables_;
 };
 
 }  // namespace objectivec
