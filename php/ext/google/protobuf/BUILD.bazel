@@ -1,76 +1,54 @@
 
 # Protobuf PHP extension (PECL)
+load("@rules_pkg//:mappings.bzl", "pkg_files", "pkg_filegroup", "strip_prefix")
 
 filegroup(
   name = "template_package_xml",
   srcs = ["template_package.xml"],
 )
 
-filegroup(
-  name = "src_files",
-  srcs = glob(
-    [
-      "**/*.m4",
-      "**/*.c",
-      "**/*.h",
-      "**/*.inc"
-    ],
-    exclude = [
-      "tests/**",
-    ]
-  ),
+pkg_files(
+  name = "utf8_range_files",
+  srcs = [
+    "@utf8_range//:utf8_range_srcs",
+    "@utf8_range//:LICENSE",
+  ],
 )
 
-filegroup(
-  name = "doc_files",
+pkg_files(
+  name = "protobuf_files",
   srcs = glob([
-    "**/LICENSE",
-  ])
+    "*.h",
+    "*.c",
+  ]) + [
+    "//:LICENSE",
+    "config.m4",
+    "wkt.inc",
+  ],
+)
+
+pkg_filegroup(
+  name = "release_files",
+  srcs = [
+    ":protobuf_files",
+    ":utf8_range_files",
+  ],
 )
 
 genrule(
     name = "pecl_dist",
     srcs = [
-      ":src_files",
-      ":doc_files",
+      ":release_files",
       ":template_package_xml",
       "//:version_json",
     ],
     outs = ["package.xml"],
-    cmd = """
-      DATE=$$(date +%Y-%m-%d)
-      TIME=$$(date +%H:%M:%S)
-
-      php_version_json=$$(cat $(location //:version_json) | python -c "import json, sys; versions=json.load(sys.stdin); print(versions.popitem()[1]['languages']['php'])")
-      php_version_array=($${php_version_json//-rc/ })
-      api_version=$${php_version_array[0]}
-      if [ $${#php_version_array[@]} -eq 2 ]; then
-        rc=$${php_version_array[1]}
-        release_version=$${api_version}RC$${rc}
-        stability='beta'
-      else
-        release_version=$${api_version}
-        stability='stable'
-      fi
-      
-      FILE='<file baseinstalldir=\"/\" name=\"NAME\" role=\"ROLE\"/>\\n'
-      files="\\n"
-      for file in $$(find -L $(locations :src_files) -type f); do
-        name=$$(echo $$file | sed -e 's|php/ext/google/protobuf/||')
-        files+='    '$$(echo $$FILE | sed -e "s;NAME;$${name};" | sed -e "s;ROLE;src;")
-      done
-      for file in $$(find -L $(locations :doc_files) -type f); do
-        name=$$(echo $$file | sed -e 's|php/ext/google/protobuf/||')
-        files+='    '$$(echo $$FILE | sed -e "s;NAME;$${name};" | sed -e "s;ROLE;doc;")
-      done
-
-      cat $(location :template_package_xml) | 
-      sed -e "s;TEMPLATE_DATE;$${DATE};" |
-      sed -e "s;TEMPLATE_TIME;$${TIME};" |
-      sed -e "s;TEMPLATE_PHP_RELEASE;$${release_version};" |
-      sed -e "s;TEMPLATE_PHP_API;$${api_version};" |
-      sed -e "s;TEMPLATE_PHP_STABILITY;$${stability};" |
-      sed -e "s;TEMPLATE_FILES;$${files};"
-      > "$@"
-    """
+    cmd = " ".join([
+      "$(location :generate_package_xml.sh)",
+      "$(location :template_package_xml)",
+      "$(location //:version_json)",
+      "$$(echo $(locations :release_files) | sed -e 's; ;,;g')",
+      "$(location package.xml)"
+    ]),
+    tools = ["generate_package_xml.sh"],
 )
