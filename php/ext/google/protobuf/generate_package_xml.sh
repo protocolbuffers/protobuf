@@ -1,24 +1,19 @@
 #!/bin/bash
 
 template_package_xml=$1
-version_json=$2
+release_version=$2
 release_files=$3
 out=$4
 
 date=$(date +%Y-%m-%d)
 time=$(date +%H:%M:%S)
 
-php_version_json=$(
-    cat $version_json |
-    python -c "import json, sys; v=json.load(sys.stdin); print(v.popitem()[1]['languages']['php'])")
-php_version_array=(${php_version_json//-rc/ })
+php_version_array=(${release_version//RC/ })
 api_version=${php_version_array[0]}
 if [ ${#php_version_array[@]} -eq 2 ]; then
     rc=${php_version_array[1]}
-    release_version=${api_version}RC${rc}
     stability='beta'
 else
-    release_version=${api_version}
     stability='stable'
 fi
 
