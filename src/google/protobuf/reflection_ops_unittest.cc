@@ -39,9 +39,9 @@
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/descriptor.h"
 #include <gtest/gtest.h>
+#include "absl/strings/str_join.h"
 #include "google/protobuf/test_util.h"
 
-#include "google/protobuf/stubs/strutil.h"
 
 namespace google {
 namespace protobuf {

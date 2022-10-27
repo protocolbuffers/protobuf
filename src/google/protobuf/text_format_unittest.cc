@@ -65,7 +65,6 @@
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 
-#include "google/protobuf/stubs/strutil.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -1906,7 +1905,11 @@ TEST_F(TextFormatParserTest, ParseDeprecatedField) {
   ExpectMessage("deprecated_int32: 42",
                 "WARNING:text format contains deprecated field "
                 "\"deprecated_int32\"",
-                1, 21, &message, true);
+                1, 17, &message, true);
+  ExpectMessage("deprecated_message {\n#blah\n#blah\n#blah\n}\n",
+                "WARNING:text format contains deprecated field "
+                "\"deprecated_message\"",
+                1, 20, &message, true);
 }
 
 TEST_F(TextFormatParserTest, SetRecursionLimit) {

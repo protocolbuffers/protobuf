@@ -35,10 +35,10 @@
 #include "google/protobuf/compiler/cpp/message_field.h"
 
 #include "google/protobuf/io/printer.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
-
-#include "google/protobuf/stubs/strutil.h"
 
 namespace google {
 namespace protobuf {
@@ -56,28 +56,34 @@ std::string ReinterpretCast(const std::string& type,
   }
 }
 
-void SetMessageVariables(const FieldDescriptor* descriptor,
-                         const Options& options, bool implicit_weak,
-                         std::map<std::string, std::string>* variables) {
+void SetMessageVariables(
+    const FieldDescriptor* descriptor, const Options& options,
+    bool implicit_weak,
+    absl::flat_hash_map<absl::string_view, std::string>* variables) {
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = FieldMessageTypeName(descriptor, options);
-  (*variables)["casted_member"] = ReinterpretCast(
-      (*variables)["type"] + "*", (*variables)["field"], implicit_weak);
-  (*variables)["casted_member_const"] =
-      ReinterpretCast("const " + (*variables)["type"] + "&",
-                      "*" + (*variables)["field"], implicit_weak);
+  variables->insert(
+      {"casted_member", ReinterpretCast(absl::StrCat((*variables)["type"], "*"),
+                                        (*variables)["field"], implicit_weak)});
+  variables->insert(
+      {"casted_member_const",
+       ReinterpretCast(absl::StrCat("const ", (*variables)["type"], "&"),
+                       absl::StrCat("*", (*variables)["field"]),
+                       implicit_weak)});
   (*variables)["type_default_instance"] =
       QualifiedDefaultInstanceName(descriptor->message_type(), options);
   (*variables)["type_default_instance_ptr"] = ReinterpretCast(
       "const ::PROTOBUF_NAMESPACE_ID::MessageLite*",
       QualifiedDefaultInstancePtr(descriptor->message_type(), options),
       implicit_weak);
-  (*variables)["type_reference_function"] =
-      implicit_weak ? ("  ::" + ProtobufNamespace(options) +
-                       "::internal::StrongReference(reinterpret_cast<const " +
-                       (*variables)["type"] + "&>(\n" +
-                       (*variables)["type_default_instance"] + "));\n")
-                    : "";
+  variables->insert(
+      {"type_reference_function",
+       implicit_weak
+           ? absl::StrCat("  ::", ProtobufNamespace(options),
+                          "::internal::StrongReference(reinterpret_cast<const ",
+                          (*variables)["type"], "&>(\n",
+                          (*variables)["type_default_instance"], "));\n")
+           : ""});
   // NOTE: Escaped here to unblock proto1->proto2 migration.
   // TODO(liujisi): Extend this to apply for other conflicting methods.
   (*variables)["release_name"] =

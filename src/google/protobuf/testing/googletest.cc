@@ -41,7 +41,6 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_replace.h"
 #include "google/protobuf/io/io_win32.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "google/protobuf/testing/file.h"
 #ifdef _MSC_VER
 // #include <direct.h>

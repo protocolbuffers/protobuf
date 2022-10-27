@@ -89,7 +89,6 @@ public final class UnknownFieldSet implements MessageLite {
   private static final UnknownFieldSet defaultInstance =
       new UnknownFieldSet(new TreeMap<Integer, Field>());
 
-
   @Override
   public boolean equals(Object other) {
     if (this == other) {

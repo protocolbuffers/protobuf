@@ -58,7 +58,6 @@ public class AnyTest {
     TestAllTypes result = container.getValue().unpack(TestAllTypes.class);
     TestUtil.assertAllFieldsSet(result);
 
-
     // Unpacking to a wrong type will throw an exception.
     try {
       container.getValue().unpack(TestAny.class);

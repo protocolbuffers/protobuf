@@ -31,6 +31,7 @@
 #include "google/protobuf/map_proto2_unittest.pb.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/reflection_tester.h"
+#include "absl/container/flat_hash_set.h"
 #include "google/protobuf/test_util2.h"
 
 

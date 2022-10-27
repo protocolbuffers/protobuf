@@ -13,4 +13,4 @@ call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary
 
 @rem Convert Windows line breaks to Unix line breaks
 @rem This allows text-matching tests to pass
-find . -type f -print0 | xargs -0 d2u
+@find . -type f -print0 | xargs -0 d2u

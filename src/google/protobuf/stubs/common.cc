@@ -51,10 +51,10 @@
 #endif
 
 #include "absl/status/status.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/stubs/callback.h"
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/strutil.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"  // NOLINT
@@ -220,7 +220,7 @@ LogMessage& LogMessage::operator<<(char value) {
 }
 
 LogMessage& LogMessage::operator<<(void* value) {
-  absl::StrAppend(&message_, strings::Hex(reinterpret_cast<uintptr_t>(value)));
+  absl::StrAppend(&message_, absl::Hex(reinterpret_cast<uintptr_t>(value)));
   return *this;
 }
 

@@ -1191,13 +1191,41 @@ uint8_t* AddNonCanonicalBytes(const uint8_t* buf, uint8_t* p,
   return p;
 }
 
-std::string EncodeEnumValue(int number, int value, int non_canonical_bytes) {
+std::string EncodeEnumValue(int number, int value, int non_canonical_bytes,
+                            bool use_packed) {
   uint8_t buf[100];
   uint8_t* p = buf;
 
-  p = internal::WireFormatLite::WriteEnumToArray(number, value, p);
-  p = AddNonCanonicalBytes(buf, p, non_canonical_bytes);
-  return std::string(buf, p);
+  if (use_packed) {
+    p = internal::WireFormatLite::WriteEnumNoTagToArray(value, p);
+    p = AddNonCanonicalBytes(buf, p, non_canonical_bytes);
+
+    std::string payload(buf, p);
+    p = buf;
+    p = internal::WireFormatLite::WriteStringToArray(number, payload, p);
+    return std::string(buf, p);
+
+  } else {
+    p = internal::WireFormatLite::WriteEnumToArray(number, value, p);
+    p = AddNonCanonicalBytes(buf, p, non_canonical_bytes);
+    return std::string(buf, p);
+  }
+}
+
+std::string EncodeOverlongEnum(int number, bool use_packed) {
+  uint8_t buf[100];
+  uint8_t* p = buf;
+
+  std::string overlong(16, static_cast<char>(0x80));
+  if (use_packed) {
+    p = internal::WireFormatLite::WriteStringToArray(number, overlong, p);
+    return std::string(buf, p);
+  } else {
+    p = internal::WireFormatLite::WriteTagToArray(
+        number, internal::WireFormatLite::WIRETYPE_VARINT, p);
+    p = std::copy(overlong.begin(), overlong.end(), p);
+    return std::string(buf, p);
+  }
 }
 
 std::string EncodeOtherField() {
@@ -1224,62 +1252,77 @@ TEST(MESSAGE_TEST_NAME, TestEnumParsers) {
   constexpr int kInvalidValue = 0x900913;
   auto* ref = obj.GetReflection();
   auto* descriptor = obj.descriptor();
-  for (bool use_tail_field : {false, true}) {
-    SCOPED_TRACE(use_tail_field);
-    for (int non_canonical_bytes = 0; non_canonical_bytes < 5;
-         ++non_canonical_bytes) {
-      SCOPED_TRACE(non_canonical_bytes);
-      for (int i = 0; i < descriptor->field_count(); ++i) {
-        const auto* field = descriptor->field(i);
-        if (field->name() == "other_field") continue;
-        SCOPED_TRACE(field->full_name());
-        const auto* enum_desc = field->enum_type();
-        for (int e = 0; e < enum_desc->value_count(); ++e) {
-          const auto* value_desc = enum_desc->value(e);
-          if (value_desc->number() < 0 && non_canonical_bytes > 0) {
-            // Negative numbers only have a canonical representation.
-            continue;
-          }
-          SCOPED_TRACE(value_desc->number());
-          GOOGLE_CHECK_NE(value_desc->number(), kInvalidValue)
-              << "Invalid value is a real label.";
-          auto encoded = EncodeEnumValue(field->number(), value_desc->number(),
-                                         non_canonical_bytes);
-          if (use_tail_field) {
-            // Make sure that fields after this one can be parsed too. ie test
-            // that the "next" jump is correct too.
-            encoded += other_field;
+  for (bool use_packed : {false, true}) {
+    SCOPED_TRACE(use_packed);
+    for (bool use_tail_field : {false, true}) {
+      SCOPED_TRACE(use_tail_field);
+      for (int non_canonical_bytes = 0; non_canonical_bytes < 5;
+           ++non_canonical_bytes) {
+        SCOPED_TRACE(non_canonical_bytes);
+        for (int i = 0; i < descriptor->field_count(); ++i) {
+          const auto* field = descriptor->field(i);
+          if (field->name() == "other_field") continue;
+          if (!field->is_repeated() && use_packed) continue;
+          SCOPED_TRACE(field->full_name());
+          const auto* enum_desc = field->enum_type();
+          for (int e = 0; e < enum_desc->value_count(); ++e) {
+            const auto* value_desc = enum_desc->value(e);
+            if (value_desc->number() < 0 && non_canonical_bytes > 0) {
+              // Negative numbers only have a canonical representation.
+              continue;
+            }
+            SCOPED_TRACE(value_desc->number());
+            GOOGLE_CHECK_NE(value_desc->number(), kInvalidValue)
+                << "Invalid value is a real label.";
+            auto encoded =
+                EncodeEnumValue(field->number(), value_desc->number(),
+                                non_canonical_bytes, use_packed);
+            if (use_tail_field) {
+              // Make sure that fields after this one can be parsed too. ie test
+              // that the "next" jump is correct too.
+              encoded += other_field;
+            }
+
+            EXPECT_TRUE(obj.ParseFromString(encoded));
+            if (field->is_repeated()) {
+              ASSERT_EQ(ref->FieldSize(obj, field), 1);
+              EXPECT_EQ(ref->GetRepeatedEnumValue(obj, field, 0),
+                        value_desc->number());
+            } else {
+              EXPECT_TRUE(ref->HasField(obj, field));
+              EXPECT_EQ(ref->GetEnumValue(obj, field), value_desc->number());
+            }
+            auto& unknown = ref->GetUnknownFields(obj);
+            ASSERT_EQ(unknown.field_count(), 0);
           }
 
-          EXPECT_TRUE(obj.ParseFromString(encoded));
-          if (field->is_repeated()) {
-            ASSERT_EQ(ref->FieldSize(obj, field), 1);
-            EXPECT_EQ(ref->GetRepeatedEnumValue(obj, field, 0),
-                      value_desc->number());
-          } else {
-            EXPECT_TRUE(ref->HasField(obj, field));
-            EXPECT_EQ(ref->GetEnumValue(obj, field), value_desc->number());
+          {
+            SCOPED_TRACE("Invalid value");
+            // Try an invalid value, which should go to the unknown fields.
+            EXPECT_TRUE(obj.ParseFromString(
+                EncodeEnumValue(field->number(), kInvalidValue,
+                                non_canonical_bytes, use_packed)));
+            if (field->is_repeated()) {
+              ASSERT_EQ(ref->FieldSize(obj, field), 0);
+            } else {
+              EXPECT_FALSE(ref->HasField(obj, field));
+              EXPECT_EQ(ref->GetEnumValue(obj, field),
+                        enum_desc->value(0)->number());
+            }
+            auto& unknown = ref->GetUnknownFields(obj);
+            ASSERT_EQ(unknown.field_count(), 1);
+            EXPECT_EQ(unknown.field(0).number(), field->number());
+            EXPECT_EQ(unknown.field(0).type(), unknown.field(0).TYPE_VARINT);
+            EXPECT_EQ(unknown.field(0).varint(), kInvalidValue);
           }
-          auto& unknown = ref->GetUnknownFields(obj);
-          ASSERT_EQ(unknown.field_count(), 0);
+          {
+            SCOPED_TRACE("Overlong varint");
+            // Try an overlong varint. It should fail parsing, but not trigger
+            // any sanitizer warning.
+            EXPECT_FALSE(obj.ParseFromString(
+                EncodeOverlongEnum(field->number(), use_packed)));
+          }
         }
-
-        SCOPED_TRACE("Invalid value");
-        // Try an invalid value, which should go to the unknown fields.
-        EXPECT_TRUE(obj.ParseFromString(EncodeEnumValue(
-            field->number(), kInvalidValue, non_canonical_bytes)));
-        if (field->is_repeated()) {
-          ASSERT_EQ(ref->FieldSize(obj, field), 0);
-        } else {
-          EXPECT_FALSE(ref->HasField(obj, field));
-          EXPECT_EQ(ref->GetEnumValue(obj, field),
-                    enum_desc->value(0)->number());
-        }
-        auto& unknown = ref->GetUnknownFields(obj);
-        ASSERT_EQ(unknown.field_count(), 1);
-        EXPECT_EQ(unknown.field(0).number(), field->number());
-        EXPECT_EQ(unknown.field(0).type(), unknown.field(0).TYPE_VARINT);
-        EXPECT_EQ(unknown.field(0).varint(), kInvalidValue);
       }
     }
   }

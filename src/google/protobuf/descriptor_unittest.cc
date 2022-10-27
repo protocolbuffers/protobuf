@@ -49,14 +49,11 @@
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/unittest_lazy_dependencies.pb.h"
 #include "google/protobuf/unittest_proto3_arena.pb.h"
-#include "google/protobuf/io/tokenizer.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/text_format.h"
-#include "google/protobuf/stubs/strutil.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
@@ -7399,16 +7396,11 @@ class ExponentialErrorDatabase : public DescriptorDatabase {
   }
 
  private:
-  void FullMatch(const std::string& name, const std::string& begin_with,
-                 const std::string& end_with, int* file_num) {
-    int begin_size = begin_with.size();
-    int end_size = end_with.size();
-    if (name.substr(0, begin_size) != begin_with ||
-        name.substr(name.size() - end_size, end_size) != end_with) {
-      return;
-    }
-    safe_strto32(
-        name.substr(begin_size, name.size() - end_size - begin_size), file_num);
+  void FullMatch(absl::string_view name, absl::string_view begin_with,
+                 absl::string_view end_with, int32_t* file_num) {
+    if (!absl::ConsumePrefix(&name, begin_with)) return;
+    if (!absl::ConsumeSuffix(&name, end_with)) return;
+    GOOGLE_CHECK(absl::SimpleAtoi(name, file_num));
   }
 
   bool PopulateFile(int file_num, FileDescriptorProto* output) {

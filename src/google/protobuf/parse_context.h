@@ -904,7 +904,7 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, int size,
   }
   int num = size / sizeof(T);
   int block_size = num * sizeof(T);
-  if(num == 0) return size == block_size ? ptr : nullptr;
+  if (num == 0) return size == block_size ? ptr : nullptr;
   int old_entries = out->size();
   out->Reserve(old_entries + num);
   auto dst = out->AddNAlreadyReserved(num);

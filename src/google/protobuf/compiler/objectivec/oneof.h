@@ -35,6 +35,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -46,7 +47,7 @@ namespace objectivec {
 class OneofGenerator {
  public:
   explicit OneofGenerator(const OneofDescriptor* descriptor);
-  ~OneofGenerator();
+  ~OneofGenerator() = default;
 
   OneofGenerator(const OneofGenerator&) = delete;
   OneofGenerator& operator=(const OneofGenerator&) = delete;
@@ -61,12 +62,12 @@ class OneofGenerator {
   void GeneratePropertyImplementation(io::Printer* printer);
   void GenerateClearFunctionImplementation(io::Printer* printer);
 
-  std::string DescriptorName(void) const;
-  std::string HasIndexAsString(void) const;
+  std::string DescriptorName() const;
+  std::string HasIndexAsString() const;
 
  private:
   const OneofDescriptor* descriptor_;
-  std::map<std::string, std::string> variables_;
+  absl::flat_hash_map<absl::string_view, std::string> variables_;
 };
 
 }  // namespace objectivec

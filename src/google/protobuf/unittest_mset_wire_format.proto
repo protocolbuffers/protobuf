@@ -35,6 +35,7 @@
 // This file contains messages for testing message_set_wire_format.
 
 syntax = "proto2";
+
 package proto2_wireformat_unittest;
 
 option cc_enable_arenas = true;
@@ -44,6 +45,7 @@ option csharp_namespace = "Google.ProtocolBuffers.TestProtos";
 // A message with message_set_wire_format.
 message TestMessageSet {
   option message_set_wire_format = true;
+
   extensions 4 to max;
 }
 

@@ -42,7 +42,9 @@ message TestMessage {
   extensions 1000 to max;
 }
 
-enum TestEnum { FOO = 1; }
+enum TestEnum {
+  FOO = 1;
+}
 
 extend TestMessage {
   optional int32 test_extension = 1000;

@@ -2483,7 +2483,5 @@ class OptionalColonMessageToStringTest(unittest.TestCase):
         message, use_short_repeated_primitives=True, force_colon=True)
     self.assertEqual('repeated_int32: [1]\n', output)
 
-
-
 if __name__ == '__main__':
   unittest.main()

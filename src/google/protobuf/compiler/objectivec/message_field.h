@@ -32,6 +32,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MESSAGE_FIELD_H__
 
 #include <map>
+#include <set>
 #include <string>
 
 #include "google/protobuf/compiler/objectivec/field.h"
@@ -46,17 +47,15 @@ class MessageFieldGenerator : public ObjCObjFieldGenerator {
 
  protected:
   explicit MessageFieldGenerator(const FieldDescriptor* descriptor);
+  ~MessageFieldGenerator() override = default;
 
   MessageFieldGenerator(const MessageFieldGenerator&) = delete;
   MessageFieldGenerator& operator=(const MessageFieldGenerator&) = delete;
 
-  virtual ~MessageFieldGenerator();
-
  public:
-  virtual void DetermineForwardDeclarations(
-      std::set<std::string>* fwd_decls,
-      bool include_external_types) const override;
-  virtual void DetermineObjectiveCClassDefinitions(
+  void DetermineForwardDeclarations(std::set<std::string>* fwd_decls,
+                                    bool include_external_types) const override;
+  void DetermineObjectiveCClassDefinitions(
       std::set<std::string>* fwd_decls) const override;
 };
 
@@ -65,17 +64,16 @@ class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
 
  protected:
   explicit RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor);
-  virtual ~RepeatedMessageFieldGenerator();
+  ~RepeatedMessageFieldGenerator() override = default;
 
   RepeatedMessageFieldGenerator(const RepeatedMessageFieldGenerator&) = delete;
   RepeatedMessageFieldGenerator operator=(
       const RepeatedMessageFieldGenerator&) = delete;
 
  public:
-  virtual void DetermineForwardDeclarations(
-      std::set<std::string>* fwd_decls,
-      bool include_external_types) const override;
-  virtual void DetermineObjectiveCClassDefinitions(
+  void DetermineForwardDeclarations(std::set<std::string>* fwd_decls,
+                                    bool include_external_types) const override;
+  void DetermineObjectiveCClassDefinitions(
       std::set<std::string>* fwd_decls) const override;
 };
 

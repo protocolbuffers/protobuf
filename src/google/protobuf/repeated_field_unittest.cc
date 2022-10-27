@@ -55,7 +55,7 @@
 #include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/stubs/strutil.h"
+
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
