@@ -51,6 +51,7 @@
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/base/dynamic_annotations.h"
+#include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/hash/hash.h"
@@ -1053,7 +1054,7 @@ using EnumValuesByNumberSet =
 // ordered data structure that implements lower_bound is convenient
 // for that.
 using ExtensionsGroupedByDescriptorMap =
-    std::map<std::pair<const Descriptor*, int>, const FieldDescriptor*>;
+    absl::btree_map<std::pair<const Descriptor*, int>, const FieldDescriptor*>;
 using LocationsByPathMap =
     absl::flat_hash_map<std::string, const SourceCodeInfo_Location*>;
 
@@ -1866,7 +1867,7 @@ void DescriptorPool::InternalDontEnforceDependencies() {
 
 void DescriptorPool::AddUnusedImportTrackFile(absl::string_view file_name,
                                               bool is_error) {
-  unused_import_track_files_[std::string(file_name)] = is_error;
+  unused_import_track_files_[file_name] = is_error;
 }
 
 void DescriptorPool::ClearUnusedImportTrackFiles() {
@@ -4045,12 +4046,12 @@ class DescriptorBuilder {
     // This maps the element path of uninterpreted options to the element path
     // of the resulting interpreted option. This is used to modify a file's
     // source code info to account for option interpretation.
-    std::map<std::vector<int>, std::vector<int>> interpreted_paths_;
+    absl::flat_hash_map<std::vector<int>, std::vector<int>> interpreted_paths_;
 
     // This maps the path to a repeated option field to the known number of
     // elements the field contains. This is used to track the compute the
     // index portion of the element path when interpreting a single option.
-    std::map<std::vector<int>, int> repeated_option_counts_;
+    absl::flat_hash_map<std::vector<int>, int> repeated_option_counts_;
 
     // Factory used to create the dynamic messages we need to parse
     // any aggregate option values we encounter.
@@ -6055,7 +6056,7 @@ void DescriptorBuilder::CheckEnumValueUniqueness(
           "Enum name %s has the same name as %s if you ignore case and strip "
           "out the enum name prefix (if any). (If you are using allow_alias, "
           "please assign the same numeric value to both enums.)",
-          value->name(), values[stripped]->name());
+          value->name(), insert_result.first->second->name());
       // There are proto2 enums out there with conflicting names, so to preserve
       // compatibility we issue only a warning for proto2.
       if (IsLegacyJsonFieldConflictEnabled(result->options()) &&
@@ -7111,23 +7112,23 @@ void DescriptorBuilder::ValidateEnumOptions(EnumDescriptor* enm,
   CheckEnumValueUniqueness(proto, enm);
 
   if (!enm->options().has_allow_alias() || !enm->options().allow_alias()) {
-    std::map<int, std::string> used_values;
+    absl::flat_hash_map<int, std::string> used_values;
     for (int i = 0; i < enm->value_count(); ++i) {
       const EnumValueDescriptor* enum_value = enm->value(i);
-      if (used_values.find(enum_value->number()) != used_values.end()) {
-        std::string error =
-            "\"" + enum_value->full_name() +
-            "\" uses the same enum value as \"" +
-            used_values[enum_value->number()] +
+      auto insert_result =
+          used_values.emplace(enum_value->number(), enum_value->full_name());
+      bool inserted = insert_result.second;
+      if (!inserted) {
+        std::string error = absl::StrCat(
+            "\"", enum_value->full_name(), "\" uses the same enum value as \"",
+            insert_result.first->second,
             "\". If this is intended, set "
-            "'option allow_alias = true;' to the enum definition.";
+            "'option allow_alias = true;' to the enum definition.");
         if (!enm->options().allow_alias()) {
           // Generate error if duplicated enum values are explicitly disallowed.
           AddError(enm->full_name(), proto.value(i),
                    DescriptorPool::ErrorCollector::NUMBER, error);
         }
-      } else {
-        used_values[enum_value->number()] = enum_value->full_name();
       }
     }
   }
@@ -7239,18 +7240,18 @@ bool DescriptorBuilder::ValidateMapEntry(FieldDescriptor* field,
 
 void DescriptorBuilder::DetectMapConflicts(const Descriptor* message,
                                            const DescriptorProto& proto) {
-  std::map<std::string, const Descriptor*> seen_types;
+  absl::flat_hash_map<std::string, const Descriptor*> seen_types;
   for (int i = 0; i < message->nested_type_count(); ++i) {
     const Descriptor* nested = message->nested_type(i);
-    std::pair<std::map<std::string, const Descriptor*>::iterator, bool> result =
-        seen_types.insert(std::make_pair(nested->name(), nested));
-    if (!result.second) {
-      if (result.first->second->options().map_entry() ||
+    auto insert_result = seen_types.emplace(nested->name(), nested);
+    bool inserted = insert_result.second;
+    if (!inserted) {
+      if (insert_result.first->second->options().map_entry() ||
           nested->options().map_entry()) {
-        AddError(message->full_name(), proto,
-                 DescriptorPool::ErrorCollector::NAME,
-                 "Expanded map entry type " + nested->name() +
-                     " conflicts with an existing nested message type.");
+        AddError(
+            message->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+            absl::StrCat("Expanded map entry type ", nested->name(),
+                         " conflicts with an existing nested message type."));
         break;
       }
     }
@@ -7260,8 +7261,7 @@ void DescriptorBuilder::DetectMapConflicts(const Descriptor* message,
   // Check for conflicted field names.
   for (int i = 0; i < message->field_count(); ++i) {
     const FieldDescriptor* field = message->field(i);
-    std::map<std::string, const Descriptor*>::iterator iter =
-        seen_types.find(field->name());
+    auto iter = seen_types.find(field->name());
     if (iter != seen_types.end() && iter->second->options().map_entry()) {
       AddError(message->full_name(), proto,
                DescriptorPool::ErrorCollector::NAME,
@@ -7272,8 +7272,7 @@ void DescriptorBuilder::DetectMapConflicts(const Descriptor* message,
   // Check for conflicted enum names.
   for (int i = 0; i < message->enum_type_count(); ++i) {
     const EnumDescriptor* enum_desc = message->enum_type(i);
-    std::map<std::string, const Descriptor*>::iterator iter =
-        seen_types.find(enum_desc->name());
+    auto iter = seen_types.find(enum_desc->name());
     if (iter != seen_types.end() && iter->second->options().map_entry()) {
       AddError(message->full_name(), proto,
                DescriptorPool::ErrorCollector::NAME,
@@ -7284,8 +7283,7 @@ void DescriptorBuilder::DetectMapConflicts(const Descriptor* message,
   // Check for conflicted oneof names.
   for (int i = 0; i < message->oneof_decl_count(); ++i) {
     const OneofDescriptor* oneof_desc = message->oneof_decl(i);
-    std::map<std::string, const Descriptor*>::iterator iter =
-        seen_types.find(oneof_desc->name());
+    auto iter = seen_types.find(oneof_desc->name());
     if (iter != seen_types.end() && iter->second->options().map_entry()) {
       AddError(message->full_name(), proto,
                DescriptorPool::ErrorCollector::NAME,
@@ -7683,8 +7681,7 @@ void DescriptorBuilder::OptionInterpreter::UpdateSourceCodeInfo(
       pathv.push_back(loc->path(j));
     }
 
-    std::map<std::vector<int>, std::vector<int>>::iterator entry =
-        interpreted_paths_.find(pathv);
+    auto entry = interpreted_paths_.find(pathv);
 
     if (entry == interpreted_paths_.end()) {
       // not a match

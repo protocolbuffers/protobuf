@@ -39,12 +39,12 @@
 #define GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 
 #include <atomic>
-#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/port.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
@@ -509,14 +509,13 @@ class PROTOBUF_EXPORT TextFormat {
     int64_t truncate_string_field_longer_than_;
 
     std::unique_ptr<const FastFieldValuePrinter> default_field_value_printer_;
-    typedef std::map<const FieldDescriptor*,
-                     std::unique_ptr<const FastFieldValuePrinter>>
-        CustomPrinterMap;
-    CustomPrinterMap custom_printers_;
+    absl::flat_hash_map<const FieldDescriptor*,
+                        std::unique_ptr<const FastFieldValuePrinter>>
+        custom_printers_;
 
-    typedef std::map<const Descriptor*, std::unique_ptr<const MessagePrinter>>
-        CustomMessagePrinterMap;
-    CustomMessagePrinterMap custom_message_printers_;
+    absl::flat_hash_map<const Descriptor*,
+                        std::unique_ptr<const MessagePrinter>>
+        custom_message_printers_;
 
     const Finder* finder_;
   };
@@ -610,17 +609,13 @@ class PROTOBUF_EXPORT TextFormat {
     ParseInfoTree* CreateNested(const FieldDescriptor* field);
 
     // Defines the map from the index-th field descriptor to its parse location.
-    typedef std::map<const FieldDescriptor*, std::vector<ParseLocationRange>>
-        LocationMap;
-
+    absl::flat_hash_map<const FieldDescriptor*, std::vector<ParseLocationRange>>
+        locations_;
     // Defines the map from the index-th field descriptor to the nested parse
     // info tree.
-    typedef std::map<const FieldDescriptor*,
-                     std::vector<std::unique_ptr<ParseInfoTree>>>
-        NestedMap;
-
-    LocationMap locations_;
-    NestedMap nested_;
+    absl::flat_hash_map<const FieldDescriptor*,
+                        std::vector<std::unique_ptr<ParseInfoTree>>>
+        nested_;
   };
 
   // For more control over parsing, use this class.

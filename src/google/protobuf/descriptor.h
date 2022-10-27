@@ -57,7 +57,6 @@
 #include <atomic>
 #include <cstdint>
 #include <iterator>
-#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -66,6 +65,7 @@
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/port.h"
 #include "absl/base/call_once.h"
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/strings/string_view.h"
@@ -2123,7 +2123,7 @@ class PROTOBUF_EXPORT DescriptorPool {
 
   // Set of files to track for unused imports. The bool value when true means
   // unused imports are treated as errors (and as warnings when false).
-  std::map<std::string, bool> unused_import_track_files_;
+  absl::flat_hash_map<std::string, bool> unused_import_track_files_;
 };
 
 

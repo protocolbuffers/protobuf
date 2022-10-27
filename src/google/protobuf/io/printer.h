@@ -40,7 +40,6 @@
 #include <cstddef>
 #include <functional>
 #include <initializer_list>
-#include <map>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -723,7 +722,7 @@ class PROTOBUF_EXPORT Printer {
   // A map from variable name to [start, end) offsets in the output buffer.
   //
   // This stores the data looked up by GetSubstitutionRange().
-  std::map<std::string, std::pair<size_t, size_t>> substitutions_;
+  absl::flat_hash_map<std::string, std::pair<size_t, size_t>> substitutions_;
   // Keeps track of the keys in `substitutions_` that need to be updated when
   // indents are inserted. These are keys that refer to the beginning of the
   // current line.
