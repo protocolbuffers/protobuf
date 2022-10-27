@@ -149,6 +149,10 @@ void RepeatedEnumFieldGenerator::FinishInitialization() {
                                 variables_["storage_type"] + "|\n";
 }
 
+// NOTE: RepeatedEnumFieldGenerator::DetermineForwardDeclarations isn't needed
+// because `GPBEnumArray` isn't generic (like `NSArray` would be for messages)
+// and thus doesn't reference the type in the header.
+
 }  // namespace objectivec
 }  // namespace compiler
 }  // namespace protobuf
