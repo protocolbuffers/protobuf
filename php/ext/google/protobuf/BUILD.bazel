@@ -17,12 +17,12 @@ pkg_files(
 )
 
 pkg_files(
-  name = "protobuf_files",
+  name = "source_files",
   srcs = glob([
     "*.h",
     "*.c",
   ]) + [
-    "//:LICENSE",
+    "LICENSE",
     "config.m4",
     "wkt.inc",
   ],
@@ -31,7 +31,7 @@ pkg_files(
 pkg_filegroup(
   name = "release_files",
   srcs = [
-    ":protobuf_files",
+    ":source_files",
     ":utf8_range_files",
   ],
 )

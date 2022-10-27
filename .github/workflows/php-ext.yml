@@ -28,6 +28,10 @@ jobs:
           rm -rf "$GITHUB_WORKSPACE/php/ext/google/protobuf/third_party"
           cp -r "$GITHUB_WORKSPACE/third_party" "$GITHUB_WORKSPACE/php/ext/google/protobuf"
           cp "$GITHUB_WORKSPACE/LICENSE" "$GITHUB_WORKSPACE/php/ext/google/protobuf"
+      - name: Generate package.xml
+        run: |
+          bazel build $GITHUB_WORKSPACE/php/ext/google/protobuf:generate_package_xml
+          cp $GITHUB_WORKSPACE/bazel-bin/php/ext/google/protobuf/package.xml $GITHUB_WORKSPACE/php/ext/google/protobuf/package.xml
       - name: Create package
         run: |
           cd /tmp

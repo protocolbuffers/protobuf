@@ -14,15 +14,11 @@ filegroup(
         "//php:__pkg__",
     ],
     srcs = glob([
-        "ext/google/protobuf/*.h",
-        "ext/google/protobuf/*.c",
         "src/GPBMetadata/Google/Protobuf/**/*.php",
         "src/Google/Protobuf/**/*.php",
     ]) + [
         "composer.json",
-        "ext/google/protobuf/wkt.inc",
-        "ext/google/protobuf/config.m4",
-        "ext/google/protobuf/package.xml",
+        "//php/ext/google/protobuf:source_files",
     ],
 )
 
