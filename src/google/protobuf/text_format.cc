@@ -166,6 +166,23 @@ std::string Message::Utf8DebugString() const {
 
 void Message::PrintDebugString() const { printf("%s", DebugString().c_str()); }
 
+namespace internal {
+
+void PerformAbslStringify(const Message& message,
+                          absl::FunctionRef<void(absl::string_view)> append) {
+  // TODO(b/249835002): consider using the single line version for short
+  TextFormat::Printer printer;
+  printer.SetExpandAny(true);
+  printer.SetInsertSilentMarker(true);
+  printer.SetRedactDebugString(true);
+  printer.SetRandomizeDebugString(true);
+  std::string result;
+  printer.PrintToString(message, &result);
+  append(result);
+}
+
+}  // namespace internal
+
 
 // ===========================================================================
 // Implementation of the parse information tree class.

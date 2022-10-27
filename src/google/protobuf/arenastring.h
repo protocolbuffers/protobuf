@@ -100,9 +100,9 @@ class TaggedStringPtr {
   // Bit flags qualifying string properties. We can use 2 bits as
   // ptr_ is guaranteed and enforced to be aligned on 4 byte boundaries.
   enum Flags {
-    kArenaBit = 0x1,      // ptr is arena allocated
-    kMutableBit = 0x2,    // ptr contents are fully mutable
-    kMask = 0x3           // Bit mask
+    kArenaBit = 0x1,    // ptr is arena allocated
+    kMutableBit = 0x2,  // ptr contents are fully mutable
+    kMask = 0x3         // Bit mask
   };
 
   // Composed logical types
@@ -168,7 +168,7 @@ class TaggedStringPtr {
 
   // If the current string is a heap-allocated mutable value, returns a pointer
   // to it.  Returns nullptr otherwise.
-  inline std::string *GetIfAllocated() const {
+  inline std::string* GetIfAllocated() const {
     auto allocated = as_int() ^ kAllocated;
     if (allocated & kMask) return nullptr;
 
@@ -423,8 +423,8 @@ inline void ArenaStringPtr::SetBytes(absl::string_view value, Arena* arena) {
 }
 
 template <>
-PROTOBUF_EXPORT
-void ArenaStringPtr::Set(const std::string& value, Arena* arena);
+PROTOBUF_EXPORT void ArenaStringPtr::Set(const std::string& value,
+                                         Arena* arena);
 
 template <>
 inline void ArenaStringPtr::SetBytes(const std::string& value, Arena* arena) {

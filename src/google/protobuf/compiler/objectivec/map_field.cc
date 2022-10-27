@@ -163,6 +163,11 @@ void MapFieldGenerator::DetermineForwardDeclarations(
     std::set<std::string>* fwd_decls, bool include_external_types) const {
   RepeatedFieldGenerator::DetermineForwardDeclarations(fwd_decls,
                                                        include_external_types);
+  // NOTE: Maps with values of enums don't have to worry about adding the
+  // forward declaration because `GPB*EnumDictionary` isn't generic to the
+  // specific enum (like say `NSDictionary<String, MyMessage>`) and thus doesn't
+  // reference the type in the header.
+
   const FieldDescriptor* value_descriptor =
       descriptor_->message_type()->map_value();
   // Within a file there is no requirement on the order of the messages, so

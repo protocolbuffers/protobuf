@@ -79,7 +79,7 @@ namespace protobuf {
 namespace internal {
 
 struct ArenaAlignDefault {
-  static constexpr size_t align = 8;  // NOLINT
+  PROTOBUF_EXPORT static constexpr size_t align = 8;  // NOLINT
 
   static constexpr bool IsAligned(size_t n) { return (n & (align - 1)) == 0; }
 
