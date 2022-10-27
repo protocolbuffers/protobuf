@@ -67,7 +67,10 @@ namespace Google.Protobuf
             // We build the code with GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE to avoid the use of ref struct in the generated code.
             var compatibilityFlag = "-define:GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE";
             var sources = "*.cs";  // the generated sources from the TestProtos project
-            var args = $"-langversion:3 -target:library {compatibilityFlag} -reference:{testProtosOutputDir}\\Google.Protobuf.dll -out:{testProtosOutputDir}\\TestProtos.RefStructCompatibilityTest.OldCompiler.dll {sources}";
+            // We suppress CS1691, which flags a warning for the generated line of
+            // #pragma warning disable 1591, 0612, 3021, 8981
+            // because CS8981 is unknown to this version of the compiler.
+            var args = $"-langversion:3 -nologo -nowarn:1691 -target:library {compatibilityFlag} -reference:{testProtosOutputDir}\\Google.Protobuf.dll -out:{testProtosOutputDir}\\TestProtos.RefStructCompatibilityTest.OldCompiler.dll {sources}";
             RunOldCsharpCompilerAndCheckSuccess(args, testProtosProjectDir);
         }
 

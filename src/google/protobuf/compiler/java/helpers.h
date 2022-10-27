@@ -74,11 +74,10 @@ void PrintGeneratedAnnotation(io::Printer* printer, char delimiter = '$',
 
 // If a GeneratedMessageLite contains non-lite enums, then its verifier
 // must be instantiated inline, rather than retrieved from the enum class.
-void PrintEnumVerifierLogic(io::Printer* printer,
-                            const FieldDescriptor* descriptor,
-                            const std::map<std::string, std::string>& variables,
-                            const char* var_name,
-                            const char* terminating_string, bool enforce_lite);
+void PrintEnumVerifierLogic(
+    io::Printer* printer, const FieldDescriptor* descriptor,
+    const absl::flat_hash_map<absl::string_view, std::string>& variables,
+    const char* var_name, const char* terminating_string, bool enforce_lite);
 
 // Converts a name to camel-case. If cap_first_letter is true, capitalize the
 // first letter.

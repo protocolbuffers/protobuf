@@ -55,7 +55,7 @@ std::string NumberedCcFileName(absl::string_view basename, int number) {
   return absl::StrCat(basename, ".out/", number, ".cc");
 }
 
-absl::flat_hash_map<std::string, std::string> CommonVars(
+absl::flat_hash_map<absl::string_view, std::string> CommonVars(
     const Options& options) {
   bool is_oss = options.opensource_runtime;
   return {

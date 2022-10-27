@@ -35,7 +35,6 @@
 #include "google/protobuf/compiler/cpp/file.h"
 
 #include <iostream>
-#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -71,7 +70,7 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
-absl::flat_hash_map<std::string, std::string> FileVars(
+absl::flat_hash_map<absl::string_view, std::string> FileVars(
     const FileDescriptor* file, const Options& options) {
   return {
       {"filename", file->name()},

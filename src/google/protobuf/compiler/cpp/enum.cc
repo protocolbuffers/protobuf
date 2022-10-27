@@ -54,7 +54,7 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
-absl::flat_hash_map<std::string, std::string> EnumVars(
+absl::flat_hash_map<absl::string_view, std::string> EnumVars(
     const EnumDescriptor* enum_, const Options& options,
     const EnumValueDescriptor* min, const EnumValueDescriptor* max) {
   auto classname = ClassName(enum_, false);

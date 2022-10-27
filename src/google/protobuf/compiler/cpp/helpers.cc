@@ -38,7 +38,6 @@
 #include <cstdint>
 #include <functional>
 #include <limits>
-#include <map>
 #include <memory>
 #include <queue>
 #include <set>
@@ -232,7 +231,7 @@ bool IsLazilyVerifiedLazy(const FieldDescriptor* field,
   return false;
 }
 
-absl::flat_hash_map<std::string, std::string> MessageVars(
+absl::flat_hash_map<absl::string_view, std::string> MessageVars(
     const Descriptor* desc) {
   absl::string_view prefix = IsMapEntryMessage(desc) ? "" : "_impl_.";
   return {
@@ -252,13 +251,13 @@ absl::flat_hash_map<std::string, std::string> MessageVars(
 
 void SetCommonMessageDataVariables(
     const Descriptor* descriptor,
-    std::map<std::string, std::string>* variables) {
+    absl::flat_hash_map<absl::string_view, std::string>* variables) {
   for (auto& pair : MessageVars(descriptor)) {
     variables->emplace(pair);
   }
 }
 
-absl::flat_hash_map<std::string, std::string> UnknownFieldsVars(
+absl::flat_hash_map<absl::string_view, std::string> UnknownFieldsVars(
     const Descriptor* desc, const Options& opts) {
   std::string proto_ns = ProtobufNamespace(opts);
 
@@ -286,9 +285,9 @@ absl::flat_hash_map<std::string, std::string> UnknownFieldsVars(
   };
 }
 
-void SetUnknownFieldsVariable(const Descriptor* descriptor,
-                              const Options& options,
-                              std::map<std::string, std::string>* variables) {
+void SetUnknownFieldsVariable(
+    const Descriptor* descriptor, const Options& options,
+    absl::flat_hash_map<absl::string_view, std::string>* variables) {
   for (auto& pair : UnknownFieldsVars(descriptor, options)) {
     variables->emplace(pair);
   }
@@ -1362,7 +1361,7 @@ bool GetBootstrapBasename(const Options& options, const std::string& basename,
   static const auto* bootstrap_mapping =
       // TODO(b/242858704) Replace these with string_view once we remove
       // StringPiece.
-      new absl::flat_hash_map<std::string, std::string>{
+      new absl::flat_hash_map<absl::string_view, std::string>{
           {"net/proto2/proto/descriptor",
            "third_party/protobuf/descriptor"},
           {"net/proto2/compiler/proto/plugin",
