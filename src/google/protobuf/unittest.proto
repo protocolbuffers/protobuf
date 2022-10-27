@@ -1570,3 +1570,8 @@ message StringParseTester {
   repeated string repeated_string_midfield = 1002;
   repeated string repeated_string_hifield = 1000002;
 };
+
+message BadFieldNames{
+  optional int32 OptionalInt32 = 1;
+  optional int32 for = 2;
+}
