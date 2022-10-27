@@ -161,8 +161,6 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
   std::string ModuleLevelMessageName(const Descriptor& descriptor) const;
   std::string ModuleLevelServiceDescriptorName(
       const ServiceDescriptor& descriptor) const;
-  std::string PublicPackage() const;
-  std::string InternalPackage() const;
 
   template <typename DescriptorT, typename DescriptorProtoT>
   void PrintSerializedPbInterval(const DescriptorT& descriptor,
