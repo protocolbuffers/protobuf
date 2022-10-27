@@ -15,6 +15,9 @@ jobs:
           - php:7.4-cli
           - php:8.1-cli
     steps:
+      - name: Install bazel
+        run: |
+          sudo apt update && sudo apt install bazel
       - name: Install git
         run: |
           apt-get update -q
