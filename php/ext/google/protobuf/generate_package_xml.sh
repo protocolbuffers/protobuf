@@ -19,13 +19,15 @@ fi
 
 files="\\n"
 for file in ${release_files//,/ }; do
-    name=$(echo $file | sed -e 's;php/ext/google/protobuf/;;')
+  name=$(echo $file | grep .*[^/]\$ | sed -e "s;protobuf-${release_version}/;;")
+  if [ ! -z $name ]; then
     if [[ $name =~ LICENSE$ ]]; then
       role='doc'
     else
       role='src'
     fi
     files+="    <file baseinstalldir=\"/\" name=\"${name}\" role=\"${role}\"/>\\n"
+  fi
 done
 
 cat $template_package_xml |
