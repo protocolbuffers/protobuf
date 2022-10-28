@@ -18,7 +18,7 @@ jobs:
       - name: Install python3
         run: |
           apt-get update -q
-          apt-get install python3
+          apt-get install -qy python3
       - name: Install bazel
         run: |
           apt-get install -qy wget
