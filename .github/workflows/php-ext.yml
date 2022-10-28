@@ -15,9 +15,12 @@ jobs:
           - php:7.4-cli
           - php:8.1-cli
     steps:
-      - name: Install bazel
+      - name: Install python3
         run: |
           apt-get update -q
+          apt-get install python3
+      - name: Install bazel
+        run: |
           apt-get install -qy wget
           mkdir $HOME/bin
           wget -O $HOME/bin/bazel https://github.com/bazelbuild/bazel/releases/download/5.3.2/bazel-5.3.2-linux-x86_64
