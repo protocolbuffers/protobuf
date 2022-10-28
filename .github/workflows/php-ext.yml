@@ -17,10 +17,10 @@ jobs:
     steps:
       - name: Install bazel
         run: |
-          apt-get install bazel
+          apt-get update -q
+          apt-get install -qy bazel
       - name: Install git
         run: |
-          apt-get update -q
           apt-get install -qy --no-install-recommends git
       - name: Checkout
         uses: actions/checkout@v3
