@@ -40,7 +40,7 @@ jobs:
       - name: Compile extension
         run: |
           cd /tmp
-          MAKE="make -j$(nproc)" pecl install bazel-bin/php/protobuf-*.tgz
+          MAKE="make -j$(nproc)" pecl install $GITHUB_WORKSPACE/bazel-bin/php/protobuf-*.tgz
       - name: Enable extension
         run: docker-php-ext-enable protobuf
       - name: Inspect extension
