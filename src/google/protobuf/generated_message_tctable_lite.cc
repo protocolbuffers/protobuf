@@ -254,15 +254,25 @@ absl::string_view TcParser::FieldName(const TcParseTableBase* table,
                   field_index + 1);
 }
 
-PROTOBUF_NOINLINE const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
+template <bool export_called_function>
+inline PROTOBUF_ALWAYS_INLINE const char* TcParser::MiniParseImpl(
+    PROTOBUF_TC_PARAM_DECL) {
+  TestMiniParseResult* test_out;
+  if (export_called_function) {
+    test_out = reinterpret_cast<TestMiniParseResult*>(
+        static_cast<uintptr_t>(data.data));
+  }
+
   uint32_t tag;
   ptr = ReadTagInlined(ptr, &tag);
   if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
+    if (export_called_function) *test_out = {Error};
     return Error(PROTOBUF_TC_PARAM_PASS);
   }
 
   auto* entry = FindFieldEntry(table, tag >> 3);
   if (entry == nullptr) {
+    if (export_called_function) *test_out = {table->fallback, tag};
     data.data = tag;
     PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
   }
@@ -324,7 +334,20 @@ PROTOBUF_NOINLINE const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
     "Invalid table order");
 
   TailCallParseFunc parse_fn = kMiniParseTable[field_type];
+  if (export_called_function) *test_out = {parse_fn, tag, entry};
+
   PROTOBUF_MUSTTAIL return parse_fn(PROTOBUF_TC_PARAM_PASS);
+}
+
+PROTOBUF_NOINLINE const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return MiniParseImpl<false>(PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE TcParser::TestMiniParseResult TcParser::TestMiniParse(
+    PROTOBUF_TC_PARAM_DECL) {
+  TestMiniParseResult result = {};
+  data.data = reinterpret_cast<uintptr_t>(&result);
+  result.ptr = MiniParseImpl<true>(PROTOBUF_TC_PARAM_PASS);
+  return result;
 }
 
 const char* TcParser::MpFallback(PROTOBUF_TC_PARAM_DECL) {
@@ -1930,6 +1953,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedVarint(
       field.Add(is_zigzag ? WireFormatLite::ZigZagDecode64(tmp) : tmp);
       if (!ctx->DataAvailable(ptr)) break;
       ptr2 = ReadTag(ptr, &next_tag);
+      if (ptr2 == nullptr) return Error(PROTOBUF_TC_PARAM_PASS);
     } while (next_tag == decoded_tag);
   } else if (rep == field_layout::kRep32Bits) {
     auto& field = RefAt<RepeatedField<uint32_t>>(msg, entry.offset);
@@ -1950,6 +1974,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedVarint(
       field.Add(tmp);
       if (!ctx->DataAvailable(ptr)) break;
       ptr2 = ReadTag(ptr, &next_tag);
+      if (ptr2 == nullptr) return Error(PROTOBUF_TC_PARAM_PASS);
     } while (next_tag == decoded_tag);
   } else {
     GOOGLE_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep8Bits));
@@ -1963,6 +1988,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedVarint(
       field.Add(static_cast<bool>(tmp));
       if (!ctx->DataAvailable(ptr)) break;
       ptr2 = ReadTag(ptr, &next_tag);
+      if (ptr2 == nullptr) return Error(PROTOBUF_TC_PARAM_PASS);
     } while (next_tag == decoded_tag);
   }
 
