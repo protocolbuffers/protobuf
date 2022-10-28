@@ -578,10 +578,3 @@ pkg_files(
     ],
     visibility = ["//pkg:__pkg__"],
 )
-
-# Version JSON file for release
-filegroup(
-    name = "version_json",
-    srcs = ["version.json"],
-    visibility=["//visibility:public"],
-)
