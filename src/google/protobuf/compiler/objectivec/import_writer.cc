@@ -30,7 +30,14 @@
 
 #include "google/protobuf/compiler/objectivec/import_writer.h"
 
+#include <iostream>
+#include <ostream>
+#include <string>
+#include <vector>
+
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/match.h"
 #include "google/protobuf/compiler/objectivec/line_consumer.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/io/printer.h"
@@ -47,24 +54,23 @@ namespace {
 
 class ProtoFrameworkCollector : public LineConsumer {
  public:
-  ProtoFrameworkCollector(
-      std::map<std::string, std::string>* inout_proto_file_to_framework_name)
+  explicit ProtoFrameworkCollector(
+      absl::flat_hash_map<std::string, std::string>*
+          inout_proto_file_to_framework_name)
       : map_(inout_proto_file_to_framework_name) {}
 
-  virtual bool ConsumeLine(const absl::string_view& line,
-                           std::string* out_error) override;
+  bool ConsumeLine(absl::string_view line, std::string* out_error) override;
 
  private:
-  std::map<std::string, std::string>* map_;
+  absl::flat_hash_map<std::string, std::string>* map_;
 };
 
-bool ProtoFrameworkCollector::ConsumeLine(const absl::string_view& line,
+bool ProtoFrameworkCollector::ConsumeLine(absl::string_view line,
                                           std::string* out_error) {
   int offset = line.find(':');
   if (offset == absl::string_view::npos) {
-    *out_error =
-        std::string("Framework/proto file mapping line without colon sign: '") +
-        std::string(line) + "'.";
+    *out_error = absl::StrCat(
+        "Framework/proto file mapping line without colon sign: '", line, "'.");
     return false;
   }
   absl::string_view framework_name =
@@ -82,25 +88,23 @@ bool ProtoFrameworkCollector::ConsumeLine(const absl::string_view& line,
     absl::string_view proto_file = absl::StripAsciiWhitespace(
         proto_file_list.substr(start, offset - start));
     if (!proto_file.empty()) {
-      std::map<std::string, std::string>::iterator existing_entry =
-          map_->find(std::string(proto_file));
+      auto existing_entry = map_->find(proto_file);
       if (existing_entry != map_->end()) {
         std::cerr << "warning: duplicate proto file reference, replacing "
                      "framework entry for '"
-                  << std::string(proto_file) << "' with '"
-                  << std::string(framework_name) << "' (was '"
+                  << proto_file << "' with '" << framework_name << "' (was '"
                   << existing_entry->second << "')." << std::endl;
         std::cerr.flush();
       }
 
-      if (proto_file.find(' ') != absl::string_view::npos) {
+      if (absl::StrContains(proto_file, ' ')) {
         std::cerr << "note: framework mapping file had a proto file with a "
                      "space in, hopefully that isn't a missing comma: '"
-                  << std::string(proto_file) << "'" << std::endl;
+                  << proto_file << "'" << std::endl;
         std::cerr.flush();
       }
 
-      (*map_)[std::string(proto_file)] = std::string(framework_name);
+      (*map_)[proto_file] = std::string(framework_name);
     }
 
     start = offset + 1;
@@ -122,8 +126,6 @@ ImportWriter::ImportWriter(
       include_wkt_imports_(include_wkt_imports),
       need_to_parse_mapping_file_(true) {}
 
-ImportWriter::~ImportWriter() {}
-
 void ImportWriter::AddFile(const FileDescriptor* file,
                            const std::string& header_extension) {
   if (IsProtobufLibraryBundledProtoFile(file)) {
@@ -143,8 +145,7 @@ void ImportWriter::AddFile(const FileDescriptor* file,
     ParseFrameworkMappings();
   }
 
-  std::map<std::string, std::string>::iterator proto_lookup =
-      proto_file_to_framework_name_.find(file->name());
+  auto proto_lookup = proto_file_to_framework_name_.find(file->name());
   if (proto_lookup != proto_file_to_framework_name_.end()) {
     other_framework_imports_.push_back(
         proto_lookup->second + "/" + FilePathBasename(file) + header_extension);

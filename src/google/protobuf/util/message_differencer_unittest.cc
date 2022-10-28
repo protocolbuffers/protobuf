@@ -41,8 +41,7 @@
 
 #include "google/protobuf/stubs/common.h"
 
-#include "google/protobuf/stubs/strutil.h"
-
+#include <gmock/gmock.h>
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/any_test.pb.h"
 #include "google/protobuf/map_test_util.h"
@@ -58,6 +57,7 @@
 #include "absl/functional/bind_front.h"
 #include "absl/strings/str_split.h"
 #include "google/protobuf/util/message_differencer_unittest.pb.h"
+
 
 namespace google {
 namespace protobuf {

@@ -70,7 +70,6 @@
 #include "google/protobuf/pyext/unknown_field_set.h"
 #include "google/protobuf/pyext/unknown_fields.h"
 #include "google/protobuf/util/message_differencer.h"
-#include "google/protobuf/stubs/strutil.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/strtod.h"

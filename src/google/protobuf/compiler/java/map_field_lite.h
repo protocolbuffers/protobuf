@@ -61,7 +61,7 @@ class ImmutableMapFieldLiteGenerator : public ImmutableFieldLiteGenerator {
 
  private:
   const FieldDescriptor* descriptor_;
-  std::map<std::string, std::string> variables_;
+  absl::flat_hash_map<absl::string_view, std::string> variables_;
   Context* context_;
   ClassNameResolver* name_resolver_;
 };

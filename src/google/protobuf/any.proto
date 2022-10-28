@@ -32,12 +32,12 @@ syntax = "proto3";
 
 package google.protobuf;
 
-option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 option go_package = "google.golang.org/protobuf/types/known/anypb";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "AnyProto";
 option java_multiple_files = true;
 option objc_class_prefix = "GPB";
+option csharp_namespace = "Google.Protobuf.WellKnownTypes";
 
 // `Any` contains an arbitrary serialized protocol buffer message along with a
 // URL that describes the type of the serialized message.

@@ -71,12 +71,15 @@
 #include "google/protobuf/stubs/common.h"
 #include "absl/numeric/bits.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace internal {
 
 struct ArenaAlignDefault {
-  static constexpr size_t align = 8;  // NOLINT
+  PROTOBUF_EXPORT static constexpr size_t align = 8;  // NOLINT
 
   static constexpr bool IsAligned(size_t n) { return (n & (align - 1)) == 0; }
 
@@ -151,5 +154,7 @@ inline ArenaAlign ArenaAlignAs(size_t align) {
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_ARENA_ALIGN_H__

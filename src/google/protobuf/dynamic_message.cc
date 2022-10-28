@@ -68,7 +68,6 @@
 #include <cstddef>
 #include <memory>
 #include <new>
-#include <unordered_map>
 
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"

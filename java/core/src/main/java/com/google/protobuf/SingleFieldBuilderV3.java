@@ -202,6 +202,9 @@ public class SingleFieldBuilderV3<
       builder = null;
     }
     onChanged();
+    // After clearing, parent is dirty, but this field builder is now clean and any changes should
+    // trickle up.
+    isClean = true;
     return this;
   }
 

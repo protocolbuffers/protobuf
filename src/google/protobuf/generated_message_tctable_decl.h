@@ -122,6 +122,20 @@ struct TcFieldData {
   uint32_t tag() const { return static_cast<uint32_t>(data); }
   uint32_t entry_offset() const { return static_cast<uint32_t>(data >> 32); }
 
+  // Fields used for passing unknown enum values to the generic fallback:
+  //     Bit:
+  //     +-----------+-------------------+
+  //     |63    ..     32|31     ..     0|
+  //     +---------------+---------------+
+  //     :   .   :   .   |===============| [32] tag() (decoded)
+  //     |===============|   .   :   .   : [32] unknown_enum_value()
+  //     +-----------+-------------------+
+  //     |63    ..     32|31     ..     0|
+  //     +---------------+---------------+
+  int32_t unknown_enum_value() const {
+    return static_cast<int32_t>(data >> 32);
+  }
+
   uint64_t data;
 };
 

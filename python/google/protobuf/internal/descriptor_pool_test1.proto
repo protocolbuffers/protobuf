@@ -32,7 +32,6 @@ syntax = "proto2";
 
 package google.protobuf.python.internal;
 
-
 message DescriptorPoolTest1 {
   extensions 1000 to max;
 

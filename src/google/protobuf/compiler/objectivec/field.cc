@@ -31,7 +31,12 @@
 #include "google/protobuf/compiler/objectivec/field.h"
 
 #include <iostream>
+#include <ostream>
+#include <set>
+#include <string>
+#include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/enum_field.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
@@ -48,8 +53,9 @@ namespace objectivec {
 
 namespace {
 
-void SetCommonFieldVariables(const FieldDescriptor* descriptor,
-                             std::map<std::string, std::string>* variables) {
+void SetCommonFieldVariables(
+    const FieldDescriptor* descriptor,
+    absl::flat_hash_map<absl::string_view, std::string>* variables) {
   std::string camel_case_name = FieldName(descriptor);
   std::string raw_field_name;
   if (descriptor->type() == FieldDescriptor::TYPE_GROUP) {
@@ -166,7 +172,7 @@ bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
 }  // namespace
 
 FieldGenerator* FieldGenerator::Make(const FieldDescriptor* field) {
-  FieldGenerator* result = NULL;
+  FieldGenerator* result = nullptr;
   if (field->is_repeated()) {
     switch (GetObjectiveCType(field)) {
       case OBJECTIVECTYPE_MESSAGE: {
@@ -210,8 +216,6 @@ FieldGenerator::FieldGenerator(const FieldDescriptor* descriptor)
     : descriptor_(descriptor) {
   SetCommonFieldVariables(descriptor, &variables_);
 }
-
-FieldGenerator::~FieldGenerator() {}
 
 void FieldGenerator::GenerateFieldNumberConstant(io::Printer* printer) const {
   printer->Print(variables_, "$field_number_name$ = $field_number$,\n");
@@ -275,11 +279,9 @@ void FieldGenerator::SetRuntimeHasBit(int has_index) {
   variables_["has_index"] = absl::StrCat(has_index);
 }
 
-void FieldGenerator::SetNoHasBit(void) {
-  variables_["has_index"] = "GPBNoHasBit";
-}
+void FieldGenerator::SetNoHasBit() { variables_["has_index"] = "GPBNoHasBit"; }
 
-int FieldGenerator::ExtraRuntimeHasBitsNeeded(void) const { return 0; }
+int FieldGenerator::ExtraRuntimeHasBitsNeeded() const { return 0; }
 
 void FieldGenerator::SetExtraRuntimeHasBitsBase(int index_base) {
   // NOTE: src/google/protobuf/compiler/plugin.cc makes use of cerr for some
@@ -292,18 +294,18 @@ void FieldGenerator::SetExtraRuntimeHasBitsBase(int index_base) {
 
 void FieldGenerator::SetOneofIndexBase(int index_base) {
   const OneofDescriptor* oneof = descriptor_->real_containing_oneof();
-  if (oneof != NULL) {
+  if (oneof != nullptr) {
     int index = oneof->index() + index_base;
     // Flip the sign to mark it as a oneof.
     variables_["has_index"] = absl::StrCat(-index);
   }
 }
 
-bool FieldGenerator::WantsHasProperty(void) const {
+bool FieldGenerator::WantsHasProperty() const {
   return descriptor_->has_presence() && !descriptor_->real_containing_oneof();
 }
 
-void FieldGenerator::FinishInitialization(void) {
+void FieldGenerator::FinishInitialization() {
   // If "property_type" wasn't set, make it "storage_type".
   if ((variables_.find("property_type") == variables_.end()) &&
       (variables_.find("storage_type") != variables_.end())) {
@@ -315,8 +317,6 @@ SingleFieldGenerator::SingleFieldGenerator(const FieldDescriptor* descriptor)
     : FieldGenerator(descriptor) {
   // Nothing
 }
-
-SingleFieldGenerator::~SingleFieldGenerator() {}
 
 void SingleFieldGenerator::GenerateFieldStorageDeclaration(
     io::Printer* printer) const {
@@ -350,7 +350,7 @@ void SingleFieldGenerator::GeneratePropertyImplementation(
   }
 }
 
-bool SingleFieldGenerator::RuntimeUsesHasBit(void) const {
+bool SingleFieldGenerator::RuntimeUsesHasBit() const {
   if (descriptor_->real_containing_oneof()) {
     // The oneof tracks what is set instead.
     return false;
@@ -365,8 +365,6 @@ ObjCObjFieldGenerator::ObjCObjFieldGenerator(const FieldDescriptor* descriptor)
     variables_["storage_attribute"] = " NS_RETURNS_NOT_RETAINED";
   }
 }
-
-ObjCObjFieldGenerator::~ObjCObjFieldGenerator() {}
 
 void ObjCObjFieldGenerator::GenerateFieldStorageDeclaration(
     io::Printer* printer) const {
@@ -410,9 +408,7 @@ RepeatedFieldGenerator::RepeatedFieldGenerator(
   variables_["array_comment"] = "";
 }
 
-RepeatedFieldGenerator::~RepeatedFieldGenerator() {}
-
-void RepeatedFieldGenerator::FinishInitialization(void) {
+void RepeatedFieldGenerator::FinishInitialization() {
   FieldGenerator::FinishInitialization();
   if (variables_.find("array_property_type") == variables_.end()) {
     variables_["array_property_type"] = variable("array_storage_type");
@@ -457,7 +453,7 @@ void RepeatedFieldGenerator::GeneratePropertyDeclaration(
   printer->Print("\n");
 }
 
-bool RepeatedFieldGenerator::RuntimeUsesHasBit(void) const {
+bool RepeatedFieldGenerator::RuntimeUsesHasBit() const {
   return false;  // The array (or map/dict) having anything is what is used.
 }
 
@@ -475,8 +471,6 @@ FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor)
   }
 }
 
-FieldGeneratorMap::~FieldGeneratorMap() {}
-
 const FieldGenerator& FieldGeneratorMap::get(
     const FieldDescriptor* field) const {
   GOOGLE_CHECK_EQ(field->containing_type(), descriptor_);
@@ -487,7 +481,7 @@ const FieldGenerator& FieldGeneratorMap::get_extension(int index) const {
   return *extension_generators_[index];
 }
 
-int FieldGeneratorMap::CalculateHasBits(void) {
+int FieldGeneratorMap::CalculateHasBits() {
   int total_bits = 0;
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (field_generators_[i]->RuntimeUsesHasBit()) {
@@ -511,7 +505,7 @@ void FieldGeneratorMap::SetOneofIndexBase(int index_base) {
   }
 }
 
-bool FieldGeneratorMap::DoesAnyFieldHaveNonZeroDefault(void) const {
+bool FieldGeneratorMap::DoesAnyFieldHaveNonZeroDefault() const {
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (HasNonZeroDefaultValue(descriptor_->field(i))) {
       return true;

@@ -117,7 +117,6 @@ public class ParserTest {
     assertRoundTripEquals(TestUtil.getAllSet());
   }
 
-
   @Test
   public void testParsePartial() throws Exception {
     assertParsePartial(TestRequired.parser(), TestRequired.newBuilder().setA(1).buildPartial());
@@ -198,7 +197,6 @@ public class ParserTest {
     TestEmptyMessage emptyMessage = TestEmptyMessage.parseFrom(TestUtil.getAllSet().toByteString());
     assertThat(emptyMessage.toByteString()).isEqualTo(TestUtil.getAllSet().toByteString());
   }
-
 
   @Test
   public void testOptimizeForSize() throws Exception {

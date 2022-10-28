@@ -60,12 +60,12 @@
 #include "google/protobuf/stubs/logging.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 
-#include "google/protobuf/stubs/strutil.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -77,6 +77,8 @@ namespace protobuf {
 namespace text_format_unittest {
 
 using ::google::protobuf::internal::kDebugStringSilentMarker;
+using ::testing::AllOf;
+using ::testing::HasSubstr;
 
 // A basic string with different escapable characters for testing.
 const std::string kEscapeTestString =
@@ -158,6 +160,7 @@ TEST_F(TextFormatTest, ShortDebugString) {
                          "optional_nested_message { bb: 2 } "
                          "optional_foreign_message { }"));
 }
+
 
 TEST_F(TextFormatTest, ShortPrimitiveRepeateds) {
   proto_.set_optional_int32(123);
@@ -1906,7 +1909,11 @@ TEST_F(TextFormatParserTest, ParseDeprecatedField) {
   ExpectMessage("deprecated_int32: 42",
                 "WARNING:text format contains deprecated field "
                 "\"deprecated_int32\"",
-                1, 21, &message, true);
+                1, 17, &message, true);
+  ExpectMessage("deprecated_message {\n#blah\n#blah\n#blah\n}\n",
+                "WARNING:text format contains deprecated field "
+                "\"deprecated_message\"",
+                1, 20, &message, true);
 }
 
 TEST_F(TextFormatParserTest, SetRecursionLimit) {

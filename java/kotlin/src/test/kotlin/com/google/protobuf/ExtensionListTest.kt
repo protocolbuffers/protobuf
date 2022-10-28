@@ -48,90 +48,92 @@ class ExtensionListTest {
   @Test
   fun matchesList() {
     assertThat(
-      ExtensionList<Int, ExampleExtensibleMessage>(
-        TestProto.repeatedExtension, listOf(1, 2, 3)
+        ExtensionList<Int, ExampleExtensibleMessage>(TestProto.repeatedExtension, listOf(1, 2, 3))
       )
-    ).containsExactly(1, 2, 3).inOrder()
+      .containsExactly(1, 2, 3)
+      .inOrder()
   }
 
   @Test
   fun reflectsChangesInList() {
     val mutableList = mutableListOf(1, 2, 3)
-    val extensionList = ExtensionList<Int, ExampleExtensibleMessage>(
-      TestProto.repeatedExtension, mutableList
-    )
+    val extensionList =
+      ExtensionList<Int, ExampleExtensibleMessage>(TestProto.repeatedExtension, mutableList)
     mutableList.add(4)
     assertThat(extensionList).containsExactly(1, 2, 3, 4).inOrder()
   }
 
   @Test
   fun extensionListIsNotMutable() {
-    val extensionList = ExtensionList<Int, ExampleExtensibleMessage>(
-      TestProto.repeatedExtension, mutableListOf(1, 2, 3)
-    )
+    val extensionList =
+      ExtensionList<Int, ExampleExtensibleMessage>(
+        TestProto.repeatedExtension,
+        mutableListOf(1, 2, 3)
+      )
     assertThat(extensionList is MutableList<*>).isFalse()
   }
 
   @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN", "UNCHECKED_CAST")
   @Test
   fun extensionListIsNotEvenSecretlyMutable() {
-    val extensionList = ExtensionList<Int, ExampleExtensibleMessage>(
-      TestProto.repeatedExtension, mutableListOf(1, 2, 3)
-    )
+    val extensionList =
+      ExtensionList<Int, ExampleExtensibleMessage>(
+        TestProto.repeatedExtension,
+        mutableListOf(1, 2, 3)
+      )
     val extensionListAsJavaUtil = extensionList as java.util.List<Int>
-    assertFailsWith<UnsupportedOperationException> {
-      extensionListAsJavaUtil.add(4)
-    }
+    assertFailsWith<UnsupportedOperationException> { extensionListAsJavaUtil.add(4) }
   }
 
   @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN", "UNCHECKED_CAST")
   @Test
   fun extensionList_IteratorIsNotEvenSecretlyMutable() {
-    val extensionList = ExtensionList<Int, ExampleExtensibleMessage>(
-      TestProto.repeatedExtension, mutableListOf(1, 2, 3)
-    )
+    val extensionList =
+      ExtensionList<Int, ExampleExtensibleMessage>(
+        TestProto.repeatedExtension,
+        mutableListOf(1, 2, 3)
+      )
     val iterator = extensionList.iterator() as java.util.Iterator<Int>
     iterator.next()
 
-    assertFailsWith<UnsupportedOperationException> {
-      iterator.remove()
-    }
+    assertFailsWith<UnsupportedOperationException> { iterator.remove() }
   }
 
   @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN", "UNCHECKED_CAST")
   @Test
   fun extensionList_ListIteratorIsNotEvenSecretlyMutable() {
-    val extensionList = ExtensionList<Int, ExampleExtensibleMessage>(
-      TestProto.repeatedExtension, mutableListOf(1, 2, 3)
-    )
+    val extensionList =
+      ExtensionList<Int, ExampleExtensibleMessage>(
+        TestProto.repeatedExtension,
+        mutableListOf(1, 2, 3)
+      )
     val iterator = extensionList.listIterator() as java.util.ListIterator<Int>
     iterator.next()
 
-    assertFailsWith<UnsupportedOperationException> {
-      iterator.remove()
-    }
+    assertFailsWith<UnsupportedOperationException> { iterator.remove() }
   }
 
   @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN", "UNCHECKED_CAST")
   @Test
   fun extensionList_ListIteratorIndexIsNotEvenSecretlyMutable() {
-    val extensionList = ExtensionList<Int, ExampleExtensibleMessage>(
-      TestProto.repeatedExtension, mutableListOf(1, 2, 3)
-    )
+    val extensionList =
+      ExtensionList<Int, ExampleExtensibleMessage>(
+        TestProto.repeatedExtension,
+        mutableListOf(1, 2, 3)
+      )
     val iterator = extensionList.listIterator(1) as java.util.ListIterator<Int>
     iterator.next()
 
-    assertFailsWith<UnsupportedOperationException> {
-      iterator.remove()
-    }
+    assertFailsWith<UnsupportedOperationException> { iterator.remove() }
   }
 
   @Test
   fun expectedToString() {
     assertThat(
-      ExtensionList<Int, ExampleExtensibleMessage>(TestProto.repeatedExtension, listOf(1, 2))
-        .toString()
-    ).isEqualTo("[1, 2]")
+        ExtensionList<Int, ExampleExtensibleMessage>(TestProto.repeatedExtension, listOf(1, 2))
+          .toString()
+      )
+      .isEqualTo("[1, 2]")
   }
 
   @Test

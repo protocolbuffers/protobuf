@@ -30,21 +30,17 @@
 
 #include "google/protobuf/compiler/objectivec/primitive_field.h"
 
-#include <map>
 #include <string>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
-#include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace objectivec {
-
-using internal::WireFormat;
-using internal::WireFormatLite;
 
 namespace {
 
@@ -72,13 +68,13 @@ const char* PrimitiveTypeName(const FieldDescriptor* descriptor) {
     case OBJECTIVECTYPE_ENUM:
       return "int32_t";
     case OBJECTIVECTYPE_MESSAGE:
-      return NULL;  // Messages go through message_field.cc|h.
+      return nullptr;  // Messages go through message_field.cc|h.
   }
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
-  return NULL;
+  return nullptr;
 }
 
 const char* PrimitiveArrayTypeName(const FieldDescriptor* descriptor) {
@@ -112,11 +108,12 @@ const char* PrimitiveArrayTypeName(const FieldDescriptor* descriptor) {
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
-  return NULL;
+  return nullptr;
 }
 
-void SetPrimitiveVariables(const FieldDescriptor* descriptor,
-                           std::map<std::string, std::string>* variables) {
+void SetPrimitiveVariables(
+    const FieldDescriptor* descriptor,
+    absl::flat_hash_map<absl::string_view, std::string>* variables) {
   std::string primitive_name = PrimitiveTypeName(descriptor);
   (*variables)["type"] = primitive_name;
   (*variables)["storage_type"] = primitive_name;
@@ -130,8 +127,6 @@ PrimitiveFieldGenerator::PrimitiveFieldGenerator(
   SetPrimitiveVariables(descriptor, &variables_);
 }
 
-PrimitiveFieldGenerator::~PrimitiveFieldGenerator() {}
-
 void PrimitiveFieldGenerator::GenerateFieldStorageDeclaration(
     io::Printer* printer) const {
   if (GetObjectiveCType(descriptor_) == OBJECTIVECTYPE_BOOLEAN) {
@@ -141,7 +136,7 @@ void PrimitiveFieldGenerator::GenerateFieldStorageDeclaration(
   }
 }
 
-int PrimitiveFieldGenerator::ExtraRuntimeHasBitsNeeded(void) const {
+int PrimitiveFieldGenerator::ExtraRuntimeHasBitsNeeded() const {
   if (GetObjectiveCType(descriptor_) == OBJECTIVECTYPE_BOOLEAN) {
     // Reserve a bit for the storage of the boolean.
     return 1;
@@ -149,10 +144,10 @@ int PrimitiveFieldGenerator::ExtraRuntimeHasBitsNeeded(void) const {
   return 0;
 }
 
-void PrimitiveFieldGenerator::SetExtraRuntimeHasBitsBase(int has_base) {
+void PrimitiveFieldGenerator::SetExtraRuntimeHasBitsBase(int index_base) {
   if (GetObjectiveCType(descriptor_) == OBJECTIVECTYPE_BOOLEAN) {
     // Set into the offset the has bit to use for the actual value.
-    variables_["storage_offset_value"] = absl::StrCat(has_base);
+    variables_["storage_offset_value"] = absl::StrCat(index_base);
     variables_["storage_offset_comment"] =
         "  // Stored in _has_storage_ to save space.";
   }
@@ -164,8 +159,6 @@ PrimitiveObjFieldGenerator::PrimitiveObjFieldGenerator(
   SetPrimitiveVariables(descriptor, &variables_);
   variables_["property_storage_attribute"] = "copy";
 }
-
-PrimitiveObjFieldGenerator::~PrimitiveObjFieldGenerator() {}
 
 RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(
     const FieldDescriptor* descriptor)
@@ -181,8 +174,6 @@ RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(
         "NSMutableArray<" + variables_["storage_type"] + "*>";
   }
 }
-
-RepeatedPrimitiveFieldGenerator::~RepeatedPrimitiveFieldGenerator() {}
 
 }  // namespace objectivec
 }  // namespace compiler

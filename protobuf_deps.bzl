@@ -70,8 +70,8 @@ def protobuf_deps():
         _github_archive(
             name = "utf8_range",
             repo = "https://github.com/protocolbuffers/utf8_range",
-            commit = "45fbf543fec00020a08650791a37575319a3ea1d",
-            sha256 = "dd93db062025f563068abaa224549e9d341434b5851e959c7853dfa263c96416",
+            commit = "de0b4a8ff9b5d4c98108bdfe723291a33c52c54f",
+            sha256 = "5da960e5e5d92394c809629a03af3c7709d2d3d0ca731dacb3a9fb4bf28f7702",
         )
 
     if not native.existing_rule("rules_cc"):

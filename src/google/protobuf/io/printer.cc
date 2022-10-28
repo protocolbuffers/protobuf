@@ -469,7 +469,7 @@ void Printer::PrintImpl(absl::string_view format,
 
     LookupResult sub;
     absl::optional<AnnotationRecord> same_name_record;
-    if (opts.allow_digit_substitions && absl::ascii_isdigit(var[0])) {
+    if (opts.allow_digit_substitutions && absl::ascii_isdigit(var[0])) {
       PrintRaw(next_chunk);
 
       if (!Validate(var.size() == 1u, opts, "expected single-digit variable")) {

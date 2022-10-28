@@ -56,8 +56,8 @@
 #include "absl/types/variant.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/util/type_resolver.h"
+#include "utf8_validity.h"
 #include "google/protobuf/stubs/status_macros.h"
-
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -455,7 +455,7 @@ absl::Status UntypedMessage::DecodeDelimited(io::CodedInputStream& stream,
       }
       if (field.proto().kind() == Field::TYPE_STRING) {
         if (desc_->proto().syntax() == google::protobuf::SYNTAX_PROTO3 &&
-            ::google::protobuf::internal::IsStructurallyValidUTF8(buf.data(), buf.size())) {
+            utf8_range::IsStructurallyValid(buf)) {
           return absl::InvalidArgumentError("proto3 strings must be UTF-8");
         }
       }

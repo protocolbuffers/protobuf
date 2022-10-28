@@ -41,9 +41,9 @@
 
 #include <algorithm>
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/port.h"
@@ -137,7 +137,7 @@ class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
   bool delegate_to_generated_factory_;
 
   struct TypeInfo;
-  std::unordered_map<const Descriptor*, const TypeInfo*> prototypes_;
+  absl::flat_hash_map<const Descriptor*, const TypeInfo*> prototypes_;
   mutable absl::Mutex prototypes_mutex_;
 
   friend class DynamicMessage;

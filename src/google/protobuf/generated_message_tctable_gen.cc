@@ -115,9 +115,6 @@ void PopulateFastFieldEntry(const TailCallTableInfo::FieldEntryInfo& entry,
     //  - Ev for the rest
     if (cpp::HasPreservingUnknownEnumSemantics(field)) {
       name.append("V32");
-    } else if (field->is_repeated() && field->is_packed()) {
-      GOOGLE_LOG(DFATAL) << "Enum validation not handled: " << field->DebugString();
-      return;
     } else {
       int16_t start;
       uint16_t size;
@@ -148,7 +145,9 @@ void PopulateFastFieldEntry(const TailCallTableInfo::FieldEntryInfo& entry,
   }
   if (field->type() == field->TYPE_STRING ||
       field->type() == field->TYPE_BYTES) {
-    if (options.is_string_inlined) {
+    if (field->options().ctype() == FieldOptions::CORD) {
+      name.append("c");
+    } else if (options.is_string_inlined) {
       name.append("i");
       GOOGLE_CHECK(!field->is_repeated());
       aux_idx = static_cast<uint8_t>(entry.inlined_string_idx);
@@ -192,21 +191,15 @@ bool IsFieldEligibleForFastParsing(
   int aux_idx = entry.aux_idx;
 
   switch (field->type()) {
-    case FieldDescriptor::TYPE_ENUM:
-      // If enum values are not validated at parse time, then this field can be
-      // handled on the fast path like an int32.
-      if (cpp::HasPreservingUnknownEnumSemantics(field)) {
-        break;
-      }
-      if (field->is_repeated() && field->is_packed()) {
-        return false;
-      }
-      break;
-
       // Some bytes fields can be handled on fast path.
     case FieldDescriptor::TYPE_STRING:
     case FieldDescriptor::TYPE_BYTES:
-      if (field->options().ctype() != FieldOptions::STRING) {
+      if (field->options().ctype() == FieldOptions::STRING) {
+        // strings are fine...
+      } else if (field->options().ctype() == FieldOptions::CORD) {
+        // Cords are worth putting into the fast table, if they're not repeated
+        if (field->is_repeated()) return false;
+      } else {
         return false;
       }
       if (options.is_string_inlined) {
@@ -359,23 +352,10 @@ std::vector<const FieldDescriptor*> FilterMiniParsedFields(
       case FieldDescriptor::TYPE_UINT64:
       case FieldDescriptor::TYPE_SINT64:
       case FieldDescriptor::TYPE_INT64:
+      case FieldDescriptor::TYPE_ENUM:
         // These are handled by MiniParse, so we don't need any generated
         // fallback code.
         handled = true;
-        break;
-
-      case FieldDescriptor::TYPE_ENUM:
-        if (field->is_repeated() &&
-            !cpp::HasPreservingUnknownEnumSemantics(field)) {
-          // TODO(b/206890171): handle packed repeated closed enums
-          // Non-packed repeated can be handled using tables, but we still
-          // need to generate fallback code for all repeated enums in order to
-          // handle packed encoding. This is because of the lite/full split
-          // when handling invalid enum values in a packed field.
-          handled = false;
-        } else {
-          handled = true;
-        }
         break;
 
       case FieldDescriptor::TYPE_BYTES:
@@ -712,19 +692,21 @@ TailCallTableInfo::TailCallTableInfo(
     const std::vector<int>& has_bit_indices,
     const std::vector<int>& inlined_string_indices) {
   // If this message has any inlined string fields, store the donation state
-  // offset in the second auxiliary entry.
+  // offset in the first auxiliary entry, which is kInlinedStringAuxIdx.
   if (!inlined_string_indices.empty()) {
-    aux_entries.resize(1);  // pad if necessary
-    aux_entries[0] = {kInlinedStringDonatedOffset};
+    aux_entries.resize(kInlinedStringAuxIdx + 1);  // Allocate our slot
+    aux_entries[kInlinedStringAuxIdx] = {kInlinedStringDonatedOffset};
   }
 
-  // If this message is split, store the split pointer offset in the third
-  // auxiliary entry.
+  // If this message is split, store the split pointer offset in the second
+  // and third auxiliary entries, which are kSplitOffsetAuxIdx and
+  // kSplitSizeAuxIdx.
   for (auto* field : ordered_fields) {
     if (option_provider.GetForField(field).should_split) {
-      aux_entries.resize(3);  // pad if necessary
-      aux_entries[1] = {kSplitOffset};
-      aux_entries[2] = {kSplitSizeof};
+      static_assert(kSplitOffsetAuxIdx + 1 == kSplitSizeAuxIdx, "");
+      aux_entries.resize(kSplitSizeAuxIdx + 1);  // Allocate our 2 slots
+      aux_entries[kSplitOffsetAuxIdx] = {kSplitOffset};
+      aux_entries[kSplitSizeAuxIdx] = {kSplitSizeof};
       break;
     }
   }

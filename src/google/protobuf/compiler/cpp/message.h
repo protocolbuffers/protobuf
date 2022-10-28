@@ -60,10 +60,11 @@ namespace compiler {
 namespace cpp {
 class MessageGenerator {
  public:
-  MessageGenerator(const Descriptor* descriptor,
-                   const std::map<std::string, std::string>& ignored,
-                   int index_in_file_messages, const Options& options,
-                   MessageSCCAnalyzer* scc_analyzer);
+  MessageGenerator(
+      const Descriptor* descriptor,
+      const absl::flat_hash_map<absl::string_view, std::string>& ignored,
+      int index_in_file_messages, const Options& options,
+      MessageSCCAnalyzer* scc_analyzer);
 
   MessageGenerator(const MessageGenerator&) = delete;
   MessageGenerator& operator=(const MessageGenerator&) = delete;
@@ -214,7 +215,7 @@ class MessageGenerator {
 
   MessageSCCAnalyzer* scc_analyzer_;
 
-  std::map<std::string, std::string> variables_;
+  absl::flat_hash_map<absl::string_view, std::string> variables_;
 
 };
 

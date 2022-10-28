@@ -30,12 +30,13 @@
 
 #include "google/protobuf/compiler/objectivec/map_field.h"
 
-#include <map>
+#include <set>
 #include <string>
+#include <vector>
 
+#include "absl/strings/match.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
-#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {
@@ -78,7 +79,7 @@ const char* MapEntryTypeName(const FieldDescriptor* descriptor, bool isKey) {
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
   GOOGLE_LOG(FATAL) << "Can't get here.";
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace
@@ -99,18 +100,17 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
   std::vector<std::string> field_flags;
   field_flags.push_back("GPBFieldMapKey" + GetCapitalizedType(key_descriptor));
   // Pull over the current text format custom name values that was calculated.
-  if (variables_["fieldflags"].find("GPBFieldTextFormatNameCustom") !=
-      std::string::npos) {
+  if (absl::StrContains(variables_["fieldflags"],
+                        "GPBFieldTextFormatNameCustom")) {
     field_flags.push_back("GPBFieldTextFormatNameCustom");
   }
   // Pull over some info from the value's flags.
   const std::string& value_field_flags =
       value_field_generator_->variable("fieldflags");
-  if (value_field_flags.find("GPBFieldHasDefaultValue") != std::string::npos) {
+  if (absl::StrContains(value_field_flags, "GPBFieldHasDefaultValue")) {
     field_flags.push_back("GPBFieldHasDefaultValue");
   }
-  if (value_field_flags.find("GPBFieldHasEnumDescriptor") !=
-      std::string::npos) {
+  if (absl::StrContains(value_field_flags, "GPBFieldHasEnumDescriptor")) {
     field_flags.push_back("GPBFieldHasEnumDescriptor");
   }
 
@@ -146,9 +146,7 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
       value_field_generator_->variable("dataTypeSpecific_value");
 }
 
-MapFieldGenerator::~MapFieldGenerator() {}
-
-void MapFieldGenerator::FinishInitialization(void) {
+void MapFieldGenerator::FinishInitialization() {
   RepeatedFieldGenerator::FinishInitialization();
   // Use the array_comment support in RepeatedFieldGenerator to output what the
   // values in the map are.
@@ -165,6 +163,11 @@ void MapFieldGenerator::DetermineForwardDeclarations(
     std::set<std::string>* fwd_decls, bool include_external_types) const {
   RepeatedFieldGenerator::DetermineForwardDeclarations(fwd_decls,
                                                        include_external_types);
+  // NOTE: Maps with values of enums don't have to worry about adding the
+  // forward declaration because `GPB*EnumDictionary` isn't generic to the
+  // specific enum (like say `NSDictionary<String, MyMessage>`) and thus doesn't
+  // reference the type in the header.
+
   const FieldDescriptor* value_descriptor =
       descriptor_->message_type()->map_value();
   // Within a file there is no requirement on the order of the messages, so

@@ -46,7 +46,6 @@
 
 #include <algorithm>
 #include <limits>
-#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -54,12 +53,13 @@
 
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/strutil.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
+#include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/python/helpers.h"
@@ -67,6 +67,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/strtod.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
 namespace google {
@@ -134,7 +135,7 @@ std::string StringifyDefaultValue(const FieldDescriptor& field) {
         // infinity * 0 = nan
         return "(1e10000 * 0)";
       } else {
-        return "float(" + SimpleDtoa(value) + ")";
+        return "float(" + io::SimpleDtoa(value) + ")";
       }
     }
     case FieldDescriptor::CPPTYPE_FLOAT: {
@@ -150,7 +151,7 @@ std::string StringifyDefaultValue(const FieldDescriptor& field) {
         // infinity - infinity = nan
         return "(1e10000 * 0)";
       } else {
-        return "float(" + SimpleFtoa(value) + ")";
+        return "float(" + io::SimpleFtoa(value) + ")";
       }
     }
     case FieldDescriptor::CPPTYPE_BOOL:
@@ -433,7 +434,7 @@ void Generator::PrintImports() const {
 
 // Prints the single file descriptor for this file.
 void Generator::PrintFileDescriptor() const {
-  std::map<std::string, std::string> m;
+  absl::flat_hash_map<absl::string_view, std::string> m;
   m["descriptor_name"] = kDescriptorKey;
   m["name"] = file_->name();
   m["package"] = file_->package();
@@ -508,7 +509,7 @@ void Generator::PrintAllNestedEnumsInFile() const {
 // enum name to a Python EnumDescriptor object equivalent to
 // enum_descriptor.
 void Generator::PrintEnum(const EnumDescriptor& enum_descriptor) const {
-  std::map<std::string, std::string> m;
+  absl::flat_hash_map<absl::string_view, std::string> m;
   std::string module_level_descriptor_name =
       ModuleLevelDescriptorName(enum_descriptor);
   m["descriptor_name"] = module_level_descriptor_name;
@@ -583,7 +584,7 @@ void Generator::PrintServices() const {
 
 void Generator::PrintServiceDescriptor(
     const ServiceDescriptor& descriptor) const {
-  std::map<std::string, std::string> m;
+  absl::flat_hash_map<absl::string_view, std::string> m;
   m["service_name"] = ModuleLevelServiceDescriptorName(descriptor);
   m["name"] = descriptor.name();
   m["file"] = kDescriptorKey;
@@ -633,7 +634,7 @@ void Generator::PrintServiceStub(const ServiceDescriptor& descriptor) const {
 //
 // Mutually recursive with PrintNestedDescriptors().
 void Generator::PrintDescriptor(const Descriptor& message_descriptor) const {
-  std::map<std::string, std::string> m;
+  absl::flat_hash_map<absl::string_view, std::string> m;
   m["name"] = message_descriptor.name();
   m["full_name"] = message_descriptor.full_name();
   m["file"] = kDescriptorKey;
@@ -784,7 +785,7 @@ void Generator::PrintMessage(const Descriptor& message_descriptor,
   to_register->push_back(qualified_name);
 
   PrintNestedMessages(message_descriptor, qualified_name, to_register);
-  std::map<std::string, std::string> m;
+  absl::flat_hash_map<absl::string_view, std::string> m;
   m["descriptor_key"] = kDescriptorKey;
   m["descriptor_name"] = ModuleLevelDescriptorName(message_descriptor);
   printer_->Print(m, "'$descriptor_key$' : $descriptor_name$,\n");
@@ -839,7 +840,7 @@ void Generator::FixForeignFieldsInDescriptor(
     FixContainingTypeInDescriptor(enum_descriptor, &descriptor);
   }
   for (int i = 0; i < descriptor.oneof_decl_count(); ++i) {
-    std::map<std::string, std::string> m;
+    absl::flat_hash_map<absl::string_view, std::string> m;
     const OneofDescriptor* oneof = descriptor.oneof_decl(i);
     m["descriptor_name"] = ModuleLevelDescriptorName(descriptor);
     m["oneof_name"] = oneof->name();
@@ -858,7 +859,7 @@ void Generator::FixForeignFieldsInDescriptor(
 }
 
 void Generator::AddMessageToFileDescriptor(const Descriptor& descriptor) const {
-  std::map<std::string, std::string> m;
+  absl::flat_hash_map<absl::string_view, std::string> m;
   m["descriptor_name"] = kDescriptorKey;
   m["message_name"] = descriptor.name();
   m["message_descriptor_name"] = ModuleLevelDescriptorName(descriptor);
@@ -870,7 +871,7 @@ void Generator::AddMessageToFileDescriptor(const Descriptor& descriptor) const {
 
 void Generator::AddServiceToFileDescriptor(
     const ServiceDescriptor& descriptor) const {
-  std::map<std::string, std::string> m;
+  absl::flat_hash_map<absl::string_view, std::string> m;
   m["descriptor_name"] = kDescriptorKey;
   m["service_name"] = descriptor.name();
   m["service_descriptor_name"] = ModuleLevelServiceDescriptorName(descriptor);
@@ -882,7 +883,7 @@ void Generator::AddServiceToFileDescriptor(
 
 void Generator::AddEnumToFileDescriptor(
     const EnumDescriptor& descriptor) const {
-  std::map<std::string, std::string> m;
+  absl::flat_hash_map<absl::string_view, std::string> m;
   m["descriptor_name"] = kDescriptorKey;
   m["enum_name"] = descriptor.name();
   m["enum_descriptor_name"] = ModuleLevelDescriptorName(descriptor);
@@ -894,7 +895,7 @@ void Generator::AddEnumToFileDescriptor(
 
 void Generator::AddExtensionToFileDescriptor(
     const FieldDescriptor& descriptor) const {
-  std::map<std::string, std::string> m;
+  absl::flat_hash_map<absl::string_view, std::string> m;
   m["descriptor_name"] = kDescriptorKey;
   m["field_name"] = descriptor.name();
   m["resolved_name"] = ResolveKeyword(descriptor.name());
@@ -918,7 +919,7 @@ void Generator::FixForeignFieldsInField(
     const std::string& python_dict_name) const {
   const std::string field_referencing_expression =
       FieldReferencingExpression(containing_type, field, python_dict_name);
-  std::map<std::string, std::string> m;
+  absl::flat_hash_map<absl::string_view, std::string> m;
   m["field_ref"] = field_referencing_expression;
   const Descriptor* foreign_message_type = field.message_type();
   if (foreign_message_type) {
@@ -1014,7 +1015,7 @@ void Generator::FixForeignFieldsInExtension(
     const FieldDescriptor& extension_field) const {
   GOOGLE_CHECK(extension_field.is_extension());
 
-  std::map<std::string, std::string> m;
+  absl::flat_hash_map<absl::string_view, std::string> m;
   // Confusingly, for FieldDescriptors that happen to be extensions,
   // containing_type() means "extended type."
   // On the other hand, extension_scope() will give us what we normally
@@ -1046,7 +1047,7 @@ void Generator::PrintEnumValueDescriptor(
   // More circular references.  ::sigh::
   std::string options_string;
   descriptor.options().SerializeToString(&options_string);
-  std::map<std::string, std::string> m;
+  absl::flat_hash_map<absl::string_view, std::string> m;
   m["name"] = descriptor.name();
   m["index"] = absl::StrCat(descriptor.index());
   m["number"] = absl::StrCat(descriptor.number());
@@ -1074,7 +1075,7 @@ void Generator::PrintFieldDescriptor(const FieldDescriptor& field,
                                      bool is_extension) const {
   std::string options_string;
   field.options().SerializeToString(&options_string);
-  std::map<std::string, std::string> m;
+  absl::flat_hash_map<absl::string_view, std::string> m;
   m["name"] = field.name();
   m["full_name"] = field.full_name();
   m["index"] = absl::StrCat(field.index());

@@ -72,10 +72,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/service.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/bytestream.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/structurally_valid.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unknown_field_set.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/delimited_message_util.cc
@@ -173,7 +170,6 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/service.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/bytestream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/callback.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/logging.h
@@ -181,7 +177,6 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/platform_macros.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/port.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/status_macros.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unknown_field_set.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/delimited_message_util.h
@@ -220,10 +215,7 @@ set(libprotobuf_lite_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/bytestream.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/structurally_valid.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_lite.cc
 )
 
@@ -264,7 +256,6 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/bytestream.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/callback.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/logging.h
@@ -272,7 +263,6 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/platform_macros.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/port.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/status_macros.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_lite.h
 )
 
@@ -725,8 +715,5 @@ set(util_test_protos_files
 
 # //src/google/protobuf/stubs:test_srcs
 set(stubs_test_files
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/bytestream_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common_unittest.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/structurally_valid_unittest.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/strutil_unittest.cc
 )

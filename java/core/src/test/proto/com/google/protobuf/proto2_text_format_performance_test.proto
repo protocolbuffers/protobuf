@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2009 Google Inc.  All rights reserved.
+// Copyright 2008 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,60 +28,25 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: brianolson@google.com (Brian Olson)
-//  Based on original Protocol Buffers design by
-//  Sanjay Ghemawat, Jeff Dean, and others.
-//
-// Test program to verify that GzipOutputStream is compatible with command line
-// gzip or java.util.zip.GzipOutputStream
-//
-// Reads data on standard input and writes compressed gzip stream to standard
-// output.
+syntax = "proto2";
 
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+package protobuf.testing.textformat.performance.proto2;
 
-#ifdef _WIN32
-#ifndef STDIN_FILENO
-#define STDIN_FILENO 0
-#endif
-#ifndef STDOUT_FILENO
-#define STDOUT_FILENO 1
-#endif
-#endif
+option java_package = "com.google.protobuf.testing.textformat.performance.proto2";
+option java_outer_classname = "Proto2TextFormatPerformanceProto";
 
-#include "google/protobuf/io/gzip_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
+message ContainsSubMessageWithRepeatedInt32 {
+  optional RepeatedInt32 sub_msg = 1;
+}
 
-using google::protobuf::io::FileOutputStream;
-using google::protobuf::io::GzipOutputStream;
+message RepeatedInt32 {
+  repeated int32 value = 2;
+}
 
-int main(int argc, const char** argv) {
-  FileOutputStream fout(STDOUT_FILENO);
-  GzipOutputStream out(&fout);
-  int readlen;
+message ContainsExtensionSubMessage {
+  extensions 1 to max;
+}
 
-  while (true) {
-    void* outptr;
-    int outlen;
-    bool ok;
-    do {
-      ok = out.Next(&outptr, &outlen);
-      if (!ok) {
-        break;
-      }
-    } while (outlen <= 0);
-    readlen = read(STDIN_FILENO, outptr, outlen);
-    if (readlen <= 0) {
-      out.BackUp(outlen);
-      break;
-    }
-    if (readlen < outlen) {
-      out.BackUp(outlen - readlen);
-    }
-  }
-
-  return 0;
+extend ContainsExtensionSubMessage {
+  optional RepeatedInt32 sub_msg_ext = 1;
 }
