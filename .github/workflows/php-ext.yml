@@ -17,10 +17,12 @@ jobs:
     steps:
       - name: Install bazel
         run: |
-          apt-get update -q
-          apt-get install -qy bazel
+          mkdir $HOME/bin
+          wget -O $HOME/bin/bazel https://github.com/bazelbuild/bazel/releases/download/5.3.2/bazel-5.3.2-linux-x86_64
+          chmod a+x $HOME/bin/bazel
       - name: Install git
         run: |
+          apt-get update -q
           apt-get install -qy --no-install-recommends git
       - name: Checkout
         uses: actions/checkout@v3
@@ -28,9 +30,9 @@ jobs:
           submodules: recursive
       - name: Create package
         run: |
-          rm -rf bazel-bin/php/protobuf-*.tgz
           cd $GITHUB_WORKSPACE
-          bazel build php:release
+          rm -rf bazel-bin/php/protobuf-*.tgz
+          $HOME/bin/bazel build php:release
       - name: Compile extension
         run: |
           cd /tmp
