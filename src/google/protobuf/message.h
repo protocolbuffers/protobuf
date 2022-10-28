@@ -355,6 +355,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   bool IsInitialized() const override;
 
   void CheckTypeAndMergeFrom(const MessageLite& other) override;
+
   // Reflective parser
   const char* _InternalParse(const char* ptr,
                              internal::ParseContext* ctx) override;
