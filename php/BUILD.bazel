@@ -147,5 +147,5 @@ pkg_tar(
     "//php/ext/google/protobuf:release_files",
     "//php/ext/google/protobuf:generate_package_xml",
   ],
-  out = "protobuf-%s" % PROTOBUF_PHP_VERSION,
+  out = "protobuf-%s.tgz" % PROTOBUF_PHP_VERSION,
 )

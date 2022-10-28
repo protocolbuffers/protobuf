@@ -48,7 +48,7 @@ pkg_tar(
   srcs = [
     ":release_files",
   ],
-  out = "release_without_package",
+  out = "release_without_package.tgz",
 )
 
 # Generate PECL package.xml
