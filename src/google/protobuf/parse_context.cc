@@ -30,14 +30,12 @@
 
 #include "google/protobuf/parse_context.h"
 
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/arenastring.h"
-#include "google/protobuf/endian.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
-#include "absl/strings/string_view.h"
 #include "google/protobuf/wire_format_lite.h"
+#include "utf8_validity.h"
+
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -382,7 +380,7 @@ void PrintUTF8ErrorLog(absl::string_view message_name,
                        bool emit_stacktrace);
 
 bool VerifyUTF8(absl::string_view str, const char* field_name) {
-  if (!::google::protobuf::internal::IsStructurallyValidUTF8(str)) {
+  if (!utf8_range::IsStructurallyValid(str)) {
     PrintUTF8ErrorLog("", field_name, "parsing", false);
     return false;
   }

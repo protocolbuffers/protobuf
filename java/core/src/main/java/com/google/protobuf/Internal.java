@@ -375,7 +375,6 @@ public final class Internal {
     }
   }
 
-
   /** An empty byte array constant used in generated code. */
   public static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
@@ -385,7 +384,6 @@ public final class Internal {
   /** An empty coded input stream constant used in generated code. */
   public static final CodedInputStream EMPTY_CODED_INPUT_STREAM =
       CodedInputStream.newInstance(EMPTY_BYTE_ARRAY);
-
 
   /** Helper method to merge two MessageLite instances. */
   static Object mergeMessage(Object destination, Object source) {
@@ -691,5 +689,4 @@ public final class Internal {
     @Override
     FloatList mutableCopyWithCapacity(int capacity);
   }
-
 }

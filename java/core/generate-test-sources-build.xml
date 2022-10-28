@@ -43,8 +43,10 @@
         <arg value="${test.proto.dir}/com/google/protobuf/proto2_message.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/proto2_message_lite.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/proto2_unknown_enum_values.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/proto2_text_format_performance_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/proto3_message.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/proto3_message_lite.proto"/>
+        <arg value="${test.proto.dir}/com/google/protobuf/proto3_text_format_performance_test.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/test_bad_identifiers.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/test_check_utf8.proto"/>
         <arg value="${test.proto.dir}/com/google/protobuf/test_check_utf8_size.proto"/>

@@ -30,9 +30,10 @@
 
 #include "google/protobuf/compiler/objectivec/enum_field.h"
 
-#include <map>
+#include <set>
 #include <string>
 
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
 #include "google/protobuf/io/printer.h"
@@ -44,22 +45,24 @@ namespace objectivec {
 
 namespace {
 
-void SetEnumVariables(const FieldDescriptor* descriptor,
-                      std::map<std::string, std::string>* variables) {
-  std::string type = EnumName(descriptor->enum_type());
+void SetEnumVariables(
+    const FieldDescriptor* descriptor,
+    absl::flat_hash_map<absl::string_view, std::string>* variables) {
+  const std::string type = EnumName(descriptor->enum_type());
+  const std::string enum_desc_func = absl::StrCat(type, "_EnumDescriptor");
   (*variables)["storage_type"] = type;
   // For non repeated fields, if it was defined in a different file, the
   // property decls need to use "enum NAME" rather than just "NAME" to support
   // the forward declaration of the enums.
   if (!descriptor->is_repeated() &&
       (descriptor->file() != descriptor->enum_type()->file())) {
-    (*variables)["property_type"] = "enum " + type;
+    (*variables)["property_type"] = absl::StrCat("enum ", type);
   }
-  (*variables)["enum_verifier"] = type + "_IsValidValue";
-  (*variables)["enum_desc_func"] = type + "_EnumDescriptor";
+  (*variables)["enum_verifier"] = absl::StrCat(type, "_IsValidValue");
+  (*variables)["enum_desc_func"] = enum_desc_func;
 
   (*variables)["dataTypeSpecific_name"] = "enumDescFunc";
-  (*variables)["dataTypeSpecific_value"] = (*variables)["enum_desc_func"];
+  (*variables)["dataTypeSpecific_value"] = enum_desc_func;
 
   const Descriptor* msg_descriptor = descriptor->containing_type();
   (*variables)["owning_message_class"] = ClassName(msg_descriptor);
@@ -70,8 +73,6 @@ EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor)
     : SingleFieldGenerator(descriptor) {
   SetEnumVariables(descriptor, &variables_);
 }
-
-EnumFieldGenerator::~EnumFieldGenerator() {}
 
 void EnumFieldGenerator::GenerateCFunctionDeclarations(
     io::Printer* printer) const {
@@ -142,13 +143,15 @@ RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
   variables_["array_storage_type"] = "GPBEnumArray";
 }
 
-RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {}
-
-void RepeatedEnumFieldGenerator::FinishInitialization(void) {
+void RepeatedEnumFieldGenerator::FinishInitialization() {
   RepeatedFieldGenerator::FinishInitialization();
   variables_["array_comment"] = "// |" + variables_["name"] + "| contains |" +
                                 variables_["storage_type"] + "|\n";
 }
+
+// NOTE: RepeatedEnumFieldGenerator::DetermineForwardDeclarations isn't needed
+// because `GPBEnumArray` isn't generic (like `NSArray` would be for messages)
+// and thus doesn't reference the type in the header.
 
 }  // namespace objectivec
 }  // namespace compiler

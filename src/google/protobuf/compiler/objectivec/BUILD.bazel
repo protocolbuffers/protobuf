@@ -33,6 +33,7 @@ cc_library(
         ":line_consumer",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf:protobuf_nowkt",
+        "@com_google_absl//absl/container:flat_hash_set",
     ],
 )
 

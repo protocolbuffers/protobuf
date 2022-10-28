@@ -121,6 +121,7 @@
 #include "google/protobuf/port.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
+#include "absl/functional/function_ref.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -157,6 +158,7 @@ class MapIterator;
 class MapReflectionTester;
 
 namespace internal {
+struct FuzzPeer;
 struct DescriptorTable;
 class MapFieldBase;
 class SwapFieldHelper;
@@ -180,7 +182,10 @@ class CelMapReflectionFriend;  // field_backed_map_impl.cc
 
 namespace internal {
 class MapFieldPrinterHelper;  // text_format.cc
-}
+void PerformAbslStringify(
+    const Message& message,
+    absl::FunctionRef<void(absl::string_view)> append);  // text_format.cc
+}  // namespace internal
 namespace util {
 class MessageDifferencer;
 }
@@ -328,6 +333,15 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   std::string Utf8DebugString() const;
   // Convenience function useful in GDB.  Prints DebugString() to stdout.
   void PrintDebugString() const;
+
+  // Implementation of the `AbslStringify` interface. This adds something
+  // similar to either `ShortDebugString()` or `DebugString()` to the sink.
+  // Do not rely on exact format.
+  template <typename Sink>
+  friend void AbslStringify(Sink& sink, const google::protobuf::Message& message) {
+    internal::PerformAbslStringify(
+        message, [&](absl::string_view content) { sink.Append(content); });
+  }
 
   // Reflection-based methods ----------------------------------------
   // These methods are pure-virtual in MessageLite, but Message provides
@@ -1110,6 +1124,7 @@ class PROTOBUF_EXPORT Reflection final {
   friend class internal::WireFormat;
   friend class internal::ReflectionOps;
   friend class internal::SwapFieldHelper;
+  friend struct internal::FuzzPeer;
   // Needed for implementing text format for map.
   friend class internal::MapFieldPrinterHelper;
 

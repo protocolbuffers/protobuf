@@ -31,9 +31,11 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_IMPORT_WRITER_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_IMPORT_WRITER_H__
 
+#include <map>
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
@@ -50,7 +52,7 @@ class ImportWriter {
                const std::string& named_framework_to_proto_path_mappings_path,
                const std::string& runtime_import_prefix,
                bool include_wkt_imports);
-  ~ImportWriter();
+  ~ImportWriter() = default;
 
   void AddFile(const FileDescriptor* file, const std::string& header_extension);
   void Print(io::Printer* printer) const;
@@ -67,7 +69,7 @@ class ImportWriter {
   const std::string named_framework_to_proto_path_mappings_path_;
   const std::string runtime_import_prefix_;
   const bool include_wkt_imports_;
-  std::map<std::string, std::string> proto_file_to_framework_name_;
+  absl::flat_hash_map<std::string, std::string> proto_file_to_framework_name_;
   bool need_to_parse_mapping_file_;
 
   std::vector<std::string> protobuf_imports_;

@@ -38,7 +38,6 @@
 #include "google/protobuf/unknown_field_set.h"
 
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 #include "google/protobuf/stubs/callback.h"
@@ -54,6 +53,7 @@
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/cord.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/time/clock.h"
@@ -136,7 +136,7 @@ TEST_F(UnknownFieldSetTest, AllFieldsPresent) {
     }
   }
 
-  std::unordered_set<uint32_t> unknown_tags;
+  absl::flat_hash_set<uint32_t> unknown_tags;
   for (int i = 0; i < unknown_fields_->field_count(); i++) {
     unknown_tags.insert(unknown_fields_->field(i).number());
   }

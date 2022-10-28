@@ -41,12 +41,10 @@
 
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "utf8_validity.h"
 
 
 // Must be included last.
@@ -622,7 +620,7 @@ void PrintUTF8ErrorLog(absl::string_view message_name,
 
 bool WireFormatLite::VerifyUtf8String(const char* data, int size, Operation op,
                                       const char* field_name) {
-  if (!::google::protobuf::internal::IsStructurallyValidUTF8(data, size)) {
+  if (!utf8_range::IsStructurallyValid({data, static_cast<size_t>(size)})) {
     const char* operation_str = nullptr;
     switch (op) {
       case PARSE:

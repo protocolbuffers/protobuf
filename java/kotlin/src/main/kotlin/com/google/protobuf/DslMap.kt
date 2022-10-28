@@ -35,13 +35,13 @@ package com.google.protobuf.kotlin
  * extension methods.
  *
  * <p>This class is used by Kotlin protocol buffer extensions, and its constructor is public only
- * because generated message code is in a different compilation unit.  Others should not use this
+ * because generated message code is in a different compilation unit. Others should not use this
  * class directly in any way.
  */
 @Suppress("unused") // the unused type parameter
-class DslMap<K, V, P : DslProxy> @OnlyForUseByGeneratedProtoCode constructor(
-  private val delegate: Map<K, V>
-) : Map<K, V> by delegate {
+class DslMap<K, V, P : DslProxy>
+@OnlyForUseByGeneratedProtoCode
+constructor(private val delegate: Map<K, V>) : Map<K, V> by delegate {
   // We allocate the wrappers on calls to get, not with lazy {...}, because lazy allocates
   // a few objects up front, and any kind of query operation on this object should be rare.
 

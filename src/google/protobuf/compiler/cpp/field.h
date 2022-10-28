@@ -36,11 +36,11 @@
 #define GOOGLE_PROTOBUF_COMPILER_CPP_FIELD_H__
 
 #include <cstdint>
-#include <map>
 #include <memory>
 #include <string>
 
 #include "google/protobuf/descriptor.h"
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 
@@ -57,23 +57,24 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 
-absl::flat_hash_map<std::string, std::string> FieldVars(
+absl::flat_hash_map<absl::string_view, std::string> FieldVars(
     const FieldDescriptor* desc, const Options& opts);
 
-absl::flat_hash_map<std::string, std::string> OneofFieldVars(
+absl::flat_hash_map<absl::string_view, std::string> OneofFieldVars(
     const FieldDescriptor* descriptor);
 
 // Helper function: set variables in the map that are the same for all
 // field code generators.
 // ['name', 'index', 'number', 'classname', 'declared_type', 'tag_size',
 // 'deprecation'].
-void SetCommonFieldVariables(const FieldDescriptor* descriptor,
-                             std::map<std::string, std::string>* variables,
-                             const Options& options);
+void SetCommonFieldVariables(
+    const FieldDescriptor* descriptor,
+    absl::flat_hash_map<absl::string_view, std::string>* variables,
+    const Options& options);
 
 void SetCommonOneofFieldVariables(
     const FieldDescriptor* descriptor,
-    std::map<std::string, std::string>* variables);
+    absl::flat_hash_map<absl::string_view, std::string>* variables);
 
 class FieldGenerator {
  public:
@@ -226,7 +227,7 @@ class FieldGenerator {
  protected:
   const FieldDescriptor* descriptor_;
   const Options& options_;
-  std::map<std::string, std::string> variables_;
+  absl::flat_hash_map<absl::string_view, std::string> variables_;
 };
 
 // Convenience class which constructs FieldGenerators for a Descriptor.

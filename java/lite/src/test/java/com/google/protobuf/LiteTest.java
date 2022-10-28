@@ -1526,7 +1526,6 @@ public class LiteTest {
     assertToStringEquals("optional_double: 3.14\noptional_float: 2.72", proto);
   }
 
-
   @Test
   public void testToStringStringFields() throws Exception {
     TestAllTypesLite proto =

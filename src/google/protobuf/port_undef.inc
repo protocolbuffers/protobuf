@@ -182,6 +182,10 @@
 #pragma GCC diagnostic pop
 #endif
 
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
 // Pop the warning(push) from port_def.inc
 #ifdef _MSC_VER
 #pragma warning(pop)

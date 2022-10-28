@@ -33,3 +33,8 @@ lib/protoc.exe
 
 # Benchmark output
 BenchmarkDotNet.Artifacts/
+
+# Reinstate generated code for test files
+!any_test.pb.*
+!map*unittest.pb.*
+!unittest*.pb.*

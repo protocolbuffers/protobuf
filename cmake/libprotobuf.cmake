@@ -37,3 +37,6 @@ set_target_properties(libprotobuf PROPERTIES
     OUTPUT_NAME ${LIB_PREFIX}protobuf
     DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")
 add_library(protobuf::libprotobuf ALIAS libprotobuf)
+
+target_include_directories(libprotobuf PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/utf8_range)
+target_link_libraries(libprotobuf PRIVATE utf8_validity)

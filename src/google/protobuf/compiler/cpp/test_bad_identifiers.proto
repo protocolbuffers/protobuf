@@ -93,11 +93,16 @@ message TestConflictingSymbolNames {
   optional int32 already_here = 15;
 
   optional uint32 uint32 = 16;
+  optional uint32 uint32_t = 41;
   optional uint64 uint64 = 17;
+  optional uint32 uint64_t = 42;
   optional string string = 18;
   optional int32 memset = 19;
   optional int32 int32 = 20;
+  optional int32 int32_t = 43;
   optional int64 int64 = 21;
+  optional int64 int64_t = 44;
+  optional int64 size_t = 45;
 
   optional uint32 cached_size = 22;
   optional uint32 extensions = 23;

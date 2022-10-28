@@ -316,6 +316,7 @@ cc_library(
         "@com_google_absl//absl/strings:internal",
         "@com_google_absl//absl/synchronization",
         "@com_google_absl//absl/time",
+        "@utf8_range//:utf8_validity",
     ],
 )
 
@@ -385,6 +386,7 @@ cc_library(
         "@com_google_absl//absl/strings:internal",
         "@com_google_absl//absl/synchronization",
         "@com_google_absl//absl/time",
+        "@utf8_range//:utf8_validity",
     ],
 )
 

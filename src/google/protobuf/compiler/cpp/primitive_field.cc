@@ -34,8 +34,11 @@
 
 #include "google/protobuf/compiler/cpp/primitive_field.h"
 
+#include <string>
+
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 
@@ -98,9 +101,10 @@ int FixedSize(FieldDescriptor::Type type) {
   return -1;
 }
 
-void SetPrimitiveVariables(const FieldDescriptor* descriptor,
-                           std::map<std::string, std::string>* variables,
-                           const Options& options) {
+void SetPrimitiveVariables(
+    const FieldDescriptor* descriptor,
+    absl::flat_hash_map<absl::string_view, std::string>* variables,
+    const Options& options) {
   SetCommonFieldVariables(descriptor, variables, options);
   (*variables)["type"] = PrimitiveTypeName(options, descriptor->cpp_type());
   (*variables)["default"] = DefaultValue(options, descriptor);
@@ -467,13 +471,13 @@ void RepeatedPrimitiveFieldGenerator::GenerateByteSize(
   int fixed_size = FixedSize(descriptor_->type());
   if (fixed_size == -1) {
     format(
-        "size_t data_size = ::_pbi::WireFormatLite::\n"
+        "::size_t data_size = ::_pbi::WireFormatLite::\n"
         "  $declared_type$Size(this->$field$);\n");
   } else {
     format(
         "unsigned int count = static_cast<unsigned "
         "int>(this->_internal_$name$_size());\n"
-        "size_t data_size = $fixed_size$UL * count;\n");
+        "::size_t data_size = $fixed_size$UL * count;\n");
   }
 
   if (descriptor_->is_packed()) {

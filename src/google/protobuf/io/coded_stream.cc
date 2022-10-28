@@ -942,26 +942,6 @@ uint8_t* CodedOutputStream::WriteStringWithSizeToArray(const std::string& str,
   return WriteStringToArray(str, target);
 }
 
-uint8_t* CodedOutputStream::WriteVarint32ToArrayOutOfLineHelper(uint32_t value,
-                                                              uint8_t* target) {
-  GOOGLE_DCHECK_GE(value, 0x80);
-  target[0] |= static_cast<uint8_t>(0x80);
-  value >>= 7;
-  target[1] = static_cast<uint8_t>(value);
-  if (value < 0x80) {
-    return target + 2;
-  }
-  target += 2;
-  do {
-    // Turn on continuation bit in the byte we just wrote.
-    target[-1] |= static_cast<uint8_t>(0x80);
-    value >>= 7;
-    *target = static_cast<uint8_t>(value);
-    ++target;
-  } while (value >= 0x80);
-  return target;
-}
-
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google

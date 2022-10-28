@@ -51,7 +51,6 @@ public interface Message extends MessageLite, MessageOrBuilder {
   @Override
   Parser<? extends Message> getParserForType();
 
-
   // -----------------------------------------------------------------
   // Comparison and hashing
 

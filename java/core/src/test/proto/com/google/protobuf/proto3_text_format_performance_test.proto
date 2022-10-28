@@ -28,45 +28,17 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Copyright 2008 Google Inc. All Rights Reserved.
-// Author: xpeng@google.com (Peter Peng)
+syntax = "proto3";
 
-#include <gtest/gtest.h>
+package protobuf.testing.textformat.performance.proto3;
 
-#include "google/protobuf/stubs/common.h"
+option java_package = "com.google.protobuf.testing.textformat.performance.proto3";
+option java_outer_classname = "Proto3TextFormatPerformanceProto";
 
-namespace google {
-namespace protobuf {
-namespace internal {
-namespace {
-
-TEST(StructurallyValidTest, ValidUTF8String) {
-  // On GCC, this string can be written as:
-  //   "abcd 1234 - \u2014\u2013\u2212"
-  // MSVC seems to interpret \u differently.
-  std::string valid_str(
-      "abcd 1234 - \342\200\224\342\200\223\342\210\222 - xyz789");
-  EXPECT_TRUE(IsStructurallyValidUTF8(valid_str.data(),
-                                      valid_str.size()));
-  // Additional check for pointer alignment
-  for (int i = 1; i < 8; ++i) {
-    EXPECT_TRUE(IsStructurallyValidUTF8(valid_str.data() + i,
-                                        valid_str.size() - i));
-  }
+message ContainsSubMessageWithRepeatedInt32 {
+  optional RepeatedInt32 sub_msg = 1;
 }
 
-TEST(StructurallyValidTest, InvalidUTF8String) {
-  const std::string invalid_str("abcd\xA0\xB0\xA0\xB0\xA0\xB0 - xyz789");
-  EXPECT_FALSE(IsStructurallyValidUTF8(invalid_str.data(),
-                                       invalid_str.size()));
-  // Additional check for pointer alignment
-  for (int i = 1; i < 8; ++i) {
-    EXPECT_FALSE(IsStructurallyValidUTF8(invalid_str.data() + i,
-                                         invalid_str.size() - i));
-  }
+message RepeatedInt32 {
+  repeated int32 value = 2;
 }
-
-}  // namespace
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google

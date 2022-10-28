@@ -30,7 +30,6 @@
 
 #include "google/protobuf/compiler/java/name_resolver.h"
 
-#include <map>
 #include <string>
 
 #include "google/protobuf/compiler/code_generator.h"

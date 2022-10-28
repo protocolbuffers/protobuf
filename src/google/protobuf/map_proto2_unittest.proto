@@ -29,9 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 syntax = "proto2";
-option cc_enable_arenas = true;
 
 import "google/protobuf/unittest_import.proto";
+
+option cc_enable_arenas = true;
 
 // We don't put this in a package within proto2 because we need to make sure
 // that the generated code doesn't depend on being in the proto2 namespace.
@@ -39,15 +40,15 @@ import "google/protobuf/unittest_import.proto";
 package protobuf_unittest;
 
 enum Proto2MapEnum {
-  PROTO2_MAP_ENUM_FOO   = 0;
-  PROTO2_MAP_ENUM_BAR   = 1;
-  PROTO2_MAP_ENUM_BAZ   = 2;
+  PROTO2_MAP_ENUM_FOO = 0;
+  PROTO2_MAP_ENUM_BAR = 1;
+  PROTO2_MAP_ENUM_BAZ = 2;
 }
 
 enum Proto2MapEnumPlusExtra {
-  E_PROTO2_MAP_ENUM_FOO   = 0;
-  E_PROTO2_MAP_ENUM_BAR   = 1;
-  E_PROTO2_MAP_ENUM_BAZ   = 2;
+  E_PROTO2_MAP_ENUM_FOO = 0;
+  E_PROTO2_MAP_ENUM_BAR = 1;
+  E_PROTO2_MAP_ENUM_BAZ = 2;
   E_PROTO2_MAP_ENUM_EXTRA = 3;
 }
 
