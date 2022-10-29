@@ -1145,7 +1145,6 @@ void ParseFunctionGenerator::GenerateFieldBody(
   uint32_t tag = WireFormatLite::MakeTag(field->number(), wiretype);
   switch (wiretype) {
     case WireFormatLite::WIRETYPE_VARINT: {
-      std::string type = PrimitiveTypeName(options_, field->cpp_type());
       if (field->type() == FieldDescriptor::TYPE_ENUM) {
         format.Set("enum_type",
                    QualifiedClassName(field->enum_type(), options_));
