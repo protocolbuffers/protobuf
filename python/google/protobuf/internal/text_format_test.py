@@ -41,7 +41,6 @@ import unittest
 
 from google.protobuf import any_pb2
 from google.protobuf import struct_pb2
-from google.protobuf import map_unittest_pb2
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
@@ -56,6 +55,7 @@ from google.protobuf import descriptor_pool
 from google.protobuf import text_format
 from google.protobuf.internal import _parameterized
 from google.protobuf import any_test_pb2
+from google.protobuf import map_unittest_pb2
 # pylint: enable=g-import-not-at-top
 
 
