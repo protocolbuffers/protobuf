@@ -55,6 +55,13 @@ source ${SCRIPT_ROOT}/kokoro/common/caplog.sh
 #
 mkdir -p "${BUILD_DIR}"
 
+#
+# Update checked-in generated files to ensure we pick up any recent changes
+# from the Bazel build.
+#
+bazel test //src:cmake_lists_staleness_test || ./bazel-bin/src/cmake_lists_staleness_test --fix
+bazel test //src/google/protobuf:well_known_types_staleness_test || ./bazel-bin/src/google/protobuf/well_known_types_staleness_test --fix
+
 (
   cd "${BUILD_DIR}"
   caplog 01_configure \

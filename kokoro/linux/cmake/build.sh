@@ -13,6 +13,10 @@ CONTAINER_IMAGE=gcr.io/protobuf-build/cmake/linux@sha256:79e6ed9d7f3f8e56167a330
 # Update git submodules
 git submodule update --init --recursive
 
+# Run the staleness tests and use them to update any stale files.
+bazel test //src:cmake_lists_staleness_test || ./bazel-bin/src/cmake_lists_staleness_test --fix
+bazel test //src/google/protobuf:well_known_types_staleness_test || ./bazel-bin/src/google/protobuf/well_known_types_staleness_test --fix
+
 tmpfile=$(mktemp -u)
 
 docker run \

@@ -274,7 +274,7 @@ cc_library(
         "implicit_weak_message.cc",
         "inlined_string_field.cc",
         "map.cc",
-        "message_lite.cc",
+        "message_lite2.cc",
         "parse_context.cc",
         "repeated_field.cc",
         "repeated_ptr_field.cc",

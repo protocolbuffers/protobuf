@@ -16,6 +16,10 @@ CONTAINER_IMAGE=gcr.io/protobuf-build/php/32bit@sha256:824cbdff02ee543eb69ee4b02
 
 git submodule update --init --recursive
 
+# Run the staleness tests and use them to update any stale files.
+bazel test //src:cmake_lists_staleness_test || ./bazel-bin/src/cmake_lists_staleness_test --fix
+bazel test //src/google/protobuf:well_known_types_staleness_test || ./bazel-bin/src/google/protobuf/well_known_types_staleness_test --fix
+
 docker run \
   "$@" \
   -v $GIT_REPO_ROOT:/workspace \
