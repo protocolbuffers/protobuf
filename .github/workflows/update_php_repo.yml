@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - v[0-9]+.[0-9]+
+      - v[0-9]+.[0-9]+-rc[0-9]+
 
 jobs:
   update-repo:
@@ -38,8 +39,7 @@ jobs:
           rm -rf protobuf
       - name: Push Changes
         run: |
-          git add .
-          git commit -m "$VERSION sync"
+          git commit -a -m "$VERSION sync"
           git push --force origin master
           git tag -a $VERSION_TAG -m "Tag release $VERSION_TAG"
           git push origin $VERSION_TAG
