@@ -2,7 +2,7 @@
 #
 # See also code generation logic under /src/google/protobuf/compiler/php.
 
-load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("@rules_pkg//:mappings.bzl", "pkg_files", "pkg_filegroup", "strip_prefix")
 load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@upb//cmake:build_defs.bzl", "staleness_test")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
@@ -20,7 +20,7 @@ filegroup(
         "src/Google/Protobuf/**/*.php",
     ]) + [
         "composer.json",
-        "//php/ext/google/protobuf:source_files",
+        ":php_ext_source_files",
     ],
 )
 
@@ -140,12 +140,70 @@ pkg_files(
 # PECL .tgz Release
 ################################################################################
 
+pkg_files(
+  name = "php_ext_source_files",
+  srcs = glob([
+    "ext/google/protobuf/*.h",
+    "ext/google/protobuf/*.c",
+  ]) + [
+    "//:LICENSE",
+    "ext/google/protobuf/config.m4",
+    "ext/google/protobuf/wkt.inc",
+  ],
+)
+
+pkg_files(
+  name = "utf8_range_files",
+  srcs = [
+    "@utf8_range//:utf8_range_srcs",
+    "@utf8_range//:LICENSE",
+  ],
+  prefix = "third_party/utf8_range",
+)
+
+pkg_filegroup(
+  name = "pecl_release_files",
+  srcs = [
+    ":php_ext_source_files",
+    ":utf8_range_files",
+  ],
+  prefix = "protobuf-%s" % PROTOBUF_PHP_VERSION,
+)
+
+# PECL .tgz without package.xml
+pkg_tar(
+  name = "release_without_package",
+  extension = "tgz",
+  srcs = [
+    ":pecl_release_files",
+  ],
+  out = "release_without_package.tgz",
+)
+
+# Generate PECL package.xml
+genrule(
+    name = "generate_package_xml",
+    srcs = [
+      ":release_without_package",
+      "ext/google/protobuf/template_package.xml",
+    ],
+    outs = ["package.xml"],
+    cmd = " ".join([
+      "$(location ext/google/protobuf/generate_package_xml.sh)",
+      "$(location ext/google/protobuf/template_package.xml)",
+      PROTOBUF_PHP_VERSION,
+      "$$(tar -tf $(location :release_without_package) | sed -z -e 's;\\n;,;g')",
+      "$(location package.xml)"
+    ]),
+    tools = ["ext/google/protobuf/generate_package_xml.sh"],
+)
+
 pkg_tar(
   name = "release",
   extension = "tgz",
   srcs = [
-    "//php/ext/google/protobuf:release_files",
-    "//php/ext/google/protobuf:generate_package_xml",
+    ":pecl_release_files",
+    ":generate_package_xml",
   ],
   out = "protobuf-%s.tgz" % PROTOBUF_PHP_VERSION,
 )
