@@ -34,6 +34,7 @@
 
 #include "google/protobuf/compiler/command_line_interface.h"
 
+#include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
 
 #include "google/protobuf/stubs/platform_macros.h"
@@ -427,7 +428,7 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
   // The files_ field maps from path keys to file content values. It's a map
   // instead of an unordered_map so that files are written in order (good when
   // writing zips).
-  absl::flat_hash_map<std::string, std::string> files_;
+  absl::btree_map<std::string, std::string> files_;
   const std::vector<const FileDescriptor*>& parsed_files_;
   bool had_error_;
 };
@@ -805,95 +806,95 @@ CommandLineInterface::MemoryOutputStream::~MemoryOutputStream() {
     }
 
     it->second.swap(data_);
+    return;
+  }
+  // This was an OpenForInsert().
+
+  // If the data doesn't end with a clean line break, add one.
+  if (!data_.empty() && data_[data_.size() - 1] != '\n') {
+    data_.push_back('\n');
+  }
+
+  // Find the file we are going to insert into.
+  if (!already_present) {
+    std::cerr << filename_ << ": Tried to insert into file that doesn't exist."
+              << std::endl;
+    directory_->had_error_ = true;
+    return;
+  }
+  std::string* target = &it->second;
+
+  // Find the insertion point.
+  std::string magic_string =
+      absl::Substitute("@@protoc_insertion_point($0)", insertion_point_);
+  std::string::size_type pos = target->find(magic_string);
+
+  if (pos == std::string::npos) {
+    std::cerr << filename_ << ": insertion point \"" << insertion_point_
+              << "\" not found." << std::endl;
+    directory_->had_error_ = true;
+    return;
+  }
+
+  if ((pos > 3) && (target->substr(pos - 3, 2) == "/*")) {
+    // Support for inline "/* @@protoc_insertion_point() */"
+    pos = pos - 3;
   } else {
-    // This was an OpenForInsert().
-
-    // If the data doesn't end with a clean line break, add one.
-    if (!data_.empty() && data_[data_.size() - 1] != '\n') {
-      data_.push_back('\n');
-    }
-
-    // Find the file we are going to insert into.
-    if (!already_present) {
-      std::cerr << filename_
-                << ": Tried to insert into file that doesn't exist."
-                << std::endl;
-      directory_->had_error_ = true;
-      return;
-    }
-    std::string* target = &it->second;
-
-    // Find the insertion point.
-    std::string magic_string =
-        absl::Substitute("@@protoc_insertion_point($0)", insertion_point_);
-    std::string::size_type pos = target->find(magic_string);
-
+    // Seek backwards to the beginning of the line, which is where we will
+    // insert the data.  Note that this has the effect of pushing the
+    // insertion point down, so the data is inserted before it.  This is
+    // intentional because it means that multiple insertions at the same point
+    // will end up in the expected order in the final output.
+    pos = target->find_last_of('\n', pos);
     if (pos == std::string::npos) {
-      std::cerr << filename_ << ": insertion point \"" << insertion_point_
-                << "\" not found." << std::endl;
-      directory_->had_error_ = true;
-      return;
-    }
-
-    if ((pos > 3) && (target->substr(pos - 3, 2) == "/*")) {
-      // Support for inline "/* @@protoc_insertion_point() */"
-      pos = pos - 3;
+      // Insertion point is on the first line.
+      pos = 0;
     } else {
-      // Seek backwards to the beginning of the line, which is where we will
-      // insert the data.  Note that this has the effect of pushing the
-      // insertion point down, so the data is inserted before it.  This is
-      // intentional because it means that multiple insertions at the same point
-      // will end up in the expected order in the final output.
-      pos = target->find_last_of('\n', pos);
-      if (pos == std::string::npos) {
-        // Insertion point is on the first line.
-        pos = 0;
-      } else {
-        // Advance to character after '\n'.
-        ++pos;
-      }
-    }
-
-    // Extract indent.
-    std::string indent_(*target, pos,
-                        target->find_first_not_of(" \t", pos) - pos);
-
-    if (indent_.empty()) {
-      // No indent.  This makes things easier.
-      target->insert(pos, data_);
-      UpdateMetadata(data_, pos, data_.size(), 0);
-    } else {
-      // Calculate how much space we need.
-      int indent_size = 0;
-      for (int i = 0; i < data_.size(); i++) {
-        if (data_[i] == '\n') indent_size += indent_.size();
-      }
-
-      // Make a hole for it.
-      target->insert(pos, data_.size() + indent_size, '\0');
-
-      // Now copy in the data.
-      std::string::size_type data_pos = 0;
-      char* target_ptr = &(*target)[pos];
-      while (data_pos < data_.size()) {
-        // Copy indent.
-        memcpy(target_ptr, indent_.data(), indent_.size());
-        target_ptr += indent_.size();
-
-        // Copy line from data_.
-        // We already guaranteed that data_ ends with a newline (above), so this
-        // search can't fail.
-        std::string::size_type line_length =
-            data_.find_first_of('\n', data_pos) + 1 - data_pos;
-        memcpy(target_ptr, data_.data() + data_pos, line_length);
-        target_ptr += line_length;
-        data_pos += line_length;
-      }
-      UpdateMetadata(data_, pos, data_.size() + indent_size, indent_.size());
-
-      GOOGLE_CHECK_EQ(target_ptr, &(*target)[pos] + data_.size() + indent_size);
+      // Advance to character after '\n'.
+      ++pos;
     }
   }
+
+  // Extract indent.
+  std::string indent_(*target, pos,
+                      target->find_first_not_of(" \t", pos) - pos);
+
+  if (indent_.empty()) {
+    // No indent.  This makes things easier.
+    target->insert(pos, data_);
+    UpdateMetadata(data_, pos, data_.size(), 0);
+    return;
+  }
+  // Calculate how much space we need.
+  int indent_size = 0;
+  for (int i = 0; i < data_.size(); i++) {
+    if (data_[i] == '\n') indent_size += indent_.size();
+  }
+
+  // Make a hole for it.
+  target->insert(pos, data_.size() + indent_size, '\0');
+
+  // Now copy in the data.
+  std::string::size_type data_pos = 0;
+  char* target_ptr = &(*target)[pos];
+  while (data_pos < data_.size()) {
+    // Copy indent.
+    memcpy(target_ptr, indent_.data(), indent_.size());
+    target_ptr += indent_.size();
+
+    // Copy line from data_.
+    // We already guaranteed that data_ ends with a newline (above), so this
+    // search can't fail.
+    std::string::size_type line_length =
+        data_.find_first_of('\n', data_pos) + 1 - data_pos;
+    memcpy(target_ptr, data_.data() + data_pos, line_length);
+    target_ptr += line_length;
+    data_pos += line_length;
+  }
+
+  GOOGLE_CHECK_EQ(target_ptr, &(*target)[pos] + data_.size() + indent_size);
+
+  UpdateMetadata(data_, pos, data_.size() + indent_size, indent_.size());
 }
 
 // ===================================================================

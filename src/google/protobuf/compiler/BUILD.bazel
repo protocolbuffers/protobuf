@@ -83,6 +83,7 @@ cc_library(
         ":code_generator",
         ":importer",
         "//src/google/protobuf:protobuf_nowkt",
+        "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
     ],
