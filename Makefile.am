@@ -815,7 +815,6 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/message.h                                   \
   php/ext/google/protobuf/names.c                                     \
   php/ext/google/protobuf/names.h                                     \
-  php/ext/google/protobuf/package.xml                                 \
   php/ext/google/protobuf/php-upb.c                                   \
   php/ext/google/protobuf/php-upb.h                                   \
   php/ext/google/protobuf/php_protobuf.h                              \
