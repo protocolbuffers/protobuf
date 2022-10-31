@@ -2,7 +2,9 @@
 #
 # See also code generation logic under /src/google/protobuf/compiler/php.
 
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
+load("//:protobuf_version.bzl", "PROTOBUF_PHP_VERSION")
 
 pkg_files(
     name = "dist_files",
@@ -29,4 +31,18 @@ pkg_files(
     prefix = "php",
     strip_prefix = strip_prefix.from_pkg(""),
     visibility = ["//pkg:__pkg__"],
+)
+
+################################################################################
+# PECL .tgz Release
+################################################################################
+
+pkg_tar(
+  name = "release",
+  extension = "tgz",
+  srcs = [
+    "//php/ext/google/protobuf:release_files",
+    "//php/ext/google/protobuf:generate_package_xml",
+  ],
+  out = "protobuf-%s.tgz" % PROTOBUF_PHP_VERSION,
 )

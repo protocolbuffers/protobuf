@@ -1,6 +1,22 @@
 
 # Pulled from: https://github.com/cyb70289/utf8
 
+exports_files(["LICENSE"])
+
+filegroup(
+    name = "utf8_range_srcs",
+    srcs = [
+        "naive.c",
+        "range2-neon.c",
+        "range2-sse.c",
+        "utf8_range.h",
+    ],
+    visibility = [
+        "@com_google_protobuf//:__subpackages__",
+        "@upb//:__subpackages__",
+    ],
+)
+
 cc_library(
     name = "utf8_range",
     hdrs = ["utf8_range.h"],
