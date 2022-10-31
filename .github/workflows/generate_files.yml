@@ -9,8 +9,12 @@ on:
       # to exclude it.
       - '!21.x'
 
+permissions: {}
 jobs:
   cmake:
+    permissions:
+      contents: write  #  for git push
+
     if: github.repository == 'protocolbuffers/protobuf'
     runs-on: ubuntu-latest
 
