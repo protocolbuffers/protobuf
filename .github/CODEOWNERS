@@ -14,7 +14,7 @@
 /java/kotlin-lite/ @protocolbuffers/protobuf-kotlin
 /java/kotlin/ @protocolbuffers/protobuf-kotlin
 
-/objectivec/ @protocolbuffers/protobuf-objc/
+/objectivec/ @protocolbuffers/protobuf-objc
 /src/google/protobuf/compiler/objectivec/ @protocolbuffers/protobuf-objc
 
 /php/ @protocolbuffers/protobuf-php
