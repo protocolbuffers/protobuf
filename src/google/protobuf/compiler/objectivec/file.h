@@ -62,10 +62,10 @@ class FileGenerator {
    private:
     struct MinDepsEntry {
       bool has_extensions;
+      // The minimal dependencies that cover all the dependencies with
+      // extensions.
       absl::flat_hash_set<const FileDescriptor*> min_deps;
-      // `covered_deps` are the transtive deps of `min_deps_w_exts` that also
-      // have extensions.
-      absl::flat_hash_set<const FileDescriptor*> covered_deps;
+      absl::flat_hash_set<const FileDescriptor*> transitive_deps;
     };
     const MinDepsEntry& CollectMinimalFileDepsContainingExtensionsInternal(
         const FileDescriptor* file);

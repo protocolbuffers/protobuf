@@ -329,8 +329,7 @@ void SingleFieldGenerator::GeneratePropertyDeclaration(
   // clang-format off
   printer->Print(
       variables_,
-      "@property(nonatomic, readwrite) $property_type$ $name$$deprecated_attribute$;\n"
-      "\n");
+      "@property(nonatomic, readwrite) $property_type$ $name$$deprecated_attribute$;\n");
   // clang-format on
   if (WantsHasProperty()) {
     // clang-format off
@@ -339,6 +338,7 @@ void SingleFieldGenerator::GeneratePropertyDeclaration(
         "@property(nonatomic, readwrite) BOOL has$capitalized_name$$deprecated_attribute$;\n");
     // clang-format on
   }
+  printer->Print("\n");
 }
 
 void SingleFieldGenerator::GeneratePropertyImplementation(

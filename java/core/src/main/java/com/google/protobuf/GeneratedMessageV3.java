@@ -2092,9 +2092,9 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
       Message.Builder newBuilder();
 
-      Message.Builder getBuilder(GeneratedMessageV3.Builder builder);
+      Message.Builder getBuilder(GeneratedMessageV3.Builder<?> builder);
 
-      Message.Builder getRepeatedBuilder(GeneratedMessageV3.Builder builder, int index);
+      Message.Builder getRepeatedBuilder(GeneratedMessageV3.Builder<?> builder, int index);
     }
 
     /** OneofAccessor provides access to a single oneof. */
@@ -2421,12 +2421,12 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Message.Builder getBuilder(GeneratedMessageV3.Builder builder) {
+      public Message.Builder getBuilder(GeneratedMessageV3.Builder<?> builder) {
         throw new UnsupportedOperationException("getFieldBuilder() called on a non-Message type.");
       }
 
       @Override
-      public Message.Builder getRepeatedBuilder(GeneratedMessageV3.Builder builder, int index) {
+      public Message.Builder getRepeatedBuilder(GeneratedMessageV3.Builder<?> builder, int index) {
         throw new UnsupportedOperationException(
             "getRepeatedFieldBuilder() called on a non-Message type.");
       }
@@ -2646,12 +2646,12 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Message.Builder getBuilder(GeneratedMessageV3.Builder builder) {
+      public Message.Builder getBuilder(GeneratedMessageV3.Builder<?> builder) {
         throw new UnsupportedOperationException("getFieldBuilder() called on a non-Message type.");
       }
 
       @Override
-      public Message.Builder getRepeatedBuilder(GeneratedMessageV3.Builder builder, int index) {
+      public Message.Builder getRepeatedBuilder(GeneratedMessageV3.Builder<?> builder, int index) {
         throw new UnsupportedOperationException(
             "getRepeatedFieldBuilder() called on a non-Message type.");
       }
@@ -2665,7 +2665,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           final Class<? extends Builder> builderClass) {
         field = descriptor;
         Method getDefaultInstanceMethod = getMethodOrDie(messageClass, "getDefaultInstance");
-        MapField defaultMapField =
+        MapField<?, ?> defaultMapField =
             getMapField((GeneratedMessageV3) invokeOrDie(getDefaultInstanceMethod, null));
         mapEntryMessageDefaultInstance = defaultMapField.getMapEntryMessageDefaultInstance();
       }
@@ -2793,17 +2793,17 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public com.google.protobuf.Message.Builder newBuilder() {
+      public Message.Builder newBuilder() {
         return mapEntryMessageDefaultInstance.newBuilderForType();
       }
 
       @Override
-      public com.google.protobuf.Message.Builder getBuilder(Builder builder) {
+      public Message.Builder getBuilder(Builder<?> builder) {
         throw new UnsupportedOperationException("Nested builder not supported for map fields.");
       }
 
       @Override
-      public com.google.protobuf.Message.Builder getRepeatedBuilder(Builder builder, int index) {
+      public Message.Builder getRepeatedBuilder(Builder<?> builder, int index) {
         throw new UnsupportedOperationException("Map fields cannot be repeated");
       }
     }
@@ -2910,9 +2910,8 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       private Method addRepeatedValueMethod;
 
       @Override
-      @SuppressWarnings("unchecked")
       public Object get(final GeneratedMessageV3 message) {
-        final List newList = new ArrayList<>();
+        final List<Object> newList = new ArrayList<>();
         final int size = getRepeatedCount(message);
         for (int i = 0; i < size; i++) {
           newList.add(getRepeated(message, i));
@@ -2921,9 +2920,8 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      @SuppressWarnings("unchecked")
       public Object get(final GeneratedMessageV3.Builder builder) {
-        final List newList = new ArrayList<>();
+        final List<Object> newList = new ArrayList<>();
         final int size = getRepeatedCount(builder);
         for (int i = 0; i < size; i++) {
           newList.add(getRepeated(builder, i));
@@ -3071,7 +3069,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Message.Builder getBuilder(GeneratedMessageV3.Builder builder) {
+      public Message.Builder getBuilder(GeneratedMessageV3.Builder<?> builder) {
         return (Message.Builder) invokeOrDie(getBuilderMethodBuilder, builder);
       }
     }
@@ -3123,7 +3121,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
       @Override
       public Message.Builder getRepeatedBuilder(
-          final GeneratedMessageV3.Builder builder, final int index) {
+          final GeneratedMessageV3.Builder<?> builder, final int index) {
         return (Message.Builder) invokeOrDie(getBuilderMethodBuilder, builder, index);
       }
     }
