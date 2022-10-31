@@ -34,7 +34,6 @@
 
 #include "google/protobuf/compiler/command_line_interface.h"
 
-#include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
 
 #include "google/protobuf/stubs/platform_macros.h"
@@ -428,7 +427,7 @@ class CommandLineInterface::GeneratorContextImpl : public GeneratorContext {
   // The files_ field maps from path keys to file content values. It's a map
   // instead of an unordered_map so that files are written in order (good when
   // writing zips).
-  absl::btree_map<std::string, std::string> files_;
+  absl::flat_hash_map<std::string, std::string> files_;
   const std::vector<const FileDescriptor*>& parsed_files_;
   bool had_error_;
 };
