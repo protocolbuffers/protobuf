@@ -51,7 +51,6 @@ import warnings
 cmp = lambda x, y: (x > y) - (x < y)
 
 from google.protobuf import unittest_pb2  # pylint: disable=g-import-not-at-top
-from google.protobuf import unittest_proto3_arena_pb2
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import encoder
 from google.protobuf.internal import more_extensions_pb2
@@ -64,6 +63,7 @@ from google.protobuf import message
 from google.protobuf.internal import _parameterized
 from google.protobuf import map_proto2_unittest_pb2
 from google.protobuf import map_unittest_pb2
+from google.protobuf import unittest_proto3_arena_pb2
 
 UCS2_MAXUNICODE = 65535
 
