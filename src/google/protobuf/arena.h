@@ -148,19 +148,9 @@ struct ArenaOptions {
         initial_block(nullptr),
         initial_block_size(0),
         block_alloc(nullptr),
-        block_dealloc(nullptr),
-        make_metrics_collector(nullptr) {}
+        block_dealloc(nullptr) {}
 
  private:
-  // If make_metrics_collector is not nullptr, it will be called at Arena init
-  // time. It may return a pointer to a collector instance that will be notified
-  // of interesting events related to the arena.
-  internal::ArenaMetricsCollector* (*make_metrics_collector)();
-
-  internal::ArenaMetricsCollector* MetricsCollector() const {
-    return make_metrics_collector ? (*make_metrics_collector)() : nullptr;
-  }
-
   internal::AllocationPolicy AllocationPolicy() const {
     internal::AllocationPolicy res;
     res.start_block_size = start_block_size;
@@ -169,8 +159,6 @@ struct ArenaOptions {
     res.block_dealloc = block_dealloc;
     return res;
   }
-
-  friend void arena_metrics::EnableArenaMetrics(ArenaOptions*);
 
   friend class Arena;
   friend class ArenaOptionsTestFriend;
