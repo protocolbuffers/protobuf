@@ -38,26 +38,6 @@ module Google
     class Error < StandardError; end
     class ParseError < Error; end
     class TypeError < ::TypeError; end
-  end
-end
-
-if RUBY_PLATFORM == "java"
-  require 'json'
-  require 'google/protobuf_java'
-else
-  begin
-    require "google/#{RUBY_VERSION.sub(/\.\d+$/, '')}/protobuf_c"
-  rescue LoadError
-    require 'google/protobuf_c'
-  end
-
-end
-
-require 'google/protobuf/descriptor_dsl'
-require 'google/protobuf/repeated_field'
-
-module Google
-  module Protobuf
 
     def self.encode(msg, options = {})
       msg.to_proto(options)
@@ -75,5 +55,15 @@ module Google
       klass.decode_json(json, options)
     end
 
+    IMPLEMENTATION = case ENV['PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION']
+      when nil, 'native', ''
+        require 'google/protobuf_native'
+       :NATIVE
+      when 'ffi'
+        require 'google/protobuf_native'
+       :FFI
+      else
+        raise RuntimeError("Unsupport value of PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION environment variable `#{ENV['PROTOCOL_BUFFERS_RUBY_IMPLEMENTATION']}`. Must be one of `native` or `ffi`. Defaults to `native`.")
+    end
   end
 end
