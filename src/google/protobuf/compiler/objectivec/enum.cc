@@ -126,7 +126,7 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
       name_);
   printer->Indent();
 
-  if (HasPreservingUnknownEnumSemantics(descriptor_->file())) {
+  if (!descriptor_->is_closed()) {
     // Include the unknown value.
     printer->Print(
         // clang-format off

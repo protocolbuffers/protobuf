@@ -76,7 +76,7 @@ EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor)
 
 void EnumFieldGenerator::GenerateCFunctionDeclarations(
     io::Printer* printer) const {
-  if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) {
+  if (descriptor_->enum_type()->is_closed()) {
     return;
   }
 
@@ -100,7 +100,9 @@ void EnumFieldGenerator::GenerateCFunctionDeclarations(
 
 void EnumFieldGenerator::GenerateCFunctionImplementations(
     io::Printer* printer) const {
-  if (!HasPreservingUnknownEnumSemantics(descriptor_->file())) return;
+  if (descriptor_->enum_type()->is_closed()) {
+    return;
+  }
 
   // clang-format off
   printer->Print(
