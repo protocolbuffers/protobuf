@@ -151,7 +151,7 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
   }
 
   absl::flat_hash_set<const FileDescriptor*> min_deps_collector;
-  absl::flat_hash_set<const FileDescriptor*> covered_deps_collector;
+  absl::flat_hash_set<const FileDescriptor*> transitive_deps_collector;
   absl::flat_hash_set<const FileDescriptor*> to_prune;
   for (int i = 0; i < file->dependency_count(); i++) {
     const FileDescriptor* dep = file->dependency(i);
@@ -159,11 +159,12 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
         CollectMinimalFileDepsContainingExtensionsInternal(dep);
 
     // Everything the dep covered, this file will also cover.
-    covered_deps_collector.insert(dep_info.covered_deps.begin(),
-                                  dep_info.covered_deps.end());
+    transitive_deps_collector.insert(dep_info.transitive_deps.begin(),
+                                     dep_info.transitive_deps.end());
     // Prune everything from the dep's covered list in case another dep lists it
     // as a min dep.
-    to_prune.insert(dep_info.covered_deps.begin(), dep_info.covered_deps.end());
+    to_prune.insert(dep_info.transitive_deps.begin(),
+                    dep_info.transitive_deps.end());
 
     // Does the dep have any extensions...
     if (dep_info.has_extensions) {
@@ -171,8 +172,8 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
       // deps.
       min_deps_collector.insert(dep);
       to_prune.insert(dep_info.min_deps.begin(), dep_info.min_deps.end());
-      covered_deps_collector.insert(dep_info.min_deps.begin(),
-                                    dep_info.min_deps.end());
+      transitive_deps_collector.insert(dep_info.min_deps.begin(),
+                                       dep_info.min_deps.end());
     } else {
       // No -> Just use its min_deps.
       min_deps_collector.insert(dep_info.min_deps.begin(),
@@ -187,7 +188,8 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
   if (to_prune.empty() || file->dependency_count() == 1) {
     return deps_info_cache
         .insert(
-            {file, {file_has_exts, min_deps_collector, covered_deps_collector}})
+            {file,
+             {file_has_exts, min_deps_collector, transitive_deps_collector}})
         .first->second;
   }
 
@@ -198,7 +200,7 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
                  return to_prune.find(value) == to_prune.end();
                });
   return deps_info_cache
-      .insert({file, {file_has_exts, min_deps, covered_deps_collector}})
+      .insert({file, {file_has_exts, min_deps, transitive_deps_collector}})
       .first->second;
 }
 
