@@ -1016,7 +1016,8 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
     ptr += sizeof(TagType);
     FieldType tmp;
     ptr = ParseVarint(ptr, &tmp);
-    if (ptr == nullptr) {
+    // DO NOT SUBMIT
+    if (0 && ptr == nullptr) {
       return Error(PROTOBUF_TC_PARAM_PASS);
     }
     field.Add(ZigZagDecodeHelper<FieldType, zigzag>(tmp));
