@@ -35,7 +35,6 @@ __author__ = 'robinson@google.com (Will Robinson)'
 import unittest
 import warnings
 
-from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import descriptor_pb2
@@ -45,6 +44,7 @@ from google.protobuf import descriptor
 from google.protobuf import descriptor_pool
 from google.protobuf import symbol_database
 from google.protobuf import text_format
+from google.protobuf import unittest_custom_options_pb2
 
 
 TEST_EMPTY_MESSAGE_DESCRIPTOR_ASCII = """

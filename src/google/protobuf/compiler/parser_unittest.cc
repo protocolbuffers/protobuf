@@ -42,7 +42,6 @@
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/any.pb.h"
-#include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/io/tokenizer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -52,6 +51,7 @@
 #include <gtest/gtest.h>
 #include "absl/strings/str_join.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/unittest_custom_options.pb.h"
 
 namespace google {
 namespace protobuf {
