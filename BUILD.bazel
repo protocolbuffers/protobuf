@@ -7,7 +7,9 @@ load("@rules_java//java:defs.bzl", "java_lite_proto_library", "java_proto_librar
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS", "PROTOC_LINK_OPTS")
 load(":protobuf.bzl", "internal_objc_proto_library", "internal_php_proto_library", "internal_py_proto_library", "internal_ruby_proto_library")
 
-licenses(["notice"])
+licenses(
+    ["notice"]
+)
 
 exports_files(["LICENSE"])
 
