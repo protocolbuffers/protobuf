@@ -47,7 +47,6 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/any.pb.h"
-#include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
@@ -63,6 +62,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 
