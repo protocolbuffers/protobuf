@@ -15,6 +15,16 @@ jobs:
           - php:7.4-cli
           - php:8.1-cli
     steps:
+      - name: Install python3
+        run: |
+          apt-get update -q
+          apt-get install -qy python3
+      - name: Install bazel
+        run: |
+          apt-get install -qy wget
+          mkdir $HOME/bin
+          wget -O $HOME/bin/bazel https://github.com/bazelbuild/bazel/releases/download/5.3.2/bazel-5.3.2-linux-x86_64
+          chmod a+x $HOME/bin/bazel
       - name: Install git
         run: |
           apt-get update -q
@@ -23,20 +33,15 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
-      - name: Prepare source code
-        run: |
-          rm -rf "$GITHUB_WORKSPACE/php/ext/google/protobuf/third_party"
-          cp -r "$GITHUB_WORKSPACE/third_party" "$GITHUB_WORKSPACE/php/ext/google/protobuf"
-          cp "$GITHUB_WORKSPACE/LICENSE" "$GITHUB_WORKSPACE/php/ext/google/protobuf"
       - name: Create package
         run: |
-          cd /tmp
-          rm -rf protobuf-*.tgz
-          pecl package "$GITHUB_WORKSPACE/php/ext/google/protobuf/package.xml"
+          cd $GITHUB_WORKSPACE
+          rm -rf bazel-bin/php/protobuf-*.tgz
+          $HOME/bin/bazel build php:release
       - name: Compile extension
         run: |
           cd /tmp
-          MAKE="make -j$(nproc)" pecl install protobuf-*.tgz
+          MAKE="make -j$(nproc)" pecl install $GITHUB_WORKSPACE/bazel-bin/php/protobuf-*.tgz
       - name: Enable extension
         run: docker-php-ext-enable protobuf
       - name: Inspect extension

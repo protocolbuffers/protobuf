@@ -809,18 +809,19 @@ php_EXTRA_DIST=                                                       \
   php/ext/google/protobuf/convert.h                                   \
   php/ext/google/protobuf/def.c                                       \
   php/ext/google/protobuf/def.h                                       \
+  php/ext/google/protobuf/generate_package_xml.sh                     \
   php/ext/google/protobuf/map.c                                       \
   php/ext/google/protobuf/map.h                                       \
   php/ext/google/protobuf/message.c                                   \
   php/ext/google/protobuf/message.h                                   \
   php/ext/google/protobuf/names.c                                     \
   php/ext/google/protobuf/names.h                                     \
-  php/ext/google/protobuf/package.xml                                 \
   php/ext/google/protobuf/php-upb.c                                   \
   php/ext/google/protobuf/php-upb.h                                   \
   php/ext/google/protobuf/php_protobuf.h                              \
   php/ext/google/protobuf/protobuf.c                                  \
   php/ext/google/protobuf/protobuf.h                                  \
+  php/ext/google/protobuf/template_package.xml                        \
   php/ext/google/protobuf/wkt.inc                                     \
   php/ext/google/protobuf/tests/unnecessary_zval.phpt                 \
   php/generate_descriptor_protos.sh                                   \
