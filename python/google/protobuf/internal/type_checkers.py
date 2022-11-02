@@ -75,10 +75,6 @@ def ToShortestFloat(original):
   return rounded
 
 
-def SupportsOpenEnums(field_descriptor):
-  return field_descriptor.containing_type.syntax == 'proto3'
-
-
 def GetTypeChecker(field):
   """Returns a type checker for a message field of the specified types.
 
@@ -93,11 +89,11 @@ def GetTypeChecker(field):
       field.type == _FieldDescriptor.TYPE_STRING):
     return UnicodeValueChecker()
   if field.cpp_type == _FieldDescriptor.CPPTYPE_ENUM:
-    if SupportsOpenEnums(field):
+    if field.enum_type.is_closed:
+      return EnumValueChecker(field.enum_type)
+    else:
       # When open enums are supported, any int32 can be assigned.
       return _VALUE_CHECKERS[_FieldDescriptor.CPPTYPE_INT32]
-    else:
-      return EnumValueChecker(field.enum_type)
   return _VALUE_CHECKERS[field.cpp_type]
 
 

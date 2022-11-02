@@ -66,6 +66,7 @@ if _USE_C_DESCRIPTORS:
   # and make it return True when the descriptor is an instance of the extension
   # type written in C++.
   class DescriptorMetaclass(type):
+
     def __instancecheck__(cls, obj):
       if super(DescriptorMetaclass, cls).__instancecheck__(obj):
         return True
@@ -735,6 +736,18 @@ class EnumDescriptor(_NestedDescriptorBase):
     self.values_by_name = dict((v.name, v) for v in values)
     # Values are reversed to ensure that the first alias is retained.
     self.values_by_number = dict((v.number, v) for v in reversed(values))
+
+  @property
+  def is_closed(self):
+    """If the enum is closed.
+
+    closed enum means:
+      - Has a fixed set of named values.
+      - Encountering values not in this set causes them to be treated as
+        unknown fields.
+      - The first value (i.e., the default) may be nonzero.
+    """
+    return self.file.syntax == 'proto2'
 
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.EnumDescriptorProto.
