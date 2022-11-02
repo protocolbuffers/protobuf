@@ -139,12 +139,11 @@ void MessageGenerator::Generate(io::Printer* printer) {
   printer->Print("{\n");
   printer->Indent();
 
-  // Static constructor to validate the runtime version against the protoc version
+  // Static field with initializer to validate the runtime version against the protoc version
+  // TODO: Consider not having this at all, and relying on the constructor validating.
   printer->Print(
       vars,
-      "static $class_name$() {\n"
-      "    pbr::RuntimeVersion.Validate($reflection_class$.MinimumRuntimeVersion);\n"
-      "}\n"
+      "private static readonly bool _runtimeVersionValidated = $reflection_class$.ValidateRuntimeVersion();\n"
       "\n"
   );
 
@@ -211,6 +210,7 @@ void MessageGenerator::Generate(io::Printer* printer) {
   printer->Print(
     vars,
     "public $class_name$() {\n"
+    "  $reflection_class$.ValidateRuntimeVersion();\n"
     "  OnConstruction();\n"
     "}\n\n"
     "partial void OnConstruction();\n\n");

@@ -66,6 +66,7 @@ class ReflectionClassGenerator : public SourceGeneratorBase {
   void WriteIntroduction(io::Printer* printer);
   void WriteCompilerVersion(io::Printer* printer);
   void WriteMinimumRuntimeVersion(io::Printer* printer);
+  void WriteValidateRuntimeVersionMethod(io::Printer* printer);
   void WriteDescriptor(io::Printer* printer);
   void WriteGeneratedCodeInfo(const Descriptor* descriptor,
                               io::Printer* printer,

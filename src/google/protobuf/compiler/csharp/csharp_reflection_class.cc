@@ -71,6 +71,7 @@ void ReflectionClassGenerator::Generate(io::Printer* printer) {
   WriteIntroduction(printer);
   WriteCompilerVersion(printer);
   WriteMinimumRuntimeVersion(printer);
+  WriteValidateRuntimeVersionMethod(printer);
   WriteDescriptor(printer);
   // Close the class declaration.
   printer->Outdent();
@@ -184,6 +185,19 @@ void ReflectionClassGenerator::WriteMinimumRuntimeVersion(io::Printer* printer) 
     "major", absl::StrCat(CSHARP_RUNTIME_MAJOR_VERSION),
     "minor", absl::StrCat(compiler_version_.minor()),
     "patch", absl::StrCat(compiler_version_.patch()));
+}
+
+void ReflectionClassGenerator::WriteValidateRuntimeVersionMethod(io::Printer* printer) {
+  printer->Print(
+    "static $reflection_class_name$() {\n"
+    "  pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);\n"
+    "}\n"
+    "\n"
+    "internal static bool ValidateRuntimeVersion() {\n"
+    "  return true;\n"
+    "}\n"
+    "\n",
+    "reflection_class_name", reflectionClassname_);
 }
 
 void ReflectionClassGenerator::WriteDescriptor(io::Printer* printer) {
