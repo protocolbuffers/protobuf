@@ -641,6 +641,24 @@ class FieldDescriptor(DescriptorBase):
         'has_presence is not ready to use because field %s is not'
         ' linked with message type nor file' % self.full_name)
 
+  @property
+  def is_packed(self):
+    """Returns if the field is packed."""
+    if self.label != FieldDescriptor.LABEL_REPEATED:
+      return False
+    field_type = self.type
+    if (field_type == FieldDescriptor.TYPE_STRING or
+        field_type == FieldDescriptor.TYPE_GROUP or
+        field_type == FieldDescriptor.TYPE_MESSAGE or
+        field_type == FieldDescriptor.TYPE_BYTES):
+      return False
+    if self.containing_type.syntax == 'proto2':
+      return self.has_options and self.GetOptions().packed
+    else:
+      return (not self.has_options or
+              not self.GetOptions().HasField('packed') or
+              self.GetOptions().packed)
+
   @staticmethod
   def ProtoTypeToCppProtoType(proto_type):
     """Converts from a Python proto type to a C++ Proto Type.
