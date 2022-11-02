@@ -27,6 +27,14 @@ namespace Google.Protobuf.TestProtos {
     }
     private static readonly global::System.Version minimumRuntimeVersion = new global::System.Version(3, 21, 9);
 
+    static UnittestWellKnownTypesReflection() {
+      pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);
+    }
+
+    internal static bool ValidateRuntimeVersion() {
+      return true;
+    }
+
     #region Descriptor
     private static readonly global::System.Lazy<pbr::FileDescriptor> descriptor = new global::System.Lazy<pbr::FileDescriptor>(CreateFileDescriptor);
     /// <summary>File descriptor for google/protobuf/unittest_well_known_types.proto</summary>
@@ -198,9 +206,7 @@ namespace Google.Protobuf.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static TestWellKnownTypes() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestWellKnownTypes> _parser = new pb::MessageParser<TestWellKnownTypes>(() => new TestWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
@@ -223,6 +229,7 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.ConstProtocVersion)]
     public TestWellKnownTypes() {
+      global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -1225,9 +1232,7 @@ namespace Google.Protobuf.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static RepeatedWellKnownTypes() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<RepeatedWellKnownTypes> _parser = new pb::MessageParser<RepeatedWellKnownTypes>(() => new RepeatedWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
@@ -1250,6 +1255,7 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.ConstProtocVersion)]
     public RepeatedWellKnownTypes() {
+      global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -1852,9 +1858,7 @@ namespace Google.Protobuf.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static OneofWellKnownTypes() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<OneofWellKnownTypes> _parser = new pb::MessageParser<OneofWellKnownTypes>(() => new OneofWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
@@ -1877,6 +1881,7 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.ConstProtocVersion)]
     public OneofWellKnownTypes() {
+      global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -2868,9 +2873,7 @@ namespace Google.Protobuf.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static MapWellKnownTypes() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<MapWellKnownTypes> _parser = new pb::MessageParser<MapWellKnownTypes>(() => new MapWellKnownTypes());
     private pb::UnknownFieldSet _unknownFields;
@@ -2893,6 +2896,7 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.ConstProtocVersion)]
     public MapWellKnownTypes() {
+      global::Google.Protobuf.TestProtos.UnittestWellKnownTypesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 

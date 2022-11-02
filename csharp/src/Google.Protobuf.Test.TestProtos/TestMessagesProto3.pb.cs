@@ -27,6 +27,14 @@ namespace ProtobufTestMessages.Proto3 {
     }
     private static readonly global::System.Version minimumRuntimeVersion = new global::System.Version(3, 21, 9);
 
+    static TestMessagesProto3Reflection() {
+      pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);
+    }
+
+    internal static bool ValidateRuntimeVersion() {
+      return true;
+    }
+
     #region Descriptor
     private static readonly global::System.Lazy<pbr::FileDescriptor> descriptor = new global::System.Lazy<pbr::FileDescriptor>(CreateFileDescriptor);
     /// <summary>File descriptor for google/protobuf/test_messages_proto3.proto</summary>
@@ -284,9 +292,7 @@ namespace ProtobufTestMessages.Proto3 {
       , pb::IBufferMessage
   #endif
   {
-    static TestAllTypesProto3() {
-        pbr::RuntimeVersion.Validate(global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestAllTypesProto3> _parser = new pb::MessageParser<TestAllTypesProto3>(() => new TestAllTypesProto3());
     private pb::UnknownFieldSet _unknownFields;
@@ -309,6 +315,7 @@ namespace ProtobufTestMessages.Proto3 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.ConstProtocVersion)]
     public TestAllTypesProto3() {
+      global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -5460,9 +5467,7 @@ namespace ProtobufTestMessages.Proto3 {
           , pb::IBufferMessage
       #endif
       {
-        static NestedMessage() {
-            pbr::RuntimeVersion.Validate(global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
@@ -5485,6 +5490,7 @@ namespace ProtobufTestMessages.Proto3 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.ConstProtocVersion)]
         public NestedMessage() {
+          global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -5704,9 +5710,7 @@ namespace ProtobufTestMessages.Proto3 {
       , pb::IBufferMessage
   #endif
   {
-    static ForeignMessage() {
-        pbr::RuntimeVersion.Validate(global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<ForeignMessage> _parser = new pb::MessageParser<ForeignMessage>(() => new ForeignMessage());
     private pb::UnknownFieldSet _unknownFields;
@@ -5729,6 +5733,7 @@ namespace ProtobufTestMessages.Proto3 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.ConstProtocVersion)]
     public ForeignMessage() {
+      global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -5897,9 +5902,7 @@ namespace ProtobufTestMessages.Proto3 {
       , pb::IBufferMessage
   #endif
   {
-    static NullHypothesisProto3() {
-        pbr::RuntimeVersion.Validate(global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<NullHypothesisProto3> _parser = new pb::MessageParser<NullHypothesisProto3>(() => new NullHypothesisProto3());
     private pb::UnknownFieldSet _unknownFields;
@@ -5922,6 +5925,7 @@ namespace ProtobufTestMessages.Proto3 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.ConstProtocVersion)]
     public NullHypothesisProto3() {
+      global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -6053,9 +6057,7 @@ namespace ProtobufTestMessages.Proto3 {
       , pb::IBufferMessage
   #endif
   {
-    static EnumOnlyProto3() {
-        pbr::RuntimeVersion.Validate(global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<EnumOnlyProto3> _parser = new pb::MessageParser<EnumOnlyProto3>(() => new EnumOnlyProto3());
     private pb::UnknownFieldSet _unknownFields;
@@ -6078,6 +6080,7 @@ namespace ProtobufTestMessages.Proto3 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.ConstProtocVersion)]
     public EnumOnlyProto3() {
+      global::ProtobufTestMessages.Proto3.TestMessagesProto3Reflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 

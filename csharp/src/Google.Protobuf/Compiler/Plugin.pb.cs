@@ -27,6 +27,14 @@ namespace Google.Protobuf.Compiler {
     }
     private static readonly global::System.Version minimumRuntimeVersion = new global::System.Version(3, 21, 9);
 
+    static PluginReflection() {
+      pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);
+    }
+
+    internal static bool ValidateRuntimeVersion() {
+      return true;
+    }
+
     #region Descriptor
     private static readonly global::System.Lazy<pbr::FileDescriptor> descriptor = new global::System.Lazy<pbr::FileDescriptor>(CreateFileDescriptor);
     /// <summary>File descriptor for google/protobuf/compiler/plugin.proto</summary>
@@ -76,9 +84,7 @@ namespace Google.Protobuf.Compiler {
       , pb::IBufferMessage
   #endif
   {
-    static Version() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.Compiler.PluginReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.Compiler.PluginReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<Version> _parser = new pb::MessageParser<Version>(() => new Version());
     private pb::UnknownFieldSet _unknownFields;
@@ -102,6 +108,7 @@ namespace Google.Protobuf.Compiler {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public Version() {
+      global::Google.Protobuf.Compiler.PluginReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -448,9 +455,7 @@ namespace Google.Protobuf.Compiler {
       , pb::IBufferMessage
   #endif
   {
-    static CodeGeneratorRequest() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.Compiler.PluginReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.Compiler.PluginReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<CodeGeneratorRequest> _parser = new pb::MessageParser<CodeGeneratorRequest>(() => new CodeGeneratorRequest());
     private pb::UnknownFieldSet _unknownFields;
@@ -473,6 +478,7 @@ namespace Google.Protobuf.Compiler {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public CodeGeneratorRequest() {
+      global::Google.Protobuf.Compiler.PluginReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -783,9 +789,7 @@ namespace Google.Protobuf.Compiler {
       , pb::IBufferMessage
   #endif
   {
-    static CodeGeneratorResponse() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.Compiler.PluginReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.Compiler.PluginReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<CodeGeneratorResponse> _parser = new pb::MessageParser<CodeGeneratorResponse>(() => new CodeGeneratorResponse());
     private pb::UnknownFieldSet _unknownFields;
@@ -809,6 +813,7 @@ namespace Google.Protobuf.Compiler {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
     public CodeGeneratorResponse() {
+      global::Google.Protobuf.Compiler.PluginReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -1098,9 +1103,7 @@ namespace Google.Protobuf.Compiler {
           , pb::IBufferMessage
       #endif
       {
-        static File() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.Compiler.PluginReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.Compiler.PluginReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<File> _parser = new pb::MessageParser<File>(() => new File());
         private pb::UnknownFieldSet _unknownFields;
@@ -1123,6 +1126,7 @@ namespace Google.Protobuf.Compiler {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Compiler.PluginReflection.ConstProtocVersion)]
         public File() {
+          global::Google.Protobuf.Compiler.PluginReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 

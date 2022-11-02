@@ -27,6 +27,14 @@ namespace UnitTest.Issues.TestProtos {
     }
     private static readonly global::System.Version minimumRuntimeVersion = new global::System.Version(3, 21, 9);
 
+    static UnittestIssuesReflection() {
+      pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);
+    }
+
+    internal static bool ValidateRuntimeVersion() {
+      return true;
+    }
+
     #region Descriptor
     private static readonly global::System.Lazy<pbr::FileDescriptor> descriptor = new global::System.Lazy<pbr::FileDescriptor>(CreateFileDescriptor);
     /// <summary>File descriptor for unittest_issues.proto</summary>
@@ -131,9 +139,7 @@ namespace UnitTest.Issues.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static Issue307() {
-        pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<Issue307> _parser = new pb::MessageParser<Issue307>(() => new Issue307());
     private pb::UnknownFieldSet _unknownFields;
@@ -156,6 +162,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
     public Issue307() {
+      global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -290,9 +297,7 @@ namespace UnitTest.Issues.TestProtos {
           , pb::IBufferMessage
       #endif
       {
-        static NestedOnce() {
-            pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<NestedOnce> _parser = new pb::MessageParser<NestedOnce>(() => new NestedOnce());
         private pb::UnknownFieldSet _unknownFields;
@@ -315,6 +320,7 @@ namespace UnitTest.Issues.TestProtos {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
         public NestedOnce() {
+          global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -449,9 +455,7 @@ namespace UnitTest.Issues.TestProtos {
               , pb::IBufferMessage
           #endif
           {
-            static NestedTwice() {
-                pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-            }
+            private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
             private static readonly pb::MessageParser<NestedTwice> _parser = new pb::MessageParser<NestedTwice>(() => new NestedTwice());
             private pb::UnknownFieldSet _unknownFields;
@@ -474,6 +478,7 @@ namespace UnitTest.Issues.TestProtos {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
             public NestedTwice() {
+              global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
               OnConstruction();
             }
 
@@ -615,9 +620,7 @@ namespace UnitTest.Issues.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static NegativeEnumMessage() {
-        pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<NegativeEnumMessage> _parser = new pb::MessageParser<NegativeEnumMessage>(() => new NegativeEnumMessage());
     private pb::UnknownFieldSet _unknownFields;
@@ -640,6 +643,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
     public NegativeEnumMessage() {
+      global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -865,9 +869,7 @@ namespace UnitTest.Issues.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static DeprecatedChild() {
-        pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<DeprecatedChild> _parser = new pb::MessageParser<DeprecatedChild>(() => new DeprecatedChild());
     private pb::UnknownFieldSet _unknownFields;
@@ -890,6 +892,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
     public DeprecatedChild() {
+      global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -1021,9 +1024,7 @@ namespace UnitTest.Issues.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static DeprecatedFieldsMessage() {
-        pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<DeprecatedFieldsMessage> _parser = new pb::MessageParser<DeprecatedFieldsMessage>(() => new DeprecatedFieldsMessage());
     private pb::UnknownFieldSet _unknownFields;
@@ -1046,6 +1047,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
     public DeprecatedFieldsMessage() {
+      global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -1388,9 +1390,7 @@ namespace UnitTest.Issues.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static ItemField() {
-        pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<ItemField> _parser = new pb::MessageParser<ItemField>(() => new ItemField());
     private pb::UnknownFieldSet _unknownFields;
@@ -1413,6 +1413,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
     public ItemField() {
+      global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -1581,9 +1582,7 @@ namespace UnitTest.Issues.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static ReservedNames() {
-        pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<ReservedNames> _parser = new pb::MessageParser<ReservedNames>(() => new ReservedNames());
     private pb::UnknownFieldSet _unknownFields;
@@ -1606,6 +1605,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
     public ReservedNames() {
+      global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -1817,9 +1817,7 @@ namespace UnitTest.Issues.TestProtos {
           , pb::IBufferMessage
       #endif
       {
-        static SomeNestedType() {
-            pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<SomeNestedType> _parser = new pb::MessageParser<SomeNestedType>(() => new SomeNestedType());
         private pb::UnknownFieldSet _unknownFields;
@@ -1842,6 +1840,7 @@ namespace UnitTest.Issues.TestProtos {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
         public SomeNestedType() {
+          global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -1990,9 +1989,7 @@ namespace UnitTest.Issues.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static TestJsonFieldOrdering() {
-        pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestJsonFieldOrdering> _parser = new pb::MessageParser<TestJsonFieldOrdering>(() => new TestJsonFieldOrdering());
     private pb::UnknownFieldSet _unknownFields;
@@ -2015,6 +2012,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
     public TestJsonFieldOrdering() {
+      global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -2434,9 +2432,7 @@ namespace UnitTest.Issues.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static TestJsonName() {
-        pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestJsonName> _parser = new pb::MessageParser<TestJsonName>(() => new TestJsonName());
     private pb::UnknownFieldSet _unknownFields;
@@ -2459,6 +2455,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
     public TestJsonName() {
+      global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -2709,9 +2706,7 @@ namespace UnitTest.Issues.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static OneofMerging() {
-        pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<OneofMerging> _parser = new pb::MessageParser<OneofMerging>(() => new OneofMerging());
     private pb::UnknownFieldSet _unknownFields;
@@ -2734,6 +2729,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
     public OneofMerging() {
+      global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -2988,9 +2984,7 @@ namespace UnitTest.Issues.TestProtos {
           , pb::IBufferMessage
       #endif
       {
-        static Nested() {
-            pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<Nested> _parser = new pb::MessageParser<Nested>(() => new Nested());
         private pb::UnknownFieldSet _unknownFields;
@@ -3013,6 +3007,7 @@ namespace UnitTest.Issues.TestProtos {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
         public Nested() {
+          global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -3223,9 +3218,7 @@ namespace UnitTest.Issues.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static NullValueOutsideStruct() {
-        pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<NullValueOutsideStruct> _parser = new pb::MessageParser<NullValueOutsideStruct>(() => new NullValueOutsideStruct());
     private pb::UnknownFieldSet _unknownFields;
@@ -3248,6 +3241,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
     public NullValueOutsideStruct() {
+      global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -3488,9 +3482,7 @@ namespace UnitTest.Issues.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static NullValueNotInOneof() {
-        pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<NullValueNotInOneof> _parser = new pb::MessageParser<NullValueNotInOneof>(() => new NullValueNotInOneof());
     private pb::UnknownFieldSet _unknownFields;
@@ -3513,6 +3505,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
     public NullValueNotInOneof() {
+      global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -3681,9 +3674,7 @@ namespace UnitTest.Issues.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static MixedRegularAndOptional() {
-        pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<MixedRegularAndOptional> _parser = new pb::MessageParser<MixedRegularAndOptional>(() => new MixedRegularAndOptional());
     private pb::UnknownFieldSet _unknownFields;
@@ -3706,6 +3697,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
     public MixedRegularAndOptional() {
+      global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -3923,9 +3915,7 @@ namespace UnitTest.Issues.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static OneofWithNoneField() {
-        pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<OneofWithNoneField> _parser = new pb::MessageParser<OneofWithNoneField>(() => new OneofWithNoneField());
     private pb::UnknownFieldSet _unknownFields;
@@ -3948,6 +3938,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
     public OneofWithNoneField() {
+      global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -4186,9 +4177,7 @@ namespace UnitTest.Issues.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static OneofWithNoneName() {
-        pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<OneofWithNoneName> _parser = new pb::MessageParser<OneofWithNoneName>(() => new OneofWithNoneName());
     private pb::UnknownFieldSet _unknownFields;
@@ -4211,6 +4200,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
     public OneofWithNoneName() {
+      global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -4452,9 +4442,7 @@ namespace UnitTest.Issues.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static DisambiguateCommonMembers() {
-        pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<DisambiguateCommonMembers> _parser = new pb::MessageParser<DisambiguateCommonMembers>(() => new DisambiguateCommonMembers());
     private pb::UnknownFieldSet _unknownFields;
@@ -4477,6 +4465,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ConstProtocVersion)]
     public DisambiguateCommonMembers() {
+      global::UnitTest.Issues.TestProtos.UnittestIssuesReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 

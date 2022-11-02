@@ -27,6 +27,14 @@ namespace Google.Protobuf.WellKnownTypes {
     }
     private static readonly global::System.Version minimumRuntimeVersion = new global::System.Version(3, 21, 9);
 
+    static TypeReflection() {
+      pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);
+    }
+
+    internal static bool ValidateRuntimeVersion() {
+      return true;
+    }
+
     #region Descriptor
     private static readonly global::System.Lazy<pbr::FileDescriptor> descriptor = new global::System.Lazy<pbr::FileDescriptor>(CreateFileDescriptor);
     /// <summary>File descriptor for google/protobuf/type.proto</summary>
@@ -113,9 +121,7 @@ namespace Google.Protobuf.WellKnownTypes {
       , pb::IBufferMessage
   #endif
   {
-    static Type() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.WellKnownTypes.TypeReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.WellKnownTypes.TypeReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<Type> _parser = new pb::MessageParser<Type>(() => new Type());
     private pb::UnknownFieldSet _unknownFields;
@@ -138,6 +144,7 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.WellKnownTypes.TypeReflection.ConstProtocVersion)]
     public Type() {
+      global::Google.Protobuf.WellKnownTypes.TypeReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -488,9 +495,7 @@ namespace Google.Protobuf.WellKnownTypes {
       , pb::IBufferMessage
   #endif
   {
-    static Field() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.WellKnownTypes.TypeReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.WellKnownTypes.TypeReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<Field> _parser = new pb::MessageParser<Field>(() => new Field());
     private pb::UnknownFieldSet _unknownFields;
@@ -513,6 +518,7 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.WellKnownTypes.TypeReflection.ConstProtocVersion)]
     public Field() {
+      global::Google.Protobuf.WellKnownTypes.TypeReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -1150,9 +1156,7 @@ namespace Google.Protobuf.WellKnownTypes {
       , pb::IBufferMessage
   #endif
   {
-    static Enum() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.WellKnownTypes.TypeReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.WellKnownTypes.TypeReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<Enum> _parser = new pb::MessageParser<Enum>(() => new Enum());
     private pb::UnknownFieldSet _unknownFields;
@@ -1175,6 +1179,7 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.WellKnownTypes.TypeReflection.ConstProtocVersion)]
     public Enum() {
+      global::Google.Protobuf.WellKnownTypes.TypeReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -1496,9 +1501,7 @@ namespace Google.Protobuf.WellKnownTypes {
       , pb::IBufferMessage
   #endif
   {
-    static EnumValue() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.WellKnownTypes.TypeReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.WellKnownTypes.TypeReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<EnumValue> _parser = new pb::MessageParser<EnumValue>(() => new EnumValue());
     private pb::UnknownFieldSet _unknownFields;
@@ -1521,6 +1524,7 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.WellKnownTypes.TypeReflection.ConstProtocVersion)]
     public EnumValue() {
+      global::Google.Protobuf.WellKnownTypes.TypeReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -1765,9 +1769,7 @@ namespace Google.Protobuf.WellKnownTypes {
       , pb::IBufferMessage
   #endif
   {
-    static Option() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.WellKnownTypes.TypeReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.WellKnownTypes.TypeReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<Option> _parser = new pb::MessageParser<Option>(() => new Option());
     private pb::UnknownFieldSet _unknownFields;
@@ -1790,6 +1792,7 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.WellKnownTypes.TypeReflection.ConstProtocVersion)]
     public Option() {
+      global::Google.Protobuf.WellKnownTypes.TypeReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 

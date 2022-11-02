@@ -27,6 +27,14 @@ namespace Google.Protobuf.Examples.AddressBook {
     }
     private static readonly global::System.Version minimumRuntimeVersion = new global::System.Version(3, 21, 9);
 
+    static AddressbookReflection() {
+      pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);
+    }
+
+    internal static bool ValidateRuntimeVersion() {
+      return true;
+    }
+
     #region Descriptor
     private static readonly global::System.Lazy<pbr::FileDescriptor> descriptor = new global::System.Lazy<pbr::FileDescriptor>(CreateFileDescriptor);
     /// <summary>File descriptor for addressbook.proto</summary>
@@ -69,9 +77,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       , pb::IBufferMessage
   #endif
   {
-    static Person() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.Examples.AddressBook.AddressbookReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.Examples.AddressBook.AddressbookReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<Person> _parser = new pb::MessageParser<Person>(() => new Person());
     private pb::UnknownFieldSet _unknownFields;
@@ -94,6 +100,7 @@ namespace Google.Protobuf.Examples.AddressBook {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Examples.AddressBook.AddressbookReflection.ConstProtocVersion)]
     public Person() {
+      global::Google.Protobuf.Examples.AddressBook.AddressbookReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -420,9 +427,7 @@ namespace Google.Protobuf.Examples.AddressBook {
           , pb::IBufferMessage
       #endif
       {
-        static PhoneNumber() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.Examples.AddressBook.AddressbookReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.Examples.AddressBook.AddressbookReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<PhoneNumber> _parser = new pb::MessageParser<PhoneNumber>(() => new PhoneNumber());
         private pb::UnknownFieldSet _unknownFields;
@@ -445,6 +450,7 @@ namespace Google.Protobuf.Examples.AddressBook {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Examples.AddressBook.AddressbookReflection.ConstProtocVersion)]
         public PhoneNumber() {
+          global::Google.Protobuf.Examples.AddressBook.AddressbookReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -658,9 +664,7 @@ namespace Google.Protobuf.Examples.AddressBook {
       , pb::IBufferMessage
   #endif
   {
-    static AddressBook() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.Examples.AddressBook.AddressbookReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.Examples.AddressBook.AddressbookReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<AddressBook> _parser = new pb::MessageParser<AddressBook>(() => new AddressBook());
     private pb::UnknownFieldSet _unknownFields;
@@ -683,6 +687,7 @@ namespace Google.Protobuf.Examples.AddressBook {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.Examples.AddressBook.AddressbookReflection.ConstProtocVersion)]
     public AddressBook() {
+      global::Google.Protobuf.Examples.AddressBook.AddressbookReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 

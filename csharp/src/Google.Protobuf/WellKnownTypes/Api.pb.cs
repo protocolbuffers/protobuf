@@ -27,6 +27,14 @@ namespace Google.Protobuf.WellKnownTypes {
     }
     private static readonly global::System.Version minimumRuntimeVersion = new global::System.Version(3, 21, 9);
 
+    static ApiReflection() {
+      pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);
+    }
+
+    internal static bool ValidateRuntimeVersion() {
+      return true;
+    }
+
     #region Descriptor
     private static readonly global::System.Lazy<pbr::FileDescriptor> descriptor = new global::System.Lazy<pbr::FileDescriptor>(CreateFileDescriptor);
     /// <summary>File descriptor for google/protobuf/api.proto</summary>
@@ -83,9 +91,7 @@ namespace Google.Protobuf.WellKnownTypes {
       , pb::IBufferMessage
   #endif
   {
-    static Api() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.WellKnownTypes.ApiReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.WellKnownTypes.ApiReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<Api> _parser = new pb::MessageParser<Api>(() => new Api());
     private pb::UnknownFieldSet _unknownFields;
@@ -108,6 +114,7 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.WellKnownTypes.ApiReflection.ConstProtocVersion)]
     public Api() {
+      global::Google.Protobuf.WellKnownTypes.ApiReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -518,9 +525,7 @@ namespace Google.Protobuf.WellKnownTypes {
       , pb::IBufferMessage
   #endif
   {
-    static Method() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.WellKnownTypes.ApiReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.WellKnownTypes.ApiReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<Method> _parser = new pb::MessageParser<Method>(() => new Method());
     private pb::UnknownFieldSet _unknownFields;
@@ -543,6 +548,7 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.WellKnownTypes.ApiReflection.ConstProtocVersion)]
     public Method() {
+      global::Google.Protobuf.WellKnownTypes.ApiReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -1023,9 +1029,7 @@ namespace Google.Protobuf.WellKnownTypes {
       , pb::IBufferMessage
   #endif
   {
-    static Mixin() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.WellKnownTypes.ApiReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.WellKnownTypes.ApiReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<Mixin> _parser = new pb::MessageParser<Mixin>(() => new Mixin());
     private pb::UnknownFieldSet _unknownFields;
@@ -1048,6 +1052,7 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.WellKnownTypes.ApiReflection.ConstProtocVersion)]
     public Mixin() {
+      global::Google.Protobuf.WellKnownTypes.ApiReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 

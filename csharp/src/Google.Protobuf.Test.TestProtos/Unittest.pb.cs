@@ -27,6 +27,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     }
     private static readonly global::System.Version minimumRuntimeVersion = new global::System.Version(3, 21, 9);
 
+    static UnittestReflection() {
+      pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);
+    }
+
+    internal static bool ValidateRuntimeVersion() {
+      return true;
+    }
+
     #region Descriptor
     private static readonly global::System.Lazy<pbr::FileDescriptor> descriptor = new global::System.Lazy<pbr::FileDescriptor>(CreateFileDescriptor);
     /// <summary>File descriptor for unittest.proto</summary>
@@ -1139,9 +1147,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestAllTypes() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestAllTypes> _parser = new pb::MessageParser<TestAllTypes>(() => new TestAllTypes());
     private pb::UnknownFieldSet _unknownFields;
@@ -1166,6 +1172,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestAllTypes() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -4610,9 +4617,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static NestedMessage() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
@@ -4636,6 +4641,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public NestedMessage() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -4825,9 +4831,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static OptionalGroup() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<OptionalGroup> _parser = new pb::MessageParser<OptionalGroup>(() => new OptionalGroup());
         private pb::UnknownFieldSet _unknownFields;
@@ -4851,6 +4855,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public OptionalGroup() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -5039,9 +5044,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static RepeatedGroup() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<RepeatedGroup> _parser = new pb::MessageParser<RepeatedGroup>(() => new RepeatedGroup());
         private pb::UnknownFieldSet _unknownFields;
@@ -5065,6 +5068,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public RepeatedGroup() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -5261,9 +5265,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static NestedTestAllTypes() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<NestedTestAllTypes> _parser = new pb::MessageParser<NestedTestAllTypes>(() => new NestedTestAllTypes());
     private pb::UnknownFieldSet _unknownFields;
@@ -5286,6 +5288,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public NestedTestAllTypes() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -5535,9 +5538,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestDeprecatedFields() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestDeprecatedFields> _parser = new pb::MessageParser<TestDeprecatedFields>(() => new TestDeprecatedFields());
     private pb::UnknownFieldSet _unknownFields;
@@ -5561,6 +5562,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestDeprecatedFields() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -5833,9 +5835,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestDeprecatedMessage() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestDeprecatedMessage> _parser = new pb::MessageParser<TestDeprecatedMessage>(() => new TestDeprecatedMessage());
     private pb::UnknownFieldSet _unknownFields;
@@ -5858,6 +5858,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestDeprecatedMessage() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -5993,9 +5994,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static ForeignMessage() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<ForeignMessage> _parser = new pb::MessageParser<ForeignMessage>(() => new ForeignMessage());
     private pb::UnknownFieldSet _unknownFields;
@@ -6019,6 +6018,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public ForeignMessage() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -6255,9 +6255,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestReservedFields() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestReservedFields> _parser = new pb::MessageParser<TestReservedFields>(() => new TestReservedFields());
     private pb::UnknownFieldSet _unknownFields;
@@ -6280,6 +6278,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestReservedFields() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -6411,9 +6410,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestAllExtensions() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestAllExtensions> _parser = new pb::MessageParser<TestAllExtensions>(() => new TestAllExtensions());
     private pb::UnknownFieldSet _unknownFields;
@@ -6438,6 +6435,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestAllExtensions() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -6612,9 +6610,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static OptionalGroup_extension() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<OptionalGroup_extension> _parser = new pb::MessageParser<OptionalGroup_extension>(() => new OptionalGroup_extension());
     private pb::UnknownFieldSet _unknownFields;
@@ -6638,6 +6634,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public OptionalGroup_extension() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -6826,9 +6823,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static RepeatedGroup_extension() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<RepeatedGroup_extension> _parser = new pb::MessageParser<RepeatedGroup_extension>(() => new RepeatedGroup_extension());
     private pb::UnknownFieldSet _unknownFields;
@@ -6852,6 +6847,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public RepeatedGroup_extension() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -7040,9 +7036,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestGroup() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestGroup> _parser = new pb::MessageParser<TestGroup>(() => new TestGroup());
     private pb::UnknownFieldSet _unknownFields;
@@ -7066,6 +7060,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestGroup() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -7313,9 +7308,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static OptionalGroup() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<OptionalGroup> _parser = new pb::MessageParser<OptionalGroup>(() => new OptionalGroup());
         private pb::UnknownFieldSet _unknownFields;
@@ -7339,6 +7332,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public OptionalGroup() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -7532,9 +7526,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestGroupExtension() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestGroupExtension> _parser = new pb::MessageParser<TestGroupExtension>(() => new TestGroupExtension());
     private pb::UnknownFieldSet _unknownFields;
@@ -7559,6 +7551,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestGroupExtension() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -7733,9 +7726,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestNestedExtension() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestNestedExtension> _parser = new pb::MessageParser<TestNestedExtension>(() => new TestNestedExtension());
     private pb::UnknownFieldSet _unknownFields;
@@ -7758,6 +7749,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestNestedExtension() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -7892,9 +7884,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static OptionalGroup_extension() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<OptionalGroup_extension> _parser = new pb::MessageParser<OptionalGroup_extension>(() => new OptionalGroup_extension());
         private pb::UnknownFieldSet _unknownFields;
@@ -7918,6 +7908,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public OptionalGroup_extension() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -8142,9 +8133,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestRequired() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestRequired> _parser = new pb::MessageParser<TestRequired>(() => new TestRequired());
     private pb::UnknownFieldSet _unknownFields;
@@ -8169,6 +8158,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestRequired() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -10034,9 +10024,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestRequiredForeign() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestRequiredForeign> _parser = new pb::MessageParser<TestRequiredForeign>(() => new TestRequiredForeign());
     private pb::UnknownFieldSet _unknownFields;
@@ -10060,6 +10048,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestRequiredForeign() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -10316,9 +10305,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestRequiredMessage() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestRequiredMessage> _parser = new pb::MessageParser<TestRequiredMessage>(() => new TestRequiredMessage());
     private pb::UnknownFieldSet _unknownFields;
@@ -10341,6 +10328,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestRequiredMessage() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -10593,9 +10581,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestForeignNested() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestForeignNested> _parser = new pb::MessageParser<TestForeignNested>(() => new TestForeignNested());
     private pb::UnknownFieldSet _unknownFields;
@@ -10618,6 +10604,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestForeignNested() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -10798,9 +10785,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestEmptyMessage() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestEmptyMessage> _parser = new pb::MessageParser<TestEmptyMessage>(() => new TestEmptyMessage());
     private pb::UnknownFieldSet _unknownFields;
@@ -10823,6 +10808,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestEmptyMessage() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -10958,9 +10944,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestEmptyMessageWithExtensions() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestEmptyMessageWithExtensions> _parser = new pb::MessageParser<TestEmptyMessageWithExtensions>(() => new TestEmptyMessageWithExtensions());
     private pb::UnknownFieldSet _unknownFields;
@@ -10985,6 +10969,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestEmptyMessageWithExtensions() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -11159,9 +11144,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestMultipleExtensionRanges() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestMultipleExtensionRanges> _parser = new pb::MessageParser<TestMultipleExtensionRanges>(() => new TestMultipleExtensionRanges());
     private pb::UnknownFieldSet _unknownFields;
@@ -11186,6 +11169,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestMultipleExtensionRanges() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -11363,9 +11347,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestReallyLargeTagNumber() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestReallyLargeTagNumber> _parser = new pb::MessageParser<TestReallyLargeTagNumber>(() => new TestReallyLargeTagNumber());
     private pb::UnknownFieldSet _unknownFields;
@@ -11389,6 +11371,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestReallyLargeTagNumber() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -11629,9 +11612,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestRecursiveMessage() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestRecursiveMessage> _parser = new pb::MessageParser<TestRecursiveMessage>(() => new TestRecursiveMessage());
     private pb::UnknownFieldSet _unknownFields;
@@ -11655,6 +11636,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestRecursiveMessage() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -11888,9 +11870,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestMutualRecursionA() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestMutualRecursionA> _parser = new pb::MessageParser<TestMutualRecursionA>(() => new TestMutualRecursionA());
     private pb::UnknownFieldSet _unknownFields;
@@ -11913,6 +11893,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestMutualRecursionA() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -12153,9 +12134,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static SubMessage() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<SubMessage> _parser = new pb::MessageParser<SubMessage>(() => new SubMessage());
         private pb::UnknownFieldSet _unknownFields;
@@ -12178,6 +12157,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public SubMessage() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -12355,9 +12335,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static SubGroup() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<SubGroup> _parser = new pb::MessageParser<SubGroup>(() => new SubGroup());
         private pb::UnknownFieldSet _unknownFields;
@@ -12380,6 +12358,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public SubGroup() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -12615,9 +12594,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestMutualRecursionB() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestMutualRecursionB> _parser = new pb::MessageParser<TestMutualRecursionB>(() => new TestMutualRecursionB());
     private pb::UnknownFieldSet _unknownFields;
@@ -12641,6 +12618,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestMutualRecursionB() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -12871,9 +12849,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestIsInitialized() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestIsInitialized> _parser = new pb::MessageParser<TestIsInitialized>(() => new TestIsInitialized());
     private pb::UnknownFieldSet _unknownFields;
@@ -12896,6 +12872,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestIsInitialized() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -13076,9 +13053,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static SubMessage() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<SubMessage> _parser = new pb::MessageParser<SubMessage>(() => new SubMessage());
         private pb::UnknownFieldSet _unknownFields;
@@ -13101,6 +13076,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public SubMessage() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -13295,9 +13271,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               , pb::IBufferMessage
           #endif
           {
-            static SubGroup() {
-                pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-            }
+            private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
             private static readonly pb::MessageParser<SubGroup> _parser = new pb::MessageParser<SubGroup>(() => new SubGroup());
             private pb::UnknownFieldSet _unknownFields;
@@ -13321,6 +13295,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
             public SubGroup() {
+              global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
               OnConstruction();
             }
 
@@ -13525,9 +13500,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestDupFieldNumber() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestDupFieldNumber> _parser = new pb::MessageParser<TestDupFieldNumber>(() => new TestDupFieldNumber());
     private pb::UnknownFieldSet _unknownFields;
@@ -13551,6 +13524,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestDupFieldNumber() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -13861,9 +13835,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static Foo() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<Foo> _parser = new pb::MessageParser<Foo>(() => new Foo());
         private pb::UnknownFieldSet _unknownFields;
@@ -13887,6 +13859,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public Foo() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -14075,9 +14048,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static Bar() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<Bar> _parser = new pb::MessageParser<Bar>(() => new Bar());
         private pb::UnknownFieldSet _unknownFields;
@@ -14101,6 +14072,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public Bar() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -14297,9 +14269,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestEagerMessage() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestEagerMessage> _parser = new pb::MessageParser<TestEagerMessage>(() => new TestEagerMessage());
     private pb::UnknownFieldSet _unknownFields;
@@ -14322,6 +14292,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestEagerMessage() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -14499,9 +14470,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestLazyMessage() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestLazyMessage> _parser = new pb::MessageParser<TestLazyMessage>(() => new TestLazyMessage());
     private pb::UnknownFieldSet _unknownFields;
@@ -14524,6 +14493,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestLazyMessage() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -14704,9 +14674,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestNestedMessageHasBits() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestNestedMessageHasBits> _parser = new pb::MessageParser<TestNestedMessageHasBits>(() => new TestNestedMessageHasBits());
     private pb::UnknownFieldSet _unknownFields;
@@ -14729,6 +14697,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestNestedMessageHasBits() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -14909,9 +14878,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static NestedMessage() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
@@ -14934,6 +14901,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public NestedMessage() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -15128,9 +15096,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestCamelCaseFieldNames() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestCamelCaseFieldNames> _parser = new pb::MessageParser<TestCamelCaseFieldNames>(() => new TestCamelCaseFieldNames());
     private pb::UnknownFieldSet _unknownFields;
@@ -15154,6 +15120,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestCamelCaseFieldNames() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -15753,9 +15720,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestFieldOrderings() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestFieldOrderings> _parser = new pb::MessageParser<TestFieldOrderings>(() => new TestFieldOrderings());
     private pb::UnknownFieldSet _unknownFields;
@@ -15781,6 +15746,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestFieldOrderings() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -16160,9 +16126,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static NestedMessage() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
@@ -16186,6 +16150,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public NestedMessage() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -16432,9 +16397,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestExtensionOrderings1() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestExtensionOrderings1> _parser = new pb::MessageParser<TestExtensionOrderings1>(() => new TestExtensionOrderings1());
     private pb::UnknownFieldSet _unknownFields;
@@ -16457,6 +16420,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestExtensionOrderings1() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -16649,9 +16613,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestExtensionOrderings2() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestExtensionOrderings2> _parser = new pb::MessageParser<TestExtensionOrderings2>(() => new TestExtensionOrderings2());
     private pb::UnknownFieldSet _unknownFields;
@@ -16674,6 +16636,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestExtensionOrderings2() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -16859,9 +16822,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static TestExtensionOrderings3() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<TestExtensionOrderings3> _parser = new pb::MessageParser<TestExtensionOrderings3>(() => new TestExtensionOrderings3());
         private pb::UnknownFieldSet _unknownFields;
@@ -16884,6 +16845,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public TestExtensionOrderings3() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -17091,9 +17053,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestExtremeDefaultValues() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestExtremeDefaultValues> _parser = new pb::MessageParser<TestExtremeDefaultValues>(() => new TestExtremeDefaultValues());
     private pb::UnknownFieldSet _unknownFields;
@@ -17117,6 +17077,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestExtremeDefaultValues() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -18669,9 +18630,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static SparseEnumMessage() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<SparseEnumMessage> _parser = new pb::MessageParser<SparseEnumMessage>(() => new SparseEnumMessage());
     private pb::UnknownFieldSet _unknownFields;
@@ -18695,6 +18654,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public SparseEnumMessage() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -18882,9 +18842,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static OneString() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<OneString> _parser = new pb::MessageParser<OneString>(() => new OneString());
     private pb::UnknownFieldSet _unknownFields;
@@ -18907,6 +18865,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public OneString() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -19089,9 +19048,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static MoreString() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<MoreString> _parser = new pb::MessageParser<MoreString>(() => new MoreString());
     private pb::UnknownFieldSet _unknownFields;
@@ -19114,6 +19071,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public MoreString() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -19271,9 +19229,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static OneBytes() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<OneBytes> _parser = new pb::MessageParser<OneBytes>(() => new OneBytes());
     private pb::UnknownFieldSet _unknownFields;
@@ -19296,6 +19252,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public OneBytes() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -19478,9 +19435,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static MoreBytes() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<MoreBytes> _parser = new pb::MessageParser<MoreBytes>(() => new MoreBytes());
     private pb::UnknownFieldSet _unknownFields;
@@ -19503,6 +19458,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public MoreBytes() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -19663,9 +19619,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static Int32Message() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<Int32Message> _parser = new pb::MessageParser<Int32Message>(() => new Int32Message());
     private pb::UnknownFieldSet _unknownFields;
@@ -19689,6 +19643,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public Int32Message() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -19873,9 +19828,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static Uint32Message() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<Uint32Message> _parser = new pb::MessageParser<Uint32Message>(() => new Uint32Message());
     private pb::UnknownFieldSet _unknownFields;
@@ -19899,6 +19852,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public Uint32Message() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -20083,9 +20037,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static Int64Message() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<Int64Message> _parser = new pb::MessageParser<Int64Message>(() => new Int64Message());
     private pb::UnknownFieldSet _unknownFields;
@@ -20109,6 +20061,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public Int64Message() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -20293,9 +20246,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static Uint64Message() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<Uint64Message> _parser = new pb::MessageParser<Uint64Message>(() => new Uint64Message());
     private pb::UnknownFieldSet _unknownFields;
@@ -20319,6 +20270,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public Uint64Message() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -20503,9 +20455,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static BoolMessage() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<BoolMessage> _parser = new pb::MessageParser<BoolMessage>(() => new BoolMessage());
     private pb::UnknownFieldSet _unknownFields;
@@ -20529,6 +20479,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public BoolMessage() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -20716,9 +20667,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestOneof() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestOneof> _parser = new pb::MessageParser<TestOneof>(() => new TestOneof());
     private pb::UnknownFieldSet _unknownFields;
@@ -20741,6 +20690,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestOneof() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -21132,9 +21082,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static FooGroup() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<FooGroup> _parser = new pb::MessageParser<FooGroup>(() => new FooGroup());
         private pb::UnknownFieldSet _unknownFields;
@@ -21158,6 +21106,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public FooGroup() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -21402,9 +21351,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestOneofBackwardsCompatible() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestOneofBackwardsCompatible> _parser = new pb::MessageParser<TestOneofBackwardsCompatible>(() => new TestOneofBackwardsCompatible());
     private pb::UnknownFieldSet _unknownFields;
@@ -21428,6 +21375,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestOneofBackwardsCompatible() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -21772,9 +21720,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static FooGroup() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<FooGroup> _parser = new pb::MessageParser<FooGroup>(() => new FooGroup());
         private pb::UnknownFieldSet _unknownFields;
@@ -21798,6 +21744,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public FooGroup() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -22042,9 +21989,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestOneof2() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestOneof2> _parser = new pb::MessageParser<TestOneof2>(() => new TestOneof2());
     private pb::UnknownFieldSet _unknownFields;
@@ -22068,6 +22013,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestOneof2() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -23193,9 +23139,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static FooGroup() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<FooGroup> _parser = new pb::MessageParser<FooGroup>(() => new FooGroup());
         private pb::UnknownFieldSet _unknownFields;
@@ -23219,6 +23163,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public FooGroup() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -23458,9 +23403,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static NestedMessage() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
@@ -23484,6 +23427,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public NestedMessage() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -23701,9 +23645,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestRequiredOneof() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestRequiredOneof> _parser = new pb::MessageParser<TestRequiredOneof>(() => new TestRequiredOneof());
     private pb::UnknownFieldSet _unknownFields;
@@ -23726,6 +23668,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestRequiredOneof() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -24048,9 +23991,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static NestedMessage() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
@@ -24074,6 +24015,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public NestedMessage() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -24263,9 +24205,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestRequiredMap() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestRequiredMap> _parser = new pb::MessageParser<TestRequiredMap>(() => new TestRequiredMap());
     private pb::UnknownFieldSet _unknownFields;
@@ -24288,6 +24228,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestRequiredMap() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -24448,9 +24389,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static NestedMessage() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<NestedMessage> _parser = new pb::MessageParser<NestedMessage>(() => new NestedMessage());
         private pb::UnknownFieldSet _unknownFields;
@@ -24474,6 +24413,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public NestedMessage() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -24663,9 +24603,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestPackedTypes() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestPackedTypes> _parser = new pb::MessageParser<TestPackedTypes>(() => new TestPackedTypes());
     private pb::UnknownFieldSet _unknownFields;
@@ -24688,6 +24626,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestPackedTypes() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -25215,9 +25154,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestUnpackedTypes() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestUnpackedTypes> _parser = new pb::MessageParser<TestUnpackedTypes>(() => new TestUnpackedTypes());
     private pb::UnknownFieldSet _unknownFields;
@@ -25240,6 +25177,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestUnpackedTypes() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -25763,9 +25701,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestPackedExtensions() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestPackedExtensions> _parser = new pb::MessageParser<TestPackedExtensions>(() => new TestPackedExtensions());
     private pb::UnknownFieldSet _unknownFields;
@@ -25790,6 +25726,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestPackedExtensions() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -25964,9 +25901,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestUnpackedExtensions() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestUnpackedExtensions> _parser = new pb::MessageParser<TestUnpackedExtensions>(() => new TestUnpackedExtensions());
     private pb::UnknownFieldSet _unknownFields;
@@ -25991,6 +25926,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestUnpackedExtensions() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -26170,9 +26106,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestDynamicExtensions() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestDynamicExtensions> _parser = new pb::MessageParser<TestDynamicExtensions>(() => new TestDynamicExtensions());
     private pb::UnknownFieldSet _unknownFields;
@@ -26196,6 +26130,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestDynamicExtensions() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -26639,9 +26574,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static DynamicMessageType() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<DynamicMessageType> _parser = new pb::MessageParser<DynamicMessageType>(() => new DynamicMessageType());
         private pb::UnknownFieldSet _unknownFields;
@@ -26665,6 +26598,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public DynamicMessageType() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -26854,9 +26788,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestRepeatedScalarDifferentTagSizes() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestRepeatedScalarDifferentTagSizes> _parser = new pb::MessageParser<TestRepeatedScalarDifferentTagSizes>(() => new TestRepeatedScalarDifferentTagSizes());
     private pb::UnknownFieldSet _unknownFields;
@@ -26879,6 +26811,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestRepeatedScalarDifferentTagSizes() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -27196,9 +27129,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestParsingMerge() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestParsingMerge> _parser = new pb::MessageParser<TestParsingMerge>(() => new TestParsingMerge());
     private pb::UnknownFieldSet _unknownFields;
@@ -27223,6 +27154,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestParsingMerge() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -27611,9 +27543,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static RepeatedFieldsGenerator() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<RepeatedFieldsGenerator> _parser = new pb::MessageParser<RepeatedFieldsGenerator>(() => new RepeatedFieldsGenerator());
         private pb::UnknownFieldSet _unknownFields;
@@ -27636,6 +27566,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public RepeatedFieldsGenerator() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -27952,9 +27883,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               , pb::IBufferMessage
           #endif
           {
-            static Group1() {
-                pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-            }
+            private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
             private static readonly pb::MessageParser<Group1> _parser = new pb::MessageParser<Group1>(() => new Group1());
             private pb::UnknownFieldSet _unknownFields;
@@ -27977,6 +27906,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
             public Group1() {
+              global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
               OnConstruction();
             }
 
@@ -28158,9 +28088,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
               , pb::IBufferMessage
           #endif
           {
-            static Group2() {
-                pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-            }
+            private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
             private static readonly pb::MessageParser<Group2> _parser = new pb::MessageParser<Group2>(() => new Group2());
             private pb::UnknownFieldSet _unknownFields;
@@ -28183,6 +28111,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
             [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
             public Group2() {
+              global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
               OnConstruction();
             }
 
@@ -28369,9 +28298,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static OptionalGroup() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<OptionalGroup> _parser = new pb::MessageParser<OptionalGroup>(() => new OptionalGroup());
         private pb::UnknownFieldSet _unknownFields;
@@ -28394,6 +28321,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public OptionalGroup() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -28575,9 +28503,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static RepeatedGroup() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<RepeatedGroup> _parser = new pb::MessageParser<RepeatedGroup>(() => new RepeatedGroup());
         private pb::UnknownFieldSet _unknownFields;
@@ -28600,6 +28526,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public RepeatedGroup() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -28798,9 +28725,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestCommentInjectionMessage() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestCommentInjectionMessage> _parser = new pb::MessageParser<TestCommentInjectionMessage>(() => new TestCommentInjectionMessage());
     private pb::UnknownFieldSet _unknownFields;
@@ -28823,6 +28748,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestCommentInjectionMessage() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -29011,9 +28937,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static FooRequest() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<FooRequest> _parser = new pb::MessageParser<FooRequest>(() => new FooRequest());
     private pb::UnknownFieldSet _unknownFields;
@@ -29036,6 +28960,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public FooRequest() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -29167,9 +29092,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static FooResponse() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<FooResponse> _parser = new pb::MessageParser<FooResponse>(() => new FooResponse());
     private pb::UnknownFieldSet _unknownFields;
@@ -29192,6 +29115,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public FooResponse() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -29323,9 +29247,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static FooClientMessage() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<FooClientMessage> _parser = new pb::MessageParser<FooClientMessage>(() => new FooClientMessage());
     private pb::UnknownFieldSet _unknownFields;
@@ -29348,6 +29270,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public FooClientMessage() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -29479,9 +29402,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static FooServerMessage() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<FooServerMessage> _parser = new pb::MessageParser<FooServerMessage>(() => new FooServerMessage());
     private pb::UnknownFieldSet _unknownFields;
@@ -29504,6 +29425,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public FooServerMessage() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -29635,9 +29557,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static BarRequest() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<BarRequest> _parser = new pb::MessageParser<BarRequest>(() => new BarRequest());
     private pb::UnknownFieldSet _unknownFields;
@@ -29660,6 +29580,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public BarRequest() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -29791,9 +29712,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static BarResponse() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<BarResponse> _parser = new pb::MessageParser<BarResponse>(() => new BarResponse());
     private pb::UnknownFieldSet _unknownFields;
@@ -29816,6 +29735,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public BarResponse() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -29947,9 +29867,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestJsonName() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestJsonName> _parser = new pb::MessageParser<TestJsonName>(() => new TestJsonName());
     private pb::UnknownFieldSet _unknownFields;
@@ -29973,6 +29891,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestJsonName() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -30417,9 +30336,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestHugeFieldNumbers() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestHugeFieldNumbers> _parser = new pb::MessageParser<TestHugeFieldNumbers>(() => new TestHugeFieldNumbers());
     private pb::UnknownFieldSet _unknownFields;
@@ -30445,6 +30362,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestHugeFieldNumbers() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
@@ -31311,9 +31229,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
           , pb::IBufferMessage
       #endif
       {
-        static OptionalGroup() {
-            pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-        }
+        private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
         private static readonly pb::MessageParser<OptionalGroup> _parser = new pb::MessageParser<OptionalGroup>(() => new OptionalGroup());
         private pb::UnknownFieldSet _unknownFields;
@@ -31337,6 +31253,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
         public OptionalGroup() {
+          global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
           OnConstruction();
         }
 
@@ -31530,9 +31447,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       , pb::IBufferMessage
   #endif
   {
-    static TestExtensionInsideTable() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<TestExtensionInsideTable> _parser = new pb::MessageParser<TestExtensionInsideTable>(() => new TestExtensionInsideTable());
     private pb::UnknownFieldSet _unknownFields;
@@ -31558,6 +31473,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ConstProtocVersion)]
     public TestExtensionInsideTable() {
+      global::Google.Protobuf.TestProtos.Proto2.UnittestReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 

@@ -27,6 +27,14 @@ namespace Google.Protobuf.WellKnownTypes {
     }
     private static readonly global::System.Version minimumRuntimeVersion = new global::System.Version(3, 21, 9);
 
+    static AnyReflection() {
+      pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);
+    }
+
+    internal static bool ValidateRuntimeVersion() {
+      return true;
+    }
+
     #region Descriptor
     private static readonly global::System.Lazy<pbr::FileDescriptor> descriptor = new global::System.Lazy<pbr::FileDescriptor>(CreateFileDescriptor);
     /// <summary>File descriptor for google/protobuf/any.proto</summary>
@@ -141,9 +149,7 @@ namespace Google.Protobuf.WellKnownTypes {
       , pb::IBufferMessage
   #endif
   {
-    static Any() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.WellKnownTypes.AnyReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.WellKnownTypes.AnyReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<Any> _parser = new pb::MessageParser<Any>(() => new Any());
     private pb::UnknownFieldSet _unknownFields;
@@ -166,6 +172,7 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.WellKnownTypes.AnyReflection.ConstProtocVersion)]
     public Any() {
+      global::Google.Protobuf.WellKnownTypes.AnyReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 

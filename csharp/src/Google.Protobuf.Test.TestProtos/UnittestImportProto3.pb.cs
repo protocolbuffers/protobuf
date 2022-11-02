@@ -27,6 +27,14 @@ namespace Google.Protobuf.TestProtos {
     }
     private static readonly global::System.Version minimumRuntimeVersion = new global::System.Version(3, 21, 9);
 
+    static UnittestImportProto3Reflection() {
+      pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);
+    }
+
+    internal static bool ValidateRuntimeVersion() {
+      return true;
+    }
+
     #region Descriptor
     private static readonly global::System.Lazy<pbr::FileDescriptor> descriptor = new global::System.Lazy<pbr::FileDescriptor>(CreateFileDescriptor);
     /// <summary>File descriptor for unittest_import_proto3.proto</summary>
@@ -69,9 +77,7 @@ namespace Google.Protobuf.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static ImportMessage() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.TestProtos.UnittestImportProto3Reflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.TestProtos.UnittestImportProto3Reflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<ImportMessage> _parser = new pb::MessageParser<ImportMessage>(() => new ImportMessage());
     private pb::UnknownFieldSet _unknownFields;
@@ -94,6 +100,7 @@ namespace Google.Protobuf.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.TestProtos.UnittestImportProto3Reflection.ConstProtocVersion)]
     public ImportMessage() {
+      global::Google.Protobuf.TestProtos.UnittestImportProto3Reflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 

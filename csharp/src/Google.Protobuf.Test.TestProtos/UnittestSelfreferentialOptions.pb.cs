@@ -27,6 +27,14 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
     }
     private static readonly global::System.Version minimumRuntimeVersion = new global::System.Version(3, 21, 9);
 
+    static UnittestSelfreferentialOptionsReflection() {
+      pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);
+    }
+
+    internal static bool ValidateRuntimeVersion() {
+      return true;
+    }
+
     #region Descriptor
     private static readonly global::System.Lazy<pbr::FileDescriptor> descriptor = new global::System.Lazy<pbr::FileDescriptor>(CreateFileDescriptor);
     /// <summary>File descriptor for unittest_selfreferential_options.proto</summary>
@@ -82,9 +90,7 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
       , pb::IBufferMessage
   #endif
   {
-    static FooOptions() {
-        pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.SelfreferentialOptions.UnittestSelfreferentialOptionsReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.SelfreferentialOptions.UnittestSelfreferentialOptionsReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<FooOptions> _parser = new pb::MessageParser<FooOptions>(() => new FooOptions());
     private pb::UnknownFieldSet _unknownFields;
@@ -110,6 +116,7 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.SelfreferentialOptions.UnittestSelfreferentialOptionsReflection.ConstProtocVersion)]
     public FooOptions() {
+      global::UnitTest.Issues.TestProtos.SelfreferentialOptions.UnittestSelfreferentialOptionsReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 

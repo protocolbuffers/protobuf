@@ -27,6 +27,14 @@ namespace Google.Protobuf.WellKnownTypes {
     }
     private static readonly global::System.Version minimumRuntimeVersion = new global::System.Version(3, 21, 9);
 
+    static SourceContextReflection() {
+      pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);
+    }
+
+    internal static bool ValidateRuntimeVersion() {
+      return true;
+    }
+
     #region Descriptor
     private static readonly global::System.Lazy<pbr::FileDescriptor> descriptor = new global::System.Lazy<pbr::FileDescriptor>(CreateFileDescriptor);
     /// <summary>File descriptor for google/protobuf/source_context.proto</summary>
@@ -63,9 +71,7 @@ namespace Google.Protobuf.WellKnownTypes {
       , pb::IBufferMessage
   #endif
   {
-    static SourceContext() {
-        pbr::RuntimeVersion.Validate(global::Google.Protobuf.WellKnownTypes.SourceContextReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::Google.Protobuf.WellKnownTypes.SourceContextReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<SourceContext> _parser = new pb::MessageParser<SourceContext>(() => new SourceContext());
     private pb::UnknownFieldSet _unknownFields;
@@ -88,6 +94,7 @@ namespace Google.Protobuf.WellKnownTypes {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::Google.Protobuf.WellKnownTypes.SourceContextReflection.ConstProtocVersion)]
     public SourceContext() {
+      global::Google.Protobuf.WellKnownTypes.SourceContextReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 

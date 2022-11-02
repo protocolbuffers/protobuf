@@ -27,6 +27,14 @@ namespace UnitTest.Issues.TestProtos {
     }
     private static readonly global::System.Version minimumRuntimeVersion = new global::System.Version(3, 21, 9);
 
+    static UnittestIssue6936CReflection() {
+      pbr::RuntimeVersion.Validate(MinimumRuntimeVersion);
+    }
+
+    internal static bool ValidateRuntimeVersion() {
+      return true;
+    }
+
     #region Descriptor
     private static readonly global::System.Lazy<pbr::FileDescriptor> descriptor = new global::System.Lazy<pbr::FileDescriptor>(CreateFileDescriptor);
     /// <summary>File descriptor for unittest_issue6936_c.proto</summary>
@@ -58,9 +66,7 @@ namespace UnitTest.Issues.TestProtos {
       , pb::IBufferMessage
   #endif
   {
-    static Bar() {
-        pbr::RuntimeVersion.Validate(global::UnitTest.Issues.TestProtos.UnittestIssue6936CReflection.MinimumRuntimeVersion);
-    }
+    private static readonly bool _runtimeVersionValidated = global::UnitTest.Issues.TestProtos.UnittestIssue6936CReflection.ValidateRuntimeVersion();
 
     private static readonly pb::MessageParser<Bar> _parser = new pb::MessageParser<Bar>(() => new Bar());
     private pb::UnknownFieldSet _unknownFields;
@@ -83,6 +89,7 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", global::UnitTest.Issues.TestProtos.UnittestIssue6936CReflection.ConstProtocVersion)]
     public Bar() {
+      global::UnitTest.Issues.TestProtos.UnittestIssue6936CReflection.ValidateRuntimeVersion();
       OnConstruction();
     }
 
