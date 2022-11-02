@@ -46,6 +46,7 @@
 namespace google {
 namespace protobuf {
 
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedPtrField<std::string>;
 
 template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<bool>;
 template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<int32_t>;
@@ -54,7 +55,7 @@ template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<int64_t>;
 template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<uint64_t>;
 template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<float>;
 template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedField<double>;
-template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedPtrField<std::string>;
+//template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedPtrField<std::string>;
 
 namespace internal {
 template class PROTOBUF_EXPORT_TEMPLATE_DEFINE RepeatedIterator<bool>;
