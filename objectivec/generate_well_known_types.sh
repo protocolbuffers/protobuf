@@ -30,7 +30,7 @@ __EOF__
 fi
 
 # Make sure the compiler is current.
-"${BazelBin}" build $@ //:protoc
+"${BazelBin}" build //:protoc $@
 
 cd src
 declare -a RUNTIME_PROTO_FILES=( \
