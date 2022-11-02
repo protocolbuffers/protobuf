@@ -265,12 +265,12 @@ const char* EpsCopyInputStream::InitFrom(io::ZeroCopyInputStream* zcis) {
 const char* ParseContext::ReadSizeAndPushLimitAndDepth(const char* ptr,
                                                        int* old_limit) {
   int size = ReadSize(&ptr);
-  if (PROTOBUF_PREDICT_FALSE(!ptr)) {
+  if (PROTOBUF_PREDICT_FALSE(!ptr) || depth_ <= 0) {
     *old_limit = 0;  // Make sure this isn't uninitialized even on error return
     return nullptr;
   }
   *old_limit = PushLimit(ptr, size);
-  if (--depth_ < 0) return nullptr;
+  --depth_;
   return ptr;
 }
 
@@ -636,7 +636,7 @@ PROTOBUF_ALWAYS_INLINE inline V1Type ValueBarrier(V1Type value1) {
 
 PROTOBUF_ALWAYS_INLINE inline uint64_t ExtractAndMergeTwoChunks(
     uint64_t data, uint64_t first_byte) {
-  GOOGLE_DCHECK(first_byte <= 6);
+  GOOGLE_DCHECK_LE(first_byte, 6);
   uint64_t first = Ubfx7(data, first_byte * 8);
   uint64_t second = Ubfx7(data, (first_byte + 1) * 8);
   return ForceToRegister(first | (second << 7));
