@@ -278,7 +278,9 @@ const char* ParseContext::ParseMessage(MessageLite* msg, const char* ptr) {
   int old;
   ptr = ReadSizeAndPushLimitAndDepth(ptr, &old);
   if (ptr == nullptr) return ptr;
+  auto old_depth = depth_;
   ptr = msg->_InternalParse(ptr, this);
+  if (ptr != nullptr) GOOGLE_DCHECK_EQ(old_depth, depth_);
   depth_++;
   if (!PopLimit(old)) return nullptr;
   return ptr;
