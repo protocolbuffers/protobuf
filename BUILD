@@ -969,6 +969,8 @@ cc_library(
         "upb/arena.h",
     ],
     hdrs = ["upb/internal/arena.h"],
+    aspect_hints = [":suppress_kotlin_interop"],
+    compatible_with = ["//buildenv/target:non_prod"],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
     deps = [":port"],
@@ -992,6 +994,8 @@ cc_library(
         "upb/msg_internal.h",
     ],
     hdrs = ["upb/internal/decode.h"],
+    aspect_hints = [":suppress_kotlin_interop"],
+    compatible_with = ["//buildenv/target:non_prod"],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
     deps = [
@@ -1005,6 +1009,8 @@ cc_library(
 cc_library(
     name = "encode_internal",
     hdrs = ["upb/internal/encode.h"],
+    aspect_hints = [":suppress_kotlin_interop"],
+    compatible_with = ["//buildenv/target:non_prod"],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
     deps = [":port"],
