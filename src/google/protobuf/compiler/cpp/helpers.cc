@@ -403,6 +403,7 @@ std::string Namespace(const std::string& package) {
   return "::" + DotsToColons(package);
 }
 
+std::string Namespace(const FileDescriptor* d) { return Namespace(d, {}); }
 std::string Namespace(const FileDescriptor* d, const Options& options) {
   std::string ns = Namespace(d->package());
   if (IsWellKnownMessage(d) && options.opensource_runtime) {
@@ -418,14 +419,17 @@ std::string Namespace(const FileDescriptor* d, const Options& options) {
   return ns;
 }
 
+std::string Namespace(const Descriptor* d) { return Namespace(d, {}); }
 std::string Namespace(const Descriptor* d, const Options& options) {
   return Namespace(d->file(), options);
 }
 
+std::string Namespace(const FieldDescriptor* d) { return Namespace(d, {}); }
 std::string Namespace(const FieldDescriptor* d, const Options& options) {
   return Namespace(d->file(), options);
 }
 
+std::string Namespace(const EnumDescriptor* d) { return Namespace(d, {}); }
 std::string Namespace(const EnumDescriptor* d, const Options& options) {
   return Namespace(d->file(), options);
 }

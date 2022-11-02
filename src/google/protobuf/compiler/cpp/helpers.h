@@ -116,6 +116,10 @@ std::string Namespace(const FileDescriptor* d, const Options& options);
 std::string Namespace(const Descriptor* d, const Options& options);
 std::string Namespace(const FieldDescriptor* d, const Options& options);
 std::string Namespace(const EnumDescriptor* d, const Options& options);
+std::string Namespace(const FileDescriptor* d);
+std::string Namespace(const Descriptor* d);
+std::string Namespace(const FieldDescriptor* d);
+std::string Namespace(const EnumDescriptor* d);
 
 // Returns true if it's safe to reset "field" to zero.
 bool CanInitializeByZeroing(const FieldDescriptor* field);
