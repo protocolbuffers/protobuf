@@ -36,7 +36,6 @@
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_ENUM_FIELD_LITE_H__
 
 #include <cstdint>
-#include <map>
 #include <string>
 
 #include "absl/container/flat_hash_map.h"

@@ -40,13 +40,13 @@
 
 #include <cstdint>
 #include <functional>
-#include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
@@ -360,9 +360,8 @@ class PROTOC_EXPORT CommandLineInterface {
   const GeneratorInfo* FindGeneratorByFlag(const std::string& name) const;
   const GeneratorInfo* FindGeneratorByOption(const std::string& option) const;
 
-  using GeneratorMap = std::map<std::string, GeneratorInfo>;
-  GeneratorMap generators_by_flag_name_;
-  GeneratorMap generators_by_option_name_;
+  absl::btree_map<std::string, GeneratorInfo> generators_by_flag_name_;
+  absl::flat_hash_map<std::string, GeneratorInfo> generators_by_option_name_;
   // A map from generator names to the parameters specified using the option
   // flag. For example, if the user invokes the compiler with:
   //   protoc --foo_out=outputdir --foo_opt=enable_bar ...

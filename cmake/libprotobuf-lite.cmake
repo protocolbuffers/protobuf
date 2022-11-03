@@ -32,7 +32,12 @@ endif()
 set_target_properties(libprotobuf-lite PROPERTIES
     VERSION ${protobuf_VERSION}
     OUTPUT_NAME ${LIB_PREFIX}protobuf-lite
-    DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}")
+    DEBUG_POSTFIX "${protobuf_DEBUG_POSTFIX}"
+    # For -fvisibility=hidden and -fvisibility-inlines-hidden
+    C_VISIBILITY_PRESET hidden
+    CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN ON
+)
 add_library(protobuf::libprotobuf-lite ALIAS libprotobuf-lite)
 
 target_include_directories(libprotobuf-lite PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/third_party/utf8_range)

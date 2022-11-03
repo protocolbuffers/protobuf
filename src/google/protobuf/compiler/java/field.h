@@ -36,7 +36,6 @@
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_FIELD_H__
 
 #include <cstdint>
-#include <map>
 #include <memory>
 #include <string>
 

@@ -38,7 +38,6 @@
 #include <algorithm>
 #include <cstdint>
 #include <iterator>
-#include <map>
 #include <string>
 
 #include "google/protobuf/compiler/scc.h"
@@ -668,7 +667,7 @@ class PROTOC_EXPORT MessageSCCAnalyzer {
   };
   SCCAnalyzer<DepsGenerator> analyzer_;
   Options options_;
-  std::map<const SCC*, MessageAnalysis> analysis_cache_;
+  absl::flat_hash_map<const SCC*, MessageAnalysis> analysis_cache_;
 };
 
 void ListAllFields(const Descriptor* d,

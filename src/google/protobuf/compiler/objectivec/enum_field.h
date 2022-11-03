@@ -31,7 +31,6 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ENUM_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ENUM_FIELD_H__
 
-#include <map>
 #include <set>
 #include <string>
 

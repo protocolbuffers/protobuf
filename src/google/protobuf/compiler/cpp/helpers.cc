@@ -1254,7 +1254,9 @@ bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
 }
 
 MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
-  if (analysis_cache_.count(scc)) return analysis_cache_[scc];
+  auto it = analysis_cache_.find(scc);
+  if (it != analysis_cache_.end()) return it->second;
+
   MessageAnalysis result;
   if (UsingImplicitWeakFields(scc->GetFile(), options_)) {
     result.contains_weak = true;
@@ -1309,7 +1311,7 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
   // in the graph, the graph should be a DAG. Hence we shouldn't need to mark
   // nodes visited as we can never return to them. By inserting them here
   // we will go in an infinite loop if the SCC is not correct.
-  return analysis_cache_[scc] = result;
+  return analysis_cache_[scc] = std::move(result);
 }
 
 void ListAllFields(const Descriptor* d,

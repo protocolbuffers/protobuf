@@ -31,7 +31,6 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_PARSE_FUNCTION_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_PARSE_FUNCTION_GENERATOR_H__
 
-#include <map>
 #include <string>
 #include <vector>
 

@@ -31,7 +31,6 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MAP_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MAP_FIELD_H__
 
-#include <map>
 #include <memory>
 #include <set>
 #include <string>

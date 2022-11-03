@@ -35,7 +35,6 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_CPP_EXTENSION_H__
 #define GOOGLE_PROTOBUF_COMPILER_CPP_EXTENSION_H__
 
-#include <map>
 #include <string>
 
 #include "absl/container/flat_hash_map.h"

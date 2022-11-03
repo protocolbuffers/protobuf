@@ -42,6 +42,7 @@
 // "generate_descriptor_proto.sh" and add
 // descriptor.pb.{h,cc} to your changelist.
 
+#include <memory>
 #include <string>
 
 #include "google/protobuf/testing/file.h"
@@ -123,7 +124,7 @@ class MockGeneratorContext : public GeneratorContext {
   }
 
  private:
-  std::map<std::string, std::unique_ptr<std::string>> files_;
+  absl::flat_hash_map<std::string, std::unique_ptr<std::string>> files_;
 };
 
 const char kDescriptorParameter[] = "dllexport_decl=PROTOBUF_EXPORT";
