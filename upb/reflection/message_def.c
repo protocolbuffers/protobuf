@@ -496,7 +496,7 @@ static bool _upb_MessageDef_EncodeMessage(upb_DescState* s,
     s->ptr = upb_MtDataEncoder_PutField(&s->e, s->ptr, type, number, modifiers);
   }
 
-  for (int i = 0; i < m->oneof_count; i++) {
+  for (int i = 0; i < m->real_oneof_count; i++) {
     if (!_upb_DescState_Grow(s, a)) return false;
     s->ptr = upb_MtDataEncoder_StartOneof(&s->e, s->ptr);
 
