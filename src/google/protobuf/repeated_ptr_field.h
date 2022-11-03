@@ -995,10 +995,6 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
 
   // Gets the underlying array.  This pointer is possibly invalidated by
   // any add or remove operation.
-  //
-  // This API is deprecated. Instead of directly working with element array,
-  // use APIs in repeated_field_util.h; e.g. sorting, etc.
-  PROTOBUF_DEPRECATED_MSG("Use APIs in repeated_field_util.h")
   Element** mutable_data();
   const Element* const* data() const;
 
