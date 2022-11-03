@@ -31,9 +31,9 @@
 #include <cstddef>
 
 #include "google/protobuf/generated_message_tctable_impl.h"
-#include "google/protobuf/wire_format_lite.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "google/protobuf/wire_format_lite.h"
 
 namespace google {
 namespace protobuf {

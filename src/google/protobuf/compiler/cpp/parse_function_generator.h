@@ -36,11 +36,11 @@
 
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/wire_format_lite.h"
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
+#include "google/protobuf/wire_format_lite.h"
 
 namespace google {
 namespace protobuf {
