@@ -98,7 +98,6 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/type.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_align.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_allocation_policy.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_cleanup.h
@@ -187,6 +186,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/time_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/type_resolver.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/type_resolver_util.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_lite.h
 )
