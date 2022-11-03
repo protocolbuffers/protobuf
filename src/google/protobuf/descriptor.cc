@@ -5517,7 +5517,8 @@ struct JsonNameDetails {
 };
 
 JsonNameDetails GetJsonNameDetails(const FieldDescriptorProto* field, bool use_custom) {
-  if (use_custom && field->has_json_name()) {
+  if (use_custom && field->has_json_name() &&
+      field->json_name() != ToJsonName(field->name())) {
     return {field, field->json_name(), true};
   }
   return {field, ToJsonName(field->name()), false};
