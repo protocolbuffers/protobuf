@@ -38,9 +38,9 @@
 
 #include "google/protobuf/message.h"
 #include "google/protobuf/unknown_field_set.h"
-#include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
+#include "google/protobuf/wire_format_lite.h"
 
 namespace google {
 namespace protobuf {
