@@ -28,7 +28,6 @@
 #include <stdio.h>
 
 #include "upb/mini_table/decode.h"
-#include "upb/mini_table/encode.h"
 #include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/desc_state_internal.h"

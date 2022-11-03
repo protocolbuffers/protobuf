@@ -25,13 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/mini_table/encode.h"
-
 #include <inttypes.h>
 
 #include "upb/mem/arena.h"
 #include "upb/mini_table/common.h"
 #include "upb/mini_table/common_internal.h"
+#include "upb/mini_table/encode_internal.h"
 #include "upb/upb.h"
 
 // Must be last.

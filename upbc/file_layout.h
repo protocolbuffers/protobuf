@@ -30,7 +30,8 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/substitute.h"
-#include "upb/mini_table.hpp"
+#include "upb/mini_table/decode.h"
+#include "upb/mini_table/encode_internal.hpp"
 #include "upb/upb.hpp"
 
 namespace upbc {

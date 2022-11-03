@@ -181,6 +181,8 @@ cc_library(
     ],
     hdrs = [
         "upb/mini_table/common_internal.h",
+        "upb/mini_table/encode_internal.h",
+        "upb/mini_table/encode_internal.hpp",
     ],
     visibility = ["//:__subpackages__"],
     deps = [
@@ -199,13 +201,12 @@ cc_library(
         "upb/mini_table/common_internal.h",
         "upb/mini_table/decode.c",
         "upb/mini_table/encode.c",
+        "upb/mini_table/encode_internal.h",
         "upb/msg_internal.h",
     ],
     hdrs = [
         "upb/mini_table.h",
-        "upb/mini_table.hpp",
         "upb/mini_table/decode.h",
-        "upb/mini_table/encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],

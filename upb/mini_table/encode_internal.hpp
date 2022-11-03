@@ -25,13 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_MINI_TABLE_HPP_
-#define UPB_MINI_TABLE_HPP_
+#ifndef UPB_MINI_TABLE_ENCODE_INTERNAL_HPP_
+#define UPB_MINI_TABLE_ENCODE_INTERNAL_HPP_
 
 #include <string>
 
-#include "upb/mini_table/decode.h"
-#include "upb/mini_table/encode.h"
+#include "upb/mini_table/encode_internal.h"
 
 namespace upb {
 
@@ -133,4 +132,4 @@ class MtDataEncoder {
 
 }  // namespace upb
 
-#endif /* UPB_MINI_TABLE_HPP_ */
+#endif /* UPB_MINI_TABLE_ENCODE_INTERNAL_HPP_ */

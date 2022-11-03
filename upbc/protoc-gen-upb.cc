@@ -33,7 +33,7 @@
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/substitute.h"
-#include "upb/mini_table.hpp"
+#include "upb/mini_table/encode_internal.hpp"
 #include "upbc/common.h"
 #include "upbc/file_layout.h"
 #include "upbc/names.h"

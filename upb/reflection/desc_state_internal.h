@@ -28,7 +28,7 @@
 #ifndef UPB_REFLECTION_DESC_STATE_INTERNAL_H_
 #define UPB_REFLECTION_DESC_STATE_INTERNAL_H_
 
-#include "upb/mini_table/encode.h"
+#include "upb/mini_table/encode_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"

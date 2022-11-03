@@ -31,6 +31,5 @@
 #define UPB_MINI_TABLE_H_
 
 #include "upb/mini_table/decode.h"
-#include "upb/mini_table/encode.h"
 
 #endif /* UPB_MINI_TABLE_H_ */

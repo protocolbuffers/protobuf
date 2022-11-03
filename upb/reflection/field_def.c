@@ -29,7 +29,6 @@
 #include <errno.h>
 
 #include "upb/mini_table/decode.h"
-#include "upb/mini_table/encode.h"
 #include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/def_type.h"

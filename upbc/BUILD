@@ -95,6 +95,7 @@ cc_library(
     deps = [
         ":common",
         "//:mini_table",
+        "//:mini_table_internal",
         "//:upb",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/strings",
@@ -142,6 +143,7 @@ cc_binary(
         ":file_layout",
         ":names",
         "//:mini_table",
+        "//:mini_table_internal",
         "//:port",
         "//:upb",
         "@com_google_absl//absl/base:core_headers",
