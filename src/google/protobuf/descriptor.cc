@@ -5487,6 +5487,12 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   }
 }
 
+namespace {
+bool IsAllowedReservedField(const FieldDescriptorProto& field) {
+  return false;
+}
+}  // namespace
+
 void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
                                               Descriptor* parent,
                                               FieldDescriptor* result,
@@ -5713,7 +5719,8 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
              absl::Substitute("Field numbers cannot be greater than $0.",
                               FieldDescriptor::kMaxNumber));
   } else if (result->number() >= FieldDescriptor::kFirstReservedNumber &&
-             result->number() <= FieldDescriptor::kLastReservedNumber) {
+             result->number() <= FieldDescriptor::kLastReservedNumber &&
+             !IsAllowedReservedField(proto)) {
     message_hints_[parent].RequestHintOnFieldNumbers(
         proto, DescriptorPool::ErrorCollector::NUMBER);
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
