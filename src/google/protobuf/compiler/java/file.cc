@@ -37,12 +37,9 @@
 #include <memory>
 #include <vector>
 
-#include "google/protobuf/compiler/code_generator.h"
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/dynamic_message.h"
 #include "absl/container/btree_set.h"
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/enum.h"
 #include "google/protobuf/compiler/java/enum_lite.h"
@@ -54,6 +51,9 @@
 #include "google/protobuf/compiler/java/service.h"
 #include "google/protobuf/compiler/java/shared_code_generator.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"

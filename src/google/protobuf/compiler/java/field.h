@@ -41,8 +41,8 @@
 
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/descriptor.h"
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/port.h"
 
 namespace google {

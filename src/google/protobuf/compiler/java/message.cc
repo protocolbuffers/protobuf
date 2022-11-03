@@ -39,10 +39,6 @@
 #include <memory>
 #include <vector>
 
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/descriptor.h"
-#include "google/protobuf/wire_format.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/substitute.h"
@@ -56,7 +52,11 @@
 #include "google/protobuf/compiler/java/message_builder_lite.h"
 #include "google/protobuf/compiler/java/message_serialization.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/wire_format.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
