@@ -86,7 +86,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
   protected static boolean alwaysUseFieldBuilders = false;
 
   /** For use by generated code only. */
-  protected UnknownFieldSet unknownFields;
+  protected transient UnknownFieldSet unknownFields;
 
   protected GeneratedMessageV3() {
     unknownFields = UnknownFieldSet.getDefaultInstance();
