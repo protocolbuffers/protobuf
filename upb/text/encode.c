@@ -25,13 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/text_encode.h"
+#include "upb/text/encode.h"
 
 #include <ctype.h>
 #include <float.h>
 #include <inttypes.h>
 #include <stdarg.h>
-#include <stdio.h>
 #include <string.h>
 
 #include "upb/internal/vsnprintf_compat.h"

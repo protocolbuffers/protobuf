@@ -531,9 +531,10 @@ cc_library(
 cc_library(
     name = "textformat",
     srcs = [
-        "upb/text_encode.c",
+        "upb/text/encode.c",
     ],
     hdrs = [
+        "upb/text/encode.h",
         "upb/text_encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
