@@ -31,9 +31,9 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MESSAGE_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MESSAGE_FIELD_H__
 
-#include <set>
 #include <string>
 
+#include "absl/container/btree_set.h"
 #include "google/protobuf/compiler/objectivec/field.h"
 
 namespace google {
@@ -52,10 +52,10 @@ class MessageFieldGenerator : public ObjCObjFieldGenerator {
   MessageFieldGenerator& operator=(const MessageFieldGenerator&) = delete;
 
  public:
-  void DetermineForwardDeclarations(std::set<std::string>* fwd_decls,
+  void DetermineForwardDeclarations(absl::btree_set<std::string>* fwd_decls,
                                     bool include_external_types) const override;
   void DetermineObjectiveCClassDefinitions(
-      std::set<std::string>* fwd_decls) const override;
+      absl::btree_set<std::string>* fwd_decls) const override;
 };
 
 class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
@@ -70,10 +70,10 @@ class RepeatedMessageFieldGenerator : public RepeatedFieldGenerator {
       const RepeatedMessageFieldGenerator&) = delete;
 
  public:
-  void DetermineForwardDeclarations(std::set<std::string>* fwd_decls,
+  void DetermineForwardDeclarations(absl::btree_set<std::string>* fwd_decls,
                                     bool include_external_types) const override;
   void DetermineObjectiveCClassDefinitions(
-      std::set<std::string>* fwd_decls) const override;
+      absl::btree_set<std::string>* fwd_decls) const override;
 };
 
 }  // namespace objectivec

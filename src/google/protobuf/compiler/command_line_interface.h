@@ -41,7 +41,6 @@
 #include <cstdint>
 #include <functional>
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -322,7 +321,7 @@ class PROTOC_EXPORT CommandLineInterface {
   static void GetTransitiveDependencies(
       const FileDescriptor* file, bool include_json_name,
       bool include_source_code_info,
-      std::set<const FileDescriptor*>* already_seen,
+      absl::flat_hash_set<const FileDescriptor*>* already_seen,
       RepeatedPtrField<FileDescriptorProto>* output);
 
   // Implements the --print_free_field_numbers. This function prints free field
@@ -411,7 +410,7 @@ class PROTOC_EXPORT CommandLineInterface {
 
   // Names of proto files which are allowed to be imported. Used by build
   // systems to enforce depend-on-what-you-import.
-  std::set<std::string> direct_dependencies_;
+  absl::flat_hash_set<std::string> direct_dependencies_;
   bool direct_dependencies_explicitly_set_ = false;
 
   // If there's a violation of depend-on-what-you-import, this string will be

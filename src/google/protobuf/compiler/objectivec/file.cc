@@ -33,12 +33,12 @@
 #include <algorithm>
 #include <iostream>
 #include <iterator>
-#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/str_cat.h"
@@ -323,15 +323,14 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
       "\n");
   // clang-format on
 
-  std::set<std::string> fwd_decls;
+  absl::btree_set<std::string> fwd_decls;
   for (const auto& generator : message_generators_) {
     generator->DetermineForwardDeclarations(
         &fwd_decls,
         /* include_external_types = */ headers_use_forward_declarations);
   }
-  for (std::set<std::string>::const_iterator i(fwd_decls.begin());
-       i != fwd_decls.end(); ++i) {
-    printer->Print("$value$;\n", "value", *i);
+  for (const auto& fwd_decl : fwd_decls) {
+    printer->Print("$value$;\n", "value", fwd_decl);
   }
   if (fwd_decls.begin() != fwd_decls.end()) {
     printer->Print("\n");
@@ -441,14 +440,13 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
     if (headers_use_forward_declarations) {
       // #import the headers for anything that a plain dependency of this proto
       // file (that means they were just an include, not a "public" include).
-      std::set<std::string> public_import_names;
+      absl::flat_hash_set<std::string> public_import_names;
       for (int i = 0; i < file_->public_dependency_count(); i++) {
         public_import_names.insert(file_->public_dependency(i)->name());
       }
       for (int i = 0; i < file_->dependency_count(); i++) {
         const FileDescriptor* dep = file_->dependency(i);
-        bool public_import = (public_import_names.count(dep->name()) != 0);
-        if (!public_import) {
+        if (!public_import_names.contains(dep->name())) {
           import_writer.AddFile(dep, header_extension);
         }
       }
@@ -477,7 +475,7 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
     }
   }
 
-  std::set<std::string> fwd_decls;
+  absl::btree_set<std::string> fwd_decls;
   for (const auto& generator : message_generators_) {
     generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
   }

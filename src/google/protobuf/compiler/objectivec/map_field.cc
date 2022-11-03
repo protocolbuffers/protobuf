@@ -30,10 +30,10 @@
 
 #include "google/protobuf/compiler/objectivec/map_field.h"
 
-#include <set>
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "absl/strings/match.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
@@ -160,7 +160,8 @@ void MapFieldGenerator::FinishInitialization() {
 }
 
 void MapFieldGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls, bool include_external_types) const {
+    absl::btree_set<std::string>* fwd_decls,
+    bool include_external_types) const {
   RepeatedFieldGenerator::DetermineForwardDeclarations(fwd_decls,
                                                        include_external_types);
   const FieldDescriptor* value_descriptor =
@@ -188,7 +189,7 @@ void MapFieldGenerator::DetermineForwardDeclarations(
 }
 
 void MapFieldGenerator::DetermineObjectiveCClassDefinitions(
-    std::set<std::string>* fwd_decls) const {
+    absl::btree_set<std::string>* fwd_decls) const {
   // Class name is already in "storage_type".
   const FieldDescriptor* value_descriptor =
       descriptor_->message_type()->map_value();

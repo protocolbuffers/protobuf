@@ -36,6 +36,7 @@
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/memory/memory.h"
 #include "google/protobuf/descriptor.h"
 
@@ -147,7 +148,7 @@ class PROTOC_EXPORT SCCAnalyzer {
 
   // Add the SCC's that are children of this SCC to its children.
   void AddChildren(SCC* scc) {
-    std::set<const SCC*> seen;
+    absl::flat_hash_set<const SCC*> seen;
     for (auto descriptor : scc->descriptors) {
       for (auto child_msg : DepsGenerator()(descriptor)) {
         GOOGLE_CHECK(child_msg);

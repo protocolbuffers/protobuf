@@ -30,7 +30,6 @@
 
 #include "google/protobuf/compiler/objectivec/enum_field.h"
 
-#include <set>
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
@@ -123,7 +122,8 @@ void EnumFieldGenerator::GenerateCFunctionImplementations(
 }
 
 void EnumFieldGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls, bool include_external_types) const {
+    absl::btree_set<std::string>* fwd_decls,
+    bool include_external_types) const {
   SingleFieldGenerator::DetermineForwardDeclarations(fwd_decls,
                                                      include_external_types);
   // If it is an enum defined in a different file (and not a WKT), then we'll

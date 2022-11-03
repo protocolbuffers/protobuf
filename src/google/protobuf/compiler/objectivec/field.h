@@ -32,10 +32,10 @@
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FIELD_H__
 
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/match.h"
 #include "google/protobuf/descriptor.h"
@@ -68,10 +68,11 @@ class FieldGenerator {
   virtual void GenerateCFunctionImplementations(io::Printer* printer) const;
 
   // Exposed for subclasses, should always call it on the parent class also.
-  virtual void DetermineForwardDeclarations(std::set<std::string>* fwd_decls,
-                                            bool include_external_types) const;
+  virtual void DetermineForwardDeclarations(
+      absl::btree_set<std::string>* fwd_decls,
+      bool include_external_types) const;
   virtual void DetermineObjectiveCClassDefinitions(
-      std::set<std::string>* fwd_decls) const;
+      absl::btree_set<std::string>* fwd_decls) const;
 
   // Used during generation, not intended to be extended by subclasses.
   void GenerateFieldDescription(io::Printer* printer,

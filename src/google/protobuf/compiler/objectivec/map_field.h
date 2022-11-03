@@ -32,9 +32,9 @@
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MAP_FIELD_H__
 
 #include <memory>
-#include <set>
 #include <string>
 
+#include "absl/container/btree_set.h"
 #include "google/protobuf/compiler/objectivec/field.h"
 
 namespace google {
@@ -56,8 +56,8 @@ class MapFieldGenerator : public RepeatedFieldGenerator {
   ~MapFieldGenerator() override = default;
 
   void DetermineObjectiveCClassDefinitions(
-      std::set<std::string>* fwd_decls) const override;
-  void DetermineForwardDeclarations(std::set<std::string>* fwd_decls,
+      absl::btree_set<std::string>* fwd_decls) const override;
+  void DetermineForwardDeclarations(absl::btree_set<std::string>* fwd_decls,
                                     bool include_external_types) const override;
 
  private:

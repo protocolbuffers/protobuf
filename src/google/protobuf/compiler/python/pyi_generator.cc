@@ -33,6 +33,7 @@
 #include <string>
 #include <utility>
 
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_split.h"
@@ -152,7 +153,7 @@ void CheckImportModules(const Descriptor* descriptor,
 
 void PyiGenerator::PrintImportForDescriptor(
     const FileDescriptor& desc,
-    std::set<std::string>* seen_aliases) const {
+    absl::flat_hash_set<std::string>* seen_aliases) const {
   const std::string& filename = desc.name();
   std::string module_name_owned = StrippedModuleName(filename);
   absl::string_view module_name(module_name_owned);
@@ -179,7 +180,7 @@ void PyiGenerator::PrintImportForDescriptor(
 
 void PyiGenerator::PrintImports() const {
   // Prints imported dependent _pb2 files.
-  std::set<std::string> seen_aliases;
+  absl::flat_hash_set<std::string> seen_aliases;
   for (int i = 0; i < file_->dependency_count(); ++i) {
     const FileDescriptor* dep = file_->dependency(i);
     PrintImportForDescriptor(*dep, &seen_aliases);

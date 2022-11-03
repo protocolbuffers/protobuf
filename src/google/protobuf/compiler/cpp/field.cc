@@ -68,8 +68,8 @@ void MaySetAnnotationVariable(
     absl::string_view prepared_template, int field_index,
     absl::string_view access_type,
     absl::flat_hash_map<absl::string_view, std::string>* variables) {
-  if (options.field_listener_options.forbidden_field_listener_events.count(
-          std::string(annotation_name)))
+  if (options.field_listener_options.forbidden_field_listener_events.contains(
+          annotation_name))
     return;
   (*variables)[absl::StrCat("annotate_", annotation_name)] = absl::Substitute(
       absl::StrCat(substitute_template_prefix, prepared_template, ");\n"),

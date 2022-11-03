@@ -33,7 +33,6 @@
 #include <algorithm>
 #include <iostream>
 #include <memory>
-#include <set>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -223,7 +222,7 @@ void MessageGenerator::GenerateStaticVariablesInitialization(
 }
 
 void MessageGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls, bool include_external_types) {
+    absl::btree_set<std::string>* fwd_decls, bool include_external_types) {
   if (!IsMapEntryMessage(descriptor_)) {
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
@@ -238,7 +237,7 @@ void MessageGenerator::DetermineForwardDeclarations(
 }
 
 void MessageGenerator::DetermineObjectiveCClassDefinitions(
-    std::set<std::string>* fwd_decls) {
+    absl::btree_set<std::string>* fwd_decls) {
   if (!IsMapEntryMessage(descriptor_)) {
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* fieldDescriptor = descriptor_->field(i);

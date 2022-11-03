@@ -73,7 +73,8 @@ MessageBuilderLiteGenerator::MessageBuilderLiteGenerator(
          "generate non-lite messages.";
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (IsRealOneof(descriptor_->field(i))) {
-      oneofs_.insert(descriptor_->field(i)->containing_oneof());
+      const OneofDescriptor* oneof = descriptor_->field(i)->containing_oneof();
+      GOOGLE_CHECK(oneofs_.emplace(oneof->index(), oneof).first->second == oneof);
     }
   }
 }
@@ -103,7 +104,8 @@ void MessageBuilderLiteGenerator::Generate(io::Printer* printer) {
   GenerateCommonBuilderMethods(printer);
 
   // oneof
-  for (auto oneof : oneofs_) {
+  for (auto& kv : oneofs_) {
+    const OneofDescriptor* oneof = kv.second;
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
     vars["oneof_capitalized_name"] =
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name;

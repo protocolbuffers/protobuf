@@ -51,6 +51,7 @@
 #include "google/protobuf/map_entry_lite.h"
 #include "google/protobuf/wire_format.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -514,8 +515,8 @@ void AnnotationVar(const Descriptor* desc, const Options& options,
                    absl::flat_hash_map<absl::string_view, std::string>& vars,
                    absl::string_view name, absl::string_view val) {
   if (!HasTracker(desc, options) ||
-      options.field_listener_options.forbidden_field_listener_events.count(
-          std::string(absl::StripPrefix(name, "annotate_"))) != 0) {
+      options.field_listener_options.forbidden_field_listener_events.contains(
+          absl::StripPrefix(name, "annotate_"))) {
     val = "";
   }
 

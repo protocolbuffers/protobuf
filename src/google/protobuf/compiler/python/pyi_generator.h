@@ -35,10 +35,10 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_PYTHON_PYI_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_PYTHON_PYI_GENERATOR_H__
 
-#include <set>
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/compiler/code_generator.h"
 
@@ -77,8 +77,9 @@ class PROTOC_EXPORT PyiGenerator : public google::protobuf::compiler::CodeGenera
                 std::string* error) const override;
 
  private:
-  void PrintImportForDescriptor(const FileDescriptor& desc,
-                                std::set<std::string>* seen_aliases) const;
+  void PrintImportForDescriptor(
+      const FileDescriptor& desc,
+      absl::flat_hash_set<std::string>* seen_aliases) const;
   template <typename DescriptorT>
   void Annotate(const std::string& label, const DescriptorT* descriptor) const;
   void PrintImports() const;

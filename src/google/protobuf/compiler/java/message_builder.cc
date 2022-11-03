@@ -85,7 +85,8 @@ MessageBuilderGenerator::MessageBuilderGenerator(const Descriptor* descriptor,
          "generate lite messages.";
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (IsRealOneof(descriptor_->field(i))) {
-      oneofs_.insert(descriptor_->field(i)->containing_oneof());
+      const OneofDescriptor* oneof = descriptor_->field(i)->containing_oneof();
+      GOOGLE_CHECK(oneofs_.emplace(oneof->index(), oneof).first->second == oneof);
     }
   }
 }
@@ -127,7 +128,8 @@ void MessageBuilderGenerator::Generate(io::Printer* printer) {
 
   // oneof
   absl::flat_hash_map<absl::string_view, std::string> vars;
-  for (auto oneof : oneofs_) {
+  for (auto& kv : oneofs_) {
+    const OneofDescriptor* oneof = kv.second;
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
     vars["oneof_capitalized_name"] =
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
@@ -364,11 +366,11 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
         .GenerateBuilderClearCode(printer);
   }
 
-  for (auto oneof : oneofs_) {
+  for (auto& kv : oneofs_) {
     printer->Print(
         "$oneof_name$Case_ = 0;\n"
         "$oneof_name$_ = null;\n",
-        "oneof_name", context_->GetOneofGeneratorInfo(oneof)->name);
+        "oneof_name", context_->GetOneofGeneratorInfo(kv.second)->name);
   }
 
   printer->Outdent();
@@ -452,9 +454,10 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
                    "bit_field_name", GetBitFieldName(i));
   }
 
-  for (auto oneof : oneofs_) {
+  for (auto& kv : oneofs_) {
     printer->Print("result.$oneof_name$Case_ = $oneof_name$Case_;\n",
-                   "oneof_name", context_->GetOneofGeneratorInfo(oneof)->name);
+                   "oneof_name",
+                   context_->GetOneofGeneratorInfo(kv.second)->name);
   }
 
   printer->Outdent();
@@ -572,7 +575,8 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
     }
 
     // Merge oneof fields.
-    for (auto oneof : oneofs_) {
+    for (auto& kv : oneofs_) {
+      const OneofDescriptor* oneof = kv.second;
       printer->Print("switch (other.get$oneof_capitalized_name$Case()) {\n",
                      "oneof_capitalized_name",
                      context_->GetOneofGeneratorInfo(oneof)->capitalized_name);
