@@ -39,12 +39,12 @@
 #include "conformance/conformance.upbdefs.h"
 #include "google/protobuf/test_messages_proto2.upbdefs.h"
 #include "google/protobuf/test_messages_proto3.upbdefs.h"
-#include "upb/decode.h"
-#include "upb/encode.h"
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
 #include "upb/reflection/message.h"
 #include "upb/text_encode.h"
+#include "upb/wire/decode.h"
+#include "upb/wire/encode.h"
 
 // Must be last.
 #include "upb/port_def.inc"

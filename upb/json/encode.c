@@ -35,11 +35,11 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "upb/decode.h"
-#include "upb/internal/encode.h"
 #include "upb/internal/vsnprintf_compat.h"
 #include "upb/map.h"
 #include "upb/reflection/message.h"
+#include "upb/wire/decode.h"
+#include "upb/wire/encode_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"

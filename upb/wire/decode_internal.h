@@ -30,12 +30,12 @@
  * decode.c and decode_fast.c.
  */
 
-#ifndef UPB_INTERNAL_DECODE_H_
-#define UPB_INTERNAL_DECODE_H_
+#ifndef UPB_WIRE_DECODE_INTERNAL_H_
+#define UPB_WIRE_DECODE_INTERNAL_H_
 
-#include "upb/decode.h"
 #include "upb/mem/arena_internal.h"
 #include "upb/msg_internal.h"
+#include "upb/wire/decode.h"
 #include "third_party/utf8_range/utf8_range.h"
 
 // Must be last.
@@ -208,4 +208,4 @@ UPB_INLINE void _upb_Decoder_PopLimit(upb_Decoder* d, const char* ptr,
 
 #include "upb/port_undef.inc"
 
-#endif /* UPB_INTERNAL_DECODE_H_ */
+#endif /* UPB_WIRE_DECODE_INTERNAL_H_ */

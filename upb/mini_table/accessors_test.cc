@@ -37,11 +37,11 @@
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/array.h"
-#include "upb/decode.h"
 #include "upb/mini_table/decode.h"
 #include "upb/mini_table/encode.h"
 #include "upb/test.upb.h"
 #include "upb/upb.h"
+#include "upb/wire/decode.h"
 
 namespace {
 

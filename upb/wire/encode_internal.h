@@ -25,12 +25,30 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_INT_H_
-#define UPB_INT_H_
+#ifndef UPB_WIRE_ENCODE_INTERNAL_H_
+#define UPB_WIRE_ENCODE_INTERNAL_H_
 
-// TODO(b/232091617): Delete this entire header which currently exists only for
-// temporary backwards compatibility.
+// Must be last.
+#include "upb/port_def.inc"
 
-#include "upb/internal/encode.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif /* UPB_INT_H_ */
+// Encodes a float or double that is round-trippable, but as short as possible.
+// These routines are not fully optimal (not guaranteed to be shortest), but are
+// short-ish and match the implementation that has been used in protobuf since
+// the beginning.
+//
+// The given buffer size must be at least kUpb_RoundTripBufferSize.
+enum { kUpb_RoundTripBufferSize = 32 };
+void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size);
+void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include "upb/port_undef.inc"
+
+#endif /* UPB_WIRE_ENCODE_INTERNAL_H_ */

@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "upb/internal/encode.h"
+#include "upb/wire/encode_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"

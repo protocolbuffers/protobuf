@@ -27,9 +27,9 @@
 
 #include "upb/mini_table/accessors.h"
 
-#include "upb/decode.h"
-#include "upb/encode.h"
 #include "upb/internal/array.h"
+#include "upb/wire/decode.h"
+#include "upb/wire/encode.h"
 
 // Must be last.
 #include "upb/msg.h"

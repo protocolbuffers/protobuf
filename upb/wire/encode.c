@@ -25,9 +25,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* We encode backwards, to avoid pre-computing lengths (one-pass encode). */
+// We encode backwards, to avoid pre-computing lengths (one-pass encode).
 
-#include "upb/encode.h"
+#include "upb/wire/encode.h"
 
 #include <string.h>
 

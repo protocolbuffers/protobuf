@@ -25,8 +25,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_INTERNAL_ENCODE_H_
-#define UPB_INTERNAL_ENCODE_H_
+/*
+ * upb_Encode: parsing from a upb_Message using a upb_MiniTable.
+ */
+
+#ifndef UPB_WIRE_ENCODE_H_
+#define UPB_WIRE_ENCODE_H_
+
+#include "upb/msg.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -35,15 +41,36 @@
 extern "C" {
 #endif
 
-// Encodes a float or double that is round-trippable, but as short as possible.
-// These routines are not fully optimal (not guaranteed to be shortest), but are
-// short-ish and match the implementation that has been used in protobuf since
-// the beginning.
-//
-// The given buffer size must be at least kUpb_RoundTripBufferSize.
-enum { kUpb_RoundTripBufferSize = 32 };
-void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size);
-void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size);
+enum {
+  /* If set, the results of serializing will be deterministic across all
+   * instances of this binary. There are no guarantees across different
+   * binary builds.
+   *
+   * If your proto contains maps, the encoder will need to malloc()/free()
+   * memory during encode. */
+  kUpb_EncodeOption_Deterministic = 1,
+
+  /* When set, unknown fields are not printed. */
+  kUpb_EncodeOption_SkipUnknown = 2,
+
+  /* When set, the encode will fail if any required fields are missing. */
+  kUpb_EncodeOption_CheckRequired = 4,
+};
+
+#define UPB_ENCODE_MAXDEPTH(depth) ((depth) << 16)
+
+typedef enum {
+  kUpb_EncodeStatus_Ok = 0,
+  kUpb_EncodeStatus_OutOfMemory = 1,       // Arena alloc failed
+  kUpb_EncodeStatus_MaxDepthExceeded = 2,  // Exceeded UPB_ENCODE_MAXDEPTH
+
+  // kUpb_EncodeOption_CheckRequired failed but the parse otherwise succeeded.
+  kUpb_EncodeStatus_MissingRequired = 3,
+} upb_EncodeStatus;
+
+upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
+                            int options, upb_Arena* arena, char** buf,
+                            size_t* size);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -51,4 +78,4 @@ void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size);
 
 #include "upb/port_undef.inc"
 
-#endif /* UPB_INTERNAL_ENCODE_H_ */
+#endif /* UPB_WIRE_ENCODE_H_ */

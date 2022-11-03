@@ -29,12 +29,12 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/container/flat_hash_set.h"
-#include "upb/decode.h"
 #include "upb/mini_table.hpp"
 #include "upb/mini_table/common_internal.h"
 #include "upb/mini_table/decode.h"
 #include "upb/upb.h"
 #include "upb/upb.hpp"
+#include "upb/wire/decode.h"
 
 // begin:google_only
 // #include "testing/fuzzing/fuzztest.h"

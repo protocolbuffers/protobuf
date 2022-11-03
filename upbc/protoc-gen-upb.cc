@@ -883,11 +883,11 @@ void WriteHeader(const FileLayout& layout, Output& output) {
   output(
       "#ifndef $0_UPB_H_\n"
       "#define $0_UPB_H_\n\n"
-      "#include \"upb/decode.h\"\n"
-      "#include \"upb/decode_fast.h\"\n"
-      "#include \"upb/encode.h\"\n\n"
       "#include \"upb/internal/array.h\"\n"
-      "#include \"upb/msg_internal.h\"\n",
+      "#include \"upb/msg_internal.h\"\n"
+      "#include \"upb/wire/decode.h\"\n"
+      "#include \"upb/wire/decode_fast.h\"\n"
+      "#include \"upb/wire/encode.h\"\n\n",
       ToPreproc(file->name()));
 
   for (int i = 0; i < file->public_dependency_count(); i++) {

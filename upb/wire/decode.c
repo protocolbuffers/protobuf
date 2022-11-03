@@ -25,14 +25,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/decode.h"
+#include "upb/wire/decode.h"
 
 #include <string.h>
 
 #include "upb/internal/array.h"
-#include "upb/internal/decode.h"
 #include "upb/msg_internal.h"
 #include "upb/upb.h"
+#include "upb/wire/decode_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"

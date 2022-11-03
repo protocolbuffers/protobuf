@@ -110,8 +110,6 @@ cc_library(
     name = "upb",
     srcs = [
         "upb/array.c",
-        "upb/decode.c",
-        "upb/encode.c",
         "upb/internal/table.h",
         "upb/internal/unicode.h",
         "upb/map_sorter.c",
@@ -120,6 +118,8 @@ cc_library(
         "upb/msg_internal.h",
         "upb/status.c",
         "upb/upb.c",
+        "upb/wire/decode.c",
+        "upb/wire/encode.c",
     ],
     hdrs = [
         "upb/alloc.h",
@@ -136,19 +136,20 @@ cc_library(
         "upb/string_view.h",
         "upb/upb.h",
         "upb/upb.hpp",
+        "upb/wire/decode.h",
+        "upb/wire/encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         ":array_internal",
-        ":decode_internal",
-        ":encode_internal",
         ":extension_registry",
         ":fastdecode",
         ":mem",
         ":port",
         ":table_internal",
         ":unicode_internal",
+        ":wire_internal",
     ],
 )
 
@@ -280,19 +281,21 @@ cc_library(
     name = "fastdecode",
     srcs = [
         "upb/decode.h",
-        "upb/decode_fast.c",
         "upb/decode_fast.h",
         "upb/msg.h",
         "upb/msg_internal.h",
+        "upb/wire/decode.h",
+        "upb/wire/decode_fast.c",
+        "upb/wire/decode_fast.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     deps = [
         ":array_internal",
-        ":decode_internal",
         ":extension_registry",
         ":mem_internal",
         ":port",
         ":table_internal",
+        ":wire_internal",
     ],
 )
 
@@ -306,9 +309,6 @@ cc_library(
     name = "generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
         "upb/array.h",
-        "upb/decode.h",
-        "upb/decode_fast.h",
-        "upb/encode.h",
         "upb/extension_registry.h",
         "upb/internal/array.h",
         "upb/message_value.h",
@@ -316,6 +316,9 @@ cc_library(
         "upb/msg_internal.h",
         "upb/port_def.inc",
         "upb/port_undef.inc",
+        "upb/wire/decode.h",
+        "upb/wire/decode_fast.h",
+        "upb/wire/encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -329,14 +332,14 @@ cc_library(
 cc_library(
     name = "generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
-        "upb/decode.h",
-        "upb/decode_fast.h",
-        "upb/encode.h",
         "upb/msg.h",
         "upb/msg_internal.h",
         "upb/port_def.inc",
         "upb/port_undef.inc",
         "upb/upb.hpp",
+        "upb/wire/decode.h",
+        "upb/wire/decode_fast.h",
+        "upb/wire/encode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -537,9 +540,9 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":collections",
-        ":encode_internal",
         ":port",
         ":reflection",
+        ":wire_internal",
     ],
 )
 
@@ -562,11 +565,11 @@ cc_library(
     deps = [
         ":atoi_internal",
         ":collections",
-        ":encode_internal",
         ":port",
         ":reflection",
         ":unicode_internal",
         ":upb",
+        ":wire_internal",
     ],
 )
 
@@ -998,16 +1001,17 @@ cc_library(
 )
 
 cc_library(
-    name = "decode_internal",
+    name = "wire_internal",
     srcs = [
-        "upb/decode.h",
         "upb/extension_registry.h",
         "upb/msg.h",
         "upb/msg_internal.h",
+        "upb/wire/decode.h",
     ],
-    hdrs = ["upb/internal/decode.h"],
-    aspect_hints = [":suppress_kotlin_interop"],
-    compatible_with = ["//buildenv/target:non_prod"],
+    hdrs = [
+        "upb/wire/decode_internal.h",
+        "upb/wire/encode_internal.h",
+    ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
     deps = [
@@ -1016,16 +1020,6 @@ cc_library(
         ":table_internal",
         "//third_party/utf8_range",
     ],
-)
-
-cc_library(
-    name = "encode_internal",
-    hdrs = ["upb/internal/encode.h"],
-    aspect_hints = [":suppress_kotlin_interop"],
-    compatible_with = ["//buildenv/target:non_prod"],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__subpackages__"],
-    deps = [":port"],
 )
 
 cc_library(
@@ -1073,9 +1067,7 @@ upb_amalgamation(
         ":array_internal",
         ":atoi_internal",
         ":collections",
-        ":decode_internal",
         ":descriptor_upb_proto",
-        ":encode_internal",
         ":extension_registry",
         ":fastdecode",
         ":mem",
@@ -1085,6 +1077,7 @@ upb_amalgamation(
         ":reflection",
         ":reflection_internal",
         ":upb",
+        ":wire_internal",
     ],
     strip_import_prefix = ["src"],
 )
@@ -1107,10 +1100,8 @@ upb_amalgamation(
         ":array_internal",
         ":atoi_internal",
         ":collections",
-        ":decode_internal",
         ":descriptor_upb_proto",
         ":descriptor_upb_proto_reflection",
-        ":encode_internal",
         ":extension_registry",
         ":fastdecode",
         ":json",
@@ -1123,6 +1114,7 @@ upb_amalgamation(
         ":table_internal",
         ":unicode_internal",
         ":upb",
+        ":wire_internal",
     ],
     prefix = "php-",
     strip_import_prefix = ["src"],
@@ -1147,9 +1139,7 @@ upb_amalgamation(
         ":array_internal",
         ":atoi_internal",
         ":collections",
-        ":decode_internal",
         ":descriptor_upb_proto",
-        ":encode_internal",
         ":extension_registry",
         ":fastdecode",
         ":json",
@@ -1162,6 +1152,7 @@ upb_amalgamation(
         ":table_internal",
         ":unicode_internal",
         ":upb",
+        ":wire_internal",
     ],
     prefix = "ruby-",
     strip_import_prefix = ["src"],
