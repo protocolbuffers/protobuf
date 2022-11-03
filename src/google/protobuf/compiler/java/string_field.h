@@ -68,6 +68,8 @@ class ImmutableStringFieldGenerator : public ImmutableFieldGenerator {
 
   // implements ImmutableFieldGenerator
   // ---------------------------------------
+  int GetMessageBitIndex() const override;
+  int GetBuilderBitIndex() const override;
   int GetNumBitsForMessage() const override;
   int GetNumBitsForBuilder() const override;
   void GenerateInterfaceMembers(io::Printer* printer) const override;
@@ -90,6 +92,8 @@ class ImmutableStringFieldGenerator : public ImmutableFieldGenerator {
 
  protected:
   const FieldDescriptor* descriptor_;
+  int message_bit_index_;
+  int builder_bit_index_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
   ClassNameResolver* name_resolver_;
 };
@@ -117,7 +121,8 @@ class ImmutableStringOneofFieldGenerator
   void GenerateSerializedSizeCode(io::Printer* printer) const override;
 };
 
-class RepeatedImmutableStringFieldGenerator : public ImmutableFieldGenerator {
+class RepeatedImmutableStringFieldGenerator
+    : public ImmutableStringFieldGenerator {
  public:
   explicit RepeatedImmutableStringFieldGenerator(
       const FieldDescriptor* descriptor, int messageBitIndex,
@@ -148,11 +153,6 @@ class RepeatedImmutableStringFieldGenerator : public ImmutableFieldGenerator {
   void GenerateKotlinDslMembers(io::Printer* printer) const override;
 
   std::string GetBoxedType() const override;
-
- private:
-  const FieldDescriptor* descriptor_;
-  absl::flat_hash_map<absl::string_view, std::string> variables_;
-  ClassNameResolver* name_resolver_;
 };
 
 }  // namespace java
