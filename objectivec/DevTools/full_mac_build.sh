@@ -187,8 +187,6 @@ else
   # Can't issue these together, when fully parallel, something sometimes chokes
   # at random.
   "${BazelBin}" test //src/... $BazelFlags
-  # Fire off the conformance tests also.
-  "${BazelBin}" test //objectivec:conformance_test $BazelFlags
 fi
 
 # Ensure the WKT sources checked in are current.

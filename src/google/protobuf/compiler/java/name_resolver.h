@@ -31,11 +31,11 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_NAME_RESOLVER_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_NAME_RESOLVER_H__
 
-#include <map>
 #include <string>
 
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/java/options.h"
 #include "google/protobuf/port.h"
 
@@ -151,7 +151,7 @@ class ClassNameResolver {
                                    const FileDescriptor* file, bool immutable,
                                    bool kotlin);
   // Caches the result to provide better performance.
-  std::map<const FileDescriptor*, std::string>
+  absl::flat_hash_map<const FileDescriptor*, std::string>
       file_immutable_outer_class_names_;
 };
 

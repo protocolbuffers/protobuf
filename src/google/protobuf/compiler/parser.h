@@ -38,10 +38,10 @@
 #define GOOGLE_PROTOBUF_COMPILER_PARSER_H__
 
 #include <cstdint>
-#include <map>
 #include <string>
 #include <utility>
 
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/tokenizer.h"
@@ -591,12 +591,12 @@ class PROTOBUF_EXPORT SourceLocationTable {
   void Clear();
 
  private:
-  typedef std::map<
+  using LocationMap = absl::flat_hash_map<
       std::pair<const Message*, DescriptorPool::ErrorCollector::ErrorLocation>,
-      std::pair<int, int> >
-      LocationMap;
+      std::pair<int, int>>;
   LocationMap location_map_;
-  std::map<std::pair<const Message*, std::string>, std::pair<int, int> >
+  absl::flat_hash_map<std::pair<const Message*, std::string>,
+                      std::pair<int, int>>
       import_location_map_;
 };
 

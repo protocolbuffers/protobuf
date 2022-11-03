@@ -367,15 +367,15 @@ cc_dist_library(
     }),
     tags = ["manual"],
     deps = [
-        "//src/google/protobuf:wkt_cc_proto",
-        "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf:arena",
         "//src/google/protobuf:arena_align",
         "//src/google/protobuf:arena_allocation_policy",
         "//src/google/protobuf:arena_cleanup",
         "//src/google/protobuf:arena_config",
-        "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf:port_def",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf:wkt_cc_proto",
         "//src/google/protobuf/compiler:importer",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:gzip_stream",
@@ -440,6 +440,7 @@ cc_dist_library(
     testonly = 1,
     tags = ["manual"],
     deps = [
+        "//src/google/protobuf:lite_test_util",
         "//src/google/protobuf:test_util",
         "//src/google/protobuf:test_util2",
         "//src/google/protobuf/compiler:annotation_test_util",
@@ -452,11 +453,10 @@ cc_dist_library(
     testonly = 1,
     tags = ["manual"],
     deps = [
-        "//src/google/protobuf/testing",
         "//src/google/protobuf/compiler:mock_code_generator",
+        "//src/google/protobuf/testing",
     ],
 )
-
 
 ################################################################################
 # Distribution sources

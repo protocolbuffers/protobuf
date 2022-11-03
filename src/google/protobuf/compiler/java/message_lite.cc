@@ -81,7 +81,8 @@ ImmutableMessageLiteGenerator::ImmutableMessageLiteGenerator(
          "generate non-lite messages.";
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (IsRealOneof(descriptor_->field(i))) {
-      oneofs_.insert(descriptor_->field(i)->containing_oneof());
+      const OneofDescriptor* oneof = descriptor_->field(i)->containing_oneof();
+      GOOGLE_CHECK(oneofs_.emplace(oneof->index(), oneof).first->second == oneof);
     }
   }
 }
@@ -152,7 +153,8 @@ void ImmutableMessageLiteGenerator::GenerateInterface(io::Printer* printer) {
     field_generators_.get(descriptor_->field(i))
         .GenerateInterfaceMembers(printer);
   }
-  for (auto oneof : oneofs_) {
+  for (auto& kv : oneofs_) {
+    const OneofDescriptor* oneof = kv.second;
     variables["oneof_capitalized_name"] =
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
     variables["classname"] =
@@ -245,7 +247,8 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   // oneof
   absl::flat_hash_map<absl::string_view, std::string> vars = {{"{", ""},
                                                               {"}", ""}};
-  for (auto oneof : oneofs_) {
+  for (auto& kv : oneofs_) {
+    const OneofDescriptor* oneof = kv.second;
     vars["oneof_name"] = context_->GetOneofGeneratorInfo(oneof)->name;
     vars["oneof_capitalized_name"] =
         context_->GetOneofGeneratorInfo(oneof)->capitalized_name;
@@ -522,11 +525,11 @@ void ImmutableMessageLiteGenerator::GenerateDynamicMethodNewBuildMessageInfo(
 
     // Record the number of oneofs.
     WriteIntToUtf16CharSequence(oneofs_.size(), &chars);
-    for (auto oneof : oneofs_) {
+    for (auto& kv : oneofs_) {
       printer->Print(
           "\"$oneof_name$_\",\n"
           "\"$oneof_name$Case_\",\n",
-          "oneof_name", context_->GetOneofGeneratorInfo(oneof)->name);
+          "oneof_name", context_->GetOneofGeneratorInfo(kv.second)->name);
     }
 
     // Integers for bit fields.
@@ -784,7 +787,8 @@ void ImmutableMessageLiteGenerator::GenerateKotlinDsl(
         .GenerateKotlinDslMembers(printer);
   }
 
-  for (auto oneof : oneofs_) {
+  for (auto& kv : oneofs_) {
+    const OneofDescriptor* oneof = kv.second;
     printer->Print(
         "public val $oneof_name$Case: $message$.$oneof_capitalized_name$Case\n"
         "  @JvmName(\"get$oneof_capitalized_name$Case\")\n"

@@ -283,20 +283,9 @@ def _IsMessageMapField(field):
 
 def _AttachFieldHelpers(cls, field_descriptor):
   is_repeated = (field_descriptor.label == _FieldDescriptor.LABEL_REPEATED)
-  is_packable = (is_repeated and
-                 wire_format.IsTypePackable(field_descriptor.type))
   is_proto3 = field_descriptor.containing_type.syntax == 'proto3'
-  if not is_packable:
-    is_packed = False
-  elif field_descriptor.containing_type.syntax == 'proto2':
-    is_packed = (field_descriptor.has_options and
-                field_descriptor.GetOptions().packed)
-  else:
-    has_packed_false = (field_descriptor.has_options and
-                        field_descriptor.GetOptions().HasField('packed') and
-                        field_descriptor.GetOptions().packed == False)
-    is_packed = not has_packed_false
   is_map_entry = _IsMapField(field_descriptor)
+  is_packed = field_descriptor.is_packed
 
   if is_map_entry:
     field_encoder = encoder.MapEncoder(field_descriptor)

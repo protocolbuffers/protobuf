@@ -31,10 +31,10 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ENUM_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_ENUM_H__
 
-#include <set>
 #include <string>
 #include <vector>
 
+#include "absl/container/flat_hash_set.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -60,7 +60,7 @@ class EnumGenerator {
   const EnumDescriptor* descriptor_;
   std::vector<const EnumValueDescriptor*> base_values_;
   std::vector<const EnumValueDescriptor*> all_values_;
-  std::set<const EnumValueDescriptor*> alias_values_to_skip_;
+  absl::flat_hash_set<const EnumValueDescriptor*> alias_values_to_skip_;
   const std::string name_;
 };
 

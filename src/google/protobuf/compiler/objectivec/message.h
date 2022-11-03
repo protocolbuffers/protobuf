@@ -32,10 +32,10 @@
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MESSAGE_H__
 
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/oneof.h"
 #include "google/protobuf/descriptor.h"
@@ -63,8 +63,9 @@ class MessageGenerator {
   void GenerateMessageHeader(io::Printer* printer);
   void GenerateSource(io::Printer* printer);
   void GenerateExtensionRegistrationSource(io::Printer* printer);
-  void DetermineObjectiveCClassDefinitions(std::set<std::string>* fwd_decls);
-  void DetermineForwardDeclarations(std::set<std::string>* fwd_decls,
+  void DetermineObjectiveCClassDefinitions(
+      absl::btree_set<std::string>* fwd_decls);
+  void DetermineForwardDeclarations(absl::btree_set<std::string>* fwd_decls,
                                     bool include_external_types);
 
   // Checks if the message or a nested message includes a oneof definition.

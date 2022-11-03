@@ -32,10 +32,10 @@
 
 #include <iostream>
 #include <ostream>
-#include <set>
 #include <string>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
@@ -146,7 +146,7 @@ void ExtensionGenerator::GenerateStaticVariablesInitialization(
 }
 
 void ExtensionGenerator::DetermineObjectiveCClassDefinitions(
-    std::set<std::string>* fwd_decls) {
+    absl::btree_set<std::string>* fwd_decls) {
   std::string extended_type = ClassName(descriptor_->containing_type());
   fwd_decls->insert(ObjCClassDeclaration(extended_type));
   ObjectiveCType objc_type = GetObjectiveCType(descriptor_);
