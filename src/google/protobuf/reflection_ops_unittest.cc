@@ -36,11 +36,11 @@
 
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/descriptor.h"
 #include <gtest/gtest.h>
 #include "absl/strings/str_join.h"
 #include "google/protobuf/test_util.h"
+#include "google/protobuf/unittest.pb.h"
 
 
 namespace google {

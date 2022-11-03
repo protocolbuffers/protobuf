@@ -28,10 +28,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "google/protobuf/unittest.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/unittest.pb.h"
 
 namespace google {
 namespace protobuf {

@@ -34,9 +34,9 @@
 
 #include <limits>
 
-#include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/descriptor.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/stubs/mathutil.h"
 
 namespace google {

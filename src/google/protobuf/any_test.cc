@@ -29,10 +29,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "google/protobuf/any.pb.h"
-#include "google/protobuf/unittest.pb.h"
 #include <gtest/gtest.h>
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/any_test.pb.h"
+#include "google/protobuf/unittest.pb.h"
 
 
 // Must be included last.

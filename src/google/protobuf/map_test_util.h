@@ -31,9 +31,9 @@
 #ifndef GOOGLE_PROTOBUF_MAP_TEST_UTIL_H__
 #define GOOGLE_PROTOBUF_MAP_TEST_UTIL_H__
 
-#include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/reflection_tester.h"
+#include "google/protobuf/unittest.pb.h"
 
 #define UNITTEST ::protobuf_unittest
 #define BRIDGE_UNITTEST ::google::protobuf::bridge_unittest

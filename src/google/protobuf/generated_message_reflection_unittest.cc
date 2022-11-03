@@ -48,10 +48,6 @@
 
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_mset.pb.h"
-#include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/testing/googletest.h"
@@ -60,6 +56,10 @@
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/test_util.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_mset.pb.h"
+#include "google/protobuf/unittest_mset_wire_format.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
