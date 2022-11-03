@@ -63,8 +63,8 @@ enable_testing()
 
 add_library(port INTERFACE)
 add_library(upb
-  ../upb/alloc.c
   ../upb/arena.c
+  ../upb/alloc.c
   ../upb/array.c
   ../upb/decode.c
   ../upb/encode.c
