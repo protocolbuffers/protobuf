@@ -36,7 +36,7 @@
 #ifndef UPB_MSG_H_
 #define UPB_MSG_H_
 
-#include "upb/arena.h"
+#include "upb/mem/arena.h"
 
 // Must be last.
 #include "upb/port_def.inc"

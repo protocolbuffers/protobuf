@@ -29,7 +29,7 @@
 
 #include <inttypes.h>
 
-#include "upb/arena.h"
+#include "upb/mem/arena.h"
 #include "upb/mini_table/common_internal.h"
 #include "upb/upb.h"
 

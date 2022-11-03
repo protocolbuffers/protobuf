@@ -40,7 +40,7 @@
 #include <string.h>
 
 // TODO(b/232091617): Remove these and fix everything that breaks as a result.
-#include "upb/arena.h"
+#include "upb/mem/arena.h"
 #include "upb/status.h"
 #include "upb/string_view.h"
 

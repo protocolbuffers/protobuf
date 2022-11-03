@@ -34,7 +34,7 @@
 #define UPB_INTERNAL_DECODE_H_
 
 #include "upb/decode.h"
-#include "upb/internal/arena.h"
+#include "upb/mem/arena_internal.h"
 #include "upb/msg_internal.h"
 #include "third_party/utf8_range/utf8_range.h"
 

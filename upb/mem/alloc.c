@@ -25,47 +25,23 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_INTERNAL_ARENA_H_
-#define UPB_INTERNAL_ARENA_H_
+#include "upb/mem/alloc.h"
 
-#include "upb/arena.h"
+#include <stdlib.h>
 
 // Must be last.
 #include "upb/port_def.inc"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+static void* upb_global_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
+                                  size_t size) {
+  UPB_UNUSED(alloc);
+  UPB_UNUSED(oldsize);
+  if (size == 0) {
+    free(ptr);
+    return NULL;
+  } else {
+    return realloc(ptr, size);
+  }
+}
 
-typedef struct mem_block mem_block;
-
-struct upb_Arena {
-  _upb_ArenaHead head;
-  /* Stores cleanup metadata for this arena.
-   * - a pointer to the current cleanup counter.
-   * - a boolean indicating if there is an unowned initial block.  */
-  uintptr_t cleanup_metadata;
-
-  /* Allocator to allocate arena blocks.  We are responsible for freeing these
-   * when we are destroyed. */
-  upb_alloc* block_alloc;
-  uint32_t last_size;
-
-  /* When multiple arenas are fused together, each arena points to a parent
-   * arena (root points to itself). The root tracks how many live arenas
-   * reference it. */
-  uint32_t refcount; /* Only used when a->parent == a */
-  struct upb_Arena* parent;
-
-  /* Linked list of blocks to free/cleanup. */
-  mem_block *freelist, *freelist_tail;
-};
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#include "upb/port_undef.inc"
-
-#endif /* UPB_INTERNAL_ARENA_H_ */
-
+upb_alloc upb_alloc_global = {&upb_global_allocfunc};

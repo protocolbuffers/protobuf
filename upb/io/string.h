@@ -36,7 +36,7 @@
 
 #include <string.h>
 
-#include "upb/arena.h"
+#include "upb/mem/arena.h"
 
 // Must be last.
 #include "upb/port_def.inc"

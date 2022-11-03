@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/internal/arena.h"
+#include "upb/mem/arena_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"
