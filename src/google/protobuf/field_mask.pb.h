@@ -46,7 +46,7 @@ PROTOBUF_NAMESPACE_CLOSE
 
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2ffield_5fmask_2eproto {
-  static const uint32_t offsets[];
+  static const ::uint32_t offsets[];
 };
 PROTOBUF_EXPORT extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2ffield_5fmask_2eproto;
@@ -154,10 +154,10 @@ class PROTOBUF_EXPORT FieldMask final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
@@ -199,12 +199,12 @@ class PROTOBUF_EXPORT FieldMask final :
   void set_paths(int index, const std::string& value);
   void set_paths(int index, std::string&& value);
   void set_paths(int index, const char* value);
-  void set_paths(int index, const char* value, size_t size);
+  void set_paths(int index, const char* value, ::size_t size);
   std::string* add_paths();
   void add_paths(const std::string& value);
   void add_paths(std::string&& value);
   void add_paths(const char* value);
-  void add_paths(const char* value, size_t size);
+  void add_paths(const char* value, ::size_t size);
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& paths() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_paths();
   private:
@@ -280,7 +280,7 @@ inline void FieldMask::set_paths(int index, const char* value) {
   GOOGLE_DCHECK(value != nullptr);  _impl_.paths_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.FieldMask.paths)
 }
-inline void FieldMask::set_paths(int index, const char* value, size_t size) {
+inline void FieldMask::set_paths(int index, const char* value, ::size_t size) {
   _impl_.paths_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.FieldMask.paths)
@@ -300,7 +300,7 @@ inline void FieldMask::add_paths(const char* value) {
   GOOGLE_DCHECK(value != nullptr);  _impl_.paths_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.FieldMask.paths)
 }
-inline void FieldMask::add_paths(const char* value, size_t size) {
+inline void FieldMask::add_paths(const char* value, ::size_t size) {
   _impl_.paths_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.FieldMask.paths)
 }
