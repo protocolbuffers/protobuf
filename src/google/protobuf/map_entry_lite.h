@@ -37,11 +37,11 @@
 #include <string>
 #include <utility>
 
-#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/arena.h"
 #include "absl/base/casts.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_type_handler.h"
 #include "google/protobuf/parse_context.h"
