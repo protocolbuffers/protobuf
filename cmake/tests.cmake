@@ -80,6 +80,7 @@ endforeach(proto_file)
 
 set(common_test_files
   ${test_util_hdrs}
+  ${lite_test_util_srcs}
   ${test_util_srcs}
   ${common_test_hdrs}
   ${common_test_srcs}
