@@ -730,6 +730,12 @@ static PyObject* PyUpb_EnumDescriptor_GetHasOptions(PyObject* _self,
   return PyBool_FromLong(upb_EnumDef_HasOptions(self->def));
 }
 
+static PyObject* PyUpb_EnumDescriptor_GetIsClosed(PyObject* _self,
+                                                  void* closure) {
+  const upb_EnumDef* enumdef = PyUpb_EnumDescriptor_GetDef(_self);
+  return PyBool_FromLong(upb_EnumDef_IsClosed(enumdef));
+}
+
 static PyObject* PyUpb_EnumDescriptor_GetOptions(PyObject* _self,
                                                  PyObject* args) {
   PyUpb_DescriptorBase* self = (void*)_self;
@@ -758,6 +764,8 @@ static PyGetSetDef PyUpb_EnumDescriptor_Getters[] = {
     {"containing_type", PyUpb_EnumDescriptor_GetContainingType, NULL,
      "Containing type"},
     {"has_options", PyUpb_EnumDescriptor_GetHasOptions, NULL, "Has Options"},
+    {"is_closed", PyUpb_EnumDescriptor_GetIsClosed, NULL,
+     "Checks if the enum is closed"},
     {NULL}};
 
 static PyMethodDef PyUpb_EnumDescriptor_Methods[] = {
