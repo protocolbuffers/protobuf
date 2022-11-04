@@ -254,6 +254,8 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/metadata_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/port_def.inc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/port_undef.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/callback.h
@@ -545,6 +547,8 @@ set(lite_test_util_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_lite_test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test_util_impl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/proto3_lite_unittest.inc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.inc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util2.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util_lite.h
 )
 
@@ -574,8 +578,6 @@ set(test_util_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_tester.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.inc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util2.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_unittest.inc
 )
 
