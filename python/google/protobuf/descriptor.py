@@ -633,13 +633,11 @@ class FieldDescriptor(DescriptorBase):
     if (self.cpp_type == FieldDescriptor.CPPTYPE_MESSAGE or
         self.containing_oneof):
       return True
-    if hasattr(self.file, 'syntax'):
-      return self.file.syntax == 'proto2'
-    if hasattr(self.message_type, 'syntax'):
-      return self.message_type.syntax == 'proto2'
-    raise RuntimeError(
-        'has_presence is not ready to use because field %s is not'
-        ' linked with message type nor file' % self.full_name)
+    # self.containing_type is used here instead of self.file for legacy
+    # compatibility. FieldDescriptor.file was added in cl/153110619
+    # Some old/generated code didn't link file to FieldDescriptor.
+    # TODO(jieluo): remove syntax usage b/240619313
+    return self.containing_type.syntax == 'proto2'
 
   @property
   def is_packed(self):

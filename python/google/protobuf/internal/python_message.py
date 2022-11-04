@@ -283,7 +283,6 @@ def _IsMessageMapField(field):
 
 def _AttachFieldHelpers(cls, field_descriptor):
   is_repeated = (field_descriptor.label == _FieldDescriptor.LABEL_REPEATED)
-  is_proto3 = field_descriptor.containing_type.syntax == 'proto3'
   is_map_entry = _IsMapField(field_descriptor)
   is_packed = field_descriptor.is_packed
 
@@ -313,12 +312,8 @@ def _AttachFieldHelpers(cls, field_descriptor):
       decode_type = _FieldDescriptor.TYPE_INT32
 
     oneof_descriptor = None
-    clear_if_default = False
     if field_descriptor.containing_oneof is not None:
       oneof_descriptor = field_descriptor
-    elif (is_proto3 and not is_repeated and
-          field_descriptor.cpp_type != _FieldDescriptor.CPPTYPE_MESSAGE):
-      clear_if_default = True
 
     if is_map_entry:
       is_message_map = _IsMessageMapField(field_descriptor)
@@ -330,7 +325,7 @@ def _AttachFieldHelpers(cls, field_descriptor):
       field_decoder = decoder.StringDecoder(
           field_descriptor.number, is_repeated, is_packed,
           field_descriptor, field_descriptor._default_constructor,
-          clear_if_default)
+          not field_descriptor.has_presence)
     elif field_descriptor.cpp_type == _FieldDescriptor.CPPTYPE_MESSAGE:
       field_decoder = type_checkers.TYPE_TO_DECODER[decode_type](
           field_descriptor.number, is_repeated, is_packed,
@@ -340,7 +335,7 @@ def _AttachFieldHelpers(cls, field_descriptor):
           field_descriptor.number, is_repeated, is_packed,
           # pylint: disable=protected-access
           field_descriptor, field_descriptor._default_constructor,
-          clear_if_default)
+          not field_descriptor.has_presence)
 
     cls._decoders_by_tag[tag_bytes] = (field_decoder, oneof_descriptor)
 
@@ -672,7 +667,6 @@ def _AddPropertiesForNonRepeatedScalarField(field, cls):
   property_name = _PropertyName(proto_field_name)
   type_checker = type_checkers.GetTypeChecker(field)
   default_value = field.default_value
-  is_proto3 = field.containing_type.syntax == 'proto3'
 
   def getter(self):
     # TODO(protobuf-team): This may be broken since there may not be
@@ -680,8 +674,6 @@ def _AddPropertiesForNonRepeatedScalarField(field, cls):
     return self._fields.get(field, default_value)
   getter.__module__ = None
   getter.__doc__ = 'Getter for %s.' % proto_field_name
-
-  clear_when_set_to_default = is_proto3 and not field.containing_oneof
 
   def field_setter(self, new_value):
     # pylint: disable=protected-access
@@ -692,7 +684,7 @@ def _AddPropertiesForNonRepeatedScalarField(field, cls):
     except TypeError as e:
       raise TypeError(
           'Cannot set %s to %.1024r: %s' % (field.full_name, new_value, e))
-    if clear_when_set_to_default and not new_value:
+    if not field.has_presence and not new_value:
       self._fields.pop(field, None)
     else:
       self._fields[field] = new_value
@@ -814,24 +806,16 @@ def _AddListFieldsMethod(message_descriptor, cls):
 
   cls.ListFields = ListFields
 
-_PROTO3_ERROR_TEMPLATE = \
-  ('Protocol message %s has no non-repeated submessage field "%s" '
-   'nor marked as optional')
-_PROTO2_ERROR_TEMPLATE = 'Protocol message %s has no non-repeated field "%s"'
 
 def _AddHasFieldMethod(message_descriptor, cls):
   """Helper for _AddMessageMethods()."""
-
-  is_proto3 = (message_descriptor.syntax == "proto3")
-  error_msg = _PROTO3_ERROR_TEMPLATE if is_proto3 else _PROTO2_ERROR_TEMPLATE
 
   hassable_fields = {}
   for field in message_descriptor.fields:
     if field.label == _FieldDescriptor.LABEL_REPEATED:
       continue
     # For proto3, only submessages and fields inside a oneof have presence.
-    if (is_proto3 and field.cpp_type != _FieldDescriptor.CPPTYPE_MESSAGE and
-        not field.containing_oneof):
+    if not field.has_presence:
       continue
     hassable_fields[field.name] = field
 
@@ -842,8 +826,10 @@ def _AddHasFieldMethod(message_descriptor, cls):
   def HasField(self, field_name):
     try:
       field = hassable_fields[field_name]
-    except KeyError:
-      raise ValueError(error_msg % (message_descriptor.full_name, field_name))
+    except KeyError as exc:
+      raise ValueError('Protocol message %s has no non-repeated field "%s" '
+                       'nor has presence is not available for this field.' % (
+                           message_descriptor.full_name, field_name)) from exc
 
     if isinstance(field, descriptor_mod.OneofDescriptor):
       try:
