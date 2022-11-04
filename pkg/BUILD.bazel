@@ -414,7 +414,6 @@ cc_dist_library(
     ],
     dist_deps = [
       ":common_test",
-      ":lite_test_util",
       ":protoc",
       ":protobuf",
       ":protobuf_lite",
