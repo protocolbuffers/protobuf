@@ -98,7 +98,6 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/type.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_align.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_allocation_policy.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_cleanup.h
@@ -187,6 +186,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/time_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/type_resolver.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/util/type_resolver_util.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_lite.h
 )
@@ -254,8 +254,6 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/metadata_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/port_def.inc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/port_undef.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/callback.h
@@ -547,30 +545,37 @@ set(lite_test_util_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_lite_test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test_util_impl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/proto3_lite_unittest.inc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.inc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util2.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util_lite.h
 )
 
 # //pkg:test_util
 set(test_util_srcs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_test_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/map_lite_test_util.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_tester.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util_lite.cc
 )
 
 # //pkg:test_util
 set(test_util_hdrs
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/annotation_test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/unittest.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/unittest.inc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/map_lite_test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test_util.inc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/map_test_util_impl.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_unittest.inc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/proto3_lite_unittest.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_tester.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util.inc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util2.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_util_lite.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/wire_format_unittest.inc
 )
 

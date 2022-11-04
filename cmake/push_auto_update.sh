@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# TODO(acozzette): re-enable this script after fixing the CMake generation
+exit 0
+
 # This script updates the CMake file lists (i.e. src/file_lists.cmake), commits
 # the resulting change, and pushes it. This does not do anything useful when
 # run manually, but should be run by our GitHub action instead.
