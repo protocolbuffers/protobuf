@@ -47,7 +47,7 @@ PROTOBUF_NAMESPACE_CLOSE
 
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fempty_2eproto {
-  static const uint32_t offsets[];
+  static const ::uint32_t offsets[];
 };
 PROTOBUF_EXPORT extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2fempty_2eproto;

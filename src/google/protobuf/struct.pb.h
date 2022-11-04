@@ -50,7 +50,7 @@ PROTOBUF_NAMESPACE_CLOSE
 
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fstruct_2eproto {
-  static const uint32_t offsets[];
+  static const ::uint32_t offsets[];
 };
 PROTOBUF_EXPORT extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2fstruct_2eproto;
@@ -81,9 +81,9 @@ PROTOBUF_NAMESPACE_OPEN
 enum NullValue : int {
   NULL_VALUE = 0,
   NullValue_INT_MIN_SENTINEL_DO_NOT_USE_ =
-      std::numeric_limits<int32_t>::min(),
+      std::numeric_limits<::int32_t>::min(),
   NullValue_INT_MAX_SENTINEL_DO_NOT_USE_ =
-      std::numeric_limits<int32_t>::max(),
+      std::numeric_limits<::int32_t>::max(),
 };
 
 PROTOBUF_EXPORT bool NullValue_IsValid(int value);
@@ -115,7 +115,7 @@ inline bool NullValue_Parse(absl::string_view name, NullValue* value) {
 
 // -------------------------------------------------------------------
 
-class Struct_FieldsEntry_DoNotUse : public ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<Struct_FieldsEntry_DoNotUse, 
+class Struct_FieldsEntry_DoNotUse final : public ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<Struct_FieldsEntry_DoNotUse, 
     std::string, ::PROTOBUF_NAMESPACE_ID::Value,
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_MESSAGE> {
@@ -229,10 +229,10 @@ class PROTOBUF_EXPORT Struct final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
@@ -401,10 +401,10 @@ class PROTOBUF_EXPORT Value final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
@@ -563,7 +563,7 @@ class PROTOBUF_EXPORT Value final :
       ::PROTOBUF_NAMESPACE_ID::ListValue* list_value_;
     } kind_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-    uint32_t _oneof_case_[1];
+    ::uint32_t _oneof_case_[1];
 
   };
   union { Impl_ _impl_; };
@@ -659,10 +659,10 @@ class PROTOBUF_EXPORT ListValue final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:

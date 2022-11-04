@@ -46,7 +46,7 @@ PROTOBUF_NAMESPACE_CLOSE
 
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fwrappers_2eproto {
-  static const uint32_t offsets[];
+  static const ::uint32_t offsets[];
 };
 PROTOBUF_EXPORT extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2fwrappers_2eproto;
@@ -194,10 +194,10 @@ class PROTOBUF_EXPORT DoubleValue final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
@@ -341,10 +341,10 @@ class PROTOBUF_EXPORT FloatValue final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
@@ -488,10 +488,10 @@ class PROTOBUF_EXPORT Int64Value final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
@@ -524,11 +524,11 @@ class PROTOBUF_EXPORT Int64Value final :
   };
   // int64 value = 1;
   void clear_value();
-  int64_t value() const;
-  void set_value(int64_t value);
+  ::int64_t value() const;
+  void set_value(::int64_t value);
   private:
-  int64_t _internal_value() const;
-  void _internal_set_value(int64_t value);
+  ::int64_t _internal_value() const;
+  void _internal_set_value(::int64_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Int64Value)
@@ -539,7 +539,7 @@ class PROTOBUF_EXPORT Int64Value final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    int64_t value_;
+    ::int64_t value_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -635,10 +635,10 @@ class PROTOBUF_EXPORT UInt64Value final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
@@ -671,11 +671,11 @@ class PROTOBUF_EXPORT UInt64Value final :
   };
   // uint64 value = 1;
   void clear_value();
-  uint64_t value() const;
-  void set_value(uint64_t value);
+  ::uint64_t value() const;
+  void set_value(::uint64_t value);
   private:
-  uint64_t _internal_value() const;
-  void _internal_set_value(uint64_t value);
+  ::uint64_t _internal_value() const;
+  void _internal_set_value(::uint64_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.UInt64Value)
@@ -686,7 +686,7 @@ class PROTOBUF_EXPORT UInt64Value final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    uint64_t value_;
+    ::uint64_t value_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -782,10 +782,10 @@ class PROTOBUF_EXPORT Int32Value final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
@@ -818,11 +818,11 @@ class PROTOBUF_EXPORT Int32Value final :
   };
   // int32 value = 1;
   void clear_value();
-  int32_t value() const;
-  void set_value(int32_t value);
+  ::int32_t value() const;
+  void set_value(::int32_t value);
   private:
-  int32_t _internal_value() const;
-  void _internal_set_value(int32_t value);
+  ::int32_t _internal_value() const;
+  void _internal_set_value(::int32_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Int32Value)
@@ -833,7 +833,7 @@ class PROTOBUF_EXPORT Int32Value final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    int32_t value_;
+    ::int32_t value_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -929,10 +929,10 @@ class PROTOBUF_EXPORT UInt32Value final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
@@ -965,11 +965,11 @@ class PROTOBUF_EXPORT UInt32Value final :
   };
   // uint32 value = 1;
   void clear_value();
-  uint32_t value() const;
-  void set_value(uint32_t value);
+  ::uint32_t value() const;
+  void set_value(::uint32_t value);
   private:
-  uint32_t _internal_value() const;
-  void _internal_set_value(uint32_t value);
+  ::uint32_t _internal_value() const;
+  void _internal_set_value(::uint32_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.UInt32Value)
@@ -980,7 +980,7 @@ class PROTOBUF_EXPORT UInt32Value final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    uint32_t value_;
+    ::uint32_t value_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -1076,10 +1076,10 @@ class PROTOBUF_EXPORT BoolValue final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
@@ -1223,10 +1223,10 @@ class PROTOBUF_EXPORT StringValue final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
@@ -1375,10 +1375,10 @@ class PROTOBUF_EXPORT BytesValue final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
@@ -1503,20 +1503,20 @@ inline void FloatValue::set_value(float value) {
 
 // int64 value = 1;
 inline void Int64Value::clear_value() {
-  _impl_.value_ = int64_t{0};
+  _impl_.value_ = ::int64_t{0};
 }
-inline int64_t Int64Value::_internal_value() const {
+inline ::int64_t Int64Value::_internal_value() const {
   return _impl_.value_;
 }
-inline int64_t Int64Value::value() const {
+inline ::int64_t Int64Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Int64Value.value)
   return _internal_value();
 }
-inline void Int64Value::_internal_set_value(int64_t value) {
+inline void Int64Value::_internal_set_value(::int64_t value) {
 
   _impl_.value_ = value;
 }
-inline void Int64Value::set_value(int64_t value) {
+inline void Int64Value::set_value(::int64_t value) {
   _internal_set_value(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Int64Value.value)
 }
@@ -1527,20 +1527,20 @@ inline void Int64Value::set_value(int64_t value) {
 
 // uint64 value = 1;
 inline void UInt64Value::clear_value() {
-  _impl_.value_ = uint64_t{0u};
+  _impl_.value_ = ::uint64_t{0u};
 }
-inline uint64_t UInt64Value::_internal_value() const {
+inline ::uint64_t UInt64Value::_internal_value() const {
   return _impl_.value_;
 }
-inline uint64_t UInt64Value::value() const {
+inline ::uint64_t UInt64Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.UInt64Value.value)
   return _internal_value();
 }
-inline void UInt64Value::_internal_set_value(uint64_t value) {
+inline void UInt64Value::_internal_set_value(::uint64_t value) {
 
   _impl_.value_ = value;
 }
-inline void UInt64Value::set_value(uint64_t value) {
+inline void UInt64Value::set_value(::uint64_t value) {
   _internal_set_value(value);
   // @@protoc_insertion_point(field_set:google.protobuf.UInt64Value.value)
 }
@@ -1553,18 +1553,18 @@ inline void UInt64Value::set_value(uint64_t value) {
 inline void Int32Value::clear_value() {
   _impl_.value_ = 0;
 }
-inline int32_t Int32Value::_internal_value() const {
+inline ::int32_t Int32Value::_internal_value() const {
   return _impl_.value_;
 }
-inline int32_t Int32Value::value() const {
+inline ::int32_t Int32Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Int32Value.value)
   return _internal_value();
 }
-inline void Int32Value::_internal_set_value(int32_t value) {
+inline void Int32Value::_internal_set_value(::int32_t value) {
 
   _impl_.value_ = value;
 }
-inline void Int32Value::set_value(int32_t value) {
+inline void Int32Value::set_value(::int32_t value) {
   _internal_set_value(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Int32Value.value)
 }
@@ -1577,18 +1577,18 @@ inline void Int32Value::set_value(int32_t value) {
 inline void UInt32Value::clear_value() {
   _impl_.value_ = 0u;
 }
-inline uint32_t UInt32Value::_internal_value() const {
+inline ::uint32_t UInt32Value::_internal_value() const {
   return _impl_.value_;
 }
-inline uint32_t UInt32Value::value() const {
+inline ::uint32_t UInt32Value::value() const {
   // @@protoc_insertion_point(field_get:google.protobuf.UInt32Value.value)
   return _internal_value();
 }
-inline void UInt32Value::_internal_set_value(uint32_t value) {
+inline void UInt32Value::_internal_set_value(::uint32_t value) {
 
   _impl_.value_ = value;
 }
-inline void UInt32Value::set_value(uint32_t value) {
+inline void UInt32Value::set_value(::uint32_t value) {
   _internal_set_value(value);
   // @@protoc_insertion_point(field_set:google.protobuf.UInt32Value.value)
 }
