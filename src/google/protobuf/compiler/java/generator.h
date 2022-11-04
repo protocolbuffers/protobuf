@@ -38,6 +38,7 @@
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_GENERATOR_H__
 
 #include <string>
+
 #include "google/protobuf/compiler/code_generator.h"
 
 // Must be included last.

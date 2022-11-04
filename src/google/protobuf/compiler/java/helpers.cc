@@ -39,7 +39,6 @@
 #include <limits>
 #include <vector>
 
-#include "google/protobuf/wire_format.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
@@ -52,6 +51,7 @@
 #include "google/protobuf/compiler/java/name_resolver.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/strtod.h"
+#include "google/protobuf/wire_format.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
