@@ -78,6 +78,7 @@ upb_fasttable_enabled(
 config_setting(
     name = "fasttable_enabled_setting",
     flag_values = {"//:fasttable_enabled": "true"},
+    visibility = ["//visibility:public"],
 )
 
 upb_proto_library_copts(
