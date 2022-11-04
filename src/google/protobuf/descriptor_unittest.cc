@@ -47,7 +47,6 @@
 #include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/unittest_lazy_dependencies.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
@@ -57,6 +56,9 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/unittest_lazy_dependencies.pb.h"
+#include "google/protobuf/unittest_lazy_dependencies_custom_option.pb.h"
+#include "google/protobuf/unittest_lazy_dependencies_enum.pb.h"
 #include "google/protobuf/unittest_proto3_arena.pb.h"
 #include "absl/strings/substitute.h"
 
