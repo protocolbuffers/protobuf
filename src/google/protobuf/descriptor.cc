@@ -5517,11 +5517,16 @@ struct JsonNameDetails {
 };
 
 JsonNameDetails GetJsonNameDetails(const FieldDescriptorProto* field, bool use_custom) {
+  std::string default_json_name = ToJsonName(field->name());
   if (use_custom && field->has_json_name() &&
-      field->json_name() != ToJsonName(field->name())) {
+      field->json_name() != default_json_name) {
     return {field, field->json_name(), true};
   }
-  return {field, ToJsonName(field->name()), false};
+  return {field, default_json_name, false};
+}
+
+bool JsonNameLooksLikeExtension(std::string name) {
+  return !name.empty() && name.front() == '[' && name.back() == ']';
 }
 
 
@@ -5534,6 +5539,16 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
   absl::flat_hash_map<std::string, JsonNameDetails> name_to_field;
   for (const FieldDescriptorProto& field : message.field()) {
     JsonNameDetails details = GetJsonNameDetails(&field, use_custom_names);
+    if (details.is_custom && JsonNameLooksLikeExtension(details.orig_name)) {
+      std::string error_message =
+          absl::StrFormat("The custom JSON name of field \"%s\" (\"%s\") is invalid: "
+                          "JSON names may not start with '[' and end with ']'.",
+                          field.name(), details.orig_name);
+      AddError(message_name, field, DescriptorPool::ErrorCollector::NAME,
+               error_message);
+      continue;
+    }
+
     std::string lowercase_name = absl::AsciiStrToLower(details.orig_name);
     auto it_inserted = name_to_field.try_emplace(lowercase_name, details);
     if (it_inserted.second) {
@@ -5546,6 +5561,17 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
       // message. That will have been reported from other pass (non-custom
       // JSON names).
       continue;
+    }
+    bool same_oneof = false;
+    if (use_custom_names && details.is_custom && match.is_custom
+        && field.has_oneof_index() && match.field->has_oneof_index()
+        && field.oneof_index() == match.field->oneof_index()) {
+      // For custom name conflicts between fields in the same oneof, we
+      // allow it (for now) but warn about it. This is to avoid breakage
+      // of sources that existed before this custom name check was added
+      // that use this trick for custom JSON marshaling only (resulting
+      // configuration cannot be correctly unmarshaled).
+      same_oneof = true;
     }
     absl::string_view this_type = details.is_custom ? "custom" : "default";
     absl::string_view existing_type = match.is_custom ? "custom" : "default";
@@ -5562,12 +5588,14 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
                         match.field->name(), name_suffix);
 
     bool involves_default = !details.is_custom || !match.is_custom;
-    if (syntax == FileDescriptor::SYNTAX_PROTO2 && involves_default) {
+    if (same_oneof ||
+        (syntax == FileDescriptor::SYNTAX_PROTO2 && involves_default)) {
       AddWarning(message_name, field, DescriptorPool::ErrorCollector::NAME,
                  error_message);
     } else {
       if (involves_default) {
-        absl::StrAppend(&error_message, " This is not allowed in proto3.");
+        absl::StrAppend(&error_message,
+          " This is not allowed in proto3 (unless fields are in the same oneof).");
       }
       AddError(message_name, field, DescriptorPool::ErrorCollector::NAME,
                error_message);

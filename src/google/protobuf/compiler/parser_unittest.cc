@@ -97,6 +97,17 @@ class MockValidationErrorCollector : public DescriptorPool::ErrorCollector {
     }
     wrapped_collector_->AddError(line, column, message);
   }
+  void AddWarning(const std::string& filename, const std::string& element_name,
+                  const Message* descriptor, ErrorLocation location,
+                  const std::string& message) override {
+    int line, column;
+    if (location == DescriptorPool::ErrorCollector::IMPORT) {
+      source_locations_.FindImport(descriptor, element_name, &line, &column);
+    } else {
+      source_locations_.Find(descriptor, location, &line, &column);
+    }
+    wrapped_collector_->AddWarning(line, column, message);
+  }
 
  private:
   const SourceLocationTable& source_locations_;
@@ -186,6 +197,30 @@ class ParserTest : public testing::Test {
                     file, &validation_error_collector) == nullptr);
     EXPECT_EQ(expected_errors, error_collector_.text_);
   }
+
+  // Parse the text as a file and validate it (with a DescriptorPool), and
+  // expect that the validation step reports the given warnings.
+  void ExpectHasValidationWarnings(const char* text,
+                                   const char* expected_warnings) {
+    SetupParser(text);
+    SourceLocationTable source_locations;
+    parser_->RecordSourceLocationsTo(&source_locations);
+
+    FileDescriptorProto file;
+    file.set_name("foo.proto");
+    ASSERT_TRUE(parser_->Parse(input_.get(), &file));
+    EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
+    ASSERT_EQ("", error_collector_.text_);
+    ASSERT_EQ("", error_collector_.warning_);
+
+    MockValidationErrorCollector validation_error_collector(source_locations,
+                                                            &error_collector_);
+    EXPECT_TRUE(pool_.BuildFileCollectingErrors(
+                    file, &validation_error_collector) != nullptr);
+    EXPECT_EQ("", error_collector_.text_);
+    EXPECT_EQ(expected_warnings, error_collector_.warning_);
+  }
+
 
   MockErrorCollector error_collector_;
   DescriptorPool pool_;
@@ -2072,31 +2107,23 @@ TEST_F(ParserValidationErrorTest, Proto3JsonConflictError) {
       "syntax = 'proto3';\n"
       "message TestMessage {\n"
       "  uint32 foo = 1;\n"
-      "  uint32 Foo = 2;\n"
+      "  uint32 _foo = 2;\n"
       "}\n",
-      "3:9: The default JSON name of field \"Foo\" (\"Foo\") conflicts "
+      "3:9: The default JSON name of field \"_foo\" (\"Foo\") conflicts "
       "with the default JSON name of field \"foo\" (\"foo\"). "
-      "This is not allowed in proto3.\n");
+      "This is not allowed in proto3 (unless fields are in the same "
+      "oneof).\n");
 }
 
 TEST_F(ParserValidationErrorTest, Proto2JsonConflictError) {
-  // conflicts with default JSON names are not errors in proto2
-  ExpectParsesTo(
+  ExpectHasValidationWarnings(
       "syntax = 'proto2';\n"
       "message TestMessage {\n"
       "  optional uint32 foo = 1;\n"
-      "  optional uint32 Foo = 2;\n"
+      "  optional uint32 _foo = 2;\n"
       "}\n",
-      "syntax: 'proto2'\n"
-      "message_type {\n"
-      "  name: 'TestMessage'\n"
-      "  field {\n"
-      "    label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'foo' number: 1\n"
-      "  }\n"
-      "  field {\n"
-      "    label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'Foo' number: 2\n"
-      "  }\n"
-      "}\n");
+      "3:18: The default JSON name of field \"_foo\" (\"Foo\") conflicts "
+      "with the default JSON name of field \"foo\" (\"foo\").\n");
 }
 
 TEST_F(ParserValidationErrorTest, Proto3CustomJsonConflictWithDefaultError) {
@@ -2108,28 +2135,19 @@ TEST_F(ParserValidationErrorTest, Proto3CustomJsonConflictWithDefaultError) {
       "}\n",
       "3:9: The default JSON name of field \"bar\" (\"bar\") conflicts "
       "with the custom JSON name of field \"foo\". "
-      "This is not allowed in proto3.\n");
+      "This is not allowed in proto3 (unless fields are in the same "
+      "oneof).\n");
 }
 
 TEST_F(ParserValidationErrorTest, Proto2CustomJsonConflictWithDefaultError) {
-  // conflicts with default JSON names are not errors in proto2
-  ExpectParsesTo(
+  ExpectHasValidationWarnings(
       "syntax = 'proto2';\n"
       "message TestMessage {\n"
       "  optional uint32 foo = 1 [json_name='bar'];\n"
       "  optional uint32 bar = 2;\n"
       "}\n",
-      "syntax: 'proto2'\n"
-      "message_type {\n"
-      "  name: 'TestMessage'\n"
-      "  field {\n"
-      "    label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'foo' number: 1 "
-      "json_name: 'bar'\n"
-      "  }\n"
-      "  field {\n"
-      "    label: LABEL_OPTIONAL type: TYPE_UINT32 name: 'bar' number: 2\n"
-      "  }\n"
-      "}\n");
+      "3:18: The default JSON name of field \"bar\" (\"bar\") conflicts "
+      "with the custom JSON name of field \"foo\".\n");
 }
 
 TEST_F(ParserValidationErrorTest, Proto3CustomJsonConflictError) {
@@ -2143,6 +2161,19 @@ TEST_F(ParserValidationErrorTest, Proto3CustomJsonConflictError) {
       "with the custom JSON name of field \"foo\".\n");
 }
 
+TEST_F(ParserValidationErrorTest, Proto3CustomJsonConflictWarningInOneof) {
+  ExpectHasValidationWarnings(
+      "syntax = 'proto3';\n"
+      "message TestMessage {\n"
+      "  oneof a {\n"
+      "    uint32 foo = 1 [json_name='baz'];\n"
+      "    uint32 bar = 2 [json_name='baz'];\n"
+      "  }\n"
+      "}\n",
+      "4:11: The custom JSON name of field \"bar\" (\"baz\") conflicts "
+      "with the custom JSON name of field \"foo\".\n");
+}
+
 TEST_F(ParserValidationErrorTest, Proto2CustomJsonConflictError) {
   ExpectHasValidationErrors(
       "syntax = 'proto2';\n"
@@ -2150,10 +2181,30 @@ TEST_F(ParserValidationErrorTest, Proto2CustomJsonConflictError) {
       "  optional uint32 foo = 1 [json_name='baz'];\n"
       "  optional uint32 bar = 2 [json_name='baz'];\n"
       "}\n",
-      // fails in proto2 also: can't explicitly configure bad custom JSON names
       "3:18: The custom JSON name of field \"bar\" (\"baz\") conflicts "
       "with the custom JSON name of field \"foo\".\n");
 }
+
+TEST_F(ParserValidationErrorTest, Proto3CustomJsonLooksLikeExtension) {
+  ExpectHasValidationErrors(
+      "syntax = 'proto3';\n"
+      "message TestMessage {\n"
+      "  uint32 foo = 1 [json_name='[baz]'];\n"
+      "}\n",
+      "2:9: The custom JSON name of field \"foo\" (\"[baz]\") is "
+      "invalid: JSON names may not start with '[' and end with ']'.\n");
+}
+
+TEST_F(ParserValidationErrorTest, Proto2CustomJsonLooksLikeExtension) {
+  ExpectHasValidationErrors(
+      "syntax = 'proto2';\n"
+      "message TestMessage {\n"
+      "  optional uint32 foo = 1 [json_name='[baz]'];\n"
+      "}\n",
+      "2:18: The custom JSON name of field \"foo\" (\"[baz]\") is "
+      "invalid: JSON names may not start with '[' and end with ']'.\n");
+}
+
 
 TEST_F(ParserValidationErrorTest, EnumNameError) {
   ExpectHasValidationErrors(

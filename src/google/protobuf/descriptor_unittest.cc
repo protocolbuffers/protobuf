@@ -6896,7 +6896,7 @@ TEST_F(ValidationErrorTest, ValidateProto3JsonName) {
       "}",
       "foo.proto: Foo: NAME: The default JSON name of field \"Name\" (\"Name\") "
       "conflicts with the default JSON name of field \"name\" (\"name\"). This is "
-      "not allowed in proto3.\n");
+      "not allowed in proto3 (unless fields are in the same oneof).\n");
   // Underscores are ignored.
   BuildFileWithErrors(
       "name: 'foo.proto' "
@@ -6908,7 +6908,7 @@ TEST_F(ValidationErrorTest, ValidateProto3JsonName) {
       "}",
       "foo.proto: Foo: NAME: The default JSON name of field \"_a__b_\" (\"AB\") "
       "conflicts with the default JSON name of field \"ab\" (\"ab\"). This is not "
-      "allowed in proto3.\n");
+      "allowed in proto3 (unless fields are in the same oneof).\n");
 }
 
 
