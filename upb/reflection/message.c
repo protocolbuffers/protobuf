@@ -29,8 +29,8 @@
 
 #include <string.h>
 
+#include "upb/collections/map.h"
 #include "upb/internal/table.h"
-#include "upb/map.h"
 #include "upb/msg.h"
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/def_type.h"

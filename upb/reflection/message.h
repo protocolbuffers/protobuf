@@ -28,7 +28,7 @@
 #ifndef UPB_REFLECTION_MESSAGE_H_
 #define UPB_REFLECTION_MESSAGE_H_
 
-#include "upb/map.h"
+#include "upb/collections/map.h"
 #include "upb/reflection/common.h"
 
 // Must be last.

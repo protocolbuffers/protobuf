@@ -27,7 +27,7 @@
 
 #include "upb/mini_table/accessors.h"
 
-#include "upb/internal/array.h"
+#include "upb/collections/array_internal.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 

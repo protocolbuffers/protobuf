@@ -109,11 +109,10 @@ cc_library(
 cc_library(
     name = "upb",
     srcs = [
-        "upb/array.c",
+        "upb/collections/map_sorter_internal.h",
+        "upb/collections/message_value.h",
         "upb/internal/table.h",
         "upb/internal/unicode.h",
-        "upb/map_sorter.c",
-        "upb/map_sorter.h",
         "upb/msg.c",
         "upb/msg_internal.h",
         "upb/status.c",
@@ -125,12 +124,12 @@ cc_library(
         "upb/alloc.h",
         "upb/arena.h",
         "upb/array.h",
+        "upb/collections/array.h",
         "upb/decode.h",
         "upb/encode.h",
         "upb/extension_registry.h",
         "upb/mem/alloc.h",
         "upb/mem/arena.h",
-        "upb/message_value.h",
         "upb/msg.h",
         "upb/status.h",
         "upb/string_view.h",
@@ -142,7 +141,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":array_internal",
+        ":collections_internal",
         ":extension_registry",
         ":fastdecode",
         ":mem",
@@ -232,8 +231,8 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":array_internal",
         ":collections",
+        ":collections_internal",
         ":mini_table",
         ":mini_table_internal",
         ":port",
@@ -291,7 +290,7 @@ cc_library(
     ],
     copts = UPB_DEFAULT_COPTS,
     deps = [
-        ":array_internal",
+        ":collections_internal",
         ":extension_registry",
         ":mem_internal",
         ":port",
@@ -309,10 +308,10 @@ cc_library(
 cc_library(
     name = "generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me",
     hdrs = [
-        "upb/array.h",
+        "upb/collections/array.h",
+        "upb/collections/array_internal.h",
+        "upb/collections/message_value.h",
         "upb/extension_registry.h",
-        "upb/internal/array.h",
-        "upb/message_value.h",
         "upb/msg.h",
         "upb/msg_internal.h",
         "upb/port_def.inc",
@@ -398,22 +397,28 @@ upb_proto_reflection_library(
 cc_library(
     name = "collections",
     srcs = [
-        "upb/map.c",
+        "upb/collections/array.c",
+        "upb/collections/array_internal.h",
+        "upb/collections/map.c",
+        "upb/collections/map_sorter.c",
+        "upb/collections/message_value.h",
+        "upb/extension_registry.h",
+        "upb/msg.h",
         "upb/msg_internal.h",
     ],
     hdrs = [
+        "upb/array.h",
         "upb/collections.h",
+        "upb/collections/array.h",
+        "upb/collections/map.h",
+        "upb/collections/map_sorter_internal.h",
         "upb/map.h",
-        "upb/map_sorter.h",
-        "upb/message_value.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":mini_table",
         ":port",
         ":table_internal",
-        ":upb",
     ],
 )
 
@@ -947,20 +952,20 @@ cc_library(
 # Internal C/C++ libraries #####################################################
 
 cc_library(
-    name = "array_internal",
+    name = "collections_internal",
     srcs = [
-        "upb/array.h",
-        "upb/internal/array.c",
-        "upb/message_value.h",
+        "upb/collections/array.h",
+        "upb/collections/message_value.h",
         "upb/msg.h",
         "upb/status.h",
         "upb/string_view.h",
         "upb/upb.h",
     ],
-    hdrs = ["upb/internal/array.h"],
+    hdrs = ["upb/collections/array_internal.h"],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
     deps = [
+        ":collections",
         ":mem",
         ":port",
     ],
@@ -1066,9 +1071,9 @@ upb_amalgamation(
         "upb.h",
     ],
     libs = [
-        ":array_internal",
         ":atoi_internal",
         ":collections",
+        ":collections_internal",
         ":descriptor_upb_proto",
         ":extension_registry",
         ":fastdecode",
@@ -1099,9 +1104,9 @@ upb_amalgamation(
         "php-upb.h",
     ],
     libs = [
-        ":array_internal",
         ":atoi_internal",
         ":collections",
+        ":collections_internal",
         ":descriptor_upb_proto",
         ":descriptor_upb_proto_reflection",
         ":extension_registry",
@@ -1138,9 +1143,9 @@ upb_amalgamation(
         "ruby-upb.h",
     ],
     libs = [
-        ":array_internal",
         ":atoi_internal",
         ":collections",
+        ":collections_internal",
         ":descriptor_upb_proto",
         ":extension_registry",
         ":fastdecode",

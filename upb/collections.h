@@ -30,7 +30,7 @@
 
 // TODO(b/232091617): Delete this entire header which currently exists only for
 // temporary backwards compatibility.
-#include "upb/array.h"
-#include "upb/map.h"
+#include "upb/collections/array.h"
+#include "upb/collections/map.h"
 
 #endif /* UPB_COLLECTIONS_H_ */

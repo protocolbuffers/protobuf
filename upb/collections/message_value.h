@@ -25,69 +25,36 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+#ifndef UPB_MESSAGE_VALUE_H_
+#define UPB_MESSAGE_VALUE_H_
 
-#ifndef UPB_MAP_SORTER_H_
-#define UPB_MAP_SORTER_H_
-
-#include "upb/msg_internal.h"
+#include "upb/msg.h"
+#include "upb/string_view.h"
+#include "upb/upb.h"
 
 // Must be last.
 #include "upb/port_def.inc"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+typedef union {
+  bool bool_val;
+  float float_val;
+  double double_val;
+  int32_t int32_val;
+  int64_t int64_val;
+  uint32_t uint32_val;
+  uint64_t uint64_val;
+  const upb_Array* array_val;
+  const upb_Map* map_val;
+  const upb_Message* msg_val;
+  upb_StringView str_val;
+} upb_MessageValue;
 
-// _upb_mapsorter sorts maps and provides ordered iteration over the entries.
-// Since maps can be recursive (map values can be messages which contain other
-// maps), _upb_mapsorter can contain a stack of maps.
-
-typedef struct {
-  upb_tabent const** entries;
-  int size;
-  int cap;
-} _upb_mapsorter;
-
-typedef struct {
-  int start;
-  int pos;
-  int end;
-} _upb_sortedmap;
-
-UPB_INLINE void _upb_mapsorter_init(_upb_mapsorter* s) {
-  s->entries = NULL;
-  s->size = 0;
-  s->cap = 0;
-}
-
-UPB_INLINE void _upb_mapsorter_destroy(_upb_mapsorter* s) {
-  if (s->entries) free(s->entries);
-}
-
-UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s, const upb_Map* map,
-                                    _upb_sortedmap* sorted, upb_MapEntry* ent) {
-  if (sorted->pos == sorted->end) return false;
-  const upb_tabent* tabent = s->entries[sorted->pos++];
-  upb_StringView key = upb_tabstrview(tabent->key);
-  _upb_map_fromkey(key, &ent->k, map->key_size);
-  upb_value val = {tabent->val.val};
-  _upb_map_fromvalue(val, &ent->v, map->val_size);
-  return true;
-}
-
-UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
-                                      _upb_sortedmap* sorted) {
-  s->size = sorted->start;
-}
-
-bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
-                            const upb_Map* map, _upb_sortedmap* sorted);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
+typedef union {
+  upb_Array* array;
+  upb_Map* map;
+  upb_Message* msg;
+} upb_MutableMessageValue;
 
 #include "upb/port_undef.inc"
 
-#endif /* UPB_MAP_SORTER_H_ */
+#endif /* UPB_MESSAGE_VALUE_H_ */

@@ -25,12 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_INTERNAL_ARRAY_H_
-#define UPB_INTERNAL_ARRAY_H_
+#ifndef UPB_INTERNAL_ARRAY_INTERNAL_H_
+#define UPB_INTERNAL_ARRAY_INTERNAL_H_
 
 #include <string.h>
 
-#include "upb/array.h"
+#include "upb/collections/array.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -39,7 +39,7 @@
 extern "C" {
 #endif
 
-/* Our internal representation for repeated fields.  */
+// Our internal representation for repeated fields.
 struct upb_Array {
   uintptr_t data;  /* Tagged ptr: low 3 bits of ptr are lg2(elem size). */
   size_t size;     /* The number of elements in the array. */
@@ -78,10 +78,10 @@ UPB_INLINE upb_Array* _upb_Array_New(upb_Arena* a, size_t init_capacity,
   return arr;
 }
 
-/* Resizes the capacity of the array to be at least min_size. */
+// Resizes the capacity of the array to be at least min_size.
 bool _upb_array_realloc(upb_Array* arr, size_t min_size, upb_Arena* arena);
 
-/* Fallback functions for when the accessors require a resize. */
+// Fallback functions for when the accessors require a resize.
 void* _upb_Array_Resize_fallback(upb_Array** arr_ptr, size_t size,
                                  int elem_size_lg2, upb_Arena* arena);
 bool _upb_Array_Append_fallback(upb_Array** arr_ptr, const void* value,
@@ -157,7 +157,7 @@ UPB_INLINE bool _upb_Array_Append_accessor2(void* msg, size_t ofs,
   return true;
 }
 
-/* Used by old generated code, remove once all code has been regenerated. */
+// Used by old generated code, remove once all code has been regenerated.
 UPB_INLINE int _upb_sizelg2(upb_CType type) {
   switch (type) {
     case kUpb_CType_Bool:
@@ -200,4 +200,4 @@ UPB_INLINE bool _upb_Array_Append_accessor(void* msg, size_t ofs,
 
 #include "upb/port_undef.inc"
 
-#endif /* UPB_INTERNAL_ARRAY_H_ */
+#endif /* UPB_INTERNAL_ARRAY_INTERNAL_H_ */

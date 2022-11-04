@@ -883,7 +883,7 @@ void WriteHeader(const FileLayout& layout, Output& output) {
   output(
       "#ifndef $0_UPB_H_\n"
       "#define $0_UPB_H_\n\n"
-      "#include \"upb/internal/array.h\"\n"
+      "#include \"upb/collections/array_internal.h\"\n"
       "#include \"upb/msg_internal.h\"\n"
       "#include \"upb/wire/decode.h\"\n"
       "#include \"upb/wire/decode_fast.h\"\n"
@@ -1502,7 +1502,7 @@ void WriteSource(const FileLayout& layout, Output& output,
 
   output(
       "#include <stddef.h>\n"
-      "#include \"upb/internal/array.h\"\n"
+      "#include \"upb/collections/array_internal.h\"\n"
       "#include \"upb/msg_internal.h\"\n"
       "#include \"$0\"\n",
       HeaderFilename(file));

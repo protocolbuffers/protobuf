@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/map.h"
+#include "upb/collections/map.h"
 
 #include <string.h>
 

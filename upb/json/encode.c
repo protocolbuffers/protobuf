@@ -35,8 +35,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "upb/collections/map.h"
 #include "upb/internal/vsnprintf_compat.h"
-#include "upb/map.h"
 #include "upb/reflection/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode_internal.h"

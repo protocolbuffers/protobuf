@@ -29,7 +29,7 @@
 
 #include <string.h>
 
-#include "upb/internal/array.h"
+#include "upb/collections/array_internal.h"
 #include "upb/msg_internal.h"
 #include "upb/upb.h"
 #include "upb/wire/decode_internal.h"

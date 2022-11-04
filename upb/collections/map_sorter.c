@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/map_sorter.h"
+#include "upb/collections/map_sorter_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"

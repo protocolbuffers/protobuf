@@ -28,7 +28,7 @@
 #ifndef UPB_MINI_TABLE_ACCESSORS_H_
 #define UPB_MINI_TABLE_ACCESSORS_H_
 
-#include "upb/array.h"
+#include "upb/collections/array.h"
 #include "upb/mini_table/common.h"
 
 // Must be last.

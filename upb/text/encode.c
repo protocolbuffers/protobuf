@@ -33,9 +33,9 @@
 #include <stdarg.h>
 #include <string.h>
 
+#include "upb/collections/map.h"
+#include "upb/collections/map_sorter_internal.h"
 #include "upb/internal/vsnprintf_compat.h"
-#include "upb/map.h"
-#include "upb/map_sorter.h"
 #include "upb/reflection/message.h"
 #include "upb/wire/encode_internal.h"
 
