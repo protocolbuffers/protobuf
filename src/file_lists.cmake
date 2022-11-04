@@ -11,16 +11,16 @@ endif()
 
 # //pkg:protobuf
 set(libprotobuf_srcs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/any.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/api.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/duration.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/empty.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/field_mask.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/source_context.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/struct.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/timestamp.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/type.pb.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/wrappers.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/any.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/api.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/duration.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/empty.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/field_mask.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/source_context.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/struct.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/timestamp.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/type.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.cc
@@ -87,16 +87,16 @@ set(libprotobuf_srcs
 
 # //pkg:protobuf
 set(libprotobuf_hdrs
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/any.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/api.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/duration.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/empty.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/field_mask.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/source_context.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/struct.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/timestamp.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/type.pb.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/wkt/google/protobuf/wrappers.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/any.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/api.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/duration.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/empty.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/field_mask.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/source_context.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/struct.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/timestamp.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/type.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/wrappers.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_align.h
