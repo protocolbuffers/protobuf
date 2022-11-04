@@ -142,12 +142,11 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   }
 
   PROTOBUF_NODISCARD bool PopLimit(int delta) {
-    if (PROTOBUF_PREDICT_FALSE(!EndedAtLimit())) return false;
     limit_ = limit_ + delta;
     // TODO(gerbens) We could remove this line and hoist the code to
     // DoneFallback. Study the perf/bin-size effects.
     limit_end_ = buffer_end_ + (std::min)(0, limit_);
-    return true;
+    return EndedAtLimit();
   }
 
   PROTOBUF_NODISCARD const char* Skip(const char* ptr, int size) {
