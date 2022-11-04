@@ -24,7 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # begin:google_only
-# load("//tools/build_defs/proto/cpp:cc_proto_library.bzl", _cc_proto_library = "cc_proto_library")
+# load("@rules_cc//cc:defs.bzl", _cc_proto_library = "cc_proto_library")
 #
 # _is_google3 = True
 # end:google_only

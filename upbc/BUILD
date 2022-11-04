@@ -75,7 +75,7 @@ cc_library(
         "common.h",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//third_party/upb/protos_generator:__pkg__"],
+    visibility = ["//protos_generator:__pkg__"],
     deps = [
         "@com_google_absl//absl/strings",
         "@com_google_protobuf//:protobuf",
@@ -91,7 +91,7 @@ cc_library(
         "file_layout.h",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//third_party/upb/protos_generator:__pkg__"],
+    visibility = ["//protos_generator:__pkg__"],
     deps = [
         ":common",
         "//:mini_table",
@@ -112,7 +112,7 @@ cc_library(
         "keywords.h",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//third_party/upb/protos_generator:__pkg__"],
+    visibility = ["//protos_generator:__pkg__"],
 )
 
 cc_library(
@@ -124,7 +124,7 @@ cc_library(
         "names.h",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
-    visibility = ["//third_party/upb/protos_generator:__pkg__"],
+    visibility = ["//protos_generator:__pkg__"],
     deps = [
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/strings",

@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package protos_generator.test;
+
+enum TestEnum {
+  DEVICE_UNKNOWN = 0;
+  DEVICE_KEYBOARD = 1;
+  DEVICE_MOUSE = 2;
+  DEVICE_MONITOR = 3;
+}

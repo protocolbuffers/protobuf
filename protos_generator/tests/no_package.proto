@@ -1,0 +1,8 @@
+syntax = "proto2";
+
+// option java_multiple_files = true;
+
+enum EnumWithNoPackage {
+  CELSIUS = 1;
+  FAHRENHEIT = 2;
+}

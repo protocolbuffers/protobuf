@@ -141,7 +141,7 @@ std::string SizeLg2(const protobuf::FieldDescriptor* field) {
     case protobuf::FieldDescriptor::CPPTYPE_ENUM:
       return std::to_string(2);
     case protobuf::FieldDescriptor::CPPTYPE_BOOL:
-      return std::to_string(1);
+      return std::to_string(0);
     case protobuf::FieldDescriptor::CPPTYPE_FLOAT:
       return std::to_string(2);
     case protobuf::FieldDescriptor::CPPTYPE_INT32:
