@@ -2571,6 +2571,15 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
       << "Index must be -1 for non-repeated fields";
 
   const FastFieldValuePrinter* printer = GetFieldPrinter(field);
+#ifndef PROTO2_OPENSOURCE
+#ifdef SUPPORT_EXPLICIT_DEBUG_STRING
+  if (redact_debug_string_ && internal::ShouldRedactField(field)) {
+    std::string redacted_value = "go/redact-debug-string";
+    generator->PrintString(redacted_value);
+    return;
+  }
+#endif
+#endif
 
   switch (field->cpp_type()) {
 #define OUTPUT_FIELD(CPPTYPE, METHOD)                                \
