@@ -269,14 +269,39 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #define UPB_DEPRECATED
 #endif
 
-#ifndef UPB_INTERNAL_ARRAY_H_
-#define UPB_INTERNAL_ARRAY_H_
+#ifndef UPB_INTERNAL_ATOI_H_
+#define UPB_INTERNAL_ATOI_H_
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// We use these hand-written routines instead of strto[u]l() because the "long
+// long" variants aren't in c89. Also our version allows setting a ptr limit.
+// Return the new position of the pointer after parsing the int, or NULL on
+// integer overflow.
+
+const char* upb_BufToUint64(const char* ptr, const char* end, uint64_t* val);
+const char* upb_BufToInt64(const char* ptr, const char* end, int64_t* val,
+                           bool* is_neg);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_INTERNAL_ATOI_H_ */
+
+#ifndef UPB_INTERNAL_ARRAY_INTERNAL_H_
+#define UPB_INTERNAL_ARRAY_INTERNAL_H_
 
 #include <string.h>
 
 
-#ifndef UPB_ARRAY_H_
-#define UPB_ARRAY_H_
+#ifndef UPB_COLLECTIONS_ARRAY_H_
+#define UPB_COLLECTIONS_ARRAY_H_
 
 
 #ifndef UPB_MESSAGE_VALUE_H_
@@ -295,14 +320,14 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #define UPB_MSG_H_
 
 
-#ifndef UPB_ARENA_H_
-#define UPB_ARENA_H_
+#ifndef UPB_MEM_ARENA_H_
+#define UPB_MEM_ARENA_H_
 
 #include <string.h>
 
 
-#ifndef UPB_ALLOC_H_
-#define UPB_ALLOC_H_
+#ifndef UPB_MEM_ALLOC_H_
+#define UPB_MEM_ALLOC_H_
 
 // Must be last.
 
@@ -345,7 +370,7 @@ UPB_INLINE void upb_free(upb_alloc* alloc, void* ptr) {
   alloc->func(alloc, ptr, 0, 0);
 }
 
-/* The global allocator used by upb.  Uses the standard malloc()/free(). */
+// The global allocator used by upb. Uses the standard malloc()/free().
 
 extern upb_alloc upb_alloc_global;
 
@@ -369,7 +394,7 @@ UPB_INLINE void upb_gfree(void* ptr) { upb_free(&upb_alloc_global, ptr); }
 #endif
 
 
-#endif /* UPB_ALLOC_H_ */
+#endif /* UPB_MEM_ALLOC_H_ */
 
 // Must be last.
 
@@ -502,7 +527,7 @@ UPB_INLINE upb_Arena* upb_Arena_New(void) {
 #endif
 
 
-#endif /* UPB_ARENA_H_ */
+#endif /* UPB_MEM_ARENA_H_ */
 
 // Must be last.
 
@@ -757,12 +782,6 @@ UPB_INLINE int _upb_Log2CeilingSize(int x) { return 1 << _upb_Log2Ceiling(x); }
 
 // Must be last.
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Definitions common to both upb_Array and upb_Map.
-
 typedef union {
   bool bool_val;
   float float_val;
@@ -782,10 +801,6 @@ typedef union {
   upb_Map* map;
   upb_Message* msg;
 } upb_MutableMessageValue;
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
 
 
 #endif /* UPB_MESSAGE_VALUE_H_ */
@@ -837,7 +852,7 @@ bool upb_Array_Resize(upb_Array* array, size_t size, upb_Arena* arena);
 #endif
 
 
-#endif /* UPB_ARRAY_H_ */
+#endif /* UPB_COLLECTIONS_ARRAY_H_ */
 
 // Must be last.
 
@@ -845,7 +860,7 @@ bool upb_Array_Resize(upb_Array* array, size_t size, upb_Arena* arena);
 extern "C" {
 #endif
 
-/* Our internal representation for repeated fields.  */
+// Our internal representation for repeated fields.
 struct upb_Array {
   uintptr_t data;  /* Tagged ptr: low 3 bits of ptr are lg2(elem size). */
   size_t size;     /* The number of elements in the array. */
@@ -884,10 +899,10 @@ UPB_INLINE upb_Array* _upb_Array_New(upb_Arena* a, size_t init_capacity,
   return arr;
 }
 
-/* Resizes the capacity of the array to be at least min_size. */
+// Resizes the capacity of the array to be at least min_size.
 bool _upb_array_realloc(upb_Array* arr, size_t min_size, upb_Arena* arena);
 
-/* Fallback functions for when the accessors require a resize. */
+// Fallback functions for when the accessors require a resize.
 void* _upb_Array_Resize_fallback(upb_Array** arr_ptr, size_t size,
                                  int elem_size_lg2, upb_Arena* arena);
 bool _upb_Array_Append_fallback(upb_Array** arr_ptr, const void* value,
@@ -963,7 +978,7 @@ UPB_INLINE bool _upb_Array_Append_accessor2(void* msg, size_t ofs,
   return true;
 }
 
-/* Used by old generated code, remove once all code has been regenerated. */
+// Used by old generated code, remove once all code has been regenerated.
 UPB_INLINE int _upb_sizelg2(upb_CType type) {
   switch (type) {
     case kUpb_CType_Bool:
@@ -1005,35 +1020,10 @@ UPB_INLINE bool _upb_Array_Append_accessor(void* msg, size_t ofs,
 #endif
 
 
-#endif /* UPB_INTERNAL_ARRAY_H_ */
+#endif /* UPB_INTERNAL_ARRAY_INTERNAL_H_ */
 
-#ifndef UPB_INTERNAL_ATOI_H_
-#define UPB_INTERNAL_ATOI_H_
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// We use these hand-written routines instead of strto[u]l() because the "long
-// long" variants aren't in c89. Also our version allows setting a ptr limit.
-// Return the new position of the pointer after parsing the int, or NULL on
-// integer overflow.
-
-const char* upb_BufToUint64(const char* ptr, const char* end, uint64_t* val);
-const char* upb_BufToInt64(const char* ptr, const char* end, int64_t* val,
-                           bool* is_neg);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_INTERNAL_ATOI_H_ */
-
-#ifndef UPB_MAP_H_
-#define UPB_MAP_H_
+#ifndef UPB_COLLECTIONS_MAP_H_
+#define UPB_COLLECTIONS_MAP_H_
 
 
 // Must be last.
@@ -1117,7 +1107,7 @@ void upb_MapIterator_SetValue(upb_Map* map, size_t iter,
 #endif
 
 
-#endif /* UPB_MAP_H_ */
+#endif /* UPB_COLLECTIONS_MAP_H_ */
 
 /*
 ** Our memory representation for parsing tables and messages themselves.
@@ -1187,6 +1177,8 @@ upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena);
 // Adds the given extension info for the array |e| of size |count| into the
 // registry. If there are any errors, the entire array is backed out.
 // The extensions must outlive the registry.
+// Possible errors include OOM or an extension number that already exists.
+// TODO: There is currently no way to determine the exact reason for failure.
 bool upb_ExtensionRegistry_AddArray(upb_ExtensionRegistry* r,
                                     const upb_MiniTable_Extension** e,
                                     size_t count);
@@ -2167,6 +2159,70 @@ UPB_INLINE void _upb_msg_map_set_value(void* msg, const void* val,
 
 
 #endif /* UPB_MSG_INT_H_ */
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+#ifndef UPB_COLLECTIONS_MAP_SORTER_INTERNAL_H_
+#define UPB_COLLECTIONS_MAP_SORTER_INTERNAL_H_
+
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// _upb_mapsorter sorts maps and provides ordered iteration over the entries.
+// Since maps can be recursive (map values can be messages which contain other
+// maps), _upb_mapsorter can contain a stack of maps.
+
+typedef struct {
+  upb_tabent const** entries;
+  int size;
+  int cap;
+} _upb_mapsorter;
+
+typedef struct {
+  int start;
+  int pos;
+  int end;
+} _upb_sortedmap;
+
+UPB_INLINE void _upb_mapsorter_init(_upb_mapsorter* s) {
+  s->entries = NULL;
+  s->size = 0;
+  s->cap = 0;
+}
+
+UPB_INLINE void _upb_mapsorter_destroy(_upb_mapsorter* s) {
+  if (s->entries) free(s->entries);
+}
+
+UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s, const upb_Map* map,
+                                    _upb_sortedmap* sorted, upb_MapEntry* ent) {
+  if (sorted->pos == sorted->end) return false;
+  const upb_tabent* tabent = s->entries[sorted->pos++];
+  upb_StringView key = upb_tabstrview(tabent->key);
+  _upb_map_fromkey(key, &ent->k, map->key_size);
+  upb_value val = {tabent->val.val};
+  _upb_map_fromvalue(val, &ent->v, map->val_size);
+  return true;
+}
+
+UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
+                                      _upb_sortedmap* sorted) {
+  s->size = sorted->start;
+}
+
+bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
+                            const upb_Map* map, _upb_sortedmap* sorted);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_COLLECTIONS_MAP_SORTER_INTERNAL_H_ */
 /* This file was generated by upbc (the upb compiler) from the input
  * file:
  *
@@ -2179,12 +2235,10 @@ UPB_INLINE void _upb_msg_map_set_value(void* msg, const void* val,
 #define GOOGLE_PROTOBUF_DESCRIPTOR_PROTO_UPB_H_
 
 
-/*
- * upb_decode: parsing into a upb_Message using a upb_MiniTable.
- */
+// upb_decode: parsing into a upb_Message using a upb_MiniTable.
 
-#ifndef UPB_DECODE_H_
-#define UPB_DECODE_H_
+#ifndef UPB_WIRE_DECODE_H_
+#define UPB_WIRE_DECODE_H_
 
 
 // Must be last.
@@ -2242,7 +2296,7 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, upb_Message* msg,
 #endif
 
 
-#endif /* UPB_DECODE_H_ */
+#endif /* UPB_WIRE_DECODE_H_ */
 
 // These are the specialized field parser functions for the fast parser.
 // Generated tables will refer to these by name.
@@ -2278,8 +2332,8 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, upb_Message* msg,
 //   - '1' for one-byte tags (field numbers 1-15)
 //   - '2' for two-byte tags (field numbers 16-2048)
 
-#ifndef UPB_DECODE_FAST_H_
-#define UPB_DECODE_FAST_H_
+#ifndef UPB_WIRE_DECODE_FAST_H_
+#define UPB_WIRE_DECODE_FAST_H_
 
 
 // Must be last.
@@ -2380,14 +2434,14 @@ TAGBYTES(r)
 #endif
 
 
-#endif /* UPB_DECODE_FAST_H_ */
+#endif /* UPB_WIRE_DECODE_FAST_H_ */
 
 /*
  * upb_Encode: parsing from a upb_Message using a upb_MiniTable.
  */
 
-#ifndef UPB_ENCODE_H_
-#define UPB_ENCODE_H_
+#ifndef UPB_WIRE_ENCODE_H_
+#define UPB_WIRE_ENCODE_H_
 
 
 // Must be last.
@@ -2432,7 +2486,7 @@ upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
 #endif
 
 
-#endif /* UPB_ENCODE_H_ */
+#endif /* UPB_WIRE_ENCODE_H_ */
 
 
 #ifdef __cplusplus
@@ -5657,12 +5711,12 @@ extern const upb_MiniTable_File google_protobuf_descriptor_proto_upb_file_layout
  * decode.c and decode_fast.c.
  */
 
-#ifndef UPB_INTERNAL_DECODE_H_
-#define UPB_INTERNAL_DECODE_H_
+#ifndef UPB_WIRE_DECODE_INTERNAL_H_
+#define UPB_WIRE_DECODE_INTERNAL_H_
 
 
-#ifndef UPB_INTERNAL_ARENA_H_
-#define UPB_INTERNAL_ARENA_H_
+#ifndef UPB_MEM_ARENA_INTERNAL_H_
+#define UPB_MEM_ARENA_INTERNAL_H_
 
 
 // Must be last.
@@ -5700,8 +5754,7 @@ struct upb_Arena {
 #endif
 
 
-#endif /* UPB_INTERNAL_ARENA_H_ */
-
+#endif /* UPB_MEM_ARENA_INTERNAL_H_ */
 #include "third_party/utf8_range/utf8_range.h"
 
 // Must be last.
@@ -5872,7 +5925,7 @@ UPB_INLINE void _upb_Decoder_PopLimit(upb_Decoder* d, const char* ptr,
 }
 
 
-#endif /* UPB_INTERNAL_DECODE_H_ */
+#endif /* UPB_WIRE_DECODE_INTERNAL_H_ */
 
 #ifndef UPB_JSON_DECODE_H_
 #define UPB_JSON_DECODE_H_
@@ -6655,32 +6708,6 @@ size_t upb_JsonEncode(const upb_Message* msg, const upb_MessageDef* m,
 
 #endif /* UPB_JSONENCODE_H_ */
 
-#ifndef UPB_INTERNAL_ENCODE_H_
-#define UPB_INTERNAL_ENCODE_H_
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// Encodes a float or double that is round-trippable, but as short as possible.
-// These routines are not fully optimal (not guaranteed to be shortest), but are
-// short-ish and match the implementation that has been used in protobuf since
-// the beginning.
-//
-// The given buffer size must be at least kUpb_RoundTripBufferSize.
-enum { kUpb_RoundTripBufferSize = 32 };
-void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size);
-void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_INTERNAL_ENCODE_H_ */
-
 #ifndef UPB_INTERNAL_VSNPRINTF_COMPAT_H_
 #define UPB_INTERNAL_VSNPRINTF_COMPAT_H_
 
@@ -6705,11 +6732,51 @@ UPB_INLINE int _upb_vsnprintf(char* buf, size_t size, const char* fmt,
 
 #endif  // UPB_INTERNAL_VSNPRINTF_COMPAT_H_
 
-#ifndef UPB_MINI_TABLE_H_
-#define UPB_MINI_TABLE_H_
+#ifndef UPB_WIRE_ENCODE_INTERNAL_H_
+#define UPB_WIRE_ENCODE_INTERNAL_H_
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Encodes a float or double that is round-trippable, but as short as possible.
+// These routines are not fully optimal (not guaranteed to be shortest), but are
+// short-ish and match the implementation that has been used in protobuf since
+// the beginning.
+//
+// The given buffer size must be at least kUpb_RoundTripBufferSize.
+enum { kUpb_RoundTripBufferSize = 32 };
+void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size);
+void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_WIRE_ENCODE_INTERNAL_H_ */
+
+#ifndef UPB_MINI_TABLE_COMMON_H_
+#define UPB_MINI_TABLE_COMMON_H_
 
 
 // Must be last.
+
+typedef enum {
+  kUpb_FieldModifier_IsRepeated = 1 << 0,
+  kUpb_FieldModifier_IsPacked = 1 << 1,
+  kUpb_FieldModifier_IsClosedEnum = 1 << 2,
+  kUpb_FieldModifier_IsProto3Singular = 1 << 3,
+  kUpb_FieldModifier_IsRequired = 1 << 4,
+} kUpb_FieldModifier;
+
+typedef enum {
+  kUpb_MessageModifier_ValidateUtf8 = 1 << 0,
+  kUpb_MessageModifier_DefaultIsPacked = 1 << 1,
+  kUpb_MessageModifier_IsExtendable = 1 << 2,
+} kUpb_MessageModifier;
 
 #ifdef __cplusplus
 extern "C" {
@@ -6730,24 +6797,184 @@ UPB_INLINE const upb_MiniTable_Enum* upb_MiniTable_GetSubEnumTable(
   return mini_table->subs[field->submsg_index].subenum;
 }
 
-/** upb_MtDataEncoder *********************************************************/
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
-// Functions to encode a string in a format that can be loaded by
-// upb_MiniTable_Build().
+
+#endif /* UPB_MINI_TABLE_COMMON_H_ */
+
+#ifndef UPB_MINI_TABLE_COMMON_INTERNAL_H_
+#define UPB_MINI_TABLE_COMMON_INTERNAL_H_
+
+
+// Must be last.
 
 typedef enum {
-  kUpb_MessageModifier_ValidateUtf8 = 1 << 0,
-  kUpb_MessageModifier_DefaultIsPacked = 1 << 1,
-  kUpb_MessageModifier_IsExtendable = 1 << 2,
-} kUpb_MessageModifier;
+  kUpb_EncodedType_Double = 0,
+  kUpb_EncodedType_Float = 1,
+  kUpb_EncodedType_Fixed32 = 2,
+  kUpb_EncodedType_Fixed64 = 3,
+  kUpb_EncodedType_SFixed32 = 4,
+  kUpb_EncodedType_SFixed64 = 5,
+  kUpb_EncodedType_Int32 = 6,
+  kUpb_EncodedType_UInt32 = 7,
+  kUpb_EncodedType_SInt32 = 8,
+  kUpb_EncodedType_Int64 = 9,
+  kUpb_EncodedType_UInt64 = 10,
+  kUpb_EncodedType_SInt64 = 11,
+  kUpb_EncodedType_OpenEnum = 12,
+  kUpb_EncodedType_Bool = 13,
+  kUpb_EncodedType_Bytes = 14,
+  kUpb_EncodedType_String = 15,
+  kUpb_EncodedType_Group = 16,
+  kUpb_EncodedType_Message = 17,
+  kUpb_EncodedType_ClosedEnum = 18,
+
+  kUpb_EncodedType_RepeatedBase = 20,
+} upb_EncodedType;
 
 typedef enum {
-  kUpb_FieldModifier_IsRepeated = 1 << 0,
-  kUpb_FieldModifier_IsPacked = 1 << 1,
-  kUpb_FieldModifier_IsClosedEnum = 1 << 2,
-  kUpb_FieldModifier_IsProto3Singular = 1 << 3,
-  kUpb_FieldModifier_IsRequired = 1 << 4,
-} kUpb_FieldModifier;
+  kUpb_EncodedFieldModifier_FlipPacked = 1 << 0,
+  // upb only.
+  kUpb_EncodedFieldModifier_IsProto3Singular = 1 << 2,
+  kUpb_EncodedFieldModifier_IsRequired = 1 << 3,
+} upb_EncodedFieldModifier;
+
+enum {
+  kUpb_EncodedValue_MinField = ' ',
+  kUpb_EncodedValue_MaxField = 'I',
+  kUpb_EncodedValue_MinModifier = 'L',
+  kUpb_EncodedValue_MaxModifier = '[',
+  kUpb_EncodedValue_End = '^',
+  kUpb_EncodedValue_MinSkip = '_',
+  kUpb_EncodedValue_MaxSkip = '~',
+  kUpb_EncodedValue_OneofSeparator = '~',
+  kUpb_EncodedValue_FieldSeparator = '|',
+  kUpb_EncodedValue_MinOneofField = ' ',
+  kUpb_EncodedValue_MaxOneofField = 'b',
+  kUpb_EncodedValue_MaxEnumMask = 'A',
+};
+
+enum {
+  kUpb_EncodedVersion_EnumV1 = '!',
+  kUpb_EncodedVersion_ExtensionV1 = '#',
+  kUpb_EncodedVersion_MapV1 = '%',
+  kUpb_EncodedVersion_MessageV1 = '$',
+  kUpb_EncodedVersion_MessageSetV1 = '&',
+};
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+UPB_INLINE char _upb_ToBase92(int8_t ch) {
+  extern const char _kUpb_ToBase92[];
+  UPB_ASSERT(0 <= ch && ch < 92);
+  return _kUpb_ToBase92[ch];
+}
+
+UPB_INLINE char _upb_FromBase92(uint8_t ch) {
+  extern const int8_t _kUpb_FromBase92[];
+  if (' ' > ch || ch > '~') return -1;
+  return _kUpb_FromBase92[ch - ' '];
+}
+
+UPB_INLINE bool _upb_FieldType_IsPackable(upb_FieldType type) {
+  // clang-format off
+  const unsigned kUnpackableTypes =
+      (1 << kUpb_FieldType_String) |
+      (1 << kUpb_FieldType_Bytes) |
+      (1 << kUpb_FieldType_Message) |
+      (1 << kUpb_FieldType_Group);
+  // clang-format on
+  return (1 << type) & ~kUnpackableTypes;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MINI_TABLE_COMMON_INTERNAL_H_ */
+
+#ifndef UPB_MINI_TABLE_DECODE_H_
+#define UPB_MINI_TABLE_DECODE_H_
+
+
+// Must be last.
+
+typedef enum {
+  kUpb_MiniTablePlatform_32Bit,
+  kUpb_MiniTablePlatform_64Bit,
+  kUpb_MiniTablePlatform_Native =
+      UPB_SIZE(kUpb_MiniTablePlatform_32Bit, kUpb_MiniTablePlatform_64Bit),
+} upb_MiniTablePlatform;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Builds a mini table from the data encoded in the buffer [data, len]. If any
+// errors occur, returns NULL and sets a status message. In the success case,
+// the caller must call upb_MiniTable_SetSub*() for all message or proto2 enum
+// fields to link the table to the appropriate sub-tables.
+upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
+                                   upb_MiniTablePlatform platform,
+                                   upb_Arena* arena, upb_Status* status);
+
+// Links a sub-message field to a MiniTable for that sub-message.  If a
+// sub-message field is not linked, it will be treated as an unknown field
+// during parsing, and setting the field will not be allowed.  It is possible
+// to link the message field later, at which point it will no longer be treated
+// as unknown.  However there is no synchronization for this operation, which
+// means parallel mutation requires external synchronization.
+void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
+                                 upb_MiniTable_Field* field,
+                                 const upb_MiniTable* sub);
+
+// Links an enum field to a MiniTable for that enum.  All enum fields must
+// be linked prior to parsing.
+void upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTable_Field* field,
+                              const upb_MiniTable_Enum* sub);
+
+const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
+                                         upb_MiniTable_Extension* ext,
+                                         const upb_MiniTable* extendee,
+                                         upb_MiniTable_Sub sub,
+                                         upb_Status* status);
+
+upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
+                                            upb_Arena* arena,
+                                            upb_Status* status);
+
+// Like upb_MiniTable_Build(), but the user provides a buffer of layout data so
+// it can be reused from call to call, avoiding repeated realloc()/free().
+//
+// The caller owns `*buf` both before and after the call, and must free() it
+// when it is no longer in use.  The function will realloc() `*buf` as
+// necessary, updating `*size` accordingly.
+upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
+                                          upb_MiniTablePlatform platform,
+                                          upb_Arena* arena, void** buf,
+                                          size_t* buf_size, upb_Status* status);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_MINI_TABLE_DECODE_H_ */
+
+#ifndef UPB_MINI_TABLE_ENCODE_INTERNAL_H_
+#define UPB_MINI_TABLE_ENCODE_INTERNAL_H_
+
+
+// Must be last.
+
+// If the input buffer has at least this many bytes available, the encoder call
+// is guaranteed to succeed (as long as field number order is maintained).
+#define kUpb_MtDataEncoder_MinSize 16
 
 typedef struct {
   char* end;  // Limit of the buffer passed as a parameter.
@@ -6755,9 +6982,9 @@ typedef struct {
   char internal[32];
 } upb_MtDataEncoder;
 
-// If the input buffer has at least this many bytes available, the encoder call
-// is guaranteed to succeed (as long as field number order is maintained).
-#define kUpb_MtDataEncoder_MinSize 16
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // Encodes field/oneof information for a given message.  The sequence of calls
 // should look like:
@@ -6799,84 +7026,25 @@ char* upb_MtDataEncoder_PutEnumValue(upb_MtDataEncoder* e, char* ptr,
                                      uint32_t val);
 char* upb_MtDataEncoder_EndEnum(upb_MtDataEncoder* e, char* ptr);
 
-// Encodes an entire mini descriptor for one extension.
+// Encodes an entire mini descriptor for an extension.
 char* upb_MtDataEncoder_EncodeExtension(upb_MtDataEncoder* e, char* ptr,
                                         upb_FieldType type, uint32_t field_num,
                                         uint64_t field_mod);
 
-/** upb_MiniTable *************************************************************/
+// Encodes an entire mini descriptor for a map.
+char* upb_MtDataEncoder_EncodeMap(upb_MtDataEncoder* e, char* ptr,
+                                  upb_FieldType key_type,
+                                  upb_FieldType value_type, uint64_t value_mod);
 
-typedef enum {
-  kUpb_MiniTablePlatform_32Bit,
-  kUpb_MiniTablePlatform_64Bit,
-  kUpb_MiniTablePlatform_Native =
-      UPB_SIZE(kUpb_MiniTablePlatform_32Bit, kUpb_MiniTablePlatform_64Bit),
-} upb_MiniTablePlatform;
-
-// Builds a mini table from the data encoded in the buffer [data, len]. If any
-// errors occur, returns NULL and sets a status message. In the success case,
-// the caller must call upb_MiniTable_SetSub*() for all message or proto2 enum
-// fields to link the table to the appropriate sub-tables.
-upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
-                                   upb_MiniTablePlatform platform,
-                                   upb_Arena* arena, upb_Status* status);
-
-// Links a sub-message field to a MiniTable for that sub-message.  If a
-// sub-message field is not linked, it will be treated as an unknown field
-// during parsing, and setting the field will not be allowed.  It is possible
-// to link the message field later, at which point it will no longer be treated
-// as unknown.  However there is no synchronization for this operation, which
-// means parallel mutation requires external synchronization.
-void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
-                                 upb_MiniTable_Field* field,
-                                 const upb_MiniTable* sub);
-
-// Links an enum field to a MiniTable for that enum.  All enum fields must
-// be linked prior to parsing.
-void upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTable_Field* field,
-                              const upb_MiniTable_Enum* sub);
-
-const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
-                                         upb_MiniTable_Extension* ext,
-                                         const upb_MiniTable* extendee,
-                                         upb_MiniTable_Sub sub,
-                                         upb_Status* status);
-
-// Special-case functions for MessageSet layout and map entries.
-upb_MiniTable* upb_MiniTable_BuildMessageSet(upb_MiniTablePlatform platform,
-                                             upb_Arena* arena);
-upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
-                                           upb_FieldType value_type,
-                                           bool value_is_proto3_enum,
-                                           upb_MiniTablePlatform platform,
-                                           upb_Arena* arena);
-
-upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
-                                            upb_Arena* arena,
-                                            upb_Status* status);
-
-// Like upb_MiniTable_Build(), but the user provides a buffer of layout data so
-// it can be reused from call to call, avoiding repeated realloc()/free().
-//
-// The caller owns `*buf` both before and after the call, and must free() it
-// when it is no longer in use.  The function will realloc() `*buf` as
-// necessary, updating `*size` accordingly.
-upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
-                                          upb_MiniTablePlatform platform,
-                                          upb_Arena* arena, void** buf,
-                                          size_t* buf_size, upb_Status* status);
-
-// For testing only.
-char upb_ToBase92(int8_t ch);
-char upb_FromBase92(uint8_t ch);
-bool upb_IsTypePackable(upb_FieldType type);
+// Encodes an entire mini descriptor for a message set.
+char* upb_MtDataEncoder_EncodeMessageSet(upb_MtDataEncoder* e, char* ptr);
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
 
-#endif /* UPB_MINI_TABLE_H_ */
+#endif /* UPB_MINI_TABLE_ENCODE_INTERNAL_H_ */
 
 #ifndef UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_
 #define UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_
@@ -7354,70 +7522,6 @@ upb_MethodDef* _upb_MethodDefs_New(
 
 
 #endif /* UPB_REFLECTION_METHOD_DEF_INTERNAL_H_ */
-
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
-
-#ifndef UPB_MAP_SORTER_H_
-#define UPB_MAP_SORTER_H_
-
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-// _upb_mapsorter sorts maps and provides ordered iteration over the entries.
-// Since maps can be recursive (map values can be messages which contain other
-// maps), _upb_mapsorter can contain a stack of maps.
-
-typedef struct {
-  upb_tabent const** entries;
-  int size;
-  int cap;
-} _upb_mapsorter;
-
-typedef struct {
-  int start;
-  int pos;
-  int end;
-} _upb_sortedmap;
-
-UPB_INLINE void _upb_mapsorter_init(_upb_mapsorter* s) {
-  s->entries = NULL;
-  s->size = 0;
-  s->cap = 0;
-}
-
-UPB_INLINE void _upb_mapsorter_destroy(_upb_mapsorter* s) {
-  if (s->entries) free(s->entries);
-}
-
-UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s, const upb_Map* map,
-                                    _upb_sortedmap* sorted, upb_MapEntry* ent) {
-  if (sorted->pos == sorted->end) return false;
-  const upb_tabent* tabent = s->entries[sorted->pos++];
-  upb_StringView key = upb_tabstrview(tabent->key);
-  _upb_map_fromkey(key, &ent->k, map->key_size);
-  upb_value val = {tabent->val.val};
-  _upb_map_fromvalue(val, &ent->v, map->val_size);
-  return true;
-}
-
-UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
-                                      _upb_sortedmap* sorted) {
-  s->size = sorted->start;
-}
-
-bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
-                            const upb_Map* map, _upb_sortedmap* sorted);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_MAP_SORTER_H_ */
 
 /* See port_def.inc.  This should #undef all macros #defined there. */
 
