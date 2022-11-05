@@ -38,7 +38,7 @@
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/collections/array.h"
 #include "upb/mini_table/decode.h"
-#include "upb/mini_table/encode_internal.h"
+#include "upb/mini_table/encode_internal.hpp"
 #include "upb/test.upb.h"
 #include "upb/upb.h"
 #include "upb/wire/decode.h"
@@ -480,22 +480,17 @@ TEST(GeneratedCode, Extensions) {
 // Create a minitable to mimic ModelWithSubMessages with unlinked subs
 // to lazily promote unknowns after parsing.
 upb_MiniTable* CreateMiniTableWithEmptySubTables(upb_Arena* arena) {
-  upb_MtDataEncoder e;
-  const size_t kBufferSize = 256;
-  char buf[kBufferSize];
-  char* ptr = buf;
-  e.end = ptr + kBufferSize;
-  ptr = upb_MtDataEncoder_StartMessage(&e, ptr, /* msg_mod= */ 0);
-  EXPECT_TRUE(ptr != nullptr);
-  ptr = upb_MtDataEncoder_PutField(&e, ptr, kUpb_FieldType_Int32, 4, 0);
-  ptr = upb_MtDataEncoder_PutField(&e, ptr, kUpb_FieldType_Message, 5, 0);
-  ptr = upb_MtDataEncoder_PutField(&e, ptr, kUpb_FieldType_Message, 6,
-                                   kUpb_FieldModifier_IsRepeated);
+  upb::MtDataEncoder e;
+  e.StartMessage(0);
+  e.PutField(kUpb_FieldType_Int32, 4, 0);
+  e.PutField(kUpb_FieldType_Message, 5, 0);
+  e.PutField(kUpb_FieldType_Message, 6, kUpb_FieldModifier_IsRepeated);
 
   upb_Status status;
   upb_Status_Clear(&status);
-  upb_MiniTable* table = upb_MiniTable_Build(
-      buf, ptr - buf, kUpb_MiniTablePlatform_Native, arena, &status);
+  upb_MiniTable* table =
+      upb_MiniTable_Build(e.data().data(), e.data().size(),
+                          kUpb_MiniTablePlatform_Native, arena, &status);
   EXPECT_EQ(status.ok, true);
   // Initialize sub table to null. Not using upb_MiniTable_SetSubMessage
   // since it checks ->ext on parameter.
