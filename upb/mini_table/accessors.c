@@ -269,7 +269,7 @@ upb_GetExtensionAsBytes_Status upb_MiniTable_GetExtensionAsBytes(
   }
   const char* data = result.ptr;
   uint32_t tag;
-  uint64_t message_len;
+  uint64_t message_len = 0;
   data = decode_tag(data, &tag);
   data = decode_varint64(data, &message_len);
   *extension_data = data;
