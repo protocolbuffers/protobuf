@@ -29,8 +29,9 @@
 
 #include <string.h>
 
+#include "upb/collections/map_internal.h"
+#include "upb/mem/arena.h"
 #include "upb/msg.h"
-#include "upb/msg_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -87,7 +88,7 @@ bool upb_MapIterator_Done(const upb_Map* map, size_t iter) {
   return upb_strtable_done(&i);
 }
 
-/* Returns the key and value for this entry of the map. */
+// Returns the key and value for this entry of the map.
 upb_MessageValue upb_MapIterator_Key(const upb_Map* map, size_t iter) {
   upb_strtable_iter i;
   upb_MessageValue ret;
@@ -106,5 +107,15 @@ upb_MessageValue upb_MapIterator_Value(const upb_Map* map, size_t iter) {
   return ret;
 }
 
-/* void upb_MapIterator_SetValue(upb_Map *map, size_t iter, upb_MessageValue
- * value); */
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+
+upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
+  upb_Map* map = upb_Arena_Malloc(a, sizeof(upb_Map));
+  if (!map) return NULL;
+
+  upb_strtable_init(&map->table, 4, a);
+  map->key_size = key_size;
+  map->val_size = value_size;
+
+  return map;
+}

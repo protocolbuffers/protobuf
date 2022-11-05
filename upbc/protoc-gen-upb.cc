@@ -884,6 +884,7 @@ void WriteHeader(const FileLayout& layout, Output& output) {
       "#ifndef $0_UPB_H_\n"
       "#define $0_UPB_H_\n\n"
       "#include \"upb/collections/array_internal.h\"\n"
+      "#include \"upb/collections/map_gencode_util.h\"\n"
       "#include \"upb/msg_internal.h\"\n"
       "#include \"upb/wire/decode.h\"\n"
       "#include \"upb/wire/decode_fast.h\"\n"

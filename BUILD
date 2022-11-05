@@ -170,6 +170,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":collections_internal",
         ":port",
         ":table_internal",
     ],
@@ -188,6 +189,7 @@ cc_library(
     ],
     visibility = ["//:__subpackages__"],
     deps = [
+        ":collections_internal",
         ":extension_registry",
         ":port",
         ":table_internal",
@@ -213,6 +215,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":collections_internal",
         ":extension_registry",
         ":mini_table_internal",
         ":port",
@@ -313,6 +316,7 @@ cc_library(
     hdrs = [
         "upb/collections/array.h",
         "upb/collections/array_internal.h",
+        "upb/collections/map_gencode_util.h",
         "upb/collections/message_value.h",
         "upb/extension_registry.h",
         "upb/msg.h",
@@ -326,6 +330,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":collections_internal",
         ":table_internal",
         ":upb",
     ],
@@ -347,6 +352,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":collections_internal",
         ":mini_table",
         ":table_internal",
         ":upb",
@@ -403,6 +409,7 @@ cc_library(
         "upb/collections/array.c",
         "upb/collections/array_internal.h",
         "upb/collections/map.c",
+        "upb/collections/map_internal.h",
         "upb/collections/map_sorter.c",
         "upb/collections/message_value.h",
         "upb/extension_registry.h",
@@ -958,19 +965,24 @@ cc_library(
     name = "collections_internal",
     srcs = [
         "upb/collections/array.h",
+        "upb/collections/map_gencode_util.h",
         "upb/collections/message_value.h",
         "upb/msg.h",
         "upb/status.h",
         "upb/string_view.h",
         "upb/upb.h",
     ],
-    hdrs = ["upb/collections/array_internal.h"],
+    hdrs = [
+        "upb/collections/array_internal.h",
+        "upb/collections/map_internal.h",
+    ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
     deps = [
         ":collections",
         ":mem",
         ":port",
+        ":table_internal",
     ],
 )
 
@@ -1025,6 +1037,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
     deps = [
+        ":collections_internal",
         ":mem_internal",
         ":port",
         ":table_internal",

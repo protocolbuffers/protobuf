@@ -34,7 +34,8 @@
 // Must be last.
 #include "upb/port_def.inc"
 
-/** upb_Message ***************************************************************/
+const float kUpb_FltInfinity = INFINITY;
+const double kUpb_Infinity = INFINITY;
 
 static const size_t overhead = sizeof(upb_Message_InternalData);
 
@@ -194,22 +195,3 @@ size_t upb_Message_ExtensionCount(const upb_Message* msg) {
   _upb_Message_Getexts(msg, &count);
   return count;
 }
-
-/** upb_Map *******************************************************************/
-
-upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
-  upb_Map* map = upb_Arena_Malloc(a, sizeof(upb_Map));
-
-  if (!map) {
-    return NULL;
-  }
-
-  upb_strtable_init(&map->table, 4, a);
-  map->key_size = key_size;
-  map->val_size = value_size;
-
-  return map;
-}
-
-const float kUpb_FltInfinity = INFINITY;
-const double kUpb_Infinity = INFINITY;

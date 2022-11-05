@@ -53,11 +53,9 @@ bool upb_Map_Get(const upb_Map* map, upb_MessageValue key,
 void upb_Map_Clear(upb_Map* map);
 
 typedef enum {
-  // LINT.IfChange
   kUpb_MapInsertStatus_Inserted = 0,
   kUpb_MapInsertStatus_Replaced = 1,
   kUpb_MapInsertStatus_OutOfMemory = 2,
-  // LINT.ThenChange(//depot/google3/third_party/upb/upb/msg_internal.h)
 } upb_MapInsertStatus;
 
 /* Sets the given key to the given value, returning whether the key was inserted

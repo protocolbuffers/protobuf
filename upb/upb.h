@@ -51,13 +51,6 @@
 extern "C" {
 #endif
 
-// These types appear in circular references so we need to forward-declare them.
-// There is no obviously good place for this so let's just put it here.
-typedef struct upb_Array upb_Array;
-typedef struct upb_Map upb_Map;
-
-/* Constants ******************************************************************/
-
 /* A list of types as they are encoded on-the-wire. */
 typedef enum {
   kUpb_WireType_Varint = 0,

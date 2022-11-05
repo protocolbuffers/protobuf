@@ -33,9 +33,6 @@
 
 #include "upb/collections/array_internal.h"
 #include "upb/collections/map_sorter_internal.h"
-#include "upb/extension_registry.h"
-#include "upb/msg_internal.h"
-#include "upb/upb.h"
 
 // Must be last.
 #include "upb/port_def.inc"

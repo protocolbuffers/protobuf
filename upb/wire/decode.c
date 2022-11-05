@@ -30,7 +30,7 @@
 #include <string.h>
 
 #include "upb/collections/array_internal.h"
-#include "upb/msg_internal.h"
+#include "upb/collections/map_internal.h"
 #include "upb/upb.h"
 #include "upb/wire/decode_internal.h"
 
@@ -619,7 +619,7 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
     }
   } else {
     if (_upb_Map_Insert(map, &ent.k, map->key_size, &ent.v, map->val_size,
-                        &d->arena) == _kUpb_MapInsertStatus_OutOfMemory) {
+                        &d->arena) == kUpb_MapInsertStatus_OutOfMemory) {
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
   }

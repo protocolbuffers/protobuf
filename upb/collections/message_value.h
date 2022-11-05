@@ -35,6 +35,9 @@
 // Must be last.
 #include "upb/port_def.inc"
 
+typedef struct upb_Array upb_Array;
+typedef struct upb_Map upb_Map;
+
 typedef union {
   bool bool_val;
   float float_val;
