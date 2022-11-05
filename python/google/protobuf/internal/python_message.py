@@ -308,7 +308,7 @@ def _AttachFieldHelpers(cls, field_descriptor):
     tag_bytes = encoder.TagBytes(field_descriptor.number, wiretype)
     decode_type = field_descriptor.type
     if (decode_type == _FieldDescriptor.TYPE_ENUM and
-        type_checkers.SupportsOpenEnums(field_descriptor)):
+        not field_descriptor.enum_type.is_closed):
       decode_type = _FieldDescriptor.TYPE_INT32
 
     oneof_descriptor = None
