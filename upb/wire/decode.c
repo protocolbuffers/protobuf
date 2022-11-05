@@ -32,6 +32,7 @@
 #include "upb/collections/array_internal.h"
 #include "upb/collections/map_internal.h"
 #include "upb/upb.h"
+#include "upb/wire/common_internal.h"
 #include "upb/wire/decode_internal.h"
 
 // Must be last.
@@ -748,10 +749,10 @@ static const char* upb_Decoder_SkipField(upb_Decoder* d, const char* ptr,
 }
 
 enum {
-  kStartItemTag = ((1 << 3) | kUpb_WireType_StartGroup),
-  kEndItemTag = ((1 << 3) | kUpb_WireType_EndGroup),
-  kTypeIdTag = ((2 << 3) | kUpb_WireType_Varint),
-  kMessageTag = ((3 << 3) | kUpb_WireType_Delimited),
+  kStartItemTag = ((kUpb_MsgSet_Item << 3) | kUpb_WireType_StartGroup),
+  kEndItemTag = ((kUpb_MsgSet_Item << 3) | kUpb_WireType_EndGroup),
+  kTypeIdTag = ((kUpb_MsgSet_TypeId << 3) | kUpb_WireType_Varint),
+  kMessageTag = ((kUpb_MsgSet_Message << 3) | kUpb_WireType_Delimited),
 };
 
 static void upb_Decoder_AddKnownMessageSetItem(
@@ -899,7 +900,7 @@ static const upb_MiniTable_Field* _upb_Decoder_FindField(
         break;
       }
       case kUpb_ExtMode_IsMessageSet:
-        if (field_number == _UPB_MSGSET_ITEM) {
+        if (field_number == kUpb_MsgSet_Item) {
           static upb_MiniTable_Field item = {
               0, 0, 0, 0, kUpb_FakeFieldType_MessageSetItem, 0};
           return &item;

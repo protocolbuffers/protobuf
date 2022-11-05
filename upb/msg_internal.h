@@ -201,20 +201,6 @@ typedef enum {
   kUpb_ExtMode_IsMapEntry = 4,
 } upb_ExtMode;
 
-/* MessageSet wire format is:
- *   message MessageSet {
- *     repeated group Item = 1 {
- *       required int32 type_id = 2;
- *       required bytes message = 3;
- *     }
- *   }
- */
-typedef enum {
-  _UPB_MSGSET_ITEM = 1,
-  _UPB_MSGSET_TYPEID = 2,
-  _UPB_MSGSET_MESSAGE = 3,
-} upb_msgext_fieldnum;
-
 struct upb_MiniTable {
   const upb_MiniTable_Sub* subs;
   const upb_MiniTable_Field* fields;

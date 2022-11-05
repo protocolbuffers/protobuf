@@ -33,6 +33,7 @@
 
 #include "upb/collections/array_internal.h"
 #include "upb/collections/map_sorter_internal.h"
+#include "upb/wire/common_internal.h"
 
 // Must be last.
 #include "upb/port_def.inc"
@@ -495,22 +496,16 @@ static void encode_field(upb_encstate* e, const upb_Message* msg,
   }
 }
 
-/* message MessageSet {
- *   repeated group Item = 1 {
- *     required int32 type_id = 2;
- *     required string message = 3;
- *   }
- * } */
 static void encode_msgset_item(upb_encstate* e,
                                const upb_Message_Extension* ext) {
   size_t size;
-  encode_tag(e, 1, kUpb_WireType_EndGroup);
+  encode_tag(e, kUpb_MsgSet_Item, kUpb_WireType_EndGroup);
   encode_message(e, ext->data.ptr, ext->ext->sub.submsg, &size);
   encode_varint(e, size);
-  encode_tag(e, 3, kUpb_WireType_Delimited);
+  encode_tag(e, kUpb_MsgSet_Message, kUpb_WireType_Delimited);
   encode_varint(e, ext->ext->field.number);
-  encode_tag(e, 2, kUpb_WireType_Varint);
-  encode_tag(e, 1, kUpb_WireType_StartGroup);
+  encode_tag(e, kUpb_MsgSet_TypeId, kUpb_WireType_Varint);
+  encode_tag(e, kUpb_MsgSet_Item, kUpb_WireType_StartGroup);
 }
 
 static void encode_message(upb_encstate* e, const upb_Message* msg,

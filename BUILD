@@ -1031,6 +1031,7 @@ cc_library(
         "upb/wire/decode.h",
     ],
     hdrs = [
+        "upb/wire/common_internal.h",
         "upb/wire/decode_internal.h",
         "upb/wire/encode_internal.h",
     ],
