@@ -30,12 +30,11 @@
 #include <errno.h>
 #include <float.h>
 #include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 void upb_Status_Clear(upb_Status* status) {
   if (!status) return;

@@ -26,13 +26,12 @@
  */
 
 #include <float.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "upb/wire/encode_internal.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 /* Miscellaneous utilities ****************************************************/
 

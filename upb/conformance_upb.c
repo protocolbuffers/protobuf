@@ -31,7 +31,6 @@
 
 #include <errno.h>
 #include <stdarg.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -47,7 +46,7 @@
 #include "upb/wire/encode.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 int test_count = 0;
 bool verbose = false; /* Set to true to get req/resp printed on stderr. */

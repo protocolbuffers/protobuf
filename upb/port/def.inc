@@ -26,10 +26,9 @@
  */
 
 /*
- * This is where we define macros used across upb.
+ * This is where we define internal portability macros used across upb.
  *
- * All of these macros are undef'd in port_undef.inc to avoid leaking them to
- * users.
+ * All of these macros are undef'd in undef.inc to avoid leaking them to users.
  *
  * The correct usage is:
  *
@@ -37,13 +36,13 @@
  *   #include "upb/baz.h"
  *
  *   // MUST be last included header.
- *   #include "upb/port_def.inc"
+ *   #include "upb/port/def.inc"
  *
  *   // Code for this file.
  *   // <...>
  *
  *   // Can be omitted for .c files, required for .h.
- *   #include "upb/port_undef.inc"
+ *   #include "upb/port/undef.inc"
  *
  * This file is private and must not be included by users!
  */
@@ -68,6 +67,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #if UINTPTR_MAX == 0xffffffff
 #define UPB_SIZE(size32, size64) size32

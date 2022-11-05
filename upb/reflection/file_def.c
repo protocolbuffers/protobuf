@@ -34,7 +34,7 @@
 #include "upb/reflection/service_def_internal.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 struct upb_FileDef {
   const google_protobuf_FileOptions* opts;

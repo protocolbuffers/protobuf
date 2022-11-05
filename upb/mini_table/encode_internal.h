@@ -31,7 +31,7 @@
 #include "upb/mini_table/common.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 // If the input buffer has at least this many bytes available, the encoder call
 // is guaranteed to succeed (as long as field number order is maintained).
@@ -104,6 +104,6 @@ char* upb_MtDataEncoder_EncodeMessageSet(upb_MtDataEncoder* e, char* ptr);
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_MINI_TABLE_ENCODE_INTERNAL_H_ */

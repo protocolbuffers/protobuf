@@ -28,7 +28,7 @@
 #include "upb/internal/atoi.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 const char* upb_BufToUint64(const char* ptr, const char* end, uint64_t* val) {
   uint64_t u64 = 0;

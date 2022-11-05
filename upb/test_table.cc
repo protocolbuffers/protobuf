@@ -43,7 +43,7 @@
 #include "upb/upb.hpp"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 // Convenience interface for C++.  We don't put this in upb itself because
 // the table is not exposed to users.

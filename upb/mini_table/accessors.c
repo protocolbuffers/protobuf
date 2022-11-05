@@ -33,7 +33,7 @@
 
 // Must be last.
 #include "upb/msg.h"
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 static size_t _upb_MiniTable_Field_GetSize(const upb_MiniTable_Field* f) {
   static unsigned char sizes[] = {

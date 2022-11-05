@@ -27,14 +27,12 @@
 
 #include "upb/io/tokenizer.h"
 
-#include <stdio.h>
-
 #include "upb/internal/unicode.h"
 #include "upb/io/string.h"
 #include "upb/io/strtod.h"
 
 // Must be included last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 typedef enum {
   // Started a line comment.

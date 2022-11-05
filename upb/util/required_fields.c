@@ -28,16 +28,14 @@
 #include "upb/util/required_fields.h"
 
 #include <inttypes.h>
-#include <setjmp.h>
 #include <stdarg.h>
-#include <stdio.h>
 
 #include "upb/collections/map.h"
-#include "upb/internal/vsnprintf_compat.h"
+#include "upb/port/vsnprintf_compat.h"
 #include "upb/reflection/message.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 ////////////////////////////////////////////////////////////////////////////////
 // upb_FieldPath_ToText()

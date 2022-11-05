@@ -25,13 +25,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_INTERNAL_VSNPRINTF_COMPAT_H_
-#define UPB_INTERNAL_VSNPRINTF_COMPAT_H_
-
-#include <stdio.h>
+#ifndef UPB_PORT_VSNPRINTF_COMPAT_H_
+#define UPB_PORT_VSNPRINTF_COMPAT_H_
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 UPB_INLINE int _upb_vsnprintf(char* buf, size_t size, const char* fmt,
                               va_list ap) {
@@ -47,6 +45,6 @@ UPB_INLINE int _upb_vsnprintf(char* buf, size_t size, const char* fmt,
 #endif
 }
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
-#endif  // UPB_INTERNAL_VSNPRINTF_COMPAT_H_
+#endif  // UPB_PORT_VSNPRINTF_COMPAT_H_

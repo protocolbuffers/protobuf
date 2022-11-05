@@ -52,7 +52,7 @@
 #include "upb/upb.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -379,6 +379,6 @@ uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_INTERNAL_TABLE_H_ */

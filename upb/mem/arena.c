@@ -28,7 +28,7 @@
 #include "upb/mem/arena_internal.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 static uint32_t* upb_cleanup_pointer(uintptr_t cleanup_metadata) {
   return (uint32_t*)(cleanup_metadata & ~0x1);

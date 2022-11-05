@@ -36,7 +36,7 @@
 #include "upb/reflection/service_def_internal.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 struct upb_DefPool {
   upb_Arena* arena;
@@ -338,9 +338,6 @@ const upb_FileDef* upb_DefPool_AddFile(
     upb_Status* status) {
   return _upb_DefPool_AddFile(s, file_proto, NULL, status);
 }
-
-/* Include here since we want most of this file to be stdio-free. */
-#include <stdio.h>
 
 bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
                                 bool rebuild_minitable) {

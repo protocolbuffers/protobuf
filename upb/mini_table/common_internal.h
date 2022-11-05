@@ -31,7 +31,7 @@
 #include "upb/upb.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 typedef enum {
   kUpb_EncodedType_Double = 0,
@@ -118,6 +118,6 @@ UPB_INLINE bool _upb_FieldType_IsPackable(upb_FieldType type) {
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_MINI_TABLE_COMMON_INTERNAL_H_ */

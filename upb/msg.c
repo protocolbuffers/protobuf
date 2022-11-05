@@ -32,7 +32,7 @@
 #include "upb/msg_internal.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 const float kUpb_FltInfinity = INFINITY;
 const double kUpb_Infinity = INFINITY;

@@ -29,7 +29,7 @@
 #define UPB_WIRE_COMMON_INTERNAL_H_
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 // MessageSet wire format is:
 //   message MessageSet {
@@ -45,6 +45,6 @@ enum {
   kUpb_MsgSet_Message = 3,
 };
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_WIRE_COMMON_INTERNAL_H_ */

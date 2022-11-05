@@ -36,7 +36,7 @@
 #include "upb/upb.hpp"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 namespace proto2 {
 namespace io {

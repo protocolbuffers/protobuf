@@ -71,7 +71,7 @@ void WriteDefHeader(const protobuf::FileDescriptor* file, Output& output) {
       "#define $0_UPBDEFS_H_\n\n"
       "#include \"upb/reflection/def.h\"\n"
       "#include \"upb/reflection/def_pool_internal.h\"\n"
-      "#include \"upb/port_def.inc\"\n"
+      "#include \"upb/port/def.inc\"\n"
       "#ifdef __cplusplus\n"
       "extern \"C\" {\n"
       "#endif\n\n",
@@ -79,7 +79,7 @@ void WriteDefHeader(const protobuf::FileDescriptor* file, Output& output) {
 
   output("#include \"upb/reflection/def.h\"\n");
   output("\n");
-  output("#include \"upb/port_def.inc\"\n");
+  output("#include \"upb/port/def.inc\"\n");
   output("\n");
 
   output("extern _upb_DefPool_Init $0;\n", DefInitSymbol(file));
@@ -94,7 +94,7 @@ void WriteDefHeader(const protobuf::FileDescriptor* file, Output& output) {
       "}  /* extern \"C\" */\n"
       "#endif\n"
       "\n"
-      "#include \"upb/port_undef.inc\"\n"
+      "#include \"upb/port/undef.inc\"\n"
       "\n"
       "#endif  /* $0_UPBDEFS_H_ */\n",
       ToPreproc(file->name()));

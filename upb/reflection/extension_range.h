@@ -33,7 +33,7 @@
 #include "upb/reflection/common.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,6 +50,6 @@ const google_protobuf_ExtensionRangeOptions* upb_ExtensionRange_Options(
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_EXTENSION_RANGE_H_ */

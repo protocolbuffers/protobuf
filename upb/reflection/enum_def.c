@@ -25,8 +25,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdio.h>
-
 #include "upb/mini_table/decode.h"
 #include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_type.h"
@@ -37,7 +35,7 @@
 #include "upb/reflection/message_def_internal.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 struct upb_EnumDef {
   const google_protobuf_EnumOptions* opts;

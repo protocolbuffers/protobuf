@@ -28,7 +28,7 @@
 #include "upb/collections/map_sorter_internal.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 static void _upb_mapsorter_getkeys(const void* _a, const void* _b, void* a_key,
                                    void* b_key, size_t size) {

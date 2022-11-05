@@ -45,7 +45,7 @@
 #include "upb/upb.h"
 
 /* Must be last. */
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 namespace upbc {
 

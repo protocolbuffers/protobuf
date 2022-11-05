@@ -27,12 +27,11 @@
 
 #include "upb/io/strtod.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 // Determine the locale-specific radix character by calling sprintf() to print
 // the number 1.5, then stripping off the digits.  As far as I can tell, this

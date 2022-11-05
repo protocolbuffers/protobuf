@@ -34,7 +34,7 @@
 #include "upb/upb.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 typedef struct {
   uint64_t present_values_mask;

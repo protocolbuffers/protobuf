@@ -31,7 +31,7 @@
 #include "upb/collections/message_value.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -109,6 +109,6 @@ void upb_MapIterator_SetValue(upb_Map* map, size_t iter,
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_COLLECTIONS_MAP_H_ */

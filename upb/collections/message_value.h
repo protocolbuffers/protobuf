@@ -33,7 +33,7 @@
 #include "upb/upb.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 typedef struct upb_Array upb_Array;
 typedef struct upb_Map upb_Map;
@@ -58,6 +58,6 @@ typedef union {
   upb_Message* msg;
 } upb_MutableMessageValue;
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_MESSAGE_VALUE_H_ */

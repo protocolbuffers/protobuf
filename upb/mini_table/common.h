@@ -31,7 +31,7 @@
 #include "upb/msg_internal.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 typedef enum {
   kUpb_FieldModifier_IsRepeated = 1 << 0,
@@ -70,6 +70,6 @@ UPB_INLINE const upb_MiniTable_Enum* upb_MiniTable_GetSubEnumTable(
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_MINI_TABLE_COMMON_H_ */

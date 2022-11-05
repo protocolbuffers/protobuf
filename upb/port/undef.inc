@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* See port_def.inc.  This should #undef all macros #defined there. */
+// This should #undef all macros #defined in def.inc
 
 #undef UPB_SIZE
 #undef UPB_PTR_AT

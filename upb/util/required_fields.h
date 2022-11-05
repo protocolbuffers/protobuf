@@ -31,8 +31,8 @@
 #include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
 
-/* Must be last. */
-#include "upb/port_def.inc"
+// Must be last.
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -89,6 +89,6 @@ bool upb_util_HasUnsetRequired(const upb_Message* msg, const upb_MessageDef* m,
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_UTIL_REQUIRED_FIELDS_H_ */

@@ -53,8 +53,8 @@ class Amalgamator:
 
     self.output_h.write("/* Amalgamated source file */\n")
 
-    port_def = self._find_include_file("upb/port_def.inc")
-    port_undef = self._find_include_file("upb/port_undef.inc")
+    port_def = self._find_include_file("upb/port/def.inc")
+    port_undef = self._find_include_file("upb/port/undef.inc")
     self._process_file(port_def, self.output_h)
     self._process_file(port_def, self.output_c)
 
@@ -88,7 +88,7 @@ class Amalgamator:
       return False
     if not (include.startswith("upb") or include.startswith("google")):
       return False
-    if include and (include.endswith("port_def.inc") or include.endswith("port_undef.inc")):
+    if include and (include.endswith("port/def.inc") or include.endswith("port/undef.inc")):
       # Skip, we handle this separately
       return True
     if include.endswith("hpp"):

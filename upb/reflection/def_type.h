@@ -31,7 +31,7 @@
 #include "upb/internal/table.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 // Inside a symtab we store tagged pointers to specific def types.
 typedef enum {
@@ -76,6 +76,6 @@ const void* _upb_DefType_Unpack(upb_value v, upb_deftype_t type);
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_DEF_TYPE_H_ */

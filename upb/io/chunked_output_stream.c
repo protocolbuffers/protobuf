@@ -28,7 +28,7 @@
 #include "upb/io/chunked_output_stream.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 typedef struct {
   upb_ZeroCopyOutputStream base;

@@ -29,16 +29,14 @@
 
 #include <inttypes.h>
 #include <math.h>
-#include <setjmp.h>
-#include <stdio.h>
 
-#include "upb/internal/vsnprintf_compat.h"
+#include "upb/port/vsnprintf_compat.h"
 #include "upb/reflection/field_def_internal.h"
 #include "upb/reflection/file_def_internal.h"
 #include "upb/reflection/message.h"
 
-/* Must be last. */
-#include "upb/port_def.inc"
+// Must be last.
+#include "upb/port/def.inc"
 
 typedef struct {
   upb_Arena* arena;

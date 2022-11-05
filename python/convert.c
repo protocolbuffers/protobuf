@@ -34,7 +34,7 @@
 #include "upb/util/compare.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 PyObject* PyUpb_UpbToPy(upb_MessageValue val, const upb_FieldDef* f,
                         PyObject* arena) {
@@ -443,4 +443,4 @@ bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
          kUpb_UnknownCompareResult_Equal;
 }
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"

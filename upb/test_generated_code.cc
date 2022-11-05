@@ -37,7 +37,7 @@
 #include "upb/upb.hpp"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #if !defined(MIN)
 #define MIN(x, y) ((x) < (y) ? (x) : (y))

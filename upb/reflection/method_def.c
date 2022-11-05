@@ -31,7 +31,7 @@
 #include "upb/reflection/service_def.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 struct upb_MethodDef {
   const google_protobuf_MethodOptions* opts;

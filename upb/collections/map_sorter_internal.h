@@ -33,7 +33,7 @@
 #include "upb/msg_internal.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -88,6 +88,6 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_COLLECTIONS_MAP_SORTER_INTERNAL_H_ */

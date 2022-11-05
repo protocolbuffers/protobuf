@@ -29,7 +29,7 @@
 #define UPB_INTERNAL_UNICODE_H_
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -72,6 +72,6 @@ int upb_Unicode_ToUTF8(uint32_t cp, char* out);
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_INTERNAL_UNICODE_H_ */

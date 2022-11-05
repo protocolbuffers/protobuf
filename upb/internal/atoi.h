@@ -29,7 +29,7 @@
 #define UPB_INTERNAL_ATOI_H_
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,6 +48,6 @@ const char* upb_BufToInt64(const char* ptr, const char* end, int64_t* val,
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_INTERNAL_ATOI_H_ */

@@ -35,7 +35,7 @@
 #include "upb/msg.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -89,6 +89,6 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, upb_Message* msg,
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_WIRE_DECODE_H_ */

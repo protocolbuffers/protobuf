@@ -34,7 +34,7 @@
 #include "upb/msg.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 /* Strings/bytes are special-cased in maps. */
 static char _upb_CTypeo_mapsize[12] = {

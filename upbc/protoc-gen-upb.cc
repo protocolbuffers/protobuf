@@ -39,7 +39,7 @@
 #include "upbc/names.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 namespace upbc {
 namespace {
@@ -902,7 +902,7 @@ void WriteHeader(const FileLayout& layout, Output& output) {
   }
 
   output(
-      "#include \"upb/port_def.inc\"\n"
+      "#include \"upb/port/def.inc\"\n"
       "\n"
       "#ifdef __cplusplus\n"
       "extern \"C\" {\n"
@@ -1023,7 +1023,7 @@ void WriteHeader(const FileLayout& layout, Output& output) {
       "}  /* extern \"C\" */\n"
       "#endif\n"
       "\n"
-      "#include \"upb/port_undef.inc\"\n"
+      "#include \"upb/port/undef.inc\"\n"
       "\n"
       "#endif  /* $0_UPB_H_ */\n",
       ToPreproc(file->name()));
@@ -1514,7 +1514,7 @@ void WriteSource(const FileLayout& layout, Output& output,
 
   output(
       "\n"
-      "#include \"upb/port_def.inc\"\n"
+      "#include \"upb/port/def.inc\"\n"
       "\n");
 
   int msg_count = WriteMessages(layout, output, fasttable_enabled);
@@ -1530,7 +1530,7 @@ void WriteSource(const FileLayout& layout, Output& output,
   output("  $0,\n", ext_count);
   output("};\n\n");
 
-  output("#include \"upb/port_undef.inc\"\n");
+  output("#include \"upb/port/undef.inc\"\n");
   output("\n");
 }
 

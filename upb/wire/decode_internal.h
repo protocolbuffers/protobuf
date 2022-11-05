@@ -39,7 +39,7 @@
 #include "third_party/utf8_range/utf8_range.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #define DECODE_NOGROUP (uint32_t) - 1
 
@@ -206,6 +206,6 @@ UPB_INLINE void _upb_Decoder_PopLimit(upb_Decoder* d, const char* ptr,
   _upb_Decoder_CheckLimit(d);
 }
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_WIRE_DECODE_INTERNAL_H_ */

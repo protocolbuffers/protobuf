@@ -36,7 +36,7 @@
 #include "upb/string_view.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 struct upb_Map {
   // Size of key and val, based on the map type.
@@ -158,6 +158,6 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size);
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_COLLECTIONS_MAP_INTERNAL_H_ */

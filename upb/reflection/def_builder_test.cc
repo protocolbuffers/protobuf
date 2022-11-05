@@ -30,7 +30,7 @@
 #include "upb/reflection/def_builder_internal.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 struct IdentTest {
   const char* text;

@@ -33,7 +33,7 @@
 #include "upbc/code_generator_request.upb.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,6 +47,6 @@ upbc_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPBC_CODE_GENERATOR_REQUEST_H_ */

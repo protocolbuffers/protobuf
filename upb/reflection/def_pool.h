@@ -35,7 +35,7 @@
 #include "upb/string_view.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -101,6 +101,6 @@ const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_DEF_POOL_H_ */

@@ -36,7 +36,7 @@
 #include "upb/wire/decode_internal.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 // A few fake field types for our tables.
 enum {

@@ -31,7 +31,7 @@
 #include "upb/collections/message_value.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -77,6 +77,6 @@ bool upb_Array_Resize(upb_Array* array, size_t size, upb_Arena* arena);
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_COLLECTIONS_ARRAY_H_ */

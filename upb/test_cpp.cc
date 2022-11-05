@@ -23,11 +23,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/*
- * Tests for C++ wrappers.
- */
+// Tests for C++ wrappers.
 
-#include <stdio.h>
 #include <string.h>
 
 #include <fstream>
@@ -47,7 +44,7 @@
 #include "upb/upb.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 TEST(Cpp, Iteration) {
   upb::DefPool defpool;

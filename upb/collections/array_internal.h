@@ -33,7 +33,7 @@
 #include "upb/collections/array.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -198,6 +198,6 @@ UPB_INLINE bool _upb_Array_Append_accessor(void* msg, size_t ofs,
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_INTERNAL_ARRAY_INTERNAL_H_ */

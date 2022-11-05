@@ -35,12 +35,12 @@
 
 #include "upb/collections/map.h"
 #include "upb/collections/map_sorter_internal.h"
-#include "upb/internal/vsnprintf_compat.h"
+#include "upb/port/vsnprintf_compat.h"
 #include "upb/reflection/message.h"
 #include "upb/wire/encode_internal.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 typedef struct {
   char *buf, *ptr, *end;

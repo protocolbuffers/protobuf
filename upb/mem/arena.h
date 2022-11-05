@@ -33,7 +33,7 @@
 #include "upb/mem/alloc.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -163,6 +163,6 @@ UPB_INLINE upb_Arena* upb_Arena_New(void) {
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_MEM_ARENA_H_ */

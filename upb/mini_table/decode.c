@@ -35,7 +35,7 @@
 #include "upb/upb.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 // Note: we sort by this number when calculating layout order.
 typedef enum {

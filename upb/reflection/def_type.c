@@ -28,7 +28,7 @@
 #include "upb/reflection/def_type.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 upb_deftype_t _upb_DefType_Type(upb_value v) {
   const uintptr_t num = (uintptr_t)upb_value_getconstptr(v);

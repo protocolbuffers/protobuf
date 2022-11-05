@@ -33,7 +33,7 @@
 #include "upb/reflection/def_type.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 // We want to copy the options verbatim into the destination options proto.
 // We use serialize+parse as our deep copy.
@@ -168,6 +168,6 @@ UPB_INLINE void _upb_DefBuilder_CheckIdentFull(upb_DefBuilder* ctx,
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_DEF_BUILDER_INTERNAL_H_ */

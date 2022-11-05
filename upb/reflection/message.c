@@ -39,7 +39,7 @@
 #include "upb/reflection/oneof_def.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 static size_t get_field_size(const upb_MiniTable_Field* f) {
   static unsigned char sizes[] = {

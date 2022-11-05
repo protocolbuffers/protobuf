@@ -31,7 +31,7 @@
 #include "upb/mem/arena.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,6 +65,6 @@ struct upb_Arena {
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_MEM_ARENA_INTERNAL_H_ */

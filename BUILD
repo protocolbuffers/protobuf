@@ -99,12 +99,12 @@ package_group(
 cc_library(
     name = "port",
     hdrs = [
-        "upb/internal/vsnprintf_compat.h",
+        "upb/port/vsnprintf_compat.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     textual_hdrs = [
-        "upb/port_def.inc",
-        "upb/port_undef.inc",
+        "upb/port/def.inc",
+        "upb/port/undef.inc",
     ],
     visibility = ["//:__subpackages__"],
 )
@@ -321,8 +321,8 @@ cc_library(
         "upb/extension_registry.h",
         "upb/msg.h",
         "upb/msg_internal.h",
-        "upb/port_def.inc",
-        "upb/port_undef.inc",
+        "upb/port/def.inc",
+        "upb/port/undef.inc",
         "upb/wire/decode.h",
         "upb/wire/decode_fast.h",
         "upb/wire/encode.h",
@@ -342,8 +342,8 @@ cc_library(
     hdrs = [
         "upb/msg.h",
         "upb/msg_internal.h",
-        "upb/port_def.inc",
-        "upb/port_undef.inc",
+        "upb/port/def.inc",
+        "upb/port/undef.inc",
         "upb/upb.hpp",
         "upb/wire/decode.h",
         "upb/wire/decode_fast.h",
@@ -376,8 +376,8 @@ cc_library(
         "upb/reflection/service_def.h",
     ],
     hdrs = [
-        "upb/port_def.inc",
-        "upb/port_undef.inc",
+        "upb/port/def.inc",
+        "upb/port/undef.inc",
         "upb/reflection/def.h",
         "upb/reflection/def_pool_internal.h",
     ],

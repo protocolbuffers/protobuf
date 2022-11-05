@@ -32,7 +32,7 @@
 #include "upb/reflection/common.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -98,6 +98,6 @@ bool upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_MESSAGE_H_ */

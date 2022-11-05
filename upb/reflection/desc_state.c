@@ -28,7 +28,7 @@
 #include "upb/reflection/desc_state_internal.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 bool _upb_DescState_Grow(upb_DescState* d, upb_Arena* a) {
   const size_t oldbufsize = d->bufsize;

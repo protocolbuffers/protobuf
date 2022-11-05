@@ -31,7 +31,7 @@
 #include "upb/mini_table/encode_internal.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 // Manages the storage for mini descriptor strings as they are being encoded.
 // TODO(b/234740652): Move some of this state directly into the encoder, maybe.
@@ -58,6 +58,6 @@ bool _upb_DescState_Grow(upb_DescState* d, upb_Arena* a);
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_DESC_STATE_INTERNAL_H_ */

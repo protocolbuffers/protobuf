@@ -31,7 +31,7 @@
 #include "upb/reflection/extension_range.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,6 +49,6 @@ upb_ExtensionRange* _upb_ExtensionRanges_New(
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_EXTENSION_RANGE_INTERNAL_H_ */

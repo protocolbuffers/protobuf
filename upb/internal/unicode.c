@@ -28,7 +28,7 @@
 #include "upb/internal/unicode.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 int upb_Unicode_ToUTF8(uint32_t cp, char* out) {
   if (cp <= 0x7f) {

@@ -31,7 +31,7 @@
 #include "upb/reflection/def.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,6 +47,6 @@ bool upb_JsonDecode(const char* buf, size_t size, upb_Message* msg,
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_JSONDECODE_H_ */

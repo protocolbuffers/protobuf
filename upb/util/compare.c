@@ -27,10 +27,7 @@
 
 #include "upb/util/compare.h"
 
-#include <setjmp.h>
-#include <stdbool.h>
-
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 struct upb_UnknownFields;
 typedef struct upb_UnknownFields upb_UnknownFields;

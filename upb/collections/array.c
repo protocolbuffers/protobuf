@@ -30,7 +30,7 @@
 #include "upb/collections/array_internal.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 static const char _upb_CTypeo_sizelg2[12] = {
     0,

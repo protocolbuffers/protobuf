@@ -31,7 +31,7 @@
 #include "upb/mini_table/common.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 typedef enum {
   kUpb_MiniTablePlatform_32Bit,
@@ -92,6 +92,6 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_MINI_TABLE_DECODE_H_ */

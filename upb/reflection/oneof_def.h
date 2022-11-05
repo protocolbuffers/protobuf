@@ -33,7 +33,7 @@
 #include "upb/reflection/common.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,6 +61,6 @@ const google_protobuf_OneofOptions* upb_OneofDef_Options(const upb_OneofDef* o);
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_ONEOF_DEF_H_ */

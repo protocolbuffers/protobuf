@@ -33,7 +33,7 @@
 #include "upb/reflection/field_def.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 /* The upb core does not generally have a concept of default instances. However
  * for descriptor options we make an exception since the max size is known and

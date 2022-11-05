@@ -29,7 +29,7 @@
 #define UPB_IO_STRTOD_H_
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,6 +41,6 @@ double NoLocaleStrtod(const char *str, char **endptr);
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_IO_STRTOD_H_ */

@@ -32,7 +32,7 @@
 #include "upb/mem/arena.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,6 +48,6 @@ upb_ZeroCopyInputStream* upb_ChunkedInputStream_New(const void* data,
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_IO_CHUNKED_INPUT_STREAM_H_ */

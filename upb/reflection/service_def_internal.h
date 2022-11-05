@@ -31,7 +31,7 @@
 #include "upb/reflection/service_def.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,6 +48,6 @@ upb_ServiceDef* _upb_ServiceDefs_New(
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_SERVICE_DEF_INTERNAL_H_ */

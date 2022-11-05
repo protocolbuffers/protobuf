@@ -30,7 +30,7 @@
 #include <stdlib.h>
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 static void* upb_global_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
                                   size_t size) {

@@ -31,7 +31,7 @@
 #include "upb/reflection/file_def.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,6 +52,6 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_FILE_DEF_INTERNAL_H_ */

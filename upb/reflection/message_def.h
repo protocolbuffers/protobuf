@@ -34,7 +34,7 @@
 #include "upb/string_view.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 // Well-known field tag numbers for map-entry messages.
 #define kUpb_MapEntry_KeyFieldNumber 1
@@ -159,6 +159,6 @@ upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m);
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_MESSAGE_DEF_H_ */

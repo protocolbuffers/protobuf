@@ -31,7 +31,7 @@
 #include "upb/reflection/oneof_def.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,6 +52,6 @@ size_t _upb_OneofDefs_Finalize(upb_DefBuilder* ctx, upb_MessageDef* m);
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_REFLECTION_ONEOF_DEF_INTERNAL_H_ */

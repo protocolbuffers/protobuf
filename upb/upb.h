@@ -32,11 +32,7 @@
 #ifndef UPB_H_
 #define UPB_H_
 
-#include <assert.h>
 #include <stdarg.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <string.h>
 
 // TODO(b/232091617): Remove these and fix everything that breaks as a result.
@@ -45,7 +41,7 @@
 #include "upb/string_view.h"
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -151,6 +147,6 @@ UPB_INLINE int _upb_Log2CeilingSize(int x) { return 1 << _upb_Log2Ceiling(x); }
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_H_ */

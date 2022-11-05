@@ -29,7 +29,7 @@
 #define UPB_WIRE_ENCODE_INTERNAL_H_
 
 // Must be last.
-#include "upb/port_def.inc"
+#include "upb/port/def.inc"
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,6 +49,6 @@ void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size);
 } /* extern "C" */
 #endif
 
-#include "upb/port_undef.inc"
+#include "upb/port/undef.inc"
 
 #endif /* UPB_WIRE_ENCODE_INTERNAL_H_ */
