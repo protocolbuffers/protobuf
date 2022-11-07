@@ -112,7 +112,7 @@ void AddExtensionsFromMessage(
 // Ordering must match upb/def.c!
 //
 // The ordering is significant because each upb_FieldDef* will point at the
-// corresponding upb_MiniTable_Extension and we just iterate through the list
+// corresponding upb_MiniTableExtension and we just iterate through the list
 // without any search or lookup.
 std::vector<const protobuf::FieldDescriptor*> SortedExtensions(
     const protobuf::FileDescriptor* file) {
@@ -147,14 +147,14 @@ upb_MiniTable* FilePlatformLayout::GetMiniTable(
   return it->second;
 }
 
-upb_MiniTable_Enum* FilePlatformLayout::GetEnumTable(
+upb_MiniTableEnum* FilePlatformLayout::GetEnumTable(
     const protobuf::EnumDescriptor* d) const {
   auto it = enum_map_.find(d);
   assert(it != enum_map_.end());
   return it->second;
 }
 
-const upb_MiniTable_Extension* FilePlatformLayout::GetExtension(
+const upb_MiniTableExtension* FilePlatformLayout::GetExtension(
     const protobuf::FieldDescriptor* fd) const {
   auto it = extension_map_.find(fd);
   assert(it != extension_map_.end());
@@ -171,7 +171,7 @@ void FilePlatformLayout::ResolveIntraFileReferences() {
       if (f->message_type() && f->message_type()->file() == f->file()) {
         // const_cast is safe because the mini-table is owned exclusively
         // by us, and was allocated from an arena (known-writable memory).
-        upb_MiniTable_Field* mt_f = const_cast<upb_MiniTable_Field*>(
+        upb_MiniTableField* mt_f = const_cast<upb_MiniTableField*>(
             upb_MiniTable_FindFieldByNumber(mt, f->number()));
         upb_MiniTable* sub_mt = GetMiniTable(f->message_type());
         upb_MiniTable_SetSubMessage(mt, mt_f, sub_mt);
@@ -182,19 +182,19 @@ void FilePlatformLayout::ResolveIntraFileReferences() {
   }
 }
 
-upb_MiniTable_Sub FilePlatformLayout::PackSub(const char* data, SubTag tag) {
+upb_MiniTableSub FilePlatformLayout::PackSub(const char* data, SubTag tag) {
   uintptr_t val = reinterpret_cast<uintptr_t>(data);
   assert((val & kMask) == 0);
-  upb_MiniTable_Sub sub;
+  upb_MiniTableSub sub;
   sub.submsg = reinterpret_cast<upb_MiniTable*>(val | tag);
   return sub;
 }
 
-bool FilePlatformLayout::IsNull(upb_MiniTable_Sub sub) {
+bool FilePlatformLayout::IsNull(upb_MiniTableSub sub) {
   return reinterpret_cast<uintptr_t>(sub.subenum) == 0;
 }
 
-std::string FilePlatformLayout::GetSub(upb_MiniTable_Sub sub) {
+std::string FilePlatformLayout::GetSub(upb_MiniTableSub sub) {
   uintptr_t as_int = reinterpret_cast<uintptr_t>(sub.submsg);
   const char* str = reinterpret_cast<const char*>(as_int & ~SubTag::kMask);
   switch (as_int & SubTag::kMask) {
@@ -212,20 +212,20 @@ void FilePlatformLayout::SetSubTableStrings() {
   for (const auto& pair : table_map_) {
     upb_MiniTable* mt = pair.second;
     for (const auto* f : FieldNumberOrder(pair.first)) {
-      upb_MiniTable_Field* mt_f = const_cast<upb_MiniTable_Field*>(
+      upb_MiniTableField* mt_f = const_cast<upb_MiniTableField*>(
           upb_MiniTable_FindFieldByNumber(mt, f->number()));
       assert(mt_f);
-      upb_MiniTable_Sub sub = PackSubForField(f, mt_f);
+      upb_MiniTableSub sub = PackSubForField(f, mt_f);
       if (IsNull(sub)) continue;
       // const_cast is safe because the mini-table is owned exclusively
       // by us, and was allocated from an arena (known-writable memory).
-      *const_cast<upb_MiniTable_Sub*>(&mt->subs[mt_f->submsg_index]) = sub;
+      *const_cast<upb_MiniTableSub*>(&mt->subs[mt_f->submsg_index]) = sub;
     }
   }
 }
 
-upb_MiniTable_Sub FilePlatformLayout::PackSubForField(
-    const protobuf::FieldDescriptor* f, const upb_MiniTable_Field* mt_f) {
+upb_MiniTableSub FilePlatformLayout::PackSubForField(
+    const protobuf::FieldDescriptor* f, const upb_MiniTableField* mt_f) {
   if (mt_f->submsg_index == kUpb_NoSub) {
     return PackSub(nullptr, SubTag::kNull);
   } else if (f->message_type()) {
@@ -262,8 +262,8 @@ void FilePlatformLayout::BuildExtensions(const protobuf::FileDescriptor* fd) {
     upb::MtDataEncoder e;
     e.EncodeExtension(static_cast<upb_FieldType>(f->type()), f->number(),
                       GetFieldModifiers(f));
-    upb_MiniTable_Extension& ext = extension_map_[f];
-    upb_MiniTable_Sub sub;
+    upb_MiniTableExtension& ext = extension_map_[f];
+    upb_MiniTableSub sub;
     // The extendee may be from another file, so we build a temporary MiniTable
     // for it, just for the purpose of building the extension.
     // Note, we are not caching so this could use more memory than is necessary.
@@ -360,7 +360,7 @@ upb_MiniTable* FilePlatformLayout::MakeRegularMiniTable(
   return ret;
 }
 
-upb_MiniTable_Enum* FilePlatformLayout::MakeMiniTableEnum(
+upb_MiniTableEnum* FilePlatformLayout::MakeMiniTableEnum(
     const protobuf::EnumDescriptor* d) {
   upb::Arena arena;
   upb::MtDataEncoder e;
@@ -373,8 +373,8 @@ upb_MiniTable_Enum* FilePlatformLayout::MakeMiniTableEnum(
 
   absl::string_view str = e.data();
   upb::Status status;
-  upb_MiniTable_Enum* ret = upb_MiniTable_BuildEnum(str.data(), str.size(),
-                                                    arena_.ptr(), status.ptr());
+  upb_MiniTableEnum* ret = upb_MiniTable_BuildEnum(str.data(), str.size(),
+                                                   arena_.ptr(), status.ptr());
   if (!ret) {
     fprintf(stderr, "Error building mini-table: %s\n", status.error_message());
   }

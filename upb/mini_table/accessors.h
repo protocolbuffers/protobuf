@@ -38,15 +38,15 @@
 extern "C" {
 #endif
 
-UPB_INLINE bool _upb_MiniTable_Field_InOneOf(const upb_MiniTable_Field* field) {
+UPB_INLINE bool _upb_MiniTableField_InOneOf(const upb_MiniTableField* field) {
   return field->presence < 0;
 }
 
 UPB_INLINE void _upb_MiniTable_SetPresence(upb_Message* msg,
-                                           const upb_MiniTable_Field* field) {
+                                           const upb_MiniTableField* field) {
   if (field->presence > 0) {
     _upb_sethas_field(msg, field);
-  } else if (_upb_MiniTable_Field_InOneOf(field)) {
+  } else if (_upb_MiniTableField_InOneOf(field)) {
     *_upb_oneofcase_field(msg, field) = field->number;
   }
 }
@@ -54,19 +54,19 @@ UPB_INLINE void _upb_MiniTable_SetPresence(upb_Message* msg,
 // EVERYTHING ABOVE THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
 bool upb_MiniTable_HasField(const upb_Message* msg,
-                            const upb_MiniTable_Field* field);
+                            const upb_MiniTableField* field);
 
 void upb_MiniTable_ClearField(upb_Message* msg,
-                              const upb_MiniTable_Field* field);
+                              const upb_MiniTableField* field);
 
 UPB_INLINE bool upb_MiniTable_GetBool(const upb_Message* msg,
-                                      const upb_MiniTable_Field* field) {
+                                      const upb_MiniTableField* field) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Bool);
   return *UPB_PTR_AT(msg, field->offset, bool);
 }
 
 UPB_INLINE void upb_MiniTable_SetBool(upb_Message* msg,
-                                      const upb_MiniTable_Field* field,
+                                      const upb_MiniTableField* field,
                                       bool value) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Bool);
   _upb_MiniTable_SetPresence(msg, field);
@@ -74,7 +74,7 @@ UPB_INLINE void upb_MiniTable_SetBool(upb_Message* msg,
 }
 
 UPB_INLINE int32_t upb_MiniTable_GetInt32(const upb_Message* msg,
-                                          const upb_MiniTable_Field* field) {
+                                          const upb_MiniTableField* field) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Int32 ||
              field->descriptortype == kUpb_FieldType_SInt32 ||
              field->descriptortype == kUpb_FieldType_SFixed32 ||
@@ -83,7 +83,7 @@ UPB_INLINE int32_t upb_MiniTable_GetInt32(const upb_Message* msg,
 }
 
 UPB_INLINE void upb_MiniTable_SetInt32(upb_Message* msg,
-                                       const upb_MiniTable_Field* field,
+                                       const upb_MiniTableField* field,
                                        int32_t value) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Int32 ||
              field->descriptortype == kUpb_FieldType_SInt32 ||
@@ -93,14 +93,14 @@ UPB_INLINE void upb_MiniTable_SetInt32(upb_Message* msg,
 }
 
 UPB_INLINE uint32_t upb_MiniTable_GetUInt32(const upb_Message* msg,
-                                            const upb_MiniTable_Field* field) {
+                                            const upb_MiniTableField* field) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_UInt32 ||
              field->descriptortype == kUpb_FieldType_Fixed32);
   return *UPB_PTR_AT(msg, field->offset, uint32_t);
 }
 
 UPB_INLINE void upb_MiniTable_SetUInt32(upb_Message* msg,
-                                        const upb_MiniTable_Field* field,
+                                        const upb_MiniTableField* field,
                                         uint32_t value) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_UInt32 ||
              field->descriptortype == kUpb_FieldType_Fixed32);
@@ -110,17 +110,17 @@ UPB_INLINE void upb_MiniTable_SetUInt32(upb_Message* msg,
 
 UPB_INLINE void upb_MiniTable_SetEnumProto2(upb_Message* msg,
                                             const upb_MiniTable* msg_mini_table,
-                                            const upb_MiniTable_Field* field,
+                                            const upb_MiniTableField* field,
                                             int32_t value) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Enum);
-  UPB_ASSERT(upb_MiniTable_Enum_CheckValue(
+  UPB_ASSERT(upb_MiniTableEnum_CheckValue(
       upb_MiniTable_GetSubEnumTable(msg_mini_table, field), value));
   _upb_MiniTable_SetPresence(msg, field);
   *UPB_PTR_AT(msg, field->offset, int32_t) = value;
 }
 
 UPB_INLINE int64_t upb_MiniTable_GetInt64(const upb_Message* msg,
-                                          const upb_MiniTable_Field* field) {
+                                          const upb_MiniTableField* field) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Int64 ||
              field->descriptortype == kUpb_FieldType_SInt64 ||
              field->descriptortype == kUpb_FieldType_SFixed64);
@@ -128,7 +128,7 @@ UPB_INLINE int64_t upb_MiniTable_GetInt64(const upb_Message* msg,
 }
 
 UPB_INLINE void upb_MiniTable_SetInt64(upb_Message* msg,
-                                       const upb_MiniTable_Field* field,
+                                       const upb_MiniTableField* field,
                                        int64_t value) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Int64 ||
              field->descriptortype == kUpb_FieldType_SInt64 ||
@@ -138,14 +138,14 @@ UPB_INLINE void upb_MiniTable_SetInt64(upb_Message* msg,
 }
 
 UPB_INLINE uint64_t upb_MiniTable_GetUInt64(const upb_Message* msg,
-                                            const upb_MiniTable_Field* field) {
+                                            const upb_MiniTableField* field) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_UInt64 ||
              field->descriptortype == kUpb_FieldType_Fixed64);
   return *UPB_PTR_AT(msg, field->offset, uint64_t);
 }
 
 UPB_INLINE void upb_MiniTable_SetUInt64(upb_Message* msg,
-                                        const upb_MiniTable_Field* field,
+                                        const upb_MiniTableField* field,
                                         uint64_t value) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_UInt64 ||
              field->descriptortype == kUpb_FieldType_Fixed64);
@@ -154,13 +154,13 @@ UPB_INLINE void upb_MiniTable_SetUInt64(upb_Message* msg,
 }
 
 UPB_INLINE float upb_MiniTable_GetFloat(const upb_Message* msg,
-                                        const upb_MiniTable_Field* field) {
+                                        const upb_MiniTableField* field) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Float);
   return *UPB_PTR_AT(msg, field->offset, float);
 }
 
 UPB_INLINE void upb_MiniTable_SetFloat(upb_Message* msg,
-                                       const upb_MiniTable_Field* field,
+                                       const upb_MiniTableField* field,
                                        float value) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Float);
   _upb_MiniTable_SetPresence(msg, field);
@@ -168,13 +168,13 @@ UPB_INLINE void upb_MiniTable_SetFloat(upb_Message* msg,
 }
 
 UPB_INLINE double upb_MiniTable_GetDouble(const upb_Message* msg,
-                                          const upb_MiniTable_Field* field) {
+                                          const upb_MiniTableField* field) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Double);
   return *UPB_PTR_AT(msg, field->offset, double);
 }
 
 UPB_INLINE void upb_MiniTable_SetDouble(upb_Message* msg,
-                                        const upb_MiniTable_Field* field,
+                                        const upb_MiniTableField* field,
                                         double value) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Double);
   _upb_MiniTable_SetPresence(msg, field);
@@ -182,14 +182,14 @@ UPB_INLINE void upb_MiniTable_SetDouble(upb_Message* msg,
 }
 
 UPB_INLINE upb_StringView upb_MiniTable_GetString(
-    const upb_Message* msg, const upb_MiniTable_Field* field) {
+    const upb_Message* msg, const upb_MiniTableField* field) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Bytes ||
              field->descriptortype == kUpb_FieldType_String);
   return *UPB_PTR_AT(msg, field->offset, upb_StringView);
 }
 
 UPB_INLINE void upb_MiniTable_SetString(upb_Message* msg,
-                                        const upb_MiniTable_Field* field,
+                                        const upb_MiniTableField* field,
                                         upb_StringView value) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Bytes ||
              field->descriptortype == kUpb_FieldType_String);
@@ -198,7 +198,7 @@ UPB_INLINE void upb_MiniTable_SetString(upb_Message* msg,
 }
 
 UPB_INLINE const upb_Message* upb_MiniTable_GetMessage(
-    const upb_Message* msg, const upb_MiniTable_Field* field) {
+    const upb_Message* msg, const upb_MiniTableField* field) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
              field->descriptortype == kUpb_FieldType_Group);
   return *UPB_PTR_AT(msg, field->offset, const upb_Message*);
@@ -206,7 +206,7 @@ UPB_INLINE const upb_Message* upb_MiniTable_GetMessage(
 
 UPB_INLINE void upb_MiniTable_SetMessage(upb_Message* msg,
                                          const upb_MiniTable* mini_table,
-                                         const upb_MiniTable_Field* field,
+                                         const upb_MiniTableField* field,
                                          upb_Message* sub_message) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
              field->descriptortype == kUpb_FieldType_Group);
@@ -217,7 +217,7 @@ UPB_INLINE void upb_MiniTable_SetMessage(upb_Message* msg,
 
 UPB_INLINE upb_Message* upb_MiniTable_GetMutableMessage(
     upb_Message* msg, const upb_MiniTable* mini_table,
-    const upb_MiniTable_Field* field, upb_Arena* arena) {
+    const upb_MiniTableField* field, upb_Arena* arena) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
              field->descriptortype == kUpb_FieldType_Group);
   upb_Message* sub_message = *UPB_PTR_AT(msg, field->offset, upb_Message*);
@@ -233,17 +233,17 @@ UPB_INLINE upb_Message* upb_MiniTable_GetMutableMessage(
 }
 
 UPB_INLINE const upb_Array* upb_MiniTable_GetArray(
-    const upb_Message* msg, const upb_MiniTable_Field* field) {
+    const upb_Message* msg, const upb_MiniTableField* field) {
   return (const upb_Array*)*UPB_PTR_AT(msg, field->offset, upb_Array*);
 }
 
 UPB_INLINE upb_Array* upb_MiniTable_GetMutableArray(
-    upb_Message* msg, const upb_MiniTable_Field* field) {
+    upb_Message* msg, const upb_MiniTableField* field) {
   return (upb_Array*)*UPB_PTR_AT(msg, field->offset, upb_Array*);
 }
 
 void* upb_MiniTable_ResizeArray(upb_Message* msg,
-                                const upb_MiniTable_Field* field, size_t len,
+                                const upb_MiniTableField* field, size_t len,
                                 upb_Arena* arena);
 typedef enum {
   kUpb_GetExtension_Ok,
@@ -264,7 +264,7 @@ typedef enum {
 // TODO(ferhat): Only supports extension fields that are messages,
 // expand support to include non-message types.
 upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
-    upb_Message* msg, const upb_MiniTable_Extension* ext_table,
+    upb_Message* msg, const upb_MiniTableExtension* ext_table,
     int decode_options, upb_Arena* arena,
     const upb_Message_Extension** extension);
 
@@ -274,7 +274,7 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
 // If an extension has already been decoded it will be re-encoded
 // to bytes.
 upb_GetExtensionAsBytes_Status upb_MiniTable_GetExtensionAsBytes(
-    const upb_Message* msg, const upb_MiniTable_Extension* ext_table,
+    const upb_Message* msg, const upb_MiniTableExtension* ext_table,
     int encode_options, upb_Arena* arena, const char** extension_data,
     size_t* len);
 
@@ -314,7 +314,7 @@ typedef struct {
 // using upb_MiniTable_SetMessage.
 upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
     upb_Message* msg, const upb_MiniTable* mini_table,
-    const upb_MiniTable_Field* field, const upb_MiniTable* sub_mini_table,
+    const upb_MiniTableField* field, const upb_MiniTable* sub_mini_table,
     int decode_options, upb_Arena* arena);
 
 // Promotes all unknown data that matches field tag id to repeated messages
@@ -324,7 +324,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
 // Since repeated messages can't be packed we remove each unknown that
 // contains the target tag id.
 upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
-    upb_Message* msg, const upb_MiniTable_Field* field,
+    upb_Message* msg, const upb_MiniTableField* field,
     const upb_MiniTable* mini_table, int decode_options, upb_Arena* arena);
 
 #ifdef __cplusplus

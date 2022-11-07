@@ -206,8 +206,8 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
                            const upb_MiniTable* m, size_t* size);
 
 static void encode_scalar(upb_encstate* e, const void* _field_mem,
-                          const upb_MiniTable_Sub* subs,
-                          const upb_MiniTable_Field* f) {
+                          const upb_MiniTableSub* subs,
+                          const upb_MiniTableField* f) {
   const char* field_mem = _field_mem;
   int wire_type;
 
@@ -289,8 +289,8 @@ static void encode_scalar(upb_encstate* e, const void* _field_mem,
 }
 
 static void encode_array(upb_encstate* e, const upb_Message* msg,
-                         const upb_MiniTable_Sub* subs,
-                         const upb_MiniTable_Field* f) {
+                         const upb_MiniTableSub* subs,
+                         const upb_MiniTableField* f) {
   const upb_Array* arr = *UPB_PTR_AT(msg, f->offset, upb_Array*);
   bool packed = f->mode & kUpb_LabelFlags_IsPacked;
   size_t pre_len = e->limit - e->ptr;
@@ -397,8 +397,8 @@ static void encode_array(upb_encstate* e, const upb_Message* msg,
 static void encode_mapentry(upb_encstate* e, uint32_t number,
                             const upb_MiniTable* layout,
                             const upb_MapEntry* ent) {
-  const upb_MiniTable_Field* key_field = &layout->fields[0];
-  const upb_MiniTable_Field* val_field = &layout->fields[1];
+  const upb_MiniTableField* key_field = &layout->fields[0];
+  const upb_MiniTableField* val_field = &layout->fields[1];
   size_t pre_len = e->limit - e->ptr;
   size_t size;
   encode_scalar(e, &ent->v, layout->subs, val_field);
@@ -409,8 +409,8 @@ static void encode_mapentry(upb_encstate* e, uint32_t number,
 }
 
 static void encode_map(upb_encstate* e, const upb_Message* msg,
-                       const upb_MiniTable_Sub* subs,
-                       const upb_MiniTable_Field* f) {
+                       const upb_MiniTableSub* subs,
+                       const upb_MiniTableField* f) {
   const upb_Map* map = *UPB_PTR_AT(msg, f->offset, const upb_Map*);
   const upb_MiniTable* layout = subs[f->submsg_index].submsg;
   UPB_ASSERT(layout->field_count == 2);
@@ -441,8 +441,8 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
 }
 
 static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
-                                const upb_MiniTable_Sub* subs,
-                                const upb_MiniTable_Field* f) {
+                                const upb_MiniTableSub* subs,
+                                const upb_MiniTableField* f) {
   if (f->presence == 0) {
     /* Proto3 presence or map/array. */
     const void* mem = UPB_PTR_AT(msg, f->offset, void);
@@ -479,8 +479,8 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
 }
 
 static void encode_field(upb_encstate* e, const upb_Message* msg,
-                         const upb_MiniTable_Sub* subs,
-                         const upb_MiniTable_Field* field) {
+                         const upb_MiniTableSub* subs,
+                         const upb_MiniTableField* field) {
   switch (upb_FieldMode_Get(field)) {
     case kUpb_FieldMode_Array:
       encode_array(e, msg, subs, field);
@@ -549,8 +549,8 @@ static void encode_message(upb_encstate* e, const upb_Message* msg,
   }
 
   if (m->field_count) {
-    const upb_MiniTable_Field* f = &m->fields[m->field_count];
-    const upb_MiniTable_Field* first = &m->fields[0];
+    const upb_MiniTableField* f = &m->fields[m->field_count];
+    const upb_MiniTableField* first = &m->fields[0];
     while (f != first) {
       f--;
       if (encode_shouldencode(e, msg, m->subs, f)) {

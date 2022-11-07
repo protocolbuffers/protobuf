@@ -48,7 +48,7 @@ struct upb_FileDef {
   const upb_EnumDef* top_lvl_enums;
   const upb_FieldDef* top_lvl_exts;
   const upb_ServiceDef* services;
-  const upb_MiniTable_Extension** ext_layouts;
+  const upb_MiniTableExtension** ext_layouts;
   const upb_DefPool* symtab;
 
   int dep_count;
@@ -149,7 +149,7 @@ const upb_ServiceDef* upb_FileDef_Service(const upb_FileDef* f, int i) {
 
 const upb_DefPool* upb_FileDef_Pool(const upb_FileDef* f) { return f->symtab; }
 
-const upb_MiniTable_Extension* _upb_FileDef_ExtensionMiniTable(
+const upb_MiniTableExtension* _upb_FileDef_ExtensionMiniTable(
     const upb_FileDef* f, int i) {
   return f->ext_layouts[i];
 }
@@ -216,7 +216,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     // We are building ext layouts from scratch.
     file->ext_layouts = _upb_DefBuilder_Alloc(
         ctx, sizeof(*file->ext_layouts) * file->ext_count);
-    upb_MiniTable_Extension* ext =
+    upb_MiniTableExtension* ext =
         _upb_DefBuilder_Alloc(ctx, sizeof(*ext) * file->ext_count);
     for (int i = 0; i < file->ext_count; i++) {
       file->ext_layouts[i] = &ext[i];

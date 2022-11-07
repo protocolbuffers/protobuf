@@ -232,13 +232,13 @@ const upb_EnumDef* upb_FieldDef_EnumSubDef(const upb_FieldDef* f) {
   return upb_FieldDef_CType(f) == kUpb_CType_Enum ? f->sub.enumdef : NULL;
 }
 
-const upb_MiniTable_Field* upb_FieldDef_MiniTable(const upb_FieldDef* f) {
+const upb_MiniTableField* upb_FieldDef_MiniTable(const upb_FieldDef* f) {
   UPB_ASSERT(!upb_FieldDef_IsExtension(f));
   const upb_MiniTable* layout = upb_MessageDef_MiniTable(f->msgdef);
   return &layout->fields[f->layout_index];
 }
 
-const upb_MiniTable_Extension* _upb_FieldDef_ExtensionMiniTable(
+const upb_MiniTableExtension* _upb_FieldDef_ExtensionMiniTable(
     const upb_FieldDef* f) {
   UPB_ASSERT(upb_FieldDef_IsExtension(f));
   const upb_FileDef* file = upb_FieldDef_File(f);
@@ -696,7 +696,7 @@ static void _upb_FieldDef_CreateNotExt(
   if (!ctx->layout) return;
 
   const upb_MiniTable* mt = upb_MessageDef_MiniTable(m);
-  const upb_MiniTable_Field* fields = mt->fields;
+  const upb_MiniTableField* fields = mt->fields;
   for (int i = 0; i < mt->field_count; i++) {
     if (fields[i].number == f->number_) {
       f->layout_index = i;
@@ -851,7 +851,7 @@ static void resolve_extension(upb_DefBuilder* ctx, const char* prefix,
         (unsigned)f->number_, f->full_name, upb_MessageDef_FullName(m));
   }
 
-  const upb_MiniTable_Extension* ext = _upb_FieldDef_ExtensionMiniTable(f);
+  const upb_MiniTableExtension* ext = _upb_FieldDef_ExtensionMiniTable(f);
 
   if (ctx->layout) {
     UPB_ASSERT(upb_FieldDef_Number(f) == ext->field.number);
@@ -861,8 +861,8 @@ static void resolve_extension(upb_DefBuilder* ctx, const char* prefix,
       _upb_DefBuilder_OomErr(ctx);
     }
 
-    upb_MiniTable_Extension* mut_ext = (upb_MiniTable_Extension*)ext;
-    upb_MiniTable_Sub sub = {NULL};
+    upb_MiniTableExtension* mut_ext = (upb_MiniTableExtension*)ext;
+    upb_MiniTableSub sub = {NULL};
     if (upb_FieldDef_IsSubMessage(f)) {
       sub.submsg = upb_MessageDef_MiniTable(f->sub.msgdef);
     } else if (_upb_FieldDef_IsClosedEnum(f)) {

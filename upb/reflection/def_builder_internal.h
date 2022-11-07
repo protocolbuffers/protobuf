@@ -60,7 +60,7 @@ struct upb_DefBuilder {
   upb_Arena* arena;                  // Allocate defs here.
   upb_Arena* tmp_arena;              // For temporary allocations.
   upb_Status* status;                // Record errors here.
-  const upb_MiniTable_File* layout;  // NULL if we should build layouts.
+  const upb_MiniTableFile* layout;   // NULL if we should build layouts.
   int enum_count;                    // Count of enums built so far.
   int msg_count;                     // Count of messages built so far.
   int ext_count;                     // Count of extensions built so far.

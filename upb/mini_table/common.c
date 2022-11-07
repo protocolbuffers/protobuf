@@ -54,7 +54,7 @@ const int8_t _kUpb_FromBase92[] = {
     73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91,
 };
 
-const upb_MiniTable_Field* upb_MiniTable_FindFieldByNumber(
+const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
     const upb_MiniTable* table, uint32_t number) {
   int n = table->field_count;
   for (int i = 0; i < n; i++) {
@@ -65,7 +65,7 @@ const upb_MiniTable_Field* upb_MiniTable_FindFieldByNumber(
   return NULL;
 }
 
-upb_FieldType upb_MiniTableField_Type(const upb_MiniTable_Field* field) {
+upb_FieldType upb_MiniTableField_Type(const upb_MiniTableField* field) {
   if (field->mode & kUpb_LabelFlags_IsAlternate) {
     if (field->descriptortype == kUpb_FieldType_Int32) {
       return kUpb_FieldType_Enum;

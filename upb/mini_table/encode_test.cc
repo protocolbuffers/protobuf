@@ -70,7 +70,7 @@ TEST_P(MiniTableTest, AllScalarTypes) {
   EXPECT_EQ(count, table->field_count);
   absl::flat_hash_set<size_t> offsets;
   for (int i = 0; i < 16; i++) {
-    const upb_MiniTable_Field* f = &table->fields[i];
+    const upb_MiniTableField* f = &table->fields[i];
     EXPECT_EQ(i + 1, f->number);
     EXPECT_EQ(kUpb_FieldMode_Scalar, f->mode & kUpb_FieldMode_Mask);
     EXPECT_TRUE(offsets.insert(f->offset).second);
@@ -96,7 +96,7 @@ TEST_P(MiniTableTest, AllRepeatedTypes) {
   EXPECT_EQ(count, table->field_count);
   absl::flat_hash_set<size_t> offsets;
   for (int i = 0; i < 16; i++) {
-    const upb_MiniTable_Field* f = &table->fields[i];
+    const upb_MiniTableField* f = &table->fields[i];
     EXPECT_EQ(i + 1, f->number);
     EXPECT_EQ(kUpb_FieldMode_Array, f->mode & kUpb_FieldMode_Mask);
     EXPECT_TRUE(offsets.insert(f->offset).second);
@@ -124,7 +124,7 @@ TEST_P(MiniTableTest, Skips) {
   EXPECT_EQ(count, table->field_count);
   absl::flat_hash_set<size_t> offsets;
   for (size_t i = 0; i < field_numbers.size(); i++) {
-    const upb_MiniTable_Field* f = &table->fields[i];
+    const upb_MiniTableField* f = &table->fields[i];
     EXPECT_EQ(field_numbers[i], f->number);
     EXPECT_EQ(kUpb_FieldType_Float, f->descriptortype);
     EXPECT_EQ(kUpb_FieldMode_Scalar, f->mode & kUpb_FieldMode_Mask);
@@ -154,7 +154,7 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
   EXPECT_EQ(count, table->field_count);
   absl::flat_hash_set<size_t> offsets;
   for (int i = 0; i < 16; i++) {
-    const upb_MiniTable_Field* f = &table->fields[i];
+    const upb_MiniTableField* f = &table->fields[i];
     EXPECT_EQ(i + 1, f->number);
     EXPECT_EQ(kUpb_FieldMode_Scalar, f->mode & kUpb_FieldMode_Mask);
     // For a oneof all fields have the same offset.
@@ -226,12 +226,12 @@ TEST(MiniTableEnumTest, Enum) {
   e.EndEnum();
 
   upb::Status status;
-  upb_MiniTable_Enum* table = upb_MiniTable_BuildEnum(
+  upb_MiniTableEnum* table = upb_MiniTable_BuildEnum(
       e.data().data(), e.data().size(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table) << status.error_message();
 
   for (int i = 0; i < UINT16_MAX; i++) {
-    EXPECT_EQ(values.contains(i), upb_MiniTable_Enum_CheckValue(table, i)) << i;
+    EXPECT_EQ(values.contains(i), upb_MiniTableEnum_CheckValue(table, i)) << i;
   }
 }
 
@@ -268,12 +268,12 @@ TEST(MiniTableEnumTest, PositiveAndNegative) {
   e.EndEnum();
 
   upb::Status status;
-  upb_MiniTable_Enum* table = upb_MiniTable_BuildEnum(
+  upb_MiniTableEnum* table = upb_MiniTable_BuildEnum(
       e.data().data(), e.data().size(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table) << status.error_message();
 
   for (int i = -UINT16_MAX; i < UINT16_MAX; i++) {
-    EXPECT_EQ(values.contains(i), upb_MiniTable_Enum_CheckValue(table, i)) << i;
+    EXPECT_EQ(values.contains(i), upb_MiniTableEnum_CheckValue(table, i)) << i;
   }
 }
 

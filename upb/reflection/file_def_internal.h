@@ -37,7 +37,7 @@
 extern "C" {
 #endif
 
-const upb_MiniTable_Extension* _upb_FileDef_ExtensionMiniTable(
+const upb_MiniTableExtension* _upb_FileDef_ExtensionMiniTable(
     const upb_FileDef* f, int i);
 const int32_t* _upb_FileDef_PublicDependencyIndexes(const upb_FileDef* f);
 const int32_t* _upb_FileDef_WeakDependencyIndexes(const upb_FileDef* f);

@@ -35,7 +35,7 @@
 #include "upb/msg.h"
 #include "upb/port/def.inc"
 
-static size_t _upb_MiniTable_Field_GetSize(const upb_MiniTable_Field* f) {
+static size_t _upb_MiniTableField_Size(const upb_MiniTableField* f) {
   static unsigned char sizes[] = {
       0,                      /* 0 */
       8,                      /* kUpb_FieldType_Double */
@@ -61,7 +61,7 @@ static size_t _upb_MiniTable_Field_GetSize(const upb_MiniTable_Field* f) {
 }
 
 // Maps descriptor type to elem_size_lg2.
-static int _upb_MiniTable_Field_CTypeLg2Size(const upb_MiniTable_Field* f) {
+static int _upb_MiniTableField_CTypeLg2Size(const upb_MiniTableField* f) {
   static const uint8_t sizes[] = {
       -1,             /* invalid descriptor type */
       3,              /* DOUBLE */
@@ -87,8 +87,8 @@ static int _upb_MiniTable_Field_CTypeLg2Size(const upb_MiniTable_Field* f) {
 }
 
 bool upb_MiniTable_HasField(const upb_Message* msg,
-                            const upb_MiniTable_Field* field) {
-  if (_upb_MiniTable_Field_InOneOf(field)) {
+                            const upb_MiniTableField* field) {
+  if (_upb_MiniTableField_InOneOf(field)) {
     return _upb_getoneofcase_field(msg, field) == field->number;
   } else if (field->presence > 0) {
     return _upb_hasbit_field(msg, field);
@@ -100,23 +100,23 @@ bool upb_MiniTable_HasField(const upb_Message* msg,
 }
 
 void upb_MiniTable_ClearField(upb_Message* msg,
-                              const upb_MiniTable_Field* field) {
+                              const upb_MiniTableField* field) {
   char* mem = UPB_PTR_AT(msg, field->offset, char);
   if (field->presence > 0) {
     _upb_clearhas_field(msg, field);
-  } else if (_upb_MiniTable_Field_InOneOf(field)) {
+  } else if (_upb_MiniTableField_InOneOf(field)) {
     uint32_t* oneof_case = _upb_oneofcase_field(msg, field);
     if (*oneof_case != field->number) return;
     *oneof_case = 0;
   }
-  memset(mem, 0, _upb_MiniTable_Field_GetSize(field));
+  memset(mem, 0, _upb_MiniTableField_Size(field));
 }
 
 void* upb_MiniTable_ResizeArray(upb_Message* msg,
-                                const upb_MiniTable_Field* field, size_t len,
+                                const upb_MiniTableField* field, size_t len,
                                 upb_Arena* arena) {
   return _upb_Array_Resize_accessor2(
-      msg, field->offset, len, _upb_MiniTable_Field_CTypeLg2Size(field), arena);
+      msg, field->offset, len, _upb_MiniTableField_CTypeLg2Size(field), arena);
 }
 
 typedef struct {
@@ -204,7 +204,7 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
 }
 
 upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
-    upb_Message* msg, const upb_MiniTable_Extension* ext_table,
+    upb_Message* msg, const upb_MiniTableExtension* ext_table,
     int decode_options, upb_Arena* arena,
     const upb_Message_Extension** extension) {
   UPB_ASSERT(ext_table->field.descriptortype == kUpb_FieldType_Message);
@@ -248,7 +248,7 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
 }
 
 upb_GetExtensionAsBytes_Status upb_MiniTable_GetExtensionAsBytes(
-    const upb_Message* msg, const upb_MiniTable_Extension* ext_table,
+    const upb_Message* msg, const upb_MiniTableExtension* ext_table,
     int encode_options, upb_Arena* arena, const char** extension_data,
     size_t* len) {
   const upb_Message_Extension* msg_ext = _upb_Message_Getext(msg, ext_table);
@@ -406,7 +406,7 @@ upb_FindUnknownRet upb_MiniTable_FindUnknown(const upb_Message* msg,
 
 upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
     upb_Message* msg, const upb_MiniTable* mini_table,
-    const upb_MiniTable_Field* field, const upb_MiniTable* sub_mini_table,
+    const upb_MiniTableField* field, const upb_MiniTable* sub_mini_table,
     int decode_options, upb_Arena* arena) {
   upb_FindUnknownRet unknown;
   // We need to loop and merge unknowns that have matching tag field->number.
@@ -454,7 +454,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
 // TODO(b/251007554): Optimize. Instead of converting messages one at a time,
 // scan all unknown data once and compact.
 upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
-    upb_Message* msg, const upb_MiniTable_Field* field,
+    upb_Message* msg, const upb_MiniTableField* field,
     const upb_MiniTable* mini_table, int decode_options, upb_Arena* arena) {
   upb_Array* repeated_messages = upb_MiniTable_GetMutableArray(msg, field);
   // Find all unknowns with given field number and parse.

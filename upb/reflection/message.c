@@ -41,7 +41,7 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-static size_t get_field_size(const upb_MiniTable_Field* f) {
+static size_t get_field_size(const upb_MiniTableField* f) {
   static unsigned char sizes[] = {
       0,                      /* 0 */
       8,                      /* kUpb_FieldType_Double */
@@ -66,13 +66,13 @@ static size_t get_field_size(const upb_MiniTable_Field* f) {
   return upb_IsRepeatedOrMap(f) ? sizeof(void*) : sizes[f->descriptortype];
 }
 
-static bool in_oneof(const upb_MiniTable_Field* field) {
+static bool in_oneof(const upb_MiniTableField* field) {
   return field->presence < 0;
 }
 
 static upb_MessageValue _upb_Message_Getraw(const upb_Message* msg,
                                             const upb_FieldDef* f) {
-  const upb_MiniTable_Field* field = upb_FieldDef_MiniTable(f);
+  const upb_MiniTableField* field = upb_FieldDef_MiniTable(f);
   const char* mem = UPB_PTR_AT(msg, field->offset, char);
   upb_MessageValue val = {0};
   memcpy(&val, mem, get_field_size(field));
@@ -82,10 +82,10 @@ static upb_MessageValue _upb_Message_Getraw(const upb_Message* msg,
 bool upb_Message_Has(const upb_Message* msg, const upb_FieldDef* f) {
   assert(upb_FieldDef_HasPresence(f));
   if (upb_FieldDef_IsExtension(f)) {
-    const upb_MiniTable_Extension* ext = _upb_FieldDef_ExtensionMiniTable(f);
+    const upb_MiniTableExtension* ext = _upb_FieldDef_ExtensionMiniTable(f);
     return _upb_Message_Getext(msg, ext) != NULL;
   } else {
-    const upb_MiniTable_Field* field = upb_FieldDef_MiniTable(f);
+    const upb_MiniTableField* field = upb_FieldDef_MiniTable(f);
     if (in_oneof(field)) {
       return _upb_getoneofcase_field(msg, field) == field->number;
     } else if (field->presence > 0) {
@@ -105,7 +105,7 @@ const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
     UPB_ASSERT(upb_OneofDef_FieldCount(o) == 1);
     return upb_Message_Has(msg, f) ? f : NULL;
   } else {
-    const upb_MiniTable_Field* field = upb_FieldDef_MiniTable(f);
+    const upb_MiniTableField* field = upb_FieldDef_MiniTable(f);
     uint32_t oneof_case = _upb_getoneofcase_field(msg, field);
     f = oneof_case ? upb_OneofDef_LookupNumber(o, oneof_case) : NULL;
     UPB_ASSERT((f != NULL) == (oneof_case != 0));
@@ -178,7 +178,7 @@ bool upb_Message_Set(upb_Message* msg, const upb_FieldDef* f,
     if (!ext) return false;
     memcpy(&ext->data, &val, sizeof(val));
   } else {
-    const upb_MiniTable_Field* field = upb_FieldDef_MiniTable(f);
+    const upb_MiniTableField* field = upb_FieldDef_MiniTable(f);
 
     // Building reflection should always cause all sub-message types to be
     // linked, but double-check here just for extra assurance.
@@ -202,7 +202,7 @@ void upb_Message_ClearField(upb_Message* msg, const upb_FieldDef* f) {
   if (upb_FieldDef_IsExtension(f)) {
     _upb_Message_Clearext(msg, _upb_FieldDef_ExtensionMiniTable(f));
   } else {
-    const upb_MiniTable_Field* field = upb_FieldDef_MiniTable(f);
+    const upb_MiniTableField* field = upb_FieldDef_MiniTable(f);
     char* mem = UPB_PTR_AT(msg, field->offset, char);
 
     if (field->presence > 0) {

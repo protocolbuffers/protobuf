@@ -42,7 +42,7 @@ struct upb_DefPool {
   upb_Arena* arena;
   upb_strtable syms;   // full_name -> packed def ptr
   upb_strtable files;  // file_name -> (upb_FileDef*)
-  upb_inttable exts;   // (upb_MiniTable_Extension*) -> (upb_FieldDef*)
+  upb_inttable exts;   // (upb_MiniTableExtension*) -> (upb_FieldDef*)
   upb_ExtensionRegistry* extreg;
   void* scratch_data;
   size_t scratch_size;
@@ -80,7 +80,7 @@ err:
   return NULL;
 }
 
-bool _upb_DefPool_InsertExt(upb_DefPool* s, const upb_MiniTable_Extension* ext,
+bool _upb_DefPool_InsertExt(upb_DefPool* s, const upb_MiniTableExtension* ext,
                             upb_FieldDef* f) {
   return upb_inttable_insert(&s->exts, (uintptr_t)ext, upb_value_constptr(f),
                              s->arena);
@@ -280,7 +280,7 @@ static void remove_filedef(upb_DefPool* s, upb_FileDef* file) {
 
 static const upb_FileDef* _upb_DefPool_AddFile(
     upb_DefPool* s, const google_protobuf_FileDescriptorProto* file_proto,
-    const upb_MiniTable_File* layout, upb_Status* status) {
+    const upb_MiniTableFile* layout, upb_Status* status) {
   const upb_StringView name = google_protobuf_FileDescriptorProto_name(file_proto);
 
   if (name.size == 0) {
@@ -374,7 +374,7 @@ bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
     goto err;
   }
 
-  const upb_MiniTable_File* mt = rebuild_minitable ? NULL : init->layout;
+  const upb_MiniTableFile* mt = rebuild_minitable ? NULL : init->layout;
   if (!_upb_DefPool_AddFile(s, file, mt, &status)) {
     goto err;
   }
@@ -398,7 +398,7 @@ size_t _upb_DefPool_BytesLoaded(const upb_DefPool* s) {
 upb_Arena* _upb_DefPool_Arena(const upb_DefPool* s) { return s->arena; }
 
 const upb_FieldDef* upb_DefPool_FindExtensionByMiniTable(
-    const upb_DefPool* s, const upb_MiniTable_Extension* ext) {
+    const upb_DefPool* s, const upb_MiniTableExtension* ext) {
   upb_value v;
   bool ok = upb_inttable_lookup(&s->exts, (uintptr_t)ext, &v);
   UPB_ASSERT(ok);
@@ -409,7 +409,7 @@ const upb_FieldDef* upb_DefPool_FindExtensionByNumber(const upb_DefPool* s,
                                                       const upb_MessageDef* m,
                                                       int32_t fieldnum) {
   const upb_MiniTable* t = upb_MessageDef_MiniTable(m);
-  const upb_MiniTable_Extension* ext =
+  const upb_MiniTableExtension* ext =
       upb_ExtensionRegistry_Lookup(s->extreg, t, fieldnum);
   return ext ? upb_DefPool_FindExtensionByMiniTable(s, ext) : NULL;
 }

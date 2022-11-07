@@ -59,23 +59,23 @@ upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
 // as unknown.  However there is no synchronization for this operation, which
 // means parallel mutation requires external synchronization.
 void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
-                                 upb_MiniTable_Field* field,
+                                 upb_MiniTableField* field,
                                  const upb_MiniTable* sub);
 
 // Links an enum field to a MiniTable for that enum.  All enum fields must
 // be linked prior to parsing.
-void upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTable_Field* field,
-                              const upb_MiniTable_Enum* sub);
+void upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
+                              const upb_MiniTableEnum* sub);
 
 const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
-                                         upb_MiniTable_Extension* ext,
+                                         upb_MiniTableExtension* ext,
                                          const upb_MiniTable* extendee,
-                                         upb_MiniTable_Sub sub,
+                                         upb_MiniTableSub sub,
                                          upb_Status* status);
 
-upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
-                                            upb_Arena* arena,
-                                            upb_Status* status);
+upb_MiniTableEnum* upb_MiniTable_BuildEnum(const char* data, size_t len,
+                                           upb_Arena* arena,
+                                           upb_Status* status);
 
 // Like upb_MiniTable_Build(), but the user provides a buffer of layout data so
 // it can be reused from call to call, avoiding repeated realloc()/free().

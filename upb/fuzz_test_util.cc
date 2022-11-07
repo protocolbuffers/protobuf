@@ -52,7 +52,7 @@ class Builder {
   void BuildMessages();
   void BuildEnums();
   void BuildExtensions(upb_ExtensionRegistry** exts);
-  bool LinkExtension(upb_MiniTable_Extension* ext);
+  bool LinkExtension(upb_MiniTableExtension* ext);
   void LinkMessages();
 
   size_t NextLink() {
@@ -67,7 +67,7 @@ class Builder {
                : mini_tables_[NextLink() % mini_tables_.size()];
   }
 
-  const upb_MiniTable_Enum* NextEnumTable() {
+  const upb_MiniTableEnum* NextEnumTable() {
     return enum_tables_.empty()
                ? nullptr
                : enum_tables_[NextLink() % enum_tables_.size()];
@@ -76,7 +76,7 @@ class Builder {
   const MiniTableFuzzInput* input_;
   upb_Arena* arena_;
   std::vector<const upb_MiniTable*> mini_tables_;
-  std::vector<const upb_MiniTable_Enum*> enum_tables_;
+  std::vector<const upb_MiniTableEnum*> enum_tables_;
   size_t link_ = 0;
 };
 
@@ -96,14 +96,14 @@ void Builder::BuildEnums() {
   upb::Status status;
   enum_tables_.reserve(input_->enum_mini_descriptors.size());
   for (const auto& d : input_->enum_mini_descriptors) {
-    upb_MiniTable_Enum* enum_table =
+    upb_MiniTableEnum* enum_table =
         upb_MiniTable_BuildEnum(d.data(), d.size(), arena_, status.ptr());
     if (enum_table) enum_tables_.push_back(enum_table);
   }
 }
 
-bool Builder::LinkExtension(upb_MiniTable_Extension* ext) {
-  upb_MiniTable_Field* field = &ext->field;
+bool Builder::LinkExtension(upb_MiniTableExtension* ext) {
+  upb_MiniTableField* field = &ext->field;
   if (field->descriptortype == kUpb_FieldType_Message ||
       field->descriptortype == kUpb_FieldType_Group) {
     auto mt = NextMiniTable();
@@ -128,9 +128,9 @@ void Builder::BuildExtensions(upb_ExtensionRegistry** exts) {
     const char* end = ptr + input_->extensions.size();
     // Iterate through the buffer, building extensions as long as we can.
     while (ptr < end) {
-      upb_MiniTable_Extension* ext = reinterpret_cast<upb_MiniTable_Extension*>(
+      upb_MiniTableExtension* ext = reinterpret_cast<upb_MiniTableExtension*>(
           upb_Arena_Malloc(arena_, sizeof(*ext)));
-      upb_MiniTable_Sub sub;
+      upb_MiniTableSub sub;
       const upb_MiniTable* extendee = NextMiniTable();
       if (!extendee) break;
       ptr = upb_MiniTable_BuildExtension(ptr, end - ptr, ext, extendee, sub,
@@ -140,7 +140,7 @@ void Builder::BuildExtensions(upb_ExtensionRegistry** exts) {
       if (upb_ExtensionRegistry_Lookup(*exts, ext->extendee, ext->field.number))
         continue;
       upb_ExtensionRegistry_AddArray(
-          *exts, const_cast<const upb_MiniTable_Extension**>(&ext), 1);
+          *exts, const_cast<const upb_MiniTableExtension**>(&ext), 1);
     }
   }
 }
@@ -150,8 +150,8 @@ void Builder::LinkMessages() {
     upb_MiniTable* table = const_cast<upb_MiniTable*>(t);
     // For each field that requires a sub-table, assign one as appropriate.
     for (size_t i = 0; i < table->field_count; i++) {
-      upb_MiniTable_Field* field =
-          const_cast<upb_MiniTable_Field*>(&table->fields[i]);
+      upb_MiniTableField* field =
+          const_cast<upb_MiniTableField*>(&table->fields[i]);
       if (link_ == input_->links.size()) link_ = 0;
       if (field->descriptortype == kUpb_FieldType_Message ||
           field->descriptortype == kUpb_FieldType_Group) {

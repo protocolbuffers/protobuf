@@ -159,14 +159,14 @@ typename T::CProxy CreateMessage(upb_Message* msg) {
 
 class ExtensionMiniTableProvider {
  public:
-  ExtensionMiniTableProvider(const upb_MiniTable_Extension* mini_table_ext)
+  ExtensionMiniTableProvider(const upb_MiniTableExtension* mini_table_ext)
       : mini_table_ext_(mini_table_ext) {}
-  const upb_MiniTable_Extension* mini_table_ext() const {
+  const upb_MiniTableExtension* mini_table_ext() const {
     return mini_table_ext_;
   }
 
  private:
-  const upb_MiniTable_Extension* mini_table_ext_;
+  const upb_MiniTableExtension* mini_table_ext_;
 };
 
 // -------------------------------------------------------------------
@@ -183,7 +183,7 @@ class ExtensionIdentifier : public ExtensionMiniTableProvider {
   using Extension = ExtensionType;
   using Extendee = ExtendeeType;
 
-  ExtensionIdentifier(const upb_MiniTable_Extension* mini_table_ext)
+  ExtensionIdentifier(const upb_MiniTableExtension* mini_table_ext)
       : ExtensionMiniTableProvider(mini_table_ext) {}
 };
 

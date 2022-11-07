@@ -51,18 +51,18 @@ typedef enum {
 extern "C" {
 #endif
 
-const upb_MiniTable_Field* upb_MiniTable_FindFieldByNumber(
+const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
     const upb_MiniTable* table, uint32_t number);
 
-upb_FieldType upb_MiniTableField_Type(const upb_MiniTable_Field* field);
+upb_FieldType upb_MiniTableField_Type(const upb_MiniTableField* field);
 
 UPB_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
-    const upb_MiniTable* mini_table, const upb_MiniTable_Field* field) {
+    const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
   return mini_table->subs[field->submsg_index].submsg;
 }
 
-UPB_INLINE const upb_MiniTable_Enum* upb_MiniTable_GetSubEnumTable(
-    const upb_MiniTable* mini_table, const upb_MiniTable_Field* field) {
+UPB_INLINE const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
+    const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
   return mini_table->subs[field->submsg_index].subenum;
 }
 

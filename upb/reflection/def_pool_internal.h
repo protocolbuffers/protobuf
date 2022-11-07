@@ -41,7 +41,7 @@ upb_Arena* _upb_DefPool_Arena(const upb_DefPool* s);
 size_t _upb_DefPool_BytesLoaded(const upb_DefPool* s);
 upb_ExtensionRegistry* _upb_DefPool_ExtReg(const upb_DefPool* s);
 
-bool _upb_DefPool_InsertExt(upb_DefPool* s, const upb_MiniTable_Extension* ext,
+bool _upb_DefPool_InsertExt(upb_DefPool* s, const upb_MiniTableExtension* ext,
                             upb_FieldDef* f);
 bool _upb_DefPool_InsertSym(upb_DefPool* s, upb_StringView sym, upb_value v,
                             upb_Status* status);
@@ -54,7 +54,7 @@ size_t* _upb_DefPool_ScratchSize(const upb_DefPool* s);
 // For generated code only: loads a generated descriptor.
 typedef struct _upb_DefPool_Init {
   struct _upb_DefPool_Init** deps;  // Dependencies of this file.
-  const upb_MiniTable_File* layout;
+  const upb_MiniTableFile* layout;
   const char* filename;
   upb_StringView descriptor;  // Serialized descriptor.
 } _upb_DefPool_Init;

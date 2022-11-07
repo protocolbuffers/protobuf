@@ -343,7 +343,7 @@ void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m) {
     const upb_FieldDef* f = upb_MessageDef_Field(m, i);
     const int layout_index = _upb_FieldDef_LayoutIndex(f);
     UPB_ASSERT(layout_index < m->layout->field_count);
-    const upb_MiniTable_Field* mt_f = &m->layout->fields[layout_index];
+    const upb_MiniTableField* mt_f = &m->layout->fields[layout_index];
     UPB_ASSERT(upb_FieldDef_Type(f) == upb_MiniTableField_Type(mt_f));
   }
 #endif
@@ -420,8 +420,8 @@ void _upb_MessageDef_LinkMiniTable(upb_DefBuilder* ctx,
     upb_MiniTable* mt = (upb_MiniTable*)upb_MessageDef_MiniTable(m);
 
     UPB_ASSERT(layout_index < m->field_count);
-    upb_MiniTable_Field* mt_f =
-        (upb_MiniTable_Field*)&m->layout->fields[layout_index];
+    upb_MiniTableField* mt_f =
+        (upb_MiniTableField*)&m->layout->fields[layout_index];
     if (sub_m) {
       if (!mt->subs) {
         _upb_DefBuilder_Errf(ctx, "invalid submsg for (%s)", m->full_name);

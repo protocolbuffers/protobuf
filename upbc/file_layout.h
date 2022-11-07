@@ -53,7 +53,7 @@ std::vector<const protobuf::Descriptor*> SortedMessages(
 // Ordering must match upb/def.c!
 //
 // The ordering is significant because each upb_FieldDef* will point at the
-// corresponding upb_MiniTable_Extension and we just iterate through the list
+// corresponding upb_MiniTableExtension and we just iterate through the list
 // without any search or lookup.
 std::vector<const protobuf::FieldDescriptor*> SortedExtensions(
     const protobuf::FileDescriptor* file);
@@ -79,12 +79,12 @@ class FilePlatformLayout {
   // Retrieves a upb MiniTable or Extension given a protobuf descriptor.  The
   // descriptor must be from this layout's file.
   upb_MiniTable* GetMiniTable(const protobuf::Descriptor* m) const;
-  upb_MiniTable_Enum* GetEnumTable(const protobuf::EnumDescriptor* d) const;
-  const upb_MiniTable_Extension* GetExtension(
+  upb_MiniTableEnum* GetEnumTable(const protobuf::EnumDescriptor* d) const;
+  const upb_MiniTableExtension* GetExtension(
       const protobuf::FieldDescriptor* fd) const;
 
   // Get the initializer for the given sub-message/sub-enum link.
-  static std::string GetSub(upb_MiniTable_Sub sub);
+  static std::string GetSub(upb_MiniTableSub sub);
 
  private:
   // Functions to build mini-tables for this file's messages and extensions.
@@ -94,7 +94,7 @@ class FilePlatformLayout {
   upb_MiniTable* MakeMapMiniTable(const protobuf::Descriptor* m);
   upb_MiniTable* MakeMessageSetMiniTable(const protobuf::Descriptor* m);
   upb_MiniTable* MakeRegularMiniTable(const protobuf::Descriptor* m);
-  upb_MiniTable_Enum* MakeMiniTableEnum(const protobuf::EnumDescriptor* d);
+  upb_MiniTableEnum* MakeMiniTableEnum(const protobuf::EnumDescriptor* d);
   uint64_t GetMessageModifiers(const protobuf::Descriptor* m);
   uint64_t GetFieldModifiers(const protobuf::FieldDescriptor* f);
   void ResolveIntraFileReferences();
@@ -117,20 +117,20 @@ class FilePlatformLayout {
     kMask = 3,
   };
 
-  static upb_MiniTable_Sub PackSub(const char* data, SubTag tag);
-  static bool IsNull(upb_MiniTable_Sub sub);
+  static upb_MiniTableSub PackSub(const char* data, SubTag tag);
+  static bool IsNull(upb_MiniTableSub sub);
   void SetSubTableStrings();
-  upb_MiniTable_Sub PackSubForField(const protobuf::FieldDescriptor* f,
-                                    const upb_MiniTable_Field* mt_f);
+  upb_MiniTableSub PackSubForField(const protobuf::FieldDescriptor* f,
+                                   const upb_MiniTableField* mt_f);
   const char* AllocStr(absl::string_view str);
 
  private:
   using TableMap =
       absl::flat_hash_map<const protobuf::Descriptor*, upb_MiniTable*>;
   using EnumMap =
-      absl::flat_hash_map<const protobuf::EnumDescriptor*, upb_MiniTable_Enum*>;
+      absl::flat_hash_map<const protobuf::EnumDescriptor*, upb_MiniTableEnum*>;
   using ExtensionMap = absl::flat_hash_map<const protobuf::FieldDescriptor*,
-                                           upb_MiniTable_Extension>;
+                                           upb_MiniTableExtension>;
   upb::Arena arena_;
   TableMap table_map_;
   EnumMap enum_map_;
@@ -160,24 +160,24 @@ class FileLayout {
     return layout64_.GetMiniTable(m);
   }
 
-  const upb_MiniTable_Enum* GetEnumTable(
+  const upb_MiniTableEnum* GetEnumTable(
       const protobuf::EnumDescriptor* d) const {
     return layout64_.GetEnumTable(d);
   }
 
   std::string GetFieldOffset(const protobuf::FieldDescriptor* f) const {
-    const upb_MiniTable_Field* f_32 = upb_MiniTable_FindFieldByNumber(
+    const upb_MiniTableField* f_32 = upb_MiniTable_FindFieldByNumber(
         GetMiniTable32(f->containing_type()), f->number());
-    const upb_MiniTable_Field* f_64 = upb_MiniTable_FindFieldByNumber(
+    const upb_MiniTableField* f_64 = upb_MiniTable_FindFieldByNumber(
         GetMiniTable64(f->containing_type()), f->number());
     return absl::Substitute("UPB_SIZE($0, $1)", f_32->offset, f_64->offset);
   }
 
   std::string GetOneofCaseOffset(const protobuf::OneofDescriptor* o) const {
     const protobuf::FieldDescriptor* f = o->field(0);
-    const upb_MiniTable_Field* f_32 = upb_MiniTable_FindFieldByNumber(
+    const upb_MiniTableField* f_32 = upb_MiniTable_FindFieldByNumber(
         GetMiniTable32(f->containing_type()), f->number());
-    const upb_MiniTable_Field* f_64 = upb_MiniTable_FindFieldByNumber(
+    const upb_MiniTableField* f_64 = upb_MiniTable_FindFieldByNumber(
         GetMiniTable64(f->containing_type()), f->number());
     return absl::Substitute("UPB_SIZE($0, $1)", ~f_32->presence,
                             ~f_64->presence);
@@ -189,7 +189,7 @@ class FileLayout {
   }
 
   int GetHasbitIndex(const protobuf::FieldDescriptor* f) const {
-    const upb_MiniTable_Field* f_64 = upb_MiniTable_FindFieldByNumber(
+    const upb_MiniTableField* f_64 = upb_MiniTable_FindFieldByNumber(
         GetMiniTable64(f->containing_type()), f->number());
     return f_64->presence;
   }
@@ -198,7 +198,7 @@ class FileLayout {
     return GetHasbitIndex(f) > 0;
   }
 
-  const upb_MiniTable_Extension* GetExtension(
+  const upb_MiniTableExtension* GetExtension(
       const protobuf::FieldDescriptor* f) const {
     return layout64_.GetExtension(f);
   }

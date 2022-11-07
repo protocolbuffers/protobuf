@@ -65,7 +65,7 @@ const upb_FileDef* upb_DefPool_FindFileByNameWithSize(const upb_DefPool* s,
                                                       size_t len);
 
 const upb_FieldDef* upb_DefPool_FindExtensionByMiniTable(
-    const upb_DefPool* s, const upb_MiniTable_Extension* ext);
+    const upb_DefPool* s, const upb_MiniTableExtension* ext);
 
 const upb_FieldDef* upb_DefPool_FindExtensionByName(const upb_DefPool* s,
                                                     const char* sym);

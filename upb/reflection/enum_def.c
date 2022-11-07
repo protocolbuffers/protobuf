@@ -39,7 +39,7 @@
 
 struct upb_EnumDef {
   const google_protobuf_EnumOptions* opts;
-  const upb_MiniTable_Enum* layout;  // Only for proto2.
+  const upb_MiniTableEnum* layout;  // Only for proto2.
   const upb_FileDef* file;
   const upb_MessageDef* containing_type;  // Could be merged with "file".
   const char* full_name;
@@ -64,7 +64,7 @@ void _upb_EnumDef_Debug(const upb_EnumDef* e) {
   fprintf(stderr, "}\n");
 }
 
-const upb_MiniTable_Enum* _upb_EnumDef_MiniTable(const upb_EnumDef* e) {
+const upb_MiniTableEnum* _upb_EnumDef_MiniTable(const upb_EnumDef* e) {
   return e->layout;
 }
 
@@ -132,7 +132,7 @@ const upb_EnumValueDef* upb_EnumDef_FindValueByNumber(const upb_EnumDef* e,
 bool upb_EnumDef_CheckNumber(const upb_EnumDef* e, int32_t num) {
   // We could use upb_EnumDef_FindValueByNumber(e, num) != NULL, but we expect
   // this to be faster (especially for small numbers).
-  return upb_MiniTable_Enum_CheckValue(e->layout, num);
+  return upb_MiniTableEnum_CheckValue(e->layout, num);
 }
 
 const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i) {
@@ -185,14 +185,14 @@ bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
   return true;
 }
 
-static upb_MiniTable_Enum* create_enumlayout(upb_DefBuilder* ctx,
-                                             const upb_EnumDef* e) {
+static upb_MiniTableEnum* create_enumlayout(upb_DefBuilder* ctx,
+                                            const upb_EnumDef* e) {
   upb_StringView sv;
   bool ok = upb_EnumDef_MiniDescriptorEncode(e, ctx->tmp_arena, &sv);
   if (!ok) _upb_DefBuilder_Errf(ctx, "OOM while building enum MiniDescriptor");
 
   upb_Status status;
-  upb_MiniTable_Enum* layout =
+  upb_MiniTableEnum* layout =
       upb_MiniTable_BuildEnum(sv.data, sv.size, ctx->arena, &status);
   if (!layout)
     _upb_DefBuilder_Errf(ctx, "Error building enum MiniTable: %s", status.msg);

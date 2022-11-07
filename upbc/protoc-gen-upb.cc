@@ -918,7 +918,7 @@ void WriteHeader(const FileLayout& layout, Output& output) {
     output("extern const upb_MiniTable $0;\n", MessageInit(message));
   }
   for (auto ext : this_file_exts) {
-    output("extern const upb_MiniTable_Extension $0;\n", ExtensionLayout(ext));
+    output("extern const upb_MiniTableExtension $0;\n", ExtensionLayout(ext));
   }
 
   // Forward-declare types not in this file, but used as submessages.
@@ -970,7 +970,7 @@ void WriteHeader(const FileLayout& layout, Output& output) {
 
   if (file->syntax() == protobuf::FileDescriptor::SYNTAX_PROTO2) {
     for (const auto* enumdesc : this_file_enums) {
-      output("extern const upb_MiniTable_Enum $0;\n", EnumInit(enumdesc));
+      output("extern const upb_MiniTableEnum $0;\n", EnumInit(enumdesc));
     }
   }
 
@@ -983,7 +983,7 @@ void WriteHeader(const FileLayout& layout, Output& output) {
     GenerateExtensionInHeader(ext, output);
   }
 
-  output("extern const upb_MiniTable_File $0;\n\n", FileLayoutName(file));
+  output("extern const upb_MiniTableFile $0;\n\n", FileLayoutName(file));
 
   if (file->name() ==
       protobuf::FileDescriptorProto::descriptor()->file()->name()) {
@@ -1054,7 +1054,7 @@ bool TryFillTableEntry(const FileLayout& layout,
                        const protobuf::FieldDescriptor* field,
                        TableEntry& ent) {
   const upb_MiniTable* mt = layout.GetMiniTable64(field->containing_type());
-  const upb_MiniTable_Field* mt_f =
+  const upb_MiniTableField* mt_f =
       upb_MiniTable_FindFieldByNumber(mt, field->number());
   std::string type = "";
   std::string cardinality = "";
@@ -1272,8 +1272,8 @@ std::string GetModeInit(uint8_t mode32, uint8_t mode64) {
   return ret;
 }
 
-void WriteField(const upb_MiniTable_Field* field64,
-                const upb_MiniTable_Field* field32, Output& output) {
+void WriteField(const upb_MiniTableField* field64,
+                const upb_MiniTableField* field32, Output& output) {
   output("{$0, UPB_SIZE($1, $2), UPB_SIZE($3, $4), $5, $6, $7}",
          field64->number, field32->offset, field64->offset, field32->presence,
          field64->presence,
@@ -1284,8 +1284,8 @@ void WriteField(const upb_MiniTable_Field* field64,
 }
 
 // Writes a single field into a .upb.c source file.
-void WriteMessageField(const upb_MiniTable_Field* field64,
-                       const upb_MiniTable_Field* field32, Output& output) {
+void WriteMessageField(const upb_MiniTableField* field64,
+                       const upb_MiniTableField* field32, Output& output) {
   output("  ");
   WriteField(field64, field32, output);
   output(",\n");
@@ -1303,7 +1303,7 @@ void WriteMessage(const protobuf::Descriptor* message, const FileLayout& layout,
   std::vector<std::string> subs;
 
   for (int i = 0; i < mt_64->field_count; i++) {
-    const upb_MiniTable_Field* f = &mt_64->fields[i];
+    const upb_MiniTableField* f = &mt_64->fields[i];
     if (f->submsg_index != kUpb_NoSub) {
       subs.push_back(FilePlatformLayout::GetSub(mt_64->subs[f->submsg_index]));
     }
@@ -1312,7 +1312,7 @@ void WriteMessage(const protobuf::Descriptor* message, const FileLayout& layout,
   if (!subs.empty()) {
     std::string submsgs_array_name = msg_name + "_submsgs";
     submsgs_array_ref = "&" + submsgs_array_name + "[0]";
-    output("static const upb_MiniTable_Sub $0[$1] = {\n", submsgs_array_name,
+    output("static const upb_MiniTableSub $0[$1] = {\n", submsgs_array_name,
            subs.size());
 
     for (const auto& sub : subs) {
@@ -1325,7 +1325,7 @@ void WriteMessage(const protobuf::Descriptor* message, const FileLayout& layout,
   if (mt_64->field_count > 0) {
     std::string fields_array_name = msg_name + "__fields";
     fields_array_ref = "&" + fields_array_name + "[0]";
-    output("static const upb_MiniTable_Field $0[$1] = {\n", fields_array_name,
+    output("static const upb_MiniTableField $0[$1] = {\n", fields_array_name,
            mt_64->field_count);
     for (int i = 0; i < mt_64->field_count; i++) {
       WriteMessageField(&mt_64->fields[i], &mt_32->fields[i], output);
@@ -1372,7 +1372,7 @@ void WriteMessage(const protobuf::Descriptor* message, const FileLayout& layout,
   output("};\n\n");
 }
 
-void WriteEnum(const upb_MiniTable_Enum* mt, const protobuf::EnumDescriptor* e,
+void WriteEnum(const upb_MiniTableEnum* mt, const protobuf::EnumDescriptor* e,
                Output& output) {
   std::string values_init = "{\n";
   uint32_t value_count = (mt->mask_limit / 32) + mt->value_count;
@@ -1384,7 +1384,7 @@ void WriteEnum(const upb_MiniTable_Enum* mt, const protobuf::EnumDescriptor* e,
 
   output(
       R"cc(
-        const upb_MiniTable_Enum $0 = {
+        const upb_MiniTableEnum $0 = {
             $1,
             $2,
             $3,
@@ -1409,7 +1409,7 @@ int WriteEnums(const FileLayout& layout, Output& output) {
   }
 
   if (!this_file_enums.empty()) {
-    output("static const upb_MiniTable_Enum *$0[$1] = {\n", kEnumsInit,
+    output("static const upb_MiniTableEnum *$0[$1] = {\n", kEnumsInit,
            this_file_enums.size());
     for (const auto* e : this_file_enums) {
       output("  &$0,\n", EnumInit(e));
@@ -1442,7 +1442,7 @@ int WriteMessages(const FileLayout& layout, Output& output,
   return file_messages.size();
 }
 
-void WriteExtension(const upb_MiniTable_Extension* ext, Output& output) {
+void WriteExtension(const upb_MiniTableExtension* ext, Output& output) {
   WriteField(&ext->field, &ext->field, output);
   output(",\n");
   output("  &$0,\n", reinterpret_cast<const char*>(ext->extendee));
@@ -1471,14 +1471,14 @@ int WriteExtensions(const FileLayout& layout, Output& output) {
   }
 
   for (auto ext : exts) {
-    output("const upb_MiniTable_Extension $0 = {\n  ", ExtensionLayout(ext));
+    output("const upb_MiniTableExtension $0 = {\n  ", ExtensionLayout(ext));
     WriteExtension(layout.GetExtension(ext), output);
     output("\n};\n");
   }
 
   output(
       "\n"
-      "static const upb_MiniTable_Extension *$0[$1] = {\n",
+      "static const upb_MiniTableExtension *$0[$1] = {\n",
       kExtensionsInit, exts.size());
 
   for (auto ext : exts) {
@@ -1517,7 +1517,7 @@ void WriteSource(const FileLayout& layout, Output& output,
   int ext_count = WriteExtensions(layout, output);
   int enum_count = WriteEnums(layout, output);
 
-  output("const upb_MiniTable_File $0 = {\n", FileLayoutName(file));
+  output("const upb_MiniTableFile $0 = {\n", FileLayoutName(file));
   output("  $0,\n", msg_count ? kMessagesInit : "NULL");
   output("  $0,\n", enum_count ? kEnumsInit : "NULL");
   output("  $0,\n", ext_count ? kExtensionsInit : "NULL");

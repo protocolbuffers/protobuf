@@ -68,7 +68,7 @@ typedef struct {
   uint8_t descriptortype;
   uint8_t mode; /* upb_FieldMode | upb_LabelFlags |
                    (upb_FieldRep << kUpb_FieldRep_Shift) */
-} upb_MiniTable_Field;
+} upb_MiniTableField;
 
 #define kUpb_NoSub ((uint16_t)-1)
 
@@ -100,20 +100,20 @@ typedef enum {
   kUpb_FieldRep_StringView = 2,
   kUpb_FieldRep_8Byte = 3,
 
-  kUpb_FieldRep_Shift = 6,  // Bit offset of the rep in upb_MiniTable_Field.mode
+  kUpb_FieldRep_Shift = 6,  // Bit offset of the rep in upb_MiniTableField.mode
   kUpb_FieldRep_Max = kUpb_FieldRep_8Byte,
 } upb_FieldRep;
 
-UPB_INLINE upb_FieldMode upb_FieldMode_Get(const upb_MiniTable_Field* field) {
+UPB_INLINE upb_FieldMode upb_FieldMode_Get(const upb_MiniTableField* field) {
   return (upb_FieldMode)(field->mode & 3);
 }
 
-UPB_INLINE bool upb_IsRepeatedOrMap(const upb_MiniTable_Field* field) {
+UPB_INLINE bool upb_IsRepeatedOrMap(const upb_MiniTableField* field) {
   /* This works because upb_FieldMode has no value 3. */
   return !(field->mode & kUpb_FieldMode_Scalar);
 }
 
-UPB_INLINE bool upb_IsSubMessage(const upb_MiniTable_Field* field) {
+UPB_INLINE bool upb_IsSubMessage(const upb_MiniTableField* field) {
   return field->descriptortype == kUpb_FieldType_Message ||
          field->descriptortype == kUpb_FieldType_Group;
 }
@@ -134,7 +134,7 @@ typedef struct {
   uint32_t mask_limit;   // Limit enum value that can be tested with mask.
   uint32_t value_count;  // Number of values after the bitfield.
   uint32_t data[];       // Bitmask + enumerated values follow.
-} upb_MiniTable_Enum;
+} upb_MiniTableEnum;
 
 typedef enum {
   _kUpb_FastEnumCheck_ValueIsInEnum = 0,
@@ -143,14 +143,14 @@ typedef enum {
 } _kUpb_FastEnumCheck_Status;
 
 UPB_INLINE _kUpb_FastEnumCheck_Status
-_upb_MiniTable_CheckEnumValueFast(const upb_MiniTable_Enum* e, uint32_t val) {
+_upb_MiniTable_CheckEnumValueFast(const upb_MiniTableEnum* e, uint32_t val) {
   if (UPB_UNLIKELY(val >= 64)) return _kUpb_FastEnumCheck_CannotCheckFast;
   uint64_t mask = e->data[0] | ((uint64_t)e->data[1] << 32);
   return (mask & (1ULL << val)) ? _kUpb_FastEnumCheck_ValueIsInEnum
                                 : _kUpb_FastEnumCheck_ValueIsNotInEnum;
 }
 
-UPB_INLINE bool _upb_MiniTable_CheckEnumValueSlow(const upb_MiniTable_Enum* e,
+UPB_INLINE bool _upb_MiniTable_CheckEnumValueSlow(const upb_MiniTableEnum* e,
                                                   uint32_t val) {
   if (val < e->mask_limit) return e->data[val / 32] & (1ULL << (val % 32));
   // OPT: binary search long lists?
@@ -163,8 +163,8 @@ UPB_INLINE bool _upb_MiniTable_CheckEnumValueSlow(const upb_MiniTable_Enum* e,
 }
 
 // Validates enum value against range defined by enum mini table.
-UPB_INLINE bool upb_MiniTable_Enum_CheckValue(const upb_MiniTable_Enum* e,
-                                              uint32_t val) {
+UPB_INLINE bool upb_MiniTableEnum_CheckValue(const upb_MiniTableEnum* e,
+                                             uint32_t val) {
   _kUpb_FastEnumCheck_Status status = _upb_MiniTable_CheckEnumValueFast(e, val);
   if (UPB_UNLIKELY(status == _kUpb_FastEnumCheck_CannotCheckFast)) {
     return _upb_MiniTable_CheckEnumValueSlow(e, val);
@@ -174,8 +174,8 @@ UPB_INLINE bool upb_MiniTable_Enum_CheckValue(const upb_MiniTable_Enum* e,
 
 typedef union {
   const struct upb_MiniTable* submsg;
-  const upb_MiniTable_Enum* subenum;
-} upb_MiniTable_Sub;
+  const upb_MiniTableEnum* subenum;
+} upb_MiniTableSub;
 
 typedef enum {
   kUpb_ExtMode_NonExtendable = 0,  // Non-extendable message.
@@ -190,8 +190,8 @@ typedef enum {
 } upb_ExtMode;
 
 struct upb_MiniTable {
-  const upb_MiniTable_Sub* subs;
-  const upb_MiniTable_Field* fields;
+  const upb_MiniTableSub* subs;
+  const upb_MiniTableField* fields;
   /* Must be aligned to sizeof(void*).  Doesn't include internal members like
    * unknown fields, extension dict, pointer to msglayout, etc. */
   uint16_t size;
@@ -206,20 +206,20 @@ struct upb_MiniTable {
   _upb_FastTable_Entry fasttable[];
 };
 
-struct upb_MiniTable_Extension {
-  upb_MiniTable_Field field;
+struct upb_MiniTableExtension {
+  upb_MiniTableField field;
   const upb_MiniTable* extendee;
-  upb_MiniTable_Sub sub; /* NULL unless submessage or proto2 enum */
+  upb_MiniTableSub sub; /* NULL unless submessage or proto2 enum */
 };
 
 typedef struct {
   const upb_MiniTable** msgs;
-  const upb_MiniTable_Enum** enums;
-  const upb_MiniTable_Extension** exts;
+  const upb_MiniTableEnum** enums;
+  const upb_MiniTableExtension** exts;
   int msg_count;
   int enum_count;
   int ext_count;
-} upb_MiniTable_File;
+} upb_MiniTableFile;
 
 // Computes a bitmask in which the |l->required_count| lowest bits are set,
 // except that we skip the lowest bit (because upb never uses hasbit 0).
@@ -314,7 +314,7 @@ bool _upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
  * bytes). We accept this because we expect messages to be the most common
  * extension type. */
 typedef struct {
-  const upb_MiniTable_Extension* ext;
+  const upb_MiniTableExtension* ext;
   union {
     upb_StringView str;
     void* ptr;
@@ -326,7 +326,7 @@ typedef struct {
  * message instance. This logically replaces any previously-added extension with
  * this number */
 upb_Message_Extension* _upb_Message_GetOrCreateExtension(
-    upb_Message* msg, const upb_MiniTable_Extension* ext, upb_Arena* arena);
+    upb_Message* msg, const upb_MiniTableExtension* ext, upb_Arena* arena);
 
 /* Returns an array of extensions for this message. Note: the array is
  * ordered in reverse relative to the order of creation. */
@@ -336,10 +336,9 @@ const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
 /* Returns an extension for the given field number, or NULL if no extension
  * exists for this field number. */
 const upb_Message_Extension* _upb_Message_Getext(
-    const upb_Message* msg, const upb_MiniTable_Extension* ext);
+    const upb_Message* msg, const upb_MiniTableExtension* ext);
 
-void _upb_Message_Clearext(upb_Message* msg,
-                           const upb_MiniTable_Extension* ext);
+void _upb_Message_Clearext(upb_Message* msg, const upb_MiniTableExtension* ext);
 
 /** Hasbit access *************************************************************/
 
@@ -355,23 +354,23 @@ UPB_INLINE void _upb_clearhas(const upb_Message* msg, size_t idx) {
   (*UPB_PTR_AT(msg, idx / 8, char)) &= (char)(~(1 << (idx % 8)));
 }
 
-UPB_INLINE size_t _upb_Message_Hasidx(const upb_MiniTable_Field* f) {
+UPB_INLINE size_t _upb_Message_Hasidx(const upb_MiniTableField* f) {
   UPB_ASSERT(f->presence > 0);
   return f->presence;
 }
 
 UPB_INLINE bool _upb_hasbit_field(const upb_Message* msg,
-                                  const upb_MiniTable_Field* f) {
+                                  const upb_MiniTableField* f) {
   return _upb_hasbit(msg, _upb_Message_Hasidx(f));
 }
 
 UPB_INLINE void _upb_sethas_field(const upb_Message* msg,
-                                  const upb_MiniTable_Field* f) {
+                                  const upb_MiniTableField* f) {
   _upb_sethas(msg, _upb_Message_Hasidx(f));
 }
 
 UPB_INLINE void _upb_clearhas_field(const upb_Message* msg,
-                                    const upb_MiniTable_Field* f) {
+                                    const upb_MiniTableField* f) {
   _upb_clearhas(msg, _upb_Message_Hasidx(f));
 }
 
@@ -385,18 +384,18 @@ UPB_INLINE uint32_t _upb_getoneofcase(const void* msg, size_t case_ofs) {
   return *UPB_PTR_AT(msg, case_ofs, uint32_t);
 }
 
-UPB_INLINE size_t _upb_oneofcase_ofs(const upb_MiniTable_Field* f) {
+UPB_INLINE size_t _upb_oneofcase_ofs(const upb_MiniTableField* f) {
   UPB_ASSERT(f->presence < 0);
   return ~(ptrdiff_t)f->presence;
 }
 
 UPB_INLINE uint32_t* _upb_oneofcase_field(upb_Message* msg,
-                                          const upb_MiniTable_Field* f) {
+                                          const upb_MiniTableField* f) {
   return _upb_oneofcase(msg, _upb_oneofcase_ofs(f));
 }
 
 UPB_INLINE uint32_t _upb_getoneofcase_field(const upb_Message* msg,
-                                            const upb_MiniTable_Field* f) {
+                                            const upb_MiniTableField* f) {
   return _upb_getoneofcase(msg, _upb_oneofcase_ofs(f));
 }
 

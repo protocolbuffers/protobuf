@@ -55,13 +55,13 @@ upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena) {
 }
 
 bool upb_ExtensionRegistry_AddArray(upb_ExtensionRegistry* r,
-                                    const upb_MiniTable_Extension** e,
+                                    const upb_MiniTableExtension** e,
                                     size_t count) {
   char buf[EXTREG_KEY_SIZE];
-  const upb_MiniTable_Extension** start = e;
-  const upb_MiniTable_Extension** end = UPB_PTRADD(e, count);
+  const upb_MiniTableExtension** start = e;
+  const upb_MiniTableExtension** end = UPB_PTRADD(e, count);
   for (; e < end; e++) {
-    const upb_MiniTable_Extension* ext = *e;
+    const upb_MiniTableExtension* ext = *e;
     extreg_key(buf, ext->extendee, ext->field.number);
     upb_value v;
     if (upb_strtable_lookup2(&r->exts, buf, EXTREG_KEY_SIZE, &v)) {
@@ -77,14 +77,14 @@ bool upb_ExtensionRegistry_AddArray(upb_ExtensionRegistry* r,
 failure:
   /* Back out the entries previously added. */
   for (end = e, e = start; e < end; e++) {
-    const upb_MiniTable_Extension* ext = *e;
+    const upb_MiniTableExtension* ext = *e;
     extreg_key(buf, ext->extendee, ext->field.number);
     upb_strtable_remove2(&r->exts, buf, EXTREG_KEY_SIZE, NULL);
   }
   return false;
 }
 
-const upb_MiniTable_Extension* upb_ExtensionRegistry_Lookup(
+const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
     const upb_ExtensionRegistry* r, const upb_MiniTable* t, uint32_t num) {
   char buf[EXTREG_KEY_SIZE];
   upb_value v;

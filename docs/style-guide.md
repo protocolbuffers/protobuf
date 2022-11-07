@@ -61,5 +61,5 @@ typedef struct {
   const int32_t* _values;  // List of values <0 or >63
   uint64_t _mask;          // Bits are set for acceptable value 0 <= x < 64
   int _value_count;
-} upb_MiniTable_Enum;
+} upb_MiniTableEnum;
 ```

@@ -66,14 +66,14 @@ typedef struct {
 typedef struct {
   const char* end;
   upb_MiniTable* table;
-  upb_MiniTable_Field* fields;
+  upb_MiniTableField* fields;
   upb_MiniTablePlatform platform;
   upb_LayoutItemVector vec;
   upb_Arena* arena;
   upb_Status* status;
 
   // When building enums.
-  upb_MiniTable_Enum* enum_table;
+  upb_MiniTableEnum* enum_table;
   uint32_t enum_value_count;
   uint32_t enum_data_count;
   uint32_t enum_data_capacity;
@@ -130,7 +130,7 @@ static const char* upb_MiniTable_DecodeBase92Varint(upb_MtDecoder* d,
   }
 }
 
-static bool upb_MiniTable_HasSub(upb_MiniTable_Field* field,
+static bool upb_MiniTable_HasSub(upb_MiniTableField* field,
                                  uint64_t msg_modifiers) {
   switch (field->descriptortype) {
     case kUpb_FieldType_Message:
@@ -148,12 +148,12 @@ static bool upb_MiniTable_HasSub(upb_MiniTable_Field* field,
   }
 }
 
-static bool upb_MtDecoder_FieldIsPackable(upb_MiniTable_Field* field) {
+static bool upb_MtDecoder_FieldIsPackable(upb_MiniTableField* field) {
   return (field->mode & kUpb_FieldMode_Array) &&
          _upb_FieldType_IsPackable(field->descriptortype);
 }
 
-static void upb_MiniTable_SetTypeAndSub(upb_MiniTable_Field* field,
+static void upb_MiniTable_SetTypeAndSub(upb_MiniTableField* field,
                                         upb_FieldType type, uint32_t* sub_count,
                                         uint64_t msg_modifiers,
                                         bool is_proto3_enum) {
@@ -200,7 +200,7 @@ static const char kUpb_EncodedToType[] = {
 };
 
 static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
-                                   upb_MiniTable_Field* field,
+                                   upb_MiniTableField* field,
                                    uint64_t msg_modifiers,
                                    uint32_t* sub_count) {
   static const char kUpb_EncodedToFieldRep[] = {
@@ -256,7 +256,7 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
 static void upb_MtDecoder_ModifyField(upb_MtDecoder* d,
                                       uint32_t message_modifiers,
                                       uint32_t field_modifiers,
-                                      upb_MiniTable_Field* field) {
+                                      upb_MiniTableField* field) {
   if (field_modifiers & kUpb_EncodedFieldModifier_FlipPacked) {
     if (!upb_MtDecoder_FieldIsPackable(field)) {
       upb_MtDecoder_ErrorFormat(
@@ -363,7 +363,7 @@ static const char* upb_MtDecoder_DecodeOneofField(upb_MtDecoder* d,
   ptr = upb_MiniTable_DecodeBase92Varint(
       d, ptr, first_ch, kUpb_EncodedValue_MinOneofField,
       kUpb_EncodedValue_MaxOneofField, &field_num);
-  upb_MiniTable_Field* f =
+  upb_MiniTableField* f =
       (void*)upb_MiniTable_FindFieldByNumber(d->table, field_num);
 
   if (!f) {
@@ -418,7 +418,7 @@ static const char* upb_MtDecoder_DecodeOneofs(upb_MtDecoder* d,
 
 static const char* upb_MtDecoder_ParseModifier(upb_MtDecoder* d,
                                                const char* ptr, char first_ch,
-                                               upb_MiniTable_Field* last_field,
+                                               upb_MiniTableField* last_field,
                                                uint64_t* msg_modifiers) {
   uint32_t mod;
   ptr = upb_MiniTable_DecodeBase92Varint(d, ptr, first_ch,
@@ -451,7 +451,7 @@ static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
                                        uint32_t* sub_count) {
   uint64_t msg_modifiers = 0;
   uint32_t last_field_number = 0;
-  upb_MiniTable_Field* last_field = NULL;
+  upb_MiniTableField* last_field = NULL;
   bool need_dense_below = d->table != NULL;
 
   d->end = UPB_PTRADD(ptr, len);
@@ -463,7 +463,7 @@ static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
         // For extensions, consume only a single field and then return.
         return --ptr;
       }
-      upb_MiniTable_Field* field = fields;
+      upb_MiniTableField* field = fields;
       *field_count += 1;
       fields = (char*)fields + field_size;
       field->number = ++last_field_number;
@@ -550,7 +550,7 @@ static bool upb_MtDecoder_SortLayoutItems(upb_MtDecoder* d) {
   // Add items for all non-oneof fields (oneofs were already added).
   int n = d->table->field_count;
   for (int i = 0; i < n; i++) {
-    upb_MiniTable_Field* f = &d->fields[i];
+    upb_MiniTableField* f = &d->fields[i];
     if (f->offset >= kOneofBase) continue;
     upb_LayoutItem item = {.field_index = i,
                            .rep = f->mode >> kUpb_FieldRep_Shift,
@@ -576,7 +576,7 @@ static void upb_MtDecoder_AssignHasbits(upb_MiniTable* ret) {
 
   // First assign required fields, which must have the lowest hasbits.
   for (int i = 0; i < n; i++) {
-    upb_MiniTable_Field* field = (upb_MiniTable_Field*)&ret->fields[i];
+    upb_MiniTableField* field = (upb_MiniTableField*)&ret->fields[i];
     if (field->offset == kRequiredPresence) {
       field->presence = ++last_hasbit;
     } else if (field->offset == kNoPresence) {
@@ -587,7 +587,7 @@ static void upb_MtDecoder_AssignHasbits(upb_MiniTable* ret) {
 
   // Next assign non-required hasbit fields.
   for (int i = 0; i < n; i++) {
-    upb_MiniTable_Field* field = (upb_MiniTable_Field*)&ret->fields[i];
+    upb_MiniTableField* field = (upb_MiniTableField*)&ret->fields[i];
     if (field->offset == kHasbitPresence) {
       field->presence = ++last_hasbit;
     }
@@ -622,7 +622,7 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
   // actual offsets will overwrite the links of the linked list.
   for (upb_LayoutItem* item = d->vec.data; item < end; item++) {
     if (item->type != kUpb_LayoutItemType_OneofCase) continue;
-    upb_MiniTable_Field* f = &d->fields[item->field_index];
+    upb_MiniTableField* f = &d->fields[item->field_index];
     while (true) {
       f->presence = ~item->offset;
       if (f->offset == kUpb_LayoutItem_IndexSentinel) break;
@@ -633,7 +633,7 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
 
   // Assign offsets.
   for (upb_LayoutItem* item = d->vec.data; item < end; item++) {
-    upb_MiniTable_Field* f = &d->fields[item->field_index];
+    upb_MiniTableField* f = &d->fields[item->field_index];
     switch (item->type) {
       case kUpb_LayoutItemType_OneofField:
         while (true) {
@@ -663,13 +663,13 @@ static void upb_MiniTable_BuildMapEntry(upb_MtDecoder* d,
                                         upb_FieldType key_type,
                                         upb_FieldType value_type,
                                         bool value_is_proto3_enum) {
-  upb_MiniTable_Field* fields = upb_Arena_Malloc(d->arena, sizeof(*fields) * 2);
+  upb_MiniTableField* fields = upb_Arena_Malloc(d->arena, sizeof(*fields) * 2);
   if (!fields) {
     upb_MtDecoder_ErrorFormat(d, "OOM while building map mini table field");
     UPB_UNREACHABLE();
   }
 
-  upb_MiniTable_Sub* subs = NULL;
+  upb_MiniTableSub* subs = NULL;
   if (value_is_proto3_enum) {
     UPB_ASSERT(value_type == kUpb_FieldType_Enum);
     // No sub needed.
@@ -826,16 +826,16 @@ done:
   return decoder.table;
 }
 
-static size_t upb_MiniTable_EnumSize(size_t count) {
-  return sizeof(upb_MiniTable_Enum) + count * sizeof(uint32_t);
+static size_t upb_MiniTableEnum_Size(size_t count) {
+  return sizeof(upb_MiniTableEnum) + count * sizeof(uint32_t);
 }
 
-static upb_MiniTable_Enum* _upb_MiniTable_AddEnumDataMember(upb_MtDecoder* d,
-                                                            uint32_t val) {
+static upb_MiniTableEnum* _upb_MiniTable_AddEnumDataMember(upb_MtDecoder* d,
+                                                           uint32_t val) {
   if (d->enum_data_count == d->enum_data_capacity) {
-    size_t old_sz = upb_MiniTable_EnumSize(d->enum_data_capacity);
+    size_t old_sz = upb_MiniTableEnum_Size(d->enum_data_capacity);
     d->enum_data_capacity = UPB_MAX(2, d->enum_data_capacity * 2);
-    size_t new_sz = upb_MiniTable_EnumSize(d->enum_data_capacity);
+    size_t new_sz = upb_MiniTableEnum_Size(d->enum_data_capacity);
     d->enum_table = upb_Arena_Realloc(d->arena, d->enum_table, old_sz, new_sz);
     upb_MtDecoder_CheckOutOfMemory(d, d->enum_table);
   }
@@ -844,7 +844,7 @@ static upb_MiniTable_Enum* _upb_MiniTable_AddEnumDataMember(upb_MtDecoder* d,
 }
 
 static void upb_MiniTable_BuildEnumValue(upb_MtDecoder* d, uint32_t val) {
-  upb_MiniTable_Enum* table = d->enum_table;
+  upb_MiniTableEnum* table = d->enum_table;
   d->enum_value_count++;
   if (table->value_count || (val > 512 && d->enum_value_count < val / 32)) {
     if (table->value_count == 0) {
@@ -862,11 +862,11 @@ static void upb_MiniTable_BuildEnumValue(upb_MtDecoder* d, uint32_t val) {
   }
 }
 
-upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
-                                            upb_Arena* arena,
-                                            upb_Status* status) {
+upb_MiniTableEnum* upb_MiniTable_BuildEnum(const char* data, size_t len,
+                                           upb_Arena* arena,
+                                           upb_Status* status) {
   upb_MtDecoder decoder = {
-      .enum_table = upb_Arena_Malloc(arena, upb_MiniTable_EnumSize(2)),
+      .enum_table = upb_Arena_Malloc(arena, upb_MiniTableEnum_Size(2)),
       .enum_value_count = 0,
       .enum_data_count = 0,
       .enum_data_capacity = 1,
@@ -923,9 +923,9 @@ upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
 }
 
 const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
-                                         upb_MiniTable_Extension* ext,
+                                         upb_MiniTableExtension* ext,
                                          const upb_MiniTable* extendee,
-                                         upb_MiniTable_Sub sub,
+                                         upb_MiniTableSub sub,
                                          upb_Status* status) {
   upb_MtDecoder decoder = {
       .arena = NULL,
@@ -950,7 +950,7 @@ const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
       upb_MtDecoder_Parse(&decoder, data, len, ext, sizeof(*ext), &count, NULL);
   if (!ret || count != 1) return NULL;
 
-  upb_MiniTable_Field* f = &ext->field;
+  upb_MiniTableField* f = &ext->field;
 
   f->mode |= kUpb_LabelFlags_IsExtension;
   f->offset = 0;
@@ -982,7 +982,7 @@ upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
 }
 
 void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
-                                 upb_MiniTable_Field* field,
+                                 upb_MiniTableField* field,
                                  const upb_MiniTable* sub) {
   UPB_ASSERT((uintptr_t)table->fields <= (uintptr_t)field &&
              (uintptr_t)field <
@@ -990,15 +990,15 @@ void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
   if (sub->ext & kUpb_ExtMode_IsMapEntry) {
     field->mode = (field->mode & ~kUpb_FieldMode_Mask) | kUpb_FieldMode_Map;
   }
-  upb_MiniTable_Sub* table_sub = (void*)&table->subs[field->submsg_index];
+  upb_MiniTableSub* table_sub = (void*)&table->subs[field->submsg_index];
   table_sub->submsg = sub;
 }
 
-void upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTable_Field* field,
-                              const upb_MiniTable_Enum* sub) {
+void upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
+                              const upb_MiniTableEnum* sub) {
   UPB_ASSERT((uintptr_t)table->fields <= (uintptr_t)field &&
              (uintptr_t)field <
                  (uintptr_t)(table->fields + table->field_count));
-  upb_MiniTable_Sub* table_sub = (void*)&table->subs[field->submsg_index];
+  upb_MiniTableSub* table_sub = (void*)&table->subs[field->submsg_index];
   table_sub->subenum = sub;
 }
