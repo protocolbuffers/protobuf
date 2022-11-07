@@ -51,18 +51,6 @@
 extern "C" {
 #endif
 
-/** upb_*Int* conversion routines ********************************************/
-
-UPB_INLINE int32_t _upb_Int32_FromI(int v) { return (int32_t)v; }
-
-UPB_INLINE int64_t _upb_Int64_FromLL(long long v) { return (int64_t)v; }
-
-UPB_INLINE uint32_t _upb_UInt32_FromU(unsigned v) { return (uint32_t)v; }
-
-UPB_INLINE uint64_t _upb_UInt64_FromULL(unsigned long long v) {
-  return (uint64_t)v;
-}
-
 extern const float kUpb_FltInfinity;
 extern const double kUpb_Infinity;
 
@@ -93,7 +81,7 @@ typedef enum {
 // Mask to isolate the upb_FieldMode from field.mode.
 #define kUpb_FieldMode_Mask 3
 
-/* Extra flags on the mode field. */
+// Extra flags on the mode field.
 typedef enum {
   kUpb_LabelFlags_IsPacked = 4,
   kUpb_LabelFlags_IsExtension = 8,
