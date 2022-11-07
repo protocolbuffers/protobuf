@@ -7,7 +7,7 @@ load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@upb//cmake:build_defs.bzl", "staleness_test")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 load("//conformance:defs.bzl", "conformance_test")
-load("//:protobuf_version.bzl", "PROTOBUF_PHP_VERSION")
+load("//:protobuf_version.bzl", "PROTOBUF_PHP_VERSION", "PROTOC_VERSION")
 
 filegroup(
     name = "source_files",
@@ -192,6 +192,7 @@ genrule(
       "$(location ext/google/protobuf/generate_package_xml.sh)",
       "$(location ext/google/protobuf/template_package.xml)",
       PROTOBUF_PHP_VERSION,
+      PROTOC_VERSION,
       "$$(tar -tf $(location :release_without_package) | sed -z -e 's;\\n;,;g')",
       "$(location package.xml)"
     ]),

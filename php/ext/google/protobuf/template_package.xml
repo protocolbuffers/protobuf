@@ -22,7 +22,7 @@
  </stability>
  <license uri="https://opensource.org/licenses/BSD-3-Clause">BSD-3-Clause</license>
  <notes>
- * See github.com/protocolbuffers/protobuf/releases for release notes.
+ * See github.com/protocolbuffers/protobuf/releases/tag/vTEMPLATE_PROTOC_VERSION for release notes.
  </notes>
  <contents>
   <dir baseinstalldir="/" name="/">TEMPLATE_FILES</dir>

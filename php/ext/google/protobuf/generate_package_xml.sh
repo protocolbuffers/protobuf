@@ -2,8 +2,9 @@
 
 template_package_xml=$1
 release_version=$2
-release_files=$3
-out=$4
+protoc_version=$3
+release_files=$4
+out=$5
 
 date=$(date +%Y-%m-%d)
 time=$(date +%H:%M:%S)
@@ -36,4 +37,5 @@ sed -e "s;TEMPLATE_TIME;${time};" |
 sed -e "s;TEMPLATE_PHP_RELEASE;${release_version};" |
 sed -e "s;TEMPLATE_PHP_API;${api_version};" |
 sed -e "s;TEMPLATE_PHP_STABILITY;${stability};g" |
+sed -e "s;TEMPLATE_PROTOC_VERSION;${protoc_version};" |
 sed -e "s;TEMPLATE_FILES;${files};" > $out
