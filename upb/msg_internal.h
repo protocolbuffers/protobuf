@@ -340,18 +340,25 @@ const upb_Message_Extension* _upb_Message_Getext(
 
 void _upb_Message_Clearext(upb_Message* msg, const upb_MiniTableExtension* ext);
 
+// LINT.IfChange(presence_logic)
+
 /** Hasbit access *************************************************************/
 
+UPB_INLINE size_t _upb_hasbit_ofs(size_t idx) { return idx / 8; }
+
+UPB_INLINE char _upb_hasbit_mask(size_t idx) { return 1 << (idx % 8); }
+
 UPB_INLINE bool _upb_hasbit(const upb_Message* msg, size_t idx) {
-  return (*UPB_PTR_AT(msg, idx / 8, const char) & (1 << (idx % 8))) != 0;
+  return (*UPB_PTR_AT(msg, _upb_hasbit_ofs(idx), const char) &
+          _upb_hasbit_mask(idx)) != 0;
 }
 
 UPB_INLINE void _upb_sethas(const upb_Message* msg, size_t idx) {
-  (*UPB_PTR_AT(msg, idx / 8, char)) |= (char)(1 << (idx % 8));
+  (*UPB_PTR_AT(msg, _upb_hasbit_ofs(idx), char)) |= _upb_hasbit_mask(idx);
 }
 
 UPB_INLINE void _upb_clearhas(const upb_Message* msg, size_t idx) {
-  (*UPB_PTR_AT(msg, idx / 8, char)) &= (char)(~(1 << (idx % 8)));
+  (*UPB_PTR_AT(msg, _upb_hasbit_ofs(idx), char)) &= ~_upb_hasbit_mask(idx);
 }
 
 UPB_INLINE size_t _upb_Message_Hasidx(const upb_MiniTableField* f) {
@@ -402,6 +409,8 @@ UPB_INLINE uint32_t _upb_getoneofcase_field(const upb_Message* msg,
 UPB_INLINE bool _upb_has_submsg_nohasbit(const upb_Message* msg, size_t ofs) {
   return *UPB_PTR_AT(msg, ofs, const upb_Message*) != NULL;
 }
+
+// LINT.ThenChange(GoogleInternalName2)
 
 /* Map entries aren't actually stored, they are only used during parsing.  For
  * parsing, it helps a lot if all map entry messages have the same layout.

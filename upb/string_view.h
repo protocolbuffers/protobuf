@@ -37,10 +37,12 @@
 extern "C" {
 #endif
 
+// LINT.IfChange(struct_definition)
 typedef struct {
   const char* data;
   size_t size;
 } upb_StringView;
+// LINT.ThenChange(GoogleInternalName0)
 
 UPB_INLINE upb_StringView upb_StringView_FromDataAndSize(const char* data,
                                                          size_t size) {
