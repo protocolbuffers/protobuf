@@ -30,7 +30,7 @@
 #include <lualib.h>
 #include <signal.h>
 
-#include "upb/bindings/lua/upb.h"
+#include "lua/upb.h"
 
 lua_State* L;
 
@@ -57,7 +57,7 @@ const char* init =
     "bazel-bin/external/com_google_protobuf/src/?.lua;"
     "bazel-bin/external/com_google_protobuf/?.lua;"
     "bazel-bin/external/com_google_protobuf/?.lua;"
-    "upb/bindings/lua/?.lua"
+    "lua/?.lua"
     "'";
 
 int main(int argc, char** argv) {
@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
 
   signal(SIGINT, sighandler);
   ret = ret || lua_pcall(L, 1, LUA_MULTRET, 0) ||
-        luaL_dofile(L, "upb/bindings/lua/test_upb.lua");
+        luaL_dofile(L, "lua/test_upb.lua");
   signal(SIGINT, SIG_DFL);
 
   if (ret) {

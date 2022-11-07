@@ -29,7 +29,7 @@ load(
     "UPB_DEFAULT_CPPOPTS",
 )
 load(
-    "//upb/bindings/lua:lua_proto_library.bzl",
+    "//lua:lua_proto_library.bzl",
     "lua_proto_library",
 )
 
@@ -82,13 +82,13 @@ cc_test(
         ":test_proto_lua",
         "//:third_party/lunit/console.lua",
         "//:third_party/lunit/lunit.lua",
-        "//upb/bindings/lua:upb.lua",
+        "//lua:upb.lua",
         "@com_google_protobuf//:descriptor_proto",
         "@com_google_protobuf//conformance:conformance_proto",
     ],
     linkstatic = 1,
     deps = [
-        "//upb/bindings/lua:lupb",
+        "//lua:lupb",
         "@lua//:liblua",
     ],
 )

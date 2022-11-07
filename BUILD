@@ -1196,7 +1196,7 @@ exports_files(
         "third_party/lunit/console.lua",
         "third_party/lunit/lunit.lua",
     ],
-    visibility = ["//upb/bindings/lua:__pkg__"],
+    visibility = ["//lua:__pkg__"],
 )
 
 filegroup(
