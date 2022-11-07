@@ -1,39 +1,44 @@
 #!/bin/bash
 
-# This script updates the CMake file lists (i.e. src/file_lists.cmake), commits
-# the resulting change, and pushes it. This does not do anything useful when
-# run manually, but should be run by our GitHub action instead.
+# This script updates src/file_lists.cmake and the checked-in generated code
+# for the well-known types, commits the resulting changes, and pushes them.
+# This does not do anything useful when run manually, but should be run by our
+# GitHub action instead.
 
 set -ex
 
-# Exit early if the previous commit was made by the bot. This reduces the risk
+# Cd to the repo root.
+cd $(dirname -- "$0")/..
+
+previous_commit_title=$(git log -1 --pretty='%s')
+
+# Exit early if the previous commit was auto-generated. This reduces the risk
 # of a bug causing an infinite loop of auto-generated commits.
-if (git log -1 --pretty=format:'%an' | grep -q "Protobuf Team Bot"); then
-  echo "Previous commit was authored by bot"
+if (echo "$previous_commit_title" | grep -q "Auto-generate"); then
+  echo "Previous commit was auto-generated"
   exit 0
 fi
 
-$(dirname -- "$0")/update_file_lists.sh
+# Run the staleness tests and use them to update any stale files.
+bazel test //src:cmake_lists_staleness_test || ./bazel-bin/src/cmake_lists_staleness_test --fix
+bazel test //src/google/protobuf:well_known_types_staleness_test || ./bazel-bin/src/google/protobuf/well_known_types_staleness_test --fix
 
-# Try to determine the most recent pull request number.
-title=$(git log -1 --pretty='%s')
-pr_from_merge=$(echo "$title" | sed -n 's/^Merge pull request #\([0-9]\+\).*/\1/p')
-pr_from_squash=$(echo "$title" | sed -n 's/^.*(#\([0-9]\+\))$/\1/p')
+# Try to determine the most recent CL or pull request.
+cl=$(git log -1 --pretty='%b' | sed -n 's/^PiperOrigin-RevId: \([0-9]*\)$/\1/p')
+pr_from_merge=$(echo "$previous_commit_title" | sed -n 's/^Merge pull request #\([0-9]\+\).*/\1/p')
+pr_from_squash=$(echo "$previous_commit_title" | sed -n 's/^.*(#\([0-9]\+\))$/\1/p')
 
-pr=""
-if [ ! -z "$pr_from_merge" ]; then
-  pr="$pr_from_merge"
+if [ ! -z "$cl" ]; then
+  commit_message="Auto-generate CMake files after cl/$cl"
+elif [ ! -z "$pr_from_merge" ]; then
+  commit_message="Auto-generate CMake files after PR #$pr_from_merge"
 elif [ ! -z "$pr_from_squash" ]; then
-  pr="$pr_from_squash"
-fi
-
-if [ ! -z "$pr" ]; then
-  commit_message="Auto-generate CMake file lists after PR #$pr"
+  commit_message="Auto-generate CMake files after PR #$pr_from_squash"
 else
-  # If we are unable to determine the pull request number, we fall back on this
-  # default commit message. Typically this should not occur, but could happen
-  # if a pull request was merged via a rebase.
-  commit_message="Auto-generate CMake file lists"
+  # If we are unable to determine the CL or pull request number, we fall back
+  # on this default commit message. Typically this should not occur, but could
+  # happen if a pull request was merged via a rebase.
+  commit_message="Auto-generate CMake files"
 fi
 
 git add -A
