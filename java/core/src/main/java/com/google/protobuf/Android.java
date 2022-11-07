@@ -43,7 +43,9 @@ final class Android {
   private static final boolean IS_ROBOLECTRIC =
       !ASSUME_ANDROID && getClassForName("org.robolectric.Robolectric") != null;
 
-  /** Returns {@code true} if running on an Android device. */
+  /**
+   * Returns {@code true} if running on an Android device.
+   * */
   static boolean isOnAndroidDevice() {
     return ASSUME_ANDROID || (MEMORY_CLASS != null && !IS_ROBOLECTRIC);
   }
