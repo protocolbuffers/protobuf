@@ -136,8 +136,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
   protected void mergeFromAndMakeImmutableInternal(
       CodedInputStream input, ExtensionRegistryLite extensionRegistry)
       throws InvalidProtocolBufferException {
-    Schema<GeneratedMessageV3> schema =
-        (Schema<GeneratedMessageV3>) Protobuf.getInstance().schemaFor(this);
+    Schema<GeneratedMessageV3> schema = Protobuf.getInstance().schemaFor(this);
     try {
       schema.mergeFrom(this, CodedInputStreamReader.forCodedInput(input), extensionRegistry);
     } catch (InvalidProtocolBufferException e) {
@@ -156,7 +155,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
    * @param getBytesForString whether to generate ByteString for string fields
    */
   private Map<FieldDescriptor, Object> getAllFieldsMutable(boolean getBytesForString) {
-    final TreeMap<FieldDescriptor, Object> result = new TreeMap<FieldDescriptor, Object>();
+    final TreeMap<FieldDescriptor, Object> result = new TreeMap<>();
     final Descriptor descriptor = internalGetFieldAccessorTable().descriptor;
     final List<FieldDescriptor> fields = descriptor.getFields();
 
@@ -618,7 +617,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
     /** Internal helper which returns a mutable map. */
     private Map<FieldDescriptor, Object> getAllFieldsMutable() {
-      final TreeMap<FieldDescriptor, Object> result = new TreeMap<FieldDescriptor, Object>();
+      final TreeMap<FieldDescriptor, Object> result = new TreeMap<>();
       final Descriptor descriptor = internalGetFieldAccessorTable().descriptor;
       final List<FieldDescriptor> fields = descriptor.getFields();
 
@@ -1038,8 +1037,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     /** Get the number of elements in a repeated extension. */
     @Override
     @SuppressWarnings("unchecked")
-    public final <T> int getExtensionCount(
-        final ExtensionLite<MessageT, List<T>> extensionLite) {
+    public final <T> int getExtensionCount(final ExtensionLite<MessageT, List<T>> extensionLite) {
       Extension<MessageT, List<T>> extension = checkNotLite(extensionLite);
 
       verifyExtensionContainingType(extension);
@@ -1410,13 +1408,12 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       Extension<MessageT, T> extension = checkNotLite(extensionLite);
 
       verifyExtensionContainingType(extension);
-      return extensions == null ? false : extensions.hasField(extension.getDescriptor());
+      return extensions != null && extensions.hasField(extension.getDescriptor());
     }
 
     /** Get the number of elements in a repeated extension. */
     @Override
-    public final <T> int getExtensionCount(
-        final ExtensionLite<MessageT, List<T>> extensionLite) {
+    public final <T> int getExtensionCount(final ExtensionLite<MessageT, List<T>> extensionLite) {
       Extension<MessageT, List<T>> extension = checkNotLite(extensionLite);
 
       verifyExtensionContainingType(extension);
@@ -1475,9 +1472,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
     /** Set the value of one element of a repeated extension. */
     public final <T> BuilderT setExtension(
-        final ExtensionLite<MessageT, List<T>> extensionLite,
-        final int index,
-        final T value) {
+        final ExtensionLite<MessageT, List<T>> extensionLite, final int index, final T value) {
       Extension<MessageT, List<T>> extension = checkNotLite(extensionLite);
 
       verifyExtensionContainingType(extension);
@@ -1603,7 +1598,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
     /** Called by subclasses to check if all extensions are initialized. */
     protected boolean extensionsAreInitialized() {
-      return extensions == null ? true : extensions.isInitialized();
+      return extensions == null || extensions.isInitialized();
     }
 
     /**
@@ -1739,7 +1734,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     public boolean hasField(final FieldDescriptor field) {
       if (field.isExtension()) {
         verifyContainingType(field);
-        return extensions == null ? false : extensions.hasField(field);
+        return extensions != null && extensions.hasField(field);
       } else {
         return super.hasField(field);
       }
@@ -1963,8 +1958,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           if (field.isRepeated()) {
             if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
               if (field.isMapField()) {
-                fields[i] =
-                    new MapFieldAccessor(field, camelCaseNames[i], messageClass, builderClass);
+                fields[i] = new MapFieldAccessor(field, messageClass);
               } else {
                 fields[i] =
                     new RepeatedMessageFieldAccessor(
@@ -2129,22 +2123,16 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
         if (fieldDescriptor != null) {
           return message.hasField(fieldDescriptor);
         } else {
-          if (((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber() == 0) {
-            return false;
-          }
+          return ((Internal.EnumLite) invokeOrDie(caseMethod, message)).getNumber() != 0;
         }
-        return true;
       }
 
       public boolean has(GeneratedMessageV3.Builder builder) {
         if (fieldDescriptor != null) {
           return builder.hasField(fieldDescriptor);
         } else {
-          if (((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber() == 0) {
-            return false;
-          }
+          return ((Internal.EnumLite) invokeOrDie(caseMethodBuilder, builder)).getNumber() != 0;
         }
-        return true;
       }
 
       public FieldDescriptor get(final GeneratedMessageV3 message) {
@@ -2434,9 +2422,9 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
     private static class RepeatedFieldAccessor implements FieldAccessor {
       interface MethodInvoker {
-        public Object get(final GeneratedMessageV3 message);
+        Object get(final GeneratedMessageV3 message);
 
-        public Object get(GeneratedMessageV3.Builder<?> builder);
+        Object get(GeneratedMessageV3.Builder<?> builder);
 
         Object getRepeated(final GeneratedMessageV3 message, final int index);
 
@@ -2455,15 +2443,15 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       private static final class ReflectionInvoker implements MethodInvoker {
-        protected final Method getMethod;
-        protected final Method getMethodBuilder;
-        protected final Method getRepeatedMethod;
-        protected final Method getRepeatedMethodBuilder;
-        protected final Method setRepeatedMethod;
-        protected final Method addRepeatedMethod;
-        protected final Method getCountMethod;
-        protected final Method getCountMethodBuilder;
-        protected final Method clearMethod;
+        private final Method getMethod;
+        private final Method getMethodBuilder;
+        private final Method getRepeatedMethod;
+        private final Method getRepeatedMethodBuilder;
+        private final Method setRepeatedMethod;
+        private final Method addRepeatedMethod;
+        private final Method getCountMethod;
+        private final Method getCountMethodBuilder;
+        private final Method clearMethod;
 
         ReflectionInvoker(
             final FieldDescriptor descriptor,
@@ -2659,10 +2647,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
     private static class MapFieldAccessor implements FieldAccessor {
       MapFieldAccessor(
-          final FieldDescriptor descriptor,
-          final String camelCaseName,
-          final Class<? extends GeneratedMessageV3> messageClass,
-          final Class<? extends Builder> builderClass) {
+          final FieldDescriptor descriptor, final Class<? extends GeneratedMessageV3> messageClass) {
         field = descriptor;
         Method getDefaultInstanceMethod = getMethodOrDie(messageClass, "getDefaultInstance");
         MapField<?, ?> defaultMapField =
@@ -2832,12 +2817,12 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
         }
       }
 
-      private EnumDescriptor enumDescriptor;
+      private final EnumDescriptor enumDescriptor;
 
-      private Method valueOfMethod;
-      private Method getValueDescriptorMethod;
+      private final Method valueOfMethod;
+      private final Method getValueDescriptorMethod;
 
-      private boolean supportUnknownEnumValue;
+      private final boolean supportUnknownEnumValue;
       private Method getValueMethod;
       private Method getValueMethodBuilder;
       private Method setValueMethod;
@@ -2898,12 +2883,13 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
         }
       }
 
-      private EnumDescriptor enumDescriptor;
+      private final EnumDescriptor enumDescriptor;
 
       private final Method valueOfMethod;
       private final Method getValueDescriptorMethod;
 
-      private boolean supportUnknownEnumValue;
+      private final boolean supportUnknownEnumValue;
+
       private Method getRepeatedValueMethod;
       private Method getRepeatedValueMethodBuilder;
       private Method setRepeatedValueMethod;
