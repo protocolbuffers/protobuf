@@ -1578,3 +1578,7 @@ message BadFieldNames{
   optional int32 OptionalInt32 = 1;
   optional int32 for = 2;
 }
+
+message RedactedFields{
+  optional string optional_redacted_string = 1 [debug_redact = true];
+}
