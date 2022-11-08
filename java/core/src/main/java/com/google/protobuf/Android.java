@@ -50,7 +50,9 @@ final class Android {
     return ASSUME_ANDROID || (MEMORY_CLASS != null && !IS_ROBOLECTRIC);
   }
 
-  /** Returns the memory class or {@code null} if not on Android device. */
+  /**
+   * Returns the memory class or {@code null} if not on Android device.
+   * */
   static Class<?> getMemoryClass() {
     return MEMORY_CLASS;
   }
