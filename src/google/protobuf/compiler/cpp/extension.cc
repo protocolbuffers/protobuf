@@ -34,11 +34,11 @@
 
 #include "google/protobuf/compiler/cpp/extension.h"
 
+#include "google/protobuf/io/printer.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {

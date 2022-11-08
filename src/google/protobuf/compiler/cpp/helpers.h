@@ -49,10 +49,10 @@
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/printer.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/port.h"
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/io/printer.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
