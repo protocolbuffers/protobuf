@@ -2,7 +2,7 @@ cc_library(
     name = "string",
     hdrs = ["string.h"],
     deps = [
-        "//:upb",
+        "//:mem",
         "//:port",
     ],
 )
@@ -37,8 +37,9 @@ cc_library(
         "zero_copy_output_stream.h",
     ],
     deps = [
-        "//:upb",
+        "//:mem",
         "//:port",
+        "//:status",
     ],
 )
 

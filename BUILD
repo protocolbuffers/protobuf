@@ -118,7 +118,6 @@ cc_library(
         "upb/internal/unicode.h",
         "upb/msg.c",
         "upb/msg_internal.h",
-        "upb/status.c",
         "upb/upb.c",
         "upb/wire/decode.c",
         "upb/wire/encode.c",
@@ -149,6 +148,7 @@ cc_library(
         ":fastdecode",
         ":mem",
         ":port",
+        ":status",
         ":table_internal",
         ":unicode_internal",
         ":wire_internal",
@@ -1014,6 +1014,19 @@ cc_library(
 )
 
 cc_library(
+    name = "status",
+    srcs = [
+        "upb/status.c",
+    ],
+    hdrs = [
+        "upb/status.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//:__subpackages__"],
+    deps = [":port"],
+)
+
+cc_library(
     name = "atoi_internal",
     srcs = ["upb/internal/atoi.c"],
     hdrs = ["upb/internal/atoi.h"],
@@ -1100,6 +1113,7 @@ upb_amalgamation(
         ":port",
         ":reflection",
         ":reflection_internal",
+        ":status",
         ":upb",
         ":wire_internal",
     ],
@@ -1135,6 +1149,7 @@ upb_amalgamation(
         ":port",
         ":reflection",
         ":reflection_internal",
+        ":status",
         ":table_internal",
         ":unicode_internal",
         ":upb",
@@ -1173,6 +1188,7 @@ upb_amalgamation(
         ":port",
         ":reflection",
         ":reflection_internal",
+        ":status",
         ":table_internal",
         ":unicode_internal",
         ":upb",
