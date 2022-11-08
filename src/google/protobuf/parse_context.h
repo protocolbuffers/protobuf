@@ -36,8 +36,6 @@
 #include <string>
 #include <type_traits>
 
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/arena.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/string_view.h"
@@ -45,6 +43,8 @@
 #include "google/protobuf/endian.h"
 #include "google/protobuf/implicit_weak_message.h"
 #include "google/protobuf/inlined_string_field.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"

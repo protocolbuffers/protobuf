@@ -46,10 +46,6 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/tokenizer.h"
-#include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/numbers.h"
@@ -60,7 +56,11 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/strtod.h"
+#include "google/protobuf/io/tokenizer.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/repeated_field.h"
@@ -273,7 +273,7 @@ const Descriptor* DefaultFinderFindAnyType(const Message& message,
 // ===========================================================================
 // Internal class for parsing an ASCII representation of a Protocol Message.
 // This class makes use of the Protocol Message compiler's tokenizer found
-// in //net/proto2/io/public/tokenizer.h. Note that class's Parse
+// in //third_party/protobuf/io/tokenizer.h. Note that class's Parse
 // method is *not* thread-safe and should only be used in a single thread at
 // a time.
 
@@ -1383,7 +1383,7 @@ class TextFormat::Parser::ParserImpl {
 
 // ===========================================================================
 // Internal class for writing text to the io::ZeroCopyOutputStream. Adapted
-// from the Printer found in //net/proto2/io/public/printer.h
+// from the Printer found in //third_party/protobuf/io/printer.h
 class TextFormat::Printer::TextGenerator
     : public TextFormat::BaseTextGenerator {
  public:
