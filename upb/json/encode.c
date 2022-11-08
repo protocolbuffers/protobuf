@@ -781,7 +781,7 @@ size_t upb_JsonEncode(const upb_Message* msg, const upb_MessageDef* m,
   e.status = status;
   e.arena = NULL;
 
-  if (setjmp(e.err)) return -1;
+  if (UPB_SETJMP(e.err)) return -1;
 
   jsonenc_msgfield(&e, msg, m);
   if (e.arena) upb_Arena_Free(e.arena);
