@@ -36,10 +36,10 @@
 
 #include <string>
 
-#include "google/protobuf/wire_format.h"
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/wire_format.h"
 
 namespace google {
 namespace protobuf {

@@ -47,11 +47,11 @@
 #include "google/protobuf/compiler/cpp/string_field.h"
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/wire_format.h"
 #include "google/protobuf/compiler/cpp/enum_field.h"
 #include "google/protobuf/compiler/cpp/map_field.h"
 #include "google/protobuf/compiler/cpp/message_field.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/wire_format.h"
 
 namespace google {
 namespace protobuf {
