@@ -34,11 +34,11 @@
 
 #include "google/protobuf/compiler/cpp/message_field.h"
 
-#include "google/protobuf/io/printer.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {
