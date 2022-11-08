@@ -5563,7 +5563,7 @@ void DescriptorBuilder::CheckFieldJsonNameUniqueness(
       continue;
     }
     bool same_oneof = false;
-    if (use_custom_names && details.is_custom && match.is_custom
+    if (use_custom_names && (details.is_custom || match.is_custom)
         && field.has_oneof_index() && match.field->has_oneof_index()
         && field.oneof_index() == match.field->oneof_index()) {
       // For custom name conflicts between fields in the same oneof, we
