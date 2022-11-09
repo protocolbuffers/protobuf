@@ -1430,7 +1430,6 @@ public abstract class GeneratedMessageLite<
 
     // since v3.6.1
     private final Class<?> messageClass;
-    // only included for backwards compatibility before messageClass was added
     private final String messageClassName;
     private final byte[] asBytes;
 
@@ -1441,7 +1440,7 @@ public abstract class GeneratedMessageLite<
      */
     SerializedForm(MessageLite regularForm) {
       messageClass = regularForm.getClass();
-      messageClassName = messageClass.getName();
+      messageClassName = regularForm.getClass().getName();
       asBytes = regularForm.toByteArray();
     }
 
