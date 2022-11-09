@@ -21,7 +21,7 @@
 /src/google/protobuf/compiler/php/ @protocolbuffers/protobuf-php
 
 /python/ @protocolbuffers/protobuf-python
-/src/google/protobuf/compiler/python/
+/src/google/protobuf/compiler/python/ @protocolbuffers/protobuf-python
 
 /ruby/ @protocolbuffers/protobuf-ruby
 /src/google/protobuf/compiler/ruby/ @protocolbuffers/protobuf-ruby
