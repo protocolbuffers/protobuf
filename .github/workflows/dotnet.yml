@@ -1,0 +1,26 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+    - name: Display dotnet version
+      run: dotnet --version
+    - name: Restore dependencies
+      run: cd ${{ github.workspace }} && dotnet restore ./csharp/src/Google.Protobuf.sln
+    - name: Build
+      run: cd ${{ github.workspace }} && dotnet build ./csharp/src/Google.Protobuf.sln --no-restore
+    - name: Test
+      run: cd ${{ github.workspace }} && dotnet test ./csharp/src/Google.Protobuf.sln --no-build --verbosity normal
