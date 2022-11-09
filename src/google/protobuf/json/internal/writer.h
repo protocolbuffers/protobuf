@@ -64,6 +64,10 @@ struct WriterOptions {
   // int32 field set to 0 will be omitted. Set this flag to true will override
   // the default behavior and print primitive fields regardless of their values.
   bool always_print_primitive_fields = false;
+  // Whether to always print repeated fields. By default proto3 empty repeated
+  // fields will be omitted in JSON output.  Set this flag to true will override
+  // the default behavior and print repeated fields regardless of their values.
+  bool always_print_repeated_fields = false;
   // Whether to always print enums as ints. By default they are rendered as
   // strings.
   bool always_print_enums_as_ints = false;

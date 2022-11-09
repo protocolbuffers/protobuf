@@ -416,8 +416,10 @@ absl::Status WriteField(JsonWriter& writer, const Msg<Traits>& msg,
   } else if (Traits::IsRepeated(field)) {
     return WriteRepeated<Traits>(writer, msg, field);
   } else if (Traits::GetSize(field, msg) == 0) {
-    // We can only get here if always_print_primitive_fields is true.
-    GOOGLE_DCHECK(writer.options().always_print_primitive_fields);
+    // We can only get here if always_print_primitive_fields or
+    // always_print_repeated_fields is true.
+    GOOGLE_DCHECK(writer.options().always_print_primitive_fields ||
+           writer.options().always_print_repeated_fields);
 
     if (Traits::FieldType(field) == FieldDescriptor::TYPE_GROUP) {
       // We do not yet have full group support, but this is required so that we
@@ -446,6 +448,9 @@ absl::Status WriteFields(JsonWriter& writer, const Msg<Traits>& msg,
           !Traits::IsRepeated(field) &&
           Traits::FieldType(field) == FieldDescriptor::TYPE_MESSAGE;
       has |= !is_singular_message && !Traits::IsOneof(field);
+    }
+    if (writer.options().always_print_repeated_fields) {
+      has |= Traits::IsRepeated(field);
     }
 
     if (has) {

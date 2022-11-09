@@ -57,6 +57,7 @@ absl::Status BinaryToJsonStream(google::protobuf::util::TypeResolver* resolver,
   opts.preserve_proto_field_names = options.preserve_proto_field_names;
   opts.always_print_enums_as_ints = options.always_print_enums_as_ints;
   opts.always_print_primitive_fields = options.always_print_primitive_fields;
+  opts.always_print_repeated_fields = options.always_print_repeated_fields;
 
   // TODO(b/234868512): Drop this setting.
   opts.allow_legacy_syntax = true;
@@ -110,6 +111,7 @@ absl::Status MessageToJsonString(const Message& message, std::string* output,
   opts.preserve_proto_field_names = options.preserve_proto_field_names;
   opts.always_print_enums_as_ints = options.always_print_enums_as_ints;
   opts.always_print_primitive_fields = options.always_print_primitive_fields;
+  opts.always_print_repeated_fields = options.always_print_repeated_fields;
 
   // TODO(b/234868512): Drop this setting.
   opts.allow_legacy_syntax = true;
