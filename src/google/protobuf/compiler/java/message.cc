@@ -390,14 +390,6 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
                  "}\n"
                  "\n");
 
-  // TODO(b/248149118): Remove this superfluous override.
-  printer->Print(
-      "@java.lang.Override\n"
-      "public final com.google.protobuf.UnknownFieldSet\n"
-      "getUnknownFields() {\n"
-      "  return this.unknownFields;\n"
-      "}\n");
-
   GenerateDescriptorMethods(printer);
 
   // Nested types
