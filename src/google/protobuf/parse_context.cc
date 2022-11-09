@@ -443,15 +443,15 @@ const char* PackedEnumParser(void* object, const char* ptr, ParseContext* ctx) {
   return VarintParser<int, false>(object, ptr, ctx);
 }
 
-const char* PackedBoolParser(void* object, const char* ptr, ParseContext* ctx) {
-  return VarintParser<bool, false>(object, ptr, ctx);
-}
-
 template <typename T>
 const char* FixedParser(void* object, const char* ptr, ParseContext* ctx) {
   int size = ReadSize(&ptr);
   return ctx->ReadPackedFixed(ptr, size,
                               static_cast<RepeatedField<T>*>(object));
+}
+  
+const char* PackedBoolParser(void* object, const char* ptr, ParseContext* ctx) {
+  return FixedParser<bool>(object, ptr, ctx);
 }
 
 const char* PackedFixed32Parser(void* object, const char* ptr,
