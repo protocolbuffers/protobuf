@@ -921,7 +921,9 @@ auto Printer::WithDefs(
         });
   }
 
-  return absl::MakeCleanup([this, has_annotations] {
+  // TODO(b/258239218): the silly "has_annotations = has_annotations" here works
+  // around a clang crash.
+  return absl::MakeCleanup([this, has_annotations = has_annotations] {
     var_lookups_.pop_back();
     if (has_annotations) {
       annotation_lookups_.pop_back();
