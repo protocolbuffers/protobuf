@@ -32,8 +32,11 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <iostream>
 #include <memory>
+#include <ostream>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -50,6 +53,9 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+ABSL_CONST_INIT extern thread_local size_t alloc_count;
+ABSL_CONST_INIT extern thread_local size_t free_count;
+
 namespace google {
 namespace protobuf {
 
@@ -62,7 +68,7 @@ class SingleArena : public testing::TestWithParam<bool> {
  public:
   std::unique_ptr<Arena> GetArena() {
     if (this->GetParam()) return nullptr;
-    return std::unique_ptr<Arena>(new Arena());
+    return std::make_unique<Arena>();
   }
 };
 
@@ -115,11 +121,11 @@ class DualArena : public testing::TestWithParam<std::tuple<bool, bool>> {
  public:
   std::unique_ptr<Arena> GetLhsArena() {
     if (std::get<0>(this->GetParam())) return nullptr;
-    return std::unique_ptr<Arena>(new Arena());
+    return std::make_unique<Arena>();
   }
   std::unique_ptr<Arena> GetRhsArena() {
     if (std::get<1>(this->GetParam())) return nullptr;
-    return std::unique_ptr<Arena>(new Arena());
+    return std::make_unique<Arena>();
   }
 };
 

@@ -37,6 +37,7 @@
 #include <string>
 #include <type_traits>
 #include <typeinfo>
+#include <utility>
 #include <vector>
 
 #include "google/protobuf/stubs/logging.h"
@@ -65,7 +66,6 @@
 #include "google/protobuf/port_def.inc"
 
 using proto2_arena_unittest::ArenaMessage;
-using protobuf_unittest::ForeignMessage;
 using protobuf_unittest::TestAllExtensions;
 using protobuf_unittest::TestAllTypes;
 using protobuf_unittest::TestEmptyMessage;
@@ -1188,7 +1188,7 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
   Arena arena(arena_block.data(), arena_block.size());
 
   {
-    internal::NoHeapChecker no_heap;
+    internal::NoHeapChecker no_heap{false};
 
     // Fill some repeated fields on the arena to test for leaks. Also verify no
     // memory allocations.
@@ -1212,6 +1212,7 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
     repeated_message.UnsafeArenaExtractSubrange(0, 5, extracted_messages);
     EXPECT_EQ(&arena, repeated_message.Get(0).GetArena());
     EXPECT_EQ(5, repeated_message.size());
+    EXPECT_EQ(no_heap.alloc_count(), 0);
   }
 
   // Now, outside the scope of the NoHeapChecker, test ExtractSubrange's copying
@@ -1420,6 +1421,8 @@ void VerifyArenaOverhead(Arena& arena, size_t overhead) {
   Arena::CreateArray<char>(&arena, kTinySize);
   uint64_t space_allocated = arena.SpaceAllocated();
 
+  ASSERT_GE(space_allocated, overhead + kTinySize);
+
   // Next allocation expects to fill up the block but no new block.
   uint64_t next_size = space_allocated - overhead - kTinySize;
   Arena::CreateArray<char>(&arena, next_size);
@@ -1469,8 +1472,8 @@ TEST(ArenaTest, BlockSizeSmallerThanAllocation) {
     Arena arena(opt);
 
     *Arena::Create<int64_t>(&arena) = 42;
-    EXPECT_GE(arena.SpaceAllocated(), 8);
-    EXPECT_EQ(8, arena.SpaceUsed());
+    ASSERT_GE(arena.SpaceAllocated(), 8);
+    ASSERT_EQ(8, arena.SpaceUsed());
 
     *Arena::Create<int64_t>(&arena) = 42;
     EXPECT_GE(arena.SpaceAllocated(), 16);

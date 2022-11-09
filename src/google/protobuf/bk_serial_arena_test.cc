@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2021 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,16 +28,21 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "google/protobuf/arena_align.h"
+#include "google/protobuf/bk_serial_arena.h"
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
+
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include "absl/strings/cord.h"
+#include "google/protobuf/arena_align.h"
 
 namespace google {
 namespace protobuf {
 namespace internal {
-
-
+namespace {}  // namespace
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

@@ -79,6 +79,8 @@ ArenaBlock* SentryArenaBlock() {
 
 }  // namespace
 
+#if !defined(PROTOBUF_ENABLE_RSEQ_ARENA)
+
 static SerialArena::Memory AllocateMemory(const AllocationPolicy* policy_ptr,
                                           size_t last_size, size_t min_bytes) {
   AllocationPolicy policy;  // default policy
@@ -882,18 +884,48 @@ SerialArena* ThreadSafeArena::GetSerialArenaFallback(size_t n) {
   return serial;
 }
 
+#endif  // !PROTOBUF_ENABLE_RSEQ_ARENA
+
 }  // namespace internal
 
 void* Arena::Allocate(size_t n) { return impl_.AllocateAligned(n); }
 
 void* Arena::AllocateForArray(size_t n) {
+#if defined(PROTOBUF_ENABLE_RSEQ_ARENA)
+  return impl_.AllocateAligned<true>(n, internal::ArenaAlignDefault{});
+#else
   return impl_.AllocateAligned<internal::AllocationClient::kArray>(n);
+#endif
 }
+
+#if !defined(PROTOBUF_ENABLE_RSEQ_ARENA)
 
 void* Arena::AllocateAlignedWithCleanup(size_t n, size_t align,
                                         void (*destructor)(void*)) {
   return impl_.AllocateAlignedWithCleanup(n, align, destructor);
 }
+
+#else  // PROTOBUF_ENABLE_RSEQ_ARENA
+
+template <typename Cleanup, typename Align>
+void* Arena::AllocateCleanup(Cleanup cleanup, Align align) {
+  return impl_.AllocateCleanup(cleanup, align);
+}
+
+template PROTOBUF_NOINLINE void* Arena::AllocateCleanup(
+    internal::cleanupx::StringAllocation, internal::ArenaAlignDefault);
+template PROTOBUF_NOINLINE void* Arena::AllocateCleanup(
+    internal::cleanupx::CordAllocation, internal::ArenaAlignDefault);
+template PROTOBUF_NOINLINE void* Arena::AllocateCleanup(
+    internal::cleanupx::DynamicAllocation, internal::ArenaAlignDefault);
+template PROTOBUF_NOINLINE void* Arena::AllocateCleanup(
+    internal::cleanupx::DynamicAllocation, internal::ArenaAlign);
+template PROTOBUF_NOINLINE void* Arena::AllocateCleanup(
+    internal::cleanupx::TaggedCleanup, internal::ArenaAlignDefault);
+template PROTOBUF_NOINLINE void* Arena::AllocateCleanup(
+    internal::cleanupx::DynamicCleanup, internal::ArenaAlignDefault);
+
+#endif  // PROTOBUF_ENABLE_RSEQ_ARENA
 
 }  // namespace protobuf
 }  // namespace google

@@ -43,6 +43,7 @@
 #include "google/protobuf/stubs/logging.h"
 #include "absl/numeric/bits.h"
 #include "absl/synchronization/mutex.h"
+#include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_config.h"
@@ -120,7 +121,8 @@ using LifecycleIdAtomic = uint64_t;
 // MetricsCollector collects stats for a particular arena.
 class PROTOBUF_EXPORT ArenaMetricsCollector {
  public:
-  ArenaMetricsCollector(bool record_allocs) : record_allocs_(record_allocs) {}
+  explicit ArenaMetricsCollector(bool record_allocs)
+      : record_allocs_(record_allocs) {}
 
   // Invoked when the arena is about to be destroyed. This method will
   // typically finalize any metric collection and delete the collector.
@@ -150,7 +152,19 @@ class PROTOBUF_EXPORT ArenaMetricsCollector {
   const bool record_allocs_;
 };
 
-enum class AllocationClient { kDefault, kArray };
+// Tag type used to invoke the constructor of message-owned arena.
+// Only message-owned arenas use this constructor for creation.
+// Such constructors are internal implementation details of the library.
+struct MessageOwned {
+  explicit MessageOwned() = default;
+};
+
+#if defined(PROTOBUF_ENABLE_RSEQ_ARENA)
+
+using ThreadSafeArena = BKArena;
+using SerialArena = BKSerialArena;
+
+#else  //! PROTOBUF_ENABLE_RSEQ_ARENA)
 
 class ThreadSafeArena;
 
@@ -428,13 +442,6 @@ class PROTOBUF_EXPORT SerialArena {
   static constexpr size_t kBlockHeaderSize = AlignUpTo8(sizeof(ArenaBlock));
 };
 
-// Tag type used to invoke the constructor of message-owned arena.
-// Only message-owned arenas use this constructor for creation.
-// Such constructors are internal implementation details of the library.
-struct MessageOwned {
-  explicit MessageOwned() = default;
-};
-
 // This class provides the core Arena memory allocation library. Different
 // implementations only need to implement the public interface below.
 // Arena is not a template type as that would only be useful if all protos
@@ -684,6 +691,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   static_assert(kSerialArenaSize % 8 == 0,
                 "kSerialArenaSize must be a multiple of 8.");
 };
+
+#endif  // PROTOBUF_ENABLE_RSEQ_ARENA
 
 }  // namespace internal
 }  // namespace protobuf

@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2022 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,16 +28,40 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "google/protobuf/arena_align.h"
+#include "google/protobuf/arena_cleanupx.h"
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <string>
+
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include "absl/strings/cord.h"
+#include "google/protobuf/arena_align.h"
+#include "google/protobuf/arena_cleanupx.h"
 
 namespace google {
 namespace protobuf {
 namespace internal {
+namespace cleanupx {
+namespace {
 
+using ::testing::Eq;
 
+TEST(ArenaCleanupTest, TagFor) {
+  struct alignas(ArenaAlignDefault::align) Default {
+    ~Default() = default;
+  };
+  EXPECT_THAT(TagFor<Default>(), Eq(Tag::kDynamic));
+  EXPECT_THAT(TagFor<std::string>(), Eq(Tag::kString));
+  EXPECT_THAT(TagFor<absl::Cord>(), Eq(Tag::kCord));
+}
+
+}  // namespace
+}  // namespace cleanupx
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

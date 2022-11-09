@@ -84,10 +84,17 @@ struct ArenaTestPeer {
 
 class NoHeapChecker {
  public:
-  NoHeapChecker() { capture_alloc.Hook(); }
+  explicit NoHeapChecker(bool fail_in_dtor = true)
+      : fail_in_dtor_(fail_in_dtor) {
+    capture_alloc.Hook();
+  }
   ~NoHeapChecker();
 
+  int alloc_count() const { return capture_alloc.alloc_count(); }
+  int free_count() const { return capture_alloc.free_count(); }
+
  private:
+  bool fail_in_dtor_;
   class NewDeleteCapture {
    public:
     // TODO(xiaofeng): Implement this for opensource protobuf.

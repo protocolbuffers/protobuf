@@ -42,8 +42,10 @@ namespace internal {
 
 NoHeapChecker::~NoHeapChecker() {
   capture_alloc.Unhook();
-  EXPECT_EQ(0, capture_alloc.alloc_count());
-  EXPECT_EQ(0, capture_alloc.free_count());
+  if (fail_in_dtor_) {
+    GOOGLE_CHECK_EQ(0, capture_alloc.alloc_count());
+    GOOGLE_CHECK_EQ(0, capture_alloc.free_count());
+  }
 }
 
 }  // namespace internal

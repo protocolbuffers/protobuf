@@ -49,6 +49,7 @@ using type_info = ::type_info;
 #endif
 
 #include <type_traits>
+#include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_config.h"
 #include "google/protobuf/arena_impl.h"
 #include "google/protobuf/port.h"
@@ -357,7 +358,12 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename T>
   PROTOBUF_ALWAYS_INLINE void OwnDestructor(T* object) {
     if (object != nullptr) {
+#if defined(PROTOBUF_ENABLE_RSEQ_ARENA)
+      AllocateCleanup(internal::cleanupx::CleanupArgFor<T>(object),
+                      internal::ArenaAlignDefault{});
+#else
       impl_.AddCleanup(object, &internal::cleanup::arena_destruct_object<T>);
+#endif
     }
   }
 
@@ -367,7 +373,12 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // the class destructor.
   PROTOBUF_ALWAYS_INLINE void OwnCustomDestructor(void* object,
                                                   void (*destruct)(void*)) {
+#if defined(PROTOBUF_ENABLE_RSEQ_ARENA)
+    AllocateCleanup(internal::cleanupx::CleanupArg(object, destruct),
+                    internal::ArenaAlignDefault{});
+#else
     impl_.AddCleanup(object, destruct);
+#endif
   }
 
   // Retrieves the arena associated with |value| if |value| is an arena-capable
@@ -562,6 +573,21 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     }
   }
 
+#if defined(PROTOBUF_ENABLE_RSEQ_ARENA)
+  template <typename Cleanup, typename Align = internal::ArenaAlignDefault>
+  void* AllocateCleanup(Cleanup cleanup, Align align = {});
+
+  template <typename T>
+  PROTOBUF_NDEBUG_INLINE void* AllocateInternal() {
+    namespace cleanup = internal::cleanupx;
+    static constexpr auto align_as = cleanup::TypeInfo<T>::align_as;
+    if (InternalHelper<T>::is_destructor_skippable::value) {
+      return AllocateAligned(cleanup::TypeInfo<T>::size, align_as.align);
+    } else {
+      return AllocateCleanup(cleanup::CleanupArgFor<T>(), align_as);
+    }
+  }
+#else
   PROTOBUF_NDEBUG_INLINE void* AllocateInternal(size_t size, size_t align,
                                                 void (*destructor)(void*)) {
     // Monitor allocation if needed.
@@ -571,6 +597,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
       return AllocateAlignedWithCleanup(size, align, destructor);
     }
   }
+#endif
 
   // CreateMessage<T> requires that T supports arenas, but this private method
   // works whether or not T supports arenas. These are not exposed to user code
@@ -610,6 +637,13 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     return static_cast<T*>(AllocateAlignedForArray(n, alignof(T)));
   }
 
+#if defined(PROTOBUF_ENABLE_RSEQ_ARENA)
+  template <typename T, typename... Args>
+  PROTOBUF_NDEBUG_INLINE T* DoCreateMessage(Args&&... args) {
+    void* mem = AllocateInternal<T>();
+    return InternalHelper<T>::Construct(mem, this, std::forward<Args>(args)...);
+  }
+#else
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE T* DoCreateMessage(Args&&... args) {
     return InternalHelper<T>::Construct(
@@ -619,6 +653,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                              T>::destructor),
         this, std::forward<Args>(args)...);
   }
+
+#endif
 
   // CreateInArenaStorage is used to implement map field. Without it,
   // Map need to call generated message's protected arena constructor,
@@ -655,6 +691,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     arena->OwnDestructor(ptr);
   }
 
+#if !defined(PROTOBUF_ENABLE_RSEQ_ARENA)
   // These implement Create(). The second parameter has type 'true_type' if T is
   // a subtype of Message and 'false_type' otherwise.
   template <typename T, typename... Args>
@@ -685,6 +722,29 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
           T(std::forward<Args>(args)...);
     }
   }
+#else
+  // These implement Create(). The second parameter has type 'true_type' if T is
+  // a subtype of Message and 'false_type' otherwise.
+  template <typename T, typename... Args>
+  PROTOBUF_ALWAYS_INLINE static T* CreateInternal(Arena* arena, std::true_type,
+                                                  Args&&... args) {
+    if (arena == nullptr) {
+      return new T(std::forward<Args>(args)...);
+    } else {
+      return new (arena->AllocateInternal<T>()) T(std::forward<Args>(args)...);
+    }
+  }
+
+  template <typename T, typename... Args>
+  PROTOBUF_ALWAYS_INLINE static T* CreateInternal(Arena* arena, std::false_type,
+                                                  Args&&... args) {
+    if (arena == nullptr) {
+      return new T(std::forward<Args>(args)...);
+    } else {
+      return new (arena->AllocateInternal<T>()) T(std::forward<Args>(args)...);
+    }
+  }
+#endif
 
   // These implement Own(), which registers an object for deletion (destructor
   // call and operator delete()). The second parameter has type 'true_type' if T
@@ -694,13 +754,23 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename T>
   PROTOBUF_ALWAYS_INLINE void OwnInternal(T* object, std::true_type) {
     if (object != nullptr) {
-      impl_.AddCleanup(object, &internal::arena_delete_object<MessageLite>);
+      static constexpr auto dtor = &internal::arena_delete_object<MessageLite>;
+#if defined(PROTOBUF_ENABLE_RSEQ_ARENA)
+      AllocateCleanup(internal::cleanupx::CleanupArg(object, dtor));
+#else
+      impl_.AddCleanup(object, dtor);
+#endif
     }
   }
   template <typename T>
   PROTOBUF_ALWAYS_INLINE void OwnInternal(T* object, std::false_type) {
     if (object != nullptr) {
+      static constexpr auto dtor = &internal::arena_delete_object<T>;
+#if defined(PROTOBUF_ENABLE_RSEQ_ARENA)
+      AllocateCleanup(internal::cleanupx::CleanupArg(object, dtor));
+#else
       impl_.AddCleanup(object, &internal::arena_delete_object<T>);
+#endif
     }
   }
 
@@ -727,8 +797,10 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   void* Allocate(size_t n);
   void* AllocateForArray(size_t n);
+#if !defined(PROTOBUF_ENABLE_RSEQ_ARENA)
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
                                    void (*destructor)(void*));
+#endif
 
   template <typename Type>
   friend class internal::GenericTypeHandler;
