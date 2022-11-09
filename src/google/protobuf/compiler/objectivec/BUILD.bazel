@@ -19,34 +19,34 @@ cc_library(
 
 cc_library(
     name = "names_internal",
+    srcs = [
+        "names.cc",
+    ],
     hdrs = [
         "names.h",
         "nsobject_methods.h",
-    ],
-    srcs = [
-        "names.cc",
     ],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/objectivec",
     visibility = ["//pkg:__pkg__"],
     deps = [
         ":line_consumer",
-        "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler:code_generator",
         "@com_google_absl//absl/container:flat_hash_set",
     ],
 )
 
 cc_library(
     name = "line_consumer",
-    hdrs = ["line_consumer.h"],
     srcs = ["line_consumer.cc"],
+    hdrs = ["line_consumer.h"],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/objectivec",
     visibility = ["//pkg:__pkg__"],
     deps = [
-        "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler:code_generator",
     ],
 )
 
@@ -96,6 +96,7 @@ cc_library(
         ":names",
         "//src/google/protobuf:protobuf_nowkt",
         "//src/google/protobuf/compiler:code_generator",
+        "@com_google_absl//absl/container:btree",
         "@com_google_absl//absl/strings",
     ],
 )

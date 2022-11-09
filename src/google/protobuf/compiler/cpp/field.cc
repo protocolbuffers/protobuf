@@ -47,11 +47,11 @@
 #include "google/protobuf/compiler/cpp/string_field.h"
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/wire_format.h"
 #include "google/protobuf/compiler/cpp/enum_field.h"
 #include "google/protobuf/compiler/cpp/map_field.h"
 #include "google/protobuf/compiler/cpp/message_field.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/wire_format.h"
 
 namespace google {
 namespace protobuf {
@@ -68,8 +68,8 @@ void MaySetAnnotationVariable(
     absl::string_view prepared_template, int field_index,
     absl::string_view access_type,
     absl::flat_hash_map<absl::string_view, std::string>* variables) {
-  if (options.field_listener_options.forbidden_field_listener_events.count(
-          std::string(annotation_name)))
+  if (options.field_listener_options.forbidden_field_listener_events.contains(
+          annotation_name))
     return;
   (*variables)[absl::StrCat("annotate_", annotation_name)] = absl::Substitute(
       absl::StrCat(substitute_template_prefix, prepared_template, ");\n"),

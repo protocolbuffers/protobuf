@@ -44,7 +44,6 @@ import unittest
 from google.protobuf import unittest_import_pb2
 from google.protobuf import unittest_mset_pb2
 from google.protobuf import unittest_pb2
-from google.protobuf import unittest_proto3_arena_pb2
 from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor
 from google.protobuf import message
@@ -59,6 +58,7 @@ from google.protobuf.internal import test_util
 from google.protobuf.internal import testing_refleaks
 from google.protobuf.internal import decoder
 from google.protobuf.internal import _parameterized
+from google.protobuf import unittest_proto3_arena_pb2
 
 
 warnings.simplefilter('error', DeprecationWarning)

@@ -36,8 +36,8 @@
 
 syntax = "proto2";
 
-import "google/protobuf/unittest_lazy_dependencies_enum.proto";
 import "google/protobuf/descriptor.proto";
+import "google/protobuf/unittest_lazy_dependencies_enum.proto";
 
 // Some generic_services option(s) added automatically.
 // See:  http://go/proto2-generic-services-default

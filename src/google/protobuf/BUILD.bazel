@@ -5,6 +5,7 @@
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_proto_library", "cc_test")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@upb//cmake:build_defs.bzl", "staleness_test")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
 
 package(
@@ -106,15 +107,22 @@ WELL_KNOWN_TYPES = [
     "wrappers",
 ]
 
+# When we generate code for the well-known types, we put the resulting files in
+# wkt/google/protobuf and add ./wkt to the include paths below. This is a
+# somewhat strange setup but is necessary to satisfy these two constraints:
+# - We need to keep the checked-in sources for now, since Cocoapods relies on
+#   them.
+# - The Bazel build should always use the generated sources so that developers
+#   don't have to worry about manually updating the checked-in sources.
 genrule(
     name = "gen_wkt_cc_sources",
     srcs = [wkt + ".proto" for wkt in WELL_KNOWN_TYPES],
     outs =
-        [wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES] +
-        [wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
+        ["wkt/google/protobuf/" + wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES] +
+        ["wkt/google/protobuf/" + wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
     cmd = """
         $(execpath //src/google/protobuf/compiler:protoc_nowkt) \
-            --cpp_out=$(RULEDIR)/../.. \
+            --cpp_out=dllexport_decl=PROTOBUF_EXPORT:$(RULEDIR)/wkt \
             --proto_path=$$(dirname $$(dirname $$(dirname $(location any.proto)))) \
             $(SRCS)
     """,
@@ -122,12 +130,21 @@ genrule(
     visibility = ["//visibility:private"],
 )
 
+staleness_test(
+    name = "well_known_types_staleness_test",
+    outs =
+        [wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES] +
+        [wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
+    generated_pattern = "wkt/google/protobuf/%s",
+    tags = ["manual"],
+)
+
 cc_library(
     name = "wkt_cc_proto",
-    srcs = [wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
-    hdrs = [wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES],
+    srcs = ["wkt/google/protobuf/" + wkt + ".pb.cc" for wkt in WELL_KNOWN_TYPES],
+    hdrs = ["wkt/google/protobuf/" + wkt + ".pb.h" for wkt in WELL_KNOWN_TYPES],
     copts = COPTS,
-    include_prefix = "google/protobuf",
+    includes = ["wkt"],
     linkopts = LINK_OPTS,
     visibility = ["//pkg:__pkg__"],
     deps = [":protobuf_nowkt"],

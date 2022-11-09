@@ -32,10 +32,10 @@
 
 #include <string>
 
-#include "google/protobuf/compiler/code_generator.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/names.h"
 

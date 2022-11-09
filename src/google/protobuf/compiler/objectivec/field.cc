@@ -32,7 +32,6 @@
 
 #include <iostream>
 #include <ostream>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -231,12 +230,13 @@ void FieldGenerator::GenerateCFunctionImplementations(
 }
 
 void FieldGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls, bool include_external_types) const {
+    absl::btree_set<std::string>* fwd_decls,
+    bool include_external_types) const {
   // Nothing
 }
 
 void FieldGenerator::DetermineObjectiveCClassDefinitions(
-    std::set<std::string>* fwd_decls) const {
+    absl::btree_set<std::string>* fwd_decls) const {
   // Nothing
 }
 
@@ -329,8 +329,7 @@ void SingleFieldGenerator::GeneratePropertyDeclaration(
   // clang-format off
   printer->Print(
       variables_,
-      "@property(nonatomic, readwrite) $property_type$ $name$$deprecated_attribute$;\n"
-      "\n");
+      "@property(nonatomic, readwrite) $property_type$ $name$$deprecated_attribute$;\n");
   // clang-format on
   if (WantsHasProperty()) {
     // clang-format off
@@ -339,6 +338,7 @@ void SingleFieldGenerator::GeneratePropertyDeclaration(
         "@property(nonatomic, readwrite) BOOL has$capitalized_name$$deprecated_attribute$;\n");
     // clang-format on
   }
+  printer->Print("\n");
 }
 
 void SingleFieldGenerator::GeneratePropertyImplementation(

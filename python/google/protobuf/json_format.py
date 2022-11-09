@@ -287,10 +287,11 @@ class _Printer(object):
       if enum_value is not None:
         return enum_value.name
       else:
-        if field.file.syntax == 'proto3':
+        if field.enum_type.is_closed:
+          raise SerializeToJsonError('Enum field contains an integer value '
+                                     'which can not mapped to an enum value.')
+        else:
           return value
-        raise SerializeToJsonError('Enum field contains an integer value '
-                                   'which can not mapped to an enum value.')
     elif field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_STRING:
       if field.type == descriptor.FieldDescriptor.TYPE_BYTES:
         # Use base64 Data encoding for bytes
@@ -799,11 +800,11 @@ def _ConvertScalarFieldValue(value, field, path, require_str=False):
           raise ParseError('Invalid enum value {0} for enum type {1}'.format(
               value, field.enum_type.full_name))
         if enum_value is None:
-          if field.file.syntax == 'proto3':
-            # Proto3 accepts unknown enums.
+          if field.enum_type.is_closed:
+            raise ParseError('Invalid enum value {0} for enum type {1}'.format(
+                value, field.enum_type.full_name))
+          else:
             return number
-          raise ParseError('Invalid enum value {0} for enum type {1}'.format(
-              value, field.enum_type.full_name))
       return enum_value.number
   except ParseError as e:
     raise ParseError('{0} at {1}'.format(e, path))

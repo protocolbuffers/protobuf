@@ -178,9 +178,6 @@ def do_test_io():
   elif len(length_bytes) != 4:
     raise IOError("I/O error")
 
-  # "I" is "unsigned int", so this depends on running on a platform with
-  # 32-bit "unsigned int" type.  The Python struct module unfortunately
-  # has no format specifier for uint32_t.
   length = struct.unpack("<I", length_bytes)[0]
   serialized_request = sys.stdin.read(length)
   if len(serialized_request) != length:

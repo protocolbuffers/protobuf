@@ -44,10 +44,6 @@ namespace protobuf {
 namespace compiler {
 namespace objectivec {
 
-inline bool HasPreservingUnknownEnumSemantics(const FileDescriptor* file) {
-  return file->syntax() == FileDescriptor::SYNTAX_PROTO3;
-}
-
 // Escape C++ trigraphs by escaping question marks to "\?".
 std::string EscapeTrigraphs(absl::string_view to_escape);
 

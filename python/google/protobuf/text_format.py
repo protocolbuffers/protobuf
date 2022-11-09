@@ -340,7 +340,7 @@ def _BuildMessageFromTypeName(type_name, descriptor_pool):
   return message_type()
 
 
-# These values must match WireType enum in google/protobuf/wire_format.h.
+# These values must match WireType enum in //net/proto2/public/wire_format.h.
 WIRETYPE_LENGTH_DELIMITED = 2
 WIRETYPE_START_GROUP = 3
 
@@ -1852,12 +1852,8 @@ def ParseEnum(field, value):
       raise ValueError('Enum type "%s" has no value named %s.' %
                        (enum_descriptor.full_name, value))
   else:
-    # Numeric value.
-    if hasattr(field.file, 'syntax'):
-      # Attribute is checked for compatibility.
-      if field.file.syntax == 'proto3':
-        # Proto3 accept numeric unknown enums.
-        return number
+    if not field.enum_type.is_closed:
+      return number
     enum_value = enum_descriptor.values_by_number.get(number, None)
     if enum_value is None:
       raise ValueError('Enum type "%s" has no value with number %d.' %

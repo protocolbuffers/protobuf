@@ -32,9 +32,9 @@
 
 #include <algorithm>
 #include <limits>
-#include <set>
 #include <string>
 
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
@@ -69,7 +69,7 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor)
   // compile error is just fine.
   // The values are still tracked to support the reflection apis and
   // TextFormat handing since they are different there.
-  std::set<std::string> value_names;
+  absl::flat_hash_set<std::string> value_names;
 
   for (int i = 0; i < descriptor_->value_count(); i++) {
     const EnumValueDescriptor* value = descriptor_->value(i);
@@ -80,11 +80,8 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor)
       base_values_.push_back(value);
       value_names.insert(EnumValueName(value));
     } else {
-      std::string value_name(EnumValueName(value));
-      if (value_names.find(value_name) != value_names.end()) {
+      if (!value_names.insert(EnumValueName(value)).second) {
         alias_values_to_skip_.insert(value);
-      } else {
-        value_names.insert(value_name);
       }
     }
     all_values_.push_back(value);
@@ -126,7 +123,7 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
       name_);
   printer->Indent();
 
-  if (HasPreservingUnknownEnumSemantics(descriptor_->file())) {
+  if (!descriptor_->is_closed()) {
     // Include the unknown value.
     printer->Print(
         // clang-format off

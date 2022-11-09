@@ -39,19 +39,20 @@
 #include <memory>
 #include <vector>
 
-#include "google/protobuf/test_util2.h"
-#include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/any.pb.h"
-#include "google/protobuf/unittest_custom_options.pb.h"
-#include "google/protobuf/io/tokenizer.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_import.pb.h"
+#include "google/protobuf/unittest_import_public.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/text_format.h"
-#include "google/protobuf/wire_format.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/test_util2.h"
+#include "google/protobuf/unittest_custom_options.pb.h"
+#include "google/protobuf/wire_format.h"
 
 namespace google {
 namespace protobuf {
@@ -2843,7 +2844,7 @@ class SourceInfoTest : public ParserTest {
 
   typedef std::multimap<SpanKey, const SourceCodeInfo::Location*> SpanMap;
   SpanMap spans_;
-  std::map<char, std::pair<int, int> > markers_;
+  absl::flat_hash_map<char, std::pair<int, int>> markers_;
   std::string text_without_markers_;
 
   void ExtractMarkers(const char* text) {

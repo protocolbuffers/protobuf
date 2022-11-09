@@ -102,7 +102,7 @@ static CFHashCode GPBRootExtensionKeyHash(const void *value) {
 //   http://mjtsai.com/blog/2015/12/16/osspinlock-is-unsafe/
 //   https://lists.swift.org/pipermail/swift-dev/Week-of-Mon-20151214/000372.html
 // It was changed to a dispatch_semaphore_t, but that has potential for priority inversion issues.
-// The minOS versions are now high enough that os_unfair_lock can be used, and should provide 
+// The minOS versions are now high enough that os_unfair_lock can be used, and should provide
 // all the support we need. For more information in the concurrency/locking space see:
 //   https://gist.github.com/tclementdev/6af616354912b0347cdf6db159c37057
 //   https://developer.apple.com/library/archive/documentation/Performance/Conceptual/EnergyGuide-iOS/PrioritizeWorkWithQoS.html

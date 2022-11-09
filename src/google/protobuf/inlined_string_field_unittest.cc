@@ -40,11 +40,11 @@
 
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/arenastring.h"
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/message.h"
 
 

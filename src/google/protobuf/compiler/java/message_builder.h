@@ -35,9 +35,9 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_BUILDER_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_MESSAGE_BUILDER_H__
 
-#include <map>
 #include <string>
 
+#include "absl/container/btree_map.h"
 #include "google/protobuf/compiler/java/field.h"
 
 namespace google {
@@ -71,6 +71,11 @@ class MessageBuilderGenerator {
 
  private:
   void GenerateCommonBuilderMethods(io::Printer* printer);
+  void GenerateBuildPartial(io::Printer* printer);
+  int GenerateBuildPartialPiece(io::Printer* printer, int piece,
+                                int first_field);
+  int GenerateBuildPartialPieceWithoutPresence(io::Printer* printer, int piece,
+                                               int first_field);
   void GenerateDescriptorMethods(io::Printer* printer);
   void GenerateBuilderParsingMethods(io::Printer* printer);
   void GenerateBuilderFieldParsingCases(io::Printer* printer);
@@ -84,7 +89,7 @@ class MessageBuilderGenerator {
   Context* context_;
   ClassNameResolver* name_resolver_;
   FieldGeneratorMap<ImmutableFieldGenerator> field_generators_;
-  std::set<const OneofDescriptor*> oneofs_;
+  absl::btree_map<int, const OneofDescriptor*> oneofs_;
 };
 
 }  // namespace java

@@ -46,10 +46,6 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/tokenizer.h"
-#include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/numbers.h"
@@ -60,7 +56,11 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/strtod.h"
+#include "google/protobuf/io/tokenizer.h"
+#include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/repeated_field.h"
@@ -273,7 +273,7 @@ const Descriptor* DefaultFinderFindAnyType(const Message& message,
 // ===========================================================================
 // Internal class for parsing an ASCII representation of a Protocol Message.
 // This class makes use of the Protocol Message compiler's tokenizer found
-// in //net/proto2/io/public/tokenizer.h. Note that class's Parse
+// in //third_party/protobuf/io/tokenizer.h. Note that class's Parse
 // method is *not* thread-safe and should only be used in a single thread at
 // a time.
 
@@ -1383,7 +1383,7 @@ class TextFormat::Parser::ParserImpl {
 
 // ===========================================================================
 // Internal class for writing text to the io::ZeroCopyOutputStream. Adapted
-// from the Printer found in //net/proto2/io/public/printer.h
+// from the Printer found in //third_party/protobuf/io/printer.h
 class TextFormat::Printer::TextGenerator
     : public TextFormat::BaseTextGenerator {
  public:
@@ -1770,13 +1770,7 @@ class StringBaseTextGenerator : public TextFormat::BaseTextGenerator {
     output_.append(text, size);
   }
 
-// Some compilers do not support ref-qualifiers even in C++11 mode.
-// Disable the optimization for now and revisit it later.
-#if 0  // LANG_CXX11
   std::string Consume() && { return std::move(output_); }
-#else  // !LANG_CXX11
-  const std::string& Get() { return output_; }
-#endif  // LANG_CXX11
 
  private:
   std::string output_;
@@ -1790,17 +1784,10 @@ class StringBaseTextGenerator : public TextFormat::BaseTextGenerator {
 TextFormat::FieldValuePrinter::FieldValuePrinter() {}
 TextFormat::FieldValuePrinter::~FieldValuePrinter() {}
 
-#if 0  // LANG_CXX11
 #define FORWARD_IMPL(fn, ...)            \
   StringBaseTextGenerator generator;     \
   delegate_.fn(__VA_ARGS__, &generator); \
   return std::move(generator).Consume()
-#else  // !LANG_CXX11
-#define FORWARD_IMPL(fn, ...)            \
-  StringBaseTextGenerator generator;     \
-  delegate_.fn(__VA_ARGS__, &generator); \
-  return generator.Get()
-#endif  // LANG_CXX11
 
 std::string TextFormat::FieldValuePrinter::PrintBool(bool val) const {
   FORWARD_IMPL(PrintBool, val);
@@ -2584,6 +2571,15 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
       << "Index must be -1 for non-repeated fields";
 
   const FastFieldValuePrinter* printer = GetFieldPrinter(field);
+#ifndef PROTO2_OPENSOURCE
+#ifdef SUPPORT_EXPLICIT_DEBUG_STRING
+  if (redact_debug_string_ && internal::ShouldRedactField(field)) {
+    std::string redacted_value = "go/redact-debug-string";
+    generator->PrintString(redacted_value);
+    return;
+  }
+#endif
+#endif
 
   switch (field->cpp_type()) {
 #define OUTPUT_FIELD(CPPTYPE, METHOD)                                \

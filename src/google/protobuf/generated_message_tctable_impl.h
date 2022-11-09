@@ -529,6 +529,18 @@ class PROTOBUF_EXPORT TcParser final {
                                  const TcParseTableBase* table,
                                  google::protobuf::internal::ParseContext* ctx);
 
+  // Test only access to verify that the right function is being called via
+  // MiniParse.
+  struct TestMiniParseResult {
+    TailCallParseFunc called_func;
+    uint32_t tag;
+    const TcParseTableBase::FieldEntry* found_entry;
+    const char* ptr;
+  };
+  static TestMiniParseResult TestMiniParse(PROTOBUF_TC_PARAM_DECL);
+  template <bool export_called_function>
+  static const char* MiniParseImpl(PROTOBUF_TC_PARAM_DECL);
+
   template <typename TagType, bool group_coding, bool aux_is_table>
   static inline const char* SingularParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
   template <typename TagType, bool group_coding, bool aux_is_table>

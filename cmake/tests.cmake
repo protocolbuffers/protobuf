@@ -50,6 +50,7 @@ set(tests_protos
   ${protobuf_test_protos_files}
   ${compiler_test_protos_files}
   ${util_test_protos_files}
+  ${lite_test_protos}
 )
 
 macro(compile_proto_file filename)
@@ -77,24 +78,13 @@ foreach(proto_file ${tests_protos})
   set(tests_proto_files ${tests_proto_files} ${pb_src} ${pb_hdr})
 endforeach(proto_file)
 
-add_library(protobuf-lite-test-common STATIC
-  ${lite_test_util_srcs} ${lite_test_proto_files})
-target_include_directories(protobuf-lite-test-common PRIVATE ${ABSL_ROOT_DIR})
-target_link_libraries(protobuf-lite-test-common
-  ${protobuf_LIB_PROTOBUF_LITE} ${protobuf_ABSL_USED_TARGETS} GTest::gmock)
-
 set(common_test_files
   ${test_util_hdrs}
+  ${lite_test_util_srcs}
   ${test_util_srcs}
   ${common_test_hdrs}
   ${common_test_srcs}
 )
-
-add_library(protobuf-test-common STATIC
-  ${common_test_files} ${tests_proto_files})
-target_include_directories(protobuf-test-common PRIVATE ${ABSL_ROOT_DIR})
-target_link_libraries(protobuf-test-common
-  ${protobuf_LIB_PROTOBUF} ${protobuf_ABSL_USED_TARGETS} GTest::gmock)
 
 set(tests_files
   ${protobuf_test_files}
@@ -129,13 +119,22 @@ else()
   set(protobuf_GTEST_ARGS)
 endif()
 
-add_executable(tests ${tests_files})
+add_executable(tests
+  ${tests_files}
+  ${common_test_files}
+  ${tests_proto_files}
+)
 if (MSVC)
   target_compile_options(tests PRIVATE
     /wd4146 # unary minus operator applied to unsigned type, result still unsigned
   )
 endif()
-target_link_libraries(tests protobuf-lite-test-common protobuf-test-common ${protobuf_LIB_PROTOC} ${protobuf_LIB_PROTOBUF} GTest::gmock_main)
+target_link_libraries(tests
+  ${protobuf_LIB_PROTOC}
+  ${protobuf_LIB_PROTOBUF}
+  ${protobuf_ABSL_USED_TARGETS}
+  GTest::gmock_main
+)
 
 set(test_plugin_files
   ${test_plugin_files}
@@ -152,8 +151,16 @@ target_link_libraries(test_plugin
   GTest::gmock
 )
 
-add_executable(lite-test ${protobuf_lite_test_files})
-target_link_libraries(lite-test protobuf-lite-test-common ${protobuf_LIB_PROTOBUF_LITE} GTest::gmock_main)
+add_executable(lite-test
+  ${protobuf_lite_test_files}
+  ${lite_test_util_srcs}
+  ${lite_test_proto_files}
+)
+target_link_libraries(lite-test
+  ${protobuf_LIB_PROTOBUF_LITE}
+  ${protobuf_ABSL_USED_TARGETS}
+  GTest::gmock_main
+)
 
 add_test(NAME lite-test
   COMMAND lite-test ${protobuf_GTEST_ARGS})

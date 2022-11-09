@@ -33,13 +33,13 @@
 #include <vector>
 
 #include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_proto3_arena.pb.h"
-#include "google/protobuf/unittest_proto3_optional.pb.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/text_format.h"
 #include <gtest/gtest.h>
 #include "absl/strings/match.h"
 #include "google/protobuf/test_util.h"
+#include "google/protobuf/unittest_proto3_arena.pb.h"
+#include "google/protobuf/unittest_proto3_optional.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

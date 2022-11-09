@@ -25,9 +25,9 @@
  */
 
 #if !((defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L) || \
-      (defined(__cplusplus) && __cplusplus >= 201103L) ||           \
+      (defined(__cplusplus) && __cplusplus >= 201402L) ||           \
       (defined(_MSC_VER) && _MSC_VER >= 1900))
-#error upb requires C99 or C++11 or MSVC >= 2015.
+#error upb requires C99 or C++14 or MSVC >= 2015.
 #endif
 
 // Portable check for GCC minimum version:
@@ -269,9 +269,131 @@ void __asan_unpoison_memory_region(void const volatile *addr, size_t size);
 #endif
 
 
+// Must be last.
+
+const char* upb_BufToUint64(const char* ptr, const char* end, uint64_t* val) {
+  uint64_t u64 = 0;
+  while (ptr < end) {
+    unsigned ch = *ptr - '0';
+    if (ch >= 10) break;
+    if (u64 > UINT64_MAX / 10 || u64 * 10 > UINT64_MAX - ch) {
+      return NULL;  // integer overflow
+    }
+    u64 *= 10;
+    u64 += ch;
+    ptr++;
+  }
+
+  *val = u64;
+  return ptr;
+}
+
+const char* upb_BufToInt64(const char* ptr, const char* end, int64_t* val,
+                           bool* is_neg) {
+  bool neg = false;
+  uint64_t u64;
+
+  if (ptr != end && *ptr == '-') {
+    ptr++;
+    neg = true;
+  }
+
+  ptr = upb_BufToUint64(ptr, end, &u64);
+  if (!ptr || u64 > (uint64_t)INT64_MAX + neg) {
+    return NULL;  // integer overflow
+  }
+
+  *val = neg ? -u64 : u64;
+  if (is_neg) *is_neg = neg;
+  return ptr;
+}
+
 #include <string.h>
 
+
 // Must be last.
+
+static const char _upb_CTypeo_sizelg2[12] = {
+    0,
+    0,              /* kUpb_CType_Bool */
+    2,              /* kUpb_CType_Float */
+    2,              /* kUpb_CType_Int32 */
+    2,              /* kUpb_CType_UInt32 */
+    2,              /* kUpb_CType_Enum */
+    UPB_SIZE(2, 3), /* kUpb_CType_Message */
+    3,              /* kUpb_CType_Double */
+    3,              /* kUpb_CType_Int64 */
+    3,              /* kUpb_CType_UInt64 */
+    UPB_SIZE(3, 4), /* kUpb_CType_String */
+    UPB_SIZE(3, 4), /* kUpb_CType_Bytes */
+};
+
+upb_Array* upb_Array_New(upb_Arena* a, upb_CType type) {
+  return _upb_Array_New(a, 4, _upb_CTypeo_sizelg2[type]);
+}
+
+size_t upb_Array_Size(const upb_Array* arr) { return arr->size; }
+
+upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {
+  upb_MessageValue ret;
+  const char* data = _upb_array_constptr(arr);
+  int lg2 = arr->data & 7;
+  UPB_ASSERT(i < arr->size);
+  memcpy(&ret, data + (i << lg2), 1 << lg2);
+  return ret;
+}
+
+void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val) {
+  char* data = _upb_array_ptr(arr);
+  int lg2 = arr->data & 7;
+  UPB_ASSERT(i < arr->size);
+  memcpy(data + (i << lg2), &val, 1 << lg2);
+}
+
+bool upb_Array_Append(upb_Array* arr, upb_MessageValue val, upb_Arena* arena) {
+  if (!upb_Array_Resize(arr, arr->size + 1, arena)) {
+    return false;
+  }
+  upb_Array_Set(arr, arr->size - 1, val);
+  return true;
+}
+
+void upb_Array_Move(upb_Array* arr, size_t dst_idx, size_t src_idx,
+                    size_t count) {
+  char* data = _upb_array_ptr(arr);
+  int lg2 = arr->data & 7;
+  memmove(&data[dst_idx << lg2], &data[src_idx << lg2], count << lg2);
+}
+
+bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
+                      upb_Arena* arena) {
+  UPB_ASSERT(i <= arr->size);
+  UPB_ASSERT(count + arr->size >= count);
+  size_t oldsize = arr->size;
+  if (!upb_Array_Resize(arr, arr->size + count, arena)) {
+    return false;
+  }
+  upb_Array_Move(arr, i + count, i, oldsize - i);
+  return true;
+}
+
+/*
+ *              i        end      arr->size
+ * |------------|XXXXXXXX|--------|
+ */
+void upb_Array_Delete(upb_Array* arr, size_t i, size_t count) {
+  size_t end = i + count;
+  UPB_ASSERT(i <= end);
+  UPB_ASSERT(end <= arr->size);
+  upb_Array_Move(arr, i, end, arr->size - end);
+  arr->size -= count;
+}
+
+bool upb_Array_Resize(upb_Array* arr, size_t size, upb_Arena* arena) {
+  return _upb_Array_Resize(arr, size, arena);
+}
+
+// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
 bool _upb_array_realloc(upb_Array* arr, size_t min_capacity, upb_Arena* arena) {
   size_t new_capacity = UPB_MAX(arr->capacity, 4);
@@ -280,7 +402,7 @@ bool _upb_array_realloc(upb_Array* arr, size_t min_capacity, upb_Arena* arena) {
   size_t new_bytes;
   void* ptr = _upb_array_ptr(arr);
 
-  /* Log2 ceiling of size. */
+  // Log2 ceiling of size.
   while (new_capacity < min_capacity) new_capacity *= 2;
 
   new_bytes = new_capacity << elem_size_lg2;
@@ -327,46 +449,6 @@ bool _upb_Array_Append_fallback(upb_Array** arr_ptr, const void* value,
   char* data = _upb_array_ptr(arr);
   memcpy(data + (elems << elem_size_lg2), value, 1 << elem_size_lg2);
   return true;
-}
-
-
-// Must be last.
-
-const char* upb_BufToUint64(const char* ptr, const char* end, uint64_t* val) {
-  uint64_t u64 = 0;
-  while (ptr < end) {
-    unsigned ch = *ptr - '0';
-    if (ch >= 10) break;
-    if (u64 > UINT64_MAX / 10 || u64 * 10 > UINT64_MAX - ch) {
-      return NULL;  // integer overflow
-    }
-    u64 *= 10;
-    u64 += ch;
-    ptr++;
-  }
-
-  *val = u64;
-  return ptr;
-}
-
-const char* upb_BufToInt64(const char* ptr, const char* end, int64_t* val,
-                           bool* is_neg) {
-  bool neg = false;
-  uint64_t u64;
-
-  if (ptr != end && *ptr == '-') {
-    ptr++;
-    neg = true;
-  }
-
-  ptr = upb_BufToUint64(ptr, end, &u64);
-  if (!ptr || u64 > (uint64_t)INT64_MAX + neg) {
-    return NULL;  // integer overflow
-  }
-
-  *val = neg ? -u64 : u64;
-  if (is_neg) *is_neg = neg;
-  return ptr;
 }
 
 
@@ -448,6 +530,114 @@ upb_MessageValue upb_MapIterator_Value(const upb_Map* map, size_t iter) {
 
 /* void upb_MapIterator_SetValue(upb_Map *map, size_t iter, upb_MessageValue
  * value); */
+
+
+// Must be last.
+
+static void _upb_mapsorter_getkeys(const void* _a, const void* _b, void* a_key,
+                                   void* b_key, size_t size) {
+  const upb_tabent* const* a = _a;
+  const upb_tabent* const* b = _b;
+  upb_StringView a_tabkey = upb_tabstrview((*a)->key);
+  upb_StringView b_tabkey = upb_tabstrview((*b)->key);
+  _upb_map_fromkey(a_tabkey, a_key, size);
+  _upb_map_fromkey(b_tabkey, b_key, size);
+}
+
+static int _upb_mapsorter_cmpi64(const void* _a, const void* _b) {
+  int64_t a, b;
+  _upb_mapsorter_getkeys(_a, _b, &a, &b, 8);
+  return a < b ? -1 : a > b;
+}
+
+static int _upb_mapsorter_cmpu64(const void* _a, const void* _b) {
+  uint64_t a, b;
+  _upb_mapsorter_getkeys(_a, _b, &a, &b, 8);
+  return a < b ? -1 : a > b;
+}
+
+static int _upb_mapsorter_cmpi32(const void* _a, const void* _b) {
+  int32_t a, b;
+  _upb_mapsorter_getkeys(_a, _b, &a, &b, 4);
+  return a < b ? -1 : a > b;
+}
+
+static int _upb_mapsorter_cmpu32(const void* _a, const void* _b) {
+  uint32_t a, b;
+  _upb_mapsorter_getkeys(_a, _b, &a, &b, 4);
+  return a < b ? -1 : a > b;
+}
+
+static int _upb_mapsorter_cmpbool(const void* _a, const void* _b) {
+  bool a, b;
+  _upb_mapsorter_getkeys(_a, _b, &a, &b, 1);
+  return a < b ? -1 : a > b;
+}
+
+static int _upb_mapsorter_cmpstr(const void* _a, const void* _b) {
+  upb_StringView a, b;
+  _upb_mapsorter_getkeys(_a, _b, &a, &b, UPB_MAPTYPE_STRING);
+  size_t common_size = UPB_MIN(a.size, b.size);
+  int cmp = memcmp(a.data, b.data, common_size);
+  if (cmp) return -cmp;
+  return a.size < b.size ? -1 : a.size > b.size;
+}
+
+static int (*const compar[kUpb_FieldType_SizeOf])(const void*, const void*) = {
+    [kUpb_FieldType_Int64] = _upb_mapsorter_cmpi64,
+    [kUpb_FieldType_SFixed64] = _upb_mapsorter_cmpi64,
+    [kUpb_FieldType_SInt64] = _upb_mapsorter_cmpi64,
+
+    [kUpb_FieldType_UInt64] = _upb_mapsorter_cmpu64,
+    [kUpb_FieldType_Fixed64] = _upb_mapsorter_cmpu64,
+
+    [kUpb_FieldType_Int32] = _upb_mapsorter_cmpi32,
+    [kUpb_FieldType_SInt32] = _upb_mapsorter_cmpi32,
+    [kUpb_FieldType_SFixed32] = _upb_mapsorter_cmpi32,
+    [kUpb_FieldType_Enum] = _upb_mapsorter_cmpi32,
+
+    [kUpb_FieldType_UInt32] = _upb_mapsorter_cmpu32,
+    [kUpb_FieldType_Fixed32] = _upb_mapsorter_cmpu32,
+
+    [kUpb_FieldType_Bool] = _upb_mapsorter_cmpbool,
+
+    [kUpb_FieldType_String] = _upb_mapsorter_cmpstr,
+    [kUpb_FieldType_Bytes] = _upb_mapsorter_cmpstr,
+};
+
+bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
+                            const upb_Map* map, _upb_sortedmap* sorted) {
+  int map_size = _upb_Map_Size(map);
+  sorted->start = s->size;
+  sorted->pos = sorted->start;
+  sorted->end = sorted->start + map_size;
+
+  // Grow s->entries if necessary.
+  if (sorted->end > s->cap) {
+    s->cap = _upb_Log2CeilingSize(sorted->end);
+    s->entries = realloc(s->entries, s->cap * sizeof(*s->entries));
+    if (!s->entries) return false;
+  }
+
+  s->size = sorted->end;
+
+  // Copy non-empty entries from the table to s->entries.
+  upb_tabent const** dst = &s->entries[sorted->start];
+  const upb_tabent* src = map->table.t.entries;
+  const upb_tabent* end = src + upb_table_size(&map->table.t);
+  for (; src < end; src++) {
+    if (!upb_tabent_isempty(src)) {
+      *dst = src;
+      dst++;
+    }
+  }
+  UPB_ASSERT(dst == &s->entries[sorted->end]);
+
+  // Sort entries according to the key type.
+  qsort(&s->entries[sorted->start], map_size, sizeof(*s->entries),
+        compar[key_type]);
+  return true;
+}
 /* This file was generated by upbc (the upb compiler) from the input
  * file:
  *
@@ -464,7 +654,7 @@ static const upb_MiniTable_Sub google_protobuf_FileDescriptorSet_submsgs[1] = {
 };
 
 static const upb_MiniTable_Field google_protobuf_FileDescriptorSet__fields[1] = {
-  {1, UPB_SIZE(0, 0), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(0, 0), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_FileDescriptorSet_msg_init = {
@@ -483,19 +673,19 @@ static const upb_MiniTable_Sub google_protobuf_FileDescriptorProto_submsgs[6] = 
 };
 
 static const upb_MiniTable_Field google_protobuf_FileDescriptorProto__fields[13] = {
-  {1, UPB_SIZE(4, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(12, 24), UPB_SIZE(2, 2), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(20, 40), UPB_SIZE(0, 0), kUpb_NoSub, 12, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {4, UPB_SIZE(24, 48), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {5, UPB_SIZE(28, 56), UPB_SIZE(0, 0), 1, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {6, UPB_SIZE(32, 64), UPB_SIZE(0, 0), 2, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {7, UPB_SIZE(36, 72), UPB_SIZE(0, 0), 3, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {8, UPB_SIZE(40, 80), UPB_SIZE(3, 3), 4, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {9, UPB_SIZE(44, 88), UPB_SIZE(4, 4), 5, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {10, UPB_SIZE(48, 96), UPB_SIZE(0, 0), kUpb_NoSub, 5, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {11, UPB_SIZE(52, 104), UPB_SIZE(0, 0), kUpb_NoSub, 5, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {12, UPB_SIZE(56, 112), UPB_SIZE(5, 5), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {13, UPB_SIZE(64, 128), UPB_SIZE(6, 6), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(40, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(48, 24), UPB_SIZE(2, 2), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(4, 40), UPB_SIZE(0, 0), kUpb_NoSub, 12, kUpb_FieldMode_Array | kUpb_LabelFlags_IsAlternate | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {4, UPB_SIZE(8, 48), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {5, UPB_SIZE(12, 56), UPB_SIZE(0, 0), 1, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {6, UPB_SIZE(16, 64), UPB_SIZE(0, 0), 2, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {7, UPB_SIZE(20, 72), UPB_SIZE(0, 0), 3, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {8, UPB_SIZE(24, 80), UPB_SIZE(3, 3), 4, 11, kUpb_FieldMode_Scalar | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {9, UPB_SIZE(28, 88), UPB_SIZE(4, 4), 5, 11, kUpb_FieldMode_Scalar | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {10, UPB_SIZE(32, 96), UPB_SIZE(0, 0), kUpb_NoSub, 5, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {11, UPB_SIZE(36, 104), UPB_SIZE(0, 0), kUpb_NoSub, 5, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {12, UPB_SIZE(56, 112), UPB_SIZE(5, 5), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {13, UPB_SIZE(64, 128), UPB_SIZE(6, 6), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_FileDescriptorProto_msg_init = {
@@ -516,16 +706,16 @@ static const upb_MiniTable_Sub google_protobuf_DescriptorProto_submsgs[8] = {
 };
 
 static const upb_MiniTable_Field google_protobuf_DescriptorProto__fields[10] = {
-  {1, UPB_SIZE(4, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(12, 24), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(16, 32), UPB_SIZE(0, 0), 1, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {4, UPB_SIZE(20, 40), UPB_SIZE(0, 0), 2, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {5, UPB_SIZE(24, 48), UPB_SIZE(0, 0), 3, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {6, UPB_SIZE(28, 56), UPB_SIZE(0, 0), 4, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {7, UPB_SIZE(32, 64), UPB_SIZE(2, 2), 5, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {8, UPB_SIZE(36, 72), UPB_SIZE(0, 0), 6, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {9, UPB_SIZE(40, 80), UPB_SIZE(0, 0), 7, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {10, UPB_SIZE(44, 88), UPB_SIZE(0, 0), kUpb_NoSub, 12, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(40, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(4, 24), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(8, 32), UPB_SIZE(0, 0), 1, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {4, UPB_SIZE(12, 40), UPB_SIZE(0, 0), 2, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {5, UPB_SIZE(16, 48), UPB_SIZE(0, 0), 3, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {6, UPB_SIZE(20, 56), UPB_SIZE(0, 0), 4, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {7, UPB_SIZE(24, 64), UPB_SIZE(2, 2), 5, 11, kUpb_FieldMode_Scalar | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {8, UPB_SIZE(28, 72), UPB_SIZE(0, 0), 6, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {9, UPB_SIZE(32, 80), UPB_SIZE(0, 0), 7, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {10, UPB_SIZE(36, 88), UPB_SIZE(0, 0), kUpb_NoSub, 12, kUpb_FieldMode_Array | kUpb_LabelFlags_IsAlternate | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_DescriptorProto_msg_init = {
@@ -541,7 +731,7 @@ static const upb_MiniTable_Sub google_protobuf_DescriptorProto_ExtensionRange_su
 static const upb_MiniTable_Field google_protobuf_DescriptorProto_ExtensionRange__fields[3] = {
   {1, UPB_SIZE(4, 4), UPB_SIZE(1, 1), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
   {2, UPB_SIZE(8, 8), UPB_SIZE(2, 2), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(12, 16), UPB_SIZE(3, 3), 0, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(12, 16), UPB_SIZE(3, 3), 0, 11, kUpb_FieldMode_Scalar | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_DescriptorProto_ExtensionRange_msg_init = {
@@ -566,7 +756,7 @@ static const upb_MiniTable_Sub google_protobuf_ExtensionRangeOptions_submsgs[1] 
 };
 
 static const upb_MiniTable_Field google_protobuf_ExtensionRangeOptions__fields[1] = {
-  {999, UPB_SIZE(0, 0), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(0, 0), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_ExtensionRangeOptions_msg_init = {
@@ -582,17 +772,17 @@ static const upb_MiniTable_Sub google_protobuf_FieldDescriptorProto_submsgs[3] =
 };
 
 static const upb_MiniTable_Field google_protobuf_FieldDescriptorProto__fields[11] = {
-  {1, UPB_SIZE(24, 24), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(32, 40), UPB_SIZE(2, 2), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(28, 24), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(36, 40), UPB_SIZE(2, 2), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
   {3, UPB_SIZE(4, 4), UPB_SIZE(3, 3), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
   {4, UPB_SIZE(8, 8), UPB_SIZE(4, 4), 0, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
   {5, UPB_SIZE(12, 12), UPB_SIZE(5, 5), 1, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {6, UPB_SIZE(40, 56), UPB_SIZE(6, 6), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {7, UPB_SIZE(48, 72), UPB_SIZE(7, 7), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {8, UPB_SIZE(56, 88), UPB_SIZE(8, 8), 2, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {9, UPB_SIZE(16, 16), UPB_SIZE(9, 9), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {10, UPB_SIZE(60, 96), UPB_SIZE(10, 10), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {17, UPB_SIZE(20, 20), UPB_SIZE(11, 11), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {6, UPB_SIZE(44, 56), UPB_SIZE(6, 6), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {7, UPB_SIZE(52, 72), UPB_SIZE(7, 7), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {8, UPB_SIZE(16, 88), UPB_SIZE(8, 8), 2, 11, kUpb_FieldMode_Scalar | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {9, UPB_SIZE(20, 16), UPB_SIZE(9, 9), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {10, UPB_SIZE(60, 96), UPB_SIZE(10, 10), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {17, UPB_SIZE(24, 20), UPB_SIZE(11, 11), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_FieldDescriptorProto_msg_init = {
@@ -606,8 +796,8 @@ static const upb_MiniTable_Sub google_protobuf_OneofDescriptorProto_submsgs[1] =
 };
 
 static const upb_MiniTable_Field google_protobuf_OneofDescriptorProto__fields[2] = {
-  {1, UPB_SIZE(4, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(12, 24), UPB_SIZE(2, 2), 0, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(8, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(4, 24), UPB_SIZE(2, 2), 0, 11, kUpb_FieldMode_Scalar | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_OneofDescriptorProto_msg_init = {
@@ -623,11 +813,11 @@ static const upb_MiniTable_Sub google_protobuf_EnumDescriptorProto_submsgs[3] = 
 };
 
 static const upb_MiniTable_Field google_protobuf_EnumDescriptorProto__fields[5] = {
-  {1, UPB_SIZE(4, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(12, 24), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(16, 32), UPB_SIZE(2, 2), 1, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {4, UPB_SIZE(20, 40), UPB_SIZE(0, 0), 2, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {5, UPB_SIZE(24, 48), UPB_SIZE(0, 0), kUpb_NoSub, 12, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(20, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(4, 24), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(8, 32), UPB_SIZE(2, 2), 1, 11, kUpb_FieldMode_Scalar | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {4, UPB_SIZE(12, 40), UPB_SIZE(0, 0), 2, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {5, UPB_SIZE(16, 48), UPB_SIZE(0, 0), kUpb_NoSub, 12, kUpb_FieldMode_Array | kUpb_LabelFlags_IsAlternate | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_EnumDescriptorProto_msg_init = {
@@ -652,9 +842,9 @@ static const upb_MiniTable_Sub google_protobuf_EnumValueDescriptorProto_submsgs[
 };
 
 static const upb_MiniTable_Field google_protobuf_EnumValueDescriptorProto__fields[3] = {
-  {1, UPB_SIZE(8, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(12, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
   {2, UPB_SIZE(4, 4), UPB_SIZE(2, 2), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(16, 24), UPB_SIZE(3, 3), 0, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(8, 24), UPB_SIZE(3, 3), 0, 11, kUpb_FieldMode_Scalar | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_EnumValueDescriptorProto_msg_init = {
@@ -669,9 +859,9 @@ static const upb_MiniTable_Sub google_protobuf_ServiceDescriptorProto_submsgs[2]
 };
 
 static const upb_MiniTable_Field google_protobuf_ServiceDescriptorProto__fields[3] = {
-  {1, UPB_SIZE(4, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(12, 24), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(16, 32), UPB_SIZE(2, 2), 1, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(12, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(4, 24), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(8, 32), UPB_SIZE(2, 2), 1, 11, kUpb_FieldMode_Scalar | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_ServiceDescriptorProto_msg_init = {
@@ -685,18 +875,18 @@ static const upb_MiniTable_Sub google_protobuf_MethodDescriptorProto_submsgs[1] 
 };
 
 static const upb_MiniTable_Field google_protobuf_MethodDescriptorProto__fields[6] = {
-  {1, UPB_SIZE(4, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(12, 24), UPB_SIZE(2, 2), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(20, 40), UPB_SIZE(3, 3), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {4, UPB_SIZE(28, 56), UPB_SIZE(4, 4), 0, 11, kUpb_FieldMode_Scalar | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {5, UPB_SIZE(1, 1), UPB_SIZE(5, 5), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {6, UPB_SIZE(2, 2), UPB_SIZE(6, 6), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(12, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(20, 24), UPB_SIZE(2, 2), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(28, 40), UPB_SIZE(3, 3), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {4, UPB_SIZE(4, 56), UPB_SIZE(4, 4), 0, 11, kUpb_FieldMode_Scalar | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {5, UPB_SIZE(8, 1), UPB_SIZE(5, 5), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {6, UPB_SIZE(9, 2), UPB_SIZE(6, 6), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_MethodDescriptorProto_msg_init = {
   &google_protobuf_MethodDescriptorProto_submsgs[0],
   &google_protobuf_MethodDescriptorProto__fields[0],
-  UPB_SIZE(32, 64), 6, kUpb_ExtMode_NonExtendable, 6, 255, 0,
+  UPB_SIZE(40, 64), 6, kUpb_ExtMode_NonExtendable, 6, 255, 0,
 };
 
 static const upb_MiniTable_Sub google_protobuf_FileOptions_submsgs[2] = {
@@ -705,11 +895,11 @@ static const upb_MiniTable_Sub google_protobuf_FileOptions_submsgs[2] = {
 };
 
 static const upb_MiniTable_Field google_protobuf_FileOptions__fields[21] = {
-  {1, UPB_SIZE(20, 24), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {8, UPB_SIZE(28, 40), UPB_SIZE(2, 2), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(24, 24), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {8, UPB_SIZE(32, 40), UPB_SIZE(2, 2), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
   {9, UPB_SIZE(4, 4), UPB_SIZE(3, 3), 0, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
   {10, UPB_SIZE(8, 8), UPB_SIZE(4, 4), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {11, UPB_SIZE(36, 56), UPB_SIZE(5, 5), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {11, UPB_SIZE(40, 56), UPB_SIZE(5, 5), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
   {16, UPB_SIZE(9, 9), UPB_SIZE(6, 6), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
   {17, UPB_SIZE(10, 10), UPB_SIZE(7, 7), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
   {18, UPB_SIZE(11, 11), UPB_SIZE(8, 8), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
@@ -717,15 +907,15 @@ static const upb_MiniTable_Field google_protobuf_FileOptions__fields[21] = {
   {23, UPB_SIZE(13, 13), UPB_SIZE(10, 10), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
   {27, UPB_SIZE(14, 14), UPB_SIZE(11, 11), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
   {31, UPB_SIZE(15, 15), UPB_SIZE(12, 12), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {36, UPB_SIZE(44, 72), UPB_SIZE(13, 13), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {37, UPB_SIZE(52, 88), UPB_SIZE(14, 14), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {39, UPB_SIZE(60, 104), UPB_SIZE(15, 15), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {40, UPB_SIZE(68, 120), UPB_SIZE(16, 16), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {41, UPB_SIZE(76, 136), UPB_SIZE(17, 17), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {36, UPB_SIZE(48, 72), UPB_SIZE(13, 13), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {37, UPB_SIZE(56, 88), UPB_SIZE(14, 14), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {39, UPB_SIZE(64, 104), UPB_SIZE(15, 15), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {40, UPB_SIZE(72, 120), UPB_SIZE(16, 16), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {41, UPB_SIZE(80, 136), UPB_SIZE(17, 17), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
   {42, UPB_SIZE(16, 16), UPB_SIZE(18, 18), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {44, UPB_SIZE(84, 152), UPB_SIZE(19, 19), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {45, UPB_SIZE(92, 168), UPB_SIZE(20, 20), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {999, UPB_SIZE(100, 184), UPB_SIZE(0, 0), 1, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {44, UPB_SIZE(88, 152), UPB_SIZE(19, 19), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {45, UPB_SIZE(96, 168), UPB_SIZE(20, 20), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(20, 184), UPB_SIZE(0, 0), 1, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_FileOptions_msg_init = {
@@ -743,7 +933,7 @@ static const upb_MiniTable_Field google_protobuf_MessageOptions__fields[5] = {
   {2, UPB_SIZE(2, 2), UPB_SIZE(2, 2), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
   {3, UPB_SIZE(3, 3), UPB_SIZE(3, 3), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
   {7, UPB_SIZE(4, 4), UPB_SIZE(4, 4), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {999, UPB_SIZE(8, 8), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(8, 8), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_MessageOptions_msg_init = {
@@ -766,7 +956,7 @@ static const upb_MiniTable_Field google_protobuf_FieldOptions__fields[8] = {
   {6, UPB_SIZE(12, 12), UPB_SIZE(5, 5), 1, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
   {10, UPB_SIZE(16, 16), UPB_SIZE(6, 6), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
   {15, UPB_SIZE(17, 17), UPB_SIZE(7, 7), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {999, UPB_SIZE(20, 24), UPB_SIZE(0, 0), 2, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(20, 24), UPB_SIZE(0, 0), 2, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_FieldOptions_msg_init = {
@@ -780,7 +970,7 @@ static const upb_MiniTable_Sub google_protobuf_OneofOptions_submsgs[1] = {
 };
 
 static const upb_MiniTable_Field google_protobuf_OneofOptions__fields[1] = {
-  {999, UPB_SIZE(0, 0), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(0, 0), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_OneofOptions_msg_init = {
@@ -796,7 +986,7 @@ static const upb_MiniTable_Sub google_protobuf_EnumOptions_submsgs[1] = {
 static const upb_MiniTable_Field google_protobuf_EnumOptions__fields[3] = {
   {2, UPB_SIZE(1, 1), UPB_SIZE(1, 1), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
   {3, UPB_SIZE(2, 2), UPB_SIZE(2, 2), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {999, UPB_SIZE(4, 8), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(4, 8), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_EnumOptions_msg_init = {
@@ -811,7 +1001,7 @@ static const upb_MiniTable_Sub google_protobuf_EnumValueOptions_submsgs[1] = {
 
 static const upb_MiniTable_Field google_protobuf_EnumValueOptions__fields[2] = {
   {1, UPB_SIZE(1, 1), UPB_SIZE(1, 1), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {999, UPB_SIZE(4, 8), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(4, 8), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_EnumValueOptions_msg_init = {
@@ -826,7 +1016,7 @@ static const upb_MiniTable_Sub google_protobuf_ServiceOptions_submsgs[1] = {
 
 static const upb_MiniTable_Field google_protobuf_ServiceOptions__fields[2] = {
   {33, UPB_SIZE(1, 1), UPB_SIZE(1, 1), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
-  {999, UPB_SIZE(4, 8), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(4, 8), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_ServiceOptions_msg_init = {
@@ -843,7 +1033,7 @@ static const upb_MiniTable_Sub google_protobuf_MethodOptions_submsgs[2] = {
 static const upb_MiniTable_Field google_protobuf_MethodOptions__fields[3] = {
   {33, UPB_SIZE(1, 1), UPB_SIZE(1, 1), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
   {34, UPB_SIZE(4, 4), UPB_SIZE(2, 2), 0, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {999, UPB_SIZE(8, 8), UPB_SIZE(0, 0), 1, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {999, UPB_SIZE(8, 8), UPB_SIZE(0, 0), 1, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_MethodOptions_msg_init = {
@@ -857,13 +1047,13 @@ static const upb_MiniTable_Sub google_protobuf_UninterpretedOption_submsgs[1] = 
 };
 
 static const upb_MiniTable_Field google_protobuf_UninterpretedOption__fields[7] = {
-  {2, UPB_SIZE(4, 8), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(8, 16), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {4, UPB_SIZE(32, 64), UPB_SIZE(2, 2), kUpb_NoSub, 4, kUpb_FieldMode_Scalar | (kUpb_FieldRep_8Byte << kUpb_FieldRep_Shift)},
-  {5, UPB_SIZE(40, 72), UPB_SIZE(3, 3), kUpb_NoSub, 3, kUpb_FieldMode_Scalar | (kUpb_FieldRep_8Byte << kUpb_FieldRep_Shift)},
-  {6, UPB_SIZE(48, 80), UPB_SIZE(4, 4), kUpb_NoSub, 1, kUpb_FieldMode_Scalar | (kUpb_FieldRep_8Byte << kUpb_FieldRep_Shift)},
-  {7, UPB_SIZE(16, 32), UPB_SIZE(5, 5), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {8, UPB_SIZE(24, 48), UPB_SIZE(6, 6), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(4, 8), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(8, 16), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {4, UPB_SIZE(16, 32), UPB_SIZE(2, 2), kUpb_NoSub, 4, kUpb_FieldMode_Scalar | (kUpb_FieldRep_8Byte << kUpb_FieldRep_Shift)},
+  {5, UPB_SIZE(24, 40), UPB_SIZE(3, 3), kUpb_NoSub, 3, kUpb_FieldMode_Scalar | (kUpb_FieldRep_8Byte << kUpb_FieldRep_Shift)},
+  {6, UPB_SIZE(32, 48), UPB_SIZE(4, 4), kUpb_NoSub, 1, kUpb_FieldMode_Scalar | (kUpb_FieldRep_8Byte << kUpb_FieldRep_Shift)},
+  {7, UPB_SIZE(40, 56), UPB_SIZE(5, 5), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {8, UPB_SIZE(48, 72), UPB_SIZE(6, 6), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_UninterpretedOption_msg_init = {
@@ -873,7 +1063,7 @@ const upb_MiniTable google_protobuf_UninterpretedOption_msg_init = {
 };
 
 static const upb_MiniTable_Field google_protobuf_UninterpretedOption_NamePart__fields[2] = {
-  {1, UPB_SIZE(4, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(4, 8), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
   {2, UPB_SIZE(1, 1), UPB_SIZE(2, 2), kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
 };
 
@@ -888,7 +1078,7 @@ static const upb_MiniTable_Sub google_protobuf_SourceCodeInfo_submsgs[1] = {
 };
 
 static const upb_MiniTable_Field google_protobuf_SourceCodeInfo__fields[1] = {
-  {1, UPB_SIZE(0, 0), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(0, 0), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_SourceCodeInfo_msg_init = {
@@ -898,11 +1088,11 @@ const upb_MiniTable google_protobuf_SourceCodeInfo_msg_init = {
 };
 
 static const upb_MiniTable_Field google_protobuf_SourceCodeInfo_Location__fields[5] = {
-  {1, UPB_SIZE(4, 8), UPB_SIZE(0, 0), kUpb_NoSub, 5, kUpb_FieldMode_Array | kUpb_LabelFlags_IsPacked | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(8, 16), UPB_SIZE(0, 0), kUpb_NoSub, 5, kUpb_FieldMode_Array | kUpb_LabelFlags_IsPacked | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(12, 24), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {4, UPB_SIZE(20, 40), UPB_SIZE(2, 2), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {6, UPB_SIZE(28, 56), UPB_SIZE(0, 0), kUpb_NoSub, 12, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(4, 8), UPB_SIZE(0, 0), kUpb_NoSub, 5, kUpb_FieldMode_Array | kUpb_LabelFlags_IsPacked | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(8, 16), UPB_SIZE(0, 0), kUpb_NoSub, 5, kUpb_FieldMode_Array | kUpb_LabelFlags_IsPacked | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(16, 24), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {4, UPB_SIZE(24, 40), UPB_SIZE(2, 2), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {6, UPB_SIZE(12, 56), UPB_SIZE(0, 0), kUpb_NoSub, 12, kUpb_FieldMode_Array | kUpb_LabelFlags_IsAlternate | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_SourceCodeInfo_Location_msg_init = {
@@ -916,7 +1106,7 @@ static const upb_MiniTable_Sub google_protobuf_GeneratedCodeInfo_submsgs[1] = {
 };
 
 static const upb_MiniTable_Field google_protobuf_GeneratedCodeInfo__fields[1] = {
-  {1, UPB_SIZE(0, 0), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(0, 0), UPB_SIZE(0, 0), 0, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_GeneratedCodeInfo_msg_init = {
@@ -930,11 +1120,11 @@ static const upb_MiniTable_Sub google_protobuf_GeneratedCodeInfo_Annotation_subm
 };
 
 static const upb_MiniTable_Field google_protobuf_GeneratedCodeInfo_Annotation__fields[5] = {
-  {1, UPB_SIZE(16, 16), UPB_SIZE(0, 0), kUpb_NoSub, 5, kUpb_FieldMode_Array | kUpb_LabelFlags_IsPacked | (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift)},
-  {2, UPB_SIZE(20, 24), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
-  {3, UPB_SIZE(4, 4), UPB_SIZE(2, 2), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {4, UPB_SIZE(8, 8), UPB_SIZE(3, 3), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
-  {5, UPB_SIZE(12, 12), UPB_SIZE(4, 4), 0, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {1, UPB_SIZE(4, 16), UPB_SIZE(0, 0), kUpb_NoSub, 5, kUpb_FieldMode_Array | kUpb_LabelFlags_IsPacked | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
+  {2, UPB_SIZE(20, 24), UPB_SIZE(1, 1), kUpb_NoSub, 12, kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsAlternate | (kUpb_FieldRep_StringView << kUpb_FieldRep_Shift)},
+  {3, UPB_SIZE(8, 4), UPB_SIZE(2, 2), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {4, UPB_SIZE(12, 8), UPB_SIZE(3, 3), kUpb_NoSub, 5, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
+  {5, UPB_SIZE(16, 12), UPB_SIZE(4, 4), 0, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_GeneratedCodeInfo_Annotation_msg_init = {
@@ -1065,319 +1255,319 @@ const upb_MiniTable_File google_protobuf_descriptor_proto_upb_file_layout = {
  * regenerated. */
 
 
-static const char descriptor[7820] = {'\n', ' ', 'g', 'o', 'o', 'g', 'l', 'e', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 'd', 'e', 's', 'c', 'r', 'i', 'p', 
-'t', 'o', 'r', '.', 'p', 'r', 'o', 't', 'o', '\022', '\017', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 
-'f', '\"', 'M', '\n', '\021', 'F', 'i', 'l', 'e', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'S', 'e', 't', '\022', '8', '\n', 
-'\004', 'f', 'i', 'l', 'e', '\030', '\001', ' ', '\003', '(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 
-'o', 'b', 'u', 'f', '.', 'F', 'i', 'l', 'e', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 'R', 
-'\004', 'f', 'i', 'l', 'e', '\"', '\376', '\004', '\n', '\023', 'F', 'i', 'l', 'e', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 
-'r', 'o', 't', 'o', '\022', '\022', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', 'R', '\004', 'n', 'a', 'm', 'e', '\022', 
-'\030', '\n', '\007', 'p', 'a', 'c', 'k', 'a', 'g', 'e', '\030', '\002', ' ', '\001', '(', '\t', 'R', '\007', 'p', 'a', 'c', 'k', 'a', 'g', 'e', 
-'\022', '\036', '\n', '\n', 'd', 'e', 'p', 'e', 'n', 'd', 'e', 'n', 'c', 'y', '\030', '\003', ' ', '\003', '(', '\t', 'R', '\n', 'd', 'e', 'p', 
-'e', 'n', 'd', 'e', 'n', 'c', 'y', '\022', '+', '\n', '\021', 'p', 'u', 'b', 'l', 'i', 'c', '_', 'd', 'e', 'p', 'e', 'n', 'd', 'e', 
-'n', 'c', 'y', '\030', '\n', ' ', '\003', '(', '\005', 'R', '\020', 'p', 'u', 'b', 'l', 'i', 'c', 'D', 'e', 'p', 'e', 'n', 'd', 'e', 'n', 
-'c', 'y', '\022', '\'', '\n', '\017', 'w', 'e', 'a', 'k', '_', 'd', 'e', 'p', 'e', 'n', 'd', 'e', 'n', 'c', 'y', '\030', '\013', ' ', '\003', 
-'(', '\005', 'R', '\016', 'w', 'e', 'a', 'k', 'D', 'e', 'p', 'e', 'n', 'd', 'e', 'n', 'c', 'y', '\022', 'C', '\n', '\014', 'm', 'e', 's', 
-'s', 'a', 'g', 'e', '_', 't', 'y', 'p', 'e', '\030', '\004', ' ', '\003', '(', '\013', '2', ' ', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 
-'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 'R', 
-'\013', 'm', 'e', 's', 's', 'a', 'g', 'e', 'T', 'y', 'p', 'e', '\022', 'A', '\n', '\t', 'e', 'n', 'u', 'm', '_', 't', 'y', 'p', 'e', 
-'\030', '\005', ' ', '\003', '(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 
-'E', 'n', 'u', 'm', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 'R', '\010', 'e', 'n', 'u', 'm', 
-'T', 'y', 'p', 'e', '\022', 'A', '\n', '\007', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\030', '\006', ' ', '\003', '(', '\013', '2', '\'', '.', 'g', 
-'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'S', 'e', 'r', 'v', 'i', 'c', 'e', 'D', 'e', 's', 
-'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 'R', '\007', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\022', 'C', '\n', '\t', 
-'e', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', '\030', '\007', ' ', '\003', '(', '\013', '2', '%', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 
-'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'e', 'l', 'd', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 
-'r', 'o', 't', 'o', 'R', '\t', 'e', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', '\022', '6', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 
-'s', '\030', '\010', ' ', '\001', '(', '\013', '2', '\034', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', 
-'.', 'F', 'i', 'l', 'e', 'O', 'p', 't', 'i', 'o', 'n', 's', 'R', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\022', 'I', '\n', '\020', 
-'s', 'o', 'u', 'r', 'c', 'e', '_', 'c', 'o', 'd', 'e', '_', 'i', 'n', 'f', 'o', '\030', '\t', ' ', '\001', '(', '\013', '2', '\037', '.', 
-'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'S', 'o', 'u', 'r', 'c', 'e', 'C', 'o', 'd', 
-'e', 'I', 'n', 'f', 'o', 'R', '\016', 's', 'o', 'u', 'r', 'c', 'e', 'C', 'o', 'd', 'e', 'I', 'n', 'f', 'o', '\022', '\026', '\n', '\006', 
-'s', 'y', 'n', 't', 'a', 'x', '\030', '\014', ' ', '\001', '(', '\t', 'R', '\006', 's', 'y', 'n', 't', 'a', 'x', '\022', '\030', '\n', '\007', 'e', 
-'d', 'i', 't', 'i', 'o', 'n', '\030', '\r', ' ', '\001', '(', '\t', 'R', '\007', 'e', 'd', 'i', 't', 'i', 'o', 'n', '\"', '\271', '\006', '\n', 
-'\017', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', '\022', '\022', '\n', '\004', 'n', 'a', 'm', 'e', '\030', 
-'\001', ' ', '\001', '(', '\t', 'R', '\004', 'n', 'a', 'm', 'e', '\022', ';', '\n', '\005', 'f', 'i', 'e', 'l', 'd', '\030', '\002', ' ', '\003', '(', 
-'\013', '2', '%', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'e', 'l', 'd', 
-'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 'R', '\005', 'f', 'i', 'e', 'l', 'd', '\022', 'C', '\n', 
-'\t', 'e', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', '\030', '\006', ' ', '\003', '(', '\013', '2', '%', '.', 'g', 'o', 'o', 'g', 'l', 'e', 
-'.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'e', 'l', 'd', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 
-'P', 'r', 'o', 't', 'o', 'R', '\t', 'e', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', '\022', 'A', '\n', '\013', 'n', 'e', 's', 't', 'e', 
-'d', '_', 't', 'y', 'p', 'e', '\030', '\003', ' ', '\003', '(', '\013', '2', ' ', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 
-'t', 'o', 'b', 'u', 'f', '.', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 'R', '\n', 'n', 'e', 
-'s', 't', 'e', 'd', 'T', 'y', 'p', 'e', '\022', 'A', '\n', '\t', 'e', 'n', 'u', 'm', '_', 't', 'y', 'p', 'e', '\030', '\004', ' ', '\003', 
-'(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'E', 'n', 'u', 'm', 
-'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 'R', '\010', 'e', 'n', 'u', 'm', 'T', 'y', 'p', 'e', 
-'\022', 'X', '\n', '\017', 'e', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', '_', 'r', 'a', 'n', 'g', 'e', '\030', '\005', ' ', '\003', '(', '\013', 
-'2', '/', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'D', 'e', 's', 'c', 'r', 'i', 
-'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', '.', 'E', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', 'R', 'a', 'n', 'g', 'e', 'R', 
-'\016', 'e', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', 'R', 'a', 'n', 'g', 'e', '\022', 'D', '\n', '\n', 'o', 'n', 'e', 'o', 'f', '_', 
-'d', 'e', 'c', 'l', '\030', '\010', ' ', '\003', '(', '\013', '2', '%', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 
-'b', 'u', 'f', '.', 'O', 'n', 'e', 'o', 'f', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 'R', 
-'\t', 'o', 'n', 'e', 'o', 'f', 'D', 'e', 'c', 'l', '\022', '9', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\030', '\007', ' ', '\001', 
-'(', '\013', '2', '\037', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'M', 'e', 's', 's', 
-'a', 'g', 'e', 'O', 'p', 't', 'i', 'o', 'n', 's', 'R', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\022', 'U', '\n', '\016', 'r', 'e', 
-'s', 'e', 'r', 'v', 'e', 'd', '_', 'r', 'a', 'n', 'g', 'e', '\030', '\t', ' ', '\003', '(', '\013', '2', '.', '.', 'g', 'o', 'o', 'g', 
-'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 
-'t', 'o', '.', 'R', 'e', 's', 'e', 'r', 'v', 'e', 'd', 'R', 'a', 'n', 'g', 'e', 'R', '\r', 'r', 'e', 's', 'e', 'r', 'v', 'e', 
-'d', 'R', 'a', 'n', 'g', 'e', '\022', '#', '\n', '\r', 'r', 'e', 's', 'e', 'r', 'v', 'e', 'd', '_', 'n', 'a', 'm', 'e', '\030', '\n', 
-' ', '\003', '(', '\t', 'R', '\014', 'r', 'e', 's', 'e', 'r', 'v', 'e', 'd', 'N', 'a', 'm', 'e', '\032', 'z', '\n', '\016', 'E', 'x', 't', 
-'e', 'n', 's', 'i', 'o', 'n', 'R', 'a', 'n', 'g', 'e', '\022', '\024', '\n', '\005', 's', 't', 'a', 'r', 't', '\030', '\001', ' ', '\001', '(', 
-'\005', 'R', '\005', 's', 't', 'a', 'r', 't', '\022', '\020', '\n', '\003', 'e', 'n', 'd', '\030', '\002', ' ', '\001', '(', '\005', 'R', '\003', 'e', 'n', 
-'d', '\022', '@', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\030', '\003', ' ', '\001', '(', '\013', '2', '&', '.', 'g', 'o', 'o', 'g', 
-'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'E', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', 'R', 'a', 'n', 'g', 
-'e', 'O', 'p', 't', 'i', 'o', 'n', 's', 'R', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\032', '7', '\n', '\r', 'R', 'e', 's', 'e', 
-'r', 'v', 'e', 'd', 'R', 'a', 'n', 'g', 'e', '\022', '\024', '\n', '\005', 's', 't', 'a', 'r', 't', '\030', '\001', ' ', '\001', '(', '\005', 'R', 
-'\005', 's', 't', 'a', 'r', 't', '\022', '\020', '\n', '\003', 'e', 'n', 'd', '\030', '\002', ' ', '\001', '(', '\005', 'R', '\003', 'e', 'n', 'd', '\"', 
-'|', '\n', '\025', 'E', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', 'R', 'a', 'n', 'g', 'e', 'O', 'p', 't', 'i', 'o', 'n', 's', '\022', 
-'X', '\n', '\024', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', '_', 'o', 'p', 't', 'i', 'o', 'n', '\030', '\347', 
-'\007', ' ', '\003', '(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'U', 
-'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', 'R', '\023', 'u', 'n', 'i', 'n', 't', 
-'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', '*', '\t', '\010', '\350', '\007', '\020', '\200', '\200', '\200', '\200', '\002', 
-'\"', '\301', '\006', '\n', '\024', 'F', 'i', 'e', 'l', 'd', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 
-'\022', '\022', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', 'R', '\004', 'n', 'a', 'm', 'e', '\022', '\026', '\n', '\006', 'n', 
-'u', 'm', 'b', 'e', 'r', '\030', '\003', ' ', '\001', '(', '\005', 'R', '\006', 'n', 'u', 'm', 'b', 'e', 'r', '\022', 'A', '\n', '\005', 'l', 'a', 
-'b', 'e', 'l', '\030', '\004', ' ', '\001', '(', '\016', '2', '+', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 
-'u', 'f', '.', 'F', 'i', 'e', 'l', 'd', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', '.', 'L', 
-'a', 'b', 'e', 'l', 'R', '\005', 'l', 'a', 'b', 'e', 'l', '\022', '>', '\n', '\004', 't', 'y', 'p', 'e', '\030', '\005', ' ', '\001', '(', '\016', 
-'2', '*', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'e', 'l', 'd', 'D', 
-'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', '.', 'T', 'y', 'p', 'e', 'R', '\004', 't', 'y', 'p', 'e', 
-'\022', '\033', '\n', '\t', 't', 'y', 'p', 'e', '_', 'n', 'a', 'm', 'e', '\030', '\006', ' ', '\001', '(', '\t', 'R', '\010', 't', 'y', 'p', 'e', 
-'N', 'a', 'm', 'e', '\022', '\032', '\n', '\010', 'e', 'x', 't', 'e', 'n', 'd', 'e', 'e', '\030', '\002', ' ', '\001', '(', '\t', 'R', '\010', 'e', 
-'x', 't', 'e', 'n', 'd', 'e', 'e', '\022', '#', '\n', '\r', 'd', 'e', 'f', 'a', 'u', 'l', 't', '_', 'v', 'a', 'l', 'u', 'e', '\030', 
-'\007', ' ', '\001', '(', '\t', 'R', '\014', 'd', 'e', 'f', 'a', 'u', 'l', 't', 'V', 'a', 'l', 'u', 'e', '\022', '\037', '\n', '\013', 'o', 'n', 
-'e', 'o', 'f', '_', 'i', 'n', 'd', 'e', 'x', '\030', '\t', ' ', '\001', '(', '\005', 'R', '\n', 'o', 'n', 'e', 'o', 'f', 'I', 'n', 'd', 
-'e', 'x', '\022', '\033', '\n', '\t', 'j', 's', 'o', 'n', '_', 'n', 'a', 'm', 'e', '\030', '\n', ' ', '\001', '(', '\t', 'R', '\010', 'j', 's', 
-'o', 'n', 'N', 'a', 'm', 'e', '\022', '7', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\030', '\010', ' ', '\001', '(', '\013', '2', '\035', 
-'.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'e', 'l', 'd', 'O', 'p', 't', 
-'i', 'o', 'n', 's', 'R', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\022', '\'', '\n', '\017', 'p', 'r', 'o', 't', 'o', '3', '_', 'o', 
-'p', 't', 'i', 'o', 'n', 'a', 'l', '\030', '\021', ' ', '\001', '(', '\010', 'R', '\016', 'p', 'r', 'o', 't', 'o', '3', 'O', 'p', 't', 'i', 
-'o', 'n', 'a', 'l', '\"', '\266', '\002', '\n', '\004', 'T', 'y', 'p', 'e', '\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'D', 'O', 'U', 
-'B', 'L', 'E', '\020', '\001', '\022', '\016', '\n', '\n', 'T', 'Y', 'P', 'E', '_', 'F', 'L', 'O', 'A', 'T', '\020', '\002', '\022', '\016', '\n', '\n', 
-'T', 'Y', 'P', 'E', '_', 'I', 'N', 'T', '6', '4', '\020', '\003', '\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'U', 'I', 'N', 'T', 
-'6', '4', '\020', '\004', '\022', '\016', '\n', '\n', 'T', 'Y', 'P', 'E', '_', 'I', 'N', 'T', '3', '2', '\020', '\005', '\022', '\020', '\n', '\014', 'T', 
-'Y', 'P', 'E', '_', 'F', 'I', 'X', 'E', 'D', '6', '4', '\020', '\006', '\022', '\020', '\n', '\014', 'T', 'Y', 'P', 'E', '_', 'F', 'I', 'X', 
-'E', 'D', '3', '2', '\020', '\007', '\022', '\r', '\n', '\t', 'T', 'Y', 'P', 'E', '_', 'B', 'O', 'O', 'L', '\020', '\010', '\022', '\017', '\n', '\013', 
-'T', 'Y', 'P', 'E', '_', 'S', 'T', 'R', 'I', 'N', 'G', '\020', '\t', '\022', '\016', '\n', '\n', 'T', 'Y', 'P', 'E', '_', 'G', 'R', 'O', 
-'U', 'P', '\020', '\n', '\022', '\020', '\n', '\014', 'T', 'Y', 'P', 'E', '_', 'M', 'E', 'S', 'S', 'A', 'G', 'E', '\020', '\013', '\022', '\016', '\n', 
-'\n', 'T', 'Y', 'P', 'E', '_', 'B', 'Y', 'T', 'E', 'S', '\020', '\014', '\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'U', 'I', 'N', 
-'T', '3', '2', '\020', '\r', '\022', '\r', '\n', '\t', 'T', 'Y', 'P', 'E', '_', 'E', 'N', 'U', 'M', '\020', '\016', '\022', '\021', '\n', '\r', 'T', 
-'Y', 'P', 'E', '_', 'S', 'F', 'I', 'X', 'E', 'D', '3', '2', '\020', '\017', '\022', '\021', '\n', '\r', 'T', 'Y', 'P', 'E', '_', 'S', 'F', 
-'I', 'X', 'E', 'D', '6', '4', '\020', '\020', '\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'S', 'I', 'N', 'T', '3', '2', '\020', '\021', 
-'\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'S', 'I', 'N', 'T', '6', '4', '\020', '\022', '\"', 'C', '\n', '\005', 'L', 'a', 'b', 'e', 
-'l', '\022', '\022', '\n', '\016', 'L', 'A', 'B', 'E', 'L', '_', 'O', 'P', 'T', 'I', 'O', 'N', 'A', 'L', '\020', '\001', '\022', '\022', '\n', '\016', 
-'L', 'A', 'B', 'E', 'L', '_', 'R', 'E', 'Q', 'U', 'I', 'R', 'E', 'D', '\020', '\002', '\022', '\022', '\n', '\016', 'L', 'A', 'B', 'E', 'L', 
-'_', 'R', 'E', 'P', 'E', 'A', 'T', 'E', 'D', '\020', '\003', '\"', 'c', '\n', '\024', 'O', 'n', 'e', 'o', 'f', 'D', 'e', 's', 'c', 'r', 
-'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', '\022', '\022', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', 'R', 
-'\004', 'n', 'a', 'm', 'e', '\022', '7', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\030', '\002', ' ', '\001', '(', '\013', '2', '\035', '.', 
-'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'O', 'n', 'e', 'o', 'f', 'O', 'p', 't', 'i', 
-'o', 'n', 's', 'R', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\"', '\343', '\002', '\n', '\023', 'E', 'n', 'u', 'm', 'D', 'e', 's', 'c', 
-'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', '\022', '\022', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', 
-'R', '\004', 'n', 'a', 'm', 'e', '\022', '?', '\n', '\005', 'v', 'a', 'l', 'u', 'e', '\030', '\002', ' ', '\003', '(', '\013', '2', ')', '.', 'g', 
-'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'E', 'n', 'u', 'm', 'V', 'a', 'l', 'u', 'e', 'D', 
-'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 'R', '\005', 'v', 'a', 'l', 'u', 'e', '\022', '6', '\n', '\007', 
-'o', 'p', 't', 'i', 'o', 'n', 's', '\030', '\003', ' ', '\001', '(', '\013', '2', '\034', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 
-'o', 't', 'o', 'b', 'u', 'f', '.', 'E', 'n', 'u', 'm', 'O', 'p', 't', 'i', 'o', 'n', 's', 'R', '\007', 'o', 'p', 't', 'i', 'o', 
-'n', 's', '\022', ']', '\n', '\016', 'r', 'e', 's', 'e', 'r', 'v', 'e', 'd', '_', 'r', 'a', 'n', 'g', 'e', '\030', '\004', ' ', '\003', '(', 
-'\013', '2', '6', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'E', 'n', 'u', 'm', 'D', 
-'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', '.', 'E', 'n', 'u', 'm', 'R', 'e', 's', 'e', 'r', 'v', 
-'e', 'd', 'R', 'a', 'n', 'g', 'e', 'R', '\r', 'r', 'e', 's', 'e', 'r', 'v', 'e', 'd', 'R', 'a', 'n', 'g', 'e', '\022', '#', '\n', 
-'\r', 'r', 'e', 's', 'e', 'r', 'v', 'e', 'd', '_', 'n', 'a', 'm', 'e', '\030', '\005', ' ', '\003', '(', '\t', 'R', '\014', 'r', 'e', 's', 
-'e', 'r', 'v', 'e', 'd', 'N', 'a', 'm', 'e', '\032', ';', '\n', '\021', 'E', 'n', 'u', 'm', 'R', 'e', 's', 'e', 'r', 'v', 'e', 'd', 
-'R', 'a', 'n', 'g', 'e', '\022', '\024', '\n', '\005', 's', 't', 'a', 'r', 't', '\030', '\001', ' ', '\001', '(', '\005', 'R', '\005', 's', 't', 'a', 
-'r', 't', '\022', '\020', '\n', '\003', 'e', 'n', 'd', '\030', '\002', ' ', '\001', '(', '\005', 'R', '\003', 'e', 'n', 'd', '\"', '\203', '\001', '\n', '\030', 
-'E', 'n', 'u', 'm', 'V', 'a', 'l', 'u', 'e', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', '\022', 
-'\022', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', 'R', '\004', 'n', 'a', 'm', 'e', '\022', '\026', '\n', '\006', 'n', 'u', 
-'m', 'b', 'e', 'r', '\030', '\002', ' ', '\001', '(', '\005', 'R', '\006', 'n', 'u', 'm', 'b', 'e', 'r', '\022', ';', '\n', '\007', 'o', 'p', 't', 
-'i', 'o', 'n', 's', '\030', '\003', ' ', '\001', '(', '\013', '2', '!', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 
-'b', 'u', 'f', '.', 'E', 'n', 'u', 'm', 'V', 'a', 'l', 'u', 'e', 'O', 'p', 't', 'i', 'o', 'n', 's', 'R', '\007', 'o', 'p', 't', 
-'i', 'o', 'n', 's', '\"', '\247', '\001', '\n', '\026', 'S', 'e', 'r', 'v', 'i', 'c', 'e', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 
-'r', 'P', 'r', 'o', 't', 'o', '\022', '\022', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', 'R', '\004', 'n', 'a', 'm', 
-'e', '\022', '>', '\n', '\006', 'm', 'e', 't', 'h', 'o', 'd', '\030', '\002', ' ', '\003', '(', '\013', '2', '&', '.', 'g', 'o', 'o', 'g', 'l', 
-'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'M', 'e', 't', 'h', 'o', 'd', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 
-'o', 'r', 'P', 'r', 'o', 't', 'o', 'R', '\006', 'm', 'e', 't', 'h', 'o', 'd', '\022', '9', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 
-'s', '\030', '\003', ' ', '\001', '(', '\013', '2', '\037', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', 
-'.', 'S', 'e', 'r', 'v', 'i', 'c', 'e', 'O', 'p', 't', 'i', 'o', 'n', 's', 'R', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\"', 
-'\211', '\002', '\n', '\025', 'M', 'e', 't', 'h', 'o', 'd', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 
-'\022', '\022', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', 'R', '\004', 'n', 'a', 'm', 'e', '\022', '\035', '\n', '\n', 'i', 
-'n', 'p', 'u', 't', '_', 't', 'y', 'p', 'e', '\030', '\002', ' ', '\001', '(', '\t', 'R', '\t', 'i', 'n', 'p', 'u', 't', 'T', 'y', 'p', 
-'e', '\022', '\037', '\n', '\013', 'o', 'u', 't', 'p', 'u', 't', '_', 't', 'y', 'p', 'e', '\030', '\003', ' ', '\001', '(', '\t', 'R', '\n', 'o', 
-'u', 't', 'p', 'u', 't', 'T', 'y', 'p', 'e', '\022', '8', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\030', '\004', ' ', '\001', '(', 
-'\013', '2', '\036', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'M', 'e', 't', 'h', 'o', 
-'d', 'O', 'p', 't', 'i', 'o', 'n', 's', 'R', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\022', '0', '\n', '\020', 'c', 'l', 'i', 'e', 
-'n', 't', '_', 's', 't', 'r', 'e', 'a', 'm', 'i', 'n', 'g', '\030', '\005', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 
-'R', '\017', 'c', 'l', 'i', 'e', 'n', 't', 'S', 't', 'r', 'e', 'a', 'm', 'i', 'n', 'g', '\022', '0', '\n', '\020', 's', 'e', 'r', 'v', 
-'e', 'r', '_', 's', 't', 'r', 'e', 'a', 'm', 'i', 'n', 'g', '\030', '\006', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 
-'R', '\017', 's', 'e', 'r', 'v', 'e', 'r', 'S', 't', 'r', 'e', 'a', 'm', 'i', 'n', 'g', '\"', '\221', '\t', '\n', '\013', 'F', 'i', 'l', 
-'e', 'O', 'p', 't', 'i', 'o', 'n', 's', '\022', '!', '\n', '\014', 'j', 'a', 'v', 'a', '_', 'p', 'a', 'c', 'k', 'a', 'g', 'e', '\030', 
-'\001', ' ', '\001', '(', '\t', 'R', '\013', 'j', 'a', 'v', 'a', 'P', 'a', 'c', 'k', 'a', 'g', 'e', '\022', '0', '\n', '\024', 'j', 'a', 'v', 
-'a', '_', 'o', 'u', 't', 'e', 'r', '_', 'c', 'l', 'a', 's', 's', 'n', 'a', 'm', 'e', '\030', '\010', ' ', '\001', '(', '\t', 'R', '\022', 
-'j', 'a', 'v', 'a', 'O', 'u', 't', 'e', 'r', 'C', 'l', 'a', 's', 's', 'n', 'a', 'm', 'e', '\022', '5', '\n', '\023', 'j', 'a', 'v', 
-'a', '_', 'm', 'u', 'l', 't', 'i', 'p', 'l', 'e', '_', 'f', 'i', 'l', 'e', 's', '\030', '\n', ' ', '\001', '(', '\010', ':', '\005', 'f', 
-'a', 'l', 's', 'e', 'R', '\021', 'j', 'a', 'v', 'a', 'M', 'u', 'l', 't', 'i', 'p', 'l', 'e', 'F', 'i', 'l', 'e', 's', '\022', 'D', 
-'\n', '\035', 'j', 'a', 'v', 'a', '_', 'g', 'e', 'n', 'e', 'r', 'a', 't', 'e', '_', 'e', 'q', 'u', 'a', 'l', 's', '_', 'a', 'n', 
-'d', '_', 'h', 'a', 's', 'h', '\030', '\024', ' ', '\001', '(', '\010', 'B', '\002', '\030', '\001', 'R', '\031', 'j', 'a', 'v', 'a', 'G', 'e', 'n', 
-'e', 'r', 'a', 't', 'e', 'E', 'q', 'u', 'a', 'l', 's', 'A', 'n', 'd', 'H', 'a', 's', 'h', '\022', ':', '\n', '\026', 'j', 'a', 'v', 
-'a', '_', 's', 't', 'r', 'i', 'n', 'g', '_', 'c', 'h', 'e', 'c', 'k', '_', 'u', 't', 'f', '8', '\030', '\033', ' ', '\001', '(', '\010', 
-':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\023', 'j', 'a', 'v', 'a', 'S', 't', 'r', 'i', 'n', 'g', 'C', 'h', 'e', 'c', 'k', 'U', 
-'t', 'f', '8', '\022', 'S', '\n', '\014', 'o', 'p', 't', 'i', 'm', 'i', 'z', 'e', '_', 'f', 'o', 'r', '\030', '\t', ' ', '\001', '(', '\016', 
-'2', ')', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'l', 'e', 'O', 'p', 
-'t', 'i', 'o', 'n', 's', '.', 'O', 'p', 't', 'i', 'm', 'i', 'z', 'e', 'M', 'o', 'd', 'e', ':', '\005', 'S', 'P', 'E', 'E', 'D', 
-'R', '\013', 'o', 'p', 't', 'i', 'm', 'i', 'z', 'e', 'F', 'o', 'r', '\022', '\035', '\n', '\n', 'g', 'o', '_', 'p', 'a', 'c', 'k', 'a', 
-'g', 'e', '\030', '\013', ' ', '\001', '(', '\t', 'R', '\t', 'g', 'o', 'P', 'a', 'c', 'k', 'a', 'g', 'e', '\022', '5', '\n', '\023', 'c', 'c', 
-'_', 'g', 'e', 'n', 'e', 'r', 'i', 'c', '_', 's', 'e', 'r', 'v', 'i', 'c', 'e', 's', '\030', '\020', ' ', '\001', '(', '\010', ':', '\005', 
-'f', 'a', 'l', 's', 'e', 'R', '\021', 'c', 'c', 'G', 'e', 'n', 'e', 'r', 'i', 'c', 'S', 'e', 'r', 'v', 'i', 'c', 'e', 's', '\022', 
-'9', '\n', '\025', 'j', 'a', 'v', 'a', '_', 'g', 'e', 'n', 'e', 'r', 'i', 'c', '_', 's', 'e', 'r', 'v', 'i', 'c', 'e', 's', '\030', 
-'\021', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\023', 'j', 'a', 'v', 'a', 'G', 'e', 'n', 'e', 'r', 'i', 'c', 
-'S', 'e', 'r', 'v', 'i', 'c', 'e', 's', '\022', '5', '\n', '\023', 'p', 'y', '_', 'g', 'e', 'n', 'e', 'r', 'i', 'c', '_', 's', 'e', 
-'r', 'v', 'i', 'c', 'e', 's', '\030', '\022', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\021', 'p', 'y', 'G', 'e', 
-'n', 'e', 'r', 'i', 'c', 'S', 'e', 'r', 'v', 'i', 'c', 'e', 's', '\022', '7', '\n', '\024', 'p', 'h', 'p', '_', 'g', 'e', 'n', 'e', 
-'r', 'i', 'c', '_', 's', 'e', 'r', 'v', 'i', 'c', 'e', 's', '\030', '*', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 
-'R', '\022', 'p', 'h', 'p', 'G', 'e', 'n', 'e', 'r', 'i', 'c', 'S', 'e', 'r', 'v', 'i', 'c', 'e', 's', '\022', '%', '\n', '\n', 'd', 
-'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\030', '\027', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\n', 'd', 
-'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\022', '.', '\n', '\020', 'c', 'c', '_', 'e', 'n', 'a', 'b', 'l', 'e', '_', 'a', 'r', 
-'e', 'n', 'a', 's', '\030', '\037', ' ', '\001', '(', '\010', ':', '\004', 't', 'r', 'u', 'e', 'R', '\016', 'c', 'c', 'E', 'n', 'a', 'b', 'l', 
-'e', 'A', 'r', 'e', 'n', 'a', 's', '\022', '*', '\n', '\021', 'o', 'b', 'j', 'c', '_', 'c', 'l', 'a', 's', 's', '_', 'p', 'r', 'e', 
-'f', 'i', 'x', '\030', '$', ' ', '\001', '(', '\t', 'R', '\017', 'o', 'b', 'j', 'c', 'C', 'l', 'a', 's', 's', 'P', 'r', 'e', 'f', 'i', 
-'x', '\022', ')', '\n', '\020', 'c', 's', 'h', 'a', 'r', 'p', '_', 'n', 'a', 'm', 'e', 's', 'p', 'a', 'c', 'e', '\030', '%', ' ', '\001', 
-'(', '\t', 'R', '\017', 'c', 's', 'h', 'a', 'r', 'p', 'N', 'a', 'm', 'e', 's', 'p', 'a', 'c', 'e', '\022', '!', '\n', '\014', 's', 'w', 
-'i', 'f', 't', '_', 'p', 'r', 'e', 'f', 'i', 'x', '\030', '\'', ' ', '\001', '(', '\t', 'R', '\013', 's', 'w', 'i', 'f', 't', 'P', 'r', 
-'e', 'f', 'i', 'x', '\022', '(', '\n', '\020', 'p', 'h', 'p', '_', 'c', 'l', 'a', 's', 's', '_', 'p', 'r', 'e', 'f', 'i', 'x', '\030', 
-'(', ' ', '\001', '(', '\t', 'R', '\016', 'p', 'h', 'p', 'C', 'l', 'a', 's', 's', 'P', 'r', 'e', 'f', 'i', 'x', '\022', '#', '\n', '\r', 
-'p', 'h', 'p', '_', 'n', 'a', 'm', 'e', 's', 'p', 'a', 'c', 'e', '\030', ')', ' ', '\001', '(', '\t', 'R', '\014', 'p', 'h', 'p', 'N', 
-'a', 'm', 'e', 's', 'p', 'a', 'c', 'e', '\022', '4', '\n', '\026', 'p', 'h', 'p', '_', 'm', 'e', 't', 'a', 'd', 'a', 't', 'a', '_', 
-'n', 'a', 'm', 'e', 's', 'p', 'a', 'c', 'e', '\030', ',', ' ', '\001', '(', '\t', 'R', '\024', 'p', 'h', 'p', 'M', 'e', 't', 'a', 'd', 
-'a', 't', 'a', 'N', 'a', 'm', 'e', 's', 'p', 'a', 'c', 'e', '\022', '!', '\n', '\014', 'r', 'u', 'b', 'y', '_', 'p', 'a', 'c', 'k', 
-'a', 'g', 'e', '\030', '-', ' ', '\001', '(', '\t', 'R', '\013', 'r', 'u', 'b', 'y', 'P', 'a', 'c', 'k', 'a', 'g', 'e', '\022', 'X', '\n', 
-'\024', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', '_', 'o', 'p', 't', 'i', 'o', 'n', '\030', '\347', '\007', ' ', 
-'\003', '(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'U', 'n', 'i', 
-'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', 'R', '\023', 'u', 'n', 'i', 'n', 't', 'e', 'r', 
-'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', '\"', ':', '\n', '\014', 'O', 'p', 't', 'i', 'm', 'i', 'z', 'e', 'M', 
-'o', 'd', 'e', '\022', '\t', '\n', '\005', 'S', 'P', 'E', 'E', 'D', '\020', '\001', '\022', '\r', '\n', '\t', 'C', 'O', 'D', 'E', '_', 'S', 'I', 
-'Z', 'E', '\020', '\002', '\022', '\020', '\n', '\014', 'L', 'I', 'T', 'E', '_', 'R', 'U', 'N', 'T', 'I', 'M', 'E', '\020', '\003', '*', '\t', '\010', 
-'\350', '\007', '\020', '\200', '\200', '\200', '\200', '\002', 'J', '\004', '\010', '&', '\020', '\'', '\"', '\343', '\002', '\n', '\016', 'M', 'e', 's', 's', 'a', 'g', 
-'e', 'O', 'p', 't', 'i', 'o', 'n', 's', '\022', '<', '\n', '\027', 'm', 'e', 's', 's', 'a', 'g', 'e', '_', 's', 'e', 't', '_', 'w', 
-'i', 'r', 'e', '_', 'f', 'o', 'r', 'm', 'a', 't', '\030', '\001', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\024', 
-'m', 'e', 's', 's', 'a', 'g', 'e', 'S', 'e', 't', 'W', 'i', 'r', 'e', 'F', 'o', 'r', 'm', 'a', 't', '\022', 'L', '\n', '\037', 'n', 
-'o', '_', 's', 't', 'a', 'n', 'd', 'a', 'r', 'd', '_', 'd', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', '_', 'a', 'c', 'c', 
-'e', 's', 's', 'o', 'r', '\030', '\002', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\034', 'n', 'o', 'S', 't', 'a', 
-'n', 'd', 'a', 'r', 'd', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'A', 'c', 'c', 'e', 's', 's', 'o', 'r', '\022', '%', 
-'\n', '\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\030', '\003', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 
-'R', '\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\022', '\033', '\n', '\t', 'm', 'a', 'p', '_', 'e', 'n', 't', 'r', 'y', 
-'\030', '\007', ' ', '\001', '(', '\010', 'R', '\010', 'm', 'a', 'p', 'E', 'n', 't', 'r', 'y', '\022', 'X', '\n', '\024', 'u', 'n', 'i', 'n', 't', 
-'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', '_', 'o', 'p', 't', 'i', 'o', 'n', '\030', '\347', '\007', ' ', '\003', '(', '\013', '2', '$', '.', 
-'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'U', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 
-'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', 'R', '\023', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 
-'O', 'p', 't', 'i', 'o', 'n', '*', '\t', '\010', '\350', '\007', '\020', '\200', '\200', '\200', '\200', '\002', 'J', '\004', '\010', '\004', '\020', '\005', 'J', '\004', 
-'\010', '\005', '\020', '\006', 'J', '\004', '\010', '\006', '\020', '\007', 'J', '\004', '\010', '\010', '\020', '\t', 'J', '\004', '\010', '\t', '\020', '\n', '\"', '\222', '\004', 
-'\n', '\014', 'F', 'i', 'e', 'l', 'd', 'O', 'p', 't', 'i', 'o', 'n', 's', '\022', 'A', '\n', '\005', 'c', 't', 'y', 'p', 'e', '\030', '\001', 
-' ', '\001', '(', '\016', '2', '#', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 
-'e', 'l', 'd', 'O', 'p', 't', 'i', 'o', 'n', 's', '.', 'C', 'T', 'y', 'p', 'e', ':', '\006', 'S', 'T', 'R', 'I', 'N', 'G', 'R', 
-'\005', 'c', 't', 'y', 'p', 'e', '\022', '\026', '\n', '\006', 'p', 'a', 'c', 'k', 'e', 'd', '\030', '\002', ' ', '\001', '(', '\010', 'R', '\006', 'p', 
-'a', 'c', 'k', 'e', 'd', '\022', 'G', '\n', '\006', 'j', 's', 't', 'y', 'p', 'e', '\030', '\006', ' ', '\001', '(', '\016', '2', '$', '.', 'g', 
-'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'e', 'l', 'd', 'O', 'p', 't', 'i', 'o', 
-'n', 's', '.', 'J', 'S', 'T', 'y', 'p', 'e', ':', '\t', 'J', 'S', '_', 'N', 'O', 'R', 'M', 'A', 'L', 'R', '\006', 'j', 's', 't', 
-'y', 'p', 'e', '\022', '\031', '\n', '\004', 'l', 'a', 'z', 'y', '\030', '\005', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', 
-'\004', 'l', 'a', 'z', 'y', '\022', '.', '\n', '\017', 'u', 'n', 'v', 'e', 'r', 'i', 'f', 'i', 'e', 'd', '_', 'l', 'a', 'z', 'y', '\030', 
-'\017', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\016', 'u', 'n', 'v', 'e', 'r', 'i', 'f', 'i', 'e', 'd', 'L', 
-'a', 'z', 'y', '\022', '%', '\n', '\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\030', '\003', ' ', '\001', '(', '\010', ':', '\005', 
-'f', 'a', 'l', 's', 'e', 'R', '\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\022', '\031', '\n', '\004', 'w', 'e', 'a', 'k', 
-'\030', '\n', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\004', 'w', 'e', 'a', 'k', '\022', 'X', '\n', '\024', 'u', 'n', 
-'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', '_', 'o', 'p', 't', 'i', 'o', 'n', '\030', '\347', '\007', ' ', '\003', '(', '\013', 
-'2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'U', 'n', 'i', 'n', 't', 'e', 
-'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', 'R', '\023', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 
-'t', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', '\"', '/', '\n', '\005', 'C', 'T', 'y', 'p', 'e', '\022', '\n', '\n', '\006', 'S', 'T', 'R', 
-'I', 'N', 'G', '\020', '\000', '\022', '\010', '\n', '\004', 'C', 'O', 'R', 'D', '\020', '\001', '\022', '\020', '\n', '\014', 'S', 'T', 'R', 'I', 'N', 'G', 
-'_', 'P', 'I', 'E', 'C', 'E', '\020', '\002', '\"', '5', '\n', '\006', 'J', 'S', 'T', 'y', 'p', 'e', '\022', '\r', '\n', '\t', 'J', 'S', '_', 
-'N', 'O', 'R', 'M', 'A', 'L', '\020', '\000', '\022', '\r', '\n', '\t', 'J', 'S', '_', 'S', 'T', 'R', 'I', 'N', 'G', '\020', '\001', '\022', '\r', 
-'\n', '\t', 'J', 'S', '_', 'N', 'U', 'M', 'B', 'E', 'R', '\020', '\002', '*', '\t', '\010', '\350', '\007', '\020', '\200', '\200', '\200', '\200', '\002', 'J', 
-'\004', '\010', '\004', '\020', '\005', '\"', 's', '\n', '\014', 'O', 'n', 'e', 'o', 'f', 'O', 'p', 't', 'i', 'o', 'n', 's', '\022', 'X', '\n', '\024', 
-'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', '_', 'o', 'p', 't', 'i', 'o', 'n', '\030', '\347', '\007', ' ', '\003', 
-'(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'U', 'n', 'i', 'n', 
-'t', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', 'R', '\023', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 
-'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', '*', '\t', '\010', '\350', '\007', '\020', '\200', '\200', '\200', '\200', '\002', '\"', '\300', '\001', 
-'\n', '\013', 'E', 'n', 'u', 'm', 'O', 'p', 't', 'i', 'o', 'n', 's', '\022', '\037', '\n', '\013', 'a', 'l', 'l', 'o', 'w', '_', 'a', 'l', 
-'i', 'a', 's', '\030', '\002', ' ', '\001', '(', '\010', 'R', '\n', 'a', 'l', 'l', 'o', 'w', 'A', 'l', 'i', 'a', 's', '\022', '%', '\n', '\n', 
-'d', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\030', '\003', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\n', 
-'d', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\022', 'X', '\n', '\024', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 
-'e', 'd', '_', 'o', 'p', 't', 'i', 'o', 'n', '\030', '\347', '\007', ' ', '\003', '(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', 
-'.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'U', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 
-'t', 'i', 'o', 'n', 'R', '\023', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', 
-'*', '\t', '\010', '\350', '\007', '\020', '\200', '\200', '\200', '\200', '\002', 'J', '\004', '\010', '\005', '\020', '\006', '\"', '\236', '\001', '\n', '\020', 'E', 'n', 'u', 
-'m', 'V', 'a', 'l', 'u', 'e', 'O', 'p', 't', 'i', 'o', 'n', 's', '\022', '%', '\n', '\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't', 
-'e', 'd', '\030', '\001', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't', 
-'e', 'd', '\022', 'X', '\n', '\024', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', '_', 'o', 'p', 't', 'i', 'o', 
-'n', '\030', '\347', '\007', ' ', '\003', '(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 
-'f', '.', 'U', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', 'R', '\023', 'u', 'n', 
-'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', '*', '\t', '\010', '\350', '\007', '\020', '\200', '\200', 
-'\200', '\200', '\002', '\"', '\234', '\001', '\n', '\016', 'S', 'e', 'r', 'v', 'i', 'c', 'e', 'O', 'p', 't', 'i', 'o', 'n', 's', '\022', '%', '\n', 
-'\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\030', '!', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', 
-'\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\022', 'X', '\n', '\024', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 
-'t', 'e', 'd', '_', 'o', 'p', 't', 'i', 'o', 'n', '\030', '\347', '\007', ' ', '\003', '(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 
-'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'U', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 
-'p', 't', 'i', 'o', 'n', 'R', '\023', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 
-'n', '*', '\t', '\010', '\350', '\007', '\020', '\200', '\200', '\200', '\200', '\002', '\"', '\340', '\002', '\n', '\r', 'M', 'e', 't', 'h', 'o', 'd', 'O', 'p', 
-'t', 'i', 'o', 'n', 's', '\022', '%', '\n', '\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\030', '!', ' ', '\001', '(', '\010', 
-':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\022', 'q', '\n', '\021', 'i', 'd', 
-'e', 'm', 'p', 'o', 't', 'e', 'n', 'c', 'y', '_', 'l', 'e', 'v', 'e', 'l', '\030', '\"', ' ', '\001', '(', '\016', '2', '/', '.', 'g', 
-'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'M', 'e', 't', 'h', 'o', 'd', 'O', 'p', 't', 'i', 
-'o', 'n', 's', '.', 'I', 'd', 'e', 'm', 'p', 'o', 't', 'e', 'n', 'c', 'y', 'L', 'e', 'v', 'e', 'l', ':', '\023', 'I', 'D', 'E', 
-'M', 'P', 'O', 'T', 'E', 'N', 'C', 'Y', '_', 'U', 'N', 'K', 'N', 'O', 'W', 'N', 'R', '\020', 'i', 'd', 'e', 'm', 'p', 'o', 't', 
-'e', 'n', 'c', 'y', 'L', 'e', 'v', 'e', 'l', '\022', 'X', '\n', '\024', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 
-'d', '_', 'o', 'p', 't', 'i', 'o', 'n', '\030', '\347', '\007', ' ', '\003', '(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 
-'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'U', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 
-'i', 'o', 'n', 'R', '\023', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', '\"', 
-'P', '\n', '\020', 'I', 'd', 'e', 'm', 'p', 'o', 't', 'e', 'n', 'c', 'y', 'L', 'e', 'v', 'e', 'l', '\022', '\027', '\n', '\023', 'I', 'D', 
-'E', 'M', 'P', 'O', 'T', 'E', 'N', 'C', 'Y', '_', 'U', 'N', 'K', 'N', 'O', 'W', 'N', '\020', '\000', '\022', '\023', '\n', '\017', 'N', 'O', 
-'_', 'S', 'I', 'D', 'E', '_', 'E', 'F', 'F', 'E', 'C', 'T', 'S', '\020', '\001', '\022', '\016', '\n', '\n', 'I', 'D', 'E', 'M', 'P', 'O', 
-'T', 'E', 'N', 'T', '\020', '\002', '*', '\t', '\010', '\350', '\007', '\020', '\200', '\200', '\200', '\200', '\002', '\"', '\232', '\003', '\n', '\023', 'U', 'n', 'i', 
-'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', '\022', 'A', '\n', '\004', 'n', 'a', 'm', 'e', '\030', 
-'\002', ' ', '\003', '(', '\013', '2', '-', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'U', 
-'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', '.', 'N', 'a', 'm', 'e', 'P', 'a', 
-'r', 't', 'R', '\004', 'n', 'a', 'm', 'e', '\022', ')', '\n', '\020', 'i', 'd', 'e', 'n', 't', 'i', 'f', 'i', 'e', 'r', '_', 'v', 'a', 
-'l', 'u', 'e', '\030', '\003', ' ', '\001', '(', '\t', 'R', '\017', 'i', 'd', 'e', 'n', 't', 'i', 'f', 'i', 'e', 'r', 'V', 'a', 'l', 'u', 
-'e', '\022', ',', '\n', '\022', 'p', 'o', 's', 'i', 't', 'i', 'v', 'e', '_', 'i', 'n', 't', '_', 'v', 'a', 'l', 'u', 'e', '\030', '\004', 
-' ', '\001', '(', '\004', 'R', '\020', 'p', 'o', 's', 'i', 't', 'i', 'v', 'e', 'I', 'n', 't', 'V', 'a', 'l', 'u', 'e', '\022', ',', '\n', 
-'\022', 'n', 'e', 'g', 'a', 't', 'i', 'v', 'e', '_', 'i', 'n', 't', '_', 'v', 'a', 'l', 'u', 'e', '\030', '\005', ' ', '\001', '(', '\003', 
-'R', '\020', 'n', 'e', 'g', 'a', 't', 'i', 'v', 'e', 'I', 'n', 't', 'V', 'a', 'l', 'u', 'e', '\022', '!', '\n', '\014', 'd', 'o', 'u', 
-'b', 'l', 'e', '_', 'v', 'a', 'l', 'u', 'e', '\030', '\006', ' ', '\001', '(', '\001', 'R', '\013', 'd', 'o', 'u', 'b', 'l', 'e', 'V', 'a', 
-'l', 'u', 'e', '\022', '!', '\n', '\014', 's', 't', 'r', 'i', 'n', 'g', '_', 'v', 'a', 'l', 'u', 'e', '\030', '\007', ' ', '\001', '(', '\014', 
-'R', '\013', 's', 't', 'r', 'i', 'n', 'g', 'V', 'a', 'l', 'u', 'e', '\022', '\'', '\n', '\017', 'a', 'g', 'g', 'r', 'e', 'g', 'a', 't', 
-'e', '_', 'v', 'a', 'l', 'u', 'e', '\030', '\010', ' ', '\001', '(', '\t', 'R', '\016', 'a', 'g', 'g', 'r', 'e', 'g', 'a', 't', 'e', 'V', 
-'a', 'l', 'u', 'e', '\032', 'J', '\n', '\010', 'N', 'a', 'm', 'e', 'P', 'a', 'r', 't', '\022', '\033', '\n', '\t', 'n', 'a', 'm', 'e', '_', 
-'p', 'a', 'r', 't', '\030', '\001', ' ', '\002', '(', '\t', 'R', '\010', 'n', 'a', 'm', 'e', 'P', 'a', 'r', 't', '\022', '!', '\n', '\014', 'i', 
-'s', '_', 'e', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', '\030', '\002', ' ', '\002', '(', '\010', 'R', '\013', 'i', 's', 'E', 'x', 't', 'e', 
-'n', 's', 'i', 'o', 'n', '\"', '\247', '\002', '\n', '\016', 'S', 'o', 'u', 'r', 'c', 'e', 'C', 'o', 'd', 'e', 'I', 'n', 'f', 'o', '\022', 
-'D', '\n', '\010', 'l', 'o', 'c', 'a', 't', 'i', 'o', 'n', '\030', '\001', ' ', '\003', '(', '\013', '2', '(', '.', 'g', 'o', 'o', 'g', 'l', 
-'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'S', 'o', 'u', 'r', 'c', 'e', 'C', 'o', 'd', 'e', 'I', 'n', 'f', 'o', 
-'.', 'L', 'o', 'c', 'a', 't', 'i', 'o', 'n', 'R', '\010', 'l', 'o', 'c', 'a', 't', 'i', 'o', 'n', '\032', '\316', '\001', '\n', '\010', 'L', 
-'o', 'c', 'a', 't', 'i', 'o', 'n', '\022', '\026', '\n', '\004', 'p', 'a', 't', 'h', '\030', '\001', ' ', '\003', '(', '\005', 'B', '\002', '\020', '\001', 
-'R', '\004', 'p', 'a', 't', 'h', '\022', '\026', '\n', '\004', 's', 'p', 'a', 'n', '\030', '\002', ' ', '\003', '(', '\005', 'B', '\002', '\020', '\001', 'R', 
-'\004', 's', 'p', 'a', 'n', '\022', ')', '\n', '\020', 'l', 'e', 'a', 'd', 'i', 'n', 'g', '_', 'c', 'o', 'm', 'm', 'e', 'n', 't', 's', 
-'\030', '\003', ' ', '\001', '(', '\t', 'R', '\017', 'l', 'e', 'a', 'd', 'i', 'n', 'g', 'C', 'o', 'm', 'm', 'e', 'n', 't', 's', '\022', '+', 
-'\n', '\021', 't', 'r', 'a', 'i', 'l', 'i', 'n', 'g', '_', 'c', 'o', 'm', 'm', 'e', 'n', 't', 's', '\030', '\004', ' ', '\001', '(', '\t', 
-'R', '\020', 't', 'r', 'a', 'i', 'l', 'i', 'n', 'g', 'C', 'o', 'm', 'm', 'e', 'n', 't', 's', '\022', ':', '\n', '\031', 'l', 'e', 'a', 
-'d', 'i', 'n', 'g', '_', 'd', 'e', 't', 'a', 'c', 'h', 'e', 'd', '_', 'c', 'o', 'm', 'm', 'e', 'n', 't', 's', '\030', '\006', ' ', 
-'\003', '(', '\t', 'R', '\027', 'l', 'e', 'a', 'd', 'i', 'n', 'g', 'D', 'e', 't', 'a', 'c', 'h', 'e', 'd', 'C', 'o', 'm', 'm', 'e', 
-'n', 't', 's', '\"', '\320', '\002', '\n', '\021', 'G', 'e', 'n', 'e', 'r', 'a', 't', 'e', 'd', 'C', 'o', 'd', 'e', 'I', 'n', 'f', 'o', 
-'\022', 'M', '\n', '\n', 'a', 'n', 'n', 'o', 't', 'a', 't', 'i', 'o', 'n', '\030', '\001', ' ', '\003', '(', '\013', '2', '-', '.', 'g', 'o', 
-'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'G', 'e', 'n', 'e', 'r', 'a', 't', 'e', 'd', 'C', 'o', 
-'d', 'e', 'I', 'n', 'f', 'o', '.', 'A', 'n', 'n', 'o', 't', 'a', 't', 'i', 'o', 'n', 'R', '\n', 'a', 'n', 'n', 'o', 't', 'a', 
-'t', 'i', 'o', 'n', '\032', '\353', '\001', '\n', '\n', 'A', 'n', 'n', 'o', 't', 'a', 't', 'i', 'o', 'n', '\022', '\026', '\n', '\004', 'p', 'a', 
-'t', 'h', '\030', '\001', ' ', '\003', '(', '\005', 'B', '\002', '\020', '\001', 'R', '\004', 'p', 'a', 't', 'h', '\022', '\037', '\n', '\013', 's', 'o', 'u', 
-'r', 'c', 'e', '_', 'f', 'i', 'l', 'e', '\030', '\002', ' ', '\001', '(', '\t', 'R', '\n', 's', 'o', 'u', 'r', 'c', 'e', 'F', 'i', 'l', 
-'e', '\022', '\024', '\n', '\005', 'b', 'e', 'g', 'i', 'n', '\030', '\003', ' ', '\001', '(', '\005', 'R', '\005', 'b', 'e', 'g', 'i', 'n', '\022', '\020', 
-'\n', '\003', 'e', 'n', 'd', '\030', '\004', ' ', '\001', '(', '\005', 'R', '\003', 'e', 'n', 'd', '\022', 'R', '\n', '\010', 's', 'e', 'm', 'a', 'n', 
-'t', 'i', 'c', '\030', '\005', ' ', '\001', '(', '\016', '2', '6', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 
-'u', 'f', '.', 'G', 'e', 'n', 'e', 'r', 'a', 't', 'e', 'd', 'C', 'o', 'd', 'e', 'I', 'n', 'f', 'o', '.', 'A', 'n', 'n', 'o', 
-'t', 'a', 't', 'i', 'o', 'n', '.', 'S', 'e', 'm', 'a', 'n', 't', 'i', 'c', 'R', '\010', 's', 'e', 'm', 'a', 'n', 't', 'i', 'c', 
-'\"', '(', '\n', '\010', 'S', 'e', 'm', 'a', 'n', 't', 'i', 'c', '\022', '\010', '\n', '\004', 'N', 'O', 'N', 'E', '\020', '\000', '\022', '\007', '\n', 
-'\003', 'S', 'E', 'T', '\020', '\001', '\022', '\t', '\n', '\005', 'A', 'L', 'I', 'A', 'S', '\020', '\002', 'B', '~', '\n', '\023', 'c', 'o', 'm', '.', 
-'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', 'B', '\020', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 
-'o', 'r', 'P', 'r', 'o', 't', 'o', 's', 'H', '\001', 'Z', '-', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'g', 'o', 'l', 'a', 'n', 'g', 
-'.', 'o', 'r', 'g', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 't', 'y', 'p', 'e', 's', '/', 'd', 'e', 's', 'c', 'r', 
-'i', 'p', 't', 'o', 'r', 'p', 'b', '\370', '\001', '\001', '\242', '\002', '\003', 'G', 'P', 'B', '\252', '\002', '\032', 'G', 'o', 'o', 'g', 'l', 'e', 
-'.', 'P', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'R', 'e', 'f', 'l', 'e', 'c', 't', 'i', 'o', 'n', 
+static const char descriptor[7820] = {'\n', ' ', 'g', 'o', 'o', 'g', 'l', 'e', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 'd', 'e', 's', 'c', 'r', 'i', 'p',
+'t', 'o', 'r', '.', 'p', 'r', 'o', 't', 'o', '\022', '\017', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u',
+'f', '\"', 'M', '\n', '\021', 'F', 'i', 'l', 'e', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'S', 'e', 't', '\022', '8', '\n',
+'\004', 'f', 'i', 'l', 'e', '\030', '\001', ' ', '\003', '(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't',
+'o', 'b', 'u', 'f', '.', 'F', 'i', 'l', 'e', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 'R',
+'\004', 'f', 'i', 'l', 'e', '\"', '\376', '\004', '\n', '\023', 'F', 'i', 'l', 'e', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P',
+'r', 'o', 't', 'o', '\022', '\022', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', 'R', '\004', 'n', 'a', 'm', 'e', '\022',
+'\030', '\n', '\007', 'p', 'a', 'c', 'k', 'a', 'g', 'e', '\030', '\002', ' ', '\001', '(', '\t', 'R', '\007', 'p', 'a', 'c', 'k', 'a', 'g', 'e',
+'\022', '\036', '\n', '\n', 'd', 'e', 'p', 'e', 'n', 'd', 'e', 'n', 'c', 'y', '\030', '\003', ' ', '\003', '(', '\t', 'R', '\n', 'd', 'e', 'p',
+'e', 'n', 'd', 'e', 'n', 'c', 'y', '\022', '+', '\n', '\021', 'p', 'u', 'b', 'l', 'i', 'c', '_', 'd', 'e', 'p', 'e', 'n', 'd', 'e',
+'n', 'c', 'y', '\030', '\n', ' ', '\003', '(', '\005', 'R', '\020', 'p', 'u', 'b', 'l', 'i', 'c', 'D', 'e', 'p', 'e', 'n', 'd', 'e', 'n',
+'c', 'y', '\022', '\'', '\n', '\017', 'w', 'e', 'a', 'k', '_', 'd', 'e', 'p', 'e', 'n', 'd', 'e', 'n', 'c', 'y', '\030', '\013', ' ', '\003',
+'(', '\005', 'R', '\016', 'w', 'e', 'a', 'k', 'D', 'e', 'p', 'e', 'n', 'd', 'e', 'n', 'c', 'y', '\022', 'C', '\n', '\014', 'm', 'e', 's',
+'s', 'a', 'g', 'e', '_', 't', 'y', 'p', 'e', '\030', '\004', ' ', '\003', '(', '\013', '2', ' ', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.',
+'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 'R',
+'\013', 'm', 'e', 's', 's', 'a', 'g', 'e', 'T', 'y', 'p', 'e', '\022', 'A', '\n', '\t', 'e', 'n', 'u', 'm', '_', 't', 'y', 'p', 'e',
+'\030', '\005', ' ', '\003', '(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.',
+'E', 'n', 'u', 'm', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 'R', '\010', 'e', 'n', 'u', 'm',
+'T', 'y', 'p', 'e', '\022', 'A', '\n', '\007', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\030', '\006', ' ', '\003', '(', '\013', '2', '\'', '.', 'g',
+'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'S', 'e', 'r', 'v', 'i', 'c', 'e', 'D', 'e', 's',
+'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 'R', '\007', 's', 'e', 'r', 'v', 'i', 'c', 'e', '\022', 'C', '\n', '\t',
+'e', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', '\030', '\007', ' ', '\003', '(', '\013', '2', '%', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.',
+'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'e', 'l', 'd', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P',
+'r', 'o', 't', 'o', 'R', '\t', 'e', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', '\022', '6', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n',
+'s', '\030', '\010', ' ', '\001', '(', '\013', '2', '\034', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f',
+'.', 'F', 'i', 'l', 'e', 'O', 'p', 't', 'i', 'o', 'n', 's', 'R', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\022', 'I', '\n', '\020',
+'s', 'o', 'u', 'r', 'c', 'e', '_', 'c', 'o', 'd', 'e', '_', 'i', 'n', 'f', 'o', '\030', '\t', ' ', '\001', '(', '\013', '2', '\037', '.',
+'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'S', 'o', 'u', 'r', 'c', 'e', 'C', 'o', 'd',
+'e', 'I', 'n', 'f', 'o', 'R', '\016', 's', 'o', 'u', 'r', 'c', 'e', 'C', 'o', 'd', 'e', 'I', 'n', 'f', 'o', '\022', '\026', '\n', '\006',
+'s', 'y', 'n', 't', 'a', 'x', '\030', '\014', ' ', '\001', '(', '\t', 'R', '\006', 's', 'y', 'n', 't', 'a', 'x', '\022', '\030', '\n', '\007', 'e',
+'d', 'i', 't', 'i', 'o', 'n', '\030', '\r', ' ', '\001', '(', '\t', 'R', '\007', 'e', 'd', 'i', 't', 'i', 'o', 'n', '\"', '\271', '\006', '\n',
+'\017', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', '\022', '\022', '\n', '\004', 'n', 'a', 'm', 'e', '\030',
+'\001', ' ', '\001', '(', '\t', 'R', '\004', 'n', 'a', 'm', 'e', '\022', ';', '\n', '\005', 'f', 'i', 'e', 'l', 'd', '\030', '\002', ' ', '\003', '(',
+'\013', '2', '%', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'e', 'l', 'd',
+'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 'R', '\005', 'f', 'i', 'e', 'l', 'd', '\022', 'C', '\n',
+'\t', 'e', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', '\030', '\006', ' ', '\003', '(', '\013', '2', '%', '.', 'g', 'o', 'o', 'g', 'l', 'e',
+'.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'e', 'l', 'd', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r',
+'P', 'r', 'o', 't', 'o', 'R', '\t', 'e', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', '\022', 'A', '\n', '\013', 'n', 'e', 's', 't', 'e',
+'d', '_', 't', 'y', 'p', 'e', '\030', '\003', ' ', '\003', '(', '\013', '2', ' ', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o',
+'t', 'o', 'b', 'u', 'f', '.', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 'R', '\n', 'n', 'e',
+'s', 't', 'e', 'd', 'T', 'y', 'p', 'e', '\022', 'A', '\n', '\t', 'e', 'n', 'u', 'm', '_', 't', 'y', 'p', 'e', '\030', '\004', ' ', '\003',
+'(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'E', 'n', 'u', 'm',
+'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 'R', '\010', 'e', 'n', 'u', 'm', 'T', 'y', 'p', 'e',
+'\022', 'X', '\n', '\017', 'e', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', '_', 'r', 'a', 'n', 'g', 'e', '\030', '\005', ' ', '\003', '(', '\013',
+'2', '/', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'D', 'e', 's', 'c', 'r', 'i',
+'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', '.', 'E', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', 'R', 'a', 'n', 'g', 'e', 'R',
+'\016', 'e', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', 'R', 'a', 'n', 'g', 'e', '\022', 'D', '\n', '\n', 'o', 'n', 'e', 'o', 'f', '_',
+'d', 'e', 'c', 'l', '\030', '\010', ' ', '\003', '(', '\013', '2', '%', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o',
+'b', 'u', 'f', '.', 'O', 'n', 'e', 'o', 'f', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 'R',
+'\t', 'o', 'n', 'e', 'o', 'f', 'D', 'e', 'c', 'l', '\022', '9', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\030', '\007', ' ', '\001',
+'(', '\013', '2', '\037', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'M', 'e', 's', 's',
+'a', 'g', 'e', 'O', 'p', 't', 'i', 'o', 'n', 's', 'R', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\022', 'U', '\n', '\016', 'r', 'e',
+'s', 'e', 'r', 'v', 'e', 'd', '_', 'r', 'a', 'n', 'g', 'e', '\030', '\t', ' ', '\003', '(', '\013', '2', '.', '.', 'g', 'o', 'o', 'g',
+'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o',
+'t', 'o', '.', 'R', 'e', 's', 'e', 'r', 'v', 'e', 'd', 'R', 'a', 'n', 'g', 'e', 'R', '\r', 'r', 'e', 's', 'e', 'r', 'v', 'e',
+'d', 'R', 'a', 'n', 'g', 'e', '\022', '#', '\n', '\r', 'r', 'e', 's', 'e', 'r', 'v', 'e', 'd', '_', 'n', 'a', 'm', 'e', '\030', '\n',
+' ', '\003', '(', '\t', 'R', '\014', 'r', 'e', 's', 'e', 'r', 'v', 'e', 'd', 'N', 'a', 'm', 'e', '\032', 'z', '\n', '\016', 'E', 'x', 't',
+'e', 'n', 's', 'i', 'o', 'n', 'R', 'a', 'n', 'g', 'e', '\022', '\024', '\n', '\005', 's', 't', 'a', 'r', 't', '\030', '\001', ' ', '\001', '(',
+'\005', 'R', '\005', 's', 't', 'a', 'r', 't', '\022', '\020', '\n', '\003', 'e', 'n', 'd', '\030', '\002', ' ', '\001', '(', '\005', 'R', '\003', 'e', 'n',
+'d', '\022', '@', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\030', '\003', ' ', '\001', '(', '\013', '2', '&', '.', 'g', 'o', 'o', 'g',
+'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'E', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', 'R', 'a', 'n', 'g',
+'e', 'O', 'p', 't', 'i', 'o', 'n', 's', 'R', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\032', '7', '\n', '\r', 'R', 'e', 's', 'e',
+'r', 'v', 'e', 'd', 'R', 'a', 'n', 'g', 'e', '\022', '\024', '\n', '\005', 's', 't', 'a', 'r', 't', '\030', '\001', ' ', '\001', '(', '\005', 'R',
+'\005', 's', 't', 'a', 'r', 't', '\022', '\020', '\n', '\003', 'e', 'n', 'd', '\030', '\002', ' ', '\001', '(', '\005', 'R', '\003', 'e', 'n', 'd', '\"',
+'|', '\n', '\025', 'E', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', 'R', 'a', 'n', 'g', 'e', 'O', 'p', 't', 'i', 'o', 'n', 's', '\022',
+'X', '\n', '\024', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', '_', 'o', 'p', 't', 'i', 'o', 'n', '\030', '\347',
+'\007', ' ', '\003', '(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'U',
+'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', 'R', '\023', 'u', 'n', 'i', 'n', 't',
+'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', '*', '\t', '\010', '\350', '\007', '\020', '\200', '\200', '\200', '\200', '\002',
+'\"', '\301', '\006', '\n', '\024', 'F', 'i', 'e', 'l', 'd', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o',
+'\022', '\022', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', 'R', '\004', 'n', 'a', 'm', 'e', '\022', '\026', '\n', '\006', 'n',
+'u', 'm', 'b', 'e', 'r', '\030', '\003', ' ', '\001', '(', '\005', 'R', '\006', 'n', 'u', 'm', 'b', 'e', 'r', '\022', 'A', '\n', '\005', 'l', 'a',
+'b', 'e', 'l', '\030', '\004', ' ', '\001', '(', '\016', '2', '+', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b',
+'u', 'f', '.', 'F', 'i', 'e', 'l', 'd', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', '.', 'L',
+'a', 'b', 'e', 'l', 'R', '\005', 'l', 'a', 'b', 'e', 'l', '\022', '>', '\n', '\004', 't', 'y', 'p', 'e', '\030', '\005', ' ', '\001', '(', '\016',
+'2', '*', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'e', 'l', 'd', 'D',
+'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', '.', 'T', 'y', 'p', 'e', 'R', '\004', 't', 'y', 'p', 'e',
+'\022', '\033', '\n', '\t', 't', 'y', 'p', 'e', '_', 'n', 'a', 'm', 'e', '\030', '\006', ' ', '\001', '(', '\t', 'R', '\010', 't', 'y', 'p', 'e',
+'N', 'a', 'm', 'e', '\022', '\032', '\n', '\010', 'e', 'x', 't', 'e', 'n', 'd', 'e', 'e', '\030', '\002', ' ', '\001', '(', '\t', 'R', '\010', 'e',
+'x', 't', 'e', 'n', 'd', 'e', 'e', '\022', '#', '\n', '\r', 'd', 'e', 'f', 'a', 'u', 'l', 't', '_', 'v', 'a', 'l', 'u', 'e', '\030',
+'\007', ' ', '\001', '(', '\t', 'R', '\014', 'd', 'e', 'f', 'a', 'u', 'l', 't', 'V', 'a', 'l', 'u', 'e', '\022', '\037', '\n', '\013', 'o', 'n',
+'e', 'o', 'f', '_', 'i', 'n', 'd', 'e', 'x', '\030', '\t', ' ', '\001', '(', '\005', 'R', '\n', 'o', 'n', 'e', 'o', 'f', 'I', 'n', 'd',
+'e', 'x', '\022', '\033', '\n', '\t', 'j', 's', 'o', 'n', '_', 'n', 'a', 'm', 'e', '\030', '\n', ' ', '\001', '(', '\t', 'R', '\010', 'j', 's',
+'o', 'n', 'N', 'a', 'm', 'e', '\022', '7', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\030', '\010', ' ', '\001', '(', '\013', '2', '\035',
+'.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'e', 'l', 'd', 'O', 'p', 't',
+'i', 'o', 'n', 's', 'R', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\022', '\'', '\n', '\017', 'p', 'r', 'o', 't', 'o', '3', '_', 'o',
+'p', 't', 'i', 'o', 'n', 'a', 'l', '\030', '\021', ' ', '\001', '(', '\010', 'R', '\016', 'p', 'r', 'o', 't', 'o', '3', 'O', 'p', 't', 'i',
+'o', 'n', 'a', 'l', '\"', '\266', '\002', '\n', '\004', 'T', 'y', 'p', 'e', '\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'D', 'O', 'U',
+'B', 'L', 'E', '\020', '\001', '\022', '\016', '\n', '\n', 'T', 'Y', 'P', 'E', '_', 'F', 'L', 'O', 'A', 'T', '\020', '\002', '\022', '\016', '\n', '\n',
+'T', 'Y', 'P', 'E', '_', 'I', 'N', 'T', '6', '4', '\020', '\003', '\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'U', 'I', 'N', 'T',
+'6', '4', '\020', '\004', '\022', '\016', '\n', '\n', 'T', 'Y', 'P', 'E', '_', 'I', 'N', 'T', '3', '2', '\020', '\005', '\022', '\020', '\n', '\014', 'T',
+'Y', 'P', 'E', '_', 'F', 'I', 'X', 'E', 'D', '6', '4', '\020', '\006', '\022', '\020', '\n', '\014', 'T', 'Y', 'P', 'E', '_', 'F', 'I', 'X',
+'E', 'D', '3', '2', '\020', '\007', '\022', '\r', '\n', '\t', 'T', 'Y', 'P', 'E', '_', 'B', 'O', 'O', 'L', '\020', '\010', '\022', '\017', '\n', '\013',
+'T', 'Y', 'P', 'E', '_', 'S', 'T', 'R', 'I', 'N', 'G', '\020', '\t', '\022', '\016', '\n', '\n', 'T', 'Y', 'P', 'E', '_', 'G', 'R', 'O',
+'U', 'P', '\020', '\n', '\022', '\020', '\n', '\014', 'T', 'Y', 'P', 'E', '_', 'M', 'E', 'S', 'S', 'A', 'G', 'E', '\020', '\013', '\022', '\016', '\n',
+'\n', 'T', 'Y', 'P', 'E', '_', 'B', 'Y', 'T', 'E', 'S', '\020', '\014', '\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'U', 'I', 'N',
+'T', '3', '2', '\020', '\r', '\022', '\r', '\n', '\t', 'T', 'Y', 'P', 'E', '_', 'E', 'N', 'U', 'M', '\020', '\016', '\022', '\021', '\n', '\r', 'T',
+'Y', 'P', 'E', '_', 'S', 'F', 'I', 'X', 'E', 'D', '3', '2', '\020', '\017', '\022', '\021', '\n', '\r', 'T', 'Y', 'P', 'E', '_', 'S', 'F',
+'I', 'X', 'E', 'D', '6', '4', '\020', '\020', '\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'S', 'I', 'N', 'T', '3', '2', '\020', '\021',
+'\022', '\017', '\n', '\013', 'T', 'Y', 'P', 'E', '_', 'S', 'I', 'N', 'T', '6', '4', '\020', '\022', '\"', 'C', '\n', '\005', 'L', 'a', 'b', 'e',
+'l', '\022', '\022', '\n', '\016', 'L', 'A', 'B', 'E', 'L', '_', 'O', 'P', 'T', 'I', 'O', 'N', 'A', 'L', '\020', '\001', '\022', '\022', '\n', '\016',
+'L', 'A', 'B', 'E', 'L', '_', 'R', 'E', 'Q', 'U', 'I', 'R', 'E', 'D', '\020', '\002', '\022', '\022', '\n', '\016', 'L', 'A', 'B', 'E', 'L',
+'_', 'R', 'E', 'P', 'E', 'A', 'T', 'E', 'D', '\020', '\003', '\"', 'c', '\n', '\024', 'O', 'n', 'e', 'o', 'f', 'D', 'e', 's', 'c', 'r',
+'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', '\022', '\022', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', 'R',
+'\004', 'n', 'a', 'm', 'e', '\022', '7', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\030', '\002', ' ', '\001', '(', '\013', '2', '\035', '.',
+'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'O', 'n', 'e', 'o', 'f', 'O', 'p', 't', 'i',
+'o', 'n', 's', 'R', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\"', '\343', '\002', '\n', '\023', 'E', 'n', 'u', 'm', 'D', 'e', 's', 'c',
+'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', '\022', '\022', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t',
+'R', '\004', 'n', 'a', 'm', 'e', '\022', '?', '\n', '\005', 'v', 'a', 'l', 'u', 'e', '\030', '\002', ' ', '\003', '(', '\013', '2', ')', '.', 'g',
+'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'E', 'n', 'u', 'm', 'V', 'a', 'l', 'u', 'e', 'D',
+'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', 'R', '\005', 'v', 'a', 'l', 'u', 'e', '\022', '6', '\n', '\007',
+'o', 'p', 't', 'i', 'o', 'n', 's', '\030', '\003', ' ', '\001', '(', '\013', '2', '\034', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r',
+'o', 't', 'o', 'b', 'u', 'f', '.', 'E', 'n', 'u', 'm', 'O', 'p', 't', 'i', 'o', 'n', 's', 'R', '\007', 'o', 'p', 't', 'i', 'o',
+'n', 's', '\022', ']', '\n', '\016', 'r', 'e', 's', 'e', 'r', 'v', 'e', 'd', '_', 'r', 'a', 'n', 'g', 'e', '\030', '\004', ' ', '\003', '(',
+'\013', '2', '6', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'E', 'n', 'u', 'm', 'D',
+'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', '.', 'E', 'n', 'u', 'm', 'R', 'e', 's', 'e', 'r', 'v',
+'e', 'd', 'R', 'a', 'n', 'g', 'e', 'R', '\r', 'r', 'e', 's', 'e', 'r', 'v', 'e', 'd', 'R', 'a', 'n', 'g', 'e', '\022', '#', '\n',
+'\r', 'r', 'e', 's', 'e', 'r', 'v', 'e', 'd', '_', 'n', 'a', 'm', 'e', '\030', '\005', ' ', '\003', '(', '\t', 'R', '\014', 'r', 'e', 's',
+'e', 'r', 'v', 'e', 'd', 'N', 'a', 'm', 'e', '\032', ';', '\n', '\021', 'E', 'n', 'u', 'm', 'R', 'e', 's', 'e', 'r', 'v', 'e', 'd',
+'R', 'a', 'n', 'g', 'e', '\022', '\024', '\n', '\005', 's', 't', 'a', 'r', 't', '\030', '\001', ' ', '\001', '(', '\005', 'R', '\005', 's', 't', 'a',
+'r', 't', '\022', '\020', '\n', '\003', 'e', 'n', 'd', '\030', '\002', ' ', '\001', '(', '\005', 'R', '\003', 'e', 'n', 'd', '\"', '\203', '\001', '\n', '\030',
+'E', 'n', 'u', 'm', 'V', 'a', 'l', 'u', 'e', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o', '\022',
+'\022', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', 'R', '\004', 'n', 'a', 'm', 'e', '\022', '\026', '\n', '\006', 'n', 'u',
+'m', 'b', 'e', 'r', '\030', '\002', ' ', '\001', '(', '\005', 'R', '\006', 'n', 'u', 'm', 'b', 'e', 'r', '\022', ';', '\n', '\007', 'o', 'p', 't',
+'i', 'o', 'n', 's', '\030', '\003', ' ', '\001', '(', '\013', '2', '!', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o',
+'b', 'u', 'f', '.', 'E', 'n', 'u', 'm', 'V', 'a', 'l', 'u', 'e', 'O', 'p', 't', 'i', 'o', 'n', 's', 'R', '\007', 'o', 'p', 't',
+'i', 'o', 'n', 's', '\"', '\247', '\001', '\n', '\026', 'S', 'e', 'r', 'v', 'i', 'c', 'e', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o',
+'r', 'P', 'r', 'o', 't', 'o', '\022', '\022', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', 'R', '\004', 'n', 'a', 'm',
+'e', '\022', '>', '\n', '\006', 'm', 'e', 't', 'h', 'o', 'd', '\030', '\002', ' ', '\003', '(', '\013', '2', '&', '.', 'g', 'o', 'o', 'g', 'l',
+'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'M', 'e', 't', 'h', 'o', 'd', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't',
+'o', 'r', 'P', 'r', 'o', 't', 'o', 'R', '\006', 'm', 'e', 't', 'h', 'o', 'd', '\022', '9', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n',
+'s', '\030', '\003', ' ', '\001', '(', '\013', '2', '\037', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f',
+'.', 'S', 'e', 'r', 'v', 'i', 'c', 'e', 'O', 'p', 't', 'i', 'o', 'n', 's', 'R', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\"',
+'\211', '\002', '\n', '\025', 'M', 'e', 't', 'h', 'o', 'd', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'P', 'r', 'o', 't', 'o',
+'\022', '\022', '\n', '\004', 'n', 'a', 'm', 'e', '\030', '\001', ' ', '\001', '(', '\t', 'R', '\004', 'n', 'a', 'm', 'e', '\022', '\035', '\n', '\n', 'i',
+'n', 'p', 'u', 't', '_', 't', 'y', 'p', 'e', '\030', '\002', ' ', '\001', '(', '\t', 'R', '\t', 'i', 'n', 'p', 'u', 't', 'T', 'y', 'p',
+'e', '\022', '\037', '\n', '\013', 'o', 'u', 't', 'p', 'u', 't', '_', 't', 'y', 'p', 'e', '\030', '\003', ' ', '\001', '(', '\t', 'R', '\n', 'o',
+'u', 't', 'p', 'u', 't', 'T', 'y', 'p', 'e', '\022', '8', '\n', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\030', '\004', ' ', '\001', '(',
+'\013', '2', '\036', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'M', 'e', 't', 'h', 'o',
+'d', 'O', 'p', 't', 'i', 'o', 'n', 's', 'R', '\007', 'o', 'p', 't', 'i', 'o', 'n', 's', '\022', '0', '\n', '\020', 'c', 'l', 'i', 'e',
+'n', 't', '_', 's', 't', 'r', 'e', 'a', 'm', 'i', 'n', 'g', '\030', '\005', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e',
+'R', '\017', 'c', 'l', 'i', 'e', 'n', 't', 'S', 't', 'r', 'e', 'a', 'm', 'i', 'n', 'g', '\022', '0', '\n', '\020', 's', 'e', 'r', 'v',
+'e', 'r', '_', 's', 't', 'r', 'e', 'a', 'm', 'i', 'n', 'g', '\030', '\006', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e',
+'R', '\017', 's', 'e', 'r', 'v', 'e', 'r', 'S', 't', 'r', 'e', 'a', 'm', 'i', 'n', 'g', '\"', '\221', '\t', '\n', '\013', 'F', 'i', 'l',
+'e', 'O', 'p', 't', 'i', 'o', 'n', 's', '\022', '!', '\n', '\014', 'j', 'a', 'v', 'a', '_', 'p', 'a', 'c', 'k', 'a', 'g', 'e', '\030',
+'\001', ' ', '\001', '(', '\t', 'R', '\013', 'j', 'a', 'v', 'a', 'P', 'a', 'c', 'k', 'a', 'g', 'e', '\022', '0', '\n', '\024', 'j', 'a', 'v',
+'a', '_', 'o', 'u', 't', 'e', 'r', '_', 'c', 'l', 'a', 's', 's', 'n', 'a', 'm', 'e', '\030', '\010', ' ', '\001', '(', '\t', 'R', '\022',
+'j', 'a', 'v', 'a', 'O', 'u', 't', 'e', 'r', 'C', 'l', 'a', 's', 's', 'n', 'a', 'm', 'e', '\022', '5', '\n', '\023', 'j', 'a', 'v',
+'a', '_', 'm', 'u', 'l', 't', 'i', 'p', 'l', 'e', '_', 'f', 'i', 'l', 'e', 's', '\030', '\n', ' ', '\001', '(', '\010', ':', '\005', 'f',
+'a', 'l', 's', 'e', 'R', '\021', 'j', 'a', 'v', 'a', 'M', 'u', 'l', 't', 'i', 'p', 'l', 'e', 'F', 'i', 'l', 'e', 's', '\022', 'D',
+'\n', '\035', 'j', 'a', 'v', 'a', '_', 'g', 'e', 'n', 'e', 'r', 'a', 't', 'e', '_', 'e', 'q', 'u', 'a', 'l', 's', '_', 'a', 'n',
+'d', '_', 'h', 'a', 's', 'h', '\030', '\024', ' ', '\001', '(', '\010', 'B', '\002', '\030', '\001', 'R', '\031', 'j', 'a', 'v', 'a', 'G', 'e', 'n',
+'e', 'r', 'a', 't', 'e', 'E', 'q', 'u', 'a', 'l', 's', 'A', 'n', 'd', 'H', 'a', 's', 'h', '\022', ':', '\n', '\026', 'j', 'a', 'v',
+'a', '_', 's', 't', 'r', 'i', 'n', 'g', '_', 'c', 'h', 'e', 'c', 'k', '_', 'u', 't', 'f', '8', '\030', '\033', ' ', '\001', '(', '\010',
+':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\023', 'j', 'a', 'v', 'a', 'S', 't', 'r', 'i', 'n', 'g', 'C', 'h', 'e', 'c', 'k', 'U',
+'t', 'f', '8', '\022', 'S', '\n', '\014', 'o', 'p', 't', 'i', 'm', 'i', 'z', 'e', '_', 'f', 'o', 'r', '\030', '\t', ' ', '\001', '(', '\016',
+'2', ')', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'l', 'e', 'O', 'p',
+'t', 'i', 'o', 'n', 's', '.', 'O', 'p', 't', 'i', 'm', 'i', 'z', 'e', 'M', 'o', 'd', 'e', ':', '\005', 'S', 'P', 'E', 'E', 'D',
+'R', '\013', 'o', 'p', 't', 'i', 'm', 'i', 'z', 'e', 'F', 'o', 'r', '\022', '\035', '\n', '\n', 'g', 'o', '_', 'p', 'a', 'c', 'k', 'a',
+'g', 'e', '\030', '\013', ' ', '\001', '(', '\t', 'R', '\t', 'g', 'o', 'P', 'a', 'c', 'k', 'a', 'g', 'e', '\022', '5', '\n', '\023', 'c', 'c',
+'_', 'g', 'e', 'n', 'e', 'r', 'i', 'c', '_', 's', 'e', 'r', 'v', 'i', 'c', 'e', 's', '\030', '\020', ' ', '\001', '(', '\010', ':', '\005',
+'f', 'a', 'l', 's', 'e', 'R', '\021', 'c', 'c', 'G', 'e', 'n', 'e', 'r', 'i', 'c', 'S', 'e', 'r', 'v', 'i', 'c', 'e', 's', '\022',
+'9', '\n', '\025', 'j', 'a', 'v', 'a', '_', 'g', 'e', 'n', 'e', 'r', 'i', 'c', '_', 's', 'e', 'r', 'v', 'i', 'c', 'e', 's', '\030',
+'\021', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\023', 'j', 'a', 'v', 'a', 'G', 'e', 'n', 'e', 'r', 'i', 'c',
+'S', 'e', 'r', 'v', 'i', 'c', 'e', 's', '\022', '5', '\n', '\023', 'p', 'y', '_', 'g', 'e', 'n', 'e', 'r', 'i', 'c', '_', 's', 'e',
+'r', 'v', 'i', 'c', 'e', 's', '\030', '\022', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\021', 'p', 'y', 'G', 'e',
+'n', 'e', 'r', 'i', 'c', 'S', 'e', 'r', 'v', 'i', 'c', 'e', 's', '\022', '7', '\n', '\024', 'p', 'h', 'p', '_', 'g', 'e', 'n', 'e',
+'r', 'i', 'c', '_', 's', 'e', 'r', 'v', 'i', 'c', 'e', 's', '\030', '*', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e',
+'R', '\022', 'p', 'h', 'p', 'G', 'e', 'n', 'e', 'r', 'i', 'c', 'S', 'e', 'r', 'v', 'i', 'c', 'e', 's', '\022', '%', '\n', '\n', 'd',
+'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\030', '\027', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\n', 'd',
+'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\022', '.', '\n', '\020', 'c', 'c', '_', 'e', 'n', 'a', 'b', 'l', 'e', '_', 'a', 'r',
+'e', 'n', 'a', 's', '\030', '\037', ' ', '\001', '(', '\010', ':', '\004', 't', 'r', 'u', 'e', 'R', '\016', 'c', 'c', 'E', 'n', 'a', 'b', 'l',
+'e', 'A', 'r', 'e', 'n', 'a', 's', '\022', '*', '\n', '\021', 'o', 'b', 'j', 'c', '_', 'c', 'l', 'a', 's', 's', '_', 'p', 'r', 'e',
+'f', 'i', 'x', '\030', '$', ' ', '\001', '(', '\t', 'R', '\017', 'o', 'b', 'j', 'c', 'C', 'l', 'a', 's', 's', 'P', 'r', 'e', 'f', 'i',
+'x', '\022', ')', '\n', '\020', 'c', 's', 'h', 'a', 'r', 'p', '_', 'n', 'a', 'm', 'e', 's', 'p', 'a', 'c', 'e', '\030', '%', ' ', '\001',
+'(', '\t', 'R', '\017', 'c', 's', 'h', 'a', 'r', 'p', 'N', 'a', 'm', 'e', 's', 'p', 'a', 'c', 'e', '\022', '!', '\n', '\014', 's', 'w',
+'i', 'f', 't', '_', 'p', 'r', 'e', 'f', 'i', 'x', '\030', '\'', ' ', '\001', '(', '\t', 'R', '\013', 's', 'w', 'i', 'f', 't', 'P', 'r',
+'e', 'f', 'i', 'x', '\022', '(', '\n', '\020', 'p', 'h', 'p', '_', 'c', 'l', 'a', 's', 's', '_', 'p', 'r', 'e', 'f', 'i', 'x', '\030',
+'(', ' ', '\001', '(', '\t', 'R', '\016', 'p', 'h', 'p', 'C', 'l', 'a', 's', 's', 'P', 'r', 'e', 'f', 'i', 'x', '\022', '#', '\n', '\r',
+'p', 'h', 'p', '_', 'n', 'a', 'm', 'e', 's', 'p', 'a', 'c', 'e', '\030', ')', ' ', '\001', '(', '\t', 'R', '\014', 'p', 'h', 'p', 'N',
+'a', 'm', 'e', 's', 'p', 'a', 'c', 'e', '\022', '4', '\n', '\026', 'p', 'h', 'p', '_', 'm', 'e', 't', 'a', 'd', 'a', 't', 'a', '_',
+'n', 'a', 'm', 'e', 's', 'p', 'a', 'c', 'e', '\030', ',', ' ', '\001', '(', '\t', 'R', '\024', 'p', 'h', 'p', 'M', 'e', 't', 'a', 'd',
+'a', 't', 'a', 'N', 'a', 'm', 'e', 's', 'p', 'a', 'c', 'e', '\022', '!', '\n', '\014', 'r', 'u', 'b', 'y', '_', 'p', 'a', 'c', 'k',
+'a', 'g', 'e', '\030', '-', ' ', '\001', '(', '\t', 'R', '\013', 'r', 'u', 'b', 'y', 'P', 'a', 'c', 'k', 'a', 'g', 'e', '\022', 'X', '\n',
+'\024', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', '_', 'o', 'p', 't', 'i', 'o', 'n', '\030', '\347', '\007', ' ',
+'\003', '(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'U', 'n', 'i',
+'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', 'R', '\023', 'u', 'n', 'i', 'n', 't', 'e', 'r',
+'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', '\"', ':', '\n', '\014', 'O', 'p', 't', 'i', 'm', 'i', 'z', 'e', 'M',
+'o', 'd', 'e', '\022', '\t', '\n', '\005', 'S', 'P', 'E', 'E', 'D', '\020', '\001', '\022', '\r', '\n', '\t', 'C', 'O', 'D', 'E', '_', 'S', 'I',
+'Z', 'E', '\020', '\002', '\022', '\020', '\n', '\014', 'L', 'I', 'T', 'E', '_', 'R', 'U', 'N', 'T', 'I', 'M', 'E', '\020', '\003', '*', '\t', '\010',
+'\350', '\007', '\020', '\200', '\200', '\200', '\200', '\002', 'J', '\004', '\010', '&', '\020', '\'', '\"', '\343', '\002', '\n', '\016', 'M', 'e', 's', 's', 'a', 'g',
+'e', 'O', 'p', 't', 'i', 'o', 'n', 's', '\022', '<', '\n', '\027', 'm', 'e', 's', 's', 'a', 'g', 'e', '_', 's', 'e', 't', '_', 'w',
+'i', 'r', 'e', '_', 'f', 'o', 'r', 'm', 'a', 't', '\030', '\001', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\024',
+'m', 'e', 's', 's', 'a', 'g', 'e', 'S', 'e', 't', 'W', 'i', 'r', 'e', 'F', 'o', 'r', 'm', 'a', 't', '\022', 'L', '\n', '\037', 'n',
+'o', '_', 's', 't', 'a', 'n', 'd', 'a', 'r', 'd', '_', 'd', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', '_', 'a', 'c', 'c',
+'e', 's', 's', 'o', 'r', '\030', '\002', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\034', 'n', 'o', 'S', 't', 'a',
+'n', 'd', 'a', 'r', 'd', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't', 'o', 'r', 'A', 'c', 'c', 'e', 's', 's', 'o', 'r', '\022', '%',
+'\n', '\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\030', '\003', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e',
+'R', '\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\022', '\033', '\n', '\t', 'm', 'a', 'p', '_', 'e', 'n', 't', 'r', 'y',
+'\030', '\007', ' ', '\001', '(', '\010', 'R', '\010', 'm', 'a', 'p', 'E', 'n', 't', 'r', 'y', '\022', 'X', '\n', '\024', 'u', 'n', 'i', 'n', 't',
+'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', '_', 'o', 'p', 't', 'i', 'o', 'n', '\030', '\347', '\007', ' ', '\003', '(', '\013', '2', '$', '.',
+'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'U', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r',
+'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', 'R', '\023', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd',
+'O', 'p', 't', 'i', 'o', 'n', '*', '\t', '\010', '\350', '\007', '\020', '\200', '\200', '\200', '\200', '\002', 'J', '\004', '\010', '\004', '\020', '\005', 'J', '\004',
+'\010', '\005', '\020', '\006', 'J', '\004', '\010', '\006', '\020', '\007', 'J', '\004', '\010', '\010', '\020', '\t', 'J', '\004', '\010', '\t', '\020', '\n', '\"', '\222', '\004',
+'\n', '\014', 'F', 'i', 'e', 'l', 'd', 'O', 'p', 't', 'i', 'o', 'n', 's', '\022', 'A', '\n', '\005', 'c', 't', 'y', 'p', 'e', '\030', '\001',
+' ', '\001', '(', '\016', '2', '#', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i',
+'e', 'l', 'd', 'O', 'p', 't', 'i', 'o', 'n', 's', '.', 'C', 'T', 'y', 'p', 'e', ':', '\006', 'S', 'T', 'R', 'I', 'N', 'G', 'R',
+'\005', 'c', 't', 'y', 'p', 'e', '\022', '\026', '\n', '\006', 'p', 'a', 'c', 'k', 'e', 'd', '\030', '\002', ' ', '\001', '(', '\010', 'R', '\006', 'p',
+'a', 'c', 'k', 'e', 'd', '\022', 'G', '\n', '\006', 'j', 's', 't', 'y', 'p', 'e', '\030', '\006', ' ', '\001', '(', '\016', '2', '$', '.', 'g',
+'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'F', 'i', 'e', 'l', 'd', 'O', 'p', 't', 'i', 'o',
+'n', 's', '.', 'J', 'S', 'T', 'y', 'p', 'e', ':', '\t', 'J', 'S', '_', 'N', 'O', 'R', 'M', 'A', 'L', 'R', '\006', 'j', 's', 't',
+'y', 'p', 'e', '\022', '\031', '\n', '\004', 'l', 'a', 'z', 'y', '\030', '\005', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R',
+'\004', 'l', 'a', 'z', 'y', '\022', '.', '\n', '\017', 'u', 'n', 'v', 'e', 'r', 'i', 'f', 'i', 'e', 'd', '_', 'l', 'a', 'z', 'y', '\030',
+'\017', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\016', 'u', 'n', 'v', 'e', 'r', 'i', 'f', 'i', 'e', 'd', 'L',
+'a', 'z', 'y', '\022', '%', '\n', '\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\030', '\003', ' ', '\001', '(', '\010', ':', '\005',
+'f', 'a', 'l', 's', 'e', 'R', '\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\022', '\031', '\n', '\004', 'w', 'e', 'a', 'k',
+'\030', '\n', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\004', 'w', 'e', 'a', 'k', '\022', 'X', '\n', '\024', 'u', 'n',
+'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', '_', 'o', 'p', 't', 'i', 'o', 'n', '\030', '\347', '\007', ' ', '\003', '(', '\013',
+'2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'U', 'n', 'i', 'n', 't', 'e',
+'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', 'R', '\023', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e',
+'t', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', '\"', '/', '\n', '\005', 'C', 'T', 'y', 'p', 'e', '\022', '\n', '\n', '\006', 'S', 'T', 'R',
+'I', 'N', 'G', '\020', '\000', '\022', '\010', '\n', '\004', 'C', 'O', 'R', 'D', '\020', '\001', '\022', '\020', '\n', '\014', 'S', 'T', 'R', 'I', 'N', 'G',
+'_', 'P', 'I', 'E', 'C', 'E', '\020', '\002', '\"', '5', '\n', '\006', 'J', 'S', 'T', 'y', 'p', 'e', '\022', '\r', '\n', '\t', 'J', 'S', '_',
+'N', 'O', 'R', 'M', 'A', 'L', '\020', '\000', '\022', '\r', '\n', '\t', 'J', 'S', '_', 'S', 'T', 'R', 'I', 'N', 'G', '\020', '\001', '\022', '\r',
+'\n', '\t', 'J', 'S', '_', 'N', 'U', 'M', 'B', 'E', 'R', '\020', '\002', '*', '\t', '\010', '\350', '\007', '\020', '\200', '\200', '\200', '\200', '\002', 'J',
+'\004', '\010', '\004', '\020', '\005', '\"', 's', '\n', '\014', 'O', 'n', 'e', 'o', 'f', 'O', 'p', 't', 'i', 'o', 'n', 's', '\022', 'X', '\n', '\024',
+'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', '_', 'o', 'p', 't', 'i', 'o', 'n', '\030', '\347', '\007', ' ', '\003',
+'(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'U', 'n', 'i', 'n',
+'t', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', 'R', '\023', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p',
+'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', '*', '\t', '\010', '\350', '\007', '\020', '\200', '\200', '\200', '\200', '\002', '\"', '\300', '\001',
+'\n', '\013', 'E', 'n', 'u', 'm', 'O', 'p', 't', 'i', 'o', 'n', 's', '\022', '\037', '\n', '\013', 'a', 'l', 'l', 'o', 'w', '_', 'a', 'l',
+'i', 'a', 's', '\030', '\002', ' ', '\001', '(', '\010', 'R', '\n', 'a', 'l', 'l', 'o', 'w', 'A', 'l', 'i', 'a', 's', '\022', '%', '\n', '\n',
+'d', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\030', '\003', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\n',
+'d', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\022', 'X', '\n', '\024', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't',
+'e', 'd', '_', 'o', 'p', 't', 'i', 'o', 'n', '\030', '\347', '\007', ' ', '\003', '(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e',
+'.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'U', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p',
+'t', 'i', 'o', 'n', 'R', '\023', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n',
+'*', '\t', '\010', '\350', '\007', '\020', '\200', '\200', '\200', '\200', '\002', 'J', '\004', '\010', '\005', '\020', '\006', '\"', '\236', '\001', '\n', '\020', 'E', 'n', 'u',
+'m', 'V', 'a', 'l', 'u', 'e', 'O', 'p', 't', 'i', 'o', 'n', 's', '\022', '%', '\n', '\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't',
+'e', 'd', '\030', '\001', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't',
+'e', 'd', '\022', 'X', '\n', '\024', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', '_', 'o', 'p', 't', 'i', 'o',
+'n', '\030', '\347', '\007', ' ', '\003', '(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u',
+'f', '.', 'U', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', 'R', '\023', 'u', 'n',
+'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', '*', '\t', '\010', '\350', '\007', '\020', '\200', '\200',
+'\200', '\200', '\002', '\"', '\234', '\001', '\n', '\016', 'S', 'e', 'r', 'v', 'i', 'c', 'e', 'O', 'p', 't', 'i', 'o', 'n', 's', '\022', '%', '\n',
+'\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\030', '!', ' ', '\001', '(', '\010', ':', '\005', 'f', 'a', 'l', 's', 'e', 'R',
+'\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\022', 'X', '\n', '\024', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e',
+'t', 'e', 'd', '_', 'o', 'p', 't', 'i', 'o', 'n', '\030', '\347', '\007', ' ', '\003', '(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l',
+'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'U', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O',
+'p', 't', 'i', 'o', 'n', 'R', '\023', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o',
+'n', '*', '\t', '\010', '\350', '\007', '\020', '\200', '\200', '\200', '\200', '\002', '\"', '\340', '\002', '\n', '\r', 'M', 'e', 't', 'h', 'o', 'd', 'O', 'p',
+'t', 'i', 'o', 'n', 's', '\022', '%', '\n', '\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\030', '!', ' ', '\001', '(', '\010',
+':', '\005', 'f', 'a', 'l', 's', 'e', 'R', '\n', 'd', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd', '\022', 'q', '\n', '\021', 'i', 'd',
+'e', 'm', 'p', 'o', 't', 'e', 'n', 'c', 'y', '_', 'l', 'e', 'v', 'e', 'l', '\030', '\"', ' ', '\001', '(', '\016', '2', '/', '.', 'g',
+'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'M', 'e', 't', 'h', 'o', 'd', 'O', 'p', 't', 'i',
+'o', 'n', 's', '.', 'I', 'd', 'e', 'm', 'p', 'o', 't', 'e', 'n', 'c', 'y', 'L', 'e', 'v', 'e', 'l', ':', '\023', 'I', 'D', 'E',
+'M', 'P', 'O', 'T', 'E', 'N', 'C', 'Y', '_', 'U', 'N', 'K', 'N', 'O', 'W', 'N', 'R', '\020', 'i', 'd', 'e', 'm', 'p', 'o', 't',
+'e', 'n', 'c', 'y', 'L', 'e', 'v', 'e', 'l', '\022', 'X', '\n', '\024', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e',
+'d', '_', 'o', 'p', 't', 'i', 'o', 'n', '\030', '\347', '\007', ' ', '\003', '(', '\013', '2', '$', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.',
+'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'U', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't',
+'i', 'o', 'n', 'R', '\023', 'u', 'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', '\"',
+'P', '\n', '\020', 'I', 'd', 'e', 'm', 'p', 'o', 't', 'e', 'n', 'c', 'y', 'L', 'e', 'v', 'e', 'l', '\022', '\027', '\n', '\023', 'I', 'D',
+'E', 'M', 'P', 'O', 'T', 'E', 'N', 'C', 'Y', '_', 'U', 'N', 'K', 'N', 'O', 'W', 'N', '\020', '\000', '\022', '\023', '\n', '\017', 'N', 'O',
+'_', 'S', 'I', 'D', 'E', '_', 'E', 'F', 'F', 'E', 'C', 'T', 'S', '\020', '\001', '\022', '\016', '\n', '\n', 'I', 'D', 'E', 'M', 'P', 'O',
+'T', 'E', 'N', 'T', '\020', '\002', '*', '\t', '\010', '\350', '\007', '\020', '\200', '\200', '\200', '\200', '\002', '\"', '\232', '\003', '\n', '\023', 'U', 'n', 'i',
+'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', '\022', 'A', '\n', '\004', 'n', 'a', 'm', 'e', '\030',
+'\002', ' ', '\003', '(', '\013', '2', '-', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'U',
+'n', 'i', 'n', 't', 'e', 'r', 'p', 'r', 'e', 't', 'e', 'd', 'O', 'p', 't', 'i', 'o', 'n', '.', 'N', 'a', 'm', 'e', 'P', 'a',
+'r', 't', 'R', '\004', 'n', 'a', 'm', 'e', '\022', ')', '\n', '\020', 'i', 'd', 'e', 'n', 't', 'i', 'f', 'i', 'e', 'r', '_', 'v', 'a',
+'l', 'u', 'e', '\030', '\003', ' ', '\001', '(', '\t', 'R', '\017', 'i', 'd', 'e', 'n', 't', 'i', 'f', 'i', 'e', 'r', 'V', 'a', 'l', 'u',
+'e', '\022', ',', '\n', '\022', 'p', 'o', 's', 'i', 't', 'i', 'v', 'e', '_', 'i', 'n', 't', '_', 'v', 'a', 'l', 'u', 'e', '\030', '\004',
+' ', '\001', '(', '\004', 'R', '\020', 'p', 'o', 's', 'i', 't', 'i', 'v', 'e', 'I', 'n', 't', 'V', 'a', 'l', 'u', 'e', '\022', ',', '\n',
+'\022', 'n', 'e', 'g', 'a', 't', 'i', 'v', 'e', '_', 'i', 'n', 't', '_', 'v', 'a', 'l', 'u', 'e', '\030', '\005', ' ', '\001', '(', '\003',
+'R', '\020', 'n', 'e', 'g', 'a', 't', 'i', 'v', 'e', 'I', 'n', 't', 'V', 'a', 'l', 'u', 'e', '\022', '!', '\n', '\014', 'd', 'o', 'u',
+'b', 'l', 'e', '_', 'v', 'a', 'l', 'u', 'e', '\030', '\006', ' ', '\001', '(', '\001', 'R', '\013', 'd', 'o', 'u', 'b', 'l', 'e', 'V', 'a',
+'l', 'u', 'e', '\022', '!', '\n', '\014', 's', 't', 'r', 'i', 'n', 'g', '_', 'v', 'a', 'l', 'u', 'e', '\030', '\007', ' ', '\001', '(', '\014',
+'R', '\013', 's', 't', 'r', 'i', 'n', 'g', 'V', 'a', 'l', 'u', 'e', '\022', '\'', '\n', '\017', 'a', 'g', 'g', 'r', 'e', 'g', 'a', 't',
+'e', '_', 'v', 'a', 'l', 'u', 'e', '\030', '\010', ' ', '\001', '(', '\t', 'R', '\016', 'a', 'g', 'g', 'r', 'e', 'g', 'a', 't', 'e', 'V',
+'a', 'l', 'u', 'e', '\032', 'J', '\n', '\010', 'N', 'a', 'm', 'e', 'P', 'a', 'r', 't', '\022', '\033', '\n', '\t', 'n', 'a', 'm', 'e', '_',
+'p', 'a', 'r', 't', '\030', '\001', ' ', '\002', '(', '\t', 'R', '\010', 'n', 'a', 'm', 'e', 'P', 'a', 'r', 't', '\022', '!', '\n', '\014', 'i',
+'s', '_', 'e', 'x', 't', 'e', 'n', 's', 'i', 'o', 'n', '\030', '\002', ' ', '\002', '(', '\010', 'R', '\013', 'i', 's', 'E', 'x', 't', 'e',
+'n', 's', 'i', 'o', 'n', '\"', '\247', '\002', '\n', '\016', 'S', 'o', 'u', 'r', 'c', 'e', 'C', 'o', 'd', 'e', 'I', 'n', 'f', 'o', '\022',
+'D', '\n', '\010', 'l', 'o', 'c', 'a', 't', 'i', 'o', 'n', '\030', '\001', ' ', '\003', '(', '\013', '2', '(', '.', 'g', 'o', 'o', 'g', 'l',
+'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'S', 'o', 'u', 'r', 'c', 'e', 'C', 'o', 'd', 'e', 'I', 'n', 'f', 'o',
+'.', 'L', 'o', 'c', 'a', 't', 'i', 'o', 'n', 'R', '\010', 'l', 'o', 'c', 'a', 't', 'i', 'o', 'n', '\032', '\316', '\001', '\n', '\010', 'L',
+'o', 'c', 'a', 't', 'i', 'o', 'n', '\022', '\026', '\n', '\004', 'p', 'a', 't', 'h', '\030', '\001', ' ', '\003', '(', '\005', 'B', '\002', '\020', '\001',
+'R', '\004', 'p', 'a', 't', 'h', '\022', '\026', '\n', '\004', 's', 'p', 'a', 'n', '\030', '\002', ' ', '\003', '(', '\005', 'B', '\002', '\020', '\001', 'R',
+'\004', 's', 'p', 'a', 'n', '\022', ')', '\n', '\020', 'l', 'e', 'a', 'd', 'i', 'n', 'g', '_', 'c', 'o', 'm', 'm', 'e', 'n', 't', 's',
+'\030', '\003', ' ', '\001', '(', '\t', 'R', '\017', 'l', 'e', 'a', 'd', 'i', 'n', 'g', 'C', 'o', 'm', 'm', 'e', 'n', 't', 's', '\022', '+',
+'\n', '\021', 't', 'r', 'a', 'i', 'l', 'i', 'n', 'g', '_', 'c', 'o', 'm', 'm', 'e', 'n', 't', 's', '\030', '\004', ' ', '\001', '(', '\t',
+'R', '\020', 't', 'r', 'a', 'i', 'l', 'i', 'n', 'g', 'C', 'o', 'm', 'm', 'e', 'n', 't', 's', '\022', ':', '\n', '\031', 'l', 'e', 'a',
+'d', 'i', 'n', 'g', '_', 'd', 'e', 't', 'a', 'c', 'h', 'e', 'd', '_', 'c', 'o', 'm', 'm', 'e', 'n', 't', 's', '\030', '\006', ' ',
+'\003', '(', '\t', 'R', '\027', 'l', 'e', 'a', 'd', 'i', 'n', 'g', 'D', 'e', 't', 'a', 'c', 'h', 'e', 'd', 'C', 'o', 'm', 'm', 'e',
+'n', 't', 's', '\"', '\320', '\002', '\n', '\021', 'G', 'e', 'n', 'e', 'r', 'a', 't', 'e', 'd', 'C', 'o', 'd', 'e', 'I', 'n', 'f', 'o',
+'\022', 'M', '\n', '\n', 'a', 'n', 'n', 'o', 't', 'a', 't', 'i', 'o', 'n', '\030', '\001', ' ', '\003', '(', '\013', '2', '-', '.', 'g', 'o',
+'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'G', 'e', 'n', 'e', 'r', 'a', 't', 'e', 'd', 'C', 'o',
+'d', 'e', 'I', 'n', 'f', 'o', '.', 'A', 'n', 'n', 'o', 't', 'a', 't', 'i', 'o', 'n', 'R', '\n', 'a', 'n', 'n', 'o', 't', 'a',
+'t', 'i', 'o', 'n', '\032', '\353', '\001', '\n', '\n', 'A', 'n', 'n', 'o', 't', 'a', 't', 'i', 'o', 'n', '\022', '\026', '\n', '\004', 'p', 'a',
+'t', 'h', '\030', '\001', ' ', '\003', '(', '\005', 'B', '\002', '\020', '\001', 'R', '\004', 'p', 'a', 't', 'h', '\022', '\037', '\n', '\013', 's', 'o', 'u',
+'r', 'c', 'e', '_', 'f', 'i', 'l', 'e', '\030', '\002', ' ', '\001', '(', '\t', 'R', '\n', 's', 'o', 'u', 'r', 'c', 'e', 'F', 'i', 'l',
+'e', '\022', '\024', '\n', '\005', 'b', 'e', 'g', 'i', 'n', '\030', '\003', ' ', '\001', '(', '\005', 'R', '\005', 'b', 'e', 'g', 'i', 'n', '\022', '\020',
+'\n', '\003', 'e', 'n', 'd', '\030', '\004', ' ', '\001', '(', '\005', 'R', '\003', 'e', 'n', 'd', '\022', 'R', '\n', '\010', 's', 'e', 'm', 'a', 'n',
+'t', 'i', 'c', '\030', '\005', ' ', '\001', '(', '\016', '2', '6', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b',
+'u', 'f', '.', 'G', 'e', 'n', 'e', 'r', 'a', 't', 'e', 'd', 'C', 'o', 'd', 'e', 'I', 'n', 'f', 'o', '.', 'A', 'n', 'n', 'o',
+'t', 'a', 't', 'i', 'o', 'n', '.', 'S', 'e', 'm', 'a', 'n', 't', 'i', 'c', 'R', '\010', 's', 'e', 'm', 'a', 'n', 't', 'i', 'c',
+'\"', '(', '\n', '\010', 'S', 'e', 'm', 'a', 'n', 't', 'i', 'c', '\022', '\010', '\n', '\004', 'N', 'O', 'N', 'E', '\020', '\000', '\022', '\007', '\n',
+'\003', 'S', 'E', 'T', '\020', '\001', '\022', '\t', '\n', '\005', 'A', 'L', 'I', 'A', 'S', '\020', '\002', 'B', '~', '\n', '\023', 'c', 'o', 'm', '.',
+'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', 'B', '\020', 'D', 'e', 's', 'c', 'r', 'i', 'p', 't',
+'o', 'r', 'P', 'r', 'o', 't', 'o', 's', 'H', '\001', 'Z', '-', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'g', 'o', 'l', 'a', 'n', 'g',
+'.', 'o', 'r', 'g', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f', '/', 't', 'y', 'p', 'e', 's', '/', 'd', 'e', 's', 'c', 'r',
+'i', 'p', 't', 'o', 'r', 'p', 'b', '\370', '\001', '\001', '\242', '\002', '\003', 'G', 'P', 'B', '\252', '\002', '\032', 'G', 'o', 'o', 'g', 'l', 'e',
+'.', 'P', 'r', 'o', 't', 'o', 'b', 'u', 'f', '.', 'R', 'e', 'f', 'l', 'e', 'c', 't', 'i', 'o', 'n',
 };
 
 static _upb_DefPool_Init *deps[1] = {
@@ -1415,16 +1605,19 @@ upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena) {
   return r;
 }
 
-bool _upb_extreg_add(upb_ExtensionRegistry* r,
-                     const upb_MiniTable_Extension** e, size_t count) {
+bool upb_ExtensionRegistry_AddArray(upb_ExtensionRegistry* r,
+                                    const upb_MiniTable_Extension** e,
+                                    size_t count) {
   char buf[EXTREG_KEY_SIZE];
   const upb_MiniTable_Extension** start = e;
   const upb_MiniTable_Extension** end = UPB_PTRADD(e, count);
   for (; e < end; e++) {
-    // TODO: we should gracefully handle the case where this already exists.
-    // Right now we're only checking for out of memory.
     const upb_MiniTable_Extension* ext = *e;
     extreg_key(buf, ext->extendee, ext->field.number);
+    upb_value v;
+    if (upb_strtable_lookup2(&r->exts, buf, EXTREG_KEY_SIZE, &v)) {
+      goto failure;
+    }
     if (!upb_strtable_insert(&r->exts, buf, EXTREG_KEY_SIZE,
                              upb_value_constptr(ext), r->arena)) {
       goto failure;
@@ -1442,12 +1635,11 @@ failure:
   return false;
 }
 
-const upb_MiniTable_Extension* _upb_extreg_get(const upb_ExtensionRegistry* r,
-                                               const upb_MiniTable* l,
-                                               uint32_t num) {
+const upb_MiniTable_Extension* upb_ExtensionRegistry_Lookup(
+    const upb_ExtensionRegistry* r, const upb_MiniTable* t, uint32_t num) {
   char buf[EXTREG_KEY_SIZE];
   upb_value v;
-  extreg_key(buf, l, num);
+  extreg_key(buf, t, num);
   if (upb_strtable_lookup2(&r->exts, buf, EXTREG_KEY_SIZE, &v)) {
     return upb_value_getconstptr(v);
   } else {
@@ -3321,7 +3513,8 @@ static void jsondec_tomsg(jsondec* d, upb_Message* msg,
 
 static upb_MessageValue jsondec_msg(jsondec* d, const upb_FieldDef* f) {
   const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
-  upb_Message* msg = upb_Message_New(m, d->arena);
+  const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
+  upb_Message* msg = upb_Message_New(layout, d->arena);
   upb_MessageValue val;
 
   jsondec_tomsg(d, msg, m);
@@ -3583,11 +3776,12 @@ static void jsondec_listvalue(jsondec* d, upb_Message* msg,
                               const upb_MessageDef* m) {
   const upb_FieldDef* values_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_MessageDef* value_m = upb_FieldDef_MessageSubDef(values_f);
+  const upb_MiniTable* value_layout = upb_MessageDef_MiniTable(value_m);
   upb_Array* values = upb_Message_Mutable(msg, values_f, d->arena).array;
 
   jsondec_arrstart(d);
   while (jsondec_arrnext(d)) {
-    upb_Message* value_msg = upb_Message_New(value_m, d->arena);
+    upb_Message* value_msg = upb_Message_New(value_layout, d->arena);
     upb_MessageValue value;
     value.msg_val = value_msg;
     upb_Array_Append(values, value, d->arena);
@@ -3602,12 +3796,13 @@ static void jsondec_struct(jsondec* d, upb_Message* msg,
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(fields_f);
   const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(entry_m, 2);
   const upb_MessageDef* value_m = upb_FieldDef_MessageSubDef(value_f);
+  const upb_MiniTable* value_layout = upb_MessageDef_MiniTable(value_m);
   upb_Map* fields = upb_Message_Mutable(msg, fields_f, d->arena).map;
 
   jsondec_objstart(d);
   while (jsondec_objnext(d)) {
     upb_MessageValue key, value;
-    upb_Message* value_msg = upb_Message_New(value_m, d->arena);
+    upb_Message* value_msg = upb_Message_New(value_layout, d->arena);
     key.str_val = jsondec_string(d);
     value.msg_val = value_msg;
     upb_Map_Set(fields, key, value, d->arena);
@@ -3809,7 +4004,8 @@ static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
     jsondec_err(d, "Any object didn't contain a '@type' field");
   }
 
-  any_msg = upb_Message_New(any_m, d->arena);
+  const upb_MiniTable* any_layout = upb_MessageDef_MiniTable(any_m);
+  any_msg = upb_Message_New(any_layout, d->arena);
 
   if (pre_type_data) {
     size_t len = pre_type_end - pre_type_data + 1;
@@ -4281,7 +4477,7 @@ static void jsonenc_any(jsonenc* e, const upb_Message* msg,
   const upb_MessageDef* any_m = jsonenc_getanymsg(e, type_url);
   const upb_MiniTable* any_layout = upb_MessageDef_MiniTable(any_m);
   upb_Arena* arena = jsonenc_arena(e);
-  upb_Message* any = upb_Message_New(any_m, arena);
+  upb_Message* any = upb_Message_New(any_layout, arena);
 
   if (upb_Decode(value.data, value.size, any, any_layout, NULL, 0, arena) !=
       kUpb_DecodeStatus_Ok) {
@@ -4672,315 +4868,293 @@ size_t upb_JsonEncode(const upb_Message* msg, const upb_MessageDef* m,
 }
 
 
-#include <inttypes.h>
-#include <setjmp.h>
+#include <stdlib.h>
+
+// Must be last.
+
+static void* upb_global_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
+                                  size_t size) {
+  UPB_UNUSED(alloc);
+  UPB_UNUSED(oldsize);
+  if (size == 0) {
+    free(ptr);
+    return NULL;
+  } else {
+    return realloc(ptr, size);
+  }
+}
+
+upb_alloc upb_alloc_global = {&upb_global_allocfunc};
 
 
 // Must be last.
 
-typedef enum {
-  kUpb_EncodedType_Double = 0,
-  kUpb_EncodedType_Float = 1,
-  kUpb_EncodedType_Fixed32 = 2,
-  kUpb_EncodedType_Fixed64 = 3,
-  kUpb_EncodedType_SFixed32 = 4,
-  kUpb_EncodedType_SFixed64 = 5,
-  kUpb_EncodedType_Int32 = 6,
-  kUpb_EncodedType_UInt32 = 7,
-  kUpb_EncodedType_SInt32 = 8,
-  kUpb_EncodedType_Int64 = 9,
-  kUpb_EncodedType_UInt64 = 10,
-  kUpb_EncodedType_SInt64 = 11,
-  kUpb_EncodedType_Enum = 12,
-  kUpb_EncodedType_Bool = 13,
-  kUpb_EncodedType_Bytes = 14,
-  kUpb_EncodedType_String = 15,
-  kUpb_EncodedType_Group = 16,
-  kUpb_EncodedType_Message = 17,
+static uint32_t* upb_cleanup_pointer(uintptr_t cleanup_metadata) {
+  return (uint32_t*)(cleanup_metadata & ~0x1);
+}
 
-  kUpb_EncodedType_RepeatedBase = 20,
-} upb_EncodedType;
+static bool upb_cleanup_has_initial_block(uintptr_t cleanup_metadata) {
+  return cleanup_metadata & 0x1;
+}
 
-typedef enum {
-  kUpb_EncodedFieldModifier_FlipPacked = 1 << 0,
-  kUpb_EncodedFieldModifier_IsClosedEnum = 1 << 1,
-  // upb only.
-  kUpb_EncodedFieldModifier_IsProto3Singular = 1 << 2,
-  kUpb_EncodedFieldModifier_IsRequired = 1 << 3,
-} upb_EncodedFieldModifier;
+static uintptr_t upb_cleanup_metadata(uint32_t* cleanup,
+                                      bool has_initial_block) {
+  return (uintptr_t)cleanup | has_initial_block;
+}
 
-enum {
-  kUpb_EncodedValue_MinField = ' ',
-  kUpb_EncodedValue_MaxField = 'K',
-  kUpb_EncodedValue_MinModifier = 'L',
-  kUpb_EncodedValue_MaxModifier = '[',
-  kUpb_EncodedValue_End = '^',
-  kUpb_EncodedValue_MinSkip = '_',
-  kUpb_EncodedValue_MaxSkip = '~',
-  kUpb_EncodedValue_OneofSeparator = '~',
-  kUpb_EncodedValue_FieldSeparator = '|',
-  kUpb_EncodedValue_MinOneofField = ' ',
-  kUpb_EncodedValue_MaxOneofField = 'b',
-  kUpb_EncodedValue_MaxEnumMask = 'A',
+struct mem_block {
+  struct mem_block* next;
+  uint32_t size;
+  uint32_t cleanups;
+  /* Data follows. */
 };
 
-char upb_ToBase92(int8_t ch) {
-  static const char kUpb_ToBase92[] = {
-      ' ', '!', '#', '$', '%', '&', '(', ')', '*', '+', ',', '-', '.', '/',
-      '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=',
-      '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K',
-      'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y',
-      'Z', '[', ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
-      'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-      'w', 'x', 'y', 'z', '{', '|', '}', '~',
-  };
+typedef struct cleanup_ent {
+  upb_CleanupFunc* cleanup;
+  void* ud;
+} cleanup_ent;
 
-  UPB_ASSERT(0 <= ch && ch < 92);
-  return kUpb_ToBase92[ch];
-}
+static const size_t memblock_reserve =
+    UPB_ALIGN_UP(sizeof(mem_block), UPB_MALLOC_ALIGN);
 
-char upb_FromBase92(uint8_t ch) {
-  static const int8_t kUpb_FromBase92[] = {
-      0,  1,  -1, 2,  3,  4,  5,  -1, 6,  7,  8,  9,  10, 11, 12, 13,
-      14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29,
-      30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45,
-      46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, -1, 58, 59, 60,
-      61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76,
-      77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91,
-  };
-
-  if (' ' > ch || ch > '~') return -1;
-  return kUpb_FromBase92[ch - ' '];
-}
-
-bool upb_IsTypePackable(upb_FieldType type) {
-  // clang-format off
-  static const unsigned kUnpackableTypes =
-      (1 << kUpb_FieldType_String) |
-      (1 << kUpb_FieldType_Bytes) |
-      (1 << kUpb_FieldType_Message) |
-      (1 << kUpb_FieldType_Group);
-  // clang-format on
-  return (1 << type) & ~kUnpackableTypes;
-}
-
-/** upb_MtDataEncoder *********************************************************/
-
-typedef struct {
-  uint64_t present_values_mask;
-  uint32_t last_written_value;
-} upb_MtDataEncoderInternal_EnumState;
-
-typedef struct {
-  uint64_t msg_modifiers;
-  uint32_t last_field_num;
-  enum {
-    kUpb_OneofState_NotStarted,
-    kUpb_OneofState_StartedOneof,
-    kUpb_OneofState_EmittedOneofField,
-  } oneof_state;
-} upb_MtDataEncoderInternal_MsgState;
-
-typedef struct {
-  char* buf_start;  // Only for checking kUpb_MtDataEncoder_MinSize.
-  union {
-    upb_MtDataEncoderInternal_EnumState enum_state;
-    upb_MtDataEncoderInternal_MsgState msg_state;
-  } state;
-} upb_MtDataEncoderInternal;
-
-static upb_MtDataEncoderInternal* upb_MtDataEncoder_GetInternal(
-    upb_MtDataEncoder* e, char* buf_start) {
-  UPB_ASSERT(sizeof(upb_MtDataEncoderInternal) <= sizeof(e->internal));
-  upb_MtDataEncoderInternal* ret = (upb_MtDataEncoderInternal*)e->internal;
-  ret->buf_start = buf_start;
-  return ret;
-}
-
-static char* upb_MtDataEncoder_Put(upb_MtDataEncoder* e, char* ptr, char ch) {
-  upb_MtDataEncoderInternal* in = (upb_MtDataEncoderInternal*)e->internal;
-  UPB_ASSERT(ptr - in->buf_start < kUpb_MtDataEncoder_MinSize);
-  if (ptr == e->end) return NULL;
-  *ptr++ = upb_ToBase92(ch);
-  return ptr;
-}
-
-static char* upb_MtDataEncoder_PutBase92Varint(upb_MtDataEncoder* e, char* ptr,
-                                               uint32_t val, int min, int max) {
-  int shift = _upb_Log2Ceiling(upb_FromBase92(max) - upb_FromBase92(min) + 1);
-  UPB_ASSERT(shift <= 6);
-  uint32_t mask = (1 << shift) - 1;
-  do {
-    uint32_t bits = val & mask;
-    ptr = upb_MtDataEncoder_Put(e, ptr, bits + upb_FromBase92(min));
-    if (!ptr) return NULL;
-    val >>= shift;
-  } while (val);
-  return ptr;
-}
-
-char* upb_MtDataEncoder_PutModifier(upb_MtDataEncoder* e, char* ptr,
-                                    uint64_t mod) {
-  if (mod) {
-    ptr = upb_MtDataEncoder_PutBase92Varint(e, ptr, mod,
-                                            kUpb_EncodedValue_MinModifier,
-                                            kUpb_EncodedValue_MaxModifier);
+static upb_Arena* arena_findroot(upb_Arena* a) {
+  /* Path splitting keeps time complexity down, see:
+   *   https://en.wikipedia.org/wiki/Disjoint-set_data_structure */
+  while (a->parent != a) {
+    upb_Arena* next = a->parent;
+    a->parent = next->parent;
+    a = next;
   }
-  return ptr;
+  return a;
 }
 
-char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* ptr,
-                                     uint64_t msg_mod) {
-  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
-  in->state.msg_state.msg_modifiers = msg_mod;
-  in->state.msg_state.last_field_num = 0;
-  in->state.msg_state.oneof_state = kUpb_OneofState_NotStarted;
-  return upb_MtDataEncoder_PutModifier(e, ptr, msg_mod);
-}
+size_t upb_Arena_SpaceAllocated(upb_Arena* arena) {
+  arena = arena_findroot(arena);
+  size_t memsize = 0;
 
-char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
-                                 upb_FieldType type, uint32_t field_num,
-                                 uint64_t field_mod) {
-  static const char kUpb_TypeToEncoded[] = {
-      [kUpb_FieldType_Double] = kUpb_EncodedType_Double,
-      [kUpb_FieldType_Float] = kUpb_EncodedType_Float,
-      [kUpb_FieldType_Int64] = kUpb_EncodedType_Int64,
-      [kUpb_FieldType_UInt64] = kUpb_EncodedType_UInt64,
-      [kUpb_FieldType_Int32] = kUpb_EncodedType_Int32,
-      [kUpb_FieldType_Fixed64] = kUpb_EncodedType_Fixed64,
-      [kUpb_FieldType_Fixed32] = kUpb_EncodedType_Fixed32,
-      [kUpb_FieldType_Bool] = kUpb_EncodedType_Bool,
-      [kUpb_FieldType_String] = kUpb_EncodedType_String,
-      [kUpb_FieldType_Group] = kUpb_EncodedType_Group,
-      [kUpb_FieldType_Message] = kUpb_EncodedType_Message,
-      [kUpb_FieldType_Bytes] = kUpb_EncodedType_Bytes,
-      [kUpb_FieldType_UInt32] = kUpb_EncodedType_UInt32,
-      [kUpb_FieldType_Enum] = kUpb_EncodedType_Enum,
-      [kUpb_FieldType_SFixed32] = kUpb_EncodedType_SFixed32,
-      [kUpb_FieldType_SFixed64] = kUpb_EncodedType_SFixed64,
-      [kUpb_FieldType_SInt32] = kUpb_EncodedType_SInt32,
-      [kUpb_FieldType_SInt64] = kUpb_EncodedType_SInt64,
-  };
+  mem_block* block = arena->freelist;
 
-  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
-  if (field_num <= in->state.msg_state.last_field_num) return NULL;
-  if (in->state.msg_state.last_field_num + 1 != field_num) {
-    // Put skip.
-    UPB_ASSERT(field_num > in->state.msg_state.last_field_num);
-    uint32_t skip = field_num - in->state.msg_state.last_field_num;
-    ptr = upb_MtDataEncoder_PutBase92Varint(
-        e, ptr, skip, kUpb_EncodedValue_MinSkip, kUpb_EncodedValue_MaxSkip);
-    if (!ptr) return NULL;
-  }
-  in->state.msg_state.last_field_num = field_num;
-
-  uint32_t encoded_modifiers = 0;
-
-  // Put field type.
-  if (type == kUpb_FieldType_Enum &&
-      !(field_mod & kUpb_FieldModifier_IsClosedEnum)) {
-    type = kUpb_FieldType_Int32;
+  while (block) {
+    memsize += sizeof(mem_block) + block->size;
+    block = block->next;
   }
 
-  int encoded_type = kUpb_TypeToEncoded[type];
-  if (field_mod & kUpb_FieldModifier_IsRepeated) {
-    // Repeated fields shift the type number up (unlike other modifiers which
-    // are bit flags).
-    encoded_type += kUpb_EncodedType_RepeatedBase;
+  return memsize;
+}
 
-    if (upb_IsTypePackable(type)) {
-      bool field_is_packed = field_mod & kUpb_FieldModifier_IsPacked;
-      bool default_is_packed = in->state.msg_state.msg_modifiers &
-                               kUpb_MessageModifier_DefaultIsPacked;
-      if (field_is_packed != default_is_packed) {
-        encoded_modifiers |= kUpb_EncodedFieldModifier_FlipPacked;
+uint32_t upb_Arena_DebugRefCount(upb_Arena* arena) {
+  return arena_findroot(arena)->refcount;
+}
+
+static void upb_Arena_addblock(upb_Arena* a, upb_Arena* root, void* ptr,
+                               size_t size) {
+  mem_block* block = ptr;
+
+  /* The block is for arena |a|, but should appear in the freelist of |root|. */
+  block->next = root->freelist;
+  block->size = (uint32_t)size;
+  block->cleanups = 0;
+  root->freelist = block;
+  a->last_size = block->size;
+  if (!root->freelist_tail) root->freelist_tail = block;
+
+  a->head.ptr = UPB_PTR_AT(block, memblock_reserve, char);
+  a->head.end = UPB_PTR_AT(block, size, char);
+  a->cleanup_metadata = upb_cleanup_metadata(
+      &block->cleanups, upb_cleanup_has_initial_block(a->cleanup_metadata));
+
+  UPB_POISON_MEMORY_REGION(a->head.ptr, a->head.end - a->head.ptr);
+}
+
+static bool upb_Arena_Allocblock(upb_Arena* a, size_t size) {
+  upb_Arena* root = arena_findroot(a);
+  size_t block_size = UPB_MAX(size, a->last_size * 2) + memblock_reserve;
+  mem_block* block = upb_malloc(root->block_alloc, block_size);
+
+  if (!block) return false;
+  upb_Arena_addblock(a, root, block, block_size);
+  return true;
+}
+
+void* _upb_Arena_SlowMalloc(upb_Arena* a, size_t size) {
+  if (!upb_Arena_Allocblock(a, size)) return NULL; /* Out of memory. */
+  UPB_ASSERT(_upb_ArenaHas(a) >= size);
+  return upb_Arena_Malloc(a, size);
+}
+
+static void* upb_Arena_doalloc(upb_alloc* alloc, void* ptr, size_t oldsize,
+                               size_t size) {
+  upb_Arena* a = (upb_Arena*)alloc; /* upb_alloc is initial member. */
+  return upb_Arena_Realloc(a, ptr, oldsize, size);
+}
+
+/* Public Arena API ***********************************************************/
+
+static upb_Arena* arena_initslow(void* mem, size_t n, upb_alloc* alloc) {
+  const size_t first_block_overhead = sizeof(upb_Arena) + memblock_reserve;
+  upb_Arena* a;
+
+  /* We need to malloc the initial block. */
+  n = first_block_overhead + 256;
+  if (!alloc || !(mem = upb_malloc(alloc, n))) {
+    return NULL;
+  }
+
+  a = UPB_PTR_AT(mem, n - sizeof(*a), upb_Arena);
+  n -= sizeof(*a);
+
+  a->head.alloc.func = &upb_Arena_doalloc;
+  a->block_alloc = alloc;
+  a->parent = a;
+  a->refcount = 1;
+  a->freelist = NULL;
+  a->freelist_tail = NULL;
+  a->cleanup_metadata = upb_cleanup_metadata(NULL, false);
+
+  upb_Arena_addblock(a, a, mem, n);
+
+  return a;
+}
+
+upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
+  upb_Arena* a;
+
+  if (n) {
+    /* Align initial pointer up so that we return properly-aligned pointers. */
+    void* aligned = (void*)UPB_ALIGN_UP((uintptr_t)mem, UPB_MALLOC_ALIGN);
+    size_t delta = (uintptr_t)aligned - (uintptr_t)mem;
+    n = delta <= n ? n - delta : 0;
+    mem = aligned;
+  }
+
+  /* Round block size down to alignof(*a) since we will allocate the arena
+   * itself at the end. */
+  n = UPB_ALIGN_DOWN(n, UPB_ALIGN_OF(upb_Arena));
+
+  if (UPB_UNLIKELY(n < sizeof(upb_Arena))) {
+    return arena_initslow(mem, n, alloc);
+  }
+
+  a = UPB_PTR_AT(mem, n - sizeof(*a), upb_Arena);
+
+  a->head.alloc.func = &upb_Arena_doalloc;
+  a->block_alloc = alloc;
+  a->parent = a;
+  a->refcount = 1;
+  a->last_size = UPB_MAX(128, n);
+  a->head.ptr = mem;
+  a->head.end = UPB_PTR_AT(mem, n - sizeof(*a), char);
+  a->freelist = NULL;
+  a->freelist_tail = NULL;
+  a->cleanup_metadata = upb_cleanup_metadata(NULL, true);
+
+  return a;
+}
+
+static void arena_dofree(upb_Arena* a) {
+  mem_block* block = a->freelist;
+  UPB_ASSERT(a->parent == a);
+  UPB_ASSERT(a->refcount == 0);
+
+  while (block) {
+    /* Load first since we are deleting block. */
+    mem_block* next = block->next;
+
+    if (block->cleanups > 0) {
+      cleanup_ent* end = UPB_PTR_AT(block, block->size, void);
+      cleanup_ent* ptr = end - block->cleanups;
+
+      for (; ptr < end; ptr++) {
+        ptr->cleanup(ptr->ud);
       }
     }
-  }
-  ptr = upb_MtDataEncoder_Put(e, ptr, encoded_type);
-  if (!ptr) return NULL;
 
-  if (field_mod & kUpb_FieldModifier_IsProto3Singular) {
-    encoded_modifiers |= kUpb_EncodedFieldModifier_IsProto3Singular;
+    upb_free(a->block_alloc, block);
+    block = next;
   }
-  if (field_mod & kUpb_FieldModifier_IsRequired) {
-    encoded_modifiers |= kUpb_EncodedFieldModifier_IsRequired;
-  }
-  return upb_MtDataEncoder_PutModifier(e, ptr, encoded_modifiers);
 }
 
-char* upb_MtDataEncoder_StartOneof(upb_MtDataEncoder* e, char* ptr) {
-  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
-  if (in->state.msg_state.oneof_state == kUpb_OneofState_NotStarted) {
-    ptr = upb_MtDataEncoder_Put(e, ptr, upb_FromBase92(kUpb_EncodedValue_End));
-  } else {
-    ptr = upb_MtDataEncoder_Put(
-        e, ptr, upb_FromBase92(kUpb_EncodedValue_OneofSeparator));
-  }
-  in->state.msg_state.oneof_state = kUpb_OneofState_StartedOneof;
-  return ptr;
+void upb_Arena_Free(upb_Arena* a) {
+  a = arena_findroot(a);
+  if (--a->refcount == 0) arena_dofree(a);
 }
 
-char* upb_MtDataEncoder_PutOneofField(upb_MtDataEncoder* e, char* ptr,
-                                      uint32_t field_num) {
-  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
-  if (in->state.msg_state.oneof_state == kUpb_OneofState_EmittedOneofField) {
-    ptr = upb_MtDataEncoder_Put(
-        e, ptr, upb_FromBase92(kUpb_EncodedValue_FieldSeparator));
-    if (!ptr) return NULL;
-  }
-  ptr = upb_MtDataEncoder_PutBase92Varint(e, ptr, field_num, upb_ToBase92(0),
-                                          upb_ToBase92(63));
-  in->state.msg_state.oneof_state = kUpb_OneofState_EmittedOneofField;
-  return ptr;
-}
+bool upb_Arena_AddCleanup(upb_Arena* a, void* ud, upb_CleanupFunc* func) {
+  cleanup_ent* ent;
+  uint32_t* cleanups = upb_cleanup_pointer(a->cleanup_metadata);
 
-void upb_MtDataEncoder_StartEnum(upb_MtDataEncoder* e) {
-  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, NULL);
-  in->state.enum_state.present_values_mask = 0;
-  in->state.enum_state.last_written_value = 0;
-}
-
-static char* upb_MtDataEncoder_FlushDenseEnumMask(upb_MtDataEncoder* e,
-                                                  char* ptr) {
-  upb_MtDataEncoderInternal* in = (upb_MtDataEncoderInternal*)e->internal;
-  ptr = upb_MtDataEncoder_Put(e, ptr, in->state.enum_state.present_values_mask);
-  in->state.enum_state.present_values_mask = 0;
-  in->state.enum_state.last_written_value += 5;
-  return ptr;
-}
-
-char* upb_MtDataEncoder_PutEnumValue(upb_MtDataEncoder* e, char* ptr,
-                                     uint32_t val) {
-  // TODO(b/229641772): optimize this encoding.
-  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
-  UPB_ASSERT(val >= in->state.enum_state.last_written_value);
-  uint32_t delta = val - in->state.enum_state.last_written_value;
-  if (delta >= 5 && in->state.enum_state.present_values_mask) {
-    ptr = upb_MtDataEncoder_FlushDenseEnumMask(e, ptr);
-    if (!ptr) {
-      return NULL;
-    }
-    delta -= 5;
+  if (!cleanups || _upb_ArenaHas(a) < sizeof(cleanup_ent)) {
+    if (!upb_Arena_Allocblock(a, 128)) return false; /* Out of memory. */
+    UPB_ASSERT(_upb_ArenaHas(a) >= sizeof(cleanup_ent));
+    cleanups = upb_cleanup_pointer(a->cleanup_metadata);
   }
 
-  if (delta >= 5) {
-    ptr = upb_MtDataEncoder_PutBase92Varint(
-        e, ptr, delta, kUpb_EncodedValue_MinSkip, kUpb_EncodedValue_MaxSkip);
-    in->state.enum_state.last_written_value += delta;
-    delta = 0;
+  a->head.end -= sizeof(cleanup_ent);
+  ent = (cleanup_ent*)a->head.end;
+  (*cleanups)++;
+  UPB_UNPOISON_MEMORY_REGION(ent, sizeof(cleanup_ent));
+
+  ent->cleanup = func;
+  ent->ud = ud;
+
+  return true;
+}
+
+bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
+  upb_Arena* r1 = arena_findroot(a1);
+  upb_Arena* r2 = arena_findroot(a2);
+
+  if (r1 == r2) return true; /* Already fused. */
+
+  /* Do not fuse initial blocks since we cannot lifetime extend them. */
+  if (upb_cleanup_has_initial_block(r1->cleanup_metadata)) return false;
+  if (upb_cleanup_has_initial_block(r2->cleanup_metadata)) return false;
+
+  /* Only allow fuse with a common allocator */
+  if (r1->block_alloc != r2->block_alloc) return false;
+
+  /* We want to join the smaller tree to the larger tree.
+   * So swap first if they are backwards. */
+  if (r1->refcount < r2->refcount) {
+    upb_Arena* tmp = r1;
+    r1 = r2;
+    r2 = tmp;
   }
 
-  UPB_ASSERT((in->state.enum_state.present_values_mask >> delta) == 0);
-  in->state.enum_state.present_values_mask |= 1ULL << delta;
-  return ptr;
+  /* r1 takes over r2's freelist and refcount. */
+  r1->refcount += r2->refcount;
+  if (r2->freelist_tail) {
+    UPB_ASSERT(r2->freelist_tail->next == NULL);
+    r2->freelist_tail->next = r1->freelist;
+    r1->freelist = r2->freelist;
+  }
+  r2->parent = r1;
+  return true;
 }
 
-char* upb_MtDataEncoder_EndEnum(upb_MtDataEncoder* e, char* ptr) {
-  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
-  if (!in->state.enum_state.present_values_mask) return ptr;
-  return upb_MtDataEncoder_FlushDenseEnumMask(e, ptr);
-}
+
+#include <inttypes.h>
+
+
+// Must be last.
+
+const char _kUpb_ToBase92[] = {
+    ' ', '!', '#', '$', '%', '&', '(', ')', '*', '+', ',', '-', '.', '/',
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=',
+    '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K',
+    'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y',
+    'Z', '[', ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
+    'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+    'w', 'x', 'y', 'z', '{', '|', '}', '~',
+};
+
+const int8_t _kUpb_FromBase92[] = {
+    0,  1,  -1, 2,  3,  4,  5,  -1, 6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16,
+    17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35,
+    36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54,
+    55, 56, 57, -1, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72,
+    73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91,
+};
 
 const upb_MiniTable_Field* upb_MiniTable_FindFieldByNumber(
     const upb_MiniTable* table, uint32_t number) {
@@ -4993,7 +5167,24 @@ const upb_MiniTable_Field* upb_MiniTable_FindFieldByNumber(
   return NULL;
 }
 
-/** Data decoder **************************************************************/
+upb_FieldType upb_MiniTableField_Type(const upb_MiniTable_Field* field) {
+  if (field->mode & kUpb_LabelFlags_IsAlternate) {
+    if (field->descriptortype == kUpb_FieldType_Int32) {
+      return kUpb_FieldType_Enum;
+    } else if (field->descriptortype == kUpb_FieldType_Bytes) {
+      return kUpb_FieldType_String;
+    } else {
+      UPB_ASSERT(false);
+    }
+  }
+  return field->descriptortype;
+}
+
+
+#include <inttypes.h>
+
+
+// Must be last.
 
 // Note: we sort by this number when calculating layout order.
 typedef enum {
@@ -5073,10 +5264,10 @@ static const char* upb_MiniTable_DecodeBase92Varint(upb_MtDecoder* d,
   uint32_t val = 0;
   uint32_t shift = 0;
   const int bits_per_char =
-      _upb_Log2Ceiling(upb_FromBase92(max) - upb_FromBase92(min));
+      _upb_Log2Ceiling(_upb_FromBase92(max) - _upb_FromBase92(min));
   char ch = first_ch;
   while (1) {
-    uint32_t bits = upb_FromBase92(ch) - upb_FromBase92(min);
+    uint32_t bits = _upb_FromBase92(ch) - _upb_FromBase92(min);
     val |= bits << shift;
     if (ptr == d->end || *ptr < min || max < *ptr) {
       *out_val = val;
@@ -5098,6 +5289,7 @@ static bool upb_MiniTable_HasSub(upb_MiniTable_Field* field,
     case kUpb_FieldType_String:
       if (!(msg_modifiers & kUpb_MessageModifier_ValidateUtf8)) {
         field->descriptortype = kUpb_FieldType_Bytes;
+        field->mode |= kUpb_LabelFlags_IsAlternate;
       }
       return false;
     default:
@@ -5107,13 +5299,21 @@ static bool upb_MiniTable_HasSub(upb_MiniTable_Field* field,
 
 static bool upb_MtDecoder_FieldIsPackable(upb_MiniTable_Field* field) {
   return (field->mode & kUpb_FieldMode_Array) &&
-         upb_IsTypePackable(field->descriptortype);
+         _upb_FieldType_IsPackable(field->descriptortype);
 }
 
 static void upb_MiniTable_SetTypeAndSub(upb_MiniTable_Field* field,
                                         upb_FieldType type, uint32_t* sub_count,
-                                        uint64_t msg_modifiers) {
+                                        uint64_t msg_modifiers,
+                                        bool is_proto3_enum) {
   field->descriptortype = type;
+
+  if (is_proto3_enum) {
+    UPB_ASSERT(field->descriptortype == kUpb_FieldType_Enum);
+    field->descriptortype = kUpb_FieldType_Int32;
+    field->mode |= kUpb_LabelFlags_IsAlternate;
+  }
+
   if (upb_MiniTable_HasSub(field, msg_modifiers)) {
     field->submsg_index = sub_count ? (*sub_count)++ : 0;
   } else {
@@ -5125,6 +5325,28 @@ static void upb_MiniTable_SetTypeAndSub(upb_MiniTable_Field* field,
     field->mode |= kUpb_LabelFlags_IsPacked;
   }
 }
+
+static const char kUpb_EncodedToType[] = {
+    [kUpb_EncodedType_Double] = kUpb_FieldType_Double,
+    [kUpb_EncodedType_Float] = kUpb_FieldType_Float,
+    [kUpb_EncodedType_Int64] = kUpb_FieldType_Int64,
+    [kUpb_EncodedType_UInt64] = kUpb_FieldType_UInt64,
+    [kUpb_EncodedType_Int32] = kUpb_FieldType_Int32,
+    [kUpb_EncodedType_Fixed64] = kUpb_FieldType_Fixed64,
+    [kUpb_EncodedType_Fixed32] = kUpb_FieldType_Fixed32,
+    [kUpb_EncodedType_Bool] = kUpb_FieldType_Bool,
+    [kUpb_EncodedType_String] = kUpb_FieldType_String,
+    [kUpb_EncodedType_Group] = kUpb_FieldType_Group,
+    [kUpb_EncodedType_Message] = kUpb_FieldType_Message,
+    [kUpb_EncodedType_Bytes] = kUpb_FieldType_Bytes,
+    [kUpb_EncodedType_UInt32] = kUpb_FieldType_UInt32,
+    [kUpb_EncodedType_OpenEnum] = kUpb_FieldType_Enum,
+    [kUpb_EncodedType_SFixed32] = kUpb_FieldType_SFixed32,
+    [kUpb_EncodedType_SFixed64] = kUpb_FieldType_SFixed64,
+    [kUpb_EncodedType_SInt32] = kUpb_FieldType_SInt32,
+    [kUpb_EncodedType_SInt64] = kUpb_FieldType_SInt64,
+    [kUpb_EncodedType_ClosedEnum] = kUpb_FieldType_Enum,
+};
 
 static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
                                    upb_MiniTable_Field* field,
@@ -5140,59 +5362,44 @@ static void upb_MiniTable_SetField(upb_MtDecoder* d, uint8_t ch,
       [kUpb_EncodedType_Fixed32] = kUpb_FieldRep_4Byte,
       [kUpb_EncodedType_Bool] = kUpb_FieldRep_1Byte,
       [kUpb_EncodedType_String] = kUpb_FieldRep_StringView,
-      [kUpb_EncodedType_Group] = kUpb_FieldRep_Pointer,
-      [kUpb_EncodedType_Message] = kUpb_FieldRep_Pointer,
       [kUpb_EncodedType_Bytes] = kUpb_FieldRep_StringView,
       [kUpb_EncodedType_UInt32] = kUpb_FieldRep_4Byte,
-      [kUpb_EncodedType_Enum] = kUpb_FieldRep_4Byte,
+      [kUpb_EncodedType_OpenEnum] = kUpb_FieldRep_4Byte,
       [kUpb_EncodedType_SFixed32] = kUpb_FieldRep_4Byte,
       [kUpb_EncodedType_SFixed64] = kUpb_FieldRep_8Byte,
       [kUpb_EncodedType_SInt32] = kUpb_FieldRep_4Byte,
       [kUpb_EncodedType_SInt64] = kUpb_FieldRep_8Byte,
+      [kUpb_EncodedType_ClosedEnum] = kUpb_FieldRep_4Byte,
   };
 
-  static const char kUpb_EncodedToType[] = {
-      [kUpb_EncodedType_Double] = kUpb_FieldType_Double,
-      [kUpb_EncodedType_Float] = kUpb_FieldType_Float,
-      [kUpb_EncodedType_Int64] = kUpb_FieldType_Int64,
-      [kUpb_EncodedType_UInt64] = kUpb_FieldType_UInt64,
-      [kUpb_EncodedType_Int32] = kUpb_FieldType_Int32,
-      [kUpb_EncodedType_Fixed64] = kUpb_FieldType_Fixed64,
-      [kUpb_EncodedType_Fixed32] = kUpb_FieldType_Fixed32,
-      [kUpb_EncodedType_Bool] = kUpb_FieldType_Bool,
-      [kUpb_EncodedType_String] = kUpb_FieldType_String,
-      [kUpb_EncodedType_Group] = kUpb_FieldType_Group,
-      [kUpb_EncodedType_Message] = kUpb_FieldType_Message,
-      [kUpb_EncodedType_Bytes] = kUpb_FieldType_Bytes,
-      [kUpb_EncodedType_UInt32] = kUpb_FieldType_UInt32,
-      [kUpb_EncodedType_Enum] = kUpb_FieldType_Enum,
-      [kUpb_EncodedType_SFixed32] = kUpb_FieldType_SFixed32,
-      [kUpb_EncodedType_SFixed64] = kUpb_FieldType_SFixed64,
-      [kUpb_EncodedType_SInt32] = kUpb_FieldType_SInt32,
-      [kUpb_EncodedType_SInt64] = kUpb_FieldType_SInt64,
-  };
+  char pointer_rep = d->platform == kUpb_MiniTablePlatform_32Bit
+                         ? kUpb_FieldRep_4Byte
+                         : kUpb_FieldRep_8Byte;
 
-  int8_t type = upb_FromBase92(ch);
-  if (ch >= upb_ToBase92(kUpb_EncodedType_RepeatedBase)) {
+  int8_t type = _upb_FromBase92(ch);
+  if (ch >= _upb_ToBase92(kUpb_EncodedType_RepeatedBase)) {
     type -= kUpb_EncodedType_RepeatedBase;
     field->mode = kUpb_FieldMode_Array;
-    field->mode |= kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift;
+    field->mode |= pointer_rep << kUpb_FieldRep_Shift;
     field->offset = kNoPresence;
   } else {
-    if (type >= sizeof(kUpb_EncodedToFieldRep)) {
+    field->mode = kUpb_FieldMode_Scalar;
+    field->offset = kHasbitPresence;
+    if (type == kUpb_EncodedType_Group || type == kUpb_EncodedType_Message) {
+      field->mode |= pointer_rep << kUpb_FieldRep_Shift;
+    } else if (type >= sizeof(kUpb_EncodedToFieldRep)) {
       upb_MtDecoder_ErrorFormat(d, "Invalid field type: %d", (int)type);
       UPB_UNREACHABLE();
+    } else {
+      field->mode |= kUpb_EncodedToFieldRep[type] << kUpb_FieldRep_Shift;
     }
-    field->mode = kUpb_FieldMode_Scalar;
-    field->mode |= kUpb_EncodedToFieldRep[type] << kUpb_FieldRep_Shift;
-    field->offset = kHasbitPresence;
   }
   if (type >= sizeof(kUpb_EncodedToType)) {
     upb_MtDecoder_ErrorFormat(d, "Invalid field type: %d", (int)type);
     UPB_UNREACHABLE();
   }
   upb_MiniTable_SetTypeAndSub(field, kUpb_EncodedToType[type], sub_count,
-                              msg_modifiers);
+                              msg_modifiers, type == kUpb_EncodedType_OpenEnum);
 }
 
 static void upb_MtDecoder_ModifyField(upb_MtDecoder* d,
@@ -5260,13 +5467,15 @@ static void upb_MtDecoder_PushOneof(upb_MtDecoder* d, upb_LayoutItem item) {
 size_t upb_MtDecoder_SizeOfRep(upb_FieldRep rep,
                                upb_MiniTablePlatform platform) {
   static const uint8_t kRepToSize32[] = {
-      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_Pointer] = 4, [kUpb_FieldRep_StringView] = 8,
+      [kUpb_FieldRep_1Byte] = 1,
+      [kUpb_FieldRep_4Byte] = 4,
+      [kUpb_FieldRep_StringView] = 8,
       [kUpb_FieldRep_8Byte] = 8,
   };
   static const uint8_t kRepToSize64[] = {
-      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_Pointer] = 8, [kUpb_FieldRep_StringView] = 16,
+      [kUpb_FieldRep_1Byte] = 1,
+      [kUpb_FieldRep_4Byte] = 4,
+      [kUpb_FieldRep_StringView] = 16,
       [kUpb_FieldRep_8Byte] = 8,
   };
   UPB_ASSERT(sizeof(upb_StringView) ==
@@ -5278,13 +5487,15 @@ size_t upb_MtDecoder_SizeOfRep(upb_FieldRep rep,
 size_t upb_MtDecoder_AlignOfRep(upb_FieldRep rep,
                                 upb_MiniTablePlatform platform) {
   static const uint8_t kRepToAlign32[] = {
-      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_Pointer] = 4, [kUpb_FieldRep_StringView] = 4,
+      [kUpb_FieldRep_1Byte] = 1,
+      [kUpb_FieldRep_4Byte] = 4,
+      [kUpb_FieldRep_StringView] = 4,
       [kUpb_FieldRep_8Byte] = 8,
   };
   static const uint8_t kRepToAlign64[] = {
-      [kUpb_FieldRep_1Byte] = 1,   [kUpb_FieldRep_4Byte] = 4,
-      [kUpb_FieldRep_Pointer] = 8, [kUpb_FieldRep_StringView] = 8,
+      [kUpb_FieldRep_1Byte] = 1,
+      [kUpb_FieldRep_4Byte] = 4,
+      [kUpb_FieldRep_StringView] = 8,
       [kUpb_FieldRep_8Byte] = 8,
   };
   UPB_ASSERT(UPB_ALIGN_OF(upb_StringView) ==
@@ -5377,7 +5588,9 @@ static const char* upb_MtDecoder_ParseModifier(upb_MtDecoder* d,
 
 static void upb_MtDecoder_AllocateSubs(upb_MtDecoder* d, uint32_t sub_count) {
   size_t subs_bytes = sizeof(*d->table->subs) * sub_count;
-  d->table->subs = upb_Arena_Malloc(d->arena, subs_bytes);
+  void* subs = upb_Arena_Malloc(d->arena, subs_bytes);
+  memset(subs, 0, subs_bytes);
+  d->table->subs = subs;
   upb_MtDecoder_CheckOutOfMemory(d, d->table->subs);
 }
 
@@ -5429,6 +5642,9 @@ static const char* upb_MtDecoder_Parse(upb_MtDecoder* d, const char* ptr,
                                              kUpb_EncodedValue_MaxSkip, &skip);
       last_field_number += skip;
       last_field_number--;  // Next field seen will increment.
+    } else {
+      upb_MtDecoder_ErrorFormat(d, "Invalid char: %c", ch);
+      UPB_UNREACHABLE();
     }
   }
 
@@ -5592,6 +5808,110 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
   d->table->size = UPB_ALIGN_UP(d->table->size, 8);
 }
 
+static void upb_MiniTable_BuildMapEntry(upb_MtDecoder* d,
+                                        upb_FieldType key_type,
+                                        upb_FieldType value_type,
+                                        bool value_is_proto3_enum) {
+  upb_MiniTable_Field* fields = upb_Arena_Malloc(d->arena, sizeof(*fields) * 2);
+  if (!fields) {
+    upb_MtDecoder_ErrorFormat(d, "OOM while building map mini table field");
+    UPB_UNREACHABLE();
+  }
+
+  upb_MiniTable_Sub* subs = NULL;
+  if (value_is_proto3_enum) {
+    UPB_ASSERT(value_type == kUpb_FieldType_Enum);
+    // No sub needed.
+  } else if (value_type == kUpb_FieldType_Message ||
+             value_type == kUpb_FieldType_Group ||
+             value_type == kUpb_FieldType_Enum) {
+    subs = upb_Arena_Malloc(d->arena, sizeof(*subs));
+    if (!subs) {
+      upb_MtDecoder_ErrorFormat(d, "OOM while building map mini table sub");
+      UPB_UNREACHABLE();
+    }
+  }
+
+  size_t field_size =
+      upb_MtDecoder_SizeOfRep(kUpb_FieldRep_StringView, d->platform);
+
+  fields[0].number = 1;
+  fields[1].number = 2;
+  fields[0].mode = kUpb_FieldMode_Scalar;
+  fields[1].mode = kUpb_FieldMode_Scalar;
+  fields[0].presence = 0;
+  fields[1].presence = 0;
+  fields[0].offset = 0;
+  fields[1].offset = field_size;
+
+  upb_MiniTable_SetTypeAndSub(&fields[0], key_type, NULL, 0, false);
+  upb_MiniTable_SetTypeAndSub(&fields[1], value_type, NULL, 0,
+                              value_is_proto3_enum);
+
+  upb_MiniTable* ret = d->table;
+  ret->size = UPB_ALIGN_UP(2 * field_size, 8);
+  ret->field_count = 2;
+  ret->ext = kUpb_ExtMode_NonExtendable | kUpb_ExtMode_IsMapEntry;
+  ret->dense_below = 2;
+  ret->table_mask = -1;
+  ret->required_count = 0;
+  ret->subs = subs;
+  ret->fields = fields;
+}
+
+static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
+                                   size_t len) {
+  if (len < 2) {
+    upb_MtDecoder_ErrorFormat(d, "Invalid map encode length: %zu", len);
+    UPB_UNREACHABLE();
+  }
+  const upb_EncodedType e0 = _upb_FromBase92(data[0]);
+  const upb_EncodedType e1 = _upb_FromBase92(data[1]);
+  switch (e0) {
+    case kUpb_EncodedType_Fixed32:
+    case kUpb_EncodedType_Fixed64:
+    case kUpb_EncodedType_SFixed32:
+    case kUpb_EncodedType_SFixed64:
+    case kUpb_EncodedType_Int32:
+    case kUpb_EncodedType_UInt32:
+    case kUpb_EncodedType_SInt32:
+    case kUpb_EncodedType_Int64:
+    case kUpb_EncodedType_UInt64:
+    case kUpb_EncodedType_SInt64:
+    case kUpb_EncodedType_Bool:
+    case kUpb_EncodedType_String:
+      break;
+
+    default:
+      upb_MtDecoder_ErrorFormat(d, "Invalid map key field type: %d", e0);
+      UPB_UNREACHABLE();
+  }
+  if (e1 >= sizeof(kUpb_EncodedToType)) {
+    upb_MtDecoder_ErrorFormat(d, "Invalid map value field type: %d", e1);
+    UPB_UNREACHABLE();
+  }
+  const upb_FieldType key_type = kUpb_EncodedToType[e0];
+  const upb_FieldType val_type = kUpb_EncodedToType[e1];
+  const bool value_is_proto3_enum = (e1 == kUpb_EncodedType_OpenEnum);
+  upb_MiniTable_BuildMapEntry(d, key_type, val_type, value_is_proto3_enum);
+}
+
+static void upb_MtDecoder_ParseMessageSet(upb_MtDecoder* d, const char* data,
+                                          size_t len) {
+  if (len > 0) {
+    upb_MtDecoder_ErrorFormat(d, "Invalid message set encode length: %zu", len);
+    UPB_UNREACHABLE();
+  }
+
+  upb_MiniTable* ret = d->table;
+  ret->size = 0;
+  ret->field_count = 0;
+  ret->ext = kUpb_ExtMode_IsMessageSet;
+  ret->dense_below = 0;
+  ret->table_mask = -1;
+  ret->required_count = 0;
+}
+
 upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
                                           upb_MiniTablePlatform platform,
                                           upb_Arena* arena, void** buf,
@@ -5624,72 +5944,35 @@ upb_MiniTable* upb_MiniTable_BuildWithBuf(const char* data, size_t len,
   decoder.table->table_mask = -1;
   decoder.table->required_count = 0;
 
-  upb_MtDecoder_ParseMessage(&decoder, data, len);
-  upb_MtDecoder_AssignHasbits(decoder.table);
-  upb_MtDecoder_SortLayoutItems(&decoder);
-  upb_MtDecoder_AssignOffsets(&decoder);
+  // Strip off and verify the version tag.
+  if (!len--) goto done;
+  const char vers = *data++;
+
+  switch (vers) {
+    case kUpb_EncodedVersion_MapV1:
+      upb_MtDecoder_ParseMap(&decoder, data, len);
+      break;
+
+    case kUpb_EncodedVersion_MessageV1:
+      upb_MtDecoder_ParseMessage(&decoder, data, len);
+      upb_MtDecoder_AssignHasbits(decoder.table);
+      upb_MtDecoder_SortLayoutItems(&decoder);
+      upb_MtDecoder_AssignOffsets(&decoder);
+      break;
+
+    case kUpb_EncodedVersion_MessageSetV1:
+      upb_MtDecoder_ParseMessageSet(&decoder, data, len);
+      break;
+
+    default:
+      upb_MtDecoder_ErrorFormat(&decoder, "Invalid message version: %c", vers);
+      UPB_UNREACHABLE();
+  }
 
 done:
   *buf = decoder.vec.data;
   *buf_size = decoder.vec.capacity * sizeof(*decoder.vec.data);
   return decoder.table;
-}
-
-upb_MiniTable* upb_MiniTable_BuildMessageSet(upb_MiniTablePlatform platform,
-                                             upb_Arena* arena) {
-  upb_MiniTable* ret = upb_Arena_Malloc(arena, sizeof(*ret));
-  if (!ret) return NULL;
-
-  ret->size = 0;
-  ret->field_count = 0;
-  ret->ext = kUpb_ExtMode_IsMessageSet;
-  ret->dense_below = 0;
-  ret->table_mask = -1;
-  ret->required_count = 0;
-  return ret;
-}
-
-upb_MiniTable* upb_MiniTable_BuildMapEntry(upb_FieldType key_type,
-                                           upb_FieldType value_type,
-                                           bool value_is_proto3_enum,
-                                           upb_MiniTablePlatform platform,
-                                           upb_Arena* arena) {
-  upb_MiniTable* ret = upb_Arena_Malloc(arena, sizeof(*ret));
-  upb_MiniTable_Field* fields = upb_Arena_Malloc(arena, sizeof(*fields) * 2);
-  if (!ret || !fields) return NULL;
-
-  upb_MiniTable_Sub* subs = NULL;
-  if (value_is_proto3_enum) value_type = kUpb_FieldType_Int32;
-  if (value_type == kUpb_FieldType_Message ||
-      value_type == kUpb_FieldType_Group || value_type == kUpb_FieldType_Enum) {
-    subs = upb_Arena_Malloc(arena, sizeof(*subs));
-    if (!subs) return NULL;
-  }
-
-  size_t field_size =
-      upb_MtDecoder_SizeOfRep(kUpb_FieldRep_StringView, platform);
-
-  fields[0].number = 1;
-  fields[1].number = 2;
-  fields[0].mode = kUpb_FieldMode_Scalar;
-  fields[1].mode = kUpb_FieldMode_Scalar;
-  fields[0].presence = 0;
-  fields[1].presence = 0;
-  fields[0].offset = 0;
-  fields[1].offset = field_size;
-
-  upb_MiniTable_SetTypeAndSub(&fields[0], key_type, NULL, 0);
-  upb_MiniTable_SetTypeAndSub(&fields[1], value_type, NULL, 0);
-
-  ret->size = UPB_ALIGN_UP(2 * field_size, 8);
-  ret->field_count = 2;
-  ret->ext = kUpb_ExtMode_NonExtendable | kUpb_ExtMode_IsMapEntry;
-  ret->dense_below = 2;
-  ret->table_mask = -1;
-  ret->required_count = 0;
-  ret->subs = subs;
-  ret->fields = fields;
-  return ret;
 }
 
 static size_t upb_MiniTable_EnumSize(size_t count) {
@@ -5731,7 +6014,7 @@ static void upb_MiniTable_BuildEnumValue(upb_MtDecoder* d, uint32_t val) {
 upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
                                             upb_Arena* arena,
                                             upb_Status* status) {
-  upb_MtDecoder d = {
+  upb_MtDecoder decoder = {
       .enum_table = upb_Arena_Malloc(arena, upb_MiniTable_EnumSize(2)),
       .enum_value_count = 0,
       .enum_data_count = 0,
@@ -5741,33 +6024,41 @@ upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
       .arena = arena,
   };
 
-  if (UPB_SETJMP(d.err)) {
-    return NULL;
+  if (UPB_SETJMP(decoder.err)) return NULL;
+
+  // If the string is non-empty then it must begin with a version tag.
+  if (len) {
+    if (*data != kUpb_EncodedVersion_EnumV1) {
+      upb_MtDecoder_ErrorFormat(&decoder, "Invalid enum version: %c", *data);
+      UPB_UNREACHABLE();
+    }
+    data++;
+    len--;
   }
 
-  upb_MtDecoder_CheckOutOfMemory(&d, d.enum_table);
+  upb_MtDecoder_CheckOutOfMemory(&decoder, decoder.enum_table);
 
   // Guarantee at least 64 bits of mask without checking mask size.
-  d.enum_table->mask_limit = 64;
-  d.enum_table = _upb_MiniTable_AddEnumDataMember(&d, 0);
-  d.enum_table = _upb_MiniTable_AddEnumDataMember(&d, 0);
+  decoder.enum_table->mask_limit = 64;
+  decoder.enum_table = _upb_MiniTable_AddEnumDataMember(&decoder, 0);
+  decoder.enum_table = _upb_MiniTable_AddEnumDataMember(&decoder, 0);
 
-  d.enum_table->value_count = 0;
+  decoder.enum_table->value_count = 0;
 
   const char* ptr = data;
   uint32_t base = 0;
 
-  while (ptr < d.end) {
+  while (ptr < decoder.end) {
     char ch = *ptr++;
     if (ch <= kUpb_EncodedValue_MaxEnumMask) {
-      uint32_t mask = upb_FromBase92(ch);
+      uint32_t mask = _upb_FromBase92(ch);
       for (int i = 0; i < 5; i++, base++, mask >>= 1) {
-        if (mask & 1) upb_MiniTable_BuildEnumValue(&d, base);
+        if (mask & 1) upb_MiniTable_BuildEnumValue(&decoder, base);
       }
     } else if (kUpb_EncodedValue_MinSkip <= ch &&
                ch <= kUpb_EncodedValue_MaxSkip) {
       uint32_t skip;
-      ptr = upb_MiniTable_DecodeBase92Varint(&d, ptr, ch,
+      ptr = upb_MiniTable_DecodeBase92Varint(&decoder, ptr, ch,
                                              kUpb_EncodedValue_MinSkip,
                                              kUpb_EncodedValue_MaxSkip, &skip);
       base += skip;
@@ -5777,7 +6068,7 @@ upb_MiniTable_Enum* upb_MiniTable_BuildEnum(const char* data, size_t len,
     }
   }
 
-  return d.enum_table;
+  return decoder.enum_table;
 }
 
 const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
@@ -5791,8 +6082,16 @@ const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
       .table = NULL,
   };
 
-  if (UPB_SETJMP(decoder.err)) {
-    return NULL;
+  if (UPB_SETJMP(decoder.err)) return NULL;
+
+  // If the string is non-empty then it must begin with a version tag.
+  if (len) {
+    if (*data != kUpb_EncodedVersion_ExtensionV1) {
+      upb_MtDecoder_ErrorFormat(&decoder, "Invalid ext version: %c", *data);
+      UPB_UNREACHABLE();
+    }
+    data++;
+    len--;
   }
 
   uint16_t count = 0;
@@ -5838,8 +6137,7 @@ void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
              (uintptr_t)field <
                  (uintptr_t)(table->fields + table->field_count));
   if (sub->ext & kUpb_ExtMode_IsMapEntry) {
-    field->mode =
-        (kUpb_FieldRep_Pointer << kUpb_FieldRep_Shift) | kUpb_FieldMode_Map;
+    field->mode = (field->mode & ~kUpb_FieldMode_Mask) | kUpb_FieldMode_Map;
   }
   upb_MiniTable_Sub* table_sub = (void*)&table->subs[field->submsg_index];
   table_sub->submsg = sub;
@@ -5854,6 +6152,273 @@ void upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTable_Field* field,
   table_sub->subenum = sub;
 }
 
+#include <inttypes.h>
+
+
+// Must be last.
+
+typedef struct {
+  uint64_t present_values_mask;
+  uint32_t last_written_value;
+} upb_MtDataEncoderInternal_EnumState;
+
+typedef struct {
+  uint64_t msg_modifiers;
+  uint32_t last_field_num;
+  enum {
+    kUpb_OneofState_NotStarted,
+    kUpb_OneofState_StartedOneof,
+    kUpb_OneofState_EmittedOneofField,
+  } oneof_state;
+} upb_MtDataEncoderInternal_MsgState;
+
+typedef struct {
+  char* buf_start;  // Only for checking kUpb_MtDataEncoder_MinSize.
+  union {
+    upb_MtDataEncoderInternal_EnumState enum_state;
+    upb_MtDataEncoderInternal_MsgState msg_state;
+  } state;
+} upb_MtDataEncoderInternal;
+
+static upb_MtDataEncoderInternal* upb_MtDataEncoder_GetInternal(
+    upb_MtDataEncoder* e, char* buf_start) {
+  UPB_ASSERT(sizeof(upb_MtDataEncoderInternal) <= sizeof(e->internal));
+  upb_MtDataEncoderInternal* ret = (upb_MtDataEncoderInternal*)e->internal;
+  ret->buf_start = buf_start;
+  return ret;
+}
+
+static char* upb_MtDataEncoder_PutRaw(upb_MtDataEncoder* e, char* ptr,
+                                      char ch) {
+  upb_MtDataEncoderInternal* in = (upb_MtDataEncoderInternal*)e->internal;
+  UPB_ASSERT(ptr - in->buf_start < kUpb_MtDataEncoder_MinSize);
+  if (ptr == e->end) return NULL;
+  *ptr++ = ch;
+  return ptr;
+}
+
+static char* upb_MtDataEncoder_Put(upb_MtDataEncoder* e, char* ptr, char ch) {
+  return upb_MtDataEncoder_PutRaw(e, ptr, _upb_ToBase92(ch));
+}
+
+static char* upb_MtDataEncoder_PutBase92Varint(upb_MtDataEncoder* e, char* ptr,
+                                               uint32_t val, int min, int max) {
+  int shift = _upb_Log2Ceiling(_upb_FromBase92(max) - _upb_FromBase92(min) + 1);
+  UPB_ASSERT(shift <= 6);
+  uint32_t mask = (1 << shift) - 1;
+  do {
+    uint32_t bits = val & mask;
+    ptr = upb_MtDataEncoder_Put(e, ptr, bits + _upb_FromBase92(min));
+    if (!ptr) return NULL;
+    val >>= shift;
+  } while (val);
+  return ptr;
+}
+
+char* upb_MtDataEncoder_PutModifier(upb_MtDataEncoder* e, char* ptr,
+                                    uint64_t mod) {
+  if (mod) {
+    ptr = upb_MtDataEncoder_PutBase92Varint(e, ptr, mod,
+                                            kUpb_EncodedValue_MinModifier,
+                                            kUpb_EncodedValue_MaxModifier);
+  }
+  return ptr;
+}
+
+char* upb_MtDataEncoder_EncodeExtension(upb_MtDataEncoder* e, char* ptr,
+                                        upb_FieldType type, uint32_t field_num,
+                                        uint64_t field_mod) {
+  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
+  in->state.msg_state.msg_modifiers = 0;
+  in->state.msg_state.last_field_num = 0;
+  in->state.msg_state.oneof_state = kUpb_OneofState_NotStarted;
+
+  ptr = upb_MtDataEncoder_PutRaw(e, ptr, kUpb_EncodedVersion_ExtensionV1);
+  if (!ptr) return NULL;
+
+  return upb_MtDataEncoder_PutField(e, ptr, type, field_num, field_mod);
+}
+
+char* upb_MtDataEncoder_EncodeMap(upb_MtDataEncoder* e, char* ptr,
+                                  upb_FieldType key_type,
+                                  upb_FieldType value_type,
+                                  uint64_t value_mod) {
+  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
+  in->state.msg_state.msg_modifiers = 0;
+  in->state.msg_state.last_field_num = 0;
+  in->state.msg_state.oneof_state = kUpb_OneofState_NotStarted;
+
+  ptr = upb_MtDataEncoder_PutRaw(e, ptr, kUpb_EncodedVersion_MapV1);
+  if (!ptr) return NULL;
+
+  ptr = upb_MtDataEncoder_PutField(e, ptr, key_type, 1, 0);
+  if (!ptr) return NULL;
+
+  return upb_MtDataEncoder_PutField(e, ptr, value_type, 2, value_mod);
+}
+
+char* upb_MtDataEncoder_EncodeMessageSet(upb_MtDataEncoder* e, char* ptr) {
+  (void)upb_MtDataEncoder_GetInternal(e, ptr);
+  return upb_MtDataEncoder_PutRaw(e, ptr, kUpb_EncodedVersion_MessageSetV1);
+}
+
+char* upb_MtDataEncoder_StartMessage(upb_MtDataEncoder* e, char* ptr,
+                                     uint64_t msg_mod) {
+  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
+  in->state.msg_state.msg_modifiers = msg_mod;
+  in->state.msg_state.last_field_num = 0;
+  in->state.msg_state.oneof_state = kUpb_OneofState_NotStarted;
+
+  ptr = upb_MtDataEncoder_PutRaw(e, ptr, kUpb_EncodedVersion_MessageV1);
+  if (!ptr) return NULL;
+
+  return upb_MtDataEncoder_PutModifier(e, ptr, msg_mod);
+}
+
+char* upb_MtDataEncoder_PutField(upb_MtDataEncoder* e, char* ptr,
+                                 upb_FieldType type, uint32_t field_num,
+                                 uint64_t field_mod) {
+  static const char kUpb_TypeToEncoded[] = {
+      [kUpb_FieldType_Double] = kUpb_EncodedType_Double,
+      [kUpb_FieldType_Float] = kUpb_EncodedType_Float,
+      [kUpb_FieldType_Int64] = kUpb_EncodedType_Int64,
+      [kUpb_FieldType_UInt64] = kUpb_EncodedType_UInt64,
+      [kUpb_FieldType_Int32] = kUpb_EncodedType_Int32,
+      [kUpb_FieldType_Fixed64] = kUpb_EncodedType_Fixed64,
+      [kUpb_FieldType_Fixed32] = kUpb_EncodedType_Fixed32,
+      [kUpb_FieldType_Bool] = kUpb_EncodedType_Bool,
+      [kUpb_FieldType_String] = kUpb_EncodedType_String,
+      [kUpb_FieldType_Group] = kUpb_EncodedType_Group,
+      [kUpb_FieldType_Message] = kUpb_EncodedType_Message,
+      [kUpb_FieldType_Bytes] = kUpb_EncodedType_Bytes,
+      [kUpb_FieldType_UInt32] = kUpb_EncodedType_UInt32,
+      [kUpb_FieldType_Enum] = kUpb_EncodedType_OpenEnum,
+      [kUpb_FieldType_SFixed32] = kUpb_EncodedType_SFixed32,
+      [kUpb_FieldType_SFixed64] = kUpb_EncodedType_SFixed64,
+      [kUpb_FieldType_SInt32] = kUpb_EncodedType_SInt32,
+      [kUpb_FieldType_SInt64] = kUpb_EncodedType_SInt64,
+  };
+
+  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
+  if (field_num <= in->state.msg_state.last_field_num) return NULL;
+  if (in->state.msg_state.last_field_num + 1 != field_num) {
+    // Put skip.
+    UPB_ASSERT(field_num > in->state.msg_state.last_field_num);
+    uint32_t skip = field_num - in->state.msg_state.last_field_num;
+    ptr = upb_MtDataEncoder_PutBase92Varint(
+        e, ptr, skip, kUpb_EncodedValue_MinSkip, kUpb_EncodedValue_MaxSkip);
+    if (!ptr) return NULL;
+  }
+  in->state.msg_state.last_field_num = field_num;
+
+  uint32_t encoded_modifiers = 0;
+
+  // Put field type.
+  int encoded_type = kUpb_TypeToEncoded[type];
+  if (field_mod & kUpb_FieldModifier_IsClosedEnum) {
+    UPB_ASSERT(type == kUpb_FieldType_Enum);
+    encoded_type = kUpb_EncodedType_ClosedEnum;
+  }
+  if (field_mod & kUpb_FieldModifier_IsRepeated) {
+    // Repeated fields shift the type number up (unlike other modifiers which
+    // are bit flags).
+    encoded_type += kUpb_EncodedType_RepeatedBase;
+
+    if (_upb_FieldType_IsPackable(type)) {
+      bool field_is_packed = field_mod & kUpb_FieldModifier_IsPacked;
+      bool default_is_packed = in->state.msg_state.msg_modifiers &
+                               kUpb_MessageModifier_DefaultIsPacked;
+      if (field_is_packed != default_is_packed) {
+        encoded_modifiers |= kUpb_EncodedFieldModifier_FlipPacked;
+      }
+    }
+  }
+  ptr = upb_MtDataEncoder_Put(e, ptr, encoded_type);
+  if (!ptr) return NULL;
+
+  if (field_mod & kUpb_FieldModifier_IsProto3Singular) {
+    encoded_modifiers |= kUpb_EncodedFieldModifier_IsProto3Singular;
+  }
+  if (field_mod & kUpb_FieldModifier_IsRequired) {
+    encoded_modifiers |= kUpb_EncodedFieldModifier_IsRequired;
+  }
+  return upb_MtDataEncoder_PutModifier(e, ptr, encoded_modifiers);
+}
+
+char* upb_MtDataEncoder_StartOneof(upb_MtDataEncoder* e, char* ptr) {
+  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
+  if (in->state.msg_state.oneof_state == kUpb_OneofState_NotStarted) {
+    ptr = upb_MtDataEncoder_Put(e, ptr, _upb_FromBase92(kUpb_EncodedValue_End));
+  } else {
+    ptr = upb_MtDataEncoder_Put(
+        e, ptr, _upb_FromBase92(kUpb_EncodedValue_OneofSeparator));
+  }
+  in->state.msg_state.oneof_state = kUpb_OneofState_StartedOneof;
+  return ptr;
+}
+
+char* upb_MtDataEncoder_PutOneofField(upb_MtDataEncoder* e, char* ptr,
+                                      uint32_t field_num) {
+  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
+  if (in->state.msg_state.oneof_state == kUpb_OneofState_EmittedOneofField) {
+    ptr = upb_MtDataEncoder_Put(
+        e, ptr, _upb_FromBase92(kUpb_EncodedValue_FieldSeparator));
+    if (!ptr) return NULL;
+  }
+  ptr = upb_MtDataEncoder_PutBase92Varint(e, ptr, field_num, _upb_ToBase92(0),
+                                          _upb_ToBase92(63));
+  in->state.msg_state.oneof_state = kUpb_OneofState_EmittedOneofField;
+  return ptr;
+}
+
+char* upb_MtDataEncoder_StartEnum(upb_MtDataEncoder* e, char* ptr) {
+  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
+  in->state.enum_state.present_values_mask = 0;
+  in->state.enum_state.last_written_value = 0;
+
+  return upb_MtDataEncoder_PutRaw(e, ptr, kUpb_EncodedVersion_EnumV1);
+}
+
+static char* upb_MtDataEncoder_FlushDenseEnumMask(upb_MtDataEncoder* e,
+                                                  char* ptr) {
+  upb_MtDataEncoderInternal* in = (upb_MtDataEncoderInternal*)e->internal;
+  ptr = upb_MtDataEncoder_Put(e, ptr, in->state.enum_state.present_values_mask);
+  in->state.enum_state.present_values_mask = 0;
+  in->state.enum_state.last_written_value += 5;
+  return ptr;
+}
+
+char* upb_MtDataEncoder_PutEnumValue(upb_MtDataEncoder* e, char* ptr,
+                                     uint32_t val) {
+  // TODO(b/229641772): optimize this encoding.
+  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
+  UPB_ASSERT(val >= in->state.enum_state.last_written_value);
+  uint32_t delta = val - in->state.enum_state.last_written_value;
+  if (delta >= 5 && in->state.enum_state.present_values_mask) {
+    ptr = upb_MtDataEncoder_FlushDenseEnumMask(e, ptr);
+    if (!ptr) {
+      return NULL;
+    }
+    delta -= 5;
+  }
+
+  if (delta >= 5) {
+    ptr = upb_MtDataEncoder_PutBase92Varint(
+        e, ptr, delta, kUpb_EncodedValue_MinSkip, kUpb_EncodedValue_MaxSkip);
+    in->state.enum_state.last_written_value += delta;
+    delta = 0;
+  }
+
+  UPB_ASSERT((in->state.enum_state.present_values_mask >> delta) == 0);
+  in->state.enum_state.present_values_mask |= 1ULL << delta;
+  return ptr;
+}
+
+char* upb_MtDataEncoder_EndEnum(upb_MtDataEncoder* e, char* ptr) {
+  upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
+  if (!in->state.enum_state.present_values_mask) return ptr;
+  return upb_MtDataEncoder_FlushDenseEnumMask(e, ptr);
+}
 
 #include <string.h>
 
@@ -6162,7 +6727,6 @@ void _upb_DefBuilder_CheckIdentSlow(upb_DefBuilder* ctx, upb_StringView name,
   // We should never reach this point.
   UPB_ASSERT(false);
 }
-
 
 
 // Must be last.
@@ -6529,7 +7093,7 @@ size_t _upb_DefPool_BytesLoaded(const upb_DefPool* s) {
 
 upb_Arena* _upb_DefPool_Arena(const upb_DefPool* s) { return s->arena; }
 
-const upb_FieldDef* _upb_DefPool_FindExtensionByMiniTable(
+const upb_FieldDef* upb_DefPool_FindExtensionByMiniTable(
     const upb_DefPool* s, const upb_MiniTable_Extension* ext) {
   upb_value v;
   bool ok = upb_inttable_lookup(&s->exts, (uintptr_t)ext, &v);
@@ -6540,9 +7104,10 @@ const upb_FieldDef* _upb_DefPool_FindExtensionByMiniTable(
 const upb_FieldDef* upb_DefPool_FindExtensionByNumber(const upb_DefPool* s,
                                                       const upb_MessageDef* m,
                                                       int32_t fieldnum) {
-  const upb_MiniTable* l = upb_MessageDef_MiniTable(m);
-  const upb_MiniTable_Extension* ext = _upb_extreg_get(s->extreg, l, fieldnum);
-  return ext ? _upb_DefPool_FindExtensionByMiniTable(s, ext) : NULL;
+  const upb_MiniTable* t = upb_MessageDef_MiniTable(m);
+  const upb_MiniTable_Extension* ext =
+      upb_ExtensionRegistry_Lookup(s->extreg, t, fieldnum);
+  return ext ? upb_DefPool_FindExtensionByMiniTable(s, ext) : NULL;
 }
 
 const upb_ExtensionRegistry* upb_DefPool_ExtensionRegistry(
@@ -6625,7 +7190,6 @@ bool _upb_DescState_Grow(upb_DescState* d, upb_Arena* a) {
 
   return true;
 }
-
 
 #include <stdio.h>
 
@@ -6735,6 +7299,11 @@ const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i) {
   return _upb_EnumValueDef_At(e->values, i);
 }
 
+bool upb_EnumDef_IsClosed(const upb_EnumDef* e) {
+  if (UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3) return false;
+  return upb_FileDef_Syntax(e->file) == kUpb_Syntax_Proto2;
+}
+
 bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
                                       upb_StringView* out) {
   upb_DescState s;
@@ -6746,7 +7315,8 @@ bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
     if (!sorted) return false;
   }
 
-  upb_MtDataEncoder_StartEnum(&s.e);
+  if (!_upb_DescState_Grow(&s, a)) return false;
+  s.ptr = upb_MtDataEncoder_StartEnum(&s.e, s.ptr);
 
   // Duplicate values are allowed but we only encode each value once.
   uint32_t previous = 0;
@@ -6822,7 +7392,7 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
                          e->full_name);
   }
 
-  UBP_DEF_SET_OPTIONS(e->opts, EnumDescriptorProto, EnumOptions, enum_proto);
+  UPB_DEF_SET_OPTIONS(e->opts, EnumDescriptorProto, EnumOptions, enum_proto);
 
   upb_inttable_compact(&e->iton, ctx->arena);
 
@@ -6855,7 +7425,6 @@ upb_EnumDef* _upb_EnumDefs_New(upb_DefBuilder* ctx, int n,
   }
   return e;
 }
-
 
 
 // Must be last.
@@ -6931,7 +7500,7 @@ static void create_enumvaldef(upb_DefBuilder* ctx, const char* prefix,
   _upb_DefBuilder_Add(ctx, v->full_name,
                       _upb_DefType_Pack(v, UPB_DEFTYPE_ENUMVAL));
 
-  UBP_DEF_SET_OPTIONS(v->opts, EnumValueDescriptorProto, EnumValueOptions,
+  UPB_DEF_SET_OPTIONS(v->opts, EnumValueDescriptorProto, EnumValueOptions,
                       val_proto);
 
   bool ok = _upb_EnumDef_Insert(e, v, ctx->arena);
@@ -6967,7 +7536,6 @@ upb_EnumValueDef* _upb_EnumValueDefs_New(
 
   return v;
 }
-
 
 
 // Must be last.
@@ -7024,13 +7592,12 @@ upb_ExtensionRange* _upb_ExtensionRanges_New(
 
     r[i].start = start;
     r[i].end = end;
-    UBP_DEF_SET_OPTIONS(r[i].opts, DescriptorProto_ExtensionRange,
+    UPB_DEF_SET_OPTIONS(r[i].opts, DescriptorProto_ExtensionRange,
                         ExtensionRangeOptions, protos[i]);
   }
 
   return r;
 }
-
 
 #include <ctype.h>
 #include <errno.h>
@@ -7242,13 +7809,6 @@ const upb_MiniTable_Extension* _upb_FieldDef_ExtensionMiniTable(
 bool _upb_FieldDef_IsClosedEnum(const upb_FieldDef* f) {
   if (UPB_TREAT_PROTO2_ENUMS_LIKE_PROTO3) return false;
   if (f->type_ != kUpb_FieldType_Enum) return false;
-
-  // TODO(https://github.com/protocolbuffers/upb/issues/541):
-  // fix map enum values to check for unknown enum values and put
-  // them in the unknown field set.
-  if (upb_MessageDef_IsMapEntry(upb_FieldDef_ContainingType(f))) {
-    return false;
-  }
 
   // TODO: Maybe make is_proto2 a bool at creation?
   const upb_FileDef* file = upb_EnumDef_File(f->sub.enumdef);
@@ -7643,7 +8203,7 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
     if (!ok) _upb_DefBuilder_OomErr(ctx);
   }
 
-  UBP_DEF_SET_OPTIONS(f->opts, FieldDescriptorProto, FieldOptions, field_proto);
+  UPB_DEF_SET_OPTIONS(f->opts, FieldDescriptorProto, FieldOptions, field_proto);
 
   if (google_protobuf_FieldOptions_has_packed(f->opts)) {
     f->is_packed_ = google_protobuf_FieldOptions_packed(f->opts);
@@ -7819,16 +8379,12 @@ bool upb_FieldDef_MiniDescriptorEncode(const upb_FieldDef* f, upb_Arena* a,
   upb_DescState s;
   _upb_DescState_Init(&s);
 
-  if (!_upb_DescState_Grow(&s, a)) return false;
-  s.ptr = upb_MtDataEncoder_StartMessage(&s.e, s.ptr, 0);
-
   const int number = upb_FieldDef_Number(f);
   const uint64_t modifiers = _upb_FieldDef_Modifiers(f);
 
   if (!_upb_DescState_Grow(&s, a)) return false;
-  s.ptr = upb_MtDataEncoder_PutField(&s.e, s.ptr, f->type_, number, modifiers);
-
-  if (!_upb_DescState_Grow(&s, a)) return false;
+  s.ptr = upb_MtDataEncoder_EncodeExtension(&s.e, s.ptr, f->type_, number,
+                                            modifiers);
   *s.ptr = '\0';
 
   out->data = s.buf;
@@ -7867,21 +8423,16 @@ static void resolve_extension(upb_DefBuilder* ctx, const char* prefix,
     }
 
     upb_MiniTable_Extension* mut_ext = (upb_MiniTable_Extension*)ext;
-    upb_MiniTable_Sub sub;
-    sub.submsg = NULL;
-    sub.subenum = NULL;
+    upb_MiniTable_Sub sub = {NULL};
+    if (upb_FieldDef_IsSubMessage(f)) {
+      sub.submsg = upb_MessageDef_MiniTable(f->sub.msgdef);
+    } else if (_upb_FieldDef_IsClosedEnum(f)) {
+      sub.subenum = _upb_EnumDef_MiniTable(f->sub.enumdef);
+    }
     bool ok2 = upb_MiniTable_BuildExtension(desc.data, desc.size, mut_ext,
                                             upb_MessageDef_MiniTable(m), sub,
                                             ctx->status);
     if (!ok2) _upb_DefBuilder_Errf(ctx, "Could not build extension mini table");
-
-    assert(mut_ext->field.number == f->number_);
-    mut_ext->extendee = upb_MessageDef_MiniTable(m);
-    if (upb_FieldDef_IsSubMessage(f)) {
-      mut_ext->sub.submsg = upb_MessageDef_MiniTable(f->sub.msgdef);
-    } else if (mut_ext->field.descriptortype == kUpb_FieldType_Enum) {
-      mut_ext->sub.subenum = _upb_EnumDef_MiniTable(f->sub.enumdef);
-    }
   }
 
   bool ok = _upb_DefPool_InsertExt(ctx->symtab, ext, f);
@@ -7928,7 +8479,6 @@ void _upb_FieldDef_Resolve(upb_DefBuilder* ctx, const char* prefix,
     resolve_extension(ctx, prefix, f, field_proto);
   }
 }
-
 
 
 // Must be last.
@@ -8150,7 +8700,7 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   }
 
   // Read options.
-  UBP_DEF_SET_OPTIONS(file->opts, FileDescriptorProto, FileOptions, file_proto);
+  UPB_DEF_SET_OPTIONS(file->opts, FileDescriptorProto, FileOptions, file_proto);
 
   // Verify dependencies.
   strs = google_protobuf_FileDescriptorProto_dependency(file_proto, &n);
@@ -8235,8 +8785,8 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   }
 
   if (file->ext_count) {
-    bool ok = _upb_extreg_add(_upb_DefPool_ExtReg(ctx->symtab),
-                              file->ext_layouts, file->ext_count);
+    bool ok = upb_ExtensionRegistry_AddArray(
+        _upb_DefPool_ExtReg(ctx->symtab), file->ext_layouts, file->ext_count);
     if (!ok) _upb_DefBuilder_OomErr(ctx);
   }
 }
@@ -8270,10 +8820,6 @@ static size_t get_field_size(const upb_MiniTable_Field* f) {
       8,                      /* kUpb_FieldType_SInt64 */
   };
   return upb_IsRepeatedOrMap(f) ? sizeof(void*) : sizes[f->descriptortype];
-}
-
-upb_Message* upb_Message_New(const upb_MessageDef* m, upb_Arena* a) {
-  return _upb_Message_New(upb_MessageDef_MiniTable(m), a);
 }
 
 static bool in_oneof(const upb_MiniTable_Field* field) {
@@ -8370,7 +8916,8 @@ make:
     ret.array = upb_Array_New(a, upb_FieldDef_CType(f));
   } else {
     UPB_ASSERT(upb_FieldDef_IsSubMessage(f));
-    ret.msg = upb_Message_New(upb_FieldDef_MessageSubDef(f), a);
+    const upb_MessageDef* m = upb_FieldDef_MessageSubDef(f);
+    ret.msg = upb_Message_New(upb_MessageDef_MiniTable(m), a);
   }
 
   val.array_val = ret.array;
@@ -8476,7 +9023,7 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
     if (i - n < count) {
       ext += count - 1 - (i - n);
       memcpy(out_val, &ext->data, sizeof(*out_val));
-      *out_f = _upb_DefPool_FindExtensionByMiniTable(ext_pool, ext->ext);
+      *out_f = upb_DefPool_FindExtensionByMiniTable(ext_pool, ext->ext);
       *iter = i;
       return true;
     }
@@ -8542,7 +9089,6 @@ bool upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
 }
 
 
-
 // Must be last.
 
 struct upb_MessageDef {
@@ -8581,7 +9127,7 @@ struct upb_MessageDef {
 };
 
 static void assign_msg_wellknowntype(upb_MessageDef* m) {
-  const char* name = upb_MessageDef_FullName(m);
+  const char* name = m->full_name;
   if (name == NULL) {
     m->well_known_type = kUpb_WellKnown_Unspecified;
     return;
@@ -8637,8 +9183,7 @@ bool _upb_MessageDef_IsValidExtensionNumber(const upb_MessageDef* m, int n) {
   return false;
 }
 
-const google_protobuf_MessageOptions* upb_MessageDef_Options(
-    const upb_MessageDef* m) {
+const google_protobuf_MessageOptions* upb_MessageDef_Options(const upb_MessageDef* m) {
   return m->opts;
 }
 
@@ -8812,40 +9357,15 @@ const upb_OneofDef* upb_MessageDef_FindOneofByName(const upb_MessageDef* m,
 }
 
 bool upb_MessageDef_IsMapEntry(const upb_MessageDef* m) {
-  return google_protobuf_MessageOptions_map_entry(upb_MessageDef_Options(m));
+  return google_protobuf_MessageOptions_map_entry(m->opts);
 }
 
 bool upb_MessageDef_IsMessageSet(const upb_MessageDef* m) {
-  return google_protobuf_MessageOptions_message_set_wire_format(
-      upb_MessageDef_Options(m));
+  return google_protobuf_MessageOptions_message_set_wire_format(m->opts);
 }
 
 static upb_MiniTable* _upb_MessageDef_MakeMiniTable(upb_DefBuilder* ctx,
                                                     const upb_MessageDef* m) {
-  if (google_protobuf_MessageOptions_message_set_wire_format(m->opts)) {
-    return upb_MiniTable_BuildMessageSet(kUpb_MiniTablePlatform_Native,
-                                         ctx->arena);
-  }
-
-  if (upb_MessageDef_IsMapEntry(m)) {
-    if (m->field_count != 2) {
-      _upb_DefBuilder_Errf(ctx, "invalid map (%s)", m->full_name);
-    }
-
-    const upb_FieldDef* f0 = upb_MessageDef_Field(m, 0);
-    const upb_FieldDef* f1 = upb_MessageDef_Field(m, 1);
-    const upb_FieldType t0 = upb_FieldDef_Type(f0);
-    const upb_FieldType t1 = upb_FieldDef_Type(f1);
-
-    const bool is_proto3_enum =
-        (t1 == kUpb_FieldType_Enum) && !_upb_FieldDef_IsClosedEnum(f1);
-    UPB_ASSERT(_upb_FieldDef_LayoutIndex(f0) == 0);
-    UPB_ASSERT(_upb_FieldDef_LayoutIndex(f1) == 1);
-
-    return upb_MiniTable_BuildMapEntry(
-        t0, t1, is_proto3_enum, kUpb_MiniTablePlatform_Native, ctx->arena);
-  }
-
   upb_StringView desc;
   bool ok = upb_MessageDef_MiniDescriptorEncode(m, ctx->tmp_arena, &desc);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
@@ -8862,7 +9382,7 @@ static upb_MiniTable* _upb_MessageDef_MakeMiniTable(upb_DefBuilder* ctx,
 void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m) {
   for (int i = 0; i < m->field_count; i++) {
     upb_FieldDef* f = (upb_FieldDef*)upb_MessageDef_Field(m, i);
-    _upb_FieldDef_Resolve(ctx, upb_MessageDef_FullName(m), f);
+    _upb_FieldDef_Resolve(ctx, m->full_name, f);
   }
 
   if (!ctx->layout) {
@@ -8870,10 +9390,20 @@ void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m) {
     if (!m->layout) _upb_DefBuilder_OomErr(ctx);
   }
 
+#ifndef NDEBUG
+  for (int i = 0; i < m->field_count; i++) {
+    const upb_FieldDef* f = upb_MessageDef_Field(m, i);
+    const int layout_index = _upb_FieldDef_LayoutIndex(f);
+    UPB_ASSERT(layout_index < m->layout->field_count);
+    const upb_MiniTable_Field* mt_f = &m->layout->fields[layout_index];
+    UPB_ASSERT(upb_FieldDef_Type(f) == upb_MiniTableField_Type(mt_f));
+  }
+#endif
+
   m->in_message_set = false;
   for (int i = 0; i < upb_MessageDef_NestedExtensionCount(m); i++) {
     upb_FieldDef* ext = (upb_FieldDef*)upb_MessageDef_NestedExtension(m, i);
-    _upb_FieldDef_Resolve(ctx, upb_MessageDef_FullName(m), ext);
+    _upb_FieldDef_Resolve(ctx, m->full_name, ext);
     if (upb_FieldDef_Type(ext) == kUpb_FieldType_Message &&
         upb_FieldDef_Label(ext) == kUpb_Label_Optional &&
         upb_FieldDef_MessageSubDef(ext) == m &&
@@ -8973,20 +9503,40 @@ static uint64_t _upb_MessageDef_Modifiers(const upb_MessageDef* m) {
   return out;
 }
 
-bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
-                                         upb_StringView* out) {
-  upb_DescState s;
-  _upb_DescState_Init(&s);
+static bool _upb_MessageDef_EncodeMap(upb_DescState* s, const upb_MessageDef* m,
+                                      upb_Arena* a) {
+  if (m->field_count != 2) return false;
 
+  const upb_FieldDef* key_field = upb_MessageDef_Field(m, 0);
+  const upb_FieldDef* val_field = upb_MessageDef_Field(m, 1);
+  if (key_field == NULL || val_field == NULL) return false;
+
+  UPB_ASSERT(_upb_FieldDef_LayoutIndex(key_field) == 0);
+  UPB_ASSERT(_upb_FieldDef_LayoutIndex(val_field) == 1);
+
+  const upb_FieldType key_type = upb_FieldDef_Type(key_field);
+  const upb_FieldType val_type = upb_FieldDef_Type(val_field);
+
+  const uint64_t val_mod = _upb_FieldDef_IsClosedEnum(val_field)
+                               ? kUpb_FieldModifier_IsClosedEnum
+                               : 0;
+
+  s->ptr =
+      upb_MtDataEncoder_EncodeMap(&s->e, s->ptr, key_type, val_type, val_mod);
+  return true;
+}
+
+static bool _upb_MessageDef_EncodeMessage(upb_DescState* s,
+                                          const upb_MessageDef* m,
+                                          upb_Arena* a) {
   const upb_FieldDef** sorted = NULL;
   if (!m->is_sorted) {
     sorted = _upb_FieldDefs_Sorted(m->fields, m->field_count, a);
     if (!sorted) return false;
   }
 
-  if (!_upb_DescState_Grow(&s, a)) return false;
-  s.ptr =
-      upb_MtDataEncoder_StartMessage(&s.e, s.ptr, _upb_MessageDef_Modifiers(m));
+  s->ptr = upb_MtDataEncoder_StartMessage(&s->e, s->ptr,
+                                          _upb_MessageDef_Modifiers(m));
 
   for (int i = 0; i < m->field_count; i++) {
     const upb_FieldDef* f = sorted ? sorted[i] : upb_MessageDef_Field(m, i);
@@ -8994,22 +9544,48 @@ bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
     const int number = upb_FieldDef_Number(f);
     const uint64_t modifiers = _upb_FieldDef_Modifiers(f);
 
-    if (!_upb_DescState_Grow(&s, a)) return false;
-    s.ptr = upb_MtDataEncoder_PutField(&s.e, s.ptr, type, number, modifiers);
+    if (!_upb_DescState_Grow(s, a)) return false;
+    s->ptr = upb_MtDataEncoder_PutField(&s->e, s->ptr, type, number, modifiers);
   }
 
-  for (int i = 0; i < m->oneof_count; i++) {
-    if (!_upb_DescState_Grow(&s, a)) return false;
-    s.ptr = upb_MtDataEncoder_StartOneof(&s.e, s.ptr);
+  for (int i = 0; i < m->real_oneof_count; i++) {
+    if (!_upb_DescState_Grow(s, a)) return false;
+    s->ptr = upb_MtDataEncoder_StartOneof(&s->e, s->ptr);
 
     const upb_OneofDef* o = upb_MessageDef_Oneof(m, i);
     const int field_count = upb_OneofDef_FieldCount(o);
     for (int j = 0; j < field_count; j++) {
       const int number = upb_FieldDef_Number(upb_OneofDef_Field(o, j));
 
-      if (!_upb_DescState_Grow(&s, a)) return false;
-      s.ptr = upb_MtDataEncoder_PutOneofField(&s.e, s.ptr, number);
+      if (!_upb_DescState_Grow(s, a)) return false;
+      s->ptr = upb_MtDataEncoder_PutOneofField(&s->e, s->ptr, number);
     }
+  }
+
+  return true;
+}
+
+static bool _upb_MessageDef_EncodeMessageSet(upb_DescState* s,
+                                             const upb_MessageDef* m,
+                                             upb_Arena* a) {
+  s->ptr = upb_MtDataEncoder_EncodeMessageSet(&s->e, s->ptr);
+
+  return true;
+}
+
+bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
+                                         upb_StringView* out) {
+  upb_DescState s;
+  _upb_DescState_Init(&s);
+
+  if (!_upb_DescState_Grow(&s, a)) return false;
+
+  if (upb_MessageDef_IsMapEntry(m)) {
+    if (!_upb_MessageDef_EncodeMap(&s, m, a)) return false;
+  } else if (google_protobuf_MessageOptions_message_set_wire_format(m->opts)) {
+    if (!_upb_MessageDef_EncodeMessageSet(&s, m, a)) return false;
+  } else {
+    if (!_upb_MessageDef_EncodeMessage(&s, m, a)) return false;
   }
 
   if (!_upb_DescState_Grow(&s, a)) return false;
@@ -9063,7 +9639,7 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
         ctx, sizeof(*m->layout) + sizeof(_upb_FastTable_Entry));
   }
 
-  UBP_DEF_SET_OPTIONS(m->opts, DescriptorProto, MessageOptions, msg_proto);
+  UPB_DEF_SET_OPTIONS(m->opts, DescriptorProto, MessageOptions, msg_proto);
 
   m->oneof_count = n_oneof;
   m->oneofs = _upb_OneofDefs_New(ctx, n_oneof, oneofs, m);
@@ -9071,6 +9647,13 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   m->field_count = n_field;
   m->fields =
       _upb_FieldDefs_New(ctx, n_field, fields, m->full_name, m, &m->is_sorted);
+
+  // Message Sets may not contain fields.
+  if (UPB_UNLIKELY(google_protobuf_MessageOptions_message_set_wire_format(m->opts))) {
+    if (UPB_UNLIKELY(n_field > 0)) {
+      _upb_DefBuilder_Errf(ctx, "invalid message set (%s)", m->full_name);
+    }
+  }
 
   m->ext_range_count = n_ext_range;
   m->ext_ranges = _upb_ExtensionRanges_New(ctx, n_ext_range, ext_ranges, m);
@@ -9112,7 +9695,6 @@ upb_MessageDef* _upb_MessageDefs_New(
   }
   return m;
 }
-
 
 
 // Must be last.
@@ -9189,7 +9771,7 @@ static void create_method(upb_DefBuilder* ctx,
       ctx, m->full_name, m->full_name,
       google_protobuf_MethodDescriptorProto_output_type(method_proto), UPB_DEFTYPE_MSG);
 
-  UBP_DEF_SET_OPTIONS(m->opts, MethodDescriptorProto, MethodOptions,
+  UPB_DEF_SET_OPTIONS(m->opts, MethodDescriptorProto, MethodOptions,
                       method_proto);
 }
 
@@ -9204,7 +9786,6 @@ upb_MethodDef* _upb_MethodDefs_New(
   }
   return m;
 }
-
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -9348,7 +9929,7 @@ static void create_oneofdef(upb_DefBuilder* ctx, upb_MessageDef* m,
   o->field_count = 0;
   o->synthetic = false;
 
-  UBP_DEF_SET_OPTIONS(o->opts, OneofDescriptorProto, OneofOptions, oneof_proto);
+  UPB_DEF_SET_OPTIONS(o->opts, OneofDescriptorProto, OneofOptions, oneof_proto);
 
   if (upb_MessageDef_FindByNameWithSize(m, name.data, name.size, NULL, NULL)) {
     _upb_DefBuilder_Errf(ctx, "duplicate oneof name (%s)", o->full_name);
@@ -9377,7 +9958,6 @@ upb_OneofDef* _upb_OneofDefs_New(
   }
   return o;
 }
-
 
 
 // Must be last.
@@ -9458,7 +10038,7 @@ static void create_service(upb_DefBuilder* ctx,
   s->method_count = n;
   s->methods = _upb_MethodDefs_New(ctx, n, methods, s);
 
-  UBP_DEF_SET_OPTIONS(s->opts, ServiceDescriptorProto, ServiceOptions,
+  UPB_DEF_SET_OPTIONS(s->opts, ServiceDescriptorProto, ServiceOptions,
                       svc_proto);
 }
 
@@ -10403,353 +10983,283 @@ int upb_Unicode_ToUTF8(uint32_t cp, char* out) {
 }
 
 
-#include <stdlib.h>
-
-// Must be last.
-
-static void* upb_global_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
-                                  size_t size) {
-  UPB_UNUSED(alloc);
-  UPB_UNUSED(oldsize);
-  if (size == 0) {
-    free(ptr);
-    return NULL;
-  } else {
-    return realloc(ptr, size);
-  }
-}
-
-upb_alloc upb_alloc_global = {&upb_global_allocfunc};
+#include <math.h>
 
 
 // Must be last.
 
-static uint32_t* upb_cleanup_pointer(uintptr_t cleanup_metadata) {
-  return (uint32_t*)(cleanup_metadata & ~0x1);
+/** upb_Message ***************************************************************/
+
+static const size_t overhead = sizeof(upb_Message_InternalData);
+
+static const upb_Message_Internal* upb_Message_Getinternal_const(
+    const upb_Message* msg) {
+  ptrdiff_t size = sizeof(upb_Message_Internal);
+  return (upb_Message_Internal*)((char*)msg - size);
 }
 
-static bool upb_cleanup_has_initial_block(uintptr_t cleanup_metadata) {
-  return cleanup_metadata & 0x1;
+upb_Message* upb_Message_New(const upb_MiniTable* mini_table,
+                             upb_Arena* arena) {
+  return _upb_Message_New(mini_table, arena);
 }
 
-static uintptr_t upb_cleanup_metadata(uint32_t* cleanup,
-                                      bool has_initial_block) {
-  return (uintptr_t)cleanup | has_initial_block;
+void _upb_Message_Clear(upb_Message* msg, const upb_MiniTable* l) {
+  void* mem = UPB_PTR_AT(msg, -sizeof(upb_Message_Internal), char);
+  memset(mem, 0, upb_msg_sizeof(l));
 }
 
-struct mem_block {
-  struct mem_block* next;
-  uint32_t size;
-  uint32_t cleanups;
-  /* Data follows. */
-};
-
-typedef struct cleanup_ent {
-  upb_CleanupFunc* cleanup;
-  void* ud;
-} cleanup_ent;
-
-static const size_t memblock_reserve =
-    UPB_ALIGN_UP(sizeof(mem_block), UPB_MALLOC_ALIGN);
-
-static upb_Arena* arena_findroot(upb_Arena* a) {
-  /* Path splitting keeps time complexity down, see:
-   *   https://en.wikipedia.org/wiki/Disjoint-set_data_structure */
-  while (a->parent != a) {
-    upb_Arena* next = a->parent;
-    a->parent = next->parent;
-    a = next;
-  }
-  return a;
-}
-
-size_t upb_Arena_SpaceAllocated(upb_Arena* arena) {
-  arena = arena_findroot(arena);
-  size_t memsize = 0;
-
-  mem_block* block = arena->freelist;
-
-  while (block) {
-    memsize += sizeof(mem_block) + block->size;
-    block = block->next;
-  }
-
-  return memsize;
-}
-
-uint32_t upb_Arena_DebugRefCount(upb_Arena* arena) {
-  return arena_findroot(arena)->refcount;
-}
-
-static void upb_Arena_addblock(upb_Arena* a, upb_Arena* root, void* ptr,
-                               size_t size) {
-  mem_block* block = ptr;
-
-  /* The block is for arena |a|, but should appear in the freelist of |root|. */
-  block->next = root->freelist;
-  block->size = (uint32_t)size;
-  block->cleanups = 0;
-  root->freelist = block;
-  a->last_size = block->size;
-  if (!root->freelist_tail) root->freelist_tail = block;
-
-  a->head.ptr = UPB_PTR_AT(block, memblock_reserve, char);
-  a->head.end = UPB_PTR_AT(block, size, char);
-  a->cleanup_metadata = upb_cleanup_metadata(
-      &block->cleanups, upb_cleanup_has_initial_block(a->cleanup_metadata));
-
-  UPB_POISON_MEMORY_REGION(a->head.ptr, a->head.end - a->head.ptr);
-}
-
-static bool upb_Arena_Allocblock(upb_Arena* a, size_t size) {
-  upb_Arena* root = arena_findroot(a);
-  size_t block_size = UPB_MAX(size, a->last_size * 2) + memblock_reserve;
-  mem_block* block = upb_malloc(root->block_alloc, block_size);
-
-  if (!block) return false;
-  upb_Arena_addblock(a, root, block, block_size);
-  return true;
-}
-
-void* _upb_Arena_SlowMalloc(upb_Arena* a, size_t size) {
-  if (!upb_Arena_Allocblock(a, size)) return NULL; /* Out of memory. */
-  UPB_ASSERT(_upb_ArenaHas(a) >= size);
-  return upb_Arena_Malloc(a, size);
-}
-
-static void* upb_Arena_doalloc(upb_alloc* alloc, void* ptr, size_t oldsize,
-                               size_t size) {
-  upb_Arena* a = (upb_Arena*)alloc; /* upb_alloc is initial member. */
-  return upb_Arena_Realloc(a, ptr, oldsize, size);
-}
-
-/* Public Arena API ***********************************************************/
-
-static upb_Arena* arena_initslow(void* mem, size_t n, upb_alloc* alloc) {
-  const size_t first_block_overhead = sizeof(upb_Arena) + memblock_reserve;
-  upb_Arena* a;
-
-  /* We need to malloc the initial block. */
-  n = first_block_overhead + 256;
-  if (!alloc || !(mem = upb_malloc(alloc, n))) {
-    return NULL;
-  }
-
-  a = UPB_PTR_AT(mem, n - sizeof(*a), upb_Arena);
-  n -= sizeof(*a);
-
-  a->head.alloc.func = &upb_Arena_doalloc;
-  a->block_alloc = alloc;
-  a->parent = a;
-  a->refcount = 1;
-  a->freelist = NULL;
-  a->freelist_tail = NULL;
-  a->cleanup_metadata = upb_cleanup_metadata(NULL, false);
-
-  upb_Arena_addblock(a, a, mem, n);
-
-  return a;
-}
-
-upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
-  upb_Arena* a;
-
-  if (n) {
-    /* Align initial pointer up so that we return properly-aligned pointers. */
-    void* aligned = (void*)UPB_ALIGN_UP((uintptr_t)mem, UPB_MALLOC_ALIGN);
-    size_t delta = (uintptr_t)aligned - (uintptr_t)mem;
-    n = delta <= n ? n - delta : 0;
-    mem = aligned;
-  }
-
-  /* Round block size down to alignof(*a) since we will allocate the arena
-   * itself at the end. */
-  n = UPB_ALIGN_DOWN(n, UPB_ALIGN_OF(upb_Arena));
-
-  if (UPB_UNLIKELY(n < sizeof(upb_Arena))) {
-    return arena_initslow(mem, n, alloc);
-  }
-
-  a = UPB_PTR_AT(mem, n - sizeof(*a), upb_Arena);
-
-  a->head.alloc.func = &upb_Arena_doalloc;
-  a->block_alloc = alloc;
-  a->parent = a;
-  a->refcount = 1;
-  a->last_size = UPB_MAX(128, n);
-  a->head.ptr = mem;
-  a->head.end = UPB_PTR_AT(mem, n - sizeof(*a), char);
-  a->freelist = NULL;
-  a->freelist_tail = NULL;
-  a->cleanup_metadata = upb_cleanup_metadata(NULL, true);
-
-  return a;
-}
-
-static void arena_dofree(upb_Arena* a) {
-  mem_block* block = a->freelist;
-  UPB_ASSERT(a->parent == a);
-  UPB_ASSERT(a->refcount == 0);
-
-  while (block) {
-    /* Load first since we are deleting block. */
-    mem_block* next = block->next;
-
-    if (block->cleanups > 0) {
-      cleanup_ent* end = UPB_PTR_AT(block, block->size, void);
-      cleanup_ent* ptr = end - block->cleanups;
-
-      for (; ptr < end; ptr++) {
-        ptr->cleanup(ptr->ud);
-      }
+static bool realloc_internal(upb_Message* msg, size_t need, upb_Arena* arena) {
+  upb_Message_Internal* in = upb_Message_Getinternal(msg);
+  if (!in->internal) {
+    /* No internal data, allocate from scratch. */
+    size_t size = UPB_MAX(128, _upb_Log2CeilingSize(need + overhead));
+    upb_Message_InternalData* internal = upb_Arena_Malloc(arena, size);
+    if (!internal) return false;
+    internal->size = size;
+    internal->unknown_end = overhead;
+    internal->ext_begin = size;
+    in->internal = internal;
+  } else if (in->internal->ext_begin - in->internal->unknown_end < need) {
+    /* Internal data is too small, reallocate. */
+    size_t new_size = _upb_Log2CeilingSize(in->internal->size + need);
+    size_t ext_bytes = in->internal->size - in->internal->ext_begin;
+    size_t new_ext_begin = new_size - ext_bytes;
+    upb_Message_InternalData* internal =
+        upb_Arena_Realloc(arena, in->internal, in->internal->size, new_size);
+    if (!internal) return false;
+    if (ext_bytes) {
+      /* Need to move extension data to the end. */
+      char* ptr = (char*)internal;
+      memmove(ptr + new_ext_begin, ptr + internal->ext_begin, ext_bytes);
     }
-
-    upb_free(a->block_alloc, block);
-    block = next;
+    internal->ext_begin = new_ext_begin;
+    internal->size = new_size;
+    in->internal = internal;
   }
-}
-
-void upb_Arena_Free(upb_Arena* a) {
-  a = arena_findroot(a);
-  if (--a->refcount == 0) arena_dofree(a);
-}
-
-bool upb_Arena_AddCleanup(upb_Arena* a, void* ud, upb_CleanupFunc* func) {
-  cleanup_ent* ent;
-  uint32_t* cleanups = upb_cleanup_pointer(a->cleanup_metadata);
-
-  if (!cleanups || _upb_ArenaHas(a) < sizeof(cleanup_ent)) {
-    if (!upb_Arena_Allocblock(a, 128)) return false; /* Out of memory. */
-    UPB_ASSERT(_upb_ArenaHas(a) >= sizeof(cleanup_ent));
-    cleanups = upb_cleanup_pointer(a->cleanup_metadata);
-  }
-
-  a->head.end -= sizeof(cleanup_ent);
-  ent = (cleanup_ent*)a->head.end;
-  (*cleanups)++;
-  UPB_UNPOISON_MEMORY_REGION(ent, sizeof(cleanup_ent));
-
-  ent->cleanup = func;
-  ent->ud = ud;
-
+  UPB_ASSERT(in->internal->ext_begin - in->internal->unknown_end >= need);
   return true;
 }
 
-bool upb_Arena_Fuse(upb_Arena* a1, upb_Arena* a2) {
-  upb_Arena* r1 = arena_findroot(a1);
-  upb_Arena* r2 = arena_findroot(a2);
-
-  if (r1 == r2) return true; /* Already fused. */
-
-  /* Do not fuse initial blocks since we cannot lifetime extend them. */
-  if (upb_cleanup_has_initial_block(r1->cleanup_metadata)) return false;
-  if (upb_cleanup_has_initial_block(r2->cleanup_metadata)) return false;
-
-  /* Only allow fuse with a common allocator */
-  if (r1->block_alloc != r2->block_alloc) return false;
-
-  /* We want to join the smaller tree to the larger tree.
-   * So swap first if they are backwards. */
-  if (r1->refcount < r2->refcount) {
-    upb_Arena* tmp = r1;
-    r1 = r2;
-    r2 = tmp;
-  }
-
-  /* r1 takes over r2's freelist and refcount. */
-  r1->refcount += r2->refcount;
-  if (r2->freelist_tail) {
-    UPB_ASSERT(r2->freelist_tail->next == NULL);
-    r2->freelist_tail->next = r1->freelist;
-    r1->freelist = r2->freelist;
-  }
-  r2->parent = r1;
+bool _upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
+                             upb_Arena* arena) {
+  if (!realloc_internal(msg, len, arena)) return false;
+  upb_Message_Internal* in = upb_Message_Getinternal(msg);
+  memcpy(UPB_PTR_AT(in->internal, in->internal->unknown_end, char), data, len);
+  in->internal->unknown_end += len;
   return true;
 }
 
+void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
+  upb_Message_Internal* in = upb_Message_Getinternal(msg);
+  if (in->internal) {
+    in->internal->unknown_end = overhead;
+  }
+}
 
+const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len) {
+  const upb_Message_Internal* in = upb_Message_Getinternal_const(msg);
+  if (in->internal) {
+    *len = in->internal->unknown_end - overhead;
+    return (char*)(in->internal + 1);
+  } else {
+    *len = 0;
+    return NULL;
+  }
+}
+
+void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len) {
+  upb_Message_Internal* in = upb_Message_Getinternal(msg);
+  const char* internal_unknown_end =
+      UPB_PTR_AT(in->internal, in->internal->unknown_end, char);
+#ifndef NDEBUG
+  size_t full_unknown_size;
+  const char* full_unknown = upb_Message_GetUnknown(msg, &full_unknown_size);
+  UPB_ASSERT((uintptr_t)data >= (uintptr_t)full_unknown);
+  UPB_ASSERT((uintptr_t)data < (uintptr_t)(full_unknown + full_unknown_size));
+  UPB_ASSERT((uintptr_t)(data + len) > (uintptr_t)data);
+  UPB_ASSERT((uintptr_t)(data + len) <= (uintptr_t)internal_unknown_end);
+#endif
+  if ((data + len) != internal_unknown_end) {
+    memmove((char*)data, data + len, internal_unknown_end - data - len);
+  }
+  in->internal->unknown_end -= len;
+}
+
+const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
+                                                  size_t* count) {
+  const upb_Message_Internal* in = upb_Message_Getinternal_const(msg);
+  if (in->internal) {
+    *count = (in->internal->size - in->internal->ext_begin) /
+             sizeof(upb_Message_Extension);
+    return UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
+  } else {
+    *count = 0;
+    return NULL;
+  }
+}
+
+const upb_Message_Extension* _upb_Message_Getext(
+    const upb_Message* msg, const upb_MiniTable_Extension* e) {
+  size_t n;
+  const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &n);
+
+  /* For now we use linear search exclusively to find extensions. If this
+   * becomes an issue due to messages with lots of extensions, we can introduce
+   * a table of some sort. */
+  for (size_t i = 0; i < n; i++) {
+    if (ext[i].ext == e) {
+      return &ext[i];
+    }
+  }
+
+  return NULL;
+}
+
+void _upb_Message_Clearext(upb_Message* msg,
+                           const upb_MiniTable_Extension* ext_l) {
+  upb_Message_Internal* in = upb_Message_Getinternal(msg);
+  if (!in->internal) return;
+  const upb_Message_Extension* base =
+      UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
+  upb_Message_Extension* ext =
+      (upb_Message_Extension*)_upb_Message_Getext(msg, ext_l);
+  if (ext) {
+    *ext = *base;
+    in->internal->ext_begin += sizeof(upb_Message_Extension);
+  }
+}
+
+upb_Message_Extension* _upb_Message_GetOrCreateExtension(
+    upb_Message* msg, const upb_MiniTable_Extension* e, upb_Arena* arena) {
+  upb_Message_Extension* ext =
+      (upb_Message_Extension*)_upb_Message_Getext(msg, e);
+  if (ext) return ext;
+  if (!realloc_internal(msg, sizeof(upb_Message_Extension), arena)) return NULL;
+  upb_Message_Internal* in = upb_Message_Getinternal(msg);
+  in->internal->ext_begin -= sizeof(upb_Message_Extension);
+  ext = UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
+  memset(ext, 0, sizeof(upb_Message_Extension));
+  ext->ext = e;
+  return ext;
+}
+
+size_t upb_Message_ExtensionCount(const upb_Message* msg) {
+  size_t count;
+  _upb_Message_Getexts(msg, &count);
+  return count;
+}
+
+/** upb_Map *******************************************************************/
+
+upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
+  upb_Map* map = upb_Arena_Malloc(a, sizeof(upb_Map));
+
+  if (!map) {
+    return NULL;
+  }
+
+  upb_strtable_init(&map->table, 4, a);
+  map->key_size = key_size;
+  map->val_size = value_size;
+
+  return map;
+}
+
+const float kUpb_FltInfinity = INFINITY;
+const double kUpb_Infinity = INFINITY;
+
+
+#include <errno.h>
+#include <float.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 // Must be last.
 
-static const char _upb_CTypeo_sizelg2[12] = {
-    0,
-    0,              /* kUpb_CType_Bool */
-    2,              /* kUpb_CType_Float */
-    2,              /* kUpb_CType_Int32 */
-    2,              /* kUpb_CType_UInt32 */
-    2,              /* kUpb_CType_Enum */
-    UPB_SIZE(2, 3), /* kUpb_CType_Message */
-    3,              /* kUpb_CType_Double */
-    3,              /* kUpb_CType_Int64 */
-    3,              /* kUpb_CType_UInt64 */
-    UPB_SIZE(3, 4), /* kUpb_CType_String */
-    UPB_SIZE(3, 4), /* kUpb_CType_Bytes */
-};
-
-upb_Array* upb_Array_New(upb_Arena* a, upb_CType type) {
-  return _upb_Array_New(a, 4, _upb_CTypeo_sizelg2[type]);
+void upb_Status_Clear(upb_Status* status) {
+  if (!status) return;
+  status->ok = true;
+  status->msg[0] = '\0';
 }
 
-size_t upb_Array_Size(const upb_Array* arr) { return arr->size; }
+bool upb_Status_IsOk(const upb_Status* status) { return status->ok; }
 
-upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {
-  upb_MessageValue ret;
-  const char* data = _upb_array_constptr(arr);
-  int lg2 = arr->data & 7;
-  UPB_ASSERT(i < arr->size);
-  memcpy(&ret, data + (i << lg2), 1 << lg2);
-  return ret;
+const char* upb_Status_ErrorMessage(const upb_Status* status) {
+  return status->msg;
 }
 
-void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val) {
-  char* data = _upb_array_ptr(arr);
-  int lg2 = arr->data & 7;
-  UPB_ASSERT(i < arr->size);
-  memcpy(data + (i << lg2), &val, 1 << lg2);
+void upb_Status_SetErrorMessage(upb_Status* status, const char* msg) {
+  if (!status) return;
+  status->ok = false;
+  strncpy(status->msg, msg, _kUpb_Status_MaxMessage - 1);
+  status->msg[_kUpb_Status_MaxMessage - 1] = '\0';
 }
 
-bool upb_Array_Append(upb_Array* arr, upb_MessageValue val, upb_Arena* arena) {
-  if (!upb_Array_Resize(arr, arr->size + 1, arena)) {
-    return false;
+void upb_Status_SetErrorFormat(upb_Status* status, const char* fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  upb_Status_VSetErrorFormat(status, fmt, args);
+  va_end(args);
+}
+
+void upb_Status_VSetErrorFormat(upb_Status* status, const char* fmt,
+                                va_list args) {
+  if (!status) return;
+  status->ok = false;
+  vsnprintf(status->msg, sizeof(status->msg), fmt, args);
+  status->msg[_kUpb_Status_MaxMessage - 1] = '\0';
+}
+
+void upb_Status_VAppendErrorFormat(upb_Status* status, const char* fmt,
+                                   va_list args) {
+  size_t len;
+  if (!status) return;
+  status->ok = false;
+  len = strlen(status->msg);
+  vsnprintf(status->msg + len, sizeof(status->msg) - len, fmt, args);
+  status->msg[_kUpb_Status_MaxMessage - 1] = '\0';
+}
+
+#include <float.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+
+// Must be last.
+
+/* Miscellaneous utilities ****************************************************/
+
+static void upb_FixLocale(char* p) {
+  /* printf() is dependent on locales; sadly there is no easy and portable way
+   * to avoid this. This little post-processing step will translate 1,2 -> 1.2
+   * since JSON needs the latter. Arguably a hack, but it is simple and the
+   * alternatives are far more complicated, platform-dependent, and/or larger
+   * in code size. */
+  for (; *p; p++) {
+    if (*p == ',') *p = '.';
   }
-  upb_Array_Set(arr, arr->size - 1, val);
-  return true;
 }
 
-void upb_Array_Move(upb_Array* arr, size_t dst_idx, size_t src_idx,
-                    size_t count) {
-  char* data = _upb_array_ptr(arr);
-  int lg2 = arr->data & 7;
-  memmove(&data[dst_idx << lg2], &data[src_idx << lg2], count << lg2);
-}
-
-bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
-                      upb_Arena* arena) {
-  UPB_ASSERT(i <= arr->size);
-  UPB_ASSERT(count + arr->size >= count);
-  size_t oldsize = arr->size;
-  if (!upb_Array_Resize(arr, arr->size + count, arena)) {
-    return false;
+void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size) {
+  assert(size >= kUpb_RoundTripBufferSize);
+  snprintf(buf, size, "%.*g", DBL_DIG, val);
+  if (strtod(buf, NULL) != val) {
+    snprintf(buf, size, "%.*g", DBL_DIG + 2, val);
+    assert(strtod(buf, NULL) == val);
   }
-  upb_Array_Move(arr, i + count, i, oldsize - i);
-  return true;
+  upb_FixLocale(buf);
 }
 
-/*
- *              i        end      arr->size
- * |------------|XXXXXXXX|--------|
- */
-void upb_Array_Delete(upb_Array* arr, size_t i, size_t count) {
-  size_t end = i + count;
-  UPB_ASSERT(i <= end);
-  UPB_ASSERT(end <= arr->size);
-  upb_Array_Move(arr, i, end, arr->size - end);
-  arr->size -= count;
-}
-
-bool upb_Array_Resize(upb_Array* arr, size_t size, upb_Arena* arena) {
-  return _upb_Array_Resize(arr, size, arena);
+void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size) {
+  assert(size >= kUpb_RoundTripBufferSize);
+  snprintf(buf, size, "%.*g", FLT_DIG, val);
+  if (strtof(buf, NULL) != val) {
+    snprintf(buf, size, "%.*g", FLT_DIG + 3, val);
+    assert(strtof(buf, NULL) == val);
+  }
+  upb_FixLocale(buf);
 }
 
 
@@ -10928,7 +11438,8 @@ static upb_Message* _upb_Decoder_NewSubMessage(
     upb_Decoder* d, const upb_MiniTable_Sub* subs,
     const upb_MiniTable_Field* field) {
   const upb_MiniTable* subl = subs[field->submsg_index].submsg;
-  upb_Message* msg = _upb_Message_New_inl(subl, &d->arena);
+  UPB_ASSERT(subl);
+  upb_Message* msg = _upb_Message_New(subl, &d->arena);
   if (!msg) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   return msg;
 }
@@ -10979,6 +11490,7 @@ static const char* _upb_Decoder_DecodeSubMessage(
     const upb_MiniTable_Sub* subs, const upb_MiniTable_Field* field, int size) {
   int saved_delta = _upb_Decoder_PushLimit(d, ptr, size);
   const upb_MiniTable* subl = subs[field->submsg_index].submsg;
+  UPB_ASSERT(subl);
   ptr = _upb_Decoder_RecurseSubMessage(d, ptr, submsg, subl, DECODE_NOGROUP);
   _upb_Decoder_PopLimit(d, ptr, saved_delta);
   return ptr;
@@ -11009,6 +11521,7 @@ static const char* _upb_Decoder_DecodeKnownGroup(
     upb_Decoder* d, const char* ptr, upb_Message* submsg,
     const upb_MiniTable_Sub* subs, const upb_MiniTable_Field* field) {
   const upb_MiniTable* subl = subs[field->submsg_index].submsg;
+  UPB_ASSERT(subl);
   return _upb_Decoder_DecodeGroup(d, ptr, submsg, subl, field->number);
 }
 
@@ -11513,11 +12026,11 @@ static void upb_Decoder_AddUnknownMessageSetItem(upb_Decoder* d,
 }
 
 static void upb_Decoder_AddMessageSetItem(upb_Decoder* d, upb_Message* msg,
-                                          const upb_MiniTable* layout,
+                                          const upb_MiniTable* t,
                                           uint32_t type_id, const char* data,
                                           uint32_t size) {
   const upb_MiniTable_Extension* item_mt =
-      _upb_extreg_get(d->extreg, layout, type_id);
+      upb_ExtensionRegistry_Lookup(d->extreg, t, type_id);
   if (item_mt) {
     upb_Decoder_AddKnownMessageSetItem(d, msg, item_mt, data, size);
   } else {
@@ -11579,40 +12092,40 @@ static const char* upb_Decoder_DecodeMessageSetItem(
 }
 
 static const upb_MiniTable_Field* _upb_Decoder_FindField(
-    upb_Decoder* d, const upb_MiniTable* l, uint32_t field_number,
+    upb_Decoder* d, const upb_MiniTable* t, uint32_t field_number,
     int* last_field_index) {
   static upb_MiniTable_Field none = {
       0, 0, 0, 0, kUpb_FakeFieldType_FieldNotFound, 0};
-  if (l == NULL) return &none;
+  if (t == NULL) return &none;
 
   size_t idx = ((size_t)field_number) - 1;  // 0 wraps to SIZE_MAX
-  if (idx < l->dense_below) {
+  if (idx < t->dense_below) {
     /* Fastest case: index into dense fields. */
     goto found;
   }
 
-  if (l->dense_below < l->field_count) {
+  if (t->dense_below < t->field_count) {
     /* Linear search non-dense fields. Resume scanning from last_field_index
      * since fields are usually in order. */
     int last = *last_field_index;
-    for (idx = last; idx < l->field_count; idx++) {
-      if (l->fields[idx].number == field_number) {
+    for (idx = last; idx < t->field_count; idx++) {
+      if (t->fields[idx].number == field_number) {
         goto found;
       }
     }
 
-    for (idx = l->dense_below; idx < last; idx++) {
-      if (l->fields[idx].number == field_number) {
+    for (idx = t->dense_below; idx < last; idx++) {
+      if (t->fields[idx].number == field_number) {
         goto found;
       }
     }
   }
 
   if (d->extreg) {
-    switch (l->ext) {
+    switch (t->ext) {
       case kUpb_ExtMode_Extendable: {
         const upb_MiniTable_Extension* ext =
-            _upb_extreg_get(d->extreg, l, field_number);
+            upb_ExtensionRegistry_Lookup(d->extreg, t, field_number);
         if (ext) return &ext->field;
         break;
       }
@@ -11629,9 +12142,9 @@ static const upb_MiniTable_Field* _upb_Decoder_FindField(
   return &none; /* Unknown field. */
 
 found:
-  UPB_ASSERT(l->fields[idx].number == field_number);
+  UPB_ASSERT(t->fields[idx].number == field_number);
   *last_field_index = idx;
-  return &l->fields[idx];
+  return &t->fields[idx];
 }
 
 int _upb_Decoder_GetVarintOp(const upb_MiniTable_Field* field) {
@@ -12010,7 +12523,7 @@ upb_DecodeStatus upb_Decode(const char* buf, size_t size, void* msg,
 #undef OP_FIXPCK_LG2
 #undef OP_VARPCK_LG2
 
-/* We encode backwards, to avoid pre-computing lengths (one-pass encode). */
+// We encode backwards, to avoid pre-computing lengths (one-pass encode).
 
 
 #include <string.h>
@@ -12432,17 +12945,11 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
         memcpy(&ch, mem, 1);
         return ch != 0;
       }
-#if UINTPTR_MAX == 0xffffffff
-      case kUpb_FieldRep_Pointer:
-#endif
       case kUpb_FieldRep_4Byte: {
         uint32_t u32;
         memcpy(&u32, mem, 4);
         return u32 != 0;
       }
-#if UINTPTR_MAX != 0xffffffff
-      case kUpb_FieldRep_Pointer:
-#endif
       case kUpb_FieldRep_8Byte: {
         uint64_t u64;
         memcpy(&u64, mem, 8);
@@ -12591,375 +13098,6 @@ upb_EncodeStatus upb_Encode(const void* msg, const upb_MiniTable* l,
 
   _upb_mapsorter_destroy(&e.sorter);
   return status;
-}
-
-
-// Must be last.
-
-static void _upb_mapsorter_getkeys(const void* _a, const void* _b, void* a_key,
-                                   void* b_key, size_t size) {
-  const upb_tabent* const* a = _a;
-  const upb_tabent* const* b = _b;
-  upb_StringView a_tabkey = upb_tabstrview((*a)->key);
-  upb_StringView b_tabkey = upb_tabstrview((*b)->key);
-  _upb_map_fromkey(a_tabkey, a_key, size);
-  _upb_map_fromkey(b_tabkey, b_key, size);
-}
-
-static int _upb_mapsorter_cmpi64(const void* _a, const void* _b) {
-  int64_t a, b;
-  _upb_mapsorter_getkeys(_a, _b, &a, &b, 8);
-  return a < b ? -1 : a > b;
-}
-
-static int _upb_mapsorter_cmpu64(const void* _a, const void* _b) {
-  uint64_t a, b;
-  _upb_mapsorter_getkeys(_a, _b, &a, &b, 8);
-  return a < b ? -1 : a > b;
-}
-
-static int _upb_mapsorter_cmpi32(const void* _a, const void* _b) {
-  int32_t a, b;
-  _upb_mapsorter_getkeys(_a, _b, &a, &b, 4);
-  return a < b ? -1 : a > b;
-}
-
-static int _upb_mapsorter_cmpu32(const void* _a, const void* _b) {
-  uint32_t a, b;
-  _upb_mapsorter_getkeys(_a, _b, &a, &b, 4);
-  return a < b ? -1 : a > b;
-}
-
-static int _upb_mapsorter_cmpbool(const void* _a, const void* _b) {
-  bool a, b;
-  _upb_mapsorter_getkeys(_a, _b, &a, &b, 1);
-  return a < b ? -1 : a > b;
-}
-
-static int _upb_mapsorter_cmpstr(const void* _a, const void* _b) {
-  upb_StringView a, b;
-  _upb_mapsorter_getkeys(_a, _b, &a, &b, UPB_MAPTYPE_STRING);
-  size_t common_size = UPB_MIN(a.size, b.size);
-  int cmp = memcmp(a.data, b.data, common_size);
-  if (cmp) return -cmp;
-  return a.size < b.size ? -1 : a.size > b.size;
-}
-
-static int (*const compar[kUpb_FieldType_SizeOf])(const void*, const void*) = {
-    [kUpb_FieldType_Int64] = _upb_mapsorter_cmpi64,
-    [kUpb_FieldType_SFixed64] = _upb_mapsorter_cmpi64,
-    [kUpb_FieldType_SInt64] = _upb_mapsorter_cmpi64,
-
-    [kUpb_FieldType_UInt64] = _upb_mapsorter_cmpu64,
-    [kUpb_FieldType_Fixed64] = _upb_mapsorter_cmpu64,
-
-    [kUpb_FieldType_Int32] = _upb_mapsorter_cmpi32,
-    [kUpb_FieldType_SInt32] = _upb_mapsorter_cmpi32,
-    [kUpb_FieldType_SFixed32] = _upb_mapsorter_cmpi32,
-    [kUpb_FieldType_Enum] = _upb_mapsorter_cmpi32,
-
-    [kUpb_FieldType_UInt32] = _upb_mapsorter_cmpu32,
-    [kUpb_FieldType_Fixed32] = _upb_mapsorter_cmpu32,
-
-    [kUpb_FieldType_Bool] = _upb_mapsorter_cmpbool,
-
-    [kUpb_FieldType_String] = _upb_mapsorter_cmpstr,
-    [kUpb_FieldType_Bytes] = _upb_mapsorter_cmpstr,
-};
-
-bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
-                            const upb_Map* map, _upb_sortedmap* sorted) {
-  int map_size = _upb_Map_Size(map);
-  sorted->start = s->size;
-  sorted->pos = sorted->start;
-  sorted->end = sorted->start + map_size;
-
-  // Grow s->entries if necessary.
-  if (sorted->end > s->cap) {
-    s->cap = _upb_Log2CeilingSize(sorted->end);
-    s->entries = realloc(s->entries, s->cap * sizeof(*s->entries));
-    if (!s->entries) return false;
-  }
-
-  s->size = sorted->end;
-
-  // Copy non-empty entries from the table to s->entries.
-  upb_tabent const** dst = &s->entries[sorted->start];
-  const upb_tabent* src = map->table.t.entries;
-  const upb_tabent* end = src + upb_table_size(&map->table.t);
-  for (; src < end; src++) {
-    if (!upb_tabent_isempty(src)) {
-      *dst = src;
-      dst++;
-    }
-  }
-  UPB_ASSERT(dst == &s->entries[sorted->end]);
-
-  // Sort entries according to the key type.
-  qsort(&s->entries[sorted->start], map_size, sizeof(*s->entries),
-        compar[key_type]);
-  return true;
-}
-
-
-#include <math.h>
-
-
-// Must be last.
-
-/** upb_Message ***************************************************************/
-
-static const size_t overhead = sizeof(upb_Message_InternalData);
-
-static const upb_Message_Internal* upb_Message_Getinternal_const(
-    const upb_Message* msg) {
-  ptrdiff_t size = sizeof(upb_Message_Internal);
-  return (upb_Message_Internal*)((char*)msg - size);
-}
-
-upb_Message* _upb_Message_New(const upb_MiniTable* l, upb_Arena* a) {
-  return _upb_Message_New_inl(l, a);
-}
-
-void _upb_Message_Clear(upb_Message* msg, const upb_MiniTable* l) {
-  void* mem = UPB_PTR_AT(msg, -sizeof(upb_Message_Internal), char);
-  memset(mem, 0, upb_msg_sizeof(l));
-}
-
-static bool realloc_internal(upb_Message* msg, size_t need, upb_Arena* arena) {
-  upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  if (!in->internal) {
-    /* No internal data, allocate from scratch. */
-    size_t size = UPB_MAX(128, _upb_Log2CeilingSize(need + overhead));
-    upb_Message_InternalData* internal = upb_Arena_Malloc(arena, size);
-    if (!internal) return false;
-    internal->size = size;
-    internal->unknown_end = overhead;
-    internal->ext_begin = size;
-    in->internal = internal;
-  } else if (in->internal->ext_begin - in->internal->unknown_end < need) {
-    /* Internal data is too small, reallocate. */
-    size_t new_size = _upb_Log2CeilingSize(in->internal->size + need);
-    size_t ext_bytes = in->internal->size - in->internal->ext_begin;
-    size_t new_ext_begin = new_size - ext_bytes;
-    upb_Message_InternalData* internal =
-        upb_Arena_Realloc(arena, in->internal, in->internal->size, new_size);
-    if (!internal) return false;
-    if (ext_bytes) {
-      /* Need to move extension data to the end. */
-      char* ptr = (char*)internal;
-      memmove(ptr + new_ext_begin, ptr + internal->ext_begin, ext_bytes);
-    }
-    internal->ext_begin = new_ext_begin;
-    internal->size = new_size;
-    in->internal = internal;
-  }
-  UPB_ASSERT(in->internal->ext_begin - in->internal->unknown_end >= need);
-  return true;
-}
-
-bool _upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
-                             upb_Arena* arena) {
-  if (!realloc_internal(msg, len, arena)) return false;
-  upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  memcpy(UPB_PTR_AT(in->internal, in->internal->unknown_end, char), data, len);
-  in->internal->unknown_end += len;
-  return true;
-}
-
-void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
-  upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  if (in->internal) {
-    in->internal->unknown_end = overhead;
-  }
-}
-
-const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len) {
-  const upb_Message_Internal* in = upb_Message_Getinternal_const(msg);
-  if (in->internal) {
-    *len = in->internal->unknown_end - overhead;
-    return (char*)(in->internal + 1);
-  } else {
-    *len = 0;
-    return NULL;
-  }
-}
-
-const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
-                                                  size_t* count) {
-  const upb_Message_Internal* in = upb_Message_Getinternal_const(msg);
-  if (in->internal) {
-    *count = (in->internal->size - in->internal->ext_begin) /
-             sizeof(upb_Message_Extension);
-    return UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
-  } else {
-    *count = 0;
-    return NULL;
-  }
-}
-
-const upb_Message_Extension* _upb_Message_Getext(
-    const upb_Message* msg, const upb_MiniTable_Extension* e) {
-  size_t n;
-  const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &n);
-
-  /* For now we use linear search exclusively to find extensions. If this
-   * becomes an issue due to messages with lots of extensions, we can introduce
-   * a table of some sort. */
-  for (size_t i = 0; i < n; i++) {
-    if (ext[i].ext == e) {
-      return &ext[i];
-    }
-  }
-
-  return NULL;
-}
-
-void _upb_Message_Clearext(upb_Message* msg,
-                           const upb_MiniTable_Extension* ext_l) {
-  upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  if (!in->internal) return;
-  const upb_Message_Extension* base =
-      UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
-  upb_Message_Extension* ext =
-      (upb_Message_Extension*)_upb_Message_Getext(msg, ext_l);
-  if (ext) {
-    *ext = *base;
-    in->internal->ext_begin += sizeof(upb_Message_Extension);
-  }
-}
-
-upb_Message_Extension* _upb_Message_GetOrCreateExtension(
-    upb_Message* msg, const upb_MiniTable_Extension* e, upb_Arena* arena) {
-  upb_Message_Extension* ext =
-      (upb_Message_Extension*)_upb_Message_Getext(msg, e);
-  if (ext) return ext;
-  if (!realloc_internal(msg, sizeof(upb_Message_Extension), arena)) return NULL;
-  upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  in->internal->ext_begin -= sizeof(upb_Message_Extension);
-  ext = UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
-  memset(ext, 0, sizeof(upb_Message_Extension));
-  ext->ext = e;
-  return ext;
-}
-
-size_t upb_Message_ExtensionCount(const upb_Message* msg) {
-  size_t count;
-  _upb_Message_Getexts(msg, &count);
-  return count;
-}
-
-/** upb_Map *******************************************************************/
-
-upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
-  upb_Map* map = upb_Arena_Malloc(a, sizeof(upb_Map));
-
-  if (!map) {
-    return NULL;
-  }
-
-  upb_strtable_init(&map->table, 4, a);
-  map->key_size = key_size;
-  map->val_size = value_size;
-
-  return map;
-}
-
-const float kUpb_FltInfinity = INFINITY;
-const double kUpb_Infinity = INFINITY;
-
-
-#include <errno.h>
-#include <float.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-// Must be last.
-
-void upb_Status_Clear(upb_Status* status) {
-  if (!status) return;
-  status->ok = true;
-  status->msg[0] = '\0';
-}
-
-bool upb_Status_IsOk(const upb_Status* status) { return status->ok; }
-
-const char* upb_Status_ErrorMessage(const upb_Status* status) {
-  return status->msg;
-}
-
-void upb_Status_SetErrorMessage(upb_Status* status, const char* msg) {
-  if (!status) return;
-  status->ok = false;
-  strncpy(status->msg, msg, _kUpb_Status_MaxMessage - 1);
-  status->msg[_kUpb_Status_MaxMessage - 1] = '\0';
-}
-
-void upb_Status_SetErrorFormat(upb_Status* status, const char* fmt, ...) {
-  va_list args;
-  va_start(args, fmt);
-  upb_Status_VSetErrorFormat(status, fmt, args);
-  va_end(args);
-}
-
-void upb_Status_VSetErrorFormat(upb_Status* status, const char* fmt,
-                                va_list args) {
-  if (!status) return;
-  status->ok = false;
-  vsnprintf(status->msg, sizeof(status->msg), fmt, args);
-  status->msg[_kUpb_Status_MaxMessage - 1] = '\0';
-}
-
-void upb_Status_VAppendErrorFormat(upb_Status* status, const char* fmt,
-                                   va_list args) {
-  size_t len;
-  if (!status) return;
-  status->ok = false;
-  len = strlen(status->msg);
-  vsnprintf(status->msg + len, sizeof(status->msg) - len, fmt, args);
-  status->msg[_kUpb_Status_MaxMessage - 1] = '\0';
-}
-
-#include <float.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-
-// Must be last.
-
-/* Miscellaneous utilities ****************************************************/
-
-static void upb_FixLocale(char* p) {
-  /* printf() is dependent on locales; sadly there is no easy and portable way
-   * to avoid this. This little post-processing step will translate 1,2 -> 1.2
-   * since JSON needs the latter. Arguably a hack, but it is simple and the
-   * alternatives are far more complicated, platform-dependent, and/or larger
-   * in code size. */
-  for (; *p; p++) {
-    if (*p == ',') *p = '.';
-  }
-}
-
-void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size) {
-  assert(size >= kUpb_RoundTripBufferSize);
-  snprintf(buf, size, "%.*g", DBL_DIG, val);
-  if (strtod(buf, NULL) != val) {
-    snprintf(buf, size, "%.*g", DBL_DIG + 2, val);
-    assert(strtod(buf, NULL) == val);
-  }
-  upb_FixLocale(buf);
-}
-
-void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size) {
-  assert(size >= kUpb_RoundTripBufferSize);
-  snprintf(buf, size, "%.*g", FLT_DIG, val);
-  if (strtof(buf, NULL) != val) {
-    snprintf(buf, size, "%.*g", FLT_DIG + 3, val);
-    assert(strtof(buf, NULL) == val);
-  }
-  upb_FixLocale(buf);
 }
 
 /* See port_def.inc.  This should #undef all macros #defined there. */

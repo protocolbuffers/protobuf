@@ -33,8 +33,8 @@
 
 #include <type_traits>
 
-#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_entry_lite.h"
 #include "google/protobuf/parse_context.h"

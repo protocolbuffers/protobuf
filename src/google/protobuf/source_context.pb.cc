@@ -39,7 +39,7 @@ static constexpr const ::_pb::EnumDescriptor**
     file_level_enum_descriptors_google_2fprotobuf_2fsource_5fcontext_2eproto = nullptr;
 static constexpr const ::_pb::ServiceDescriptor**
     file_level_service_descriptors_google_2fprotobuf_2fsource_5fcontext_2eproto = nullptr;
-const uint32_t TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(
+const ::uint32_t TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(
     protodesc_cold) = {
     ~0u,  // no _has_bits_
     PROTOBUF_FIELD_OFFSET(::PROTOBUF_NAMESPACE_ID::SourceContext, _internal_metadata_),
@@ -170,7 +170,7 @@ void SourceContext::SetCachedSize(int size) const {
 
 void SourceContext::Clear() {
 // @@protoc_insertion_point(message_clear_start:google.protobuf.SourceContext)
-  uint32_t cached_has_bits = 0;
+  ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
@@ -182,18 +182,19 @@ const char* SourceContext::_InternalParse(const char* ptr, ::_pbi::ParseContext*
 
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
-    uint32_t tag;
+    ::uint32_t tag;
     ptr = ::_pbi::ReadTag(ptr, &tag);
     switch (tag >> 3) {
       // string file_name = 1;
       case 1:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 10)) {
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::uint8_t>(tag) == 10)) {
           auto str = _internal_mutable_file_name();
           ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(ptr);
           CHK_(::_pbi::VerifyUTF8(str, "google.protobuf.SourceContext.file_name"));
-        } else
+        } else {
           goto handle_unusual;
+        }
         continue;
       default:
         goto handle_unusual;
@@ -218,11 +219,11 @@ failure:
 #undef CHK_
 }
 
-uint8_t* SourceContext::_InternalSerialize(
-    uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+::uint8_t* SourceContext::_InternalSerialize(
+    ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
 
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.SourceContext)
-  uint32_t cached_has_bits = 0;
+  ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   // string file_name = 1;
@@ -243,12 +244,12 @@ uint8_t* SourceContext::_InternalSerialize(
   return target;
 }
 
-size_t SourceContext::ByteSizeLong() const {
+::size_t SourceContext::ByteSizeLong() const {
 
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.SourceContext)
-  size_t total_size = 0;
+  ::size_t total_size = 0;
 
-  uint32_t cached_has_bits = 0;
+  ::uint32_t cached_has_bits = 0;
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
@@ -275,7 +276,7 @@ void SourceContext::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::
 
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceContext)
   GOOGLE_DCHECK_NE(&from, _this);
-  uint32_t cached_has_bits = 0;
+  ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
   if (!from._internal_file_name().empty()) {
