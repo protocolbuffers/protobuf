@@ -404,38 +404,57 @@ class Proto2LiteTest {
   fun testExtensionsSet() {
     assertThat(
         testAllExtensionsLite {
-          this[UnittestLite.optionalInt32ExtensionLite] = 101
-          this[UnittestLite.optionalInt64ExtensionLite] = 102L
-          this[UnittestLite.optionalUint32ExtensionLite] = 103
-          this[UnittestLite.optionalUint64ExtensionLite] = 104L
-          this[UnittestLite.optionalSint32ExtensionLite] = 105
-          this[UnittestLite.optionalSint64ExtensionLite] = 106L
-          this[UnittestLite.optionalFixed32ExtensionLite] = 107
-          this[UnittestLite.optionalFixed64ExtensionLite] = 108L
-          this[UnittestLite.optionalSfixed32ExtensionLite] = 109
-          this[UnittestLite.optionalSfixed64ExtensionLite] = 110L
-          this[UnittestLite.optionalFloatExtensionLite] = 111F
-          this[UnittestLite.optionalDoubleExtensionLite] = 112.0
-          this[UnittestLite.optionalBoolExtensionLite] = true
-          this[UnittestLite.optionalStringExtensionLite] = "115"
-          this[UnittestLite.optionalBytesExtensionLite] = toBytes("116")
-          this[UnittestLite.optionalGroupExtensionLite] = optionalGroupExtensionLite { a = 117 }
-          this[UnittestLite.optionalNestedMessageExtensionLite] =
+          setExtension(UnittestLite.optionalInt32ExtensionLite, 101)
+          setExtension(UnittestLite.optionalInt64ExtensionLite, 102L)
+          setExtension(UnittestLite.optionalUint32ExtensionLite, 103)
+          setExtension(UnittestLite.optionalUint64ExtensionLite, 104L)
+          setExtension(UnittestLite.optionalSint32ExtensionLite, 105)
+          setExtension(UnittestLite.optionalSint64ExtensionLite, 106L)
+          setExtension(UnittestLite.optionalFixed32ExtensionLite, 107)
+          setExtension(UnittestLite.optionalFixed64ExtensionLite, 108L)
+          setExtension(UnittestLite.optionalSfixed32ExtensionLite, 109)
+          setExtension(UnittestLite.optionalSfixed64ExtensionLite, 110L)
+          setExtension(UnittestLite.optionalFloatExtensionLite, 111F)
+          setExtension(UnittestLite.optionalDoubleExtensionLite, 112.0)
+          setExtension(UnittestLite.optionalBoolExtensionLite, true)
+          setExtension(UnittestLite.optionalStringExtensionLite, "115")
+          setExtension(UnittestLite.optionalBytesExtensionLite, toBytes("116"))
+          setExtension(
+            UnittestLite.optionalGroupExtensionLite,
+            optionalGroupExtensionLite { a = 117 }
+          )
+          setExtension(
+            UnittestLite.optionalNestedMessageExtensionLite,
             TestAllTypesLiteKt.nestedMessage { bb = 118 }
-          this[UnittestLite.optionalForeignMessageExtensionLite] = foreignMessageLite { c = 119 }
-          this[UnittestLite.optionalImportMessageExtensionLite] =
+          )
+          setExtension(
+            UnittestLite.optionalForeignMessageExtensionLite,
+            foreignMessageLite { c = 119 }
+          )
+          setExtension(
+            UnittestLite.optionalImportMessageExtensionLite,
             ImportMessageLite.newBuilder().setD(120).build()
-          this[UnittestLite.optionalPublicImportMessageExtensionLite] =
+          )
+          setExtension(
+            UnittestLite.optionalPublicImportMessageExtensionLite,
             PublicImportMessageLite.newBuilder().setE(126).build()
-          this[UnittestLite.optionalLazyMessageExtensionLite] =
+          )
+          setExtension(
+            UnittestLite.optionalLazyMessageExtensionLite,
             TestAllTypesLiteKt.nestedMessage { bb = 127 }
-          this[UnittestLite.optionalUnverifiedLazyMessageExtensionLite] =
+          )
+          setExtension(
+            UnittestLite.optionalUnverifiedLazyMessageExtensionLite,
             TestAllTypesLiteKt.nestedMessage { bb = 128 }
-          this[UnittestLite.optionalNestedEnumExtensionLite] = NestedEnum.BAZ
-          this[UnittestLite.optionalForeignEnumExtensionLite] = ForeignEnumLite.FOREIGN_LITE_BAZ
-          this[UnittestLite.optionalImportEnumExtensionLite] = ImportEnumLite.IMPORT_LITE_BAZ
-          this[UnittestLite.optionalStringPieceExtensionLite] = "124"
-          this[UnittestLite.optionalCordExtensionLite] = "125"
+          )
+          setExtension(UnittestLite.optionalNestedEnumExtensionLite, NestedEnum.BAZ)
+          setExtension(
+            UnittestLite.optionalForeignEnumExtensionLite,
+            ForeignEnumLite.FOREIGN_LITE_BAZ
+          )
+          setExtension(UnittestLite.optionalImportEnumExtensionLite, ImportEnumLite.IMPORT_LITE_BAZ)
+          setExtension(UnittestLite.optionalStringPieceExtensionLite, "124")
+          setExtension(UnittestLite.optionalCordExtensionLite, "125")
           this[UnittestLite.repeatedInt32ExtensionLite].add(201)
           this[UnittestLite.repeatedInt64ExtensionLite].add(202L)
           this[UnittestLite.repeatedUint32ExtensionLite].add(203)

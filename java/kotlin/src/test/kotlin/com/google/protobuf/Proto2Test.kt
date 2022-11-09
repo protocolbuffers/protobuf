@@ -487,26 +487,26 @@ class Proto2Test {
           this[UnittestProto.repeatedImportEnumExtension] += ImportEnum.IMPORT_BAZ
           this[UnittestProto.repeatedStringPieceExtension] += "324"
           this[UnittestProto.repeatedCordExtension] += "325"
-          this[UnittestProto.defaultInt32Extension] = 401
-          this[UnittestProto.defaultInt64Extension] = 402L
-          this[UnittestProto.defaultUint32Extension] = 403
-          this[UnittestProto.defaultUint64Extension] = 404L
-          this[UnittestProto.defaultSint32Extension] = 405
-          this[UnittestProto.defaultSint64Extension] = 406L
-          this[UnittestProto.defaultFixed32Extension] = 407
-          this[UnittestProto.defaultFixed64Extension] = 408L
-          this[UnittestProto.defaultSfixed32Extension] = 409
-          this[UnittestProto.defaultSfixed64Extension] = 410L
-          this[UnittestProto.defaultFloatExtension] = 411F
-          this[UnittestProto.defaultDoubleExtension] = 412.0
-          this[UnittestProto.defaultBoolExtension] = false
-          this[UnittestProto.defaultStringExtension] = "415"
-          this[UnittestProto.defaultBytesExtension] = toBytes("416")
-          this[UnittestProto.defaultNestedEnumExtension] = NestedEnum.FOO
-          this[UnittestProto.defaultForeignEnumExtension] = ForeignEnum.FOREIGN_FOO
-          this[UnittestProto.defaultImportEnumExtension] = ImportEnum.IMPORT_FOO
-          this[UnittestProto.defaultStringPieceExtension] = "424"
-          this[UnittestProto.defaultCordExtension] = "425"
+          setExtension(UnittestProto.defaultInt32Extension, 401)
+          setExtension(UnittestProto.defaultInt64Extension, 402L)
+          setExtension(UnittestProto.defaultUint32Extension, 403)
+          setExtension(UnittestProto.defaultUint64Extension, 404L)
+          setExtension(UnittestProto.defaultSint32Extension, 405)
+          setExtension(UnittestProto.defaultSint64Extension, 406L)
+          setExtension(UnittestProto.defaultFixed32Extension, 407)
+          setExtension(UnittestProto.defaultFixed64Extension, 408L)
+          setExtension(UnittestProto.defaultSfixed32Extension, 409)
+          setExtension(UnittestProto.defaultSfixed64Extension, 410L)
+          setExtension(UnittestProto.defaultFloatExtension, 411F)
+          setExtension(UnittestProto.defaultDoubleExtension, 412.0)
+          setExtension(UnittestProto.defaultBoolExtension, false)
+          setExtension(UnittestProto.defaultStringExtension, "415")
+          setExtension(UnittestProto.defaultBytesExtension, toBytes("416"))
+          setExtension(UnittestProto.defaultNestedEnumExtension, NestedEnum.FOO)
+          setExtension(UnittestProto.defaultForeignEnumExtension, ForeignEnum.FOREIGN_FOO)
+          setExtension(UnittestProto.defaultImportEnumExtension, ImportEnum.IMPORT_FOO)
+          setExtension(UnittestProto.defaultStringPieceExtension, "424")
+          setExtension(UnittestProto.defaultCordExtension, "425")
           this[UnittestProto.oneofUint32Extension] = 601
           this[UnittestProto.oneofNestedMessageExtension] =
             TestAllTypesKt.nestedMessage { bb = 602 }
