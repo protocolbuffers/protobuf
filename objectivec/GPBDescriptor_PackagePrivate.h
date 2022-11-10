@@ -52,7 +52,7 @@ typedef NS_OPTIONS(uint16_t, GPBFieldFlags) {
   // Indicates the field needs custom handling for the TextFormat name, if not
   // set, the name can be derived from the ObjC name.
   GPBFieldTextFormatNameCustom = 1 << 6,
-  // Indicates the field has an enum descriptor.
+  // This flag has never had any meaning, it was set on all enum fields.
   GPBFieldHasEnumDescriptor = 1 << 7,
 
   // These are not standard protobuf concepts, they are specific to the
@@ -89,10 +89,8 @@ typedef struct GPBMessageFieldDescription {
     // clazz is used iff GPBDescriptorInitializationFlag_UsesClassRefs is set.
     char *className;  // Name of the class of the message.
     Class clazz;      // Class of the message.
-    // For enums only: If EnumDescriptors are compiled in, it will be that,
-    // otherwise it will be the verifier.
+    // For enums only.
     GPBEnumDescriptorFunc enumDescFunc;
-    GPBEnumValidationFunc enumVerifier;
   } dataTypeSpecific;
   // The field number for the ivar.
   uint32_t number;
