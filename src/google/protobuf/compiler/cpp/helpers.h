@@ -39,6 +39,7 @@
 #include <cstdint>
 #include <iterator>
 #include <string>
+#include <tuple>
 
 #include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/compiler/code_generator.h"
@@ -862,16 +863,54 @@ class PROTOC_EXPORT Formatter {
     return absl::StrCat(x);
   }
   static std::string ToString(absl::Hex x) { return absl::StrCat(x); }
-  static std::string ToString(const FieldDescriptor* d) { return Payload(d); }
-  static std::string ToString(const Descriptor* d) { return Payload(d); }
-  static std::string ToString(const EnumDescriptor* d) { return Payload(d); }
-  static std::string ToString(const EnumValueDescriptor* d) {
-    return Payload(d);
+  static std::string ToString(const FieldDescriptor* d) {
+    return Payload(d, GeneratedCodeInfo::Annotation::NONE);
   }
-  static std::string ToString(const OneofDescriptor* d) { return Payload(d); }
+  static std::string ToString(const Descriptor* d) {
+    return Payload(d, GeneratedCodeInfo::Annotation::NONE);
+  }
+  static std::string ToString(const EnumDescriptor* d) {
+    return Payload(d, GeneratedCodeInfo::Annotation::NONE);
+  }
+  static std::string ToString(const EnumValueDescriptor* d) {
+    return Payload(d, GeneratedCodeInfo::Annotation::NONE);
+  }
+  static std::string ToString(const OneofDescriptor* d) {
+    return Payload(d, GeneratedCodeInfo::Annotation::NONE);
+  }
+
+  static std::string ToString(
+      std::tuple<const FieldDescriptor*,
+                 GeneratedCodeInfo::Annotation::Semantic>
+          p) {
+    return Payload(std::get<0>(p), std::get<1>(p));
+  }
+  static std::string ToString(
+      std::tuple<const Descriptor*, GeneratedCodeInfo::Annotation::Semantic>
+          p) {
+    return Payload(std::get<0>(p), std::get<1>(p));
+  }
+  static std::string ToString(
+      std::tuple<const EnumDescriptor*, GeneratedCodeInfo::Annotation::Semantic>
+          p) {
+    return Payload(std::get<0>(p), std::get<1>(p));
+  }
+  static std::string ToString(
+      std::tuple<const EnumValueDescriptor*,
+                 GeneratedCodeInfo::Annotation::Semantic>
+          p) {
+    return Payload(std::get<0>(p), std::get<1>(p));
+  }
+  static std::string ToString(
+      std::tuple<const OneofDescriptor*,
+                 GeneratedCodeInfo::Annotation::Semantic>
+          p) {
+    return Payload(std::get<0>(p), std::get<1>(p));
+  }
 
   template <typename Descriptor>
-  static std::string Payload(const Descriptor* descriptor) {
+  static std::string Payload(const Descriptor* descriptor,
+                             GeneratedCodeInfo::Annotation::Semantic semantic) {
     std::vector<int> path;
     descriptor->GetLocationPath(&path);
     GeneratedCodeInfo::Annotation annotation;
@@ -879,6 +918,7 @@ class PROTOC_EXPORT Formatter {
       annotation.add_path(index);
     }
     annotation.set_source_file(descriptor->file()->name());
+    annotation.set_semantic(semantic);
     return annotation.SerializeAsString();
   }
 };
