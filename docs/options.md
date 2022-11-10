@@ -202,7 +202,7 @@ with info about your project (name and website) so we can add an entry for you.
    * Extensions: 1070
 
 1. Protoc-gen-validate
-   * Website: https://github.com/envoyproxy/protoc-gen-validate
+   * Website: https://github.com/bufbuild/protoc-gen-validate
    * Extensions: 1071
 
 1. Protokt
@@ -352,3 +352,11 @@ with info about your project (name and website) so we can add an entry for you.
 1. Perfetto
    * Website: https://perfetto.dev
    * Extension: 1156
+
+1. Buf
+   * Website: http://buf.build/
+   * Extension: 1157-1166
+
+1. Connect
+   * Website: http://connect.build/
+   * Extension: 1167-1176
