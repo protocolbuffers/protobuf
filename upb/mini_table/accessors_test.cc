@@ -159,10 +159,10 @@ TEST(GeneratedCode, ScalarsProto2) {
   EXPECT_EQ(
       0, protobuf_test_messages_proto2_TestAllTypesProto2_optional_int32(msg));
 
-  EXPECT_EQ(0, upb_MiniTable_GetInt32(msg, optional_int32_field));
+  EXPECT_EQ(0, upb_MiniTable_GetInt32(msg, optional_int32_field, 0));
   upb_MiniTable_SetInt32(msg, optional_int32_field, kTestInt32);
   EXPECT_EQ(true, upb_MiniTable_HasField(msg, optional_int32_field));
-  EXPECT_EQ(kTestInt32, upb_MiniTable_GetInt32(msg, optional_int32_field));
+  EXPECT_EQ(kTestInt32, upb_MiniTable_GetInt32(msg, optional_int32_field, 0));
   EXPECT_EQ(
       kTestInt32,
       protobuf_test_messages_proto2_TestAllTypesProto2_optional_int32(msg));
@@ -172,9 +172,10 @@ TEST(GeneratedCode, ScalarsProto2) {
 
   EXPECT_EQ(
       0, protobuf_test_messages_proto2_TestAllTypesProto2_optional_uint32(msg));
-  EXPECT_EQ(0, upb_MiniTable_GetUInt32(msg, optional_uint32_field));
+  EXPECT_EQ(0, upb_MiniTable_GetUInt32(msg, optional_uint32_field, 0));
   upb_MiniTable_SetUInt32(msg, optional_uint32_field, kTestUInt32);
-  EXPECT_EQ(kTestUInt32, upb_MiniTable_GetUInt32(msg, optional_uint32_field));
+  EXPECT_EQ(kTestUInt32,
+            upb_MiniTable_GetUInt32(msg, optional_uint32_field, 0));
   EXPECT_EQ(
       kTestUInt32,
       protobuf_test_messages_proto2_TestAllTypesProto2_optional_uint32(msg));
@@ -197,7 +198,7 @@ TEST(GeneratedCode, ScalarProto3) {
   upb_MiniTable_SetInt64(msg, optional_int64_field, -1);
   EXPECT_EQ(
       -1, protobuf_test_messages_proto3_TestAllTypesProto3_optional_int64(msg));
-  EXPECT_EQ(-1, upb_MiniTable_GetInt64(msg, optional_int64_field));
+  EXPECT_EQ(-1, upb_MiniTable_GetInt64(msg, optional_int64_field, 0));
 
   EXPECT_EQ(
       0, protobuf_test_messages_proto3_TestAllTypesProto3_optional_uint64(msg));
@@ -205,7 +206,8 @@ TEST(GeneratedCode, ScalarProto3) {
   EXPECT_EQ(
       kTestUInt64,
       protobuf_test_messages_proto3_TestAllTypesProto3_optional_uint64(msg));
-  EXPECT_EQ(kTestUInt64, upb_MiniTable_GetUInt64(msg, optional_uint64_field));
+  EXPECT_EQ(kTestUInt64,
+            upb_MiniTable_GetUInt64(msg, optional_uint64_field, 0));
 
   upb_Arena_Free(arena);
 }
@@ -224,7 +226,8 @@ TEST(GeneratedCode, Strings) {
   protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_string(
       msg, upb_StringView_FromString(kTestStr1));
   EXPECT_EQ(true, upb_MiniTable_HasField(msg, optional_string_field));
-  upb_StringView value = upb_MiniTable_GetString(msg, optional_string_field);
+  upb_StringView value = upb_MiniTable_GetString(msg, optional_string_field,
+                                                 upb_StringView{NULL, 0});
   std::string read_value = std::string(value.data, value.size);
   EXPECT_EQ(kTestStr1, read_value);
   // Clear.
@@ -257,7 +260,7 @@ TEST(GeneratedCode, SubMessage) {
       find_proto2_field(kFieldOptionalNestedMessage);
 
   const upb_Message* test_message =
-      upb_MiniTable_GetMessage(msg, optional_message_field);
+      upb_MiniTable_GetMessage(msg, optional_message_field, NULL);
   EXPECT_EQ(NULL, test_message);
 
   EXPECT_EQ(false, upb_MiniTable_HasField(msg, optional_message_field));
@@ -273,14 +276,14 @@ TEST(GeneratedCode, SubMessage) {
 
   // Read back using mini table API.
   const upb_Message* sub_message =
-      upb_MiniTable_GetMessage(msg, optional_message_field);
+      upb_MiniTable_GetMessage(msg, optional_message_field, NULL);
   EXPECT_EQ(true, sub_message != NULL);
 
   const upb_MiniTableField* nested_message_a_field =
       upb_MiniTable_FindFieldByNumber(
           &protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_msg_init,
           kFieldOptionalNestedMessageA);
-  EXPECT_EQ(5, upb_MiniTable_GetInt32(sub_message, nested_message_a_field));
+  EXPECT_EQ(5, upb_MiniTable_GetInt32(sub_message, nested_message_a_field, 0));
 
   upb_MiniTable_ClearField(msg, optional_message_field);
   EXPECT_EQ(
@@ -305,7 +308,7 @@ TEST(GeneratedCode, SubMessage) {
           msg) != NULL);
   EXPECT_EQ(true, upb_MiniTable_HasField(msg, optional_message_field));
   EXPECT_EQ(123,
-            upb_MiniTable_GetInt32(mutable_message, nested_message_a_field));
+            upb_MiniTable_GetInt32(mutable_message, nested_message_a_field, 0));
 
   upb_Arena_Free(arena);
 }
@@ -522,7 +525,7 @@ TEST(GeneratedCode, PromoteUnknownMessage) {
                                               mini_table, nullptr, 0, arena);
   EXPECT_EQ(decode_status, kUpb_DecodeStatus_Ok);
   int32_t val = upb_MiniTable_GetInt32(
-      msg, upb_MiniTable_FindFieldByNumber(mini_table, 4));
+      msg, upb_MiniTable_FindFieldByNumber(mini_table, 4), 0);
   EXPECT_EQ(val, 11);
   upb_FindUnknownRet unknown = upb_MiniTable_FindUnknown(msg, 5);
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
@@ -538,7 +541,7 @@ TEST(GeneratedCode, PromoteUnknownMessage) {
           &upb_test_ModelWithExtensions_msg_init, decode_options, arena);
   EXPECT_EQ(promote_result.status, kUpb_UnknownToMessage_Ok);
   const upb_Message* promoted_message =
-      upb_MiniTable_GetMessage(msg, &mini_table->fields[1]);
+      upb_MiniTable_GetMessage(msg, &mini_table->fields[1], NULL);
   EXPECT_EQ(upb_test_ModelWithExtensions_random_int32(
                 (upb_test_ModelWithExtensions*)promoted_message),
             12);

@@ -86,19 +86,6 @@ static int _upb_MiniTableField_CTypeLg2Size(const upb_MiniTableField* f) {
   return sizes[f->descriptortype];
 }
 
-bool upb_MiniTable_HasField(const upb_Message* msg,
-                            const upb_MiniTableField* field) {
-  if (_upb_MiniTableField_InOneOf(field)) {
-    return _upb_getoneofcase_field(msg, field) == field->number;
-  } else if (field->presence > 0) {
-    return _upb_hasbit_field(msg, field);
-  } else {
-    UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
-               field->descriptortype == kUpb_FieldType_Group);
-    return upb_MiniTable_GetMessage(msg, field) != NULL;
-  }
-}
-
 void upb_MiniTable_ClearField(upb_Message* msg,
                               const upb_MiniTableField* field) {
   char* mem = UPB_PTR_AT(msg, field->offset, char);
@@ -413,7 +400,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
   upb_Message* message = NULL;
   // Callers should check that message is not set first before calling
   // PromotoUnknownToMessage.
-  UPB_ASSERT(upb_MiniTable_GetMessage(msg, field) == NULL);
+  UPB_ASSERT(upb_MiniTable_GetMessage(msg, field, NULL) == NULL);
   upb_UnknownToMessageRet ret;
   ret.status = kUpb_UnknownToMessage_Ok;
   do {

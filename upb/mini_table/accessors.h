@@ -53,15 +53,24 @@ UPB_INLINE void _upb_MiniTable_SetPresence(upb_Message* msg,
 
 // EVERYTHING ABOVE THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
-bool upb_MiniTable_HasField(const upb_Message* msg,
-                            const upb_MiniTableField* field);
-
 void upb_MiniTable_ClearField(upb_Message* msg,
                               const upb_MiniTableField* field);
 
+UPB_INLINE bool upb_MiniTable_HasField(const upb_Message* msg,
+                                       const upb_MiniTableField* field) {
+  if (_upb_MiniTableField_InOneOf(field)) {
+    return _upb_getoneofcase_field(msg, field) == field->number;
+  }
+
+  UPB_ASSERT(field->presence > 0);
+  return _upb_hasbit_field(msg, field);
+}
+
 UPB_INLINE bool upb_MiniTable_GetBool(const upb_Message* msg,
-                                      const upb_MiniTableField* field) {
+                                      const upb_MiniTableField* field,
+                                      bool default_val) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Bool);
+  if (default_val && !upb_MiniTable_HasField(msg, field)) return default_val;
   return *UPB_PTR_AT(msg, field->offset, bool);
 }
 
@@ -74,11 +83,13 @@ UPB_INLINE void upb_MiniTable_SetBool(upb_Message* msg,
 }
 
 UPB_INLINE int32_t upb_MiniTable_GetInt32(const upb_Message* msg,
-                                          const upb_MiniTableField* field) {
+                                          const upb_MiniTableField* field,
+                                          int32_t default_val) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Int32 ||
              field->descriptortype == kUpb_FieldType_SInt32 ||
              field->descriptortype == kUpb_FieldType_SFixed32 ||
              field->descriptortype == kUpb_FieldType_Enum);
+  if (default_val && !upb_MiniTable_HasField(msg, field)) return default_val;
   return *UPB_PTR_AT(msg, field->offset, int32_t);
 }
 
@@ -93,9 +104,11 @@ UPB_INLINE void upb_MiniTable_SetInt32(upb_Message* msg,
 }
 
 UPB_INLINE uint32_t upb_MiniTable_GetUInt32(const upb_Message* msg,
-                                            const upb_MiniTableField* field) {
+                                            const upb_MiniTableField* field,
+                                            uint32_t default_val) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_UInt32 ||
              field->descriptortype == kUpb_FieldType_Fixed32);
+  if (default_val && !upb_MiniTable_HasField(msg, field)) return default_val;
   return *UPB_PTR_AT(msg, field->offset, uint32_t);
 }
 
@@ -120,10 +133,12 @@ UPB_INLINE void upb_MiniTable_SetEnumProto2(upb_Message* msg,
 }
 
 UPB_INLINE int64_t upb_MiniTable_GetInt64(const upb_Message* msg,
-                                          const upb_MiniTableField* field) {
+                                          const upb_MiniTableField* field,
+                                          uint64_t default_val) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Int64 ||
              field->descriptortype == kUpb_FieldType_SInt64 ||
              field->descriptortype == kUpb_FieldType_SFixed64);
+  if (default_val && !upb_MiniTable_HasField(msg, field)) return default_val;
   return *UPB_PTR_AT(msg, field->offset, int64_t);
 }
 
@@ -138,9 +153,11 @@ UPB_INLINE void upb_MiniTable_SetInt64(upb_Message* msg,
 }
 
 UPB_INLINE uint64_t upb_MiniTable_GetUInt64(const upb_Message* msg,
-                                            const upb_MiniTableField* field) {
+                                            const upb_MiniTableField* field,
+                                            uint64_t default_val) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_UInt64 ||
              field->descriptortype == kUpb_FieldType_Fixed64);
+  if (default_val && !upb_MiniTable_HasField(msg, field)) return default_val;
   return *UPB_PTR_AT(msg, field->offset, uint64_t);
 }
 
@@ -154,8 +171,10 @@ UPB_INLINE void upb_MiniTable_SetUInt64(upb_Message* msg,
 }
 
 UPB_INLINE float upb_MiniTable_GetFloat(const upb_Message* msg,
-                                        const upb_MiniTableField* field) {
+                                        const upb_MiniTableField* field,
+                                        float default_val) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Float);
+  if (default_val && !upb_MiniTable_HasField(msg, field)) return default_val;
   return *UPB_PTR_AT(msg, field->offset, float);
 }
 
@@ -168,8 +187,10 @@ UPB_INLINE void upb_MiniTable_SetFloat(upb_Message* msg,
 }
 
 UPB_INLINE double upb_MiniTable_GetDouble(const upb_Message* msg,
-                                          const upb_MiniTableField* field) {
+                                          const upb_MiniTableField* field,
+                                          double default_val) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Double);
+  if (default_val && !upb_MiniTable_HasField(msg, field)) return default_val;
   return *UPB_PTR_AT(msg, field->offset, double);
 }
 
@@ -181,10 +202,12 @@ UPB_INLINE void upb_MiniTable_SetDouble(upb_Message* msg,
   *UPB_PTR_AT(msg, field->offset, double) = value;
 }
 
-UPB_INLINE upb_StringView upb_MiniTable_GetString(
-    const upb_Message* msg, const upb_MiniTableField* field) {
+UPB_INLINE upb_StringView
+upb_MiniTable_GetString(const upb_Message* msg, const upb_MiniTableField* field,
+                        upb_StringView def_val) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Bytes ||
              field->descriptortype == kUpb_FieldType_String);
+  if (def_val.size && !upb_MiniTable_HasField(msg, field)) return def_val;
   return *UPB_PTR_AT(msg, field->offset, upb_StringView);
 }
 
@@ -198,9 +221,11 @@ UPB_INLINE void upb_MiniTable_SetString(upb_Message* msg,
 }
 
 UPB_INLINE const upb_Message* upb_MiniTable_GetMessage(
-    const upb_Message* msg, const upb_MiniTableField* field) {
+    const upb_Message* msg, const upb_MiniTableField* field,
+    upb_Message* default_val) {
   UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
              field->descriptortype == kUpb_FieldType_Group);
+  if (default_val && !upb_MiniTable_HasField(msg, field)) return default_val;
   return *UPB_PTR_AT(msg, field->offset, const upb_Message*);
 }
 
