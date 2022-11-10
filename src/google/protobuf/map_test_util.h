@@ -33,6 +33,7 @@
 
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/reflection_tester.h"
+#include "google/protobuf/unittest.pb.h"
 
 #define UNITTEST ::protobuf_unittest
 #define BRIDGE_UNITTEST ::google::protobuf::bridge_unittest

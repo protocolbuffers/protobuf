@@ -38,7 +38,6 @@
 #include <algorithm>
 #include <cstdint>
 #include <iterator>
-#include <map>
 #include <string>
 
 #include "google/protobuf/compiler/scc.h"
@@ -117,6 +116,10 @@ std::string Namespace(const FileDescriptor* d, const Options& options);
 std::string Namespace(const Descriptor* d, const Options& options);
 std::string Namespace(const FieldDescriptor* d, const Options& options);
 std::string Namespace(const EnumDescriptor* d, const Options& options);
+std::string Namespace(const FileDescriptor* d);
+std::string Namespace(const Descriptor* d);
+std::string Namespace(const FieldDescriptor* d);
+std::string Namespace(const EnumDescriptor* d);
 
 // Returns true if it's safe to reset "field" to zero.
 bool CanInitializeByZeroing(const FieldDescriptor* field);
@@ -668,7 +671,7 @@ class PROTOC_EXPORT MessageSCCAnalyzer {
   };
   SCCAnalyzer<DepsGenerator> analyzer_;
   Options options_;
-  std::map<const SCC*, MessageAnalysis> analysis_cache_;
+  absl::flat_hash_map<const SCC*, MessageAnalysis> analysis_cache_;
 };
 
 void ListAllFields(const Descriptor* d,

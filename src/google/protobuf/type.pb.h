@@ -49,7 +49,7 @@ PROTOBUF_NAMESPACE_CLOSE
 
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2ftype_2eproto {
-  static const uint32_t offsets[];
+  static const ::uint32_t offsets[];
 };
 PROTOBUF_EXPORT extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2ftype_2eproto;
@@ -103,9 +103,9 @@ enum Field_Kind : int {
   Field_Kind_TYPE_SINT32 = 17,
   Field_Kind_TYPE_SINT64 = 18,
   Field_Kind_Field_Kind_INT_MIN_SENTINEL_DO_NOT_USE_ =
-      std::numeric_limits<int32_t>::min(),
+      std::numeric_limits<::int32_t>::min(),
   Field_Kind_Field_Kind_INT_MAX_SENTINEL_DO_NOT_USE_ =
-      std::numeric_limits<int32_t>::max(),
+      std::numeric_limits<::int32_t>::max(),
 };
 
 PROTOBUF_EXPORT bool Field_Kind_IsValid(int value);
@@ -137,9 +137,9 @@ enum Field_Cardinality : int {
   Field_Cardinality_CARDINALITY_REQUIRED = 2,
   Field_Cardinality_CARDINALITY_REPEATED = 3,
   Field_Cardinality_Field_Cardinality_INT_MIN_SENTINEL_DO_NOT_USE_ =
-      std::numeric_limits<int32_t>::min(),
+      std::numeric_limits<::int32_t>::min(),
   Field_Cardinality_Field_Cardinality_INT_MAX_SENTINEL_DO_NOT_USE_ =
-      std::numeric_limits<int32_t>::max(),
+      std::numeric_limits<::int32_t>::max(),
 };
 
 PROTOBUF_EXPORT bool Field_Cardinality_IsValid(int value);
@@ -169,9 +169,9 @@ enum Syntax : int {
   SYNTAX_PROTO2 = 0,
   SYNTAX_PROTO3 = 1,
   Syntax_INT_MIN_SENTINEL_DO_NOT_USE_ =
-      std::numeric_limits<int32_t>::min(),
+      std::numeric_limits<::int32_t>::min(),
   Syntax_INT_MAX_SENTINEL_DO_NOT_USE_ =
-      std::numeric_limits<int32_t>::max(),
+      std::numeric_limits<::int32_t>::max(),
 };
 
 PROTOBUF_EXPORT bool Syntax_IsValid(int value);
@@ -292,10 +292,10 @@ class PROTOBUF_EXPORT Type final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
@@ -360,12 +360,12 @@ class PROTOBUF_EXPORT Type final :
   void set_oneofs(int index, const std::string& value);
   void set_oneofs(int index, std::string&& value);
   void set_oneofs(int index, const char* value);
-  void set_oneofs(int index, const char* value, size_t size);
+  void set_oneofs(int index, const char* value, ::size_t size);
   std::string* add_oneofs();
   void add_oneofs(const std::string& value);
   void add_oneofs(std::string&& value);
   void add_oneofs(const char* value);
-  void add_oneofs(const char* value, size_t size);
+  void add_oneofs(const char* value, ::size_t size);
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>& oneofs() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField<std::string>* mutable_oneofs();
   private:
@@ -541,10 +541,10 @@ class PROTOBUF_EXPORT Field final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
@@ -737,20 +737,20 @@ class PROTOBUF_EXPORT Field final :
 
   // int32 number = 3;
   void clear_number();
-  int32_t number() const;
-  void set_number(int32_t value);
+  ::int32_t number() const;
+  void set_number(::int32_t value);
   private:
-  int32_t _internal_number() const;
-  void _internal_set_number(int32_t value);
+  ::int32_t _internal_number() const;
+  void _internal_set_number(::int32_t value);
   public:
 
   // int32 oneof_index = 7;
   void clear_oneof_index();
-  int32_t oneof_index() const;
-  void set_oneof_index(int32_t value);
+  ::int32_t oneof_index() const;
+  void set_oneof_index(::int32_t value);
   private:
-  int32_t _internal_oneof_index() const;
-  void _internal_set_oneof_index(int32_t value);
+  ::int32_t _internal_oneof_index() const;
+  void _internal_set_oneof_index(::int32_t value);
   public:
 
   // bool packed = 8;
@@ -777,8 +777,8 @@ class PROTOBUF_EXPORT Field final :
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr default_value_;
     int kind_;
     int cardinality_;
-    int32_t number_;
-    int32_t oneof_index_;
+    ::int32_t number_;
+    ::int32_t oneof_index_;
     bool packed_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
@@ -875,10 +875,10 @@ class PROTOBUF_EXPORT Enum final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
@@ -1098,10 +1098,10 @@ class PROTOBUF_EXPORT EnumValue final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
@@ -1168,11 +1168,11 @@ class PROTOBUF_EXPORT EnumValue final :
 
   // int32 number = 2;
   void clear_number();
-  int32_t number() const;
-  void set_number(int32_t value);
+  ::int32_t number() const;
+  void set_number(::int32_t value);
   private:
-  int32_t _internal_number() const;
-  void _internal_set_number(int32_t value);
+  ::int32_t _internal_number() const;
+  void _internal_set_number(::int32_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumValue)
@@ -1185,7 +1185,7 @@ class PROTOBUF_EXPORT EnumValue final :
   struct Impl_ {
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option > options_;
     ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
-    int32_t number_;
+    ::int32_t number_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -1281,10 +1281,10 @@ class PROTOBUF_EXPORT Option final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
@@ -1502,7 +1502,7 @@ inline void Type::set_oneofs(int index, const char* value) {
   GOOGLE_DCHECK(value != nullptr);  _impl_.oneofs_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.Type.oneofs)
 }
-inline void Type::set_oneofs(int index, const char* value, size_t size) {
+inline void Type::set_oneofs(int index, const char* value, ::size_t size) {
   _impl_.oneofs_.Mutable(index)->assign(
     reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_set_pointer:google.protobuf.Type.oneofs)
@@ -1522,7 +1522,7 @@ inline void Type::add_oneofs(const char* value) {
   GOOGLE_DCHECK(value != nullptr);  _impl_.oneofs_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.Type.oneofs)
 }
-inline void Type::add_oneofs(const char* value, size_t size) {
+inline void Type::add_oneofs(const char* value, ::size_t size) {
   _impl_.oneofs_.Add()->assign(reinterpret_cast<const char*>(value), size);
   // @@protoc_insertion_point(field_add_pointer:google.protobuf.Type.oneofs)
 }
@@ -1725,18 +1725,18 @@ inline void Field::set_cardinality(::PROTOBUF_NAMESPACE_ID::Field_Cardinality va
 inline void Field::clear_number() {
   _impl_.number_ = 0;
 }
-inline int32_t Field::_internal_number() const {
+inline ::int32_t Field::_internal_number() const {
   return _impl_.number_;
 }
-inline int32_t Field::number() const {
+inline ::int32_t Field::number() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.number)
   return _internal_number();
 }
-inline void Field::_internal_set_number(int32_t value) {
+inline void Field::_internal_set_number(::int32_t value) {
 
   _impl_.number_ = value;
 }
-inline void Field::set_number(int32_t value) {
+inline void Field::set_number(::int32_t value) {
   _internal_set_number(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Field.number)
 }
@@ -1835,18 +1835,18 @@ inline void Field::set_allocated_type_url(std::string* type_url) {
 inline void Field::clear_oneof_index() {
   _impl_.oneof_index_ = 0;
 }
-inline int32_t Field::_internal_oneof_index() const {
+inline ::int32_t Field::_internal_oneof_index() const {
   return _impl_.oneof_index_;
 }
-inline int32_t Field::oneof_index() const {
+inline ::int32_t Field::oneof_index() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Field.oneof_index)
   return _internal_oneof_index();
 }
-inline void Field::_internal_set_oneof_index(int32_t value) {
+inline void Field::_internal_set_oneof_index(::int32_t value) {
 
   _impl_.oneof_index_ = value;
 }
-inline void Field::set_oneof_index(int32_t value) {
+inline void Field::set_oneof_index(::int32_t value) {
   _internal_set_oneof_index(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Field.oneof_index)
 }
@@ -2283,18 +2283,18 @@ inline void EnumValue::set_allocated_name(std::string* name) {
 inline void EnumValue::clear_number() {
   _impl_.number_ = 0;
 }
-inline int32_t EnumValue::_internal_number() const {
+inline ::int32_t EnumValue::_internal_number() const {
   return _impl_.number_;
 }
-inline int32_t EnumValue::number() const {
+inline ::int32_t EnumValue::number() const {
   // @@protoc_insertion_point(field_get:google.protobuf.EnumValue.number)
   return _internal_number();
 }
-inline void EnumValue::_internal_set_number(int32_t value) {
+inline void EnumValue::_internal_set_number(::int32_t value) {
 
   _impl_.number_ = value;
 }
-inline void EnumValue::set_number(int32_t value) {
+inline void EnumValue::set_number(::int32_t value) {
   _internal_set_number(value);
   // @@protoc_insertion_point(field_set:google.protobuf.EnumValue.number)
 }

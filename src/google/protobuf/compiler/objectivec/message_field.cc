@@ -30,9 +30,9 @@
 
 #include "google/protobuf/compiler/objectivec/message_field.h"
 
-#include <set>
 #include <string>
 
+#include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
@@ -66,7 +66,8 @@ MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor)
 }
 
 void MessageFieldGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls, bool include_external_types) const {
+    absl::btree_set<std::string>* fwd_decls,
+    bool include_external_types) const {
   ObjCObjFieldGenerator::DetermineForwardDeclarations(fwd_decls,
                                                       include_external_types);
   // Within a file there is no requirement on the order of the messages, so
@@ -81,7 +82,7 @@ void MessageFieldGenerator::DetermineForwardDeclarations(
 }
 
 void MessageFieldGenerator::DetermineObjectiveCClassDefinitions(
-    std::set<std::string>* fwd_decls) const {
+    absl::btree_set<std::string>* fwd_decls) const {
   fwd_decls->insert(ObjCClassDeclaration(variable("storage_type")));
 }
 
@@ -95,7 +96,8 @@ RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
 }
 
 void RepeatedMessageFieldGenerator::DetermineForwardDeclarations(
-    std::set<std::string>* fwd_decls, bool include_external_types) const {
+    absl::btree_set<std::string>* fwd_decls,
+    bool include_external_types) const {
   RepeatedFieldGenerator::DetermineForwardDeclarations(fwd_decls,
                                                        include_external_types);
   // Within a file there is no requirement on the order of the messages, so
@@ -110,7 +112,7 @@ void RepeatedMessageFieldGenerator::DetermineForwardDeclarations(
 }
 
 void RepeatedMessageFieldGenerator::DetermineObjectiveCClassDefinitions(
-    std::set<std::string>* fwd_decls) const {
+    absl::btree_set<std::string>* fwd_decls) const {
   fwd_decls->insert(ObjCClassDeclaration(variable("storage_type")));
 }
 

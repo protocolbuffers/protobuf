@@ -33,6 +33,7 @@
 
 #include <string>
 
+#include "absl/container/btree_set.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
 
@@ -53,7 +54,8 @@ class ExtensionGenerator {
   void GenerateMembersHeader(io::Printer* printer);
   void GenerateStaticVariablesInitialization(io::Printer* printer);
   void GenerateRegistrationSource(io::Printer* printer);
-  void DetermineObjectiveCClassDefinitions(std::set<std::string>* fwd_decls);
+  void DetermineObjectiveCClassDefinitions(
+      absl::btree_set<std::string>* fwd_decls);
 
  private:
   std::string method_name_;

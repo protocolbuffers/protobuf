@@ -1300,7 +1300,7 @@ VALUE build_module_from_enumdesc(VALUE _enumdesc) {
   return mod;
 }
 
-// Internal only; used by Google::Protobuf.deep_copy.
+// Internal to the library; used by Google::Protobuf.deep_copy.
 upb_Message* Message_deep_copy(const upb_Message* msg, const upb_MessageDef* m,
                                upb_Arena* arena) {
   // Serialize and parse.

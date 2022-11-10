@@ -42,7 +42,6 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
-#include "google/protobuf/wire_format_lite.h"
 #include "absl/base/attributes.h"
 #include "absl/base/casts.h"
 #include "absl/container/flat_hash_map.h"
@@ -54,6 +53,7 @@
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/json/internal/descriptor_traits.h"
+#include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.

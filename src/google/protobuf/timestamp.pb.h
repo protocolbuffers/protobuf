@@ -46,7 +46,7 @@ PROTOBUF_NAMESPACE_CLOSE
 
 // Internal implementation detail -- do not use these members.
 struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2ftimestamp_2eproto {
-  static const uint32_t offsets[];
+  static const ::uint32_t offsets[];
 };
 PROTOBUF_EXPORT extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable
     descriptor_table_google_2fprotobuf_2ftimestamp_2eproto;
@@ -154,10 +154,10 @@ class PROTOBUF_EXPORT Timestamp final :
   PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
   bool IsInitialized() const final;
 
-  size_t ByteSizeLong() const final;
+  ::size_t ByteSizeLong() const final;
   const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  uint8_t* _InternalSerialize(
-      uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  ::uint8_t* _InternalSerialize(
+      ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
@@ -191,20 +191,20 @@ class PROTOBUF_EXPORT Timestamp final :
   };
   // int64 seconds = 1;
   void clear_seconds();
-  int64_t seconds() const;
-  void set_seconds(int64_t value);
+  ::int64_t seconds() const;
+  void set_seconds(::int64_t value);
   private:
-  int64_t _internal_seconds() const;
-  void _internal_set_seconds(int64_t value);
+  ::int64_t _internal_seconds() const;
+  void _internal_set_seconds(::int64_t value);
   public:
 
   // int32 nanos = 2;
   void clear_nanos();
-  int32_t nanos() const;
-  void set_nanos(int32_t value);
+  ::int32_t nanos() const;
+  void set_nanos(::int32_t value);
   private:
-  int32_t _internal_nanos() const;
-  void _internal_set_nanos(int32_t value);
+  ::int32_t _internal_nanos() const;
+  void _internal_set_nanos(::int32_t value);
   public:
 
   // @@protoc_insertion_point(class_scope:google.protobuf.Timestamp)
@@ -215,8 +215,8 @@ class PROTOBUF_EXPORT Timestamp final :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   struct Impl_ {
-    int64_t seconds_;
-    int32_t nanos_;
+    ::int64_t seconds_;
+    ::int32_t nanos_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -240,20 +240,20 @@ class PROTOBUF_EXPORT Timestamp final :
 
 // int64 seconds = 1;
 inline void Timestamp::clear_seconds() {
-  _impl_.seconds_ = int64_t{0};
+  _impl_.seconds_ = ::int64_t{0};
 }
-inline int64_t Timestamp::_internal_seconds() const {
+inline ::int64_t Timestamp::_internal_seconds() const {
   return _impl_.seconds_;
 }
-inline int64_t Timestamp::seconds() const {
+inline ::int64_t Timestamp::seconds() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Timestamp.seconds)
   return _internal_seconds();
 }
-inline void Timestamp::_internal_set_seconds(int64_t value) {
+inline void Timestamp::_internal_set_seconds(::int64_t value) {
 
   _impl_.seconds_ = value;
 }
-inline void Timestamp::set_seconds(int64_t value) {
+inline void Timestamp::set_seconds(::int64_t value) {
   _internal_set_seconds(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Timestamp.seconds)
 }
@@ -262,18 +262,18 @@ inline void Timestamp::set_seconds(int64_t value) {
 inline void Timestamp::clear_nanos() {
   _impl_.nanos_ = 0;
 }
-inline int32_t Timestamp::_internal_nanos() const {
+inline ::int32_t Timestamp::_internal_nanos() const {
   return _impl_.nanos_;
 }
-inline int32_t Timestamp::nanos() const {
+inline ::int32_t Timestamp::nanos() const {
   // @@protoc_insertion_point(field_get:google.protobuf.Timestamp.nanos)
   return _internal_nanos();
 }
-inline void Timestamp::_internal_set_nanos(int32_t value) {
+inline void Timestamp::_internal_set_nanos(::int32_t value) {
 
   _impl_.nanos_ = value;
 }
-inline void Timestamp::set_nanos(int32_t value) {
+inline void Timestamp::set_nanos(::int32_t value) {
   _internal_set_nanos(value);
   // @@protoc_insertion_point(field_set:google.protobuf.Timestamp.nanos)
 }

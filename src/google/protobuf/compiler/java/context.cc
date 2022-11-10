@@ -30,11 +30,11 @@
 
 #include "google/protobuf/compiler/java/context.h"
 
-#include "google/protobuf/descriptor.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/java/field.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {

@@ -51,9 +51,6 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/any.pb.h"
-#include "google/protobuf/test_util2.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
@@ -64,12 +61,15 @@
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/command_line_interface.h"
+#include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/mock_code_generator.h"
 #include "google/protobuf/compiler/subprocess.h"
-#include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/test_util2.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_custom_options.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -2691,7 +2691,7 @@ TEST_P(EncodeDecodeTest, Encode) {
   std::string args;
   if (GetParam() != DESCRIPTOR_SET_IN) {
     args.append(
-        TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto"));
+        TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto"));
   }
   EXPECT_TRUE(Run(args + " --encode=protobuf_unittest.TestAllTypes"));
   ExpectStdoutMatchesBinaryFile(TestUtil::GetTestDataPath(
@@ -2703,7 +2703,7 @@ TEST_P(EncodeDecodeTest, Decode) {
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
       "third_party/protobuf/testdata/golden_message_oneof_implemented"));
   EXPECT_TRUE(
-      Run(TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto") +
+      Run(TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto") +
           " --decode=protobuf_unittest.TestAllTypes"));
   ExpectStdoutMatchesTextFile(TestUtil::GetTestDataPath(
       "third_party/protobuf/"
@@ -2714,7 +2714,7 @@ TEST_P(EncodeDecodeTest, Decode) {
 TEST_P(EncodeDecodeTest, Partial) {
   RedirectStdinFromText("");
   EXPECT_TRUE(
-      Run(TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto") +
+      Run(TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto") +
           " --encode=protobuf_unittest.TestRequired"));
   ExpectStdoutMatchesText("");
   ExpectStderrMatchesText(
@@ -2738,7 +2738,7 @@ TEST_P(EncodeDecodeTest, DecodeRaw) {
 
 TEST_P(EncodeDecodeTest, UnknownType) {
   EXPECT_FALSE(
-      Run(TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto") +
+      Run(TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto") +
           " --encode=NoSuchType"));
   ExpectStdoutMatchesText("");
   ExpectStderrMatchesText("Type not defined: NoSuchType\n");
@@ -2760,7 +2760,7 @@ TEST_P(EncodeDecodeTest, EncodeDeterministicOutput) {
   std::string args;
   if (GetParam() != DESCRIPTOR_SET_IN) {
     args.append(
-        TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto"));
+        TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto"));
   }
   EXPECT_TRUE(Run(
       args + " --encode=protobuf_unittest.TestAllTypes --deterministic_output"));
@@ -2773,7 +2773,7 @@ TEST_P(EncodeDecodeTest, DecodeDeterministicOutput) {
   RedirectStdinFromFile(TestUtil::GetTestDataPath(
       "third_party/protobuf/testdata/golden_message_oneof_implemented"));
   EXPECT_FALSE(
-      Run(TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto") +
+      Run(TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto") +
           " --decode=protobuf_unittest.TestAllTypes --deterministic_output"));
   ExpectStderrMatchesText(
       "Can only use --deterministic_output with --encode.\n");

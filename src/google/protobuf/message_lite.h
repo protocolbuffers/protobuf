@@ -45,12 +45,12 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/port.h"
 #include "absl/base/call_once.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/explicitly_constructed.h"
+#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/port.h"
 

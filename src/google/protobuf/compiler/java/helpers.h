@@ -38,12 +38,12 @@
 #include <cstdint>
 #include <string>
 
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/descriptor.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/names.h"
 #include "google/protobuf/compiler/java/options.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/printer.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"

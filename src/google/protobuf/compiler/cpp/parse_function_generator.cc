@@ -36,12 +36,12 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/wire_format.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
+#include "google/protobuf/wire_format.h"
 
 namespace google {
 namespace protobuf {
@@ -1145,7 +1145,6 @@ void ParseFunctionGenerator::GenerateFieldBody(
   uint32_t tag = WireFormatLite::MakeTag(field->number(), wiretype);
   switch (wiretype) {
     case WireFormatLite::WIRETYPE_VARINT: {
-      std::string type = PrimitiveTypeName(options_, field->cpp_type());
       if (field->type() == FieldDescriptor::TYPE_ENUM) {
         format.Set("enum_type",
                    QualifiedClassName(field->enum_type(), options_));

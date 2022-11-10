@@ -40,7 +40,6 @@
 #include <limits>
 #include <memory>
 #include <queue>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -50,8 +49,6 @@
 #include "google/protobuf/compiler/scc.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
-#include "google/protobuf/wire_format.h"
-#include "google/protobuf/wire_format_lite.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/ascii.h"
@@ -66,6 +63,8 @@
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/strtod.h"
+#include "google/protobuf/wire_format.h"
+#include "google/protobuf/wire_format_lite.h"
 
 
 // Must be last.
@@ -404,6 +403,7 @@ std::string Namespace(const std::string& package) {
   return "::" + DotsToColons(package);
 }
 
+std::string Namespace(const FileDescriptor* d) { return Namespace(d, {}); }
 std::string Namespace(const FileDescriptor* d, const Options& options) {
   std::string ns = Namespace(d->package());
   if (IsWellKnownMessage(d) && options.opensource_runtime) {
@@ -419,14 +419,17 @@ std::string Namespace(const FileDescriptor* d, const Options& options) {
   return ns;
 }
 
+std::string Namespace(const Descriptor* d) { return Namespace(d, {}); }
 std::string Namespace(const Descriptor* d, const Options& options) {
   return Namespace(d->file(), options);
 }
 
+std::string Namespace(const FieldDescriptor* d) { return Namespace(d, {}); }
 std::string Namespace(const FieldDescriptor* d, const Options& options) {
   return Namespace(d->file(), options);
 }
 
+std::string Namespace(const EnumDescriptor* d) { return Namespace(d, {}); }
 std::string Namespace(const EnumDescriptor* d, const Options& options) {
   return Namespace(d->file(), options);
 }
@@ -1254,7 +1257,9 @@ bool IsImplicitWeakField(const FieldDescriptor* field, const Options& options,
 }
 
 MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
-  if (analysis_cache_.count(scc)) return analysis_cache_[scc];
+  auto it = analysis_cache_.find(scc);
+  if (it != analysis_cache_.end()) return it->second;
+
   MessageAnalysis result;
   if (UsingImplicitWeakFields(scc->GetFile(), options_)) {
     result.contains_weak = true;
@@ -1309,7 +1314,7 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
   // in the graph, the graph should be a DAG. Hence we shouldn't need to mark
   // nodes visited as we can never return to them. By inserting them here
   // we will go in an infinite loop if the SCC is not correct.
-  return analysis_cache_[scc] = result;
+  return analysis_cache_[scc] = std::move(result);
 }
 
 void ListAllFields(const Descriptor* d,

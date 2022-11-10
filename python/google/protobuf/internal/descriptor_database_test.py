@@ -35,12 +35,12 @@ __author__ = 'matthewtoia@google.com (Matt Toia)'
 import unittest
 import warnings
 
-from google.protobuf import unittest_pb2
 from google.protobuf import descriptor_pb2
 from google.protobuf.internal import factory_test2_pb2
 from google.protobuf.internal import no_package_pb2
 from google.protobuf.internal import testing_refleaks
 from google.protobuf import descriptor_database
+from google.protobuf import unittest_pb2
 
 
 @testing_refleaks.TestCase
@@ -119,9 +119,9 @@ class DescriptorDatabaseTest(unittest.TestCase):
       self.assertIs(w[0].category, RuntimeWarning)
       self.assertIn('Conflict register for file "other_file2": ',
                     str(w[0].message))
-      self.assertIn('already defined in file '
-                    '"google/protobuf/unittest.proto"',
-                    str(w[0].message))
+      self.assertIn(
+          'already defined in file '
+          '"google/protobuf/unittest.proto"', str(w[0].message))
 
 if __name__ == '__main__':
   unittest.main()

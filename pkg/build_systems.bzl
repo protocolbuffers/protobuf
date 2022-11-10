@@ -281,7 +281,10 @@ def _cmake_var_fragment(owner, varname, prefix, entries):
     ).format(
         owner = owner,
         varname = varname,
-        entries = "\n".join(["  %s%s" % (prefix, f) for f in entries]),
+        # Strip out "wkt/google/protobuf/" from the well-known type file paths.
+        # This is currently necessary to allow checked-in and generated
+        # versions of the well-known type generated code to coexist.
+        entries = "\n".join(["  %s%s" % (prefix, f.replace("wkt/google/protobuf/", "")) for f in entries]),
     )
 
 def _cmake_file_list_impl(ctx):

@@ -114,53 +114,35 @@ void arena_delete_object(void* object) {
 struct ArenaOptions {
   // This defines the size of the first block requested from the system malloc.
   // Subsequent block sizes will increase in a geometric series up to a maximum.
-  size_t start_block_size;
+  size_t start_block_size = internal::AllocationPolicy::kDefaultStartBlockSize;
 
   // This defines the maximum block size requested from system malloc (unless an
   // individual arena allocation request occurs with a size larger than this
   // maximum). Requested block sizes increase up to this value, then remain
   // here.
-  size_t max_block_size;
+  size_t max_block_size = internal::GetDefaultArenaMaxBlockSize();
 
   // An initial block of memory for the arena to use, or nullptr for none. If
   // provided, the block must live at least as long as the arena itself. The
   // creator of the Arena retains ownership of the block after the Arena is
   // destroyed.
-  char* initial_block;
+  char* initial_block = nullptr;
 
   // The size of the initial block, if provided.
-  size_t initial_block_size;
+  size_t initial_block_size = 0;
 
   // A function pointer to an alloc method that returns memory blocks of size
   // requested. By default, it contains a ptr to the malloc function.
   //
   // NOTE: block_alloc and dealloc functions are expected to behave like
   // malloc and free, including Asan poisoning.
-  void* (*block_alloc)(size_t);
+  void* (*block_alloc)(size_t) = nullptr;
   // A function pointer to a dealloc method that takes ownership of the blocks
   // from the arena. By default, it contains a ptr to a wrapper function that
   // calls free.
-  void (*block_dealloc)(void*, size_t);
-
-  ArenaOptions()
-      : start_block_size(internal::AllocationPolicy::kDefaultStartBlockSize),
-        max_block_size(internal::GetDefaultArenaMaxBlockSize()),
-        initial_block(nullptr),
-        initial_block_size(0),
-        block_alloc(nullptr),
-        block_dealloc(nullptr),
-        make_metrics_collector(nullptr) {}
+  void (*block_dealloc)(void*, size_t) = nullptr;
 
  private:
-  // If make_metrics_collector is not nullptr, it will be called at Arena init
-  // time. It may return a pointer to a collector instance that will be notified
-  // of interesting events related to the arena.
-  internal::ArenaMetricsCollector* (*make_metrics_collector)();
-
-  internal::ArenaMetricsCollector* MetricsCollector() const {
-    return make_metrics_collector ? (*make_metrics_collector)() : nullptr;
-  }
-
   internal::AllocationPolicy AllocationPolicy() const {
     internal::AllocationPolicy res;
     res.start_block_size = start_block_size;
@@ -169,8 +151,6 @@ struct ArenaOptions {
     res.block_dealloc = block_dealloc;
     return res;
   }
-
-  friend void arena_metrics::EnableArenaMetrics(ArenaOptions*);
 
   friend class Arena;
   friend class ArenaOptionsTestFriend;

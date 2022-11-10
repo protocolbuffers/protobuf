@@ -551,7 +551,6 @@ pkg_files(
         "WORKSPACE",
         "cmake/CMakeLists.txt",
         "cmake/README.md",
-        "cmake/update_file_lists.sh",
         "generate_descriptor_proto.sh",
         "maven_install.json",
         "//third_party:BUILD.bazel",

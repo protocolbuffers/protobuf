@@ -39,14 +39,14 @@
 
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/io/printer.h"
-#include "google/protobuf/wire_format.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/helpers.h"
 #include "google/protobuf/compiler/java/name_resolver.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/wire_format.h"
 
 // Must be last.
 #include "google/protobuf/port_def.inc"
@@ -91,22 +91,15 @@ void SetEnumVariables(
   if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
-    (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builderBitIndex);
-
     // Note that these have a trailing ";".
     (*variables)["set_has_field_bit_message"] =
         GenerateSetBit(messageBitIndex) + ";";
-    (*variables)["set_has_field_bit_builder"] =
-        GenerateSetBit(builderBitIndex) + ";";
-    (*variables)["clear_has_field_bit_builder"] =
-        GenerateClearBit(builderBitIndex) + ";";
-
+    (*variables)["set_has_field_bit_to_local"] =
+        GenerateSetBitToLocal(messageBitIndex);
     (*variables)["is_field_present_message"] = GenerateGetBit(messageBitIndex);
   } else {
     (*variables)["set_has_field_bit_message"] = "";
-    (*variables)["set_has_field_bit_builder"] = "";
-    (*variables)["clear_has_field_bit_builder"] = "";
-
+    (*variables)["set_has_field_bit_to_local"] = "";
     variables->insert({"is_field_present_message",
                        absl::StrCat((*variables)["name"], "_ != ",
                                     (*variables)["default"], ".getNumber()")});
@@ -117,10 +110,15 @@ void SetEnumVariables(
   (*variables)["set_mutable_bit_builder"] = GenerateSetBit(builderBitIndex);
   (*variables)["clear_mutable_bit_builder"] = GenerateClearBit(builderBitIndex);
 
+  (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builderBitIndex);
+
+  // Note that these have a trailing ";".
+  (*variables)["set_has_field_bit_builder"] =
+      GenerateSetBit(builderBitIndex) + ";";
+  (*variables)["clear_has_field_bit_builder"] =
+      GenerateClearBit(builderBitIndex) + ";";
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
-  (*variables)["set_has_field_bit_to_local"] =
-      GenerateSetBitToLocal(messageBitIndex);
 
   if (SupportUnknownEnumValue(descriptor->file())) {
     variables->insert(
@@ -137,7 +135,10 @@ void SetEnumVariables(
 ImmutableEnumFieldGenerator::ImmutableEnumFieldGenerator(
     const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
     Context* context)
-    : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
+    : descriptor_(descriptor),
+      message_bit_index_(messageBitIndex),
+      builder_bit_index_(builderBitIndex),
+      name_resolver_(context->GetNameResolver()) {
   SetEnumVariables(descriptor, messageBitIndex, builderBitIndex,
                    context->GetFieldGeneratorInfo(descriptor), name_resolver_,
                    &variables_, context);
@@ -145,13 +146,19 @@ ImmutableEnumFieldGenerator::ImmutableEnumFieldGenerator(
 
 ImmutableEnumFieldGenerator::~ImmutableEnumFieldGenerator() {}
 
+int ImmutableEnumFieldGenerator::GetMessageBitIndex() const {
+  return message_bit_index_;
+}
+
+int ImmutableEnumFieldGenerator::GetBuilderBitIndex() const {
+  return builder_bit_index_;
+}
+
 int ImmutableEnumFieldGenerator::GetNumBitsForMessage() const {
   return HasHasbit(descriptor_) ? 1 : 0;
 }
 
-int ImmutableEnumFieldGenerator::GetNumBitsForBuilder() const {
-  return GetNumBitsForMessage();
-}
+int ImmutableEnumFieldGenerator::GetNumBitsForBuilder() const { return 1; }
 
 void ImmutableEnumFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
@@ -170,7 +177,7 @@ void ImmutableEnumFieldGenerator::GenerateInterfaceMembers(
 }
 
 void ImmutableEnumFieldGenerator::GenerateMembers(io::Printer* printer) const {
-  printer->Print(variables_, "private int $name$_;\n");
+  printer->Print(variables_, "private int $name$_ = $default_number$;\n");
   PrintExtraFieldInfo(variables_, printer);
   if (HasHazzer(descriptor_)) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
@@ -225,8 +232,8 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
     printer->Print(variables_,
                    "$deprecation$public Builder "
                    "${$set$capitalized_name$Value$}$(int value) {\n"
-                   "  $set_has_field_bit_builder$\n"
                    "  $name$_ = value;\n"
+                   "  $set_has_field_bit_builder$\n"
                    "  onChanged();\n"
                    "  return this;\n"
                    "}\n");
@@ -321,9 +328,7 @@ void ImmutableEnumFieldGenerator::GenerateInitializationCode(
 
 void ImmutableEnumFieldGenerator::GenerateBuilderClearCode(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "$name$_ = $default_number$;\n"
-                 "$clear_has_field_bit_builder$\n");
+  printer->Print(variables_, "$name$_ = $default_number$;\n");
 }
 
 void ImmutableEnumFieldGenerator::GenerateMergingCode(
@@ -346,13 +351,13 @@ void ImmutableEnumFieldGenerator::GenerateMergingCode(
 
 void ImmutableEnumFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
-  if (HasHazzer(descriptor_)) {
-    printer->Print(variables_,
-                   "if ($get_has_field_bit_from_local$) {\n"
-                   "  $set_has_field_bit_to_local$;\n"
-                   "}\n");
+  printer->Print(variables_,
+                 "if ($get_has_field_bit_from_local$) {\n"
+                 "  result.$name$_ = $name$_;\n");
+  if (GetNumBitsForMessage() > 0) {
+    printer->Print(variables_, "  $set_has_field_bit_to_local$;\n");
   }
-  printer->Print(variables_, "result.$name$_ = $name$_;\n");
+  printer->Print("}\n");
 }
 
 void ImmutableEnumFieldGenerator::GenerateBuilderParsingCode(
@@ -504,6 +509,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
                  "  return $default$;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
+
   WriteFieldAccessorDocComment(printer, descriptor_, SETTER,
                                /* builder */ true);
   printer->Print(variables_,
@@ -518,6 +524,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
+
   WriteFieldAccessorDocComment(printer, descriptor_, CLEARER,
                                /* builder */ true);
   printer->Print(
@@ -540,10 +547,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderClearCode(
 
 void ImmutableEnumOneofFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "if ($has_oneof_case_message$) {\n"
-                 "  result.$oneof_name$_ = $oneof_name$_;\n"
-                 "}\n");
+  // No-Op: Handled by single statement for the oneof
 }
 
 void ImmutableEnumOneofFieldGenerator::GenerateMergingCode(
@@ -632,11 +636,8 @@ void ImmutableEnumOneofFieldGenerator::GenerateHashCode(
 RepeatedImmutableEnumFieldGenerator::RepeatedImmutableEnumFieldGenerator(
     const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
     Context* context)
-    : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
-  SetEnumVariables(descriptor, messageBitIndex, builderBitIndex,
-                   context->GetFieldGeneratorInfo(descriptor), name_resolver_,
-                   &variables_, context);
-}
+    : ImmutableEnumFieldGenerator(descriptor, messageBitIndex, builderBitIndex,
+                                  context) {}
 
 RepeatedImmutableEnumFieldGenerator::~RepeatedImmutableEnumFieldGenerator() {}
 

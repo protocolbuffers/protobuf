@@ -340,7 +340,7 @@ def _BuildMessageFromTypeName(type_name, descriptor_pool):
   return message_type()
 
 
-# These values must match WireType enum in google/protobuf/wire_format.h.
+# These values must match WireType enum in //net/proto2/public/wire_format.h.
 WIRETYPE_LENGTH_DELIMITED = 2
 WIRETYPE_START_GROUP = 3
 
@@ -1091,12 +1091,6 @@ class _Parser(object):
       else:
         getattr(message, field.name)[sub_message.key] = sub_message.value
 
-  @staticmethod
-  def _IsProto3Syntax(message):
-    message_descriptor = message.DESCRIPTOR
-    return (hasattr(message_descriptor, 'syntax') and
-            message_descriptor.syntax == 'proto3')
-
   def _MergeScalarField(self, tokenizer, message, field):
     """Merges a single scalar field into a message.
 
@@ -1148,7 +1142,7 @@ class _Parser(object):
     else:
       if field.is_extension:
         if (not self._allow_multiple_scalars and
-            not self._IsProto3Syntax(message) and
+            field.has_presence and
             message.HasExtension(field)):
           raise tokenizer.ParseErrorPreviousToken(
               'Message type "%s" should not have multiple "%s" extensions.' %
@@ -1158,12 +1152,12 @@ class _Parser(object):
       else:
         duplicate_error = False
         if not self._allow_multiple_scalars:
-          if self._IsProto3Syntax(message):
-            # Proto3 doesn't represent presence so we try best effort to check
-            # multiple scalars by compare to default values.
-            duplicate_error = bool(getattr(message, field.name))
-          else:
+          if field.has_presence:
             duplicate_error = message.HasField(field.name)
+          else:
+            # For field that doesn't represent presence, try best effort to
+            # check multiple scalars by compare to default values.
+            duplicate_error = bool(getattr(message, field.name))
 
         if duplicate_error:
           raise tokenizer.ParseErrorPreviousToken(
@@ -1852,12 +1846,8 @@ def ParseEnum(field, value):
       raise ValueError('Enum type "%s" has no value named %s.' %
                        (enum_descriptor.full_name, value))
   else:
-    # Numeric value.
-    if hasattr(field.file, 'syntax'):
-      # Attribute is checked for compatibility.
-      if field.file.syntax == 'proto3':
-        # Proto3 accept numeric unknown enums.
-        return number
+    if not field.enum_type.is_closed:
+      return number
     enum_value = enum_descriptor.values_by_number.get(number, None)
     if enum_value is None:
       raise ValueError('Enum type "%s" has no value with number %d.' %

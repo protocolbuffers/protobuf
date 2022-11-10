@@ -254,15 +254,25 @@ absl::string_view TcParser::FieldName(const TcParseTableBase* table,
                   field_index + 1);
 }
 
-PROTOBUF_NOINLINE const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
+template <bool export_called_function>
+inline PROTOBUF_ALWAYS_INLINE const char* TcParser::MiniParseImpl(
+    PROTOBUF_TC_PARAM_DECL) {
+  TestMiniParseResult* test_out;
+  if (export_called_function) {
+    test_out = reinterpret_cast<TestMiniParseResult*>(
+        static_cast<uintptr_t>(data.data));
+  }
+
   uint32_t tag;
   ptr = ReadTagInlined(ptr, &tag);
   if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
+    if (export_called_function) *test_out = {Error};
     return Error(PROTOBUF_TC_PARAM_PASS);
   }
 
   auto* entry = FindFieldEntry(table, tag >> 3);
   if (entry == nullptr) {
+    if (export_called_function) *test_out = {table->fallback, tag};
     data.data = tag;
     PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
   }
@@ -324,7 +334,20 @@ PROTOBUF_NOINLINE const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
     "Invalid table order");
 
   TailCallParseFunc parse_fn = kMiniParseTable[field_type];
+  if (export_called_function) *test_out = {parse_fn, tag, entry};
+
   PROTOBUF_MUSTTAIL return parse_fn(PROTOBUF_TC_PARAM_PASS);
+}
+
+PROTOBUF_NOINLINE const char* TcParser::MiniParse(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return MiniParseImpl<false>(PROTOBUF_TC_PARAM_PASS);
+}
+PROTOBUF_NOINLINE TcParser::TestMiniParseResult TcParser::TestMiniParse(
+    PROTOBUF_TC_PARAM_DECL) {
+  TestMiniParseResult result = {};
+  data.data = reinterpret_cast<uintptr_t>(&result);
+  result.ptr = MiniParseImpl<true>(PROTOBUF_TC_PARAM_PASS);
+  return result;
 }
 
 const char* TcParser::MpFallback(PROTOBUF_TC_PARAM_DECL) {
@@ -766,31 +789,99 @@ done10:
   return {p + 10, res1 & res2 & res3};
 }
 
+template <class Type>
 inline PROTOBUF_ALWAYS_INLINE const char* ParseVarint(const char* p,
-                                                      uint64_t* value) {
+                                                      Type* value) {
+  static_assert(sizeof(Type) == 4 || sizeof(Type) == 8,
+                "Only [u]int32_t and [u]int64_t please");
   int64_t byte = static_cast<int8_t>(*p);
   if (PROTOBUF_PREDICT_TRUE(byte >= 0)) {
     *value = byte;
     return p + 1;
   } else {
     auto tmp = Parse64FallbackPair(p, byte);
-    if (PROTOBUF_PREDICT_TRUE(tmp.first)) *value = tmp.second;
+    if (PROTOBUF_PREDICT_TRUE(tmp.first)) {
+      *value = static_cast<Type>(tmp.second);
+    }
     return tmp.first;
   }
 }
 
+// This overload is specifically for handling bool, because bools have very
+// different requirements and performance opportunities than ints.
+inline PROTOBUF_ALWAYS_INLINE const char* ParseVarint(const char* p,
+                                                      bool* value) {
+  unsigned char byte = static_cast<unsigned char>(*p++);
+  if (PROTOBUF_PREDICT_TRUE(byte == 0 || byte == 1)) {
+    // This is the code path almost always taken,
+    // so we take care to make it very efficient.
+    if (sizeof(byte) == sizeof(*value)) {
+      memcpy(value, &byte, 1);
+    } else {
+      // The C++ standard does not specify that a `bool` takes only one byte
+      *value = byte;
+    }
+    return p;
+  }
+  // This part, we just care about code size.
+  // Although it's almost never used, we have to support it because we guarantee
+  // compatibility for users who change a field from an int32 or int64 to a bool
+  if (PROTOBUF_PREDICT_FALSE(byte & 0x80)) {
+    byte = (byte - 0x80) | *p++;
+    if (PROTOBUF_PREDICT_FALSE(byte & 0x80)) {
+      byte = (byte - 0x80) | *p++;
+      if (PROTOBUF_PREDICT_FALSE(byte & 0x80)) {
+        byte = (byte - 0x80) | *p++;
+        if (PROTOBUF_PREDICT_FALSE(byte & 0x80)) {
+          byte = (byte - 0x80) | *p++;
+          if (PROTOBUF_PREDICT_FALSE(byte & 0x80)) {
+            byte = (byte - 0x80) | *p++;
+            if (PROTOBUF_PREDICT_FALSE(byte & 0x80)) {
+              byte = (byte - 0x80) | *p++;
+              if (PROTOBUF_PREDICT_FALSE(byte & 0x80)) {
+                byte = (byte - 0x80) | *p++;
+                if (PROTOBUF_PREDICT_FALSE(byte & 0x80)) {
+                  byte = (byte - 0x80) | *p++;
+                  if (PROTOBUF_PREDICT_FALSE(byte & 0x80)) {
+                    byte = (byte - 0x80) | *p++;
+                    if (PROTOBUF_PREDICT_FALSE(byte & 0x80)) {
+                      return nullptr;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  *value = byte;
+  return p;
+}
+
 template <typename FieldType, bool zigzag = false>
-inline FieldType ZigZagDecodeHelper(uint64_t value) {
+inline FieldType ZigZagDecodeHelper(FieldType value) {
   return static_cast<FieldType>(value);
 }
 
 template <>
-inline int32_t ZigZagDecodeHelper<int32_t, true>(uint64_t value) {
+inline uint32_t ZigZagDecodeHelper<uint32_t, true>(uint32_t value) {
   return WireFormatLite::ZigZagDecode32(value);
 }
 
 template <>
-inline int64_t ZigZagDecodeHelper<int64_t, true>(uint64_t value) {
+inline int32_t ZigZagDecodeHelper<int32_t, true>(int32_t value) {
+  return WireFormatLite::ZigZagDecode32(value);
+}
+
+template <>
+inline uint64_t ZigZagDecodeHelper<uint64_t, true>(uint64_t value) {
+  return WireFormatLite::ZigZagDecode64(value);
+}
+
+template <>
+inline int64_t ZigZagDecodeHelper<int64_t, true>(int64_t value) {
   return WireFormatLite::ZigZagDecode64(value);
 }
 
@@ -845,11 +936,11 @@ PROTOBUF_NOINLINE const char* TcParser::SingularVarBigint(
 #if defined(__GNUC__)
   // This empty asm block convinces the compiler that the contents of spill may
   // have changed, and thus can't be cached in registers.  It's similar to, but
-  // more optimal then, the effect of declaring it "volatile".
+  // more optimal than, the effect of declaring it "volatile".
   asm("" : "+m"(spill));
 #endif
 
-  uint64_t tmp;
+  FieldType tmp;
   PROTOBUF_ASSUME(static_cast<int8_t>(*ptr) < 0);
   ptr = ParseVarint(ptr, &tmp);
 
@@ -923,7 +1014,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
   do {
     ptr += sizeof(TagType);
-    uint64_t tmp;
+    FieldType tmp;
     ptr = ParseVarint(ptr, &tmp);
     if (ptr == nullptr) {
       return Error(PROTOBUF_TC_PARAM_PASS);
@@ -1930,6 +2021,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedVarint(
       field.Add(is_zigzag ? WireFormatLite::ZigZagDecode64(tmp) : tmp);
       if (!ctx->DataAvailable(ptr)) break;
       ptr2 = ReadTag(ptr, &next_tag);
+      if (ptr2 == nullptr) return Error(PROTOBUF_TC_PARAM_PASS);
     } while (next_tag == decoded_tag);
   } else if (rep == field_layout::kRep32Bits) {
     auto& field = RefAt<RepeatedField<uint32_t>>(msg, entry.offset);
@@ -1950,6 +2042,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedVarint(
       field.Add(tmp);
       if (!ctx->DataAvailable(ptr)) break;
       ptr2 = ReadTag(ptr, &next_tag);
+      if (ptr2 == nullptr) return Error(PROTOBUF_TC_PARAM_PASS);
     } while (next_tag == decoded_tag);
   } else {
     GOOGLE_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep8Bits));
@@ -1963,6 +2056,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedVarint(
       field.Add(static_cast<bool>(tmp));
       if (!ctx->DataAvailable(ptr)) break;
       ptr2 = ReadTag(ptr, &next_tag);
+      if (ptr2 == nullptr) return Error(PROTOBUF_TC_PARAM_PASS);
     } while (next_tag == decoded_tag);
   }
 

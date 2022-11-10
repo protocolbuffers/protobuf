@@ -31,10 +31,13 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_SCC_H__
 #define GOOGLE_PROTOBUF_COMPILER_SCC_H__
 
-#include <map>
+#include <memory>
 
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
+#include "absl/memory/memory.h"
 #include "google/protobuf/descriptor.h"
 
 // Must be included last.
@@ -68,8 +71,11 @@ class PROTOC_EXPORT SCCAnalyzer {
   SCCAnalyzer& operator=(const SCCAnalyzer&) = delete;
 
   const SCC* GetSCC(const Descriptor* descriptor) {
-    if (cache_.count(descriptor)) return cache_[descriptor].scc;
-    return DFS(descriptor).scc;
+    auto it = cache_.find(descriptor);
+    if (it == cache_.end()) {
+      return DFS(descriptor).scc;
+    }
+    return it->second->scc;
   }
 
  private:
@@ -79,7 +85,7 @@ class PROTOC_EXPORT SCCAnalyzer {
     int lowlink;
   };
 
-  std::map<const Descriptor*, NodeData> cache_;
+  absl::flat_hash_map<const Descriptor*, std::unique_ptr<NodeData>> cache_;
   std::vector<const Descriptor*> stack_;
   int index_;
   std::vector<std::unique_ptr<SCC>> garbage_bin_;
@@ -91,24 +97,25 @@ class PROTOC_EXPORT SCCAnalyzer {
 
   // Tarjan's Strongly Connected Components algo
   NodeData DFS(const Descriptor* descriptor) {
-    // Must not have visited already.
-    GOOGLE_DCHECK_EQ(cache_.count(descriptor), 0);
-
     // Mark visited by inserting in map.
-    NodeData& result = cache_[descriptor];
+    auto ins = cache_.try_emplace(descriptor, absl::make_unique<NodeData>());
+    // Must not have visited already.
+    GOOGLE_DCHECK(ins.second);
+    NodeData& result = *ins.first->second;
     // Initialize data structures.
     result.index = result.lowlink = index_++;
     stack_.push_back(descriptor);
 
     // Recurse the fields / nodes in graph
-    for (auto dep : DepsGenerator()(descriptor)) {
+    for (const auto* dep : DepsGenerator()(descriptor)) {
       GOOGLE_CHECK(dep);
-      if (cache_.count(dep) == 0) {
+      auto it = cache_.find(dep);
+      if (it == cache_.end()) {
         // unexplored node
         NodeData child_data = DFS(dep);
         result.lowlink = std::min(result.lowlink, child_data.lowlink);
       } else {
-        NodeData child_data = cache_[dep];
+        NodeData& child_data = *it->second;
         if (child_data.scc == nullptr) {
           // Still in the stack_ so we found a back edge
           result.lowlink = std::min(result.lowlink, child_data.index);
@@ -123,7 +130,7 @@ class PROTOC_EXPORT SCCAnalyzer {
         scc->descriptors.push_back(scc_desc);
         // Remove from stack
         stack_.pop_back();
-        cache_[scc_desc].scc = scc;
+        cache_[scc_desc]->scc = scc;
 
         if (scc_desc == descriptor) break;
       }
@@ -141,7 +148,7 @@ class PROTOC_EXPORT SCCAnalyzer {
 
   // Add the SCC's that are children of this SCC to its children.
   void AddChildren(SCC* scc) {
-    std::set<const SCC*> seen;
+    absl::flat_hash_set<const SCC*> seen;
     for (auto descriptor : scc->descriptors) {
       for (auto child_msg : DepsGenerator()(descriptor)) {
         GOOGLE_CHECK(child_msg);
