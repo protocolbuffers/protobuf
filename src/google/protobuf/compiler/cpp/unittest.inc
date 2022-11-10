@@ -33,7 +33,7 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 //
 // To test the code generator, we actually use it to generate code for
-// net/proto2/internal/unittest.proto, then test that.  This means that we
+// third_party/protobuf/unittest.proto, then test that.  This means that we
 // are actually testing the parser and other parts of the system at the same
 // time, and that problems in the generator may show up as compile-time errors
 // rather than unittest failures, which may be surprising.  However, testing

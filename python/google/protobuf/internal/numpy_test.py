@@ -34,8 +34,8 @@ import unittest
 
 import numpy as np
 
-from google.protobuf import unittest_pb2
 from google.protobuf.internal import testing_refleaks
+from google.protobuf import unittest_pb2
 
 message = unittest_pb2.TestAllTypes()
 np_float_scalar = np.float64(0.0)

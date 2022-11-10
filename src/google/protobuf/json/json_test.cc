@@ -42,7 +42,6 @@
 #include "google/protobuf/struct.pb.h"
 #include "google/protobuf/timestamp.pb.h"
 #include "google/protobuf/wrappers.pb.h"
-#include "google/protobuf/unittest.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/status/status.h"
@@ -54,6 +53,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/util/json_format.pb.h"
 #include "google/protobuf/util/json_format_proto3.pb.h"
+#include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/util/type_resolver_util.h"
 #include "google/protobuf/stubs/status_macros.h"
