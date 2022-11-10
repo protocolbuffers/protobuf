@@ -162,35 +162,6 @@ std::string SizeLg2(const protobuf::FieldDescriptor* field) {
   }
 }
 
-bool HasNonZeroDefault(const protobuf::FieldDescriptor* field) {
-  switch (field->cpp_type()) {
-    case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
-      return false;
-    case protobuf::FieldDescriptor::CPPTYPE_STRING:
-      return !field->default_value_string().empty();
-    case protobuf::FieldDescriptor::CPPTYPE_INT32:
-      return field->default_value_int32() != 0;
-    case protobuf::FieldDescriptor::CPPTYPE_INT64:
-      return field->default_value_int64() != 0;
-    case protobuf::FieldDescriptor::CPPTYPE_UINT32:
-      return field->default_value_uint32() != 0;
-    case protobuf::FieldDescriptor::CPPTYPE_UINT64:
-      return field->default_value_uint64() != 0;
-    case protobuf::FieldDescriptor::CPPTYPE_FLOAT:
-      return field->default_value_float() != 0;
-    case protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
-      return field->default_value_double() != 0;
-    case protobuf::FieldDescriptor::CPPTYPE_BOOL:
-      return field->default_value_bool() != false;
-    case protobuf::FieldDescriptor::CPPTYPE_ENUM:
-      // Use a number instead of a symbolic name so that we don't require
-      // this enum's header to be included.
-      return field->default_value_enum()->number() != 0;
-  }
-  ABSL_ASSERT(false);
-  return false;
-}
-
 std::string FloatToCLiteral(float value) {
   if (value == std::numeric_limits<float>::infinity()) {
     return "kUpb_FltInfinity";
@@ -633,30 +604,67 @@ void GenerateOneofGetters(const protobuf::FieldDescriptor* field,
       field->number(), FieldDefault(field));
 }
 
+std::string GetAccessor(const protobuf::FieldDescriptor* field) {
+  switch (field->cpp_type()) {
+    case protobuf::FieldDescriptor::CPPTYPE_BOOL:
+      return "upb_MiniTable_GetBool";
+
+    case protobuf::FieldDescriptor::CPPTYPE_INT32:
+    case protobuf::FieldDescriptor::CPPTYPE_ENUM:
+      return "upb_MiniTable_GetInt32";
+
+    case protobuf::FieldDescriptor::CPPTYPE_UINT32:
+      return "upb_MiniTable_GetUInt32";
+
+    case protobuf::FieldDescriptor::CPPTYPE_INT64:
+      return "upb_MiniTable_GetInt64";
+
+    case protobuf::FieldDescriptor::CPPTYPE_UINT64:
+      return "upb_MiniTable_GetUInt64";
+
+    case protobuf::FieldDescriptor::CPPTYPE_FLOAT:
+      return "upb_MiniTable_GetFloat";
+
+    case protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
+      return "upb_MiniTable_GetDouble";
+
+    case protobuf::FieldDescriptor::CPPTYPE_STRING:
+      return "upb_MiniTable_GetString";
+
+    case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
+      return absl::StrCat("(", CTypeConst(field), ")upb_MiniTable_GetMessage");
+
+    default:
+      fprintf(stderr, "unexpected type %d\n", field->cpp_type());
+      abort();
+  }
+}
+
+void WriteField(const upb_MiniTableField* field64,
+                const upb_MiniTableField* field32, Output& output);
+
 void GenerateScalarGetters(const protobuf::FieldDescriptor* field,
                            const FileLayout& layout, absl::string_view msg_name,
                            const NameToFieldDescriptorMap& field_names,
                            Output& output) {
+  const protobuf::Descriptor* message = field->containing_type();
+  const upb_MiniTable* t32 = layout.GetMiniTable32(message);
+  const upb_MiniTable* t64 = layout.GetMiniTable64(message);
+  const upb_MiniTableField* f32 =
+      upb_MiniTable_FindFieldByNumber(t32, field->number());
+  const upb_MiniTableField* f64 =
+      upb_MiniTable_FindFieldByNumber(t64, field->number());
+
   std::string resolved_name = ResolveFieldName(field, field_names);
-  if (HasNonZeroDefault(field)) {
-    output(
-        R"cc(
-          UPB_INLINE $0 $1_$2(const $1* msg) {
-            return $1_has_$2(msg) ? *UPB_PTR_AT(msg, $3, $0) : $4;
-          }
-        )cc",
-        CTypeConst(field), msg_name, resolved_name,
-        layout.GetFieldOffset(field), FieldDefault(field));
-  } else {
-    output(
-        R"cc(
-          UPB_INLINE $0 $1_$2(const $1* msg) {
-            return *UPB_PTR_AT(msg, $3, $0);
-          }
-        )cc",
-        CTypeConst(field), msg_name, resolved_name,
-        layout.GetFieldOffset(field));
-  }
+  output(
+      R"cc(
+        UPB_INLINE $0 $1_$2(const $1* msg) {
+          const upb_MiniTableField field =)cc",
+      CTypeConst(field), msg_name, resolved_name);
+  WriteField(f64, f32, output);
+  output(";\n");
+  output("  return $0(msg, &field, $1);\n}\n", GetAccessor(field),
+         FieldDefault(field));
 }
 
 void GenerateGetters(const protobuf::FieldDescriptor* field,
@@ -881,6 +889,7 @@ void WriteHeader(const FileLayout& layout, Output& output) {
       "#define $0_UPB_H_\n\n"
       "#include \"upb/collections/array_internal.h\"\n"
       "#include \"upb/collections/map_gencode_util.h\"\n"
+      "#include \"upb/mini_table/accessors.h\"\n"
       "#include \"upb/msg_internal.h\"\n"
       "#include \"upb/wire/decode.h\"\n"
       "#include \"upb/wire/decode_fast.h\"\n"
@@ -1274,9 +1283,9 @@ std::string GetModeInit(uint8_t mode32, uint8_t mode64) {
 
 void WriteField(const upb_MiniTableField* field64,
                 const upb_MiniTableField* field32, Output& output) {
-  output("{$0, UPB_SIZE($1, $2), UPB_SIZE($3, $4), $5, $6, $7}",
-         field64->number, field32->offset, field64->offset, field32->presence,
-         field64->presence,
+  output("{$0, $1, $2, $3, $4, $5}", field64->number,
+         FileLayout::UpbSize(field32->offset, field64->offset),
+         FileLayout::UpbSize(field32->presence, field64->presence),
          field64->submsg_index == kUpb_NoSub
              ? "kUpb_NoSub"
              : absl::StrCat(field64->submsg_index).c_str(),

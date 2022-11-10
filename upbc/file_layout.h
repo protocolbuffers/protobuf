@@ -170,7 +170,7 @@ class FileLayout {
         GetMiniTable32(f->containing_type()), f->number());
     const upb_MiniTableField* f_64 = upb_MiniTable_FindFieldByNumber(
         GetMiniTable64(f->containing_type()), f->number());
-    return absl::Substitute("UPB_SIZE($0, $1)", f_32->offset, f_64->offset);
+    return UpbSize(f_32->offset, f_64->offset);
   }
 
   std::string GetOneofCaseOffset(const protobuf::OneofDescriptor* o) const {
@@ -179,13 +179,11 @@ class FileLayout {
         GetMiniTable32(f->containing_type()), f->number());
     const upb_MiniTableField* f_64 = upb_MiniTable_FindFieldByNumber(
         GetMiniTable64(f->containing_type()), f->number());
-    return absl::Substitute("UPB_SIZE($0, $1)", ~f_32->presence,
-                            ~f_64->presence);
+    return UpbSize(~f_32->presence, ~f_64->presence);
   }
 
   std::string GetMessageSize(const protobuf::Descriptor* d) const {
-    return absl::Substitute("UPB_SIZE($0, $1)", GetMiniTable32(d)->size,
-                            GetMiniTable64(d)->size);
+    return UpbSize(GetMiniTable32(d)->size, GetMiniTable64(d)->size);
   }
 
   int GetHasbitIndex(const protobuf::FieldDescriptor* f) const {
@@ -201,6 +199,12 @@ class FileLayout {
   const upb_MiniTableExtension* GetExtension(
       const protobuf::FieldDescriptor* f) const {
     return layout64_.GetExtension(f);
+  }
+
+  template <class T>
+  static std::string UpbSize(T a, T b) {
+    if (a == b) return absl::Substitute("$0", a);
+    return absl::Substitute("UPB_SIZE($0, $1)", a, b);
   }
 
  private:
