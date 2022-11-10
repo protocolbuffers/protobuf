@@ -29,8 +29,8 @@
 
 #include "google/ads/googleads/v11/services/google_ads_service.upbdefs.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/dynamic_message.h"
 #include "absl/container/flat_hash_set.h"
+#include "google/protobuf/dynamic_message.h"
 #include "benchmarks/descriptor.pb.h"
 #include "benchmarks/descriptor.upb.h"
 #include "benchmarks/descriptor.upbdefs.h"

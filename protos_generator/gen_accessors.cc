@@ -25,10 +25,10 @@
 
 #include "protos_generator/gen_accessors.h"
 
-#include "google/protobuf/descriptor.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor.h"
 #include "protos_generator/gen_utils.h"
 #include "protos_generator/output.h"
 #include "upbc/file_layout.h"

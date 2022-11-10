@@ -25,9 +25,9 @@
 
 #include <memory>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/plugin.h"
-#include "google/protobuf/descriptor.pb.h"
 #include "protos_generator/gen_enums.h"
 #include "protos_generator/gen_extensions.h"
 #include "protos_generator/gen_messages.h"

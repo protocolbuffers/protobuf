@@ -30,12 +30,12 @@
 
 #include <vector>
 
-#include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/descriptor.h"
 #include "absl/base/log_severity.h"
 #include "absl/log/log.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/substitute.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 
 namespace protos_generator {
 

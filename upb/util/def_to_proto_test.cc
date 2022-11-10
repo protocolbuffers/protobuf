@@ -29,10 +29,10 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.upbdefs.h"
-#include "google/protobuf/dynamic_message.h"
-#include "google/protobuf/util/message_differencer.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "google/protobuf/dynamic_message.h"
+#include "google/protobuf/util/message_differencer.h"
 #include "upb/reflection/def.hpp"
 #include "upb/upb.hpp"
 #include "upb/util/def_to_proto_test.upbdefs.h"

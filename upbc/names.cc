@@ -29,8 +29,8 @@
 
 #include <string>
 
-#include "google/protobuf/descriptor.h"
 #include "absl/strings/match.h"
+#include "google/protobuf/descriptor.h"
 
 namespace upbc {
 

@@ -28,12 +28,12 @@
 #ifndef UPB_PROTOS_GENERATOR_GEN_UTILS_H_
 #define UPB_PROTOS_GENERATOR_GEN_UTILS_H_
 
+#include "google/protobuf/descriptor.pb.h"
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/plugin.h"
-#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/wire_format.h"
-#include "absl/container/flat_hash_map.h"
 #include "protos_generator/output.h"
 
 namespace protos_generator {

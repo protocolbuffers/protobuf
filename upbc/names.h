@@ -30,8 +30,8 @@
 
 #include <string>
 
-#include "google/protobuf/descriptor.h"
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/descriptor.h"
 
 namespace upbc {
 
