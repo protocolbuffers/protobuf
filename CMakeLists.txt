@@ -238,7 +238,7 @@ if (NOT MSVC)
   check_cxx_source_compiles("
     #include <atomic>
     int main() {
-      return std::atomic<int64_t>{};
+      return static_cast<int>(std::atomic<int64_t>{});
     }
   " protobuf_HAVE_BUILTIN_ATOMICS)
   if (NOT protobuf_HAVE_BUILTIN_ATOMICS)
