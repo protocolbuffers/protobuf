@@ -340,7 +340,7 @@ def _BuildMessageFromTypeName(type_name, descriptor_pool):
   return message_type()
 
 
-# These values must match WireType enum in //net/proto2/public/wire_format.h.
+# These values must match WireType enum in //google/protobuf/wire_format.h.
 WIRETYPE_LENGTH_DELIMITED = 2
 WIRETYPE_START_GROUP = 3
 
