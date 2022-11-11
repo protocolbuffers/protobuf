@@ -270,7 +270,7 @@ class _Printer(object):
 
     except ValueError as e:
       raise SerializeToJsonError(
-          'Failed to serialize {0} field: {1}.'.format(field.name, e))
+          'Failed to serialize {0} field: {1}.'.format(field.name, e)) from e
 
     return js
 
@@ -399,9 +399,9 @@ def _CreateMessageFromTypeUrl(type_url, descriptor_pool):
   type_name = type_url.split('/')[-1]
   try:
     message_descriptor = pool.FindMessageTypeByName(type_name)
-  except KeyError:
+  except KeyError as e:
     raise TypeError(
-        'Can not find message descriptor by type_url: {0}'.format(type_url))
+        'Can not find message descriptor by type_url: {0}'.format(type_url)) from e
   message_class = db.GetPrototype(message_descriptor)
   return message_class()
 
@@ -434,7 +434,7 @@ def Parse(text,
   try:
     js = json.loads(text, object_pairs_hook=_DuplicateChecker)
   except ValueError as e:
-    raise ParseError('Failed to load JSON: {0}.'.format(str(e)))
+    raise ParseError('Failed to load JSON: {0}.'.format(str(e))) from e
   return ParseDict(js, message, ignore_unknown_fields, descriptor_pool,
                    max_recursion_depth)
 
@@ -626,13 +626,13 @@ class _Parser(object):
                                          '{0}.{1}'.format(path, name)))
       except ParseError as e:
         if field and field.containing_oneof is None:
-          raise ParseError('Failed to parse {0} field: {1}.'.format(name, e))
+          raise ParseError('Failed to parse {0} field: {1}.'.format(name, e)) from e
         else:
-          raise ParseError(str(e))
+          raise ParseError(str(e)) from e
       except ValueError as e:
-        raise ParseError('Failed to parse {0} field: {1}.'.format(name, e))
+        raise ParseError('Failed to parse {0} field: {1}.'.format(name, e)) from e
       except TypeError as e:
-        raise ParseError('Failed to parse {0} field: {1}.'.format(name, e))
+        raise ParseError('Failed to parse {0} field: {1}.'.format(name, e)) from e
 
   def _ConvertAnyMessage(self, value, message, path):
     """Convert a JSON representation into Any message."""
@@ -640,14 +640,14 @@ class _Parser(object):
       return
     try:
       type_url = value['@type']
-    except KeyError:
+    except KeyError as e:
       raise ParseError(
-          '@type is missing when parsing any message at {0}'.format(path))
+          '@type is missing when parsing any message at {0}'.format(path)) from e
 
     try:
       sub_message = _CreateMessageFromTypeUrl(type_url, self.descriptor_pool)
     except TypeError as e:
-      raise ParseError('{0} at {1}'.format(e, path))
+      raise ParseError('{0} at {1}'.format(e, path)) from e
     message_descriptor = sub_message.DESCRIPTOR
     full_name = message_descriptor.full_name
     if _IsWrapperMessage(message_descriptor):
@@ -672,7 +672,7 @@ class _Parser(object):
     try:
       message.FromJsonString(value)
     except ValueError as e:
-      raise ParseError('{0} at {1}'.format(e, path))
+      raise ParseError('{0} at {1}'.format(e, path)) from e
 
   def _ConvertValueMessage(self, value, message, path):
     """Convert a JSON representation into Value message."""
@@ -796,9 +796,9 @@ def _ConvertScalarFieldValue(value, field, path, require_str=False):
         try:
           number = int(value)
           enum_value = field.enum_type.values_by_number.get(number, None)
-        except ValueError:
+        except ValueError as e:
           raise ParseError('Invalid enum value {0} for enum type {1}'.format(
-              value, field.enum_type.full_name))
+              value, field.enum_type.full_name)) from e
         if enum_value is None:
           if field.enum_type.is_closed:
             raise ParseError('Invalid enum value {0} for enum type {1}'.format(
@@ -807,7 +807,7 @@ def _ConvertScalarFieldValue(value, field, path, require_str=False):
             return number
       return enum_value.number
   except ParseError as e:
-    raise ParseError('{0} at {1}'.format(e, path))
+    raise ParseError('{0} at {1}'.format(e, path)) from e
 
 
 def _ConvertInteger(value):
@@ -859,7 +859,7 @@ def _ConvertFloat(value, field):
   try:
     # Assume Python compatible syntax.
     return float(value)
-  except ValueError:
+  except ValueError as e:
     # Check alternative spellings.
     if value == _NEG_INFINITY:
       return float('-inf')
@@ -868,7 +868,7 @@ def _ConvertFloat(value, field):
     elif value == _NAN:
       return float('nan')
     else:
-      raise ParseError('Couldn\'t parse float: {0}'.format(value))
+      raise ParseError('Couldn\'t parse float: {0}'.format(value)) from e
 
 
 def _ConvertBool(value, require_str):
