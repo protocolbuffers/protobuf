@@ -439,6 +439,9 @@ if __name__ == '__main__':
       download_url='https://github.com/protocolbuffers/protobuf/releases',
       long_description="Protocol Buffers are Google's data interchange format",
       url='https://developers.google.com/protocol-buffers/',
+      project_urls={
+          'Source': 'https://github.com/protocolbuffers/protobuf',
+      },
       maintainer='protobuf@googlegroups.com',
       maintainer_email='protobuf@googlegroups.com',
       license='BSD-3-Clause',
