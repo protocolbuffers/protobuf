@@ -2021,9 +2021,6 @@ UnsafeArenaAllocatedRepeatedPtrFieldBackInserter(
       mutable_field);
 }
 
-extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
-    RepeatedPtrField<std::string>;
-
 }  // namespace protobuf
 }  // namespace google
 
