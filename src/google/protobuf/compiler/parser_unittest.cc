@@ -2122,8 +2122,8 @@ TEST_F(ParserValidationErrorTest, Proto2JsonConflictError) {
       "  optional uint32 foo = 1;\n"
       "  optional uint32 _foo = 2;\n"
       "}\n",
-      "3:18: The default JSON name of field \"_foo\" (\"Foo\") conflicts "
-      "with the default JSON name of field \"foo\" (\"foo\").\n");
+      // expect no warnings for this in proto2
+      "");
 }
 
 TEST_F(ParserValidationErrorTest, Proto3CustomJsonConflictWithDefaultError) {

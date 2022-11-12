@@ -5499,11 +5499,15 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
 
 void DescriptorBuilder::CheckFieldJsonNameUniqueness(
     const DescriptorProto& proto, const Descriptor* result) {
+  // Two passes: one looking only at default JSON names, and one that considers
+  // custom JSON names. We can skip the first pass for proto2. (There may be some
+  // value in it, since FieldMask only uses default JSON names; but we skip it
+  // because it can be confusing, especially for fields that have custom names.)
   FileDescriptor::Syntax syntax = result->file()->syntax();
   std::string message_name = result->full_name();
-  // two passes: one looking only at default JSON names, and one that considers
-  // custom JSON names
-  CheckFieldJsonNameUniqueness(message_name, proto, syntax, false);
+  if (syntax != FileDescriptor::SYNTAX_PROTO2) {
+    CheckFieldJsonNameUniqueness(message_name, proto, syntax, false);
+  }
   CheckFieldJsonNameUniqueness(message_name, proto, syntax, true);
 }
 
