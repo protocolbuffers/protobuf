@@ -191,12 +191,6 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
                             storageSize:(uint32_t)storageSize
                                   flags:(GPBDescriptorInitializationFlags)flags;
 
-- (instancetype)initWithClass:(Class)messageClass
-                         file:(GPBFileDescriptor *)file
-                       fields:(NSArray *)fields
-                  storageSize:(uint32_t)storage
-                   wireFormat:(BOOL)wireFormat;
-
 // Called right after init to provide extra information to avoid init having
 // an explosion of args. These pointers are recorded, so they are expected
 // to live for the lifetime of the app.
@@ -240,15 +234,6 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
   SEL hasOrCountSel_;  // *Count for map<>/repeated fields, has* otherwise.
   SEL setHasSel_;
 }
-
-// Single initializer
-// description has to be long lived, it is held as a raw pointer.
-- (instancetype)initWithFieldDescription:(void *)description
-                         includesDefault:(BOOL)includesDefault
-                           usesClassRefs:(BOOL)usesClassRefs
-                     proto3OptionalKnown:(BOOL)proto3OptionalKnown
-                                  syntax:(GPBFileSyntax)syntax;
-
 @end
 
 @interface GPBEnumDescriptor ()
@@ -265,12 +250,6 @@ typedef NS_OPTIONS(uint32_t, GPBDescriptorInitializationFlags) {
                                  count:(uint32_t)valueCount
                           enumVerifier:(GPBEnumValidationFunc)enumVerifier
                    extraTextFormatInfo:(const char *)extraTextFormatInfo;
-
-- (instancetype)initWithName:(NSString *)name
-                  valueNames:(const char *)valueNames
-                      values:(const int32_t *)values
-                       count:(uint32_t)valueCount
-                enumVerifier:(GPBEnumValidationFunc)enumVerifier;
 @end
 
 @interface GPBExtensionDescriptor () {

@@ -36,6 +36,33 @@
 #import "GPBUtilities_PackagePrivate.h"
 #import "GPBWireFormat.h"
 
+@interface GPBDescriptor ()
+- (instancetype)initWithClass:(Class)messageClass
+                         file:(GPBFileDescriptor *)file
+                       fields:(NSArray *)fields
+                  storageSize:(uint32_t)storage
+                   wireFormat:(BOOL)wireFormat;
+@end
+
+@interface GPBFieldDescriptor ()
+// Single initializer
+// description has to be long lived, it is held as a raw pointer.
+- (instancetype)initWithFieldDescription:(void *)description
+                                    file:(GPBFileDescriptor *)file
+                         includesDefault:(BOOL)includesDefault
+                           usesClassRefs:(BOOL)usesClassRefs
+                     proto3OptionalKnown:(BOOL)proto3OptionalKnown;
+
+@end
+
+@interface GPBEnumDescriptor ()
+- (instancetype)initWithName:(NSString *)name
+                  valueNames:(const char *)valueNames
+                      values:(const int32_t *)values
+                       count:(uint32_t)valueCount
+                enumVerifier:(GPBEnumValidationFunc)enumVerifier;
+@end
+
 // Direct access is use for speed, to avoid even internally declaring things
 // read/write, etc. The warning is enabled in the project to ensure code calling
 // protos can turn on -Wdirect-ivar-access without issues.
@@ -118,31 +145,26 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   // The rootClass is no longer used, but it is passed in to ensure it
   // was started up during initialization also.
   (void)rootClass;
-  NSMutableArray *fields = nil;
-  GPBFileSyntax syntax = file.syntax;
+  NSMutableArray *fields =
+      (fieldCount ? [[NSMutableArray alloc] initWithCapacity:fieldCount] : nil);
   BOOL fieldsIncludeDefault = (flags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
   BOOL usesClassRefs = (flags & GPBDescriptorInitializationFlag_UsesClassRefs) != 0;
   BOOL proto3OptionalKnown = (flags & GPBDescriptorInitializationFlag_Proto3OptionalKnown) != 0;
 
   void *desc;
   for (uint32_t i = 0; i < fieldCount; ++i) {
-    if (fields == nil) {
-      fields = [[NSMutableArray alloc] initWithCapacity:fieldCount];
-    }
     // Need correctly typed pointer for array indexing below to work.
     if (fieldsIncludeDefault) {
-      GPBMessageFieldDescriptionWithDefault *fieldDescWithDefault = fieldDescriptions;
-      desc = &(fieldDescWithDefault[i]);
+      desc = &(((GPBMessageFieldDescriptionWithDefault *)fieldDescriptions)[i]);
     } else {
-      GPBMessageFieldDescription *fieldDesc = fieldDescriptions;
-      desc = &(fieldDesc[i]);
+      desc = &(((GPBMessageFieldDescription *)fieldDescriptions)[i]);
     }
     GPBFieldDescriptor *fieldDescriptor =
         [[GPBFieldDescriptor alloc] initWithFieldDescription:desc
+                                                        file:file
                                              includesDefault:fieldsIncludeDefault
                                                usesClassRefs:usesClassRefs
-                                         proto3OptionalKnown:proto3OptionalKnown
-                                                      syntax:syntax];
+                                         proto3OptionalKnown:proto3OptionalKnown];
     [fields addObject:fieldDescriptor];
     [fieldDescriptor release];
   }
@@ -450,10 +472,10 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 @synthesize containingOneof = containingOneof_;
 
 - (instancetype)initWithFieldDescription:(void *)description
+                                    file:(GPBFileDescriptor *)file
                          includesDefault:(BOOL)includesDefault
                            usesClassRefs:(BOOL)usesClassRefs
-                     proto3OptionalKnown:(BOOL)proto3OptionalKnown
-                                  syntax:(GPBFileSyntax)syntax {
+                     proto3OptionalKnown:(BOOL)proto3OptionalKnown {
   if ((self = [super init])) {
     GPBMessageFieldDescription *coreDesc;
     if (includesDefault) {
@@ -477,7 +499,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
       //  - not repeated/map
       //  - not in a oneof (negative has index)
       //  - not a message (the flag doesn't make sense for messages)
-      BOOL clearOnZero = ((syntax == GPBFileSyntaxProto3) && !isMapOrArray &&
+      BOOL clearOnZero = ((file.syntax == GPBFileSyntaxProto3) && !isMapOrArray &&
                           (coreDesc->hasIndex >= 0) && !isMessage);
       if (clearOnZero) {
         coreDesc->flags |= GPBFieldClearHasIvarOnZero;
