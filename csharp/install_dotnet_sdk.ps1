@@ -18,3 +18,4 @@ Invoke-WebRequest -Uri $InstallScriptUrl -OutFile $InstallScriptPath
 # installed by kokoro/linux/dockerfile/test/csharp/Dockerfile
 &$InstallScriptPath -Version 3.1.415
 &$InstallScriptPath -Version 6.0.100
+&$InstallScriptPath -Version 7.0.100

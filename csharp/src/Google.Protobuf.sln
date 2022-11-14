@@ -1,6 +1,7 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26114.2
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33103.201
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AddressBook", "AddressBook\AddressBook.csproj", "{AFB63919-1E05-43B4-802A-8FB8C9B2F463}"
 EndProject
@@ -12,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Google.Protobuf.Conformance
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Google.Protobuf.JsonDump", "Google.Protobuf.JsonDump\Google.Protobuf.JsonDump.csproj", "{9695E08F-9829-497D-B95C-B38F28D48690}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Google.Protobuf.Test.TestProtos", "Google.Protobuf.Test.TestProtos\Google.Protobuf.Test.TestProtos.csproj", "{ADF24BEB-A318-4530-8448-356B72B820EA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Google.Protobuf.Test.TestProtos", "Google.Protobuf.Test.TestProtos\Google.Protobuf.Test.TestProtos.csproj", "{ADF24BEB-A318-4530-8448-356B72B820EA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Google.Protobuf.Test.NativeAot", "Google.Protobuf.Test.NativeAot\Google.Protobuf.Test.NativeAot.csproj", "{642232EA-FA89-4E84-9CA0-423EA98F37ED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +47,10 @@ Global
 		{ADF24BEB-A318-4530-8448-356B72B820EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ADF24BEB-A318-4530-8448-356B72B820EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ADF24BEB-A318-4530-8448-356B72B820EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{642232EA-FA89-4E84-9CA0-423EA98F37ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{642232EA-FA89-4E84-9CA0-423EA98F37ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{642232EA-FA89-4E84-9CA0-423EA98F37ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{642232EA-FA89-4E84-9CA0-423EA98F37ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
