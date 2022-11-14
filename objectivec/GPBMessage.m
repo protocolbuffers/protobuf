@@ -2058,7 +2058,7 @@ static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self) {
 #pragma mark - MergeFromCodedInputStream Support
 
 static void MergeSingleFieldFromCodedInputStream(
-    GPBMessage *self, GPBFieldDescriptor *field, GPBFileSyntax syntax,
+    GPBMessage *self, GPBFieldDescriptor *field,
     GPBCodedInputStream *input, id<GPBExtensionRegistry>extensionRegistry) {
   GPBDataType fieldDataType = GPBGetFieldDataType(field);
   switch (fieldDataType) {
@@ -2128,8 +2128,7 @@ static void MergeSingleFieldFromCodedInputStream(
 
     case GPBDataTypeEnum: {
       int32_t val = GPBCodedInputStreamReadEnum(&input->state_);
-      if (GPBHasPreservingUnknownEnumSemantics(syntax) ||
-          [field isValidEnumValue:val]) {
+      if (!GPBFieldIsClosedEnum(field) || [field isValidEnumValue:val]) {
         GPBSetInt32IvarWithFieldPrivate(self, field, val);
       } else {
         GPBUnknownFieldSet *unknownFields = GetOrMakeUnknownFields(self);
@@ -2140,7 +2139,7 @@ static void MergeSingleFieldFromCodedInputStream(
 }
 
 static void MergeRepeatedPackedFieldFromCodedInputStream(
-    GPBMessage *self, GPBFieldDescriptor *field, GPBFileSyntax syntax,
+    GPBMessage *self, GPBFieldDescriptor *field,
     GPBCodedInputStream *input) {
   GPBDataType fieldDataType = GPBGetFieldDataType(field);
   GPBCodedInputStreamState *state = &input->state_;
@@ -2179,8 +2178,7 @@ static void MergeRepeatedPackedFieldFromCodedInputStream(
 
       case GPBDataTypeEnum: {
         int32_t val = GPBCodedInputStreamReadEnum(state);
-        if (GPBHasPreservingUnknownEnumSemantics(syntax) ||
-            [field isValidEnumValue:val]) {
+        if (!GPBFieldIsClosedEnum(field) || [field isValidEnumValue:val]) {
           [(GPBEnumArray*)genericArray addRawValue:val];
         } else {
           GPBUnknownFieldSet *unknownFields = GetOrMakeUnknownFields(self);
@@ -2194,7 +2192,7 @@ static void MergeRepeatedPackedFieldFromCodedInputStream(
 }
 
 static void MergeRepeatedNotPackedFieldFromCodedInputStream(
-    GPBMessage *self, GPBFieldDescriptor *field, GPBFileSyntax syntax,
+    GPBMessage *self, GPBFieldDescriptor *field,
     GPBCodedInputStream *input, id<GPBExtensionRegistry>extensionRegistry) {
   GPBCodedInputStreamState *state = &input->state_;
   id genericArray = GetOrCreateArrayIvarWithField(self, field);
@@ -2247,8 +2245,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
     }
     case GPBDataTypeEnum: {
       int32_t val = GPBCodedInputStreamReadEnum(state);
-      if (GPBHasPreservingUnknownEnumSemantics(syntax) ||
-          [field isValidEnumValue:val]) {
+      if (!GPBFieldIsClosedEnum(field) || [field isValidEnumValue:val]) {
         [(GPBEnumArray*)genericArray addRawValue:val];
       } else {
         GPBUnknownFieldSet *unknownFields = GetOrMakeUnknownFields(self);
@@ -2262,7 +2259,6 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
 - (void)mergeFromCodedInputStream:(GPBCodedInputStream *)input
                 extensionRegistry:(id<GPBExtensionRegistry>)extensionRegistry {
   GPBDescriptor *descriptor = [self descriptor];
-  GPBFileSyntax syntax = descriptor.file.syntax;
   GPBCodedInputStreamState *state = &input->state_;
   uint32_t tag = 0;
   NSUInteger startingIndex = 0;
@@ -2280,7 +2276,7 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
       if (GPBFieldTag(fieldDescriptor) == tag) {
         GPBFieldType fieldType = fieldDescriptor.fieldType;
         if (fieldType == GPBFieldTypeSingle) {
-          MergeSingleFieldFromCodedInputStream(self, fieldDescriptor, syntax,
+          MergeSingleFieldFromCodedInputStream(self, fieldDescriptor,
                                                input, extensionRegistry);
           // Well formed protos will only have a single field once, advance
           // the starting index to the next field.
@@ -2288,13 +2284,13 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
         } else if (fieldType == GPBFieldTypeRepeated) {
           if (fieldDescriptor.isPackable) {
             MergeRepeatedPackedFieldFromCodedInputStream(
-                self, fieldDescriptor, syntax, input);
+                self, fieldDescriptor, input);
             // Well formed protos will only have a repeated field that is
             // packed once, advance the starting index to the next field.
             startingIndex += 1;
           } else {
             MergeRepeatedNotPackedFieldFromCodedInputStream(
-                self, fieldDescriptor, syntax, input, extensionRegistry);
+                self, fieldDescriptor, input, extensionRegistry);
           }
         } else {  // fieldType == GPBFieldTypeMap
           // GPB*Dictionary or NSDictionary, exact type doesn't matter at this
@@ -2325,13 +2321,13 @@ static void MergeRepeatedNotPackedFieldFromCodedInputStream(
           BOOL alternateIsPacked = !fieldDescriptor.isPackable;
           if (alternateIsPacked) {
             MergeRepeatedPackedFieldFromCodedInputStream(
-                self, fieldDescriptor, syntax, input);
+                self, fieldDescriptor, input);
             // Well formed protos will only have a repeated field that is
             // packed once, advance the starting index to the next field.
             startingIndex += 1;
           } else {
             MergeRepeatedNotPackedFieldFromCodedInputStream(
-                self, fieldDescriptor, syntax, input, extensionRegistry);
+                self, fieldDescriptor, input, extensionRegistry);
           }
           merged = YES;
           break;
