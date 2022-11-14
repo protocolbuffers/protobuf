@@ -90,15 +90,13 @@ CF_EXTERN_C_END
  * The set of unknown fields for this message.
  *
  * Only messages from proto files declared with "proto2" syntax support unknown
- * fields. For "proto3" syntax, any unknown fields found while parsing are
- * dropped.
+ * fields.
  **/
 @property(nonatomic, copy, nullable) GPBUnknownFieldSet *unknownFields;
 
 /**
  * Whether the message, along with all submessages, have the required fields
- * set. This is only applicable for files declared with "proto2" syntax, as
- * there are no required fields for "proto3" syntax.
+ * set.
  **/
 @property(nonatomic, readonly, getter=isInitialized) BOOL initialized;
 
