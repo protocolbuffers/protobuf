@@ -23,9 +23,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-/*
- * Tests for upb_table.
- */
+// Tests for upb_table.
 
 #include <limits.h>
 #include <string.h>
@@ -39,7 +37,8 @@
 #include <vector>
 
 #include "gtest/gtest.h"
-#include "upb/internal/table.h"
+#include "upb/hash/int_table.h"
+#include "upb/hash/str_table.h"
 #include "upb/upb.hpp"
 
 // Must be last.

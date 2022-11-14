@@ -27,7 +27,7 @@
 
 #include "upb/extension_registry.h"
 
-#include "upb/internal/table.h"
+#include "upb/hash/str_table.h"
 #include "upb/msg.h"
 #include "upb/msg_internal.h"
 

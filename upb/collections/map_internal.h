@@ -32,7 +32,7 @@
 
 #include "upb/base/string_view.h"
 #include "upb/collections/map.h"
-#include "upb/internal/table.h"
+#include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
 
 // Must be last.

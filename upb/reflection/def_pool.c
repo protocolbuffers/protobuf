@@ -25,6 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "upb/hash/int_table.h"
+#include "upb/hash/str_table.h"
 #include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_pool_internal.h"
 #include "upb/reflection/def_type.h"

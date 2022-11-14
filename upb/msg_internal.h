@@ -41,7 +41,6 @@
 #include "upb/base/status.h"
 #include "upb/collections/map_internal.h"
 #include "upb/extension_registry.h"
-#include "upb/internal/table.h"
 #include "upb/msg.h"
 
 // Must be last.

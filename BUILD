@@ -114,7 +114,6 @@ cc_library(
     srcs = [
         "upb/collections/map_sorter_internal.h",
         "upb/collections/message_value.h",
-        "upb/internal/table.h",
         "upb/internal/unicode.h",
         "upb/msg.c",
         "upb/msg_internal.h",
@@ -152,9 +151,9 @@ cc_library(
         ":collections_internal",
         ":extension_registry",
         ":fastdecode",
+        ":hash",
         ":mem",
         ":port",
-        ":table_internal",
         ":unicode_internal",
         ":wire_internal",
     ],
@@ -192,8 +191,9 @@ cc_library(
     deps = [
         ":base",
         ":collections_internal",
+        ":hash",
+        ":mem",
         ":port",
-        ":table_internal",
     ],
 )
 
@@ -213,8 +213,8 @@ cc_library(
         ":base",
         ":collections_internal",
         ":extension_registry",
+        ":hash",
         ":port",
-        ":table_internal",
         ":upb",
     ],
 )
@@ -240,9 +240,9 @@ cc_library(
         ":base",
         ":collections_internal",
         ":extension_registry",
+        ":hash",
         ":mini_table_internal",
         ":port",
-        ":table_internal",
         ":upb",
     ],
 )
@@ -261,10 +261,9 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":collections_internal",
-        ":mini_table",
+        ":hash",
         ":mini_table_internal",
         ":port",
-        ":table_internal",
         ":upb",
     ],
 )
@@ -276,10 +275,10 @@ cc_test(
     ],
     deps = [
         ":extension_registry",
+        ":hash",
         ":mini_table",
         ":mini_table_internal",
         ":port",
-        ":table_internal",
         ":upb",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_googletest//:gtest_main",
@@ -321,9 +320,9 @@ cc_library(
         ":base",
         ":collections_internal",
         ":extension_registry",
+        ":hash",
         ":mem_internal",
         ":port",
-        ":table_internal",
         ":wire_internal",
     ],
 )
@@ -357,7 +356,7 @@ cc_library(
     deps = [
         ":base",
         ":collections_internal",
-        ":table_internal",
+        ":hash",
         ":upb",
     ],
 )
@@ -380,8 +379,8 @@ cc_library(
     deps = [
         ":base",
         ":collections_internal",
+        ":hash",
         ":mini_table",
-        ":table_internal",
         ":upb",
     ],
 )
@@ -413,8 +412,8 @@ cc_library(
     deps = [
         ":base",
         ":descriptor_upb_proto",
+        ":hash",
         ":reflection_internal",
-        ":table_internal",
     ],
 )
 
@@ -468,9 +467,9 @@ cc_library(
     visibility = ["//:__subpackages__"],
     deps = [
         ":base",
+        ":hash",
         ":mem",
         ":port",
-        ":table_internal",
     ],
 )
 
@@ -551,10 +550,10 @@ cc_library(
     deps = [
         ":collections",
         ":descriptor_upb_proto",
+        ":hash",
         ":mini_table",
         ":mini_table_internal",
         ":port",
-        ":table_internal",
         ":upb",
     ],
 )
@@ -617,10 +616,10 @@ cc_test(
     ],
     deps = [
         ":descriptor_upb_proto",
+        ":hash",
         ":port",
         ":reflection",
         ":reflection_internal",
-        ":table_internal",
         ":upb",
         "@com_google_googletest//:gtest_main",
     ],
@@ -847,12 +846,12 @@ cc_test(
 )
 
 cc_test(
-    name = "test_table",
-    srcs = ["upb/test_table.cc"],
+    name = "hash_test",
+    srcs = ["upb/hash/test.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
+        ":hash",
         ":port",
-        ":table_internal",
         ":upb",
         "@com_google_googletest//:gtest_main",
     ],
@@ -1034,28 +1033,28 @@ cc_library(
     deps = [
         ":base",
         ":collections_internal",
+        ":hash",
         ":mem_internal",
         ":port",
-        ":table_internal",
         "//third_party/utf8_range",
     ],
 )
 
 cc_library(
-    name = "table_internal",
+    name = "hash",
     srcs = [
-        "upb/internal/table.c",
+        "upb/hash/common.c",
     ],
     hdrs = [
-        "upb/internal/table.h",
-        "upb/mem/alloc.h",
-        "upb/mem/arena.h",
-        "upb/upb.h",
+        "upb/hash/common.h",
+        "upb/hash/int_table.h",
+        "upb/hash/str_table.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
     deps = [
         ":base",
+        ":mem",
         ":port",
     ],
 )
@@ -1090,6 +1089,7 @@ upb_amalgamation(
         ":descriptor_upb_proto",
         ":extension_registry",
         ":fastdecode",
+        ":hash",
         ":mem_internal",
         ":mini_table",
         ":mini_table_accessors",
@@ -1124,6 +1124,7 @@ upb_amalgamation(
         ":descriptor_upb_proto_reflection",
         ":extension_registry",
         ":fastdecode",
+        ":hash",
         ":json",
         ":mem_internal",
         ":mini_table",
@@ -1131,7 +1132,6 @@ upb_amalgamation(
         ":port",
         ":reflection",
         ":reflection_internal",
-        ":table_internal",
         ":unicode_internal",
         ":upb",
         ":wire_internal",
@@ -1162,6 +1162,7 @@ upb_amalgamation(
         ":descriptor_upb_proto",
         ":extension_registry",
         ":fastdecode",
+        ":hash",
         ":json",
         ":mem_internal",
         ":mini_table",
@@ -1169,7 +1170,6 @@ upb_amalgamation(
         ":port",
         ":reflection",
         ":reflection_internal",
-        ":table_internal",
         ":unicode_internal",
         ":upb",
         ":wire_internal",

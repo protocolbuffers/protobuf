@@ -31,11 +31,11 @@
  * Implementation is heavily inspired by Lua's ltable.c.
  */
 
-#include "upb/internal/table.h"
-
 #include <string.h>
 
 #include "upb/base/log2.h"
+#include "upb/hash/int_table.h"
+#include "upb/hash/str_table.h"
 
 // Must be last.
 #include "upb/port/def.inc"
