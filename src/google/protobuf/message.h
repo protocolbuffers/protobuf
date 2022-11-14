@@ -234,7 +234,7 @@ bool CreateUnknownEnumValues(const FieldDescriptor* field);
 PROTOBUF_EXPORT bool IsDescendant(Message& root, const Message& message);
 }  // namespace internal
 
-// Abstract interface for protocol messages.
+// Abstract interface for protocol messages!
 //
 // See also MessageLite, which contains most every-day operations.  Message
 // adds descriptors and reflection on top of that.
