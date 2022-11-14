@@ -505,8 +505,11 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
       //  - not repeated/map
       //  - not in a oneof (negative has index)
       //  - not a message (the flag doesn't make sense for messages)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
       BOOL clearOnZero = ((file.syntax == GPBFileSyntaxProto3) && !isMapOrArray &&
                           (coreDesc->hasIndex >= 0) && !isMessage);
+#pragma clang diagnostic pop
       if (clearOnZero) {
         coreDesc->flags |= GPBFieldClearHasIvarOnZero;
       }
@@ -521,7 +524,10 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
       // to be what the runtime was doing (even though it was wrong). This is
       // only wrong in the rare cases an enum is declared in a proto3 syntax
       // file but used for a field in the proto2 syntax file.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
       BOOL isClosedEnum = (dataType == GPBDataTypeEnum && file.syntax != GPBFileSyntaxProto3);
+#pragma clang diagnostic pop
       if (isClosedEnum) {
         coreDesc->flags |= GPBFieldClosedEnum;
       }
