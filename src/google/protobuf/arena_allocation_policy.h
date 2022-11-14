@@ -36,9 +36,22 @@
 
 #include "google/protobuf/arena_config.h"
 
+#ifndef OPEN_SOURCE
+#include "third_party/tcmalloc/malloc_extension.h"
+#endif  // !OPEN_SOURCE
+
 namespace google {
 namespace protobuf {
 namespace internal {
+
+#ifndef OPEN_SOURCE
+using SizedPtr = tcmalloc::sized_ptr_t;
+#else   // !OPEN_SOURCE
+struct SizedPtr {  // sized_ptr_t
+  void* p;
+  size_t n;
+};
+#endif  // !OPEN_SOURCE
 
 // `AllocationPolicy` defines `Arena` allocation policies. Applications can
 // customize the initial and maximum sizes for arena allocation, as well as set

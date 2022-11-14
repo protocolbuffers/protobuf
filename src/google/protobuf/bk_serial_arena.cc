@@ -1,5 +1,5 @@
 // Protocol Buffers - Google's data interchange format
-// Copyright 2008 Google Inc.  All rights reserved.
+// Copyright 2022 Google Inc.  All rights reserved.
 // https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,15 +28,41 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "google/protobuf/arena_align.h"
+#include "google/protobuf/bk_serial_arena.h"
 
 #include <cstddef>
 #include <cstdint>
+
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/memory_block.h"
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
 namespace internal {
 
+BKSerialArena::AllocationInfo BKSerialArena::GetAllocationInfo() const {
+  AllocationInfo info;
+  info.used = space_used_.load(std::memory_order_acquire);
+  info.allocated = space_allocated_.load(std::memory_order_acquire);
+
+  const MemoryBlock* memory = this->memory();
+  info.allocated += memory->allocated_size();
+
+  Ptr ptr = this->ptr();
+  if (ptr >= memory->head() && ptr <= memory->tail()) {
+    info.used += ptr - memory->head();
+    const Ptr limit = this->limit();
+    if (limit >= ptr && limit <= memory->tail()) {
+      info.used += memory->tail() - limit;
+    }
+  }
+
+  return info;
+}
 
 }  // namespace internal
 }  // namespace protobuf

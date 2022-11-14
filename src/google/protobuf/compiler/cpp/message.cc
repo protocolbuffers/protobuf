@@ -1737,6 +1737,16 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       "public:\n"
       "\n");
 
+  if (NeedsArenaDestructor() == ArenaDtorNeeds::kRequired) {
+    format(
+        "static constexpr void(*kArenaDestructor)(void*) = "
+        "&$classname$::ArenaDtor;\n");
+  } else {
+    format(
+        "static constexpr void(*kArenaDestructor)(void*) = "
+        "nullptr;\n");
+  }
+
   if (HasDescriptorMethods(descriptor_->file(), options_)) {
     if (HasGeneratedMethods(descriptor_->file(), options_)) {
       format(

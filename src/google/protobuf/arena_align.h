@@ -69,6 +69,7 @@
 
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
+#include "absl/base/optimization.h"
 #include "absl/numeric/bits.h"
 
 // Must be included last.
@@ -78,8 +79,18 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-struct ArenaAlignDefault {
-  PROTOBUF_EXPORT static constexpr size_t align = 8;  // NOLINT
+template <size_t align>
+struct ArenaAlignTo;
+
+using ArenaAlignDefault = ArenaAlignTo<8>;
+using ArenaAlignCacheline = ArenaAlignTo<ABSL_CACHELINE_SIZE>;
+
+template <size_t fixed_align>
+struct ArenaAlignTo {
+  PROTOBUF_EXPORT static constexpr size_t align = fixed_align;  // NOLINT
+  static constexpr size_t extra() { return fixed_align - 8; }
+
+  ArenaAlignTo() = default;
 
   static constexpr bool IsAligned(size_t n) { return (n & (align - 1)) == 0; }
 
@@ -91,15 +102,33 @@ struct ArenaAlignDefault {
   static constexpr size_t Ceil(size_t n) { return (n + align - 1) & -align; }
   static constexpr size_t Floor(size_t n) { return (n & ~(align - 1)); }
 
+  static size_t CeilDefaultAligned(size_t n) {
+    GOOGLE_DCHECK(ArenaAlignDefault::IsAligned(n));
+    return align == ArenaAlignDefault::align ? n : Ceil(n);
+  }
+
   template <typename T>
-  T* Ceil(T* ptr) const {
+  static T* Ceil(T* ptr) {
     uintptr_t intptr = reinterpret_cast<uintptr_t>(ptr);
     return reinterpret_cast<T*>((intptr + align - 1) & -align);
   }
 
   template <typename T>
   T* CeilDefaultAligned(T* ptr) const {
-    return ArenaAlignDefault().CheckAligned(ptr);
+    GOOGLE_DCHECK(ArenaAlignDefault::IsAligned(ptr));
+    return align == ArenaAlignDefault::align ? ptr : Ceil(ptr);
+  }
+
+  template <typename T>
+  static T* Floor(T* ptr) {
+    uintptr_t intptr = reinterpret_cast<uintptr_t>(ptr);
+    return reinterpret_cast<T*>(intptr & ~(align - 1));
+  }
+
+  template <typename T>
+  T* FloorDefaultAligned(T* ptr) const {
+    GOOGLE_DCHECK(ArenaAlignDefault::IsAligned(ptr));
+    return align == ArenaAlignDefault::align ? ptr : Floor(ptr);
   }
 
   // Address sanitizer enabled alignment check
@@ -108,12 +137,24 @@ struct ArenaAlignDefault {
     GOOGLE_DCHECK(IsAligned(ptr)) << static_cast<void*>(ptr);
     return ptr;
   }
+
+  template <typename T>
+  static size_t ModDefaultAligned(const T* ptr) {
+    return reinterpret_cast<size_t>(ptr) & (align - 1);
+  }
 };
+
+template <>
+template <typename T>
+size_t ArenaAlignTo<8>::ModDefaultAligned(const T* ptr) {
+  return 0;
+}
 
 struct ArenaAlign {
   static constexpr bool IsDefault() { return false; };
 
   size_t align;
+  size_t extra() const { return align - 8; }
 
   constexpr bool IsAligned(size_t n) const { return (n & (align - 1)) == 0; }
 
@@ -125,6 +166,11 @@ struct ArenaAlign {
   constexpr size_t Ceil(size_t n) const { return (n + align - 1) & -align; }
   constexpr size_t Floor(size_t n) const { return (n & ~(align - 1)); }
 
+  size_t CeilDefaultAligned(size_t n) const {
+    GOOGLE_DCHECK(ArenaAlignDefault::IsAligned(n));
+    return Ceil(n);
+  }
+
   template <typename T>
   T* Ceil(T* ptr) const {
     uintptr_t intptr = reinterpret_cast<uintptr_t>(ptr);
@@ -132,8 +178,21 @@ struct ArenaAlign {
   }
 
   template <typename T>
+  T* Floor(T* ptr) const {
+    uintptr_t intptr = reinterpret_cast<uintptr_t>(ptr);
+    return reinterpret_cast<T*>(intptr & ~(align - 1));
+  }
+
+  template <typename T>
   T* CeilDefaultAligned(T* ptr) const {
-    return Ceil(ArenaAlignDefault().CheckAligned(ptr));
+    GOOGLE_DCHECK(ArenaAlignDefault::IsAligned(ptr));
+    return Ceil(ptr);
+  }
+
+  template <typename T>
+  T* FloorDefaultAligned(T* ptr) const {
+    GOOGLE_DCHECK(ArenaAlignDefault::IsAligned(ptr));
+    return Floor(ptr);
   }
 
   // Address sanitizer enabled alignment check
@@ -142,13 +201,47 @@ struct ArenaAlign {
     GOOGLE_DCHECK(IsAligned(ptr)) << static_cast<void*>(ptr);
     return ptr;
   }
+
+  template <typename T>
+  size_t ModDefaultAligned(const T* ptr) const {
+    return reinterpret_cast<size_t>(ptr) & (align - 1);
+  }
 };
 
-inline ArenaAlign ArenaAlignAs(size_t align) {
+inline constexpr ArenaAlign ArenaAlignAs(size_t align) {
   // align must be a non zero power of 2 >= 8
   GOOGLE_DCHECK_NE(align, 0);
   GOOGLE_DCHECK(absl::has_single_bit(align)) << "Invalid alignment " << align;
   return ArenaAlign{align};
+}
+
+inline constexpr ArenaAlignDefault ArenaAlignAs() {
+  return ArenaAlignDefault();
+}
+
+template <bool default_aligned>
+struct AlignFactoryType {
+  using Align = ArenaAlign;
+  static constexpr ArenaAlign AlignAs(size_t align) {
+    return ArenaAlign{align};
+  }
+};
+
+template <>
+struct AlignFactoryType<true> {
+  using Align = ArenaAlignDefault;
+  static constexpr Align AlignAs(size_t) { return ArenaAlignDefault(); }
+};
+
+template <size_t align>
+using AlignFactory = AlignFactoryType<align <= ArenaAlignDefault::align>;
+
+template <size_t align>
+using AlignType = typename AlignFactory<align>::Align;
+
+template <size_t align>
+inline constexpr AlignType<align> ArenaAlignAs() {
+  return AlignFactory<align>::AlignAs(align);
 }
 
 }  // namespace internal
