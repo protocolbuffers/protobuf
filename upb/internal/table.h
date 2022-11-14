@@ -49,7 +49,9 @@
 
 #include <string.h>
 
-#include "upb/upb.h"
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
+#include "upb/mem/arena.h"
 
 // Must be last.
 #include "upb/port/def.inc"

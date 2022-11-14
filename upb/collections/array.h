@@ -28,6 +28,7 @@
 #ifndef UPB_COLLECTIONS_ARRAY_H_
 #define UPB_COLLECTIONS_ARRAY_H_
 
+#include "upb/base/descriptor_constants.h"
 #include "upb/collections/message_value.h"
 
 // Must be last.

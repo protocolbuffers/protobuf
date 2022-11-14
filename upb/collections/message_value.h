@@ -28,9 +28,8 @@
 #ifndef UPB_MESSAGE_VALUE_H_
 #define UPB_MESSAGE_VALUE_H_
 
+#include "upb/base/string_view.h"
 #include "upb/msg.h"
-#include "upb/string_view.h"
-#include "upb/upb.h"
 
 // Must be last.
 #include "upb/port/def.inc"

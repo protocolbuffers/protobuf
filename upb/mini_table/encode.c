@@ -27,11 +27,11 @@
 
 #include <inttypes.h>
 
+#include "upb/base/log2.h"
 #include "upb/mem/arena.h"
 #include "upb/mini_table/common.h"
 #include "upb/mini_table/common_internal.h"
 #include "upb/mini_table/encode_internal.h"
-#include "upb/upb.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -82,7 +82,7 @@ static char* upb_MtDataEncoder_Put(upb_MtDataEncoder* e, char* ptr, char ch) {
 
 static char* upb_MtDataEncoder_PutBase92Varint(upb_MtDataEncoder* e, char* ptr,
                                                uint32_t val, int min, int max) {
-  int shift = _upb_Log2Ceiling(_upb_FromBase92(max) - _upb_FromBase92(min) + 1);
+  int shift = upb_Log2Ceiling(_upb_FromBase92(max) - _upb_FromBase92(min) + 1);
   UPB_ASSERT(shift <= 6);
   uint32_t mask = (1 << shift) - 1;
   do {

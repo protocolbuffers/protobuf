@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/status.h"
+#include "upb/base/status.h"
 
 #include <errno.h>
 #include <float.h>

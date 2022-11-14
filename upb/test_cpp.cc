@@ -41,7 +41,6 @@
 #include "upb/reflection/def.hpp"
 #include "upb/test_cpp.upb.h"
 #include "upb/test_cpp.upbdefs.h"
-#include "upb/upb.h"
 
 // Must be last.
 #include "upb/port/def.inc"

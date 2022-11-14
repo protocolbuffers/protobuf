@@ -29,7 +29,6 @@
 #define UPB_EXTENSION_REGISTRY_H_
 
 #include "upb/msg.h"
-#include "upb/upb.h"
 
 // Must be last.
 #include "upb/port/def.inc"

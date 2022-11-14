@@ -25,6 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "upb/base/log2.h"
 #include "upb/collections/map_sorter_internal.h"
 
 // Must be last.
@@ -110,7 +111,7 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
 
   // Grow s->entries if necessary.
   if (sorted->end > s->cap) {
-    s->cap = _upb_Log2CeilingSize(sorted->end);
+    s->cap = upb_Log2CeilingSize(sorted->end);
     s->entries = realloc(s->entries, s->cap * sizeof(*s->entries));
     if (!s->entries) return false;
   }

@@ -24,7 +24,8 @@ cc_library(
         ":string",
         ":strtod",
         ":zero_copy_stream",
-        "//:upb",
+        "//:base",
+        "//:mem",
         "//:port",
         "//:unicode_internal",
     ],
@@ -37,9 +38,9 @@ cc_library(
         "zero_copy_output_stream.h",
     ],
     deps = [
+        "//:base",
         "//:mem",
         "//:port",
-        "//:status",
     ],
 )
 

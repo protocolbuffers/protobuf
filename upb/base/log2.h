@@ -25,11 +25,33 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// This header is deprecated, use upb/base/string_view.h instead
+#ifndef UPB_BASE_LOG2_H_
+#define UPB_BASE_LOG2_H_
 
-#ifndef UPB_STRING_VIEW_H_
-#define UPB_STRING_VIEW_H_
+// Must be last.
+#include "upb/port/def.inc"
 
-#include "upb/base/string_view.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif /* UPB_STRING_VIEW_H_ */
+UPB_INLINE int upb_Log2Ceiling(int x) {
+  if (x <= 1) return 0;
+#ifdef __GNUC__
+  return 32 - __builtin_clz(x - 1);
+#else
+  int lg2 = 0;
+  while (1 << lg2 < x) lg2++;
+  return lg2;
+#endif
+}
+
+UPB_INLINE int upb_Log2CeilingSize(int x) { return 1 << upb_Log2Ceiling(x); }
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include "upb/port/undef.inc"
+
+#endif /* UPB_BASE_LOG2_H_ */

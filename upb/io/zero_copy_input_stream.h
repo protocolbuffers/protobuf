@@ -28,7 +28,7 @@
 #ifndef UPB_IO_ZERO_COPY_INPUT_STREAM_H_
 #define UPB_IO_ZERO_COPY_INPUT_STREAM_H_
 
-#include "upb/status.h"
+#include "upb/base/status.h"
 
 // Must be last.
 #include "upb/port/def.inc"

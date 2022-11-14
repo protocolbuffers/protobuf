@@ -25,128 +25,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * This file contains shared definitions that are widely used across upb.
- */
+// This header is deprecated, use the individual #includes below as needed.
 
 #ifndef UPB_H_
 #define UPB_H_
 
-#include <stdarg.h>
-#include <string.h>
-
-// TODO(b/232091617): Remove these and fix everything that breaks as a result.
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/status.h"
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
-#include "upb/status.h"
-#include "upb/string_view.h"
-
-// Must be last.
-#include "upb/port/def.inc"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* A list of types as they are encoded on-the-wire. */
-typedef enum {
-  kUpb_WireType_Varint = 0,
-  kUpb_WireType_64Bit = 1,
-  kUpb_WireType_Delimited = 2,
-  kUpb_WireType_StartGroup = 3,
-  kUpb_WireType_EndGroup = 4,
-  kUpb_WireType_32Bit = 5
-} upb_WireType;
-
-/* The types a field can have.  Note that this list is not identical to the
- * types defined in descriptor.proto, which gives INT32 and SINT32 separate
- * types (we distinguish the two with the "integer encoding" enum below). */
-typedef enum {
-  kUpb_CType_Bool = 1,
-  kUpb_CType_Float = 2,
-  kUpb_CType_Int32 = 3,
-  kUpb_CType_UInt32 = 4,
-  kUpb_CType_Enum = 5, /* Enum values are int32. */
-  kUpb_CType_Message = 6,
-  kUpb_CType_Double = 7,
-  kUpb_CType_Int64 = 8,
-  kUpb_CType_UInt64 = 9,
-  kUpb_CType_String = 10,
-  kUpb_CType_Bytes = 11
-} upb_CType;
-
-/* The repeated-ness of each field; this matches descriptor.proto. */
-typedef enum {
-  kUpb_Label_Optional = 1,
-  kUpb_Label_Required = 2,
-  kUpb_Label_Repeated = 3
-} upb_Label;
-
-/* Descriptor types, as defined in descriptor.proto. */
-typedef enum {
-  kUpb_FieldType_Double = 1,
-  kUpb_FieldType_Float = 2,
-  kUpb_FieldType_Int64 = 3,
-  kUpb_FieldType_UInt64 = 4,
-  kUpb_FieldType_Int32 = 5,
-  kUpb_FieldType_Fixed64 = 6,
-  kUpb_FieldType_Fixed32 = 7,
-  kUpb_FieldType_Bool = 8,
-  kUpb_FieldType_String = 9,
-  kUpb_FieldType_Group = 10,
-  kUpb_FieldType_Message = 11,
-  kUpb_FieldType_Bytes = 12,
-  kUpb_FieldType_UInt32 = 13,
-  kUpb_FieldType_Enum = 14,
-  kUpb_FieldType_SFixed32 = 15,
-  kUpb_FieldType_SFixed64 = 16,
-  kUpb_FieldType_SInt32 = 17,
-  kUpb_FieldType_SInt64 = 18,
-} upb_FieldType;
-
-#define kUpb_FieldType_SizeOf 19
-
-#define kUpb_Map_Begin ((size_t)-1)
-
-UPB_INLINE bool _upb_IsLittleEndian(void) {
-  int x = 1;
-  return *(char*)&x == 1;
-}
-
-UPB_INLINE uint32_t _upb_BigEndian_Swap32(uint32_t val) {
-  if (_upb_IsLittleEndian()) {
-    return val;
-  } else {
-    return ((val & 0xff) << 24) | ((val & 0xff00) << 8) |
-           ((val & 0xff0000) >> 8) | ((val & 0xff000000) >> 24);
-  }
-}
-
-UPB_INLINE uint64_t _upb_BigEndian_Swap64(uint64_t val) {
-  if (_upb_IsLittleEndian()) {
-    return val;
-  } else {
-    return ((uint64_t)_upb_BigEndian_Swap32((uint32_t)val) << 32) |
-           _upb_BigEndian_Swap32((uint32_t)(val >> 32));
-  }
-}
-
-UPB_INLINE int _upb_Log2Ceiling(int x) {
-  if (x <= 1) return 0;
-#ifdef __GNUC__
-  return 32 - __builtin_clz(x - 1);
-#else
-  int lg2 = 0;
-  while (1 << lg2 < x) lg2++;
-  return lg2;
-#endif
-}
-
-UPB_INLINE int _upb_Log2CeilingSize(int x) { return 1 << _upb_Log2Ceiling(x); }
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#include "upb/port/undef.inc"
 
 #endif /* UPB_H_ */

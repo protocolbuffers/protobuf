@@ -29,10 +29,10 @@
 
 #include <inttypes.h>
 
+#include "upb/base/log2.h"
 #include "upb/mem/arena.h"
 #include "upb/mini_table/common.h"
 #include "upb/mini_table/common_internal.h"
-#include "upb/upb.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -115,7 +115,7 @@ static const char* upb_MiniTable_DecodeBase92Varint(upb_MtDecoder* d,
   uint32_t val = 0;
   uint32_t shift = 0;
   const int bits_per_char =
-      _upb_Log2Ceiling(_upb_FromBase92(max) - _upb_FromBase92(min));
+      upb_Log2Ceiling(_upb_FromBase92(max) - _upb_FromBase92(min));
   char ch = first_ch;
   while (1) {
     uint32_t bits = _upb_FromBase92(ch) - _upb_FromBase92(min);
@@ -534,8 +534,8 @@ int upb_MtDecoder_CompareFields(const void* _a, const void* _b) {
   //  2. field_index (smallest numbers first)
   // The main goal of this is to reduce space lost to padding.
   // Later we may have more subtle reasons to prefer a different ordering.
-  const int rep_bits = _upb_Log2Ceiling(kUpb_FieldRep_Max);
-  const int type_bits = _upb_Log2Ceiling(kUpb_LayoutItemType_Max);
+  const int rep_bits = upb_Log2Ceiling(kUpb_FieldRep_Max);
+  const int type_bits = upb_Log2Ceiling(kUpb_LayoutItemType_Max);
   const int idx_bits = (sizeof(a->field_index) * 8);
   UPB_ASSERT(idx_bits + rep_bits + type_bits < 32);
 #define UPB_COMBINE(rep, ty, idx) (((rep << type_bits) | ty) << idx_bits) | idx

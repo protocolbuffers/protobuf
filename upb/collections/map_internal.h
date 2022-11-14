@@ -30,10 +30,10 @@
 #ifndef UPB_COLLECTIONS_MAP_INTERNAL_H_
 #define UPB_COLLECTIONS_MAP_INTERNAL_H_
 
+#include "upb/base/string_view.h"
 #include "upb/collections/map.h"
 #include "upb/internal/table.h"
 #include "upb/mem/arena.h"
-#include "upb/string_view.h"
 
 // Must be last.
 #include "upb/port/def.inc"

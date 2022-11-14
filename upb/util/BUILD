@@ -117,6 +117,7 @@ cc_test(
     srcs = ["compare_test.cc"],
     deps = [
         ":compare",
+        "//:wire_internal",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],

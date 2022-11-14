@@ -121,11 +121,15 @@ cc_library(
         "upb/upb.c",
         "upb/wire/decode.c",
         "upb/wire/encode.c",
+        "upb/wire/swap_internal.h",
     ],
     hdrs = [
         "upb/alloc.h",
         "upb/arena.h",
         "upb/array.h",
+        "upb/base/descriptor_constants.h",
+        "upb/base/status.h",
+        "upb/base/string_view.h",
         "upb/collections/array.h",
         "upb/decode.h",
         "upb/encode.h",
@@ -144,16 +148,32 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":base",
         ":collections_internal",
         ":extension_registry",
         ":fastdecode",
         ":mem",
         ":port",
-        ":status",
         ":table_internal",
         ":unicode_internal",
         ":wire_internal",
     ],
+)
+
+cc_library(
+    name = "base",
+    srcs = [
+        "upb/base/status.c",
+    ],
+    hdrs = [
+        "upb/base/descriptor_constants.h",
+        "upb/base/log2.h",
+        "upb/base/status.h",
+        "upb/base/string_view.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//:__subpackages__"],
+    deps = [":port"],
 )
 
 cc_library(
@@ -162,7 +182,6 @@ cc_library(
         "upb/extension_registry.c",
         "upb/msg.h",
         "upb/msg_internal.h",
-        "upb/string_view.h",
         "upb/upb.h",
     ],
     hdrs = [
@@ -171,6 +190,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":base",
         ":collections_internal",
         ":port",
         ":table_internal",
@@ -190,6 +210,7 @@ cc_library(
     ],
     visibility = ["//:__subpackages__"],
     deps = [
+        ":base",
         ":collections_internal",
         ":extension_registry",
         ":port",
@@ -216,6 +237,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":base",
         ":collections_internal",
         ":extension_registry",
         ":mini_table_internal",
@@ -250,7 +272,6 @@ cc_library(
 cc_test(
     name = "mini_table_encode_test",
     srcs = [
-        "upb/internal/table.h",
         "upb/mini_table/encode_test.cc",
     ],
     deps = [
@@ -258,6 +279,7 @@ cc_test(
         ":mini_table",
         ":mini_table_internal",
         ":port",
+        ":table_internal",
         ":upb",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_googletest//:gtest_main",
@@ -296,6 +318,7 @@ cc_library(
     ],
     copts = UPB_DEFAULT_COPTS,
     deps = [
+        ":base",
         ":collections_internal",
         ":extension_registry",
         ":mem_internal",
@@ -332,6 +355,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":base",
         ":collections_internal",
         ":table_internal",
         ":upb",
@@ -354,6 +378,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":base",
         ":collections_internal",
         ":mini_table",
         ":table_internal",
@@ -386,6 +411,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":base",
         ":descriptor_upb_proto",
         ":reflection_internal",
         ":table_internal",
@@ -413,6 +439,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
+        ":base",
         ":collections_internal",
         ":port",
     ],
@@ -427,8 +454,6 @@ cc_library(
         "upb/extension_registry.h",
         "upb/msg.h",
         "upb/msg_internal.h",
-        "upb/status.h",
-        "upb/string_view.h",
     ],
     hdrs = [
         "upb/collections/array.h",
@@ -442,6 +467,7 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
     deps = [
+        ":base",
         ":mem",
         ":port",
         ":table_internal",
@@ -981,19 +1007,6 @@ cc_library(
 )
 
 cc_library(
-    name = "status",
-    srcs = [
-        "upb/status.c",
-    ],
-    hdrs = [
-        "upb/status.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__subpackages__"],
-    deps = [":port"],
-)
-
-cc_library(
     name = "atoi_internal",
     srcs = ["upb/internal/atoi.c"],
     hdrs = ["upb/internal/atoi.h"],
@@ -1014,10 +1027,12 @@ cc_library(
         "upb/wire/common_internal.h",
         "upb/wire/decode_internal.h",
         "upb/wire/encode_internal.h",
+        "upb/wire/swap_internal.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
     deps = [
+        ":base",
         ":collections_internal",
         ":mem_internal",
         ":port",
@@ -1035,13 +1050,14 @@ cc_library(
         "upb/internal/table.h",
         "upb/mem/alloc.h",
         "upb/mem/arena.h",
-        "upb/status.h",
-        "upb/string_view.h",
         "upb/upb.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
-    deps = [":port"],
+    deps = [
+        ":base",
+        ":port",
+    ],
 )
 
 cc_library(
@@ -1069,6 +1085,7 @@ upb_amalgamation(
     ],
     libs = [
         ":atoi_internal",
+        ":base",
         ":collections_internal",
         ":descriptor_upb_proto",
         ":extension_registry",
@@ -1079,7 +1096,6 @@ upb_amalgamation(
         ":port",
         ":reflection",
         ":reflection_internal",
-        ":status",
         ":upb",
         ":wire_internal",
     ],
@@ -1102,6 +1118,7 @@ upb_amalgamation(
     ],
     libs = [
         ":atoi_internal",
+        ":base",
         ":collections_internal",
         ":descriptor_upb_proto",
         ":descriptor_upb_proto_reflection",
@@ -1114,7 +1131,6 @@ upb_amalgamation(
         ":port",
         ":reflection",
         ":reflection_internal",
-        ":status",
         ":table_internal",
         ":unicode_internal",
         ":upb",
@@ -1141,6 +1157,7 @@ upb_amalgamation(
     ],
     libs = [
         ":atoi_internal",
+        ":base",
         ":collections_internal",
         ":descriptor_upb_proto",
         ":extension_registry",
@@ -1152,7 +1169,6 @@ upb_amalgamation(
         ":port",
         ":reflection",
         ":reflection_internal",
-        ":status",
         ":table_internal",
         ":unicode_internal",
         ":upb",

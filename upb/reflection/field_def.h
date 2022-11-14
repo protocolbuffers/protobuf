@@ -30,8 +30,8 @@
 #ifndef UPB_REFLECTION_FIELD_DEF_H_
 #define UPB_REFLECTION_FIELD_DEF_H_
 
+#include "upb/base/string_view.h"
 #include "upb/reflection/common.h"
-#include "upb/string_view.h"
 
 // Must be last.
 #include "upb/port/def.inc"

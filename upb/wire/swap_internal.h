@@ -25,11 +25,39 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// This header is deprecated, use upb/base/string_view.h instead
+#ifndef UPB_WIRE_SWAP_INTERNAL_H_
+#define UPB_WIRE_SWAP_INTERNAL_H_
 
-#ifndef UPB_STRING_VIEW_H_
-#define UPB_STRING_VIEW_H_
+// Must be last.
+#include "upb/port/def.inc"
 
-#include "upb/base/string_view.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#endif /* UPB_STRING_VIEW_H_ */
+UPB_INLINE bool _upb_IsLittleEndian(void) {
+  int x = 1;
+  return *(char*)&x == 1;
+}
+
+UPB_INLINE uint32_t _upb_BigEndian_Swap32(uint32_t val) {
+  if (_upb_IsLittleEndian()) return val;
+
+  return ((val & 0xff) << 24) | ((val & 0xff00) << 8) |
+         ((val & 0xff0000) >> 8) | ((val & 0xff000000) >> 24);
+}
+
+UPB_INLINE uint64_t _upb_BigEndian_Swap64(uint64_t val) {
+  if (_upb_IsLittleEndian()) return val;
+
+  return ((uint64_t)_upb_BigEndian_Swap32((uint32_t)val) << 32) |
+         _upb_BigEndian_Swap32((uint32_t)(val >> 32));
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include "upb/port/undef.inc"
+
+#endif /* UPB_WIRE_SWAP_INTERNAL_H_ */

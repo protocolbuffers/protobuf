@@ -31,9 +31,9 @@
 
 #include "upb/collections/array_internal.h"
 #include "upb/collections/map_internal.h"
-#include "upb/upb.h"
 #include "upb/wire/common_internal.h"
 #include "upb/wire/decode_internal.h"
+#include "upb/wire/swap_internal.h"
 
 // Must be last.
 #include "upb/port/def.inc"

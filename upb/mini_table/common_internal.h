@@ -28,7 +28,7 @@
 #ifndef UPB_MINI_TABLE_COMMON_INTERNAL_H_
 #define UPB_MINI_TABLE_COMMON_INTERNAL_H_
 
-#include "upb/upb.h"
+#include "upb/base/descriptor_constants.h"
 
 // Must be last.
 #include "upb/port/def.inc"

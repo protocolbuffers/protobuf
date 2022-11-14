@@ -40,7 +40,6 @@
 #include "upb/mini_table/decode.h"
 #include "upb/mini_table/encode_internal.hpp"
 #include "upb/test.upb.h"
-#include "upb/upb.h"
 #include "upb/wire/decode.h"
 
 namespace {

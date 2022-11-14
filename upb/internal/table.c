@@ -35,6 +35,8 @@
 
 #include <string.h>
 
+#include "upb/base/log2.h"
+
 // Must be last.
 #include "upb/port/def.inc"
 
@@ -458,7 +460,7 @@ bool upb_strtable_init(upb_strtable* t, size_t expected_size, upb_Arena* a) {
   // denominator.
   size_t need_entries = (expected_size + 1) * 1204 / 1024;
   UPB_ASSERT(need_entries >= expected_size * 0.85);
-  int size_lg2 = _upb_Log2Ceiling(need_entries);
+  int size_lg2 = upb_Log2Ceiling(need_entries);
   return init(&t->t, size_lg2, a);
 }
 

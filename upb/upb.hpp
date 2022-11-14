@@ -28,7 +28,9 @@
 
 #include <memory>
 
-#include "upb/upb.h"
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/status.h"
+#include "upb/mem/arena.h"
 
 namespace upb {
 

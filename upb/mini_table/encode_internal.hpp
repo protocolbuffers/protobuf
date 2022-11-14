@@ -30,6 +30,7 @@
 
 #include <string>
 
+#include "upb/base/log2.h"
 #include "upb/mini_table/encode_internal.h"
 
 namespace upb {
@@ -114,7 +115,7 @@ class MtDataEncoder {
       if (!end) return false;
       // C++ does not guarantee that string has doubling growth behavior, but
       // we need it to avoid O(n^2).
-      str_.reserve(_upb_Log2CeilingSize(str_.size() + (end - buf_)));
+      str_.reserve(upb_Log2CeilingSize(str_.size() + (end - buf_)));
       str_.append(buf_, end - buf_);
       return true;
     }

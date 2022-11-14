@@ -29,6 +29,7 @@
 
 #include <math.h>
 
+#include "upb/base/log2.h"
 #include "upb/msg_internal.h"
 
 // Must be last.
@@ -59,7 +60,7 @@ static bool realloc_internal(upb_Message* msg, size_t need, upb_Arena* arena) {
   upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (!in->internal) {
     /* No internal data, allocate from scratch. */
-    size_t size = UPB_MAX(128, _upb_Log2CeilingSize(need + overhead));
+    size_t size = UPB_MAX(128, upb_Log2CeilingSize(need + overhead));
     upb_Message_InternalData* internal = upb_Arena_Malloc(arena, size);
     if (!internal) return false;
     internal->size = size;
@@ -68,7 +69,7 @@ static bool realloc_internal(upb_Message* msg, size_t need, upb_Arena* arena) {
     in->internal = internal;
   } else if (in->internal->ext_begin - in->internal->unknown_end < need) {
     /* Internal data is too small, reallocate. */
-    size_t new_size = _upb_Log2CeilingSize(in->internal->size + need);
+    size_t new_size = upb_Log2CeilingSize(in->internal->size + need);
     size_t ext_bytes = in->internal->size - in->internal->ext_begin;
     size_t new_ext_begin = new_size - ext_bytes;
     upb_Message_InternalData* internal =

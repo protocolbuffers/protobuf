@@ -28,6 +28,7 @@
 #ifndef UPB_COLLECTIONS_MAP_H_
 #define UPB_COLLECTIONS_MAP_H_
 
+#include "upb/base/descriptor_constants.h"
 #include "upb/collections/message_value.h"
 
 // Must be last.
@@ -73,7 +74,7 @@ UPB_INLINE bool upb_Map_Set(upb_Map* map, upb_MessageValue key,
          kUpb_MapInsertStatus_OutOfMemory;
 }
 
-/* Deletes this key from the table.  Returns true if the key was present. */
+// Deletes this key from the table. Returns true if the key was present.
 bool upb_Map_Delete(upb_Map* map, upb_MessageValue key);
 
 /* Map iteration:
@@ -88,7 +89,9 @@ bool upb_Map_Delete(upb_Map* map, upb_MessageValue key);
  * }
  */
 
-/* Advances to the next entry.  Returns false if no more entries are present. */
+#define kUpb_Map_Begin ((size_t)-1)
+
+// Advances to the next entry. Returns false if no more entries are present.
 bool upb_MapIterator_Next(const upb_Map* map, size_t* iter);
 
 /* Returns true if the iterator still points to a valid entry, or false if the

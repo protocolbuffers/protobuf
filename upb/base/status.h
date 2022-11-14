@@ -25,11 +25,42 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// This header is deprecated, use upb/base/string_view.h instead
+#ifndef UPB_BASE_STATUS_H_
+#define UPB_BASE_STATUS_H_
 
-#ifndef UPB_STRING_VIEW_H_
-#define UPB_STRING_VIEW_H_
+#include <stdarg.h>
 
-#include "upb/base/string_view.h"
+// Must be last.
+#include "upb/port/def.inc"
 
-#endif /* UPB_STRING_VIEW_H_ */
+#define _kUpb_Status_MaxMessage 127
+
+typedef struct {
+  bool ok;
+  char msg[_kUpb_Status_MaxMessage];  // Error message; NULL-terminated.
+} upb_Status;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+const char* upb_Status_ErrorMessage(const upb_Status* status);
+bool upb_Status_IsOk(const upb_Status* status);
+
+// These are no-op if |status| is NULL.
+void upb_Status_Clear(upb_Status* status);
+void upb_Status_SetErrorMessage(upb_Status* status, const char* msg);
+void upb_Status_SetErrorFormat(upb_Status* status, const char* fmt, ...)
+    UPB_PRINTF(2, 3);
+void upb_Status_VSetErrorFormat(upb_Status* status, const char* fmt,
+                                va_list args) UPB_PRINTF(2, 0);
+void upb_Status_VAppendErrorFormat(upb_Status* status, const char* fmt,
+                                   va_list args) UPB_PRINTF(2, 0);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#include "upb/port/undef.inc"
+
+#endif /* UPB_BASE_STATUS_H_ */

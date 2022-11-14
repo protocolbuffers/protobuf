@@ -31,7 +31,6 @@
 
 #include "upb/mem/arena.h"
 #include "upb/mini_table/common_internal.h"
-#include "upb/upb.h"
 
 // Must be last.
 #include "upb/port/def.inc"

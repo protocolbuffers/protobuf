@@ -30,9 +30,10 @@
 #ifndef UPB_IO_TOKENIZER_H_
 #define UPB_IO_TOKENIZER_H_
 
+#include "upb/base/status.h"
+#include "upb/base/string_view.h"
 #include "upb/io/zero_copy_input_stream.h"
-#include "upb/string_view.h"
-#include "upb/upb.h"
+#include "upb/mem/arena.h"
 
 // Must be included last.
 #include "upb/port/def.inc"
