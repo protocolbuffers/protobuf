@@ -448,7 +448,6 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 
 @synthesize msgClass = msgClass_;
 @synthesize containingOneof = containingOneof_;
-@synthesize enumDescriptor = enumDescriptor_;
 
 - (instancetype)initWithFieldDescription:(void *)description
                          includesDefault:(BOOL)includesDefault
@@ -621,6 +620,10 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 - (BOOL)isValidEnumValue:(int32_t)value {
   NSAssert(description_->dataType == GPBDataTypeEnum, @"Field Must be of type GPBDataTypeEnum");
   return enumDescriptor_.enumVerifier(value);
+}
+
+- (GPBEnumDescriptor *)enumDescriptor {
+  return enumDescriptor_;
 }
 
 - (GPBGenericValue)defaultValue {
