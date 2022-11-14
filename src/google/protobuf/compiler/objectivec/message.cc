@@ -530,6 +530,8 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
     std::vector<std::string> init_flags;
     init_flags.push_back("GPBDescriptorInitializationFlag_UsesClassRefs");
     init_flags.push_back("GPBDescriptorInitializationFlag_Proto3OptionalKnown");
+    init_flags.push_back(
+        "GPBDescriptorInitializationFlag_ClosedEnumSupportKnown");
     if (need_defaults) {
       init_flags.push_back("GPBDescriptorInitializationFlag_FieldsWithDefault");
     }
