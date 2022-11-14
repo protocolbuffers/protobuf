@@ -454,16 +454,6 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 @synthesize msgClass = msgClass_;
 @synthesize containingOneof = containingOneof_;
 
-- (instancetype)init {
-  // Throw an exception if people attempt to not use the designated initializer.
-  self = [super init];
-  if (self != nil) {
-    [self doesNotRecognizeSelector:_cmd];
-    self = nil;
-  }
-  return self;
-}
-
 - (instancetype)initWithFieldDescription:(void *)description
                          includesDefault:(BOOL)includesDefault
                            usesClassRefs:(BOOL)usesClassRefs
