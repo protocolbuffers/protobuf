@@ -443,16 +443,12 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
   Class msgClass_;
 
   // Enum ivars.
-  // If protos are generated with GenerateEnumDescriptors on then it will
-  // be a enumDescriptor, otherwise it will be a enumVerifier.
-  union {
-    GPBEnumDescriptor *enumDescriptor_;
-    GPBEnumValidationFunc enumVerifier_;
-  } enumHandling_;
+  GPBEnumDescriptor *enumDescriptor_;
 }
 
 @synthesize msgClass = msgClass_;
 @synthesize containingOneof = containingOneof_;
+@synthesize enumDescriptor = enumDescriptor_;
 
 - (instancetype)initWithFieldDescription:(void *)description
                          includesDefault:(BOOL)includesDefault
@@ -518,11 +514,9 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
         NSAssert(msgClass_, @"Class %s not defined", className);
       }
     } else if (dataType == GPBDataTypeEnum) {
-      if ((coreDesc->flags & GPBFieldHasEnumDescriptor) != 0) {
-        enumHandling_.enumDescriptor_ = coreDesc->dataTypeSpecific.enumDescFunc();
-      } else {
-        enumHandling_.enumVerifier_ = coreDesc->dataTypeSpecific.enumVerifier;
-      }
+      NSAssert((coreDesc->flags & GPBFieldHasEnumDescriptor) != 0,
+               @"Field must have GPBFieldHasEnumDescriptor set");
+      enumDescriptor_ = coreDesc->dataTypeSpecific.enumDescFunc();
     }
 
     // Non map<>/repeated fields can have defaults in proto2 syntax.
@@ -626,19 +620,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 
 - (BOOL)isValidEnumValue:(int32_t)value {
   NSAssert(description_->dataType == GPBDataTypeEnum, @"Field Must be of type GPBDataTypeEnum");
-  if (description_->flags & GPBFieldHasEnumDescriptor) {
-    return enumHandling_.enumDescriptor_.enumVerifier(value);
-  } else {
-    return enumHandling_.enumVerifier_(value);
-  }
-}
-
-- (GPBEnumDescriptor *)enumDescriptor {
-  if (description_->flags & GPBFieldHasEnumDescriptor) {
-    return enumHandling_.enumDescriptor_;
-  } else {
-    return nil;
-  }
+  return enumDescriptor_.enumVerifier(value);
 }
 
 - (GPBGenericValue)defaultValue {
