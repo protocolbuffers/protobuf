@@ -32,21 +32,21 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include <google/protobuf/compiler/java/primitive_field.h>
+#include "google/protobuf/compiler/java/primitive_field.h"
 
 #include <cstdint>
 #include <map>
 #include <string>
 
-#include <google/protobuf/stubs/logging.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/io/printer.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/stubs/strutil.h>
-#include <google/protobuf/compiler/java/context.h>
-#include <google/protobuf/compiler/java/doc_comment.h>
-#include <google/protobuf/compiler/java/helpers.h>
-#include <google/protobuf/compiler/java/name_resolver.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/common.h"
+#include "google/protobuf/io/printer.h"
+#include "google/protobuf/wire_format.h"
+#include "google/protobuf/stubs/strutil.h"
+#include "google/protobuf/compiler/java/context.h"
+#include "google/protobuf/compiler/java/doc_comment.h"
+#include "google/protobuf/compiler/java/helpers.h"
+#include "google/protobuf/compiler/java/name_resolver.h"
 
 namespace google {
 namespace protobuf {
@@ -57,53 +57,55 @@ using internal::WireFormat;
 
 namespace {
 
-void SetPrimitiveVariables(const FieldDescriptor* descriptor,
-                           int messageBitIndex, int builderBitIndex,
-                           const FieldGeneratorInfo* info,
-                           ClassNameResolver* name_resolver,
-                           std::map<std::string, std::string>* variables) {
+void SetPrimitiveVariables(
+    const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
+    const FieldGeneratorInfo* info, ClassNameResolver* name_resolver,
+    std::map<std::string, std::string>* variables,
+    Context* context) {
   SetCommonFieldVariables(descriptor, info, variables);
   JavaType javaType = GetJavaType(descriptor);
 
   (*variables)["type"] = PrimitiveTypeName(javaType);
   (*variables)["boxed_type"] = BoxedPrimitiveTypeName(javaType);
   (*variables)["kt_type"] = KotlinTypeName(javaType);
-  (*variables)["field_type"] = (*variables)["type"];
+  variables->insert({"field_type", (*variables)["type"]});
 
+  std::string name = (*variables)["name"];
   if (javaType == JAVATYPE_BOOLEAN || javaType == JAVATYPE_DOUBLE ||
       javaType == JAVATYPE_FLOAT || javaType == JAVATYPE_INT ||
       javaType == JAVATYPE_LONG) {
     std::string capitalized_type = UnderscoresToCamelCase(
         PrimitiveTypeName(javaType), /*cap_first_letter=*/true);
     (*variables)["field_list_type"] =
-        "com.google.protobuf.Internal." + capitalized_type + "List";
-    (*variables)["empty_list"] = "empty" + capitalized_type + "List()";
-    (*variables)["create_list"] = "new" + capitalized_type + "List()";
-    (*variables)["mutable_copy_list"] =
-        "mutableCopy(" + (*variables)["name"] + "_)";
-    (*variables)["name_make_immutable"] =
-        (*variables)["name"] + "_.makeImmutable()";
-    (*variables)["repeated_get"] =
-        (*variables)["name"] + "_.get" + capitalized_type;
-    (*variables)["repeated_add"] =
-        (*variables)["name"] + "_.add" + capitalized_type;
-    (*variables)["repeated_set"] =
-        (*variables)["name"] + "_.set" + capitalized_type;
-  } else {
-    (*variables)["field_list_type"] =
-        "java.util.List<" + (*variables)["boxed_type"] + ">";
+        StrCat("com.google.protobuf.Internal.", capitalized_type, "List");
+    (*variables)["empty_list"] =
+        StrCat("empty", capitalized_type, "List()");
     (*variables)["create_list"] =
-        "new java.util.ArrayList<" + (*variables)["boxed_type"] + ">()";
-    (*variables)["mutable_copy_list"] = "new java.util.ArrayList<" +
-                                        (*variables)["boxed_type"] + ">(" +
-                                        (*variables)["name"] + "_)";
-    (*variables)["empty_list"] = "java.util.Collections.emptyList()";
+        StrCat("new", capitalized_type, "List()");
+    (*variables)["mutable_copy_list"] =
+        StrCat("mutableCopy(", name, "_)");
     (*variables)["name_make_immutable"] =
-        (*variables)["name"] + "_ = java.util.Collections.unmodifiableList(" +
-        (*variables)["name"] + "_)";
-    (*variables)["repeated_get"] = (*variables)["name"] + "_.get";
-    (*variables)["repeated_add"] = (*variables)["name"] + "_.add";
-    (*variables)["repeated_set"] = (*variables)["name"] + "_.set";
+        StrCat(name, "_.makeImmutable()");
+    (*variables)["repeated_get"] =
+        StrCat(name, "_.get", capitalized_type);
+    (*variables)["repeated_add"] =
+        StrCat(name, "_.add", capitalized_type);
+    (*variables)["repeated_set"] =
+        StrCat(name, "_.set", capitalized_type);
+  } else {
+    std::string boxed_type = (*variables)["boxed_type"];
+    (*variables)["field_list_type"] =
+        StrCat("java.util.List<", boxed_type, ">");
+    (*variables)["create_list"] =
+        StrCat("new java.util.ArrayList<", boxed_type, ">()");
+    (*variables)["mutable_copy_list"] =
+        StrCat("new java.util.ArrayList<", boxed_type, ">(", name, "_)");
+    (*variables)["empty_list"] = "java.util.Collections.emptyList()";
+    (*variables)["name_make_immutable"] = StrCat(
+        name, "_ = java.util.Collections.unmodifiableList(", name, "_)");
+    (*variables)["repeated_get"] = StrCat(name, "_.get");
+    (*variables)["repeated_add"] = StrCat(name, "_.add");
+    (*variables)["repeated_set"] = StrCat(name, "_.set");
   }
 
   (*variables)["default"] = ImmutableDefaultValue(descriptor, name_resolver);
@@ -119,9 +121,7 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   if (IsReferenceType(GetJavaType(descriptor))) {
     (*variables)["null_check"] =
-        "  if (value == null) {\n"
-        "    throw new NullPointerException();\n"
-        "  }\n";
+        "if (value == null) { throw new NullPointerException(); }";
   } else {
     (*variables)["null_check"] = "";
   }
@@ -131,8 +131,8 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
   (*variables)["kt_deprecation"] =
       descriptor->options().deprecated()
-          ? "@kotlin.Deprecated(message = \"Field " + (*variables)["name"] +
-                " is deprecated\") "
+          ? StrCat("@kotlin.Deprecated(message = \"Field ", name,
+                         " is deprecated\") ")
           : "";
   int fixed_size = FixedSize(GetType(descriptor));
   if (fixed_size != -1) {
@@ -143,40 +143,29 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   if (HasHasbit(descriptor)) {
     // For singular messages and builders, one bit is used for the hasField bit.
     (*variables)["get_has_field_bit_message"] = GenerateGetBit(messageBitIndex);
-    (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builderBitIndex);
-
     // Note that these have a trailing ";".
-    (*variables)["set_has_field_bit_message"] =
-        GenerateSetBit(messageBitIndex) + ";";
-    (*variables)["set_has_field_bit_builder"] =
-        GenerateSetBit(builderBitIndex) + ";";
-    (*variables)["clear_has_field_bit_builder"] =
-        GenerateClearBit(builderBitIndex) + ";";
-
+    (*variables)["set_has_field_bit_to_local"] =
+        GenerateSetBitToLocal(messageBitIndex) + ";";
     (*variables)["is_field_present_message"] = GenerateGetBit(messageBitIndex);
   } else {
-    (*variables)["set_has_field_bit_message"] = "";
-    (*variables)["set_has_field_bit_builder"] = "";
-    (*variables)["clear_has_field_bit_builder"] = "";
-
+    (*variables)["set_has_field_bit_to_local"] = "";
     switch (descriptor->type()) {
       case FieldDescriptor::TYPE_BYTES:
         (*variables)["is_field_present_message"] =
-            "!" + (*variables)["name"] + "_.isEmpty()";
+            StrCat("!", name, "_.isEmpty()");
         break;
       case FieldDescriptor::TYPE_FLOAT:
         (*variables)["is_field_present_message"] =
-            "java.lang.Float.floatToRawIntBits(" + (*variables)["name"] +
-            "_) != 0";
+            StrCat("java.lang.Float.floatToRawIntBits(", name, "_) != 0");
         break;
       case FieldDescriptor::TYPE_DOUBLE:
-        (*variables)["is_field_present_message"] =
-            "java.lang.Double.doubleToRawLongBits(" + (*variables)["name"] +
-            "_) != 0";
+        (*variables)["is_field_present_message"] = StrCat(
+            "java.lang.Double.doubleToRawLongBits(", name, "_) != 0");
         break;
       default:
-        (*variables)["is_field_present_message"] =
-            (*variables)["name"] + "_ != " + (*variables)["default"];
+        variables->insert(
+            {"is_field_present_message",
+             StrCat(name, "_ != ", (*variables)["default"])});
         break;
     }
   }
@@ -186,10 +175,15 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
   (*variables)["set_mutable_bit_builder"] = GenerateSetBit(builderBitIndex);
   (*variables)["clear_mutable_bit_builder"] = GenerateClearBit(builderBitIndex);
 
+  // Always track the presence of a field explicitly in the builder, regardless
+  // of syntax.
+  (*variables)["get_has_field_bit_builder"] = GenerateGetBit(builderBitIndex);
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
-  (*variables)["set_has_field_bit_to_local"] =
-      GenerateSetBitToLocal(messageBitIndex);
+  (*variables)["set_has_field_bit_builder"] =
+      GenerateSetBit(builderBitIndex) + ";";
+  (*variables)["clear_has_field_bit_builder"] =
+      GenerateClearBit(builderBitIndex) + ";";
 }
 
 }  // namespace
@@ -199,21 +193,30 @@ void SetPrimitiveVariables(const FieldDescriptor* descriptor,
 ImmutablePrimitiveFieldGenerator::ImmutablePrimitiveFieldGenerator(
     const FieldDescriptor* descriptor, int messageBitIndex, int builderBitIndex,
     Context* context)
-    : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
+    : descriptor_(descriptor),
+      message_bit_index_(messageBitIndex),
+      builder_bit_index_(builderBitIndex),
+      name_resolver_(context->GetNameResolver()) {
   SetPrimitiveVariables(descriptor, messageBitIndex, builderBitIndex,
                         context->GetFieldGeneratorInfo(descriptor),
-                        name_resolver_, &variables_);
+                        name_resolver_, &variables_, context);
 }
 
 ImmutablePrimitiveFieldGenerator::~ImmutablePrimitiveFieldGenerator() {}
+
+int ImmutablePrimitiveFieldGenerator::GetMessageBitIndex() const {
+  return message_bit_index_;
+}
+
+int ImmutablePrimitiveFieldGenerator::GetBuilderBitIndex() const {
+  return builder_bit_index_;
+}
 
 int ImmutablePrimitiveFieldGenerator::GetNumBitsForMessage() const {
   return HasHasbit(descriptor_) ? 1 : 0;
 }
 
-int ImmutablePrimitiveFieldGenerator::GetNumBitsForBuilder() const {
-  return GetNumBitsForMessage();
-}
+int ImmutablePrimitiveFieldGenerator::GetNumBitsForBuilder() const { return 1; }
 
 void ImmutablePrimitiveFieldGenerator::GenerateInterfaceMembers(
     io::Printer* printer) const {
@@ -228,7 +231,7 @@ void ImmutablePrimitiveFieldGenerator::GenerateInterfaceMembers(
 
 void ImmutablePrimitiveFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
-  printer->Print(variables_, "private $field_type$ $name$_;\n");
+  printer->Print(variables_, "private $field_type$ $name$_ = $default$;\n");
   PrintExtraFieldInfo(variables_, printer);
   if (HasHazzer(descriptor_)) {
     WriteFieldAccessorDocComment(printer, descriptor_, HAZZER);
@@ -278,9 +281,9 @@ void ImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  "$deprecation$public Builder "
                  "${$set$capitalized_name$$}$($type$ value) {\n"
-                 "$null_check$"
-                 "  $set_has_field_bit_builder$\n"
+                 "  $null_check$\n"
                  "  $name$_ = value;\n"
+                 "  $set_has_field_bit_builder$\n"
                  "  $on_changed$\n"
                  "  return this;\n"
                  "}\n");
@@ -352,9 +355,8 @@ void ImmutablePrimitiveFieldGenerator::GenerateInitializationCode(
 
 void ImmutablePrimitiveFieldGenerator::GenerateBuilderClearCode(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "$name$_ = $default$;\n"
-                 "$clear_has_field_bit_builder$\n");
+  // No need to clear the has-bit since we clear the bitField ints all at once.
+  printer->Print(variables_, "$name$_ = $default$;\n");
 }
 
 void ImmutablePrimitiveFieldGenerator::GenerateMergingCode(
@@ -374,23 +376,13 @@ void ImmutablePrimitiveFieldGenerator::GenerateMergingCode(
 
 void ImmutablePrimitiveFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
-  if (HasHazzer(descriptor_)) {
-    if (IsDefaultValueJavaDefault(descriptor_)) {
-      printer->Print(variables_,
-                     "if ($get_has_field_bit_from_local$) {\n"
-                     "  result.$name$_ = $name$_;\n"
-                     "  $set_has_field_bit_to_local$;\n"
-                     "}\n");
-    } else {
-      printer->Print(variables_,
-                     "if ($get_has_field_bit_from_local$) {\n"
-                     "  $set_has_field_bit_to_local$;\n"
-                     "}\n"
-                     "result.$name$_ = $name$_;\n");
-    }
-  } else {
-    printer->Print(variables_, "result.$name$_ = $name$_;\n");
+  printer->Print(variables_,
+                 "if ($get_has_field_bit_from_local$) {\n"
+                 "  result.$name$_ = $name$_;\n");
+  if (GetNumBitsForMessage() > 0) {
+    printer->Print(variables_, "  $set_has_field_bit_to_local$\n");
   }
+  printer->Print("}\n");
 }
 
 void ImmutablePrimitiveFieldGenerator::GenerateBuilderParsingCode(
@@ -579,7 +571,7 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  "$deprecation$public Builder "
                  "${$set$capitalized_name$$}$($type$ value) {\n"
-                 "$null_check$"
+                 "  $null_check$\n"
                  "  $set_oneof_case_message$;\n"
                  "  $oneof_name$_ = value;\n"
                  "  $on_changed$\n"
@@ -610,10 +602,7 @@ void ImmutablePrimitiveOneofFieldGenerator::GenerateBuilderClearCode(
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateBuildingCode(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "if ($has_oneof_case_message$) {\n"
-                 "  result.$oneof_name$_ = $oneof_name$_;\n"
-                 "}\n");
+  // no-op
 }
 
 void ImmutablePrimitiveOneofFieldGenerator::GenerateMergingCode(
@@ -671,11 +660,8 @@ RepeatedImmutablePrimitiveFieldGenerator::
                                              int messageBitIndex,
                                              int builderBitIndex,
                                              Context* context)
-    : descriptor_(descriptor), name_resolver_(context->GetNameResolver()) {
-  SetPrimitiveVariables(descriptor, messageBitIndex, builderBitIndex,
-                        context->GetFieldGeneratorInfo(descriptor),
-                        name_resolver_, &variables_);
-}
+    : ImmutablePrimitiveFieldGenerator(descriptor, messageBitIndex,
+                                       builderBitIndex, context) {}
 
 RepeatedImmutablePrimitiveFieldGenerator::
     ~RepeatedImmutablePrimitiveFieldGenerator() {}
@@ -704,7 +690,8 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateInterfaceMembers(
 
 void RepeatedImmutablePrimitiveFieldGenerator::GenerateMembers(
     io::Printer* printer) const {
-  printer->Print(variables_, "private $field_list_type$ $name$_;\n");
+  printer->Print(variables_, "@SuppressWarnings(\"serial\")\n"
+                             "private $field_list_type$ $name$_;\n");
   PrintExtraFieldInfo(variables_, printer);
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_GETTER);
   printer->Print(variables_,
@@ -754,7 +741,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
                  "  if (!$get_mutable_bit_builder$) {\n"
                  "    $name$_ = $mutable_copy_list$;\n"
                  "    $set_mutable_bit_builder$;\n"
-                 "   }\n"
+                 "  }\n"
                  "}\n");
 
   // Note:  We return an unmodifiable list because otherwise the caller
@@ -789,7 +776,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
                  "    int index, $type$ value) {\n"
-                 "$null_check$"
+                 "  $null_check$\n"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $repeated_set$(index, value);\n"
                  "  $on_changed$\n"
@@ -801,7 +788,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  "$deprecation$public Builder "
                  "${$add$capitalized_name$$}$($type$ value) {\n"
-                 "$null_check$"
+                 "  $null_check$\n"
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $repeated_add$(value);\n"
                  "  $on_changed$\n"
@@ -939,9 +926,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateInitializationCode(
 
 void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderClearCode(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "$name$_ = $empty_list$;\n"
-                 "$clear_mutable_bit_builder$;\n");
+  printer->Print(variables_, "$name$_ = $empty_list$;\n");
 }
 
 void RepeatedImmutablePrimitiveFieldGenerator::GenerateMergingCode(

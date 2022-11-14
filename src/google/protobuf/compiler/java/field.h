@@ -68,6 +68,8 @@ class ImmutableFieldGenerator {
   ImmutableFieldGenerator() {}
   virtual ~ImmutableFieldGenerator();
 
+  virtual int GetMessageBitIndex() const = 0;
+  virtual int GetBuilderBitIndex() const = 0;
   virtual int GetNumBitsForMessage() const = 0;
   virtual int GetNumBitsForBuilder() const = 0;
   virtual void GenerateInterfaceMembers(io::Printer* printer) const = 0;

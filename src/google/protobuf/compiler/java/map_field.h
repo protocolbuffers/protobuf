@@ -31,7 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_MAP_FIELD_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_MAP_FIELD_H__
 
-#include <google/protobuf/compiler/java/field.h>
+#include "google/protobuf/compiler/java/field.h"
 
 namespace google {
 namespace protobuf {
@@ -46,6 +46,8 @@ class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
   ~ImmutableMapFieldGenerator() override;
 
   // implements ImmutableFieldGenerator ---------------------------------------
+  int GetMessageBitIndex() const override;
+  int GetBuilderBitIndex() const override;
   int GetNumBitsForMessage() const override;
   int GetNumBitsForBuilder() const override;
   void GenerateInterfaceMembers(io::Printer* printer) const override;
@@ -68,8 +70,11 @@ class ImmutableMapFieldGenerator : public ImmutableFieldGenerator {
 
  private:
   const FieldDescriptor* descriptor_;
+  int message_bit_index_;
+  int builder_bit_index_;
   std::map<std::string, std::string> variables_;
   ClassNameResolver* name_resolver_;
+  Context* context_;
   void GenerateMapGetters(io::Printer* printer) const;
 };
 
