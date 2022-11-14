@@ -38,6 +38,7 @@
 #define GOOGLE_PROTOBUF_MAP_H__
 
 
+#include <algorithm>
 #include <functional>
 #include <initializer_list>
 #include <iterator>
@@ -193,9 +194,8 @@ class MapAllocator {
 };
 
 template <typename T>
-using KeyForTree =
-    typename std::conditional<std::is_scalar<T>::value, T,
-                              std::reference_wrapper<const T>>::type;
+using KeyForTree = std::conditional_t<std::is_integral<T>::value, uint64_t,
+                                      std::reference_wrapper<const T>>;
 
 // Default case: Not transparent.
 // We use std::hash<key_type>/std::less<key_type> and all the lookup functions
@@ -263,17 +263,46 @@ using TreeForMap =
     std::map<KeyForTree<Key>, void*, typename TransparentSupport<Key>::less,
              MapAllocator<std::pair<const KeyForTree<Key>, void*>>>;
 
-inline bool TableEntryIsEmpty(void* const* table, size_t b) {
-  return table[b] == nullptr;
+// Type safe tagged pointer.
+// We convert to/from nodes and trees using the operations below.
+// They ensure that the tags are used correctly.
+// There are three states:
+//  - x == 0: the entry is empty
+//  - x != 0 && (x&1) == 0: the entry is a node list
+//  - x != 0 && (x&1) == 1: the entry is a tree
+enum class TableEntryPtr : uintptr_t;
+
+inline bool TableEntryIsEmpty(TableEntryPtr entry) {
+  return entry == TableEntryPtr{};
 }
-inline bool TableEntryIsNonEmptyList(void* const* table, size_t b) {
-  return table[b] != nullptr && table[b] != table[b ^ 1];
+inline bool TableEntryIsTree(TableEntryPtr entry) {
+  return (static_cast<uintptr_t>(entry) & 1) == 1;
 }
-inline bool TableEntryIsTree(void* const* table, size_t b) {
-  return !TableEntryIsEmpty(table, b) && !TableEntryIsNonEmptyList(table, b);
+inline bool TableEntryIsList(TableEntryPtr entry) {
+  return !TableEntryIsTree(entry);
 }
-inline bool TableEntryIsList(void* const* table, size_t b) {
-  return !TableEntryIsTree(table, b);
+inline bool TableEntryIsNonEmptyList(TableEntryPtr entry) {
+  return !TableEntryIsEmpty(entry) && TableEntryIsList(entry);
+}
+template <typename Node>
+Node* TableEntryToNode(TableEntryPtr entry) {
+  GOOGLE_DCHECK(TableEntryIsList(entry));
+  return reinterpret_cast<Node*>(static_cast<uintptr_t>(entry));
+}
+template <typename Node>
+TableEntryPtr NodeToTableEntry(Node* node) {
+  GOOGLE_DCHECK((reinterpret_cast<uintptr_t>(node) & 1) == 0);
+  return static_cast<TableEntryPtr>(reinterpret_cast<uintptr_t>(node));
+}
+template <typename Tree>
+Tree* TableEntryToTree(TableEntryPtr entry) {
+  GOOGLE_DCHECK(TableEntryIsTree(entry));
+  return reinterpret_cast<Tree*>(static_cast<uintptr_t>(entry) - 1);
+}
+template <typename Tree>
+TableEntryPtr TreeToTableEntry(Tree* node) {
+  GOOGLE_DCHECK((reinterpret_cast<uintptr_t>(node) & 1) == 0);
+  return static_cast<TableEntryPtr>(reinterpret_cast<uintptr_t>(node) | 1);
 }
 
 // This captures all numeric types.
@@ -288,12 +317,14 @@ size_t MapValueSpaceUsedExcludingSelfLong(const T& message) {
 }
 
 constexpr size_t kGlobalEmptyTableSize = 1;
-PROTOBUF_EXPORT extern void* const kGlobalEmptyTable[kGlobalEmptyTableSize];
+PROTOBUF_EXPORT extern const TableEntryPtr
+    kGlobalEmptyTable[kGlobalEmptyTableSize];
 
 // Space used for the table, trees, and nodes.
 // Does not include the indirect space used. Eg the data of a std::string.
 template <typename Key>
-PROTOBUF_NOINLINE size_t SpaceUsedInTable(void** table, size_t num_buckets,
+PROTOBUF_NOINLINE size_t SpaceUsedInTable(TableEntryPtr* table,
+                                          size_t num_buckets,
                                           size_t num_elements,
                                           size_t sizeof_node) {
   size_t size = 0;
@@ -303,10 +334,10 @@ PROTOBUF_NOINLINE size_t SpaceUsedInTable(void** table, size_t num_buckets,
   size += sizeof_node * num_elements;
   // For each tree, count the overhead of the those nodes.
   // Two buckets at a time because we only care about trees.
-  for (size_t b = 0; b < num_buckets; b += 2) {
-    if (internal::TableEntryIsTree(table, b)) {
+  for (size_t b = 0; b < num_buckets; ++b) {
+    if (internal::TableEntryIsTree(table[b])) {
       using Tree = TreeForMap<Key>;
-      Tree* tree = static_cast<Tree*>(table[b]);
+      Tree* tree = TableEntryToTree<Tree>(table[b]);
       // Estimated cost of the red-black tree nodes, 3 pointers plus a
       // bool (plus alignment, so 4 pointers).
       size += tree->size() *
@@ -486,7 +517,7 @@ class Map {
           num_buckets_(internal::kGlobalEmptyTableSize),
           seed_(0),
           index_of_first_non_null_(internal::kGlobalEmptyTableSize),
-          table_(const_cast<void**>(internal::kGlobalEmptyTable)),
+          table_(const_cast<TableEntryPtr*>(internal::kGlobalEmptyTable)),
           alloc_(arena) {}
 
     InnerMap(const InnerMap&) = delete;
@@ -496,7 +527,7 @@ class Map {
       if (alloc_.arena() == nullptr &&
           num_buckets_ != internal::kGlobalEmptyTableSize) {
         clear();
-        Dealloc<void*>(table_, num_buckets_);
+        Dealloc<TableEntryPtr>(table_, num_buckets_);
       }
     }
 
@@ -520,6 +551,8 @@ class Map {
     static Node* NodeFromTreeIterator(TreeIterator it) {
       return static_cast<Node*>(it->second);
     }
+
+    using TableEntryPtr = internal::TableEntryPtr;
 
     // iterator and const_iterator are instantiations of iterator_base.
     template <typename KeyValueType>
@@ -552,30 +585,28 @@ class Map {
           : node_(n), m_(m), bucket_index_(index) {}
 
       iterator_base(TreeIterator tree_it, const InnerMap* m, size_type index)
-          : node_(NodeFromTreeIterator(tree_it)), m_(m), bucket_index_(index) {
-        // Invariant: iterators that use buckets with trees have an even
-        // bucket_index_.
-        GOOGLE_DCHECK_EQ(bucket_index_ % 2, 0u);
-      }
+          : node_(NodeFromTreeIterator(tree_it)), m_(m), bucket_index_(index) {}
 
       // Advance through buckets, looking for the first that isn't empty.
       // If nothing non-empty is found then leave node_ == nullptr.
       void SearchFrom(size_type start_bucket) {
         GOOGLE_DCHECK(m_->index_of_first_non_null_ == m_->num_buckets_ ||
-               m_->table_[m_->index_of_first_non_null_] != nullptr);
-        node_ = nullptr;
-        for (bucket_index_ = start_bucket; bucket_index_ < m_->num_buckets_;
-             bucket_index_++) {
-          if (m_->TableEntryIsNonEmptyList(bucket_index_)) {
-            node_ = static_cast<Node*>(m_->table_[bucket_index_]);
-            break;
-          } else if (m_->TableEntryIsTree(bucket_index_)) {
-            Tree* tree = static_cast<Tree*>(m_->table_[bucket_index_]);
+               !m_->TableEntryIsEmpty(m_->index_of_first_non_null_));
+        for (size_type i = start_bucket; i < m_->num_buckets_; ++i) {
+          TableEntryPtr entry = m_->table_[i];
+          if (entry == TableEntryPtr{}) continue;
+          bucket_index_ = i;
+          if (PROTOBUF_PREDICT_TRUE(internal::TableEntryIsList(entry))) {
+            node_ = internal::TableEntryToNode<Node>(entry);
+          } else {
+            Tree* tree = internal::TableEntryToTree<Tree>(entry);
             GOOGLE_DCHECK(!tree->empty());
             node_ = NodeFromTreeIterator(tree->begin());
-            break;
           }
+          return;
         }
+        node_ = nullptr;
+        bucket_index_ = m_->num_buckets_;
       }
 
       reference operator*() const { return node_->kv; }
@@ -590,19 +621,7 @@ class Map {
 
       iterator_base& operator++() {
         if (node_->next == nullptr) {
-          TreeIterator tree_it;
-          const bool is_list = revalidate_if_necessary(&tree_it);
-          if (is_list) {
-            SearchFrom(bucket_index_ + 1);
-          } else {
-            GOOGLE_DCHECK_EQ(bucket_index_ & 1, 0u);
-            Tree* tree = static_cast<Tree*>(m_->table_[bucket_index_]);
-            if (++tree_it == tree->end()) {
-              SearchFrom(bucket_index_ + 2);
-            } else {
-              node_ = NodeFromTreeIterator(tree_it);
-            }
-          }
+          SearchFrom(bucket_index_ + 1);
         } else {
           node_ = node_->next;
         }
@@ -624,11 +643,12 @@ class Map {
         // Force bucket_index_ to be in range.
         bucket_index_ &= (m_->num_buckets_ - 1);
         // Common case: the bucket we think is relevant points to node_.
-        if (m_->table_[bucket_index_] == static_cast<void*>(node_)) return true;
+        if (m_->table_[bucket_index_] == internal::NodeToTableEntry(node_))
+          return true;
         // Less common: the bucket is a linked list with node_ somewhere in it,
         // but not at the head.
         if (m_->TableEntryIsNonEmptyList(bucket_index_)) {
-          Node* l = static_cast<Node*>(m_->table_[bucket_index_]);
+          Node* l = internal::TableEntryToNode<Node>(m_->table_[bucket_index_]);
           while ((l = l->next) != nullptr) {
             if (l == node_) {
               return true;
@@ -639,8 +659,8 @@ class Map {
         // not.  Revalidate just to be sure.  This case is rare enough that we
         // don't worry about potential optimizations, such as having a custom
         // find-like method that compares Node* instead of the key.
-        iterator_base i(m_->find(node_->kv.first, it));
-        bucket_index_ = i.bucket_index_;
+        auto res = m_->FindHelper(node_->kv.first, it);
+        bucket_index_ = res.bucket;
         return m_->TableEntryIsList(bucket_index_);
       }
 
@@ -671,30 +691,23 @@ class Map {
 
     void clear() {
       for (size_type b = 0; b < num_buckets_; b++) {
+        Node* node;
         if (TableEntryIsNonEmptyList(b)) {
-          Node* node = static_cast<Node*>(table_[b]);
-          table_[b] = nullptr;
-          do {
-            Node* next = node->next;
-            DestroyNode(node);
-            node = next;
-          } while (node != nullptr);
+          node = internal::TableEntryToNode<Node>(table_[b]);
+          table_[b] = TableEntryPtr{};
         } else if (TableEntryIsTree(b)) {
-          Tree* tree = static_cast<Tree*>(table_[b]);
-          GOOGLE_DCHECK(table_[b] == table_[b + 1] && (b & 1) == 0);
-          table_[b] = table_[b + 1] = nullptr;
-          typename Tree::iterator tree_it = tree->begin();
-          do {
-            Node* node = NodeFromTreeIterator(tree_it);
-            typename Tree::iterator next = tree_it;
-            ++next;
-            tree->erase(tree_it);
-            DestroyNode(node);
-            tree_it = next;
-          } while (tree_it != tree->end());
+          Tree* tree = internal::TableEntryToTree<Tree>(table_[b]);
+          table_[b] = TableEntryPtr{};
+          node = NodeFromTreeIterator(tree->begin());
           DestroyTree(tree);
-          b++;
+        } else {
+          continue;
         }
+        do {
+          Node* next = node->next;
+          DestroyNode(node);
+          node = next;
+        } while (node != nullptr);
       }
       num_elements_ = 0;
       index_of_first_non_null_ = num_buckets_;
@@ -710,12 +723,14 @@ class Map {
 
     template <typename K>
     iterator find(const K& k) {
-      return iterator(FindHelper(k).first);
+      auto res = FindHelper(k);
+      return iterator(res.node, this, res.bucket);
     }
 
     template <typename K>
     const_iterator find(const K& k) const {
-      return FindHelper(k).first;
+      auto res = FindHelper(k);
+      return const_iterator(res.node, this, res.bucket);
     }
 
     // Inserts a new element into the container if there is no element with the
@@ -746,32 +761,33 @@ class Map {
 
     void erase(iterator it) {
       GOOGLE_DCHECK_EQ(it.m_, this);
-      typename Tree::iterator tree_it;
+      TreeIterator tree_it;
       const bool is_list = it.revalidate_if_necessary(&tree_it);
       size_type b = it.bucket_index_;
       Node* const item = it.node_;
       if (is_list) {
         GOOGLE_DCHECK(TableEntryIsNonEmptyList(b));
-        Node* head = static_cast<Node*>(table_[b]);
+        Node* head = internal::TableEntryToNode<Node>(table_[b]);
         head = EraseFromLinkedList(item, head);
-        table_[b] = static_cast<void*>(head);
+        table_[b] = internal::NodeToTableEntry(head);
       } else {
         GOOGLE_DCHECK(TableEntryIsTree(b));
-        Tree* tree = static_cast<Tree*>(table_[b]);
+        Tree* tree = internal::TableEntryToTree<Tree>(table_[b]);
+        if (tree_it != tree->begin()) {
+          auto* prev = NodeFromTreeIterator(std::prev(tree_it));
+          prev->next = prev->next->next;
+        }
         tree->erase(tree_it);
         if (tree->empty()) {
-          // Force b to be the minimum of b and b ^ 1.  This is important
-          // only because we want index_of_first_non_null_ to be correct.
-          b &= ~static_cast<size_type>(1);
           DestroyTree(tree);
-          table_[b] = table_[b + 1] = nullptr;
+          table_[b] = TableEntryPtr{};
         }
       }
       DestroyNode(item);
       --num_elements_;
       if (PROTOBUF_PREDICT_FALSE(b == index_of_first_non_null_)) {
         while (index_of_first_non_null_ < num_buckets_ &&
-               table_[index_of_first_non_null_] == nullptr) {
+               TableEntryIsEmpty(index_of_first_non_null_)) {
           ++index_of_first_non_null_;
         }
       }
@@ -785,15 +801,15 @@ class Map {
    private:
     template <typename K, typename... Args>
     std::pair<iterator, bool> TryEmplaceInternal(K&& k, Args&&... args) {
-      std::pair<const_iterator, size_type> p = FindHelper(k);
+      auto p = FindHelper(k);
       // Case 1: key was already present.
-      if (p.first.node_ != nullptr)
-        return std::make_pair(iterator(p.first), false);
+      if (p.node != nullptr)
+        return std::make_pair(iterator(p.node, this, p.bucket), false);
       // Case 2: insert.
       if (ResizeIfLoadIsOutOfRange(num_elements_ + 1)) {
         p = FindHelper(k);
       }
-      const size_type b = p.second;  // bucket number
+      const size_type b = p.bucket;  // bucket number
       // If K is not key_type, make the conversion to key_type explicit.
       using TypeToInit = typename std::conditional<
           std::is_same<typename std::decay<K>::type, key_type>::value, K&&,
@@ -856,37 +872,31 @@ class Map {
       return TryEmplaceInternal(std::forward<Args>(args)...);
     }
 
-    const_iterator find(const Key& k, TreeIterator* it) const {
-      return FindHelper(k, it).first;
-    }
+    struct NodeAndBucket {
+      Node* node;
+      size_type bucket;
+    };
     template <typename K>
-    std::pair<const_iterator, size_type> FindHelper(const K& k) const {
-      return FindHelper(k, nullptr);
-    }
-    template <typename K>
-    std::pair<const_iterator, size_type> FindHelper(const K& k,
-                                                    TreeIterator* it) const {
+    NodeAndBucket FindHelper(const K& k, TreeIterator* it = nullptr) const {
       size_type b = BucketNumber(k);
       if (TableEntryIsNonEmptyList(b)) {
-        Node* node = static_cast<Node*>(table_[b]);
+        Node* node = internal::TableEntryToNode<Node>(table_[b]);
         do {
           if (internal::TransparentSupport<Key>::Equals(node->kv.first, k)) {
-            return std::make_pair(const_iterator(node, this, b), b);
+            return {node, b};
           } else {
             node = node->next;
           }
         } while (node != nullptr);
       } else if (TableEntryIsTree(b)) {
-        GOOGLE_DCHECK_EQ(table_[b], table_[b ^ 1]);
-        b &= ~static_cast<size_t>(1);
-        Tree* tree = static_cast<Tree*>(table_[b]);
+        Tree* tree = internal::TableEntryToTree<Tree>(table_[b]);
         auto tree_it = tree->find(k);
+        if (it != nullptr) *it = tree_it;
         if (tree_it != tree->end()) {
-          if (it != nullptr) *it = tree_it;
-          return std::make_pair(const_iterator(tree_it, this, b), b);
+          return {NodeFromTreeIterator(tree_it), b};
         }
       }
-      return std::make_pair(end(), b);
+      return {nullptr, b};
     }
 
     // Insert the given Node in bucket b.  If that would make bucket b too big,
@@ -895,34 +905,27 @@ class Map {
     // bucket.  num_elements_ is not modified.
     iterator InsertUnique(size_type b, Node* node) {
       GOOGLE_DCHECK(index_of_first_non_null_ == num_buckets_ ||
-             table_[index_of_first_non_null_] != nullptr);
+             !TableEntryIsEmpty(index_of_first_non_null_));
       // In practice, the code that led to this point may have already
       // determined whether we are inserting into an empty list, a short list,
       // or whatever.  But it's probably cheap enough to recompute that here;
       // it's likely that we're inserting into an empty or short list.
-      iterator result;
       GOOGLE_DCHECK(find(node->kv.first) == end());
       if (TableEntryIsEmpty(b)) {
-        result = InsertUniqueInList(b, node);
-      } else if (TableEntryIsNonEmptyList(b)) {
-        if (PROTOBUF_PREDICT_FALSE(TableEntryIsTooLong(b))) {
-          TreeConvert(b);
-          result = InsertUniqueInTree(b, node);
-          GOOGLE_DCHECK_EQ(result.bucket_index_, b & ~static_cast<size_type>(1));
-        } else {
-          // Insert into a pre-existing list.  This case cannot modify
-          // index_of_first_non_null_, so we skip the code to update it.
-          return InsertUniqueInList(b, node);
-        }
+        InsertUniqueInList(b, node);
+        index_of_first_non_null_ = (std::min)(index_of_first_non_null_, b);
+      } else if (TableEntryIsNonEmptyList(b) && !TableEntryIsTooLong(b)) {
+        InsertUniqueInList(b, node);
       } else {
-        // Insert into a pre-existing tree.  This case cannot modify
-        // index_of_first_non_null_, so we skip the code to update it.
-        return InsertUniqueInTree(b, node);
+        if (TableEntryIsNonEmptyList(b)) {
+          TreeConvert(b);
+        }
+        GOOGLE_DCHECK(TableEntryIsTree(b))
+            << (void*)table_[b] << " " << (uintptr_t)table_[b];
+        InsertUniqueInTree(b, node);
+        index_of_first_non_null_ = (std::min)(index_of_first_non_null_, b);
       }
-      // parentheses around (std::min) prevents macro expansion of min(...)
-      index_of_first_non_null_ =
-          (std::min)(index_of_first_non_null_, result.bucket_index_);
-      return result;
+      return iterator(node, this, b);
     }
 
     // Returns whether we should insert after the head of the list. For
@@ -941,28 +944,30 @@ class Map {
 
     // Helper for InsertUnique.  Handles the case where bucket b is a
     // not-too-long linked list.
-    iterator InsertUniqueInList(size_type b, Node* node) {
-      if (table_[b] != nullptr && ShouldInsertAfterHead(node)) {
-        Node* first = static_cast<Node*>(table_[b]);
+    void InsertUniqueInList(size_type b, Node* node) {
+      if (!TableEntryIsEmpty(b) && ShouldInsertAfterHead(node)) {
+        Node* first = internal::TableEntryToNode<Node>(table_[b]);
         node->next = first->next;
         first->next = node;
-        return iterator(node, this, b);
+      } else {
+        node->next = internal::TableEntryToNode<Node>(table_[b]);
+        table_[b] = internal::NodeToTableEntry(node);
       }
-
-      node->next = static_cast<Node*>(table_[b]);
-      table_[b] = static_cast<void*>(node);
-      return iterator(node, this, b);
     }
 
     // Helper for InsertUnique.  Handles the case where bucket b points to a
     // Tree.
-    iterator InsertUniqueInTree(size_type b, Node* node) {
-      GOOGLE_DCHECK_EQ(table_[b], table_[b ^ 1]);
-      // Maintain the invariant that node->next is null for all Nodes in Trees.
-      node->next = nullptr;
-      return iterator(
-          static_cast<Tree*>(table_[b])->insert({node->kv.first, node}).first,
-          this, b & ~static_cast<size_t>(1));
+    void InsertUniqueInTree(size_type b, Node* node) {
+      auto* tree = internal::TableEntryToTree<Tree>(table_[b]);
+      auto it = tree->insert({node->kv.first, node}).first;
+      // Maintain the linked list of the nodes in the tree.
+      // For simplicity, they are in the same order as the tree iteration.
+      if (it != tree->begin()) {
+        auto* prev = NodeFromTreeIterator(std::prev(it));
+        prev->next = node;
+      }
+      auto next = std::next(it);
+      node->next = next != tree->end() ? NodeFromTreeIterator(next) : nullptr;
     }
 
     // Returns whether it did resize.  Currently this is only used when
@@ -1018,24 +1023,24 @@ class Map {
       }
 
       GOOGLE_DCHECK_GE(new_num_buckets, kMinTableSize);
-      void** const old_table = table_;
+      const auto old_table = table_;
       const size_type old_table_size = num_buckets_;
       num_buckets_ = new_num_buckets;
       table_ = CreateEmptyTable(num_buckets_);
       const size_type start = index_of_first_non_null_;
       index_of_first_non_null_ = num_buckets_;
-      for (size_type i = start; i < old_table_size; i++) {
-        if (internal::TableEntryIsNonEmptyList(old_table, i)) {
-          TransferList(old_table, i);
-        } else if (internal::TableEntryIsTree(old_table, i)) {
-          TransferTree(old_table, i++);
+      for (size_type i = start; i < old_table_size; ++i) {
+        if (internal::TableEntryIsNonEmptyList(old_table[i])) {
+          TransferList(internal::TableEntryToNode<Node>(old_table[i]));
+        } else if (internal::TableEntryIsTree(old_table[i])) {
+          TransferTree(internal::TableEntryToTree<Tree>(old_table[i]));
         }
       }
-      Dealloc<void*>(old_table, old_table_size);
+      Dealloc<TableEntryPtr>(old_table, old_table_size);
     }
 
-    void TransferList(void* const* table, size_type index) {
-      Node* node = static_cast<Node*>(table[index]);
+    // Transfer all nodes in the list `node` into `this`.
+    void TransferList(Node* node) {
       do {
         Node* next = node->next;
         InsertUnique(BucketNumber(node->kv.first), node);
@@ -1043,14 +1048,11 @@ class Map {
       } while (node != nullptr);
     }
 
-    void TransferTree(void* const* table, size_type index) {
-      Tree* tree = static_cast<Tree*>(table[index]);
-      typename Tree::iterator tree_it = tree->begin();
-      do {
-        InsertUnique(BucketNumber(std::cref(tree_it->first).get()),
-                     NodeFromTreeIterator(tree_it));
-      } while (++tree_it != tree->end());
+    // Transfer all nodes in the tree `tree` into `this` and destroy the tree.
+    void TransferTree(Tree* tree) {
+      Node* node = NodeFromTreeIterator(tree->begin());
       DestroyTree(tree);
+      TransferList(node);
     }
 
     Node* EraseFromLinkedList(Node* item, Node* head) {
@@ -1063,33 +1065,41 @@ class Map {
     }
 
     bool TableEntryIsEmpty(size_type b) const {
-      return internal::TableEntryIsEmpty(table_, b);
+      return internal::TableEntryIsEmpty(table_[b]);
     }
     bool TableEntryIsNonEmptyList(size_type b) const {
-      return internal::TableEntryIsNonEmptyList(table_, b);
+      return internal::TableEntryIsNonEmptyList(table_[b]);
     }
     bool TableEntryIsTree(size_type b) const {
-      return internal::TableEntryIsTree(table_, b);
+      return internal::TableEntryIsTree(table_[b]);
     }
     bool TableEntryIsList(size_type b) const {
-      return internal::TableEntryIsList(table_, b);
+      return internal::TableEntryIsList(table_[b]);
     }
 
     void TreeConvert(size_type b) {
-      GOOGLE_DCHECK(!TableEntryIsTree(b) && !TableEntryIsTree(b ^ 1));
+      GOOGLE_DCHECK(!TableEntryIsTree(b));
       Tree* tree =
           Arena::Create<Tree>(alloc_.arena(), typename Tree::key_compare(),
                               typename Tree::allocator_type(alloc_));
-      size_type count = CopyListToTree(b, tree) + CopyListToTree(b ^ 1, tree);
+      size_type count = CopyListToTree(b, tree);
       GOOGLE_DCHECK_EQ(count, tree->size());
-      table_[b] = table_[b ^ 1] = static_cast<void*>(tree);
+      table_[b] = internal::TreeToTableEntry(tree);
+      // Relink the nodes.
+      Node* next = nullptr;
+      auto it = tree->end();
+      do {
+        auto* node = NodeFromTreeIterator(--it);
+        node->next = next;
+        next = node;
+      } while (it != tree->begin());
     }
 
     // Copy a linked list in the given bucket to a tree.
     // Returns the number of things it copied.
     size_type CopyListToTree(size_type b, Tree* tree) {
       size_type count = 0;
-      Node* node = static_cast<Node*>(table_[b]);
+      Node* node = internal::TableEntryToNode<Node>(table_[b]);
       while (node != nullptr) {
         tree->insert({node->kv.first, node});
         ++count;
@@ -1105,7 +1115,7 @@ class Map {
     bool TableEntryIsTooLong(size_type b) {
       const size_type kMaxLength = 8;
       size_type count = 0;
-      Node* node = static_cast<Node*>(table_[b]);
+      Node* node = internal::TableEntryToNode<Node>(table_[b]);
       do {
         ++count;
         node = node->next;
@@ -1162,10 +1172,10 @@ class Map {
       }
     }
 
-    void** CreateEmptyTable(size_type n) {
+    TableEntryPtr* CreateEmptyTable(size_type n) {
       GOOGLE_DCHECK(n >= kMinTableSize);
       GOOGLE_DCHECK_EQ(n & (n - 1), 0u);
-      void** result = Alloc<void*>(n);
+      TableEntryPtr* result = Alloc<TableEntryPtr>(n);
       memset(result, 0, n * sizeof(result[0]));
       return result;
     }
@@ -1205,7 +1215,7 @@ class Map {
     size_type num_buckets_;
     size_type seed_;
     size_type index_of_first_non_null_;
-    void** table_;  // an array with num_buckets_ entries
+    TableEntryPtr* table_;  // an array with num_buckets_ entries
     Allocator alloc_;
   };  // end of class InnerMap
 
@@ -1488,6 +1498,15 @@ class Map {
             internal::WireFormatLite::FieldType value_wire_type>
   friend class internal::MapFieldLite;
 };
+
+namespace internal {
+template <typename... T>
+PROTOBUF_NOINLINE void MapMergeFrom(Map<T...>& dest, const Map<T...>& src) {
+  for (const auto& elem : src) {
+    dest[elem.first] = elem.second;
+  }
+}
+}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google

@@ -99,10 +99,7 @@ class MapFieldLite {
   int size() const { return static_cast<int>(map_.size()); }
   void Clear() { return map_.clear(); }
   void MergeFrom(const MapFieldLite& other) {
-    for (typename Map<Key, T>::const_iterator it = other.map_.begin();
-         it != other.map_.end(); ++it) {
-      map_[it->first] = it->second;
-    }
+    internal::MapMergeFrom(map_, other.map_);
   }
   void Swap(MapFieldLite* other) { map_.swap(other->map_); }
   void InternalSwap(MapFieldLite* other) { map_.InternalSwap(&other->map_); }

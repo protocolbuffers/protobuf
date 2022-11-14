@@ -501,18 +501,12 @@ static void TestValidityForAllKeysExcept(int key_to_avoid, const T& check_map,
   }
 }
 
-// EXPECT i0 and i1 to be the same.  Advancing them should have the same effect,
-// too.
+// EXPECT i0 and i1 to be the same.
 template <typename Iter>
 static void TestEqualIterators(Iter i0, Iter i1, Iter end) {
-  const int kMaxAdvance = 10;
-  for (int i = 0; i < kMaxAdvance; i++) {
-    EXPECT_EQ(i0 == end, i1 == end);
-    if (i0 == end) return;
-    EXPECT_EQ(&*i0, &*i1) << "iter " << i;
-    ++i0;
-    ++i1;
-  }
+  EXPECT_EQ(i0 == end, i1 == end);
+  if (i0 == end) return;
+  EXPECT_EQ(&*i0, &*i1);
 }
 
 template <typename IteratorType>
