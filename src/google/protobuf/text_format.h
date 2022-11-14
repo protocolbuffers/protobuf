@@ -115,7 +115,22 @@ class PROTOBUF_EXPORT TextFormat {
                                       const FieldDescriptor* field, int index,
                                       std::string* output);
 
+  // Forward declare `Printer` for `BaseTextGenerator::MarkerToken` which
+  // restricts some methods of `BaseTextGenerator` to the class `Printer`.
+  class Printer;
+
   class PROTOBUF_EXPORT BaseTextGenerator {
+   private:
+    // Passkey (go/totw/134#what-about-stdshared-ptr) that allows `Printer`
+    // (but not derived classes) to call `PrintMaybeWithMarker` and its
+    // `Printer::TextGenerator` to overload it.
+    // This prevents users from bypassing the marker generation.
+    class MarkerToken {
+     private:
+      explicit MarkerToken() = default;  // 'explicit' prevents aggregate init.
+      friend class Printer;
+    };
+
    public:
     virtual ~BaseTextGenerator();
 
@@ -133,6 +148,20 @@ class PROTOBUF_EXPORT TextFormat {
     void PrintLiteral(const char (&text)[n]) {
       Print(text, n - 1);  // n includes the terminating zero character.
     }
+
+    // Internal to Printer, access regulated by `MarkerToken`.
+    virtual void PrintMaybeWithMarker(MarkerToken, absl::string_view text) {
+      Print(text.data(), text.size());
+    }
+
+    // Internal to Printer, access regulated by `MarkerToken`.
+    virtual void PrintMaybeWithMarker(MarkerToken, absl::string_view text_head,
+                                      absl::string_view text_tail) {
+      Print(text_head.data(), text_head.size());
+      Print(text_tail.data(), text_tail.size());
+    }
+
+    friend class Printer;
   };
 
   // The default printer that converts scalar values from fields into their
@@ -381,6 +410,14 @@ class PROTOBUF_EXPORT TextFormat {
     bool RegisterMessagePrinter(const Descriptor* descriptor,
                                 const MessagePrinter* printer);
 
+    // Default printing for messages, which allows registered message printers
+    // to fall back to default printing without losing the ability to control
+    // sub-messages or fields.
+    // NOTE: If the passed in `text_generaor` is not actually the current
+    // `TextGenerator`, then no output will be produced.
+    void PrintMessage(const Message& message,
+                      BaseTextGenerator* generator) const;
+
    private:
     friend std::string Message::DebugString() const;
     friend std::string Message::ShortDebugString() const;
@@ -404,6 +441,7 @@ class PROTOBUF_EXPORT TextFormat {
     // Forward declaration of an internal class used to print the text
     // output to the OutputStream (see text_format.cc for implementation).
     class TextGenerator;
+    using MarkerToken = BaseTextGenerator::MarkerToken;
 
     // Forward declaration of an internal class used to print field values for
     // DebugString APIs (see text_format.cc for implementation).
@@ -417,40 +455,40 @@ class PROTOBUF_EXPORT TextFormat {
 
     // Internal Print method, used for writing to the OutputStream via
     // the TextGenerator class.
-    void Print(const Message& message, TextGenerator* generator) const;
+    void Print(const Message& message, BaseTextGenerator* generator) const;
 
     // Print a single field.
     void PrintField(const Message& message, const Reflection* reflection,
                     const FieldDescriptor* field,
-                    TextGenerator* generator) const;
+                    BaseTextGenerator* generator) const;
 
     // Print a repeated primitive field in short form.
     void PrintShortRepeatedField(const Message& message,
                                  const Reflection* reflection,
                                  const FieldDescriptor* field,
-                                 TextGenerator* generator) const;
+                                 BaseTextGenerator* generator) const;
 
     // Print the name of a field -- i.e. everything that comes before the
     // ':' for a single name/value pair.
     void PrintFieldName(const Message& message, int field_index,
                         int field_count, const Reflection* reflection,
                         const FieldDescriptor* field,
-                        TextGenerator* generator) const;
+                        BaseTextGenerator* generator) const;
 
     // Outputs a textual representation of the value of the field supplied on
     // the message supplied or the default value if not set.
     void PrintFieldValue(const Message& message, const Reflection* reflection,
                          const FieldDescriptor* field, int index,
-                         TextGenerator* generator) const;
+                         BaseTextGenerator* generator) const;
 
     // Print the fields in an UnknownFieldSet.  They are printed by tag number
     // only.  Embedded messages are heuristically identified by attempting to
     // parse them (subject to the recursion budget).
     void PrintUnknownFields(const UnknownFieldSet& unknown_fields,
-                            TextGenerator* generator,
+                            BaseTextGenerator* generator,
                             int recursion_budget) const;
 
-    bool PrintAny(const Message& message, TextGenerator* generator) const;
+    bool PrintAny(const Message& message, BaseTextGenerator* generator) const;
 
     const FastFieldValuePrinter* GetFieldPrinter(
         const FieldDescriptor* field) const {
