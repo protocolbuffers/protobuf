@@ -33,6 +33,7 @@ package com.google.protobuf;
 import static com.google.common.truth.Truth.assertThat;
 
 import protobuf_unittest.Engine;
+import protobuf_unittest.TimingBelt;
 import protobuf_unittest.Vehicle;
 import protobuf_unittest.Wheel;
 import java.util.ArrayList;
@@ -48,6 +49,27 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class NestedBuildersTest {
 
+  @Test
+  public void test3LayerPropagationWithIntermediateClear() {
+    Vehicle.Builder vehicleBuilder = Vehicle.newBuilder();
+    vehicleBuilder.getEngineBuilder().getTimingBeltBuilder();
+
+    // This step detaches the TimingBelt.Builder (though it leaves a SingleFieldBuilder in place)
+    vehicleBuilder.getEngineBuilder().clear();
+
+    // These steps build the middle and top level messages, it used to leave the vestigial
+    // TimingBelt.Builder in a state where further changes didn't propagate anymore
+    Object unused = vehicleBuilder.getEngineBuilder().build();
+    unused = vehicleBuilder.build();
+
+    TimingBelt expected = TimingBelt.newBuilder().setNumberOfTeeth(124).build();
+    vehicleBuilder.getEngineBuilder().setTimingBelt(expected);
+    // Testing that b/254158939 is fixed. It used to be that the setTimingBelt call above didn't
+    // propagate a change notification and the call below would return a stale version of the timing
+    // belt.
+    assertThat(vehicleBuilder.getEngine().getTimingBelt()).isEqualTo(expected);
+  }
+  
   @Test
   public void testMessagesAndBuilders() {
     Vehicle.Builder vehicleBuilder = Vehicle.newBuilder();
