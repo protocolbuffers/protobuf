@@ -697,7 +697,7 @@ void FileGenerator::GenerateKotlin(io::Printer* printer) {
       "filename", file_->name());
   printer->Print(
       "// Generated files should ignore deprecation warnings\n"
-      "@file:Suppress(\"DEPRECATION\")");
+      "@file:Suppress(\"DEPRECATION\")\n");
   if (!java_package_.empty()) {
     printer->Print(
         "package $package$;\n"
@@ -734,7 +734,7 @@ void FileGenerator::GenerateKotlinSiblings(
         "filename", descriptor->file()->name());
     printer.Print(
         "// Generated files should ignore deprecation warnings\n"
-        "@file:Suppress(\"DEPRECATION\")");
+        "@file:Suppress(\"DEPRECATION\")\n");
     if (!java_package_.empty()) {
       printer.Print(
           "package $package$;\n"
