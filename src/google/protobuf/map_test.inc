@@ -1342,6 +1342,10 @@ TEST_F(MapImplTest, SpaceUsed) {
   // An newly constructed map should have no space used.
   EXPECT_EQ(m.SpaceUsedExcludingSelfLong(), 0);
 
+  struct IntIntNode : internal::NodeBase {
+    std::pair<int32_t, int32_t> kv;
+  };
+
   size_t capacity = kMinCap;
   for (int i = 0; i < 100; ++i) {
     m[i];
@@ -1349,27 +1353,32 @@ TEST_F(MapImplTest, SpaceUsed) {
     if (m.size() >= capacity * kMaxLoadFactor) {
       capacity *= 2;
     }
-    EXPECT_EQ(
-        m.SpaceUsedExcludingSelfLong(),
-        sizeof(void*) * capacity +
-            m.size() * sizeof(std::pair<std::pair<int32_t, int32_t>, void*>));
+    EXPECT_EQ(m.SpaceUsedExcludingSelfLong(),
+              sizeof(void*) * capacity + m.size() * sizeof(IntIntNode));
   }
 
   // Test string, and non-scalar keys.
   Map<std::string, int32_t> m2;
   std::string str = "Some arbitrarily large string";
   m2[str] = 1;
+
+  struct StringIntNode : internal::NodeBase {
+    std::pair<std::string, int32_t> kv;
+  };
+
   EXPECT_EQ(m2.SpaceUsedExcludingSelfLong(),
-            sizeof(void*) * kMinCap +
-                sizeof(std::pair<std::pair<std::string, int32_t>, void*>) +
+            sizeof(void*) * kMinCap + sizeof(StringIntNode) +
                 internal::StringSpaceUsedExcludingSelfLong(str));
+
+  struct IntAllTypesNode : internal::NodeBase {
+    std::pair<int32_t, TestAllTypes> kv;
+  };
 
   // Test messages, and non-scalar values.
   Map<int32_t, TestAllTypes> m3;
   m3[0].set_optional_string(str);
   EXPECT_EQ(m3.SpaceUsedExcludingSelfLong(),
-            sizeof(void*) * kMinCap +
-                sizeof(std::pair<std::pair<int32_t, TestAllTypes>, void*>) +
+            sizeof(void*) * kMinCap + sizeof(IntAllTypesNode) +
                 m3[0].SpaceUsedLong() - sizeof(m3[0]));
 }
 
