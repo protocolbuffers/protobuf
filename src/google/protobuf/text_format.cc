@@ -2240,7 +2240,9 @@ void TextFormat::Printer::Print(const Message& message,
   auto itr = custom_message_printers_.find(descriptor);
   if (itr != custom_message_printers_.end()) {
     itr->second->Print(message, single_line_mode_, generator);
-    return;
+    if (itr->second->BypassDefaultPrint()) {
+      return;
+    }
   }
   if (descriptor->full_name() == internal::kAnyFullTypeName && expand_any_ &&
       PrintAny(message, generator)) {

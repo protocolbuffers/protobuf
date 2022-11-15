@@ -215,12 +215,16 @@ class PROTOBUF_EXPORT TextFormat {
 
   class PROTOBUF_EXPORT MessagePrinter {
    public:
-    MessagePrinter() {}
+    MessagePrinter() = default;
     MessagePrinter(const MessagePrinter&) = delete;
     MessagePrinter& operator=(const MessagePrinter&) = delete;
-    virtual ~MessagePrinter() {}
+    virtual ~MessagePrinter() = default;
+    // Allows to override the logic on how to print the content of a message.
+    // If this only prints a preamble (e.g. a comment), then BypassDefaultPrint
+    // must return false to print the message.
     virtual void Print(const Message& message, bool single_line_mode,
                        BaseTextGenerator* generator) const = 0;
+    virtual bool BypassDefaultPrint() const { return true; }
   };
 
   // Interface that Printers or Parsers can use to find extensions, or types

@@ -776,19 +776,25 @@ TEST_F(TextFormatTest, MultilineStringPrinter) {
 
 class CustomNestedMessagePrinter : public TextFormat::MessagePrinter {
  public:
-  CustomNestedMessagePrinter() {}
-  ~CustomNestedMessagePrinter() override {}
+  CustomNestedMessagePrinter() = default;
+  ~CustomNestedMessagePrinter() override = default;
   void Print(const Message& message, bool single_line_mode,
              TextFormat::BaseTextGenerator* generator) const override {
-    generator->PrintLiteral("custom");
+    generator->PrintLiteral("// custom\n");
   }
+  bool BypassDefaultPrint() const override { return bypass_result_; }
+  void SetBypassResult(bool bypass_result) { bypass_result_ = bypass_result; }
+
+ private:
+  bool bypass_result_ = true;
 };
 
 TEST_F(TextFormatTest, CustomMessagePrinter) {
   TextFormat::Printer printer;
+  auto* custom_printer = new CustomNestedMessagePrinter;
   printer.RegisterMessagePrinter(
       unittest::TestAllTypes::NestedMessage::default_instance().descriptor(),
-      new CustomNestedMessagePrinter);
+      custom_printer);
 
   unittest::TestAllTypes message;
   std::string text;
@@ -797,7 +803,12 @@ TEST_F(TextFormatTest, CustomMessagePrinter) {
 
   message.mutable_optional_nested_message()->set_bb(1);
   EXPECT_TRUE(printer.PrintToString(message, &text));
-  EXPECT_EQ("optional_nested_message {\n  custom}\n", text);
+  EXPECT_TRUE(printer.PrintToString(message, &text));
+  EXPECT_EQ("optional_nested_message {\n  // custom\n}\n", text);
+
+  custom_printer->SetBypassResult(false);
+  EXPECT_TRUE(printer.PrintToString(message, &text));
+  EXPECT_EQ("optional_nested_message {\n  // custom\n  bb: 1\n}\n", text);
 }
 
 TEST_F(TextFormatTest, ParseBasic) {
