@@ -176,6 +176,10 @@ cc_binary(
         "subprocess.h",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
+    target_compatible_with = select({
+        "@platforms//os:windows": ["//third_party/bazel_platforms:incompatible"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
     deps = [
         ":code_generator_request_upb_proto",

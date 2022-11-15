@@ -115,6 +115,11 @@ cc_library(
 cc_test(
     name = "compare_test",
     srcs = ["compare_test.cc"],
+    # TODO(b/259158757): fix this test on Windows.
+    target_compatible_with = select({
+        "@platforms//os:windows": ["//third_party/bazel_platforms:incompatible"],
+        "//conditions:default": [],
+    }),
     deps = [
         ":compare",
         "//:wire_internal",

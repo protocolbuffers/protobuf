@@ -27,7 +27,6 @@
 
 #include <limits.h>
 #include <string.h>
-#include <sys/resource.h>
 
 #include <iostream>
 #include <map>
@@ -356,12 +355,6 @@ class TypedIntTable {
 #define CPU_TIME_PER_TEST 0.5
 
 using std::vector;
-
-double get_usertime() {
-  struct rusage usage;
-  getrusage(RUSAGE_SELF, &usage);
-  return usage.ru_utime.tv_sec + (usage.ru_utime.tv_usec / 1000000.0);
-}
 
 TEST(Table, StringTable) {
   vector<std::string> keys;

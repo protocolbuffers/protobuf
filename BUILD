@@ -614,6 +614,11 @@ cc_test(
         "upb/reflection/def_builder_test.cc",
         "upb/reflection/def_type.h",
     ],
+    # TODO(b/259158612): fix this test on Windows.
+    target_compatible_with = select({
+        "@platforms//os:windows": ["//third_party/bazel_platforms:incompatible"],
+        "//conditions:default": [],
+    }),
     deps = [
         ":descriptor_upb_proto",
         ":hash",
@@ -887,6 +892,10 @@ cc_binary(
     srcs = ["upb/conformance_upb.c"],
     copts = UPB_DEFAULT_COPTS,
     data = ["upb/conformance_upb_failures.txt"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["//third_party/bazel_platforms:incompatible"],
+        "//conditions:default": [],
+    }),
     deps = [
         ":conformance_proto_upb",
         ":conformance_proto_upbdefs",
@@ -917,6 +926,10 @@ sh_test(
         ":conformance_upb",
         "@com_google_protobuf//conformance:conformance_test_runner",
     ],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["//third_party/bazel_platforms:incompatible"],
+        "//conditions:default": [],
+    }),
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )
 
@@ -928,6 +941,10 @@ cc_binary(
         "-DREBUILD_MINITABLES",
     ],
     data = ["upb/conformance_upb_failures.txt"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["//third_party/bazel_platforms:incompatible"],
+        "//conditions:default": [],
+    }),
     deps = [
         ":conformance_proto_upb",
         ":conformance_proto_upbdefs",

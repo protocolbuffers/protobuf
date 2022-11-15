@@ -202,6 +202,10 @@ py_extension(
         # casts between function pointers and object pointers.
         "-Wno-pedantic",
     ],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["//third_party/bazel_platforms:incompatible"],
+        "//conditions:default": [],
+    }),
     deps = [
         "//:collections",
         "//:descriptor_upb_proto_reflection",

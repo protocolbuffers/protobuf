@@ -31,6 +31,10 @@ def pyproto_test_wrapper(name, deps = []):
 #             "//net/proto2/python/internal:" + name + "_for_deps",
 #             "//net/proto2/python/public:use_upb_protos",
 #         ],
+#         target_compatible_with = select({
+#             "@platforms//os:windows": ["//third_party/bazel_platforms:incompatible"],
+#             "//conditions:default": [],
+#         }),
 #     )
 #
 # end:google_only
