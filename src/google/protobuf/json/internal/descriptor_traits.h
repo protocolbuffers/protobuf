@@ -267,6 +267,10 @@ struct Proto2Descriptor {
 
   static bool IsOptional(Field f) { return f->has_presence(); }
 
+  static bool IsImplicitPresence(Field f) {
+    return !f->is_repeated() && !f->has_presence();
+  }
+
   static bool IsExtension(Field f) { return f->is_extension(); }
 
   static bool IsOneof(Field f) { return f->containing_oneof() != nullptr; }
@@ -449,8 +453,20 @@ struct Proto3Type {
   }
 
   static bool IsOptional(Field f) {
+    // Implicit presence requires this weird check: in proto3, everything is
+    // implicit presence, except for things that are members of oneofs,
+    // which is how proto3 optional is represented.
+    if (f->parent().proto().syntax() == google::protobuf::SYNTAX_PROTO3) {
+      return f->proto().oneof_index() != 0;
+    }
+
     return f->proto().cardinality() ==
-           google::protobuf::Field::CARDINALITY_OPTIONAL;
+               google::protobuf::Field::CARDINALITY_OPTIONAL ||
+           google::protobuf::Field::CARDINALITY_REQUIRED;
+  }
+
+  static bool IsImplicitPresence(Field f) {
+    return !IsRepeated(f) && !IsOptional(f);
   }
 
   static bool IsExtension(Field f) { return false; }
