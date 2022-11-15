@@ -235,6 +235,18 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
 @property(nonatomic, readonly, copy) NSString *name;
 /** Function that validates that raw values are valid enum values. */
 @property(nonatomic, readonly) GPBEnumValidationFunc enumVerifier;
+/**
+ * Is this a closed enum, meaning that it:
+ * - Has a fixed set of named values.
+ * - Encountering values not in this set causes them to be treated as unknown
+ *   fields.
+ * - The first value (i.e., the default) may be nonzero.
+ *
+ * NOTE: This is only accurate if the generate sources for a proto file were
+ * generated with a protobuf release after the v21.9 version, as the ObjC
+ * generator wasn't capturing this information.
+ */
+@property(nonatomic, readonly) BOOL isClosed;
 
 /**
  * Returns the enum value name for the given raw enum.
