@@ -88,6 +88,11 @@ inline PROTOBUF_ALWAYS_INLINE void* AlignTo(void* p, size_t a) {
   }
 }
 
+template <typename T>
+constexpr bool IsString() {
+  return std::is_same<std::string, typename std::remove_cv<T>::type>();
+}
+
 // Arena blocks are variable length malloc-ed objects.  The following structure
 // describes the common header for all blocks.
 struct ArenaBlock {
@@ -304,10 +309,19 @@ class PROTOBUF_EXPORT SerialArena {
     GOOGLE_DCHECK_GE(limit_, ptr());
     static_assert(!std::is_trivially_destructible<T>::value,
                   "This function is only for non-trivial types.");
+    if (IsString<T>()) {
+      if (PROTOBUF_PREDICT_FALSE(!HasStringSpace())) {
+        if (!HasSpace(AlignUpTo8(sizeof(cleanup::StringBlock)))) return nullptr;
+        AllocateStringBlock();
+      }
+      void* ptr = AllocateStringFromExisting();
+      PROTOBUF_ASSUME(ptr != nullptr);
+      return ptr;
+    }
 
     constexpr int aligned_size = AlignUpTo8(sizeof(T));
     constexpr auto destructor = cleanup::arena_destruct_object<T>;
-    size_t required = aligned_size + cleanup::Size(destructor);
+    size_t required = aligned_size + cleanup::Size();
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(required))) {
       return nullptr;
     }
@@ -317,10 +331,14 @@ class PROTOBUF_EXPORT SerialArena {
     return ptr;
   }
 
-  PROTOBUF_ALWAYS_INLINE
-  void* AllocateAlignedWithCleanup(size_t n, size_t align,
-                                   void (*destructor)(void*)) {
-    size_t required = AlignUpTo(n, align) + cleanup::Size(destructor);
+  template <bool is_string>
+  PROTOBUF_ALWAYS_INLINE void* AllocateAlignedWithCleanup(
+      size_t n, size_t align, void (*destructor)(void*)) {
+    if (is_string) {
+      if (PROTOBUF_PREDICT_FALSE(!HasStringSpace())) AllocateStringBlock();
+      return AllocateStringFromExisting();
+    }
+    size_t required = AlignUpTo(n, align) + cleanup::Size();
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(required))) {
       return AllocateAlignedWithCleanupFallback(n, align, destructor);
     }
@@ -329,7 +347,7 @@ class PROTOBUF_EXPORT SerialArena {
 
   PROTOBUF_ALWAYS_INLINE
   void AddCleanup(void* elem, void (*destructor)(void*)) {
-    size_t required = cleanup::Size(destructor);
+    size_t required = cleanup::Size();
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(required))) {
       return AddCleanupFallback(elem, destructor);
     }
@@ -337,6 +355,8 @@ class PROTOBUF_EXPORT SerialArena {
   }
 
  private:
+  friend class ThreadSafeArena;
+
   void* AllocateFromExistingWithCleanupFallback(size_t n, size_t align,
                                                 void (*destructor)(void*)) {
     n = AlignUpTo(n, align);
@@ -350,17 +370,37 @@ class PROTOBUF_EXPORT SerialArena {
 
   PROTOBUF_ALWAYS_INLINE
   void AddCleanupFromExisting(void* elem, void (*destructor)(void*)) {
-    cleanup::Tag tag = cleanup::Type(destructor);
-    size_t n = cleanup::Size(tag);
+    size_t n = cleanup::Size();
 
     PROTOBUF_UNPOISON_MEMORY_REGION(limit_ - n, n);
     limit_ -= n;
     GOOGLE_DCHECK_GE(limit_, ptr());
-    cleanup::CreateNode(tag, limit_, elem, destructor);
+    cleanup::CreateNode(limit_, elem, destructor);
   }
 
- private:
-  friend class ThreadSafeArena;
+  PROTOBUF_ALWAYS_INLINE bool HasStringSpace() const {
+    static_assert(
+        cleanup::StringBlock::kCapacity <= std::numeric_limits<uint8_t>::max(),
+        "");
+    return first_string_block_size_.load(std::memory_order_relaxed) <
+           cleanup::StringBlock::kCapacity;
+  }
+  PROTOBUF_ALWAYS_INLINE void* AllocateStringFromExisting() {
+    uint8_t first_string_block_size =
+        first_string_block_size_.load(std::memory_order_relaxed);
+    void* ptr = string_blocks_->GetSpace(first_string_block_size);
+    first_string_block_size_.store(first_string_block_size + 1);
+    return ptr;
+  }
+  void AllocateStringBlock() {
+    GOOGLE_DCHECK_EQ(first_string_block_size_.load(std::memory_order_relaxed),
+              cleanup::StringBlock::kCapacity);
+    auto* new_block = static_cast<cleanup::StringBlock*>(
+        AllocateAligned(AlignUpTo8(sizeof(cleanup::StringBlock))));
+    new_block->next = string_blocks_;
+    string_blocks_ = new_block;
+    first_string_block_size_.store(0, std::memory_order_relaxed);
+  }
 
   // Creates a new SerialArena inside mem using the remaining memory as for
   // future allocations.
@@ -397,8 +437,14 @@ class PROTOBUF_EXPORT SerialArena {
     // Simple linked list.
     CachedBlock* next;
   };
-  uint8_t cached_block_length_ = 0;
   CachedBlock** cached_blocks_ = nullptr;
+  uint8_t cached_block_length_ = 0;
+
+  // Size of the first StringBlock. Other blocks are all full.
+  std::atomic<uint8_t> first_string_block_size_{
+      cleanup::StringBlock::kCapacity};
+  // Pointer to string destruct block list.
+  cleanup::StringBlock* string_blocks_ = nullptr;
 
   // Helper getters/setters to handle relaxed operations on atomic variables.
   ArenaBlock* head() { return head_.load(std::memory_order_relaxed); }
@@ -501,8 +547,17 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     return false;
   }
 
+  template <bool is_string>
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
-                                   void (*destructor)(void*));
+                                   void (*destructor)(void*)) {
+    SerialArena* arena;
+    if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+      return arena->AllocateAlignedWithCleanup<is_string>(n, align, destructor);
+    } else {
+      return AllocateAlignedWithCleanupFallback<is_string>(n, align,
+                                                           destructor);
+    }
+  }
 
   // Add object pointer and cleanup function pointer to the list.
   void AddCleanup(void* elem, void (*cleanup)(void*));
@@ -564,8 +619,13 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   const AllocationPolicy* AllocPolicy() const { return alloc_policy_.get(); }
   void InitializeWithPolicy(const AllocationPolicy& policy);
-  void* AllocateAlignedWithCleanupFallback(size_t n, size_t align,
-                                           void (*destructor)(void*));
+
+  template <bool is_string>
+  PROTOBUF_NOINLINE void* AllocateAlignedWithCleanupFallback(
+      size_t n, size_t align, void (*destructor)(void*)) {
+    return GetSerialArenaFallback(n + kMaxCleanupNodeSize)
+        ->AllocateAlignedWithCleanup<is_string>(n, align, destructor);
+  }
 
   void Init();
 

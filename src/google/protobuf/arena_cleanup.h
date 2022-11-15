@@ -54,14 +54,6 @@ void arena_destruct_object(void* object) {
   reinterpret_cast<T*>(object)->~T();
 }
 
-// Tag defines the type of cleanup / cleanup object. This tag is stored in the
-// lowest 2 bits of the `elem` value identifying the type of node. All node
-// types must start with a `uintptr_t` that stores `Tag` in its low two bits.
-enum class Tag : uintptr_t {
-  kDynamic = 0,  // DynamicNode
-  kString = 1,   // StringNode (std::string)
-};
-
 // DynamicNode contains the object (`elem`) that needs to be
 // destroyed, and the function to destroy it (`destructor`)
 // elem must be aligned at minimum on a 4 byte boundary.
@@ -70,37 +62,11 @@ struct DynamicNode {
   void (*destructor)(void*);
 };
 
-// StringNode contains a `std::string` object (`elem`) that needs to be
-// destroyed. The lowest 2 bits of `elem` contain the non-zero kString tag.
-struct StringNode {
-  uintptr_t elem;
-};
-
-
-// EnableSpecializedTags() return true if the alignment of tagged objects
-// such as std::string allow us to poke tags in the 2 LSB bits.
-inline constexpr bool EnableSpecializedTags() {
-  // For now we require 2 bits
-  return alignof(std::string) >= 8;
-}
-
-// Adds a cleanup entry identified by `tag` at memory location `pos`.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE void CreateNode(Tag tag, void* pos,
+// Adds a cleanup entry at memory location `pos`.
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE void CreateNode(void* pos,
                                                     const void* elem_raw,
                                                     void (*destructor)(void*)) {
   auto elem = reinterpret_cast<uintptr_t>(elem_raw);
-  if (EnableSpecializedTags()) {
-    GOOGLE_DCHECK_EQ(elem & 3, 0ULL);  // Must be aligned
-    switch (tag) {
-      case Tag::kString: {
-        StringNode n = {elem | static_cast<uintptr_t>(Tag::kString)};
-        memcpy(pos, &n, sizeof(n));
-        return;
-      }
-      default:
-        break;
-    }
-  }
   DynamicNode n = {elem, destructor};
   memcpy(pos, &n, sizeof(n));
 }
@@ -111,76 +77,63 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE void PrefetchNode(
   (void)elem_address;
 }
 
-// Destroys the node idenitfied by `tag` stored at memory location `pos`.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE void DestroyNode(Tag tag, const void* pos) {
-  if (EnableSpecializedTags()) {
-    switch (tag) {
-      case Tag::kString: {
-        StringNode n;
-        memcpy(&n, pos, sizeof(n));
-        auto* s = reinterpret_cast<std::string*>(n.elem & ~0x7ULL);
-        // Some compilers don't like fully qualified explicit dtor calls,
-        // so use an alias to avoid having to type `::`.
-        using string_type = std::string;
-        s->~string_type();
-        return;
-      }
-      default:
-        break;
-    }
-  }
+// Destroys the node stored at memory location `pos`.
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE void DestroyNode(const void* pos) {
   DynamicNode n;
   memcpy(&n, pos, sizeof(n));
   n.destructor(reinterpret_cast<void*>(n.elem));
 }
 
-// Returns the `tag` identifying the type of object for `destructor` or
-// kDynamic if `destructor` does not identify a well know object type.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE Tag Type(void (*destructor)(void*)) {
-  if (EnableSpecializedTags()) {
-    if (destructor == &arena_destruct_object<std::string>) {
-      return Tag::kString;
+// Returns the required size in bytes for a DynamicNode.
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t Size() {
+  return sizeof(DynamicNode);
+}
+
+// Block on the arena for std::strings so that we can destruct them efficiently.
+// This is a linked list. The first block may be partially full, but all other
+// blocks are full.
+struct StringBlock {
+  static constexpr size_t kMaxSize = 512;
+  static constexpr size_t kCapacity =
+      (kMaxSize - sizeof(StringBlock*)) / sizeof(std::string);
+
+  ABSL_ATTRIBUTE_ALWAYS_INLINE void* GetSpace(size_t i) {
+    static_assert(sizeof(StringBlock) <= kMaxSize, "");
+    return space + sizeof(std::string) * i;
+  }
+  ABSL_ATTRIBUTE_ALWAYS_INLINE std::string* Get(size_t i) {
+    return static_cast<std::string*>(GetSpace(i));
+  }
+
+  StringBlock* next = nullptr;
+  alignas(std::string) char space[kCapacity * sizeof(std::string)];
+};
+
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE void DestroyStrings(
+    StringBlock* block, size_t first_block_size) {
+  // Some compilers don't like fully qualified explicit dtor calls,
+  // so use an alias to avoid having to type `::`.
+  using string_type = std::string;
+
+#ifndef PROTO2_OPENSOURCE
+  // Prefetch the next block if non-null.
+  if (block->next != nullptr) ::compiler::PrefetchT0(block->next);
+#endif
+  for (size_t i = 0; i < first_block_size; ++i) {
+    block->Get(i)->~string_type();
+  }
+
+  // All blocks other than the first are full.
+  while (block->next != nullptr) {
+    block = block->next;
+#ifndef PROTO2_OPENSOURCE
+    // Prefetch the next block if non-null.
+    if (block->next != nullptr) ::compiler::PrefetchT0(block->next);
+#endif
+    for (size_t i = 0; i < StringBlock::kCapacity; ++i) {
+      block->Get(i)->~string_type();
     }
   }
-  return Tag::kDynamic;
-}
-
-// Returns the `tag` identifying the type of object stored at memory location
-// `elem`, which represents the first uintptr_t value in the node.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE Tag Type(void* raw) {
-  if (!EnableSpecializedTags()) return Tag::kDynamic;
-
-  uintptr_t elem;
-  memcpy(&elem, raw, sizeof(elem));
-  switch (static_cast<Tag>(elem & 0x7ULL)) {
-    case Tag::kDynamic:
-      return Tag::kDynamic;
-    case Tag::kString:
-      return Tag::kString;
-    default:
-      GOOGLE_LOG(FATAL) << "Corrupted cleanup tag: " << (elem & 0x7ULL);
-      return Tag::kDynamic;
-  }
-}
-
-// Returns the required size in bytes off the node type identified by `tag`.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t Size(Tag tag) {
-  if (!EnableSpecializedTags()) return sizeof(DynamicNode);
-
-  switch (tag) {
-    case Tag::kDynamic:
-      return sizeof(DynamicNode);
-    case Tag::kString:
-      return sizeof(StringNode);
-    default:
-      GOOGLE_LOG(FATAL) << "Corrupted cleanup tag: " << static_cast<int>(tag);
-      return sizeof(DynamicNode);
-  }
-}
-
-// Returns the required size in bytes off the node type for `destructor`.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t Size(void (*destructor)(void*)) {
-  return destructor == nullptr ? 0 : Size(Type(destructor));
 }
 
 }  // namespace cleanup

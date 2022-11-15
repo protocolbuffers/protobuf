@@ -35,10 +35,12 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <string>
 #include <typeinfo>
 
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena_allocation_policy.h"
+#include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_impl.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
@@ -162,8 +164,11 @@ void SerialArena::Init(ArenaBlock* b, size_t offset) {
   head_.store(b, std::memory_order_relaxed);
   space_used_.store(0, std::memory_order_relaxed);
   space_allocated_.store(b->size, std::memory_order_relaxed);
-  cached_block_length_ = 0;
   cached_blocks_ = nullptr;
+  cached_block_length_ = 0;
+  first_string_block_size_.store(cleanup::StringBlock::kCapacity,
+                                 std::memory_order_relaxed);
+  string_blocks_ = nullptr;
 }
 
 SerialArena* SerialArena::New(Memory mem, ThreadSafeArena& parent) {
@@ -196,14 +201,14 @@ void* SerialArena::AllocateAlignedFallback(size_t n) {
 PROTOBUF_NOINLINE
 void* SerialArena::AllocateAlignedWithCleanupFallback(
     size_t n, size_t align, void (*destructor)(void*)) {
-  size_t required = AlignUpTo(n, align) + cleanup::Size(destructor);
+  size_t required = AlignUpTo(n, align) + cleanup::Size();
   AllocateNewBlock(required);
   return AllocateFromExistingWithCleanupFallback(n, align, destructor);
 }
 
 PROTOBUF_NOINLINE
 void SerialArena::AddCleanupFallback(void* elem, void (*destructor)(void*)) {
-  size_t required = cleanup::Size(destructor);
+  size_t required = cleanup::Size();
   AllocateNewBlock(required);
   AddCleanupFromExisting(elem, destructor);
 }
@@ -265,10 +270,20 @@ uint64_t SerialArena::SpaceUsed() const {
       static_cast<uint64_t>(
           ptr() - const_cast<ArenaBlock*>(h)->Pointer(kBlockHeaderSize)),
       current_block_size);
+  // Subtract out the unused capacity on the first string block.
+  const uint8_t first_string_block_size =
+      first_string_block_size_.load(std::memory_order_relaxed);
+  current_space_used -= sizeof(std::string) * (cleanup::StringBlock::kCapacity -
+                                               first_string_block_size);
   return current_space_used + space_used_.load(std::memory_order_relaxed);
 }
 
 void SerialArena::CleanupList() {
+  if (string_blocks_ != nullptr) {
+    cleanup::DestroyStrings(string_blocks_, first_string_block_size_.load(
+                                                std::memory_order_relaxed));
+  }
+
   ArenaBlock* b = head();
   if (b->IsSentry()) return;
 
@@ -281,33 +296,28 @@ void SerialArena::CleanupList() {
       // A prefetch distance of 8 here was chosen arbitrarily.  It makes the
       // pending nodes fill a cacheline which seemed nice.
       constexpr int kPrefetchDist = 8;
-      cleanup::Tag pending_type[kPrefetchDist];
       char* pending_node[kPrefetchDist];
 
       int pos = 0;
-      for (; pos < kPrefetchDist && it < limit; ++pos) {
-        pending_type[pos] = cleanup::Type(it);
+      for (; pos < kPrefetchDist && it < limit; ++pos, it += cleanup::Size()) {
         pending_node[pos] = it;
-        it += cleanup::Size(pending_type[pos]);
       }
 
       if (pos < kPrefetchDist) {
         for (int i = 0; i < pos; ++i) {
-          cleanup::DestroyNode(pending_type[i], pending_node[i]);
+          cleanup::DestroyNode(pending_node[i]);
         }
       } else {
         pos = 0;
         while (it < limit) {
           cleanup::PrefetchNode(it);
-          cleanup::DestroyNode(pending_type[pos], pending_node[pos]);
-          pending_type[pos] = cleanup::Type(it);
+          cleanup::DestroyNode(pending_node[pos]);
           pending_node[pos] = it;
-          it += cleanup::Size(pending_type[pos]);
+          it += cleanup::Size();
           pos = (pos + 1) % kPrefetchDist;
         }
         for (int i = pos; i < pos + kPrefetchDist; ++i) {
-          cleanup::DestroyNode(pending_type[i % kPrefetchDist],
-                               pending_node[i % kPrefetchDist]);
+          cleanup::DestroyNode(pending_node[i % kPrefetchDist]);
         }
       }
     }
@@ -739,29 +749,12 @@ uint64_t ThreadSafeArena::Reset() {
   return space_allocated;
 }
 
-void* ThreadSafeArena::AllocateAlignedWithCleanup(size_t n, size_t align,
-                                                  void (*destructor)(void*)) {
-  SerialArena* arena;
-  if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
-    return arena->AllocateAlignedWithCleanup(n, align, destructor);
-  } else {
-    return AllocateAlignedWithCleanupFallback(n, align, destructor);
-  }
-}
-
 void ThreadSafeArena::AddCleanup(void* elem, void (*cleanup)(void*)) {
   SerialArena* arena;
   if (PROTOBUF_PREDICT_FALSE(!GetSerialArenaFast(&arena))) {
     arena = GetSerialArenaFallback(kMaxCleanupNodeSize);
   }
   arena->AddCleanup(elem, cleanup);
-}
-
-PROTOBUF_NOINLINE
-void* ThreadSafeArena::AllocateAlignedWithCleanupFallback(
-    size_t n, size_t align, void (*destructor)(void*)) {
-  return GetSerialArenaFallback(n + kMaxCleanupNodeSize)
-      ->AllocateAlignedWithCleanup(n, align, destructor);
 }
 
 template <typename Functor>
@@ -882,6 +875,16 @@ SerialArena* ThreadSafeArena::GetSerialArenaFallback(size_t n) {
   return serial;
 }
 
+// Extern template instantiations for inline functions.
+template void* ThreadSafeArena::AllocateAlignedWithCleanup<false>(
+    size_t n, size_t align, void (*destructor)(void*));
+template void* ThreadSafeArena::AllocateAlignedWithCleanup<true>(
+    size_t n, size_t align, void (*destructor)(void*));
+template void* ThreadSafeArena::AllocateAlignedWithCleanupFallback<false>(
+    size_t n, size_t align, void (*destructor)(void*));
+template void* ThreadSafeArena::AllocateAlignedWithCleanupFallback<true>(
+    size_t n, size_t align, void (*destructor)(void*));
+
 }  // namespace internal
 
 void* Arena::Allocate(size_t n) { return impl_.AllocateAligned(n); }
@@ -890,10 +893,11 @@ void* Arena::AllocateForArray(size_t n) {
   return impl_.AllocateAligned<internal::AllocationClient::kArray>(n);
 }
 
-void* Arena::AllocateAlignedWithCleanup(size_t n, size_t align,
-                                        void (*destructor)(void*)) {
-  return impl_.AllocateAlignedWithCleanup(n, align, destructor);
-}
+// Extern template instantiations for inline functions.
+template void* Arena::AllocateAlignedWithCleanup<false>(
+    size_t n, size_t align, void (*destructor)(void*));
+template void* Arena::AllocateAlignedWithCleanup<true>(
+    size_t n, size_t align, void (*destructor)(void*));
 
 }  // namespace protobuf
 }  // namespace google

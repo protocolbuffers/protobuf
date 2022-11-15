@@ -562,13 +562,14 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     }
   }
 
+  template <bool is_string>
   PROTOBUF_NDEBUG_INLINE void* AllocateInternal(size_t size, size_t align,
                                                 void (*destructor)(void*)) {
     // Monitor allocation if needed.
     if (destructor == nullptr) {
       return AllocateAligned(size, align);
     } else {
-      return AllocateAlignedWithCleanup(size, align, destructor);
+      return AllocateAlignedWithCleanup<is_string>(size, align, destructor);
     }
   }
 
@@ -613,10 +614,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE T* DoCreateMessage(Args&&... args) {
     return InternalHelper<T>::Construct(
-        AllocateInternal(sizeof(T), alignof(T),
-                         internal::ObjectDestructor<
-                             InternalHelper<T>::is_destructor_skippable::value,
-                             T>::destructor),
+        AllocateInternal<internal::IsString<T>()>(
+            sizeof(T), alignof(T),
+            internal::ObjectDestructor<
+                InternalHelper<T>::is_destructor_skippable::value,
+                T>::destructor),
         this, std::forward<Args>(args)...);
   }
 
@@ -666,9 +668,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
       auto destructor =
           internal::ObjectDestructor<std::is_trivially_destructible<T>::value,
                                      T>::destructor;
-      T* result =
-          new (arena->AllocateInternal(sizeof(T), alignof(T), destructor))
-              T(std::forward<Args>(args)...);
+      T* result = new (arena->AllocateInternal<internal::IsString<T>()>(
+          sizeof(T), alignof(T), destructor)) T(std::forward<Args>(args)...);
       return result;
     }
   }
@@ -681,8 +682,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
       auto destructor =
           internal::ObjectDestructor<std::is_trivially_destructible<T>::value,
                                      T>::destructor;
-      return new (arena->AllocateInternal(sizeof(T), alignof(T), destructor))
-          T(std::forward<Args>(args)...);
+      return new (arena->AllocateInternal<internal::IsString<T>()>(
+          sizeof(T), alignof(T), destructor)) T(std::forward<Args>(args)...);
     }
   }
 
@@ -727,8 +728,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   void* Allocate(size_t n);
   void* AllocateForArray(size_t n);
+  template <bool is_string>
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
-                                   void (*destructor)(void*));
+                                   void (*destructor)(void*)) {
+    return impl_.AllocateAlignedWithCleanup<is_string>(n, align, destructor);
+  }
 
   template <typename Type>
   friend class internal::GenericTypeHandler;

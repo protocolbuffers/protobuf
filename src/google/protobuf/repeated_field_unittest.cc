@@ -223,12 +223,12 @@ void CheckNaturalGrowthOnArenasReuseBlocks(bool is_ptr) {
 
   size_t used_bytes_if_reusing =
       values.size() * values[0]->Capacity() * (is_ptr ? sizeof(T*) : sizeof(T));
-  // Use a 2% slack for other overhead.
+  // Use a 10% slack for other overhead.
   // If we were not reusing the blocks, the actual value would be ~2x the
   // expected.
   EXPECT_THAT(
       arena.SpaceUsed() - (is_ptr ? sizeof(T) * kNumElems * kNumFields : 0),
-      AllOf(Ge(used_bytes_if_reusing), Le(1.02 * used_bytes_if_reusing)));
+      AllOf(Ge(used_bytes_if_reusing), Le(1.1 * used_bytes_if_reusing)));
 }
 
 TEST(RepeatedField, NaturalGrowthOnArenasReuseBlocks) {
@@ -1127,10 +1127,6 @@ TEST(RepeatedPtrField, Large) {
 
   int min_expected_usage = 16 * sizeof(std::string);
   EXPECT_GE(field.SpaceUsedExcludingSelf(), min_expected_usage);
-}
-
-TEST(RepeatedPtrField, ArenaAllocationSizesMatchExpectedValues) {
-  CheckAllocationSizes<RepeatedPtrField<std::string>>(true);
 }
 
 TEST(RepeatedPtrField, NaturalGrowthOnArenasReuseBlocks) {
