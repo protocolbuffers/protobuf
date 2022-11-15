@@ -112,6 +112,9 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
   }
   if (absl::StrContains(value_field_flags, "GPBFieldHasEnumDescriptor")) {
     field_flags.push_back("GPBFieldHasEnumDescriptor");
+    if (absl::StrContains(value_field_flags, "GPBFieldClosedEnum")) {
+      field_flags.push_back("GPBFieldClosedEnum");
+    }
   }
 
   variables_["fieldflags"] = BuildFlagsString(FLAGTYPE_FIELD, field_flags);
