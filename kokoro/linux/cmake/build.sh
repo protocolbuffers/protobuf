@@ -8,7 +8,7 @@ set -eux
 cd $(dirname $0)/../../..
 GIT_REPO_ROOT=`pwd`
 
-CONTAINER_IMAGE=gcr.io/protobuf-build/cmake/linux@sha256:79e6ed9d7f3f8e56167a3309a521e5b7e6a212bfb19855c65ee1cbb6f9099671
+CONTAINER_IMAGE=gcr.io/protobuf-build/bazel/linux-san:b6bfa3bb505e83f062af0cb0ed23abf1e89b9ed
 
 # Update git submodules
 git submodule update --init --recursive
