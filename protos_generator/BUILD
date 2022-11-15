@@ -68,6 +68,7 @@ cc_library(
         "//upbc:common",
         "//upbc:file_layout",
         "//upbc:keywords",
+        "//upbc:names",
         "@com_google_absl//absl/base:log_severity",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",

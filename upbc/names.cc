@@ -36,15 +36,15 @@ namespace upbc {
 
 namespace protobuf = ::google::protobuf;
 
+static constexpr absl::string_view kClearAccessor = "clear_";
+static constexpr absl::string_view kSetAccessor = "set_";
+
 // List of generated accessor prefixes to check against.
 // Example:
 //     optional repeated string phase = 236;
 //     optional bool clear_phase = 237;
 static constexpr absl::string_view kAccessorPrefixes[] = {
-    "clear_",
-    "delete_",
-    "add_",
-    "resize_",
+    kClearAccessor, "delete_", "add_", "resize_", kSetAccessor,
 };
 
 std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
@@ -58,7 +58,11 @@ std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
       auto match = field_names.find(field_name.substr(prefix.size()));
       if (match != field_names.end()) {
         const auto* candidate = match->second;
-        if (candidate->is_repeated() || candidate->is_map()) {
+        if (candidate->is_repeated() || candidate->is_map() ||
+            (candidate->cpp_type() ==
+                 protobuf::FieldDescriptor::CPPTYPE_STRING &&
+             prefix == kClearAccessor) ||
+            prefix == kSetAccessor) {
           return absl::StrCat(field_name, "_");
         }
       }

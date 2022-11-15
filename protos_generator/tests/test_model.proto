@@ -87,9 +87,11 @@ message TestModel {
   // Tests publicly imported enum.
   optional TestEnum imported_enum = 238;
 
-  // TODO(243705098) accessor name collision with field name
-  // optional repeated string phase = 236;
-  // optional bool clear_phase = 237;
+  optional string phase = 239;
+  optional bool clear_phase = 240;
+
+  optional string doc_id = 241;
+  optional bool set_doc_id = 242;
 
   extensions 10000 to max;
 }

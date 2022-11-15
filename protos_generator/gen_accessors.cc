@@ -33,6 +33,7 @@
 #include "protos_generator/output.h"
 #include "upbc/file_layout.h"
 #include "upbc/keywords.h"
+#include "upbc/names.h"
 
 namespace protos_generator {
 
@@ -45,14 +46,17 @@ using NameToFieldDescriptorMap =
 void WriteFieldAccessorHazzer(const protobuf::Descriptor* desc,
                               const protobuf::FieldDescriptor* field,
                               const absl::string_view resolved_field_name,
+                              const absl::string_view resolved_upbc_name,
                               const FileLayout& layout, Output& output);
 void WriteFieldAccessorClear(const protobuf::Descriptor* desc,
                              const protobuf::FieldDescriptor* field,
                              const absl::string_view resolved_field_name,
+                             const absl::string_view resolved_upbc_name,
                              const FileLayout& layout, Output& output);
 void WriteMapFieldAccessors(const protobuf::Descriptor* desc,
                             const protobuf::FieldDescriptor* field,
                             const absl::string_view resolved_field_name,
+                            const absl::string_view resolved_upbc_name,
                             Output& output);
 
 void WriteMapAccessorDefinitions(const protobuf::Descriptor* message,
@@ -101,15 +105,20 @@ void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
   OutputIndenter i(output);
 
   auto field_names = CreateFieldNameMap(desc);
+  auto upbc_field_names = upbc::CreateFieldNameMap(desc);
 
   for (auto field : ::upbc::FieldNumberOrder(desc)) {
     std::string resolved_field_name = ResolveFieldName(field, field_names);
-    absl::string_view upbc_name = field->name();
-    WriteFieldAccessorHazzer(desc, field, resolved_field_name, layout, output);
-    WriteFieldAccessorClear(desc, field, resolved_field_name, layout, output);
+    std::string resolved_upbc_name =
+        upbc::ResolveFieldName(field, upbc_field_names);
+    WriteFieldAccessorHazzer(desc, field, resolved_field_name,
+                             resolved_upbc_name, layout, output);
+    WriteFieldAccessorClear(desc, field, resolved_field_name,
+                            resolved_upbc_name, layout, output);
 
     if (field->is_map()) {
-      WriteMapFieldAccessors(desc, field, resolved_field_name, output);
+      WriteMapFieldAccessors(desc, field, resolved_field_name,
+                             resolved_upbc_name, output);
     } else if (desc->options().map_entry()) {
       // TODO(b/237399867) Implement map entry
     } else if (field->is_repeated()) {
@@ -123,18 +132,18 @@ void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
 
             inline void clear_$1() { $0_clear_$2(msg_); }
           )cc",
-          MessageName(desc), resolved_field_name, upbc_name);
+          MessageName(desc), resolved_field_name, resolved_upbc_name);
 
       if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
         output(
             R"cc(
               $1 $2(size_t index) const;
               absl::StatusOr<$0> add_$2();
-              $0 mutable_$3(size_t index) const;
+              $0 mutable_$2(size_t index) const;
             )cc",
             MessagePtrConstType(field, /* const */ false),
             MessagePtrConstType(field, /* const */ true), resolved_field_name,
-            upbc_name);
+            resolved_upbc_name);
       } else {
         output(
             R"cc(
@@ -157,11 +166,11 @@ void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
                  protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
         output(R"cc(
                  $1 $2() const;
-                 $0 mutable_$3();
+                 $0 mutable_$2();
                )cc",
                MessagePtrConstType(field, /* const */ false),
                MessagePtrConstType(field, /* const */ true),
-               resolved_field_name, upbc_name);
+               resolved_field_name, resolved_upbc_name);
       } else {
         output(
             R"cc(
@@ -169,7 +178,7 @@ void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
               inline void set_$1($0 value) { return $2_set_$3(msg_, value); }
             )cc",
             CppConstType(field), resolved_field_name, MessageName(desc),
-            upbc_name);
+            resolved_upbc_name);
       }
     }
   }
@@ -178,42 +187,43 @@ void WriteFieldAccessorsInHeader(const protobuf::Descriptor* desc,
 void WriteFieldAccessorHazzer(const protobuf::Descriptor* desc,
                               const protobuf::FieldDescriptor* field,
                               const absl::string_view resolved_field_name,
+                              const absl::string_view resolved_upbc_name,
                               const FileLayout& layout, Output& output) {
   // Generate hazzer (if any).
   if (layout.HasHasbit(field) || field->real_containing_oneof()) {
-    absl::string_view upbc_name = field->name();
     // Has presence.
     output("inline bool has_$0() const { return $1_has_$2(msg_); }\n",
-           resolved_field_name, MessageName(desc), upbc_name);
+           resolved_field_name, MessageName(desc), resolved_upbc_name);
   }
 }
 
 void WriteFieldAccessorClear(const protobuf::Descriptor* desc,
                              const protobuf::FieldDescriptor* field,
                              const absl::string_view resolved_field_name,
+                             const absl::string_view resolved_upbc_name,
                              const FileLayout& layout, Output& output) {
   if (layout.HasHasbit(field) || field->real_containing_oneof()) {
-    absl::string_view upbc_name = field->name();
     output("void clear_$0() { $2_clear_$1(msg_); }\n", resolved_field_name,
-           upbc_name, MessageName(desc));
+           resolved_upbc_name, MessageName(desc));
   }
 }
 
 void WriteMapFieldAccessors(const protobuf::Descriptor* desc,
                             const protobuf::FieldDescriptor* field,
                             const absl::string_view resolved_field_name,
+                            const absl::string_view resolved_upbc_name,
                             Output& output) {
   const protobuf::Descriptor* entry = field->message_type();
   const protobuf::FieldDescriptor* key = entry->FindFieldByNumber(1);
   const protobuf::FieldDescriptor* val = entry->FindFieldByNumber(2);
-  absl::string_view upbc_name = field->name();
   output(
       R"cc(
         inline size_t $0_size() const { return $1_$3_size(msg_); }
         inline void clear_$0() { $1_clear_$3(msg_); }
         void delete_$0($2 key);
       )cc",
-      resolved_field_name, MessageName(desc), CppConstType(key), upbc_name);
+      resolved_field_name, MessageName(desc), CppConstType(key),
+      resolved_upbc_name);
 
   if (val->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
     output(
@@ -242,11 +252,14 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc,
   output("namespace internal {\n");
   const char arena_expression[] = "arena_";
   auto field_names = CreateFieldNameMap(desc);
+  auto upbc_field_names = upbc::CreateFieldNameMap(desc);
 
   // Generate const methods.
   OutputIndenter i(output);
   for (auto field : ::upbc::FieldNumberOrder(desc)) {
     std::string resolved_field_name = ResolveFieldName(field, field_names);
+    std::string resolved_upbc_name =
+        upbc::ResolveFieldName(field, upbc_field_names);
     if (field->is_map()) {
       WriteMapAccessorDefinitions(desc, field, resolved_field_name, class_name,
                                   output);
@@ -265,7 +278,6 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc,
                                     class_name, output);
       }
     } else {
-      absl::string_view upbc_name = field->name();
       // non-repeated field.
       if (field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING) {
         output(
@@ -275,7 +287,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc,
               }
             )cc",
             class_name, CppConstType(field), resolved_field_name,
-            MessageName(desc), upbc_name);
+            MessageName(desc), resolved_upbc_name);
         // Set string.
         output(
             R"cc(
@@ -283,8 +295,8 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc,
                 $4_set_$3(msg_, ::protos::UpbStrFromStringView(value, $5));
               }
             )cc",
-            class_name, CppConstType(field), resolved_field_name, upbc_name,
-            MessageName(desc), arena_expression);
+            class_name, CppConstType(field), resolved_field_name,
+            resolved_upbc_name, MessageName(desc), arena_expression);
       } else if (field->cpp_type() ==
                  protobuf::FieldDescriptor::CPPTYPE_MESSAGE) {
         output(
@@ -298,7 +310,8 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc,
             )cc",
             class_name, MessagePtrConstType(field, /* is_const */ true),
             resolved_field_name, MessageName(desc),
-            MessageBaseType(field, /* maybe_const */ false), upbc_name);
+            MessageBaseType(field, /* maybe_const */ false),
+            resolved_upbc_name);
 
         output(
             R"cc(
@@ -309,7 +322,7 @@ void WriteAccessorsInSource(const protobuf::Descriptor* desc,
             )cc",
             class_name, MessagePtrConstType(field, /* is_const */ false),
             resolved_field_name, MessageName(desc),
-            MessageBaseType(field, /* maybe_const */ false), upbc_name,
+            MessageBaseType(field, /* maybe_const */ false), resolved_upbc_name,
             arena_expression);
       }
     }
@@ -683,15 +696,15 @@ std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
           "arena_",
       });
 
+  static constexpr absl::string_view kClearAccessor = "clear_";
+  static constexpr absl::string_view kSetAccessor = "set_";
+
   // List of generated accessor prefixes to check against.
   // Example:
   //     optional repeated string phase = 236;
   //     optional bool clear_phase = 237;
   static constexpr absl::string_view kAccessorPrefixes[] = {
-      "clear_",
-      "delete_",
-      "add_",
-      "resize_",
+      kClearAccessor, "delete_", "add_", "resize_", kSetAccessor,
   };
 
   absl::string_view field_name = field->name();
@@ -710,7 +723,11 @@ std::string ResolveFieldName(const protobuf::FieldDescriptor* field,
       auto match = field_names.find(field_name.substr(prefix.size()));
       if (match != field_names.end()) {
         const auto* candidate = match->second;
-        if (candidate->is_repeated() || candidate->is_map()) {
+        if (candidate->is_repeated() || candidate->is_map() ||
+            (candidate->cpp_type() ==
+                 protobuf::FieldDescriptor::CPPTYPE_STRING &&
+             prefix == kClearAccessor) ||
+            prefix == kSetAccessor) {
           return absl::StrCat(field_name, "_");
         }
       }
