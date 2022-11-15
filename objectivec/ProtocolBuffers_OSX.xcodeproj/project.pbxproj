@@ -700,6 +700,7 @@
 /* Begin PBXShellScriptBuildPhase section */
 		F4B62A781AF91F6000AFCEDC /* Script: Check Runtime Stamps */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
