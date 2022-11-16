@@ -228,7 +228,7 @@ _WrappedDefsGeneratedSrcsInfo = provider(
 
 def _compile_upb_protos(ctx, generator, proto_info, proto_sources):
     if len(proto_sources) == 0:
-        return GeneratedSrcsInfo(srcs = [], hdrs = [])
+        return GeneratedSrcsInfo(srcs = [], hdrs = [], includes = [])
 
     ext = "." + generator
     tool = getattr(ctx.executable, "_gen_" + generator)
