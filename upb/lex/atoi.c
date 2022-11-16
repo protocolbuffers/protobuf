@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/internal/atoi.h"
+#include "upb/lex/atoi.h"
 
 // Must be last.
 #include "upb/port/def.inc"

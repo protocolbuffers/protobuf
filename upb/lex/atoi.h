@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022, Google LLC
+ * Copyright (c) 2009-2021, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_IO_STRTOD_H_
-#define UPB_IO_STRTOD_H_
+#ifndef UPB_LEX_ATOI_H_
+#define UPB_LEX_ATOI_H_
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -35,7 +35,14 @@
 extern "C" {
 #endif
 
-double NoLocaleStrtod(const char *str, char **endptr);
+// We use these hand-written routines instead of strto[u]l() because the "long
+// long" variants aren't in c89. Also our version allows setting a ptr limit.
+// Return the new position of the pointer after parsing the int, or NULL on
+// integer overflow.
+
+const char* upb_BufToUint64(const char* ptr, const char* end, uint64_t* val);
+const char* upb_BufToInt64(const char* ptr, const char* end, int64_t* val,
+                           bool* is_neg);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -43,4 +50,4 @@ double NoLocaleStrtod(const char *str, char **endptr);
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_IO_STRTOD_H_ */
+#endif /* UPB_LEX_ATOI_H_ */

@@ -35,10 +35,10 @@
 #include <string.h>
 
 #include "upb/collections/map.h"
+#include "upb/lex/round_trip.h"
 #include "upb/port/vsnprintf_compat.h"
 #include "upb/reflection/message.h"
 #include "upb/wire/decode.h"
-#include "upb/wire/encode_internal.h"
 
 // Must be last.
 #include "upb/port/def.inc"

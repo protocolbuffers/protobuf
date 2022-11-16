@@ -8,26 +8,16 @@ cc_library(
 )
 
 cc_library(
-    name = "strtod",
-    srcs = ["strtod.c"],
-    hdrs = ["strtod.h"],
-    deps = [
-        "//:port",
-    ],
-)
-
-cc_library(
     name = "tokenizer",
     srcs = ["tokenizer.c"],
     hdrs = ["tokenizer.h"],
     deps = [
         ":string",
-        ":strtod",
         ":zero_copy_stream",
         "//:base",
+        "//:lex",
         "//:mem",
         "//:port",
-        "//:unicode_internal",
     ],
 )
 
@@ -87,8 +77,8 @@ cc_test(
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/strings:str_format",
         "//:upb",
+        "//:lex",
         "//:port",
-        "//:unicode_internal",
         "@com_google_googletest//:gtest_main",
     ],
 )

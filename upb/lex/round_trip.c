@@ -25,33 +25,43 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/internal/unicode.h"
+#include "upb/lex/round_trip.h"
+
+#include <float.h>
+#include <stdlib.h>
 
 // Must be last.
 #include "upb/port/def.inc"
 
-int upb_Unicode_ToUTF8(uint32_t cp, char* out) {
-  if (cp <= 0x7f) {
-    out[0] = cp;
-    return 1;
+/* Miscellaneous utilities ****************************************************/
+
+static void upb_FixLocale(char* p) {
+  /* printf() is dependent on locales; sadly there is no easy and portable way
+   * to avoid this. This little post-processing step will translate 1,2 -> 1.2
+   * since JSON needs the latter. Arguably a hack, but it is simple and the
+   * alternatives are far more complicated, platform-dependent, and/or larger
+   * in code size. */
+  for (; *p; p++) {
+    if (*p == ',') *p = '.';
   }
-  if (cp <= 0x07ff) {
-    out[0] = (cp >> 6) | 0xc0;
-    out[1] = (cp & 0x3f) | 0x80;
-    return 2;
+}
+
+void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size) {
+  assert(size >= kUpb_RoundTripBufferSize);
+  snprintf(buf, size, "%.*g", DBL_DIG, val);
+  if (strtod(buf, NULL) != val) {
+    snprintf(buf, size, "%.*g", DBL_DIG + 2, val);
+    assert(strtod(buf, NULL) == val);
   }
-  if (cp <= 0xffff) {
-    out[0] = (cp >> 12) | 0xe0;
-    out[1] = ((cp >> 6) & 0x3f) | 0x80;
-    out[2] = (cp & 0x3f) | 0x80;
-    return 3;
+  upb_FixLocale(buf);
+}
+
+void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size) {
+  assert(size >= kUpb_RoundTripBufferSize);
+  snprintf(buf, size, "%.*g", FLT_DIG, val);
+  if (strtof(buf, NULL) != val) {
+    snprintf(buf, size, "%.*g", FLT_DIG + 3, val);
+    assert(strtof(buf, NULL) == val);
   }
-  if (cp <= 0x10ffff) {
-    out[0] = (cp >> 18) | 0xf0;
-    out[1] = ((cp >> 12) & 0x3f) | 0x80;
-    out[2] = ((cp >> 6) & 0x3f) | 0x80;
-    out[3] = (cp & 0x3f) | 0x80;
-    return 4;
-  }
-  return 0;
+  upb_FixLocale(buf);
 }

@@ -25,24 +25,26 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_INTERNAL_ATOI_H_
-#define UPB_INTERNAL_ATOI_H_
+#ifndef UPB_LEX_ROUND_TRIP_H_
+#define UPB_LEX_ROUND_TRIP_H_
 
 // Must be last.
 #include "upb/port/def.inc"
+
+// Encodes a float or double that is round-trippable, but as short as possible.
+// These routines are not fully optimal (not guaranteed to be shortest), but are
+// short-ish and match the implementation that has been used in protobuf since
+// the beginning.
+
+// The given buffer size must be at least kUpb_RoundTripBufferSize.
+enum { kUpb_RoundTripBufferSize = 32 };
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// We use these hand-written routines instead of strto[u]l() because the "long
-// long" variants aren't in c89. Also our version allows setting a ptr limit.
-// Return the new position of the pointer after parsing the int, or NULL on
-// integer overflow.
-
-const char* upb_BufToUint64(const char* ptr, const char* end, uint64_t* val);
-const char* upb_BufToInt64(const char* ptr, const char* end, int64_t* val,
-                           bool* is_neg);
+void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size);
+void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -50,4 +52,4 @@ const char* upb_BufToInt64(const char* ptr, const char* end, int64_t* val,
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_INTERNAL_ATOI_H_ */
+#endif /* UPB_LEX_ROUND_TRIP_H_ */

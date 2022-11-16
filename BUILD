@@ -114,10 +114,8 @@ cc_library(
     srcs = [
         "upb/collections/map_sorter_internal.h",
         "upb/collections/message_value.h",
-        "upb/internal/unicode.h",
         "upb/msg.c",
         "upb/msg_internal.h",
-        "upb/upb.c",
         "upb/wire/decode.c",
         "upb/wire/encode.c",
         "upb/wire/swap_internal.h",
@@ -152,9 +150,9 @@ cc_library(
         ":extension_registry",
         ":fastdecode",
         ":hash",
+        ":lex",
         ":mem",
         ":port",
-        ":unicode_internal",
         ":wire_internal",
     ],
 )
@@ -571,9 +569,9 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":collections_internal",
+        ":lex",
         ":port",
         ":reflection",
-        ":wire_internal",
     ],
 )
 
@@ -594,13 +592,11 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":atoi_internal",
         ":collections",
+        ":lex",
         ":port",
         ":reflection",
-        ":unicode_internal",
         ":upb",
-        ":wire_internal",
     ],
 )
 
@@ -812,10 +808,10 @@ upb_proto_reflection_library(
 
 cc_test(
     name = "atoi_test",
-    srcs = ["upb/internal/atoi_test.cc"],
+    srcs = ["upb/lex/atoi_test.cc"],
     copts = UPB_DEFAULT_CPPOPTS,
     deps = [
-        ":atoi_internal",
+        ":lex",
         "@com_google_absl//absl/strings",
         "@com_google_googletest//:gtest_main",
     ],
@@ -1023,15 +1019,6 @@ cc_library(
 )
 
 cc_library(
-    name = "atoi_internal",
-    srcs = ["upb/internal/atoi.c"],
-    hdrs = ["upb/internal/atoi.h"],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//:__subpackages__"],
-    deps = [":port"],
-)
-
-cc_library(
     name = "wire_internal",
     srcs = [
         "upb/extension_registry.h",
@@ -1042,7 +1029,6 @@ cc_library(
     hdrs = [
         "upb/wire/common_internal.h",
         "upb/wire/decode_internal.h",
-        "upb/wire/encode_internal.h",
         "upb/wire/swap_internal.h",
     ],
     copts = UPB_DEFAULT_COPTS,
@@ -1077,12 +1063,18 @@ cc_library(
 )
 
 cc_library(
-    name = "unicode_internal",
+    name = "lex",
     srcs = [
-        "upb/internal/unicode.c",
+        "upb/lex/atoi.c",
+        "upb/lex/round_trip.c",
+        "upb/lex/strtod.c",
+        "upb/lex/unicode.c",
     ],
     hdrs = [
-        "upb/internal/unicode.h",
+        "upb/lex/atoi.h",
+        "upb/lex/round_trip.h",
+        "upb/lex/strtod.h",
+        "upb/lex/unicode.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],
@@ -1100,13 +1092,13 @@ upb_amalgamation(
         "upb.h",
     ],
     libs = [
-        ":atoi_internal",
         ":base",
         ":collections_internal",
         ":descriptor_upb_proto",
         ":extension_registry",
         ":fastdecode",
         ":hash",
+        ":lex",
         ":mem_internal",
         ":mini_table",
         ":mini_table_accessors",
@@ -1134,7 +1126,6 @@ upb_amalgamation(
         "php-upb.h",
     ],
     libs = [
-        ":atoi_internal",
         ":base",
         ":collections_internal",
         ":descriptor_upb_proto",
@@ -1143,13 +1134,13 @@ upb_amalgamation(
         ":fastdecode",
         ":hash",
         ":json",
+        ":lex",
         ":mem_internal",
         ":mini_table",
         ":mini_table_accessors",
         ":port",
         ":reflection",
         ":reflection_internal",
-        ":unicode_internal",
         ":upb",
         ":wire_internal",
     ],
@@ -1173,7 +1164,6 @@ upb_amalgamation(
         "ruby-upb.h",
     ],
     libs = [
-        ":atoi_internal",
         ":base",
         ":collections_internal",
         ":descriptor_upb_proto",
@@ -1181,13 +1171,13 @@ upb_amalgamation(
         ":fastdecode",
         ":hash",
         ":json",
+        ":lex",
         ":mem_internal",
         ":mini_table",
         ":mini_table_accessors",
         ":port",
         ":reflection",
         ":reflection_internal",
-        ":unicode_internal",
         ":upb",
         ":wire_internal",
     ],

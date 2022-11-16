@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_WIRE_ENCODE_INTERNAL_H_
-#define UPB_WIRE_ENCODE_INTERNAL_H_
+#ifndef UPB_LEX_UNICODE_H_
+#define UPB_LEX_UNICODE_H_
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -35,15 +35,38 @@
 extern "C" {
 #endif
 
-// Encodes a float or double that is round-trippable, but as short as possible.
-// These routines are not fully optimal (not guaranteed to be shortest), but are
-// short-ish and match the implementation that has been used in protobuf since
-// the beginning.
-//
-// The given buffer size must be at least kUpb_RoundTripBufferSize.
-enum { kUpb_RoundTripBufferSize = 32 };
-void _upb_EncodeRoundTripDouble(double val, char* buf, size_t size);
-void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size);
+// Returns true iff a codepoint is the value for a high surrogate.
+UPB_INLINE bool upb_Unicode_IsHigh(uint32_t cp) {
+  return (cp >= 0xd800 && cp <= 0xdbff);
+}
+
+// Returns true iff a codepoint is the value for a low surrogate.
+UPB_INLINE bool upb_Unicode_IsLow(uint32_t cp) {
+  return (cp >= 0xdc00 && cp <= 0xdfff);
+}
+
+// Returns the high 16-bit surrogate value for a supplementary codepoint.
+// Does not sanity-check the input.
+UPB_INLINE uint16_t upb_Unicode_ToHigh(uint32_t cp) {
+  return (cp >> 10) + 0xd7c0;
+}
+
+// Returns the low 16-bit surrogate value for a supplementary codepoint.
+// Does not sanity-check the input.
+UPB_INLINE uint16_t upb_Unicode_ToLow(uint32_t cp) {
+  return (cp & 0x3ff) | 0xdc00;
+}
+
+// Returns the 32-bit value corresponding to a pair of 16-bit surrogates.
+// Does not sanity-check the input.
+UPB_INLINE uint32_t upb_Unicode_FromPair(uint32_t high, uint32_t low) {
+  return ((high & 0x3ff) << 10) + (low & 0x3ff) + 0x10000;
+}
+
+// Outputs a codepoint as UTF8.
+// Returns the number of bytes written (1-4 on success, 0 on error).
+// Does not sanity-check the input. Specifically does not check for surrogates.
+int upb_Unicode_ToUTF8(uint32_t cp, char* out);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -51,4 +74,4 @@ void _upb_EncodeRoundTripFloat(float val, char* buf, size_t size);
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_WIRE_ENCODE_INTERNAL_H_ */
+#endif /* UPB_LEX_UNICODE_H_ */

@@ -30,9 +30,9 @@
 #include "gtest/gtest.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_format.h"
-#include "upb/internal/unicode.h"
 #include "upb/io/chunked_input_stream.h"
 #include "upb/io/string.h"
+#include "upb/lex/unicode.h"
 #include "upb/upb.hpp"
 
 // Must be last.

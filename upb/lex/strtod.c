@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/io/strtod.h"
+#include "upb/lex/strtod.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -63,7 +63,7 @@ static void LocalizeRadix(const char *input, const char *pos, char *output) {
   strcpy(output + len1 + len2, input + len1 + 1);
 }
 
-double NoLocaleStrtod(const char *str, char **endptr) {
+double _upb_NoLocaleStrtod(const char *str, char **endptr) {
   // We cannot simply set the locale to "C" temporarily with setlocale()
   // as this is not thread-safe.  Instead, we try to parse in the current
   // locale first.  If parsing stops at a '.' character, then this is a

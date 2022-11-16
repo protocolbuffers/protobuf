@@ -27,9 +27,9 @@
 
 #include "upb/io/tokenizer.h"
 
-#include "upb/internal/unicode.h"
 #include "upb/io/string.h"
-#include "upb/io/strtod.h"
+#include "upb/lex/strtod.h"
+#include "upb/lex/unicode.h"
 
 // Must be included last.
 #include "upb/port/def.inc"
@@ -782,7 +782,7 @@ bool upb_Parse_Integer(const char* text, uint64_t max_value, uint64_t* output) {
 
 double upb_Parse_Float(const char* text) {
   char* end;
-  double result = NoLocaleStrtod(text, &end);
+  double result = _upb_NoLocaleStrtod(text, &end);
 
   // "1e" is not a valid float, but if the tokenizer reads it, it will
   // report an error but still return it as a valid token.  We need to
