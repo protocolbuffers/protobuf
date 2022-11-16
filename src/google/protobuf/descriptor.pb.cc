@@ -537,7 +537,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 GeneratedCodeInfoDefaultTypeInternal _GeneratedCodeInfo_default_instance_;
 PROTOBUF_NAMESPACE_CLOSE
 static ::_pb::Metadata file_level_metadata_google_2fprotobuf_2fdescriptor_2eproto[27];
-static const ::_pb::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[7];
+static const ::_pb::EnumDescriptor* file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[9];
 static constexpr const ::_pb::ServiceDescriptor**
     file_level_service_descriptors_google_2fprotobuf_2fdescriptor_2eproto = nullptr;
 const ::uint32_t TableStruct_google_2fprotobuf_2fdescriptor_2eproto::offsets[] PROTOBUF_SECTION_VARIABLE(
@@ -1180,7 +1180,7 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] PR
     "eld_conflicts\030\013 \001(\010B\002\030\001\022C\n\024uninterpreted"
     "_option\030\347\007 \003(\0132$.google.protobuf.Uninter"
     "pretedOption*\t\010\350\007\020\200\200\200\200\002J\004\010\004\020\005J\004\010\005\020\006J\004\010\006\020"
-    "\007J\004\010\010\020\tJ\004\010\t\020\n\"\333\003\n\014FieldOptions\022:\n\005ctype\030"
+    "\007J\004\010\010\020\tJ\004\010\t\020\n\"\301\006\n\014FieldOptions\022:\n\005ctype\030"
     "\001 \001(\0162#.google.protobuf.FieldOptions.CTy"
     "pe:\006STRING\022\016\n\006packed\030\002 \001(\010\022\?\n\006jstype\030\006 \001"
     "(\0162$.google.protobuf.FieldOptions.JSType"
@@ -1191,58 +1191,67 @@ const char descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto[] PR
     "ption\030\347\007 \003(\0132$.google.protobuf.Uninterpr"
     "etedOption\"/\n\005CType\022\n\n\006STRING\020\000\022\010\n\004CORD\020"
     "\001\022\020\n\014STRING_PIECE\020\002\"5\n\006JSType\022\r\n\tJS_NORM"
-    "AL\020\000\022\r\n\tJS_STRING\020\001\022\r\n\tJS_NUMBER\020\002*\t\010\350\007\020"
-    "\200\200\200\200\002J\004\010\004\020\005\"^\n\014OneofOptions\022C\n\024uninterpr"
-    "eted_option\030\347\007 \003(\0132$.google.protobuf.Uni"
-    "nterpretedOption*\t\010\350\007\020\200\200\200\200\002\"\307\001\n\013EnumOpti"
-    "ons\022\023\n\013allow_alias\030\002 \001(\010\022\031\n\ndeprecated\030\003"
-    " \001(\010:\005false\0222\n&deprecated_legacy_json_fi"
-    "eld_conflicts\030\006 \001(\010B\002\030\001\022C\n\024uninterpreted"
-    "_option\030\347\007 \003(\0132$.google.protobuf.Uninter"
-    "pretedOption*\t\010\350\007\020\200\200\200\200\002J\004\010\005\020\006\"}\n\020EnumVal"
-    "ueOptions\022\031\n\ndeprecated\030\001 \001(\010:\005false\022C\n\024"
-    "uninterpreted_option\030\347\007 \003(\0132$.google.pro"
-    "tobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\"{\n\016"
-    "ServiceOptions\022\031\n\ndeprecated\030! \001(\010:\005fals"
-    "e\022C\n\024uninterpreted_option\030\347\007 \003(\0132$.googl"
-    "e.protobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200"
-    "\002\"\255\002\n\rMethodOptions\022\031\n\ndeprecated\030! \001(\010:"
-    "\005false\022_\n\021idempotency_level\030\" \001(\0162/.goog"
-    "le.protobuf.MethodOptions.IdempotencyLev"
-    "el:\023IDEMPOTENCY_UNKNOWN\022C\n\024uninterpreted"
-    "_option\030\347\007 \003(\0132$.google.protobuf.Uninter"
-    "pretedOption\"P\n\020IdempotencyLevel\022\027\n\023IDEM"
-    "POTENCY_UNKNOWN\020\000\022\023\n\017NO_SIDE_EFFECTS\020\001\022\016"
-    "\n\nIDEMPOTENT\020\002*\t\010\350\007\020\200\200\200\200\002\"\236\002\n\023Uninterpre"
-    "tedOption\022;\n\004name\030\002 \003(\0132-.google.protobu"
-    "f.UninterpretedOption.NamePart\022\030\n\020identi"
-    "fier_value\030\003 \001(\t\022\032\n\022positive_int_value\030\004"
-    " \001(\004\022\032\n\022negative_int_value\030\005 \001(\003\022\024\n\014doub"
-    "le_value\030\006 \001(\001\022\024\n\014string_value\030\007 \001(\014\022\027\n\017"
-    "aggregate_value\030\010 \001(\t\0323\n\010NamePart\022\021\n\tnam"
-    "e_part\030\001 \002(\t\022\024\n\014is_extension\030\002 \002(\010\"\325\001\n\016S"
-    "ourceCodeInfo\022:\n\010location\030\001 \003(\0132(.google"
-    ".protobuf.SourceCodeInfo.Location\032\206\001\n\010Lo"
-    "cation\022\020\n\004path\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002"
-    "\020\001\022\030\n\020leading_comments\030\003 \001(\t\022\031\n\021trailing"
-    "_comments\030\004 \001(\t\022!\n\031leading_detached_comm"
-    "ents\030\006 \003(\t\"\234\002\n\021GeneratedCodeInfo\022A\n\nanno"
-    "tation\030\001 \003(\0132-.google.protobuf.Generated"
-    "CodeInfo.Annotation\032\303\001\n\nAnnotation\022\020\n\004pa"
-    "th\030\001 \003(\005B\002\020\001\022\023\n\013source_file\030\002 \001(\t\022\r\n\005beg"
-    "in\030\003 \001(\005\022\013\n\003end\030\004 \001(\005\022H\n\010semantic\030\005 \001(\0162"
-    "6.google.protobuf.GeneratedCodeInfo.Anno"
-    "tation.Semantic\"(\n\010Semantic\022\010\n\004NONE\020\000\022\007\n"
-    "\003SET\020\001\022\t\n\005ALIAS\020\002B~\n\023com.google.protobuf"
-    "B\020DescriptorProtosH\001Z-google.golang.org/"
-    "protobuf/types/descriptorpb\370\001\001\242\002\003GPB\252\002\032G"
-    "oogle.Protobuf.Reflection"
+    "AL\020\000\022\r\n\tJS_STRING\020\001\022\r\n\tJS_NUMBER\020\002\"U\n\017Op"
+    "tionRetention\022\025\n\021RETENTION_UNKNOWN\020\000\022\025\n\021"
+    "RETENTION_RUNTIME\020\001\022\024\n\020RETENTION_SOURCE\020"
+    "\002\"\214\002\n\020OptionTargetType\022\027\n\023TARGET_TYPE_UN"
+    "KNOWN\020\000\022\024\n\020TARGET_TYPE_FILE\020\001\022\037\n\033TARGET_"
+    "TYPE_EXTENSION_RANGE\020\002\022\027\n\023TARGET_TYPE_ME"
+    "SSAGE\020\003\022\025\n\021TARGET_TYPE_FIELD\020\004\022\025\n\021TARGET"
+    "_TYPE_ONEOF\020\005\022\024\n\020TARGET_TYPE_ENUM\020\006\022\032\n\026T"
+    "ARGET_TYPE_ENUM_ENTRY\020\007\022\027\n\023TARGET_TYPE_S"
+    "ERVICE\020\010\022\026\n\022TARGET_TYPE_METHOD\020\t*\t\010\350\007\020\200\200"
+    "\200\200\002J\004\010\004\020\005\"^\n\014OneofOptions\022C\n\024uninterpret"
+    "ed_option\030\347\007 \003(\0132$.google.protobuf.Unint"
+    "erpretedOption*\t\010\350\007\020\200\200\200\200\002\"\307\001\n\013EnumOption"
+    "s\022\023\n\013allow_alias\030\002 \001(\010\022\031\n\ndeprecated\030\003 \001"
+    "(\010:\005false\0222\n&deprecated_legacy_json_fiel"
+    "d_conflicts\030\006 \001(\010B\002\030\001\022C\n\024uninterpreted_o"
+    "ption\030\347\007 \003(\0132$.google.protobuf.Uninterpr"
+    "etedOption*\t\010\350\007\020\200\200\200\200\002J\004\010\005\020\006\"}\n\020EnumValue"
+    "Options\022\031\n\ndeprecated\030\001 \001(\010:\005false\022C\n\024un"
+    "interpreted_option\030\347\007 \003(\0132$.google.proto"
+    "buf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\"{\n\016Se"
+    "rviceOptions\022\031\n\ndeprecated\030! \001(\010:\005false\022"
+    "C\n\024uninterpreted_option\030\347\007 \003(\0132$.google."
+    "protobuf.UninterpretedOption*\t\010\350\007\020\200\200\200\200\002\""
+    "\255\002\n\rMethodOptions\022\031\n\ndeprecated\030! \001(\010:\005f"
+    "alse\022_\n\021idempotency_level\030\" \001(\0162/.google"
+    ".protobuf.MethodOptions.IdempotencyLevel"
+    ":\023IDEMPOTENCY_UNKNOWN\022C\n\024uninterpreted_o"
+    "ption\030\347\007 \003(\0132$.google.protobuf.Uninterpr"
+    "etedOption\"P\n\020IdempotencyLevel\022\027\n\023IDEMPO"
+    "TENCY_UNKNOWN\020\000\022\023\n\017NO_SIDE_EFFECTS\020\001\022\016\n\n"
+    "IDEMPOTENT\020\002*\t\010\350\007\020\200\200\200\200\002\"\236\002\n\023Uninterprete"
+    "dOption\022;\n\004name\030\002 \003(\0132-.google.protobuf."
+    "UninterpretedOption.NamePart\022\030\n\020identifi"
+    "er_value\030\003 \001(\t\022\032\n\022positive_int_value\030\004 \001"
+    "(\004\022\032\n\022negative_int_value\030\005 \001(\003\022\024\n\014double"
+    "_value\030\006 \001(\001\022\024\n\014string_value\030\007 \001(\014\022\027\n\017ag"
+    "gregate_value\030\010 \001(\t\0323\n\010NamePart\022\021\n\tname_"
+    "part\030\001 \002(\t\022\024\n\014is_extension\030\002 \002(\010\"\325\001\n\016Sou"
+    "rceCodeInfo\022:\n\010location\030\001 \003(\0132(.google.p"
+    "rotobuf.SourceCodeInfo.Location\032\206\001\n\010Loca"
+    "tion\022\020\n\004path\030\001 \003(\005B\002\020\001\022\020\n\004span\030\002 \003(\005B\002\020\001"
+    "\022\030\n\020leading_comments\030\003 \001(\t\022\031\n\021trailing_c"
+    "omments\030\004 \001(\t\022!\n\031leading_detached_commen"
+    "ts\030\006 \003(\t\"\234\002\n\021GeneratedCodeInfo\022A\n\nannota"
+    "tion\030\001 \003(\0132-.google.protobuf.GeneratedCo"
+    "deInfo.Annotation\032\303\001\n\nAnnotation\022\020\n\004path"
+    "\030\001 \003(\005B\002\020\001\022\023\n\013source_file\030\002 \001(\t\022\r\n\005begin"
+    "\030\003 \001(\005\022\013\n\003end\030\004 \001(\005\022H\n\010semantic\030\005 \001(\01626."
+    "google.protobuf.GeneratedCodeInfo.Annota"
+    "tion.Semantic\"(\n\010Semantic\022\010\n\004NONE\020\000\022\007\n\003S"
+    "ET\020\001\022\t\n\005ALIAS\020\002B~\n\023com.google.protobufB\020"
+    "DescriptorProtosH\001Z-google.golang.org/pr"
+    "otobuf/types/descriptorpb\370\001\001\242\002\003GPB\252\002\032Goo"
+    "gle.Protobuf.Reflection"
 };
 static ::absl::once_flag descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto = {
     false,
     false,
-    6345,
+    6703,
     descriptor_table_protodef_google_2fprotobuf_2fdescriptor_2eproto,
     "google/protobuf/descriptor.proto",
     &descriptor_table_google_2fprotobuf_2fdescriptor_2eproto_once,
@@ -1435,9 +1444,75 @@ constexpr int FieldOptions::JSType_ARRAYSIZE;
 
 #endif  // (__cplusplus < 201703) &&
         // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
-const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* MethodOptions_IdempotencyLevel_descriptor() {
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FieldOptions_OptionRetention_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
   return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[5];
+}
+bool FieldOptions_OptionRetention_IsValid(int value) {
+  switch (value) {
+    case 0:
+    case 1:
+    case 2:
+      return true;
+    default:
+      return false;
+  }
+}
+#if (__cplusplus < 201703) && \
+  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
+
+constexpr FieldOptions_OptionRetention FieldOptions::RETENTION_UNKNOWN;
+constexpr FieldOptions_OptionRetention FieldOptions::RETENTION_RUNTIME;
+constexpr FieldOptions_OptionRetention FieldOptions::RETENTION_SOURCE;
+constexpr FieldOptions_OptionRetention FieldOptions::OptionRetention_MIN;
+constexpr FieldOptions_OptionRetention FieldOptions::OptionRetention_MAX;
+constexpr int FieldOptions::OptionRetention_ARRAYSIZE;
+
+#endif  // (__cplusplus < 201703) &&
+        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* FieldOptions_OptionTargetType_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
+  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[6];
+}
+bool FieldOptions_OptionTargetType_IsValid(int value) {
+  switch (value) {
+    case 0:
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+      return true;
+    default:
+      return false;
+  }
+}
+#if (__cplusplus < 201703) && \
+  (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
+
+constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_UNKNOWN;
+constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_FILE;
+constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_EXTENSION_RANGE;
+constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_MESSAGE;
+constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_FIELD;
+constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_ONEOF;
+constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_ENUM;
+constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_ENUM_ENTRY;
+constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_SERVICE;
+constexpr FieldOptions_OptionTargetType FieldOptions::TARGET_TYPE_METHOD;
+constexpr FieldOptions_OptionTargetType FieldOptions::OptionTargetType_MIN;
+constexpr FieldOptions_OptionTargetType FieldOptions::OptionTargetType_MAX;
+constexpr int FieldOptions::OptionTargetType_ARRAYSIZE;
+
+#endif  // (__cplusplus < 201703) &&
+        // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* MethodOptions_IdempotencyLevel_descriptor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
+  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[7];
 }
 bool MethodOptions_IdempotencyLevel_IsValid(int value) {
   switch (value) {
@@ -1463,7 +1538,7 @@ constexpr int MethodOptions::IdempotencyLevel_ARRAYSIZE;
         // (!defined(_MSC_VER) || (_MSC_VER >= 1900 && _MSC_VER < 1912))
 const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* GeneratedCodeInfo_Annotation_Semantic_descriptor() {
   ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&descriptor_table_google_2fprotobuf_2fdescriptor_2eproto);
-  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[6];
+  return file_level_enum_descriptors_google_2fprotobuf_2fdescriptor_2eproto[8];
 }
 bool GeneratedCodeInfo_Annotation_Semantic_IsValid(int value) {
   switch (value) {
