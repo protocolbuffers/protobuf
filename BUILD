@@ -46,7 +46,7 @@ load(
 
 # begin:github_only
 load(
-    "//bazel:build_defs.bzl",
+    "//bazel:amalgamation.bzl",
     "upb_amalgamation",
 )
 # end:github_only
