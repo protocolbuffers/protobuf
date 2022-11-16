@@ -297,6 +297,21 @@ const char* EpsCopyInputStream::ReadArenaString(const char* ptr,
   return ptr;
 }
 
+const char* EpsCopyInputStream::ReadArenaString(const char* ptr,
+                                                ArenaStringPtr* s,
+                                                SerialArena* arena) {
+  ScopedCheckPtrInvariants check(&s->tagged_ptr_);
+  GOOGLE_DCHECK(arena != nullptr);
+
+  int size = ReadSize(&ptr);
+  if (!ptr) return nullptr;
+
+  auto* str = s->NewString(arena);
+  ptr = ReadString(ptr, size, str);
+  GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
+  return ptr;
+}
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

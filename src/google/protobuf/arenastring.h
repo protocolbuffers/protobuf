@@ -369,6 +369,18 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
     }
   }
 
+  template <typename... Args>
+  inline std::string* NewString(SerialArena* arena, Args&&... args) {
+    if (arena == nullptr) {
+      auto* s = new std::string(std::forward<Args>(args)...);
+      return tagged_ptr_.SetAllocated(s);
+    } else {
+      auto* s =
+          arena->MakeWithCleanup<std::string>(std::forward<Args>(args)...);
+      return tagged_ptr_.SetMutableArena(s);
+    }
+  }
+
   TaggedStringPtr tagged_ptr_;
 
   bool IsFixedSizeArena() const { return false; }

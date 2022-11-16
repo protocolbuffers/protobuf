@@ -75,6 +75,14 @@ std::string* InlinedStringField::MutableSlow(::google::protobuf::Arena* arena,
   return UnsafeMutablePointer();
 }
 
+std::string* InlinedStringField::MutableSlow(
+    ::google::protobuf::internal::SerialArena* arena, bool donated,
+    uint32_t* donating_states, uint32_t mask, MessageLite* msg) {
+  (void)mask;
+  (void)msg;
+  return UnsafeMutablePointer();
+}
+
 void InlinedStringField::SetAllocated(const std::string* default_value,
                                       std::string* value, Arena* arena,
                                       bool donated, uint32_t* donating_states,

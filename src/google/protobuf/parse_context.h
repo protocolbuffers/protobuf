@@ -182,6 +182,9 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   PROTOBUF_NODISCARD const char* ReadArenaString(const char* ptr,
                                                  ArenaStringPtr* s,
                                                  Arena* arena);
+  PROTOBUF_NODISCARD const char* ReadArenaString(const char* ptr,
+                                                 ArenaStringPtr* s,
+                                                 SerialArena* arena);
 
   template <typename Tag, typename T>
   PROTOBUF_NODISCARD const char* ReadRepeatedFixed(const char* ptr,
@@ -401,11 +404,14 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   struct Data {
     const DescriptorPool* pool = nullptr;
     MessageFactory* factory = nullptr;
+    internal::SerialArena* serial_arena = nullptr;
   };
 
   template <typename... T>
-  ParseContext(int depth, bool aliasing, const char** start, T&&... args)
+  ParseContext(int depth, bool aliasing, const char** start, Arena* arena,
+               T&&... args)
       : EpsCopyInputStream(aliasing), depth_(depth) {
+    if (arena) data().serial_arena = arena->impl_.GetSerialArena();
     *start = InitFrom(std::forward<T>(args)...);
   }
 
@@ -426,7 +432,8 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
   // The spawned context always disables aliasing (different input).
   template <typename... T>
   ParseContext Spawn(const char** start, T&&... args) {
-    ParseContext spawned(depth_, false, start, std::forward<T>(args)...);
+    ParseContext spawned(depth_, false, start, nullptr,
+                         std::forward<T>(args)...);
     // Transfer key context states.
     spawned.data_ = data_;
     return spawned;

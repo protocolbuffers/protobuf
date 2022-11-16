@@ -1886,7 +1886,7 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
                   : io::CodedInputStream::GetDefaultRecursionLimit();
   const char* ptr;
   internal::ParseContext ctx(
-      depth, false, &ptr,
+      depth, false, &ptr, self->message->GetArenaForAllocation(),
       absl::string_view(static_cast<const char*>(data.buf), data.len));
   PyBuffer_Release(&data);
   ctx.data().pool = factory->pool->pool;

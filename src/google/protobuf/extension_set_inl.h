@@ -240,7 +240,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
           const char* p;
           // We can't use regular parse from string as we have to track
           // proper recursion depth and descriptor pools.
-          ParseContext tmp_ctx(ctx->depth(), false, &p, payload);
+          ParseContext tmp_ctx(ctx->depth(), false, &p, GetArena(), payload);
           tmp_ctx.data().pool = ctx->data().pool;
           tmp_ctx.data().factory = ctx->data().factory;
           GOOGLE_PROTOBUF_PARSER_ASSERT(value->_InternalParse(p, &tmp_ctx) &&

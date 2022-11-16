@@ -92,6 +92,39 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount) {
   return &rep_->elements[current_size_];
 }
 
+void RepeatedPtrFieldBase::InternalExtendForParse(SerialArena* serial_arena) {
+  int new_size = current_size_ + 1;
+  if (total_size_ >= new_size) {
+    return;
+  }
+  Rep* old_rep = rep_;
+  new_size = internal::CalculateReserveSize<void*, kRepHeaderSize>(total_size_,
+                                                                   new_size);
+  GOOGLE_CHECK_LE(static_cast<int64_t>(new_size),
+           static_cast<int64_t>(
+               (std::numeric_limits<size_t>::max() - kRepHeaderSize) /
+               sizeof(old_rep->elements[0])))
+      << "Requested size is too large to fit into size_t.";
+  size_t bytes = kRepHeaderSize + sizeof(old_rep->elements[0]) * new_size;
+  rep_ = reinterpret_cast<Rep*>(
+      serial_arena->AllocateAligned<AllocationClient::kArray>(bytes));
+  const int old_total_size = total_size_;
+  total_size_ = new_size;
+  if (old_rep) {
+    if (old_rep->allocated_size > 0) {
+      memcpy(rep_->elements, old_rep->elements,
+             old_rep->allocated_size * sizeof(rep_->elements[0]));
+    }
+    rep_->allocated_size = old_rep->allocated_size;
+
+    const size_t old_size =
+        old_total_size * sizeof(rep_->elements[0]) + kRepHeaderSize;
+    serial_arena->ReturnArrayMemory(old_rep, old_size);
+  } else {
+    rep_->allocated_size = 0;
+  }
+}
+
 void RepeatedPtrFieldBase::Reserve(int new_size) {
   if (new_size > current_size_) {
     InternalExtend(new_size - current_size_);

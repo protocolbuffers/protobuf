@@ -365,6 +365,9 @@ class PROTOBUF_EXPORT InlinedStringField {
 
   alignas(std::string) char value_[sizeof(std::string)];
 
+  std::string* MutableSlow(::google::protobuf::internal::SerialArena* arena, bool donated,
+                           uint32_t* donating_states, uint32_t mask,
+                           MessageLite* msg);
   std::string* MutableSlow(::google::protobuf::Arena* arena, bool donated,
                            uint32_t* donating_states, uint32_t mask,
                            MessageLite* msg);

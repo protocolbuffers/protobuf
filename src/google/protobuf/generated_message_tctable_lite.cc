@@ -1518,7 +1518,7 @@ namespace {
 PROTOBUF_ALWAYS_INLINE inline const char* ReadStringIntoArena(
     MessageLite* /*msg*/, const char* ptr, ParseContext* ctx,
     uint32_t /*aux_idx*/, const TcParseTableBase* /*table*/,
-    ArenaStringPtr& field, Arena* arena) {
+    ArenaStringPtr& field, SerialArena* arena) {
   return ctx->ReadArenaString(ptr, &field, arena);
 }
 
@@ -1549,7 +1549,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularString(
   ptr += sizeof(TagType);
   hasbits |= (uint64_t{1} << data.hasbit_idx());
   auto& field = RefAt<FieldType>(msg, data.offset());
-  auto arena = msg->GetArenaForAllocation();
+  auto* arena = ctx->data().serial_arena;
   if (arena) {
     ptr =
         ReadStringIntoArena(msg, ptr, ctx, data.aux_idx(), table, field, arena);
@@ -1668,14 +1668,12 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
     }
   };
 
-  auto* arena = field.GetOwningArena();
-  SerialArena* serial_arena;
-  if (PROTOBUF_PREDICT_TRUE(arena != nullptr &&
-                            arena->impl_.GetSerialArenaFast(&serial_arena) &&
-                            field.PrepareForParse())) {
+  SerialArena* serial_arena = ctx->data().serial_arena;
+  if (PROTOBUF_PREDICT_TRUE(serial_arena != nullptr &&
+                            field.PrepareForParse(serial_arena))) {
     do {
       ptr += sizeof(TagType);
-      ptr = ParseRepeatedStringOnce(ptr, arena, serial_arena, ctx, field);
+      ptr = ParseRepeatedStringOnce(ptr, serial_arena, ctx, field);
 
       if (PROTOBUF_PREDICT_FALSE(ptr == nullptr || !validate_last_string())) {
         return Error(PROTOBUF_TC_PARAM_PASS);
@@ -1785,7 +1783,7 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
       case field_layout::kRepMessage:
       case field_layout::kRepGroup: {
         auto& field = RefAt<MessageLite*>(msg, current_entry->offset);
-        if (!msg->GetArenaForAllocation()) {
+        if (ctx->data().serial_arena == nullptr) {
           delete field;
         }
         break;
@@ -1828,9 +1826,9 @@ void* TcParser::MaybeGetSplitBase(MessageLite* msg, const bool is_split,
     if (split == default_split) {
       // Allocate split instance when needed.
       uint32_t size = GetSizeofSplit(table);
-      Arena* arena = msg->GetArenaForAllocation();
+      auto* arena = ctx->data().serial_arena;
       split = (arena == nullptr) ? ::operator new(size)
-                                 : arena->AllocateAligned(size);
+                                 : arena->AllocateAligned(AlignUpTo8(size));
       memcpy(split, default_split, size);
     }
     out = split;
@@ -2202,9 +2200,9 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
     case field_layout::kRepAString: {
       auto& field = RefAt<ArenaStringPtr>(base, entry.offset);
       if (need_init) field.InitDefault();
-      Arena* arena = msg->GetArenaForAllocation();
-      if (arena) {
-        ptr = ctx->ReadArenaString(ptr, &field, arena);
+      SerialArena* serial_arena = ctx->data().serial_arena;
+      if (serial_arena) {
+        ptr = ctx->ReadArenaString(ptr, &field, serial_arena);
       } else {
         std::string* str = field.MutableNoCopy(nullptr);
         ptr = InlineGreedyStringParser(str, ptr, ctx);
@@ -2226,12 +2224,12 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
 }
 
 PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseRepeatedStringOnce(
-    const char* ptr, Arena* arena, SerialArena* serial_arena, ParseContext* ctx,
+    const char* ptr, SerialArena* serial_arena, ParseContext* ctx,
     RepeatedPtrField<std::string>& field) {
   int size = ReadSize(&ptr);
   if (PROTOBUF_PREDICT_FALSE(!ptr)) return {};
-  auto* str = Arena::Create<std::string>(arena);
-  field.AddAllocatedForParse(str);
+  auto* str = serial_arena->MakeWithCleanup<std::string>();
+  field.AddAllocatedForParse(str, serial_arena);
   ptr = ctx->ReadString(ptr, size, str);
   if (PROTOBUF_PREDICT_FALSE(!ptr)) return {};
   PROTOBUF_ASSUME(ptr != nullptr);
@@ -2257,15 +2255,12 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
       const char* ptr2 = ptr;
       uint32_t next_tag;
 
-      auto* arena = field.GetOwningArena();
-      SerialArena* serial_arena;
-      if (PROTOBUF_PREDICT_TRUE(
-              arena != nullptr &&
-              arena->impl_.GetSerialArenaFast(&serial_arena) &&
-              field.PrepareForParse())) {
+      SerialArena* serial_arena = ctx->data().serial_arena;
+      if (PROTOBUF_PREDICT_TRUE(serial_arena != nullptr &&
+                                field.PrepareForParse(serial_arena))) {
         do {
           ptr = ptr2;
-          ptr = ParseRepeatedStringOnce(ptr, arena, serial_arena, ctx, field);
+          ptr = ParseRepeatedStringOnce(ptr, serial_arena, ctx, field);
           if (PROTOBUF_PREDICT_FALSE(ptr == nullptr ||
                                      !MpVerifyUtf8(field[field.size() - 1],
                                                    table, entry, xform_val))) {

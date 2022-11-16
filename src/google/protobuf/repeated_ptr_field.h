@@ -322,9 +322,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   //  - there are no preallocated elements.
   //  Returns true if the invariants hold and `AddAllocatedForParse` can be
   //  used.
-  bool PrepareForParse() {
+  bool PrepareForParse(SerialArena* arena) {
     if (current_size_ == total_size_) {
-      InternalExtend(1);
+      InternalExtendForParse(arena);
     }
     return rep_->allocated_size == current_size_;
   }
@@ -333,12 +333,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Can only be invoked after a call to `PrepareForParse` that returned `true`,
   // or other calls to `AddAllocatedForParse`.
   template <typename TypeHandler>
-  void AddAllocatedForParse(typename TypeHandler::Type* value) {
+  void AddAllocatedForParse(typename TypeHandler::Type* value,
+                            SerialArena* arena) {
     PROTOBUF_ASSUME(rep_ != nullptr);
     PROTOBUF_ASSUME(current_size_ == rep_->allocated_size);
     if (current_size_ == total_size_) {
       // The array is completely full with no cleared objects, so grow it.
-      InternalExtend(1);
+      InternalExtendForParse(arena);
     }
     rep_->elements[current_size_++] = value;
     ++rep_->allocated_size;
@@ -767,6 +768,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // common behavior from Reserve() and MergeFrom() to reduce code size.
   // |extend_amount| must be > 0.
   void** InternalExtend(int extend_amount);
+  void InternalExtendForParse(SerialArena* serial_arena);
 
   // Internal helper for Add: adds "obj" as the next element in the
   // array, including potentially resizing the array with Reserve if
@@ -1198,8 +1200,8 @@ class RepeatedPtrField final : private internal::RepeatedPtrFieldBase {
   void ExtractSubrangeInternal(int start, int num, Element** elements,
                                std::false_type);
 
-  void AddAllocatedForParse(Element* p) {
-    return RepeatedPtrFieldBase::AddAllocatedForParse<TypeHandler>(p);
+  void AddAllocatedForParse(Element* p, internal::SerialArena* arena) {
+    return RepeatedPtrFieldBase::AddAllocatedForParse<TypeHandler>(p, arena);
   }
 
   friend class Arena;

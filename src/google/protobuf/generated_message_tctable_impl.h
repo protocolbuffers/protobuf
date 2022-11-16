@@ -654,8 +654,8 @@ class PROTOBUF_EXPORT TcParser final {
   static inline const char* RepeatedString(PROTOBUF_TC_PARAM_DECL);
 
   static inline const char* ParseRepeatedStringOnce(
-      const char* ptr, Arena* arena, SerialArena* serial_arena,
-      ParseContext* ctx, RepeatedPtrField<std::string>& field);
+      const char* ptr, SerialArena* serial_arena, ParseContext* ctx,
+      RepeatedPtrField<std::string>& field);
 
   static void UnknownPackedEnum(MessageLite* msg, ParseContext* ctx,
                                 const TcParseTableBase* table, uint32_t tag,

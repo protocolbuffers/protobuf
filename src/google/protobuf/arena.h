@@ -88,6 +88,7 @@ class LazyField;             // defined in lazy_field.h
 class EpsCopyInputStream;    // defined in parse_context.h
 class RepeatedPtrFieldBase;  // defined in repeated_ptr_field.h
 class TcParser;              // defined in generated_message_tctable_impl.h
+class ParseContext;
 
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
@@ -701,6 +702,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   friend class internal::LazyField;        // For CreateMaybeMessage.
   friend class internal::EpsCopyInputStream;  // For parser performance
   friend class internal::TcParser;            // For parser performance
+  friend class internal::ParseContext;
   friend class MessageLite;
   template <typename Key, typename T>
   friend class Map;
@@ -709,6 +711,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   friend class internal::RepeatedPtrFieldBase;  // For ReturnArrayMemory
   friend struct internal::ArenaTestPeer;
 };
+
+// static_assert(std::is_standard_layout_v<Arena>, "");
 
 }  // namespace protobuf
 }  // namespace google

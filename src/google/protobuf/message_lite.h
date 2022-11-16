@@ -440,8 +440,11 @@ class PROTOBUF_EXPORT MessageLite {
 
   // Returns the arena, used for allocating internal objects(e.g., child
   // messages, etc), or owning incoming objects (e.g., set allocated).
+ public:
+  // XXX Fix this
   Arena* GetArenaForAllocation() const { return _internal_metadata_.arena(); }
 
+ protected:
   // Returns true if this message is enabled for message-owned arena (MOA)
   // trials. No lite messages are eligible for MOA.
   static bool InMoaTrial() { return false; }

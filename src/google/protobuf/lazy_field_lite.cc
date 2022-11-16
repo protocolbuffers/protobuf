@@ -65,7 +65,8 @@ inline bool ParseWithOuterContextImpl(const T& input, LazyVerifyOption option,
   const char* ptr;
   ParseContext local_ctx =
       ctx != nullptr ? ctx->Spawn(&ptr, input)
-                     : ParseContext(GetInitDepth(option), false, &ptr, input);
+                     : ParseContext(GetInitDepth(option), false, &ptr,
+                                    message->GetArenaForAllocation(), input);
 
   if (ctx == nullptr ||
       ctx->lazy_parse_mode() == ParseContext::LazyParseMode::kEagerVerify) {

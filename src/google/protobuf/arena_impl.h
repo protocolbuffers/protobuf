@@ -56,7 +56,10 @@
 
 namespace google {
 namespace protobuf {
+class Arena;
+
 namespace internal {
+class RepeatedPtrFieldBase;
 
 // To prevent sharing cache lines between threads
 #ifdef __cpp_aligned_new
@@ -296,6 +299,8 @@ class PROTOBUF_EXPORT SerialArena {
     return true;
   }
 
+  Arena* parent() const { return reinterpret_cast<Arena*>(&parent_); }
+
   // If there is enough space in the current block, allocate space for one `T`
   // object and register for destruction. The object has not been constructed
   // and the memory returned is uninitialized.
@@ -336,6 +341,14 @@ class PROTOBUF_EXPORT SerialArena {
     AddCleanupFromExisting(elem, destructor);
   }
 
+  template <typename T, typename... Args>
+  T* MakeWithCleanup(Args&&... args) {
+    static_assert(!std::is_trivially_destructible_v<T>, "");
+    return new (AllocateAlignedWithCleanup(sizeof(T), alignof(T),
+                                           cleanup::arena_destruct_object<T>))
+        T(std::forward<Args>(args)...);
+  }
+
  private:
   void* AllocateFromExistingWithCleanupFallback(size_t n, size_t align,
                                                 void (*destructor)(void*)) {
@@ -361,6 +374,7 @@ class PROTOBUF_EXPORT SerialArena {
 
  private:
   friend class ThreadSafeArena;
+  friend class internal::RepeatedPtrFieldBase;  // For ReturnArrayMemory
 
   // Creates a new SerialArena inside mem using the remaining memory as for
   // future allocations.
@@ -598,6 +612,14 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAlignedFallback(size_t n);
 
+ public:
+  SerialArena* GetSerialArena() {
+    SerialArena* arena;
+    if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) return arena;
+    return GetSerialArenaFallback(0);
+  }
+
+ private:
   // Executes callback function over SerialArenaChunk. Passes const
   // SerialArenaChunk*.
   template <typename Functor>
