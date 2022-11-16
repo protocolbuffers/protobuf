@@ -108,8 +108,7 @@ class IntTable {
 
   void Compact() { upb_inttable_compact(&table_, arena_.ptr()); }
 
-  class iterator : public std::iterator<std::forward_iterator_tag,
-                                        std::pair<uintptr_t, upb_value> > {
+  class iterator {
    public:
     explicit iterator(IntTable* table) {
       upb_inttable_begin(&iter_, &table->table_);
@@ -173,8 +172,7 @@ class StrTable {
     upb_strtable_resize(&table_, size_lg2, arena_.ptr());
   }
 
-  class iterator : public std::iterator<std::forward_iterator_tag,
-                                        std::pair<std::string, upb_value> > {
+  class iterator {
    public:
     explicit iterator(StrTable* table) {
       upb_strtable_begin(&iter_, &table->table_);
