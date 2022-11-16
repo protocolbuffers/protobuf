@@ -41,5 +41,8 @@ SerializationTest.testFieldDataDescriptor.__unittest_expecting_failure__ = True
 
 SerializationTest.testFieldProperties.__unittest_expecting_failure__ = True
 
+# TODO(259423340) Python Docker image on MacOS failing.
+ClassAPITest.testParsingNestedClass.__unittest_skip__ = True
+
 if __name__ == '__main__':
   unittest.main(verbosity=2)

@@ -580,3 +580,17 @@ TEST(CppGeneratedCode, NameCollisions) {
   model.set_arena__("test");
   EXPECT_EQ("test", model.arena__());
 }
+
+TEST(CppGeneratedCode, SharedPointer) {
+  std::shared_ptr<TestModel> model = std::make_shared<TestModel>();
+  ::upb::Arena arena;
+  auto bytes = protos::Serialize(model, arena);
+  EXPECT_TRUE(protos::Parse(model, bytes.value()));
+}
+
+TEST(CppGeneratedCode, UniquePointer) {
+  std::unique_ptr<TestModel> model = std::make_unique<TestModel>();
+  ::upb::Arena arena;
+  auto bytes = protos::Serialize(model, arena);
+  EXPECT_TRUE(protos::Parse(model, bytes.value()));
+}

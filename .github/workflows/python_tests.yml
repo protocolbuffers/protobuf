@@ -15,8 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/upb' }}
     env:
-      DOCKER_IMAGE: gcr.io/protobuf-build/bazel/linux@sha256:2bfd061284eff8234f2fcca16d71d43c69ccf3a22206628b54c204a6a9aac277
-      BAZEL_CACHE: --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/upb --google_default_credentials
+      DOCKER_IMAGE: gcr.io/protobuf-build/bazel/linux@sha256:9dba7773926bb6dce839de098948055c9e80260d7470a7fefb94b6a4fed363ba
 
     steps:
       - uses: actions/checkout@v2

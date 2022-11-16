@@ -52,7 +52,7 @@ upb_Message* upb_Message_New(const upb_MiniTable* mini_table,
 }
 
 void _upb_Message_Clear(upb_Message* msg, const upb_MiniTable* l) {
-  void* mem = UPB_PTR_AT(msg, -sizeof(upb_Message_Internal), char);
+  void* mem = (char*)msg - sizeof(upb_Message_Internal);
   memset(mem, 0, upb_msg_sizeof(l));
 }
 
