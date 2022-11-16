@@ -30,6 +30,7 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/compiler/plugin.h"
 #include "google/protobuf/descriptor.h"
@@ -75,6 +76,8 @@ std::string MessageCProxyType(const protobuf::FieldDescriptor* field,
                               bool is_const);
 std::string MessageProxyType(const protobuf::FieldDescriptor* field,
                              bool is_const);
+
+inline constexpr absl::string_view kNoPackageNamePrefix = "protos_";
 
 }  // namespace protos_generator
 

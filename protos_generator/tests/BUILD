@@ -59,6 +59,14 @@ proto_library(
     ],
 )
 
+proto_library(
+    name = "no_package_enum_user_proto",
+    srcs = [
+        "no_package_enum_user.proto",
+    ],
+    deps = [":no_package_proto"],
+)
+
 upb_proto_library(
     name = "test_model_upb_proto",
     visibility = [
@@ -78,7 +86,16 @@ upb_cc_proto_library(
 
 upb_cc_proto_library(
     name = "no_package_upb_cc_proto",
-    deps = [":no_package_proto"],
+    deps = [
+        ":no_package_proto",
+    ],
+)
+
+upb_cc_proto_library(
+    name = "no_package_enum_user_upb_cc_proto",
+    deps = [
+        ":no_package_enum_user_proto",
+    ],
 )
 
 cc_proto_library(

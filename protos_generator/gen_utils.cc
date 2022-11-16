@@ -73,6 +73,13 @@ std::string QualifiedFileLevelSymbol(const protobuf::FileDescriptor* file,
 std::string ClassName(const protobuf::Descriptor* descriptor) {
   const protobuf::Descriptor* parent = descriptor->containing_type();
   std::string res;
+  // Classes in global namespace without package names are prefixed
+  // by protos_ to avoid collision with C compiler structs defined in
+  // proto.upb.h.
+  if ((parent && parent->file()->package().empty()) ||
+      descriptor->file()->package().empty()) {
+    res = std::string(kNoPackageNamePrefix);
+  }
   if (parent) res += ClassName(parent) + "_";
   absl::StrAppend(&res, descriptor->name());
   return ::upbc::ResolveKeywordConflict(res);

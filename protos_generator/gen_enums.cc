@@ -27,6 +27,7 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.h"
+#include "protos_generator/gen_utils.h"
 
 namespace protos_generator {
 
@@ -53,12 +54,22 @@ std::string EnumTypeName(const protobuf::EnumDescriptor* enum_descriptor) {
     // enums types with no package name are prefixed with protos_ to prevent
     // conflicts with generated C headers.
     if (enum_descriptor->file()->package().empty()) {
-      return absl::StrCat("protos_", ToCIdent(enum_descriptor->name()));
+      return absl::StrCat(kNoPackageNamePrefix,
+                          ToCIdent(enum_descriptor->name()));
     }
     return ToCIdent(enum_descriptor->name());
   } else {
-    return ToCIdent(
-        absl::StrCat(containing_type->name(), "_", enum_descriptor->name()));
+    // Since the enum is in global name space (no package), it will have the
+    // same classified name as the C header include, to prevent collision
+    // rename as above.
+    if (containing_type->file()->package().empty()) {
+      return ToCIdent(absl::StrCat(containing_type->name(), "_",
+                                   kNoPackageNamePrefix,
+                                   enum_descriptor->name()));
+    } else {
+      return ToCIdent(
+          absl::StrCat(containing_type->name(), "_", enum_descriptor->name()));
+    }
   }
 }
 
@@ -73,7 +84,7 @@ std::string EnumValueSymbolInNameSpace(
     // protos enum values with no package name are prefixed with protos_ to
     // prevent conflicts with generated C headers.
     if (desc->file()->package().empty()) {
-      return absl::StrCat("protos_", ToCIdent(value->name()));
+      return absl::StrCat(kNoPackageNamePrefix, ToCIdent(value->name()));
     }
     return ToCIdent(value->name());
   }
