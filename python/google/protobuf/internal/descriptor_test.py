@@ -134,6 +134,88 @@ class DescriptorTest(unittest.TestCase):
     file_descriptor = pool.AddSerializedFile(serialized)
     self.assertEqual('', file_descriptor.package)
 
+  def testReservedName(self):
+    text = """
+      name: "foo.proto"
+      message_type {
+        name: "BrokenMessageFoo"
+        reserved_name: "is_deprecated"
+      }
+      """
+
+    fdp = text_format.Parse(text, descriptor_pb2.FileDescriptorProto())
+    serialized = fdp.SerializeToString()
+    # AddSerializedFile() will allow duplicate adds but only if the descriptors
+    # are identical and can round-trip through a FileDescriptor losslessly.
+    desc1 = descriptor_pool.Default().AddSerializedFile(serialized)
+    desc2 = descriptor_pool.Default().AddSerializedFile(serialized)
+    self.assertEqual(desc1, desc2)
+
+  def testReservedRange(self):
+    text = """
+      name: "bar.proto"
+      message_type {
+        name: "BrokenMessageBar"
+        reserved_range {
+          start: 101
+          end: 102
+        }
+      }
+      """
+
+    fdp = text_format.Parse(text, descriptor_pb2.FileDescriptorProto())
+    serialized = fdp.SerializeToString()
+    # AddSerializedFile() will allow duplicate adds but only if the descriptors
+    # are identical and can round-trip through a FileDescriptor losslessly.
+    desc1 = descriptor_pool.Default().AddSerializedFile(serialized)
+    desc2 = descriptor_pool.Default().AddSerializedFile(serialized)
+    self.assertEqual(desc1, desc2)
+
+  def testReservedNameEnum(self):
+    text = """
+      name: "baz.proto"
+      enum_type {
+        name: "BrokenMessageBaz"
+        value: <
+          name: 'ENUM_BAZ'
+          number: 114
+        >
+        reserved_name: "is_deprecated"
+      }
+      """
+
+    fdp = text_format.Parse(text, descriptor_pb2.FileDescriptorProto())
+    serialized = fdp.SerializeToString()
+    # AddSerializedFile() will allow duplicate adds but only if the descriptors
+    # are identical and can round-trip through a FileDescriptor losslessly.
+    desc1 = descriptor_pool.Default().AddSerializedFile(serialized)
+    desc2 = descriptor_pool.Default().AddSerializedFile(serialized)
+    self.assertEqual(desc1, desc2)
+
+  def testReservedRangeEnum(self):
+    text = """
+      name: "bat.proto"
+      enum_type {
+        name: "BrokenMessageBat"
+        value: <
+          name: 'ENUM_BAT'
+          number: 115
+        >
+        reserved_range {
+          start: 1001
+          end: 1002
+        }
+      }
+      """
+
+    fdp = text_format.Parse(text, descriptor_pb2.FileDescriptorProto())
+    serialized = fdp.SerializeToString()
+    # AddSerializedFile() will allow duplicate adds but only if the descriptors
+    # are identical and can round-trip through a FileDescriptor losslessly.
+    desc1 = descriptor_pool.Default().AddSerializedFile(serialized)
+    desc2 = descriptor_pool.Default().AddSerializedFile(serialized)
+    self.assertEqual(desc1, desc2)
+
   def testFindMethodByName(self):
     service_descriptor = (unittest_custom_options_pb2.
                           TestServiceWithCustomOptions.DESCRIPTOR)
