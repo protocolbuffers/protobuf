@@ -176,23 +176,6 @@ bool IsPOD(const FieldDescriptor* field) {
   }
 }
 
-// Helper for the code that emits the SharedCtor() and InternalSwap() methods.
-// Anything that is a POD or a "normal" message (represented by a pointer) can
-// be manipulated as raw bytes.
-bool CanBeManipulatedAsRawBytes(const FieldDescriptor* field,
-                                const Options& options,
-                                MessageSCCAnalyzer* scc_analyzer) {
-  bool ret = CanInitializeByZeroing(field);
-
-  // Non-repeated, non-lazy message fields are simply raw pointers, so we can
-  // swap them or use memset to initialize these in SharedCtor. We cannot use
-  // this in Clear, as we need to potentially delete the existing value.
-  ret =
-      ret || (!field->is_repeated() && !IsLazy(field, options, scc_analyzer) &&
-              field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE);
-  return ret;
-}
-
 // Finds runs of fields for which `predicate` is true.
 // RunMap maps from fields that start each run to the number of fields in that
 // run.  This is optimized for the common case that there are very few runs in
@@ -3069,7 +3052,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
   // checks all hasbits in the chunk and skips it if none are set.
   int zero_init_bytes = 0;
   for (const auto& field : optimized_order_) {
-    if (CanInitializeByZeroing(field)) {
+    if (CanClearByZeroing(field)) {
       zero_init_bytes += EstimateAlignmentSize(field);
     }
   }
@@ -3082,12 +3065,12 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
         chunk_count++;
         // This predicate guarantees that there is only a single zero-init
         // (memset) per chunk, and if present it will be at the beginning.
-        bool same = HasByteIndex(a) == HasByteIndex(b) &&
-                    a->is_repeated() == b->is_repeated() &&
-                    ShouldSplit(a, options_) == ShouldSplit(b, options_) &&
-                    (CanInitializeByZeroing(a) == CanInitializeByZeroing(b) ||
-                     (CanInitializeByZeroing(a) &&
-                      (chunk_count == 1 || merge_zero_init)));
+        bool same =
+            HasByteIndex(a) == HasByteIndex(b) &&
+            a->is_repeated() == b->is_repeated() &&
+            ShouldSplit(a, options_) == ShouldSplit(b, options_) &&
+            (CanClearByZeroing(a) == CanClearByZeroing(b) ||
+             (CanClearByZeroing(a) && (chunk_count == 1 || merge_zero_init)));
         if (!same) chunk_count = 0;
         return same;
       });
@@ -3116,7 +3099,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
     }
 
     for (const auto& field : chunk) {
-      if (CanInitializeByZeroing(field)) {
+      if (CanClearByZeroing(field)) {
         GOOGLE_CHECK(!saw_non_zero_init);
         if (!memset_start) memset_start = field;
         memset_end = field;
@@ -3172,7 +3155,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
 
     // Clear all non-zero-initializable fields in the chunk.
     for (const auto& field : chunk) {
-      if (CanInitializeByZeroing(field)) continue;
+      if (CanClearByZeroing(field)) continue;
       // It's faster to just overwrite primitive types, but we should only
       // clear strings and messages if they were set.
       //
@@ -3310,7 +3293,7 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
     const RunMap runs =
         FindRuns(optimized_order_, [this](const FieldDescriptor* field) {
           return !ShouldSplit(field, options_) &&
-                 CanBeManipulatedAsRawBytes(field, options_, scc_analyzer_);
+                 HasTrivialSwap(field, options_, scc_analyzer_);
         });
 
     for (size_t i = 0; i < optimized_order_.size(); ++i) {

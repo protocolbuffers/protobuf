@@ -121,7 +121,7 @@ static void OptimizeLayoutHelper(std::vector<const FieldDescriptor*>* fields,
       if (IsLazy(field, options, scc_analyzer)) {
         f = LAZY_MESSAGE;
       }
-    } else if (CanInitializeByZeroing(field)) {
+    } else if (CanInitializeByZeroing(field, options, scc_analyzer)) {
       f = ZERO_INITIALIZABLE;
     }
 
