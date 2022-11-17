@@ -401,7 +401,8 @@ def _CreateMessageFromTypeUrl(type_url, descriptor_pool):
     message_descriptor = pool.FindMessageTypeByName(type_name)
   except KeyError as e:
     raise TypeError(
-        'Can not find message descriptor by type_url: {0}'.format(type_url)) from e
+        'Can not find message descriptor by type_url: {0}'.format(type_url)
+      ) from e
   message_class = db.GetPrototype(message_descriptor)
   return message_class()
 
@@ -626,13 +627,19 @@ class _Parser(object):
                                          '{0}.{1}'.format(path, name)))
       except ParseError as e:
         if field and field.containing_oneof is None:
-          raise ParseError('Failed to parse {0} field: {1}.'.format(name, e)) from e
+          raise ParseError(
+            'Failed to parse {0} field: {1}.'.format(name, e)
+          ) from e
         else:
           raise ParseError(str(e)) from e
       except ValueError as e:
-        raise ParseError('Failed to parse {0} field: {1}.'.format(name, e)) from e
+        raise ParseError(
+          'Failed to parse {0} field: {1}.'.format(name, e)
+        ) from e
       except TypeError as e:
-        raise ParseError('Failed to parse {0} field: {1}.'.format(name, e)) from e
+        raise ParseError(
+          'Failed to parse {0} field: {1}.'.format(name, e)
+        ) from e
 
   def _ConvertAnyMessage(self, value, message, path):
     """Convert a JSON representation into Any message."""
