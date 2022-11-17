@@ -239,8 +239,7 @@ class TypedStrTable {
 
   void Resize(size_t size_lg2) { table_.Resize(size_lg2); }
 
-  class iterator : public std::iterator<std::forward_iterator_tag,
-                                        std::pair<std::string, T> > {
+  class iterator {
    public:
     explicit iterator(TypedStrTable* table) : iter_(&table->table_) {}
     static iterator end(TypedStrTable* table) {
@@ -312,8 +311,7 @@ class TypedIntTable {
 
   void Compact() { table_.Compact(); }
 
-  class iterator : public std::iterator<std::forward_iterator_tag,
-                                        std::pair<uintptr_t, T> > {
+  class iterator {
    public:
     explicit iterator(TypedIntTable* table) : iter_(&table->table_) {}
     static iterator end(TypedIntTable* table) {
