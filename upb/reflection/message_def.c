@@ -36,6 +36,7 @@
 #include "upb/reflection/field_def_internal.h"
 #include "upb/reflection/file_def_internal.h"
 #include "upb/reflection/message_def_internal.h"
+#include "upb/reflection/message_reserved_range_internal.h"
 #include "upb/reflection/oneof_def_internal.h"
 
 // Must be last.
@@ -58,13 +59,19 @@ struct upb_MessageDef {
   const upb_FieldDef* fields;
   const upb_OneofDef* oneofs;
   const upb_ExtensionRange* ext_ranges;
+  const upb_StringView* res_names;
   const upb_MessageDef* nested_msgs;
+  const upb_MessageReservedRange* res_ranges;
   const upb_EnumDef* nested_enums;
   const upb_FieldDef* nested_exts;
+
+  // TODO(salo): These counters don't need anywhere near 32 bits.
   int field_count;
   int real_oneof_count;
   int oneof_count;
   int ext_range_count;
+  int res_range_count;
+  int res_name_count;
   int nested_msg_count;
   int nested_enum_count;
   int nested_ext_count;
@@ -231,6 +238,14 @@ int upb_MessageDef_ExtensionRangeCount(const upb_MessageDef* m) {
   return m->ext_range_count;
 }
 
+int upb_MessageDef_ReservedRangeCount(const upb_MessageDef* m) {
+  return m->res_range_count;
+}
+
+int upb_MessageDef_ReservedNameCount(const upb_MessageDef* m) {
+  return m->res_name_count;
+}
+
 int upb_MessageDef_FieldCount(const upb_MessageDef* m) {
   return m->field_count;
 }
@@ -259,6 +274,17 @@ const upb_ExtensionRange* upb_MessageDef_ExtensionRange(const upb_MessageDef* m,
                                                         int i) {
   UPB_ASSERT(0 <= i && i < m->ext_range_count);
   return _upb_ExtensionRange_At(m->ext_ranges, i);
+}
+
+const upb_MessageReservedRange* upb_MessageDef_ReservedRange(
+    const upb_MessageDef* m, int i) {
+  UPB_ASSERT(0 <= i && i < m->res_range_count);
+  return _upb_MessageReservedRange_At(m->res_ranges, i);
+}
+
+upb_StringView upb_MessageDef_ReservedName(const upb_MessageDef* m, int i) {
+  UPB_ASSERT(0 <= i && i < m->res_name_count);
+  return m->res_names[i];
 }
 
 const upb_FieldDef* upb_MessageDef_Field(const upb_MessageDef* m, int i) {
@@ -546,6 +572,17 @@ bool upb_MessageDef_MiniDescriptorEncode(const upb_MessageDef* m, upb_Arena* a,
   return true;
 }
 
+static upb_StringView* _upb_ReservedNames_New(upb_DefBuilder* ctx, int n,
+                                              const upb_StringView* protos) {
+  upb_StringView* sv = _upb_DefBuilder_Alloc(ctx, sizeof(upb_StringView) * n);
+  for (size_t i = 0; i < n; i++) {
+    sv[i].data =
+        upb_strdup2(protos[i].data, protos[i].size, _upb_DefBuilder_Arena(ctx));
+    sv[i].size = protos[i].size;
+  }
+  return sv;
+}
+
 static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
                           const google_protobuf_DescriptorProto* msg_proto,
                           const upb_MessageDef* containing_type,
@@ -553,7 +590,10 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   const google_protobuf_OneofDescriptorProto* const* oneofs;
   const google_protobuf_FieldDescriptorProto* const* fields;
   const google_protobuf_DescriptorProto_ExtensionRange* const* ext_ranges;
-  size_t n_oneof, n_field, n_ext_range, n_enum, n_ext, n_msg;
+  const google_protobuf_DescriptorProto_ReservedRange* const* res_ranges;
+  const upb_StringView* res_names;
+  size_t n_oneof, n_field, n_enum, n_ext, n_msg;
+  size_t n_ext_range, n_res_range, n_res_name;
   upb_StringView name;
 
   // Must happen before _upb_DefBuilder_Add()
@@ -571,6 +611,8 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
   oneofs = google_protobuf_DescriptorProto_oneof_decl(msg_proto, &n_oneof);
   fields = google_protobuf_DescriptorProto_field(msg_proto, &n_field);
   ext_ranges = google_protobuf_DescriptorProto_extension_range(msg_proto, &n_ext_range);
+  res_ranges = google_protobuf_DescriptorProto_reserved_range(msg_proto, &n_res_range);
+  res_names = google_protobuf_DescriptorProto_reserved_name(msg_proto, &n_res_name);
 
   bool ok = upb_inttable_init(&m->itof, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
@@ -607,6 +649,13 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
 
   m->ext_range_count = n_ext_range;
   m->ext_ranges = _upb_ExtensionRanges_New(ctx, n_ext_range, ext_ranges, m);
+
+  m->res_range_count = n_res_range;
+  m->res_ranges =
+      _upb_MessageReservedRanges_New(ctx, n_res_range, res_ranges, m);
+
+  m->res_name_count = n_res_name;
+  m->res_names = _upb_ReservedNames_New(ctx, n_res_name, res_names);
 
   const size_t synthetic_count = _upb_OneofDefs_Finalize(ctx, m);
   m->real_oneof_count = m->oneof_count - synthetic_count;

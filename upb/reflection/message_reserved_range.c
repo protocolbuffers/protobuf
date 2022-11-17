@@ -26,6 +26,7 @@
  */
 
 #include "upb/reflection/def_builder_internal.h"
+#include "upb/reflection/enum_def.h"
 #include "upb/reflection/extension_range_internal.h"
 #include "upb/reflection/field_def.h"
 #include "upb/reflection/message_def.h"
@@ -33,60 +34,46 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-struct upb_ExtensionRange {
-  const google_protobuf_ExtensionRangeOptions* opts;
+struct upb_MessageReservedRange {
   int32_t start;
   int32_t end;
 };
 
-upb_ExtensionRange* _upb_ExtensionRange_At(const upb_ExtensionRange* r, int i) {
-  return (upb_ExtensionRange*)&r[i];
+upb_MessageReservedRange* _upb_MessageReservedRange_At(
+    const upb_MessageReservedRange* r, int i) {
+  return (upb_MessageReservedRange*)&r[i];
 }
 
-const google_protobuf_ExtensionRangeOptions* upb_ExtensionRange_Options(
-    const upb_ExtensionRange* r) {
-  return r->opts;
-}
-
-bool upb_ExtensionRange_HasOptions(const upb_ExtensionRange* r) {
-  return r->opts != (void*)kUpbDefOptDefault;
-}
-
-int32_t upb_ExtensionRange_Start(const upb_ExtensionRange* r) {
+int32_t upb_MessageReservedRange_Start(const upb_MessageReservedRange* r) {
   return r->start;
 }
+int32_t upb_MessageReservedRange_End(const upb_MessageReservedRange* r) {
+  return r->end;
+}
 
-int32_t upb_ExtensionRange_End(const upb_ExtensionRange* r) { return r->end; }
-
-upb_ExtensionRange* _upb_ExtensionRanges_New(
+upb_MessageReservedRange* _upb_MessageReservedRanges_New(
     upb_DefBuilder* ctx, int n,
-    const google_protobuf_DescriptorProto_ExtensionRange* const* protos,
+    const google_protobuf_DescriptorProto_ReservedRange* const* protos,
     const upb_MessageDef* m) {
-  upb_ExtensionRange* r =
-      _upb_DefBuilder_Alloc(ctx, sizeof(upb_ExtensionRange) * n);
+  upb_MessageReservedRange* r =
+      _upb_DefBuilder_Alloc(ctx, sizeof(upb_MessageReservedRange) * n);
 
   for (int i = 0; i < n; i++) {
-    const int32_t start =
-        google_protobuf_DescriptorProto_ExtensionRange_start(protos[i]);
-    const int32_t end = google_protobuf_DescriptorProto_ExtensionRange_end(protos[i]);
-    const int32_t max =
-        google_protobuf_MessageOptions_message_set_wire_format(upb_MessageDef_Options(m))
-            ? INT32_MAX
-            : kUpb_MaxFieldNumber + 1;
+    const int32_t start = google_protobuf_DescriptorProto_ReservedRange_start(protos[i]);
+    const int32_t end = google_protobuf_DescriptorProto_ReservedRange_end(protos[i]);
+    const int32_t max = kUpb_MaxFieldNumber + 1;
 
     // A full validation would also check that each range is disjoint, and that
     // none of the fields overlap with the extension ranges, but we are just
     // sanity checking here.
     if (start < 1 || end <= start || end > max) {
       _upb_DefBuilder_Errf(ctx,
-                           "Extension range (%d, %d) is invalid, message=%s\n",
+                           "Reserved range (%d, %d) is invalid, message=%s\n",
                            (int)start, (int)end, upb_MessageDef_FullName(m));
     }
 
     r[i].start = start;
     r[i].end = end;
-    UPB_DEF_SET_OPTIONS(r[i].opts, DescriptorProto_ExtensionRange,
-                        ExtensionRangeOptions, protos[i]);
   }
 
   return r;

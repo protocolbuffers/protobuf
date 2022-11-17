@@ -27,10 +27,9 @@
 
 // IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
 
-#ifndef UPB_REFLECTION_ENUM_DEF_H_
-#define UPB_REFLECTION_ENUM_DEF_H_
+#ifndef UPB_REFLECTION_MESSAGE_RESERVED_RANGE_H_
+#define UPB_REFLECTION_MESSAGE_RESERVED_RANGE_H_
 
-#include "upb/base/string_view.h"
 #include "upb/reflection/common.h"
 
 // Must be last.
@@ -40,36 +39,8 @@
 extern "C" {
 #endif
 
-bool upb_EnumDef_CheckNumber(const upb_EnumDef* e, int32_t num);
-const upb_MessageDef* upb_EnumDef_ContainingType(const upb_EnumDef* e);
-int32_t upb_EnumDef_Default(const upb_EnumDef* e);
-const upb_FileDef* upb_EnumDef_File(const upb_EnumDef* e);
-const upb_EnumValueDef* upb_EnumDef_FindValueByName(const upb_EnumDef* e,
-                                                    const char* name);
-const upb_EnumValueDef* upb_EnumDef_FindValueByNameWithSize(
-    const upb_EnumDef* e, const char* name, size_t size);
-const upb_EnumValueDef* upb_EnumDef_FindValueByNumber(const upb_EnumDef* e,
-                                                      int32_t num);
-const char* upb_EnumDef_FullName(const upb_EnumDef* e);
-bool upb_EnumDef_HasOptions(const upb_EnumDef* e);
-bool upb_EnumDef_IsClosed(const upb_EnumDef* e);
-
-// Creates a mini descriptor string for an enum, returns true on success.
-bool upb_EnumDef_MiniDescriptorEncode(const upb_EnumDef* e, upb_Arena* a,
-                                      upb_StringView* out);
-
-const char* upb_EnumDef_Name(const upb_EnumDef* e);
-const google_protobuf_EnumOptions* upb_EnumDef_Options(const upb_EnumDef* e);
-
-upb_StringView upb_EnumDef_ReservedName(const upb_EnumDef* e, int i);
-int upb_EnumDef_ReservedNameCount(const upb_EnumDef* e);
-
-const upb_EnumReservedRange* upb_EnumDef_ReservedRange(const upb_EnumDef* e,
-                                                       int i);
-int upb_EnumDef_ReservedRangeCount(const upb_EnumDef* e);
-
-const upb_EnumValueDef* upb_EnumDef_Value(const upb_EnumDef* e, int i);
-int upb_EnumDef_ValueCount(const upb_EnumDef* e);
+int32_t upb_MessageReservedRange_Start(const upb_MessageReservedRange* r);
+int32_t upb_MessageReservedRange_End(const upb_MessageReservedRange* r);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -77,4 +48,4 @@ int upb_EnumDef_ValueCount(const upb_EnumDef* e);
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_REFLECTION_ENUM_DEF_H_ */
+#endif /* UPB_REFLECTION_MESSAGE_RESERVED_RANGE_H_ */

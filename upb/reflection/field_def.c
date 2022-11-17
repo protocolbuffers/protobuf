@@ -35,7 +35,6 @@
 #include "upb/reflection/desc_state_internal.h"
 #include "upb/reflection/enum_def_internal.h"
 #include "upb/reflection/enum_value_def_internal.h"
-#include "upb/reflection/extension_range_internal.h"
 #include "upb/reflection/field_def_internal.h"
 #include "upb/reflection/file_def_internal.h"
 #include "upb/reflection/message_def_internal.h"
@@ -407,7 +406,7 @@ static void parse_default(upb_DefBuilder* ctx, const char* str, size_t len,
     case kUpb_CType_UInt64:
     case kUpb_CType_Double:
     case kUpb_CType_Float:
-      /* Standard C number parsing functions expect null-terminated strings. */
+      // Standard C number parsing functions expect null-terminated strings.
       if (len >= sizeof(nullz) - 1) {
         _upb_DefBuilder_Errf(ctx, "Default too long: %.*s", (int)len, str);
       }

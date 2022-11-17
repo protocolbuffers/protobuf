@@ -25,33 +25,31 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
+#ifndef UPB_REFLECTION_MESSAGE_RESERVED_RANGE_INTERNAL_H_
+#define UPB_REFLECTION_MESSAGE_RESERVED_RANGE_INTERNAL_H_
 
-// Declarations common to all public def types.
+#include "upb/reflection/message_reserved_range.h"
 
-#ifndef UPB_REFLECTION_COMMON_H_
-#define UPB_REFLECTION_COMMON_H_
+// Must be last.
+#include "upb/port/def.inc"
 
-#include "google/protobuf/descriptor.upb.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-typedef enum { kUpb_Syntax_Proto2 = 2, kUpb_Syntax_Proto3 = 3 } upb_Syntax;
+upb_MessageReservedRange* _upb_MessageReservedRange_At(
+    const upb_MessageReservedRange* r, int i);
 
-// Forward declarations for circular references.
-typedef struct upb_DefPool upb_DefPool;
-typedef struct upb_EnumDef upb_EnumDef;
-typedef struct upb_EnumReservedRange upb_EnumReservedRange;
-typedef struct upb_EnumValueDef upb_EnumValueDef;
-typedef struct upb_ExtensionRange upb_ExtensionRange;
-typedef struct upb_FieldDef upb_FieldDef;
-typedef struct upb_FileDef upb_FileDef;
-typedef struct upb_MessageDef upb_MessageDef;
-typedef struct upb_MessageReservedRange upb_MessageReservedRange;
-typedef struct upb_MethodDef upb_MethodDef;
-typedef struct upb_OneofDef upb_OneofDef;
-typedef struct upb_ServiceDef upb_ServiceDef;
+// Allocate and initialize an array of |n| reserved ranges owned by |m|.
+upb_MessageReservedRange* _upb_MessageReservedRanges_New(
+    upb_DefBuilder* ctx, int n,
+    const google_protobuf_DescriptorProto_ReservedRange* const* protos,
+    const upb_MessageDef* m);
 
-// EVERYTHING BELOW THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
 
-typedef struct upb_DefBuilder upb_DefBuilder;
+#include "upb/port/undef.inc"
 
-#endif /* UPB_REFLECTION_COMMON_H_ */
+#endif /* UPB_REFLECTION_MESSAGE_RESERVED_RANGE_INTERNAL_H_ */

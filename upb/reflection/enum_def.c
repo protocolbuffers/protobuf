@@ -32,6 +32,7 @@
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/desc_state_internal.h"
 #include "upb/reflection/enum_def_internal.h"
+#include "upb/reflection/enum_reserved_range_internal.h"
 #include "upb/reflection/enum_value_def_internal.h"
 #include "upb/reflection/file_def_internal.h"
 #include "upb/reflection/message_def_internal.h"
@@ -48,7 +49,11 @@ struct upb_EnumDef {
   upb_strtable ntoi;
   upb_inttable iton;
   const upb_EnumValueDef* values;
+  const upb_EnumReservedRange* res_ranges;
+  const upb_StringView* res_names;
   int value_count;
+  int res_range_count;
+  int res_name_count;
   int32_t defaultval;
   bool is_sorted;  // Whether all of the values are defined in ascending order.
 };
@@ -107,6 +112,25 @@ const upb_MessageDef* upb_EnumDef_ContainingType(const upb_EnumDef* e) {
 int32_t upb_EnumDef_Default(const upb_EnumDef* e) {
   UPB_ASSERT(upb_EnumDef_FindValueByNumber(e, e->defaultval));
   return e->defaultval;
+}
+
+int upb_EnumDef_ReservedRangeCount(const upb_EnumDef* e) {
+  return e->res_range_count;
+}
+
+const upb_EnumReservedRange* upb_EnumDef_ReservedRange(const upb_EnumDef* e,
+                                                       int i) {
+  UPB_ASSERT(0 <= i && i < e->res_range_count);
+  return _upb_EnumReservedRange_At(e->res_ranges, i);
+}
+
+int upb_EnumDef_ReservedNameCount(const upb_EnumDef* e) {
+  return e->res_name_count;
+}
+
+upb_StringView upb_EnumDef_ReservedName(const upb_EnumDef* e, int i) {
+  UPB_ASSERT(0 <= i && i < e->res_name_count);
+  return e->res_names[i];
 }
 
 int upb_EnumDef_ValueCount(const upb_EnumDef* e) { return e->value_count; }
@@ -201,12 +225,25 @@ static upb_MiniTableEnum* create_enumlayout(upb_DefBuilder* ctx,
   return layout;
 }
 
+static upb_StringView* _upb_EnumReservedNames_New(
+    upb_DefBuilder* ctx, int n, const upb_StringView* protos) {
+  upb_StringView* sv = _upb_DefBuilder_Alloc(ctx, sizeof(upb_StringView) * n);
+  for (size_t i = 0; i < n; i++) {
+    sv[i].data =
+        upb_strdup2(protos[i].data, protos[i].size, _upb_DefBuilder_Arena(ctx));
+    sv[i].size = protos[i].size;
+  }
+  return sv;
+}
+
 static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
                            const google_protobuf_EnumDescriptorProto* enum_proto,
                            upb_EnumDef* e) {
   const google_protobuf_EnumValueDescriptorProto* const* values;
+  const google_protobuf_EnumDescriptorProto_EnumReservedRange* const* res_ranges;
+  const upb_StringView* res_names;
   upb_StringView name;
-  size_t n;
+  size_t n_value, n_res_range, n_res_name;
 
   // Must happen before _upb_DefBuilder_Add()
   e->file = _upb_DefBuilder_File(ctx);
@@ -218,22 +255,32 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
   _upb_DefBuilder_Add(ctx, e->full_name,
                       _upb_DefType_Pack(e, UPB_DEFTYPE_ENUM));
 
-  values = google_protobuf_EnumDescriptorProto_value(enum_proto, &n);
+  values = google_protobuf_EnumDescriptorProto_value(enum_proto, &n_value);
 
-  bool ok = upb_strtable_init(&e->ntoi, n, ctx->arena);
+  bool ok = upb_strtable_init(&e->ntoi, n_value, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
   ok = upb_inttable_init(&e->iton, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
   e->defaultval = 0;
-  e->value_count = n;
-  e->values = _upb_EnumValueDefs_New(ctx, prefix, n, values, e, &e->is_sorted);
+  e->value_count = n_value;
+  e->values =
+      _upb_EnumValueDefs_New(ctx, prefix, n_value, values, e, &e->is_sorted);
 
-  if (n == 0) {
+  if (n_value == 0) {
     _upb_DefBuilder_Errf(ctx, "enums must contain at least one value (%s)",
                          e->full_name);
   }
+
+  res_ranges =
+      google_protobuf_EnumDescriptorProto_reserved_range(enum_proto, &n_res_range);
+  e->res_range_count = n_res_range;
+  e->res_ranges = _upb_EnumReservedRanges_New(ctx, n_res_range, res_ranges, e);
+
+  res_names = google_protobuf_EnumDescriptorProto_reserved_name(enum_proto, &n_res_name);
+  e->res_name_count = n_res_name;
+  e->res_names = _upb_EnumReservedNames_New(ctx, n_res_name, res_names);
 
   UPB_DEF_SET_OPTIONS(e->opts, EnumDescriptorProto, EnumOptions, enum_proto);
 

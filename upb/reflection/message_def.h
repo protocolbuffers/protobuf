@@ -152,6 +152,14 @@ const upb_OneofDef* upb_MessageDef_Oneof(const upb_MessageDef* m, int i);
 int upb_MessageDef_OneofCount(const upb_MessageDef* m);
 
 const google_protobuf_MessageOptions* upb_MessageDef_Options(const upb_MessageDef* m);
+
+upb_StringView upb_MessageDef_ReservedName(const upb_MessageDef* m, int i);
+int upb_MessageDef_ReservedNameCount(const upb_MessageDef* m);
+
+const upb_MessageReservedRange* upb_MessageDef_ReservedRange(
+    const upb_MessageDef* m, int i);
+int upb_MessageDef_ReservedRangeCount(const upb_MessageDef* m);
+
 upb_Syntax upb_MessageDef_Syntax(const upb_MessageDef* m);
 upb_WellKnown upb_MessageDef_WellKnownType(const upb_MessageDef* m);
 
