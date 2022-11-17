@@ -78,70 +78,20 @@ bool upb_inttable_replace(upb_inttable* t, uintptr_t key, upb_value val);
 // inserting more entries is legal, but will likely require a table resize.
 void upb_inttable_compact(upb_inttable* t, upb_Arena* a);
 
-/* Iteration over inttable.
- *
- *   intptr_t iter = UPB_INTTABLE_BEGIN;
- *   uintptr_t key;
- *   upb_value val;
- *   while (upb_inttable_next2(t, &key, &val, &iter)) {
- *      // ...
- *   }
- */
+// Iteration over inttable:
+//
+//   intptr_t iter = UPB_INTTABLE_BEGIN;
+//   uintptr_t key;
+//   upb_value val;
+//   while (upb_inttable_next(t, &key, &val, &iter)) {
+//      // ...
+//   }
 
 #define UPB_INTTABLE_BEGIN -1
 
-bool upb_inttable_next2(const upb_inttable* t, uintptr_t* key, upb_value* val,
-                        intptr_t* iter);
+bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
+                       intptr_t* iter);
 void upb_inttable_removeiter(upb_inttable* t, intptr_t* iter);
-
-/* DEPRECATED iterators, slated for removal.
- *
- * Iterators for int tables.  We are subject to some kind of unusual
- * design constraints:
- *
- * For high-level languages:
- *  - we must be able to guarantee that we don't crash or corrupt memory even if
- *    the program accesses an invalidated iterator.
- *
- * For C++11 range-based for:
- *  - iterators must be copyable
- *  - iterators must be comparable
- *  - it must be possible to construct an "end" value.
- *
- * Iteration order is undefined.
- *
- * Modifying the table invalidates iterators.  upb_{str,int}table_done() is
- * guaranteed to work even on an invalidated iterator, as long as the table it
- * is iterating over has not been freed.  Calling next() or accessing data from
- * an invalidated iterator yields unspecified elements from the table, but it is
- * guaranteed not to crash and to return real table elements (except when done()
- * is true). */
-
-/* upb_inttable_iter **********************************************************/
-
-/*   upb_inttable_iter i;
- *   upb_inttable_begin(&i, t);
- *   for(; !upb_inttable_done(&i); upb_inttable_next(&i)) {
- *     uintptr_t key = upb_inttable_iter_key(&i);
- *     upb_value val = upb_inttable_iter_value(&i);
- *     // ...
- *   }
- */
-
-typedef struct {
-  const upb_inttable* t;
-  size_t index;
-  bool array_part;
-} upb_inttable_iter;
-
-void upb_inttable_begin(upb_inttable_iter* i, const upb_inttable* t);
-void upb_inttable_next(upb_inttable_iter* i);
-bool upb_inttable_done(const upb_inttable_iter* i);
-uintptr_t upb_inttable_iter_key(const upb_inttable_iter* i);
-upb_value upb_inttable_iter_value(const upb_inttable_iter* i);
-void upb_inttable_iter_setdone(upb_inttable_iter* i);
-bool upb_inttable_iter_isequal(const upb_inttable_iter* i1,
-                               const upb_inttable_iter* i2);
 
 #ifdef __cplusplus
 } /* extern "C" */

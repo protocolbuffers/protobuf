@@ -428,11 +428,10 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
     }
     _upb_mapsorter_popmap(&e->sorter, &sorted);
   } else {
-    upb_strtable_iter i;
-    upb_strtable_begin(&i, &map->table);
-    for (; !upb_strtable_done(&i); upb_strtable_next(&i)) {
-      upb_StringView key = upb_strtable_iter_key(&i);
-      const upb_value val = upb_strtable_iter_value(&i);
+    intptr_t iter = UPB_STRTABLE_BEGIN;
+    upb_StringView key;
+    upb_value val;
+    while (upb_strtable_next2(&map->table, &key, &val, &iter)) {
       upb_MapEntry ent;
       _upb_map_fromkey(key, &ent.k, map->key_size);
       _upb_map_fromvalue(val, &ent.v, map->val_size);

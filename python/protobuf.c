@@ -173,7 +173,7 @@ bool PyUpb_WeakMap_Next(PyUpb_WeakMap* map, const void** key, PyObject** obj,
                         intptr_t* iter) {
   uintptr_t u_key;
   upb_value val;
-  if (!upb_inttable_next2(&map->table, &u_key, &val, iter)) return false;
+  if (!upb_inttable_next(&map->table, &u_key, &val, iter)) return false;
   *key = (void*)(u_key << PyUpb_PtrShift);
   *obj = upb_value_getptr(val);
   return true;

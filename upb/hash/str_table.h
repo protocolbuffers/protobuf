@@ -85,9 +85,9 @@ UPB_INLINE bool upb_strtable_remove(upb_strtable* t, const char* key,
 // Exposed for testing only.
 bool upb_strtable_resize(upb_strtable* t, size_t size_lg2, upb_Arena* a);
 
-/* Iteration over strtable.
+/* Iteration over strtable:
  *
- *   intptr_t iter = UPB_INTTABLE_BEGIN;
+ *   intptr_t iter = UPB_STRTABLE_BEGIN;
  *   upb_StringView key;
  *   upb_value val;
  *   while (upb_strtable_next2(t, &key, &val, &iter)) {

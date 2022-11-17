@@ -431,14 +431,14 @@ const upb_FieldDef** upb_DefPool_GetAllExtensions(const upb_DefPool* s,
   // This is O(all exts) instead of O(exts for m).  If we need this to be
   // efficient we may need to make extreg into a two-level table, or have a
   // second per-message index.
-  while (upb_inttable_next2(&s->exts, &key, &val, &iter)) {
+  while (upb_inttable_next(&s->exts, &key, &val, &iter)) {
     const upb_FieldDef* f = upb_value_getconstptr(val);
     if (upb_FieldDef_ContainingType(f) == m) n++;
   }
   const upb_FieldDef** exts = malloc(n * sizeof(*exts));
   iter = UPB_INTTABLE_BEGIN;
   size_t i = 0;
-  while (upb_inttable_next2(&s->exts, &key, &val, &iter)) {
+  while (upb_inttable_next(&s->exts, &key, &val, &iter)) {
     const upb_FieldDef* f = upb_value_getconstptr(val);
     if (upb_FieldDef_ContainingType(f) == m) exts[i++] = f;
   }

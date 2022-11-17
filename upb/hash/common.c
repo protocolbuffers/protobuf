@@ -40,9 +40,9 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-#define UPB_MAXARRSIZE 16 /* 64k. */
+#define UPB_MAXARRSIZE 16  // 2**16 = 64k.
 
-/* From Chromium. */
+// From Chromium.
 #define ARRAY_SIZE(x) \
   ((sizeof(x) / sizeof(0 [x])) / ((size_t)(!(sizeof(x) % sizeof(0 [x])))))
 
@@ -65,7 +65,7 @@ static int log2ceil(uint64_t v) {
   int ret = 0;
   bool pow2 = is_pow2(v);
   while (v >>= 1) ret++;
-  ret = pow2 ? ret : ret + 1; /* Ceiling. */
+  ret = pow2 ? ret : ret + 1;  // Ceiling.
   return UPB_MIN(UPB_MAXARRSIZE, ret);
 }
 
@@ -472,14 +472,13 @@ void upb_strtable_clear(upb_strtable* t) {
 
 bool upb_strtable_resize(upb_strtable* t, size_t size_lg2, upb_Arena* a) {
   upb_strtable new_table;
-  upb_strtable_iter i;
-
   if (!init(&new_table.t, size_lg2, a)) return false;
-  upb_strtable_begin(&i, t);
-  for (; !upb_strtable_done(&i); upb_strtable_next(&i)) {
-    upb_StringView key = upb_strtable_iter_key(&i);
-    upb_strtable_insert(&new_table, key.data, key.size,
-                        upb_strtable_iter_value(&i), a);
+
+  intptr_t iter = UPB_STRTABLE_BEGIN;
+  upb_StringView key;
+  upb_value val;
+  while (upb_strtable_next2(t, &key, &val, &iter)) {
+    upb_strtable_insert(&new_table, key.data, key.size, val, a);
   }
   *t = new_table;
   return true;
@@ -598,12 +597,13 @@ static void check(upb_inttable* t) {
   UPB_UNUSED(t);
 #if defined(UPB_DEBUG_TABLE) && !defined(NDEBUG)
   {
-    /* This check is very expensive (makes inserts/deletes O(N)). */
+    // This check is very expensive (makes inserts/deletes O(N)).
     size_t count = 0;
-    upb_inttable_iter i;
-    upb_inttable_begin(&i, t);
-    for (; !upb_inttable_done(&i); upb_inttable_next(&i), count++) {
-      UPB_ASSERT(upb_inttable_lookup(t, upb_inttable_iter_key(&i), NULL));
+    intptr_t iter = UPB_INTTABLE_BEGIN;
+    uintptr_t key;
+    upb_value val;
+    while (upb_inttable_next(t, &key, &val, &iter)) {
+      UPB_ASSERT(upb_inttable_lookup(t, key, NULL));
     }
     UPB_ASSERT(count == upb_inttable_count(t));
   }
@@ -716,22 +716,22 @@ void upb_inttable_compact(upb_inttable* t, upb_Arena* a) {
   /* The max key in each bucket. */
   uintptr_t max[UPB_MAXARRSIZE + 1] = {0};
 
-  upb_inttable_iter i;
-  size_t arr_count;
-  int size_lg2;
-  upb_inttable new_t;
-
-  upb_inttable_begin(&i, t);
-  for (; !upb_inttable_done(&i); upb_inttable_next(&i)) {
-    uintptr_t key = upb_inttable_iter_key(&i);
-    int bucket = log2ceil(key);
-    max[bucket] = UPB_MAX(max[bucket], key);
-    counts[bucket]++;
+  {
+    intptr_t iter = UPB_INTTABLE_BEGIN;
+    uintptr_t key;
+    upb_value val;
+    while (upb_inttable_next(t, &key, &val, &iter)) {
+      int bucket = log2ceil(key);
+      max[bucket] = UPB_MAX(max[bucket], key);
+      counts[bucket]++;
+    }
   }
 
   /* Find the largest power of two that satisfies the MIN_DENSITY
    * definition (while actually having some keys). */
-  arr_count = upb_inttable_count(t);
+  size_t arr_count = upb_inttable_count(t);
+  int size_lg2;
+  upb_inttable new_t;
 
   for (size_lg2 = ARRAY_SIZE(counts) - 1; size_lg2 > 0; size_lg2--) {
     if (counts[size_lg2] == 0) {
@@ -754,55 +754,28 @@ void upb_inttable_compact(upb_inttable* t, upb_Arena* a) {
     int hashsize_lg2 = log2ceil(hash_size);
 
     upb_inttable_sizedinit(&new_t, arr_size, hashsize_lg2, a);
-    upb_inttable_begin(&i, t);
-    for (; !upb_inttable_done(&i); upb_inttable_next(&i)) {
-      uintptr_t k = upb_inttable_iter_key(&i);
-      upb_inttable_insert(&new_t, k, upb_inttable_iter_value(&i), a);
+
+    {
+      intptr_t iter = UPB_INTTABLE_BEGIN;
+      uintptr_t key;
+      upb_value val;
+      while (upb_inttable_next(t, &key, &val, &iter)) {
+        upb_inttable_insert(&new_t, key, val, a);
+      }
     }
+
     UPB_ASSERT(new_t.array_size == arr_size);
     UPB_ASSERT(new_t.t.size_lg2 == hashsize_lg2);
   }
   *t = new_t;
 }
 
-/* Iteration. */
+// Iteration.
 
-static const upb_tabent* int_tabent(const upb_inttable_iter* i) {
-  UPB_ASSERT(!i->array_part);
-  return &i->t->t.entries[i->index];
-}
-
-static upb_tabval int_arrent(const upb_inttable_iter* i) {
-  UPB_ASSERT(i->array_part);
-  return i->t->array[i->index];
-}
-
-void upb_inttable_begin(upb_inttable_iter* i, const upb_inttable* t) {
-  i->t = t;
-  i->index = -1;
-  i->array_part = true;
-  upb_inttable_next(i);
-}
-
-void upb_inttable_next(upb_inttable_iter* iter) {
-  const upb_inttable* t = iter->t;
-  if (iter->array_part) {
-    while (++iter->index < t->array_size) {
-      if (upb_arrhas(int_arrent(iter))) {
-        return;
-      }
-    }
-    iter->array_part = false;
-    iter->index = begin(&t->t);
-  } else {
-    iter->index = next(&t->t, iter->index);
-  }
-}
-
-bool upb_inttable_next2(const upb_inttable* t, uintptr_t* key, upb_value* val,
-                        intptr_t* iter) {
+bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
+                       intptr_t* iter) {
   intptr_t i = *iter;
-  if (i < t->array_size) {
+  if ((size_t)(i + 1) <= t->array_size) {
     while (++i < t->array_size) {
       upb_tabval ent = t->array[i];
       if (upb_arrhas(ent)) {
@@ -812,9 +785,10 @@ bool upb_inttable_next2(const upb_inttable* t, uintptr_t* key, upb_value* val,
         return true;
       }
     }
+    i--;  // Back up to exactly one position before the start of the table.
   }
 
-  size_t tab_idx = next(&t->t, i == -1 ? -1 : i - t->array_size);
+  size_t tab_idx = next(&t->t, i - t->array_size);
   if (tab_idx < upb_table_size(&t->t)) {
     upb_tabent* ent = &t->t.entries[tab_idx];
     *key = ent->key;
@@ -891,38 +865,4 @@ void upb_strtable_removeiter(upb_strtable* t, intptr_t* iter) {
   t->t.count--;
   ent->key = 0;
   ent->next = NULL;
-}
-
-bool upb_inttable_done(const upb_inttable_iter* i) {
-  if (!i->t) return true;
-  if (i->array_part) {
-    return i->index >= i->t->array_size || !upb_arrhas(int_arrent(i));
-  } else {
-    return i->index >= upb_table_size(&i->t->t) ||
-           upb_tabent_isempty(int_tabent(i));
-  }
-}
-
-uintptr_t upb_inttable_iter_key(const upb_inttable_iter* i) {
-  UPB_ASSERT(!upb_inttable_done(i));
-  return i->array_part ? i->index : int_tabent(i)->key;
-}
-
-upb_value upb_inttable_iter_value(const upb_inttable_iter* i) {
-  UPB_ASSERT(!upb_inttable_done(i));
-  return _upb_value_val(i->array_part ? i->t->array[i->index].val
-                                      : int_tabent(i)->val.val);
-}
-
-void upb_inttable_iter_setdone(upb_inttable_iter* i) {
-  i->t = NULL;
-  i->index = SIZE_MAX;
-  i->array_part = false;
-}
-
-bool upb_inttable_iter_isequal(const upb_inttable_iter* i1,
-                               const upb_inttable_iter* i2) {
-  if (upb_inttable_done(i1) && upb_inttable_done(i2)) return true;
-  return i1->t == i2->t && i1->index == i2->index &&
-         i1->array_part == i2->array_part;
 }
