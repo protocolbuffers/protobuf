@@ -106,16 +106,16 @@
 #define UPB_ALIGN_MALLOC(size) UPB_ALIGN_UP(size, UPB_MALLOC_ALIGN)
 #define UPB_ALIGN_OF(type) offsetof (struct { char c; type member; }, member)
 
-/* Hints to the compiler about likely/unlikely branches. */
+// Hints to the compiler about likely/unlikely branches.
 #if defined (__GNUC__) || defined(__clang__)
-#define UPB_LIKELY(x) __builtin_expect((x),1)
-#define UPB_UNLIKELY(x) __builtin_expect((x),0)
+#define UPB_LIKELY(x) __builtin_expect((bool)(x), 1)
+#define UPB_UNLIKELY(x) __builtin_expect((bool)(x), 0)
 #else
 #define UPB_LIKELY(x) (x)
 #define UPB_UNLIKELY(x) (x)
 #endif
 
-/* Macros for function attributes on compilers that support them. */
+// Macros for function attributes on compilers that support them.
 #ifdef __GNUC__
 #define UPB_FORCEINLINE __inline__ __attribute__((always_inline))
 #define UPB_NOINLINE __attribute__((noinline))
@@ -138,8 +138,7 @@
 
 #define UPB_UNUSED(var) (void)var
 
-/* UPB_ASSUME(): in release mode, we tell the compiler to assume this is true.
- */
+// UPB_ASSUME(): in release mode, we tell the compiler to assume this is true.
 #ifdef NDEBUG
 #ifdef __GNUC__
 #define UPB_ASSUME(expr) if (!(expr)) __builtin_unreachable()
