@@ -822,6 +822,15 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
           deprecated: true
         >
       >
+      field: {
+        name: 'deprecated_repeated_string'
+        number: 4
+        label: LABEL_REPEATED
+        type: TYPE_STRING
+        options: {
+          deprecated: true
+        }
+      }
       field {
         name: "deprecated_message"
         number: 3
@@ -841,6 +850,13 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
           deprecated: true
         }
         oneof_index: 0
+      }
+      field {
+        name: "nested"
+        number: 5
+        label: LABEL_OPTIONAL
+        type: TYPE_MESSAGE
+        type_name: ".protobuf_unittest.TestDeprecatedFields"
       }
       oneof_decl {
         name: "oneof_fields"

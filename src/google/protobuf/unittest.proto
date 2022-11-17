@@ -194,10 +194,12 @@ message NestedTestAllTypes {
 
 message TestDeprecatedFields {
   optional int32 deprecated_int32 = 1 [deprecated=true];
+  repeated string deprecated_repeated_string = 4 [deprecated=true];
   optional TestAllTypes.NestedMessage deprecated_message = 3 [deprecated=true];
   oneof oneof_fields {
     int32 deprecated_int32_in_oneof = 2 [deprecated=true];
   }
+  optional TestDeprecatedFields nested = 5;
 }
 
 message TestDeprecatedMessage {
