@@ -43,6 +43,7 @@
 #include <limits.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <cstring>
 #include <utility>
 
@@ -711,6 +712,14 @@ uint8_t* EpsCopyOutputStream::Trim(uint8_t* ptr) {
   // Reset to initial state (expecting new buffer)
   buffer_end_ = end_ = buffer_;
   return buffer_;
+}
+
+PROTOBUF_NODISCARD uint8_t* PROTOBUF_NOINLINE
+EpsCopyOutputStream::EnsureSpace(uint8_t* ptr) {
+  if (PROTOBUF_PREDICT_FALSE(ptr >= end_)) {
+    return EnsureSpaceFallback(ptr);
+  }
+  return ptr;
 }
 
 

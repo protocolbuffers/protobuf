@@ -669,12 +669,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   // After this it's guaranteed you can safely write kSlopBytes to ptr. This
   // will never fail! The underlying stream can produce an error. Use HadError
   // to check for errors.
-  PROTOBUF_NODISCARD uint8_t* EnsureSpace(uint8_t* ptr) {
-    if (PROTOBUF_PREDICT_FALSE(ptr >= end_)) {
-      return EnsureSpaceFallback(ptr);
-    }
-    return ptr;
-  }
+  PROTOBUF_NODISCARD uint8_t* PROTOBUF_NOINLINE EnsureSpace(uint8_t* ptr);
 
   uint8_t* WriteRaw(const void* data, int size, uint8_t* ptr) {
     if (PROTOBUF_PREDICT_FALSE(end_ - ptr < size)) {
