@@ -525,7 +525,7 @@ absl::Status ParseSingular(JsonLexer& lex, Field<Traits> field,
       absl::StatusOr<absl::optional<int32_t>> x = ParseEnum<Traits>(lex, field);
       RETURN_IF_ERROR(x.status());
 
-      if (x->has_value() || !Traits::IsOptional(field)) {
+      if (x->has_value() || Traits::IsImplicitPresence(field)) {
         Traits::SetEnum(field, msg, x->value_or(0));
       }
       break;
