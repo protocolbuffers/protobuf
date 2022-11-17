@@ -343,7 +343,7 @@ void WriteRepeatedMessageAccessor(const protobuf::Descriptor* message,
         $1 $0::$2(size_t index) const {
           size_t len;
           auto* ptr = $3_$5(msg_, &len);
-          assert(0 <= index && index < len);
+          assert(index < len);
           return ::protos::internal::CreateMessage<$4>((upb_Message*)*(ptr + index));
         }
       )cc",
@@ -369,7 +369,7 @@ void WriteRepeatedMessageAccessor(const protobuf::Descriptor* message,
         $1 $0::mutable_$2(size_t index) const {
           size_t len;
           auto* ptr = $3_$6(msg_, &len);
-          assert(0 <= index && index < len);
+          assert(index < len);
           return ::protos::internal::CreateMessageProxy<$4>(
               (upb_Message*)*(ptr + index), $5);
         }
@@ -391,7 +391,7 @@ void WriteRepeatedStringAccessor(const protobuf::Descriptor* message,
         $1 $0::$2(size_t index) const {
           size_t len;
           auto* ptr = $3_mutable_$4(msg_, &len);
-          assert(0 <= index && index < len);
+          assert(index < len);
           return ::protos::UpbStrToStringView(*(ptr + index));
         }
       )cc",
@@ -417,7 +417,7 @@ void WriteRepeatedStringAccessor(const protobuf::Descriptor* message,
         void $0::set_$2(size_t index, $1 val) {
           size_t len;
           auto* ptr = $3_mutable_$4(msg_, &len);
-          assert(0 <= index && index < len);
+          assert(index < len);
           *(ptr + index) = ::protos::UpbStrFromStringView(val, arena_);
         }
       )cc",
@@ -436,7 +436,7 @@ void WriteRepeatedScalarAccessor(const protobuf::Descriptor* message,
         $1 $0::$2(size_t index) const {
           size_t len;
           auto* ptr = $3_mutable_$4(msg_, &len);
-          assert(0 <= index && index < len);
+          assert(index < len);
           return *(ptr + index);
         }
       )cc",
@@ -460,7 +460,7 @@ void WriteRepeatedScalarAccessor(const protobuf::Descriptor* message,
         void $0::set_$2(size_t index, $1 val) {
           size_t len;
           auto* ptr = $3_mutable_$4(msg_, &len);
-          assert(0 <= index && index < len);
+          assert(index < len);
           *(ptr + index) = val;
         }
       )cc",
