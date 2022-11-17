@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Protocol Buffers - Google's data interchange format
 # Copyright 2008 Google Inc.  All rights reserved.
 # https://developers.google.com/protocol-buffers/
@@ -36,22 +36,20 @@ See conformance.proto for more information.
 
 import struct
 import sys
-import os
 from google.protobuf import json_format
 from google.protobuf import message
-from google.protobuf import test_messages_proto3_pb2
-from google.protobuf import test_messages_proto2_pb2
 from google.protobuf import text_format
+from google.protobuf import test_messages_proto2_pb2
+from google.protobuf import test_messages_proto3_pb2
 from conformance import conformance_pb2
-
-sys.stdout = os.fdopen(sys.stdout.fileno(), 'wb', 0)
-sys.stdin = os.fdopen(sys.stdin.fileno(), 'rb', 0)
 
 test_count = 0
 verbose = False
 
+
 class ProtocolError(Exception):
   pass
+
 
 def do_test(request):
   response = conformance_pb2.ConformanceResponse()
@@ -171,15 +169,16 @@ def do_test(request):
 
   return response
 
+
 def do_test_io():
-  length_bytes = sys.stdin.read(4)
+  length_bytes = sys.stdin.buffer.read(4)
   if len(length_bytes) == 0:
     return False   # EOF
   elif len(length_bytes) != 4:
     raise IOError("I/O error")
 
   length = struct.unpack("<I", length_bytes)[0]
-  serialized_request = sys.stdin.read(length)
+  serialized_request = sys.stdin.buffer.read(length)
   if len(serialized_request) != length:
     raise IOError("I/O error")
 
@@ -189,9 +188,9 @@ def do_test_io():
   response = do_test(request)
 
   serialized_response = response.SerializeToString()
-  sys.stdout.write(struct.pack("<I", len(serialized_response)))
-  sys.stdout.write(serialized_response)
-  sys.stdout.flush()
+  sys.stdout.buffer.write(struct.pack("<I", len(serialized_response)))
+  sys.stdout.buffer.write(serialized_response)
+  sys.stdout.buffer.flush()
 
   if verbose:
     sys.stderr.write("conformance_python: request=%s, response=%s\n" % (
