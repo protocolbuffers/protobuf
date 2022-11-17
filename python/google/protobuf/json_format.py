@@ -649,7 +649,8 @@ class _Parser(object):
       type_url = value['@type']
     except KeyError as e:
       raise ParseError(
-          '@type is missing when parsing any message at {0}'.format(path)) from e
+        '@type is missing when parsing any message at {0}'.format(path)
+      ) from e
 
     try:
       sub_message = _CreateMessageFromTypeUrl(type_url, self.descriptor_pool)
