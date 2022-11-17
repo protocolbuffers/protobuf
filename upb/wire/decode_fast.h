@@ -62,7 +62,7 @@
 #ifndef UPB_WIRE_DECODE_FAST_H_
 #define UPB_WIRE_DECODE_FAST_H_
 
-#include "upb/msg.h"
+#include "upb/message/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"

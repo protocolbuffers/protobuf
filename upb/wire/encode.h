@@ -25,14 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * upb_Encode: parsing from a upb_Message using a upb_MiniTable.
- */
+// upb_Encode: parsing from a upb_Message using a upb_MiniTable.
 
 #ifndef UPB_WIRE_ENCODE_H_
 #define UPB_WIRE_ENCODE_H_
 
-#include "upb/msg.h"
+#include "upb/message/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"

@@ -188,6 +188,7 @@ cc_binary(
         ":plugin_upb_proto_reflection",
         "//:json",
         "//:mini_table",
+        "//:mini_table_internal",
         "//:port",
         "//:reflection",
         "//:upb",

@@ -32,6 +32,7 @@
 #include "absl/strings/substitute.h"
 #include "upb/mini_table/decode.h"
 #include "upb/mini_table/encode_internal.hpp"
+#include "upb/mini_table/extension_internal.h"
 #include "upb/upb.hpp"
 
 namespace upbc {

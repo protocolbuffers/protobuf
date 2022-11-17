@@ -31,7 +31,7 @@
  * accessed through reflective APIs exposed through mini table accessors.
  */
 
-#include "upb/mini_table/accessors.h"
+#include "upb/message/accessors.h"
 
 #include "gtest/gtest.h"
 #include "google/protobuf/test_messages_proto2.upb.h"
@@ -40,6 +40,7 @@
 #include "upb/mini_table/decode.h"
 #include "upb/mini_table/encode_internal.hpp"
 #include "upb/test.upb.h"
+#include "upb/upb.h"
 #include "upb/wire/decode.h"
 
 namespace {

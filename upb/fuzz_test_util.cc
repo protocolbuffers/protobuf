@@ -27,7 +27,10 @@
 
 #include "upb/fuzz_test_util.h"
 
-#include "upb/msg.h"
+#include "upb/extension_registry.h"
+#include "upb/message/message.h"
+#include "upb/mini_table/decode.h"
+#include "upb/mini_table/extension_internal.h"
 #include "upb/upb.hpp"
 
 namespace upb {

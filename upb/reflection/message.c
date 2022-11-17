@@ -31,7 +31,7 @@
 
 #include "upb/collections/map.h"
 #include "upb/hash/common.h"
-#include "upb/msg.h"
+#include "upb/message/message.h"
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/field_def_internal.h"

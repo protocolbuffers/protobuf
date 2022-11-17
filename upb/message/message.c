@@ -25,12 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/msg.h"
+#include "upb/message/message.h"
 
 #include <math.h>
 
 #include "upb/base/log2.h"
-#include "upb/msg_internal.h"
+#include "upb/message/internal.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -40,19 +40,14 @@ const double kUpb_Infinity = INFINITY;
 
 static const size_t overhead = sizeof(upb_Message_InternalData);
 
-static const upb_Message_Internal* upb_Message_Getinternal_const(
-    const upb_Message* msg) {
-  ptrdiff_t size = sizeof(upb_Message_Internal);
-  return (upb_Message_Internal*)((char*)msg - size);
-}
-
 upb_Message* upb_Message_New(const upb_MiniTable* mini_table,
                              upb_Arena* arena) {
   return _upb_Message_New(mini_table, arena);
 }
 
 void _upb_Message_Clear(upb_Message* msg, const upb_MiniTable* l) {
-  void* mem = (char*)msg - sizeof(upb_Message_Internal);
+  // Note: Can't use UPB_PTR_AT() here because we are doing pointer subtraction.
+  char* mem = (char*)msg - sizeof(upb_Message_Internal);
   memset(mem, 0, upb_msg_sizeof(l));
 }
 
@@ -105,7 +100,7 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
 }
 
 const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len) {
-  const upb_Message_Internal* in = upb_Message_Getinternal_const(msg);
+  const upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (in->internal) {
     *len = in->internal->unknown_end - overhead;
     return (char*)(in->internal + 1);
@@ -135,7 +130,7 @@ void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len) {
 
 const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
                                                   size_t* count) {
-  const upb_Message_Internal* in = upb_Message_Getinternal_const(msg);
+  const upb_Message_Internal* in = upb_Message_Getinternal(msg);
   if (in->internal) {
     *count = (in->internal->size - in->internal->ext_begin) /
              sizeof(upb_Message_Extension);

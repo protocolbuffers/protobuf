@@ -28,18 +28,17 @@
 #include "upb/extension_registry.h"
 
 #include "upb/hash/str_table.h"
-#include "upb/msg.h"
-#include "upb/msg_internal.h"
+#include "upb/mini_table/extension_internal.h"
 
 // Must be last.
 #include "upb/port/def.inc"
 
+#define EXTREG_KEY_SIZE (sizeof(upb_MiniTable*) + sizeof(uint32_t))
+
 struct upb_ExtensionRegistry {
   upb_Arena* arena;
-  upb_strtable exts; /* Key is upb_MiniTable* concatenated with fieldnum. */
+  upb_strtable exts;  // Key is upb_MiniTable* concatenated with fieldnum.
 };
-
-#define EXTREG_KEY_SIZE (sizeof(upb_MiniTable*) + sizeof(uint32_t))
 
 static void extreg_key(char* buf, const upb_MiniTable* l, uint32_t fieldnum) {
   memcpy(buf, &l, sizeof(l));
@@ -75,7 +74,7 @@ bool upb_ExtensionRegistry_AddArray(upb_ExtensionRegistry* r,
   return true;
 
 failure:
-  /* Back out the entries previously added. */
+  // Back out the entries previously added.
   for (end = e, e = start; e < end; e++) {
     const upb_MiniTableExtension* ext = *e;
     extreg_key(buf, ext->extendee, ext->field.number);

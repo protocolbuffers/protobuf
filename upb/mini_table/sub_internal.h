@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022, Google LLC
+ * Copyright (c) 2009-2021, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,53 +25,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_MINI_TABLE_COMMON_H_
-#define UPB_MINI_TABLE_COMMON_H_
+#ifndef UPB_MINI_TABLE_SUB_INTERNAL_H_
+#define UPB_MINI_TABLE_SUB_INTERNAL_H_
 
-#include "upb/mini_table/field_internal.h"
-#include "upb/mini_table/message_internal.h"
-#include "upb/mini_table/sub_internal.h"
+#include "upb/mini_table/types.h"
 
-// Must be last.
-#include "upb/port/def.inc"
+union upb_MiniTableSub {
+  const upb_MiniTable* submsg;
+  const upb_MiniTableEnum* subenum;
+};
 
-typedef enum {
-  kUpb_FieldModifier_IsRepeated = 1 << 0,
-  kUpb_FieldModifier_IsPacked = 1 << 1,
-  kUpb_FieldModifier_IsClosedEnum = 1 << 2,
-  kUpb_FieldModifier_IsProto3Singular = 1 << 3,
-  kUpb_FieldModifier_IsRequired = 1 << 4,
-} kUpb_FieldModifier;
-
-typedef enum {
-  kUpb_MessageModifier_ValidateUtf8 = 1 << 0,
-  kUpb_MessageModifier_DefaultIsPacked = 1 << 1,
-  kUpb_MessageModifier_IsExtendable = 1 << 2,
-} kUpb_MessageModifier;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
-    const upb_MiniTable* table, uint32_t number);
-
-upb_FieldType upb_MiniTableField_Type(const upb_MiniTableField* field);
-
-UPB_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
-    const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
-  return mini_table->subs[field->submsg_index].submsg;
-}
-
-UPB_INLINE const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
-    const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
-  return mini_table->subs[field->submsg_index].subenum;
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#include "upb/port/undef.inc"
-
-#endif /* UPB_MINI_TABLE_COMMON_H_ */
+#endif /* UPB_MINI_TABLE_SUB_INTERNAL_H_ */

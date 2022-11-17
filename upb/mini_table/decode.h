@@ -28,6 +28,8 @@
 #ifndef UPB_MINI_TABLE_DECODE_H_
 #define UPB_MINI_TABLE_DECODE_H_
 
+#include "upb/base/status.h"
+#include "upb/mem/arena.h"
 #include "upb/mini_table/common.h"
 
 // Must be last.

@@ -29,6 +29,7 @@
 #include <unordered_set>
 
 #include "upb/mini_table/encode_internal.hpp"
+#include "upb/mini_table/extension_internal.h"
 #include "upbc/common.h"
 
 namespace upbc {

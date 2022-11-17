@@ -25,14 +25,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/mini_table/accessors.h"
+#include "upb/message/accessors.h"
 
 #include "upb/collections/array_internal.h"
+#include "upb/message/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 
 // Must be last.
-#include "upb/msg.h"
 #include "upb/port/def.inc"
 
 static size_t _upb_MiniTableField_Size(const upb_MiniTableField* f) {

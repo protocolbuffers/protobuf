@@ -28,11 +28,15 @@
 #include "upb/mini_table/decode.h"
 
 #include <inttypes.h>
+#include <stdlib.h>
 
 #include "upb/base/log2.h"
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/mini_table/common.h"
 #include "upb/mini_table/common_internal.h"
+#include "upb/mini_table/enum_internal.h"
+#include "upb/mini_table/extension_internal.h"
 
 // Must be last.
 #include "upb/port/def.inc"

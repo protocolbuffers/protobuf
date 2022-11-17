@@ -32,10 +32,11 @@
 
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
-#include "upb/decode.h"
-#include "upb/encode.h"
-#include "upb/mini_table.h"
+#include "upb/message/extension_internal.h"
+#include "upb/mini_table/types.h"
 #include "upb/upb.hpp"
+#include "upb/wire/decode.h"
+#include "upb/wire/encode.h"
 
 namespace protos {
 

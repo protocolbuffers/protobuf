@@ -135,7 +135,7 @@ void WriteHeader(const FileLayout& layout, Output& output) {
 
 #include "absl/strings/string_view.h"
 #include "absl/status/statusor.h"
-#include "upb/msg_internal.h"
+#include "upb/message/internal.h"
       )cc",
       ToPreproc(file->name()));
 
@@ -198,7 +198,7 @@ void WriteSource(const FileLayout& layout, Output& output,
       R"cc(
 #include <stddef.h>
 #include "absl/strings/string_view.h"
-#include "upb/msg_internal.h"
+#include "upb/message/internal.h"
 #include "protos/protos.h"
 #include "$0"
       )cc",

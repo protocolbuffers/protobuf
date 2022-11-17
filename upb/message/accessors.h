@@ -25,11 +25,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_MINI_TABLE_ACCESSORS_H_
-#define UPB_MINI_TABLE_ACCESSORS_H_
+#ifndef UPB_MESSAGE_ACCESSORS_H_
+#define UPB_MESSAGE_ACCESSORS_H_
 
 #include "upb/collections/array.h"
+#include "upb/message/internal.h"
 #include "upb/mini_table/common.h"
+#include "upb/mini_table/enum_internal.h"
+#include "upb/mini_table/field_internal.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -358,4 +361,4 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
 
 #include "upb/port/undef.inc"
 
-#endif  // UPB_MINI_TABLE_ACCESSORS_H_
+#endif  // UPB_MESSAGE_ACCESSORS_H_

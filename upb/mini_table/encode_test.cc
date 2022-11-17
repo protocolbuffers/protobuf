@@ -29,9 +29,11 @@
 #include "gtest/gtest.h"
 #include "absl/container/flat_hash_set.h"
 #include "google/protobuf/descriptor.h"
+#include "upb/message/internal.h"
 #include "upb/mini_table/common_internal.h"
 #include "upb/mini_table/decode.h"
 #include "upb/mini_table/encode_internal.hpp"
+#include "upb/mini_table/enum_internal.h"
 #include "upb/upb.hpp"
 #include "upb/wire/decode.h"
 

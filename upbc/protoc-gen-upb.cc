@@ -34,6 +34,8 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/wire_format.h"
 #include "upb/mini_table/encode_internal.hpp"
+#include "upb/mini_table/enum_internal.h"
+#include "upb/mini_table/extension_internal.h"
 #include "upbc/common.h"
 #include "upbc/file_layout.h"
 #include "upbc/names.h"
@@ -889,8 +891,9 @@ void WriteHeader(const FileLayout& layout, Output& output) {
       "#define $0_UPB_H_\n\n"
       "#include \"upb/collections/array_internal.h\"\n"
       "#include \"upb/collections/map_gencode_util.h\"\n"
-      "#include \"upb/mini_table/accessors.h\"\n"
-      "#include \"upb/msg_internal.h\"\n"
+      "#include \"upb/message/accessors.h\"\n"
+      "#include \"upb/message/internal.h\"\n"
+      "#include \"upb/mini_table/enum_internal.h\"\n"
       "#include \"upb/wire/decode.h\"\n"
       "#include \"upb/wire/decode_fast.h\"\n"
       "#include \"upb/wire/encode.h\"\n\n",
@@ -1509,7 +1512,8 @@ void WriteSource(const FileLayout& layout, Output& output,
   output(
       "#include <stddef.h>\n"
       "#include \"upb/collections/array_internal.h\"\n"
-      "#include \"upb/msg_internal.h\"\n"
+      "#include \"upb/message/internal.h\"\n"
+      "#include \"upb/mini_table/enum_internal.h\"\n"
       "#include \"$0\"\n",
       HeaderFilename(file));
 

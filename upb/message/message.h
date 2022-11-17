@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009-2022, Google LLC
+ * Copyright (c) 2009-2021, Google LLC
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,48 +25,41 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_MINI_TABLE_COMMON_H_
-#define UPB_MINI_TABLE_COMMON_H_
+// Public APIs for message operations that do not require descriptors.
+// These functions can be used even in build that does not want to depend on
+// reflection or descriptors.
+//
+// Descriptor-based reflection functionality lives in reflection.h.
 
-#include "upb/mini_table/field_internal.h"
-#include "upb/mini_table/message_internal.h"
-#include "upb/mini_table/sub_internal.h"
+#ifndef UPB_MESSAGE_MESSAGE_H_
+#define UPB_MESSAGE_MESSAGE_H_
+
+#include "upb/mem/arena.h"
+#include "upb/mini_table/types.h"
 
 // Must be last.
 #include "upb/port/def.inc"
-
-typedef enum {
-  kUpb_FieldModifier_IsRepeated = 1 << 0,
-  kUpb_FieldModifier_IsPacked = 1 << 1,
-  kUpb_FieldModifier_IsClosedEnum = 1 << 2,
-  kUpb_FieldModifier_IsProto3Singular = 1 << 3,
-  kUpb_FieldModifier_IsRequired = 1 << 4,
-} kUpb_FieldModifier;
-
-typedef enum {
-  kUpb_MessageModifier_ValidateUtf8 = 1 << 0,
-  kUpb_MessageModifier_DefaultIsPacked = 1 << 1,
-  kUpb_MessageModifier_IsExtendable = 1 << 2,
-} kUpb_MessageModifier;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
-    const upb_MiniTable* table, uint32_t number);
+// Creates a new message with the given mini_table on the given arena.
+upb_Message* upb_Message_New(const upb_MiniTable* mini_table, upb_Arena* arena);
 
-upb_FieldType upb_MiniTableField_Type(const upb_MiniTableField* field);
+// Adds unknown data (serialized protobuf data) to the given message.
+// The data is copied into the message instance.
+void upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
+                            upb_Arena* arena);
 
-UPB_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
-    const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
-  return mini_table->subs[field->submsg_index].submsg;
-}
+// Returns a reference to the message's unknown data.
+const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
 
-UPB_INLINE const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
-    const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
-  return mini_table->subs[field->submsg_index].subenum;
-}
+// Removes partial unknown data from message.
+void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len);
+
+// Returns the number of extensions present in this message.
+size_t upb_Message_ExtensionCount(const upb_Message* msg);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -74,4 +67,4 @@ UPB_INLINE const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
 
 #include "upb/port/undef.inc"
 
-#endif /* UPB_MINI_TABLE_COMMON_H_ */
+#endif /* UPB_MESSAGE_MESSAGE_H_ */

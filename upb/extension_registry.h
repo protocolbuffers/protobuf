@@ -28,7 +28,8 @@
 #ifndef UPB_EXTENSION_REGISTRY_H_
 #define UPB_EXTENSION_REGISTRY_H_
 
-#include "upb/msg.h"
+#include "upb/mem/arena.h"
+#include "upb/mini_table/types.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -72,7 +73,6 @@ extern "C" {
  */
 
 typedef struct upb_ExtensionRegistry upb_ExtensionRegistry;
-typedef struct upb_MiniTableExtension upb_MiniTableExtension;
 
 // Creates a upb_ExtensionRegistry in the given arena.
 // The arena must outlive any use of the extreg.

@@ -30,6 +30,7 @@
 #ifndef UPB_REFLECTION_DEF_POOL_H_
 #define UPB_REFLECTION_DEF_POOL_H_
 
+#include "upb/base/status.h"
 #include "upb/base/string_view.h"
 #include "upb/reflection/common.h"
 #include "upb/reflection/def_type.h"

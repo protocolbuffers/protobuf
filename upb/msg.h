@@ -25,53 +25,11 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * Public APIs for message operations that do not require descriptors.
- * These functions can be used even in build that does not want to depend on
- * reflection or descriptors.
- *
- * Descriptor-based reflection functionality lives in reflection.h.
- */
+// This header is deprecated, use upb/message/message.h instead
 
 #ifndef UPB_MSG_H_
 #define UPB_MSG_H_
 
-#include "upb/mem/arena.h"
-
-// Must be last.
-#include "upb/port/def.inc"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef void upb_Message;
-
-/* For users these are opaque. They can be obtained from
- * upb_MessageDef_MiniTable() but users cannot access any of the members. */
-typedef struct upb_MiniTable upb_MiniTable;
-
-/* Creates a new message with the given mini_table on the given arena. */
-upb_Message* upb_Message_New(const upb_MiniTable* mini_table, upb_Arena* arena);
-
-/* Adds unknown data (serialized protobuf data) to the given message.  The data
- * is copied into the message instance. */
-void upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
-                            upb_Arena* arena);
-
-/* Returns a reference to the message's unknown data. */
-const char* upb_Message_GetUnknown(const upb_Message* msg, size_t* len);
-
-/* Removes partial unknown data from message. */
-void upb_Message_DeleteUnknown(upb_Message* msg, const char* data, size_t len);
-
-/* Returns the number of extensions present in this message. */
-size_t upb_Message_ExtensionCount(const upb_Message* msg);
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-#include "upb/port/undef.inc"
+#include "upb/message/message.h"
 
 #endif /* UPB_MSG_INT_H_ */

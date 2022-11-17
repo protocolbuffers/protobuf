@@ -31,8 +31,8 @@
 #include "upb/fuzz_test_util.h"
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
-#include "upb/msg_test.upb.h"
-#include "upb/msg_test.upbdefs.h"
+#include "upb/message/test.upb.h"
+#include "upb/message/test.upbdefs.h"
 #include "upb/reflection/def.hpp"
 #include "upb/upb.hpp"
 
