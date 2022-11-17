@@ -111,13 +111,6 @@ cc_library(
 
 cc_library(
     name = "upb",
-    srcs = [
-        "upb/message/internal.h",
-        "upb/message/message.c",
-        "upb/wire/decode.c",
-        "upb/wire/encode.c",
-        "upb/wire/swap_internal.h",
-    ],
     hdrs = [
         "upb/alloc.h",
         "upb/arena.h",
@@ -152,9 +145,10 @@ cc_library(
         ":hash",
         ":lex",
         ":mem",
+        ":message_internal",
         ":mini_table_internal",
         ":port",
-        ":wire_internal",
+        ":wire",
     ],
 )
 
@@ -240,11 +234,46 @@ cc_library(
 )
 
 cc_library(
+    name = "message",
+    hdrs = [
+        "upb/message/message.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":mem",
+        ":message_internal",
+        ":mini_table",
+        ":port",
+    ],
+)
+
+cc_library(
+    name = "message_internal",
+    srcs = [
+        "upb/message/message.c",
+    ],
+    hdrs = [
+        "upb/message/extension_internal.h",
+        "upb/message/internal.h",
+        "upb/message/message.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":base",
+        ":extension_registry",
+        ":hash",
+        ":mem",
+        ":mini_table_internal",
+        ":port",
+    ],
+)
+
+cc_library(
     name = "message_accessors",
     srcs = [
         "upb/message/accessors.c",
-        "upb/message/extension_internal.h",
-        "upb/message/internal.h",
     ],
     hdrs = [
         "upb/message/accessors.h",
@@ -253,6 +282,8 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":collections_internal",
+        ":hash",
+        ":message_internal",
         ":mini_table_internal",
         ":port",
         ":upb",
@@ -262,14 +293,13 @@ cc_library(
 cc_test(
     name = "mini_table_encode_test",
     srcs = [
-        "upb/message/extension_internal.h",
-        "upb/message/internal.h",
         "upb/mini_table/encode_test.cc",
     ],
     deps = [
         ":collections_internal",
         ":extension_registry",
         ":hash",
+        ":message_internal",
         ":mini_table_internal",
         ":port",
         ":upb",
@@ -298,14 +328,6 @@ cc_test(
 
 cc_library(
     name = "fastdecode",
-    srcs = [
-        "upb/message/extension_internal.h",
-        "upb/message/internal.h",
-        "upb/message/message.h",
-        "upb/wire/decode.h",
-        "upb/wire/decode_fast.c",
-        "upb/wire/decode_fast.h",
-    ],
     copts = UPB_DEFAULT_COPTS,
     deps = [
         ":base",
@@ -313,9 +335,10 @@ cc_library(
         ":extension_registry",
         ":hash",
         ":mem_internal",
+        ":message_internal",
         ":mini_table_internal",
         ":port",
-        ":wire_internal",
+        ":wire",
     ],
 )
 
@@ -434,6 +457,7 @@ cc_library(
     deps = [
         ":base",
         ":collections_internal",
+        ":mem",
         ":port",
     ],
 )
@@ -444,9 +468,6 @@ cc_library(
         "upb/collections/array.c",
         "upb/collections/map.c",
         "upb/collections/map_sorter.c",
-        "upb/message/extension_internal.h",
-        "upb/message/internal.h",
-        "upb/message/message.h",
     ],
     hdrs = [
         "upb/collections/array.h",
@@ -464,6 +485,7 @@ cc_library(
         ":extension_registry",
         ":hash",
         ":mem",
+        ":message_internal",
         ":mini_table_internal",
         ":port",
     ],
@@ -1015,16 +1037,35 @@ cc_library(
 )
 
 cc_library(
+    name = "wire",
+    hdrs = [
+        "upb/wire/decode.h",
+        "upb/wire/encode.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":extension_registry",
+        ":mem",
+        ":message_internal",
+        ":port",
+        ":wire_internal",
+    ],
+)
+
+cc_library(
     name = "wire_internal",
     srcs = [
-        "upb/message/extension_internal.h",
-        "upb/message/internal.h",
-        "upb/message/message.h",
-        "upb/wire/decode.h",
+        "upb/wire/decode.c",
+        "upb/wire/decode_fast.c",
+        "upb/wire/encode.c",
     ],
     hdrs = [
         "upb/wire/common_internal.h",
+        "upb/wire/decode.h",
+        "upb/wire/decode_fast.h",
         "upb/wire/decode_internal.h",
+        "upb/wire/encode.h",
         "upb/wire/swap_internal.h",
     ],
     copts = UPB_DEFAULT_COPTS,
@@ -1035,6 +1076,7 @@ cc_library(
         ":extension_registry",
         ":hash",
         ":mem_internal",
+        ":message_internal",
         ":mini_table_internal",
         ":port",
         "//third_party/utf8_range",
@@ -1100,6 +1142,7 @@ upb_amalgamation(
         ":mem_internal",
         ":mini_table_internal",
         ":message_accessors",
+        ":message_internal",
         ":port",
         ":reflection",
         ":reflection_internal",
@@ -1134,8 +1177,9 @@ upb_amalgamation(
         ":json",
         ":lex",
         ":mem_internal",
-        ":mini_table_internal",
         ":message_accessors",
+        ":message_internal",
+        ":mini_table_internal",
         ":port",
         ":reflection",
         ":reflection_internal",
@@ -1171,8 +1215,9 @@ upb_amalgamation(
         ":json",
         ":lex",
         ":mem_internal",
-        ":mini_table_internal",
         ":message_accessors",
+        ":message_internal",
+        ":mini_table_internal",
         ":port",
         ":reflection",
         ":reflection_internal",

@@ -38,8 +38,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "upb/collections/map_internal.h"
 #include "upb/extension_registry.h"
+#include "upb/hash/common.h"
 #include "upb/message/extension_internal.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/extension_internal.h"

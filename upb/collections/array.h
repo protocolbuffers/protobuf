@@ -30,6 +30,7 @@
 
 #include "upb/base/descriptor_constants.h"
 #include "upb/collections/message_value.h"
+#include "upb/mem/arena.h"
 
 // Must be last.
 #include "upb/port/def.inc"

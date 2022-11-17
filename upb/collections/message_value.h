@@ -29,7 +29,7 @@
 #define UPB_MESSAGE_VALUE_H_
 
 #include "upb/base/string_view.h"
-#include "upb/message/message.h"
+#include "upb/mini_table/types.h"
 
 // Must be last.
 #include "upb/port/def.inc"
