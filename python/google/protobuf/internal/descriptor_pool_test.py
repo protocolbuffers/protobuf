@@ -492,7 +492,7 @@ class DescriptorPoolTestBase(object):
         unittest_import_pb2.DESCRIPTOR.serialized_pb))
     pool.Add(descriptor_pb2.FileDescriptorProto.FromString(
         unittest_pb2.DESCRIPTOR.serialized_pb))
-    message_class = message_factory.MessageFactory(pool).GetPrototype(
+    message_class = message_factory.GetMessageClass(
         pool.FindMessageTypeByName(
             unittest_pb2.TestAllTypes.DESCRIPTOR.full_name))
     _CheckDefaultValues(message_class())

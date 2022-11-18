@@ -63,11 +63,18 @@ from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
 
 
-class SymbolDatabase(message_factory.MessageFactory):
+class SymbolDatabase():
   """A database of Python generated symbols."""
 
   # local cache of registered classes.
   _classes = {}
+
+  def __init__(self, pool=None):
+    """Initializes a new SymbolDatabase."""
+    self.pool = pool or descriptor_pool.DescriptorPool()
+
+  def GetPrototype(self, descriptor):
+    return message_factory.GetMessageClass(descriptor)
 
   def RegisterMessage(self, message):
     """Registers the given message type in the local database.
