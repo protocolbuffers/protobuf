@@ -330,13 +330,12 @@ def _BuildMessageFromTypeName(type_name, descriptor_pool):
   if descriptor_pool is None:
     from google.protobuf import descriptor_pool as pool_mod
     descriptor_pool = pool_mod.Default()
-  from google.protobuf import symbol_database
-  database = symbol_database.Default()
+  from google.protobuf import message_factory
   try:
     message_descriptor = descriptor_pool.FindMessageTypeByName(type_name)
   except KeyError:
     return None
-  message_type = database.GetPrototype(message_descriptor)
+  message_type = message_factory.GetMessageClass(message_descriptor)
   return message_type()
 
 
