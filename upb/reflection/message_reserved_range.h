@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// IWYU pragma: private, include "third_party/upb/upb/reflection/def.h"
+// IWYU pragma: private, include "upb/reflection/def.h"
 
 #ifndef UPB_REFLECTION_MESSAGE_RESERVED_RANGE_H_
 #define UPB_REFLECTION_MESSAGE_RESERVED_RANGE_H_
