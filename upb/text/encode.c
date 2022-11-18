@@ -38,6 +38,7 @@
 #include "upb/lex/round_trip.h"
 #include "upb/port/vsnprintf_compat.h"
 #include "upb/reflection/message.h"
+#include "upb/wire/types.h"
 
 // Must be last.
 #include "upb/port/def.inc"

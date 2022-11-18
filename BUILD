@@ -287,6 +287,7 @@ cc_library(
         ":mini_table_internal",
         ":port",
         ":upb",
+        ":wire",
     ],
 )
 
@@ -597,6 +598,7 @@ cc_library(
         ":lex",
         ":port",
         ":reflection",
+        ":wire",
     ],
 )
 
@@ -1047,6 +1049,7 @@ cc_library(
     hdrs = [
         "upb/wire/decode.h",
         "upb/wire/encode.h",
+        "upb/wire/types.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
@@ -1073,6 +1076,7 @@ cc_library(
         "upb/wire/decode_internal.h",
         "upb/wire/encode.h",
         "upb/wire/swap_internal.h",
+        "upb/wire/types.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//:__subpackages__"],

@@ -36,6 +36,7 @@
 #include "gtest/gtest.h"
 #include "absl/strings/string_view.h"
 #include "upb/wire/swap_internal.h"
+#include "upb/wire/types.h"
 
 struct UnknownField;
 

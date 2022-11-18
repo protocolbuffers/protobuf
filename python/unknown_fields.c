@@ -29,6 +29,7 @@
 
 #include "python/message.h"
 #include "python/protobuf.h"
+#include "upb/wire/types.h"
 
 static const char* PyUpb_DecodeVarint(const char* ptr, const char* end,
                                       uint64_t* val) {

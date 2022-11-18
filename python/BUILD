@@ -214,6 +214,7 @@ py_extension(
         "//:reflection",
         "//:textformat",
         "//:upb",
+        "//:wire",
         "//upb/util:compare",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",

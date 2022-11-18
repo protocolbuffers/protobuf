@@ -31,6 +31,7 @@
 #include "upb/message/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
+#include "upb/wire/types.h"
 
 // Must be last.
 #include "upb/port/def.inc"

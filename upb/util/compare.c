@@ -27,6 +27,9 @@
 
 #include "upb/util/compare.h"
 
+#include "upb/wire/types.h"
+
+// Must be last.
 #include "upb/port/def.inc"
 
 struct upb_UnknownFields;

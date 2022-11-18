@@ -35,6 +35,7 @@
 #include "upb/collections/map_sorter_internal.h"
 #include "upb/wire/common_internal.h"
 #include "upb/wire/swap_internal.h"
+#include "upb/wire/types.h"
 
 // Must be last.
 #include "upb/port/def.inc"
