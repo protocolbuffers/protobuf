@@ -80,7 +80,7 @@ bool upb_Map_Next(const upb_Map* map, upb_MessageValue* key,
                   upb_MessageValue* val, size_t* iter) {
   upb_StringView k;
   upb_value v;
-  const bool ok = upb_strtable_next2(&map->table, &k, &v, iter);
+  const bool ok = upb_strtable_next2(&map->table, &k, &v, (intptr_t*)iter);
   if (ok) {
     _upb_map_fromkey(k, key, map->key_size);
     _upb_map_fromvalue(v, val, map->val_size);
