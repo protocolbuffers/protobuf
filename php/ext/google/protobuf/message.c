@@ -426,11 +426,12 @@ static zval *Message_get_property_ptr_ptr(PROTO_VAL *object, PROTO_STR *member,
  */
 static zend_object *Message_clone_obj(PROTO_VAL *object) {
   Message* intern = PROTO_VAL_P(object);
-  upb_Message *clone = upb_Message_New(intern->desc->msgdef, Arena_Get(&intern->arena));
+  upb_MiniTable *t = upb_MessageDef_MiniTable(intern->desc->msgdef);
+  upb_Message *clone = upb_Message_New(t, Arena_Get(&intern->arena));
 
   // TODO: copy unknown fields?
   // TODO: use official upb msg copy function
-  memcpy(clone, intern->msg, upb_MessageDef_MiniTable(intern->desc->msgdef)->size);
+  memcpy(clone, intern->msg, t->size);
   zval ret;
   Message_GetPhpWrapper(&ret, intern->desc, clone, &intern->arena);
   return Z_OBJ_P(&ret);
@@ -579,7 +580,8 @@ bool Message_InitFromPhp(upb_Message *msg, const upb_MessageDef *m, zval *init,
 
 static void Message_Initialize(Message *intern, const Descriptor *desc) {
   intern->desc = desc;
-  intern->msg = upb_Message_New(desc->msgdef, Arena_Get(&intern->arena));
+  upb_MiniTable *t = upb_MessageDef_MiniTable(desc->msgdef);
+  intern->msg = upb_Message_New(t, Arena_Get(&intern->arena));
   ObjCache_Add(intern->msg, &intern->std);
 }
 
