@@ -26,6 +26,7 @@
  */
 
 // This header is deprecated, use upb/wire/decode_fast.h instead
+// IWYU pragma: private, include "upb/wire/decode_fast.h"
 
 #ifndef UPB_DECODE_FAST_H_
 #define UPB_DECODE_FAST_H_

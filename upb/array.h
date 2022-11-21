@@ -26,6 +26,7 @@
  */
 
 // This header is deprecated, use upb/collections/array.h instead
+// IWYU pragma: private, include "upb/collections/array.h"
 
 #ifndef UPB_ARRAY_H_
 #define UPB_ARRAY_H_

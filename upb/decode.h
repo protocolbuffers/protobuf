@@ -26,6 +26,7 @@
  */
 
 // This header is deprecated, use upb/wire/decode.h instead
+// IWYU pragma: private, include "upb/wire/decode.h"
 
 #ifndef UPB_DECODE_H_
 #define UPB_DECODE_H_

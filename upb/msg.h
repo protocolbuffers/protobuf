@@ -26,6 +26,7 @@
  */
 
 // This header is deprecated, use upb/message/message.h instead
+// IWYU pragma: private, include "upb/message/message.h"
 
 #ifndef UPB_MSG_H_
 #define UPB_MSG_H_

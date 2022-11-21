@@ -26,6 +26,7 @@
  */
 
 // This header is deprecated, use the individual #includes below as needed.
+// IWYU pragma: private, include "upb/base/status.h"
 
 #ifndef UPB_H_
 #define UPB_H_

@@ -26,6 +26,7 @@
  */
 
 // This header is deprecated, use upb/collections/map.h instead
+// IWYU pragma: private, include "upb/collections/map.h"
 
 #ifndef UPB_MAP_H_
 #define UPB_MAP_H_

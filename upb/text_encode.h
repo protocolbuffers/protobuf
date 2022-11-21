@@ -26,6 +26,7 @@
  */
 
 // This header is deprecated, use upb/text/encode.h instead
+// IWYU pragma: private, include "upb/text/encode.h"
 
 #ifndef UPB_TEXTENCODE_H_
 #define UPB_TEXTENCODE_H_

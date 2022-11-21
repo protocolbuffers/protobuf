@@ -26,6 +26,7 @@
  */
 
 // This header is deprecated, use upb/base/status.h instead
+// IWYU pragma: private, include "upb/base/status.h"
 
 #ifndef UPB_STATUS_H_
 #define UPB_STATUS_H_

@@ -26,6 +26,7 @@
  */
 
 // This header is deprecated, use upb/mem/alloc.h instead
+// IWYU pragma: private, include "upb/mem/alloc.h"
 
 #ifndef UPB_ALLOC_H_
 #define UPB_ALLOC_H_

@@ -26,6 +26,7 @@
  */
 
 // This header is deprecated, use the header(s) below instead.
+// IWYU pragma: private, include "upb/mini_table/decode.h"
 
 #ifndef UPB_MINI_TABLE_H_
 #define UPB_MINI_TABLE_H_

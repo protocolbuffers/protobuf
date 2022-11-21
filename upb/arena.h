@@ -26,6 +26,7 @@
  */
 
 // This header is deprecated, use upb/mem/arena.h instead
+// IWYU pragma: private, include "upb/mem/arena.h"
 
 #ifndef UPB_ARENA_H_
 #define UPB_ARENA_H_

@@ -26,6 +26,7 @@
  */
 
 // This header is deprecated, use upb/json/decode.h instead
+// IWYU pragma: private, include "upb/json/decode.h"
 
 #ifndef UPB_JSONDECODE_H_
 #define UPB_JSONDECODE_H_

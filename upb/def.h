@@ -26,6 +26,7 @@
  */
 
 // This header is deprecated, use upb/reflection/def.h instead
+// IWYU pragma: private, include "upb/reflection/def.h"
 
 #ifndef UPB_DEF_H_
 #define UPB_DEF_H_

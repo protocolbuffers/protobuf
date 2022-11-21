@@ -26,6 +26,7 @@
  */
 
 // This header is deprecated, use upb/base/string_view.h instead
+// IWYU pragma: private, include "upb/base/string_view.h"
 
 #ifndef UPB_STRING_VIEW_H_
 #define UPB_STRING_VIEW_H_
