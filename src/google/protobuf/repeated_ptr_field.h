@@ -693,11 +693,11 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   Rep* rep_;
 
   template <typename TypeHandler>
-  static inline typename TypeHandler::Type* cast(void* element) {
+  static inline typename TypeHandler::Type* (cast)(void* element) {
     return reinterpret_cast<typename TypeHandler::Type*>(element);
   }
   template <typename TypeHandler>
-  static inline const typename TypeHandler::Type* cast(const void* element) {
+  static inline const typename TypeHandler::Type* (cast)(const void* element) {
     return reinterpret_cast<const typename TypeHandler::Type*>(element);
   }
 
