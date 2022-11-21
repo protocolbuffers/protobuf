@@ -33,3 +33,12 @@ build:ubsan --copt=-DUNDEFINED_SANITIZER=1
 # Workaround for the fact that Bazel links with $CC, not $CXX
 # https://github.com/bazelbuild/bazel/issues/11122#issuecomment-613746748
 build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
+
+# Force the use of Clang for C++ builds.
+build --action_env=CC=clang
+build --action_env=CXX=clang++
+
+# Define the --config=asan-libfuzzer configuration.
+build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine=@rules_fuzzing//fuzzing/engines:libfuzzer
+build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_instrumentation=libfuzzer
+build:asan-libfuzzer --@rules_fuzzing//fuzzing:cc_engine_sanitizer=asan

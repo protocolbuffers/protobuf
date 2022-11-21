@@ -7,6 +7,7 @@ load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 load("@upb//cmake:build_defs.bzl", "staleness_test")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS")
+load("@rules_fuzzing//fuzzing:cc_defs.bzl", "cc_fuzz_test")
 
 package(
     default_visibility = [
@@ -1242,6 +1243,71 @@ cc_test(
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
+)
+
+
+cc_fuzz_test(
+    name = "fuzz_pb2",
+    deps = [
+        ":protobuf",
+        ":cc_test_messages_proto2_proto",
+    ],
+    srcs = ["fuzz/fuzz_pb2.cc"],
+)
+
+cc_fuzz_test(
+    name = "fuzz_pb3",
+    deps = [
+        ":protobuf",
+        ":cc_test_messages_proto3_proto",
+    ],
+    srcs = ["fuzz/fuzz_pb3.cc"],
+)
+
+cc_fuzz_test(
+    name = "fuzz_json2",
+    deps = [
+        ":protobuf",
+        ":cc_test_messages_proto2_proto",
+    ],
+    srcs = ["fuzz/fuzz_json2.cc"],
+)
+
+cc_fuzz_test(
+    name = "fuzz_json3",
+    deps = [
+        ":protobuf",
+        ":cc_test_messages_proto3_proto",
+    ],
+    srcs = ["fuzz/fuzz_json3.cc"],
+)
+
+cc_fuzz_test(
+    name = "fuzz_text2",
+    deps = [
+        ":protobuf",
+        ":cc_test_messages_proto2_proto",
+    ],
+    srcs = ["fuzz/fuzz_text2.cc"],
+)
+
+cc_fuzz_test(
+    name = "fuzz_text3",
+    deps = [
+        ":protobuf",
+        ":cc_test_messages_proto3_proto",
+    ],
+    srcs = ["fuzz/fuzz_text3.cc"],
+)
+
+cc_proto_library(
+    name = "cc_test_messages_proto2_proto",
+    deps = [":test_messages_proto2_proto"],
+)
+
+cc_proto_library(
+    name = "cc_test_messages_proto3_proto",
+    deps = [":test_messages_proto3_proto"],
 )
 
 ################################################################################
