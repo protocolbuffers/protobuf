@@ -33,11 +33,7 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef struct mem_block mem_block;
+typedef struct _upb_MemBlock _upb_MemBlock;
 
 struct upb_Arena {
   _upb_ArenaHead head;
@@ -58,8 +54,12 @@ struct upb_Arena {
   struct upb_Arena* parent;
 
   /* Linked list of blocks to free/cleanup. */
-  mem_block *freelist, *freelist_tail;
+  _upb_MemBlock *freelist, *freelist_tail;
 };
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifdef __cplusplus
 } /* extern "C" */

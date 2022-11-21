@@ -103,9 +103,8 @@ inline absl::string_view UpbStrToStringView(upb_StringView str) {
 // TODO: update bzl and move to upb runtime / protos.cc.
 inline upb_StringView UpbStrFromStringView(absl::string_view str,
                                            upb_Arena* arena) {
-  upb_alloc* alloc = upb_Arena_Alloc(arena);
   const size_t str_size = str.size();
-  char* buffer = static_cast<char*>(upb_malloc(alloc, str_size));
+  char* buffer = static_cast<char*>(upb_Arena_Malloc(arena, str_size));
   memcpy(buffer, str.data(), str_size);
   return upb_StringView_FromDataAndSize(buffer, str_size);
 }

@@ -25,20 +25,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_MEM_ARENA_H_
-#define UPB_MEM_ARENA_H_
-
-#include <string.h>
-
-#include "upb/mem/alloc.h"
-
-// Must be last.
-#include "upb/port/def.inc"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /* upb_Arena is a specific allocator implementation that uses arena allocation.
  * The user provides an allocator that will be used to allocate the underlying
  * arena blocks.  Arenas by nature do not require the individual allocations
@@ -51,9 +37,19 @@ extern "C" {
  * upb_alloc interface, but it would not be as efficient for the
  * single-threaded case. */
 
-typedef void upb_CleanupFunc(void* ud);
+#ifndef UPB_MEM_ARENA_H_
+#define UPB_MEM_ARENA_H_
+
+#include <string.h>
+
+#include "upb/mem/alloc.h"
+
+// Must be last.
+#include "upb/port/def.inc"
 
 typedef struct upb_Arena upb_Arena;
+
+typedef void upb_CleanupFunc(void* context);
 
 typedef struct {
   /* We implement the allocator interface.
@@ -63,6 +59,10 @@ typedef struct {
 
   char *ptr, *end;
 } _upb_ArenaHead;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* Creates an arena from the given initial block (if any -- n may be 0).
  * Additional blocks will be allocated from |alloc|.  If |alloc| is NULL, this
@@ -82,7 +82,13 @@ UPB_INLINE size_t _upb_ArenaHas(upb_Arena* a) {
   return (size_t)(h->end - h->ptr);
 }
 
-UPB_INLINE void* _upb_Arena_FastMalloc(upb_Arena* a, size_t size) {
+UPB_INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
+  size = UPB_ALIGN_MALLOC(size);
+  if (UPB_UNLIKELY(_upb_ArenaHas(a) < size)) {
+    return _upb_Arena_SlowMalloc(a, size);
+  }
+
+  // We have enough space to do a fast malloc.
   _upb_ArenaHead* h = (_upb_ArenaHead*)a;
   void* ret = h->ptr;
   UPB_ASSERT(UPB_ALIGN_MALLOC((uintptr_t)ret) == (uintptr_t)ret);
@@ -103,16 +109,6 @@ UPB_INLINE void* _upb_Arena_FastMalloc(upb_Arena* a, size_t size) {
 #endif
 
   return ret;
-}
-
-UPB_INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
-  size = UPB_ALIGN_MALLOC(size);
-
-  if (UPB_UNLIKELY(_upb_ArenaHas(a) < size)) {
-    return _upb_Arena_SlowMalloc(a, size);
-  }
-
-  return _upb_Arena_FastMalloc(a, size);
 }
 
 // Shrinks the last alloc from arena.

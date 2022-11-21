@@ -43,11 +43,11 @@ static uintptr_t upb_cleanup_metadata(uint32_t* cleanup,
   return (uintptr_t)cleanup | has_initial_block;
 }
 
-struct mem_block {
-  struct mem_block* next;
+struct _upb_MemBlock {
+  struct _upb_MemBlock* next;
   uint32_t size;
   uint32_t cleanups;
-  /* Data follows. */
+  // Data follows.
 };
 
 typedef struct cleanup_ent {
@@ -56,7 +56,7 @@ typedef struct cleanup_ent {
 } cleanup_ent;
 
 static const size_t memblock_reserve =
-    UPB_ALIGN_UP(sizeof(mem_block), UPB_MALLOC_ALIGN);
+    UPB_ALIGN_UP(sizeof(_upb_MemBlock), UPB_MALLOC_ALIGN);
 
 static upb_Arena* arena_findroot(upb_Arena* a) {
   /* Path splitting keeps time complexity down, see:
@@ -73,10 +73,10 @@ size_t upb_Arena_SpaceAllocated(upb_Arena* arena) {
   arena = arena_findroot(arena);
   size_t memsize = 0;
 
-  mem_block* block = arena->freelist;
+  _upb_MemBlock* block = arena->freelist;
 
   while (block) {
-    memsize += sizeof(mem_block) + block->size;
+    memsize += sizeof(_upb_MemBlock) + block->size;
     block = block->next;
   }
 
@@ -89,7 +89,7 @@ uint32_t upb_Arena_DebugRefCount(upb_Arena* arena) {
 
 static void upb_Arena_addblock(upb_Arena* a, upb_Arena* root, void* ptr,
                                size_t size) {
-  mem_block* block = ptr;
+  _upb_MemBlock* block = ptr;
 
   /* The block is for arena |a|, but should appear in the freelist of |root|. */
   block->next = root->freelist;
@@ -110,7 +110,7 @@ static void upb_Arena_addblock(upb_Arena* a, upb_Arena* root, void* ptr,
 static bool upb_Arena_Allocblock(upb_Arena* a, size_t size) {
   upb_Arena* root = arena_findroot(a);
   size_t block_size = UPB_MAX(size, a->last_size * 2) + memblock_reserve;
-  mem_block* block = upb_malloc(root->block_alloc, block_size);
+  _upb_MemBlock* block = upb_malloc(root->block_alloc, block_size);
 
   if (!block) return false;
   upb_Arena_addblock(a, root, block, block_size);
@@ -193,13 +193,13 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
 }
 
 static void arena_dofree(upb_Arena* a) {
-  mem_block* block = a->freelist;
+  _upb_MemBlock* block = a->freelist;
   UPB_ASSERT(a->parent == a);
   UPB_ASSERT(a->refcount == 0);
 
   while (block) {
     /* Load first since we are deleting block. */
-    mem_block* next = block->next;
+    _upb_MemBlock* next = block->next;
 
     if (block->cleanups > 0) {
       cleanup_ent* end = UPB_PTR_AT(block, block->size, void);

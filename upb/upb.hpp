@@ -77,13 +77,6 @@ class Arena {
 
   upb_Arena* ptr() const { return ptr_.get(); }
 
-  // Allows this arena to be used as a generic allocator.
-  //
-  // The arena does not need free() calls so when using Arena as an allocator
-  // it is safe to skip them.  However they are no-ops so there is no harm in
-  // calling free() either.
-  upb_alloc* allocator() { return upb_Arena_Alloc(ptr_.get()); }
-
   // Add a cleanup function to run when the arena is destroyed.
   // Returns false on out-of-memory.
   template <class T>
