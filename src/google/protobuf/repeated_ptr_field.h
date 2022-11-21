@@ -693,11 +693,19 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   Rep* rep_;
 
   template <typename TypeHandler>
-  static inline typename TypeHandler::Type* cast(void* element) {
+  #ifdef _MSC_BUILD 
+  static inline typename TypeHandler::Type* (cast) (void* element){
+  #else
+  static inline typename TypeHandler::Type* cast (void* element){
+  #endif
     return reinterpret_cast<typename TypeHandler::Type*>(element);
   }
   template <typename TypeHandler>
-  static inline const typename TypeHandler::Type* cast(const void* element) {
+  #ifdef _MSC_BUILD
+  static inline const typename TypeHandler::Type* (cast) (const void* element) {
+  #else
+  static inline const typename TypeHandler::Type* cast (const void* element) {
+  #endif
     return reinterpret_cast<const typename TypeHandler::Type*>(element);
   }
 
