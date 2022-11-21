@@ -58,6 +58,11 @@ const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
 
 upb_FieldType upb_MiniTableField_Type(const upb_MiniTableField* field);
 
+UPB_INLINE bool upb_MiniTableField_IsExtension(
+    const upb_MiniTableField* field) {
+  return field->mode & kUpb_LabelFlags_IsExtension;
+}
+
 UPB_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
     const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
   return mini_table->subs[field->submsg_index].submsg;

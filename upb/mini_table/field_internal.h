@@ -75,9 +75,15 @@ typedef enum {
   kUpb_FieldRep_StringView = 2,
   kUpb_FieldRep_8Byte = 3,
 
-  kUpb_FieldRep_Shift = 6,  // Bit offset of the rep in upb_MiniTableField.mode
   kUpb_FieldRep_Max = kUpb_FieldRep_8Byte,
 } upb_FieldRep;
+
+#define kUpb_FieldRep_Shift 6
+
+UPB_INLINE upb_FieldRep
+_upb_MiniTableField_GetRep(const upb_MiniTableField* field) {
+  return (upb_FieldRep)(field->mode >> kUpb_FieldRep_Shift);
+}
 
 #ifdef __cplusplus
 extern "C" {

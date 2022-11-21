@@ -269,8 +269,9 @@ void FilePlatformLayout::BuildExtensions(const protobuf::FileDescriptor* fd) {
     // for it, just for the purpose of building the extension.
     // Note, we are not caching so this could use more memory than is necessary.
     upb_MiniTable* extendee = MakeMiniTable(f->containing_type());
-    bool ok = upb_MiniTable_BuildExtension(e.data().data(), e.data().size(),
-                                           &ext, extendee, sub, status.ptr());
+    bool ok =
+        _upb_MiniTable_BuildExtension(e.data().data(), e.data().size(), &ext,
+                                      extendee, sub, platform_, status.ptr());
     if (!ok) {
       // TODO(haberman): Use ABSL CHECK() when it is available.
       fprintf(stderr, "Error building mini-table: %s\n",

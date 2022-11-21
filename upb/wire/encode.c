@@ -447,7 +447,7 @@ static bool encode_shouldencode(upb_encstate* e, const upb_Message* msg,
   if (f->presence == 0) {
     /* Proto3 presence or map/array. */
     const void* mem = UPB_PTR_AT(msg, f->offset, void);
-    switch (f->mode >> kUpb_FieldRep_Shift) {
+    switch (_upb_MiniTableField_GetRep(f)) {
       case kUpb_FieldRep_1Byte: {
         char ch;
         memcpy(&ch, mem, 1);

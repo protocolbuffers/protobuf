@@ -55,6 +55,7 @@ extern "C" {
 
 extern const float kUpb_FltInfinity;
 extern const double kUpb_Infinity;
+extern const double kUpb_NaN;
 
 /* Internal members of a upb_Message that track unknown fields and/or
  * extensions. We can change this without breaking binary compatibility.  We put

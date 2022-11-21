@@ -29,6 +29,7 @@
 #include <errno.h>
 
 #include "upb/mini_table/decode.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/def_type.h"
@@ -63,6 +64,7 @@ struct upb_FieldDef {
     float flt;
     bool boolean;
     str_t* str;
+    void* msg;  // Always NULL.
   } defaultval;
   union {
     const upb_OneofDef* oneof;
@@ -186,8 +188,11 @@ const upb_OneofDef* upb_FieldDef_RealContainingOneof(const upb_FieldDef* f) {
 }
 
 upb_MessageValue upb_FieldDef_Default(const upb_FieldDef* f) {
-  UPB_ASSERT(!upb_FieldDef_IsSubMessage(f));
   upb_MessageValue ret;
+
+  if (upb_FieldDef_IsRepeated(f) || upb_FieldDef_IsSubMessage(f)) {
+    return (upb_MessageValue){.msg_val = NULL};
+  }
 
   switch (upb_FieldDef_CType(f)) {
     case kUpb_CType_Bool:
@@ -232,9 +237,14 @@ const upb_EnumDef* upb_FieldDef_EnumSubDef(const upb_FieldDef* f) {
 }
 
 const upb_MiniTableField* upb_FieldDef_MiniTable(const upb_FieldDef* f) {
-  UPB_ASSERT(!upb_FieldDef_IsExtension(f));
-  const upb_MiniTable* layout = upb_MessageDef_MiniTable(f->msgdef);
-  return &layout->fields[f->layout_index];
+  if (upb_FieldDef_IsExtension(f)) {
+    const upb_FileDef* file = upb_FieldDef_File(f);
+    return (upb_MiniTableField*)_upb_FileDef_ExtensionMiniTable(
+        file, f->layout_index);
+  } else {
+    const upb_MiniTable* layout = upb_MessageDef_MiniTable(f->msgdef);
+    return &layout->fields[f->layout_index];
+  }
 }
 
 const upb_MiniTableExtension* _upb_FieldDef_ExtensionMiniTable(
@@ -531,6 +541,7 @@ static void set_default_default(upb_DefBuilder* ctx, upb_FieldDef* f) {
     case kUpb_CType_Enum: {
       const upb_EnumValueDef* v = upb_EnumDef_Value(f->sub.enumdef, 0);
       f->defaultval.sint = upb_EnumValueDef_Number(v);
+      break;
     }
     case kUpb_CType_Message:
       break;

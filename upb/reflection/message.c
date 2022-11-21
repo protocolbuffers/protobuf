@@ -32,6 +32,7 @@
 #include "upb/collections/map.h"
 #include "upb/hash/common.h"
 #include "upb/message/message.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/field_def_internal.h"
@@ -115,20 +116,10 @@ const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
 
 upb_MessageValue upb_Message_Get(const upb_Message* msg,
                                  const upb_FieldDef* f) {
-  if (upb_FieldDef_IsExtension(f)) {
-    const upb_Message_Extension* ext =
-        _upb_Message_Getext(msg, _upb_FieldDef_ExtensionMiniTable(f));
-    if (ext) {
-      upb_MessageValue val;
-      memcpy(&val, &ext->data, sizeof(val));
-      return val;
-    } else if (upb_FieldDef_IsRepeated(f)) {
-      return (upb_MessageValue){.array_val = NULL};
-    }
-  } else if (!upb_FieldDef_HasPresence(f) || upb_Message_Has(msg, f)) {
-    return _upb_Message_Getraw(msg, f);
-  }
-  return upb_FieldDef_Default(f);
+  upb_MessageValue default_val = upb_FieldDef_Default(f);
+  upb_MessageValue ret;
+  _upb_MiniTable_GetField(msg, upb_FieldDef_MiniTable(f), &default_val, &ret);
+  return ret;
 }
 
 upb_MutableMessageValue upb_Message_Mutable(upb_Message* msg,
@@ -172,30 +163,7 @@ make:
 
 bool upb_Message_Set(upb_Message* msg, const upb_FieldDef* f,
                      upb_MessageValue val, upb_Arena* a) {
-  if (upb_FieldDef_IsExtension(f)) {
-    upb_Message_Extension* ext = _upb_Message_GetOrCreateExtension(
-        msg, _upb_FieldDef_ExtensionMiniTable(f), a);
-    if (!ext) return false;
-    memcpy(&ext->data, &val, sizeof(val));
-  } else {
-    const upb_MiniTableField* field = upb_FieldDef_MiniTable(f);
-
-    // Building reflection should always cause all sub-message types to be
-    // linked, but double-check here just for extra assurance.
-    UPB_ASSERT(!upb_FieldDef_IsSubMessage(f) ||
-               upb_MessageDef_MiniTable(upb_FieldDef_ContainingType(f))
-                   ->subs[field->submsg_index]
-                   .submsg);
-
-    char* mem = UPB_PTR_AT(msg, field->offset, char);
-    memcpy(mem, &val, get_field_size(field));
-    if (field->presence > 0) {
-      _upb_sethas_field(msg, field);
-    } else if (in_oneof(field)) {
-      *_upb_oneofcase_field(msg, field) = field->number;
-    }
-  }
-  return true;
+  return _upb_MiniTable_SetField(msg, upb_FieldDef_MiniTable(f), &val, a);
 }
 
 void upb_Message_ClearField(upb_Message* msg, const upb_FieldDef* f) {

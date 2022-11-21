@@ -161,6 +161,20 @@ class FileLayout {
     return layout64_.GetMiniTable(m);
   }
 
+  const upb_MiniTableField* GetField32(
+      const protobuf::FieldDescriptor* f) const {
+    if (f->is_extension()) return &layout32_.GetExtension(f)->field;
+    return upb_MiniTable_FindFieldByNumber(GetMiniTable32(f->containing_type()),
+                                           f->number());
+  }
+
+  const upb_MiniTableField* GetField64(
+      const protobuf::FieldDescriptor* f) const {
+    if (f->is_extension()) return &layout64_.GetExtension(f)->field;
+    return upb_MiniTable_FindFieldByNumber(GetMiniTable64(f->containing_type()),
+                                           f->number());
+  }
+
   const upb_MiniTableEnum* GetEnumTable(
       const protobuf::EnumDescriptor* d) const {
     return layout64_.GetEnumTable(d);
@@ -195,11 +209,6 @@ class FileLayout {
 
   bool HasHasbit(const protobuf::FieldDescriptor* f) const {
     return GetHasbitIndex(f) > 0;
-  }
-
-  const upb_MiniTableExtension* GetExtension(
-      const protobuf::FieldDescriptor* f) const {
-    return layout64_.GetExtension(f);
   }
 
   template <class T>

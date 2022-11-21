@@ -69,11 +69,19 @@ void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
 void upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
                               const upb_MiniTableEnum* sub);
 
-const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
-                                         upb_MiniTableExtension* ext,
-                                         const upb_MiniTable* extendee,
-                                         upb_MiniTableSub sub,
-                                         upb_Status* status);
+const char* _upb_MiniTable_BuildExtension(const char* data, size_t len,
+                                          upb_MiniTableExtension* ext,
+                                          const upb_MiniTable* extendee,
+                                          upb_MiniTableSub sub,
+                                          upb_MiniTablePlatform platform,
+                                          upb_Status* status);
+
+UPB_INLINE const char* upb_MiniTable_BuildExtension(
+    const char* data, size_t len, upb_MiniTableExtension* ext,
+    const upb_MiniTable* extendee, upb_MiniTableSub sub, upb_Status* status) {
+  return _upb_MiniTable_BuildExtension(data, len, ext, extendee, sub,
+                                       kUpb_MiniTablePlatform_Native, status);
+}
 
 upb_MiniTableEnum* upb_MiniTable_BuildEnum(const char* data, size_t len,
                                            upb_Arena* arena,

@@ -663,45 +663,29 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
   d->table->size = UPB_ALIGN_UP(d->table->size, 8);
 }
 
-static void upb_MiniTable_BuildMapEntry(upb_MtDecoder* d,
-                                        upb_FieldType key_type,
-                                        upb_FieldType value_type,
-                                        bool value_is_proto3_enum) {
+static void upb_MiniTable_BuildMapEntry(upb_MtDecoder* d, char key_type,
+                                        char val_type) {
   upb_MiniTableField* fields = upb_Arena_Malloc(d->arena, sizeof(*fields) * 2);
   if (!fields) {
     upb_MtDecoder_ErrorFormat(d, "OOM while building map mini table field");
     UPB_UNREACHABLE();
   }
 
-  upb_MiniTableSub* subs = NULL;
-  if (value_is_proto3_enum) {
-    UPB_ASSERT(value_type == kUpb_FieldType_Enum);
-    // No sub needed.
-  } else if (value_type == kUpb_FieldType_Message ||
-             value_type == kUpb_FieldType_Group ||
-             value_type == kUpb_FieldType_Enum) {
-    subs = upb_Arena_Malloc(d->arena, sizeof(*subs));
-    if (!subs) {
-      upb_MtDecoder_ErrorFormat(d, "OOM while building map mini table sub");
-      UPB_UNREACHABLE();
-    }
-  }
-
   size_t field_size =
       upb_MtDecoder_SizeOfRep(kUpb_FieldRep_StringView, d->platform);
 
+  uint32_t sub_count = 0;
   fields[0].number = 1;
   fields[1].number = 2;
-  fields[0].mode = kUpb_FieldMode_Scalar;
-  fields[1].mode = kUpb_FieldMode_Scalar;
+  upb_MiniTable_SetField(d, key_type, &fields[0], 0, &sub_count);
+  upb_MiniTable_SetField(d, val_type, &fields[1], 0, &sub_count);
+  upb_MtDecoder_AllocateSubs(d, sub_count);
+
+  // Map entries have a pre-determined layout, regardless of types.
   fields[0].presence = 0;
   fields[1].presence = 0;
   fields[0].offset = 0;
   fields[1].offset = field_size;
-
-  upb_MiniTable_SetTypeAndSub(&fields[0], key_type, NULL, 0, false);
-  upb_MiniTable_SetTypeAndSub(&fields[1], value_type, NULL, 0,
-                              value_is_proto3_enum);
 
   upb_MiniTable* ret = d->table;
   ret->size = UPB_ALIGN_UP(2 * field_size, 8);
@@ -710,7 +694,6 @@ static void upb_MiniTable_BuildMapEntry(upb_MtDecoder* d,
   ret->dense_below = 2;
   ret->table_mask = -1;
   ret->required_count = 0;
-  ret->subs = subs;
   ret->fields = fields;
 }
 
@@ -720,9 +703,8 @@ static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
     upb_MtDecoder_ErrorFormat(d, "Invalid map encode length: %zu", len);
     UPB_UNREACHABLE();
   }
-  const upb_EncodedType e0 = _upb_FromBase92(data[0]);
-  const upb_EncodedType e1 = _upb_FromBase92(data[1]);
-  switch (e0) {
+  const upb_EncodedType key_type = _upb_FromBase92(data[0]);
+  switch (key_type) {
     case kUpb_EncodedType_Fixed32:
     case kUpb_EncodedType_Fixed64:
     case kUpb_EncodedType_SFixed32:
@@ -738,17 +720,10 @@ static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
       break;
 
     default:
-      upb_MtDecoder_ErrorFormat(d, "Invalid map key field type: %d", e0);
+      upb_MtDecoder_ErrorFormat(d, "Invalid map key field type: %d", key_type);
       UPB_UNREACHABLE();
   }
-  if (e1 >= sizeof(kUpb_EncodedToType)) {
-    upb_MtDecoder_ErrorFormat(d, "Invalid map value field type: %d", e1);
-    UPB_UNREACHABLE();
-  }
-  const upb_FieldType key_type = kUpb_EncodedToType[e0];
-  const upb_FieldType val_type = kUpb_EncodedToType[e1];
-  const bool value_is_proto3_enum = (e1 == kUpb_EncodedType_OpenEnum);
-  upb_MiniTable_BuildMapEntry(d, key_type, val_type, value_is_proto3_enum);
+  upb_MiniTable_BuildMapEntry(d, data[0], data[1]);
 }
 
 static void upb_MtDecoder_ParseMessageSet(upb_MtDecoder* d, const char* data,
@@ -926,15 +901,17 @@ upb_MiniTableEnum* upb_MiniTable_BuildEnum(const char* data, size_t len,
   return decoder.enum_table;
 }
 
-const char* upb_MiniTable_BuildExtension(const char* data, size_t len,
-                                         upb_MiniTableExtension* ext,
-                                         const upb_MiniTable* extendee,
-                                         upb_MiniTableSub sub,
-                                         upb_Status* status) {
+const char* _upb_MiniTable_BuildExtension(const char* data, size_t len,
+                                          upb_MiniTableExtension* ext,
+                                          const upb_MiniTable* extendee,
+                                          upb_MiniTableSub sub,
+                                          upb_MiniTablePlatform platform,
+                                          upb_Status* status) {
   upb_MtDecoder decoder = {
       .arena = NULL,
       .status = status,
       .table = NULL,
+      .platform = platform,
   };
 
   if (UPB_SETJMP(decoder.err)) return NULL;

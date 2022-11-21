@@ -23,6 +23,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+#include <cstdint>
 #include <memory>
 
 #include "google/protobuf/descriptor.pb.h"
@@ -169,6 +170,8 @@ std::string FloatToCLiteral(float value) {
     return "kUpb_FltInfinity";
   } else if (value == -std::numeric_limits<float>::infinity()) {
     return "-kUpb_FltInfinity";
+  } else if (std::isnan(value)) {
+    return "kUpb_NaN";
   } else {
     return absl::StrCat(value);
   }
@@ -179,6 +182,8 @@ std::string DoubleToCLiteral(double value) {
     return "kUpb_Infinity";
   } else if (value == -std::numeric_limits<double>::infinity()) {
     return "-kUpb_Infinity";
+  } else if (std::isnan(value)) {
+    return "kUpb_NaN";
   } else {
     return absl::StrCat(value);
   }
@@ -243,8 +248,11 @@ void DumpEnumValues(const protobuf::EnumDescriptor* desc, Output& output) {
   }
 }
 
+std::string GetFieldRep(const FileLayout& layout,
+                        const protobuf::FieldDescriptor* field);
+
 void GenerateExtensionInHeader(const protobuf::FieldDescriptor* ext,
-                               Output& output) {
+                               const FileLayout& layout, Output& output) {
   output(
       R"cc(
         UPB_INLINE bool $0_has_$1(const struct $2* msg) {
@@ -264,42 +272,36 @@ void GenerateExtensionInHeader(const protobuf::FieldDescriptor* ext,
       ExtensionLayout(ext));
 
   if (ext->is_repeated()) {
-  } else if (ext->message_type()) {
-    output(
-        R"cc(
-          UPB_INLINE $0 $1_$2(const struct $3* msg) {
-            const upb_Message_Extension* ext = _upb_Message_Getext(msg, &$4);
-            UPB_ASSERT(ext);
-            return *UPB_PTR_AT(&ext->data, 0, $0);
-          }
-        )cc",
-        CTypeConst(ext), ExtensionIdentBase(ext), ext->name(),
-        MessageName(ext->containing_type()), ExtensionLayout(ext),
-        FieldDefault(ext));
-    output(
-        R"cc(
-          UPB_INLINE void $1_set_$2(struct $3* msg, $0 ext, upb_Arena* arena) {
-            const upb_Message_Extension* msg_ext =
-                _upb_Message_GetOrCreateExtension(msg, &$4, arena);
-            UPB_ASSERT(msg_ext);
-            *UPB_PTR_AT(&msg_ext->data, 0, $0) = ext;
-          }
-        )cc",
-        CTypeConst(ext), ExtensionIdentBase(ext), ext->name(),
-        MessageName(ext->containing_type()), ExtensionLayout(ext),
-        FieldDefault(ext));
+    // TODO(b/259861668): We need generated accessors for repeated extensions.
   } else {
-    // Returns default if extension field is not a message.
     output(
         R"cc(
           UPB_INLINE $0 $1_$2(const struct $3* msg) {
-            const upb_Message_Extension* ext = _upb_Message_Getext(msg, &$4);
-            return ext ? *UPB_PTR_AT(&ext->data, 0, $0) : $5;
+            const upb_MiniTableExtension* ext = &$4;
+            UPB_ASSUME(!upb_IsRepeatedOrMap(&ext->field));
+            UPB_ASSUME(_upb_MiniTableField_GetRep(&ext->field) == $5);
+            $0 default_val = $6;
+            $0 ret;
+            _upb_MiniTable_GetExtensionField(msg, ext, &default_val, &ret);
+            return ret;
           }
         )cc",
         CTypeConst(ext), ExtensionIdentBase(ext), ext->name(),
         MessageName(ext->containing_type()), ExtensionLayout(ext),
-        FieldDefault(ext));
+        GetFieldRep(layout, ext), FieldDefault(ext));
+    output(
+        R"cc(
+          UPB_INLINE void $1_set_$2(struct $3* msg, $0 val, upb_Arena* arena) {
+            const upb_MiniTableExtension* ext = &$4;
+            UPB_ASSUME(!upb_IsRepeatedOrMap(&ext->field));
+            UPB_ASSUME(_upb_MiniTableField_GetRep(&ext->field) == $5);
+            bool ok = _upb_MiniTable_SetExtensionField(msg, ext, &val, arena);
+            UPB_ASSERT(ok);
+          }
+        )cc",
+        CTypeConst(ext), ExtensionIdentBase(ext), ext->name(),
+        MessageName(ext->containing_type()), ExtensionLayout(ext),
+        GetFieldRep(layout, ext));
   }
 }
 
@@ -590,83 +592,26 @@ void GenerateRepeatedGetters(const protobuf::FieldDescriptor* field,
       layout.GetFieldOffset(field));
 }
 
-void GenerateOneofGetters(const protobuf::FieldDescriptor* field,
-                          const FileLayout& layout, absl::string_view msg_name,
-                          const NameToFieldDescriptorMap& field_names,
-                          Output& output) {
-  output(
-      R"cc(
-        UPB_INLINE $0 $1_$2(const $1* msg) {
-          return UPB_READ_ONEOF(msg, $0, $3, $4, $5, $6);
-        }
-      )cc",
-      CTypeConst(field), msg_name, ResolveFieldName(field, field_names),
-      layout.GetFieldOffset(field),
-      layout.GetOneofCaseOffset(field->real_containing_oneof()),
-      field->number(), FieldDefault(field));
-}
-
-std::string GetAccessor(const protobuf::FieldDescriptor* field) {
-  switch (field->cpp_type()) {
-    case protobuf::FieldDescriptor::CPPTYPE_BOOL:
-      return "upb_MiniTable_GetBool";
-
-    case protobuf::FieldDescriptor::CPPTYPE_INT32:
-    case protobuf::FieldDescriptor::CPPTYPE_ENUM:
-      return "upb_MiniTable_GetInt32";
-
-    case protobuf::FieldDescriptor::CPPTYPE_UINT32:
-      return "upb_MiniTable_GetUInt32";
-
-    case protobuf::FieldDescriptor::CPPTYPE_INT64:
-      return "upb_MiniTable_GetInt64";
-
-    case protobuf::FieldDescriptor::CPPTYPE_UINT64:
-      return "upb_MiniTable_GetUInt64";
-
-    case protobuf::FieldDescriptor::CPPTYPE_FLOAT:
-      return "upb_MiniTable_GetFloat";
-
-    case protobuf::FieldDescriptor::CPPTYPE_DOUBLE:
-      return "upb_MiniTable_GetDouble";
-
-    case protobuf::FieldDescriptor::CPPTYPE_STRING:
-      return "upb_MiniTable_GetString";
-
-    case protobuf::FieldDescriptor::CPPTYPE_MESSAGE:
-      return absl::StrCat("(", CTypeConst(field), ")upb_MiniTable_GetMessage");
-
-    default:
-      fprintf(stderr, "unexpected type %d\n", field->cpp_type());
-      abort();
-  }
-}
-
-void WriteField(const upb_MiniTableField* field64,
-                const upb_MiniTableField* field32, Output& output);
+std::string FieldInitializer(const FileLayout& layout,
+                             const protobuf::FieldDescriptor* field);
 
 void GenerateScalarGetters(const protobuf::FieldDescriptor* field,
                            const FileLayout& layout, absl::string_view msg_name,
                            const NameToFieldDescriptorMap& field_names,
                            Output& output) {
-  const protobuf::Descriptor* message = field->containing_type();
-  const upb_MiniTable* t32 = layout.GetMiniTable32(message);
-  const upb_MiniTable* t64 = layout.GetMiniTable64(message);
-  const upb_MiniTableField* f32 =
-      upb_MiniTable_FindFieldByNumber(t32, field->number());
-  const upb_MiniTableField* f64 =
-      upb_MiniTable_FindFieldByNumber(t64, field->number());
-
-  std::string resolved_name = ResolveFieldName(field, field_names);
+  std::string field_name = ResolveFieldName(field, field_names);
   output(
       R"cc(
         UPB_INLINE $0 $1_$2(const $1* msg) {
-          const upb_MiniTableField field =)cc",
-      CTypeConst(field), msg_name, resolved_name);
-  WriteField(f64, f32, output);
-  output(";\n");
-  output("  return $0(msg, &field, $1);\n}\n", GetAccessor(field),
-         FieldDefault(field));
+          $0 default_val = $3;
+          $0 ret;
+          const upb_MiniTableField field = $4;
+          _upb_MiniTable_GetNonExtensionField(msg, &field, &default_val, &ret);
+          return ret;
+        }
+      )cc",
+      CTypeConst(field), msg_name, field_name, FieldDefault(field),
+      FieldInitializer(layout, field));
 }
 
 void GenerateGetters(const protobuf::FieldDescriptor* field,
@@ -679,8 +624,6 @@ void GenerateGetters(const protobuf::FieldDescriptor* field,
     GenerateMapEntryGetters(field, msg_name, output);
   } else if (field->is_repeated()) {
     GenerateRepeatedGetters(field, layout, msg_name, field_names, output);
-  } else if (field->real_containing_oneof()) {
-    GenerateOneofGetters(field, layout, msg_name, field_names, output);
   } else {
     GenerateScalarGetters(field, layout, msg_name, field_names, output);
   }
@@ -787,34 +730,25 @@ void GenerateNonRepeatedSetters(const protobuf::FieldDescriptor* field,
     // Key cannot be mutated.
     return;
   }
-  std::string resolved_name = ResolveFieldName(field, field_names);
-  // The common function signature for all setters.  Varying
-  // implementations follow.
-  output("UPB_INLINE void $0_set_$1($0 *msg, $2 value) {\n", msg_name,
-         resolved_name, CType(field));
+
+  std::string field_name = ResolveFieldName(field, field_names);
 
   if (field == field->containing_type()->map_value()) {
-    output(
-        "  _upb_msg_map_set_value(msg, &value, $0);\n"
-        "}\n",
-        field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
-            ? "0"
-            : "sizeof(" + CType(field) + ")");
-  } else if (field->real_containing_oneof()) {
-    output(
-        "  UPB_WRITE_ONEOF(msg, $0, $1, value, $2, $3);\n"
-        "}\n",
-        CType(field), layout.GetFieldOffset(field),
-        layout.GetOneofCaseOffset(field->real_containing_oneof()),
-        field->number());
+    output(R"cc(
+             UPB_INLINE void $0_set_$1($0 *msg, $2 value) {
+               _upb_msg_map_set_value(msg, &value, $3);
+             })cc",
+           msg_name, field_name, CType(field),
+           field->cpp_type() == protobuf::FieldDescriptor::CPPTYPE_STRING
+               ? "0"
+               : "sizeof(" + CType(field) + ")");
   } else {
-    if (layout.HasHasbit(field)) {
-      output("  _upb_sethas(msg, $0);\n", layout.GetHasbitIndex(field));
-    }
-    output(
-        "  *UPB_PTR_AT(msg, $1, $0) = value;\n"
-        "}\n",
-        CType(field), layout.GetFieldOffset(field));
+    output(R"cc(
+             UPB_INLINE void $0_set_$1($0 *msg, $2 value) {
+               const upb_MiniTableField field = $3;
+               _upb_MiniTable_SetNonExtensionField(msg, &field, &value);
+             })cc",
+           msg_name, field_name, CType(field), FieldInitializer(layout, field));
   }
 
   // Message fields also have a Msg_mutable_foo() accessor that will create
@@ -827,13 +761,12 @@ void GenerateNonRepeatedSetters(const protobuf::FieldDescriptor* field,
             struct $0* sub = (struct $0*)$1_$2(msg);
             if (sub == NULL) {
               sub = (struct $0*)_upb_Message_New(&$3, arena);
-              if (!sub) return NULL;
-              $1_set_$2(msg, sub);
+              if (sub) $1_set_$2(msg, sub);
             }
             return sub;
           }
         )cc",
-        MessageName(field->message_type()), msg_name, resolved_name,
+        MessageName(field->message_type()), msg_name, field_name,
         MessageInit(field->message_type()));
   }
 }
@@ -992,7 +925,7 @@ void WriteHeader(const FileLayout& layout, Output& output) {
   }
 
   for (auto ext : this_file_exts) {
-    GenerateExtensionInHeader(ext, output);
+    GenerateExtensionInHeader(ext, layout, output);
   }
 
   output("extern const upb_MiniTableFile $0;\n\n", FileLayoutName(file));
@@ -1226,13 +1159,45 @@ std::vector<TableEntry> FastDecodeTable(const protobuf::Descriptor* message,
   return table;
 }
 
+std::string GetFieldRep(const upb_MiniTableField* field32,
+                        const upb_MiniTableField* field64) {
+  switch (_upb_MiniTableField_GetRep(field32)) {
+    case kUpb_FieldRep_1Byte:
+      return "kUpb_FieldRep_1Byte";
+      break;
+    case kUpb_FieldRep_4Byte: {
+      if (_upb_MiniTableField_GetRep(field64) == kUpb_FieldRep_4Byte) {
+        return "kUpb_FieldRep_4Byte";
+      } else {
+        assert(_upb_MiniTableField_GetRep(field64) == kUpb_FieldRep_8Byte);
+        return "UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte)";
+      }
+      break;
+    }
+    case kUpb_FieldRep_StringView:
+      return "kUpb_FieldRep_StringView";
+      break;
+    case kUpb_FieldRep_8Byte:
+      return "kUpb_FieldRep_8Byte";
+      break;
+  }
+  UPB_UNREACHABLE();
+}
+
+std::string GetFieldRep(const FileLayout& layout,
+                        const protobuf::FieldDescriptor* field) {
+  return GetFieldRep(layout.GetField32(field), layout.GetField64(field));
+}
+
 // Returns the field mode as a string initializer.
 //
 // We could just emit this as a number (and we may yet go in that direction) but
 // for now emitting symbolic constants gives this better readability and
 // debuggability.
-std::string GetModeInit(uint8_t mode32, uint8_t mode64) {
+std::string GetModeInit(const upb_MiniTableField* field32,
+                        const upb_MiniTableField* field64) {
   std::string ret;
+  uint8_t mode32 = field32->mode;
   switch (mode32 & kUpb_FieldMode_Mask) {
     case kUpb_FieldMode_Map:
       ret = "kUpb_FieldMode_Map";
@@ -1259,48 +1224,32 @@ std::string GetModeInit(uint8_t mode32, uint8_t mode64) {
     absl::StrAppend(&ret, " | kUpb_LabelFlags_IsAlternate");
   }
 
-  std::string rep;
-  switch (mode32 >> kUpb_FieldRep_Shift) {
-    case kUpb_FieldRep_1Byte:
-      rep = "kUpb_FieldRep_1Byte";
-      break;
-    case kUpb_FieldRep_4Byte:
-      if (mode64 >> kUpb_FieldRep_Shift == kUpb_FieldRep_4Byte) {
-        rep = "kUpb_FieldRep_4Byte";
-      } else {
-        assert(mode64 >> kUpb_FieldRep_Shift == kUpb_FieldRep_8Byte);
-        rep = "UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte)";
-      }
-      break;
-    case kUpb_FieldRep_StringView:
-      rep = "kUpb_FieldRep_StringView";
-      break;
-    case kUpb_FieldRep_8Byte:
-      rep = "kUpb_FieldRep_8Byte";
-      break;
-  }
-
-  absl::StrAppend(&ret, " | (", rep, " << kUpb_FieldRep_Shift)");
+  absl::StrAppend(&ret, " | (", GetFieldRep(field32, field64),
+                  " << kUpb_FieldRep_Shift)");
   return ret;
 }
 
-void WriteField(const upb_MiniTableField* field64,
-                const upb_MiniTableField* field32, Output& output) {
-  output("{$0, $1, $2, $3, $4, $5}", field64->number,
-         FileLayout::UpbSize(field32->offset, field64->offset),
-         FileLayout::UpbSize(field32->presence, field64->presence),
-         field64->submsg_index == kUpb_NoSub
-             ? "kUpb_NoSub"
-             : absl::StrCat(field64->submsg_index).c_str(),
-         field64->descriptortype, GetModeInit(field32->mode, field64->mode));
+std::string FieldInitializer(const upb_MiniTableField* field64,
+                             const upb_MiniTableField* field32) {
+  return absl::Substitute(
+      "{$0, $1, $2, $3, $4, $5}", field64->number,
+      FileLayout::UpbSize(field32->offset, field64->offset),
+      FileLayout::UpbSize(field32->presence, field64->presence),
+      field64->submsg_index == kUpb_NoSub
+          ? "kUpb_NoSub"
+          : absl::StrCat(field64->submsg_index).c_str(),
+      field64->descriptortype, GetModeInit(field32, field64));
+}
+
+std::string FieldInitializer(const FileLayout& layout,
+                             const protobuf::FieldDescriptor* field) {
+  return FieldInitializer(layout.GetField64(field), layout.GetField32(field));
 }
 
 // Writes a single field into a .upb.c source file.
 void WriteMessageField(const upb_MiniTableField* field64,
                        const upb_MiniTableField* field32, Output& output) {
-  output("  ");
-  WriteField(field64, field32, output);
-  output(",\n");
+  output("  $0,\n", FieldInitializer(field64, field32));
 }
 
 // Writes a single message into a .upb.c source file.
@@ -1454,11 +1403,13 @@ int WriteMessages(const FileLayout& layout, Output& output,
   return file_messages.size();
 }
 
-void WriteExtension(const upb_MiniTableExtension* ext, Output& output) {
-  WriteField(&ext->field, &ext->field, output);
-  output(",\n");
-  output("  &$0,\n", reinterpret_cast<const char*>(ext->extendee));
-  output("  $0,\n", FilePlatformLayout::GetSub(ext->sub));
+void WriteExtension(const protobuf::FieldDescriptor* ext,
+                    const FileLayout& layout, Output& output) {
+  output("$0,\n", FieldInitializer(layout, ext));
+  const upb_MiniTableExtension* mt_ext =
+      reinterpret_cast<const upb_MiniTableExtension*>(layout.GetField32(ext));
+  output("  &$0,\n", reinterpret_cast<const char*>(mt_ext->extendee));
+  output("  $0,\n", FilePlatformLayout::GetSub(mt_ext->sub));
 }
 
 int WriteExtensions(const FileLayout& layout, Output& output) {
@@ -1484,7 +1435,7 @@ int WriteExtensions(const FileLayout& layout, Output& output) {
 
   for (auto ext : exts) {
     output("const upb_MiniTableExtension $0 = {\n  ", ExtensionLayout(ext));
-    WriteExtension(layout.GetExtension(ext), output);
+    WriteExtension(ext, layout, output);
     output("\n};\n");
   }
 
