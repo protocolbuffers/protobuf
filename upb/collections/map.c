@@ -92,6 +92,14 @@ bool upb_MapIterator_Next(const upb_Map* map, size_t* iter) {
   return _upb_map_next(map, iter);
 }
 
+bool upb_MapIterator_Done(const upb_Map* map, size_t iter) {
+  upb_strtable_iter i;
+  UPB_ASSERT(iter != kUpb_Map_Begin);
+  i.t = &map->table;
+  i.index = iter;
+  return upb_strtable_done(&i);
+}
+
 // Returns the key and value for this entry of the map.
 upb_MessageValue upb_MapIterator_Key(const upb_Map* map, size_t iter) {
   upb_strtable_iter i;

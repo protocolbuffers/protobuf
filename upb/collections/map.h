@@ -107,6 +107,11 @@ bool upb_Map_Next(const upb_Map* map, upb_MessageValue* key,
 // Advances to the next entry. Returns false if no more entries are present.
 bool upb_MapIterator_Next(const upb_Map* map, size_t* iter);
 
+/* Returns true if the iterator still points to a valid entry, or false if the
+ * iterator is past the last element. It is an error to call this function with
+ * kUpb_Map_Begin (you must call next() at least once first). */
+bool upb_MapIterator_Done(const upb_Map* map, size_t iter);
+
 /* Returns the key and value for this entry of the map. */
 upb_MessageValue upb_MapIterator_Key(const upb_Map* map, size_t iter);
 upb_MessageValue upb_MapIterator_Value(const upb_Map* map, size_t iter);
