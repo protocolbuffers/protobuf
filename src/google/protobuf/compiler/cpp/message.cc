@@ -242,7 +242,8 @@ bool EmitFieldNonDefaultCondition(io::Printer* p, const std::string& prefix,
     format.Indent();
     return true;
   } else if (field->real_containing_oneof()) {
-    format("if (_internal_has_$name$()) {\n");
+    auto v = p->WithVars(OneofFieldVars(field));
+    format("if ($has_field$) {\n");
     format.Indent();
     return true;
   }
@@ -259,6 +260,11 @@ bool HasHasMethod(const FieldDescriptor* field) {
   // type or inside an one-of have a has_$name$() method.
   return field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
          field->has_optional_keyword() || field->real_containing_oneof();
+}
+
+bool HasInternalHasMethod(const FieldDescriptor* field) {
+  return !HasHasbit(field) &&
+         field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE;
 }
 
 // Collects map entry message type information.
@@ -284,14 +290,6 @@ void CollectMapInfo(
       "TYPE_" + absl::AsciiStrToUpper(DeclaredTypeMethodName(key->type()));
   vars["val_wire_type"] =
       "TYPE_" + absl::AsciiStrToUpper(DeclaredTypeMethodName(val->type()));
-}
-
-// Does the given field have a private (internal helper only) has_$name$()
-// method?
-bool HasPrivateHasMethod(const FieldDescriptor* field) {
-  // Only for oneofs in message types with no field presence. has_$name$(),
-  // based on the oneof case, is still useful internally for generated code.
-  return IsProto3(field->file()) && field->real_containing_oneof();
 }
 
 
@@ -622,6 +620,16 @@ absl::flat_hash_map<absl::string_view, std::string> ClassVars(
   return vars;
 }
 
+absl::flat_hash_map<absl::string_view, std::string> HasbitVars(
+    int has_bit_index) {
+  return {
+      {"has_array_index", absl::StrCat(has_bit_index / 32)},
+      {"has_mask",
+       absl::StrCat(
+           "0x", absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8), "u")},
+  };
+}
+
 }  // anonymous namespace
 
 // ===================================================================
@@ -786,17 +794,13 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
             "public:\n",
             field);
       }
-    } else if (HasHasMethod(field)) {
-      format("$deprecated_attr$bool ${1$has_$name$$}$() const$2$\n", field,
-             !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
-      if (!IsFieldStripped(field, options_)) {
+    } else {
+      if (HasHasMethod(field)) {
         format(
-            "private:\n"
-            "bool _internal_has_$name$() const;\n"
-            "public:\n");
+            "$deprecated_attr$bool ${1$has_$name$$}$() const$2$\n", field,
+            !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
       }
-    } else if (HasPrivateHasMethod(field)) {
-      if (!IsFieldStripped(field, options_)) {
+      if (HasInternalHasMethod(field) && !IsFieldStripped(field, options_)) {
         format(
             "private:\n"
             "bool ${1$_internal_has_$name$$}$() const;\n"
@@ -1057,15 +1061,11 @@ void MessageGenerator::GenerateSingularFieldHasBits(
     int has_bit_index = HasBitIndex(field);
     GOOGLE_CHECK_NE(has_bit_index, kNoHasbit);
 
-    auto v = p->WithVars({
-        {"has_array_index", has_bit_index / 32},
-        {"has_mask", absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8)},
-    });
-
+    auto v = p->WithVars(HasbitVars(has_bit_index));
     format(
-        "inline bool $classname$::_internal_has_$name$() const {\n"
-        "  bool value = "
-        "($has_bits$[$has_array_index$] & 0x$has_mask$u) != 0;\n");
+        "inline bool $classname$::has_$name$() const {\n"
+        "$annotate_has$"
+        "  bool value = ($has_bits$[$has_array_index$] & $has_mask$) != 0;\n");
 
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
         !IsLazy(field, options_, scc_analyzer_)) {
@@ -1077,10 +1077,6 @@ void MessageGenerator::GenerateSingularFieldHasBits(
 
     format(
         "  return value;\n"
-        "}\n"
-        "inline bool $classname$::has_$name$() const {\n"
-        "$annotate_has$"
-        "  return _internal_has_$name$();\n"
         "}\n");
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     // Message fields have a has_$name$() method.
@@ -1124,6 +1120,7 @@ void MessageGenerator::GenerateOneofHasBits(io::Printer* p) {
 
 void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
                                                   io::Printer* p) {
+  auto v = p->WithVars(OneofFieldVars(field));
   Formatter format(p);
   if (IsFieldStripped(field, options_)) {
     if (HasHasMethod(field)) {
@@ -1139,25 +1136,18 @@ void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
   // Singular field in a oneof
   // N.B.: Without field presence, we do not use has-bits or generate
   // has_$name$() methods, but oneofs still have set_has_$name$().
-  // Oneofs also have has_$name$() but only as a private helper
-  // method, so that generated code is slightly cleaner (vs.  comparing
-  // _oneof_case_[index] against a constant everywhere).
-  //
-  // If has_$name$() is private, there is no need to add an internal accessor.
-  // Only annotate public accessors.
+  // Oneofs also have private _internal_has_$name$() a helper method.
   if (HasHasMethod(field)) {
     format(
-        "inline bool $classname$::_internal_has_$name$() const {\n"
-        "  return $oneof_name$_case() == k$field_name$;\n"
-        "}\n"
         "inline bool $classname$::has_$name$() const {\n"
         "$annotate_has$"
-        "  return _internal_has_$name$();\n"
+        "  return $has_field$;\n"
         "}\n");
-  } else if (HasPrivateHasMethod(field)) {
+  }
+  if (HasInternalHasMethod(field)) {
     format(
         "inline bool $classname$::_internal_has_$name$() const {\n"
-        "  return $oneof_name$_case() == k$field_name$;\n"
+        "  return $has_field$;\n"
         "}\n");
   }
   // set_has_$name$() for oneof fields is always private; hence should not be
@@ -1188,7 +1178,7 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
     // Clear this field only if it is the active field in this oneof,
     // otherwise ignore
     auto v = p->WithVars(OneofFieldVars(field));
-    format("if (_internal_has_$name$()) {\n");
+    format("if ($has_field$) {\n");
     format.Indent();
     field_generators_.get(field).GenerateClearingCode(p);
     format("clear_has_$oneof_name$();\n");
@@ -1201,10 +1191,8 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
     field_generators_.get(field).GenerateClearingCode(p);
     if (HasHasbit(field)) {
       int has_bit_index = HasBitIndex(field);
-      auto v = p->WithVars({{"has_array_index", has_bit_index / 32},
-                            {"has_mask", absl::Hex(1u << (has_bit_index % 32),
-                                                   absl::kZeroPad8)}});
-      format("$has_bits$[$has_array_index$] &= ~0x$has_mask$u;\n");
+      auto v = p->WithVars(HasbitVars(has_bit_index));
+      format("$has_bits$[$has_array_index$] &= ~$has_mask$;\n");
     }
   }
   format("$annotate_clear$");
@@ -1245,11 +1233,6 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
                 : "");
       }
     } else if (field->real_containing_oneof()) {
-      auto v = p->WithVars({
-          {"field_name", UnderscoresToCamelCase(field->name(), true)},
-          {"oneof_name", field->containing_oneof()->name()},
-          {"oneof_index", absl::StrCat(field->containing_oneof()->index())},
-      });
       GenerateOneofMemberHasBits(field, p);
     } else {
       // Singular field.
@@ -3513,7 +3496,9 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
                  cached_has_word_index != HasWordIndex(field)) {
         // Check hasbit, not using cached bits.
         GOOGLE_CHECK(HasHasbit(field));
-        format("if (from._internal_has_$1$()) {\n", FieldName(field));
+        auto v = p->WithVars(HasbitVars(HasBitIndex(field)));
+        format(
+            "if ((from.$has_bits$[$has_array_index$] & $has_mask$) != 0) {\n");
         format.Indent();
         generator.GenerateMergingCode(p);
         format.Outdent();
@@ -3704,18 +3689,18 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
     PrintFieldComment(format, field);
   }
 
+  const FieldGenerator& field_gen = field_generators_.get(field);
+
   bool have_enclosing_if = false;
   if (field->options().weak()) {
   } else if (HasHasbit(field)) {
     // Attempt to use the state of cached_has_bits, if possible.
     int has_bit_index = HasBitIndex(field);
+    auto v = p->WithVars(HasbitVars(has_bit_index));
     if (cached_has_bits_index == has_bit_index / 32) {
-      const std::string mask =
-          absl::StrCat(absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
-
-      format("if (cached_has_bits & 0x$1$u) {\n", mask);
+      format("if (cached_has_bits & $has_mask$) {\n");
     } else {
-      format("if (_internal_has_$1$()) {\n", FieldName(field));
+      field_gen.GenerateIfHasField(p);
     }
 
     format.Indent();
@@ -3724,7 +3709,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
     have_enclosing_if = EmitFieldNonDefaultCondition(p, "this->", field);
   }
 
-  field_generators_.get(field).GenerateSerializeWithCachedSizesToArray(p);
+  field_gen.GenerateSerializeWithCachedSizesToArray(p);
 
   if (have_enclosing_if) {
     format.Outdent();
@@ -4150,13 +4135,12 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     format("::size_t total_size = 0;\n");
     for (auto field : optimized_order_) {
       if (field->is_required()) {
-        format(
-            "\n"
-            "if (_internal_has_$1$()) {\n",
-            FieldName(field));
+        const FieldGenerator& field_gen = field_generators_.get(field);
+        format("\n");
+        field_gen.GenerateIfHasField(p);
         format.Indent();
         PrintFieldComment(format, field);
-        field_generators_.get(field).GenerateByteSize(p);
+        field_gen.GenerateByteSize(p);
         format.Outdent();
         format("}\n");
       }
@@ -4210,9 +4194,10 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     for (auto field : optimized_order_) {
       if (!field->is_required()) continue;
       PrintFieldComment(format, field);
-      format("if (_internal_has_$1$()) {\n", FieldName(field));
+      const FieldGenerator& field_gen = field_generators_.get(field);
+      field_gen.GenerateIfHasField(p);
       format.Indent();
-      field_generators_.get(field).GenerateByteSize(p);
+      field_gen.GenerateByteSize(p);
       format.Outdent();
       format("}\n");
     }

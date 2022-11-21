@@ -1070,7 +1070,7 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
           }
           if (field->real_containing_oneof()) {
             format(
-                "if (!$msg$_internal_has_$name$()) {\n"
+                "if ($msg$$1$_case() != k$2$) {\n"
                 "  $msg$clear_$1$();\n"
                 "  $msg$$field$ = ::$proto_ns$::Arena::CreateMessage<\n"
                 "      ::$proto_ns$::internal::LazyField>("
@@ -1078,7 +1078,8 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
                 "  $msg$set_has_$name$();\n"
                 "}\n"
                 "auto* lazy_field = $msg$$field$;\n",
-                field->containing_oneof()->name());
+                field->containing_oneof()->name(),
+                UnderscoresToCamelCase(field->name(), true));
           } else if (internal::cpp::HasHasbit(field)) {
             format(
                 "_Internal::set_has_$name$(&$has_bits$);\n"
