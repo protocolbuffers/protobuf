@@ -596,9 +596,8 @@ static int lupb_MapIterator_Next(lua_State* L) {
   size_t* iter = lua_touserdata(L, lua_upvalueindex(1));
   lupb_map* lmap = lupb_map_check(L, map);
 
-  if (upb_MapIterator_Next(lmap->map, iter)) {
-    upb_MessageValue key = upb_MapIterator_Key(lmap->map, *iter);
-    upb_MessageValue val = upb_MapIterator_Value(lmap->map, *iter);
+  upb_MessageValue key, val;
+  if (upb_Map_Next(lmap->map, &key, &val, iter)) {
     lupb_pushmsgval(L, map, lmap->key_type, key);
     lupb_pushmsgval(L, map, lmap->value_type, val);
     return 2;

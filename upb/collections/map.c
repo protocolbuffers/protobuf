@@ -76,16 +76,20 @@ bool upb_Map_Delete(upb_Map* map, upb_MessageValue key) {
   return _upb_Map_Delete(map, &key, map->key_size);
 }
 
-bool upb_MapIterator_Next(const upb_Map* map, size_t* iter) {
-  return _upb_map_next(map, iter);
+bool upb_Map_Next(const upb_Map* map, upb_MessageValue* key,
+                  upb_MessageValue* val, size_t* iter) {
+  upb_StringView k;
+  upb_value v;
+  const bool ok = upb_strtable_next2(&map->table, &k, &v, iter);
+  if (ok) {
+    _upb_map_fromkey(k, key, map->key_size);
+    _upb_map_fromvalue(v, val, map->val_size);
+  }
+  return ok;
 }
 
-bool upb_MapIterator_Done(const upb_Map* map, size_t iter) {
-  upb_strtable_iter i;
-  UPB_ASSERT(iter != kUpb_Map_Begin);
-  i.t = &map->table;
-  i.index = iter;
-  return upb_strtable_done(&i);
+bool upb_MapIterator_Next(const upb_Map* map, size_t* iter) {
+  return _upb_map_next(map, iter);
 }
 
 // Returns the key and value for this entry of the map.

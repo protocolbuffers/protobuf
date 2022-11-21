@@ -265,9 +265,8 @@ static void upb_util_FindUnsetRequiredInternal(upb_FindContext* ctx,
       if (!val_m) continue;
       const upb_Map* map = val.map_val;
       size_t iter = kUpb_Map_Begin;
-      while (upb_MapIterator_Next(map, &iter)) {
-        upb_MessageValue key = upb_MapIterator_Key(map, iter);
-        upb_MessageValue map_val = upb_MapIterator_Value(map, iter);
+      upb_MessageValue key, map_val;
+      while (upb_Map_Next(map, &key, &map_val, &iter)) {
         upb_FindContext_Push(ctx, (upb_FieldPathEntry){.map_key = key});
         upb_util_FindUnsetRequiredInternal(ctx, map_val.msg_val, val_m);
         upb_FindContext_Pop(ctx);

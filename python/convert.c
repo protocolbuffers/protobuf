@@ -334,9 +334,8 @@ bool PyUpb_Map_IsEqual(const upb_Map* map1, const upb_Map* map2,
   const upb_FieldDef* val_f = upb_MessageDef_Field(entry_m, 1);
   size_t iter = kUpb_Map_Begin;
 
-  while (upb_MapIterator_Next(map1, &iter)) {
-    upb_MessageValue key = upb_MapIterator_Key(map1, iter);
-    upb_MessageValue val1 = upb_MapIterator_Value(map1, iter);
+  upb_MessageValue key, val1;
+  while (upb_Map_Next(map1, &key, &val1, &iter)) {
     upb_MessageValue val2;
     if (!upb_Map_Get(map2, key, &val2)) return false;
     if (!PyUpb_ValueEq(val1, val2, val_f)) return false;

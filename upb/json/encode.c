@@ -470,20 +470,20 @@ static void jsonenc_fieldmask(jsonenc* e, const upb_Message* msg,
 
 static void jsonenc_struct(jsonenc* e, const upb_Message* msg,
                            const upb_MessageDef* m) {
-  const upb_FieldDef* fields_f = upb_MessageDef_FindFieldByNumber(m, 1);
-  const upb_Map* fields = upb_Message_Get(msg, fields_f).map_val;
-  const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(fields_f);
-  const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(entry_m, 2);
-  size_t iter = kUpb_Map_Begin;
-  bool first = true;
-
   jsonenc_putstr(e, "{");
 
-  if (fields) {
-    while (upb_MapIterator_Next(fields, &iter)) {
-      upb_MessageValue key = upb_MapIterator_Key(fields, iter);
-      upb_MessageValue val = upb_MapIterator_Value(fields, iter);
+  const upb_FieldDef* fields_f = upb_MessageDef_FindFieldByNumber(m, 1);
+  const upb_Map* fields = upb_Message_Get(msg, fields_f).map_val;
 
+  if (fields) {
+    const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(fields_f);
+    const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(entry_m, 2);
+
+    size_t iter = kUpb_Map_Begin;
+    bool first = true;
+
+    upb_MessageValue key, val;
+    while (upb_Map_Next(fields, &key, &val, &iter)) {
       jsonenc_putsep(e, ",", &first);
       jsonenc_string(e, key.str_val);
       jsonenc_putstr(e, ":");
@@ -677,19 +677,21 @@ static void jsonenc_array(jsonenc* e, const upb_Array* arr,
 }
 
 static void jsonenc_map(jsonenc* e, const upb_Map* map, const upb_FieldDef* f) {
+  jsonenc_putstr(e, "{");
+
   const upb_MessageDef* entry = upb_FieldDef_MessageSubDef(f);
   const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry, 1);
   const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(entry, 2);
-  size_t iter = kUpb_Map_Begin;
-  bool first = true;
-
-  jsonenc_putstr(e, "{");
 
   if (map) {
-    while (upb_MapIterator_Next(map, &iter)) {
+    size_t iter = kUpb_Map_Begin;
+    bool first = true;
+
+    upb_MessageValue key, val;
+    while (upb_Map_Next(map, &key, &val, &iter)) {
       jsonenc_putsep(e, ",", &first);
-      jsonenc_mapkey(e, upb_MapIterator_Key(map, iter), key_f);
-      jsonenc_scalar(e, upb_MapIterator_Value(map, iter), val_f);
+      jsonenc_mapkey(e, key, key_f);
+      jsonenc_scalar(e, val, val_f);
     }
   }
 

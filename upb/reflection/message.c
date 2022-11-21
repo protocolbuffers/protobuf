@@ -299,8 +299,8 @@ bool _upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
 
       if (!val_m) continue;
 
-      while (upb_MapIterator_Next(map, &iter)) {
-        upb_MessageValue map_val = upb_MapIterator_Value(map, iter);
+      upb_MessageValue map_key, map_val;
+      while (upb_Map_Next(map, &map_key, &map_val, &iter)) {
         if (!_upb_Message_DiscardUnknown((upb_Message*)map_val.msg_val, val_m,
                                          depth)) {
           ret = false;

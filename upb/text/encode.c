@@ -282,9 +282,8 @@ static void txtenc_mapentry(txtenc* e, upb_MessageValue key,
 static void txtenc_map(txtenc* e, const upb_Map* map, const upb_FieldDef* f) {
   if (e->options & UPB_TXTENC_NOSORT) {
     size_t iter = kUpb_Map_Begin;
-    while (upb_MapIterator_Next(map, &iter)) {
-      upb_MessageValue key = upb_MapIterator_Key(map, iter);
-      upb_MessageValue val = upb_MapIterator_Value(map, iter);
+    upb_MessageValue key, val;
+    while (upb_Map_Next(map, &key, &val, &iter)) {
       txtenc_mapentry(e, key, val, f);
     }
   } else {
