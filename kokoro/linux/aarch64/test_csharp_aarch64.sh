@@ -25,5 +25,5 @@ docker run $DOCKER_TTY_ARGS --rm --user "$(id -u):$(id -g)" -e "HOME=/home/fake-
 #   running under current user's UID and GID. To be able to do that, we need to provide a home directory for the user
 #   otherwise the UID would be homeless under the docker container and pip install wouldn't work. For simplicity,
 #   we just run map the user's home to a throwaway temporary directory
-CSHARP_TEST_COMMAND="dotnet vstest csharp/src/Google.Protobuf.Test/bin/Release/net60/publish/Google.Protobuf.Test.dll"
+CSHARP_TEST_COMMAND="dotnet vstest csharp/src/Google.Protobuf.Test/bin/Release/net70/publish/Google.Protobuf.Test.dll"
 docker run $DOCKER_TTY_ARGS --rm --user "$(id -u):$(id -g)" -e "HOME=/home/fake-user" -e "DOTNET_CLI_TELEMETRY_OPTOUT=true" -e "DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true" -v "$(mktemp -d):/home/fake-user" -v "$(pwd)":/work -w /work mcr.microsoft.com/dotnet/sdk:7.0.100-bullseye-slim-arm64v8 bash -c "$CSHARP_TEST_COMMAND"
