@@ -15,7 +15,7 @@ fi
 # First, build protobuf C# tests under x86_64 docker image
 # Tests are built "dotnet publish" because we want all the dependencies to the copied to the destination directory
 # (we want to avoid references to ~/.nuget that won't be available in the subsequent docker run)
-CSHARP_BUILD_COMMAND="dotnet publish -c Release -f net60 csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj"
+CSHARP_BUILD_COMMAND="dotnet publish -c Release -f net70 csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj"
 docker run $DOCKER_TTY_ARGS --rm --user "$(id -u):$(id -g)" -e "HOME=/home/fake-user" -e "DOTNET_CLI_TELEMETRY_OPTOUT=true" -e "DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true" -v "$(mktemp -d):/home/fake-user" -v "$(pwd)":/work -w /work mcr.microsoft.com/dotnet/sdk:7.0.100-bullseye-slim bash -c "$CSHARP_BUILD_COMMAND"
 
 # Use an actual aarch64 docker image to run protobuf C# tests with an emulator. "dotnet vstest" allows
