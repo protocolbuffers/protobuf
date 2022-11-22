@@ -185,7 +185,10 @@ UPB_INLINE size_t upb_table_size(const upb_table* t) {
 }
 
 // Internal-only functions, in .h file only out of necessity.
+
 UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) { return e->key == 0; }
+
+uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
 
 #ifdef __cplusplus
 } /* extern "C" */
