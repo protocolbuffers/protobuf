@@ -80,5 +80,7 @@ pyproto_test_wrapper(name = "wire_format_test")
 filegroup(
     name = "test_files",
     srcs = glob(["*.py"]),
-    visibility = ["//python/dist:__pkg__"],
+    visibility = [
+        "//python/dist:__pkg__",  # Scheuklappen: keep
+    ],
 )
