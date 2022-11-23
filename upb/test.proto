@@ -69,6 +69,10 @@ message ModelExtension1 {
 message ModelExtension2 {
   extend ModelWithExtensions {
     optional ModelExtension2 model_ext = 4135;
+    optional ModelExtension2 model_ext_2 = 4136;
+    optional ModelExtension2 model_ext_3 = 4137;
+    optional ModelExtension2 model_ext_4 = 4138;
+    optional ModelExtension2 model_ext_5 = 4139;
   }
   optional int32 i = 9;
 }

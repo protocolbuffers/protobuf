@@ -207,6 +207,8 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
   if (result.status != kUpb_FindUnknown_Ok) {
     return kUpb_GetExtension_NotPresent;
   }
+  size_t len;
+  size_t ofs = result.ptr - upb_Message_GetUnknown(msg, &len);
   // Decode and promote from unknown.
   const upb_MiniTable* extension_table = ext_table->sub.submsg;
   upb_UnknownToMessageRet parse_result = upb_MiniTable_ParseUnknownMessage(
@@ -231,7 +233,8 @@ upb_GetExtension_Status upb_MiniTable_GetOrPromoteExtension(
   }
   memcpy(&ext->data, &extension_msg, sizeof(extension_msg));
   *extension = ext;
-  upb_Message_DeleteUnknown(msg, result.ptr, result.len);
+  const char* delete_ptr = upb_Message_GetUnknown(msg, &len) + ofs;
+  upb_Message_DeleteUnknown(msg, delete_ptr, result.len);
   return kUpb_GetExtension_Ok;
 }
 

@@ -36,6 +36,7 @@
 #include "gtest/gtest.h"
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
+#include "upb/base/string_view.h"
 #include "upb/collections/array.h"
 #include "upb/mini_table/decode.h"
 #include "upb/mini_table/encode_internal.hpp"
@@ -430,22 +431,78 @@ TEST(GeneratedCode, Extensions) {
   upb_test_ModelExtension2* extension2 = upb_test_ModelExtension2_new(arena);
   upb_test_ModelExtension2_set_i(extension2, 5);
 
+  upb_test_ModelExtension2* extension3 = upb_test_ModelExtension2_new(arena);
+  upb_test_ModelExtension2_set_i(extension3, 6);
+
+  upb_test_ModelExtension2* extension4 = upb_test_ModelExtension2_new(arena);
+  upb_test_ModelExtension2_set_i(extension4, 7);
+
+  upb_test_ModelExtension2* extension5 = upb_test_ModelExtension2_new(arena);
+  upb_test_ModelExtension2_set_i(extension5, 8);
+
+  upb_test_ModelExtension2* extension6 = upb_test_ModelExtension2_new(arena);
+  upb_test_ModelExtension2_set_i(extension6, 9);
+
+  // Set many extensions, to exercise code paths that involve reallocating the
+  // extensions and unknown fields array.
   upb_test_ModelExtension1_set_model_ext(msg, extension1, arena);
   upb_test_ModelExtension2_set_model_ext(msg, extension2, arena);
+  upb_test_ModelExtension2_set_model_ext_2(msg, extension3, arena);
+  upb_test_ModelExtension2_set_model_ext_3(msg, extension4, arena);
+  upb_test_ModelExtension2_set_model_ext_4(msg, extension5, arena);
+  upb_test_ModelExtension2_set_model_ext_5(msg, extension6, arena);
 
   size_t serialized_size;
   char* serialized =
       upb_test_ModelWithExtensions_serialize(msg, arena, &serialized_size);
 
-  // Test known GetExtension
   const upb_Message_Extension* upb_ext2;
-  upb_GetExtension_Status promote_status = upb_MiniTable_GetOrPromoteExtension(
-      msg, &upb_test_ModelExtension2_model_ext_ext, 0, arena, &upb_ext2);
+  upb_test_ModelExtension1* ext1;
+  upb_test_ModelExtension2* ext2;
+  upb_GetExtension_Status promote_status;
 
-  upb_test_ModelExtension2* ext2 =
-      (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+  // Test known GetExtension 1
+  promote_status = upb_MiniTable_GetOrPromoteExtension(
+      msg, &upb_test_ModelExtension1_model_ext_ext, 0, arena, &upb_ext2);
+  ext1 = (upb_test_ModelExtension1*)upb_ext2->data.ptr;
+  EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
+  EXPECT_TRUE(upb_StringView_IsEqual(upb_StringView_FromString("World"),
+                                     upb_test_ModelExtension1_str(ext1)));
+
+  // Test known GetExtension 2
+  promote_status = upb_MiniTable_GetOrPromoteExtension(
+      msg, &upb_test_ModelExtension2_model_ext_ext, 0, arena, &upb_ext2);
+  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(5, upb_test_ModelExtension2_i(ext2));
+
+  // Test known GetExtension 3
+  promote_status = upb_MiniTable_GetOrPromoteExtension(
+      msg, &upb_test_ModelExtension2_model_ext_2_ext, 0, arena, &upb_ext2);
+  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+  EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
+  EXPECT_EQ(6, upb_test_ModelExtension2_i(ext2));
+
+  // Test known GetExtension 4
+  promote_status = upb_MiniTable_GetOrPromoteExtension(
+      msg, &upb_test_ModelExtension2_model_ext_3_ext, 0, arena, &upb_ext2);
+  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+  EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
+  EXPECT_EQ(7, upb_test_ModelExtension2_i(ext2));
+
+  // Test known GetExtension 5
+  promote_status = upb_MiniTable_GetOrPromoteExtension(
+      msg, &upb_test_ModelExtension2_model_ext_4_ext, 0, arena, &upb_ext2);
+  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+  EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
+  EXPECT_EQ(8, upb_test_ModelExtension2_i(ext2));
+
+  // Test known GetExtension 6
+  promote_status = upb_MiniTable_GetOrPromoteExtension(
+      msg, &upb_test_ModelExtension2_model_ext_5_ext, 0, arena, &upb_ext2);
+  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+  EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
+  EXPECT_EQ(9, upb_test_ModelExtension2_i(ext2));
 
   upb_test_EmptyMessageWithExtensions* base_msg =
       upb_test_EmptyMessageWithExtensions_parse(serialized, serialized_size,
@@ -463,19 +520,39 @@ TEST(GeneratedCode, Extensions) {
 
   // Test unknown GetExtension.
   promote_status = upb_MiniTable_GetOrPromoteExtension(
-      base_msg, &upb_test_ModelExtension2_model_ext_ext, 0, arena, &upb_ext2);
+      base_msg, &upb_test_ModelExtension1_model_ext_ext, 0, arena, &upb_ext2);
+  ext1 = (upb_test_ModelExtension1*)upb_ext2->data.ptr;
+  EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
+  EXPECT_TRUE(upb_StringView_IsEqual(upb_StringView_FromString("World"),
+                                     upb_test_ModelExtension1_str(ext1)));
 
+  // Test unknown GetExtension.
+  promote_status = upb_MiniTable_GetOrPromoteExtension(
+      base_msg, &upb_test_ModelExtension2_model_ext_ext, 0, arena, &upb_ext2);
   ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
   EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
   EXPECT_EQ(5, upb_test_ModelExtension2_i(ext2));
 
-  // Get unknown extension bytes after promotion.
-  status = upb_MiniTable_GetExtensionAsBytes(
-      base_msg, &upb_test_ModelExtension2_model_ext_ext, 0, arena,
-      &extension_data, &len);
-  EXPECT_EQ(kUpb_GetExtensionAsBytes_Ok, status);
-  EXPECT_EQ(0x48, extension_data[0]);
-  EXPECT_EQ(5, extension_data[1]);
+  // Test unknown GetExtension.
+  promote_status = upb_MiniTable_GetOrPromoteExtension(
+      base_msg, &upb_test_ModelExtension2_model_ext_2_ext, 0, arena, &upb_ext2);
+  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+  EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
+  EXPECT_EQ(6, upb_test_ModelExtension2_i(ext2));
+
+  // Test unknown GetExtension.
+  promote_status = upb_MiniTable_GetOrPromoteExtension(
+      base_msg, &upb_test_ModelExtension2_model_ext_3_ext, 0, arena, &upb_ext2);
+  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+  EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
+  EXPECT_EQ(7, upb_test_ModelExtension2_i(ext2));
+
+  // Test unknown GetExtension.
+  promote_status = upb_MiniTable_GetOrPromoteExtension(
+      base_msg, &upb_test_ModelExtension2_model_ext_4_ext, 0, arena, &upb_ext2);
+  ext2 = (upb_test_ModelExtension2*)upb_ext2->data.ptr;
+  EXPECT_EQ(kUpb_GetExtension_Ok, promote_status);
+  EXPECT_EQ(8, upb_test_ModelExtension2_i(ext2));
 
   upb_Arena_Free(arena);
 }
