@@ -2,6 +2,9 @@
 
 set -ex
 
+# Use Python 3 by default
+pyenv global 3.10.7
+
 # Fix permissions
 sudo chown -R $(whoami) $HOME/.rvm/
 sudo chown -R $(whoami) /Library/Ruby/
