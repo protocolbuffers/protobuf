@@ -3,7 +3,7 @@ Protocol Buffers - Google's data interchange format
 
 Copyright 2008 Google Inc.
 
-[Protocol Buffers documentation](https://developers.google.com/protocol-buffers/)
+https://developers.google.com/protocol-buffers/
 
 Overview
 --------
@@ -24,14 +24,18 @@ the [C++ Installation Instructions](src/README.md) to install protoc along
 with the C++ runtime.
 
 For non-C++ users, the simplest way to install the protocol compiler is to
-download a pre-built binary from our [GitHub release page](https://github.com/protocolbuffers/protobuf/releases).
+download a pre-built binary from our release page:
+
+  [https://github.com/protocolbuffers/protobuf/releases](https://github.com/protocolbuffers/protobuf/releases)
 
 In the downloads section of each release, you can find pre-built binaries in
-zip packages: `protoc-$VERSION-$PLATFORM.zip`. It contains the protoc binary
-as well as a set of standard `.proto` files distributed along with protobuf.
+zip packages: protoc-$VERSION-$PLATFORM.zip. It contains the protoc binary
+as well as a set of standard .proto files distributed along with protobuf.
 
 If you are looking for an old version that is not available in the release
-page, check out the [Maven repository](https://repo1.maven.org/maven2/com/google/protobuf/protoc/).
+page, check out the maven repo here:
+
+  [https://repo1.maven.org/maven2/com/google/protobuf/protoc/](https://repo1.maven.org/maven2/com/google/protobuf/protoc/)
 
 These pre-built binaries are only provided for released versions. If you want
 to use the github main version at HEAD, or you need to modify protobuf code,
@@ -63,8 +67,10 @@ how to install protobuf runtime for that specific language:
 Quick Start
 -----------
 
-The best way to learn how to use protobuf is to follow the [tutorials in our
-developer guide](https://developers.google.com/protocol-buffers/docs/tutorials).
+The best way to learn how to use protobuf is to follow the tutorials in our
+developer guide:
+
+https://developers.google.com/protocol-buffers/docs/tutorials
 
 If you want to learn from code examples, take a look at the examples in the
 [examples](examples) directory.
@@ -72,7 +78,10 @@ If you want to learn from code examples, take a look at the examples in the
 Documentation
 -------------
 
-The complete documentation is available via the [Protocol Buffers documentation](https://developers.google.com/protocol-buffers/).
+The complete documentation for Protocol Buffers is available via the
+web at:
+
+https://developers.google.com/protocol-buffers/
 
 Developer Community
 -------------------
