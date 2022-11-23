@@ -183,6 +183,10 @@ class PROTOBUF_EXPORT SerialArena {
   }
   uint64_t SpaceUsed() const;
 
+  inline size_t SpaceAvailable() const {
+    return static_cast<size_t>(limit_ - ptr());
+  }
+
   bool HasSpace(size_t n) const {
     return n <= static_cast<size_t>(limit_ - ptr());
   }
@@ -287,6 +291,25 @@ class PROTOBUF_EXPORT SerialArena {
   }
 
  public:
+  PROTOBUF_NDEBUG_INLINE
+  void* AllocateCleanup(size_t size) {
+    GOOGLE_DCHECK(ArenaAlignDefault::IsAligned(size));
+    if (PROTOBUF_PREDICT_TRUE(size <= SpaceAvailable())) {
+      return limit_ -= size;
+    }
+    return AllocateCleanupFallback(size);
+  }
+
+  PROTOBUF_NDEBUG_INLINE
+  Memory AllocateCleanup(size_t size, size_t align) {
+    size_t tail_padding = reinterpret_cast<size_t>(limit_) & (align - 1);
+    if (PROTOBUF_PREDICT_TRUE(size + tail_padding <= SpaceAvailable())) {
+      size += tail_padding;
+      return {limit_ -= size, size};
+    }
+    return AllocateCleanupFallback(size, align);
+  }
+
   // Allocate space if the current region provides enough space.
   bool MaybeAllocateAligned(size_t n, void** out) {
     GOOGLE_DCHECK_EQ(internal::AlignUpTo8(n), n);  // Must be already aligned.
@@ -421,6 +444,8 @@ class PROTOBUF_EXPORT SerialArena {
   void* AllocateAlignedWithCleanupFallback(size_t n, size_t align,
                                            void (*destructor)(void*));
   void AddCleanupFallback(void* elem, void (*destructor)(void*));
+  void* AllocateCleanupFallback(size_t size);
+  Memory AllocateCleanupFallback(size_t size, size_t align);
   inline void AllocateNewBlock(size_t n);
   inline void Init(ArenaBlock* b, size_t offset);
 
@@ -443,6 +468,8 @@ struct MessageOwned {
 // use #ifdef the select the best implementation based on hardware / OS.
 class PROTOBUF_EXPORT ThreadSafeArena {
  public:
+  using Memory = SerialArena::Memory;
+
   ThreadSafeArena();
 
   // Constructor solely used by message-owned arena.
@@ -507,6 +534,23 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Add object pointer and cleanup function pointer to the list.
   void AddCleanup(void* elem, void (*cleanup)(void*));
 
+  // Allocate cleanup space.
+  PROTOBUF_NDEBUG_INLINE void* AllocateCleanup(size_t size) {
+    SerialArena* arena;
+    if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+      return arena->AllocateCleanup(size);
+    }
+    return AllocateCleanupFallback(size);
+  }
+
+  PROTOBUF_NDEBUG_INLINE Memory AllocateCleanup(size_t size, size_t align) {
+    SerialArena* arena;
+    if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+      return arena->AllocateCleanup(size, align);
+    }
+    return AllocateCleanupFallback(size, align);
+  }
+
   // Checks whether this arena is message-owned.
   PROTOBUF_ALWAYS_INLINE bool IsMessageOwned() const {
     return tag_and_id_ & kMessageOwnedArena;
@@ -566,6 +610,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   void InitializeWithPolicy(const AllocationPolicy& policy);
   void* AllocateAlignedWithCleanupFallback(size_t n, size_t align,
                                            void (*destructor)(void*));
+  void* AllocateCleanupFallback(size_t size);
+  Memory AllocateCleanupFallback(size_t size, size_t align);
 
   void Init();
 

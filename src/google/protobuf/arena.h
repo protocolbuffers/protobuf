@@ -253,6 +253,12 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     return Arena::CreateMaybeMessage<T>(arena, static_cast<Args&&>(args)...);
   }
 
+  template <typename T>
+  struct ObjectCreator {
+    template <typename... Args>
+    static T* Create(Arena* arena, Args&&... args);
+  };
+
   // API to create any objects on the arena. Note that only the object will
   // be created on the arena; the underlying ptrs (in case of a proto2 message)
   // will be still heap allocated. Proto messages should usually be allocated
@@ -273,11 +279,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     if (arena == nullptr) {
       return new T(std::forward<Args>(args)...);
     }
-    auto destructor =
-        internal::ObjectDestructor<std::is_trivially_destructible<T>::value,
-                                   T>::destructor;
-    return new (arena->AllocateInternal(sizeof(T), alignof(T), destructor))
-        T(std::forward<Args>(args)...);
+    return ObjectCreator<T>::Create(arena, std::forward<Args>(args)...);
   }
 
   // API to delete any objects not on an arena.  This can be used to safely
@@ -690,6 +692,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     }
   }
 
+  template <typename T, internal::cleanup::Tag tag>
+  void* AllocateWithCleanup();
+  void* AllocateWithCleanup(size_t size, void (*dtor)(void*));
+  void* AllocateWithCleanup(size_t size, size_t align, void (*dtor)(void*));
+
   void* Allocate(size_t n);
   void* AllocateForArray(size_t n);
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
@@ -708,6 +715,45 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   friend class RepeatedField;                   // For ReturnArrayMemory
   friend class internal::RepeatedPtrFieldBase;  // For ReturnArrayMemory
   friend struct internal::ArenaTestPeer;
+};
+
+template <typename T>
+template <typename... Args>
+PROTOBUF_NDEBUG_INLINE T* Arena::ObjectCreator<T>::Create(Arena* arena,
+                                                          Args&&... args) {
+  constexpr auto dtor = &internal::cleanup::arena_destruct_object<T>;
+
+  void* mem;
+  if (std::is_trivially_destructible<T>::value) {
+    // Simple case: trivially destructible
+    mem = arena->AllocateAligned(sizeof(T), alignof(T));
+  } else if (sizeof(T) <= 32) {
+    // The size of this item is small, and locality is important. We allocate
+    // the object inside the cleanup list itself. 32 bytes here is chosen as a
+    // reasonable 'half cache line' size. If we would embed large objects (one
+    // or more cache lines) into the cleanup list, we may actually  hurt cleanup
+    // iteration as we then need to skip one or more cache lines of 'dead' data
+    // during cleanup. Custom dtors on large objects are more likely to address
+    // at most a handful of memory locations.
+    mem = (alignof(T) > internal::ArenaAlignDefault::align)
+              ? arena->AllocateWithCleanup(sizeof(T), alignof(T), dtor)
+              : arena->AllocateWithCleanup(sizeof(T), dtor);
+  } else {
+    // Fallback to 'old school' create internal
+    mem = arena->AllocateInternal(sizeof(T), alignof(T), dtor);
+  }
+  return new (mem) T(std::forward<Args>(args)...);
+}
+
+template <>
+struct Arena::ObjectCreator<std::string> {
+  template <typename... Args>
+  PROTOBUF_NDEBUG_INLINE static std::string* Create(Arena* arena,
+                                                    Args&&... args) {
+    using internal::cleanup::Tag;
+    void* mem = arena->AllocateWithCleanup<std::string, Tag::kString>();
+    return new (mem) std::string(std::forward<Args>(args)...);
+  }
 };
 
 }  // namespace protobuf

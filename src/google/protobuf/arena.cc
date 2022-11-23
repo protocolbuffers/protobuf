@@ -202,6 +202,23 @@ void* SerialArena::AllocateAlignedWithCleanupFallback(
 }
 
 PROTOBUF_NOINLINE
+void* SerialArena::AllocateCleanupFallback(size_t size) {
+  GOOGLE_DCHECK(ArenaAlignDefault::IsAligned(size));
+  AllocateNewBlock(size);
+  return limit_ -= size;
+}
+
+PROTOBUF_NOINLINE
+SerialArena::Memory SerialArena::AllocateCleanupFallback(size_t size,
+                                                         size_t align) {
+  GOOGLE_DCHECK(ArenaAlignDefault::IsAligned(size));
+  GOOGLE_DCHECK(ArenaAlignDefault::IsAligned(align));
+  AllocateNewBlock(size + align - internal::ArenaAlignDefault::align);
+  size += reinterpret_cast<size_t>(limit_) & (align - 1);
+  return {limit_ -= size, size};
+}
+
+PROTOBUF_NOINLINE
 void SerialArena::AddCleanupFallback(void* elem, void (*destructor)(void*)) {
   size_t required = cleanup::Size(destructor);
   AllocateNewBlock(required);
@@ -277,40 +294,10 @@ void SerialArena::CleanupList() {
     char* limit = b->Limit();
     char* it = reinterpret_cast<char*>(b->cleanup_nodes);
     GOOGLE_DCHECK(!b->IsSentry() || it == limit);
-    if (it < limit) {
-      // A prefetch distance of 8 here was chosen arbitrarily.  It makes the
-      // pending nodes fill a cacheline which seemed nice.
-      constexpr int kPrefetchDist = 8;
-      cleanup::Tag pending_type[kPrefetchDist];
-      char* pending_node[kPrefetchDist];
-
-      int pos = 0;
-      for (; pos < kPrefetchDist && it < limit; ++pos) {
-        pending_type[pos] = cleanup::Type(it);
-        pending_node[pos] = it;
-        it += cleanup::Size(pending_type[pos]);
-      }
-
-      if (pos < kPrefetchDist) {
-        for (int i = 0; i < pos; ++i) {
-          cleanup::DestroyNode(pending_type[i], pending_node[i]);
-        }
-      } else {
-        pos = 0;
-        while (it < limit) {
-          cleanup::PrefetchNode(it);
-          cleanup::DestroyNode(pending_type[pos], pending_node[pos]);
-          pending_type[pos] = cleanup::Type(it);
-          pending_node[pos] = it;
-          it += cleanup::Size(pending_type[pos]);
-          pos = (pos + 1) % kPrefetchDist;
-        }
-        for (int i = pos; i < pos + kPrefetchDist; ++i) {
-          cleanup::DestroyNode(pending_type[i % kPrefetchDist],
-                               pending_node[i % kPrefetchDist]);
-        }
-      }
+    while (it < limit) {
+      it += cleanup::DestroyNodeAt(it);
     }
+    GOOGLE_DCHECK_EQ(it, limit);
     b = b->next;
   } while (b);
 }
@@ -749,6 +736,19 @@ void* ThreadSafeArena::AllocateAlignedWithCleanup(size_t n, size_t align,
   }
 }
 
+void* ThreadSafeArena::AllocateCleanupFallback(size_t size) {
+  GOOGLE_DCHECK(ArenaAlignDefault::IsAligned(size));
+  return GetSerialArenaFallback(size)->AllocateCleanup(size);
+}
+
+ThreadSafeArena::Memory ThreadSafeArena::AllocateCleanupFallback(size_t size,
+                                                                 size_t align) {
+  GOOGLE_DCHECK(ArenaAlignDefault::IsAligned(size));
+  GOOGLE_DCHECK(ArenaAlignDefault::IsAligned(align));
+  size_t required = size + align - ArenaAlignDefault::align;
+  return GetSerialArenaFallback(required)->AllocateCleanup(size, align);
+}
+
 void ThreadSafeArena::AddCleanup(void* elem, void (*cleanup)(void*)) {
   SerialArena* arena;
   if (PROTOBUF_PREDICT_FALSE(!GetSerialArenaFast(&arena))) {
@@ -894,6 +894,38 @@ void* Arena::AllocateAlignedWithCleanup(size_t n, size_t align,
                                         void (*destructor)(void*)) {
   return impl_.AllocateAlignedWithCleanup(n, align, destructor);
 }
+
+template <typename T, internal::cleanup::Tag tag>
+void* Arena::AllocateWithCleanup() {
+  using internal::ArenaAlignDefault;
+  using internal::cleanup::TaggedNode;
+  static_assert(alignof(T) <= ArenaAlignDefault::align);
+  constexpr size_t n = ArenaAlignDefault::Ceil(sizeof(TaggedNode) + sizeof(T));
+  void* mem = impl_.AllocateCleanup(n);
+  internal::cleanup::CreateNode(mem, tag);
+  return static_cast<TaggedNode*>(mem) + 1;
+}
+
+void* Arena::AllocateWithCleanup(size_t size, void (*dtor)(void*)) {
+  using internal::ArenaAlignDefault;
+  using internal::cleanup::DynamicNode;
+  size_t required = ArenaAlignDefault::Ceil(size + sizeof(DynamicNode));
+  void* mem = impl_.AllocateCleanup(required);
+  internal::cleanup::CreateNode(mem, required, dtor);
+  return static_cast<DynamicNode*>(mem) + 1;
+}
+
+void* Arena::AllocateWithCleanup(size_t size, size_t align,
+                                 void (*dtor)(void*)) {
+  using internal::cleanup::DynamicNode;
+  size_t required = size + sizeof(DynamicNode);
+  auto mem = impl_.AllocateCleanup(required, align);
+  internal::cleanup::CreateNode(mem.ptr, mem.size, dtor);
+  return static_cast<DynamicNode*>(mem.ptr) + 1;
+}
+
+template void*
+Arena::AllocateWithCleanup<std::string, internal::cleanup::Tag::kString>();
 
 }  // namespace protobuf
 }  // namespace google
