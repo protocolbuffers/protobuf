@@ -578,6 +578,7 @@ set(test_util_hdrs
 set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/any_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_align_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_cleanup_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arena_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenastring_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/arenaz_sampler_test.cc

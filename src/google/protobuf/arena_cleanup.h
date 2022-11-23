@@ -38,6 +38,7 @@
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
+#include "google/protobuf/arena_align.h"
 
 
 // Must be included last.
@@ -58,9 +59,13 @@ void arena_destruct_object(void* object) {
 // lowest 2 bits of the `elem` value identifying the type of node. All node
 // types must start with a `uintptr_t` that stores `Tag` in its low two bits.
 enum class Tag : uintptr_t {
-  kDynamic = 0,  // DynamicNode
-  kString = 1,   // StringNode (std::string)
+  kDynamic = 0,   // DynamicNode
+  kEmbedded = 1,  // Embedded node
+  kString = 2,    // TaggedNode (std::string) (pointer or embedded)
+  kCord = 3,      // TaggedNode (absl::Cord)  (pointer or embedded)
 };
+
+enum { kTagMask = 0x3 };
 
 // DynamicNode contains the object (`elem`) that needs to be
 // destroyed, and the function to destroy it (`destructor`)
@@ -70,18 +75,50 @@ struct DynamicNode {
   void (*destructor)(void*);
 };
 
-// StringNode contains a `std::string` object (`elem`) that needs to be
-// destroyed. The lowest 2 bits of `elem` contain the non-zero kString tag.
-struct StringNode {
+// TaggedNode describes a well known cleanup instance identified by the non-zero
+// tag value stored in the lowest 2 bits of `elem`.
+struct TaggedNode {
   uintptr_t elem;
 };
-
 
 // EnableSpecializedTags() return true if the alignment of tagged objects
 // such as std::string allow us to poke tags in the 2 LSB bits.
 inline constexpr bool EnableSpecializedTags() {
   // For now we require 2 bits
-  return alignof(std::string) >= 8;
+  return alignof(std::string) > kTagMask;
+}
+
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE void CreateNode(void* pos,
+                                                    const void* object,
+                                                    void (*dtor)(void*)) {
+  auto elem = reinterpret_cast<uintptr_t>(object);
+  DynamicNode n = {elem, dtor};
+  memcpy(pos, &n, sizeof(n));
+}
+
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE void CreateNode(void* pos, size_t size,
+                                                    void (*dtor)(void*)) {
+  GOOGLE_DCHECK_GT(size, 0);
+  GOOGLE_DCHECK(ArenaAlignDefault::IsAligned(size));
+  auto elem = static_cast<uintptr_t>(size);
+  DynamicNode n = {elem + static_cast<uintptr_t>(Tag::kEmbedded), dtor};
+  memcpy(pos, &n, sizeof(n));
+}
+
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE void CreateNode(void* pos,
+                                                    const void* object,
+                                                    Tag tag) {
+  GOOGLE_DCHECK(tag != Tag::kDynamic && tag != Tag::kEmbedded);
+  auto elem = reinterpret_cast<uintptr_t>(object);
+  GOOGLE_DCHECK_EQ(elem & 3, 0ULL);  // Must be aligned
+  TaggedNode n = {elem + static_cast<uintptr_t>(tag)};
+  memcpy(pos, &n, sizeof(n));
+}
+
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE void CreateNode(void* pos, Tag tag) {
+  GOOGLE_DCHECK(tag != Tag::kDynamic && tag != Tag::kEmbedded);
+  TaggedNode n = {static_cast<uintptr_t>(tag)};
+  memcpy(pos, &n, sizeof(n));
 }
 
 // Adds a cleanup entry identified by `tag` at memory location `pos`.
@@ -93,7 +130,7 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE void CreateNode(Tag tag, void* pos,
     GOOGLE_DCHECK_EQ(elem & 3, 0ULL);  // Must be aligned
     switch (tag) {
       case Tag::kString: {
-        StringNode n = {elem | static_cast<uintptr_t>(Tag::kString)};
+        TaggedNode n = {elem | static_cast<uintptr_t>(Tag::kString)};
         memcpy(pos, &n, sizeof(n));
         return;
       }
@@ -105,34 +142,48 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE void CreateNode(Tag tag, void* pos,
   memcpy(pos, &n, sizeof(n));
 }
 
-// Optimization: performs a prefetch on `elem_address`.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE void PrefetchNode(
-    const void* elem_address) {
-  (void)elem_address;
+template <typename T>
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t DestroyTaggedObject(void* pos,
+                                                               uintptr_t elem) {
+  // elem == 0 identifies embedded, elem != 0 pointer cleanup
+  if (elem) {
+    reinterpret_cast<T*>(elem)->~T();
+    return sizeof(TaggedNode);
+  } else {
+    reinterpret_cast<T*>(static_cast<TaggedNode*>(pos) + 1)->~T();
+    return ArenaAlignDefault::Ceil(sizeof(TaggedNode) + sizeof(T));
+  }
 }
 
 // Destroys the node idenitfied by `tag` stored at memory location `pos`.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE void DestroyNode(Tag tag, const void* pos) {
-  if (EnableSpecializedTags()) {
-    switch (tag) {
-      case Tag::kString: {
-        StringNode n;
-        memcpy(&n, pos, sizeof(n));
-        auto* s = reinterpret_cast<std::string*>(n.elem & ~0x7ULL);
-        // Some compilers don't like fully qualified explicit dtor calls,
-        // so use an alias to avoid having to type `::`.
-        using string_type = std::string;
-        s->~string_type();
-        return;
-      }
-      default:
-        break;
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t DestroyNodeAt(void* pos) {
+  uintptr_t head = *reinterpret_cast<uintptr_t*>(pos);
+  uintptr_t tag = head & kTagMask;
+  switch (static_cast<Tag>(tag)) {
+    case Tag::kDynamic: {
+      auto* node = static_cast<DynamicNode*>(pos);
+      GOOGLE_DCHECK(node->destructor != nullptr);
+      GOOGLE_DCHECK(head);
+      node->destructor(reinterpret_cast<void*>(head));
+      return sizeof(DynamicNode);
     }
+
+    case Tag::kEmbedded: {
+      auto* node = static_cast<DynamicNode*>(pos);
+      GOOGLE_DCHECK(node->destructor != nullptr);
+      GOOGLE_DCHECK_GT(head - tag, 0);
+      node->destructor(node + 1);
+      return head - tag;
+    }
+
+    case Tag::kString:
+      return DestroyTaggedObject<std::string>(pos, head - tag);
+
+    case Tag::kCord:
+      return DestroyTaggedObject<absl::Cord>(pos, head - tag);
   }
-  DynamicNode n;
-  memcpy(&n, pos, sizeof(n));
-  n.destructor(reinterpret_cast<void*>(n.elem));
 }
+
 
 // Returns the `tag` identifying the type of object for `destructor` or
 // kDynamic if `destructor` does not identify a well know object type.
@@ -169,9 +220,11 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t Size(Tag tag) {
 
   switch (tag) {
     case Tag::kDynamic:
+    case Tag::kEmbedded:
       return sizeof(DynamicNode);
     case Tag::kString:
-      return sizeof(StringNode);
+    case Tag::kCord:
+      return sizeof(TaggedNode);
     default:
       GOOGLE_LOG(FATAL) << "Corrupted cleanup tag: " << static_cast<int>(tag);
       return sizeof(DynamicNode);

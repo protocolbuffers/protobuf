@@ -277,40 +277,10 @@ void SerialArena::CleanupList() {
     char* limit = b->Limit();
     char* it = reinterpret_cast<char*>(b->cleanup_nodes);
     GOOGLE_DCHECK(!b->IsSentry() || it == limit);
-    if (it < limit) {
-      // A prefetch distance of 8 here was chosen arbitrarily.  It makes the
-      // pending nodes fill a cacheline which seemed nice.
-      constexpr int kPrefetchDist = 8;
-      cleanup::Tag pending_type[kPrefetchDist];
-      char* pending_node[kPrefetchDist];
-
-      int pos = 0;
-      for (; pos < kPrefetchDist && it < limit; ++pos) {
-        pending_type[pos] = cleanup::Type(it);
-        pending_node[pos] = it;
-        it += cleanup::Size(pending_type[pos]);
-      }
-
-      if (pos < kPrefetchDist) {
-        for (int i = 0; i < pos; ++i) {
-          cleanup::DestroyNode(pending_type[i], pending_node[i]);
-        }
-      } else {
-        pos = 0;
-        while (it < limit) {
-          cleanup::PrefetchNode(it);
-          cleanup::DestroyNode(pending_type[pos], pending_node[pos]);
-          pending_type[pos] = cleanup::Type(it);
-          pending_node[pos] = it;
-          it += cleanup::Size(pending_type[pos]);
-          pos = (pos + 1) % kPrefetchDist;
-        }
-        for (int i = pos; i < pos + kPrefetchDist; ++i) {
-          cleanup::DestroyNode(pending_type[i % kPrefetchDist],
-                               pending_node[i % kPrefetchDist]);
-        }
-      }
+    while (it < limit) {
+      it += cleanup::DestroyNodeAt(it);
     }
+    GOOGLE_DCHECK_EQ(it, limit);
     b = b->next;
   } while (b);
 }
