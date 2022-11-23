@@ -49,10 +49,7 @@
 // description has to be long lived, it is held as a raw pointer.
 - (instancetype)initWithFieldDescription:(void *)description
                                     file:(GPBFileDescriptor *)file
-                         includesDefault:(BOOL)includesDefault
-                           usesClassRefs:(BOOL)usesClassRefs
-                     proto3OptionalKnown:(BOOL)proto3OptionalKnown
-                  closedEnumSupportKnown:(BOOL)closedEnumSupportKnown;
+                          decriptorFlags:(GPBDescriptorInitializationFlags)decriptorFlags;
 
 @end
 
@@ -150,10 +147,6 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
   NSMutableArray *fields =
       (fieldCount ? [[NSMutableArray alloc] initWithCapacity:fieldCount] : nil);
   BOOL fieldsIncludeDefault = (flags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
-  BOOL usesClassRefs = (flags & GPBDescriptorInitializationFlag_UsesClassRefs) != 0;
-  BOOL proto3OptionalKnown = (flags & GPBDescriptorInitializationFlag_Proto3OptionalKnown) != 0;
-  BOOL closedEnumSupportKnown =
-      (flags & GPBDescriptorInitializationFlag_ClosedEnumSupportKnown) != 0;
 
   void *desc;
   for (uint32_t i = 0; i < fieldCount; ++i) {
@@ -164,12 +157,7 @@ static NSArray *NewFieldsArrayForHasIndex(int hasIndex, NSArray *allMessageField
       desc = &(((GPBMessageFieldDescription *)fieldDescriptions)[i]);
     }
     GPBFieldDescriptor *fieldDescriptor =
-        [[GPBFieldDescriptor alloc] initWithFieldDescription:desc
-                                                        file:file
-                                             includesDefault:fieldsIncludeDefault
-                                               usesClassRefs:usesClassRefs
-                                         proto3OptionalKnown:proto3OptionalKnown
-                                      closedEnumSupportKnown:closedEnumSupportKnown];
+        [[GPBFieldDescriptor alloc] initWithFieldDescription:desc file:file decriptorFlags:flags];
     [fields addObject:fieldDescriptor];
     [fieldDescriptor release];
   }
@@ -478,11 +466,10 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 
 - (instancetype)initWithFieldDescription:(void *)description
                                     file:(GPBFileDescriptor *)file
-                         includesDefault:(BOOL)includesDefault
-                           usesClassRefs:(BOOL)usesClassRefs
-                     proto3OptionalKnown:(BOOL)proto3OptionalKnown
-                  closedEnumSupportKnown:(BOOL)closedEnumSupportKnown {
+                          decriptorFlags:(GPBDescriptorInitializationFlags)decriptorFlags {
   if ((self = [super init])) {
+    BOOL includesDefault =
+        (decriptorFlags & GPBDescriptorInitializationFlag_FieldsWithDefault) != 0;
     GPBMessageFieldDescription *coreDesc;
     if (includesDefault) {
       coreDesc = &(((GPBMessageFieldDescriptionWithDefault *)description)->core);
@@ -499,7 +486,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 
     // If proto3 optionals weren't known (i.e. generated code from an
     // older version), compute the flag for the rest of the runtime.
-    if (!proto3OptionalKnown) {
+    if ((decriptorFlags & GPBDescriptorInitializationFlag_Proto3OptionalKnown) == 0) {
       // If it was...
       //  - proto3 syntax
       //  - not repeated/map
@@ -517,7 +504,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 
     // If the ClosedEnum flag wasn't known (i.e. generated code from an older
     // version), compute the flag for the rest of the runtime.
-    if (!closedEnumSupportKnown) {
+    if ((decriptorFlags & GPBDescriptorInitializationFlag_ClosedEnumSupportKnown) == 0) {
       // NOTE: This isn't correct, it is using the syntax of the file that
       // declared the field, not the syntax of the file that declared the
       // enum; but for older generated code, that's all we have and that happens
@@ -553,7 +540,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
       // Note: Only fetch the class here, can't send messages to it because
       // that could cause cycles back to this class within +initialize if
       // two messages have each other in fields (i.e. - they build a graph).
-      if (usesClassRefs) {
+      if ((decriptorFlags & GPBDescriptorInitializationFlag_UsesClassRefs) != 0) {
         msgClass_ = coreDesc->dataTypeSpecific.clazz;
       } else {
         // Backwards compatibility for sources generated with older protoc.
@@ -566,7 +553,7 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 #if defined(DEBUG) && DEBUG
       NSAssert((coreDesc->flags & GPBFieldHasEnumDescriptor) != 0,
                @"Field must have GPBFieldHasEnumDescriptor set");
-      NSAssert(!closedEnumSupportKnown ||
+      NSAssert(((decriptorFlags & GPBDescriptorInitializationFlag_ClosedEnumSupportKnown) != 0) ||
                    (((coreDesc->flags & GPBFieldClosedEnum) != 0) == enumDescriptor_.isClosed),
                @"Internal error, ClosedEnum flag doesn't agree with EnumDescriptor");
 #endif  // DEBUG
