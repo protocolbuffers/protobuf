@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MESSAGE_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MESSAGE_H__
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
@@ -61,7 +62,7 @@ class MessageGenerator {
       std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators);
 
   void GenerateMessageHeader(io::Printer* printer) const;
-  void GenerateSource(io::Printer* printer);
+  void GenerateSource(io::Printer* printer) const;
   void DetermineObjectiveCClassDefinitions(
       absl::btree_set<std::string>* fwd_decls) const;
   void DetermineForwardDeclarations(absl::btree_set<std::string>* fwd_decls,
@@ -78,6 +79,7 @@ class MessageGenerator {
   const std::string deprecated_attribute_;
   std::vector<const ExtensionGenerator*> extension_generators_;
   std::vector<std::unique_ptr<OneofGenerator>> oneof_generators_;
+  size_t sizeof_has_storage_;
 };
 
 }  // namespace objectivec
