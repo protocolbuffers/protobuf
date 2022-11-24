@@ -44,35 +44,6 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-static size_t get_field_size(const upb_MiniTableField* f) {
-  static unsigned char sizes[] = {
-      0,                      /* 0 */
-      8,                      /* kUpb_FieldType_Double */
-      4,                      /* kUpb_FieldType_Float */
-      8,                      /* kUpb_FieldType_Int64 */
-      8,                      /* kUpb_FieldType_UInt64 */
-      4,                      /* kUpb_FieldType_Int32 */
-      8,                      /* kUpb_FieldType_Fixed64 */
-      4,                      /* kUpb_FieldType_Fixed32 */
-      1,                      /* kUpb_FieldType_Bool */
-      sizeof(upb_StringView), /* kUpb_FieldType_String */
-      sizeof(void*),          /* kUpb_FieldType_Group */
-      sizeof(void*),          /* kUpb_FieldType_Message */
-      sizeof(upb_StringView), /* kUpb_FieldType_Bytes */
-      4,                      /* kUpb_FieldType_UInt32 */
-      4,                      /* kUpb_FieldType_Enum */
-      4,                      /* kUpb_FieldType_SFixed32 */
-      8,                      /* kUpb_FieldType_SFixed64 */
-      4,                      /* kUpb_FieldType_SInt32 */
-      8,                      /* kUpb_FieldType_SInt64 */
-  };
-  return upb_IsRepeatedOrMap(f) ? sizeof(void*) : sizes[f->descriptortype];
-}
-
-static bool in_oneof(const upb_MiniTableField* field) {
-  return field->presence < 0;
-}
-
 bool upb_Message_Has(const upb_Message* msg, const upb_FieldDef* f) {
   UPB_ASSERT(upb_FieldDef_HasPresence(f));
   return _upb_MiniTable_HasField(msg, upb_FieldDef_MiniTable(f));
@@ -146,22 +117,7 @@ bool upb_Message_Set(upb_Message* msg, const upb_FieldDef* f,
 }
 
 void upb_Message_ClearField(upb_Message* msg, const upb_FieldDef* f) {
-  if (upb_FieldDef_IsExtension(f)) {
-    _upb_Message_Clearext(msg, _upb_FieldDef_ExtensionMiniTable(f));
-  } else {
-    const upb_MiniTableField* field = upb_FieldDef_MiniTable(f);
-    char* mem = UPB_PTR_AT(msg, field->offset, char);
-
-    if (field->presence > 0) {
-      _upb_clearhas_field(msg, field);
-    } else if (in_oneof(field)) {
-      uint32_t* oneof_case = _upb_oneofcase_field(msg, field);
-      if (*oneof_case != field->number) return;
-      *oneof_case = 0;
-    }
-
-    memset(mem, 0, get_field_size(field));
-  }
+  _upb_MiniTable_ClearField(msg, upb_FieldDef_MiniTable(f));
 }
 
 void upb_Message_Clear(upb_Message* msg, const upb_MessageDef* m) {

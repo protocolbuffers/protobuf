@@ -228,10 +228,40 @@ UPB_INLINE bool _upb_MiniTable_HasField(const upb_Message* msg,
   }
 }
 
+UPB_INLINE void _upb_MiniTable_ClearExtensionField(
+    upb_Message* msg, const upb_MiniTableExtension* ext) {
+  _upb_Message_Clearext(msg, ext);
+}
+
+UPB_INLINE void _upb_MiniTable_ClearNonExtensionField(
+    upb_Message* msg, const upb_MiniTableField* field) {
+  if (field->presence > 0) {
+    _upb_clearhas_field(msg, field);
+  } else if (_upb_MiniTableField_InOneOf(field)) {
+    uint32_t* oneof_case = _upb_oneofcase_field(msg, field);
+    if (*oneof_case != field->number) return;
+    *oneof_case = 0;
+  }
+  const char zeros[16] = {0};
+  _upb_MiniTable_CopyFieldData(_upb_MiniTableField_GetPtr(msg, field), zeros,
+                               field);
+}
+
+UPB_INLINE void _upb_MiniTable_ClearField(upb_Message* msg,
+                                          const upb_MiniTableField* field) {
+  if (upb_MiniTableField_IsExtension(field)) {
+    _upb_Message_Clearext(msg, (const upb_MiniTableExtension*)field);
+  } else {
+    _upb_MiniTable_ClearNonExtensionField(msg, field);
+  }
+}
+
 // EVERYTHING ABOVE THIS LINE IS INTERNAL - DO NOT USE /////////////////////////
 
-void upb_MiniTable_ClearField(upb_Message* msg,
-                              const upb_MiniTableField* field);
+UPB_INLINE void upb_MiniTable_ClearField(upb_Message* msg,
+                                         const upb_MiniTableField* field) {
+  _upb_MiniTable_ClearNonExtensionField(msg, field);
+}
 
 UPB_INLINE bool upb_MiniTable_HasField(const upb_Message* msg,
                                        const upb_MiniTableField* field) {

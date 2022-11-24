@@ -87,19 +87,6 @@ static int _upb_MiniTableField_CTypeLg2Size(const upb_MiniTableField* f) {
   return sizes[f->descriptortype];
 }
 
-void upb_MiniTable_ClearField(upb_Message* msg,
-                              const upb_MiniTableField* field) {
-  char* mem = UPB_PTR_AT(msg, field->offset, char);
-  if (field->presence > 0) {
-    _upb_clearhas_field(msg, field);
-  } else if (_upb_MiniTableField_InOneOf(field)) {
-    uint32_t* oneof_case = _upb_oneofcase_field(msg, field);
-    if (*oneof_case != field->number) return;
-    *oneof_case = 0;
-  }
-  memset(mem, 0, _upb_MiniTableField_Size(field));
-}
-
 void* upb_MiniTable_ResizeArray(upb_Message* msg,
                                 const upb_MiniTableField* field, size_t len,
                                 upb_Arena* arena) {
