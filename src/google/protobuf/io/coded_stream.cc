@@ -722,6 +722,13 @@ bool CodedInputStream::Refresh() {
 
 // CodedOutputStream =================================================
 
+uint8_t* EpsCopyOutputStream::EnsureSpace(uint8_t* ptr) {
+  if (PROTOBUF_PREDICT_FALSE(ptr >= end_)) {
+    return EnsureSpaceFallback(ptr);
+  }
+  return ptr;
+}
+
 void EpsCopyOutputStream::EnableAliasing(bool enabled) {
   aliasing_enabled_ = enabled && stream_->AllowsAliasing();
 }
