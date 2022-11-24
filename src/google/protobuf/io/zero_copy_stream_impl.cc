@@ -169,8 +169,8 @@ int FileInputStream::CopyingFileInputStream::Skip(int count) {
 
 // ===================================================================
 
-FileOutputStream::FileOutputStream(int file_descriptor, int /*block_size*/)
-    : CopyingOutputStreamAdaptor(&copying_output_),
+FileOutputStream::FileOutputStream(int file_descriptor, int block_size)
+    : CopyingOutputStreamAdaptor(&copying_output_, block_size),
       copying_output_(file_descriptor) {}
 
 bool FileOutputStream::Close() {
