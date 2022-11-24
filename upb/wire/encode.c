@@ -403,8 +403,8 @@ static void encode_mapentry(upb_encstate* e, uint32_t number,
   const upb_MiniTableField* val_field = &layout->fields[1];
   size_t pre_len = e->limit - e->ptr;
   size_t size;
-  encode_scalar(e, &ent->v, layout->subs, val_field);
-  encode_scalar(e, &ent->k, layout->subs, key_field);
+  encode_scalar(e, &ent->data.v, layout->subs, val_field);
+  encode_scalar(e, &ent->data.k, layout->subs, key_field);
   size = (e->limit - e->ptr) - pre_len;
   encode_varint(e, size);
   encode_tag(e, number, kUpb_WireType_Delimited);
@@ -434,8 +434,8 @@ static void encode_map(upb_encstate* e, const upb_Message* msg,
     upb_value val;
     while (upb_strtable_next2(&map->table, &key, &val, &iter)) {
       upb_MapEntry ent;
-      _upb_map_fromkey(key, &ent.k, map->key_size);
-      _upb_map_fromvalue(val, &ent.v, map->val_size);
+      _upb_map_fromkey(key, &ent.data.k, map->key_size);
+      _upb_map_fromvalue(val, &ent.data.v, map->val_size);
       encode_mapentry(e, f->number, layout, &ent);
     }
   }

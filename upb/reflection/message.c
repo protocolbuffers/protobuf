@@ -31,7 +31,9 @@
 
 #include "upb/collections/map.h"
 #include "upb/hash/common.h"
+#include "upb/message/accessors.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/field_internal.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/def_type.h"
@@ -71,32 +73,9 @@ static bool in_oneof(const upb_MiniTableField* field) {
   return field->presence < 0;
 }
 
-static upb_MessageValue _upb_Message_Getraw(const upb_Message* msg,
-                                            const upb_FieldDef* f) {
-  const upb_MiniTableField* field = upb_FieldDef_MiniTable(f);
-  const char* mem = UPB_PTR_AT(msg, field->offset, char);
-  upb_MessageValue val = {0};
-  memcpy(&val, mem, get_field_size(field));
-  return val;
-}
-
 bool upb_Message_Has(const upb_Message* msg, const upb_FieldDef* f) {
-  assert(upb_FieldDef_HasPresence(f));
-  if (upb_FieldDef_IsExtension(f)) {
-    const upb_MiniTableExtension* ext = _upb_FieldDef_ExtensionMiniTable(f);
-    return _upb_Message_Getext(msg, ext) != NULL;
-  } else {
-    const upb_MiniTableField* field = upb_FieldDef_MiniTable(f);
-    if (in_oneof(field)) {
-      return _upb_getoneofcase_field(msg, field) == field->number;
-    } else if (field->presence > 0) {
-      return _upb_hasbit_field(msg, field);
-    } else {
-      UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
-                 field->descriptortype == kUpb_FieldType_Group);
-      return _upb_Message_Getraw(msg, f).msg_val != NULL;
-    }
-  }
+  UPB_ASSERT(upb_FieldDef_HasPresence(f));
+  return _upb_MiniTable_HasField(msg, upb_FieldDef_MiniTable(f));
 }
 
 const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
@@ -194,31 +173,28 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
                       upb_MessageValue* out_val, size_t* iter) {
   size_t i = *iter;
   size_t n = upb_MessageDef_FieldCount(m);
-  const upb_MessageValue zero = {0};
   UPB_UNUSED(ext_pool);
 
-  /* Iterate over normal fields, returning the first one that is set. */
+  // Iterate over normal fields, returning the first one that is set.
   while (++i < n) {
     const upb_FieldDef* f = upb_MessageDef_Field(m, i);
-    upb_MessageValue val = _upb_Message_Getraw(msg, f);
+    const upb_MiniTableField* field = upb_FieldDef_MiniTable(f);
+    upb_MessageValue val = upb_Message_Get(msg, f);
 
-    /* Skip field if unset or empty. */
-    if (upb_FieldDef_HasPresence(f)) {
+    // Skip field if unset or empty.
+    if (upb_MiniTableField_HasPresence(field)) {
       if (!upb_Message_Has(msg, f)) continue;
     } else {
-      upb_MessageValue test = val;
-      if (upb_FieldDef_IsString(f) && !upb_FieldDef_IsRepeated(f)) {
-        /* Clear string pointer, only size matters (ptr could be non-NULL). */
-        test.str_val.data = NULL;
-      }
-      /* Continue if NULL or 0. */
-      if (memcmp(&test, &zero, sizeof(test)) == 0) continue;
-
-      /* Continue on empty array or map. */
-      if (upb_FieldDef_IsMap(f)) {
-        if (upb_Map_Size(test.map_val) == 0) continue;
-      } else if (upb_FieldDef_IsRepeated(f)) {
-        if (upb_Array_Size(test.array_val) == 0) continue;
+      switch (upb_FieldMode_Get(field)) {
+        case kUpb_FieldMode_Map:
+          if (!val.map_val || upb_Map_Size(val.map_val) == 0) continue;
+          break;
+        case kUpb_FieldMode_Array:
+          if (!val.array_val || upb_Array_Size(val.array_val) == 0) continue;
+          break;
+        case kUpb_FieldMode_Scalar:
+          if (!_upb_MiniTable_ValueIsNonZero(&val, field)) continue;
+          break;
       }
     }
 
@@ -229,7 +205,7 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
   }
 
   if (ext_pool) {
-    /* Return any extensions that are set. */
+    // Return any extensions that are set.
     size_t count;
     const upb_Message_Extension* ext = _upb_Message_Getexts(msg, &count);
     if (i - n < count) {

@@ -228,6 +228,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":base",
+        ":hash",
         ":mem",
         ":port",
     ],
@@ -576,6 +577,7 @@ cc_library(
         ":collections",
         ":descriptor_upb_proto",
         ":hash",
+        ":message_accessors",
         ":mini_table_internal",
         ":port",
         ":upb",

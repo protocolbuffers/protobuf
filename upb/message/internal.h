@@ -126,21 +126,6 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg);
 bool _upb_Message_AddUnknown(upb_Message* msg, const char* data, size_t len,
                              upb_Arena* arena);
 
-/* Map entries aren't actually stored, they are only used during parsing.  For
- * parsing, it helps a lot if all map entry messages have the same layout.
- * The compiler and def.c must ensure that all map entries have this layout. */
-typedef struct {
-  upb_Message_Internal internal;
-  union {
-    upb_StringView str; /* For str/bytes. */
-    upb_value val;      /* For all other types. */
-  } k;
-  union {
-    upb_StringView str; /* For str/bytes. */
-    upb_value val;      /* For all other types. */
-  } v;
-} upb_MapEntry;
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

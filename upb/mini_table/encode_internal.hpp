@@ -89,10 +89,10 @@ class MtDataEncoder {
   }
 
   bool EncodeMap(upb_FieldType key_type, upb_FieldType val_type,
-                 uint64_t val_mod) {
+                 uint64_t key_mod, uint64_t val_mod) {
     return appender_([=](char* buf) {
       return upb_MtDataEncoder_EncodeMap(&encoder_, buf, key_type, val_type,
-                                         val_mod);
+                                         key_mod, val_mod);
     });
   }
 

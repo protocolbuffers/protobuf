@@ -578,8 +578,8 @@ upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d, const upb_MiniTable* entry) {
   const upb_MiniTableField* val_field = &entry->fields[1];
   char key_size = kSizeInMap[key_field->descriptortype];
   char val_size = kSizeInMap[val_field->descriptortype];
-  UPB_ASSERT(key_field->offset == 0);
-  UPB_ASSERT(val_field->offset == sizeof(upb_StringView));
+  UPB_ASSERT(key_field->offset == offsetof(upb_MapEntryData, k));
+  UPB_ASSERT(val_field->offset == offsetof(upb_MapEntryData, v));
   upb_Map* ret = _upb_Map_New(&d->arena, key_size, val_size);
   if (!ret) _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
   return ret;
@@ -606,15 +606,16 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
   if (entry->fields[1].descriptortype == kUpb_FieldType_Message ||
       entry->fields[1].descriptortype == kUpb_FieldType_Group) {
     /* Create proactively to handle the case where it doesn't appear. */
-    ent.v.val =
+    ent.data.v.val =
         upb_value_ptr(_upb_Message_New(entry->subs[0].submsg, &d->arena));
   }
 
   const char* start = ptr;
-  ptr = _upb_Decoder_DecodeSubMessage(d, ptr, &ent.k, subs, field, val->size);
+  ptr =
+      _upb_Decoder_DecodeSubMessage(d, ptr, &ent.data, subs, field, val->size);
   // check if ent had any unknown fields
   size_t size;
-  upb_Message_GetUnknown(&ent.k, &size);
+  upb_Message_GetUnknown(&ent.data, &size);
   if (size != 0) {
     uint32_t tag = ((uint32_t)field->number << 3) | kUpb_WireType_Delimited;
     _upb_Decoder_AddUnknownVarints(d, msg, tag, (uint32_t)(ptr - start));
@@ -622,7 +623,8 @@ static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }
   } else {
-    if (_upb_Map_Insert(map, &ent.k, map->key_size, &ent.v, map->val_size,
+    if (_upb_Map_Insert(map, &ent.data.k, map->key_size, &ent.data.v,
+                        map->val_size,
                         &d->arena) == kUpb_MapInsertStatus_OutOfMemory) {
       _upb_Decoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
     }

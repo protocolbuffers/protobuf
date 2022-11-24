@@ -71,9 +71,9 @@ UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s, const upb_Map* map,
   if (sorted->pos == sorted->end) return false;
   const upb_tabent* tabent = s->entries[sorted->pos++];
   upb_StringView key = upb_tabstrview(tabent->key);
-  _upb_map_fromkey(key, &ent->k, map->key_size);
+  _upb_map_fromkey(key, &ent->data.k, map->key_size);
   upb_value val = {tabent->val.val};
-  _upb_map_fromvalue(val, &ent->v, map->val_size);
+  _upb_map_fromvalue(val, &ent->data.v, map->val_size);
   return true;
 }
 

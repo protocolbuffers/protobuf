@@ -28,6 +28,7 @@
 #include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
 #include "upb/mini_table/decode.h"
+#include "upb/reflection/def.h"
 #include "upb/reflection/def_builder_internal.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/desc_state_internal.h"
@@ -352,6 +353,7 @@ static upb_MiniTable* _upb_MessageDef_MakeMiniTable(upb_DefBuilder* ctx,
       desc.data, desc.size, kUpb_MiniTablePlatform_Native, ctx->arena,
       scratch_data, scratch_size, ctx->status);
   if (!ret) _upb_DefBuilder_FailJmp(ctx);
+
   return ret;
 }
 
@@ -373,6 +375,8 @@ void _upb_MessageDef_Resolve(upb_DefBuilder* ctx, upb_MessageDef* m) {
     UPB_ASSERT(layout_index < m->layout->field_count);
     const upb_MiniTableField* mt_f = &m->layout->fields[layout_index];
     UPB_ASSERT(upb_FieldDef_Type(f) == upb_MiniTableField_Type(mt_f));
+    UPB_ASSERT(upb_FieldDef_HasPresence(f) ==
+               upb_MiniTableField_HasPresence(mt_f));
   }
 #endif
 
@@ -490,15 +494,9 @@ static bool _upb_MessageDef_EncodeMap(upb_DescState* s, const upb_MessageDef* m,
   UPB_ASSERT(_upb_FieldDef_LayoutIndex(key_field) == 0);
   UPB_ASSERT(_upb_FieldDef_LayoutIndex(val_field) == 1);
 
-  const upb_FieldType key_type = upb_FieldDef_Type(key_field);
-  const upb_FieldType val_type = upb_FieldDef_Type(val_field);
-
-  const uint64_t val_mod = _upb_FieldDef_IsClosedEnum(val_field)
-                               ? kUpb_FieldModifier_IsClosedEnum
-                               : 0;
-
-  s->ptr =
-      upb_MtDataEncoder_EncodeMap(&s->e, s->ptr, key_type, val_type, val_mod);
+  s->ptr = upb_MtDataEncoder_EncodeMap(
+      &s->e, s->ptr, upb_FieldDef_Type(key_field), upb_FieldDef_Type(val_field),
+      _upb_FieldDef_Modifiers(key_field), _upb_FieldDef_Modifiers(val_field));
   return true;
 }
 

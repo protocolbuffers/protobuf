@@ -227,6 +227,9 @@ std::string CTypeConst(const protobuf::FieldDescriptor* field) {
   return CTypeInternal(field, true);
 }
 
+std::string FieldInitializer(const FileLayout& layout,
+                             const protobuf::FieldDescriptor* field);
+
 void DumpEnumValues(const protobuf::EnumDescriptor* desc, Output& output) {
   std::vector<const protobuf::EnumValueDescriptor*> values;
   for (int i = 0; i < desc->value_count(); i++) {
@@ -256,7 +259,7 @@ void GenerateExtensionInHeader(const protobuf::FieldDescriptor* ext,
   output(
       R"cc(
         UPB_INLINE bool $0_has_$1(const struct $2* msg) {
-          return _upb_Message_Getext(msg, &$3) != NULL;
+          return _upb_MiniTable_HasExtensionField(msg, &$3);
         }
       )cc",
       ExtensionIdentBase(ext), ext->name(), MessageName(ext->containing_type()),
@@ -375,32 +378,35 @@ void GenerateHazzer(const protobuf::FieldDescriptor* field,
                     const NameToFieldDescriptorMap& field_names,
                     Output& output) {
   std::string resolved_name = ResolveFieldName(field, field_names);
-  if (layout.HasHasbit(field)) {
+  if (field->has_presence()) {
     output(
         R"cc(
           UPB_INLINE bool $0_has_$1(const $0* msg) {
-            return _upb_hasbit(msg, $2);
+            const upb_MiniTableField field = $2;
+            return _upb_MiniTable_HasNonExtensionField(msg, &field);
           }
         )cc",
-        msg_name, resolved_name, layout.GetHasbitIndex(field));
-  } else if (field->real_containing_oneof()) {
+        msg_name, resolved_name, FieldInitializer(layout, field));
+  } else if (field->is_map()) {
+    // TODO(b/259616267): remove.
     output(
         R"cc(
           UPB_INLINE bool $0_has_$1(const $0* msg) {
-            return _upb_getoneofcase(msg, $2) == $3;
+            return $0_$1_size(msg) != 0;
           }
         )cc",
-        msg_name, resolved_name,
-        layout.GetOneofCaseOffset(field->real_containing_oneof()),
-        field->number());
-  } else if (field->message_type()) {
+        msg_name, resolved_name);
+  } else if (field->is_repeated()) {
+    // TODO(b/259616267): remove.
     output(
         R"cc(
           UPB_INLINE bool $0_has_$1(const $0* msg) {
-            return _upb_has_submsg_nohasbit(msg, $2);
+            size_t size;
+            $0_$1(msg, &size);
+            return size != 0;
           }
         )cc",
-        msg_name, resolved_name, layout.GetFieldOffset(field));
+        msg_name, resolved_name);
   }
 }
 
@@ -591,9 +597,6 @@ void GenerateRepeatedGetters(const protobuf::FieldDescriptor* field,
       CTypeConst(field), msg_name, ResolveFieldName(field, field_names),
       layout.GetFieldOffset(field));
 }
-
-std::string FieldInitializer(const FileLayout& layout,
-                             const protobuf::FieldDescriptor* field);
 
 void GenerateScalarGetters(const protobuf::FieldDescriptor* field,
                            const FileLayout& layout, absl::string_view msg_name,
@@ -798,13 +801,13 @@ void GenerateMessageInHeader(const protobuf::Descriptor* message,
 
   auto field_names = CreateFieldNameMap(message);
   for (auto field : FieldNumberOrder(message)) {
-    GenerateHazzer(field, layout, msg_name, field_names, output);
     if (field->is_repeated()) {
       GenerateRepeatedClear(field, layout, msg_name, field_names, output);
     } else {
       GenerateClear(field, layout, msg_name, field_names, output);
     }
     GenerateGetters(field, layout, msg_name, field_names, output);
+    GenerateHazzer(field, layout, msg_name, field_names, output);
   }
 
   output("\n");

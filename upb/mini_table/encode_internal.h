@@ -95,7 +95,8 @@ char* upb_MtDataEncoder_EncodeExtension(upb_MtDataEncoder* e, char* ptr,
 // Encodes an entire mini descriptor for a map.
 char* upb_MtDataEncoder_EncodeMap(upb_MtDataEncoder* e, char* ptr,
                                   upb_FieldType key_type,
-                                  upb_FieldType value_type, uint64_t value_mod);
+                                  upb_FieldType value_type, uint64_t key_mod,
+                                  uint64_t value_mod);
 
 // Encodes an entire mini descriptor for a message set.
 char* upb_MtDataEncoder_EncodeMessageSet(upb_MtDataEncoder* e, char* ptr);

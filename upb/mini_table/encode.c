@@ -120,7 +120,7 @@ char* upb_MtDataEncoder_EncodeExtension(upb_MtDataEncoder* e, char* ptr,
 
 char* upb_MtDataEncoder_EncodeMap(upb_MtDataEncoder* e, char* ptr,
                                   upb_FieldType key_type,
-                                  upb_FieldType value_type,
+                                  upb_FieldType value_type, uint64_t key_mod,
                                   uint64_t value_mod) {
   upb_MtDataEncoderInternal* in = upb_MtDataEncoder_GetInternal(e, ptr);
   in->state.msg_state.msg_modifiers = 0;
@@ -130,7 +130,7 @@ char* upb_MtDataEncoder_EncodeMap(upb_MtDataEncoder* e, char* ptr,
   ptr = upb_MtDataEncoder_PutRaw(e, ptr, kUpb_EncodedVersion_MapV1);
   if (!ptr) return NULL;
 
-  ptr = upb_MtDataEncoder_PutField(e, ptr, key_type, 1, 0);
+  ptr = upb_MtDataEncoder_PutField(e, ptr, key_type, 1, key_mod);
   if (!ptr) return NULL;
 
   return upb_MtDataEncoder_PutField(e, ptr, value_type, 2, value_mod);

@@ -663,40 +663,6 @@ static void upb_MtDecoder_AssignOffsets(upb_MtDecoder* d) {
   d->table->size = UPB_ALIGN_UP(d->table->size, 8);
 }
 
-static void upb_MiniTable_BuildMapEntry(upb_MtDecoder* d, char key_type,
-                                        char val_type) {
-  upb_MiniTableField* fields = upb_Arena_Malloc(d->arena, sizeof(*fields) * 2);
-  if (!fields) {
-    upb_MtDecoder_ErrorFormat(d, "OOM while building map mini table field");
-    UPB_UNREACHABLE();
-  }
-
-  size_t field_size =
-      upb_MtDecoder_SizeOfRep(kUpb_FieldRep_StringView, d->platform);
-
-  uint32_t sub_count = 0;
-  fields[0].number = 1;
-  fields[1].number = 2;
-  upb_MiniTable_SetField(d, key_type, &fields[0], 0, &sub_count);
-  upb_MiniTable_SetField(d, val_type, &fields[1], 0, &sub_count);
-  upb_MtDecoder_AllocateSubs(d, sub_count);
-
-  // Map entries have a pre-determined layout, regardless of types.
-  fields[0].presence = 0;
-  fields[1].presence = 0;
-  fields[0].offset = 0;
-  fields[1].offset = field_size;
-
-  upb_MiniTable* ret = d->table;
-  ret->size = UPB_ALIGN_UP(2 * field_size, 8);
-  ret->field_count = 2;
-  ret->ext = kUpb_ExtMode_NonExtendable | kUpb_ExtMode_IsMapEntry;
-  ret->dense_below = 2;
-  ret->table_mask = -1;
-  ret->required_count = 0;
-  ret->fields = fields;
-}
-
 static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
                                    size_t len) {
   if (len < 2) {
@@ -723,7 +689,18 @@ static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
       upb_MtDecoder_ErrorFormat(d, "Invalid map key field type: %d", key_type);
       UPB_UNREACHABLE();
   }
-  upb_MiniTable_BuildMapEntry(d, data[0], data[1]);
+
+  upb_MtDecoder_ParseMessage(d, data, len);
+  upb_MtDecoder_AssignHasbits(d->table);
+
+  // Map entries have a pre-determined layout, regardless of types.
+  d->fields[0].offset = offsetof(upb_MapEntryData, k);
+  d->fields[1].offset = offsetof(upb_MapEntryData, v);
+  d->table->size = UPB_ALIGN_UP(sizeof(upb_MapEntryData), 8);
+
+  // Map entries have a special bit set to signal it's a map entry, used in
+  // upb_MiniTable_SetSubMessage() below.
+  d->table->ext |= kUpb_ExtMode_IsMapEntry;
 }
 
 static void upb_MtDecoder_ParseMessageSet(upb_MtDecoder* d, const char* data,

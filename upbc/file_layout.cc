@@ -299,14 +299,10 @@ upb_MiniTable* FilePlatformLayout::MakeMapMiniTable(
     const protobuf::Descriptor* m) {
   const auto key_type = static_cast<upb_FieldType>(m->map_key()->type());
   const auto val_type = static_cast<upb_FieldType>(m->map_value()->type());
-  const uint64_t val_mod = (m->map_value()->enum_type() &&
-                            m->map_value()->enum_type()->file()->syntax() ==
-                                protobuf::FileDescriptor::SYNTAX_PROTO2)
-                               ? kUpb_FieldModifier_IsClosedEnum
-                               : 0;
 
   upb::MtDataEncoder e;
-  e.EncodeMap(key_type, val_type, val_mod);
+  e.EncodeMap(key_type, val_type, GetFieldModifiers(m->map_key()),
+              GetFieldModifiers(m->map_value()));
 
   const absl::string_view str = e.data();
   upb::Status status;

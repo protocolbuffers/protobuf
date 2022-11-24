@@ -295,8 +295,8 @@ static void txtenc_map(txtenc* e, const upb_Map* map, const upb_FieldDef* f) {
     _upb_mapsorter_pushmap(&e->sorter, upb_FieldDef_Type(key_f), map, &sorted);
     while (_upb_sortedmap_next(&e->sorter, map, &sorted, &ent)) {
       upb_MessageValue key, val;
-      memcpy(&key, &ent.k, sizeof(key));
-      memcpy(&val, &ent.v, sizeof(val));
+      memcpy(&key, &ent.data.k, sizeof(key));
+      memcpy(&val, &ent.data.v, sizeof(val));
       txtenc_mapentry(e, key, val, f);
     }
     _upb_mapsorter_popmap(&e->sorter, &sorted);

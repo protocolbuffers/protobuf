@@ -28,6 +28,8 @@
 #ifndef UPB_MINI_TABLE_MESSAGE_INTERNAL_H_
 #define UPB_MINI_TABLE_MESSAGE_INTERNAL_H_
 
+#include "upb/base/string_view.h"
+#include "upb/hash/common.h"
 #include "upb/mini_table/types.h"
 
 // Must be last.
@@ -76,6 +78,30 @@ struct upb_MiniTable {
   // of flexible array members is a GNU extension, not in C99 unfortunately.
   _upb_FastTable_Entry fasttable[];
 };
+
+// Map entries aren't actually stored for map fields, they are only used during
+// parsing. For parsing, it helps a lot if all map entry messages have the same
+// layout. The layout code in mini_table/decode.c will ensure that all map
+// entries have this layout.
+//
+// Note that users can and do create map entries directly, which will also use
+// this layout.
+typedef struct {
+  uint32_t hasbits;
+  union {
+    upb_StringView str;  // For str/bytes.
+    upb_value val;       // For all other types.
+  } k;
+  union {
+    upb_StringView str;  // For str/bytes.
+    upb_value val;       // For all other types.
+  } v;
+} upb_MapEntryData;
+
+typedef struct {
+  void* internal_data;
+  upb_MapEntryData data;
+} upb_MapEntry;
 
 #ifdef __cplusplus
 extern "C" {
