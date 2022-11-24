@@ -127,6 +127,7 @@ cc_library(
         "upb/mem/arena.h",
         "upb/message/extension_internal.h",
         "upb/message/message.h",
+        "upb/mini_table/extension_registry.h",
         "upb/msg.h",
         "upb/status.h",
         "upb/string_view.h",
@@ -140,7 +141,6 @@ cc_library(
     deps = [
         ":base",
         ":collections_internal",
-        ":extension_registry",
         ":fastdecode",
         ":hash",
         ":lex",
@@ -169,29 +169,11 @@ cc_library(
 )
 
 cc_library(
-    name = "extension_registry",
-    srcs = [
-        "upb/extension_registry.c",
-    ],
-    hdrs = [
-        "upb/extension_registry.h",
-    ],
-    copts = UPB_DEFAULT_COPTS,
-    visibility = ["//visibility:public"],
-    deps = [
-        ":base",
-        ":hash",
-        ":mem",
-        ":mini_table_internal",
-        ":port",
-    ],
-)
-
-cc_library(
     name = "mini_table",
     hdrs = [
         "upb/mini_table.h",
         "upb/mini_table/decode.h",
+        "upb/mini_table/extension_registry.h",
         "upb/mini_table/types.h",
     ],
     copts = UPB_DEFAULT_COPTS,
@@ -210,6 +192,7 @@ cc_library(
         "upb/mini_table/common.c",
         "upb/mini_table/decode.c",
         "upb/mini_table/encode.c",
+        "upb/mini_table/extension_registry.c",
     ],
     hdrs = [
         "upb/mini_table/common.h",
@@ -219,6 +202,7 @@ cc_library(
         "upb/mini_table/encode_internal.hpp",
         "upb/mini_table/enum_internal.h",
         "upb/mini_table/extension_internal.h",
+        "upb/mini_table/extension_registry.h",
         "upb/mini_table/field_internal.h",
         "upb/mini_table/file_internal.h",
         "upb/mini_table/message_internal.h",
@@ -263,7 +247,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":base",
-        ":extension_registry",
         ":hash",
         ":mem",
         ":mini_table_internal",
@@ -299,7 +282,6 @@ cc_test(
     ],
     deps = [
         ":collections_internal",
-        ":extension_registry",
         ":hash",
         ":message_internal",
         ":mini_table_internal",
@@ -334,7 +316,6 @@ cc_library(
     deps = [
         ":base",
         ":collections_internal",
-        ":extension_registry",
         ":hash",
         ":mem_internal",
         ":message_internal",
@@ -484,7 +465,6 @@ cc_library(
     visibility = ["//:__subpackages__"],
     deps = [
         ":base",
-        ":extension_registry",
         ":hash",
         ":mem",
         ":message_internal",
@@ -1056,9 +1036,9 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     visibility = ["//visibility:public"],
     deps = [
-        ":extension_registry",
         ":mem",
         ":message_internal",
+        ":mini_table",
         ":port",
         ":wire_internal",
     ],
@@ -1085,7 +1065,6 @@ cc_library(
     deps = [
         ":base",
         ":collections_internal",
-        ":extension_registry",
         ":hash",
         ":mem_internal",
         ":message_internal",
@@ -1147,7 +1126,6 @@ upb_amalgamation(
         ":base",
         ":collections_internal",
         ":descriptor_upb_proto",
-        ":extension_registry",
         ":fastdecode",
         ":hash",
         ":lex",
@@ -1183,7 +1161,6 @@ upb_amalgamation(
         ":collections_internal",
         ":descriptor_upb_proto",
         ":descriptor_upb_proto_reflection",
-        ":extension_registry",
         ":fastdecode",
         ":hash",
         ":json",
@@ -1221,7 +1198,6 @@ upb_amalgamation(
         ":base",
         ":collections_internal",
         ":descriptor_upb_proto",
-        ":extension_registry",
         ":fastdecode",
         ":hash",
         ":json",
@@ -1285,9 +1261,7 @@ filegroup(
 #     compatible_with = ["//buildenv/target:non_prod"],
 #     headers_to_exclude = glob([
 #         "**/*.hpp",
-#     ]) + [
-#         "upb/extension_registry.h",
-#     ],
+#     ]),
 #     no_string_conversion = ["upb_MiniTable_Build"],
 #     strict_enums = ["upb_FieldType"],
 # )

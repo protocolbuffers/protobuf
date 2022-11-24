@@ -31,7 +31,7 @@
 #include <string>
 #include <vector>
 
-#include "upb/extension_registry.h"
+#include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/types.h"
 
 namespace upb {

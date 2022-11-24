@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/extension_registry.h"
+#include "upb/mini_table/extension_registry.h"
 
 #include "upb/hash/str_table.h"
 #include "upb/mini_table/extension_internal.h"

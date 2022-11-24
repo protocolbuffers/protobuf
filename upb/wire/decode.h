@@ -30,9 +30,9 @@
 #ifndef UPB_WIRE_DECODE_H_
 #define UPB_WIRE_DECODE_H_
 
-#include "upb/extension_registry.h"
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/extension_registry.h"
 
 // Must be last.
 #include "upb/port/def.inc"
