@@ -236,16 +236,6 @@ struct ReflectionSchema {
     return false;
   }
 
-  bool IsFieldStripped(const FieldDescriptor* field) const {
-    (void)field;
-    return false;
-  }
-
-  bool IsMessageStripped(const Descriptor* descriptor) const {
-    (void)descriptor;
-    return false;
-  }
-
   bool IsSplit() const { return split_offset_ != -1; }
 
   bool IsSplit(const FieldDescriptor* field) const {
