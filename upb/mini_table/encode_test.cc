@@ -227,7 +227,7 @@ TEST(MiniTableEnumTest, Enum) {
   e.EndEnum();
 
   upb::Status status;
-  upb_MiniTableEnum* table = upb_MiniTable_BuildEnum(
+  upb_MiniTableEnum* table = upb_MiniTableEnum_Build(
       e.data().data(), e.data().size(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table) << status.error_message();
 
@@ -269,7 +269,7 @@ TEST(MiniTableEnumTest, PositiveAndNegative) {
   e.EndEnum();
 
   upb::Status status;
-  upb_MiniTableEnum* table = upb_MiniTable_BuildEnum(
+  upb_MiniTableEnum* table = upb_MiniTableEnum_Build(
       e.data().data(), e.data().size(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table) << status.error_message();
 

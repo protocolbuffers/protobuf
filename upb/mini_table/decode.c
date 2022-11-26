@@ -88,11 +88,13 @@ typedef struct {
 UPB_PRINTF(2, 3)
 UPB_NORETURN static void upb_MtDecoder_ErrorFormat(upb_MtDecoder* d,
                                                    const char* fmt, ...) {
-  va_list argp;
-  upb_Status_SetErrorMessage(d->status, "Error building mini table: ");
-  va_start(argp, fmt);
-  upb_Status_VAppendErrorFormat(d->status, fmt, argp);
-  va_end(argp);
+  if (d->status) {
+    va_list argp;
+    upb_Status_SetErrorMessage(d->status, "Error building mini table: ");
+    va_start(argp, fmt);
+    upb_Status_VAppendErrorFormat(d->status, fmt, argp);
+    va_end(argp);
+  }
   UPB_LONGJMP(d->err, 1);
 }
 
@@ -799,7 +801,7 @@ static upb_MiniTableEnum* _upb_MiniTable_AddEnumDataMember(upb_MtDecoder* d,
   return d->enum_table;
 }
 
-static void upb_MiniTable_BuildEnumValue(upb_MtDecoder* d, uint32_t val) {
+static void upb_MiniTableEnum_BuildValue(upb_MtDecoder* d, uint32_t val) {
   upb_MiniTableEnum* table = d->enum_table;
   d->enum_value_count++;
   if (table->value_count || (val > 512 && d->enum_value_count < val / 32)) {
@@ -818,7 +820,7 @@ static void upb_MiniTable_BuildEnumValue(upb_MtDecoder* d, uint32_t val) {
   }
 }
 
-upb_MiniTableEnum* upb_MiniTable_BuildEnum(const char* data, size_t len,
+upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
                                            upb_Arena* arena,
                                            upb_Status* status) {
   upb_MtDecoder decoder = {
@@ -860,7 +862,7 @@ upb_MiniTableEnum* upb_MiniTable_BuildEnum(const char* data, size_t len,
     if (ch <= kUpb_EncodedValue_MaxEnumMask) {
       uint32_t mask = _upb_FromBase92(ch);
       for (int i = 0; i < 5; i++, base++, mask >>= 1) {
-        if (mask & 1) upb_MiniTable_BuildEnumValue(&decoder, base);
+        if (mask & 1) upb_MiniTableEnum_BuildValue(&decoder, base);
       }
     } else if (kUpb_EncodedValue_MinSkip <= ch &&
                ch <= kUpb_EncodedValue_MaxSkip) {
@@ -870,7 +872,7 @@ upb_MiniTableEnum* upb_MiniTable_BuildEnum(const char* data, size_t len,
                                              kUpb_EncodedValue_MaxSkip, &skip);
       base += skip;
     } else {
-      upb_Status_SetErrorFormat(status, "Unexpected character: %c", ch);
+      upb_MtDecoder_ErrorFormat(&decoder, "Unexpected character: %c", ch);
       return NULL;
     }
   }
@@ -878,7 +880,7 @@ upb_MiniTableEnum* upb_MiniTable_BuildEnum(const char* data, size_t len,
   return decoder.enum_table;
 }
 
-const char* _upb_MiniTable_BuildExtension(const char* data, size_t len,
+const char* _upb_MiniTableExtension_Build(const char* data, size_t len,
                                           upb_MiniTableExtension* ext,
                                           const upb_MiniTable* extendee,
                                           upb_MiniTableSub sub,

@@ -43,11 +43,11 @@ struct MiniTableFuzzInput {
   std::vector<std::string> mini_descriptors;
 
   // MiniDescripotrs for N enums, in the format accepted by
-  // upb_MiniTable_BuildEnum().
+  // upb_MiniTableEnum_Build().
   std::vector<std::string> enum_mini_descriptors;
 
   // A MiniDescriptor for N extensions, in the format accepted by
-  // upb_MiniTable_BuildExtension().
+  // upb_MiniTableExtension_Build().
   std::string extensions;
 
   // Integer indexes into the message or enum mini tables lists.  These specify

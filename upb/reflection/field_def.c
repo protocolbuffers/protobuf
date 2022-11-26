@@ -878,7 +878,7 @@ static void resolve_extension(upb_DefBuilder* ctx, const char* prefix,
     } else if (_upb_FieldDef_IsClosedEnum(f)) {
       sub.subenum = _upb_EnumDef_MiniTable(f->sub.enumdef);
     }
-    bool ok2 = upb_MiniTable_BuildExtension(desc.data, desc.size, mut_ext,
+    bool ok2 = upb_MiniTableExtension_Build(desc.data, desc.size, mut_ext,
                                             upb_MessageDef_MiniTable(m), sub,
                                             ctx->status);
     if (!ok2) _upb_DefBuilder_Errf(ctx, "Could not build extension mini table");

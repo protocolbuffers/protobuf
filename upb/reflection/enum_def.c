@@ -219,7 +219,7 @@ static upb_MiniTableEnum* create_enumlayout(upb_DefBuilder* ctx,
 
   upb_Status status;
   upb_MiniTableEnum* layout =
-      upb_MiniTable_BuildEnum(sv.data, sv.size, ctx->arena, &status);
+      upb_MiniTableEnum_Build(sv.data, sv.size, ctx->arena, &status);
   if (!layout)
     _upb_DefBuilder_Errf(ctx, "Error building enum MiniTable: %s", status.msg);
   return layout;

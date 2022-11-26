@@ -100,7 +100,7 @@ void Builder::BuildEnums() {
   enum_tables_.reserve(input_->enum_mini_descriptors.size());
   for (const auto& d : input_->enum_mini_descriptors) {
     upb_MiniTableEnum* enum_table =
-        upb_MiniTable_BuildEnum(d.data(), d.size(), arena_, status.ptr());
+        upb_MiniTableEnum_Build(d.data(), d.size(), arena_, status.ptr());
     if (enum_table) enum_tables_.push_back(enum_table);
   }
 }
@@ -136,7 +136,7 @@ void Builder::BuildExtensions(upb_ExtensionRegistry** exts) {
       upb_MiniTableSub sub;
       const upb_MiniTable* extendee = NextMiniTable();
       if (!extendee) break;
-      ptr = upb_MiniTable_BuildExtension(ptr, end - ptr, ext, extendee, sub,
+      ptr = upb_MiniTableExtension_Build(ptr, end - ptr, ext, extendee, sub,
                                          status.ptr());
       if (!ptr) break;
       if (!LinkExtension(ext)) continue;
