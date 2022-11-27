@@ -467,7 +467,6 @@ cc_library(
         ":base",
         ":hash",
         ":mem",
-        ":message_internal",
         ":mini_table_internal",
         ":port",
     ],
@@ -1038,7 +1037,7 @@ cc_library(
     deps = [
         ":mem",
         ":message_internal",
-        ":mini_table",
+        ":mini_table_internal",
         ":port",
         ":wire_internal",
     ],

@@ -31,7 +31,6 @@
 
 #include "upb/collections/map_internal.h"
 #include "upb/mem/arena.h"
-#include "upb/message/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"

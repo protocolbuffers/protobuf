@@ -30,8 +30,10 @@
 #ifndef UPB_COLLECTIONS_MAP_SORTER_INTERNAL_H_
 #define UPB_COLLECTIONS_MAP_SORTER_INTERNAL_H_
 
+#include <stdlib.h>
+
 #include "upb/collections/map_internal.h"
-#include "upb/message/internal.h"
+#include "upb/mini_table/message_internal.h"
 
 // Must be last.
 #include "upb/port/def.inc"
