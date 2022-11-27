@@ -59,9 +59,8 @@ typedef enum {
 
 typedef enum {
   kUpb_EncodedFieldModifier_FlipPacked = 1 << 0,
-  // upb only.
+  kUpb_EncodedFieldModifier_IsRequired = 1 << 1,
   kUpb_EncodedFieldModifier_IsProto3Singular = 1 << 2,
-  kUpb_EncodedFieldModifier_IsRequired = 1 << 3,
 } upb_EncodedFieldModifier;
 
 enum {
