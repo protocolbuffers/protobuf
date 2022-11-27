@@ -49,7 +49,7 @@ TEST_P(MiniTableTest, Empty) {
   upb::Arena arena;
   upb::Status status;
   upb_MiniTable* table =
-      upb_MiniTable_Build(NULL, 0, GetParam(), arena.ptr(), status.ptr());
+      _upb_MiniTable_Build(NULL, 0, GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(0, table->field_count);
   EXPECT_EQ(0, table->required_count);
@@ -65,7 +65,7 @@ TEST_P(MiniTableTest, AllScalarTypes) {
     count++;
   }
   upb::Status status;
-  upb_MiniTable* table = upb_MiniTable_Build(
+  upb_MiniTable* table = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(count, table->field_count);
@@ -91,7 +91,7 @@ TEST_P(MiniTableTest, AllRepeatedTypes) {
     count++;
   }
   upb::Status status;
-  upb_MiniTable* table = upb_MiniTable_Build(
+  upb_MiniTable* table = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(count, table->field_count);
@@ -119,7 +119,7 @@ TEST_P(MiniTableTest, Skips) {
     count++;
   }
   upb::Status status;
-  upb_MiniTable* table = upb_MiniTable_Build(
+  upb_MiniTable* table = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(count, table->field_count);
@@ -149,7 +149,7 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
     ASSERT_TRUE(e.PutOneofField(i));
   }
   upb::Status status;
-  upb_MiniTable* table = upb_MiniTable_Build(
+  upb_MiniTable* table = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table) << status.error_message();
   EXPECT_EQ(count, table->field_count);
@@ -182,7 +182,7 @@ TEST_P(MiniTableTest, SizeOverflow) {
     ASSERT_TRUE(e.PutField(kUpb_FieldType_Double, i, 0));
   }
   upb::Status status;
-  upb_MiniTable* table = upb_MiniTable_Build(
+  upb_MiniTable* table = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table) << status.error_message();
 
@@ -191,7 +191,7 @@ TEST_P(MiniTableTest, SizeOverflow) {
   for (size_t i = 1; i < max_double_fields + 2; i++) {
     ASSERT_TRUE(e.PutField(kUpb_FieldType_Double, i, 0));
   }
-  upb_MiniTable* table2 = upb_MiniTable_Build(
+  upb_MiniTable* table2 = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_EQ(nullptr, table2) << status.error_message();
 }
@@ -244,7 +244,7 @@ TEST_P(MiniTableTest, SubsInitializedToNull) {
   ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 15, 0));
   ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, 16, 0));
   upb::Status status;
-  upb_MiniTable* table = upb_MiniTable_Build(
+  upb_MiniTable* table = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(table->field_count, 2);
@@ -288,7 +288,7 @@ TEST_P(MiniTableTest, Extendible) {
     count++;
   }
   upb::Status status;
-  upb_MiniTable* table = upb_MiniTable_Build(
+  upb_MiniTable* table = _upb_MiniTable_Build(
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table);
   EXPECT_EQ(kUpb_ExtMode_Extendable, table->ext & kUpb_ExtMode_Extendable);
@@ -299,7 +299,7 @@ TEST_P(MiniTableTest, Extendible) {
 // static void BuildMiniTable(std::string_view s, bool is_32bit) {
 //   upb::Arena arena;
 //   upb::Status status;
-//   upb_MiniTable_Build(
+//   _upb_MiniTable_Build(
 //       s.data(), s.size(),
 //       is_32bit ? kUpb_MiniTablePlatform_32Bit : kUpb_MiniTablePlatform_64Bit,
 //       arena.ptr(), status.ptr());

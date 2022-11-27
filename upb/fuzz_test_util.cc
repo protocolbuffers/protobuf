@@ -87,10 +87,8 @@ void Builder::BuildMessages() {
   upb::Status status;
   mini_tables_.reserve(input_->mini_descriptors.size());
   for (const auto& d : input_->mini_descriptors) {
-    upb_MiniTable* table;
-    table =
-        upb_MiniTable_Build(d.data(), d.size(), kUpb_MiniTablePlatform_Native,
-                            arena_, status.ptr());
+    upb_MiniTable* table =
+        upb_MiniTable_Build(d.data(), d.size(), arena_, status.ptr());
     if (table) mini_tables_.push_back(table);
   }
 }

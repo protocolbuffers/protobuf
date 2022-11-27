@@ -306,8 +306,8 @@ upb_MiniTable* FilePlatformLayout::MakeMapMiniTable(
 
   const absl::string_view str = e.data();
   upb::Status status;
-  upb_MiniTable* ret = upb_MiniTable_Build(str.data(), str.size(), platform_,
-                                           arena_.ptr(), status.ptr());
+  upb_MiniTable* ret = _upb_MiniTable_Build(str.data(), str.size(), platform_,
+                                            arena_.ptr(), status.ptr());
   if (!ret) {
     fprintf(stderr, "Error building mini-table: %s\n", status.error_message());
   }
@@ -322,8 +322,8 @@ upb_MiniTable* FilePlatformLayout::MakeMessageSetMiniTable(
 
   const absl::string_view str = e.data();
   upb::Status status;
-  upb_MiniTable* ret = upb_MiniTable_Build(str.data(), str.size(), platform_,
-                                           arena_.ptr(), status.ptr());
+  upb_MiniTable* ret = _upb_MiniTable_Build(str.data(), str.size(), platform_,
+                                            arena_.ptr(), status.ptr());
   if (!ret) {
     fprintf(stderr, "Error building mini-table: %s\n", status.error_message());
   }
@@ -349,8 +349,8 @@ upb_MiniTable* FilePlatformLayout::MakeRegularMiniTable(
   }
   absl::string_view str = e.data();
   upb::Status status;
-  upb_MiniTable* ret = upb_MiniTable_Build(str.data(), str.size(), platform_,
-                                           arena_.ptr(), status.ptr());
+  upb_MiniTable* ret = _upb_MiniTable_Build(str.data(), str.size(), platform_,
+                                            arena_.ptr(), status.ptr());
   if (!ret) {
     fprintf(stderr, "Error building mini-table: %s\n", status.error_message());
   }

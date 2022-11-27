@@ -50,9 +50,16 @@ extern "C" {
 // errors occur, returns NULL and sets a status message. In the success case,
 // the caller must call upb_MiniTable_SetSub*() for all message or proto2 enum
 // fields to link the table to the appropriate sub-tables.
-upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
-                                   upb_MiniTablePlatform platform,
-                                   upb_Arena* arena, upb_Status* status);
+upb_MiniTable* _upb_MiniTable_Build(const char* data, size_t len,
+                                    upb_MiniTablePlatform platform,
+                                    upb_Arena* arena, upb_Status* status);
+
+UPB_INLINE upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
+                                              upb_Arena* arena,
+                                              upb_Status* status) {
+  return _upb_MiniTable_Build(data, len, kUpb_MiniTablePlatform_Native, arena,
+                              status);
+}
 
 // Links a sub-message field to a MiniTable for that sub-message.  If a
 // sub-message field is not linked, it will be treated as an unknown field

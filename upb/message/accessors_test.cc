@@ -569,8 +569,7 @@ upb_MiniTable* CreateMiniTableWithEmptySubTables(upb_Arena* arena) {
   upb_Status status;
   upb_Status_Clear(&status);
   upb_MiniTable* table =
-      upb_MiniTable_Build(e.data().data(), e.data().size(),
-                          kUpb_MiniTablePlatform_Native, arena, &status);
+      upb_MiniTable_Build(e.data().data(), e.data().size(), arena, &status);
   EXPECT_EQ(status.ok, true);
   // Initialize sub table to null. Not using upb_MiniTable_SetSubMessage
   // since it checks ->ext on parameter.
