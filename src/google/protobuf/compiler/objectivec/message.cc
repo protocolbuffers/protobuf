@@ -192,6 +192,31 @@ MessageGenerator::MessageGenerator(const std::string& root_classname,
     oneof_generators_.push_back(
         std::make_unique<OneofGenerator>(descriptor_->oneof_decl(i)));
   }
+
+  // Assign has bits:
+  // 1. FieldGeneratorMap::CalculateHasBits() loops through the fields seeing
+  //    who needs has bits and assigning them.
+  // 2. FieldGenerator::SetOneofIndexBase() overrides has_bit with a negative
+  //    index that groups all the elements in the oneof.
+  size_t num_has_bits = field_generators_.CalculateHasBits();
+  size_t sizeof_has_storage = (num_has_bits + 31) / 32;
+  if (sizeof_has_storage == 0) {
+    // In the case where no field needs has bits, don't let the _has_storage_
+    // end up as zero length (zero length arrays are sort of a grey area
+    // since it has to be at the start of the struct). This also ensures a
+    // field with only oneofs keeps the required negative indices they need.
+    sizeof_has_storage = 1;
+  }
+  // Tell all the fields the oneof base.
+  for (const auto& generator : oneof_generators_) {
+    generator->SetOneofIndexBase(sizeof_has_storage);
+  }
+  field_generators_.SetOneofIndexBase(sizeof_has_storage);
+  // sizeof_has_storage needs enough bits for the single fields that aren't in
+  // any oneof, and then one int32 for each oneof (to store the field number).
+  sizeof_has_storage += oneof_generators_.size();
+
+  sizeof_has_storage_ = sizeof_has_storage;
 }
 
 void MessageGenerator::AddExtensionGenerators(
@@ -321,7 +346,7 @@ void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
   }
 }
 
-void MessageGenerator::GenerateSource(io::Printer* printer) {
+void MessageGenerator::GenerateSource(io::Printer* printer) const {
   if (IsMapEntryMessage(descriptor_)) {
     return;
   }
@@ -367,29 +392,6 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
   std::sort(sorted_extensions.begin(), sorted_extensions.end(),
             ExtensionRangeOrdering());
 
-  // Assign has bits:
-  // 1. FieldGeneratorMap::CalculateHasBits() loops through the fields seeing
-  //    who needs has bits and assigning them.
-  // 2. FieldGenerator::SetOneofIndexBase() overrides has_bit with a negative
-  //    index that groups all the elements in the oneof.
-  size_t num_has_bits = field_generators_.CalculateHasBits();
-  size_t sizeof_has_storage = (num_has_bits + 31) / 32;
-  if (sizeof_has_storage == 0) {
-    // In the case where no field needs has bits, don't let the _has_storage_
-    // end up as zero length (zero length arrays are sort of a grey area
-    // since it has to be at the start of the struct). This also ensures a
-    // field with only oneofs keeps the required negative indices they need.
-    sizeof_has_storage = 1;
-  }
-  // Tell all the fields the oneof base.
-  for (const auto& generator : oneof_generators_) {
-    generator->SetOneofIndexBase(sizeof_has_storage);
-  }
-  field_generators_.SetOneofIndexBase(sizeof_has_storage);
-  // sizeof_has_storage needs enough bits for the single fields that aren't in
-  // any oneof, and then one int32 for each oneof (to store the field number).
-  sizeof_has_storage += oneof_generators_.size();
-
   printer->Print(
       // clang-format off
       "\n"
@@ -397,7 +399,7 @@ void MessageGenerator::GenerateSource(io::Printer* printer) {
       "  uint32_t _has_storage_[$sizeof_has_storage$];\n",
       // clang-format on
       "classname", class_name_, "sizeof_has_storage",
-      absl::StrCat(sizeof_has_storage));
+      absl::StrCat(sizeof_has_storage_));
   printer->Indent();
   for (int i = 0; i < descriptor_->field_count(); i++) {
     field_generators_.get(size_order_fields[i])
