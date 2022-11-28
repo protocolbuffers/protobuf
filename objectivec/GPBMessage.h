@@ -410,6 +410,12 @@ CF_EXTERN_C_END
  * repeated fields. If the extension is a Message one will be auto created for
  * you and returned similar to fields.
  *
+ * NOTE: For Enum extensions, if the enum was _closed_, then unknown values
+ * were parsed into the message's unknown fields instead of ending up in the
+ * extensions, just like what happens with singular/repeated fields. For open
+ * enums, the _raw_ value will be in the NSNumber, meaning if one does a
+ * `switch` on the values, a `default` case should also be included.
+ *
  * @param extension The extension descriptor of the extension to fetch.
  *
  * @return The extension matching the given descriptor, or nil if none found.

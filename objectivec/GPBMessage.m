@@ -108,6 +108,7 @@ static id GetOrCreateMapIvarWithField(GPBMessage *self, GPBFieldDescriptor *fiel
 static id GetMapIvarWithField(GPBMessage *self, GPBFieldDescriptor *field);
 static NSMutableDictionary *CloneExtensionMap(NSDictionary *extensionMap, NSZone *zone)
     __attribute__((ns_returns_retained));
+static GPBUnknownFieldSet *GetOrMakeUnknownFields(GPBMessage *self);
 
 #ifdef DEBUG
 static NSError *MessageError(NSInteger code, NSDictionary *userInfo) {
@@ -638,6 +639,7 @@ static id GetMapIvarWithField(GPBMessage *self, GPBFieldDescriptor *field) {
 #endif  // !defined(__clang_analyzer__)
 
 static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
+                                        GPBMessage *messageToGetExtension,
                                         GPBCodedInputStream *input,
                                         id<GPBExtensionRegistry> extensionRegistry,
                                         GPBMessage *existingValue)
@@ -645,6 +647,7 @@ static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
 
 // Note that this returns a retained value intentionally.
 static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
+                                        GPBMessage *messageToGetExtension,
                                         GPBCodedInputStream *input,
                                         id<GPBExtensionRegistry> extensionRegistry,
                                         GPBMessage *existingValue) {
@@ -681,8 +684,20 @@ static id NewSingleValueFromInputStream(GPBExtensionDescriptor *extension,
       return GPBCodedInputStreamReadRetainedBytes(state);
     case GPBDataTypeString:
       return GPBCodedInputStreamReadRetainedString(state);
-    case GPBDataTypeEnum:
-      return [[NSNumber alloc] initWithInt:GPBCodedInputStreamReadEnum(state)];
+    case GPBDataTypeEnum: {
+      int32_t val = GPBCodedInputStreamReadEnum(&input->state_);
+      GPBEnumDescriptor *enumDescriptor = extension.enumDescriptor;
+      // If run with source generated before the closed enum support, all enums
+      // will be considers not closed, so casing to the enum type for a switch
+      // could cause things to fall off the end of a switch.
+      if (!enumDescriptor.isClosed || enumDescriptor.enumVerifier(val)) {
+        return [[NSNumber alloc] initWithInt:val];
+      } else {
+        GPBUnknownFieldSet *unknownFields = GetOrMakeUnknownFields(messageToGetExtension);
+        [unknownFields mergeVarintField:extension->description_->fieldNumber value:val];
+        return nil;
+      }
+    }
     case GPBDataTypeGroup:
     case GPBDataTypeMessage: {
       GPBMessage *message;
@@ -726,9 +741,11 @@ static void ExtensionMergeFromInputStream(GPBExtensionDescriptor *extension, BOO
     int32_t length = GPBCodedInputStreamReadInt32(state);
     size_t limit = GPBCodedInputStreamPushLimit(state, length);
     while (GPBCodedInputStreamBytesUntilLimit(state) > 0) {
-      id value = NewSingleValueFromInputStream(extension, input, extensionRegistry, nil);
-      [message addExtension:extension value:value];
-      [value release];
+      id value = NewSingleValueFromInputStream(extension, message, input, extensionRegistry, nil);
+      if (value) {
+        [message addExtension:extension value:value];
+        [value release];
+      }
     }
     GPBCodedInputStreamPopLimit(state, limit);
   } else {
@@ -737,13 +754,16 @@ static void ExtensionMergeFromInputStream(GPBExtensionDescriptor *extension, BOO
     if (!isRepeated && GPBDataTypeIsMessage(description->dataType)) {
       existingValue = [message getExistingExtension:extension];
     }
-    id value = NewSingleValueFromInputStream(extension, input, extensionRegistry, existingValue);
-    if (isRepeated) {
-      [message addExtension:extension value:value];
-    } else {
-      [message setExtension:extension value:value];
+    id value =
+        NewSingleValueFromInputStream(extension, message, input, extensionRegistry, existingValue);
+    if (value) {
+      if (isRepeated) {
+        [message addExtension:extension value:value];
+      } else {
+        [message setExtension:extension value:value];
+      }
+      [value release];
     }
-    [value release];
   }
 }
 
