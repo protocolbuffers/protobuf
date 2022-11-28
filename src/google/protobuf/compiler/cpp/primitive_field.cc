@@ -270,13 +270,13 @@ void PrimitiveOneofFieldGenerator::GenerateInlineAccessorDefinitions(
   Formatter format(printer, variables_);
   format(
       "inline $type$ $classname$::_internal_$name$() const {\n"
-      "  if (_internal_has_$name$()) {\n"
+      "  if ($has_field$) {\n"
       "    return $field$;\n"
       "  }\n"
       "  return $default$;\n"
       "}\n"
       "inline void $classname$::_internal_set_$name$($type$ value) {\n"
-      "  if (!_internal_has_$name$()) {\n"
+      "  if ($not_has_field$) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
       "  }\n"
