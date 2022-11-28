@@ -60,9 +60,9 @@ import protobuf_unittest.testEmptyMessageWithExtensions
 import protobuf_unittest.testEnumMap
 import protobuf_unittest.testIntIntMap
 import protobuf_unittest.testMaps
-import `in`.com.google.protobuf.kotlin.generator.EvilNamesProto2OuterClass.EvilNamesProto2
-import `in`.com.google.protobuf.kotlin.generator.EvilNamesProto2OuterClass.HardKeywordsAllTypesProto2
-import `in`.com.google.protobuf.kotlin.generator.EvilNamesProto2OuterClass.Interface
+import `in`.com.google.protobuf.kotlin.generator.EvilNamesProto2
+import `in`.com.google.protobuf.kotlin.generator.HardKeywordsAllTypesProto2
+import `in`.com.google.protobuf.kotlin.generator.Interface
 import `in`.com.google.protobuf.kotlin.generator.HardKeywordsAllTypesProto2Kt
 import `in`.com.google.protobuf.kotlin.generator.evilNamesProto2
 import `in`.com.google.protobuf.kotlin.generator.hardKeywordsAllTypesProto2
