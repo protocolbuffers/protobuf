@@ -221,7 +221,7 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
                              CommonState& common_state)
     : file_(file),
       generation_options_(generation_options),
-      common_state_(common_state),
+      common_state_(&common_state),
       root_class_name_(FileClassName(file)),
       is_bundled_proto_(IsProtobufLibraryBundledProtoFile(file)) {
   for (int i = 0; i < file_->enum_type_count(); i++) {
@@ -241,7 +241,7 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
   }
 }
 
-void FileGenerator::GenerateHeader(io::Printer* printer) {
+void FileGenerator::GenerateHeader(io::Printer* printer) const {
   std::vector<std::string> headers;
   // Generated files bundled with the library get minimal imports, everything
   // else gets the wrapper so everything is usable.
@@ -393,7 +393,7 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
   // clang-format on
 }
 
-void FileGenerator::GenerateSource(io::Printer* printer) {
+void FileGenerator::GenerateSource(io::Printer* printer) const {
   // #import the runtime support.
   std::vector<std::string> headers;
   headers.push_back("GPBProtocolBuffers_RuntimeSupport.h");
@@ -410,7 +410,7 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
   }
 
   std::vector<const FileDescriptor*> deps_with_extensions =
-      common_state_.CollectMinimalFileDepsContainingExtensions(file_);
+      common_state_->CollectMinimalFileDepsContainingExtensions(file_);
 
   // The bundled protos (WKTs) don't use of forward declarations.
   bool headers_use_forward_declarations =

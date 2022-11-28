@@ -80,15 +80,15 @@ class FileGenerator {
   FileGenerator(const FileGenerator&) = delete;
   FileGenerator& operator=(const FileGenerator&) = delete;
 
-  void GenerateSource(io::Printer* printer);
-  void GenerateHeader(io::Printer* printer);
+  void GenerateSource(io::Printer* printer) const;
+  void GenerateHeader(io::Printer* printer) const;
 
  private:
   const FileDescriptor* file_;
   const GenerationOptions& generation_options_;
-  CommonState& common_state_;
-  std::string root_class_name_;
-  bool is_bundled_proto_;
+  mutable CommonState* common_state_;
+  const std::string root_class_name_;
+  const bool is_bundled_proto_;
 
   std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;
   std::vector<std::unique_ptr<MessageGenerator>> message_generators_;
