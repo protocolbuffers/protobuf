@@ -205,7 +205,7 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
 // There are comments about what the expected code should be line and limited
 // testing objectivec/Tests/GPBUnittestProtos2.m around compilation (#imports
 // specifically).
-const std::vector<const FileDescriptor*>
+std::vector<const FileDescriptor*>
 FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensions(
     const FileDescriptor* file) {
   absl::flat_hash_set<const FileDescriptor*> min_deps =
