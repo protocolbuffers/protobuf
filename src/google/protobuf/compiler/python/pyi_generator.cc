@@ -564,6 +564,7 @@ void PyiGenerator::PrintServices() const {
         "class $service_name$(_service.service): ...\n\n"
         "class $service_name$_Stub($service_name$): ...\n",
         "service_name", file_->service(i)->name());
+    Annotate("service_name", file_->service(i));
   }
 }
 
