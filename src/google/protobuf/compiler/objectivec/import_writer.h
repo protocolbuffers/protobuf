@@ -54,10 +54,10 @@ class ImportWriter {
   ~ImportWriter() = default;
 
   void AddFile(const FileDescriptor* file, const std::string& header_extension);
-  void Print(io::Printer* printer) const;
+  void Emit(io::Printer* p) const;
 
-  static void PrintRuntimeImports(
-      io::Printer* printer, const std::vector<std::string>& header_to_import,
+  static void EmitRuntimeImports(
+      io::Printer* p, const std::vector<std::string>& header_to_import,
       const std::string& runtime_import_prefix,
       bool default_cpp_symbol = false);
 

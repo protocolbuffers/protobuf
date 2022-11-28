@@ -205,7 +205,7 @@ FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensionsInternal(
 // There are comments about what the expected code should be line and limited
 // testing objectivec/Tests/GPBUnittestProtos2.m around compilation (#imports
 // specifically).
-const std::vector<const FileDescriptor*>
+std::vector<const FileDescriptor*>
 FileGenerator::CommonState::CollectMinimalFileDepsContainingExtensions(
     const FileDescriptor* file) {
   absl::flat_hash_set<const FileDescriptor*> min_deps =
@@ -298,7 +298,7 @@ void FileGenerator::GenerateHeader(io::Printer* printer) const {
         import_writer.AddFile(file_->dependency(i), header_extension);
       }
     }
-    import_writer.Print(printer);
+    import_writer.Emit(printer);
   }
 
   // Note:
@@ -455,7 +455,7 @@ void FileGenerator::GenerateSource(io::Printer* printer) const {
       }
     }
 
-    import_writer.Print(printer);
+    import_writer.Emit(printer);
   }
 
   bool includes_oneof = false;
@@ -710,9 +710,9 @@ void FileGenerator::PrintFileRuntimePreamble(
                      import_prefix, "header", header);
     }
   } else {
-    ImportWriter::PrintRuntimeImports(printer, headers_to_import,
-                                      generation_options_.runtime_import_prefix,
-                                      true);
+    ImportWriter::EmitRuntimeImports(printer, headers_to_import,
+                                     generation_options_.runtime_import_prefix,
+                                     true);
   }
 
   printer->Print("\n");
