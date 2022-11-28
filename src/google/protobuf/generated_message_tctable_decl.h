@@ -289,6 +289,8 @@ struct alignas(uint64_t) TcParseTableBase {
     constexpr FieldAux(FieldAuxDefaultMessage, const void* msg)
         : message_default_p(msg) {}
     constexpr FieldAux(const TcParseTableBase* table) : table(table) {}
+    constexpr FieldAux(LazyEagerVerifyFnType verify_func)
+        : verify_func(verify_func) {}
     bool (*enum_validator)(int);
     struct {
       int16_t start;    // minimum enum number (if it fits)
@@ -297,6 +299,7 @@ struct alignas(uint64_t) TcParseTableBase {
     uint32_t offset;
     const void* message_default_p;
     const TcParseTableBase* table;
+    LazyEagerVerifyFnType verify_func;
 
     const MessageLite* message_default() const {
       return static_cast<const MessageLite*>(message_default_p);
