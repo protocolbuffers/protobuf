@@ -204,7 +204,8 @@ void MessageGenerator::AddExtensionGenerators(
 }
 
 void MessageGenerator::DetermineForwardDeclarations(
-    absl::btree_set<std::string>* fwd_decls, bool include_external_types) {
+    absl::btree_set<std::string>* fwd_decls,
+    bool include_external_types) const {
   if (IsMapEntryMessage(descriptor_)) {
     return;
   }
@@ -216,7 +217,7 @@ void MessageGenerator::DetermineForwardDeclarations(
 }
 
 void MessageGenerator::DetermineObjectiveCClassDefinitions(
-    absl::btree_set<std::string>* fwd_decls) {
+    absl::btree_set<std::string>* fwd_decls) const {
   if (!IsMapEntryMessage(descriptor_)) {
     for (int i = 0; i < descriptor_->field_count(); i++) {
       const FieldDescriptor* fieldDescriptor = descriptor_->field(i);
@@ -232,7 +233,7 @@ void MessageGenerator::DetermineObjectiveCClassDefinitions(
   }
 }
 
-void MessageGenerator::GenerateMessageHeader(io::Printer* printer) {
+void MessageGenerator::GenerateMessageHeader(io::Printer* printer) const {
   // This a a map entry message, just recurse and do nothing directly.
   if (IsMapEntryMessage(descriptor_)) {
     return;

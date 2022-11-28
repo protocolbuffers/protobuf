@@ -88,7 +88,7 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor)
   }
 }
 
-void EnumGenerator::GenerateHeader(io::Printer* printer) {
+void EnumGenerator::GenerateHeader(io::Printer* printer) const {
   std::string enum_comments;
   SourceLocation location;
   if (descriptor_->GetSourceLocation(&location)) {
@@ -173,7 +173,7 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
       "name", name_);
 }
 
-void EnumGenerator::GenerateSource(io::Printer* printer) {
+void EnumGenerator::GenerateSource(io::Printer* printer) const {
   printer->Print(
       "#pragma mark - Enum $name$\n"
       "\n",
