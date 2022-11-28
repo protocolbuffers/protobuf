@@ -92,6 +92,7 @@ class FileGenerator {
 
   std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;
   std::vector<std::unique_ptr<MessageGenerator>> message_generators_;
+  // The first file_->extension_count() are the extensions at file level scope.
   std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
 
   void PrintFileRuntimePreamble(

@@ -47,7 +47,6 @@ namespace compiler {
 namespace objectivec {
 
 class ExtensionGenerator;
-class EnumGenerator;
 
 class MessageGenerator {
  public:
@@ -58,18 +57,18 @@ class MessageGenerator {
   MessageGenerator(const MessageGenerator&) = delete;
   MessageGenerator& operator=(const MessageGenerator&) = delete;
 
-  void GenerateStaticVariablesInitialization(io::Printer* printer);
-  void GenerateEnumHeader(io::Printer* printer);
+  void AddExtensionGenerators(
+      std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators);
+
   void GenerateMessageHeader(io::Printer* printer);
   void GenerateSource(io::Printer* printer);
-  void GenerateExtensionRegistrationSource(io::Printer* printer);
   void DetermineObjectiveCClassDefinitions(
       absl::btree_set<std::string>* fwd_decls);
   void DetermineForwardDeclarations(absl::btree_set<std::string>* fwd_decls,
                                     bool include_external_types);
 
   // Checks if the message or a nested message includes a oneof definition.
-  bool IncludesOneOfDefinition() const;
+  bool IncludesOneOfDefinition() const { return !oneof_generators_.empty(); }
 
  private:
   void GenerateParseFromMethodsHeader(io::Printer* printer);
@@ -88,9 +87,7 @@ class MessageGenerator {
   FieldGeneratorMap field_generators_;
   const std::string class_name_;
   const std::string deprecated_attribute_;
-  std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
-  std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;
-  std::vector<std::unique_ptr<MessageGenerator>> nested_message_generators_;
+  std::vector<ExtensionGenerator*> extension_generators_;
   std::vector<std::unique_ptr<OneofGenerator>> oneof_generators_;
 };
 

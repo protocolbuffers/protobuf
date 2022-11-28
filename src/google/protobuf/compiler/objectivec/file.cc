@@ -33,11 +33,13 @@
 #include <algorithm>
 #include <iostream>
 #include <iterator>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/descriptor.h"
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
@@ -68,20 +70,6 @@ std::string BundledFileName(const FileDescriptor* file) {
   return "GPB" + FilePathBasename(file) + kHeaderExtension;
 }
 
-// Checks if a message contains any enums definitions (on the message or
-// a nested message under it).
-bool MessageContainsEnums(const Descriptor* message) {
-  if (message->enum_type_count() > 0) {
-    return true;
-  }
-  for (int i = 0; i < message->nested_type_count(); i++) {
-    if (MessageContainsEnums(message->nested_type(i))) {
-      return true;
-    }
-  }
-  return false;
-}
-
 // Checks if a message contains any extension definitions (on the message or
 // a nested message under it).
 bool MessageContainsExtensions(const Descriptor* message) {
@@ -90,20 +78,6 @@ bool MessageContainsExtensions(const Descriptor* message) {
   }
   for (int i = 0; i < message->nested_type_count(); i++) {
     if (MessageContainsExtensions(message->nested_type(i))) {
-      return true;
-    }
-  }
-  return false;
-}
-
-// Checks if the file contains any enum definitions (at the root or
-// nested under a message).
-bool FileContainsEnums(const FileDescriptor* file) {
-  if (file->enum_type_count() > 0) {
-    return true;
-  }
-  for (int i = 0; i < file->message_type_count(); i++) {
-    if (MessageContainsEnums(file->message_type(i))) {
       return true;
     }
   }
@@ -139,6 +113,24 @@ struct FileDescriptorsOrderedByName {
     return a->name() < b->name();
   }
 };
+
+void MakeDescriptors(
+    const Descriptor* descriptor, const std::string& root_classname,
+    std::vector<std::unique_ptr<EnumGenerator>>* enum_generators,
+    std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators,
+    std::vector<std::unique_ptr<MessageGenerator>>* message_generators) {
+  for (int i = 0; i < descriptor->enum_type_count(); i++) {
+    enum_generators->emplace_back(
+        std::make_unique<EnumGenerator>(descriptor->enum_type(i)));
+  }
+  for (int i = 0; i < descriptor->nested_type_count(); i++) {
+    message_generators->emplace_back(std::make_unique<MessageGenerator>(
+        root_classname, descriptor->nested_type(i)));
+    message_generators->back()->AddExtensionGenerators(extension_generators);
+    MakeDescriptors(descriptor->nested_type(i), root_classname, enum_generators,
+                    extension_generators, message_generators);
+  }
+}
 
 }  // namespace
 
@@ -233,18 +225,19 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
       root_class_name_(FileClassName(file)),
       is_bundled_proto_(IsProtobufLibraryBundledProtoFile(file)) {
   for (int i = 0; i < file_->enum_type_count(); i++) {
-    EnumGenerator* generator = new EnumGenerator(file_->enum_type(i));
-    enum_generators_.emplace_back(generator);
-  }
-  for (int i = 0; i < file_->message_type_count(); i++) {
-    MessageGenerator* generator =
-        new MessageGenerator(root_class_name_, file_->message_type(i));
-    message_generators_.emplace_back(generator);
+    enum_generators_.emplace_back(
+        std::make_unique<EnumGenerator>(file_->enum_type(i)));
   }
   for (int i = 0; i < file_->extension_count(); i++) {
-    ExtensionGenerator* generator =
-        new ExtensionGenerator(root_class_name_, file_->extension(i));
-    extension_generators_.emplace_back(generator);
+    extension_generators_.push_back(std::make_unique<ExtensionGenerator>(
+        root_class_name_, file_->extension(i)));
+  }
+  for (int i = 0; i < file_->message_type_count(); i++) {
+    message_generators_.emplace_back(std::make_unique<MessageGenerator>(
+        root_class_name_, file_->message_type(i)));
+    message_generators_.back()->AddExtensionGenerators(&extension_generators_);
+    MakeDescriptors(file_->message_type(i), root_class_name_, &enum_generators_,
+                    &extension_generators_, &message_generators_);
   }
 }
 
@@ -345,10 +338,6 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
     generator->GenerateHeader(printer);
   }
 
-  for (const auto& generator : message_generators_) {
-    generator->GenerateEnumHeader(printer);
-  }
-
   // For extensions to chain together, the Root gets created even if there
   // are no extensions.
   printer->Print(
@@ -371,18 +360,20 @@ void FileGenerator::GenerateHeader(io::Printer* printer) {
       // clang-format off
       "root_class_name", root_class_name_);
 
-  if (!extension_generators_.empty()) {
-    // The dynamic methods block is only needed if there are extensions.
+  // The dynamic methods block is only needed if there are extensions that are
+  // file level scoped (not message scoped). The first file_->extension_count()
+  // of extension_generators_ are the file scoped ones.
+  if (file_->extension_count()) {
     printer->Print(
         "@interface $root_class_name$ (DynamicMethods)\n",
         "root_class_name", root_class_name_);
 
-    for (const auto& generator : extension_generators_) {
-      generator->GenerateMembersHeader(printer);
+    for (int i = 0; i < file_->extension_count(); i++) {
+      extension_generators_[i]->GenerateMembersHeader(printer);
     }
 
     printer->Print("@end\n\n");
-  }  // !extension_generators_.empty()
+  }  // file_->extension_count()
 
   for (const auto& generator : message_generators_) {
     generator->GenerateMessageHeader(printer);
@@ -412,7 +403,7 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
   PrintFileRuntimePreamble(printer, headers);
 
   // Enums use atomic in the generated code, so add the system import as needed.
-  if (FileContainsEnums(file_)) {
+  if (!enum_generators_.empty()) {
     printer->Print(
         "#import <stdatomic.h>\n"
         "\n");
@@ -533,7 +524,7 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
       // clang-format on
       "root_class_name", root_class_name_);
 
-  const bool file_contains_extensions = FileContainsExtensions(file_);
+  const bool file_contains_extensions = !extension_generators_.empty();
 
   // If there were any extensions or this file has any dependencies, output
   // a registry to override to create the file specific registry.
@@ -556,9 +547,6 @@ void FileGenerator::GenerateSource(io::Printer* printer) {
       printer->Print("static GPBExtensionDescription descriptions[] = {\n");
       printer->Indent();
       for (const auto& generator : extension_generators_) {
-        generator->GenerateStaticVariablesInitialization(printer);
-      }
-      for (const auto& generator : message_generators_) {
         generator->GenerateStaticVariablesInitialization(printer);
       }
       printer->Outdent();
