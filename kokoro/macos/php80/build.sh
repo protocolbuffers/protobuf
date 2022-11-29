@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # Build file to set up and run tests
+set -eux
 
 # Change to repo root
 cd $(dirname $0)/../../..
