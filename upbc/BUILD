@@ -25,6 +25,7 @@
 
 load(
     "//bazel:build_defs.bzl",
+    "UPB_DEFAULT_COPTS",
     "UPB_DEFAULT_CPPOPTS",
 )
 load(
@@ -133,6 +134,31 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "upbdev",
+    srcs = [
+        "code_generator_request.c",
+        "code_generator_request.h",
+        "upbdev.c",
+    ],
+    hdrs = [
+        "upbdev.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":code_generator_request_upb_proto",
+        ":code_generator_request_upb_proto_reflection",
+        ":plugin_upb_proto",
+        ":plugin_upb_proto_reflection",
+        "//:base",
+        "//:json",
+        "//:mem",
+        "//:port",
+        "//:reflection",
+    ],
+)
+
 cc_binary(
     name = "protoc-gen-upb",
     srcs = ["protoc-gen-upb.cc"],
@@ -169,8 +195,6 @@ cc_binary(
 cc_binary(
     name = "protoc-gen-upbdev",
     srcs = [
-        "code_generator_request.c",
-        "code_generator_request.h",
         "protoc-gen-upbdev.cc",
         "subprocess.cc",
         "subprocess.h",
@@ -182,16 +206,9 @@ cc_binary(
     }),
     visibility = ["//visibility:public"],
     deps = [
-        ":code_generator_request_upb_proto",
-        ":code_generator_request_upb_proto_reflection",
         ":plugin_upb_proto",
-        ":plugin_upb_proto_reflection",
-        "//:json",
-        "//:mini_table",
-        "//:mini_table_internal",
+        ":upbdev",
         "//:port",
-        "//:reflection",
-        "//:upb",
         "@com_google_absl//absl/strings",
     ],
 )

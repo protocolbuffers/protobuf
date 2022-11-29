@@ -25,12 +25,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPBC_CODE_GENERATOR_REQUEST_H_
-#define UPBC_CODE_GENERATOR_REQUEST_H_
+#ifndef UPBC_UPBDEV_H_
+#define UPBC_UPBDEV_H_
 
+#include "upb/base/status.h"
+#include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
-#include "upb/reflection/def.h"
-#include "upbc/code_generator_request.upb.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -39,9 +39,14 @@
 extern "C" {
 #endif
 
-upbc_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
-    struct google_protobuf_compiler_CodeGeneratorRequest* request, upb_Arena* a,
-    upb_Status* s);
+// Consume |buf|, deserialize it to a Code_Generator_Request proto, construct a
+// upbc_Code_Generator_Request, and return it as a JSON-encoded string.
+upb_StringView upbdev_ProcessInput(const char* buf, size_t size, upb_Arena* a,
+                                   upb_Status* status);
+
+// Deserialize |buf| from JSON then serialize it to wire format and return.
+upb_StringView upbdev_ProcessOutput(const char* buf, size_t size, upb_Arena* a,
+                                    upb_Status* status);
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -49,4 +54,4 @@ upbc_CodeGeneratorRequest* upbc_MakeCodeGeneratorRequest(
 
 #include "upb/port/undef.inc"
 
-#endif /* UPBC_CODE_GENERATOR_REQUEST_H_ */
+#endif  // UPBC_UPBDEV_H_

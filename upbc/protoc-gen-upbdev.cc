@@ -23,75 +23,19 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <assert.h>
-
 #include <iostream>
 #include <string>
 
 #include "google/protobuf/compiler/plugin.upb.h"
-#include "google/protobuf/compiler/plugin.upbdefs.h"
-#include "upb/json/decode.h"
-#include "upb/json/encode.h"
-#include "upb/reflection/def.h"
-#include "upb/upb.h"
-#include "upbc/code_generator_request.h"
-#include "upbc/code_generator_request.upb.h"
-#include "upbc/code_generator_request.upbdefs.h"
 #include "upbc/subprocess.h"
+#include "upbc/upbdev.h"
 
 static constexpr char kDefaultPlugin[] = "protoc_dart_plugin";
 
-static std::string JsonEncode(const upbc_CodeGeneratorRequest* request,
-                              upb_Arena* a) {
-  upb_DefPool* s = upb_DefPool_New();
-  const upb_MessageDef* m = upbc_CodeGeneratorRequest_getmsgdef(s);
-
-  upb_Status status;
-  upb_Status_Clear(&status);
-
-  const size_t json_size = upb_JsonEncode(request, m, s, 0, NULL, 0, &status);
-  assert(upb_Status_IsOk(&status));
-
-  char* json_buf = (char*)upb_Arena_Malloc(a, json_size + 1);
-
-  (void)upb_JsonEncode(request, m, s, 0, json_buf, json_size + 1, &status);
-  assert(upb_Status_IsOk(&status));
-
-  upb_DefPool_Free(s);
-
-  return std::string(json_buf, json_size);
-}
-
-static google_protobuf_compiler_CodeGeneratorResponse* JsonDecode(
-    const std::string& json, upb_Arena* a) {
-  google_protobuf_compiler_CodeGeneratorResponse* response =
-      google_protobuf_compiler_CodeGeneratorResponse_new(a);
-
-  upb_DefPool* s = upb_DefPool_New();
-  const upb_MessageDef* m = google_protobuf_compiler_CodeGeneratorResponse_getmsgdef(s);
-
-  upb_Status status;
-  upb_Status_Clear(&status);
-
-  (void)upb_JsonDecode(json.c_str(), json.size(), response, m, s, 0, a,
-                       &status);
-  assert(upb_Status_IsOk(&status));
-
-  upb_DefPool_Free(s);
-
-  return response;
-}
-
-static std::string Serialize(
-    const google_protobuf_compiler_CodeGeneratorResponse* response, upb_Arena* a) {
-  size_t len = 0;
-  const char* buf =
-      google_protobuf_compiler_CodeGeneratorResponse_serialize(response, a, &len);
-  return std::string(buf, len);
-}
-
 int main() {
   upb_Arena* a = upb_Arena_New();
+  upb_Status status;
+  upb_Status_Clear(&status);
 
   // Read (binary) stdin into a string.
   const std::string input = {std::istreambuf_iterator<char>(std::cin),
@@ -108,22 +52,20 @@ int main() {
     plugin = std::string(param.data, param.size);
   }
 
-  // Wrap the request inside a upbc_CodeGeneratorRequest.
-  upb_Status status;
-  upb_Status_Clear(&status);
-  auto outer_request = upbc_MakeCodeGeneratorRequest(inner_request, a, &status);
+  // Wrap the request inside a upbc_CodeGeneratorRequest and JSON-encode it.
+  const upb_StringView sv =
+      upbdev_ProcessInput(input.data(), input.size(), a, &status);
   if (!upb_Status_IsOk(&status)) {
     std::cerr << status.msg << std::endl;
     return -1;
   }
-
-  const std::string json_request = JsonEncode(outer_request, a);
 
   // Launch the subprocess.
   upbc::Subprocess subprocess;
   subprocess.Start(plugin, upbc::Subprocess::SEARCH_PATH);
 
   // Exchange JSON strings with the subprocess.
+  const std::string json_request = std::string(sv.data, sv.size);
   std::string json_response, error;
   const bool ok = subprocess.Communicate(json_request, &json_response, &error);
   if (!ok) {
@@ -133,11 +75,14 @@ int main() {
   }
 
   // Decode and serialize the JSON response.
-  const auto response = JsonDecode(json_response, a);
-  const std::string output = Serialize(response, a);
+  const auto response = upbdev_ProcessOutput(json_response.data(),
+                                             json_response.size(), a, &status);
+  if (!upb_Status_IsOk(&status)) {
+    std::cerr << status.msg << std::endl;
+    return -1;
+  }
 
-  // Question: Is this sufficient for sending reliably to stdout?
-  std::cout << output;
+  std::cout << std::string(response.data, response.size);
 
   upb_Arena_Free(a);
   return 0;

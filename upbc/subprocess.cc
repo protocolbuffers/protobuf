@@ -42,9 +42,8 @@
 #endif
 
 #include "absl/strings/substitute.h"
-#include "upb/upb.h"
 
-/* Must be last. */
+// Must be last.
 #include "upb/port/def.inc"
 
 namespace upbc {
