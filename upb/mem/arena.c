@@ -123,12 +123,6 @@ void* _upb_Arena_SlowMalloc(upb_Arena* a, size_t size) {
   return upb_Arena_Malloc(a, size);
 }
 
-static void* upb_Arena_doalloc(upb_alloc* alloc, void* ptr, size_t oldsize,
-                               size_t size) {
-  upb_Arena* a = (upb_Arena*)alloc; /* upb_alloc is initial member. */
-  return upb_Arena_Realloc(a, ptr, oldsize, size);
-}
-
 /* Public Arena API ***********************************************************/
 
 static upb_Arena* arena_initslow(void* mem, size_t n, upb_alloc* alloc) {
@@ -144,7 +138,6 @@ static upb_Arena* arena_initslow(void* mem, size_t n, upb_alloc* alloc) {
   a = UPB_PTR_AT(mem, n - sizeof(*a), upb_Arena);
   n -= sizeof(*a);
 
-  a->head.alloc.func = &upb_Arena_doalloc;
   a->block_alloc = alloc;
   a->parent = a;
   a->refcount = 1;
@@ -178,7 +171,6 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
 
   a = UPB_PTR_AT(mem, n - sizeof(*a), upb_Arena);
 
-  a->head.alloc.func = &upb_Arena_doalloc;
   a->block_alloc = alloc;
   a->parent = a;
   a->refcount = 1;

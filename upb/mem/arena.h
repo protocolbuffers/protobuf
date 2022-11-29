@@ -52,11 +52,6 @@ typedef struct upb_Arena upb_Arena;
 typedef void upb_CleanupFunc(void* context);
 
 typedef struct {
-  /* We implement the allocator interface.
-   * This must be the first member of upb_Arena!
-   * TODO(haberman): remove once handlers are gone. */
-  upb_alloc alloc;
-
   char *ptr, *end;
 } _upb_ArenaHead;
 
@@ -64,18 +59,17 @@ typedef struct {
 extern "C" {
 #endif
 
-/* Creates an arena from the given initial block (if any -- n may be 0).
- * Additional blocks will be allocated from |alloc|.  If |alloc| is NULL, this
- * is a fixed-size arena and cannot grow. */
+// Creates an arena from the given initial block (if any -- n may be 0).
+// Additional blocks will be allocated from |alloc|.  If |alloc| is NULL, this
+// is a fixed-size arena and cannot grow.
 upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc);
+
 void upb_Arena_Free(upb_Arena* a);
 bool upb_Arena_AddCleanup(upb_Arena* a, void* ud, upb_CleanupFunc* func);
 bool upb_Arena_Fuse(upb_Arena* a, upb_Arena* b);
 void* _upb_Arena_SlowMalloc(upb_Arena* a, size_t size);
 size_t upb_Arena_SpaceAllocated(upb_Arena* arena);
 uint32_t upb_Arena_DebugRefCount(upb_Arena* arena);
-
-UPB_INLINE upb_alloc* upb_Arena_Alloc(upb_Arena* a) { return (upb_alloc*)a; }
 
 UPB_INLINE size_t _upb_ArenaHas(upb_Arena* a) {
   _upb_ArenaHead* h = (_upb_ArenaHead*)a;
