@@ -3089,7 +3089,15 @@ void Reflection::PopulateTcParseFieldAux(
         break;
       case internal::TailCallTableInfo::kSubTable:
       case internal::TailCallTableInfo::kSubMessageWeak:
+      case internal::TailCallTableInfo::kCreateInArena:
         ABSL_LOG(FATAL) << "Not supported";
+        break;
+      case internal::TailCallTableInfo::kMapAuxInfo:
+        // Default constructed info, which causes MpMap to call the fallback.
+        // DynamicMessage uses DynamicMapField, which uses variant keys and
+        // values. TcParser does not support them yet, so mark the field as
+        // unsupported to fallback to reflection.
+        field_aux++->map_info = internal::MapAuxInfo{};
         break;
       case internal::TailCallTableInfo::kSubMessage:
         field_aux++->message_default_p =
@@ -3143,18 +3151,21 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
     explicit ReflectionOptionProvider(const Reflection& ref) : ref_(ref) {}
     internal::TailCallTableInfo::PerFieldOptions GetForField(
         const FieldDescriptor* field) const final {
-      return {ref_.IsLazyField(field),  //
-              ref_.IsInlined(field),    //
+      return {
+          ref_.IsLazyField(field),  //
+          ref_.IsInlined(field),    //
 
-              // Only LITE can be implicitly weak.
-              /* is_implicitly_weak */ false,
+          // Only LITE can be implicitly weak.
+          /* is_implicitly_weak */ false,
 
-              // We could change this to use direct table.
-              // Might be easier to do when all messages support TDP.
-              /* use_direct_tcparser_table */ false,
+          // We could change this to use direct table.
+          // Might be easier to do when all messages support TDP.
+          /* use_direct_tcparser_table */ false,
 
-              /* is_lite */ false,  //
-              ref_.schema_.IsSplit(field)};
+          /* is_lite */ false,          //
+          ref_.schema_.IsSplit(field),  //
+          /* uses_codegen */ false      //
+      };
     }
 
    private:

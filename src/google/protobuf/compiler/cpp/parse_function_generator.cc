@@ -96,7 +96,8 @@ class ParseFunctionGenerator::GeneratedOptionProvider final
             UseDirectTcParserTable(field, gen_->options_),
             GetOptimizeFor(field->file(), gen_->options_) ==
                 FileOptions::LITE_RUNTIME,
-            ShouldSplit(field, gen_->options_)};
+            ShouldSplit(field, gen_->options_),
+            true};
   }
 
  private:
@@ -615,6 +616,29 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
                 break;
               case TailCallTableInfo::kNumericOffset:
                 format("{_fl::Offset{$1$}},\n", aux_entry.offset);
+                break;
+              case TailCallTableInfo::kMapAuxInfo: {
+                auto utf8_check = internal::cpp::GetUtf8CheckMode(
+                    aux_entry.field,
+                    GetOptimizeFor(aux_entry.field->file(), options_) ==
+                        FileOptions::LITE_RUNTIME);
+                auto* map_value = aux_entry.field->message_type()->map_value();
+                const bool validated_enum =
+                    map_value->type() == FieldDescriptor::TYPE_ENUM &&
+                    !internal::cpp::HasPreservingUnknownEnumSemantics(
+                        map_value);
+                format(
+                    "{::_pbi::TcParser::GetMapAuxInfo<decltype($classname$("
+                    ").$1$)>($2$, $3$, $4$)},\n",
+                    FieldMemberName(aux_entry.field, /*split=*/false),
+                    utf8_check == internal::cpp::Utf8CheckMode::kStrict,
+                    utf8_check == internal::cpp::Utf8CheckMode::kVerify,
+                    validated_enum);
+                break;
+              }
+              case TailCallTableInfo::kCreateInArena:
+                format("{::_pbi::TcParser::CreateInArenaStorageCb<$1$>},\n",
+                       QualifiedClassName(aux_entry.desc, options_));
                 break;
             }
           }

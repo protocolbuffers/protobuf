@@ -76,6 +76,7 @@ class MapFieldBaseStub : public MapFieldBase {
   void SetRepeatedDirty() {
     state_.store(STATE_MODIFIED_REPEATED, std::memory_order_relaxed);
   }
+  UntypedMapBase* MutableMap() override { return nullptr; }
   bool ContainsMapKey(const MapKey& map_key) const override { return false; }
   bool InsertOrLookupMapValue(const MapKey& map_key,
                               MapValueRef* val) override {

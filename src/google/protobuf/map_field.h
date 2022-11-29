@@ -336,7 +336,7 @@ class MapFieldAccessor;
 // This class provides access to map field using reflection, which is the same
 // as those provided for RepeatedPtrField<Message>. It is used for internal
 // reflection implementation only. Users should never use this directly.
-class PROTOBUF_EXPORT MapFieldBase {
+class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
  public:
   MapFieldBase()
       : arena_(nullptr), repeated_field_(nullptr), state_(STATE_MODIFIED_MAP) {}
@@ -523,7 +523,9 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
   bool EqualIterator(const MapIterator& a, const MapIterator& b) const override;
 
   virtual const Map<Key, T>& GetMap() const = 0;
-  virtual Map<Key, T>* MutableMap() = 0;
+  // This overrides the base's method to specialize the signature via
+  // covariance, but we do not yet provide an implementation here, so `= 0`.
+  Map<Key, T>* MutableMap() override = 0;
 
  protected:
   typename Map<Key, T>::const_iterator& InternalGetIterator(
@@ -543,19 +545,19 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
 // internal generated message implementation only. Users should never use this
 // directly.
 template <typename Derived, typename Key, typename T,
-          WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType>
+          WireFormatLite::FieldType kKeyFieldType_,
+          WireFormatLite::FieldType kValueFieldType_>
 class MapField : public TypeDefinedMapFieldBase<Key, T> {
   // Provide utilities to parse/serialize key/value.  Provide utilities to
   // manipulate internal stored type.
-  typedef MapTypeHandler<kKeyFieldType, Key> KeyTypeHandler;
-  typedef MapTypeHandler<kValueFieldType, T> ValueTypeHandler;
+  typedef MapTypeHandler<kKeyFieldType_, Key> KeyTypeHandler;
+  typedef MapTypeHandler<kValueFieldType_, T> ValueTypeHandler;
 
   // Define message type for internal repeated field.
   typedef Derived EntryType;
 
   // Define abbreviation for parent MapFieldLite
-  typedef MapFieldLite<Derived, Key, T, kKeyFieldType, kValueFieldType>
+  typedef MapFieldLite<Derived, Key, T, kKeyFieldType_, kValueFieldType_>
       MapFieldLiteType;
 
   // Enum needs to be handled differently from other types because it has
@@ -567,6 +569,8 @@ class MapField : public TypeDefinedMapFieldBase<Key, T> {
 
  public:
   typedef Map<Key, T> MapType;
+  static constexpr WireFormatLite::FieldType kKeyFieldType = kKeyFieldType_;
+  static constexpr WireFormatLite::FieldType kValueFieldType = kValueFieldType_;
 
   MapField() : impl_() {}
   MapField(const MapField&) = delete;

@@ -425,7 +425,7 @@ std::vector<const FieldDescriptor*> FilterMiniParsedFields(
       case FieldDescriptor::TYPE_MESSAGE:
       case FieldDescriptor::TYPE_GROUP:
         // TODO(b/210762816): support remaining field types.
-        if (field->is_map() || field->options().weak() || options.is_lazy) {
+        if (field->options().weak() || options.is_lazy) {
           handled = false;
         } else {
           handled = true;
@@ -444,33 +444,38 @@ std::vector<const FieldDescriptor*> FilterMiniParsedFields(
 
 // We only need field names for reporting UTF-8 parsing errors, so we only
 // emit them for string fields with Utf8 transform specified.
-absl::string_view FieldNameForTable(
-    const TailCallTableInfo::FieldEntryInfo& entry) {
-  const auto* field = entry.field;
-  if (field->type() == FieldDescriptor::TYPE_STRING) {
-    const uint16_t xform_val = entry.type_card & field_layout::kTvMask;
+bool NeedsFieldNameForTable(const FieldDescriptor* field, bool is_lite) {
+  if (cpp::GetUtf8CheckMode(field, is_lite) == cpp::Utf8CheckMode::kNone)
+    return false;
+  return field->type() == FieldDescriptor::TYPE_STRING ||
+         (field->is_map() && (field->message_type()->map_key()->type() ==
+                                  FieldDescriptor::TYPE_STRING ||
+                              field->message_type()->map_value()->type() ==
+                                  FieldDescriptor::TYPE_STRING));
+}
 
-    switch (xform_val) {
-      case field_layout::kTvUtf8:
-      case field_layout::kTvUtf8Debug:
-        return field->name();
-    }
+absl::string_view FieldNameForTable(
+    const TailCallTableInfo::FieldEntryInfo& entry,
+    const TailCallTableInfo::OptionProvider& option_provider) {
+  if (NeedsFieldNameForTable(
+          entry.field, option_provider.GetForField(entry.field).is_lite)) {
+    return entry.field->name();
   }
   return "";
 }
 
 std::vector<uint8_t> GenerateFieldNames(
     const Descriptor* descriptor,
-    const std::vector<TailCallTableInfo::FieldEntryInfo>& entries) {
+    const std::vector<TailCallTableInfo::FieldEntryInfo>& entries,
+    const TailCallTableInfo::OptionProvider& option_provider) {
   static constexpr int kMaxNameLength = 255;
   std::vector<uint8_t> out;
 
+  std::vector<absl::string_view> names;
   bool found_needed_name = false;
   for (const auto& entry : entries) {
-    if (!FieldNameForTable(entry).empty()) {
-      found_needed_name = true;
-      break;
-    }
+    names.push_back(FieldNameForTable(entry, option_provider));
+    if (!names.back().empty()) found_needed_name = true;
   }
 
   // No names needed. Omit the whole table.
@@ -483,8 +488,8 @@ std::vector<uint8_t> GenerateFieldNames(
   int count = 1;
   out.push_back(std::min(static_cast<int>(descriptor->full_name().size()),
                          kMaxNameLength));
-  for (const auto& entry : entries) {
-    out.push_back(FieldNameForTable(entry).size());
+  for (auto field_name : names) {
+    out.push_back(field_name.size());
     ++count;
   }
   while (count & 7) {  // align to an 8-byte boundary
@@ -501,8 +506,7 @@ std::vector<uint8_t> GenerateFieldNames(
   }
   out.insert(out.end(), message_name.begin(), message_name.end());
   // Then we output the actual field names
-  for (const auto& entry : entries) {
-    const auto& field_name = FieldNameForTable(entry);
+  for (auto field_name : names) {
     out.insert(out.end(), field_name.begin(), field_name.end());
   }
 
@@ -779,7 +783,19 @@ TailCallTableInfo::TailCallTableInfo(
         field->type() == FieldDescriptor::TYPE_GROUP) {
       // Message-typed fields have a FieldAux with the default instance pointer.
       if (field->is_map()) {
-        // TODO(b/205904770): generate aux entries for maps
+        field_entries.back().aux_idx = aux_entries.size();
+        aux_entries.push_back({kMapAuxInfo, {field}});
+        if (options.uses_codegen) {
+          // If we don't use codegen we can't add these.
+          auto* map_value = field->message_type()->map_value();
+          if (auto* sub = map_value->message_type()) {
+            aux_entries.push_back({kCreateInArena});
+            aux_entries.back().desc = sub;
+          } else if (map_value->type() == FieldDescriptor::TYPE_ENUM &&
+                     !cpp::HasPreservingUnknownEnumSemantics(map_value)) {
+            aux_entries.push_back({kEnumValidator, {map_value}});
+          }
+        }
       } else if (field->options().weak()) {
         // Don't generate anything for weak fields. They are handled by the
         // generated fallback.
@@ -880,7 +896,8 @@ TailCallTableInfo::TailCallTableInfo(
 
   num_to_entry_table = MakeNumToEntryTable(ordered_fields);
   ABSL_CHECK_EQ(field_entries.size(), ordered_fields.size());
-  field_name_data = GenerateFieldNames(descriptor, field_entries);
+  field_name_data =
+      GenerateFieldNames(descriptor, field_entries, option_provider);
 
   // If there are no fallback fields, and at most one extension range, the
   // parser can use a generic fallback function. Otherwise, a message-specific
