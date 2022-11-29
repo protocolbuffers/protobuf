@@ -50,15 +50,18 @@ class ImportWriter {
   ImportWriter(const std::string& generate_for_named_framework,
                const std::string& named_framework_to_proto_path_mappings_path,
                const std::string& runtime_import_prefix,
-               bool include_wkt_imports);
+               bool for_bundled_proto);
   ~ImportWriter() = default;
 
   void AddFile(const FileDescriptor* file, const std::string& header_extension);
-  void Emit(io::Printer* p) const;
+  void AddRuntimeImport(const std::string& header_name);
+
+  void EmitFileImports(io::Printer* p) const;
+  void EmitRuntimeImports(io::Printer* p, bool default_cpp_symbol) const;
 
   static void EmitRuntimeImports(
-      io::Printer* p, const std::vector<std::string>& header_to_import,
-      const std::string& runtime_import_prefix,
+      io::Printer* p, const std::vector<std::string>& headers_to_import,
+      const std::string& runtime_import_prefix, bool is_bundled_proto = false,
       bool default_cpp_symbol = false);
 
  private:
@@ -67,8 +70,8 @@ class ImportWriter {
   const std::string generate_for_named_framework_;
   const std::string named_framework_to_proto_path_mappings_path_;
   const std::string runtime_import_prefix_;
-  const bool include_wkt_imports_;
   absl::flat_hash_map<std::string, std::string> proto_file_to_framework_name_;
+  bool for_bundled_proto_;
   bool need_to_parse_mapping_file_;
 
   std::vector<std::string> protobuf_imports_;
