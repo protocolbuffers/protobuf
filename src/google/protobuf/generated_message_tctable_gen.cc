@@ -654,8 +654,7 @@ uint16_t MakeTypeCardForField(
         type_card |= fl::kMessage;
         if (options.lazy_opt != 0) {
           GOOGLE_CHECK(options.lazy_opt == field_layout::kTvEager ||
-                options.lazy_opt == field_layout::kTvLazy)
-              << options.lazy_opt;
+                options.lazy_opt == field_layout::kTvLazy);
           type_card |= +fl::kRepLazy | options.lazy_opt;
         } else {
           if (options.is_implicitly_weak) {
