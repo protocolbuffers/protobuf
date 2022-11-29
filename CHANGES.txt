@@ -1,4 +1,4 @@
-2022-11-28 version 21.10-rc0 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+2022-11-29 version 21.10 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
 
   Java
   * Use bit-field int values in buildPartial to skip work on unset groups of fields. (#10960)
@@ -7,7 +7,6 @@
   * Fix UPB_LIKELY() for 32-bit Windows builds; update protobuf_deps to point to the current upb 21.x (#11028)
   Other
   * Add public modifiers to kotlin code (#11068)
-
 
 2022-10-26 version 21.9 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
 
