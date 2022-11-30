@@ -31,7 +31,7 @@
 // Author: anuraag@google.com (Anuraag Agrawal)
 // Author: tibell@google.com (Johan Tibell)
 
-#include "third_party/py/google/protobuf/pyext/repeated_scalar_container.h"
+#include "google/protobuf/pyext/repeated_scalar_container.h"
 
 #include <cstdint>
 #include <memory>
@@ -42,10 +42,10 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
-#include "third_party/py/google/protobuf/pyext/descriptor.h"
-#include "third_party/py/google/protobuf/pyext/descriptor_pool.h"
-#include "third_party/py/google/protobuf/pyext/message.h"
-#include "third_party/py/google/protobuf/pyext/scoped_pyobject_ptr.h"
+#include "google/protobuf/pyext/descriptor.h"
+#include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/pyext/message.h"
+#include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 
 #define PyString_AsString(ob) \
   (PyUnicode_Check(ob) ? PyUnicode_AsUTF8(ob) : PyBytes_AsString(ob))

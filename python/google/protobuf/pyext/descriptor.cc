@@ -30,7 +30,7 @@
 
 // Author: petar@google.com (Petar Petrov)
 
-#include "third_party/py/google/protobuf/pyext/descriptor.h"
+#include "google/protobuf/pyext/descriptor.h"
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
@@ -42,11 +42,11 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
-#include "third_party/py/google/protobuf/pyext/descriptor_containers.h"
-#include "third_party/py/google/protobuf/pyext/descriptor_pool.h"
-#include "third_party/py/google/protobuf/pyext/message.h"
-#include "third_party/py/google/protobuf/pyext/message_factory.h"
-#include "third_party/py/google/protobuf/pyext/scoped_pyobject_ptr.h"
+#include "google/protobuf/pyext/descriptor_containers.h"
+#include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/pyext/message.h"
+#include "google/protobuf/pyext/message_factory.h"
+#include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/coded_stream.h"
 

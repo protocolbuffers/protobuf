@@ -31,7 +31,7 @@
 // Author: anuraag@google.com (Anuraag Agrawal)
 // Author: tibell@google.com (Johan Tibell)
 
-#include "third_party/py/google/protobuf/pyext/message.h"
+#include "google/protobuf/pyext/message.h"
 
 #include <structmember.h>  // A Python header file.
 
@@ -57,18 +57,18 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unknown_field_set.h"
-#include "third_party/py/google/protobuf/pyext/descriptor.h"
-#include "third_party/py/google/protobuf/pyext/descriptor_pool.h"
-#include "third_party/py/google/protobuf/pyext/extension_dict.h"
-#include "third_party/py/google/protobuf/pyext/field.h"
-#include "third_party/py/google/protobuf/pyext/map_container.h"
-#include "third_party/py/google/protobuf/pyext/message_factory.h"
-#include "third_party/py/google/protobuf/pyext/repeated_composite_container.h"
-#include "third_party/py/google/protobuf/pyext/repeated_scalar_container.h"
-#include "third_party/py/google/protobuf/pyext/safe_numerics.h"
-#include "third_party/py/google/protobuf/pyext/scoped_pyobject_ptr.h"
-#include "third_party/py/google/protobuf/pyext/unknown_field_set.h"
-#include "third_party/py/google/protobuf/pyext/unknown_fields.h"
+#include "google/protobuf/pyext/descriptor.h"
+#include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/pyext/extension_dict.h"
+#include "google/protobuf/pyext/field.h"
+#include "google/protobuf/pyext/map_container.h"
+#include "google/protobuf/pyext/message_factory.h"
+#include "google/protobuf/pyext/repeated_composite_container.h"
+#include "google/protobuf/pyext/repeated_scalar_container.h"
+#include "google/protobuf/pyext/safe_numerics.h"
+#include "google/protobuf/pyext/scoped_pyobject_ptr.h"
+#include "google/protobuf/pyext/unknown_field_set.h"
+#include "google/protobuf/pyext/unknown_fields.h"
 #include "google/protobuf/util/message_differencer.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/coded_stream.h"

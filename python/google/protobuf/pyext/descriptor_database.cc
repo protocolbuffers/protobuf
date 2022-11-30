@@ -31,7 +31,7 @@
 // This file defines a C++ DescriptorDatabase, which wraps a Python Database
 // and delegate all its operations to Python methods.
 
-#include "third_party/py/google/protobuf/pyext/descriptor_database.h"
+#include "google/protobuf/pyext/descriptor_database.h"
 
 #include <cstdint>
 #include <string>
@@ -40,8 +40,8 @@
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "third_party/py/google/protobuf/pyext/message.h"
-#include "third_party/py/google/protobuf/pyext/scoped_pyobject_ptr.h"
+#include "google/protobuf/pyext/message.h"
+#include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 
 namespace google {
 namespace protobuf {

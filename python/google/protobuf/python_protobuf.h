@@ -33,8 +33,8 @@
 // This module exposes the C proto inside the given Python proto, in
 // case the Python proto is implemented with a C proto.
 
-#ifndef THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYTHON_PYTHON_PROTOBUF_H__
-#define THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYTHON_PYTHON_PROTOBUF_H__
+#ifndef GOOGLE_PROTOBUF_PYTHON_PYTHON_PROTOBUF_H__
+#define GOOGLE_PROTOBUF_PYTHON_PYTHON_PROTOBUF_H__
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
@@ -55,4 +55,4 @@ Message* MutableCProtoInsidePyProto(PyObject* msg);
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYTHON_PYTHON_PROTOBUF_H__
+#endif  // GOOGLE_PROTOBUF_PYTHON_PYTHON_PROTOBUF_H__

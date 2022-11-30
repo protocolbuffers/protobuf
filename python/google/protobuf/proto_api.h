@@ -42,8 +42,8 @@
 // Then use the methods of the returned class:
 //    py_proto_api->GetMessagePointer(...);
 
-#ifndef THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYTHON_PROTO_API_H__
-#define THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYTHON_PROTO_API_H__
+#ifndef GOOGLE_PROTOBUF_PYTHON_PROTO_API_H__
+#define GOOGLE_PROTOBUF_PYTHON_PROTO_API_H__
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
@@ -141,4 +141,4 @@ inline const char* PyProtoAPICapsuleName() {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYTHON_PROTO_API_H__
+#endif  // GOOGLE_PROTOBUF_PYTHON_PROTO_API_H__

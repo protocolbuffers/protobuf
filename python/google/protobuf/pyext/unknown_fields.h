@@ -28,8 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYTHON_CPP_UNKNOWN_FIELDS_H__
-#define THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYTHON_CPP_UNKNOWN_FIELDS_H__
+#ifndef GOOGLE_PROTOBUF_PYTHON_CPP_UNKNOWN_FIELDS_H__
+#define GOOGLE_PROTOBUF_PYTHON_CPP_UNKNOWN_FIELDS_H__
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
@@ -37,7 +37,7 @@
 #include <memory>
 #include <set>
 
-#include "third_party/py/google/protobuf/pyext/message.h"
+#include "google/protobuf/pyext/message.h"
 
 namespace google {
 namespace protobuf {
@@ -88,4 +88,4 @@ void Clear(PyUnknownFields* self);
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYTHON_CPP_UNKNOWN_FIELDS_H__
+#endif  // GOOGLE_PROTOBUF_PYTHON_CPP_UNKNOWN_FIELDS_H__

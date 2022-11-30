@@ -30,8 +30,8 @@
 
 // Author: tibell@google.com (Johan Tibell)
 
-#ifndef THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYTHON_CPP_SCOPED_PYOBJECT_PTR_H__
-#define THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYTHON_CPP_SCOPED_PYOBJECT_PTR_H__
+#ifndef GOOGLE_PROTOBUF_PYTHON_CPP_SCOPED_PYOBJECT_PTR_H__
+#define GOOGLE_PROTOBUF_PYTHON_CPP_SCOPED_PYOBJECT_PTR_H__
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
@@ -96,4 +96,4 @@ typedef ScopedPythonPtr<PyObject> ScopedPyObjectPtr;
 }  // namespace python
 }  // namespace protobuf
 }  // namespace google
-#endif  // THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYTHON_CPP_SCOPED_PYOBJECT_PTR_H__
+#endif  // GOOGLE_PROTOBUF_PYTHON_CPP_SCOPED_PYOBJECT_PTR_H__

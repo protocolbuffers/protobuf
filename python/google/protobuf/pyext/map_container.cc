@@ -30,7 +30,7 @@
 
 // Author: haberman@google.com (Josh Haberman)
 
-#include "third_party/py/google/protobuf/pyext/map_container.h"
+#include "google/protobuf/pyext/map_container.h"
 
 #include <cstdint>
 #include <memory>
@@ -41,10 +41,10 @@
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
-#include "third_party/py/google/protobuf/pyext/message.h"
-#include "third_party/py/google/protobuf/pyext/message_factory.h"
-#include "third_party/py/google/protobuf/pyext/repeated_composite_container.h"
-#include "third_party/py/google/protobuf/pyext/scoped_pyobject_ptr.h"
+#include "google/protobuf/pyext/message.h"
+#include "google/protobuf/pyext/message_factory.h"
+#include "google/protobuf/pyext/repeated_composite_container.h"
+#include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 
 namespace google {
 namespace protobuf {
