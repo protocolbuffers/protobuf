@@ -152,12 +152,6 @@ def Type():
   return _implementation_type
 
 
-def _SetType(implementation_type):
-  """Never use! Only for protobuf benchmark."""
-  global _implementation_type
-  _implementation_type = implementation_type
-
-
 # See comment on 'Type' above.
 # TODO(jieluo): Remove the API, it returns a constant. b/228102101
 def Version():
