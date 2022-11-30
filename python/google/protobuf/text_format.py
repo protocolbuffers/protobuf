@@ -340,7 +340,7 @@ def _BuildMessageFromTypeName(type_name, descriptor_pool):
   return message_type()
 
 
-# These values must match WireType enum in //net/proto2/public/wire_format.h.
+# These values must match WireType enum in //google/protobuf/wire_format.h.
 WIRETYPE_LENGTH_DELIMITED = 2
 WIRETYPE_START_GROUP = 3
 
@@ -1091,12 +1091,6 @@ class _Parser(object):
       else:
         getattr(message, field.name)[sub_message.key] = sub_message.value
 
-  @staticmethod
-  def _IsProto3Syntax(message):
-    message_descriptor = message.DESCRIPTOR
-    return (hasattr(message_descriptor, 'syntax') and
-            message_descriptor.syntax == 'proto3')
-
   def _MergeScalarField(self, tokenizer, message, field):
     """Merges a single scalar field into a message.
 
@@ -1148,7 +1142,7 @@ class _Parser(object):
     else:
       if field.is_extension:
         if (not self._allow_multiple_scalars and
-            not self._IsProto3Syntax(message) and
+            field.has_presence and
             message.HasExtension(field)):
           raise tokenizer.ParseErrorPreviousToken(
               'Message type "%s" should not have multiple "%s" extensions.' %
@@ -1158,12 +1152,12 @@ class _Parser(object):
       else:
         duplicate_error = False
         if not self._allow_multiple_scalars:
-          if self._IsProto3Syntax(message):
-            # Proto3 doesn't represent presence so we try best effort to check
-            # multiple scalars by compare to default values.
-            duplicate_error = bool(getattr(message, field.name))
-          else:
+          if field.has_presence:
             duplicate_error = message.HasField(field.name)
+          else:
+            # For field that doesn't represent presence, try best effort to
+            # check multiple scalars by compare to default values.
+            duplicate_error = bool(getattr(message, field.name))
 
         if duplicate_error:
           raise tokenizer.ParseErrorPreviousToken(

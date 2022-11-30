@@ -155,7 +155,9 @@ void PopulateFastFieldEntry(const TailCallTableInfo::FieldEntryInfo& entry,
   }
   if (field->type() == field->TYPE_MESSAGE ||
       field->type() == field->TYPE_GROUP) {
-    name.append(options.use_direct_tcparser_table ? "t" : "d");
+    name.append(options.lazy_opt != 0               ? "l"
+                : options.use_direct_tcparser_table ? "t"
+                                                    : "d");
   }
 
   // The field implementation functions are prefixed by cardinality:
@@ -182,7 +184,7 @@ bool IsFieldEligibleForFastParsing(
   // Map, oneof, weak, and lazy fields are not handled on the fast path.
   if (field->is_map() || field->real_containing_oneof() ||
       field->options().weak() || options.is_implicitly_weak ||
-      options.is_lazy || options.should_split) {
+      options.should_split) {
     return false;
   }
 
@@ -330,8 +332,7 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
 // Filter out fields that will be handled by mini parsing.
 std::vector<const FieldDescriptor*> FilterMiniParsedFields(
     const std::vector<const FieldDescriptor*>& fields,
-    const TailCallTableInfo::OptionProvider& option_provider
-) {
+    const TailCallTableInfo::OptionProvider& option_provider) {
   std::vector<const FieldDescriptor*> generated_fallback_fields;
 
   for (const auto* field : fields) {
@@ -371,7 +372,7 @@ std::vector<const FieldDescriptor*> FilterMiniParsedFields(
       case FieldDescriptor::TYPE_MESSAGE:
       case FieldDescriptor::TYPE_GROUP:
         // TODO(b/210762816): support remaining field types.
-        if (field->is_map() || field->options().weak() || options.is_lazy) {
+        if (field->is_map() || field->options().weak()) {
           handled = false;
         } else {
           handled = true;
@@ -651,16 +652,18 @@ uint16_t MakeTypeCardForField(
         type_card |= fl::kMap;
       } else {
         type_card |= fl::kMessage;
-        if (options.is_lazy) {
-          type_card |= fl::kRepLazy;
-        }
-
-        if (options.is_implicitly_weak) {
-          type_card |= fl::kTvWeakPtr;
-        } else if (options.use_direct_tcparser_table) {
-          type_card |= fl::kTvTable;
+        if (options.lazy_opt != 0) {
+          GOOGLE_CHECK(options.lazy_opt == field_layout::kTvEager ||
+                options.lazy_opt == field_layout::kTvLazy);
+          type_card |= +fl::kRepLazy | options.lazy_opt;
         } else {
-          type_card |= fl::kTvDefault;
+          if (options.is_implicitly_weak) {
+            type_card |= fl::kTvWeakPtr;
+          } else if (options.use_direct_tcparser_table) {
+            type_card |= fl::kTvTable;
+          } else {
+            type_card |= fl::kTvDefault;
+          }
         }
       }
       break;
@@ -729,8 +732,12 @@ TailCallTableInfo::TailCallTableInfo(
       } else if (field->options().weak()) {
         // Don't generate anything for weak fields. They are handled by the
         // generated fallback.
-      } else if (options.is_lazy) {
-        // Lazy fields are handled by the generated fallback function.
+      } else if (options.lazy_opt != 0) {
+        field_entries.back().aux_idx = aux_entries.size();
+        aux_entries.push_back({kSubMessage, {field}});
+        aux_entries.push_back(
+            {kMessageVerifyFunc,
+             {options.lazy_opt == field_layout::kTvEager ? field : nullptr}});
       } else {
         field_entries.back().aux_idx = aux_entries.size();
         aux_entries.push_back({options.is_implicitly_weak ? kSubMessageWeak
@@ -821,8 +828,7 @@ TailCallTableInfo::TailCallTableInfo(
 
   // Filter out fields that are handled by MiniParse. We don't need to generate
   // a fallback for these, which saves code size.
-  fallback_fields = FilterMiniParsedFields(ordered_fields, option_provider
-  );
+  fallback_fields = FilterMiniParsedFields(ordered_fields, option_provider);
 
   num_to_entry_table = MakeNumToEntryTable(ordered_fields);
   GOOGLE_CHECK_EQ(field_entries.size(), ordered_fields.size());

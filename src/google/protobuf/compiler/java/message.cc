@@ -390,14 +390,6 @@ void ImmutableMessageGenerator::Generate(io::Printer* printer) {
                  "}\n"
                  "\n");
 
-  // TODO(b/248149118): Remove this superfluous override.
-  printer->Print(
-      "@java.lang.Override\n"
-      "public final com.google.protobuf.UnknownFieldSet\n"
-      "getUnknownFields() {\n"
-      "  return this.unknownFields;\n"
-      "}\n");
-
   GenerateDescriptorMethods(printer);
 
   // Nested types
@@ -1404,7 +1396,7 @@ void ImmutableMessageGenerator::GenerateKotlinExtensions(
       "com.google.protobuf.ExtensionLite<$message$, T>): T {\n"
       "  return if (extension.isRepeated) {\n"
       "    get(extension as com.google.protobuf.ExtensionLite<$message$, "
-      "List<*>>) as T\n"
+      "kotlin.collections.List<*>>) as T\n"
       "  } else {\n"
       "    _builder.getExtension(extension)\n"
       "  }\n"
@@ -1417,7 +1409,8 @@ void ImmutableMessageGenerator::GenerateKotlinExtensions(
       "(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)\n"
       "@kotlin.jvm.JvmName(\"-getRepeatedExtension\")\n"
       "public operator fun <E : kotlin.Any> get(\n"
-      "  extension: com.google.protobuf.ExtensionLite<$message$, List<E>>\n"
+      "  extension: com.google.protobuf.ExtensionLite<$message$, "
+      "kotlin.collections.List<E>>\n"
       "): com.google.protobuf.kotlin.ExtensionList<E, $message$> {\n"
       "  return com.google.protobuf.kotlin.ExtensionList(extension, "
       "_builder.getExtension(extension))\n"
@@ -1444,8 +1437,7 @@ void ImmutableMessageGenerator::GenerateKotlinExtensions(
 
   printer->Print(
       "@kotlin.jvm.JvmSynthetic\n"
-      "@kotlin.PublishedApi\n"
-      "internal fun <T : kotlin.Any> setExtension(extension: "
+      "public fun <T : kotlin.Any> setExtension(extension: "
       "com.google.protobuf.ExtensionLite<$message$, T>, "
       "value: T) {\n"
       "  _builder.setExtension(extension, value)\n"

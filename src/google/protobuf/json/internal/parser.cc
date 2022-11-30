@@ -44,6 +44,7 @@
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
 #include "absl/base/attributes.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
@@ -525,7 +526,7 @@ absl::Status ParseSingular(JsonLexer& lex, Field<Traits> field,
       absl::StatusOr<absl::optional<int32_t>> x = ParseEnum<Traits>(lex, field);
       RETURN_IF_ERROR(x.status());
 
-      if (x->has_value() || !Traits::IsOptional(field)) {
+      if (x->has_value() || Traits::IsImplicitPresence(field)) {
         Traits::SetEnum(field, msg, x->value_or(0));
       }
       break;

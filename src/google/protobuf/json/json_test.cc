@@ -42,7 +42,6 @@
 #include "google/protobuf/struct.pb.h"
 #include "google/protobuf/timestamp.pb.h"
 #include "google/protobuf/wrappers.pb.h"
-#include "google/protobuf/unittest.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/status/status.h"
@@ -54,6 +53,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/util/json_format.pb.h"
 #include "google/protobuf/util/json_format_proto3.pb.h"
+#include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/util/type_resolver.h"
 #include "google/protobuf/util/type_resolver_util.h"
 #include "google/protobuf/stubs/status_macros.h"
@@ -273,20 +273,20 @@ TEST_P(JsonTest, TestDefaultValues) {
           R"("defaultForeignEnum":"FOREIGN_BAR","defaultImportEnum":"IMPORT_BAR",)"
           R"("defaultStringPiece":"abc","defaultCord":"123"})"));
 
-    EXPECT_THAT(
-        ToJson(protobuf_unittest::TestExtremeDefaultValues(), options),
-        IsOkAndHolds(
-            R"({"escapedBytes":"XDAwMFwwMDFcMDA3XDAxMFwwMTRcblxyXHRcMDEzXFxcJ1wiXDM3Ng==")"
-            R"(,"largeUint32":4294967295,"largeUint64":"18446744073709551615",)"
-            R"("smallInt32":-2147483647,"smallInt64":"-9223372036854775807",)"
-            R"("utf8String":"ሴ","zeroFloat":0,"oneFloat":1,"smallFloat":1.5,)"
-            R"("negativeOneFloat":-1,"negativeFloat":-1.5,"largeFloat":2e+08,)"
-            R"("smallNegativeFloat":-8e-28,"infDouble":0,"negInfDouble":0,)"
-            R"("nanDouble":0,"infFloat":0,"negInfFloat":0,"nanFloat":0,)"
-            R"("cppTrigraph":"? ? ?? ?? ??? ??/ ??-","reallySmallInt32":-2147483648)"
-            R"(,"reallySmallInt64":"-9223372036854775808","stringWithZero":"hel\u0000lo")"
-            R"(,"bytesWithZero":"d29yXDAwMGxk","stringPieceWithZero":"ab\u0000c")"
-            R"(,"cordWithZero":"12\u00003","replacementString":"${unknown}"})"));
+  EXPECT_THAT(
+      ToJson(protobuf_unittest::TestExtremeDefaultValues(), options),
+      IsOkAndHolds(
+          R"({"escapedBytes":"XDAwMFwwMDFcMDA3XDAxMFwwMTRcblxyXHRcMDEzXFxcJ1wiXDM3Ng==")"
+          R"(,"largeUint32":4294967295,"largeUint64":"18446744073709551615",)"
+          R"("smallInt32":-2147483647,"smallInt64":"-9223372036854775807",)"
+          R"("utf8String":"ሴ","zeroFloat":0,"oneFloat":1,"smallFloat":1.5,)"
+          R"("negativeOneFloat":-1,"negativeFloat":-1.5,"largeFloat":2e+08,)"
+          R"("smallNegativeFloat":-8e-28,"infDouble":0,"negInfDouble":0,)"
+          R"("nanDouble":0,"infFloat":0,"negInfFloat":0,"nanFloat":0,)"
+          R"("cppTrigraph":"? ? ?? ?? ??? ??/ ??-","reallySmallInt32":-2147483648)"
+          R"(,"reallySmallInt64":"-9223372036854775808","stringWithZero":"hel\u0000lo")"
+          R"(,"bytesWithZero":"d29yXDAwMGxk","stringPieceWithZero":"ab\u0000c")"
+          R"(,"cordWithZero":"12\u00003","replacementString":"${unknown}"})"));
 }
 
 TEST_P(JsonTest, TestPreserveProtoFieldNames) {
@@ -972,6 +972,21 @@ TEST_P(JsonTest, TestParsingUnknownEnumsProto3FromArray) {
               StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
+TEST_P(JsonTest, TestParsingRepeatedUnknownEnums) {
+  absl::string_view input = R"json({
+    "repeated_enum_value": ["FOO", "BAZ", "BAR"]
+  })json";
+
+  EXPECT_THAT(ToProto<TestMessage>(input),
+              StatusIs(absl::StatusCode::kInvalidArgument));
+
+  ParseOptions options;
+  options.ignore_unknown_fields = true;
+  auto m = ToProto<TestMessage>(input, options);
+  ASSERT_OK(m);
+  EXPECT_THAT(m->repeated_enum_value(), ElementsAre(proto3::FOO, proto3::BAR));
+}
+
 TEST_P(JsonTest, TestParsingEnumCaseSensitive) {
   TestMessage m;
   m.set_enum_value(proto3::FOO);
@@ -1278,9 +1293,8 @@ TEST_P(JsonTest, FieldOrder) {
       resolver_.get(), "type.googleapis.com/proto3.TestMessage",
       "\x18\x03\xb0\x01\x02\x08\x01\xb0\x01\x02", &out);
   ASSERT_OK(s);
-    EXPECT_EQ(
-        out,
-        R"({"boolValue":true,"int64Value":"3","repeatedInt32Value":[2,2]})");
+  EXPECT_EQ(
+      out, R"({"boolValue":true,"int64Value":"3","repeatedInt32Value":[2,2]})");
 }
 
 // JSON values get special treatment when it comes to pre-existing values in

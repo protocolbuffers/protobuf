@@ -34,11 +34,11 @@
 
 #include "google/protobuf/compiler/cpp/message_field.h"
 
-#include "google/protobuf/io/printer.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {
@@ -363,7 +363,7 @@ void MessageFieldGenerator::GenerateInternalAccessorDefinitions(
       format("  if (msg->$field$ == nullptr) {\n");
     } else {
       format(
-          "  if (!msg->_internal_has_$name$()) {\n"
+          "  if (msg->$not_has_field$) {\n"
           "    msg->clear_$oneof_name$();\n"
           "    msg->set_has_$name$();\n");
     }
@@ -463,15 +463,24 @@ void MessageFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
   format("delete $field$;\n");
 }
 
+using internal::cpp::HasHasbit;
+
 void MessageFieldGenerator::GenerateCopyConstructorCode(
     io::Printer* printer) const {
   GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
-  format(
-      "if (from._internal_has_$name$()) {\n"
-      "  _this->$field$ = new $type$(*from.$field$);\n"
-      "}\n");
+  if (HasHasbit(descriptor_)) {
+    format(
+        "if ((from.$has_hasbit$) != 0) {\n"
+        "  _this->$field$ = new $type$(*from.$field$);\n"
+        "}\n");
+  } else {
+    format(
+        "if (from._internal_has_$name$()) {\n"
+        "  _this->$field$ = new $type$(*from.$field$);\n"
+        "}\n");
+  }
 }
 
 void MessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
@@ -509,10 +518,17 @@ void MessageFieldGenerator::GenerateIsInitialized(io::Printer* printer) const {
   if (!has_required_fields_) return;
 
   Formatter format(printer, variables_);
-  format(
-      "if (_internal_has_$name$()) {\n"
-      "  if (!$field$->IsInitialized()) return false;\n"
-      "}\n");
+  if (HasHasbit(descriptor_)) {
+    format(
+        "if (($has_hasbit$) != 0) {\n"
+        "  if (!$field$->IsInitialized()) return false;\n"
+        "}\n");
+  } else {
+    format(
+        "if (_internal_has_$name$()) {\n"
+        "  if (!$field$->IsInitialized()) return false;\n"
+        "}\n");
+  }
 }
 
 void MessageFieldGenerator::GenerateConstexprAggregateInitializer(
@@ -590,7 +606,7 @@ void MessageOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "$annotate_release$"
       "  // @@protoc_insertion_point(field_release:$full_name$)\n"
       "$type_reference_function$"
-      "  if (_internal_has_$name$()) {\n"
+      "  if ($has_field$) {\n"
       "    clear_has_$oneof_name$();\n"
       "    $type$* temp = $casted_member$;\n"
       "    if (GetArenaForAllocation() != nullptr) {\n"
@@ -606,7 +622,7 @@ void MessageOneofFieldGenerator::GenerateInlineAccessorDefinitions(
   format(
       "inline const $type$& $classname$::_internal_$name$() const {\n"
       "$type_reference_function$"
-      "  return _internal_has_$name$()\n"
+      "  return $has_field$\n"
       "      ? $casted_member_const$\n"
       "      : reinterpret_cast< $type$&>($type_default_instance$);\n"
       "}\n"
@@ -620,7 +636,7 @@ void MessageOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "  // @@protoc_insertion_point(field_unsafe_arena_release"
       ":$full_name$)\n"
       "$type_reference_function$"
-      "  if (_internal_has_$name$()) {\n"
+      "  if ($has_field$) {\n"
       "    clear_has_$oneof_name$();\n"
       "    $type$* temp = $casted_member$;\n"
       "    $field$ = nullptr;\n"
@@ -652,7 +668,7 @@ void MessageOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "inline $type$* $classname$::_internal_mutable_$name$() {\n"
       "$type_reference_function$"
-      "  if (!_internal_has_$name$()) {\n"
+      "  if ($not_has_field$) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n");
   if (implicit_weak_field_) {
@@ -716,7 +732,7 @@ void MessageOneofFieldGenerator::GenerateIsInitialized(
 
   Formatter format(printer, variables_);
   format(
-      "if (_internal_has_$name$()) {\n"
+      "if ($has_field$) {\n"
       "  if (!$field$->IsInitialized()) return false;\n"
       "}\n");
 }

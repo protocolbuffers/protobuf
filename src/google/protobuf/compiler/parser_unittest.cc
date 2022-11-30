@@ -40,9 +40,6 @@
 #include <vector>
 
 #include "google/protobuf/any.pb.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_import.pb.h"
-#include "google/protobuf/unittest_import_public.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/testing/googletest.h"
@@ -51,7 +48,10 @@
 #include "absl/strings/str_join.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/test_util2.h"
+#include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
+#include "google/protobuf/unittest_import.pb.h"
+#include "google/protobuf/unittest_import_public.pb.h"
 #include "google/protobuf/wire_format.h"
 
 namespace google {
@@ -2323,7 +2323,7 @@ TEST_F(ParseDescriptorDebugTest, TestAllDescriptorTypes) {
   // need to link to a FileDecriptor, then output back to a proto. We'll
   // also need to give it the same name as the original.
   parsed.set_name(
-      TestUtil::MaybeTranslatePath("net/proto2/internal/unittest.proto"));
+      TestUtil::MaybeTranslatePath("third_party/protobuf/unittest.proto"));
   // We need the imported dependency before we can build our parsed proto
   const FileDescriptor* public_import =
       protobuf_unittest_import::PublicImportMessage::descriptor()->file();

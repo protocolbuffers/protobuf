@@ -32,10 +32,10 @@
 
 import unittest
 
-from google.protobuf import unittest_pb2
 from google.protobuf import descriptor
 from google.protobuf import descriptor_pool
 from google.protobuf import symbol_database
+from google.protobuf import unittest_pb2
 
 
 class SymbolDatabaseTest(unittest.TestCase):

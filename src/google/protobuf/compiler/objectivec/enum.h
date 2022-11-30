@@ -51,8 +51,8 @@ class EnumGenerator {
   EnumGenerator(const EnumGenerator&) = delete;
   EnumGenerator& operator=(const EnumGenerator&) = delete;
 
-  void GenerateHeader(io::Printer* printer);
-  void GenerateSource(io::Printer* printer);
+  void GenerateHeader(io::Printer* printer) const;
+  void GenerateSource(io::Printer* printer) const;
 
   const std::string& name() const { return name_; }
 

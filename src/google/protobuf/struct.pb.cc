@@ -716,20 +716,20 @@ failure:
   (void) cached_has_bits;
 
   // .google.protobuf.NullValue null_value = 1;
-  if (_internal_has_null_value()) {
+  if (kind_case() == kNullValue) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteEnumToArray(
       1, this->_internal_null_value(), target);
   }
 
   // double number_value = 2;
-  if (_internal_has_number_value()) {
+  if (kind_case() == kNumberValue) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteDoubleToArray(2, this->_internal_number_value(), target);
   }
 
   // string string_value = 3;
-  if (_internal_has_string_value()) {
+  if (kind_case() == kStringValue) {
     ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
       this->_internal_string_value().data(), static_cast<int>(this->_internal_string_value().length()),
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
@@ -739,20 +739,20 @@ failure:
   }
 
   // bool bool_value = 4;
-  if (_internal_has_bool_value()) {
+  if (kind_case() == kBoolValue) {
     target = stream->EnsureSpace(target);
     target = ::_pbi::WireFormatLite::WriteBoolToArray(4, this->_internal_bool_value(), target);
   }
 
   // .google.protobuf.Struct struct_value = 5;
-  if (_internal_has_struct_value()) {
+  if (kind_case() == kStructValue) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessage(5, _Internal::struct_value(this),
         _Internal::struct_value(this).GetCachedSize(), target, stream);
   }
 
   // .google.protobuf.ListValue list_value = 6;
-  if (_internal_has_list_value()) {
+  if (kind_case() == kListValue) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
       InternalWriteMessage(6, _Internal::list_value(this),
         _Internal::list_value(this).GetCachedSize(), target, stream);

@@ -442,9 +442,6 @@ class PROTOBUF_EXPORT Value final :
   };
   // .google.protobuf.NullValue null_value = 1;
   bool has_null_value() const;
-  private:
-  bool _internal_has_null_value() const;
-  public:
   void clear_null_value();
   ::PROTOBUF_NAMESPACE_ID::NullValue null_value() const;
   void set_null_value(::PROTOBUF_NAMESPACE_ID::NullValue value);
@@ -455,9 +452,6 @@ class PROTOBUF_EXPORT Value final :
 
   // double number_value = 2;
   bool has_number_value() const;
-  private:
-  bool _internal_has_number_value() const;
-  public:
   void clear_number_value();
   double number_value() const;
   void set_number_value(double value);
@@ -468,9 +462,6 @@ class PROTOBUF_EXPORT Value final :
 
   // string string_value = 3;
   bool has_string_value() const;
-  private:
-  bool _internal_has_string_value() const;
-  public:
   void clear_string_value();
   const std::string& string_value() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
@@ -486,9 +477,6 @@ class PROTOBUF_EXPORT Value final :
 
   // bool bool_value = 4;
   bool has_bool_value() const;
-  private:
-  bool _internal_has_bool_value() const;
-  public:
   void clear_bool_value();
   bool bool_value() const;
   void set_bool_value(bool value);
@@ -777,23 +765,20 @@ Struct::mutable_fields() {
 // Value
 
 // .google.protobuf.NullValue null_value = 1;
-inline bool Value::_internal_has_null_value() const {
-  return kind_case() == kNullValue;
-}
 inline bool Value::has_null_value() const {
-  return _internal_has_null_value();
+  return kind_case() == kNullValue;
 }
 inline void Value::set_has_null_value() {
   _impl_._oneof_case_[0] = kNullValue;
 }
 inline void Value::clear_null_value() {
-  if (_internal_has_null_value()) {
+  if (kind_case() == kNullValue) {
     _impl_.kind_.null_value_ = 0;
     clear_has_kind();
   }
 }
 inline ::PROTOBUF_NAMESPACE_ID::NullValue Value::_internal_null_value() const {
-  if (_internal_has_null_value()) {
+  if (kind_case() == kNullValue) {
     return static_cast< ::PROTOBUF_NAMESPACE_ID::NullValue >(_impl_.kind_.null_value_);
   }
   return static_cast< ::PROTOBUF_NAMESPACE_ID::NullValue >(0);
@@ -803,7 +788,7 @@ inline ::PROTOBUF_NAMESPACE_ID::NullValue Value::null_value() const {
   return _internal_null_value();
 }
 inline void Value::_internal_set_null_value(::PROTOBUF_NAMESPACE_ID::NullValue value) {
-  if (!_internal_has_null_value()) {
+  if (kind_case() != kNullValue) {
     clear_kind();
     set_has_null_value();
   }
@@ -815,29 +800,26 @@ inline void Value::set_null_value(::PROTOBUF_NAMESPACE_ID::NullValue value) {
 }
 
 // double number_value = 2;
-inline bool Value::_internal_has_number_value() const {
-  return kind_case() == kNumberValue;
-}
 inline bool Value::has_number_value() const {
-  return _internal_has_number_value();
+  return kind_case() == kNumberValue;
 }
 inline void Value::set_has_number_value() {
   _impl_._oneof_case_[0] = kNumberValue;
 }
 inline void Value::clear_number_value() {
-  if (_internal_has_number_value()) {
+  if (kind_case() == kNumberValue) {
     _impl_.kind_.number_value_ = 0;
     clear_has_kind();
   }
 }
 inline double Value::_internal_number_value() const {
-  if (_internal_has_number_value()) {
+  if (kind_case() == kNumberValue) {
     return _impl_.kind_.number_value_;
   }
   return 0;
 }
 inline void Value::_internal_set_number_value(double value) {
-  if (!_internal_has_number_value()) {
+  if (kind_case() != kNumberValue) {
     clear_kind();
     set_has_number_value();
   }
@@ -853,17 +835,14 @@ inline void Value::set_number_value(double value) {
 }
 
 // string string_value = 3;
-inline bool Value::_internal_has_string_value() const {
-  return kind_case() == kStringValue;
-}
 inline bool Value::has_string_value() const {
-  return _internal_has_string_value();
+  return kind_case() == kStringValue;
 }
 inline void Value::set_has_string_value() {
   _impl_._oneof_case_[0] = kStringValue;
 }
 inline void Value::clear_string_value() {
-  if (_internal_has_string_value()) {
+  if (kind_case() == kStringValue) {
     _impl_.kind_.string_value_.Destroy();
     clear_has_kind();
   }
@@ -874,7 +853,7 @@ inline const std::string& Value::string_value() const {
 }
 template <typename ArgT0, typename... ArgT>
 inline void Value::set_string_value(ArgT0&& arg0, ArgT... args) {
-  if (!_internal_has_string_value()) {
+  if (kind_case() != kStringValue) {
     clear_kind();
     set_has_string_value();
     _impl_.kind_.string_value_.InitDefault();
@@ -888,13 +867,13 @@ inline std::string* Value::mutable_string_value() {
   return _s;
 }
 inline const std::string& Value::_internal_string_value() const {
-  if (_internal_has_string_value()) {
+  if (kind_case() == kStringValue) {
     return _impl_.kind_.string_value_.Get();
   }
   return ::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited();
 }
 inline void Value::_internal_set_string_value(const std::string& value) {
-  if (!_internal_has_string_value()) {
+  if (kind_case() != kStringValue) {
     clear_kind();
     set_has_string_value();
     _impl_.kind_.string_value_.InitDefault();
@@ -902,7 +881,7 @@ inline void Value::_internal_set_string_value(const std::string& value) {
   _impl_.kind_.string_value_.Set(value, GetArenaForAllocation());
 }
 inline std::string* Value::_internal_mutable_string_value() {
-  if (!_internal_has_string_value()) {
+  if (kind_case() != kStringValue) {
     clear_kind();
     set_has_string_value();
     _impl_.kind_.string_value_.InitDefault();
@@ -911,7 +890,7 @@ inline std::string* Value::_internal_mutable_string_value() {
 }
 inline std::string* Value::release_string_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.string_value)
-  if (_internal_has_string_value()) {
+  if (kind_case() == kStringValue) {
     clear_has_kind();
     return _impl_.kind_.string_value_.Release();
   } else {
@@ -930,29 +909,26 @@ inline void Value::set_allocated_string_value(std::string* string_value) {
 }
 
 // bool bool_value = 4;
-inline bool Value::_internal_has_bool_value() const {
-  return kind_case() == kBoolValue;
-}
 inline bool Value::has_bool_value() const {
-  return _internal_has_bool_value();
+  return kind_case() == kBoolValue;
 }
 inline void Value::set_has_bool_value() {
   _impl_._oneof_case_[0] = kBoolValue;
 }
 inline void Value::clear_bool_value() {
-  if (_internal_has_bool_value()) {
+  if (kind_case() == kBoolValue) {
     _impl_.kind_.bool_value_ = false;
     clear_has_kind();
   }
 }
 inline bool Value::_internal_bool_value() const {
-  if (_internal_has_bool_value()) {
+  if (kind_case() == kBoolValue) {
     return _impl_.kind_.bool_value_;
   }
   return false;
 }
 inline void Value::_internal_set_bool_value(bool value) {
-  if (!_internal_has_bool_value()) {
+  if (kind_case() != kBoolValue) {
     clear_kind();
     set_has_bool_value();
   }
@@ -968,17 +944,17 @@ inline void Value::set_bool_value(bool value) {
 }
 
 // .google.protobuf.Struct struct_value = 5;
-inline bool Value::_internal_has_struct_value() const {
+inline bool Value::has_struct_value() const {
   return kind_case() == kStructValue;
 }
-inline bool Value::has_struct_value() const {
-  return _internal_has_struct_value();
+inline bool Value::_internal_has_struct_value() const {
+  return kind_case() == kStructValue;
 }
 inline void Value::set_has_struct_value() {
   _impl_._oneof_case_[0] = kStructValue;
 }
 inline void Value::clear_struct_value() {
-  if (_internal_has_struct_value()) {
+  if (kind_case() == kStructValue) {
     if (GetArenaForAllocation() == nullptr) {
       delete _impl_.kind_.struct_value_;
     }
@@ -987,7 +963,7 @@ inline void Value::clear_struct_value() {
 }
 inline ::PROTOBUF_NAMESPACE_ID::Struct* Value::release_struct_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.struct_value)
-  if (_internal_has_struct_value()) {
+  if (kind_case() == kStructValue) {
     clear_has_kind();
     ::PROTOBUF_NAMESPACE_ID::Struct* temp = _impl_.kind_.struct_value_;
     if (GetArenaForAllocation() != nullptr) {
@@ -1000,7 +976,7 @@ inline ::PROTOBUF_NAMESPACE_ID::Struct* Value::release_struct_value() {
   }
 }
 inline const ::PROTOBUF_NAMESPACE_ID::Struct& Value::_internal_struct_value() const {
-  return _internal_has_struct_value()
+  return kind_case() == kStructValue
       ? *_impl_.kind_.struct_value_
       : reinterpret_cast< ::PROTOBUF_NAMESPACE_ID::Struct&>(::PROTOBUF_NAMESPACE_ID::_Struct_default_instance_);
 }
@@ -1010,7 +986,7 @@ inline const ::PROTOBUF_NAMESPACE_ID::Struct& Value::struct_value() const {
 }
 inline ::PROTOBUF_NAMESPACE_ID::Struct* Value::unsafe_arena_release_struct_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Value.struct_value)
-  if (_internal_has_struct_value()) {
+  if (kind_case() == kStructValue) {
     clear_has_kind();
     ::PROTOBUF_NAMESPACE_ID::Struct* temp = _impl_.kind_.struct_value_;
     _impl_.kind_.struct_value_ = nullptr;
@@ -1028,7 +1004,7 @@ inline void Value::unsafe_arena_set_allocated_struct_value(::PROTOBUF_NAMESPACE_
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Value.struct_value)
 }
 inline ::PROTOBUF_NAMESPACE_ID::Struct* Value::_internal_mutable_struct_value() {
-  if (!_internal_has_struct_value()) {
+  if (kind_case() != kStructValue) {
     clear_kind();
     set_has_struct_value();
     _impl_.kind_.struct_value_ = CreateMaybeMessage< ::PROTOBUF_NAMESPACE_ID::Struct >(GetArenaForAllocation());
@@ -1042,17 +1018,17 @@ inline ::PROTOBUF_NAMESPACE_ID::Struct* Value::mutable_struct_value() {
 }
 
 // .google.protobuf.ListValue list_value = 6;
-inline bool Value::_internal_has_list_value() const {
+inline bool Value::has_list_value() const {
   return kind_case() == kListValue;
 }
-inline bool Value::has_list_value() const {
-  return _internal_has_list_value();
+inline bool Value::_internal_has_list_value() const {
+  return kind_case() == kListValue;
 }
 inline void Value::set_has_list_value() {
   _impl_._oneof_case_[0] = kListValue;
 }
 inline void Value::clear_list_value() {
-  if (_internal_has_list_value()) {
+  if (kind_case() == kListValue) {
     if (GetArenaForAllocation() == nullptr) {
       delete _impl_.kind_.list_value_;
     }
@@ -1061,7 +1037,7 @@ inline void Value::clear_list_value() {
 }
 inline ::PROTOBUF_NAMESPACE_ID::ListValue* Value::release_list_value() {
   // @@protoc_insertion_point(field_release:google.protobuf.Value.list_value)
-  if (_internal_has_list_value()) {
+  if (kind_case() == kListValue) {
     clear_has_kind();
     ::PROTOBUF_NAMESPACE_ID::ListValue* temp = _impl_.kind_.list_value_;
     if (GetArenaForAllocation() != nullptr) {
@@ -1074,7 +1050,7 @@ inline ::PROTOBUF_NAMESPACE_ID::ListValue* Value::release_list_value() {
   }
 }
 inline const ::PROTOBUF_NAMESPACE_ID::ListValue& Value::_internal_list_value() const {
-  return _internal_has_list_value()
+  return kind_case() == kListValue
       ? *_impl_.kind_.list_value_
       : reinterpret_cast< ::PROTOBUF_NAMESPACE_ID::ListValue&>(::PROTOBUF_NAMESPACE_ID::_ListValue_default_instance_);
 }
@@ -1084,7 +1060,7 @@ inline const ::PROTOBUF_NAMESPACE_ID::ListValue& Value::list_value() const {
 }
 inline ::PROTOBUF_NAMESPACE_ID::ListValue* Value::unsafe_arena_release_list_value() {
   // @@protoc_insertion_point(field_unsafe_arena_release:google.protobuf.Value.list_value)
-  if (_internal_has_list_value()) {
+  if (kind_case() == kListValue) {
     clear_has_kind();
     ::PROTOBUF_NAMESPACE_ID::ListValue* temp = _impl_.kind_.list_value_;
     _impl_.kind_.list_value_ = nullptr;
@@ -1102,7 +1078,7 @@ inline void Value::unsafe_arena_set_allocated_list_value(::PROTOBUF_NAMESPACE_ID
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:google.protobuf.Value.list_value)
 }
 inline ::PROTOBUF_NAMESPACE_ID::ListValue* Value::_internal_mutable_list_value() {
-  if (!_internal_has_list_value()) {
+  if (kind_case() != kListValue) {
     clear_kind();
     set_has_list_value();
     _impl_.kind_.list_value_ = CreateMaybeMessage< ::PROTOBUF_NAMESPACE_ID::ListValue >(GetArenaForAllocation());

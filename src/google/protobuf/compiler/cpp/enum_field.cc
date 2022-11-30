@@ -35,10 +35,12 @@
 #include "google/protobuf/compiler/cpp/enum_field.h"
 
 #include <string>
+#include <tuple>
 
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/wire_format.h"
 
 namespace google {
@@ -83,9 +85,10 @@ void EnumFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
 void EnumFieldGenerator::GenerateAccessorDeclarations(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
+  format("$deprecated_attr$$type$ ${1$$name$$}$() const;\n", descriptor_);
+  format("$deprecated_attr$void ${1$set_$name$$}$($type$ value);\n",
+         std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::SET));
   format(
-      "$deprecated_attr$$type$ ${1$$name$$}$() const;\n"
-      "$deprecated_attr$void ${1$set_$name$$}$($type$ value);\n"
       "private:\n"
       "$type$ ${1$_internal_$name$$}$() const;\n"
       "void ${1$_internal_set_$name$$}$($type$ value);\n"
@@ -195,7 +198,7 @@ void EnumOneofFieldGenerator::GenerateInlineAccessorDefinitions(
   Formatter format(printer, variables_);
   format(
       "inline $type$ $classname$::_internal_$name$() const {\n"
-      "  if (_internal_has_$name$()) {\n"
+      "  if ($has_field$) {\n"
       "    return static_cast< $type$ >($field$);\n"
       "  }\n"
       "  return static_cast< $type$ >($default$);\n"
@@ -210,7 +213,7 @@ void EnumOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     format("  assert($type$_IsValid(value));\n");
   }
   format(
-      "  if (!_internal_has_$name$()) {\n"
+      "  if ($not_has_field$) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
       "  }\n"

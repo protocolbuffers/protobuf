@@ -47,9 +47,6 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/any.pb.h"
-#include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/unittest_mset.pb.h"
-#include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
@@ -64,6 +61,9 @@
 #include "google/protobuf/map_unittest.pb.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
+#include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/unittest_mset.pb.h"
+#include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3.pb.h"
 
 
@@ -780,15 +780,24 @@ class CustomNestedMessagePrinter : public TextFormat::MessagePrinter {
   ~CustomNestedMessagePrinter() override {}
   void Print(const Message& message, bool single_line_mode,
              TextFormat::BaseTextGenerator* generator) const override {
-    generator->PrintLiteral("custom");
+    generator->PrintLiteral("// custom\n");
+    if (printer_ != nullptr) {
+      printer_->PrintMessage(message, generator);
+    }
   }
+
+  void SetPrinter(TextFormat::Printer* printer) { printer_ = printer; }
+
+ private:
+  TextFormat::Printer* printer_ = nullptr;
 };
 
 TEST_F(TextFormatTest, CustomMessagePrinter) {
   TextFormat::Printer printer;
+  auto* custom_printer = new CustomNestedMessagePrinter;
   printer.RegisterMessagePrinter(
       unittest::TestAllTypes::NestedMessage::default_instance().descriptor(),
-      new CustomNestedMessagePrinter);
+      custom_printer);
 
   unittest::TestAllTypes message;
   std::string text;
@@ -797,7 +806,11 @@ TEST_F(TextFormatTest, CustomMessagePrinter) {
 
   message.mutable_optional_nested_message()->set_bb(1);
   EXPECT_TRUE(printer.PrintToString(message, &text));
-  EXPECT_EQ("optional_nested_message {\n  custom}\n", text);
+  EXPECT_EQ("optional_nested_message {\n  // custom\n}\n", text);
+
+  custom_printer->SetPrinter(&printer);
+  EXPECT_TRUE(printer.PrintToString(message, &text));
+  EXPECT_EQ("optional_nested_message {\n  // custom\n  bb: 1\n}\n", text);
 }
 
 TEST_F(TextFormatTest, ParseBasic) {

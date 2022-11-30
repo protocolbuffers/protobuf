@@ -53,13 +53,13 @@ class OneofGenerator {
 
   void SetOneofIndexBase(int index_base);
 
-  void GenerateCaseEnum(io::Printer* printer);
+  void GenerateCaseEnum(io::Printer* printer) const;
 
-  void GeneratePublicCasePropertyDeclaration(io::Printer* printer);
-  void GenerateClearFunctionDeclaration(io::Printer* printer);
+  void GeneratePublicCasePropertyDeclaration(io::Printer* printer) const;
+  void GenerateClearFunctionDeclaration(io::Printer* printer) const;
 
-  void GeneratePropertyImplementation(io::Printer* printer);
-  void GenerateClearFunctionImplementation(io::Printer* printer);
+  void GeneratePropertyImplementation(io::Printer* printer) const;
+  void GenerateClearFunctionImplementation(io::Printer* printer) const;
 
   std::string DescriptorName() const;
   std::string HasIndexAsString() const;

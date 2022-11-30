@@ -49,11 +49,12 @@ except NameError:
   long = int  # Python 3
 
 
-# Tests whether the given TestAllTypes message is proto2 or not.
+# Tests whether the given TestAllTypes message is
+# protobuf_unittest.TestAllTypes or not.
 # This is used to gate several fields/features that only exist
-# for the proto2 version of the message.
+# for the protobuf_unittest version of the message.
 def IsProto2(message):
-  return message.DESCRIPTOR.syntax == "proto2"
+  return message.DESCRIPTOR.full_name == 'protobuf_unittest.TestAllTypes'
 
 
 def SetAllNonLazyFields(message):
