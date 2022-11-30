@@ -375,6 +375,7 @@ class PROTOBUF_EXPORT LimitingInputStream PROTOBUF_FUTURE_FINAL
   void BackUp(int count) override;
   bool Skip(int count) override;
   int64_t ByteCount() const override;
+  bool ReadCord(absl::Cord* cord, int count) override;
 
 
  private:
