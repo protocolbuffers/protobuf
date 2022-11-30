@@ -1545,7 +1545,8 @@ public final class TextFormat {
      * the current token is part of the field value, so the silent marker is indicated by
      * containsSilentMarkerAfterPrevToken.
      */
-    private void detectSilentMarker(Tokenizer tokenizer, String fieldName) {
+    private void detectSilentMarker(
+        Tokenizer tokenizer, Descriptor immediateMessageType, String fieldName) {
     }
 
     /**
@@ -1898,18 +1899,18 @@ public final class TextFormat {
         // start with "{" or "<" which indicates the beginning of a message body.
         // If there is no ":" or there is a "{" or "<" after ":", this field has
         // to be a message or the input is ill-formed.
-        detectSilentMarker(tokenizer, name);
+        detectSilentMarker(tokenizer, type, name);
         if (tokenizer.tryConsume(":") && !tokenizer.lookingAt("{") && !tokenizer.lookingAt("<")) {
           skipFieldValue(tokenizer);
         } else {
-          skipFieldMessage(tokenizer);
+          skipFieldMessage(tokenizer, type);
         }
         return;
       }
 
       // Handle potential ':'.
       if (field.getJavaType() == FieldDescriptor.JavaType.MESSAGE) {
-        detectSilentMarker(tokenizer, field.getFullName());
+        detectSilentMarker(tokenizer, type, field.getFullName());
         tokenizer.tryConsume(":"); // optional
         if (parseTreeBuilder != null) {
           TextFormatParseInfoTree.Builder childParseTreeBuilder =
@@ -1933,7 +1934,7 @@ public final class TextFormat {
               unknownFields);
         }
       } else {
-        detectSilentMarker(tokenizer, field.getFullName());
+        detectSilentMarker(tokenizer, type, field.getFullName());
         tokenizer.consume(":"); // required
         consumeFieldValues(
             tokenizer,
@@ -2223,7 +2224,7 @@ public final class TextFormat {
           throw tokenizer.parseExceptionPreviousToken("Expected a valid type URL.");
         }
       }
-      detectSilentMarker(tokenizer, typeUrlBuilder.toString());
+      detectSilentMarker(tokenizer, anyDescriptor, typeUrlBuilder.toString());
       tokenizer.tryConsume(":");
       final String anyEndToken;
       if (tokenizer.tryConsume("<")) {
@@ -2260,7 +2261,7 @@ public final class TextFormat {
     }
 
     /** Skips the next field including the field's name and value. */
-    private void skipField(Tokenizer tokenizer) throws ParseException {
+    private void skipField(Tokenizer tokenizer, Descriptor type) throws ParseException {
       String name = consumeFullTypeName(tokenizer);
 
       // Try to guess the type of this field.
@@ -2269,11 +2270,11 @@ public final class TextFormat {
       // start with "{" or "<" which indicates the beginning of a message body.
       // If there is no ":" or there is a "{" or "<" after ":", this field has
       // to be a message or the input is ill-formed.
-      detectSilentMarker(tokenizer, name);
+      detectSilentMarker(tokenizer, type, name);
       if (tokenizer.tryConsume(":") && !tokenizer.lookingAt("<") && !tokenizer.lookingAt("{")) {
         skipFieldValue(tokenizer);
       } else {
-        skipFieldMessage(tokenizer);
+        skipFieldMessage(tokenizer, type);
       }
       // For historical reasons, fields may optionally be separated by commas or
       // semicolons.
@@ -2285,7 +2286,7 @@ public final class TextFormat {
     /**
      * Skips the whole body of a message including the beginning delimiter and the ending delimiter.
      */
-    private void skipFieldMessage(Tokenizer tokenizer) throws ParseException {
+    private void skipFieldMessage(Tokenizer tokenizer, Descriptor type) throws ParseException {
       final String delimiter;
       if (tokenizer.tryConsume("<")) {
         delimiter = ">";
@@ -2294,7 +2295,7 @@ public final class TextFormat {
         delimiter = "}";
       }
       while (!tokenizer.lookingAt(">") && !tokenizer.lookingAt("}")) {
-        skipField(tokenizer);
+        skipField(tokenizer, type);
       }
       tokenizer.consume(delimiter);
     }
