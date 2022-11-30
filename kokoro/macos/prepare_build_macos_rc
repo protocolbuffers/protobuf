@@ -5,6 +5,7 @@
 set -eux
 
 export HOMEBREW_PREFIX=$(brew --prefix)
+export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1 # Do not automatically update packages.
 
 ##
 # Select Xcode version
