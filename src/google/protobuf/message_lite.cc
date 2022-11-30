@@ -357,7 +357,7 @@ inline uint8_t* SerializeToArrayImpl(const MessageLite& msg, uint8_t* target,
     io::EpsCopyOutputStream out(
         target, size,
         io::CodedOutputStream::IsDefaultSerializationDeterministic());
-    auto res = msg._InternalSerialize(target, &out);
+    auto res = out.Finalize(msg._InternalSerialize(target, &out));
     GOOGLE_DCHECK(target + size == res);
     return res;
   }
