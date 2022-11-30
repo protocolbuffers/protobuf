@@ -9,12 +9,6 @@
     <LangVersion>10.0</LangVersion>
     <Authors>Google Inc.</Authors>
     <TargetFrameworks>netstandard1.1;netstandard2.0;net45;net50</TargetFrameworks>
-    <!-- 
-      - We're aware we target older frameworks, for compatibility.
-      - Framework choice is reviewed periodically (and definitely on
-      - major version changes).
-      -->
-    <CheckEolTargetFramework>false</CheckEolTargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AssemblyOriginatorKeyFile>../../keys/Google.Protobuf.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
