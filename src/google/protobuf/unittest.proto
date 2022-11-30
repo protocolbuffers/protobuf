@@ -888,6 +888,7 @@ message TestRequiredOneof {
     int32 foo_int = 1;
     string foo_string = 2;
     NestedMessage foo_message = 3;
+    NestedMessage foo_lazy_message = 4 [lazy = true];
   }
   message NestedMessage {
     required double required_double = 1;
