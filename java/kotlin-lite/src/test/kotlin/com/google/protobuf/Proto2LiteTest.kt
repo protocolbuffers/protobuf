@@ -57,8 +57,8 @@ import protobuf_unittest.MapLiteUnittest.TestMapLite
 import protobuf_unittest.testMapLite
 import `in`.com.google.protobuf.kotlin.generator.EvilNamesProto2
 import `in`.com.google.protobuf.kotlin.generator.HardKeywordsAllTypesProto2
-import `in`.com.google.protobuf.kotlin.generator.Interface
 import `in`.com.google.protobuf.kotlin.generator.HardKeywordsAllTypesProto2Kt
+import `in`.com.google.protobuf.kotlin.generator.Interface
 import `in`.com.google.protobuf.kotlin.generator.evilNamesProto2
 import `in`.com.google.protobuf.kotlin.generator.hardKeywordsAllTypesProto2
 import `in`.com.google.protobuf.kotlin.generator.interface_
@@ -178,7 +178,7 @@ class Proto2LiteTest {
       .isEqualTo(TestUtilLite.getAllLiteSetBuilder().build())
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testGetters() {
     testAllTypesLite {
@@ -199,7 +199,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testDefaultGetters() {
     testAllTypesLite {
@@ -210,7 +210,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testRepeatedGettersAndSetters() {
     testAllTypesLite {
@@ -301,7 +301,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHazzers() {
     testAllTypesLite {
@@ -332,7 +332,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testClears() {
     testAllTypesLite {
@@ -544,7 +544,7 @@ class Proto2LiteTest {
       .isEqualTo(TestUtilLite.getAllLiteExtensionsSet())
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testExtensionGetters() {
     testAllExtensionsLite {
@@ -568,7 +568,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testRepeatedExtensionGettersAndSetters() {
     testAllExtensionsLite {
@@ -658,7 +658,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testExtensionContains() {
     testAllExtensionsLite {
@@ -690,7 +690,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testExtensionClears() {
     testAllExtensionsLite {
@@ -779,7 +779,7 @@ class Proto2LiteTest {
       )
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testMapGettersAndSetters() {
     testMapLite {
@@ -835,7 +835,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testMapRemove() {
     testMapLite {
@@ -861,7 +861,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testMapClear() {
     testMapLite {
@@ -943,7 +943,7 @@ class Proto2LiteTest {
     assertThat(interface_ {}).isEqualTo(Interface.newBuilder().build())
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHardKeywordGettersAndSetters() {
     hardKeywordsAllTypesProto2 {
@@ -973,7 +973,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHardKeywordHazzers() {
     hardKeywordsAllTypesProto2 {
@@ -988,7 +988,7 @@ class Proto2LiteTest {
     }
   }
 
-  @Suppress("CheckResult")
+  @Suppress("CheckReturnValue")
   @Test
   fun testHardKeywordClears() {
     hardKeywordsAllTypesProto2 {
