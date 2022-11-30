@@ -28,8 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef GOOGLE_PROTOBUF_PYTHON_CPP_MAP_CONTAINER_H__
-#define GOOGLE_PROTOBUF_PYTHON_CPP_MAP_CONTAINER_H__
+#ifndef THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYTHON_CPP_MAP_CONTAINER_H__
+#define THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYTHON_CPP_MAP_CONTAINER_H__
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
@@ -38,7 +38,7 @@
 
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
-#include "google/protobuf/pyext/message.h"
+#include "third_party/py/google/protobuf/pyext/message.h"
 
 namespace google {
 namespace protobuf {
@@ -86,4 +86,4 @@ extern MessageMapContainer* NewMessageMapContainer(
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_PYTHON_CPP_MAP_CONTAINER_H__
+#endif  // THIRD_PARTY_PY_GOOGLE_PROTOBUF_PYTHON_CPP_MAP_CONTAINER_H__
