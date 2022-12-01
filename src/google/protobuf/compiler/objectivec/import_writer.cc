@@ -118,12 +118,12 @@ bool ProtoFrameworkCollector::ConsumeLine(absl::string_view line,
 ImportWriter::ImportWriter(
     const std::string& generate_for_named_framework,
     const std::string& named_framework_to_proto_path_mappings_path,
-    const std::string& runtime_import_prefix, bool include_wkt_imports)
+    const std::string& runtime_import_prefix, bool for_bundled_proto)
     : generate_for_named_framework_(generate_for_named_framework),
       named_framework_to_proto_path_mappings_path_(
           named_framework_to_proto_path_mappings_path),
       runtime_import_prefix_(runtime_import_prefix),
-      include_wkt_imports_(include_wkt_imports),
+      for_bundled_proto_(for_bundled_proto),
       need_to_parse_mapping_file_(true) {}
 
 void ImportWriter::AddFile(const FileDescriptor* file,
@@ -132,7 +132,7 @@ void ImportWriter::AddFile(const FileDescriptor* file,
     // The imports of the WKTs are only needed within the library itself,
     // in other cases, they get skipped because the generated code already
     // import GPBProtocolBuffers.h and hence proves them.
-    if (include_wkt_imports_) {
+    if (for_bundled_proto_) {
       const std::string header_name =
           "GPB" + FilePathBasename(file) + header_extension;
       protobuf_imports_.push_back(header_name);
@@ -162,15 +162,13 @@ void ImportWriter::AddFile(const FileDescriptor* file,
   other_imports_.push_back(FilePath(file) + header_extension);
 }
 
-void ImportWriter::Emit(io::Printer* p) const {
+void ImportWriter::AddRuntimeImport(const std::string& header_name) {
+  protobuf_imports_.push_back(header_name);
+}
+
+void ImportWriter::EmitFileImports(io::Printer* p) const {
   p->Emit(
       {
-          {"runtime_import",
-           [&] {
-             if (!protobuf_imports_.empty()) {
-               EmitRuntimeImports(p, protobuf_imports_, runtime_import_prefix_);
-             }
-           }},
           {"other_framework_imports",
            [&] {
              for (const auto& header : other_framework_imports_) {
@@ -191,15 +189,21 @@ void ImportWriter::Emit(io::Printer* p) const {
            }},
       },
       R"objc(
-        $runtime_import$;
         $other_framework_imports$;
         $other_imports$;
       )objc");
 }
 
+void ImportWriter::EmitRuntimeImports(io::Printer* p,
+                                      bool default_cpp_symbol) const {
+  EmitRuntimeImports(p, protobuf_imports_, runtime_import_prefix_,
+                     for_bundled_proto_, default_cpp_symbol);
+}
+
 void ImportWriter::EmitRuntimeImports(
-    io::Printer* p, const std::vector<std::string>& header_to_import,
-    const std::string& runtime_import_prefix, bool default_cpp_symbol) {
+    io::Printer* p, const std::vector<std::string>& headers_to_import,
+    const std::string& runtime_import_prefix, bool is_bundled_proto,
+    bool default_cpp_symbol) {
   // Given an override, use that.
   if (!runtime_import_prefix.empty()) {
     p->Emit(
@@ -207,7 +211,7 @@ void ImportWriter::EmitRuntimeImports(
             {"import_prefix", runtime_import_prefix},
             {"imports",
              [&] {
-               for (const auto& header : header_to_import) {
+               for (const auto& header : headers_to_import) {
                  p->Emit({{"header", header}},
                          R"objc(
                            #import "$import_prefix$/$header$"
@@ -219,6 +223,27 @@ void ImportWriter::EmitRuntimeImports(
           $imports$;
         )objc");
 
+    return;
+  }
+
+  // If bundled, no need to do the framework support below.
+  if (is_bundled_proto) {
+    GOOGLE_CHECK(!default_cpp_symbol);
+    p->Emit(
+        {
+            {"imports",
+             [&] {
+               for (const auto& header : headers_to_import) {
+                 p->Emit({{"header", header}},
+                         R"objc(
+                           #import "$header$"
+                         )objc");
+               }
+             }},
+        },
+        R"objc(
+          $imports$;
+        )objc");
     return;
   }
 
@@ -244,7 +269,7 @@ void ImportWriter::EmitRuntimeImports(
           {"framework_name", ProtobufLibraryFrameworkName},
           {"framework_imports",
            [&] {
-             for (const auto& header : header_to_import) {
+             for (const auto& header : headers_to_import) {
                p->Emit({{"header", header}},
                        R"objc(
                          #import <$framework_name$/$header$>
@@ -253,7 +278,7 @@ void ImportWriter::EmitRuntimeImports(
            }},
           {"raw_imports",
            [&] {
-             for (const auto& header : header_to_import) {
+             for (const auto& header : headers_to_import) {
                p->Emit({{"header", header}},
                        R"objc(
                          #import "$header$"
