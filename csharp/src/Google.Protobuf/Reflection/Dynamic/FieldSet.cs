@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Google.Protobuf.Reflection.Dynamic
 {
 
-    internal sealed class FieldSet
+    public sealed class FieldSet
     {
 
         private IDictionary<FieldDescriptor, object> fields;

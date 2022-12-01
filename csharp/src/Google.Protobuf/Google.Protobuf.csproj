@@ -34,7 +34,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" Version="1.0.0"/>
+  <!--  <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" Version="1.0.0"/> -->
     <!-- Needed for the net45 build to work on Unix. See https://github.com/dotnet/designs/pull/33 -->
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" PrivateAssets="All" Version="1.0.0"/>
   </ItemGroup>

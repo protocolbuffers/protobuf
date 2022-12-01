@@ -22,9 +22,16 @@ namespace Google.Protobuf.Reflection
             ByteString byteStr = msg.ToByteString();
             MessageDescriptor desc = TestAllTypes.Descriptor;
             FieldDescriptor fd = desc.FindFieldByName("single_string");
-            DynamicMessage res = DynamicMessage.ParseFrom(desc, byteStr);
+            DynamicMessage res = ParseFrom(desc, byteStr);
             Assert.NotNull(res);
-            Assert.AreEqual(val, res.GetField(fd));
+            Assert.AreEqual(val, res.Fields.GetField(fd));
+        }
+
+        public DynamicMessage ParseFrom(MessageDescriptor type, ByteString data)
+        {
+            DynamicMessage dynMsg = new DynamicMessage(type);
+            dynMsg.MergeFrom(data);
+            return dynMsg;
         }
 
         [Test]
@@ -33,7 +40,7 @@ namespace Google.Protobuf.Reflection
             TestAllTypes message = GetAllTypesMessage();
             MessageDescriptor desc = TestAllTypes.Descriptor;
             ByteString byteStr = message.ToByteString();
-            DynamicMessage res = DynamicMessage.ParseFrom(desc, byteStr);
+            DynamicMessage res = ParseFrom(desc, byteStr);
             Assertions(desc, res);
         }
 
@@ -43,9 +50,9 @@ namespace Google.Protobuf.Reflection
             TestAllTypes message = GetAllTypesMessage();
             MessageDescriptor desc = TestAllTypes.Descriptor;
             ByteString byteStr = message.ToByteString();
-            DynamicMessage dm = DynamicMessage.ParseFrom(desc, byteStr);
+            DynamicMessage dm = ParseFrom(desc, byteStr);
             ByteString dmByteString = Any.Pack(dm).Value;
-            DynamicMessage objectUnderTest = DynamicMessage.ParseFrom(desc, dmByteString);
+            DynamicMessage objectUnderTest = ParseFrom(desc, dmByteString);
             Assertions(desc, objectUnderTest);
         }
 
@@ -53,8 +60,8 @@ namespace Google.Protobuf.Reflection
         public void TestDynamicMessageSetterRejectsNull()
         {
             MessageDescriptor desc = TestAllTypes.Descriptor;
-            DynamicMessage.Builder builder = DynamicMessage.NewBuilder(desc);
-            var exc = Assert.Throws<ArgumentNullException>(() => builder.SetField(desc.FindFieldByName("single_string"), null));
+            DynamicMessage dm = new DynamicMessage(desc);
+            var exc = Assert.Throws<ArgumentNullException>(() => dm.Fields.SetField(desc.FindFieldByName("single_string"), null));
             Assert.That(exc.ParamName, Is.EqualTo("single_string"));
         }
 
@@ -64,7 +71,7 @@ namespace Google.Protobuf.Reflection
             var message = GetAllTypesMessage();
             MessageDescriptor desc = TestAllTypes.Descriptor;
             ByteString byteStr = message.ToByteString();
-            DynamicMessage dm = DynamicMessage.ParseFrom(desc, byteStr);
+            DynamicMessage dm = ParseFrom(desc, byteStr);
             Assert.AreEqual(1386, dm.CalculateSize());
         }
 
@@ -156,7 +163,7 @@ namespace Google.Protobuf.Reflection
         {
             if (!fieldFullName.Contains(".") && !fieldFullName.Contains("["))
             {
-                return dm.GetField(desc.FindFieldByName(fieldFullName));
+                return dm.Fields.GetField(desc.FindFieldByName(fieldFullName));
             }
             else if (fieldFullName.Contains("[") && !fieldFullName.Contains("."))
             {
