@@ -59,11 +59,6 @@ class ImportWriter {
   void EmitFileImports(io::Printer* p) const;
   void EmitRuntimeImports(io::Printer* p, bool default_cpp_symbol) const;
 
-  static void EmitRuntimeImports(
-      io::Printer* p, const std::vector<std::string>& headers_to_import,
-      const std::string& runtime_import_prefix, bool is_bundled_proto = false,
-      bool default_cpp_symbol = false);
-
  private:
   void ParseFrameworkMappings();
 

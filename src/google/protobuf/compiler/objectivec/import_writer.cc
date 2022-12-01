@@ -196,22 +196,14 @@ void ImportWriter::EmitFileImports(io::Printer* p) const {
 
 void ImportWriter::EmitRuntimeImports(io::Printer* p,
                                       bool default_cpp_symbol) const {
-  EmitRuntimeImports(p, protobuf_imports_, runtime_import_prefix_,
-                     for_bundled_proto_, default_cpp_symbol);
-}
-
-void ImportWriter::EmitRuntimeImports(
-    io::Printer* p, const std::vector<std::string>& headers_to_import,
-    const std::string& runtime_import_prefix, bool is_bundled_proto,
-    bool default_cpp_symbol) {
   // Given an override, use that.
-  if (!runtime_import_prefix.empty()) {
+  if (!runtime_import_prefix_.empty()) {
     p->Emit(
         {
-            {"import_prefix", runtime_import_prefix},
+            {"import_prefix", runtime_import_prefix_},
             {"imports",
              [&] {
-               for (const auto& header : headers_to_import) {
+               for (const auto& header : protobuf_imports_) {
                  p->Emit({{"header", header}},
                          R"objc(
                            #import "$import_prefix$/$header$"
@@ -227,13 +219,13 @@ void ImportWriter::EmitRuntimeImports(
   }
 
   // If bundled, no need to do the framework support below.
-  if (is_bundled_proto) {
-    GOOGLE_CHECK(!default_cpp_symbol);
+  if (for_bundled_proto_) {
+    GOOGLE_DCHECK(!default_cpp_symbol);
     p->Emit(
         {
             {"imports",
              [&] {
-               for (const auto& header : headers_to_import) {
+               for (const auto& header : protobuf_imports_) {
                  p->Emit({{"header", header}},
                          R"objc(
                            #import "$header$"
@@ -269,7 +261,7 @@ void ImportWriter::EmitRuntimeImports(
           {"framework_name", ProtobufLibraryFrameworkName},
           {"framework_imports",
            [&] {
-             for (const auto& header : headers_to_import) {
+             for (const auto& header : protobuf_imports_) {
                p->Emit({{"header", header}},
                        R"objc(
                          #import <$framework_name$/$header$>
@@ -278,7 +270,7 @@ void ImportWriter::EmitRuntimeImports(
            }},
           {"raw_imports",
            [&] {
-             for (const auto& header : headers_to_import) {
+             for (const auto& header : protobuf_imports_) {
                p->Emit({{"header", header}},
                        R"objc(
                          #import "$header$"

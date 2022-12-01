@@ -80,8 +80,16 @@ class FileGenerator {
   FileGenerator(const FileGenerator&) = delete;
   FileGenerator& operator=(const FileGenerator&) = delete;
 
-  void GenerateSource(io::Printer* printer) const;
-  void GenerateHeader(io::Printer* printer) const;
+  void GenerateHeader(io::Printer* p) const;
+  void GenerateSource(io::Printer* p) const;
+
+  void EmitRootImplementation(
+      io::Printer* p,
+      const std::vector<const FileDescriptor*>& deps_with_extensions) const;
+  void EmitRootExtensionRegistryImplementation(
+      io::Printer* p,
+      const std::vector<const FileDescriptor*>& deps_with_extensions) const;
+  void EmitFileDescriptorImplementation(io::Printer* p) const;
 
  private:
   const FileDescriptor* file_;
@@ -94,10 +102,6 @@ class FileGenerator {
   std::vector<std::unique_ptr<MessageGenerator>> message_generators_;
   // The first file_->extension_count() are the extensions at file level scope.
   std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
-
-  void PrintFileRuntimePreamble(
-      io::Printer* printer,
-      const std::vector<std::string>& headers_to_import) const;
 };
 
 }  // namespace objectivec
