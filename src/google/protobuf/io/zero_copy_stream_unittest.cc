@@ -46,6 +46,7 @@
 //   "parametized tests" so that one set of tests can be used on all the
 //   implementations.
 
+#include <algorithm>
 #include <chrono>
 #include <thread>
 
@@ -62,6 +63,7 @@
 #include <memory>
 #include <sstream>
 #include <utility>
+#include <vector>
 
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -78,6 +80,9 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -735,6 +740,89 @@ TEST_F(IoTest, LargeOutput) {
   output.Next(&unused_data, &size);
   EXPECT_GT(size, 0);
 #endif  // THREAD_SANITIZER
+}
+
+TEST(DefaultReadCordTest, ReadSmallCord) {
+  std::string source = "hello world";
+  ArrayInputStream input(source.data(), source.size());
+
+  absl::Cord dest;
+  EXPECT_TRUE(input.Skip(1));
+  EXPECT_TRUE(input.ReadCord(&dest, source.size() - 2));
+
+  EXPECT_EQ(dest, "ello worl");
+}
+
+TEST(DefaultReadCordTest, ReadSmallCordAfterBackUp) {
+  std::string source = "hello world";
+  ArrayInputStream input(source.data(), source.size());
+
+  absl::Cord dest;
+  const void* buffer;
+  int size;
+  EXPECT_TRUE(input.Next(&buffer, &size));
+  input.BackUp(size - 1);
+
+  EXPECT_TRUE(input.ReadCord(&dest, source.size() - 2));
+
+  EXPECT_EQ(dest, "ello worl");
+}
+
+TEST(DefaultReadCordTest, ReadLargeCord) {
+  std::string source = "hello world";
+  for (int i = 0; i < 1024; i++) {
+    source.append("hello world");
+  }
+
+  absl::Cord dest;
+  ArrayInputStream input(source.data(), source.size());
+  EXPECT_TRUE(input.Skip(1));
+  EXPECT_TRUE(input.ReadCord(&dest, source.size() - 2));
+
+  absl::Cord expected(source);
+  expected.RemovePrefix(1);
+  expected.RemoveSuffix(1);
+
+  EXPECT_EQ(expected, dest);
+}
+
+TEST(DefaultReadCordTest, ReadLargeCordAfterBackup) {
+  std::string source = "hello world";
+  for (int i = 0; i < 1024; i++) {
+    source.append("hello world");
+  }
+
+  absl::Cord dest;
+  ArrayInputStream input(source.data(), source.size());
+
+  const void* buffer;
+  int size;
+  EXPECT_TRUE(input.Next(&buffer, &size));
+  input.BackUp(size - 1);
+
+  EXPECT_TRUE(input.ReadCord(&dest, source.size() - 2));
+
+  absl::Cord expected(source);
+  expected.RemovePrefix(1);
+  expected.RemoveSuffix(1);
+
+  EXPECT_EQ(expected, dest);
+
+  EXPECT_TRUE(input.Next(&buffer, &size));
+  EXPECT_EQ("d", std::string(reinterpret_cast<const char*>(buffer), size));
+}
+
+TEST(DefaultReadCordTest, ReadCordEof) {
+  std::string source = "hello world";
+
+  absl::Cord dest;
+  ArrayInputStream input(source.data(), source.size());
+  input.Skip(1);
+  EXPECT_FALSE(input.ReadCord(&dest, source.size()));
+
+  absl::Cord expected(source);
+  expected.RemovePrefix(1);
+  EXPECT_EQ(expected, dest);
 }
 
 
