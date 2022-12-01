@@ -9,5 +9,7 @@ cd $(dirname $0)/../../..
 KOKORO_INSTALL_VENV=yes
 source kokoro/macos/prepare_build_macos_rc
 
-bazel test //python/...  $(kokoro/common/bazel_flags.sh) \
-  --macos_minimum_os=10.9 --define=use_fast_cpp_protos=true
+bazel test //python/... //python:python_version \
+  $(kokoro/common/bazel_flags.sh) \
+  --macos_minimum_os=10.9 \
+  --define=use_fast_cpp_protos=true
