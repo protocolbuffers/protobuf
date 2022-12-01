@@ -108,6 +108,7 @@
 #define GOOGLE_PROTOBUF_IO_ZERO_COPY_STREAM_H__
 
 #include "google/protobuf/stubs/common.h"
+#include "absl/strings/cord.h"
 #include "google/protobuf/port.h"
 
 
@@ -182,6 +183,18 @@ class PROTOBUF_EXPORT ZeroCopyInputStream {
 
   // Returns the total number of bytes read since this object was created.
   virtual int64_t ByteCount() const = 0;
+
+  // Read the next `count` bytes and append it to the given Cord.
+  //
+  // In the case of a read error, the method reads as much data as possible into
+  // the cord before returning false. The default implementation iterates over
+  // the buffers and appends up to `count` bytes of data into `cord` using the
+  // `absl::CordBuffer` API.
+  //
+  // Some streams may implement this in a way that avoids copying by sharing or
+  // reference counting existing data managed by the stream implementation.
+  //
+  virtual bool ReadCord(absl::Cord* cord, int count);
 
 };
 

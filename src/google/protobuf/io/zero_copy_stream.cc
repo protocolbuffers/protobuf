@@ -34,13 +34,76 @@
 
 #include "google/protobuf/io/zero_copy_stream.h"
 
+#include <utility>
+
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
+#include "absl/strings/cord.h"
+#include "absl/strings/cord_buffer.h"
+#include "absl/strings/string_view.h"
+#include "absl/types/span.h"
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
 namespace io {
 
+bool ZeroCopyInputStream::ReadCord(absl::Cord* cord, int count) {
+  if (count <= 0) return true;
+
+  absl::CordBuffer cord_buffer = cord->GetAppendBuffer(count);
+  absl::Span<char> out = cord_buffer.available_up_to(count);
+
+  auto FetchNextChunk = [&]() -> absl::Span<const char> {
+    const void* buffer;
+    int size;
+    if (!Next(&buffer, &size)) return {};
+
+    if (size > count) {
+      BackUp(size - count);
+      size = count;
+    }
+    return absl::MakeConstSpan(static_cast<const char*>(buffer), size);
+  };
+
+  auto AppendFullBuffer = [&]() -> absl::Span<char> {
+    cord->Append(std::move(cord_buffer));
+    cord_buffer = absl::CordBuffer::CreateWithDefaultLimit(count);
+    return cord_buffer.available_up_to(count);
+  };
+
+  auto CopyBytes = [&](absl::Span<char>& dst, absl::Span<const char>& src,
+                       size_t bytes) {
+    memcpy(dst.data(), src.data(), bytes);
+    dst.remove_prefix(bytes);
+    src.remove_prefix(bytes);
+    count -= bytes;
+    cord_buffer.IncreaseLengthBy(bytes);
+  };
+
+  do {
+    absl::Span<const char> in = FetchNextChunk();
+    if (in.empty()) {
+      // Append whatever we have pending so far.
+      cord->Append(std::move(cord_buffer));
+      return false;
+    }
+
+    if (out.empty()) out = AppendFullBuffer();
+
+    while (in.size() > out.size()) {
+      CopyBytes(out, in, out.size());
+      out = AppendFullBuffer();
+    }
+
+    CopyBytes(out, in, in.size());
+  } while (count > 0);
+
+  cord->Append(std::move(cord_buffer));
+  return true;
+}
 
 bool ZeroCopyOutputStream::WriteAliasedRaw(const void* /* data */,
                                            int /* size */) {
