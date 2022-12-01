@@ -1,8 +1,22 @@
-﻿using Google.Protobuf.Collections;
+﻿
+/* Unmerged change from project 'Google.Protobuf (net50)'
+Before:
+using Google.Protobuf.Collections;
+using System;
+After:
+using Google;
+using Google.Protobuf;
+using Google.Protobuf.Collections;
+using Google.Protobuf.Reflection;
+using Google.Protobuf.Reflection;
+using Google.Protobuf.Reflection.Dynamic;
+using System;
+*/
+using Google.Protobuf.Collections;
 using System;
 using System.Collections;
 
-namespace Google.Protobuf.Reflection.Dynamic
+namespace Google.Protobuf.Reflection
 {
 
     /// <summary>
@@ -273,7 +287,7 @@ namespace Google.Protobuf.Reflection.Dynamic
                     rfDouble.AddEntriesFrom(input, FieldCodec.ForDouble(tag));
                     return rfDouble.GetEnumerator();
                 case FieldType.String:
-                    RepeatedField<String> rfString = new RepeatedField<String>();
+                    RepeatedField<string> rfString = new RepeatedField<string>();
                     rfString.AddEntriesFrom(input, FieldCodec.ForString(tag));
                     return rfString.GetEnumerator();
                 case FieldType.Bytes:

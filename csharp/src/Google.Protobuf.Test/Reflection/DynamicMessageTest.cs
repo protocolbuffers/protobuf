@@ -1,5 +1,4 @@
-﻿using Google.Protobuf.Reflection.Dynamic;
-using Google.Protobuf.TestProtos;
+﻿using Google.Protobuf.TestProtos;
 using Google.Protobuf.WellKnownTypes;
 using NUnit.Framework;
 using System;
