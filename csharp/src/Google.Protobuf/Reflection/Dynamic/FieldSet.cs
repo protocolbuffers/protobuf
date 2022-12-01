@@ -27,38 +27,6 @@ namespace Google.Protobuf.Reflection.Dynamic
         }
 
         /// <summary>
-        /// Checks if all the required fields have value.
-        /// </summary>
-        /// <param name="typeFields"></param>
-        /// <returns></returns>
-        internal bool IsInitializedWithRespectTo(IEnumerable typeFields)
-        {
-            foreach (KeyValuePair<string, FieldDescriptor> field in typeFields)
-            {
-                // according to proto3, field can't be required.
-                // So result to this method will always be true.
-                if (field.Value.IsRequired && !HasField(field.Value))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// Checks if the fields dictionary contains the field.
-        /// </summary>
-        private bool HasField(FieldDescriptor field)
-        {
-            if (field.IsRepeated)
-            {
-                throw new ArgumentException("HasField() can only be called on non-repeated fields.");
-            }
-
-            return fields.ContainsKey(field);
-        }
-
-        /// <summary>
         /// Returns the serialized size.
         /// </summary>
         /// <returns></returns>

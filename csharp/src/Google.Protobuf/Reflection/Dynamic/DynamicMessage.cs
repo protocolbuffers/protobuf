@@ -283,7 +283,5 @@ namespace Google.Protobuf.Reflection.Dynamic
             }
             throw new Exception("FieldType:" + fieldType + ", not handled in GetFieldCodec method.");
         }
-
-
     }
 }
