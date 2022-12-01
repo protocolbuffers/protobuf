@@ -14,7 +14,7 @@ namespace Google.Protobuf.Reflection.Dynamic
         private readonly MessageDescriptor type;
         private readonly FieldSet fieldSet = FieldSet.CreateInstance();
         private int memoizedSize = -1;
-        //private UnknownFieldSet _unknownFields;
+        private UnknownFieldSet _unknownFields;
 
         /// <summary>
         /// The constructor takes in message descriptor.
@@ -40,6 +40,8 @@ namespace Google.Protobuf.Reflection.Dynamic
         /// </summary>
         public MessageDescriptor Descriptor => type;
 
+        public UnknownFieldSet UnknownFields => _unknownFields;
+
         /// <summary>
         /// Used to calculate the size of the serialized message.
         /// </summary>
@@ -52,6 +54,10 @@ namespace Google.Protobuf.Reflection.Dynamic
                 return size;
             }
             size = fieldSet.GetSerializedSize();
+            if (_unknownFields != null)
+            {
+                size += _unknownFields.CalculateSize();
+            }
             memoizedSize = size;
             return size;
         }
@@ -74,7 +80,7 @@ namespace Google.Protobuf.Reflection.Dynamic
 
                 if (fd == null)
                 {
-                    throw new Exception($"Field descriptor not found for fieldNumber: {fieldNumber}");
+                    _unknownFields = UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
                 }
                 if (fd.FieldType == FieldType.Message)
                 {
@@ -94,11 +100,15 @@ namespace Google.Protobuf.Reflection.Dynamic
         public void WriteTo(CodedOutputStream output)
         {
             fieldSet.WriteTo(output);
+            _unknownFields?.WriteTo(output);
         }
 
         public void MergeFrom(DynamicMessage message)
         {
-            this.fieldSet.Merge(message.fieldSet);
+            if (message == null)
+                return;
+            fieldSet.Merge(message.fieldSet);
+            _unknownFields = UnknownFieldSet.MergeFrom(_unknownFields, message._unknownFields);
         }
 
         public bool Equals(DynamicMessage other)
@@ -112,7 +122,7 @@ namespace Google.Protobuf.Reflection.Dynamic
                 return true;
             }
             if (!fieldSet.Equals(other.fieldSet)) return false;
-            return true;
+            return Equals(_unknownFields, other._unknownFields);
         }
 
         public DynamicMessage Clone()
