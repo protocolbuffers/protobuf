@@ -93,7 +93,8 @@ upb_StringView upbdev_ProcessOutput(const char* buf, size_t size, upb_Arena* a,
                                     upb_Status* status) {
   upb_StringView out = {.data = NULL, .size = 0};
 
-  int response = upbc_JsonDecode(buf, size, a, status);
+  const google_protobuf_compiler_CodeGeneratorResponse* response =
+      upbc_JsonDecode(buf, size, a, status);
   if (upb_Status_IsOk(status)) {
     out.data =
         google_protobuf_compiler_CodeGeneratorResponse_serialize(response, a, &out.size);
