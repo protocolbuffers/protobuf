@@ -5,10 +5,12 @@ using System.Collections.Generic;
 namespace Google.Protobuf.Reflection.Dynamic
 {
 
-    public sealed class FieldSet
+    public sealed class FieldSet : IEquatable<FieldSet>, IDeepCloneable<FieldSet>
     {
 
-        private IDictionary<FieldDescriptor, object> fields;
+        private readonly IDictionary<FieldDescriptor, object> fields;
+
+        public IDictionary<FieldDescriptor, object> Fields => fields;
 
         /// <summary>
         /// Creates a new instance.
@@ -369,6 +371,41 @@ namespace Google.Protobuf.Reflection.Dynamic
             return value;
         }
 
+        internal void Merge(FieldSet fieldSet)
+        {
+            foreach (KeyValuePair<FieldDescriptor, object> kv in fieldSet.Fields)
+            {
+                FieldDescriptor fd = kv.Key;
+                object val = kv.Value;
+                if (fd.IsRepeated)
+                {
+                    AddRepeatedField(fd, val);
+                }
+                else
+                {
+                    SetField(fd, val);
+                }
+            }
+        }
+
+        public bool Equals(FieldSet other)
+        {
+            if (ReferenceEquals(other, null))
+            {
+                return false;
+            }
+            if (ReferenceEquals(other, this))
+            {
+                return true;
+            }
+            if (!fields.Equals(other.fields)) return false;
+            return true;
+        }
+
+        public FieldSet Clone()
+        {
+            return new FieldSet(new Dictionary<FieldDescriptor, object>(fields));
+        }
     }
 
 }

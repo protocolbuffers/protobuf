@@ -9,11 +9,12 @@ namespace Google.Protobuf.Reflection.Dynamic
     /// An implementation of IMessage that can represent arbitrary types, given a MessageaDescriptor.
     /// Unknown fields not supported.
     /// </summary>
-    public sealed class DynamicMessage : IMessage
+    public sealed class DynamicMessage : IMessage<DynamicMessage>
     {
         private readonly MessageDescriptor type;
-        private readonly FieldSet fields = FieldSet.CreateInstance();
+        private readonly FieldSet fieldSet = FieldSet.CreateInstance();
         private int memoizedSize = -1;
+        //private UnknownFieldSet _unknownFields;
 
         /// <summary>
         /// The constructor takes in message descriptor.
@@ -24,10 +25,15 @@ namespace Google.Protobuf.Reflection.Dynamic
             this.type = type;
         }
 
+        public DynamicMessage(FieldSet fieldSet)
+        {
+            this.fieldSet = fieldSet;
+        }
+
         /// <summary>
         /// The FieldSet reference
         /// </summary>
-        public FieldSet Fields => fields;
+        public FieldSet FieldSet => fieldSet;
 
         /// <summary>
         /// Descriptor for this message.
@@ -45,7 +51,7 @@ namespace Google.Protobuf.Reflection.Dynamic
             {
                 return size;
             }
-            size = fields.GetSerializedSize();
+            size = fieldSet.GetSerializedSize();
             memoizedSize = size;
             return size;
         }
@@ -87,7 +93,31 @@ namespace Google.Protobuf.Reflection.Dynamic
         /// <param name="output"></param>
         public void WriteTo(CodedOutputStream output)
         {
-            fields.WriteTo(output);
+            fieldSet.WriteTo(output);
+        }
+
+        public void MergeFrom(DynamicMessage message)
+        {
+            this.fieldSet.Merge(message.fieldSet);
+        }
+
+        public bool Equals(DynamicMessage other)
+        {
+            if (ReferenceEquals(other, null))
+            {
+                return false;
+            }
+            if (ReferenceEquals(other, this))
+            {
+                return true;
+            }
+            if (!fieldSet.Equals(other.fieldSet)) return false;
+            return true;
+        }
+
+        public DynamicMessage Clone()
+        {
+            return new DynamicMessage(fieldSet.Clone());
         }
 
         private void MergeFromPrimitiveTypeField(CodedInputStream input, uint tag, FieldDescriptor fd)
@@ -95,14 +125,14 @@ namespace Google.Protobuf.Reflection.Dynamic
             if (fd.ToProto().Label != FieldDescriptorProto.Types.Label.Repeated)
             {
                 object value = ReadField(fd.FieldType, input);
-                fields.SetField(fd, value);
+                fieldSet.SetField(fd, value);
             }
             else
             {
                 IEnumerator enumerator = GetFieldCodec(tag, fd.FieldType, input);
                 while (enumerator.MoveNext())
                 {
-                    fields.AddRepeatedField(fd, enumerator.Current);
+                    fieldSet.AddRepeatedField(fd, enumerator.Current);
                 }
             }
 
@@ -114,11 +144,11 @@ namespace Google.Protobuf.Reflection.Dynamic
             input.ReadMessage(value);
             if (fd.ToProto().Label != FieldDescriptorProto.Types.Label.Repeated)
             {
-                fields.SetField(fd, value);
+                fieldSet.SetField(fd, value);
             }
             else
             {
-                fields.AddRepeatedField(fd, value);
+                fieldSet.AddRepeatedField(fd, value);
             }
         }
 
@@ -243,5 +273,7 @@ namespace Google.Protobuf.Reflection.Dynamic
             }
             throw new Exception("FieldType:" + fieldType + ", not handled in GetFieldCodec method.");
         }
+
+
     }
 }

@@ -24,7 +24,7 @@ namespace Google.Protobuf.Reflection
             FieldDescriptor fd = desc.FindFieldByName("single_string");
             DynamicMessage res = ParseFrom(desc, byteStr);
             Assert.NotNull(res);
-            Assert.AreEqual(val, res.Fields.GetField(fd));
+            Assert.AreEqual(val, res.FieldSet.GetField(fd));
         }
 
         public DynamicMessage ParseFrom(MessageDescriptor type, ByteString data)
@@ -61,7 +61,7 @@ namespace Google.Protobuf.Reflection
         {
             MessageDescriptor desc = TestAllTypes.Descriptor;
             DynamicMessage dm = new DynamicMessage(desc);
-            var exc = Assert.Throws<ArgumentNullException>(() => dm.Fields.SetField(desc.FindFieldByName("single_string"), null));
+            var exc = Assert.Throws<ArgumentNullException>(() => dm.FieldSet.SetField(desc.FindFieldByName("single_string"), null));
             Assert.That(exc.ParamName, Is.EqualTo("single_string"));
         }
 
@@ -163,7 +163,7 @@ namespace Google.Protobuf.Reflection
         {
             if (!fieldFullName.Contains(".") && !fieldFullName.Contains("["))
             {
-                return dm.Fields.GetField(desc.FindFieldByName(fieldFullName));
+                return dm.FieldSet.GetField(desc.FindFieldByName(fieldFullName));
             }
             else if (fieldFullName.Contains("[") && !fieldFullName.Contains("."))
             {
