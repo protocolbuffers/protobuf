@@ -613,7 +613,8 @@ message FieldOptions {
   optional bool deprecated = 3 [default = false];
 
   // For Google-internal migration only. Do not use.
-  optional bool weak = 10 [default = false];
+  // optional bool weak = 10 [default = false];
+  reserved 10;
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
