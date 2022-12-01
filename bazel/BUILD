@@ -30,6 +30,10 @@ licenses(["notice"])
 py_binary(
     name = "amalgamate",
     srcs = ["amalgamate.py"],
+    target_compatible_with = select({
+        "@system_python//:exists": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
     visibility = ["//:__pkg__"],
 )
 

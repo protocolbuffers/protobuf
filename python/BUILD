@@ -172,6 +172,21 @@ selects.config_setting_group(
     ],
 )
 
+# begin:github_only
+_message_target_compatible_with = {
+   "@platforms//os:windows": ["@platforms//:incompatible"],
+   "@system_python//:none": ["@platforms//:incompatible"],
+   "@system_python//:unsupported": ["@platforms//:incompatible"],
+   "//conditions:default": [],
+}
+# end:github_only
+# begin:google_only
+# _message_target_compatible_with = {
+#     "@platforms//os:windows": ["//third_party/bazel_platforms:incompatible"],
+#     "//conditions:default": [],
+# }
+# end:google_only
+
 py_extension(
     name = "_message",
     srcs = [
@@ -202,10 +217,7 @@ py_extension(
         # casts between function pointers and object pointers.
         "-Wno-pedantic",
     ],
-    target_compatible_with = select({
-        "@platforms//os:windows": ["//third_party/bazel_platforms:incompatible"],
-        "//conditions:default": [],
-    }),
+    target_compatible_with = select(_message_target_compatible_with),
     deps = [
         "//:collections",
         "//:descriptor_upb_proto_reflection",

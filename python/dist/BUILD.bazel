@@ -230,6 +230,10 @@ py_wheel(
         "python/",
         "src/",
     ],
+    target_compatible_with = select({
+        "@system_python//:none": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     version = PROTOBUF_PYTHON_VERSION,
     deps = [
         ":message_mod",
@@ -261,6 +265,10 @@ py_wheel(
         "python/",
         "src/",
     ],
+    target_compatible_with = select({
+        "@system_python//:none": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     version = PROTOBUF_PYTHON_VERSION,
     deps = [
         ":well_known_proto_py_pb2",
@@ -279,6 +287,10 @@ py_wheel(
         "python/",
         "src/",
     ],
+    target_compatible_with = select({
+        "@system_python//:none": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
     version = PROTOBUF_PYTHON_VERSION,
     deps = [
         "//python/pb_unit_tests:test_files",

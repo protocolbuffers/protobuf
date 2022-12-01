@@ -4,7 +4,6 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//bazel:workspace_deps.bzl", "upb_deps")
 
 upb_deps()
-register_toolchains("@system_python//:python_toolchain")
 
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 protobuf_deps()
@@ -69,9 +68,20 @@ load("@rules_fuzzing//fuzzing:init.bzl", "rules_fuzzing_init")
 
 rules_fuzzing_init()
 
-load("@rules_python//python:pip.bzl", "pip_install")
+load("//bazel:system_python.bzl", "system_python")
+system_python(
+    name = "system_python",
+    minimum_python_version = "3.7",
+)
 
+load("@system_python//:register.bzl", "register_system_python")
+register_system_python()
+
+load("@system_python//:pip.bzl", "pip_install")
 pip_install(
     name="pip_deps",
-    requirements = "@com_google_protobuf//python:requirements.txt"
+    requirements = "//python:requirements.txt",
+    requirements_overrides = {
+        "3.11": "//python:requirements_311.txt",
+    },
 )

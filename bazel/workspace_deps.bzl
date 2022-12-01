@@ -1,7 +1,6 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load("//bazel:python_downloads.bzl", "python_nuget_package", "python_source_archive")
-load("//bazel:system_python.bzl", "system_python")
 
 def _github_archive(repo, commit, **kwargs):
     repo_name = repo.split("/")[-1]
@@ -24,7 +23,8 @@ def upb_deps():
         _github_archive,
         name = "com_google_protobuf",
         repo = "https://github.com/protocolbuffers/protobuf",
-        commit = "c79832bddc3931d798d31d417238e4377f869c79",
+        commit = "016ef2393e163cb8a49186adab8e2981476eec37",
+        sha256 = "ed91f723ba5db42190ca4a2734d1fdd449ceccf259c1112d3e4da14b322680f5",
         patches = ["@upb//bazel:protobuf.patch"],
     )
 
@@ -43,10 +43,6 @@ def upb_deps():
         name = "bazel_skylib",
         strip_prefix = "bazel-skylib-main",
         urls = ["https://github.com/bazelbuild/bazel-skylib/archive/main.tar.gz"],
-    )
-
-    system_python(
-        name = "system_python",
     )
 
     #Python Downloads

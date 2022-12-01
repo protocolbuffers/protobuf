@@ -60,11 +60,40 @@ jobs:
         run: echo "BAZEL_CACHE_AUTH=--remote_upload_local_results=false" >> $GITHUB_ENV
         if: ${{ github.event.pull_request.head.repo.full_name != 'protocolbuffers/upb' }}
       - name: Setup Python venv
-        run: rm -rf /tmp/venv && python3 -m venv /tmp/venv
+        run: rm -rf /tmp/venv && python3 -m venv /tmp/venv && source /tmp/venv/bin/activate && python3 --version
       - name: Install dependencies
         run: sudo apt update && sudo apt install -y ${{ matrix.install }}
         if: matrix.install != ''
       - name: Install numpy
-        run: pip install numpy
+        run: source /tmp/venv/bin/activate && pip3 install numpy
       - name: Run tests
-        run: cd ${{ github.workspace }} && PATH=/tmp/venv/bin:$PATH CC=${{ matrix.CC }} ${{ matrix.BAZEL }} test --test_output=errors $BAZEL_CACHE $BAZEL_CACHE_AUTH ... ${{ matrix.flags }}
+        run: cd ${{ github.workspace }} && source /tmp/venv/bin/activate && CC=${{ matrix.CC }} ${{ matrix.BAZEL }} test --test_output=errors $BAZEL_CACHE $BAZEL_CACHE_AUTH ... ${{ matrix.flags }}
+
+  no-python:
+    runs-on: ubuntu-20.04
+    env:
+      BAZEL_CACHE: --remote_cache=https://storage.googleapis.com/protobuf-bazel-cache/upb
+
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+
+    name: "No System Python"
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Cloud SDK
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+          export_environment_variables: true
+        if: ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/upb' }}
+      - name: Set up Bazel read/write caching
+        run: echo "BAZEL_CACHE_AUTH=--google_default_credentials" >> $GITHUB_ENV
+        if: ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/upb' }}
+      - name: Set up Bazel read-only caching
+        run: echo "BAZEL_CACHE_AUTH=--remote_upload_local_results=false" >> $GITHUB_ENV
+        if: ${{ github.event.pull_request.head.repo.full_name != 'protocolbuffers/upb' }}
+      - name: Uninstall python
+        run: which python3 && sudo mv `which python3` /tmp && ! which python3
+      - name: Run tests
+        run: cd ${{ github.workspace }} && bazel test --test_output=errors $BAZEL_CACHE $BAZEL_CACHE_AUTH //python/...

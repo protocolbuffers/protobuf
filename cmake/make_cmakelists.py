@@ -239,6 +239,9 @@ class WorkspaceFileFunctions(object):
   def system_python(self, **kwargs):
     pass
 
+  def register_system_python(self, **kwargs):
+    pass
+
   def register_toolchains(self, toolchain):
     pass
 
