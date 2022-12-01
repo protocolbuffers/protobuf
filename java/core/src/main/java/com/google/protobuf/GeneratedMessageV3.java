@@ -1973,7 +1973,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
    * Gets the descriptor for an extension. The implementation depends on whether the extension is
    * scoped in the top level of a file or scoped in a Message.
    */
-  static interface ExtensionDescriptorRetriever {
+  interface ExtensionDescriptorRetriever {
     FieldDescriptor getDescriptor();
   }
 
@@ -2193,17 +2193,11 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
 
       Object getRaw(GeneratedMessageV3 message);
 
-      Object getRaw(GeneratedMessageV3.Builder<?> builder);
-
       void set(Builder<?> builder, Object value);
 
       Object getRepeated(GeneratedMessageV3 message, int index);
 
       Object getRepeated(GeneratedMessageV3.Builder<?> builder, int index);
-
-      Object getRepeatedRaw(GeneratedMessageV3 message, int index);
-
-      Object getRepeatedRaw(GeneratedMessageV3.Builder<?> builder, int index);
 
       void setRepeated(Builder<?> builder, int index, Object value);
 
@@ -2323,14 +2317,14 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       private static final class ReflectionInvoker implements MethodInvoker {
-        protected final Method getMethod;
-        protected final Method getMethodBuilder;
-        protected final Method setMethod;
-        protected final Method hasMethod;
-        protected final Method hasMethodBuilder;
-        protected final Method clearMethod;
-        protected final Method caseMethod;
-        protected final Method caseMethodBuilder;
+        private final Method getMethod;
+        private final Method getMethodBuilder;
+        private final Method setMethod;
+        private final Method hasMethod;
+        private final Method hasMethodBuilder;
+        private final Method clearMethod;
+        private final Method caseMethod;
+        private final Method caseMethodBuilder;
 
         ReflectionInvoker(
             final FieldDescriptor descriptor,
@@ -2457,11 +2451,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Object getRaw(GeneratedMessageV3.Builder<?> builder) {
-        return get(builder);
-      }
-
-      @Override
       public void set(final Builder<?> builder, final Object value) {
         invoker.set(builder, value);
       }
@@ -2474,18 +2463,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       @Override
       public Object getRepeated(GeneratedMessageV3.Builder<?> builder, int index) {
         throw new UnsupportedOperationException("getRepeatedField() called on a singular field.");
-      }
-
-      @Override
-      public Object getRepeatedRaw(final GeneratedMessageV3 message, final int index) {
-        throw new UnsupportedOperationException(
-            "getRepeatedFieldRaw() called on a singular field.");
-      }
-
-      @Override
-      public Object getRepeatedRaw(GeneratedMessageV3.Builder<?> builder, int index) {
-        throw new UnsupportedOperationException(
-            "getRepeatedFieldRaw() called on a singular field.");
       }
 
       @Override
@@ -2691,11 +2668,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Object getRaw(GeneratedMessageV3.Builder<?> builder) {
-        return get(builder);
-      }
-
-      @Override
       public void set(final Builder<?> builder, final Object value) {
         // Add all the elements individually.  This serves two purposes:
         // 1) Verifies that each element has the correct type.
@@ -2715,16 +2687,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       @Override
       public Object getRepeated(GeneratedMessageV3.Builder<?> builder, int index) {
         return invoker.getRepeated(builder, index);
-      }
-
-      @Override
-      public Object getRepeatedRaw(GeneratedMessageV3 message, int index) {
-        return getRepeated(message, index);
-      }
-
-      @Override
-      public Object getRepeatedRaw(GeneratedMessageV3.Builder<?> builder, int index) {
-        return getRepeated(builder, index);
       }
 
       @Override
@@ -2843,11 +2805,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       }
 
       @Override
-      public Object getRaw(GeneratedMessageV3.Builder<?> builder) {
-        return get(builder);
-      }
-
-      @Override
       public void set(Builder<?> builder, Object value) {
         clear(builder);
         for (Object entry : (List<?>) value) {
@@ -2863,16 +2820,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       @Override
       public Object getRepeated(Builder<?> builder, int index) {
         return getMapField(builder).getList().get(index);
-      }
-
-      @Override
-      public Object getRepeatedRaw(GeneratedMessageV3 message, int index) {
-        return getRepeated(message, index);
-      }
-
-      @Override
-      public Object getRepeatedRaw(Builder<?> builder, int index) {
-        return getRepeated(builder, index);
       }
 
       @Override
@@ -3115,23 +3062,16 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
           final String containingOneofCamelCaseName) {
         super(descriptor, camelCaseName, messageClass, builderClass, containingOneofCamelCaseName);
         getBytesMethod = getMethodOrDie(messageClass, "get" + camelCaseName + "Bytes");
-        getBytesMethodBuilder = getMethodOrDie(builderClass, "get" + camelCaseName + "Bytes");
         setBytesMethodBuilder =
             getMethodOrDie(builderClass, "set" + camelCaseName + "Bytes", ByteString.class);
       }
 
       private final Method getBytesMethod;
-      private final Method getBytesMethodBuilder;
       private final Method setBytesMethodBuilder;
 
       @Override
       public Object getRaw(final GeneratedMessageV3 message) {
         return invokeOrDie(getBytesMethod, message);
-      }
-
-      @Override
-      public Object getRaw(GeneratedMessageV3.Builder<?> builder) {
-        return invokeOrDie(getBytesMethodBuilder, builder);
       }
 
       @Override
