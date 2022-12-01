@@ -51,6 +51,8 @@ endif()
 
 include_directories(..)
 include_directories(../cmake)
+include_directories(../third_party/utf8_range)
+include_directories(../external/utf8_range)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 if(APPLE)
@@ -288,7 +290,7 @@ target_link_libraries(decode_internal INTERFACE
   arena_internal
   port
   table_internal
-  /third_party/utf8_range)
+  utf8_range)
 add_library(encode_internal INTERFACE)
 target_link_libraries(encode_internal INTERFACE
   port)

@@ -227,6 +227,9 @@ class WorkspaceFileFunctions(object):
   def protobuf_deps(self):
     pass
 
+  def utf8_range_deps(self):
+    pass
+
   def pip_install(self, **kwargs):
     pass
 
@@ -316,6 +319,8 @@ class Converter(object):
 
     include_directories(..)
     include_directories(../cmake)
+    include_directories(../third_party/utf8_range)
+    include_directories(../external/utf8_range)
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
     if(APPLE)

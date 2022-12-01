@@ -99,7 +99,7 @@ sh_test(
         ":copy_protos",
         ":gen_cmakelists",
         "//:cmake_files",
-        "//third_party/utf8_range:cmake_files",
+        "@utf8_range//:utf8_range_srcs",
     ],
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )

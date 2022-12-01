@@ -1069,7 +1069,7 @@ cc_library(
         ":message_internal",
         ":mini_table_internal",
         ":port",
-        "//third_party/utf8_range",
+        "@utf8_range//:utf8_range",
     ],
 )
 
@@ -1146,7 +1146,7 @@ cc_library(
     srcs = ["upb.c"],
     hdrs = ["upb.h"],
     copts = UPB_DEFAULT_COPTS,
-    deps = ["//third_party/utf8_range"],
+    deps = ["@utf8_range//:utf8_range"],
 )
 
 upb_amalgamation(
@@ -1184,7 +1184,7 @@ cc_library(
     srcs = ["php-upb.c"],
     hdrs = ["php-upb.h"],
     copts = UPB_DEFAULT_COPTS,
-    deps = ["//third_party/utf8_range"],
+    deps = ["@utf8_range//:utf8_range"],
 )
 
 upb_amalgamation(
@@ -1221,7 +1221,7 @@ cc_library(
     srcs = ["ruby-upb.c"],
     hdrs = ["ruby-upb.h"],
     copts = UPB_DEFAULT_COPTS,
-    deps = ["//third_party/utf8_range"],
+    deps = ["@utf8_range//:utf8_range"],
 )
 
 exports_files(

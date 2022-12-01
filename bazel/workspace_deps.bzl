@@ -28,6 +28,14 @@ def upb_deps():
         patches = ["@upb//bazel:protobuf.patch"],
     )
 
+    maybe(
+        _github_archive,
+        name = "utf8_range",
+        repo = "https://github.com/protocolbuffers/utf8_range",
+        commit = "de0b4a8ff9b5d4c98108bdfe723291a33c52c54f",
+        sha256 = "5da960e5e5d92394c809629a03af3c7709d2d3d0ca731dacb3a9fb4bf28f7702",
+    )
+
     rules_python_version = "0.12.0"  # Latest @ August 31, 2022
 
     maybe(
