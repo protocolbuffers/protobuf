@@ -246,7 +246,7 @@ void PyiGenerator::PrintImports() const {
       printer_->Print(
           "from google3.net.rpc.python import proto_python_api_2_stub as "
           "_proto_python_api_2_stub\n"
-          "from google3.net.rpc.python import pywraprpc as _pywraprpc\n"
+          "from google3.net.rpc.python import _pywraprpc as _pywraprpc\n"
           "from google3.net.rpc.python import rpcserver as _rpcserver\n");
     }
   }
