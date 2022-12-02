@@ -69,7 +69,6 @@ public class NestedBuildersTest {
     // belt.
     assertThat(vehicleBuilder.getEngine().getTimingBelt()).isEqualTo(expected);
   }
-
   @Test
   public void testMessagesAndBuilders() {
     Vehicle.Builder vehicleBuilder = Vehicle.newBuilder();
