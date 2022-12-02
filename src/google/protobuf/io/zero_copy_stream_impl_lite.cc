@@ -467,6 +467,18 @@ int64_t LimitingInputStream::ByteCount() const {
   }
 }
 
+bool LimitingInputStream::ReadCord(absl::Cord* cord, int count) {
+  if (count <= 0) return true;
+  if (count <= limit_) {
+    if (!input_->ReadCord(cord, count)) return false;
+    limit_ -= count;
+    return true;
+  }
+  input_->ReadCord(cord, limit_);
+  limit_ = 0;
+  return false;
+}
+
 
 // ===================================================================
 
