@@ -100,7 +100,6 @@ build_msvc
 Pods/
 
 # Conformance test output
-conformance/.libs/
 conformance/com/
 conformance/conformance-cpp
 conformance/conformance-csharp
