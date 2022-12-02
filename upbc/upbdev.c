@@ -38,14 +38,14 @@
 #include "upbc/code_generator_request.upbdefs.h"
 
 static google_protobuf_compiler_CodeGeneratorResponse* upbc_JsonDecode(
-    const char* data, size_t size, upb_Arena* a, upb_Status* status) {
+    const char* data, size_t size, upb_Arena* arena, upb_Status* status) {
   google_protobuf_compiler_CodeGeneratorResponse* response =
-      google_protobuf_compiler_CodeGeneratorResponse_new(a);
+      google_protobuf_compiler_CodeGeneratorResponse_new(arena);
 
   upb_DefPool* s = upb_DefPool_New();
   const upb_MessageDef* m = google_protobuf_compiler_CodeGeneratorResponse_getmsgdef(s);
 
-  (void)upb_JsonDecode(data, size, response, m, s, 0, a, status);
+  (void)upb_JsonDecode(data, size, response, m, s, 0, arena, status);
   if (!upb_Status_IsOk(status)) return NULL;
 
   upb_DefPool_Free(s);
@@ -54,7 +54,7 @@ static google_protobuf_compiler_CodeGeneratorResponse* upbc_JsonDecode(
 }
 
 static upb_StringView upbc_JsonEncode(const upbc_CodeGeneratorRequest* request,
-                                      upb_Arena* a, upb_Status* status) {
+                                      upb_Arena* arena, upb_Status* status) {
   upb_StringView out = {.data = NULL, .size = 0};
 
   upb_DefPool* s = upb_DefPool_New();
@@ -63,7 +63,7 @@ static upb_StringView upbc_JsonEncode(const upbc_CodeGeneratorRequest* request,
   out.size = upb_JsonEncode(request, m, s, 0, NULL, 0, status);
   if (!upb_Status_IsOk(status)) goto done;
 
-  char* data = (char*)upb_Arena_Malloc(a, out.size + 1);
+  char* data = (char*)upb_Arena_Malloc(arena, out.size + 1);
 
   (void)upb_JsonEncode(request, m, s, 0, data, out.size + 1, status);
   if (!upb_Status_IsOk(status)) goto done;
@@ -75,29 +75,46 @@ done:
   return out;
 }
 
-upb_StringView upbdev_ProcessInput(const char* buf, size_t size, upb_Arena* a,
-                                   upb_Status* status) {
+upb_StringView upbdev_ProcessInput(const char* buf, size_t size,
+                                   upb_Arena* arena, upb_Status* status) {
   upb_StringView out = {.data = NULL, .size = 0};
 
   google_protobuf_compiler_CodeGeneratorRequest* inner_request =
-      google_protobuf_compiler_CodeGeneratorRequest_parse(buf, size, a);
+      google_protobuf_compiler_CodeGeneratorRequest_parse(buf, size, arena);
 
   const upbc_CodeGeneratorRequest* outer_request =
-      upbc_MakeCodeGeneratorRequest(inner_request, a, status);
-  if (upb_Status_IsOk(status)) out = upbc_JsonEncode(outer_request, a, status);
+      upbc_MakeCodeGeneratorRequest(inner_request, arena, status);
+  if (upb_Status_IsOk(status))
+    out = upbc_JsonEncode(outer_request, arena, status);
 
   return out;
 }
 
-upb_StringView upbdev_ProcessOutput(const char* buf, size_t size, upb_Arena* a,
-                                    upb_Status* status) {
+upb_StringView upbdev_ProcessOutput(const char* buf, size_t size,
+                                    upb_Arena* arena, upb_Status* status) {
   upb_StringView out = {.data = NULL, .size = 0};
 
   const google_protobuf_compiler_CodeGeneratorResponse* response =
-      upbc_JsonDecode(buf, size, a, status);
-  if (upb_Status_IsOk(status)) {
-    out.data =
-        google_protobuf_compiler_CodeGeneratorResponse_serialize(response, a, &out.size);
-  }
+      upbc_JsonDecode(buf, size, arena, status);
+  if (!upb_Status_IsOk(status)) return out;
+
+  out.data = google_protobuf_compiler_CodeGeneratorResponse_serialize(response, arena,
+                                                             &out.size);
   return out;
+}
+
+void upbdev_ProcessStdout(const char* buf, size_t size, upb_Arena* arena,
+                          upb_Status* status) {
+  const upb_StringView sv = upbdev_ProcessOutput(buf, size, arena, status);
+  if (!upb_Status_IsOk(status)) return;
+
+  const char* ptr = sv.data;
+  size_t len = sv.size;
+  while (len) {
+    int n = write(1, ptr, len);
+    if (n > 0) {
+      ptr += n;
+      len -= n;
+    }
+  }
 }

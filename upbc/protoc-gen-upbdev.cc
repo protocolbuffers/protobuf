@@ -74,15 +74,12 @@ int main() {
     return -1;
   }
 
-  // Decode and serialize the JSON response.
-  const auto response = upbdev_ProcessOutput(json_response.data(),
-                                             json_response.size(), a, &status);
+  // Decode, serialize, and write the JSON response.
+  upbdev_ProcessOutput(json_response.data(), json_response.size(), a, &status);
   if (!upb_Status_IsOk(&status)) {
     std::cerr << status.msg << std::endl;
     return -1;
   }
-
-  std::cout << std::string(response.data, response.size);
 
   upb_Arena_Free(a);
   return 0;

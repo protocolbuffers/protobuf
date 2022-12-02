@@ -41,12 +41,16 @@ extern "C" {
 
 // Consume |buf|, deserialize it to a Code_Generator_Request proto, construct a
 // upbc_Code_Generator_Request, and return it as a JSON-encoded string.
-upb_StringView upbdev_ProcessInput(const char* buf, size_t size, upb_Arena* a,
-                                   upb_Status* status);
+upb_StringView upbdev_ProcessInput(const char* buf, size_t size,
+                                   upb_Arena* arena, upb_Status* status);
 
-// Deserialize |buf| from JSON then serialize it to wire format and return.
-upb_StringView upbdev_ProcessOutput(const char* buf, size_t size, upb_Arena* a,
-                                    upb_Status* status);
+// Decode |buf| from JSON, serialize to wire format, and return it.
+upb_StringView upbdev_ProcessOutput(const char* buf, size_t size,
+                                    upb_Arena* arena, upb_Status* status);
+
+// Decode |buf| from JSON, serialize to wire format, and write it to stdout.
+void upbdev_ProcessStdout(const char* buf, size_t size, upb_Arena* arena,
+                          upb_Status* status);
 
 #ifdef __cplusplus
 } /* extern "C" */
