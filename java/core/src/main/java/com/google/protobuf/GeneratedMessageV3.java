@@ -937,7 +937,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     protected MapField internalGetMapField(int fieldNumber) {
       // Note that we can't use descriptor names here because this method will
       // be called when descriptor is being initialized.
-      throw new RuntimeException("No map fields found in " + getClass().getName());
+      throw new IllegalArgumentException("No map fields found in " + getClass().getName());
     }
 
     /** Like {@link #internalGetMapField} but return a mutable version. */
@@ -1985,7 +1985,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     try {
       return clazz.getMethod(name, params);
     } catch (NoSuchMethodException e) {
-      throw new RuntimeException(
+      throw new IllegalStateException(
           "Generated message class \"" + clazz.getName() + "\" missing method \"" + name + "\".",
           e);
     }
@@ -1998,7 +1998,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     try {
       return method.invoke(object, params);
     } catch (IllegalAccessException e) {
-      throw new RuntimeException(
+      throw new IllegalStateException(
           "Couldn't use Java reflection to implement protocol message " + "reflection.", e);
     } catch (InvocationTargetException e) {
       final Throwable cause = e.getCause();
@@ -2007,7 +2007,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
       } else if (cause instanceof Error) {
         throw (Error) cause;
       } else {
-        throw new RuntimeException(
+        throw new IllegalStateException(
             "Unexpected exception thrown by generated accessor method.", cause);
       }
     }
@@ -2026,7 +2026,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
   protected MapField internalGetMapField(int fieldNumber) {
     // Note that we can't use descriptor names here because this method will
     // be called when descriptor is being initialized.
-    throw new RuntimeException("No map fields found in " + getClass().getName());
+    throw new IllegalArgumentException("No map fields found in " + getClass().getName());
   }
 
   /**
