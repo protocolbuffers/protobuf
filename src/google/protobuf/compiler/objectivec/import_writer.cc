@@ -166,125 +166,70 @@ void ImportWriter::AddRuntimeImport(const std::string& header_name) {
   protobuf_imports_.push_back(header_name);
 }
 
-void ImportWriter::EmitFileImports(io::Printer* p) const {
-  p->Emit(
-      {
-          {"other_framework_imports",
-           [&] {
-             for (const auto& header : other_framework_imports_) {
-               p->Emit({{"header", header}},
-                       R"objc(
-                         #import <$header$>
-                       )objc");
-             }
-           }},
-          {"other_imports",
-           [&] {
-             for (const auto& header : other_imports_) {
-               p->Emit({{"header", header}},
-                       R"objc(
-                         #import "$header$"
-                       )objc");
-             }
-           }},
-      },
-      R"objc(
-        $other_framework_imports$;
-        $other_imports$;
-      )objc");
+void ImportWriter::PrintFileImports(io::Printer* p) const {
+  if (!other_framework_imports_.empty()) {
+    for (const auto& header : other_framework_imports_) {
+      p->Print("#import <$header$>\n", "header", header);
+    }
+  }
+
+  if (!other_imports_.empty()) {
+    if (!other_framework_imports_.empty()) {
+      p->Print("\n");
+    }
+
+    for (const auto& header : other_imports_) {
+      p->Print("#import \"$header$\"\n", "header", header);
+    }
+  }
 }
 
-void ImportWriter::EmitRuntimeImports(io::Printer* p,
-                                      bool default_cpp_symbol) const {
+void ImportWriter::PrintRuntimeImports(io::Printer* p,
+                                       bool default_cpp_symbol) const {
   // Given an override, use that.
   if (!runtime_import_prefix_.empty()) {
-    p->Emit(
-        {
-            {"import_prefix", runtime_import_prefix_},
-            {"imports",
-             [&] {
-               for (const auto& header : protobuf_imports_) {
-                 p->Emit({{"header", header}},
-                         R"objc(
-                           #import "$import_prefix$/$header$"
-                         )objc");
-               }
-             }},
-        },
-        R"objc(
-          $imports$
-        )objc");
-
+    for (const auto& header : protobuf_imports_) {
+      p->Print("#import \"$import_prefix$/$header$\"\n", "header", header,
+               "import_prefix", runtime_import_prefix_);
+    }
     return;
   }
 
   // If bundled, no need to do the framework support below.
   if (for_bundled_proto_) {
     GOOGLE_DCHECK(!default_cpp_symbol);
-    p->Emit(
-        {
-            {"imports",
-             [&] {
-               for (const auto& header : protobuf_imports_) {
-                 p->Emit({{"header", header}},
-                         R"objc(
-                           #import "$header$"
-                         )objc");
-               }
-             }},
-        },
-        R"objc(
-          $imports$
-        )objc");
+    for (const auto& header : protobuf_imports_) {
+      p->Print("#import \"$header$\"\n", "header", header);
+    }
     return;
   }
 
-  auto v = p->WithVars({
-      {"cpp_symbol",
-       ProtobufFrameworkImportSymbol(ProtobufLibraryFrameworkName)},
-  });
+  const std::string cpp_symbol(
+      ProtobufFrameworkImportSymbol(ProtobufLibraryFrameworkName));
 
   if (default_cpp_symbol) {
-    p->Emit(
-        R"objc(
-          // This CPP symbol can be defined to use imports that match up to the framework
-          // imports needed when using CocoaPods.
-          #if !defined($cpp_symbol$)
-           #define $cpp_symbol$ 0
-          #endif
-
-        )objc");
+    p->Print(
+        // clang-format off
+        "// This CPP symbol can be defined to use imports that match up to the framework\n"
+        "// imports needed when using CocoaPods.\n"
+        "#if !defined($cpp_symbol$)\n"
+        " #define $cpp_symbol$ 0\n"
+        "#endif\n"
+        "\n",
+        // clang-format on
+        "cpp_symbol", cpp_symbol);
   }
 
-  p->Emit(
-      {
-          {"framework_name", ProtobufLibraryFrameworkName},
-          {"framework_imports",
-           [&] {
-             for (const auto& header : protobuf_imports_) {
-               p->Emit({{"header", header}},
-                       R"objc(
-                         #import <$framework_name$/$header$>
-                       )objc");
-             }
-           }},
-          {"raw_imports",
-           [&] {
-             for (const auto& header : protobuf_imports_) {
-               p->Emit({{"header", header}},
-                       R"objc(
-                         #import "$header$"
-                       )objc");
-             }
-           }},
-      },
-      R"objc(
-        #if $cpp_symbol$
-         $framework_imports$
-        #else
-         $raw_imports$
-        #endif
-      )objc");
+  p->Print("#if $cpp_symbol$\n", "cpp_symbol", cpp_symbol);
+  for (const auto& header : protobuf_imports_) {
+    p->Print(" #import <$framework_name$/$header$>\n", "framework_name",
+             ProtobufLibraryFrameworkName, "header", header);
+  }
+  p->Print("#else\n");
+  for (const auto& header : protobuf_imports_) {
+    p->Print(" #import \"$header$\"\n", "header", header);
+  }
+  p->Print("#endif\n");
 }
 
 void ImportWriter::ParseFrameworkMappings() {

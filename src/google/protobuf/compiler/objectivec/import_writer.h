@@ -56,8 +56,8 @@ class ImportWriter {
   void AddFile(const FileDescriptor* file, const std::string& header_extension);
   void AddRuntimeImport(const std::string& header_name);
 
-  void EmitFileImports(io::Printer* p) const;
-  void EmitRuntimeImports(io::Printer* p, bool default_cpp_symbol) const;
+  void PrintFileImports(io::Printer* p) const;
+  void PrintRuntimeImports(io::Printer* p, bool default_cpp_symbol) const;
 
  private:
   void ParseFrameworkMappings();

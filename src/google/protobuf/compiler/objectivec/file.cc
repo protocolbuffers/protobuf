@@ -44,6 +44,7 @@
 #include "absl/container/btree_set.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "google/protobuf/compiler/objectivec/enum.h"
 #include "google/protobuf/compiler/objectivec/extension.h"
@@ -240,92 +241,71 @@ FileGenerator::FileGenerator(const FileDescriptor* file,
 
 void FileGenerator::GenerateHeader(io::Printer* p) const {
   GenerateFile(p, GeneratedFileType::kHeader, [&] {
-    p->Emit(
-        {
-            {"fwd_decls",
-             [&] {
-               absl::btree_set<std::string> fwd_decls;
-               for (const auto& generator : message_generators_) {
-                 generator->DetermineForwardDeclarations(
-                     &fwd_decls,
-                     /* include_external_types = */
-                     HeadersUseForwardDeclarations());
-               }
+    p->Print("CF_EXTERN_C_BEGIN\n\n");
 
-               if (!fwd_decls.empty()) {
-                 p->Emit({{"decls", absl::StrJoin(fwd_decls, "\n")}},
-                         R"objc(
-                          $decls$
+    absl::btree_set<std::string> fwd_decls;
+    for (const auto& generator : message_generators_) {
+      generator->DetermineForwardDeclarations(&fwd_decls,
+                                              /* include_external_types = */
+                                              HeadersUseForwardDeclarations());
+    }
+    if (!fwd_decls.empty()) {
+      p->Print("$fwd_decls$\n\n", "fwd_decls", absl::StrJoin(fwd_decls, "\n"));
+    }
 
-                         )objc");
-               }
-             }},
-            {"enums",
-             [&] {
-               for (const auto& generator : enum_generators_) {
-                 generator->GenerateHeader(p);
-               }
-             }},
-            {"root_extensions",
-             [&] {
-               // The dynamic methods block is only needed if there are
-               // extensions that are file level scoped (not message scoped).
-               // The first file_->extension_count() of extension_generators_
-               // are the file scoped ones.
-               if (file_->extension_count()) {
-                 p->Emit(
-                     {
-                         {"extension_methods",
-                          [&] {
-                            for (int i = 0; i < file_->extension_count(); i++) {
-                              extension_generators_[i]->GenerateMembersHeader(
-                                  p);
-                            }
-                          }},
-                     },
-                     R"objc(
-                       @interface $root_class_name$ (DynamicMethods)
-                       $extension_methods$;
-                      @end
+    p->Print("NS_ASSUME_NONNULL_BEGIN\n\n");
 
-                     )objc");
-               }  // file_->extension_count()
-             }},
-            {"messages",
-             [&] {
-               for (const auto& generator : message_generators_) {
-                 generator->GenerateMessageHeader(p);
-               }
-             }},
-        },
-        R"objc(
-          CF_EXTERN_C_BEGIN
+    for (const auto& generator : enum_generators_) {
+      generator->GenerateHeader(p);
+    }
 
-          $fwd_decls$;
-          NS_ASSUME_NONNULL_BEGIN
+    // For extensions to chain together, the Root gets created even if there
+    // are no extensions.
+    p->Print(
+        // clang-format off
+        "#pragma mark - $root_class_name$\n"
+        "\n"
+        "/**\n"
+        " * Exposes the extension registry for this file.\n"
+        " *\n"
+        " * The base class provides:\n"
+        " * @code\n"
+        " *   + (GPBExtensionRegistry *)extensionRegistry;\n"
+        " * @endcode\n"
+        " * which is a @c GPBExtensionRegistry that includes all the extensions defined by\n"
+        " * this file and all files that it depends on.\n"
+        " **/\n"
+        "GPB_FINAL @interface $root_class_name$ : GPBRootObject\n"
+        "@end\n"
+        "\n",
+        // clang-format on
+        "root_class_name", root_class_name_);
 
-          $enums$;
-          #pragma mark - $root_class_name$
+    // The dynamic methods block is only needed if there are extensions that are
+    // file level scoped (not message scoped). The first
+    // file_->extension_count() of extension_generators_ are the file scoped
+    // ones.
+    if (file_->extension_count()) {
+      p->Print("@interface $root_class_name$ (DynamicMethods)\n",
+               "root_class_name", root_class_name_);
 
-          /**
-           * Exposes the extension registry for this file.
-           *
-           * The base class provides:
-           * @code
-           *   + (GPBExtensionRegistry *)extensionRegistry;
-           * @endcode
-           * which is a @c GPBExtensionRegistry that includes all the extensions defined by
-           * this file and all files that it depends on.
-           **/
-          GPB_FINAL @interface $root_class_name$ : GPBRootObject
-          @end
+      for (int i = 0; i < file_->extension_count(); i++) {
+        extension_generators_[i]->GenerateMembersHeader(p);
+      }
 
-          $root_extensions$;
-          $messages$;
-          NS_ASSUME_NONNULL_END
+      p->Print("@end\n\n");
+    }  // file_->extension_count()
 
-          CF_EXTERN_C_END
-        )objc");
+    for (const auto& generator : message_generators_) {
+      generator->GenerateMessageHeader(p);
+    }
+
+    // clang-format off
+    p->Print(
+      "NS_ASSUME_NONNULL_END\n"
+      "\n"
+      "CF_EXTERN_C_END\n");
+    // clang-format on
   });
 }
 
@@ -368,44 +348,28 @@ void FileGenerator::GenerateSource(io::Printer* p) const {
 
   GenerateFile(
       p, GeneratedFileType::kSource, ignored_warnings, extra_files, [&] {
-        p->Emit(
-            {
-                {"fwd_decls",
-                 [&] {
-                   if (fwd_decls.empty()) {
-                     return;
-                   }
-                   p->Emit({{"decls", absl::StrJoin(fwd_decls, "\n")}},
-                           R"objc(
-                             #pragma mark - Objective C Class declarations
-                             // Forward declarations of Objective C classes that we can use as
-                             // static values in struct initializers.
-                             // We don't use [Foo class] because it is not a static value.
-                             $decls$
+        if (!fwd_decls.empty()) {
+          p->Print(
+              // clang-format off
+              "#pragma mark - Objective C Class declarations\n"
+              "// Forward declarations of Objective C classes that we can use as\n"
+              "// static values in struct initializers.\n"
+              "// We don't use [Foo class] because it is not a static value.\n"
+              "$fwd_decls$\n"
+              "\n",
+              // clang-format on
+              "fwd_decls", absl::StrJoin(fwd_decls, "\n"));
+        }
 
-                           )objc");
-                 }},
-                {"root_implementation",
-                 [&] { EmitRootImplementation(p, deps_with_extensions); }},
-                {"file_descriptor_implementation",
-                 [&] { EmitFileDescriptorImplementation(p); }},
-                {"enums_and_messages",
-                 [&] {
-                   for (const auto& generator : enum_generators_) {
-                     generator->GenerateSource(p);
-                   }
-                   for (const auto& generator : message_generators_) {
-                     generator->GenerateSource(p);
-                   }
-                 }},
-            },
-            R"objc(
-              $fwd_decls$;
-              $root_implementation$
+        PrintRootImplementation(p, deps_with_extensions);
+        PrintFileDescriptorImplementation(p);
 
-              $file_descriptor_implementation$;
-              $enums_and_messages$;
-            )objc");
+        for (const auto& generator : enum_generators_) {
+          generator->GenerateSource(p);
+        }
+        for (const auto& generator : message_generators_) {
+          generator->GenerateSource(p);
+        }
       });
 }
 
@@ -468,245 +432,222 @@ void FileGenerator::GenerateFile(
     import_writer.AddFile(dep, header_extension);
   }
 
-  p->Emit(
-      {
-          // Avoid the directive within the string below being seen by the
-          // tool.
-          {"clangfmt", "clang-format"},
-          {"filename", file_->name()},
-          {"root_class_name", root_class_name_},
-          {"source_check",
-           [&] {
-             if (file_type == GeneratedFileType::kHeader) {
-               // Add some verification that the generated code matches the
-               // source the code is being compiled with.
-               //
-               // NOTE: Where used, this captures the raw numeric values at the
-               // time the generator was compiled, since that will be the
-               // versions for the ObjC runtime at that time.  The constants in
-               // the generated code will then get their values at at compile
-               // time (so checking against the headers being used to compile).
-               p->Emit({{"google_protobuf_objc_version",
-                         GOOGLE_PROTOBUF_OBJC_VERSION}},
-                       R"objc(
-    #if GOOGLE_PROTOBUF_OBJC_VERSION < $google_protobuf_objc_version$
-    #error This file was generated by a newer version of protoc which is incompatible with your Protocol Buffer library sources.
-    #endif
-    #if $google_protobuf_objc_version$ < GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION
-    #error This file was generated by an older version of protoc which is incompatible with your Protocol Buffer library sources.
-    #endif
+  p->Print(
+      "// Generated by the protocol buffer compiler.  DO NOT EDIT!\n"
+      "// $clangfmt$ off\n"
+      "// source: $filename$\n"
+      "\n",
+      "filename", file_->name(), "clangfmt", "clang-format");
 
-                       )objc");
-             }
-           }},
-          {"runtime_imports",
-           [&] {
-             import_writer.EmitRuntimeImports(
-                 p, /* default_cpp_symbol = */ !is_bundled_proto_);
-           }},
-          {"file_imports", [&] { import_writer.EmitFileImports(p); }},
-          {"extra_imports",
-           [&] {
-             // Enum implementation uses atomic in the generated code, so add
-             // the system import as needed.
-             if (file_type == GeneratedFileType::kSource &&
-                 !enum_generators_.empty()) {
-               p->Emit("#import <stdatomic.h>\n\n");
-             }
-           }},
-          {"extra_warnings",
-           [&] {
-             for (const auto& warning : ignored_warnings) {
-               p->Emit({{"warning", warning}},
-                       R"objc(
-                        #pragma clang diagnostic ignored "-W$warning$"
-                      )objc");
-             }
-           }},
-          {"body", body},
-      },
-      R"objc(
-        // Generated by the protocol buffer compiler.  DO NOT EDIT!
-        // $clangfmt$ off
-        // source: $filename$
+  import_writer.PrintRuntimeImports(
+      p, /* default_cpp_symbol = */ !is_bundled_proto_);
 
-        $runtime_imports$
+  p->Print("\n");
 
-        $source_check$;
-        $extra_imports$;
-        $file_imports$
-        // @@protoc_insertion_point(imports)
+  if (file_type == GeneratedFileType::kHeader) {
+    // Add some verification that the generated code matches the source the
+    // code is being compiled with.
+    // NOTE: This captures the raw numeric values at the time the generator was
+    // compiled, since that will be the versions for the ObjC runtime at that
+    // time.  The constants in the generated code will then get their values at
+    // at compile time (so checking against the headers being used to compile).
+    p->Print(
+        // clang-format off
+        "#if GOOGLE_PROTOBUF_OBJC_VERSION < $google_protobuf_objc_version$\n"
+        "#error This file was generated by a newer version of protoc which is incompatible with your Protocol Buffer library sources.\n"
+        "#endif\n"
+        "#if $google_protobuf_objc_version$ < GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION\n"
+        "#error This file was generated by an older version of protoc which is incompatible with your Protocol Buffer library sources.\n"
+        "#endif\n"
+        "\n",
+        // clang-format on
+        "google_protobuf_objc_version",
+        absl::StrCat(GOOGLE_PROTOBUF_OBJC_VERSION));
+  }
 
-        #pragma clang diagnostic push
-        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        $extra_warnings$;
+  // Enum implementation uses atomic in the generated code, so add
+  // the system import as needed.
+  if (file_type == GeneratedFileType::kSource && !enum_generators_.empty()) {
+    p->Print("#import <stdatomic.h>\n\n");
+  }
 
-        $body$;
+  import_writer.PrintFileImports(p);
 
-        #pragma clang diagnostic pop
+  // clang-format off
+  p->Print(
+      "// @@protoc_insertion_point(imports)\n"
+      "\n"
+      "#pragma clang diagnostic push\n"
+      "#pragma clang diagnostic ignored \"-Wdeprecated-declarations\"\n");
+  // clang-format on
+  for (const auto& warning : ignored_warnings) {
+    p->Print("#pragma clang diagnostic ignored \"-W$warning$\"\n", "warning",
+             warning);
+  }
+  p->Print("\n");
 
-        // @@protoc_insertion_point(global_scope)
+  body();
 
-        // $clangfmt$ on
-  )objc");
+  p->Print(
+      "\n"
+      "#pragma clang diagnostic pop\n"
+      "\n"
+      "// @@protoc_insertion_point(global_scope)\n"
+      "\n"
+      "// $clangfmt$ on\n",
+      "clangfmt", "clang-format");
 }
 
-void FileGenerator::EmitRootImplementation(
+void FileGenerator::PrintRootImplementation(
     io::Printer* p,
     const std::vector<const FileDescriptor*>& deps_with_extensions) const {
-  p->Emit(
-      {
-          {"root_extension_registry",
-           [&] {
-             // If there were any extensions or this file has any dependencies,
-             // output a registry to override to create the file specific
-             // registry.
-             if (extension_generators_.empty() &&
-                 deps_with_extensions.empty()) {
-               if (file_->dependency_count() == 0) {
-                 p->Emit(R"objc(
-                    // No extensions in the file and no imports, so no need to generate
-                    // +extensionRegistry.
-                  )objc");
-               } else {
-                 p->Emit(R"objc(
-                    // No extensions in the file and none of the imports (direct or indirect)
-                    // defined extensions, so no need to generate +extensionRegistry.
-                  )objc");
-               }
-             } else {
-               EmitRootExtensionRegistryImplementation(p, deps_with_extensions);
-             }
-           }},
-      },
-      R"objc(
-        #pragma mark - $root_class_name$
+  p->Print(
+      // clang-format off
+      "#pragma mark - $root_class_name$\n"
+      "\n"
+      "@implementation $root_class_name$\n"
+      "\n",
+      // clang-format on
+      "root_class_name", root_class_name_);
 
-        @implementation $root_class_name$
+  // If there were any extensions or this file has any dependencies, output a
+  // registry to override to create the file specific registry.
+  if (extension_generators_.empty() && deps_with_extensions.empty()) {
+    if (file_->dependency_count() == 0) {
+      // clang-format off
+      p->Print(
+          "// No extensions in the file and no imports, so no need to generate\n"
+          "// +extensionRegistry.\n");
+      // clang-format on
+    } else {
+      // clang-format off
+      p->Print(
+          "// No extensions in the file and none of the imports (direct or indirect)\n"
+          "// defined extensions, so no need to generate +extensionRegistry.\n");
+      // clang-format on
+    }
+  } else {
+    PrintRootExtensionRegistryImplementation(p, deps_with_extensions);
+  }
 
-        $root_extension_registry$
-
-        @end
-      )objc");
+  p->Print("\n@end\n\n");
 }
 
-void FileGenerator::EmitRootExtensionRegistryImplementation(
+void FileGenerator::PrintRootExtensionRegistryImplementation(
     io::Printer* p,
     const std::vector<const FileDescriptor*>& deps_with_extensions) const {
-  p->Emit(
-      {
-          {"register_local_extensions",
-           [&] {
-             if (extension_generators_.empty()) {
-               return;
-             }
-             p->Emit(R"objc(
-                 static GPBExtensionDescription descriptions[] = {
-                   $register_local_extensions_variable_blocks$
-                 };
-                 for (size_t i = 0; i < sizeof(descriptions) / sizeof(descriptions[0]); ++i) {
-                   GPBExtensionDescriptor *extension =
-                       [[GPBExtensionDescriptor alloc] initWithExtensionDescription:&descriptions[i]
-                                                                      usesClassRefs:YES];
-                   [registry addExtension:extension];
-                   [self globallyRegisterExtension:extension];
-                   [extension release];
-                 }
-               )objc");
-           }},
-          {"register_local_extensions_variable_blocks",
-           [&] {
-             for (const auto& generator : extension_generators_) {
-               generator->GenerateStaticVariablesInitialization(p);
-             }
-           }},
-          {"register_imports",
-           [&] {
-             if (deps_with_extensions.empty()) {
-               p->Emit(R"objc(
-                   // None of the imports (direct or indirect) defined extensions, so no need to add
-                   // them to this registry.
-                 )objc");
-             } else {
-               p->Emit(R"objc(
-                   // Merge in the imports (direct or indirect) that defined extensions.
-                 )objc");
-               for (const auto& dep : deps_with_extensions) {
-                 p->Emit({{"dependency", FileClassName(dep)}},
-                         R"objc(
-                           [registry addExtensions:[$dependency$ extensionRegistry]];
-                         )objc");
-               }
-             }
-           }},
-      },
-      R"objc(
-        + (GPBExtensionRegistry*)extensionRegistry {
-          // This is called by +initialize so there is no need to worry
-          // about thread safety and initialization of registry.
-          static GPBExtensionRegistry* registry = nil;
-          if (!registry) {
-            GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
-            registry = [[GPBExtensionRegistry alloc] init];
-            $register_local_extensions$;
-            $register_imports$
-          }
-          return registry;
-        }
-      )objc");
+  // clang-format off
+  p->Print(
+      "+ (GPBExtensionRegistry*)extensionRegistry {\n"
+      "  // This is called by +initialize so there is no need to worry\n"
+      "  // about thread safety and initialization of registry.\n"
+      "  static GPBExtensionRegistry* registry = nil;\n"
+      "  if (!registry) {\n"
+      "    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n"
+      "    registry = [[GPBExtensionRegistry alloc] init];\n");
+  // clang-format on
+
+  p->Indent();
+  p->Indent();
+
+  if (!extension_generators_.empty()) {
+    p->Print("static GPBExtensionDescription descriptions[] = {\n");
+    p->Indent();
+    for (const auto& generator : extension_generators_) {
+      generator->GenerateStaticVariablesInitialization(p);
+    }
+    p->Outdent();
+    // clang-format off
+    p->Print(
+        "};\n"
+        "for (size_t i = 0; i < sizeof(descriptions) / sizeof(descriptions[0]); ++i) {\n"
+        "  GPBExtensionDescriptor *extension =\n"
+        "      [[GPBExtensionDescriptor alloc] initWithExtensionDescription:&descriptions[i]\n"
+        "                                                     usesClassRefs:YES];\n"
+        "  [registry addExtension:extension];\n"
+        "  [self globallyRegisterExtension:extension];\n"
+        "  [extension release];\n"
+        "}\n");
+    // clang-format on
+  }
+
+  if (deps_with_extensions.empty()) {
+    // clang-format off
+    p->Print(
+        "// None of the imports (direct or indirect) defined extensions, so no need to add\n"
+        "// them to this registry.\n");
+    // clang-format on
+  } else {
+    // clang-format off
+    p->Print(
+        "// Merge in the imports (direct or indirect) that defined extensions.\n");
+    // clang-format on
+    for (const auto& dep : deps_with_extensions) {
+      const std::string root_class_name(FileClassName((dep)));
+      p->Print("[registry addExtensions:[$dependency$ extensionRegistry]];\n",
+               "dependency", root_class_name);
+    }
+  }
+
+  p->Outdent();
+  p->Outdent();
+
+  // clang-format off
+    p->Print(
+        "  }\n"
+        "  return registry;\n"
+        "}\n");
+  // clang-format on
 }
 
-void FileGenerator::EmitFileDescriptorImplementation(io::Printer* p) const {
+void FileGenerator::PrintFileDescriptorImplementation(io::Printer* p) const {
   // File descriptor only needed if there are messages to use it.
   if (message_generators_.empty()) {
     return;
   }
 
-  std::string syntax;
+  const std::string objc_prefix(FileClassPrefix(file_));
+  absl::flat_hash_map<absl::string_view, std::string> vars;
+  vars["root_class_name"] = root_class_name_;
+  vars["package"] = file_->package();
   switch (file_->syntax()) {
     case FileDescriptor::SYNTAX_UNKNOWN:
-      syntax = "GPBFileSyntaxUnknown";
+      vars["syntax"] = "GPBFileSyntaxUnknown";
       break;
     case FileDescriptor::SYNTAX_PROTO2:
-      syntax = "GPBFileSyntaxProto2";
+      vars["syntax"] = "GPBFileSyntaxProto2";
       break;
     case FileDescriptor::SYNTAX_PROTO3:
-      syntax = "GPBFileSyntaxProto3";
+      vars["syntax"] = "GPBFileSyntaxProto3";
       break;
   }
-  const std::string objc_prefix(FileClassPrefix(file_));
+  if (objc_prefix.empty()) {
+    vars["prefix_arg"] = "";
+  } else {
+    vars["prefix_arg"] = absl::StrCat(
+        "                                                 objcPrefix:@\"",
+        objc_prefix, "\"\n");
+  }
 
-  p->Emit(
-      {
-          {"package", file_->package()},
-          {"objc_prefix", objc_prefix},
-          {"objc_prefix_arg",
-           [&] {
-             if (!objc_prefix.empty()) {
-               p->Emit(R"objc(
-                   objcPrefix:@"$objc_prefix$"
-                 )objc");
-             }
-           }},
-          {"syntax", syntax},
-      },
-      R"objc(
-        #pragma mark - $root_class_name$_FileDescriptor
-
-        static GPBFileDescriptor *$root_class_name$_FileDescriptor(void) {
-          // This is called by +initialize so there is no need to worry
-          // about thread safety of the singleton.
-          static GPBFileDescriptor *descriptor = NULL;
-          if (!descriptor) {
-            GPB_DEBUG_CHECK_RUNTIME_VERSIONS();
-            descriptor = [[GPBFileDescriptor alloc] initWithPackage:@"$package$"
-                                                         $objc_prefix_arg$;
-                                                             syntax:$syntax$];
-          }
-          return descriptor;
-        }
-
-      )objc");
+  // clang-format off
+  p->Print(
+      vars,
+      "#pragma mark - $root_class_name$_FileDescriptor\n"
+      "\n"
+      "static GPBFileDescriptor *$root_class_name$_FileDescriptor(void) {\n"
+      "  // This is called by +initialize so there is no need to worry\n"
+      "  // about thread safety of the singleton.\n"
+      "  static GPBFileDescriptor *descriptor = NULL;\n"
+      "  if (!descriptor) {\n"
+      "    GPB_DEBUG_CHECK_RUNTIME_VERSIONS();\n"
+      "    descriptor = [[GPBFileDescriptor alloc] initWithPackage:@\"$package$\"\n"
+      "$prefix_arg$"
+      "                                                     syntax:$syntax$];\n"
+      "  }\n"
+      "  return descriptor;\n"
+      "}\n"
+      "\n");
+  // clang-format on
 }
 
 }  // namespace objectivec
