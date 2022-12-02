@@ -2005,6 +2005,21 @@ void BinaryAndJsonConformanceSuite::RunJsonTestsForFieldNameConvention() {
         optional_int32: 1
         optional_int64: 2
       )");
+  RunValidJsonTest("FieldNameConflict1", REQUIRED,
+                   "{\n \"jsonConflict\": \"hello\"\n}",
+                   R"pb(
+                     json_field_conflict1: "hello"
+                   )pb");
+  RunValidJsonTest("FieldNameConflict2", REQUIRED,
+                   "{\n \"jsonConflict\": \"hello\"\n}",
+                   R"pb(
+                     json_field_conflict2: "hello"
+                   )pb");
+  RunValidJsonTest(
+      "FieldNameConflictBoth", REQUIRED, "{\n \"jsonConflict\": \"hello\"\n}",
+      R"pb(
+        json_field_conflict1: "hello" json_field_conflict2: "hello"
+      )pb");
   // Missing comma between key/value pairs.
   ExpectParseFailureForJson(
       "MissingCommaOneLine", RECOMMENDED,

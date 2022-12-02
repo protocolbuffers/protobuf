@@ -233,6 +233,9 @@ message TestAllTypesProto2 {
   optional int32 field_name17__ = 417;
   optional int32 Field_name18__ = 418;
 
+  optional string json_field_conflict1 = 419 [json_name = "jsonConflict"];
+  optional string json_field_conflict2 = 420 [json_name = "jsonConflict"];
+
   // Reserved for unknown fields test.
   reserved 1000 to 9999;
 
