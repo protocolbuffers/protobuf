@@ -6043,9 +6043,12 @@ static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
   upb_MtDecoder_AssignHasbits(d->table);
 
   // Map entries have a pre-determined layout, regardless of types.
-  d->fields[0].offset = offsetof(upb_MapEntryData, k);
-  d->fields[1].offset = offsetof(upb_MapEntryData, v);
-  d->table->size = UPB_ALIGN_UP(sizeof(upb_MapEntryData), 8);
+  // NOTE: sync with mini_table/message_internal.h.
+  const size_t kv_size = d->platform == kUpb_MiniTablePlatform_32Bit ? 8 : 16;
+  const size_t hasbit_size = 8;
+  d->fields[0].offset = hasbit_size;
+  d->fields[1].offset = hasbit_size + kv_size;
+  d->table->size = UPB_ALIGN_UP(hasbit_size + kv_size + kv_size, 8);
 
   // Map entries have a special bit set to signal it's a map entry, used in
   // upb_MiniTable_SetSubMessage() below.
