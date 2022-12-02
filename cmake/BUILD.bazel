@@ -55,6 +55,7 @@ genrule(
     srcs = [
         "//:BUILD",
         "//:WORKSPACE",
+        "//bazel:workspace_deps.bzl",
     ],
     outs = ["generated-in/CMakeLists.txt"],
     cmd = "$(location :make_cmakelists) $@",
@@ -99,7 +100,7 @@ sh_test(
         ":copy_protos",
         ":gen_cmakelists",
         "//:cmake_files",
-        "//third_party/utf8_range:cmake_files",
+        "@utf8_range//:utf8_range_srcs",
     ],
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )

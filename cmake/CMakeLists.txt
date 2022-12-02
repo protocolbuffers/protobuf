@@ -53,6 +53,38 @@ include_directories(..)
 include_directories(../cmake)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
+if(EXISTS ../external/utf8_range)
+  # utf8_range is already installed
+  include_directories(../external/utf8_range)
+else()
+  include(FetchContent)
+  FetchContent_Declare(
+    utf8_range
+    GIT_REPOSITORY "https://github.com/protocolbuffers/utf8_range.git"
+    GIT_TAG "de0b4a8ff9b5d4c98108bdfe723291a33c52c54f"
+  )
+  FetchContent_GetProperties(utf8_range)
+  if(NOT utf8_range_POPULATED)
+    FetchContent_Populate(utf8_range)
+    include_directories(${utf8_range_SOURCE_DIR})
+  endif()
+  #FetchContent_MakeAvailable(utf8_range)
+  #include_directories(${utf8_range_SOURCE_DIR})
+  #
+  #include(ExternalProject)
+  #ExternalProject_Add(utf8_range
+  #                    PREFIX ${CMAKE_BINARY_DIR}/external
+  #                    GIT_REPOSITORY "https://github.com/protocolbuffers/utf8_range.git"
+  #                    GIT_TAG "de0b4a8ff9b5d4c98108bdfe723291a33c52c54f"
+  #                    SOURCE_DIR ${CMAKE_BINARY_DIR}/external/utf8_range
+  #                    UPDATE_COMMAND ""
+  #                    PATCH_COMMAND ""
+  #                    CONFIGURE_COMMAND ""
+  #                    BUILD_COMMAND ""
+  #                    BUILD_BYPRODUCTS ${CMAKE_BINARY_DIR}/external/utf8_range/utf8_range.h)
+  #include_directories(${CMAKE_BINARY_DIR}/external/utf8_range)
+endif()
+
 if(APPLE)
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -undefined dynamic_lookup -flat_namespace")
 elseif(UNIX)
@@ -62,191 +94,208 @@ endif()
 enable_testing()
 
 add_library(port INTERFACE)
-add_library(upb
-  ../upb/arena.c
-  ../upb/alloc.c
-  ../upb/array.c
-  ../upb/decode.c
-  ../upb/encode.c
-  ../upb/internal/table.h
-  ../upb/internal/unicode.h
-  ../upb/map_sorter.c
-  ../upb/map_sorter.h
-  ../upb/msg.c
-  ../upb/msg_internal.h
-  ../upb/status.c
-  ../upb/upb.c
-  ../upb/alloc.h
-  ../upb/arena.h
-  ../upb/array.h
-  ../upb/decode.h
-  ../upb/encode.h
-  ../upb/extension_registry.h
-  ../upb/message_value.h
-  ../upb/msg.h
-  ../upb/status.h
-  ../upb/string_view.h
-  ../upb/upb.h
-  ../upb/upb.hpp)
-target_link_libraries(upb
-  arena_internal
-  array_internal
-  decode_internal
-  encode_internal
-  extension_registry
+add_library(upb INTERFACE)
+target_link_libraries(upb INTERFACE
+  base
+  collections_internal
   fastdecode
-  port
-  table_internal
-  unicode_internal)
-add_library(extension_registry
-  ../upb/extension_registry.c
-  ../upb/msg.h
-  ../upb/msg_internal.h
-  ../upb/string_view.h
-  ../upb/upb.h
-  ../upb/extension_registry.h)
-target_link_libraries(extension_registry
-  port
-  table_internal)
-add_library(mini_table_internal INTERFACE)
-target_link_libraries(mini_table_internal INTERFACE
-  extension_registry
-  port
-  table_internal
-  upb)
-add_library(mini_table
-  ../upb/mini_table.c
-  ../upb/mini_table.h
-  ../upb/mini_table.hpp)
-target_link_libraries(mini_table
-  extension_registry
+  hash
+  lex
+  mem
+  message_internal
   mini_table_internal
   port
-  upb)
-add_library(mini_table_accessors
-  ../upb/internal/mini_table_accessors.h
-  ../upb/mini_table_accessors.c
-  ../upb/mini_table_accessors.h)
-target_link_libraries(mini_table_accessors
-  array_internal
-  collections
+  wire)
+add_library(base
+  ../upb/base/status.c
+  ../upb/base/descriptor_constants.h
+  ../upb/base/log2.h
+  ../upb/base/status.h
+  ../upb/base/string_view.h)
+target_link_libraries(base
+  port)
+add_library(mini_table INTERFACE)
+target_link_libraries(mini_table INTERFACE
+  base
+  mem
+  mini_table_internal
+  port)
+add_library(mini_table_internal
+  ../upb/mini_table/common.c
+  ../upb/mini_table/decode.c
+  ../upb/mini_table/encode.c
+  ../upb/mini_table/extension_registry.c
+  ../upb/mini_table/common.h
+  ../upb/mini_table/common_internal.h
+  ../upb/mini_table/decode.h
+  ../upb/mini_table/encode_internal.h
+  ../upb/mini_table/encode_internal.hpp
+  ../upb/mini_table/enum_internal.h
+  ../upb/mini_table/extension_internal.h
+  ../upb/mini_table/extension_registry.h
+  ../upb/mini_table/field_internal.h
+  ../upb/mini_table/file_internal.h
+  ../upb/mini_table/message_internal.h
+  ../upb/mini_table/sub_internal.h
+  ../upb/mini_table/types.h)
+target_link_libraries(mini_table_internal
+  base
+  hash
+  mem
+  port)
+add_library(message INTERFACE)
+target_link_libraries(message INTERFACE
+  mem
+  message_internal
   mini_table
+  port)
+add_library(message_internal
+  ../upb/message/message.c
+  ../upb/message/extension_internal.h
+  ../upb/message/internal.h
+  ../upb/message/message.h)
+target_link_libraries(message_internal
+  base
+  hash
+  mem
+  mini_table_internal
+  port)
+add_library(message_accessors
+  ../upb/message/accessors.c
+  ../upb/message/accessors.h)
+target_link_libraries(message_accessors
+  collections_internal
+  hash
+  message_internal
   mini_table_internal
   port
-  upb)
-add_library(fastdecode
-  ../upb/decode.h
-  ../upb/decode_fast.c
-  ../upb/decode_fast.h
-  ../upb/msg.h
-  ../upb/msg_internal.h)
-target_link_libraries(fastdecode
-  arena_internal
-  array_internal
-  decode_internal
-  extension_registry
+  upb
+  wire)
+add_library(fastdecode INTERFACE)
+target_link_libraries(fastdecode INTERFACE
+  base
+  collections_internal
+  hash
+  mem_internal
+  message_internal
+  mini_table_internal
   port
-  table_internal)
+  wire)
 add_library(generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE)
 target_link_libraries(generated_code_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
-  table_internal
+  base
+  collections_internal
+  hash
   upb)
 add_library(generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE)
 target_link_libraries(generated_cpp_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
+  base
+  collections_internal
+  hash
   mini_table
-  table_internal
   upb)
 add_library(generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE)
 target_link_libraries(generated_reflection_support__only_for_generated_code_do_not_use__i_give_permission_to_break_me INTERFACE
+  base
   descriptor_upb_proto
-  reflection
-  reflection_internal
-  table_internal)
-add_library(collections
-  ../upb/map.c
-  ../upb/msg_internal.h
-  ../upb/collections.h
-  ../upb/map.h
-  ../upb/map_sorter.h
-  ../upb/message_value.h)
-target_link_libraries(collections
-  mini_table
+  hash
+  reflection_internal)
+add_library(collections INTERFACE)
+target_link_libraries(collections INTERFACE
+  base
+  collections_internal
+  mem
+  port)
+add_library(collections_internal
+  ../upb/collections/array.c
+  ../upb/collections/map.c
+  ../upb/collections/map_sorter.c
+  ../upb/collections/array.h
+  ../upb/collections/array_internal.h
+  ../upb/collections/map.h
+  ../upb/collections/map_gencode_util.h
+  ../upb/collections/map_internal.h
+  ../upb/collections/map_sorter_internal.h
+  ../upb/collections/message_value.h)
+target_link_libraries(collections_internal
+  base
+  hash
+  mem
+  mini_table_internal
+  port)
+add_library(reflection INTERFACE)
+target_link_libraries(reflection INTERFACE
+  collections
   port
-  table_internal
+  reflection_internal
   upb)
-add_library(reflection
-  ../upb/reflection/common.h
+add_library(reflection_internal
   ../upb/reflection/def_builder.c
-  ../upb/reflection/def_builder_internal.h
   ../upb/reflection/def_pool.c
-  ../upb/reflection/def_pool.h
-  ../upb/reflection/def_pool_internal.h
   ../upb/reflection/def_type.c
-  ../upb/reflection/def_type.h
   ../upb/reflection/desc_state.c
-  ../upb/reflection/desc_state_internal.h
   ../upb/reflection/enum_def.c
-  ../upb/reflection/enum_def.h
-  ../upb/reflection/enum_def_internal.h
+  ../upb/reflection/enum_reserved_range.c
   ../upb/reflection/enum_value_def.c
-  ../upb/reflection/enum_value_def.h
-  ../upb/reflection/enum_value_def_internal.h
   ../upb/reflection/extension_range.c
-  ../upb/reflection/extension_range.h
-  ../upb/reflection/extension_range_internal.h
   ../upb/reflection/field_def.c
-  ../upb/reflection/field_def.h
-  ../upb/reflection/field_def_internal.h
   ../upb/reflection/file_def.c
-  ../upb/reflection/file_def.h
-  ../upb/reflection/file_def_internal.h
   ../upb/reflection/message.c
   ../upb/reflection/message_def.c
-  ../upb/reflection/message_def.h
-  ../upb/reflection/message_def_internal.h
+  ../upb/reflection/message_reserved_range.c
   ../upb/reflection/method_def.c
-  ../upb/reflection/method_def.h
-  ../upb/reflection/method_def_internal.h
   ../upb/reflection/oneof_def.c
-  ../upb/reflection/oneof_def.h
-  ../upb/reflection/oneof_def_internal.h
   ../upb/reflection/service_def.c
-  ../upb/reflection/service_def.h
-  ../upb/reflection/service_def_internal.h
-  ../upb/def.h
-  ../upb/def.hpp
-  ../upb/reflection.h
-  ../upb/reflection.hpp
+  ../upb/reflection/common.h
   ../upb/reflection/def.h
   ../upb/reflection/def.hpp
+  ../upb/reflection/def_builder_internal.h
+  ../upb/reflection/def_pool.h
+  ../upb/reflection/def_pool_internal.h
+  ../upb/reflection/def_type.h
+  ../upb/reflection/desc_state_internal.h
+  ../upb/reflection/enum_def.h
+  ../upb/reflection/enum_def_internal.h
+  ../upb/reflection/enum_reserved_range.h
+  ../upb/reflection/enum_reserved_range_internal.h
+  ../upb/reflection/enum_value_def.h
+  ../upb/reflection/enum_value_def_internal.h
+  ../upb/reflection/extension_range.h
+  ../upb/reflection/extension_range_internal.h
+  ../upb/reflection/field_def.h
+  ../upb/reflection/field_def_internal.h
+  ../upb/reflection/file_def.h
+  ../upb/reflection/file_def_internal.h
   ../upb/reflection/message.h
-  ../upb/reflection/message.hpp)
-target_link_libraries(reflection
+  ../upb/reflection/message.hpp
+  ../upb/reflection/message_def.h
+  ../upb/reflection/message_def_internal.h
+  ../upb/reflection/message_reserved_range.h
+  ../upb/reflection/message_reserved_range_internal.h
+  ../upb/reflection/method_def.h
+  ../upb/reflection/method_def_internal.h
+  ../upb/reflection/oneof_def.h
+  ../upb/reflection/oneof_def_internal.h
+  ../upb/reflection/service_def.h
+  ../upb/reflection/service_def_internal.h)
+target_link_libraries(reflection_internal
   collections
   descriptor_upb_proto
-  mini_table
+  hash
+  message_accessors
   mini_table_internal
   port
-  table_internal
-  upb)
-add_library(reflection_internal INTERFACE)
-target_link_libraries(reflection_internal INTERFACE
-  collections
-  descriptor_upb_proto
-  mini_table
-  mini_table_internal
-  port
-  reflection
-  table_internal
   upb)
 add_library(textformat
-  ../upb/text_encode.c
+  ../upb/text/encode.c
+  ../upb/text/encode.h
   ../upb/text_encode.h)
 target_link_libraries(textformat
-  collections
-  encode_internal
+  collections_internal
+  lex
   port
-  reflection)
+  reflection
+  wire)
 add_library(json
   ../upb/json/decode.c
   ../upb/json/encode.c
@@ -255,57 +304,69 @@ add_library(json
   ../upb/json_decode.h
   ../upb/json_encode.h)
 target_link_libraries(json
-  atoi_internal
   collections
-  encode_internal
+  lex
   port
   reflection
-  unicode_internal
   upb)
-add_library(array_internal
-  ../upb/alloc.h
-  ../upb/arena.h
-  ../upb/array.h
-  ../upb/internal/array.c
-  ../upb/message_value.h
-  ../upb/msg.h
-  ../upb/status.h
-  ../upb/string_view.h
-  ../upb/upb.h
-  ../upb/internal/array.h)
-target_link_libraries(array_internal
+add_library(mem INTERFACE)
+target_link_libraries(mem INTERFACE
+  mem_internal
   port)
-add_library(arena_internal INTERFACE)
-target_link_libraries(arena_internal INTERFACE
+add_library(mem_internal
+  ../upb/mem/alloc.c
+  ../upb/mem/arena.c
+  ../upb/mem/alloc.h
+  ../upb/mem/arena.h
+  ../upb/mem/arena_internal.h)
+target_link_libraries(mem_internal
   port)
-add_library(atoi_internal
-  ../upb/internal/atoi.c
-  ../upb/internal/atoi.h)
-target_link_libraries(atoi_internal
-  port)
-add_library(decode_internal INTERFACE)
-target_link_libraries(decode_internal INTERFACE
-  arena_internal
+add_library(wire INTERFACE)
+target_link_libraries(wire INTERFACE
+  mem
+  message_internal
+  mini_table_internal
   port
-  table_internal
-  /third_party/utf8_range)
-add_library(encode_internal INTERFACE)
-target_link_libraries(encode_internal INTERFACE
+  wire_internal)
+add_library(wire_internal
+  ../upb/wire/decode.c
+  ../upb/wire/decode_fast.c
+  ../upb/wire/encode.c
+  ../upb/wire/common_internal.h
+  ../upb/wire/decode.h
+  ../upb/wire/decode_fast.h
+  ../upb/wire/decode_internal.h
+  ../upb/wire/encode.h
+  ../upb/wire/swap_internal.h
+  ../upb/wire/types.h)
+target_link_libraries(wire_internal
+  base
+  collections_internal
+  hash
+  mem_internal
+  message_internal
+  mini_table_internal
+  port
+  utf8_range//:utf8_range)
+add_library(hash
+  ../upb/hash/common.c
+  ../upb/hash/common.h
+  ../upb/hash/int_table.h
+  ../upb/hash/str_table.h)
+target_link_libraries(hash
+  base
+  mem
   port)
-add_library(table_internal
-  ../upb/internal/table.c
-  ../upb/alloc.h
-  ../upb/arena.h
-  ../upb/internal/table.h
-  ../upb/status.h
-  ../upb/string_view.h
-  ../upb/upb.h)
-target_link_libraries(table_internal
-  port)
-add_library(unicode_internal
-  ../upb/internal/unicode.c
-  ../upb/internal/unicode.h)
-target_link_libraries(unicode_internal
+add_library(lex
+  ../upb/lex/atoi.c
+  ../upb/lex/round_trip.c
+  ../upb/lex/strtod.c
+  ../upb/lex/unicode.c
+  ../upb/lex/atoi.h
+  ../upb/lex/round_trip.h
+  ../upb/lex/strtod.h
+  ../upb/lex/unicode.h)
+target_link_libraries(lex
   port)
 
 

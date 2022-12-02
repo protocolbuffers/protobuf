@@ -8,6 +8,9 @@ upb_deps()
 load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
 protobuf_deps()
 
+load("@utf8_range//:workspace_deps.bzl", "utf8_range_deps")
+utf8_range_deps()
+
 http_archive(
     name = "lua",
     build_file = "//bazel:lua.BUILD",

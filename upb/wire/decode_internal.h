@@ -36,7 +36,7 @@
 #include "upb/mem/arena_internal.h"
 #include "upb/message/internal.h"
 #include "upb/wire/decode.h"
-#include "third_party/utf8_range/utf8_range.h"
+#include "utf8_range.h"
 
 // Must be last.
 #include "upb/port/def.inc"
