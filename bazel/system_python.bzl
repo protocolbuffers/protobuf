@@ -176,25 +176,29 @@ def _get_python_path(repository_ctx):
 
 def _populate_package(ctx, path, python3, python_version):
     ctx.symlink(path, "python")
-    support = "Supported"
+    supported = True
     for idx, v in enumerate(ctx.attr.minimum_python_version.split(".")):
         if int(python_version[idx]) < int(v):
-            support = "Unsupported"
+            supported = False
             break
 
     build_file = _build_file.format(
         interpreter = python3,
-        support = support,
+        support = "Supported" if supported else "Unsupported",
     )
 
     ctx.file("interpreter", "exec {} \"$@\"".format(python3))
     ctx.file("BUILD.bazel", build_file)
     ctx.file("version.bzl", "SYSTEM_PYTHON_VERSION = '{}{}'".format(python_version[0], python_version[1]))
     ctx.file("register.bzl", _register.format(ctx.attr.name))
-    ctx.file("pip.bzl", _alias_pip.format(
-        python_version = ".".join(python_version),
-        repo = ctx.attr.name,
-    ))
+    if supported:
+        ctx.file("pip.bzl", _alias_pip.format(
+            python_version = ".".join(python_version),
+            repo = ctx.attr.name,
+        ))
+    else:
+        # PIP dependencies are unlikely to be satisfiable for unsupported versions of python.
+        ctx.file("pip.bzl", _mock_pip)
 
 def _populate_empty_package(ctx):
     # Mock out all the entrypoints we need to run from WORKSPACE.  Targets that
