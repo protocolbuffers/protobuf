@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_FILE_H__
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -83,6 +84,17 @@ class FileGenerator {
   void GenerateHeader(io::Printer* p) const;
   void GenerateSource(io::Printer* p) const;
 
+  enum class GeneratedFileType : int { kHeader, kSource };
+
+  void GenerateFile(io::Printer* p, GeneratedFileType file_type,
+                    const std::vector<std::string>& ignored_warnings,
+                    const std::vector<const FileDescriptor*>& extra_files,
+                    std::function<void()> body) const;
+  void GenerateFile(io::Printer* p, GeneratedFileType file_type,
+                    std::function<void()> body) const {
+    GenerateFile(p, file_type, {}, {}, body);
+  }
+
   void EmitRootImplementation(
       io::Printer* p,
       const std::vector<const FileDescriptor*>& deps_with_extensions) const;
@@ -90,6 +102,12 @@ class FileGenerator {
       io::Printer* p,
       const std::vector<const FileDescriptor*>& deps_with_extensions) const;
   void EmitFileDescriptorImplementation(io::Printer* p) const;
+
+  bool HeadersUseForwardDeclarations() const {
+    // The bundled protos (WKTs) don't make use of forward declarations.
+    return !is_bundled_proto_ &&
+           generation_options_.headers_use_forward_declarations;
+  }
 
  private:
   const FileDescriptor* file_;

@@ -212,7 +212,7 @@ void ImportWriter::EmitRuntimeImports(io::Printer* p,
              }},
         },
         R"objc(
-          $imports$;
+          $imports$
         )objc");
 
     return;
@@ -234,7 +234,7 @@ void ImportWriter::EmitRuntimeImports(io::Printer* p,
              }},
         },
         R"objc(
-          $imports$;
+          $imports$
         )objc");
     return;
   }
