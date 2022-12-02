@@ -33,6 +33,7 @@
 #include <climits>
 #include <iostream>
 #include <string>
+#include <utility>
 
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/common.h"
@@ -50,6 +51,9 @@
 #include "google/protobuf/test_util_lite.h"
 #include "google/protobuf/unittest_lite.pb.h"
 #include "google/protobuf/wire_format_lite.h"
+
+// Must be included last
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
