@@ -300,10 +300,10 @@ cc_test(
         ":collections",
         ":message_accessors",
         ":mini_table_internal",
-        ":test_messages_proto2_proto_upb",
-        ":test_messages_proto3_proto_upb",
-        ":test_upb_proto",
         ":upb",
+        "//upb/test:test_messages_proto2_upb_proto",
+        "//upb/test:test_messages_proto3_upb_proto",
+        "//upb/test:test_upb_proto",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_googletest//:gtest_main",
         "@com_google_protobuf//:protobuf",
@@ -634,55 +634,6 @@ cc_test(
     ],
 )
 
-cc_test(
-    name = "test_generated_code",
-    srcs = ["upb/test_generated_code.cc"],
-    deps = [
-        ":empty_upbdefs_proto",
-        ":port",
-        ":test_messages_proto2_proto_upb",
-        ":test_messages_proto3_proto_upb",
-        ":test_upb_proto",
-        ":upb",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-proto_library(
-    name = "test_proto",
-    testonly = 1,
-    srcs = ["upb/test.proto"],
-)
-
-upb_proto_library(
-    name = "test_upb_proto",
-    testonly = 1,
-    deps = [":test_proto"],
-)
-
-proto_library(
-    name = "empty_proto",
-    srcs = ["upb/empty.proto"],
-)
-
-upb_proto_reflection_library(
-    name = "empty_upbdefs_proto",
-    testonly = 1,
-    deps = [":empty_proto"],
-)
-
-upb_proto_library(
-    name = "test_messages_proto2_proto_upb",
-    testonly = 1,
-    deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto2_proto"],
-)
-
-upb_proto_library(
-    name = "test_messages_proto3_proto_upb",
-    testonly = 1,
-    deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto3_proto"],
-)
-
 proto_library(
     name = "json_test_proto",
     testonly = 1,
@@ -734,13 +685,13 @@ cc_test(
     name = "message_test",
     srcs = ["upb/message/test.cc"],
     deps = [
-        ":fuzz_test_util",
         ":json",
         ":message_test_upb_proto",
         ":message_test_upb_proto_reflection",
         ":reflection",
-        ":test_messages_proto3_proto_upb",
         ":upb",
+        "//upb/test:fuzz_util",
+        "//upb/test:test_messages_proto3_upb_proto",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -758,60 +709,15 @@ upb_proto_library(
     deps = [":message_test_proto"],
 )
 
-proto_library(
-    name = "proto3_test_proto",
-    testonly = 1,
-    srcs = ["upb/proto3_test.proto"],
-    deps = ["@com_google_protobuf//:descriptor_proto"],
-)
-
-upb_proto_library(
-    name = "proto3_test_upb_proto",
-    testonly = 1,
-    deps = [":proto3_test_proto"],
-)
-
-upb_proto_reflection_library(
-    name = "proto3_test_upb_proto_reflection",
-    testonly = 1,
-    deps = [":proto3_test_proto"],
-)
-
 upb_proto_reflection_library(
     name = "message_test_upb_proto_reflection",
     testonly = 1,
     deps = [":message_test_proto"],
 )
 
-proto_library(
-    name = "test_cpp_proto",
-    srcs = ["upb/test_cpp.proto"],
-    deps = ["@com_google_protobuf//:timestamp_proto"],
-)
-
-upb_proto_library(
-    name = "test_cpp_upb_proto",
-    deps = ["test_cpp_proto"],
-)
-
-upb_proto_reflection_library(
-    name = "test_cpp_upb_proto_reflection",
-    deps = ["test_cpp_proto"],
-)
-
 upb_proto_library(
     name = "struct_upb_proto",
     deps = ["@com_google_protobuf//:struct_proto"],
-)
-
-upb_proto_library(
-    name = "timestamp_upb_proto",
-    deps = ["@com_google_protobuf//:timestamp_proto"],
-)
-
-upb_proto_reflection_library(
-    name = "timestamp_upb_proto_reflection",
-    deps = ["@com_google_protobuf//:timestamp_proto"],
 )
 
 cc_test(
@@ -821,35 +727,6 @@ cc_test(
     deps = [
         ":lex",
         "@com_google_absl//absl/strings",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "proto3_test",
-    srcs = ["upb/proto3_test.cc"],
-    copts = UPB_DEFAULT_CPPOPTS,
-    deps = [
-        ":proto3_test_upb_proto",
-        ":proto3_test_upb_proto_reflection",
-        ":reflection",
-        "@com_google_googletest//:gtest_main",
-    ],
-)
-
-cc_test(
-    name = "test_cpp",
-    srcs = ["upb/test_cpp.cc"],
-    copts = UPB_DEFAULT_CPPOPTS,
-    deps = [
-        ":json",
-        ":port",
-        ":reflection",
-        ":test_cpp_upb_proto",
-        ":test_cpp_upb_proto_reflection",
-        ":timestamp_upb_proto",
-        ":timestamp_upb_proto_reflection",
-        ":upb",
         "@com_google_googletest//:gtest_main",
     ],
 )
@@ -867,13 +744,13 @@ cc_test(
 )
 
 upb_proto_library(
-    name = "conformance_proto_upb",
+    name = "conformance_upb_proto",
     testonly = 1,
     deps = ["@com_google_protobuf//conformance:conformance_proto"],
 )
 
 upb_proto_reflection_library(
-    name = "conformance_proto_upbdefs",
+    name = "conformance_upb_proto_reflection",
     testonly = 1,
     deps = ["@com_google_protobuf//conformance:conformance_proto"],
 )
@@ -881,12 +758,14 @@ upb_proto_reflection_library(
 upb_proto_reflection_library(
     name = "test_messages_proto2_upbdefs",
     testonly = 1,
+    visibility = ["//:__subpackages__"],
     deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto2_proto"],
 )
 
 upb_proto_reflection_library(
     name = "test_messages_proto3_upbdefs",
     testonly = 1,
+    visibility = ["//:__subpackages__"],
     deps = ["@com_google_protobuf//src/google/protobuf:test_messages_proto3_proto"],
 )
 
@@ -901,8 +780,8 @@ cc_binary(
         "//conditions:default": [],
     }),
     deps = [
-        ":conformance_proto_upb",
-        ":conformance_proto_upbdefs",
+        ":conformance_upb_proto",
+        ":conformance_upb_proto_reflection",
         ":json",
         ":port",
         ":reflection",
@@ -950,8 +829,8 @@ cc_binary(
         "//conditions:default": [],
     }),
     deps = [
-        ":conformance_proto_upb",
-        ":conformance_proto_upbdefs",
+        ":conformance_upb_proto",
+        ":conformance_upb_proto_reflection",
         ":json",
         ":port",
         ":reflection",
@@ -980,17 +859,6 @@ sh_test(
         "@com_google_protobuf//conformance:conformance_test_runner",
     ],
     deps = ["@bazel_tools//tools/bash/runfiles"],
-)
-
-cc_library(
-    name = "fuzz_test_util",
-    testonly = 1,
-    srcs = ["upb/fuzz_test_util.cc"],
-    hdrs = ["upb/fuzz_test_util.h"],
-    deps = [
-        ":mini_table_internal",
-        ":upb",
-    ],
 )
 
 # Internal C/C++ libraries #####################################################

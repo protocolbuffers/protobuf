@@ -25,8 +25,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef UPB_FUZZ_TEST_UTIL_H_
-#define UPB_FUZZ_TEST_UTIL_H_
+#ifndef UPB_TEST_FUZZ_UTIL_H_
+#define UPB_TEST_FUZZ_UTIL_H_
 
 #include <string>
 #include <vector>
@@ -78,4 +78,4 @@ const upb_MiniTable* BuildMiniTable(const MiniTableFuzzInput& input,
 }  // namespace fuzz
 }  // namespace upb
 
-#endif  // THIRD_PARTY_UPB_UPB_FUZZ_TEST_UTIL_H_
+#endif  // UPB_TEST_FUZZ_UTIL_H_

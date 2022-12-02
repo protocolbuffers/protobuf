@@ -26,9 +26,9 @@
  */
 
 #include "gtest/gtest.h"
-#include "upb/proto3_test.upb.h"
-#include "upb/proto3_test.upbdefs.h"
 #include "upb/reflection/def.hpp"
+#include "upb/test/proto3_test.upb.h"
+#include "upb/test/proto3_test.upbdefs.h"
 
 TEST(Proto3Test, SyntheticOneofExtension) {
   upb::DefPool defpool;

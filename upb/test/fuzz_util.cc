@@ -25,7 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "upb/fuzz_test_util.h"
+#include "upb/test/fuzz_util.h"
 
 #include "upb/message/message.h"
 #include "upb/mini_table/decode.h"

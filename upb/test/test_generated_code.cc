@@ -33,7 +33,7 @@
 #include "gtest/gtest.h"
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
-#include "upb/test.upb.h"
+#include "upb/test/test.upb.h"
 #include "upb/upb.hpp"
 
 // Must be last.

@@ -39,8 +39,8 @@
 #include "upb/json/encode.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
-#include "upb/test_cpp.upb.h"
-#include "upb/test_cpp.upbdefs.h"
+#include "upb/test/test_cpp.upb.h"
+#include "upb/test/test_cpp.upbdefs.h"
 
 // Must be last.
 #include "upb/port/def.inc"
