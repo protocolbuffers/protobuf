@@ -34,9 +34,12 @@
 #ifndef UPB_IO_STRING_H_
 #define UPB_IO_STRING_H_
 
+#include <stdarg.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "upb/mem/arena.h"
+#include "upb/port/vsnprintf_compat.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -110,6 +113,35 @@ UPB_INLINE bool upb_String_Append(upb_String* s, const char* data,
   s->size_ += size;
   s->data_[s->size_] = '\0';
   return true;
+}
+
+UPB_PRINTF(2, 0)
+UPB_INLINE bool upb_String_AppendFmtV(upb_String* s, const char* fmt,
+                                      va_list args) {
+  size_t capacity = 1000;
+  char* buf = (char*)malloc(capacity);
+  bool out = false;
+  for (;;) {
+    const int n = _upb_vsnprintf(buf, capacity, fmt, args);
+    if (n < 0) break;
+    if (n < capacity) {
+      out = upb_String_Append(s, buf, n);
+      break;
+    }
+    capacity *= 2;
+    buf = (char*)realloc(buf, capacity);
+  }
+  free(buf);
+  return out;
+}
+
+UPB_PRINTF(2, 3)
+UPB_INLINE bool upb_String_AppendFmt(upb_String* s, const char* fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  const bool ok = upb_String_AppendFmtV(s, fmt, args);
+  va_end(args);
+  return ok;
 }
 
 UPB_INLINE bool upb_String_Assign(upb_String* s, const char* data,
