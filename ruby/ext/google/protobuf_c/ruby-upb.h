@@ -1499,8 +1499,12 @@ struct upb_MiniTable {
 //
 // Note that users can and do create map entries directly, which will also use
 // this layout.
+//
+// NOTE: sync with mini_table/decode.c.
 typedef struct {
-  uint32_t hasbits;
+  // We only need 2 hasbits max, but due to alignment we'll use 8 bytes here,
+  // and the uint64_t helps make this clear.
+  uint64_t hasbits;
   union {
     upb_StringView str;  // For str/bytes.
     upb_value val;       // For all other types.
