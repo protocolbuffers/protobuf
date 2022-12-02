@@ -50,8 +50,8 @@ typedef struct {
 extern "C" {
 #endif
 
-UPB_INLINE upb_StringView upb_StringView_FromDataAndSize(const char* data,
-                                                         size_t size) {
+UPB_API_INLINE upb_StringView upb_StringView_FromDataAndSize(const char* data,
+                                                             size_t size) {
   upb_StringView ret;
   ret.data = data;
   ret.size = size;

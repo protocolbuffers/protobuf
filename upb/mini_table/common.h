@@ -53,17 +53,17 @@ typedef enum {
 extern "C" {
 #endif
 
-const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
+UPB_API const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
     const upb_MiniTable* table, uint32_t number);
 
-upb_FieldType upb_MiniTableField_Type(const upb_MiniTableField* field);
+UPB_API upb_FieldType upb_MiniTableField_Type(const upb_MiniTableField* field);
 
-UPB_INLINE bool upb_MiniTableField_IsExtension(
+UPB_API_INLINE bool upb_MiniTableField_IsExtension(
     const upb_MiniTableField* field) {
   return field->mode & kUpb_LabelFlags_IsExtension;
 }
 
-UPB_INLINE bool upb_MiniTableField_HasPresence(
+UPB_API_INLINE bool upb_MiniTableField_HasPresence(
     const upb_MiniTableField* field) {
   if (upb_MiniTableField_IsExtension(field)) {
     return !upb_IsRepeatedOrMap(field);
@@ -72,12 +72,12 @@ UPB_INLINE bool upb_MiniTableField_HasPresence(
   }
 }
 
-UPB_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
+UPB_API_INLINE const upb_MiniTable* upb_MiniTable_GetSubMessageTable(
     const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
   return mini_table->subs[field->submsg_index].submsg;
 }
 
-UPB_INLINE const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
+UPB_API_INLINE const upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
     const upb_MiniTable* mini_table, const upb_MiniTableField* field) {
   return mini_table->subs[field->submsg_index].subenum;
 }

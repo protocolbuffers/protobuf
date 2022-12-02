@@ -54,9 +54,9 @@ upb_MiniTable* _upb_MiniTable_Build(const char* data, size_t len,
                                     upb_MiniTablePlatform platform,
                                     upb_Arena* arena, upb_Status* status);
 
-UPB_INLINE upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
-                                              upb_Arena* arena,
-                                              upb_Status* status) {
+UPB_API_INLINE upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
+                                                  upb_Arena* arena,
+                                                  upb_Status* status) {
   return _upb_MiniTable_Build(data, len, kUpb_MiniTablePlatform_Native, arena,
                               status);
 }
@@ -67,14 +67,15 @@ UPB_INLINE upb_MiniTable* upb_MiniTable_Build(const char* data, size_t len,
 // to link the message field later, at which point it will no longer be treated
 // as unknown.  However there is no synchronization for this operation, which
 // means parallel mutation requires external synchronization.
-void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
-                                 upb_MiniTableField* field,
-                                 const upb_MiniTable* sub);
+UPB_API void upb_MiniTable_SetSubMessage(upb_MiniTable* table,
+                                         upb_MiniTableField* field,
+                                         const upb_MiniTable* sub);
 
 // Links an enum field to a MiniTable for that enum.  All enum fields must
 // be linked prior to parsing.
-void upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
-                              const upb_MiniTableEnum* sub);
+UPB_API void upb_MiniTable_SetSubEnum(upb_MiniTable* table,
+                                      upb_MiniTableField* field,
+                                      const upb_MiniTableEnum* sub);
 
 const char* _upb_MiniTableExtension_Build(const char* data, size_t len,
                                           upb_MiniTableExtension* ext,
@@ -83,16 +84,16 @@ const char* _upb_MiniTableExtension_Build(const char* data, size_t len,
                                           upb_MiniTablePlatform platform,
                                           upb_Status* status);
 
-UPB_INLINE const char* upb_MiniTableExtension_Build(
+UPB_API_INLINE const char* upb_MiniTableExtension_Build(
     const char* data, size_t len, upb_MiniTableExtension* ext,
     const upb_MiniTable* extendee, upb_MiniTableSub sub, upb_Status* status) {
   return _upb_MiniTableExtension_Build(data, len, ext, extendee, sub,
                                        kUpb_MiniTablePlatform_Native, status);
 }
 
-upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
-                                           upb_Arena* arena,
-                                           upb_Status* status);
+UPB_API upb_MiniTableEnum* upb_MiniTableEnum_Build(const char* data, size_t len,
+                                                   upb_Arena* arena,
+                                                   upb_Status* status);
 
 // Like upb_MiniTable_Build(), but the user provides a buffer of layout data so
 // it can be reused from call to call, avoiding repeated realloc()/free().

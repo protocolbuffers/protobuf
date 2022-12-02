@@ -44,11 +44,11 @@ typedef struct {
 extern "C" {
 #endif
 
-const char* upb_Status_ErrorMessage(const upb_Status* status);
-bool upb_Status_IsOk(const upb_Status* status);
+UPB_API const char* upb_Status_ErrorMessage(const upb_Status* status);
+UPB_API bool upb_Status_IsOk(const upb_Status* status);
 
 // These are no-op if |status| is NULL.
-void upb_Status_Clear(upb_Status* status);
+UPB_API void upb_Status_Clear(upb_Status* status);
 void upb_Status_SetErrorMessage(upb_Status* status, const char* msg);
 void upb_Status_SetErrorFormat(upb_Status* status, const char* fmt, ...)
     UPB_PRINTF(2, 3);

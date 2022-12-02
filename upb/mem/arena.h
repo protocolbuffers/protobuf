@@ -62,11 +62,13 @@ extern "C" {
 // Creates an arena from the given initial block (if any -- n may be 0).
 // Additional blocks will be allocated from |alloc|.  If |alloc| is NULL, this
 // is a fixed-size arena and cannot grow.
-upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc);
+UPB_API upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc);
 
-void upb_Arena_Free(upb_Arena* a);
-bool upb_Arena_AddCleanup(upb_Arena* a, void* ud, upb_CleanupFunc* func);
-bool upb_Arena_Fuse(upb_Arena* a, upb_Arena* b);
+UPB_API void upb_Arena_Free(upb_Arena* a);
+UPB_API bool upb_Arena_AddCleanup(upb_Arena* a, void* ud,
+                                  upb_CleanupFunc* func);
+UPB_API bool upb_Arena_Fuse(upb_Arena* a, upb_Arena* b);
+
 void* _upb_Arena_SlowMalloc(upb_Arena* a, size_t size);
 size_t upb_Arena_SpaceAllocated(upb_Arena* arena);
 uint32_t upb_Arena_DebugRefCount(upb_Arena* arena);
@@ -76,7 +78,7 @@ UPB_INLINE size_t _upb_ArenaHas(upb_Arena* a) {
   return (size_t)(h->end - h->ptr);
 }
 
-UPB_INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
+UPB_API_INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
   size = UPB_ALIGN_MALLOC(size);
   if (UPB_UNLIKELY(_upb_ArenaHas(a) < size)) {
     return _upb_Arena_SlowMalloc(a, size);
@@ -109,8 +111,8 @@ UPB_INLINE void* upb_Arena_Malloc(upb_Arena* a, size_t size) {
 // REQUIRES: (ptr, oldsize) was the last malloc/realloc from this arena.
 // We could also add a upb_Arena_TryShrinkLast() which is simply a no-op if
 // this was not the last alloc.
-UPB_INLINE void upb_Arena_ShrinkLast(upb_Arena* a, void* ptr, size_t oldsize,
-                                     size_t size) {
+UPB_API_INLINE void upb_Arena_ShrinkLast(upb_Arena* a, void* ptr,
+                                         size_t oldsize, size_t size) {
   _upb_ArenaHead* h = (_upb_ArenaHead*)a;
   oldsize = UPB_ALIGN_MALLOC(oldsize);
   size = UPB_ALIGN_MALLOC(size);
@@ -119,8 +121,8 @@ UPB_INLINE void upb_Arena_ShrinkLast(upb_Arena* a, void* ptr, size_t oldsize,
   h->ptr = (char*)ptr + size;
 }
 
-UPB_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
-                                   size_t size) {
+UPB_API_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
+                                       size_t size) {
   _upb_ArenaHead* h = (_upb_ArenaHead*)a;
   oldsize = UPB_ALIGN_MALLOC(oldsize);
   size = UPB_ALIGN_MALLOC(size);
@@ -145,7 +147,7 @@ UPB_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr, size_t oldsize,
   return ret;
 }
 
-UPB_INLINE upb_Arena* upb_Arena_New(void) {
+UPB_API_INLINE upb_Arena* upb_Arena_New(void) {
   return upb_Arena_Init(NULL, 0, &upb_alloc_global);
 }
 
