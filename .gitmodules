@@ -1,3 +1,0 @@
-[submodule "third_party/utf8_range"]
-	path = third_party/utf8_range
-	url = https://github.com/protocolbuffers/utf8_range.git

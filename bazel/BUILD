@@ -27,6 +27,8 @@ load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 
 licenses(["notice"])
 
+exports_files(["workspace_deps.bzl"], visibility = ["//cmake:__pkg__"])
+
 py_binary(
     name = "amalgamate",
     srcs = ["amalgamate.py"],

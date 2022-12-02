@@ -55,6 +55,7 @@ genrule(
     srcs = [
         "//:BUILD",
         "//:WORKSPACE",
+        "//bazel:workspace_deps.bzl"
     ],
     outs = ["generated-in/CMakeLists.txt"],
     cmd = "$(location :make_cmakelists) $@",
