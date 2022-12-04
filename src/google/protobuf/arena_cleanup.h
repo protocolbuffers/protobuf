@@ -113,42 +113,49 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE void CreateNode(Tag tag, void* pos,
 }
 
 // Optimization: performs a prefetch on `elem_address`.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE void PrefetchNode(
-    const void* elem_address) {
-  (void)elem_address;
+// Returns the size of the cleanup (meta) data at this address, allowing the
+// caller to advance cleanup iterators without needing to examine or know
+// anything about the underlying cleanup node or cleanup meta data / tags.
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t
+PrefetchNode(const void* elem_address) {
+  if (EnableSpecializedTags()) {
+    uintptr_t elem;
+    memcpy(&elem, elem_address, sizeof(elem));
+    if (static_cast<Tag>(elem & 3) != Tag::kDynamic) {
+      return sizeof(TaggedNode);
+    }
+  }
+  return sizeof(DynamicNode);
 }
 
-// Destroys the node idenitfied by `tag` stored at memory location `pos`.
-inline ABSL_ATTRIBUTE_ALWAYS_INLINE void DestroyNode(Tag tag, const void* pos) {
+// Destroys the object referenced by the cleanup node at memory location `pos`.
+// Returns the size of the cleanup (meta) data at this address, allowing the
+// caller to advance cleanup iterators without needing to examine or know
+// anything about the underlying cleanup node or cleanup meta data / tags.
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t DestroyNode(const void* pos) {
+  uintptr_t elem;
+  memcpy(&elem, pos, sizeof(elem));
   if (EnableSpecializedTags()) {
-    switch (tag) {
+    switch (static_cast<Tag>(elem & 3)) {
       case Tag::kString: {
-        TaggedNode n;
-        memcpy(&n, pos, sizeof(n));
-        auto* s = reinterpret_cast<std::string*>(n.elem & ~0x7ULL);
         // Some compilers don't like fully qualified explicit dtor calls,
         // so use an alias to avoid having to type `::`.
-        using string_type = std::string;
-        s->~string_type();
-        return;
+        using T = std::string;
+        reinterpret_cast<T*>(elem - static_cast<uintptr_t>(Tag::kString))->~T();
+        return sizeof(TaggedNode);
       }
       case Tag::kCord: {
-        TaggedNode n;
-        memcpy(&n, pos, sizeof(n));
-        auto* s = reinterpret_cast<absl::Cord*>(n.elem & ~0x7ULL);
-        // Some compilers don't like fully qualified explicit dtor calls,
-        // so use an alias to avoid having to type `::`.
-        using cord_type = absl::Cord;
-        s->~cord_type();
-        return;
+        using T = absl::Cord;
+        reinterpret_cast<T*>(elem - static_cast<uintptr_t>(Tag::kCord))->~T();
+        return sizeof(TaggedNode);
       }
       default:
         break;
     }
   }
-  DynamicNode n;
-  memcpy(&n, pos, sizeof(n));
-  n.destructor(reinterpret_cast<void*>(n.elem));
+  static_cast<const DynamicNode*>(pos)->destructor(
+      reinterpret_cast<void*>(elem - static_cast<uintptr_t>(Tag::kDynamic)));
+  return sizeof(DynamicNode);
 }
 
 // Returns the `tag` identifying the type of object for `destructor` or
