@@ -20,6 +20,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * C: https://github.com/squidfunk/protobluff
 * C: https://github.com/eerimoq/pbtools
 * C++: https://github.com/protocolbuffers/protobuf (Google-official implementation)
+* C++: https://github.com/yksten/struct2x
 * C++: https://EmbeddedProto.com
 * C/C++: http://spbc.sf.net/
 * C#: https://code.google.com/p/protobuf-csharp-port
