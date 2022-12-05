@@ -65,8 +65,8 @@ UPB_INLINE void _upb_MiniTable_SetPresence(upb_Message* msg,
   }
 }
 
-UPB_INLINE bool upb_MiniTable_HasField(const upb_Message* msg,
-                                       const upb_MiniTableField* field);
+UPB_API_INLINE bool upb_MiniTable_HasField(const upb_Message* msg,
+                                           const upb_MiniTableField* field);
 
 UPB_INLINE bool _upb_MiniTable_ValueIsNonZero(const void* default_val,
                                               const upb_MiniTableField* field) {

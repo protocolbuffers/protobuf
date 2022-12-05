@@ -45,7 +45,8 @@ extern "C" {
 #endif
 
 // Creates a new message with the given mini_table on the given arena.
-upb_Message* upb_Message_New(const upb_MiniTable* mini_table, upb_Arena* arena);
+UPB_API upb_Message* upb_Message_New(const upb_MiniTable* mini_table,
+                                     upb_Arena* arena);
 
 // Adds unknown data (serialized protobuf data) to the given message.
 // The data is copied into the message instance.
