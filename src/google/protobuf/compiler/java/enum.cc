@@ -119,7 +119,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
     printer->Annotate("name", canonical_values_[i]);
   }
 
-  if (SupportUnknownEnumValue(descriptor_->file())) {
+  if (SupportUnknownEnumValue(descriptor_)) {
     if (ordinal_is_index) {
       printer->Print("${$UNRECOGNIZED$}$(-1),\n", "{", "", "}", "");
     } else {
@@ -167,7 +167,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
   printer->Print(
       "\n"
       "public final int getNumber() {\n");
-  if (SupportUnknownEnumValue(descriptor_->file())) {
+  if (SupportUnknownEnumValue(descriptor_)) {
     if (ordinal_is_index) {
       printer->Print(
           "  if (this == UNRECOGNIZED) {\n"
@@ -251,7 +251,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
     printer->Print(
         "public final com.google.protobuf.Descriptors.EnumValueDescriptor\n"
         "    getValueDescriptor() {\n");
-    if (SupportUnknownEnumValue(descriptor_->file())) {
+    if (SupportUnknownEnumValue(descriptor_)) {
       if (ordinal_is_index) {
         printer->Print(
             "  if (this == UNRECOGNIZED) {\n"
@@ -346,7 +346,7 @@ void EnumGenerator::Generate(io::Printer* printer) {
         "      \"EnumValueDescriptor is not for this type.\");\n"
         "  }\n",
         "classname", descriptor_->name());
-    if (SupportUnknownEnumValue(descriptor_->file())) {
+    if (SupportUnknownEnumValue(descriptor_)) {
       printer->Print(
           "  if (desc.getIndex() == -1) {\n"
           "    return UNRECOGNIZED;\n"

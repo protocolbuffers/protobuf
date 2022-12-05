@@ -120,7 +120,7 @@ void SetEnumVariables(
   (*variables)["get_has_field_bit_from_local"] =
       GenerateGetBitFromLocal(builderBitIndex);
 
-  if (SupportUnknownEnumValue(descriptor->file())) {
+  if (SupportUnknownEnumValue(descriptor)) {
     variables->insert(
         {"unknown", absl::StrCat((*variables)["type"], ".UNRECOGNIZED")});
   } else {
@@ -167,7 +167,7 @@ void ImmutableEnumFieldGenerator::GenerateInterfaceMembers(
     printer->Print(variables_,
                    "$deprecation$boolean has$capitalized_name$();\n");
   }
-  if (SupportUnknownEnumValue(descriptor_->file())) {
+  if (SupportUnknownEnumValue(descriptor_)) {
     WriteFieldEnumValueAccessorDocComment(printer, descriptor_, GETTER);
     printer->Print(variables_,
                    "$deprecation$int get$capitalized_name$Value();\n");
@@ -188,7 +188,7 @@ void ImmutableEnumFieldGenerator::GenerateMembers(io::Printer* printer) const {
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
-  if (SupportUnknownEnumValue(descriptor_->file())) {
+  if (SupportUnknownEnumValue(descriptor_)) {
     WriteFieldEnumValueAccessorDocComment(printer, descriptor_, GETTER);
     printer->Print(variables_,
                    "@java.lang.Override $deprecation$public int "
@@ -219,7 +219,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
   }
-  if (SupportUnknownEnumValue(descriptor_->file())) {
+  if (SupportUnknownEnumValue(descriptor_)) {
     WriteFieldEnumValueAccessorDocComment(printer, descriptor_, GETTER);
     printer->Print(variables_,
                    "@java.lang.Override $deprecation$public int "
@@ -286,7 +286,7 @@ void ImmutableEnumFieldGenerator::GenerateKotlinDslMembers(
                  "    $kt_dsl_builder$.${$set$capitalized_name$$}$(value)\n"
                  "  }\n");
 
-  if (SupportUnknownEnumValue(descriptor_->file())) {
+  if (SupportUnknownEnumValue(descriptor_)) {
     printer->Print(
         variables_,
         "$kt_deprecation$public var $kt_name$Value: kotlin.Int\n"
@@ -338,7 +338,7 @@ void ImmutableEnumFieldGenerator::GenerateMergingCode(
                    "if (other.has$capitalized_name$()) {\n"
                    "  set$capitalized_name$(other.get$capitalized_name$());\n"
                    "}\n");
-  } else if (SupportUnknownEnumValue(descriptor_->file())) {
+  } else if (SupportUnknownEnumValue(descriptor_)) {
     printer->Print(
         variables_,
         "if (other.$name$_ != $default_number$) {\n"
@@ -362,7 +362,7 @@ void ImmutableEnumFieldGenerator::GenerateBuildingCode(
 
 void ImmutableEnumFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
-  if (SupportUnknownEnumValue(descriptor_->file())) {
+  if (SupportUnknownEnumValue(descriptor_)) {
     printer->Print(variables_,
                    "$name$_ = input.readEnum();\n"
                    "$set_has_field_bit_builder$\n");
@@ -437,7 +437,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateMembers(
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  if (SupportUnknownEnumValue(descriptor_->file())) {
+  if (SupportUnknownEnumValue(descriptor_)) {
     WriteFieldEnumValueAccessorDocComment(printer, descriptor_, GETTER);
     printer->Print(
         variables_,
@@ -473,7 +473,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  if (SupportUnknownEnumValue(descriptor_->file())) {
+  if (SupportUnknownEnumValue(descriptor_)) {
     WriteFieldEnumValueAccessorDocComment(printer, descriptor_, GETTER);
     printer->Print(
         variables_,
@@ -552,7 +552,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuildingCode(
 
 void ImmutableEnumOneofFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
-  if (SupportUnknownEnumValue(descriptor_->file())) {
+  if (SupportUnknownEnumValue(descriptor_)) {
     printer->Print(
         variables_,
         "set$capitalized_name$Value(other.get$capitalized_name$Value());\n");
@@ -564,7 +564,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateMergingCode(
 
 void ImmutableEnumOneofFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
-  if (SupportUnknownEnumValue(descriptor_->file())) {
+  if (SupportUnknownEnumValue(descriptor_)) {
     printer->Print(variables_,
                    "int rawValue = input.readEnum();\n"
                    "$set_oneof_case_message$;\n"
@@ -604,7 +604,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateSerializedSizeCode(
 
 void ImmutableEnumOneofFieldGenerator::GenerateEqualsCode(
     io::Printer* printer) const {
-  if (SupportUnknownEnumValue(descriptor_->file())) {
+  if (SupportUnknownEnumValue(descriptor_)) {
     printer->Print(
         variables_,
         "if (get$capitalized_name$Value()\n"
@@ -619,7 +619,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateEqualsCode(
 
 void ImmutableEnumOneofFieldGenerator::GenerateHashCode(
     io::Printer* printer) const {
-  if (SupportUnknownEnumValue(descriptor_->file())) {
+  if (SupportUnknownEnumValue(descriptor_)) {
     printer->Print(variables_,
                    "hash = (37 * hash) + $constant_name$;\n"
                    "hash = (53 * hash) + get$capitalized_name$Value();\n");
@@ -661,7 +661,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateInterfaceMembers(
   WriteFieldAccessorDocComment(printer, descriptor_, LIST_INDEXED_GETTER);
   printer->Print(variables_,
                  "$deprecation$$type$ get$capitalized_name$(int index);\n");
-  if (SupportUnknownEnumValue(descriptor_->file())) {
+  if (SupportUnknownEnumValue(descriptor_)) {
     WriteFieldEnumValueAccessorDocComment(printer, descriptor_, LIST_GETTER);
     printer->Print(variables_,
                    "$deprecation$java.util.List<java.lang.Integer>\n"
@@ -716,7 +716,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateMembers(
       "  return $name$_converter_.convert($name$_.get(index));\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
-  if (SupportUnknownEnumValue(descriptor_->file())) {
+  if (SupportUnknownEnumValue(descriptor_)) {
     WriteFieldEnumValueAccessorDocComment(printer, descriptor_, LIST_GETTER);
     printer->Print(variables_,
                    "@java.lang.Override\n"
@@ -844,7 +844,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
       "}\n");
   printer->Annotate("{", "}", descriptor_);
 
-  if (SupportUnknownEnumValue(descriptor_->file())) {
+  if (SupportUnknownEnumValue(descriptor_)) {
     WriteFieldEnumValueAccessorDocComment(printer, descriptor_, LIST_GETTER);
     printer->Print(variables_,
                    "$deprecation$public java.util.List<java.lang.Integer>\n"
@@ -954,7 +954,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuildingCode(
 void RepeatedImmutableEnumFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
   // Read and store the enum
-  if (SupportUnknownEnumValue(descriptor_->file())) {
+  if (SupportUnknownEnumValue(descriptor_)) {
     printer->Print(variables_,
                    "int tmpRaw = input.readEnum();\n"
                    "ensure$capitalized_name$IsMutable();\n"

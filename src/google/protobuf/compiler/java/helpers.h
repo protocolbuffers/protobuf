@@ -383,15 +383,12 @@ inline bool ExposePublicParser(const FileDescriptor* descriptor) {
   return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO2;
 }
 
-// Whether unknown enum values are kept (i.e., not stored in UnknownFieldSet
-// but in the message and can be queried using additional getters that return
-// ints.
-inline bool SupportUnknownEnumValue(const FileDescriptor* descriptor) {
-  return descriptor->syntax() == FileDescriptor::SYNTAX_PROTO3;
+inline bool SupportUnknownEnumValue(const EnumDescriptor* e) {
+  return !e->is_closed();
 }
 
 inline bool SupportUnknownEnumValue(const FieldDescriptor* field) {
-  return field->file()->syntax() == FileDescriptor::SYNTAX_PROTO3;
+  return field->enum_type() != nullptr && !field->enum_type()->is_closed();
 }
 
 // Check whether a message has repeated fields.

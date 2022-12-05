@@ -147,7 +147,7 @@ void SetMessageVariables(
         {"value_enum_type_pass_through_nullness",
          absl::StrCat(pass_through_nullness, (*variables)["value_enum_type"])});
 
-    if (SupportUnknownEnumValue(descriptor->file())) {
+    if (SupportUnknownEnumValue(descriptor)) {
       // Map unknown values to a special UNRECOGNIZED value if supported.
       variables->insert(
           {"unrecognized_value",
@@ -275,7 +275,7 @@ void ImmutableMapFieldGenerator::GenerateInterfaceMembers(
         "$deprecation$$value_enum_type$ ${$get$capitalized_name$OrThrow$}$(\n"
         "    $key_type$ key);\n");
     printer->Annotate("{", "}", descriptor_);
-    if (SupportUnknownEnumValue(descriptor_->file())) {
+    if (SupportUnknownEnumValue(descriptor_)) {
       printer->Print(
           variables_,
           "/**\n"
@@ -478,7 +478,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
         "}\n");
     printer->Annotate("{", "}", descriptor_);
 
-    if (SupportUnknownEnumValue(descriptor_->file())) {
+    if (SupportUnknownEnumValue(descriptor_)) {
       if (context_->options().opensource_runtime) {
         printer->Print(
             variables_,
@@ -645,7 +645,7 @@ void ImmutableMapFieldGenerator::GenerateMapGetters(
         "}\n");
     printer->Annotate("{", "}", descriptor_);
 
-    if (SupportUnknownEnumValue(descriptor_->file())) {
+    if (SupportUnknownEnumValue(descriptor_)) {
       printer->Print(
           variables_,
           "/**\n"
@@ -870,7 +870,7 @@ void ImmutableMapFieldGenerator::GenerateBuildingCode(
 
 void ImmutableMapFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
-  if (!SupportUnknownEnumValue(descriptor_->file()) &&
+  if (!SupportUnknownEnumValue(descriptor_) &&
       GetJavaType(ValueField(descriptor_)) == JAVATYPE_ENUM) {
     printer->Print(
         variables_,
