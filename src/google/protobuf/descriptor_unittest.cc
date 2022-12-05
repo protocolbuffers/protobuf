@@ -67,7 +67,6 @@
 #include "google/protobuf/port_def.inc"
 
 using ::testing::AnyOf;
-using ::testing::ElementsAre;
 
 namespace google {
 namespace protobuf {
@@ -864,6 +863,7 @@ TEST_F(DescriptorTest, FieldNamesDedup) {
     return names;
   };
 
+  using testing::ElementsAre;
   // field_name1
   EXPECT_THAT(collect_unique_names(message4_->field(0)),
               ElementsAre("fieldName1", "field_name1"));
@@ -4601,7 +4601,6 @@ TEST_F(ValidationErrorTest, ReservedFieldNumber) {
       "reserved for the protocol buffer library implementation.\n"
       "foo.proto: Foo: NUMBER: Suggested field numbers for Foo: 1, 2\n");
 }
-
 
 TEST_F(ValidationErrorTest, ExtensionMissingExtendee) {
   BuildFileWithErrors(
@@ -8488,46 +8487,6 @@ TEST_F(LazilyBuildDependenciesTest, Dependency) {
   EXPECT_TRUE(bar_file != nullptr);
   EXPECT_TRUE(pool_.InternalIsFileLoaded("bar.proto"));
   EXPECT_FALSE(pool_.InternalIsFileLoaded("baz.proto"));
-}
-
-TEST(AllowedReservedFieldTest, ParsesCorrectInput) {
-  auto res = internal::ParseAllowedReservedField(R"(
- optional,  foo.bar  , foo_bar,  19000
-repeated,  int32, the_int, 19123
-  # comment
- optional, optional, optional, 19253
-)");
-
-  ASSERT_EQ(res.size(), 3);
-  EXPECT_EQ(res[0].label, FieldDescriptor::LABEL_OPTIONAL);
-  EXPECT_EQ(res[0].number, 19000);
-  EXPECT_EQ(res[0].type_name, "foo.bar");
-  EXPECT_EQ(res[0].name, "foo_bar");
-
-  EXPECT_EQ(res[1].label, FieldDescriptor::LABEL_REPEATED);
-  EXPECT_EQ(res[1].number, 19123);
-  EXPECT_EQ(res[1].type_name, "int32");
-  EXPECT_EQ(res[1].name, "the_int");
-
-  EXPECT_EQ(res[2].label, FieldDescriptor::LABEL_OPTIONAL);
-  EXPECT_EQ(res[2].number, 19253);
-  EXPECT_EQ(res[2].type_name, "optional");
-  EXPECT_EQ(res[2].name, "optional");
-}
-
-TEST(AllowedReservedFieldTest, IncorrectInputDoesNotCrash) {
-  // Bad label.
-  EXPECT_THAT(internal::ParseAllowedReservedField("required, a,  b, 19000"),
-              ElementsAre());
-  // Bad number of fields.
-  EXPECT_THAT(internal::ParseAllowedReservedField("optional, a,  b"),
-              ElementsAre());
-  // Bad field number.
-  EXPECT_THAT(internal::ParseAllowedReservedField("required, a,  b, xxx"),
-              ElementsAre());
-  // Out of bounds field number.
-  EXPECT_THAT(internal::ParseAllowedReservedField("required, a,  b, 1"),
-              ElementsAre());
 }
 
 // ===================================================================
