@@ -397,7 +397,7 @@ bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
   //      using upb_Message_Next(msg2).  If the two messages have the same set
   //      of fields, this will yield the same field.
   //   3. For extension fields, we have to actually search for the corresponding
-  //      field, which we do with upb_Message_Get(msg2, ext_f1).
+  //      field, which we do with upb_Message_GetFieldByDef(msg2, ext_f1).
   //   4. Once iteration over msg1 is complete, we call upb_Message_Next(msg2)
   //   one
   //      final time to verify that we have visited all of msg2's regular fields
@@ -413,7 +413,7 @@ bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
   size_t iter2 = kUpb_Message_Begin;
   while (upb_Message_Next(msg1, m, symtab, &f1, &val1, &iter1)) {
     if (upb_FieldDef_IsExtension(f1)) {
-      val2 = upb_Message_Get(msg2, f1);
+      val2 = upb_Message_GetFieldByDef(msg2, f1);
     } else {
       if (!upb_Message_Next(msg2, m, NULL, &f2, &val2, &iter2) || f1 != f2) {
         return false;

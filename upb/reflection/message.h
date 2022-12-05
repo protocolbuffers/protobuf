@@ -38,61 +38,86 @@
 extern "C" {
 #endif
 
-upb_MessageValue upb_FieldDef_Default(const upb_FieldDef* f);
-
-/* Returns the value associated with this field. */
-upb_MessageValue upb_Message_Get(const upb_Message* msg, const upb_FieldDef* f);
-
-/* Returns a mutable pointer to a map, array, or submessage value.  If the given
- * arena is non-NULL this will construct a new object if it was not previously
- * present.  May not be called for primitive fields. */
+// Returns a mutable pointer to a map, array, or submessage value. If the given
+// arena is non-NULL this will construct a new object if it was not previously
+// present. May not be called for primitive fields.
 upb_MutableMessageValue upb_Message_Mutable(upb_Message* msg,
                                             const upb_FieldDef* f,
                                             upb_Arena* a);
 
-/* May only be called for fields where upb_FieldDef_HasPresence(f) == true. */
-bool upb_Message_Has(const upb_Message* msg, const upb_FieldDef* f);
-
-/* Returns the field that is set in the oneof, or NULL if none are set. */
+// Returns the field that is set in the oneof, or NULL if none are set.
 const upb_FieldDef* upb_Message_WhichOneof(const upb_Message* msg,
                                            const upb_OneofDef* o);
 
-/* Sets the given field to the given value.  For a msg/array/map/string, the
- * caller must ensure that the target data outlives |msg| (by living either in
- * the same arena or a different arena that outlives it).
- *
- * Returns false if allocation fails. */
-bool upb_Message_Set(upb_Message* msg, const upb_FieldDef* f,
-                     upb_MessageValue val, upb_Arena* a);
+// Clear all data and unknown fields.
+void upb_Message_ClearByDef(upb_Message* msg, const upb_MessageDef* m);
 
-/* Clears any field presence and sets the value back to its default. */
-void upb_Message_ClearField(upb_Message* msg, const upb_FieldDef* f);
+// Clears any field presence and sets the value back to its default.
+void upb_Message_ClearFieldByDef(upb_Message* msg, const upb_FieldDef* f);
 
-/* Clear all data and unknown fields. */
-void upb_Message_Clear(upb_Message* msg, const upb_MessageDef* m);
+// May only be called for fields where upb_FieldDef_HasPresence(f) == true.
+bool upb_Message_HasFieldByDef(const upb_Message* msg, const upb_FieldDef* f);
 
-/* Iterate over present fields.
- *
- * size_t iter = kUpb_Message_Begin;
- * const upb_FieldDef *f;
- * upb_MessageValue val;
- * while (upb_Message_Next(msg, m, ext_pool, &f, &val, &iter)) {
- *   process_field(f, val);
- * }
- *
- * If ext_pool is NULL, no extensions will be returned.  If the given symtab
- * returns extensions that don't match what is in this message, those extensions
- * will be skipped.
- */
+// Returns the value in the message associated with this field def.
+upb_MessageValue upb_Message_GetFieldByDef(const upb_Message* msg,
+                                           const upb_FieldDef* f);
+
+// Sets the given field to the given value. For a msg/array/map/string, the
+// caller must ensure that the target data outlives |msg| (by living either in
+// the same arena or a different arena that outlives it).
+//
+// Returns false if allocation fails.
+bool upb_Message_SetFieldByDef(upb_Message* msg, const upb_FieldDef* f,
+                               upb_MessageValue val, upb_Arena* a);
+
+// Iterate over present fields.
+//
+// size_t iter = kUpb_Message_Begin;
+// const upb_FieldDef *f;
+// upb_MessageValue val;
+// while (upb_Message_Next(msg, m, ext_pool, &f, &val, &iter)) {
+//   process_field(f, val);
+// }
+//
+// If ext_pool is NULL, no extensions will be returned.  If the given symtab
+// returns extensions that don't match what is in this message, those extensions
+// will be skipped.
 
 #define kUpb_Message_Begin -1
+
 bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
                       const upb_DefPool* ext_pool, const upb_FieldDef** f,
                       upb_MessageValue* val, size_t* iter);
 
-/* Clears all unknown field data from this message and all submessages. */
+// Clears all unknown field data from this message and all submessages.
 bool upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
                                 int maxdepth);
+
+// DEPRECATED FUNCTIONS
+// PHP and Ruby need these until we can version-bump them to the current upb.
+
+UPB_INLINE void upb_Message_Clear(upb_Message* msg, const upb_MessageDef* m) {
+  return upb_Message_ClearByDef(msg, m);
+}
+
+UPB_INLINE void upb_Message_ClearField(upb_Message* msg,
+                                       const upb_FieldDef* f) {
+  return upb_Message_ClearFieldByDef(msg, f);
+}
+
+UPB_INLINE bool upb_Message_Has(const upb_Message* msg, const upb_FieldDef* f) {
+  return upb_Message_HasFieldByDef(msg, f);
+}
+
+UPB_INLINE upb_MessageValue upb_Message_Get(const upb_Message* msg,
+                                            const upb_FieldDef* f) {
+  return upb_Message_GetFieldByDef(msg, f);
+}
+
+UPB_INLINE bool upb_Message_Set(upb_Message* msg, const upb_FieldDef* f,
+                                upb_MessageValue val, upb_Arena* a) {
+  return upb_Message_SetFieldByDef(msg, f, val, a);
+}
 
 #ifdef __cplusplus
 } /* extern "C" */

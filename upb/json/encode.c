@@ -143,8 +143,8 @@ static void jsonenc_timestamp(jsonenc* e, const upb_Message* msg,
                               const upb_MessageDef* m) {
   const upb_FieldDef* seconds_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_FieldDef* nanos_f = upb_MessageDef_FindFieldByNumber(m, 2);
-  int64_t seconds = upb_Message_Get(msg, seconds_f).int64_val;
-  int32_t nanos = upb_Message_Get(msg, nanos_f).int32_val;
+  int64_t seconds = upb_Message_GetFieldByDef(msg, seconds_f).int64_val;
+  int32_t nanos = upb_Message_GetFieldByDef(msg, nanos_f).int32_val;
   int L, N, I, J, K, hour, min, sec;
 
   if (seconds < -62135596800) {
@@ -186,8 +186,8 @@ static void jsonenc_duration(jsonenc* e, const upb_Message* msg,
                              const upb_MessageDef* m) {
   const upb_FieldDef* seconds_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_FieldDef* nanos_f = upb_MessageDef_FindFieldByNumber(m, 2);
-  int64_t seconds = upb_Message_Get(msg, seconds_f).int64_val;
-  int32_t nanos = upb_Message_Get(msg, nanos_f).int32_val;
+  int64_t seconds = upb_Message_GetFieldByDef(msg, seconds_f).int64_val;
+  int32_t nanos = upb_Message_GetFieldByDef(msg, nanos_f).int32_val;
   bool negative = false;
 
   if (seconds > 315576000000 || seconds < -315576000000 ||
@@ -348,7 +348,7 @@ static void upb_JsonEncode_Float(jsonenc* e, float val) {
 static void jsonenc_wrapper(jsonenc* e, const upb_Message* msg,
                             const upb_MessageDef* m) {
   const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(m, 1);
-  upb_MessageValue val = upb_Message_Get(msg, val_f);
+  upb_MessageValue val = upb_Message_GetFieldByDef(msg, val_f);
   jsonenc_scalar(e, val, val_f);
 }
 
@@ -393,8 +393,8 @@ static void jsonenc_any(jsonenc* e, const upb_Message* msg,
                         const upb_MessageDef* m) {
   const upb_FieldDef* type_url_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(m, 2);
-  upb_StringView type_url = upb_Message_Get(msg, type_url_f).str_val;
-  upb_StringView value = upb_Message_Get(msg, value_f).str_val;
+  upb_StringView type_url = upb_Message_GetFieldByDef(msg, type_url_f).str_val;
+  upb_StringView value = upb_Message_GetFieldByDef(msg, value_f).str_val;
   const upb_MessageDef* any_m = jsonenc_getanymsg(e, type_url);
   const upb_MiniTable* any_layout = upb_MessageDef_MiniTable(any_m);
   upb_Arena* arena = jsonenc_arena(e);
@@ -452,7 +452,7 @@ static void jsonenc_fieldpath(jsonenc* e, upb_StringView path) {
 static void jsonenc_fieldmask(jsonenc* e, const upb_Message* msg,
                               const upb_MessageDef* m) {
   const upb_FieldDef* paths_f = upb_MessageDef_FindFieldByNumber(m, 1);
-  const upb_Array* paths = upb_Message_Get(msg, paths_f).array_val;
+  const upb_Array* paths = upb_Message_GetFieldByDef(msg, paths_f).array_val;
   bool first = true;
   size_t i, n = 0;
 
@@ -473,7 +473,7 @@ static void jsonenc_struct(jsonenc* e, const upb_Message* msg,
   jsonenc_putstr(e, "{");
 
   const upb_FieldDef* fields_f = upb_MessageDef_FindFieldByNumber(m, 1);
-  const upb_Map* fields = upb_Message_Get(msg, fields_f).map_val;
+  const upb_Map* fields = upb_Message_GetFieldByDef(msg, fields_f).map_val;
 
   if (fields) {
     const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(fields_f);
@@ -498,7 +498,7 @@ static void jsonenc_listvalue(jsonenc* e, const upb_Message* msg,
                               const upb_MessageDef* m) {
   const upb_FieldDef* values_f = upb_MessageDef_FindFieldByNumber(m, 1);
   const upb_MessageDef* values_m = upb_FieldDef_MessageSubDef(values_f);
-  const upb_Array* values = upb_Message_Get(msg, values_f).array_val;
+  const upb_Array* values = upb_Message_GetFieldByDef(msg, values_f).array_val;
   size_t i;
   bool first = true;
 
@@ -738,8 +738,8 @@ static void jsonenc_msgfields(jsonenc* e, const upb_Message* msg,
     int n = upb_MessageDef_FieldCount(m);
     for (i = 0; i < n; i++) {
       f = upb_MessageDef_Field(m, i);
-      if (!upb_FieldDef_HasPresence(f) || upb_Message_Has(msg, f)) {
-        jsonenc_fieldval(e, f, upb_Message_Get(msg, f), &first);
+      if (!upb_FieldDef_HasPresence(f) || upb_Message_HasFieldByDef(msg, f)) {
+        jsonenc_fieldval(e, f, upb_Message_GetFieldByDef(msg, f), &first);
       }
     }
   } else {

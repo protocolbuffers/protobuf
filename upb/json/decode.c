@@ -938,7 +938,7 @@ static void jsondec_field(jsondec* d, upb_Message* msg,
     jsondec_tomsg(d, submsg, subm);
   } else {
     upb_MessageValue val = jsondec_value(d, f);
-    upb_Message_Set(msg, f, val, d->arena);
+    upb_Message_SetFieldByDef(msg, f, val, d->arena);
   }
 
   d->debug_field = preserved;
@@ -1091,9 +1091,10 @@ static void jsondec_timestamp(jsondec* d, upb_Message* msg,
     jsondec_err(d, "Timestamp out of range");
   }
 
-  upb_Message_Set(msg, upb_MessageDef_FindFieldByNumber(m, 1), seconds,
-                  d->arena);
-  upb_Message_Set(msg, upb_MessageDef_FindFieldByNumber(m, 2), nanos, d->arena);
+  upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 1),
+                            seconds, d->arena);
+  upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 2), nanos,
+                            d->arena);
   return;
 
 malformed:
@@ -1126,9 +1127,10 @@ static void jsondec_duration(jsondec* d, upb_Message* msg,
     nanos.int32_val = -nanos.int32_val;
   }
 
-  upb_Message_Set(msg, upb_MessageDef_FindFieldByNumber(m, 1), seconds,
-                  d->arena);
-  upb_Message_Set(msg, upb_MessageDef_FindFieldByNumber(m, 2), nanos, d->arena);
+  upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 1),
+                            seconds, d->arena);
+  upb_Message_SetFieldByDef(msg, upb_MessageDef_FindFieldByNumber(m, 2), nanos,
+                            d->arena);
 }
 
 static void jsondec_listvalue(jsondec* d, upb_Message* msg,
@@ -1223,7 +1225,7 @@ static void jsondec_wellknownvalue(jsondec* d, upb_Message* msg,
       UPB_UNREACHABLE();
   }
 
-  upb_Message_Set(msg, f, val, d->arena);
+  upb_Message_SetFieldByDef(msg, f, val, d->arena);
 }
 
 static upb_StringView jsondec_mask(jsondec* d, const char* buf,
@@ -1310,7 +1312,7 @@ static const upb_MessageDef* jsondec_typeurl(jsondec* d, upb_Message* msg,
   upb_MessageValue val;
 
   val.str_val = type_url;
-  upb_Message_Set(msg, type_url_f, val, d->arena);
+  upb_Message_SetFieldByDef(msg, type_url_f, val, d->arena);
 
   /* Find message name after the last '/' */
   while (ptr > type_url.data && *--ptr != '/') {
@@ -1394,14 +1396,14 @@ static void jsondec_any(jsondec* d, upb_Message* msg, const upb_MessageDef* m) {
                  (char**)&encoded.str_val.data, &encoded.str_val.size);
   // TODO(b/235839510): We should fail gracefully here on a bad return status.
   UPB_ASSERT(status == kUpb_EncodeStatus_Ok);
-  upb_Message_Set(msg, value_f, encoded, d->arena);
+  upb_Message_SetFieldByDef(msg, value_f, encoded, d->arena);
 }
 
 static void jsondec_wrapper(jsondec* d, upb_Message* msg,
                             const upb_MessageDef* m) {
   const upb_FieldDef* value_f = upb_MessageDef_FindFieldByNumber(m, 1);
   upb_MessageValue val = jsondec_value(d, value_f);
-  upb_Message_Set(msg, value_f, val, d->arena);
+  upb_Message_SetFieldByDef(msg, value_f, val, d->arena);
 }
 
 static void jsondec_wellknown(jsondec* d, upb_Message* msg,

@@ -47,6 +47,7 @@ extern "C" {
 const upb_OneofDef* upb_FieldDef_ContainingOneof(const upb_FieldDef* f);
 const upb_MessageDef* upb_FieldDef_ContainingType(const upb_FieldDef* f);
 upb_CType upb_FieldDef_CType(const upb_FieldDef* f);
+upb_MessageValue upb_FieldDef_Default(const upb_FieldDef* f);
 const upb_EnumDef* upb_FieldDef_EnumSubDef(const upb_FieldDef* f);
 const upb_MessageDef* upb_FieldDef_ExtensionScope(const upb_FieldDef* f);
 const upb_FileDef* upb_FieldDef_File(const upb_FieldDef* f);

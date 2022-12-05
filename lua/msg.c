@@ -825,7 +825,7 @@ static int lupb_msg_index(lua_State* L) {
     }
   } else {
     /* Value type, just push value and return .*/
-    upb_MessageValue val = upb_Message_Get(msg, f);
+    upb_MessageValue val = upb_Message_GetFieldByDef(msg, f);
     lupb_pushmsgval(L, 0, upb_FieldDef_CType(f), val);
   }
 
@@ -882,7 +882,7 @@ static int lupb_Message_Newindex(lua_State* L) {
     lupb_Arena_Fuseobjs(L, 1, 3);
   }
 
-  upb_Message_Set(msg, f, msgval, lupb_Arenaget(L, 1));
+  upb_Message_SetFieldByDef(msg, f, msgval, lupb_Arenaget(L, 1));
 
   /* Return the new value for chained assignments. */
   lua_pushvalue(L, 3);

@@ -449,7 +449,7 @@ TEST(MessageTest, MaxRequiredFields) {
   for (int i = 1; i <= 61; i++) {
     upb::FieldDefPtr f = m.FindFieldByNumber(i);
     ASSERT_TRUE(f);
-    upb_Message_Set(test_msg, f.ptr(), val, arena.ptr());
+    upb_Message_SetFieldByDef(test_msg, f.ptr(), val, arena.ptr());
   }
 
   // Fails, field 63 still isn't set.
@@ -460,7 +460,7 @@ TEST(MessageTest, MaxRequiredFields) {
   // Succeeds, all required fields are set.
   upb::FieldDefPtr f = m.FindFieldByNumber(62);
   ASSERT_TRUE(f);
-  upb_Message_Set(test_msg, f.ptr(), val, arena.ptr());
+  upb_Message_SetFieldByDef(test_msg, f.ptr(), val, arena.ptr());
   serialized = upb_test_TestMaxRequiredFields_serialize_ex(
       test_msg, kUpb_EncodeOption_CheckRequired, arena.ptr(), &size);
   ASSERT_TRUE(serialized != nullptr);
