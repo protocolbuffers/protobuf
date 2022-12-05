@@ -252,14 +252,7 @@ bool EmitFieldNonDefaultCondition(io::Printer* p, const std::string& prefix,
 
 // Does the given field have a has_$name$() method?
 bool HasHasMethod(const FieldDescriptor* field) {
-  if (!IsProto3(field->file())) {
-    // In proto1/proto2, every field has a has_$name$() method.
-    return true;
-  }
-  // For message types without true field presence, only fields with a message
-  // type or inside an one-of have a has_$name$() method.
-  return field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE ||
-         field->has_optional_keyword() || field->real_containing_oneof();
+  return field->is_optional() && field->has_presence();
 }
 
 bool HasInternalHasMethod(const FieldDescriptor* field) {
