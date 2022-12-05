@@ -2357,9 +2357,9 @@ bool DescriptorPool::TryFindFileInFallbackDatabase(
     absl::string_view name) const {
   if (fallback_database_ == nullptr) return false;
 
-  auto name_string = std::string(name);
-  if (tables_->known_bad_files_.count(name_string) > 0) return false;
+  if (tables_->known_bad_files_.contains(name)) return false;
 
+  std::string name_string(name);
   FileDescriptorProto file_proto;
   if (!fallback_database_->FindFileByName(name_string, &file_proto) ||
       BuildFileFromDatabase(file_proto) == nullptr) {
@@ -2395,9 +2395,9 @@ bool DescriptorPool::TryFindSymbolInFallbackDatabase(
     absl::string_view name) const {
   if (fallback_database_ == nullptr) return false;
 
-  auto name_string = std::string(name);
-  if (tables_->known_bad_symbols_.count(name_string) > 0) return false;
+  if (tables_->known_bad_symbols_.contains(name)) return false;
 
+  std::string name_string(name);
   FileDescriptorProto file_proto;
   if (  // We skip looking in the fallback database if the name is a sub-symbol
         // of any descriptor that already exists in the descriptor pool (except
@@ -4119,7 +4119,7 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
 const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
     const FileDescriptorProto& proto) const {
   mutex_->AssertHeld();
-  if (tables_->known_bad_files_.count(proto.name()) > 0) {
+  if (tables_->known_bad_files_.contains(proto.name())) {
     return nullptr;
   }
   const FileDescriptor* result =
