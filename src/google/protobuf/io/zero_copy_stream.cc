@@ -34,6 +34,7 @@
 
 #include "google/protobuf/io/zero_copy_stream.h"
 
+#include <cstring>
 #include <utility>
 
 #include "google/protobuf/stubs/logging.h"
@@ -104,6 +105,32 @@ bool ZeroCopyInputStream::ReadCord(absl::Cord* cord, int count) {
   cord->Append(std::move(cord_buffer));
   return true;
 }
+
+bool ZeroCopyOutputStream::WriteCord(const absl::Cord& cord) {
+  if (cord.empty()) return true;
+
+  void* buffer;
+  int buffer_size = 0;
+  if (!Next(&buffer, &buffer_size)) return false;
+
+  for (absl::string_view fragment : cord.Chunks()) {
+    while (fragment.size() > static_cast<size_t>(buffer_size)) {
+      std::memcpy(buffer, fragment.data(), buffer_size);
+
+      fragment.remove_prefix(buffer_size);
+
+      if (!Next(&buffer, &buffer_size)) return false;
+    }
+    std::memcpy(buffer, fragment.data(), fragment.size());
+
+    // Advance the buffer.
+    buffer = static_cast<char*>(buffer) + fragment.size();
+    buffer_size -= static_cast<int>(fragment.size());
+  }
+  BackUp(buffer_size);
+  return true;
+}
+
 
 bool ZeroCopyOutputStream::WriteAliasedRaw(const void* /* data */,
                                            int /* size */) {

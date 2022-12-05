@@ -380,6 +380,14 @@ bool CopyingOutputStreamAdaptor::WriteAliasedRaw(const void* data, int size) {
   return true;
 }
 
+bool CopyingOutputStreamAdaptor::WriteCord(const absl::Cord& cord) {
+  for (absl::string_view chunk : cord.Chunks()) {
+    if (!WriteAliasedRaw(chunk.data(), chunk.size())) {
+      return false;
+    }
+  }
+  return true;
+}
 
 bool CopyingOutputStreamAdaptor::WriteBuffer() {
   if (failed_) {

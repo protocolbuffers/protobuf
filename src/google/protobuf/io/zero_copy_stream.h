@@ -260,6 +260,15 @@ class PROTOBUF_EXPORT ZeroCopyOutputStream {
   virtual bool WriteAliasedRaw(const void* data, int size);
   virtual bool AllowsAliasing() const { return false; }
 
+  // Writes the given Cord to the output.
+  //
+  // The default implementation iterates over all Cord chunks copying all cord
+  // data into the buffer(s) returned by the stream's `Next()` method.
+  //
+  // Some streams may implement this in a way that avoids copying the cord
+  // data by copying and managing a copy of the provided cord instead.
+  virtual bool WriteCord(const absl::Cord& cord);
+
 };
 
 }  // namespace io
