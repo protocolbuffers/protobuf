@@ -27,6 +27,9 @@
 
 # Mock out rules_python's pip.bzl for cases where no system python is found.
 _mock_pip = """
+def fuzzing_py_install_deps():
+    print("WARNING: could not install fuzzing_py dependencies")
+
 def _pip_install_impl(repository_ctx):
     repository_ctx.file("BUILD.bazel", '''
 py_library(
@@ -52,9 +55,11 @@ pip_install = repository_rule(
 pip_parse = pip_install
 """
 
-# Alias rules_python's pip.bzl for cases where a system pythong is found.
+# Alias rules_python's pip.bzl for cases where a system python is found.
 _alias_pip = """
 load("@rules_python//python:pip.bzl", _pip_install = "pip_install", _pip_parse = "pip_parse")
+load("@fuzzing_py_deps//:requirements.bzl", _fuzzing_py_install_deps = "install_deps")
+
 def _get_requirements(requirements, requirements_overrides):
     for version, override in requirements_overrides.items():
         if version in "{python_version}":
@@ -74,6 +79,9 @@ def pip_parse(requirements, requirements_overrides={{}}, **kwargs):
         requirements = _get_requirements(requirements, requirements_overrides),
         **kwargs,
     )
+
+def fuzzing_py_install_deps():
+    _fuzzing_py_install_deps()
 """
 
 _build_file = """

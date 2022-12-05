@@ -206,6 +206,9 @@ py_wheel(
         "Programming Language :: Python :: 3.10",
     ],
     distribution = "protobuf",
+    extra_distinfo_files = {
+        "//:LICENSE": "LICENSE",
+    },
     homepage = "https://developers.google.com/protocol-buffers/",
     license = "3-Clause BSD License",
     platform = select({
@@ -256,6 +259,9 @@ py_wheel(
         "Programming Language :: Python :: 3.10",
     ],
     distribution = "protobuf",
+    extra_distinfo_files = {
+        "//:LICENSE": "LICENSE",
+    },
     homepage = "https://developers.google.com/protocol-buffers/",
     license = "3-Clause BSD License",
     platform = "any",
@@ -281,6 +287,9 @@ py_wheel(
     testonly = True,
     abi = "none",
     distribution = "protobuftests",
+    extra_distinfo_files = {
+        "//:LICENSE": "LICENSE",
+    },
     platform = "any",
     python_tag = "py3",
     strip_path_prefixes = [
