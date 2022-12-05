@@ -122,8 +122,17 @@ std::string Namespace(const Descriptor* d);
 std::string Namespace(const FieldDescriptor* d);
 std::string Namespace(const EnumDescriptor* d);
 
+class MessageSCCAnalyzer;
+
+// Returns true if it's safe to init "field" to zero.
+bool CanInitializeByZeroing(const FieldDescriptor* field,
+                            const Options& options,
+                            MessageSCCAnalyzer* scc_analyzer);
 // Returns true if it's safe to reset "field" to zero.
-bool CanInitializeByZeroing(const FieldDescriptor* field);
+bool CanClearByZeroing(const FieldDescriptor* field);
+// Determines if swap can be implemented via memcpy.
+bool HasTrivialSwap(const FieldDescriptor* field, const Options& options,
+                    MessageSCCAnalyzer* scc_analyzer);
 
 std::string ClassName(const Descriptor* descriptor);
 std::string ClassName(const EnumDescriptor* enum_descriptor);
@@ -362,8 +371,6 @@ inline bool IsStringPiece(const FieldDescriptor* field,
   return field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
          EffectiveStringCType(field, options) == FieldOptions::STRING_PIECE;
 }
-
-class MessageSCCAnalyzer;
 
 // Does the given FileDescriptor use lazy fields?
 bool HasLazyFields(const FileDescriptor* file, const Options& options,

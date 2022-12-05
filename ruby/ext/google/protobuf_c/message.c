@@ -511,8 +511,8 @@ static int Map_initialize_kwarg(VALUE key, VALUE val, VALUE _self) {
   k = Convert_RubyToUpb(key, "", map_init->key_type, NULL);
 
   if (map_init->val_type.type == kUpb_CType_Message && TYPE(val) == T_HASH) {
-    upb_Message* msg =
-        upb_Message_New(map_init->val_type.def.msgdef, map_init->arena);
+    upb_MiniTable* t = upb_MessageDef_MiniTable(map_init->val_type.def.msgdef);
+    upb_Message* msg = upb_Message_New(t, map_init->arena);
     Message_InitFromValue(msg, map_init->val_type.def.msgdef, val,
                           map_init->arena);
     v.msg_val = msg;
@@ -542,7 +542,8 @@ static upb_MessageValue MessageValue_FromValue(VALUE val, TypeInfo info,
                                                upb_Arena* arena) {
   if (info.type == kUpb_CType_Message) {
     upb_MessageValue msgval;
-    upb_Message* msg = upb_Message_New(info.def.msgdef, arena);
+    upb_MiniTable* t = upb_MessageDef_MiniTable(info.def.msgdef);
+    upb_Message* msg = upb_Message_New(t, arena);
     Message_InitFromValue(msg, info.def.msgdef, val, arena);
     msgval.msg_val = msg;
     return msgval;
@@ -657,7 +658,8 @@ static VALUE Message_initialize(int argc, VALUE* argv, VALUE _self) {
   Message* self = ruby_to_Message(_self);
   VALUE arena_rb = Arena_new();
   upb_Arena* arena = Arena_get(arena_rb);
-  upb_Message* msg = upb_Message_New(self->msgdef, arena);
+  upb_MiniTable* t = upb_MessageDef_MiniTable(self->msgdef);
+  upb_Message* msg = upb_Message_New(t, arena);
 
   Message_InitPtr(_self, msg, arena_rb);
 
@@ -1308,7 +1310,7 @@ upb_Message* Message_deep_copy(const upb_Message* msg, const upb_MessageDef* m,
   const upb_MiniTable* layout = upb_MessageDef_MiniTable(m);
   size_t size;
 
-  upb_Message* new_msg = upb_Message_New(m, arena);
+  upb_Message* new_msg = upb_Message_New(layout, arena);
   char* data;
 
   if (upb_Encode(msg, layout, 0, tmp_arena, &data, &size) !=
@@ -1341,7 +1343,8 @@ const upb_Message* Message_GetUpbMessage(VALUE value, const upb_MessageDef* m,
     switch (upb_MessageDef_WellKnownType(m)) {
       case kUpb_WellKnown_Timestamp: {
         // Time -> Google::Protobuf::Timestamp
-        upb_Message* msg = upb_Message_New(m, arena);
+        const upb_MiniTable* t = upb_MessageDef_MiniTable(m);
+        upb_Message* msg = upb_Message_New(t, arena);
         upb_MessageValue sec, nsec;
         struct timespec time;
         const upb_FieldDef* sec_f = upb_MessageDef_FindFieldByNumber(m, 1);
@@ -1358,7 +1361,8 @@ const upb_Message* Message_GetUpbMessage(VALUE value, const upb_MessageDef* m,
       }
       case kUpb_WellKnown_Duration: {
         // Numeric -> Google::Protobuf::Duration
-        upb_Message* msg = upb_Message_New(m, arena);
+        const upb_MiniTable* t = upb_MessageDef_MiniTable(m);
+        upb_Message* msg = upb_Message_New(t, arena);
         upb_MessageValue sec, nsec;
         const upb_FieldDef* sec_f = upb_MessageDef_FindFieldByNumber(m, 1);
         const upb_FieldDef* nsec_f = upb_MessageDef_FindFieldByNumber(m, 2);

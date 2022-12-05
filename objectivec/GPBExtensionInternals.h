@@ -32,14 +32,7 @@
 
 #import "GPBDescriptor.h"
 
-@class GPBCodedInputStream;
 @class GPBCodedOutputStream;
-@protocol GPBExtensionRegistry;
-
-void GPBExtensionMergeFromInputStream(GPBExtensionDescriptor *extension, BOOL isPackedOnStream,
-                                      GPBCodedInputStream *input,
-                                      id<GPBExtensionRegistry> extensionRegistry,
-                                      GPBMessage *message);
 
 size_t GPBComputeExtensionSerializedSizeIncludingTag(GPBExtensionDescriptor *extension, id value);
 

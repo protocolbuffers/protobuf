@@ -30,10 +30,10 @@ def protobuf_deps():
         http_archive(
             name = "bazel_skylib",
             urls = [
-                "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.2.1/bazel-skylib-1.2.1.tar.gz",
-                "https://github.com/bazelbuild/bazel-skylib/releases/download/1.2.1/bazel-skylib-1.2.1.tar.gz",
+                "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
+                "https://github.com/bazelbuild/bazel-skylib/releases/download/1.3.0/bazel-skylib-1.3.0.tar.gz",
             ],
-            sha256 = "f7be3474d42aae265405a592bb7da8e171919d74c16f082a5457840f06054728",
+            sha256 = "74d544d96f4a5bb630d465ca8bbcfe231e3594e5aae57e1edbf17a6eb3ca2506",
         )
 
     if not native.existing_rule("com_google_absl"):
@@ -101,9 +101,9 @@ def protobuf_deps():
     if not native.existing_rule("rules_python"):
         http_archive(
             name = "rules_python",
-            sha256 = "9fcf91dbcc31fde6d1edb15f117246d912c33c36f44cf681976bd886538deba6",
-            strip_prefix = "rules_python-0.8.0",
-            url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.8.0.tar.gz",
+            sha256 = "a868059c8c6dd6ad45a205cca04084c652cfe1852e6df2d5aca036f6e5438380",
+            strip_prefix = "rules_python-0.14.0",
+            url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.14.0.tar.gz",
         )
 
     if not native.existing_rule("rules_jvm_external"):
@@ -135,6 +135,6 @@ def protobuf_deps():
         _github_archive(
             name = "upb",
             repo = "https://github.com/protocolbuffers/upb",
-            commit = "73661563dbb82bf7fdd614dd8da1186c0acc6b17",
-            sha256 = "0b2789aa957c665165fa66892a6402489d6491cb097391fd8ea5b5a248dbde35",
+            commit = "ee56471047ad8619d0c701f894aa1767ca91f5c2",
+            sha256 = "0c3f86ce497e6cc75e89a0d4a8e32c90ea25aaedabd6d42fb9e2f2ad52d3f4b0",
         )

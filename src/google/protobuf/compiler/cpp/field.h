@@ -215,6 +215,8 @@ class FieldGenerator {
   // message fields won't need to override this function.
   virtual void GenerateIsInitialized(io::Printer* printer) const {}
 
+  virtual void GenerateIfHasField(io::Printer* printer) const;
+
   virtual bool IsInlined() const { return false; }
 
   virtual ArenaDtorNeeds NeedsArenaDestructor() const {

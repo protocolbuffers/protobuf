@@ -91,7 +91,14 @@ class ParseFunctionGenerator::GeneratedOptionProvider final
   explicit GeneratedOptionProvider(ParseFunctionGenerator* gen) : gen_(gen) {}
   TailCallTableInfo::PerFieldOptions GetForField(
       const FieldDescriptor* field) const final {
-    return {IsLazy(field, gen_->options_, gen_->scc_analyzer_),
+    const auto verify_flag = [&] {
+      if (IsEagerlyVerifiedLazy(field, gen_->options_, gen_->scc_analyzer_))
+        return internal::field_layout::kTvEager;
+      if (IsLazilyVerifiedLazy(field, gen_->options_))
+        return internal::field_layout::kTvLazy;
+      return internal::field_layout::TransformValidation{};
+    };
+    return {verify_flag(),
             IsStringInlined(field, gen_->options_),
             IsImplicitWeakField(field, gen_->options_, gen_->scc_analyzer_),
             UseDirectTcParserTable(field, gen_->options_),
@@ -623,6 +630,15 @@ void ParseFunctionGenerator::GenerateTailCallTable(Formatter& format) {
                        QualifiedDefaultInstancePtr(
                            aux_entry.field->message_type(), options_));
                 break;
+              case TailCallTableInfo::kMessageVerifyFunc:
+                if (aux_entry.field != nullptr) {
+                  format("{$1$::InternalVerify},\n",
+                         QualifiedClassName(aux_entry.field->message_type(),
+                                            options_));
+                } else {
+                  format("{},\n");
+                }
+                break;
               case TailCallTableInfo::kEnumRange:
                 format("{$1$, $2$},\n", aux_entry.enum_range.start,
                        aux_entry.enum_range.size);
@@ -756,13 +772,15 @@ static void FormatFieldKind(Formatter& format,
         format(" | ::_fl::kRep$1$", rep);
       }
 
-      static constexpr const char* kXFormNames[] = {nullptr, "Default", "Table",
-                                                    "WeakPtr"};
+      static constexpr const char* kXFormNames[2][4] = {
+          {nullptr, "Default", "Table", "WeakPtr"}, {nullptr, "Eager", "Lazy"}};
       static_assert((fl::kTvDefault >> fl::kTvShift) == 1, "");
       static_assert((fl::kTvTable >> fl::kTvShift) == 2, "");
       static_assert((fl::kTvWeakPtr >> fl::kTvShift) == 3, "");
+      static_assert((fl::kTvEager >> fl::kTvShift) == 1, "");
+      static_assert((fl::kTvLazy >> fl::kTvShift) == 2, "");
 
-      if (auto* xform = kXFormNames[tv_index]) {
+      if (auto* xform = kXFormNames[rep_index == 2][tv_index]) {
         format(" | ::_fl::kTv$1$", xform);
       }
       break;
@@ -1052,7 +1070,7 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
           }
           if (field->real_containing_oneof()) {
             format(
-                "if (!$msg$_internal_has_$name$()) {\n"
+                "if ($msg$$1$_case() != k$2$) {\n"
                 "  $msg$clear_$1$();\n"
                 "  $msg$$field$ = ::$proto_ns$::Arena::CreateMessage<\n"
                 "      ::$proto_ns$::internal::LazyField>("
@@ -1060,7 +1078,8 @@ void ParseFunctionGenerator::GenerateLengthDelim(Formatter& format,
                 "  $msg$set_has_$name$();\n"
                 "}\n"
                 "auto* lazy_field = $msg$$field$;\n",
-                field->containing_oneof()->name());
+                field->containing_oneof()->name(),
+                UnderscoresToCamelCase(field->name(), true));
           } else if (internal::cpp::HasHasbit(field)) {
             format(
                 "_Internal::set_has_$name$(&$has_bits$);\n"

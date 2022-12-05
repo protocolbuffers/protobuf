@@ -27,7 +27,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        PLATFORM: ["ios", "macos", "tvos", "watchos"]
+        # Add back 'watchos'. See CocoaPods/CocoaPods#11558
+        PLATFORM: ["ios", "macos", "tvos"]
         CONFIGURATION: ["Debug", "Release"]
     steps:
     - uses: actions/checkout@v2

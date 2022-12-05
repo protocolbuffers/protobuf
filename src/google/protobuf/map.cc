@@ -34,7 +34,7 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-void* const kGlobalEmptyTable[kGlobalEmptyTableSize] = {nullptr};
+const TableEntryPtr kGlobalEmptyTable[kGlobalEmptyTableSize] = {};
 
 }  // namespace internal
 }  // namespace protobuf

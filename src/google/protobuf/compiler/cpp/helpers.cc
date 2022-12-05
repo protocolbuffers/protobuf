@@ -323,7 +323,9 @@ const char kThickSeparator[] =
 const char kThinSeparator[] =
     "// -------------------------------------------------------------------\n";
 
-bool CanInitializeByZeroing(const FieldDescriptor* field) {
+bool CanInitializeByZeroing(const FieldDescriptor* field,
+                            const Options& options,
+                            MessageSCCAnalyzer* scc_analyzer) {
   if (field->is_repeated() || field->is_extension()) return false;
   switch (field->cpp_type()) {
     case FieldDescriptor::CPPTYPE_ENUM:
@@ -342,6 +344,57 @@ bool CanInitializeByZeroing(const FieldDescriptor* field) {
       return field->default_value_double() == 0;
     case FieldDescriptor::CPPTYPE_BOOL:
       return field->default_value_bool() == false;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      // Non-repeated, non-lazy message fields are raw pointers initialized to
+      // null.
+      return !IsLazy(field, options, scc_analyzer);
+    default:
+      return false;
+  }
+}
+
+bool CanClearByZeroing(const FieldDescriptor* field) {
+  if (field->is_repeated() || field->is_extension()) return false;
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return field->default_value_enum()->number() == 0;
+    case FieldDescriptor::CPPTYPE_INT32:
+      return field->default_value_int32() == 0;
+    case FieldDescriptor::CPPTYPE_INT64:
+      return field->default_value_int64() == 0;
+    case FieldDescriptor::CPPTYPE_UINT32:
+      return field->default_value_uint32() == 0;
+    case FieldDescriptor::CPPTYPE_UINT64:
+      return field->default_value_uint64() == 0;
+    case FieldDescriptor::CPPTYPE_FLOAT:
+      return field->default_value_float() == 0;
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+      return field->default_value_double() == 0;
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return field->default_value_bool() == false;
+    default:
+      return false;
+  }
+}
+
+// Determines if swap can be implemented via memcpy.
+bool HasTrivialSwap(const FieldDescriptor* field, const Options& options,
+                    MessageSCCAnalyzer* scc_analyzer) {
+  if (field->is_repeated() || field->is_extension()) return false;
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_ENUM:
+    case FieldDescriptor::CPPTYPE_INT32:
+    case FieldDescriptor::CPPTYPE_INT64:
+    case FieldDescriptor::CPPTYPE_UINT32:
+    case FieldDescriptor::CPPTYPE_UINT64:
+    case FieldDescriptor::CPPTYPE_FLOAT:
+    case FieldDescriptor::CPPTYPE_DOUBLE:
+    case FieldDescriptor::CPPTYPE_BOOL:
+      return true;
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      // Non-repeated, non-lazy message fields are simply raw pointers, so we
+      // can swap them with memcpy.
+      return !IsLazy(field, options, scc_analyzer);
     default:
       return false;
   }

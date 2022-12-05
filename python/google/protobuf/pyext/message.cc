@@ -1100,7 +1100,8 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
             reinterpret_cast<RepeatedCompositeContainer*>(container.get());
         ScopedPyObjectPtr iter(PyObject_GetIter(value));
         if (iter == nullptr) {
-          PyErr_SetString(PyExc_TypeError, "Value must be iterable");
+          PyErr_Format(PyExc_TypeError, "Value of field '%s' must be iterable",
+                       descriptor->name().c_str());
           return -1;
         }
         ScopedPyObjectPtr next;
@@ -1129,7 +1130,8 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
             reinterpret_cast<RepeatedScalarContainer*>(container.get());
         ScopedPyObjectPtr iter(PyObject_GetIter(value));
         if (iter == nullptr) {
-          PyErr_SetString(PyExc_TypeError, "Value must be iterable");
+          PyErr_Format(PyExc_TypeError, "Value of field '%s' must be iterable",
+                       descriptor->name().c_str());
           return -1;
         }
         ScopedPyObjectPtr next;

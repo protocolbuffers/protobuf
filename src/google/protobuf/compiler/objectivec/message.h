@@ -31,6 +31,7 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MESSAGE_H__
 #define GOOGLE_PROTOBUF_COMPILER_OBJECTIVEC_MESSAGE_H__
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
@@ -47,7 +48,6 @@ namespace compiler {
 namespace objectivec {
 
 class ExtensionGenerator;
-class EnumGenerator;
 
 class MessageGenerator {
  public:
@@ -58,40 +58,28 @@ class MessageGenerator {
   MessageGenerator(const MessageGenerator&) = delete;
   MessageGenerator& operator=(const MessageGenerator&) = delete;
 
-  void GenerateStaticVariablesInitialization(io::Printer* printer);
-  void GenerateEnumHeader(io::Printer* printer);
-  void GenerateMessageHeader(io::Printer* printer);
-  void GenerateSource(io::Printer* printer);
-  void GenerateExtensionRegistrationSource(io::Printer* printer);
+  void AddExtensionGenerators(
+      std::vector<std::unique_ptr<ExtensionGenerator>>* extension_generators);
+
+  void GenerateMessageHeader(io::Printer* printer) const;
+  void GenerateSource(io::Printer* printer) const;
   void DetermineObjectiveCClassDefinitions(
-      absl::btree_set<std::string>* fwd_decls);
+      absl::btree_set<std::string>* fwd_decls) const;
   void DetermineForwardDeclarations(absl::btree_set<std::string>* fwd_decls,
-                                    bool include_external_types);
+                                    bool include_external_types) const;
 
   // Checks if the message or a nested message includes a oneof definition.
-  bool IncludesOneOfDefinition() const;
+  bool IncludesOneOfDefinition() const { return !oneof_generators_.empty(); }
 
  private:
-  void GenerateParseFromMethodsHeader(io::Printer* printer);
-
-  void GenerateSerializeOneFieldSource(io::Printer* printer,
-                                       const FieldDescriptor* field);
-  void GenerateSerializeOneExtensionRangeSource(
-      io::Printer* printer, const Descriptor::ExtensionRange* range);
-
-  void GenerateMessageDescriptionSource(io::Printer* printer);
-  void GenerateDescriptionOneFieldSource(io::Printer* printer,
-                                         const FieldDescriptor* field);
-
   const std::string root_classname_;
   const Descriptor* descriptor_;
   FieldGeneratorMap field_generators_;
   const std::string class_name_;
   const std::string deprecated_attribute_;
-  std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
-  std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;
-  std::vector<std::unique_ptr<MessageGenerator>> nested_message_generators_;
+  std::vector<const ExtensionGenerator*> extension_generators_;
   std::vector<std::unique_ptr<OneofGenerator>> oneof_generators_;
+  size_t sizeof_has_storage_;
 };
 
 }  // namespace objectivec

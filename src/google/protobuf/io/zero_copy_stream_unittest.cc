@@ -46,6 +46,7 @@
 //   "parametized tests" so that one set of tests can be used on all the
 //   implementations.
 
+#include <algorithm>
 #include <chrono>
 #include <thread>
 
@@ -59,15 +60,18 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <iterator>
 #include <memory>
 #include <sstream>
 #include <utility>
+#include <vector>
 
 #include "google/protobuf/testing/file.h"
-#include "google/protobuf/test_util2.h"
+#include "absl/strings/cord.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
+#include "google/protobuf/test_util2.h"
 
 #if HAVE_ZLIB
 #include "google/protobuf/io/gzip_stream.h"
@@ -78,6 +82,9 @@
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 namespace google {
 namespace protobuf {
@@ -735,6 +742,136 @@ TEST_F(IoTest, LargeOutput) {
   output.Next(&unused_data, &size);
   EXPECT_GT(size, 0);
 #endif  // THREAD_SANITIZER
+}
+
+TEST(DefaultReadCordTest, ReadSmallCord) {
+  std::string source = "abcdefghijk";
+  ArrayInputStream input(source.data(), source.size());
+
+  absl::Cord dest;
+  EXPECT_TRUE(input.Skip(1));
+  EXPECT_TRUE(input.ReadCord(&dest, source.size() - 2));
+
+  EXPECT_EQ(dest, "bcdefghij");
+}
+
+TEST(DefaultReadCordTest, ReadSmallCordAfterBackUp) {
+  std::string source = "abcdefghijk";
+  ArrayInputStream input(source.data(), source.size());
+
+  absl::Cord dest;
+  const void* buffer;
+  int size;
+  EXPECT_TRUE(input.Next(&buffer, &size));
+  input.BackUp(size - 1);
+
+  EXPECT_TRUE(input.ReadCord(&dest, source.size() - 2));
+
+  EXPECT_EQ(dest, "bcdefghij");
+}
+
+TEST(DefaultReadCordTest, ReadLargeCord) {
+  std::string source = "abcdefghijk";
+  for (int i = 0; i < 1024; i++) {
+    source.append("abcdefghijk");
+  }
+
+  absl::Cord dest;
+  ArrayInputStream input(source.data(), source.size());
+  EXPECT_TRUE(input.Skip(1));
+  EXPECT_TRUE(input.ReadCord(&dest, source.size() - 2));
+
+  absl::Cord expected(source);
+  expected.RemovePrefix(1);
+  expected.RemoveSuffix(1);
+
+  EXPECT_EQ(expected, dest);
+}
+
+TEST(DefaultReadCordTest, ReadLargeCordAfterBackup) {
+  std::string source = "abcdefghijk";
+  for (int i = 0; i < 1024; i++) {
+    source.append("abcdefghijk");
+  }
+
+  absl::Cord dest;
+  ArrayInputStream input(source.data(), source.size());
+
+  const void* buffer;
+  int size;
+  EXPECT_TRUE(input.Next(&buffer, &size));
+  input.BackUp(size - 1);
+
+  EXPECT_TRUE(input.ReadCord(&dest, source.size() - 2));
+
+  absl::Cord expected(source);
+  expected.RemovePrefix(1);
+  expected.RemoveSuffix(1);
+
+  EXPECT_EQ(expected, dest);
+
+  EXPECT_TRUE(input.Next(&buffer, &size));
+  EXPECT_EQ("k", std::string(reinterpret_cast<const char*>(buffer), size));
+}
+
+TEST(DefaultReadCordTest, ReadCordEof) {
+  std::string source = "abcdefghijk";
+
+  absl::Cord dest;
+  ArrayInputStream input(source.data(), source.size());
+  input.Skip(1);
+  EXPECT_FALSE(input.ReadCord(&dest, source.size()));
+
+  absl::Cord expected(source);
+  expected.RemovePrefix(1);
+  EXPECT_EQ(expected, dest);
+}
+
+TEST(DefaultWriteCordTest, WriteEmptyCordToArray) {
+  absl::Cord source;
+  std::string buffer = "abc";
+  ArrayOutputStream output(&buffer[0], static_cast<int>(buffer.length()));
+  EXPECT_TRUE(output.WriteCord(source));
+  EXPECT_EQ(output.ByteCount(), source.size());
+  EXPECT_EQ(buffer, "abc");
+}
+
+TEST(DefaultWriteCordTest, WriteSmallCord) {
+  absl::Cord source("foo bar");
+
+  std::string buffer(source.size(), 'z');
+  ArrayOutputStream output(&buffer[0], static_cast<int>(buffer.length()));
+  EXPECT_TRUE(output.WriteCord(source));
+  EXPECT_EQ(output.ByteCount(), source.size());
+  EXPECT_EQ(buffer, source);
+}
+
+TEST(DefaultWriteCordTest, WriteLargeCord) {
+  absl::Cord source;
+  for (int i = 0; i < 1024; i++) {
+    source.Append("foo bar");
+  }
+  // Verify that we created a fragmented cord.
+  ASSERT_GT(std::distance(source.chunk_begin(), source.chunk_end()), 1);
+
+  std::string buffer(source.size(), 'z');
+  ArrayOutputStream output(&buffer[0], static_cast<int>(buffer.length()));
+  EXPECT_TRUE(output.WriteCord(source));
+  EXPECT_EQ(output.ByteCount(), source.size());
+  EXPECT_EQ(buffer, source);
+}
+
+TEST(DefaultWriteCordTest, WriteTooLargeCord) {
+  absl::Cord source;
+  for (int i = 0; i < 1024; i++) {
+    source.Append("foo bar");
+  }
+
+  std::string buffer(source.size() - 1, 'z');
+  ArrayOutputStream output(&buffer[0], static_cast<int>(buffer.length()));
+  EXPECT_FALSE(output.WriteCord(source));
+  EXPECT_EQ(output.ByteCount(), buffer.size());
+  EXPECT_EQ(buffer, source.Subcord(0, output.ByteCount()));
 }
 
 

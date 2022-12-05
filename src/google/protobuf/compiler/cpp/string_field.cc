@@ -291,7 +291,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
 
   if (internal::cpp::HasHasbit(descriptor_)) {
     format(
-        "  if (!_internal_has_$name$()) {\n"
+        "  if (($has_hasbit$) == 0) {\n"
         "    return nullptr;\n"
         "  }\n"
         "  $clear_hasbit$\n");
@@ -463,7 +463,7 @@ void StringFieldGenerator::GenerateCopyConstructorCode(
   }
 
   if (internal::cpp::HasHasbit(descriptor_)) {
-    format("if (from._internal_has_$name$()) {\n");
+    format("if ((from.$has_hasbit$) != 0) {\n");
   } else {
     format("if (!from._internal_$name$().empty()) {\n");
   }
@@ -580,9 +580,6 @@ StringOneofFieldGenerator::StringOneofFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options)
     : StringFieldGenerator(descriptor, options) {
   SetCommonOneofFieldVariables(descriptor, &variables_);
-  variables_["field_name"] = UnderscoresToCamelCase(descriptor->name(), true);
-  variables_["oneof_index"] =
-      absl::StrCat(descriptor->containing_oneof()->index());
 }
 
 StringOneofFieldGenerator::~StringOneofFieldGenerator() {}
@@ -598,7 +595,7 @@ void StringOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n"
       "template <typename ArgT0, typename... ArgT>\n"
       "inline void $classname$::set_$name$(ArgT0&& arg0, ArgT... args) {\n"
-      "  if (!_internal_has_$name$()) {\n"
+      "  if ($not_has_field$) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
       "    $field$.InitDefault();\n"
@@ -615,14 +612,14 @@ void StringOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "  return _s;\n"
       "}\n"
       "inline const std::string& $classname$::_internal_$name$() const {\n"
-      "  if (_internal_has_$name$()) {\n"
+      "  if ($has_field$) {\n"
       "    return $field$.Get();\n"
       "  }\n"
       "  return $default_string$;\n"
       "}\n"
       "inline void $classname$::_internal_set_$name$(const std::string& "
       "value) {\n"
-      "  if (!_internal_has_$name$()) {\n"
+      "  if ($not_has_field$) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
       "    $field$.InitDefault();\n"
@@ -631,7 +628,7 @@ void StringOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "}\n");
   format(
       "inline std::string* $classname$::_internal_mutable_$name$() {\n"
-      "  if (!_internal_has_$name$()) {\n"
+      "  if ($not_has_field$) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
       "    $field$.InitDefault();\n"
@@ -642,7 +639,7 @@ void StringOneofFieldGenerator::GenerateInlineAccessorDefinitions(
       "inline std::string* $classname$::$release_name$() {\n"
       "$annotate_release$"
       "  // @@protoc_insertion_point(field_release:$full_name$)\n"
-      "  if (_internal_has_$name$()) {\n"
+      "  if ($has_field$) {\n"
       "    clear_has_$oneof_name$();\n"
       "    return $field$.Release();\n"
       "  } else {\n"

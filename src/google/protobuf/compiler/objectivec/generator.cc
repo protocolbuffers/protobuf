@@ -39,6 +39,7 @@
 
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/strip.h"
 #include "google/protobuf/compiler/objectivec/file.h"
@@ -285,7 +286,7 @@ bool ObjectiveCGenerator::GenerateAll(
   FileGenerator::CommonState state;
   for (int i = 0; i < files.size(); i++) {
     const FileDescriptor* file = files[i];
-    FileGenerator file_generator(file, generation_options, state);
+    const FileGenerator file_generator(file, generation_options, state);
     std::string filepath = FilePath(file);
 
     // Generate header.
@@ -294,6 +295,11 @@ bool ObjectiveCGenerator::GenerateAll(
           context->Open(filepath + ".pbobjc.h"));
       io::Printer printer(output.get(), '$');
       file_generator.GenerateHeader(&printer);
+      if (printer.failed()) {
+        *error = absl::StrCat("error: internal error generating a header: ",
+                              file->name());
+        return false;
+      }
     }
 
     // Generate m file.
@@ -302,6 +308,12 @@ bool ObjectiveCGenerator::GenerateAll(
           context->Open(filepath + ".pbobjc.m"));
       io::Printer printer(output.get(), '$');
       file_generator.GenerateSource(&printer);
+      if (printer.failed()) {
+        *error =
+            absl::StrCat("error: internal error generating an implementation:",
+                         file->name());
+        return false;
+      }
     }
   }
 

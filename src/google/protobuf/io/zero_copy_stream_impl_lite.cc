@@ -380,6 +380,14 @@ bool CopyingOutputStreamAdaptor::WriteAliasedRaw(const void* data, int size) {
   return true;
 }
 
+bool CopyingOutputStreamAdaptor::WriteCord(const absl::Cord& cord) {
+  for (absl::string_view chunk : cord.Chunks()) {
+    if (!WriteAliasedRaw(chunk.data(), chunk.size())) {
+      return false;
+    }
+  }
+  return true;
+}
 
 bool CopyingOutputStreamAdaptor::WriteBuffer() {
   if (failed_) {
@@ -465,6 +473,18 @@ int64_t LimitingInputStream::ByteCount() const {
   } else {
     return input_->ByteCount() - prior_bytes_read_;
   }
+}
+
+bool LimitingInputStream::ReadCord(absl::Cord* cord, int count) {
+  if (count <= 0) return true;
+  if (count <= limit_) {
+    if (!input_->ReadCord(cord, count)) return false;
+    limit_ -= count;
+    return true;
+  }
+  input_->ReadCord(cord, limit_);
+  limit_ = 0;
+  return false;
 }
 
 

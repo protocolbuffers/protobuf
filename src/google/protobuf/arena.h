@@ -270,8 +270,14 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // is obtained from the arena).
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE static T* Create(Arena* arena, Args&&... args) {
-    return CreateInternal<T>(arena, std::is_convertible<T*, MessageLite*>(),
-                             static_cast<Args&&>(args)...);
+    if (arena == nullptr) {
+      return new T(std::forward<Args>(args)...);
+    }
+    auto destructor =
+        internal::ObjectDestructor<std::is_trivially_destructible<T>::value,
+                                   T>::destructor;
+    return new (arena->AllocateInternal(sizeof(T), alignof(T), destructor))
+        T(std::forward<Args>(args)...);
   }
 
   // API to delete any objects not on an arena.  This can be used to safely
@@ -346,7 +352,15 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // when the arena is destroyed or reset.
   template <typename T>
   PROTOBUF_ALWAYS_INLINE void Own(T* object) {
-    OwnInternal(object, std::is_convertible<T*, MessageLite*>());
+    // Collapsing all template instantiations to one for generic Message reduces
+    // code size, using the virtual destructor instead.
+    using TypeToUse =
+        std::conditional_t<std::is_convertible<T*, MessageLite*>::value,
+                           MessageLite, T>;
+    if (object != nullptr) {
+      impl_.AddCleanup(static_cast<TypeToUse*>(object),
+                       &internal::arena_delete_object<TypeToUse>);
+    }
   }
 
   // Adds |object| to a list of objects whose destructors will be manually
@@ -653,55 +667,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   static void RegisterDestructorInternal(T* ptr, Arena* arena,
                                          std::false_type) {
     arena->OwnDestructor(ptr);
-  }
-
-  // These implement Create(). The second parameter has type 'true_type' if T is
-  // a subtype of Message and 'false_type' otherwise.
-  template <typename T, typename... Args>
-  PROTOBUF_ALWAYS_INLINE static T* CreateInternal(Arena* arena, std::true_type,
-                                                  Args&&... args) {
-    if (arena == nullptr) {
-      return new T(std::forward<Args>(args)...);
-    } else {
-      auto destructor =
-          internal::ObjectDestructor<std::is_trivially_destructible<T>::value,
-                                     T>::destructor;
-      T* result =
-          new (arena->AllocateInternal(sizeof(T), alignof(T), destructor))
-              T(std::forward<Args>(args)...);
-      return result;
-    }
-  }
-  template <typename T, typename... Args>
-  PROTOBUF_ALWAYS_INLINE static T* CreateInternal(Arena* arena, std::false_type,
-                                                  Args&&... args) {
-    if (arena == nullptr) {
-      return new T(std::forward<Args>(args)...);
-    } else {
-      auto destructor =
-          internal::ObjectDestructor<std::is_trivially_destructible<T>::value,
-                                     T>::destructor;
-      return new (arena->AllocateInternal(sizeof(T), alignof(T), destructor))
-          T(std::forward<Args>(args)...);
-    }
-  }
-
-  // These implement Own(), which registers an object for deletion (destructor
-  // call and operator delete()). The second parameter has type 'true_type' if T
-  // is a subtype of Message and 'false_type' otherwise. Collapsing
-  // all template instantiations to one for generic Message reduces code size,
-  // using the virtual destructor instead.
-  template <typename T>
-  PROTOBUF_ALWAYS_INLINE void OwnInternal(T* object, std::true_type) {
-    if (object != nullptr) {
-      impl_.AddCleanup(object, &internal::arena_delete_object<MessageLite>);
-    }
-  }
-  template <typename T>
-  PROTOBUF_ALWAYS_INLINE void OwnInternal(T* object, std::false_type) {
-    if (object != nullptr) {
-      impl_.AddCleanup(object, &internal::arena_delete_object<T>);
-    }
   }
 
   // Implementation for GetArena(). Only message objects with

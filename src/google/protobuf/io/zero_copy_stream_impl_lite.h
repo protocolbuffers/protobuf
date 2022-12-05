@@ -51,6 +51,9 @@
 
 #include "google/protobuf/stubs/callback.h"
 #include "google/protobuf/stubs/common.h"
+#include "absl/base/attributes.h"
+#include "absl/strings/cord.h"
+#include "absl/strings/cord_buffer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/port.h"
 
@@ -325,6 +328,7 @@ class PROTOBUF_EXPORT CopyingOutputStreamAdaptor : public ZeroCopyOutputStream {
   int64_t ByteCount() const override;
   bool WriteAliasedRaw(const void* data, int size) override;
   bool AllowsAliasing() const override { return true; }
+  bool WriteCord(const absl::Cord& cord) override;
 
  private:
   // Write the current buffer, if it is present.
@@ -375,6 +379,7 @@ class PROTOBUF_EXPORT LimitingInputStream PROTOBUF_FUTURE_FINAL
   void BackUp(int count) override;
   bool Skip(int count) override;
   int64_t ByteCount() const override;
+  bool ReadCord(absl::Cord* cord, int count) override;
 
 
  private:

@@ -134,7 +134,7 @@ void EnumFieldGenerator::DetermineForwardDeclarations(
       !IsProtobufLibraryBundledProtoFile(descriptor_->enum_type()->file())) {
     // Enum name is already in "storage_type".
     const std::string& name = variable("storage_type");
-    fwd_decls->insert("GPB_ENUM_FWD_DECLARE(" + name + ")");
+    fwd_decls->insert(absl::StrCat("GPB_ENUM_FWD_DECLARE(", name, ");"));
   }
 }
 

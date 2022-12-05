@@ -806,6 +806,42 @@ TEST_F(PrinterTest, EmitCallbacks) {
             "};\n");
 }
 
+TEST_F(PrinterTest, PreserveNewlinesThroughEmits) {
+  {
+    Printer printer(output());
+    const std::vector<std::string> insertion_lines = {"// line 1", "// line 2"};
+    printer.Emit(
+        {
+            {"insert_lines",
+             [&] {
+               for (const auto& line : insertion_lines) {
+                 printer.Emit({{"line", line}}, R"cc(
+                   $line$
+                 )cc");
+               }
+             }},
+        },
+        R"cc(
+          // one
+          // two
+
+          $insert_lines$;
+
+          // three
+          // four
+        )cc");
+  }
+  EXPECT_EQ(written(),
+            "// one\n"
+            "// two\n"
+            "\n"
+            "// line 1\n"
+            "// line 2\n"
+            "\n"
+            "// three\n"
+            "// four\n");
+}
+
 }  // namespace io
 }  // namespace protobuf
 }  // namespace google

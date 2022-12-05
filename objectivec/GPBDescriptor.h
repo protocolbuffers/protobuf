@@ -64,6 +64,9 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
  **/
 @interface GPBDescriptor : NSObject <NSCopying>
 
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
+
 /** Name of the message. */
 @property(nonatomic, readonly, copy) NSString *name;
 /** Fields declared in the message. */
@@ -123,12 +126,23 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
  **/
 @interface GPBFileDescriptor : NSObject
 
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
+
 /** The package declared in the proto file. */
 @property(nonatomic, readonly, copy) NSString *package;
 /** The objc prefix declared in the proto file. */
 @property(nonatomic, readonly, copy, nullable) NSString *objcPrefix;
-/** The syntax of the proto file. */
-@property(nonatomic, readonly) GPBFileSyntax syntax;
+/**
+ * The syntax of the proto file.
+ *
+ * This should not be used for making decisions about support
+ * features/behaviors, what proto2 vs. proto3 syntax has meant has evolved over
+ * time, and not more specific methods on the descriptors should be used
+ * instead.
+ */
+@property(nonatomic, readonly) GPBFileSyntax syntax
+    __attribute__((deprecated("Syntax is not a good way to decide things about behaviors.")));
 
 @end
 
@@ -136,6 +150,10 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
  * Describes a oneof field.
  **/
 @interface GPBOneofDescriptor : NSObject
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
+
 /** Name of the oneof field. */
 @property(nonatomic, readonly) NSString *name;
 /** Fields declared in the oneof. */
@@ -165,6 +183,9 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
  * Describes a proto field.
  **/
 @interface GPBFieldDescriptor : NSObject
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
 
 /** Name of the field. */
 @property(nonatomic, readonly, copy) NSString *name;
@@ -215,10 +236,25 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
  **/
 @interface GPBEnumDescriptor : NSObject
 
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
+
 /** Name of the enum. */
 @property(nonatomic, readonly, copy) NSString *name;
 /** Function that validates that raw values are valid enum values. */
 @property(nonatomic, readonly) GPBEnumValidationFunc enumVerifier;
+/**
+ * Is this a closed enum, meaning that it:
+ * - Has a fixed set of named values.
+ * - Encountering values not in this set causes them to be treated as unknown
+ *   fields.
+ * - The first value (i.e., the default) may be nonzero.
+ *
+ * NOTE: This is only accurate if the generate sources for a proto file were
+ * generated with a protobuf release after the v21.9 version, as the ObjC
+ * generator wasn't capturing this information.
+ */
+@property(nonatomic, readonly) BOOL isClosed;
 
 /**
  * Returns the enum value name for the given raw enum.
@@ -294,6 +330,10 @@ typedef NS_ENUM(uint8_t, GPBFieldType) {
  * Describes a proto extension.
  **/
 @interface GPBExtensionDescriptor : NSObject <NSCopying>
+
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)new NS_UNAVAILABLE;
+
 /** Field number under which the extension is stored. */
 @property(nonatomic, readonly) uint32_t fieldNumber;
 /** The containing message class, i.e. the class extended by this extension. */

@@ -198,7 +198,7 @@ void EnumOneofFieldGenerator::GenerateInlineAccessorDefinitions(
   Formatter format(printer, variables_);
   format(
       "inline $type$ $classname$::_internal_$name$() const {\n"
-      "  if (_internal_has_$name$()) {\n"
+      "  if ($has_field$) {\n"
       "    return static_cast< $type$ >($field$);\n"
       "  }\n"
       "  return static_cast< $type$ >($default$);\n"
@@ -213,7 +213,7 @@ void EnumOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     format("  assert($type$_IsValid(value));\n");
   }
   format(
-      "  if (!_internal_has_$name$()) {\n"
+      "  if ($not_has_field$) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
       "  }\n"

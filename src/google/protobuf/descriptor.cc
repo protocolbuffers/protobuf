@@ -2357,9 +2357,9 @@ bool DescriptorPool::TryFindFileInFallbackDatabase(
     absl::string_view name) const {
   if (fallback_database_ == nullptr) return false;
 
-  auto name_string = std::string(name);
-  if (tables_->known_bad_files_.count(name_string) > 0) return false;
+  if (tables_->known_bad_files_.contains(name)) return false;
 
+  std::string name_string(name);
   FileDescriptorProto file_proto;
   if (!fallback_database_->FindFileByName(name_string, &file_proto) ||
       BuildFileFromDatabase(file_proto) == nullptr) {
@@ -2395,9 +2395,9 @@ bool DescriptorPool::TryFindSymbolInFallbackDatabase(
     absl::string_view name) const {
   if (fallback_database_ == nullptr) return false;
 
-  auto name_string = std::string(name);
-  if (tables_->known_bad_symbols_.count(name_string) > 0) return false;
+  if (tables_->known_bad_symbols_.contains(name)) return false;
 
+  std::string name_string(name);
   FileDescriptorProto file_proto;
   if (  // We skip looking in the fallback database if the name is a sub-symbol
         // of any descriptor that already exists in the descriptor pool (except
@@ -4119,7 +4119,7 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
 const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
     const FileDescriptorProto& proto) const {
   mutex_->AssertHeld();
-  if (tables_->known_bad_files_.count(proto.name()) > 0) {
+  if (tables_->known_bad_files_.contains(proto.name())) {
     return nullptr;
   }
   const FileDescriptor* result =
@@ -5487,6 +5487,12 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   }
 }
 
+namespace {
+bool IsAllowedReservedField(const FieldDescriptorProto& field) {
+  return false;
+}
+}  // namespace
+
 void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
                                               Descriptor* parent,
                                               FieldDescriptor* result,
@@ -5713,7 +5719,8 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
              absl::Substitute("Field numbers cannot be greater than $0.",
                               FieldDescriptor::kMaxNumber));
   } else if (result->number() >= FieldDescriptor::kFirstReservedNumber &&
-             result->number() <= FieldDescriptor::kLastReservedNumber) {
+             result->number() <= FieldDescriptor::kLastReservedNumber &&
+             !IsAllowedReservedField(proto)) {
     message_hints_[parent].RequestHintOnFieldNumbers(
         proto, DescriptorPool::ErrorCollector::NUMBER);
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
@@ -8294,6 +8301,56 @@ void LazyDescriptor::Once(const ServiceDescriptor* service) {
           file->pool_->CrossLinkOnDemandHelper(lazy_name, false).descriptor();
     });
   }
+}
+
+// The format of this file is a sequence of lines like:
+//   <label>,<type>,<name>,<number>
+// Whitespace is ignored.
+// Lines that start with `#` are comments and ignored.
+std::vector<AllowedReservedField> ParseAllowedReservedField(
+    absl::string_view input) {
+  std::vector<AllowedReservedField> out;
+
+  for (absl::string_view line :
+       absl::StrSplit(input, absl::ByAnyChar("\r\n"), absl::SkipEmpty())) {
+    line = absl::StripAsciiWhitespace(line);
+    // Skip comments
+    if (absl::StartsWith(line, "#")) continue;
+    std::vector<absl::string_view> parts = absl::StrSplit(line, ',');
+    for (auto& p : parts) p = absl::StripAsciiWhitespace(p);
+
+    if (parts.size() != 4) {
+      GOOGLE_LOG(ERROR) << "Invalid line in ParseAllowedReservedField <" << line
+                 << ">";
+      continue;
+    }
+    AllowedReservedField field;
+    if (parts[0] == "optional") {
+      field.label = FieldDescriptor::LABEL_OPTIONAL;
+    } else if (parts[0] == "repeated") {
+      field.label = FieldDescriptor::LABEL_REPEATED;
+    } else {
+      GOOGLE_LOG(ERROR) << "Invalid label in ParseAllowedReservedField <" << parts[0]
+                 << ">";
+      continue;
+    }
+
+    field.type_name = std::string(parts[1]);
+    field.name = std::string(parts[2]);
+
+    if (!absl::SimpleAtoi(parts[3], &field.number) ||
+        field.number < FieldDescriptor::kFirstReservedNumber ||
+        field.number > FieldDescriptor::kLastReservedNumber) {
+      GOOGLE_LOG(ERROR) << "Invalid number in ParseAllowedReservedField <" << parts[3]
+                 << ">";
+      continue;
+    }
+
+    // Only insert after input has been verified.
+    out.push_back(std::move(field));
+  }
+
+  return out;
 }
 
 namespace cpp {

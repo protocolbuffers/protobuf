@@ -334,6 +334,16 @@ TEST(ArenaTest, CreateDestroy) {
             strlen(arena_message->optional_string().c_str()));
 }
 
+struct OnlyArenaConstructible {
+  using InternalArenaConstructable_ = void;
+  explicit OnlyArenaConstructible(Arena* arena) {}
+};
+
+TEST(ArenaTest, ArenaOnlyTypesCanBeConstructed) {
+  Arena arena;
+  Arena::CreateMessage<OnlyArenaConstructible>(&arena);
+}
+
 TEST(ArenaTest, Parsing) {
   TestAllTypes original;
   TestUtil::SetAllFields(&original);

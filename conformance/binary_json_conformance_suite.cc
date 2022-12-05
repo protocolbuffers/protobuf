@@ -1766,6 +1766,7 @@ void BinaryAndJsonConformanceSuite::RunJsonTests() {
   RunJsonTestsForStruct();
   RunJsonTestsForValue();
   RunJsonTestsForAny();
+  RunJsonTestsForUnknownEnumStringValues();
 
   RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonNumber", REQUIRED,
                                 R"({
@@ -1799,6 +1800,41 @@ void BinaryAndJsonConformanceSuite::RunJsonTests() {
                                 "");
 
   ExpectParseFailureForJson("RejectTopLevelNull", REQUIRED, "null");
+}
+
+void BinaryAndJsonConformanceSuite::RunJsonTestsForUnknownEnumStringValues() {
+  // Tests the handling of unknown enum values when encoded as string labels.
+  // The expected behavior depends on whether unknown fields are ignored:
+  // * when ignored, the parser should ignore the unknown enum string value.
+  // * when not ignored, the parser should fail.
+  struct TestCase {
+    // Used in the test name.
+    string enum_location;
+    // JSON input which will contain the unknown field.
+    string input_json;
+  };
+  const std::vector<TestCase> test_cases = {
+      {"InOptionalField", R"json({
+      "optional_nested_enum": "UNKNOWN_ENUM_VALUE"
+    })json"},
+      {"InRepeatedField", R"json({
+      "repeated_nested_enum": ["UNKNOWN_ENUM_VALUE"]
+    })json"},
+      {"InMapValue", R"json({
+      "map_string_nested_enum": {"key": "UNKNOWN_ENUM_VALUE"}
+    })json"},
+  };
+  for (const TestCase& test_case : test_cases) {
+    // Unknown enum string value is a parse failure when not ignoring unknown
+    // fields.
+    ExpectParseFailureForJson(
+        absl::StrCat("RejectUnknownEnumStringValue", test_case.enum_location),
+        RECOMMENDED, test_case.input_json);
+    // Unknown enum string value is ignored when ignoring unknown fields.
+    RunValidJsonIgnoreUnknownTest(
+        absl::StrCat("IgnoreUnknownEnumStringValue", test_case.enum_location),
+        RECOMMENDED, test_case.input_json, "");
+  }
 }
 
 void BinaryAndJsonConformanceSuite::RunJsonTestsForFieldNameConvention() {

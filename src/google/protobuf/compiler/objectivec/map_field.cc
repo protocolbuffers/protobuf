@@ -112,6 +112,9 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
   }
   if (absl::StrContains(value_field_flags, "GPBFieldHasEnumDescriptor")) {
     field_flags.push_back("GPBFieldHasEnumDescriptor");
+    if (absl::StrContains(value_field_flags, "GPBFieldClosedEnum")) {
+      field_flags.push_back("GPBFieldClosedEnum");
+    }
   }
 
   variables_["fieldflags"] = BuildFlagsString(FLAGTYPE_FIELD, field_flags);
@@ -184,7 +187,7 @@ void MapFieldGenerator::DetermineForwardDeclarations(
       descriptor_->file() == value_msg_descriptor->file()) {
     const std::string& value_storage_type =
         value_field_generator_->variable("storage_type");
-    fwd_decls->insert("@class " + value_storage_type);
+    fwd_decls->insert(absl::StrCat("@class ", value_storage_type, ";"));
   }
 }
 
