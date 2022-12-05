@@ -93,32 +93,6 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
 bool upb_Message_DiscardUnknown(upb_Message* msg, const upb_MessageDef* m,
                                 int maxdepth);
 
-// DEPRECATED FUNCTIONS
-// PHP and Ruby need these until we can version-bump them to the current upb.
-
-UPB_INLINE void upb_Message_Clear(upb_Message* msg, const upb_MessageDef* m) {
-  return upb_Message_ClearByDef(msg, m);
-}
-
-UPB_INLINE void upb_Message_ClearField(upb_Message* msg,
-                                       const upb_FieldDef* f) {
-  return upb_Message_ClearFieldByDef(msg, f);
-}
-
-UPB_INLINE bool upb_Message_Has(const upb_Message* msg, const upb_FieldDef* f) {
-  return upb_Message_HasFieldByDef(msg, f);
-}
-
-UPB_INLINE upb_MessageValue upb_Message_Get(const upb_Message* msg,
-                                            const upb_FieldDef* f) {
-  return upb_Message_GetFieldByDef(msg, f);
-}
-
-UPB_INLINE bool upb_Message_Set(upb_Message* msg, const upb_FieldDef* f,
-                                upb_MessageValue val, upb_Arena* a) {
-  return upb_Message_SetFieldByDef(msg, f, val, a);
-}
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
