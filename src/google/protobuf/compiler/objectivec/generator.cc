@@ -303,7 +303,7 @@ bool ObjectiveCGenerator::GenerateAll(
     }
 
     // Generate m file.
-    if (!headers_only && skip_impls.count(file->name()) == 0) {
+    if (!headers_only && !skip_impls.contains(file->name())) {
       std::unique_ptr<io::ZeroCopyOutputStream> output(
           context->Open(filepath + ".pbobjc.m"));
       io::Printer printer(output.get(), '$');
