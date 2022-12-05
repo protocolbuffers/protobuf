@@ -129,7 +129,9 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/stubs/logging.h"
+#include "absl/base/attributes.h"
 #include "absl/numeric/bits.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
 
@@ -214,6 +216,9 @@ class PROTOBUF_EXPORT CodedInputStream {
 
   // Like ReadRaw, but reads into a string.
   bool ReadString(std::string* buffer, int size);
+
+  // Like ReadString(), but reads to a Cord.
+  bool ReadCord(absl::Cord* output, int size);
 
 
   // Read a 32-bit little-endian integer.
@@ -698,6 +703,7 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     }
   }
 
+  uint8_t* WriteCord(const absl::Cord& cord, uint8_t* ptr);
 
 #ifndef NDEBUG
   PROTOBUF_NOINLINE
@@ -732,6 +738,13 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
     std::memcpy(ptr, s.data(), size);
     return ptr + size;
   }
+
+  uint8_t* WriteString(uint32_t num, const absl::Cord& s, uint8_t* ptr) {
+    ptr = EnsureSpace(ptr);
+    ptr = WriteTag(num, 2, ptr);
+    return WriteCordOutline(s, ptr);
+  }
+
   template <typename T>
 #ifndef NDEBUG
   PROTOBUF_NOINLINE
@@ -869,6 +882,8 @@ class PROTOBUF_EXPORT EpsCopyOutputStream {
   uint8_t* WriteStringMaybeAliasedOutline(uint32_t num, const std::string& s,
                                           uint8_t* ptr);
   uint8_t* WriteStringOutline(uint32_t num, const std::string& s, uint8_t* ptr);
+  uint8_t* WriteStringOutline(uint32_t num, absl::string_view s, uint8_t* ptr);
+  uint8_t* WriteCordOutline(const absl::Cord& c, uint8_t* ptr);
 
   template <typename T, typename E>
   PROTOBUF_ALWAYS_INLINE uint8_t* WriteVarintPacked(int num, const T& r,
@@ -1123,6 +1138,12 @@ class PROTOBUF_EXPORT CodedOutputStream {
   // Write the varint-encoded size of str followed by str.
   static uint8_t* WriteStringWithSizeToArray(const std::string& str,
                                              uint8_t* target);
+
+  // Like WriteString() but writes a Cord.
+  void WriteCord(const absl::Cord& cord) { cur_ = impl_.WriteCord(cord, cur_); }
+
+  // Like WriteCord() but writing directly to the target array.
+  static uint8_t* WriteCordToArray(const absl::Cord& cord, uint8_t* target);
 
 
   // Write a 32-bit little-endian integer.
