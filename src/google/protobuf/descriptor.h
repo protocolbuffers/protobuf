@@ -2493,6 +2493,15 @@ inline FileDescriptor::Syntax FileDescriptor::syntax() const {
 
 namespace internal {
 
+struct AllowedReservedField {
+  FieldDescriptor::Label label;
+  int number;
+  std::string type_name;
+  std::string name;
+};
+PROTOBUF_EXPORT std::vector<AllowedReservedField> ParseAllowedReservedField(
+    absl::string_view input);
+
 // FieldRange(desc) provides an iterable range for the fields of a
 // descriptor type, appropriate for range-for loops.
 
