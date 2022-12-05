@@ -158,9 +158,8 @@ inline bool SupportsPresenceApi(const FieldDescriptor* descriptor) {
       descriptor->type() == FieldDescriptor::TYPE_MESSAGE) {
     return false;
   }
-  // has_optional_keyword() has more complex rules for proto2, but that
-  // doesn't matter given the first part of this condition.
-  return IsProto2(descriptor->file()) || descriptor->has_optional_keyword();
+
+  return descriptor->has_presence();
 }
 
 inline bool RequiresPresenceBit(const FieldDescriptor* descriptor) {
