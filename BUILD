@@ -1044,7 +1044,7 @@ upb_amalgamation(
     ],
     prefix = "php-",
     strip_import_prefix = ["src"],
-    visibility = ["@com_google_protobuf//php:__pkg__"],
+    visibility = ["@com_google_protobuf//php:__subpackages__"],
 )
 
 cc_library(
@@ -1081,7 +1081,7 @@ upb_amalgamation(
     ],
     prefix = "ruby-",
     strip_import_prefix = ["src"],
-    visibility = ["@com_google_protobuf//ruby:__pkg__"],
+    visibility = ["@com_google_protobuf//ruby:__subpackages__"],
 )
 
 cc_library(
