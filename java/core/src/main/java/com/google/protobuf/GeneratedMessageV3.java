@@ -423,6 +423,30 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
         size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
   }
 
+  protected static LongList mutableCopy(LongList list) {
+    int size = list.size();
+    return list.mutableCopyWithCapacity(
+        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+  }
+
+  protected static FloatList mutableCopy(FloatList list) {
+    int size = list.size();
+    return list.mutableCopyWithCapacity(
+        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+  }
+
+  protected static DoubleList mutableCopy(DoubleList list) {
+    int size = list.size();
+    return list.mutableCopyWithCapacity(
+        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+  }
+
+  protected static BooleanList mutableCopy(BooleanList list) {
+    int size = list.size();
+    return list.mutableCopyWithCapacity(
+        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
+  }
+
   protected static LongList emptyLongList() {
     return LongArrayList.emptyList();
   }
@@ -430,12 +454,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
   // TODO(b/258340024): Unused. Remove.
   protected static LongList newLongList() {
     return new LongArrayList();
-  }
-
-  protected static LongList mutableCopy(LongList list) {
-    int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
   }
 
   protected static FloatList emptyFloatList() {
@@ -447,12 +465,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return new FloatArrayList();
   }
 
-  protected static FloatList mutableCopy(FloatList list) {
-    int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
-  }
-
   protected static DoubleList emptyDoubleList() {
     return DoubleArrayList.emptyList();
   }
@@ -462,12 +474,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
     return new DoubleArrayList();
   }
 
-  protected static DoubleList mutableCopy(DoubleList list) {
-    int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
-  }
-
   protected static BooleanList emptyBooleanList() {
     return BooleanArrayList.emptyList();
   }
@@ -475,12 +481,6 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
   // TODO(b/258340024): Unused. Remove.
   protected static BooleanList newBooleanList() {
     return new BooleanArrayList();
-  }
-
-  protected static BooleanList mutableCopy(BooleanList list) {
-    int size = list.size();
-    return list.mutableCopyWithCapacity(
-        size == 0 ? AbstractProtobufList.DEFAULT_CAPACITY : size * 2);
   }
 
   @Override
