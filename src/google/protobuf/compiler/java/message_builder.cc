@@ -418,6 +418,79 @@ void MessageBuilderGenerator::GenerateCommonBuilderMethods(
 
   GenerateBuildPartial(printer);
 
+  if (context_->options().opensource_runtime) {
+    // Override methods declared in GeneratedMessage to return the concrete
+    // generated type so callsites won't depend on GeneratedMessage. This
+    // is needed to keep binary compatibility when we change generated code
+    // to subclass a different GeneratedMessage class (e.g., in v3.0.0 release
+    // we changed all generated code to subclass GeneratedMessageV3).
+    printer->Print(
+        "@java.lang.Override\n"
+        "public Builder clone() {\n"
+        "  return super.clone();\n"
+        "}\n"
+        "@java.lang.Override\n"
+        "public Builder setField(\n"
+        "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
+        "    java.lang.Object value) {\n"
+        "  return super.setField(field, value);\n"
+        "}\n"
+        "@java.lang.Override\n"
+        "public Builder clearField(\n"
+        "    com.google.protobuf.Descriptors.FieldDescriptor field) {\n"
+        "  return super.clearField(field);\n"
+        "}\n"
+        "@java.lang.Override\n"
+        "public Builder clearOneof(\n"
+        "    com.google.protobuf.Descriptors.OneofDescriptor oneof) {\n"
+        "  return super.clearOneof(oneof);\n"
+        "}\n"
+        "@java.lang.Override\n"
+        "public Builder setRepeatedField(\n"
+        "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
+        "    int index, java.lang.Object value) {\n"
+        "  return super.setRepeatedField(field, index, value);\n"
+        "}\n"
+        "@java.lang.Override\n"
+        "public Builder addRepeatedField(\n"
+        "    com.google.protobuf.Descriptors.FieldDescriptor field,\n"
+        "    java.lang.Object value) {\n"
+        "  return super.addRepeatedField(field, value);\n"
+        "}\n");
+
+    if (descriptor_->extension_range_count() > 0) {
+      printer->Print(
+          "@java.lang.Override\n"
+          "public <Type> Builder setExtension(\n"
+          "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+          "        $classname$, Type> extension,\n"
+          "    Type value) {\n"
+          "  return super.setExtension(extension, value);\n"
+          "}\n"
+          "@java.lang.Override\n"
+          "public <Type> Builder setExtension(\n"
+          "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+          "        $classname$, java.util.List<Type>> extension,\n"
+          "    int index, Type value) {\n"
+          "  return super.setExtension(extension, index, value);\n"
+          "}\n"
+          "@java.lang.Override\n"
+          "public <Type> Builder addExtension(\n"
+          "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+          "        $classname$, java.util.List<Type>> extension,\n"
+          "    Type value) {\n"
+          "  return super.addExtension(extension, value);\n"
+          "}\n"
+          "@java.lang.Override\n"
+          "public <Type> Builder clearExtension(\n"
+          "    com.google.protobuf.GeneratedMessage.GeneratedExtension<\n"
+          "        $classname$, ?> extension) {\n"
+          "  return super.clearExtension(extension);\n"
+          "}\n",
+          "classname", name_resolver_->GetImmutableClassName(descriptor_));
+    }
+  }
+
   // -----------------------------------------------------------------
 
   if (context_->HasGeneratedMethods(descriptor_)) {
