@@ -298,6 +298,7 @@ bool Generator::Generate(const FileDescriptor* file,
   PrintTopBoilerplate();
   PrintImports();
   PrintFileDescriptor();
+  printer_->Print("_globals = globals()\n");
   if (GeneratingDescriptorProto()) {
     printer_->Print("if _descriptor._USE_C_DESCRIPTORS == False:\n");
     printer_->Indent();
@@ -312,7 +313,7 @@ bool Generator::Generate(const FileDescriptor* file,
   // Find the message descriptors first and then use the message
   // descriptor to find enums.
   printer_->Print(
-      "_builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())\n");
+      "_builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)\n");
   if (GeneratingDescriptorProto()) {
     printer_->Outdent();
   }
@@ -323,7 +324,7 @@ bool Generator::Generate(const FileDescriptor* file,
   }
   printer_->Print(
       "_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, '$module_name$', "
-      "globals())\n",
+      "_globals)\n",
       "module_name", module_name);
   printer.Print("if _descriptor._USE_C_DESCRIPTORS == False:\n");
   printer_->Indent();
@@ -345,7 +346,7 @@ bool Generator::Generate(const FileDescriptor* file,
   printer_->Outdent();
   if (HasGenericServices(file)) {
     printer_->Print(
-        "_builder.BuildServices(DESCRIPTOR, '$module_name$', globals())\n",
+        "_builder.BuildServices(DESCRIPTOR, '$module_name$', _globals)\n",
         "module_name", module_name);
   }
 
@@ -1231,8 +1232,8 @@ void Generator::PrintSerializedPbInterval(const DescriptorT& descriptor,
   GOOGLE_CHECK_GE(offset, 0);
 
   printer_->Print(
-      "$name$._serialized_start=$serialized_start$\n"
-      "$name$._serialized_end=$serialized_end$\n",
+      "_globals['$name$']._serialized_start=$serialized_start$\n"
+      "_globals['$name$']._serialized_end=$serialized_end$\n",
       "name", name, "serialized_start", absl::StrCat(offset), "serialized_end",
       absl::StrCat(offset + sp.size()));
 }
