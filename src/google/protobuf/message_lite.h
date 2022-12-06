@@ -41,6 +41,7 @@
 
 
 #include <climits>
+#include <iosfwd>
 #include <string>
 
 #include "google/protobuf/stubs/common.h"
