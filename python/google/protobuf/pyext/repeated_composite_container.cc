@@ -35,7 +35,6 @@
 
 #include <memory>
 
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"

@@ -77,7 +77,7 @@ using std::vector;
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
-#define GOOGLE_CHECK_SYSCALL(call)                            \
+#define CHECK_SYSCALL(call)                            \
   if (call < 0) {                                      \
     perror(#call " " __FILE__ ":" TOSTRING(__LINE__)); \
     exit(1);                                           \
@@ -289,22 +289,22 @@ void ForkPipeRunner::SpawnTestProgram() {
 
   if (pid) {
     // Parent.
-    GOOGLE_CHECK_SYSCALL(close(toproc_pipe_fd[0]));
-    GOOGLE_CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
+    CHECK_SYSCALL(close(toproc_pipe_fd[0]));
+    CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
     write_fd_ = toproc_pipe_fd[1];
     read_fd_ = fromproc_pipe_fd[0];
     child_pid_ = pid;
   } else {
     // Child.
-    GOOGLE_CHECK_SYSCALL(close(STDIN_FILENO));
-    GOOGLE_CHECK_SYSCALL(close(STDOUT_FILENO));
-    GOOGLE_CHECK_SYSCALL(dup2(toproc_pipe_fd[0], STDIN_FILENO));
-    GOOGLE_CHECK_SYSCALL(dup2(fromproc_pipe_fd[1], STDOUT_FILENO));
+    CHECK_SYSCALL(close(STDIN_FILENO));
+    CHECK_SYSCALL(close(STDOUT_FILENO));
+    CHECK_SYSCALL(dup2(toproc_pipe_fd[0], STDIN_FILENO));
+    CHECK_SYSCALL(dup2(fromproc_pipe_fd[1], STDOUT_FILENO));
 
-    GOOGLE_CHECK_SYSCALL(close(toproc_pipe_fd[0]));
-    GOOGLE_CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
-    GOOGLE_CHECK_SYSCALL(close(toproc_pipe_fd[1]));
-    GOOGLE_CHECK_SYSCALL(close(fromproc_pipe_fd[0]));
+    CHECK_SYSCALL(close(toproc_pipe_fd[0]));
+    CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
+    CHECK_SYSCALL(close(toproc_pipe_fd[1]));
+    CHECK_SYSCALL(close(fromproc_pipe_fd[0]));
 
     std::unique_ptr<char[]> executable(new char[executable_.size() + 1]);
     memcpy(executable.get(), executable_.c_str(), executable_.size());
@@ -319,7 +319,7 @@ void ForkPipeRunner::SpawnTestProgram() {
     }
     argv.push_back(nullptr);
     // Never returns.
-    GOOGLE_CHECK_SYSCALL(execv(executable.get(), const_cast<char **>(argv.data())));
+    CHECK_SYSCALL(execv(executable.get(), const_cast<char **>(argv.data())));
   }
 }
 
