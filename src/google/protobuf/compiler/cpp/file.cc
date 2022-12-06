@@ -197,9 +197,9 @@ void FileGenerator::GenerateSharedHeaderCode(io::Printer* p) {
   p->Emit(
       {
           {"port_def",
-           [&] { IncludeFile("net/proto2/public/port_def.inc", p); }},
+           [&] { IncludeFile("third_party/protobuf/port_def.inc", p); }},
           {"port_undef",
-           [&] { IncludeFile("net/proto2/public/port_undef.inc", p); }},
+           [&] { IncludeFile("third_party/protobuf/port_undef.inc", p); }},
           {"dllexport_macro", FileDllExport(file_, options_)},
           {"undefs", [&] { GenerateMacroUndefs(p); }},
           {"global_state_decls",
@@ -372,7 +372,7 @@ void FileGenerator::GeneratePBHeader(io::Printer* p,
 
 void FileGenerator::DoIncludeFile(absl::string_view google3_name,
                                   bool do_export, io::Printer* p) {
-  constexpr absl::string_view prefix = "net/proto2/";
+  constexpr absl::string_view prefix = "third_party/protobuf/";
   GOOGLE_CHECK(absl::StartsWith(google3_name, prefix)) << google3_name;
 
   auto v = p->WithVars(
@@ -445,26 +445,26 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
         #include <algorithm>
       )");
 
-  IncludeFile("net/proto2/io/public/coded_stream.h", p);
+  IncludeFile("third_party/protobuf/io/coded_stream.h", p);
   // TODO(gerbens) This is to include parse_context.h, we need a better way
-  IncludeFile("net/proto2/public/extension_set.h", p);
-  IncludeFile("net/proto2/public/wire_format_lite.h", p);
+  IncludeFile("third_party/protobuf/extension_set.h", p);
+  IncludeFile("third_party/protobuf/wire_format_lite.h", p);
 
   // Unknown fields implementation in lite mode uses StringOutputStream
   if (!UseUnknownFieldSet(file_, options_) && !message_generators_.empty()) {
-    IncludeFile("net/proto2/io/public/zero_copy_stream_impl_lite.h", p);
+    IncludeFile("third_party/protobuf/io/zero_copy_stream_impl_lite.h", p);
   }
 
   if (HasDescriptorMethods(file_, options_)) {
-    IncludeFile("net/proto2/public/descriptor.h", p);
-    IncludeFile("net/proto2/public/generated_message_reflection.h", p);
-    IncludeFile("net/proto2/public/reflection_ops.h", p);
-    IncludeFile("net/proto2/public/wire_format.h", p);
+    IncludeFile("third_party/protobuf/descriptor.h", p);
+    IncludeFile("third_party/protobuf/generated_message_reflection.h", p);
+    IncludeFile("third_party/protobuf/reflection_ops.h", p);
+    IncludeFile("third_party/protobuf/wire_format.h", p);
   }
 
   if (HasGeneratedMethods(file_, options_) &&
       options_.tctable_mode != Options::kTCTableNever) {
-    IncludeFile("net/proto2/public/generated_message_tctable_impl.h", p);
+    IncludeFile("third_party/protobuf/generated_message_tctable_impl.h", p);
   }
 
   if (options_.proto_h) {
@@ -498,7 +498,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
 
     // Must be included last.
   )cc");
-  IncludeFile("net/proto2/public/port_def.inc", p);
+  IncludeFile("third_party/protobuf/port_def.inc", p);
 }
 
 void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
@@ -860,7 +860,7 @@ void FileGenerator::GenerateSource(io::Printer* p) {
     UnmuteWuninitialized(p);
   }
 
-  IncludeFile("net/proto2/public/port_undef.inc", p);
+  IncludeFile("third_party/protobuf/port_undef.inc", p);
 }
 
 void FileGenerator::GenerateReflectionInitializationCode(io::Printer* p) {
@@ -1237,24 +1237,24 @@ void FileGenerator::GenerateForwardDeclarations(io::Printer* p) {
 
 void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
   if (UsingImplicitWeakFields(file_, options_)) {
-    IncludeFile("net/proto2/public/implicit_weak_message.h", p);
+    IncludeFile("third_party/protobuf/implicit_weak_message.h", p);
   }
   if (HasWeakFields(file_, options_)) {
     GOOGLE_CHECK(!options_.opensource_runtime);
-    IncludeFile("net/proto2/public/weak_field_map.h", p);
+    IncludeFile("third_party/protobuf/weak_field_map.h", p);
   }
   if (HasLazyFields(file_, options_, &scc_analyzer_)) {
     GOOGLE_CHECK(!options_.opensource_runtime);
-    IncludeFile("net/proto2/public/lazy_field.h", p);
+    IncludeFile("third_party/protobuf/lazy_field.h", p);
   }
   if (ShouldVerify(file_, options_, &scc_analyzer_)) {
-    IncludeFile("net/proto2/public/wire_format_verify.h", p);
+    IncludeFile("third_party/protobuf/wire_format_verify.h", p);
   }
 
   if (options_.opensource_runtime) {
     // Verify the protobuf library header version is compatible with the protoc
     // version before going any further.
-    IncludeFile("net/proto2/public/port_def.inc", p);
+    IncludeFile("third_party/protobuf/port_def.inc", p);
     p->Emit(
         {
             {"min_version", PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC},
@@ -1273,52 +1273,52 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
         #error "regenerate this file with a newer version of protoc."
         #endif  // PROTOBUF_MIN_PROTOC_VERSION
     )");
-    IncludeFile("net/proto2/public/port_undef.inc", p);
+    IncludeFile("third_party/protobuf/port_undef.inc", p);
   }
 
   // OK, it's now safe to #include other files.
-  IncludeFile("net/proto2/io/public/coded_stream.h", p);
-  IncludeFile("net/proto2/public/arena.h", p);
-  IncludeFile("net/proto2/public/arenastring.h", p);
+  IncludeFile("third_party/protobuf/io/coded_stream.h", p);
+  IncludeFile("third_party/protobuf/arena.h", p);
+  IncludeFile("third_party/protobuf/arenastring.h", p);
   if ((options_.force_inline_string || options_.profile_driven_inline_string) &&
       !options_.opensource_runtime) {
-    IncludeFile("net/proto2/public/inlined_string_field.h", p);
+    IncludeFile("third_party/protobuf/inlined_string_field.h", p);
   }
   if (HasSimpleBaseClasses(file_, options_)) {
-    IncludeFile("net/proto2/public/generated_message_bases.h", p);
+    IncludeFile("third_party/protobuf/generated_message_bases.h", p);
   }
   if (HasGeneratedMethods(file_, options_) &&
       options_.tctable_mode != Options::kTCTableNever) {
-    IncludeFile("net/proto2/public/generated_message_tctable_decl.h", p);
+    IncludeFile("third_party/protobuf/generated_message_tctable_decl.h", p);
   }
-  IncludeFile("net/proto2/public/generated_message_util.h", p);
-  IncludeFile("net/proto2/public/metadata_lite.h", p);
+  IncludeFile("third_party/protobuf/generated_message_util.h", p);
+  IncludeFile("third_party/protobuf/metadata_lite.h", p);
 
   if (HasDescriptorMethods(file_, options_)) {
-    IncludeFile("net/proto2/public/generated_message_reflection.h", p);
+    IncludeFile("third_party/protobuf/generated_message_reflection.h", p);
   }
 
   if (!message_generators_.empty()) {
     if (HasDescriptorMethods(file_, options_)) {
-      IncludeFile("net/proto2/public/message.h", p);
+      IncludeFile("third_party/protobuf/message.h", p);
     } else {
-      IncludeFile("net/proto2/public/message_lite.h", p);
+      IncludeFile("third_party/protobuf/message_lite.h", p);
     }
   }
   if (options_.opensource_runtime) {
     // Open-source relies on unconditional includes of these.
-    IncludeFileAndExport("net/proto2/public/repeated_field.h", p);
-    IncludeFileAndExport("net/proto2/public/extension_set.h", p);
+    IncludeFileAndExport("third_party/protobuf/repeated_field.h", p);
+    IncludeFileAndExport("third_party/protobuf/extension_set.h", p);
   } else {
     // Google3 includes these files only when they are necessary.
     if (HasExtensionsOrExtendableMessage(file_)) {
-      IncludeFileAndExport("net/proto2/public/extension_set.h", p);
+      IncludeFileAndExport("third_party/protobuf/extension_set.h", p);
     }
     if (HasRepeatedFields(file_)) {
-      IncludeFileAndExport("net/proto2/public/repeated_field.h", p);
+      IncludeFileAndExport("third_party/protobuf/repeated_field.h", p);
     }
     if (HasStringPieceFields(file_, options_)) {
-      IncludeFile("net/proto2/public/string_piece_field_support.h", p);
+      IncludeFile("third_party/protobuf/string_piece_field_support.h", p);
     }
     if (HasCordFields(file_, options_)) {
       p->Emit(R"(
@@ -1327,30 +1327,30 @@ void FileGenerator::GenerateLibraryIncludes(io::Printer* p) {
     }
   }
   if (HasMapFields(file_)) {
-    IncludeFileAndExport("net/proto2/public/map.h", p);
+    IncludeFileAndExport("third_party/protobuf/map.h", p);
     if (HasDescriptorMethods(file_, options_)) {
-      IncludeFile("net/proto2/public/map_entry.h", p);
-      IncludeFile("net/proto2/public/map_field_inl.h", p);
+      IncludeFile("third_party/protobuf/map_entry.h", p);
+      IncludeFile("third_party/protobuf/map_field_inl.h", p);
     } else {
-      IncludeFile("net/proto2/public/map_entry_lite.h", p);
-      IncludeFile("net/proto2/public/map_field_lite.h", p);
+      IncludeFile("third_party/protobuf/map_entry_lite.h", p);
+      IncludeFile("third_party/protobuf/map_field_lite.h", p);
     }
   }
 
   if (HasEnumDefinitions(file_)) {
     if (HasDescriptorMethods(file_, options_)) {
-      IncludeFile("net/proto2/public/generated_enum_reflection.h", p);
+      IncludeFile("third_party/protobuf/generated_enum_reflection.h", p);
     } else {
-      IncludeFile("net/proto2/public/generated_enum_util.h", p);
+      IncludeFile("third_party/protobuf/generated_enum_util.h", p);
     }
   }
 
   if (HasGenericServices(file_, options_)) {
-    IncludeFile("net/proto2/public/service.h", p);
+    IncludeFile("third_party/protobuf/service.h", p);
   }
 
   if (UseUnknownFieldSet(file_, options_) && !message_generators_.empty()) {
-    IncludeFile("net/proto2/public/unknown_field_set.h", p);
+    IncludeFile("third_party/protobuf/unknown_field_set.h", p);
   }
 }
 
