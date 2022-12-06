@@ -1409,7 +1409,7 @@ inline const FileDescriptorTables& FileDescriptorTables::GetEmptyInstance() {
 }
 
 void DescriptorPool::Tables::AddCheckpoint() {
-  checkpoints_.push_back(CheckPoint(this));
+  checkpoints_.emplace_back(this);
 }
 
 void DescriptorPool::Tables::ClearLastCheckpoint() {
@@ -2359,11 +2359,17 @@ bool DescriptorPool::TryFindFileInFallbackDatabase(
 
   if (tables_->known_bad_files_.contains(name)) return false;
 
-  std::string name_string(name);
-  FileDescriptorProto file_proto;
-  if (!fallback_database_->FindFileByName(name_string, &file_proto) ||
-      BuildFileFromDatabase(file_proto) == nullptr) {
-    tables_->known_bad_files_.insert(std::move(name_string));
+  // NOINLINE to reduce the stack cost of the operation in the caller.
+  const auto find_file = [](DescriptorDatabase& database,
+                            absl::string_view filename,
+                            FileDescriptorProto& output) PROTOBUF_NOINLINE {
+    return database.FindFileByName(std::string(filename), &output);
+  };
+
+  auto file_proto = absl::make_unique<FileDescriptorProto>();
+  if (!find_file(*fallback_database_, name, *file_proto) ||
+      BuildFileFromDatabase(*file_proto) == nullptr) {
+    tables_->known_bad_files_.emplace(name);
     return false;
   }
   return true;
@@ -2398,7 +2404,7 @@ bool DescriptorPool::TryFindSymbolInFallbackDatabase(
   if (tables_->known_bad_symbols_.contains(name)) return false;
 
   std::string name_string(name);
-  FileDescriptorProto file_proto;
+  auto file_proto = absl::make_unique<FileDescriptorProto>();
   if (  // We skip looking in the fallback database if the name is a sub-symbol
         // of any descriptor that already exists in the descriptor pool (except
         // for package descriptors).  This is valid because all symbols except
@@ -2418,15 +2424,16 @@ bool DescriptorPool::TryFindSymbolInFallbackDatabase(
       IsSubSymbolOfBuiltType(name)
 
       // Look up file containing this symbol in fallback database.
-      || !fallback_database_->FindFileContainingSymbol(name_string, &file_proto)
+      || !fallback_database_->FindFileContainingSymbol(name_string,
+                                                       file_proto.get())
 
       // Check if we've already built this file. If so, it apparently doesn't
       // contain the symbol we're looking for.  Some DescriptorDatabases
       // return false positives.
-      || tables_->FindFile(file_proto.name()) != nullptr
+      || tables_->FindFile(file_proto->name()) != nullptr
 
       // Build the file.
-      || BuildFileFromDatabase(file_proto) == nullptr) {
+      || BuildFileFromDatabase(*file_proto) == nullptr) {
     tables_->known_bad_symbols_.insert(std::move(name_string));
     return false;
   }
@@ -2438,20 +2445,20 @@ bool DescriptorPool::TryFindExtensionInFallbackDatabase(
     const Descriptor* containing_type, int field_number) const {
   if (fallback_database_ == nullptr) return false;
 
-  FileDescriptorProto file_proto;
+  auto file_proto = absl::make_unique<FileDescriptorProto>();
   if (!fallback_database_->FindFileContainingExtension(
-          containing_type->full_name(), field_number, &file_proto)) {
+          containing_type->full_name(), field_number, file_proto.get())) {
     return false;
   }
 
-  if (tables_->FindFile(file_proto.name()) != nullptr) {
+  if (tables_->FindFile(file_proto->name()) != nullptr) {
     // We've already loaded this file, and it apparently doesn't contain the
     // extension we're looking for.  Some DescriptorDatabases return false
     // positives.
     return false;
   }
 
-  if (BuildFileFromDatabase(file_proto) == nullptr) {
+  if (BuildFileFromDatabase(*file_proto) == nullptr) {
     return false;
   }
 
@@ -3625,13 +3632,21 @@ struct OptionsToInterpret {
 
 class DescriptorBuilder {
  public:
-  DescriptorBuilder(const DescriptorPool* pool, DescriptorPool::Tables* tables,
-                    DescriptorPool::ErrorCollector* error_collector);
+  static std::unique_ptr<DescriptorBuilder> New(
+      const DescriptorPool* pool, DescriptorPool::Tables* tables,
+      DescriptorPool::ErrorCollector* error_collector) {
+    return std::unique_ptr<DescriptorBuilder>(
+        new DescriptorBuilder(pool, tables, error_collector));
+  }
+
   ~DescriptorBuilder();
 
   const FileDescriptor* BuildFile(const FileDescriptorProto& proto);
 
  private:
+  DescriptorBuilder(const DescriptorPool* pool, DescriptorPool::Tables* tables,
+                    DescriptorPool::ErrorCollector* error_collector);
+
   friend class OptionInterpreter;
 
   // Non-recursive part of BuildFile functionality.
@@ -4100,7 +4115,7 @@ const FileDescriptor* DescriptorPool::BuildFile(
   GOOGLE_CHECK(mutex_ == nullptr);  // Implied by the above GOOGLE_CHECK.
   tables_->known_bad_symbols_.clear();
   tables_->known_bad_files_.clear();
-  return DescriptorBuilder(this, tables_.get(), nullptr).BuildFile(proto);
+  return DescriptorBuilder::New(this, tables_.get(), nullptr)->BuildFile(proto);
 }
 
 const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
@@ -4112,8 +4127,8 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
   GOOGLE_CHECK(mutex_ == nullptr);  // Implied by the above GOOGLE_CHECK.
   tables_->known_bad_symbols_.clear();
   tables_->known_bad_files_.clear();
-  return DescriptorBuilder(this, tables_.get(), error_collector)
-      .BuildFile(proto);
+  return DescriptorBuilder::New(this, tables_.get(), error_collector)
+      ->BuildFile(proto);
 }
 
 const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
@@ -4123,8 +4138,8 @@ const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
     return nullptr;
   }
   const FileDescriptor* result =
-      DescriptorBuilder(this, tables_.get(), default_error_collector_)
-          .BuildFile(proto);
+      DescriptorBuilder::New(this, tables_.get(), default_error_collector_)
+          ->BuildFile(proto);
   if (result == nullptr) {
     tables_->known_bad_files_.insert(proto.name());
   }
@@ -4143,7 +4158,7 @@ DescriptorBuilder::DescriptorBuilder(
 
 DescriptorBuilder::~DescriptorBuilder() {}
 
-void DescriptorBuilder::AddError(
+PROTOBUF_NOINLINE void DescriptorBuilder::AddError(
     const std::string& element_name, const Message& descriptor,
     DescriptorPool::ErrorCollector::ErrorLocation location,
     const std::string& error) {
@@ -4160,13 +4175,13 @@ void DescriptorBuilder::AddError(
   had_errors_ = true;
 }
 
-void DescriptorBuilder::AddError(
+PROTOBUF_NOINLINE void DescriptorBuilder::AddError(
     const std::string& element_name, const Message& descriptor,
     DescriptorPool::ErrorCollector::ErrorLocation location, const char* error) {
   AddError(element_name, descriptor, location, std::string(error));
 }
 
-void DescriptorBuilder::AddNotDefinedError(
+PROTOBUF_NOINLINE void DescriptorBuilder::AddNotDefinedError(
     const std::string& element_name, const Message& descriptor,
     DescriptorPool::ErrorCollector::ErrorLocation location,
     const std::string& undefined_symbol) {
@@ -4198,7 +4213,7 @@ void DescriptorBuilder::AddNotDefinedError(
   }
 }
 
-void DescriptorBuilder::AddWarning(
+PROTOBUF_NOINLINE void DescriptorBuilder::AddWarning(
     const std::string& element_name, const Message& descriptor,
     DescriptorPool::ErrorCollector::ErrorLocation location,
     const std::string& error) {
@@ -4770,7 +4785,7 @@ void DescriptorBuilder::AllocateOptionsImpl(
     METHOD(INPUT.NAME(i), PARENT, OUTPUT->NAME##s_ + i, alloc);        \
   }
 
-void DescriptorBuilder::AddRecursiveImportError(
+PROTOBUF_NOINLINE void DescriptorBuilder::AddRecursiveImportError(
     const FileDescriptorProto& proto, int from_here) {
   std::string error_message("File recursively imports itself: ");
   for (size_t i = from_here; i < tables_->pending_files_.size(); i++) {
@@ -4808,8 +4823,8 @@ void DescriptorBuilder::AddImportError(const FileDescriptorProto& proto,
            DescriptorPool::ErrorCollector::IMPORT, message);
 }
 
-static bool ExistingFileMatchesProto(const FileDescriptor* existing_file,
-                                     const FileDescriptorProto& proto) {
+PROTOBUF_NOINLINE static bool ExistingFileMatchesProto(
+    const FileDescriptor* existing_file, const FileDescriptorProto& proto) {
   FileDescriptorProto existing_proto;
   existing_file->CopyTo(&existing_proto);
   // TODO(liujisi): Remove it when CopyTo supports copying syntax params when
@@ -5013,16 +5028,16 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
   // Checkpoint the tables so that we can roll back if something goes wrong.
   tables_->AddCheckpoint();
 
-  internal::FlatAllocator alloc;
-  PlanAllocationSize(proto, alloc);
-  alloc.FinalizePlanning(tables_);
-  FileDescriptor* result = BuildFileImpl(proto, alloc);
+  auto alloc = absl::make_unique<internal::FlatAllocator>();
+  PlanAllocationSize(proto, *alloc);
+  alloc->FinalizePlanning(tables_);
+  FileDescriptor* result = BuildFileImpl(proto, *alloc);
 
   file_tables_->FinalizeTables();
   if (result) {
     tables_->ClearLastCheckpoint();
     result->finished_building_ = true;
-    alloc.ExpectConsumed();
+    alloc->ExpectConsumed();
   } else {
     tables_->RollbackToLastCheckpoint();
   }
