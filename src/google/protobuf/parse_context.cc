@@ -30,8 +30,10 @@
 
 #include "google/protobuf/parse_context.h"
 
+#include <algorithm>
 #include <cstring>
 
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
@@ -229,6 +231,61 @@ const char* EpsCopyInputStream::AppendStringFallback(const char* ptr, int size,
   }
   return AppendSize(ptr, size,
                     [str](const char* p, int s) { str->append(p, s); });
+}
+
+const char* EpsCopyInputStream::ReadCordFallback(const char* ptr, int size,
+                                                 absl::Cord* cord) {
+  if (zcis_ == nullptr) {
+    int bytes_from_buffer = buffer_end_ - ptr + kSlopBytes;
+    if (size <= bytes_from_buffer) {
+      *cord = absl::string_view(ptr, size);
+      return ptr + size;
+    }
+    return AppendSize(ptr, size, [cord](const char* p, int s) {
+      cord->Append(absl::string_view(p, s));
+    });
+  }
+  int new_limit = buffer_end_ - ptr + limit_;
+  if (size > new_limit) return nullptr;
+  new_limit -= size;
+  int bytes_from_buffer = buffer_end_ - ptr + kSlopBytes;
+  const bool in_patch_buf = reinterpret_cast<uintptr_t>(ptr) -
+                                reinterpret_cast<uintptr_t>(patch_buffer_) <=
+                            kPatchBufferSize;
+  if (bytes_from_buffer > kPatchBufferSize || !in_patch_buf) {
+    cord->Clear();
+    StreamBackUp(bytes_from_buffer);
+  } else if (bytes_from_buffer == kSlopBytes && next_chunk_ != nullptr &&
+             // Only backup if next_chunk_ points to a valid buffer returned by
+             // ZeroCopyInputStream. This happens when NextStream() returns a
+             // chunk that's smaller than or equal to kSlopBytes.
+             next_chunk_ != patch_buffer_) {
+    cord->Clear();
+    StreamBackUp(size_);
+  } else {
+    size -= bytes_from_buffer;
+    GOOGLE_ABSL_DCHECK_GT(size, 0);
+    *cord = absl::string_view(ptr, bytes_from_buffer);
+    if (next_chunk_ == patch_buffer_) {
+      // We have read to end of the last buffer returned by
+      // ZeroCopyInputStream. So the stream is in the right position.
+    } else if (next_chunk_ == nullptr) {
+      // There is no remaining chunks. We can't read size.
+      SetEndOfStream();
+      return nullptr;
+    } else {
+      // Next chunk is already loaded
+      GOOGLE_ABSL_DCHECK(size_ > kSlopBytes);
+      StreamBackUp(size_ - kSlopBytes);
+    }
+  }
+  if (size > overall_limit_) return nullptr;
+  overall_limit_ -= size;
+  if (!zcis_->ReadCord(cord, size)) return nullptr;
+  ptr = InitFrom(zcis_);
+  limit_ = new_limit - static_cast<int>(buffer_end_ - ptr);
+  limit_end_ = buffer_end_ + (std::min)(0, limit_);
+  return ptr;
 }
 
 
