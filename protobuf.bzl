@@ -328,7 +328,7 @@ internal_gen_well_known_protos_java = rule(
         "_protoc": attr.label(
             executable = True,
             cfg = "exec",
-            default = "@com_google_protobuf//:protoc",
+            default = "//:protoc",
         ),
     },
 )
@@ -402,8 +402,8 @@ def internal_objc_proto_library(
         outs = [],
         proto_deps = [],
         includes = ["."],
-        default_runtime = "@com_google_protobuf//:protobuf_objc",
-        protoc = "@com_google_protobuf//:protoc",
+        default_runtime = Label("//:protobuf_objc"),
+        protoc = Label("//:protoc"),
         testonly = None,
         visibility = ["//visibility:public"],
         **kwargs):
@@ -492,8 +492,8 @@ def internal_py_proto_library(
         py_libs = [],
         py_extra_srcs = [],
         include = None,
-        default_runtime = "@com_google_protobuf//:protobuf_python",
-        protoc = "@com_google_protobuf//:protoc",
+        default_runtime = Label("//:protobuf_python"),
+        protoc = Label("//:protoc"),
         use_grpc_plugin = False,
         testonly = None,
         **kargs):
@@ -580,7 +580,7 @@ def _source_proto_library(
         outs = [],
         lang = None,
         includes = ["."],
-        protoc = "@com_google_protobuf//:protoc",
+        protoc = Label("//:protoc"),
         testonly = None,
         visibility = ["//visibility:public"],
         **kwargs):
