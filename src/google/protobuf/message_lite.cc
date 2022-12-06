@@ -37,6 +37,8 @@
 
 #include <climits>
 #include <cstdint>
+#include <istream>
+#include <ostream>
 #include <string>
 #include <utility>
 
@@ -49,13 +51,11 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
-#include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/parse_context.h"
-#include "google/protobuf/repeated_field.h"
 
 
 // Must be included last.
@@ -73,8 +73,7 @@ std::string MessageLite::InitializationErrorString() const {
 }
 
 std::string MessageLite::DebugString() const {
-  std::uintptr_t address = reinterpret_cast<std::uintptr_t>(this);
-  return absl::StrCat("MessageLite at 0x", absl::Hex(address));
+  return absl::StrCat("MessageLite at 0x", absl::Hex(this));
 }
 
 namespace {
@@ -100,32 +99,19 @@ void ByteSizeConsistencyError(size_t byte_size_before_serialization,
   GOOGLE_LOG(FATAL) << "This shouldn't be called if all the sizes are equal.";
 }
 
-std::string InitializationErrorMessage(const char* action,
+std::string InitializationErrorMessage(absl::string_view action,
                                        const MessageLite& message) {
-  // Note:  We want to avoid depending on strutil in the lite library, otherwise
-  //   we'd use:
-  //
-  // return strings::Substitute(
-  //   "Can't $0 message of type \"$1\" because it is missing required "
-  //   "fields: $2",
-  //   action, message.GetTypeName(),
-  //   message.InitializationErrorString());
-
-  std::string result;
-  result += "Can't ";
-  result += action;
-  result += " message of type \"";
-  result += message.GetTypeName();
-  result += "\" because it is missing required fields: ";
-  result += message.InitializationErrorString();
-  return result;
+  return absl::StrCat("Can't ", action, " message of type \"",
+                      message.GetTypeName(),
+                      "\" because it is missing required fields: ",
+                      message.InitializationErrorString());
 }
 
 inline absl::string_view as_string_view(const void* data, int size) {
   return absl::string_view(static_cast<const char*>(data), size);
 }
 
-// Returns true of all required fields are present / have values.
+// Returns true if all required fields are present / have values.
 inline bool CheckFieldPresence(const internal::ParseContext& ctx,
                                const MessageLite& msg,
                                MessageLite::ParseFlags parse_flags) {
@@ -206,7 +192,7 @@ template bool MergeFromImpl<true>(BoundedZCIS input, MessageLite* msg,
 
 class ZeroCopyCodedInputStream : public io::ZeroCopyInputStream {
  public:
-  ZeroCopyCodedInputStream(io::CodedInputStream* cis) : cis_(cis) {}
+  explicit ZeroCopyCodedInputStream(io::CodedInputStream* cis) : cis_(cis) {}
   bool Next(const void** data, int* size) final {
     if (!cis_->GetDirectBufferPointer(data, size)) return false;
     cis_->Skip(*size);
@@ -357,7 +343,7 @@ inline uint8_t* SerializeToArrayImpl(const MessageLite& msg, uint8_t* target,
     io::EpsCopyOutputStream out(
         target, size,
         io::CodedOutputStream::IsDefaultSerializationDeterministic());
-    auto res = msg._InternalSerialize(target, &out);
+    uint8_t* res = msg._InternalSerialize(target, &out);
     GOOGLE_DCHECK(target + size == res);
     return res;
   }
