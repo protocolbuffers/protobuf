@@ -55,8 +55,9 @@ namespace objectivec {
 namespace {
 
 // Convert a string with "yes"/"no" (case insensitive) to a boolean, returning
-// true/false for if the input string was a valid value. If the input string is
-// invalid, `result` is unchanged.
+// true/false for if the input string was a valid value. The empty string is
+// also treated as a true value. If the input string is invalid, `result` is
+// unchanged.
 bool StringToBool(const std::string& value, bool* result) {
   std::string upper_value(value);
   absl::AsciiStrToUpper(&upper_value);
@@ -64,7 +65,7 @@ bool StringToBool(const std::string& value, bool* result) {
     *result = false;
     return true;
   }
-  if (upper_value == "YES") {
+  if (upper_value == "YES" || upper_value.empty()) {
     *result = true;
     return true;
   }
