@@ -198,11 +198,6 @@ std::string IntTypeName(const Options& options, const std::string& type) {
   return absl::StrCat("::", type, "_t");
 }
 
-// Returns true if the message can potentially allocate memory for its field.
-// This is used to determine if message-owned arena will be useful.
-bool AllocExpected(const Descriptor* descriptor) {
-  return false;
-}
 
 
 }  // namespace
@@ -1650,19 +1645,6 @@ FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
   GOOGLE_ABSL_LOG(FATAL) << "Unknown optimization enforcement requested.";
   // The phony return below serves to silence a warning from GCC 8.
   return FileOptions::SPEED;
-}
-
-inline bool IsMessageOwnedArenaEligible(const Descriptor* desc,
-                                        const Options& options) {
-  return GetOptimizeFor(desc->file(), options) != FileOptions::LITE_RUNTIME &&
-         !options.bootstrap && !options.opensource_runtime &&
-         AllocExpected(desc);
-}
-
-bool EnableMessageOwnedArena(const Descriptor* desc, const Options& options) {
-  (void)desc;
-  (void)options;
-  return false;
 }
 
 bool HasMessageFieldOrExtension(const Descriptor* desc) {
