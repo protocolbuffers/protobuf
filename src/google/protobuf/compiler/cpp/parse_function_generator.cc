@@ -1413,46 +1413,6 @@ void ParseFunctionGenerator::GenerateFieldSwitch(
   format("}  // switch\n");
 }
 
-#if 0
-void PopulateFastFieldEntry(const Descriptor* descriptor,
-                            const TailCallTableInfo::FieldEntryInfo& entry,
-                            const Options& options,
-                            TailCallTableInfo::FastFieldInfo& info) {
-                            .....
-  if (name == "V8S1") {
-    info.func_name = absl::StrCat(
-        "::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(",  //
-        ClassName(descriptor),                                     //
-        ", ",                                                      //
-        FieldMemberName(field, /*split=*/false),                   //
-        "), ",                                                     //
-        HasHasbit(field) ? entry.hasbit_idx : 63,                  //
-        ">()");
-  } else if (name == "V32S1") {
-    info.func_name = absl::StrCat(
-        "::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(",  //
-        ClassName(descriptor),                                           //
-        ", ",                                                            //
-        FieldMemberName(field, /*split=*/false),                         //
-        "), ",                                                           //
-        HasHasbit(field) ? entry.hasbit_idx : 63,                        //
-        ">()");
-  } else if (name == "V64S1") {
-    info.func_name = absl::StrCat(
-        "::_pbi::TcParser::SingularVarintNoZag1<::uint64_t, offsetof(",  //
-        ClassName(descriptor),                                           //
-        ", ",                                                            //
-        FieldMemberName(field, /*split=*/false),                         //
-        "), ",                                                           //
-        HasHasbit(field) ? entry.hasbit_idx : 63,                        //
-        ">()");
-  } else {
-    info.func_name = absl::StrCat("::_pbi::TcParser::Fast", name);
-  }
-  info.aux_idx = aux_idx;
-}
-#endif
-
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
