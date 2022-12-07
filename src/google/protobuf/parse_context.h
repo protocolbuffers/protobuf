@@ -36,9 +36,9 @@
 #include <string>
 #include <type_traits>
 
-#include "google/protobuf/arena.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/endian.h"
 #include "google/protobuf/implicit_weak_message.h"
