@@ -179,6 +179,7 @@ class PROTOBUF_EXPORT UnknownFieldSet {
 
   // Serialization.
   bool SerializeToString(std::string* output) const;
+  bool SerializeToCord(absl::Cord* output) const;
   bool SerializeToCodedStream(io::CodedOutputStream* output) const;
   static const UnknownFieldSet& default_instance();
 
