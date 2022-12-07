@@ -84,6 +84,14 @@ class FileGenerator {
   void GenerateHeader(io::Printer* p) const;
   void GenerateSource(io::Printer* p) const;
 
+  int NumEnums() const { return enum_generators_.size(); }
+  int NumMessages() const { return message_generators_.size(); }
+
+  void GenerateGlobalSource(io::Printer* p) const;
+  void GenerateSourceForMessage(int idx, io::Printer* p) const;
+  void GenerateSourceForEnum(int idx, io::Printer* p) const;
+
+ private:
   enum class GeneratedFileType : int { kHeader, kSource };
 
   void GenerateFile(io::Printer* p, GeneratedFileType file_type,
@@ -109,7 +117,6 @@ class FileGenerator {
            generation_options_.headers_use_forward_declarations;
   }
 
- private:
   const FileDescriptor* file_;
   const GenerationOptions& generation_options_;
   mutable CommonState* common_state_;

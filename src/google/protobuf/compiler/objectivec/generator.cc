@@ -73,6 +73,10 @@ bool StringToBool(const std::string& value, bool* result) {
   return false;
 }
 
+std::string NumberedObjCMFileName(absl::string_view basename, int number) {
+  return absl::StrCat(basename, ".out/", number, ".pbobjc.m");
+}
+
 }  // namespace
 
 bool ObjectiveCGenerator::HasGenerateAll() const { return true; }
@@ -251,6 +255,23 @@ bool ObjectiveCGenerator::GenerateAll(
                  options[i].second;
         return false;
       }
+    } else if (options[i].first == "experimental_multi_source_generation") {
+      // This is an experimental option, and could be removed or change at any
+      // time; it is not documented in the README.md for that reason.
+      //
+      // Enables a mode where each type (message & enum) generates to a unique
+      // .m file; this is to explore impacts on code size when not
+      // compiling/linking with `-ObjC` as then only linker visible needs should
+      // be pulled into the builds.
+
+      if (!StringToBool(
+              options[i].second,
+              &generation_options.experimental_multi_source_generation)) {
+        *error =
+            "error: Unknown value for experimental_multi_source_generation: " +
+            options[i].second;
+        return false;
+      }
     } else {
       *error = "error: Unknown generator option: " + options[i].first;
       return false;
@@ -285,16 +306,14 @@ bool ObjectiveCGenerator::GenerateAll(
   }
 
   FileGenerator::CommonState state;
-  for (int i = 0; i < files.size(); i++) {
-    const FileDescriptor* file = files[i];
+  for (const auto& file : files) {
     const FileGenerator file_generator(file, generation_options, state);
     std::string filepath = FilePath(file);
 
     // Generate header.
     {
-      std::unique_ptr<io::ZeroCopyOutputStream> output(
-          context->Open(filepath + ".pbobjc.h"));
-      io::Printer printer(output.get(), '$');
+      auto output = absl::WrapUnique(context->Open(filepath + ".pbobjc.h"));
+      io::Printer printer(output.get());
       file_generator.GenerateHeader(&printer);
       if (printer.failed()) {
         *error = absl::StrCat("error: internal error generating a header: ",
@@ -303,20 +322,63 @@ bool ObjectiveCGenerator::GenerateAll(
       }
     }
 
-    // Generate m file.
-    if (!headers_only && !skip_impls.contains(file->name())) {
-      std::unique_ptr<io::ZeroCopyOutputStream> output(
-          context->Open(filepath + ".pbobjc.m"));
-      io::Printer printer(output.get(), '$');
-      file_generator.GenerateSource(&printer);
-      if (printer.failed()) {
-        *error =
-            absl::StrCat("error: internal error generating an implementation:",
-                         file->name());
-        return false;
+    // Generate m file(s).
+    if (!headers_only && skip_impls.count(file->name()) == 0) {
+      if (generation_options.experimental_multi_source_generation) {
+        int file_number = 0;
+
+        // Generate the Root and FileDescriptor (if needed).
+        {
+          std::unique_ptr<io::ZeroCopyOutputStream> output(
+              context->Open(NumberedObjCMFileName(filepath, file_number++)));
+          io::Printer printer(output.get());
+          file_generator.GenerateGlobalSource(&printer);
+          if (printer.failed()) {
+            *error = absl::StrCat(
+                "error: internal error generating an implementation:",
+                file->name());
+            return false;
+          }
+        }
+
+        for (int i = 0; i < file_generator.NumEnums(); ++i) {
+          std::unique_ptr<io::ZeroCopyOutputStream> output(
+              context->Open(NumberedObjCMFileName(filepath, file_number++)));
+          io::Printer printer(output.get());
+          file_generator.GenerateSourceForEnum(i, &printer);
+          if (printer.failed()) {
+            *error = absl::StrCat(
+                "error: internal error generating an enum implementation:",
+                file->name(), "::", i);
+            return false;
+          }
+        }
+
+        for (int i = 0; i < file_generator.NumMessages(); ++i) {
+          std::unique_ptr<io::ZeroCopyOutputStream> output(
+              context->Open(NumberedObjCMFileName(filepath, file_number++)));
+          io::Printer printer(output.get());
+          file_generator.GenerateSourceForMessage(i, &printer);
+          if (printer.failed()) {
+            *error = absl::StrCat(
+                "error: internal error generating an message implementation:",
+                file->name(), "::", i);
+            return false;
+          }
+        }
+      } else {
+        auto output = absl::WrapUnique(context->Open(filepath + ".pbobjc.m"));
+        io::Printer printer(output.get());
+        file_generator.GenerateSource(&printer);
+        if (printer.failed()) {
+          *error = absl::StrCat(
+              "error: internal error generating an implementation:",
+              file->name());
+          return false;
+        }
       }
-    }
-  }
+    }  // if (!headers_only && skip_impls.count(file->name()) == 0)
+  }    // for(file : files)
 
   return true;
 }

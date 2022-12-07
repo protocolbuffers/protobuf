@@ -373,6 +373,92 @@ void FileGenerator::GenerateSource(io::Printer* p) const {
       });
 }
 
+void FileGenerator::GenerateGlobalSource(io::Printer* p) const {
+  std::vector<const FileDescriptor*> deps_with_extensions =
+      common_state_->CollectMinimalFileDepsContainingExtensions(file_);
+
+  // If any indirect dependency provided extensions, it needs to be directly
+  // imported so it can get merged into the root's extensions registry.
+  // See the Note by CollectMinimalFileDepsContainingExtensions before
+  // changing this.
+  std::vector<const FileDescriptor*> extra_files;
+  for (auto& dep : deps_with_extensions) {
+    if (!IsDirectDependency(dep, file_)) {
+      extra_files.push_back(dep);
+    }
+  }
+
+  absl::btree_set<std::string> fwd_decls;
+  for (const auto& generator : extension_generators_) {
+    generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
+  }
+
+  std::vector<std::string> ignored_warnings;
+  if (!fwd_decls.empty()) {
+    ignored_warnings.push_back("dollar-in-identifier-extension");
+  }
+
+  GenerateFile(
+      p, GeneratedFileType::kSource, ignored_warnings, extra_files, [&] {
+        if (!fwd_decls.empty()) {
+          p->Print(
+              // clang-format off
+              "#pragma mark - Objective C Class declarations\n"
+              "// Forward declarations of Objective C classes that we can use as\n"
+              "// static values in struct initializers.\n"
+              "// We don't use [Foo class] because it is not a static value.\n"
+              "$fwd_decls$\n"
+              "\n",
+              // clang-format on
+              "fwd_decls", absl::StrJoin(fwd_decls, "\n"));
+        }
+
+        PrintRootImplementation(p, deps_with_extensions);
+        PrintFileDescriptorImplementation(p);
+      });
+}
+
+void FileGenerator::GenerateSourceForEnum(int idx, io::Printer* p) const {
+  GenerateFile(p, GeneratedFileType::kSource,
+               [&] { enum_generators_[idx]->GenerateSource(p); });
+}
+
+void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) const {
+  const auto& generator = message_generators_[idx];
+
+  absl::btree_set<std::string> fwd_decls;
+  generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
+
+  std::vector<std::string> ignored_warnings;
+  // The generated code for oneof's uses direct ivar access, suppress the
+  // warning in case developer turn that on in the context they compile the
+  // generated code.
+  if (generator->IncludesOneOfDefinition()) {
+    ignored_warnings.push_back("direct-ivar-access");
+  }
+
+  GenerateFile(p, GeneratedFileType::kSource, ignored_warnings, {}, [&] {
+    p->Print(
+        "extern GPBFileDescriptor *$root_class_name$_FileDescriptor(void);\n\n",
+        "root_class_name", root_class_name_);
+
+    if (!fwd_decls.empty()) {
+      p->Print(
+          // clang-format off
+              "#pragma mark - Objective C Class declarations\n"
+              "// Forward declarations of Objective C classes that we can use as\n"
+              "// static values in struct initializers.\n"
+              "// We don't use [Foo class] because it is not a static value.\n"
+              "$fwd_decls$\n"
+              "\n",
+          // clang-format on
+          "fwd_decls", absl::StrJoin(fwd_decls, "\n"));
+    }
+
+    generator->GenerateSource(p);
+  });
+}
+
 void FileGenerator::GenerateFile(
     io::Printer* p, GeneratedFileType file_type,
     const std::vector<std::string>& ignored_warnings,
@@ -593,10 +679,10 @@ void FileGenerator::PrintRootExtensionRegistryImplementation(
   p->Outdent();
 
   // clang-format off
-    p->Print(
-        "  }\n"
-        "  return registry;\n"
-        "}\n");
+  p->Print(
+      "  }\n"
+      "  return registry;\n"
+      "}\n");
   // clang-format on
 }
 
@@ -629,12 +715,18 @@ void FileGenerator::PrintFileDescriptorImplementation(io::Printer* p) const {
         objc_prefix, "\"\n");
   }
 
+  if (generation_options_.experimental_multi_source_generation) {
+    vars["file_desc_scope"] = "";
+  } else {
+    vars["file_desc_scope"] = "static ";
+  }
+
   // clang-format off
   p->Print(
       vars,
       "#pragma mark - $root_class_name$_FileDescriptor\n"
       "\n"
-      "static GPBFileDescriptor *$root_class_name$_FileDescriptor(void) {\n"
+      "$file_desc_scope$GPBFileDescriptor *$root_class_name$_FileDescriptor(void) {\n"
       "  // This is called by +initialize so there is no need to worry\n"
       "  // about thread safety of the singleton.\n"
       "  static GPBFileDescriptor *descriptor = NULL;\n"
