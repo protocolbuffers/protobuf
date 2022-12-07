@@ -37,6 +37,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -369,7 +370,7 @@ void StringFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
   if (descriptor_->default_value_string().empty()) {
     format("$field$.ClearToEmpty();\n");
   } else {
-    GOOGLE_DCHECK(!inlined_);
+    GOOGLE_ABSL_DCHECK(!inlined_);
     format(
         "$field$.ClearToDefault($lazy_variable$, GetArenaForAllocation());\n");
   }
@@ -443,7 +444,7 @@ void StringFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
   if (inlined_ && descriptor_->default_value_string().empty()) {
     return;
   }
-  GOOGLE_DCHECK(!inlined_);
+  GOOGLE_ABSL_DCHECK(!inlined_);
   format("$field$.InitDefault();\n");
   if (IsString(descriptor_, options_) &&
       descriptor_->default_value_string().empty()) {
@@ -499,7 +500,7 @@ void StringFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
   // Destructor has been implicitly skipped as a union, and even the
   // message-owned arena is enabled, arena could still be missing for
   // Arena::CreateMessage(nullptr).
-  GOOGLE_DCHECK(!ShouldSplit(descriptor_, options_));
+  GOOGLE_ABSL_DCHECK(!ShouldSplit(descriptor_, options_));
   format("$field$.~InlinedStringField();\n");
 }
 
@@ -557,7 +558,7 @@ void StringFieldGenerator::GenerateAggregateInitializer(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (ShouldSplit(descriptor_, options_)) {
-    GOOGLE_CHECK(!inlined_);
+    GOOGLE_ABSL_CHECK(!inlined_);
     format("decltype(Impl_::Split::$name$_){}");
     return;
   }

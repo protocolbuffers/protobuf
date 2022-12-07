@@ -316,7 +316,7 @@ void SetCommonOneofFieldVariables(
 
 void FieldGenerator::SetHasBitIndex(int32_t has_bit_index) {
   if (!internal::cpp::HasHasbit(descriptor_) || has_bit_index < 0) {
-    GOOGLE_CHECK_EQ(has_bit_index, -1);
+    GOOGLE_ABSL_CHECK_EQ(has_bit_index, -1);
     return;
   }
   int32_t index = has_bit_index / 32;
@@ -334,11 +334,11 @@ void FieldGenerator::SetHasBitIndex(int32_t has_bit_index) {
 
 void FieldGenerator::SetInlinedStringIndex(int32_t inlined_string_index) {
   if (!IsStringInlined(descriptor_, options_)) {
-    GOOGLE_CHECK_EQ(inlined_string_index, -1);
+    GOOGLE_ABSL_CHECK_EQ(inlined_string_index, -1);
     return;
   }
   // The first bit is the tracking bit for on demand registering ArenaDtor.
-  GOOGLE_CHECK_GT(inlined_string_index, 0)
+  GOOGLE_ABSL_CHECK_GT(inlined_string_index, 0)
       << "_inlined_string_donated_'s bit 0 is reserved for arena dtor tracking";
   variables_["inlined_string_donated"] = absl::StrCat(
       "(", variables_["inlined_string_donated_array"], "[",
@@ -384,8 +384,8 @@ void FieldGenerator::GenerateCopyConstructorCode(io::Printer* printer) const {
 }
 
 void FieldGenerator::GenerateIfHasField(io::Printer* printer) const {
-  GOOGLE_CHECK(internal::cpp::HasHasbit(descriptor_));
-  GOOGLE_CHECK(variables_.find("has_hasbit") != variables_.end());
+  GOOGLE_ABSL_CHECK(internal::cpp::HasHasbit(descriptor_));
+  GOOGLE_ABSL_CHECK(variables_.find("has_hasbit") != variables_.end());
 
   Formatter format(printer, variables_);
   format("if (($has_hasbit$) != 0) {\n");
@@ -465,7 +465,7 @@ FieldGeneratorMap::~FieldGeneratorMap() {}
 
 const FieldGenerator& FieldGeneratorMap::get(
     const FieldDescriptor* field) const {
-  GOOGLE_CHECK_EQ(field->containing_type(), descriptor_);
+  GOOGLE_ABSL_CHECK_EQ(field->containing_type(), descriptor_);
   return *field_generators_[field->index()];
 }
 

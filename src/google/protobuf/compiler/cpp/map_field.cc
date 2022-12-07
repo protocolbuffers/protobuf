@@ -33,6 +33,7 @@
 #include <string>
 
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -300,7 +301,7 @@ void MapFieldGenerator::GenerateAggregateInitializer(
 }
 
 void MapFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
   if (ShouldSplit(descriptor_, options_)) {

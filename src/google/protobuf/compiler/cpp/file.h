@@ -45,6 +45,7 @@
 #include "google/protobuf/compiler/scc.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -179,7 +180,7 @@ class FileGenerator {
 
   bool IsDepWeak(const FileDescriptor* dep) const {
     if (weak_deps_.count(dep) != 0) {
-      GOOGLE_CHECK(!options_.opensource_runtime);
+      GOOGLE_ABSL_CHECK(!options_.opensource_runtime);
       return true;
     }
     return false;

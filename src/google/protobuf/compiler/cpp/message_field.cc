@@ -35,6 +35,7 @@
 #include "google/protobuf/compiler/cpp/message_field.h"
 
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/field.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -386,7 +387,7 @@ void MessageFieldGenerator::GenerateInternalAccessorDefinitions(
 }
 
 void MessageFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
   if (!internal::cpp::HasHasbit(descriptor_)) {
@@ -404,7 +405,7 @@ void MessageFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
 
 void MessageFieldGenerator::GenerateMessageClearingCode(
     io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
   if (!internal::cpp::HasHasbit(descriptor_)) {
@@ -423,7 +424,7 @@ void MessageFieldGenerator::GenerateMessageClearingCode(
 }
 
 void MessageFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
   if (implicit_weak_field_) {
@@ -438,14 +439,14 @@ void MessageFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
 }
 
 void MessageFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
   format("swap($field$, other->$field$);\n");
 }
 
 void MessageFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
   if (options_.opensource_runtime) {
@@ -467,7 +468,7 @@ using internal::cpp::HasHasbit;
 
 void MessageFieldGenerator::GenerateCopyConstructorCode(
     io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
   if (HasHasbit(descriptor_)) {
@@ -485,7 +486,7 @@ void MessageFieldGenerator::GenerateCopyConstructorCode(
 
 void MessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
   if (descriptor_->type() == FieldDescriptor::TYPE_MESSAGE) {
@@ -503,7 +504,7 @@ void MessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
 }
 
 void MessageFieldGenerator::GenerateByteSize(io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
   format(
@@ -513,7 +514,7 @@ void MessageFieldGenerator::GenerateByteSize(io::Printer* printer) const {
 }
 
 void MessageFieldGenerator::GenerateIsInitialized(io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   if (!has_required_fields_) return;
 
@@ -695,7 +696,7 @@ void MessageOneofFieldGenerator::GenerateInlineAccessorDefinitions(
 
 void MessageOneofFieldGenerator::GenerateClearingCode(
     io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
   format(
@@ -866,7 +867,7 @@ void RepeatedMessageFieldGenerator::GenerateInlineAccessorDefinitions(
 
 void RepeatedMessageFieldGenerator::GenerateClearingCode(
     io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
   format("$field$.Clear();\n");
@@ -874,7 +875,7 @@ void RepeatedMessageFieldGenerator::GenerateClearingCode(
 
 void RepeatedMessageFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
   format("_this->$field$.MergeFrom(from.$field$);\n");
@@ -882,7 +883,7 @@ void RepeatedMessageFieldGenerator::GenerateMergingCode(
 
 void RepeatedMessageFieldGenerator::GenerateSwappingCode(
     io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
   format("$field$.InternalSwap(&other->$field$);\n");
@@ -895,7 +896,7 @@ void RepeatedMessageFieldGenerator::GenerateConstructorCode(
 
 void RepeatedMessageFieldGenerator::GenerateDestructorCode(
     io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
   if (implicit_weak_field_) {
@@ -907,7 +908,7 @@ void RepeatedMessageFieldGenerator::GenerateDestructorCode(
 
 void RepeatedMessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
   if (implicit_weak_field_) {
@@ -952,7 +953,7 @@ void RepeatedMessageFieldGenerator::GenerateSerializeWithCachedSizesToArray(
 
 void RepeatedMessageFieldGenerator::GenerateByteSize(
     io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   Formatter format(printer, variables_);
   format(
@@ -965,7 +966,7 @@ void RepeatedMessageFieldGenerator::GenerateByteSize(
 
 void RepeatedMessageFieldGenerator::GenerateIsInitialized(
     io::Printer* printer) const {
-  GOOGLE_CHECK(!IsFieldStripped(descriptor_, options_));
+  GOOGLE_ABSL_CHECK(!IsFieldStripped(descriptor_, options_));
 
   if (!has_required_fields_) return;
 

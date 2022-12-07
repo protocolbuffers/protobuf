@@ -38,6 +38,7 @@
 #include <tuple>
 
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -99,7 +100,7 @@ int FixedSize(FieldDescriptor::Type type) {
       // No default because we want the compiler to complain if any new
       // types are added.
   }
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return -1;
 }
 

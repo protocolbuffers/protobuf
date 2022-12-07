@@ -37,6 +37,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/compiler/annotation_test_util.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 
@@ -77,12 +78,12 @@ class CppMetadataTest : public ::testing::Test {
     std::string output_base = TestTempDir() + "/" + StripProto(filename);
 
     if (pb_cc != nullptr) {
-      GOOGLE_CHECK_OK(
+      GOOGLE_ABSL_CHECK_OK(
           File::GetContents(output_base + ".pb.cc", pb_cc, true));
     }
 
     if (pb_h != nullptr && pb_h_info != nullptr) {
-      GOOGLE_CHECK_OK(
+      GOOGLE_ABSL_CHECK_OK(
           File::GetContents(output_base + ".pb.h", pb_h, true));
       if (!atu::DecodeMetadata(output_base + ".pb.h.meta", pb_h_info)) {
         return false;
@@ -90,8 +91,8 @@ class CppMetadataTest : public ::testing::Test {
     }
 
     if (proto_h != nullptr && proto_h_info != nullptr) {
-      GOOGLE_CHECK_OK(File::GetContents(output_base + ".proto.h", proto_h,
-                                 true));
+      GOOGLE_ABSL_CHECK_OK(File::GetContents(output_base + ".proto.h", proto_h,
+                                      true));
       if (!atu::DecodeMetadata(output_base + ".proto.h.meta", proto_h_info)) {
         return false;
       }

@@ -41,6 +41,7 @@
 
 #include "google/protobuf/descriptor.h"
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
 
@@ -169,7 +170,7 @@ class FieldGenerator {
   // shared-for-the-whole-message-class method registered with
   // OwnDestructor().
   virtual void GenerateArenaDestructorCode(io::Printer* printer) const {
-    GOOGLE_CHECK(NeedsArenaDestructor() == ArenaDtorNeeds::kNone)
+    GOOGLE_ABSL_CHECK(NeedsArenaDestructor() == ArenaDtorNeeds::kNone)
         << descriptor_->cpp_type_name();
   }
 
