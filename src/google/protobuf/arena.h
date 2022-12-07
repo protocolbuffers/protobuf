@@ -271,7 +271,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // is obtained from the arena).
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE static T* Create(Arena* arena, Args&&... args) {
-    if (arena == nullptr) {
+    if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
       return new T(std::forward<Args>(args)...);
     }
     auto destructor =
@@ -320,10 +320,13 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                   "CreateArray requires a trivially destructible type");
     GOOGLE_ABSL_CHECK_LE(num_elements, std::numeric_limits<size_t>::max() / sizeof(T))
         << "Requested size is too large to fit into size_t.";
-    if (arena == nullptr) {
+    if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
       return static_cast<T*>(::operator new[](num_elements * sizeof(T)));
     } else {
-      return arena->CreateInternalRawArray<T>(num_elements);
+      // We count on compiler to realize that if sizeof(T) is a multiple of
+      // 8 AlignUpTo can be elided.
+      return static_cast<T*>(
+          arena->AllocateAlignedForArray(sizeof(T) * num_elements, alignof(T)));
     }
   }
 
@@ -596,18 +599,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                                                       Args&&... args) {
     return DoCreateMaybeMessage<T>(arena, is_arena_constructable<T>(),
                                    std::forward<Args>(args)...);
-  }
-
-  // Just allocate the required size for the given type assuming the
-  // type has a trivial constructor.
-  template <typename T>
-  PROTOBUF_NDEBUG_INLINE T* CreateInternalRawArray(size_t num_elements) {
-    GOOGLE_ABSL_CHECK_LE(num_elements, std::numeric_limits<size_t>::max() / sizeof(T))
-        << "Requested size is too large to fit into size_t.";
-    // We count on compiler to realize that if sizeof(T) is a multiple of
-    // 8 AlignUpTo can be elided.
-    const size_t n = sizeof(T) * num_elements;
-    return static_cast<T*>(AllocateAlignedForArray(n, alignof(T)));
   }
 
   template <typename T, typename... Args>
