@@ -43,10 +43,13 @@
 #include <limits.h>
 
 #include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <utility>
 
 #include "google/protobuf/stubs/logging.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
@@ -67,6 +70,9 @@ namespace {
 static const int kMaxVarintBytes = 10;
 static const int kMaxVarint32Bytes = 5;
 
+// When reading / writing Cords, if we have fewer than this many bytes we
+// won't bother trying to avoid coping the contents.
+static const int kMaxCordBytesToCopy = 512;
 
 inline bool NextNonEmpty(ZeroCopyInputStream* input, const void** data,
                          int* size) {
@@ -75,6 +81,14 @@ inline bool NextNonEmpty(ZeroCopyInputStream* input, const void** data,
     success = input->Next(data, size);
   } while (success && *size == 0);
   return success;
+}
+
+inline uint8_t* CopyCordToArray(const absl::Cord& cord, uint8_t* target) {
+  for (absl::string_view sv : cord.Chunks()) {
+    memcpy(target, sv.data(), sv.size());
+    target += sv.size();
+  }
+  return target;
 }
 
 }  // namespace
@@ -307,6 +321,46 @@ bool CodedInputStream::ReadStringFallback(std::string* buffer, int size) {
   Advance(size);
 
   return true;
+}
+
+bool CodedInputStream::ReadCord(absl::Cord* output, int size) {
+  GOOGLE_DCHECK_NE(output, nullptr);
+
+  // security: size is often user-supplied
+  if (size < 0) {
+    output->Clear();
+    return false;  // security: size is often user-supplied
+  }
+
+  // Grab whatever is in the current output if `size` is relatively small,
+  // or if we are not sourcing data from an input stream.
+  if (input_ == nullptr || size < kMaxCordBytesToCopy) {
+    // Just copy the current buffer into the output rather than backing up.
+    absl::string_view buffer(reinterpret_cast<const char*>(buffer_),
+                             static_cast<size_t>(std::min(size, BufferSize())));
+    *output = buffer;
+    Advance(static_cast<int>(buffer.size()));
+    size -= static_cast<int>(buffer.size());
+    if (size == 0) return true;
+    if (input_ == nullptr || buffer_size_after_limit_ + overflow_bytes_ > 0) {
+      // We hit a limit.
+      return false;
+    }
+  } else {
+    output->Clear();
+    BackUpInputToCurrentPosition();
+  }
+
+  // Make sure to not cross a limit set by PushLimit() or SetTotalBytesLimit().
+  const int closest_limit = std::min(current_limit_, total_bytes_limit_);
+  const int available = closest_limit - total_bytes_read_;
+  if (PROTOBUF_PREDICT_FALSE(size > available)) {
+    total_bytes_read_ = closest_limit;
+    input_->ReadCord(output, available);
+    return false;
+  }
+  total_bytes_read_ += size;
+  return input_->ReadCord(output, size);
 }
 
 
@@ -910,6 +964,26 @@ uint8_t* EpsCopyOutputStream::WriteRawLittleEndian64(const void* data, int size,
 }
 #endif
 
+uint8_t* EpsCopyOutputStream::WriteCord(const absl::Cord& cord, uint8_t* ptr) {
+  int s = GetSize(ptr);
+  if (stream_ == nullptr) {
+    if (static_cast<int64_t>(cord.size()) <= s) {
+      // Just copy it to the current buffer.
+      return CopyCordToArray(cord, ptr);
+    } else {
+      return Error();
+    }
+  } else if (static_cast<int64_t>(cord.size()) <= s &&
+             static_cast<int64_t>(cord.size()) < kMaxCordBytesToCopy) {
+    // Just copy it to the current buffer.
+    return CopyCordToArray(cord, ptr);
+  } else {
+    // Back up to the position where the Cord should start.
+    ptr = Trim(ptr);
+    if (!stream_->WriteCord(cord)) return Error();
+    return ptr;
+  }
+}
 
 uint8_t* EpsCopyOutputStream::WriteStringMaybeAliasedOutline(uint32_t num,
                                                            const std::string& s,
@@ -928,10 +1002,29 @@ uint8_t* EpsCopyOutputStream::WriteStringOutline(uint32_t num, const std::string
   return WriteRaw(s.data(), size, ptr);
 }
 
+uint8_t* EpsCopyOutputStream::WriteStringOutline(uint32_t num, absl::string_view s,
+                                               uint8_t* ptr) {
+  ptr = EnsureSpace(ptr);
+  uint32_t size = s.size();
+  ptr = WriteLengthDelim(num, size, ptr);
+  return WriteRaw(s.data(), size, ptr);
+}
+
+uint8_t* EpsCopyOutputStream::WriteCordOutline(const absl::Cord& c, uint8_t* ptr) {
+  uint32_t size = c.size();
+  ptr = UnsafeWriteSize(size, ptr);
+  return WriteCord(c, ptr);
+}
+
 std::atomic<bool> CodedOutputStream::default_serialization_deterministic_{
     false};
 
 CodedOutputStream::~CodedOutputStream() { Trim(); }
+
+uint8_t* CodedOutputStream::WriteCordToArray(const absl::Cord& cord,
+                                             uint8_t* target) {
+  return CopyCordToArray(cord, target);
+}
 
 
 uint8_t* CodedOutputStream::WriteStringWithSizeToArray(const std::string& str,
