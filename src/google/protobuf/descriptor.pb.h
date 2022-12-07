@@ -4411,6 +4411,7 @@ class PROTOBUF_EXPORT MessageOptions final :
     kNoStandardDescriptorAccessorFieldNumber = 2,
     kDeprecatedFieldNumber = 3,
     kMapEntryFieldNumber = 7,
+    kDeprecatedLegacyJsonFieldConflictsFieldNumber = 11,
   };
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   int uninterpreted_option_size() const;
@@ -4468,6 +4469,16 @@ class PROTOBUF_EXPORT MessageOptions final :
   private:
   bool _internal_map_entry() const;
   void _internal_set_map_entry(bool value);
+  public:
+
+  // optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
+  PROTOBUF_DEPRECATED bool has_deprecated_legacy_json_field_conflicts() const;
+  PROTOBUF_DEPRECATED void clear_deprecated_legacy_json_field_conflicts();
+  PROTOBUF_DEPRECATED bool deprecated_legacy_json_field_conflicts() const;
+  PROTOBUF_DEPRECATED void set_deprecated_legacy_json_field_conflicts(bool value);
+  private:
+  bool _internal_deprecated_legacy_json_field_conflicts() const;
+  void _internal_set_deprecated_legacy_json_field_conflicts(bool value);
   public:
 
 
@@ -4677,6 +4688,7 @@ class PROTOBUF_EXPORT MessageOptions final :
     bool no_standard_descriptor_accessor_;
     bool deprecated_;
     bool map_entry_;
+    bool deprecated_legacy_json_field_conflicts_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -5650,6 +5662,7 @@ class PROTOBUF_EXPORT EnumOptions final :
     kUninterpretedOptionFieldNumber = 999,
     kAllowAliasFieldNumber = 2,
     kDeprecatedFieldNumber = 3,
+    kDeprecatedLegacyJsonFieldConflictsFieldNumber = 6,
   };
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   int uninterpreted_option_size() const;
@@ -5687,6 +5700,16 @@ class PROTOBUF_EXPORT EnumOptions final :
   private:
   bool _internal_deprecated() const;
   void _internal_set_deprecated(bool value);
+  public:
+
+  // optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
+  PROTOBUF_DEPRECATED bool has_deprecated_legacy_json_field_conflicts() const;
+  PROTOBUF_DEPRECATED void clear_deprecated_legacy_json_field_conflicts();
+  PROTOBUF_DEPRECATED bool deprecated_legacy_json_field_conflicts() const;
+  PROTOBUF_DEPRECATED void set_deprecated_legacy_json_field_conflicts(bool value);
+  private:
+  bool _internal_deprecated_legacy_json_field_conflicts() const;
+  void _internal_set_deprecated_legacy_json_field_conflicts(bool value);
   public:
 
 
@@ -5894,6 +5917,7 @@ class PROTOBUF_EXPORT EnumOptions final :
     ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption > uninterpreted_option_;
     bool allow_alias_;
     bool deprecated_;
+    bool deprecated_legacy_json_field_conflicts_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -12630,6 +12654,31 @@ inline void MessageOptions::set_map_entry(bool value) {
   // @@protoc_insertion_point(field_set:google.protobuf.MessageOptions.map_entry)
 }
 
+// optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
+inline bool MessageOptions::has_deprecated_legacy_json_field_conflicts() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
+  return value;
+}
+inline void MessageOptions::clear_deprecated_legacy_json_field_conflicts() {
+  _impl_.deprecated_legacy_json_field_conflicts_ = false;
+  _impl_._has_bits_[0] &= ~0x00000010u;
+}
+inline bool MessageOptions::_internal_deprecated_legacy_json_field_conflicts() const {
+  return _impl_.deprecated_legacy_json_field_conflicts_;
+}
+inline bool MessageOptions::deprecated_legacy_json_field_conflicts() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.MessageOptions.deprecated_legacy_json_field_conflicts)
+  return _internal_deprecated_legacy_json_field_conflicts();
+}
+inline void MessageOptions::_internal_set_deprecated_legacy_json_field_conflicts(bool value) {
+  _impl_._has_bits_[0] |= 0x00000010u;
+  _impl_.deprecated_legacy_json_field_conflicts_ = value;
+}
+inline void MessageOptions::set_deprecated_legacy_json_field_conflicts(bool value) {
+  _internal_set_deprecated_legacy_json_field_conflicts(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.MessageOptions.deprecated_legacy_json_field_conflicts)
+}
+
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
 inline int MessageOptions::_internal_uninterpreted_option_size() const {
   return _impl_.uninterpreted_option_.size();
@@ -12987,6 +13036,31 @@ inline void EnumOptions::_internal_set_deprecated(bool value) {
 inline void EnumOptions::set_deprecated(bool value) {
   _internal_set_deprecated(value);
   // @@protoc_insertion_point(field_set:google.protobuf.EnumOptions.deprecated)
+}
+
+// optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
+inline bool EnumOptions::has_deprecated_legacy_json_field_conflicts() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  return value;
+}
+inline void EnumOptions::clear_deprecated_legacy_json_field_conflicts() {
+  _impl_.deprecated_legacy_json_field_conflicts_ = false;
+  _impl_._has_bits_[0] &= ~0x00000004u;
+}
+inline bool EnumOptions::_internal_deprecated_legacy_json_field_conflicts() const {
+  return _impl_.deprecated_legacy_json_field_conflicts_;
+}
+inline bool EnumOptions::deprecated_legacy_json_field_conflicts() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.EnumOptions.deprecated_legacy_json_field_conflicts)
+  return _internal_deprecated_legacy_json_field_conflicts();
+}
+inline void EnumOptions::_internal_set_deprecated_legacy_json_field_conflicts(bool value) {
+  _impl_._has_bits_[0] |= 0x00000004u;
+  _impl_.deprecated_legacy_json_field_conflicts_ = value;
+}
+inline void EnumOptions::set_deprecated_legacy_json_field_conflicts(bool value) {
+  _internal_set_deprecated_legacy_json_field_conflicts(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.EnumOptions.deprecated_legacy_json_field_conflicts)
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
