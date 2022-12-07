@@ -445,7 +445,7 @@ class PROTOBUF_EXPORT MessageLite {
 
   // Returns true if this message is enabled for message-owned arena (MOA)
   // trials. No lite messages are eligible for MOA.
-  static bool InMoaTrial() { return false; }
+  bool InMoaTrial() const { return false; }
 
   internal::InternalMetadata _internal_metadata_;
 
