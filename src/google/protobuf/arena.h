@@ -552,7 +552,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     static_assert(
         InternalHelper<T>::is_arena_constructable::value,
         "CreateMessage can only construct types that are ArenaConstructable");
-    if (arena == nullptr) {
+    if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
       return new T(nullptr, static_cast<Args&&>(args)...);
     } else {
       return arena->DoCreateMessage<T>(static_cast<Args&&>(args)...);
@@ -642,7 +642,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     CreateInArenaStorageInternal(ptr, arena,
                                  typename is_arena_constructable<T>::type(),
                                  std::forward<Args>(args)...);
-    if (arena != nullptr) {
+    if (PROTOBUF_PREDICT_TRUE(arena != nullptr)) {
       RegisterDestructorInternal(
           ptr, arena,
           typename InternalHelper<T>::is_destructor_skippable::type());
