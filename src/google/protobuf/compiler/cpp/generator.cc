@@ -174,8 +174,6 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       } while (pos < value.size());
     } else if (key == "unverified_lazy_message_sets") {
       file_options.unverified_lazy_message_sets = true;
-    } else if (key == "message_owned_arena_trial") {
-      file_options.message_owned_arena_trial = true;
     } else if (key == "force_eagerly_verified_lazy") {
       file_options.force_eagerly_verified_lazy = true;
     } else if (key == "experimental_tail_call_table_mode") {

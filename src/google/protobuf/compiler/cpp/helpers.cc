@@ -1663,11 +1663,6 @@ bool EnableMessageOwnedArena(const Descriptor* desc, const Options& options) {
   return false;
 }
 
-bool EnableMessageOwnedArenaTrial(const Descriptor* desc,
-                                  const Options& options) {
-  return false;
-}
-
 bool HasMessageFieldOrExtension(const Descriptor* desc) {
   if (desc->extension_range_count() > 0) return true;
   for (const auto* f : FieldRange(desc)) {

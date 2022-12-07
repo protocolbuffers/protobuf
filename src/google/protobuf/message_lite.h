@@ -443,10 +443,6 @@ class PROTOBUF_EXPORT MessageLite {
   // messages, etc), or owning incoming objects (e.g., set allocated).
   Arena* GetArenaForAllocation() const { return _internal_metadata_.arena(); }
 
-  // Returns true if this message is enabled for message-owned arena (MOA)
-  // trials. No lite messages are eligible for MOA.
-  bool InMoaTrial() const { return false; }
-
   internal::InternalMetadata _internal_metadata_;
 
  public:

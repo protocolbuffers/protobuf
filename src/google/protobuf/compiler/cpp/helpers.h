@@ -1021,9 +1021,6 @@ PROTOC_EXPORT std::string StripProto(const std::string& filename);
 
 bool EnableMessageOwnedArena(const Descriptor* desc, const Options& options);
 
-bool EnableMessageOwnedArenaTrial(const Descriptor* desc,
-                                  const Options& options);
-
 bool ShouldVerify(const Descriptor* descriptor, const Options& options,
                   MessageSCCAnalyzer* scc_analyzer);
 bool ShouldVerify(const FileDescriptor* file, const Options& options,

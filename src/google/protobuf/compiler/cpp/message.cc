@@ -1369,11 +1369,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
     format(
         "inline $classname$() : $classname$("
         "::$proto_ns$::Arena::InternalCreateMessageOwnedArena(), true) {}\n");
-  } else if (EnableMessageOwnedArenaTrial(descriptor_, options_)) {
-    format(
-        "inline $classname$() : $classname$(InMoaTrial() ? "
-        "::$proto_ns$::Arena::InternalCreateMessageOwnedArena() : nullptr, "
-        "InMoaTrial()) {}\n");
   } else {
     format("inline $classname$() : $classname$(nullptr) {}\n");
   }
