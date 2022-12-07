@@ -35,7 +35,6 @@
 #include "google/protobuf/compiler/code_generator.h"
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "absl/strings/str_split.h"

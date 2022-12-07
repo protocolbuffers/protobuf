@@ -40,7 +40,6 @@
 #include <vector>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"

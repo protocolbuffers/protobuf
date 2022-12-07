@@ -35,7 +35,6 @@
 #include "google/protobuf/test_util_lite.h"
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
 

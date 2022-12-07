@@ -47,7 +47,6 @@
 #include "google/protobuf/stubs/logging.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
-#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"

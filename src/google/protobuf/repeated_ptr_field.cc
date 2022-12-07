@@ -35,7 +35,6 @@
 #include <algorithm>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/implicit_weak_message.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/port.h"

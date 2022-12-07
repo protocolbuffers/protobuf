@@ -35,7 +35,6 @@
 #include "google/protobuf/reflection_ops.h"
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/descriptor.h"
 #include <gtest/gtest.h>
 #include "absl/strings/str_join.h"

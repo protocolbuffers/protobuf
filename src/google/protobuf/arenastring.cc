@@ -33,7 +33,6 @@
 #include <cstddef>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/io/coded_stream.h"

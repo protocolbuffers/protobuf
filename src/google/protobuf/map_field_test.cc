@@ -32,7 +32,6 @@
 #include <memory>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field_inl.h"

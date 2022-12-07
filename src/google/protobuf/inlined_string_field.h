@@ -35,7 +35,6 @@
 #include <utility>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/port.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arenastring.h"

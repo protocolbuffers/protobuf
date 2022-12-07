@@ -38,7 +38,6 @@
 // out of this file.
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"

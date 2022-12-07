@@ -68,7 +68,6 @@
 #include <cstdint>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "absl/numeric/bits.h"
 
 // Must be included last.

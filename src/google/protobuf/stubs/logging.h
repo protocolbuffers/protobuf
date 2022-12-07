@@ -141,15 +141,24 @@ inline bool IsOk(bool status) { return status; }
 #undef GOOGLE_DCHECK_GT
 #undef GOOGLE_DCHECK_GE
 
-#define GOOGLE_LOG(LEVEL)                          \
+#define GOOGLE_LOG(LEVEL)                       \
+  ::google::protobuf::internal::LogFinisher() = \
+      ::google::protobuf::internal::LogMessage( \
+          ::google::protobuf::LOGLEVEL_##LEVEL, __FILE__, __LINE__)
+#define GOOGLE_ABSL_LOG(LEVEL)                  \
   ::google::protobuf::internal::LogFinisher() = \
       ::google::protobuf::internal::LogMessage( \
           ::google::protobuf::LOGLEVEL_##LEVEL, __FILE__, __LINE__)
 #define GOOGLE_LOG_IF(LEVEL, CONDITION) \
   !(CONDITION) ? (void)0 : GOOGLE_LOG(LEVEL)
+#define GOOGLE_ABSL_LOG_IF(LEVEL, CONDITION) \
+  !(CONDITION) ? (void)0 : GOOGLE_LOG(LEVEL)
 
 #define GOOGLE_CHECK(EXPRESSION) \
   GOOGLE_LOG_IF(FATAL, !(EXPRESSION)) << "CHECK failed: " #EXPRESSION ": "
+#define GOOGLE_ABSL_CHECK(EXPRESSION) \
+  GOOGLE_LOG_IF(FATAL, !(EXPRESSION)) << "CHECK failed: " #EXPRESSION ": "
+
 #define GOOGLE_CHECK_OK(A) GOOGLE_CHECK(::google::protobuf::internal::IsOk(A))
 #define GOOGLE_CHECK_EQ(A, B) GOOGLE_CHECK((A) == (B))
 #define GOOGLE_CHECK_NE(A, B) GOOGLE_CHECK((A) != (B))
@@ -157,6 +166,14 @@ inline bool IsOk(bool status) { return status; }
 #define GOOGLE_CHECK_LE(A, B) GOOGLE_CHECK((A) <= (B))
 #define GOOGLE_CHECK_GT(A, B) GOOGLE_CHECK((A) >  (B))
 #define GOOGLE_CHECK_GE(A, B) GOOGLE_CHECK((A) >= (B))
+
+#define GOOGLE_ABSL_CHECK_OK GOOGLE_CHECK_OK
+#define GOOGLE_ABSL_CHECK_EQ GOOGLE_CHECK_EQ
+#define GOOGLE_ABSL_CHECK_NE GOOGLE_CHECK_NE
+#define GOOGLE_ABSL_CHECK_LT GOOGLE_CHECK_LT
+#define GOOGLE_ABSL_CHECK_LE GOOGLE_CHECK_LE
+#define GOOGLE_ABSL_CHECK_GT GOOGLE_CHECK_GT
+#define GOOGLE_ABSL_CHECK_GE GOOGLE_CHECK_GE
 
 namespace internal {
 template<typename T>
@@ -199,6 +216,15 @@ T* CheckNotNull(const char* /* file */, int /* line */,
 #define GOOGLE_DCHECK_GE GOOGLE_CHECK_GE
 
 #endif  // !NDEBUG
+
+#define GOOGLE_ABSL_DCHECK GOOGLE_DCHECK
+#define GOOGLE_ABSL_DCHECK_OK GOOGLE_DCHECK_OK
+#define GOOGLE_ABSL_DCHECK_EQ GOOGLE_DCHECK_EQ
+#define GOOGLE_ABSL_DCHECK_NE GOOGLE_DCHECK_NE
+#define GOOGLE_ABSL_DCHECK_LT GOOGLE_DCHECK_LT
+#define GOOGLE_ABSL_DCHECK_LE GOOGLE_DCHECK_LE
+#define GOOGLE_ABSL_DCHECK_GT GOOGLE_DCHECK_GT
+#define GOOGLE_ABSL_DCHECK_GE GOOGLE_DCHECK_GE
 
 typedef void LogHandler(LogLevel level, const char* filename, int line,
                         const std::string& message);

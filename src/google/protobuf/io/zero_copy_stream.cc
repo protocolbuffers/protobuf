@@ -38,7 +38,6 @@
 #include <utility>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/cord_buffer.h"
 #include "absl/strings/string_view.h"

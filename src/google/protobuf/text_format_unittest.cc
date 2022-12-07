@@ -43,14 +43,12 @@
 #include <string>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/any.pb.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
