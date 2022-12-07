@@ -37,7 +37,6 @@
 #include <vector>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include <gtest/gtest.h>
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"

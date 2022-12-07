@@ -36,7 +36,6 @@
 #include <string>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "absl/base/attributes.h"
 #include "absl/strings/cord.h"
 

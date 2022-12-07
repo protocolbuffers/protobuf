@@ -35,7 +35,6 @@
 #include "google/protobuf/unknown_field_set.h"
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "google/protobuf/extension_set.h"

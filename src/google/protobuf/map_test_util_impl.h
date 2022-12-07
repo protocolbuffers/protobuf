@@ -32,7 +32,6 @@
 #define GOOGLE_PROTOBUF_MAP_TEST_UTIL_IMPL_H__
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include <gtest/gtest.h>
 
 

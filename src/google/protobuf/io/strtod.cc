@@ -41,7 +41,6 @@
 #include <system_error>  // NOLINT(build/c++11)
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "absl/strings/charconv.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_format.h"

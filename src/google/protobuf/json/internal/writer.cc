@@ -36,7 +36,6 @@
 #include <utility>
 
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "absl/algorithm/container.h"
 
 // Must be included last.
