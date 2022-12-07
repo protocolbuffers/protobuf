@@ -956,6 +956,80 @@ TEST(RepeatedField, Truncate) {
 #endif
 }
 
+TEST(RepeatedField, Cords) {
+  RepeatedField<absl::Cord> field;
+
+  field.Add(absl::Cord("foo"));
+  field.Add(absl::Cord("bar"));
+  field.Add(absl::Cord("baz"));
+  field.Add(absl::Cord("moo"));
+  field.Add(absl::Cord("corge"));
+
+  EXPECT_EQ("foo", std::string(field.Get(0)));
+  EXPECT_EQ("corge", std::string(field.Get(4)));
+
+  // Test swap.  Note:  One of the swapped objects is using internal storage,
+  //   the other is not.
+  RepeatedField<absl::Cord> field2;
+  field2.Add(absl::Cord("grault"));
+  field.Swap(&field2);
+  EXPECT_EQ(1, field.size());
+  EXPECT_EQ("grault", std::string(field.Get(0)));
+  EXPECT_EQ(5, field2.size());
+  EXPECT_EQ("foo", std::string(field2.Get(0)));
+  EXPECT_EQ("corge", std::string(field2.Get(4)));
+
+  // Test SwapElements().
+  field2.SwapElements(1, 3);
+  EXPECT_EQ("moo", std::string(field2.Get(1)));
+  EXPECT_EQ("bar", std::string(field2.Get(3)));
+
+  // Make sure cords are cleared correctly.
+  field2.RemoveLast();
+  EXPECT_TRUE(field2.Add()->empty());
+  field2.Clear();
+  EXPECT_TRUE(field2.Add()->empty());
+}
+
+TEST(RepeatedField, TruncateCords) {
+  RepeatedField<absl::Cord> field;
+
+  field.Add(absl::Cord("foo"));
+  field.Add(absl::Cord("bar"));
+  field.Add(absl::Cord("baz"));
+  field.Add(absl::Cord("moo"));
+  EXPECT_EQ(4, field.size());
+
+  field.Truncate(3);
+  EXPECT_EQ(3, field.size());
+
+  field.Add(absl::Cord("corge"));
+  EXPECT_EQ(4, field.size());
+  EXPECT_EQ("corge", std::string(field.Get(3)));
+
+  // Truncating to the current size should be fine (no-op), but truncating
+  // to a larger size should crash.
+  field.Truncate(field.size());
+#ifdef PROTOBUF_HAS_DEATH_TEST
+  EXPECT_DEBUG_DEATH(field.Truncate(field.size() + 1), "new_size");
+#endif
+}
+
+TEST(RepeatedField, ResizeCords) {
+  RepeatedField<absl::Cord> field;
+  field.Resize(2, absl::Cord("foo"));
+  EXPECT_EQ(2, field.size());
+  field.Resize(5, absl::Cord("bar"));
+  EXPECT_EQ(5, field.size());
+  field.Resize(4, absl::Cord("baz"));
+  ASSERT_EQ(4, field.size());
+  EXPECT_EQ("foo", std::string(field.Get(0)));
+  EXPECT_EQ("foo", std::string(field.Get(1)));
+  EXPECT_EQ("bar", std::string(field.Get(2)));
+  EXPECT_EQ("bar", std::string(field.Get(3)));
+  field.Resize(0, absl::Cord("moo"));
+  EXPECT_TRUE(field.empty());
+}
 
 TEST(RepeatedField, ExtractSubrange) {
   // Exhaustively test every subrange in arrays of all sizes from 0 through 9.

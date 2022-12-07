@@ -55,6 +55,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/stubs/logging.h"
+#include "absl/strings/cord.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
@@ -139,6 +140,10 @@ class RepeatedIterator;
 // other words, everything except strings and nested Messages).  Most users will
 // not ever use a RepeatedField directly; they will use the get-by-index,
 // set-by-index, and add accessors that are generated for all repeated fields.
+// Actually, in addition to primitive types, we use RepeatedField for repeated
+// Cords, because the Cord class is in fact just a reference-counted pointer.
+// We have to specialize several methods in the Cord case to get the memory
+// management right; e.g. swapping when appropriate, etc.
 template <typename Element>
 class RepeatedField final {
   static_assert(
@@ -207,6 +212,7 @@ class RepeatedField final {
   void Reserve(int new_size);
 
   // Resizes the RepeatedField to a new, smaller size.  This is O(1).
+  // Except for RepeatedField<Cord>, for which it is O(size-new_size).
   void Truncate(int new_size);
 
   void AddAlreadyReserved(const Element& value);
@@ -380,6 +386,7 @@ class RepeatedField final {
   // Moves the contents of |from| into |to|, possibly clobbering |from| in the
   // process.  For primitive types this is just a memcpy(), but it could be
   // specialized for non-primitive types to, say, swap each element instead.
+  // In fact, we do exactly that for Cords.
   void MoveArray(Element* to, Element* from, int size);
 
   // Copies the elements of |from| into |to|.
@@ -968,6 +975,10 @@ void RepeatedField<Element>::Reserve(int new_size) {
   // Likewise, we need to invoke destructors on the old array.
   InternalDeallocate(old_rep, old_total_size, false);
 
+  // Note that in the case of Cords, MoveArray() will have conveniently replaced
+  // all the Cords in the original array with empty values, which means that
+  // even if the old array was initial_space_, we don't have to worry about
+  // the old cords sticking around and holding on to memory.
 }
 
 template <typename Element>
@@ -1008,6 +1019,40 @@ struct ElementCopier<Element, true> {
 
 }  // namespace internal
 
+// Cords should be swapped when possible and need explicit clearing, so provide
+// some specializations for them.  Some definitions are in the .cc file.
+
+template <>
+inline void RepeatedField<absl::Cord>::RemoveLast() {
+  GOOGLE_ABSL_DCHECK_GT(current_size_, 0);
+  Mutable(size() - 1)->Clear();
+  ExchangeCurrentSize(current_size_ - 1);
+}
+
+template <>
+void RepeatedField<absl::Cord>::Clear();
+
+template <>
+inline void RepeatedField<absl::Cord>::SwapElements(int index1, int index2) {
+  Mutable(index1)->swap(*Mutable(index2));
+}
+
+template <>
+size_t RepeatedField<absl::Cord>::SpaceUsedExcludingSelfLong() const;
+
+template <>
+void RepeatedField<absl::Cord>::Truncate(int new_size);
+
+template <>
+void RepeatedField<absl::Cord>::Resize(int new_size, const absl::Cord& value);
+
+template <>
+void RepeatedField<absl::Cord>::MoveArray(absl::Cord* to, absl::Cord* from,
+                                          int size);
+
+template <>
+void RepeatedField<absl::Cord>::CopyArray(absl::Cord* to,
+                                          const absl::Cord* from, int size);
 
 // -------------------------------------------------------------------
 
@@ -1190,6 +1235,8 @@ extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<int64_t>;
 extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<uint64_t>;
 extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<float>;
 extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedField<double>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
+    RepeatedField<absl::Cord>;
 
 namespace internal {
 extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedIterator<bool>;
@@ -1203,6 +1250,8 @@ extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
     RepeatedIterator<uint64_t>;
 extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedIterator<float>;
 extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE RepeatedIterator<double>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
+    RepeatedIterator<absl::Cord>;
 }  // namespace internal
 
 }  // namespace protobuf
