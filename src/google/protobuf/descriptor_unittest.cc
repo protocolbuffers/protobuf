@@ -4601,6 +4601,7 @@ TEST_F(ValidationErrorTest, ReservedFieldNumber) {
       "foo.proto: Foo: NUMBER: Suggested field numbers for Foo: 1, 2\n");
 }
 
+
 TEST_F(ValidationErrorTest, ExtensionMissingExtendee) {
   BuildFileWithErrors(
       "name: \"foo.proto\" "
