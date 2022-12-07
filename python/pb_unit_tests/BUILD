@@ -23,6 +23,10 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# begin:google_only
+# load(":pyproto_test_wrapper.bzl", "pyproto_net_proto2_test_wrapper")
+#
+# end:google_only
 load(":pyproto_test_wrapper.bzl", "pyproto_test_wrapper")
 # begin:github_only
 load("@pip_deps//:requirements.bzl", "requirement")
@@ -46,8 +50,6 @@ pyproto_test_wrapper(name = "keywords_test")
 
 pyproto_test_wrapper(name = "message_factory_test")
 
-pyproto_test_wrapper(name = "message_test")
-
 # begin:github_only
 pyproto_test_wrapper(
     name = "numpy_test",
@@ -56,12 +58,10 @@ pyproto_test_wrapper(
 # end:github_only
 
 # begin:google_only
-# pyproto_test_wrapper(name = "numpy_test")
+# pyproto_net_proto2_test_wrapper(name = "numpy_test")
 # end:google_only
 
 pyproto_test_wrapper(name = "proto_builder_test")
-
-pyproto_test_wrapper(name = "reflection_test")
 
 pyproto_test_wrapper(name = "service_reflection_test")
 
@@ -69,9 +69,25 @@ pyproto_test_wrapper(name = "symbol_database_test")
 
 pyproto_test_wrapper(name = "text_encoding_test")
 
+# begin:google_only
+# pyproto_net_proto2_test_wrapper(name = "message_test")
+#
+# pyproto_net_proto2_test_wrapper(name = "reflection_test")
+#
+# pyproto_net_proto2_test_wrapper(name = "text_format_test")
+#
+# pyproto_net_proto2_test_wrapper(name = "unknown_fields_test")
+# end:google_only
+
+# begin:github_only
+pyproto_test_wrapper(name = "message_test")
+
+pyproto_test_wrapper(name = "reflection_test")
+
 pyproto_test_wrapper(name = "text_format_test")
 
 pyproto_test_wrapper(name = "unknown_fields_test")
+# end:github_only
 
 pyproto_test_wrapper(name = "well_known_types_test")
 

@@ -32,6 +32,22 @@ def pyproto_test_wrapper(name, deps = []):
 #         srcs = [src],
 #         main = src,
 #         deps = [
+#             "//third_party/py/google/protobuf/internal:" + name + "_for_deps",
+#             "//net/proto2/python/public:use_upb_protos",
+#         ],
+#         target_compatible_with = select({
+#             "@platforms//os:windows": ["//third_party/bazel_platforms:incompatible"],
+#             "//conditions:default": [],
+#         }),
+#     )
+#
+# def pyproto_net_proto2_test_wrapper(name):
+#     src = name + "_wrapper.py"
+#     native.py_test(
+#         name = name,
+#         srcs = [src],
+#         main = src,
+#         deps = [
 #             "//net/proto2/python/internal:" + name + "_for_deps",
 #             "//net/proto2/python/public:use_upb_protos",
 #         ],
