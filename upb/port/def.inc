@@ -171,6 +171,12 @@
 
 #if defined(__GNUC__) || defined(__clang__)
 #define UPB_UNREACHABLE() do { assert(0); __builtin_unreachable(); } while(0)
+#elif defined(_MSC_VER)
+#define UPB_UNREACHABLE() \
+  do {                    \
+    assert(0);            \
+    __assume(0);          \
+  } while (0)
 #else
 #define UPB_UNREACHABLE() do { assert(0); } while(0)
 #endif
