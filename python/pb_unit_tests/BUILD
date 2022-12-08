@@ -69,21 +69,17 @@ pyproto_test_wrapper(name = "symbol_database_test")
 
 pyproto_test_wrapper(name = "text_encoding_test")
 
+pyproto_test_wrapper(name = "message_test")
+
+pyproto_test_wrapper(name = "reflection_test")
+
 # begin:google_only
-# pyproto_net_proto2_test_wrapper(name = "message_test")
-#
-# pyproto_net_proto2_test_wrapper(name = "reflection_test")
-#
 # pyproto_net_proto2_test_wrapper(name = "text_format_test")
 #
 # pyproto_net_proto2_test_wrapper(name = "unknown_fields_test")
 # end:google_only
 
 # begin:github_only
-pyproto_test_wrapper(name = "message_test")
-
-pyproto_test_wrapper(name = "reflection_test")
-
 pyproto_test_wrapper(name = "text_format_test")
 
 pyproto_test_wrapper(name = "unknown_fields_test")
