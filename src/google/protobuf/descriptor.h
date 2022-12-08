@@ -1981,7 +1981,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   // underlay for a new DescriptorPool in which you add only the new file.
   //
   // WARNING:  Use of underlays can lead to many subtle gotchas.  Instead,
-  //   try to formulate what you want to do in terms of DescriptorDatabases.
+  // consider using MergedDescriptorDatabase with a DescriptorPoolDatabase.
   explicit DescriptorPool(const DescriptorPool* underlay);
 
   // Called by generated classes at init time to add their descriptors to
