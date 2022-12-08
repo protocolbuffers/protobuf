@@ -33,6 +33,8 @@
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/util/json_util.h"
 #include "google/protobuf/util/type_resolver_util.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "json/json.h"
@@ -255,9 +257,10 @@ const FieldDescriptor* GetFieldForType(FieldDescriptor::Type type,
   if (packed == Packed::kFalse) {
     packed_string = "Unpacked ";
   }
-  GOOGLE_LOG(FATAL) << "Couldn't find field with type: " << repeated_string.c_str()
-             << packed_string.c_str() << FieldDescriptor::TypeName(type)
-             << " for " << proto_string.c_str();
+  GOOGLE_ABSL_LOG(FATAL) << "Couldn't find field with type: "
+                  << repeated_string.c_str() << packed_string.c_str()
+                  << FieldDescriptor::TypeName(type) << " for "
+                  << proto_string.c_str();
   return nullptr;
 }
 
@@ -279,10 +282,10 @@ const FieldDescriptor* GetFieldForMapType(FieldDescriptor::Type key_type,
   }
 
   const string proto_string = is_proto3 ? "Proto3" : "Proto2";
-  GOOGLE_LOG(FATAL) << "Couldn't find map field with type: "
-             << FieldDescriptor::TypeName(key_type) << " and "
-             << FieldDescriptor::TypeName(key_type) << " for "
-             << proto_string.c_str();
+  GOOGLE_ABSL_LOG(FATAL) << "Couldn't find map field with type: "
+                  << FieldDescriptor::TypeName(key_type) << " and "
+                  << FieldDescriptor::TypeName(key_type) << " for "
+                  << proto_string.c_str();
   return nullptr;
 }
 
@@ -299,9 +302,9 @@ const FieldDescriptor* GetFieldForOneofType(FieldDescriptor::Type type,
   }
 
   const string proto_string = is_proto3 ? "Proto3" : "Proto2";
-  GOOGLE_LOG(FATAL) << "Couldn't find oneof field with type: "
-             << FieldDescriptor::TypeName(type) << " for "
-             << proto_string.c_str();
+  GOOGLE_ABSL_LOG(FATAL) << "Couldn't find oneof field with type: "
+                  << FieldDescriptor::TypeName(type) << " for "
+                  << proto_string.c_str();
   return nullptr;
 }
 
@@ -369,8 +372,8 @@ bool BinaryAndJsonConformanceSuite::ParseJsonResponse(
   }
 
   if (!test_message->ParseFromString(binary_protobuf)) {
-    GOOGLE_LOG(FATAL) << "INTERNAL ERROR: internal JSON->protobuf transcode "
-               << "yielded unparseable proto.";
+    GOOGLE_ABSL_LOG(FATAL) << "INTERNAL ERROR: internal JSON->protobuf transcode "
+                    << "yielded unparseable proto.";
     return false;
   }
 
@@ -426,8 +429,8 @@ bool BinaryAndJsonConformanceSuite::ParseResponse(
     }
 
     default:
-      GOOGLE_LOG(FATAL) << test_name
-                 << ": unknown payload type: " << response.result_case();
+      GOOGLE_ABSL_LOG(FATAL) << test_name
+                      << ": unknown payload type: " << response.result_case();
   }
 
   return true;
@@ -678,7 +681,7 @@ void BinaryAndJsonConformanceSuite::ExpectParseFailureForJson(
 void BinaryAndJsonConformanceSuite::ExpectSerializeFailureForJson(
     const string& test_name, ConformanceLevel level, const string& text_format) {
   TestAllTypesProto3 payload_message;
-  GOOGLE_CHECK(TextFormat::ParseFromString(text_format, &payload_message))
+  GOOGLE_ABSL_CHECK(TextFormat::ParseFromString(text_format, &payload_message))
       << "Failed to parse: " << text_format;
 
   TestAllTypesProto3 prototype;
@@ -1420,7 +1423,7 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
   req.set_protobuf_payload("");
   req.set_requested_output_format(conformance::WireFormat::PROTOBUF);
   RunTest("FindFailures", req, &res);
-  GOOGLE_CHECK(failure_set.MergeFromString(res.protobuf_payload()));
+  GOOGLE_ABSL_CHECK(failure_set.MergeFromString(res.protobuf_payload()));
   for (const string& failure : failure_set.failure()) {
     AddExpectedFailedTest(failure);
   }

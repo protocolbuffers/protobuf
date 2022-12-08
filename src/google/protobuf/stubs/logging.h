@@ -217,6 +217,7 @@ T* CheckNotNull(const char* /* file */, int /* line */,
 
 #endif  // !NDEBUG
 
+#define GOOGLE_ABSL_DLOG GOOGLE_DLOG
 #define GOOGLE_ABSL_DCHECK GOOGLE_DCHECK
 #define GOOGLE_ABSL_DCHECK_OK GOOGLE_DCHECK_OK
 #define GOOGLE_ABSL_DCHECK_EQ GOOGLE_DCHECK_EQ

@@ -43,6 +43,8 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_MESSAGE_DIFFERENCER_H__
 #define GOOGLE_PROTOBUF_UTIL_MESSAGE_DIFFERENCER_H__
 
+#include "google/protobuf/stubs/logging.h"
+
 
 #include <functional>
 #include <map>
@@ -342,7 +344,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
     virtual bool IsMatch(const Message& message1, const Message& message2,
                          int /* unmapped_any */,
                          const std::vector<SpecificField>& fields) const {
-      GOOGLE_CHECK(false) << "IsMatch() is not implemented.";
+      GOOGLE_ABSL_CHECK(false) << "IsMatch() is not implemented.";
       return false;
     }
   };
@@ -928,7 +930,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // Checks if index is equal to new_index in all the specific fields.
   static bool CheckPathChanged(const std::vector<SpecificField>& parent_fields);
 
-  // CHECKs that the given repeated field can be compared according to
+  // ABSL_CHECKs that the given repeated field can be compared according to
   // new_comparison.
   void CheckRepeatedFieldComparisons(
       const FieldDescriptor* field,
