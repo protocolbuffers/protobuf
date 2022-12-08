@@ -1,3 +1,8 @@
+2022-12-07 version 21.11 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+  Python
+  * Add license file to pypi wheels (#10936)
+  * Fix round-trip bug (#10158)
+
 2022-11-29 version 21.10 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
 
   Java
