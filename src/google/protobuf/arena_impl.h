@@ -117,39 +117,6 @@ struct ArenaBlock {
 
 using LifecycleIdAtomic = uint64_t;
 
-// MetricsCollector collects stats for a particular arena.
-class PROTOBUF_EXPORT ArenaMetricsCollector {
- public:
-  ArenaMetricsCollector(bool record_allocs) : record_allocs_(record_allocs) {}
-
-  // Invoked when the arena is about to be destroyed. This method will
-  // typically finalize any metric collection and delete the collector.
-  // space_allocated is the space used by the arena.
-  virtual void OnDestroy(uint64_t space_allocated) = 0;
-
-  // OnReset() is called when the associated arena is reset.
-  // space_allocated is the space used by the arena just before the reset.
-  virtual void OnReset(uint64_t space_allocated) = 0;
-
-  // OnAlloc is called when an allocation happens.
-  // type_info is promised to be static - its lifetime extends to
-  // match program's lifetime (It is given by typeid operator).
-  // Note: typeid(void) will be passed as allocated_type every time we
-  // intentionally want to avoid monitoring an allocation. (i.e. internal
-  // allocations for managing the arena)
-  virtual void OnAlloc(const std::type_info* allocated_type,
-                       uint64_t alloc_size) = 0;
-
-  // Does OnAlloc() need to be called?  If false, metric collection overhead
-  // will be reduced since we will not do extra work per allocation.
-  bool RecordAllocs() { return record_allocs_; }
-
- protected:
-  // This class is destructed by the call to OnDestroy().
-  ~ArenaMetricsCollector() = default;
-  const bool record_allocs_;
-};
-
 enum class AllocationClient { kDefault, kArray };
 
 class ThreadSafeArena;
