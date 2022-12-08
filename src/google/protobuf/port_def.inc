@@ -534,13 +534,6 @@
 #define PROTOBUF_NODISCARD
 #endif
 
-// Enable all stable experiments if this flag is set.  This allows us to group
-// all of these experiments under a single build flag, which can be enabled in
-// the protobuf.stable-experiments TAP project.
-#ifdef PROTOBUF_ENABLE_STABLE_EXPERIMENTS
-#define PROTOBUF_FORCE_MESSAGE_OWNED_ARENA
-#endif  // !PROTOBUF_ENABLE_STABLE_EXPERIMENTS
-
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
 #error PROTOBUF_FORCE_COPY_IN_RELEASE was previously defined
 #endif

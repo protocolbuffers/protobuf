@@ -1367,13 +1367,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
   format(" public:\n");
   format.Indent();
 
-  if (EnableMessageOwnedArena(descriptor_, options_)) {
-    format(
-        "inline $classname$() : $classname$("
-        "::$proto_ns$::Arena::InternalCreateMessageOwnedArena(), true) {}\n");
-  } else {
-    format("inline $classname$() : $classname$(nullptr) {}\n");
-  }
+  format("inline $classname$() : $classname$(nullptr) {}\n");
   if (!HasSimpleBaseClass(descriptor_, options_)) {
     format("~$classname$() override;\n");
   }
