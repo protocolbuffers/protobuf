@@ -73,6 +73,7 @@ using protobuf_unittest::TestRepeatedString;
 
 namespace google {
 namespace protobuf {
+namespace internal {
 
 class Notifier {
  public:
@@ -282,8 +283,7 @@ TEST(ArenaTest, CreateWithMoveArguments) {
 TEST(ArenaTest, InitialBlockTooSmall) {
   // Construct a small blocks of memory to be used by the arena allocator; then,
   // allocate an object which will not fit in the initial block.
-  for (uint32_t size = 0; size <= internal::SerialArena::kBlockHeaderSize + 32;
-       size++) {
+  for (uint32_t size = 0; size <= SerialArena::kBlockHeaderSize + 32; size++) {
     std::vector<char> arena_block(size);
     ArenaOptions options;
     options.initial_block = arena_block.data();
@@ -1197,7 +1197,7 @@ TEST(ArenaTest, RepeatedFieldOnArena) {
   Arena arena(arena_block.data(), arena_block.size());
 
   {
-    internal::NoHeapChecker no_heap;
+    NoHeapChecker no_heap;
 
     // Fill some repeated fields on the arena to test for leaks. Also verify no
     // memory allocations.
@@ -1440,7 +1440,7 @@ void VerifyArenaOverhead(Arena& arena, size_t overhead) {
 
 TEST(ArenaTest, FirstArenaOverhead) {
   Arena arena;
-  VerifyArenaOverhead(arena, internal::SerialArena::kBlockHeaderSize);
+  VerifyArenaOverhead(arena, SerialArena::kBlockHeaderSize);
 }
 
 
@@ -1552,7 +1552,7 @@ TEST(ArenaTest, SpaceReuseForArraysSizeChecks) {
     }
 
     for (void* p : pointers) {
-      internal::ArenaTestPeer::ReturnArrayMemory(&arena, p, size);
+      ArenaTestPeer::ReturnArrayMemory(&arena, p, size);
     }
 
     std::vector<void*> second_pointers;
@@ -1583,7 +1583,7 @@ TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
       pointers.push_back(p);
     }
     for (void* p : pointers) {
-      internal::ArenaTestPeer::ReturnArrayMemory(&arena, p, kSize);
+      ArenaTestPeer::ReturnArrayMemory(&arena, p, kSize);
       // The first one is not poisoned because it becomes the freelist.
       if (p != pointers[0]) EXPECT_TRUE(__asan_address_is_poisoned(p));
     }
@@ -1609,6 +1609,7 @@ TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
 }
 
 
+}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
 
