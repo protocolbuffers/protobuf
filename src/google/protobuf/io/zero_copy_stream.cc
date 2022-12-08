@@ -133,9 +133,9 @@ bool ZeroCopyOutputStream::WriteCord(const absl::Cord& cord) {
 
 bool ZeroCopyOutputStream::WriteAliasedRaw(const void* /* data */,
                                            int /* size */) {
-  GOOGLE_LOG(FATAL) << "This ZeroCopyOutputStream doesn't support aliasing. "
-                "Reaching here usually means a ZeroCopyOutputStream "
-                "implementation bug.";
+  GOOGLE_ABSL_LOG(FATAL) << "This ZeroCopyOutputStream doesn't support aliasing. "
+                     "Reaching here usually means a ZeroCopyOutputStream "
+                     "implementation bug.";
   return false;
 }
 

@@ -44,9 +44,10 @@
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
 #include <gtest/gtest.h>
 #include "absl/base/casts.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -237,9 +238,11 @@ TEST_F(CodedStreamTest, EmptyInputBeforeEos) {
       *size = 0;
       return count_++ < 2;
     }
-    void BackUp(int count) override { GOOGLE_LOG(FATAL) << "Tests never call this."; }
+    void BackUp(int count) override {
+      GOOGLE_ABSL_LOG(FATAL) << "Tests never call this.";
+    }
     bool Skip(int count) override {
-      GOOGLE_LOG(FATAL) << "Tests never call this.";
+      GOOGLE_ABSL_LOG(FATAL) << "Tests never call this.";
       return false;
     }
     int64_t ByteCount() const override { return 0; }
@@ -1490,11 +1493,11 @@ class ReallyBigInputStream : public ZeroCopyInputStream {
   void BackUp(int count) override { backup_amount_ = count; }
 
   bool Skip(int count) override {
-    GOOGLE_LOG(FATAL) << "Not implemented.";
+    GOOGLE_ABSL_LOG(FATAL) << "Not implemented.";
     return false;
   }
   int64_t ByteCount() const override {
-    GOOGLE_LOG(FATAL) << "Not implemented.";
+    GOOGLE_ABSL_LOG(FATAL) << "Not implemented.";
     return 0;
   }
 

@@ -36,8 +36,8 @@
 #include <string>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -133,7 +133,7 @@ class PatternedOutputStream : public io::ZeroCopyOutputStream {
   }
 
   void BackUp(int length) override {
-    GOOGLE_CHECK(length <= static_cast<int>(segment_.size()));
+    GOOGLE_ABSL_CHECK(length <= static_cast<int>(segment_.size()));
 
     size_t backup = segment_.size() - static_cast<size_t>(length);
     back_up_.push_back(segment_.substr(backup));

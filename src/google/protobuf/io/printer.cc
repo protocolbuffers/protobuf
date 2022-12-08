@@ -44,8 +44,9 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
@@ -139,10 +140,10 @@ Printer::Printer(ZeroCopyOutputStream* output, Options options)
 
 absl::string_view Printer::LookupVar(absl::string_view var) {
   LookupResult result = LookupInFrameStack(var, absl::MakeSpan(var_lookups_));
-  GOOGLE_CHECK(result.has_value()) << "could not find " << var;
+  GOOGLE_ABSL_CHECK(result.has_value()) << "could not find " << var;
   auto* view = absl::get_if<absl::string_view>(&*result);
-  GOOGLE_CHECK(view != nullptr) << "could not find " << var
-                         << "; found callback instead";
+  GOOGLE_ABSL_CHECK(view != nullptr)
+      << "could not find " << var << "; found callback instead";
 
   return *view;
 }
@@ -151,9 +152,9 @@ bool Printer::Validate(bool cond, Printer::PrintOptions opts,
                        absl::FunctionRef<std::string()> message) {
   if (!cond) {
     if (opts.checks_are_debug_only) {
-      GOOGLE_LOG(DFATAL) << message();
+      GOOGLE_ABSL_LOG(DFATAL) << message();
     } else {
-      GOOGLE_LOG(FATAL) << message();
+      GOOGLE_ABSL_LOG(FATAL) << message();
     }
   }
   return cond;
@@ -165,7 +166,7 @@ bool Printer::Validate(bool cond, Printer::PrintOptions opts,
 }
 
 // This function is outlined to isolate the use of
-// GOOGLE_CHECK into the .cc file.
+// GOOGLE_ABSL_CHECK into the .cc file.
 void Printer::Outdent() {
   PrintOptions opts;
   opts.checks_are_debug_only = true;
@@ -226,8 +227,8 @@ void Printer::Annotate(absl::string_view begin_varname,
     return;
   }
   if (begin->first > end->second) {
-    GOOGLE_LOG(DFATAL) << "annotation has negative length from " << begin_varname
-                << " to " << end_varname;
+    GOOGLE_ABSL_LOG(DFATAL) << "annotation has negative length from " << begin_varname
+                     << " to " << end_varname;
     return;
   }
   options_.annotation_collector->AddAnnotation(begin->first, end->second,
@@ -588,7 +589,7 @@ void Printer::PrintImpl(absl::string_view format,
       }
     } else {
       auto* fnc = absl::get_if<std::function<void()>>(&*sub);
-      GOOGLE_CHECK(fnc != nullptr);
+      GOOGLE_ABSL_CHECK(fnc != nullptr);
 
       Validate(
           prefix.empty() && suffix.empty(), opts,

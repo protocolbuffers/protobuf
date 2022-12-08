@@ -32,21 +32,20 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include "google/protobuf/io/printer.h"
-
 #include <ostream>
 #include <string>
 #include <tuple>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -57,7 +56,7 @@ namespace io {
 class PrinterTest : public testing::Test {
  protected:
   ZeroCopyOutputStream* output() {
-    GOOGLE_CHECK(stream_.has_value());
+    GOOGLE_ABSL_CHECK(stream_.has_value());
     return &*stream_;
   }
   absl::string_view written() {

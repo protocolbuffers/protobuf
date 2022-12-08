@@ -39,8 +39,8 @@
 #include <utility>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
 #include "absl/base/casts.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 
@@ -82,16 +82,16 @@ bool ArrayInputStream::Next(const void** data, int* size) {
 }
 
 void ArrayInputStream::BackUp(int count) {
-  GOOGLE_CHECK_GT(last_returned_size_, 0)
+  GOOGLE_ABSL_CHECK_GT(last_returned_size_, 0)
       << "BackUp() can only be called after a successful Next().";
-  GOOGLE_CHECK_LE(count, last_returned_size_);
-  GOOGLE_CHECK_GE(count, 0);
+  GOOGLE_ABSL_CHECK_LE(count, last_returned_size_);
+  GOOGLE_ABSL_CHECK_GE(count, 0);
   position_ -= count;
   last_returned_size_ = 0;  // Don't let caller back up further.
 }
 
 bool ArrayInputStream::Skip(int count) {
-  GOOGLE_CHECK_GE(count, 0);
+  GOOGLE_ABSL_CHECK_GE(count, 0);
   last_returned_size_ = 0;  // Don't let caller back up.
   if (count > size_ - position_) {
     position_ = size_;
@@ -129,9 +129,9 @@ bool ArrayOutputStream::Next(void** data, int* size) {
 }
 
 void ArrayOutputStream::BackUp(int count) {
-  GOOGLE_CHECK_LE(count, last_returned_size_)
+  GOOGLE_ABSL_CHECK_LE(count, last_returned_size_)
       << "BackUp() can not exceed the size of the last Next() call.";
-  GOOGLE_CHECK_GE(count, 0);
+  GOOGLE_ABSL_CHECK_GE(count, 0);
   position_ -= count;
   last_returned_size_ -= count;
 }
@@ -143,7 +143,7 @@ int64_t ArrayOutputStream::ByteCount() const { return position_; }
 StringOutputStream::StringOutputStream(std::string* target) : target_(target) {}
 
 bool StringOutputStream::Next(void** data, int* size) {
-  GOOGLE_CHECK(target_ != NULL);
+  GOOGLE_ABSL_CHECK(target_ != NULL);
   size_t old_size = target_->size();
 
   // Grow the string.
@@ -170,14 +170,14 @@ bool StringOutputStream::Next(void** data, int* size) {
 }
 
 void StringOutputStream::BackUp(int count) {
-  GOOGLE_CHECK_GE(count, 0);
-  GOOGLE_CHECK(target_ != NULL);
-  GOOGLE_CHECK_LE(static_cast<size_t>(count), target_->size());
+  GOOGLE_ABSL_CHECK_GE(count, 0);
+  GOOGLE_ABSL_CHECK(target_ != NULL);
+  GOOGLE_ABSL_CHECK_LE(static_cast<size_t>(count), target_->size());
   target_->resize(target_->size() - count);
 }
 
 int64_t StringOutputStream::ByteCount() const {
-  GOOGLE_CHECK(target_ != NULL);
+  GOOGLE_ABSL_CHECK(target_ != NULL);
   return target_->size();
 }
 
@@ -249,18 +249,18 @@ bool CopyingInputStreamAdaptor::Next(const void** data, int* size) {
 }
 
 void CopyingInputStreamAdaptor::BackUp(int count) {
-  GOOGLE_CHECK(backup_bytes_ == 0 && buffer_.get() != NULL)
+  GOOGLE_ABSL_CHECK(backup_bytes_ == 0 && buffer_.get() != NULL)
       << " BackUp() can only be called after Next().";
-  GOOGLE_CHECK_LE(count, buffer_used_)
+  GOOGLE_ABSL_CHECK_LE(count, buffer_used_)
       << " Can't back up over more bytes than were returned by the last call"
          " to Next().";
-  GOOGLE_CHECK_GE(count, 0) << " Parameter to BackUp() can't be negative.";
+  GOOGLE_ABSL_CHECK_GE(count, 0) << " Parameter to BackUp() can't be negative.";
 
   backup_bytes_ = count;
 }
 
 bool CopyingInputStreamAdaptor::Skip(int count) {
-  GOOGLE_CHECK_GE(count, 0);
+  GOOGLE_ABSL_CHECK_GE(count, 0);
 
   if (failed_) {
     // Already failed on a previous read.
@@ -293,7 +293,7 @@ void CopyingInputStreamAdaptor::AllocateBufferIfNeeded() {
 }
 
 void CopyingInputStreamAdaptor::FreeBuffer() {
-  GOOGLE_CHECK_EQ(backup_bytes_, 0);
+  GOOGLE_ABSL_CHECK_EQ(backup_bytes_, 0);
   buffer_used_ = 0;
   buffer_.reset();
 }
@@ -336,10 +336,10 @@ void CopyingOutputStreamAdaptor::BackUp(int count) {
     Flush();
     return;
   }
-  GOOGLE_CHECK_GE(count, 0);
-  GOOGLE_CHECK_EQ(buffer_used_, buffer_size_)
+  GOOGLE_ABSL_CHECK_GE(count, 0);
+  GOOGLE_ABSL_CHECK_EQ(buffer_used_, buffer_size_)
       << " BackUp() can only be called after Next().";
-  GOOGLE_CHECK_LE(count, buffer_used_)
+  GOOGLE_ABSL_CHECK_LE(count, buffer_used_)
       << " Can't back up over more bytes than were returned by the last call"
          " to Next().";
 
@@ -355,7 +355,7 @@ bool CopyingOutputStreamAdaptor::WriteAliasedRaw(const void* data, int size) {
     if (!Flush() || !copying_stream_->Write(data, size)) {
       return false;
     }
-    GOOGLE_DCHECK_EQ(buffer_used_, 0);
+    GOOGLE_ABSL_DCHECK_EQ(buffer_used_, 0);
     position_ += size;
     return true;
   }
@@ -533,7 +533,7 @@ bool CordInputStream::Next(const void** data, int* size) {
 
 void CordInputStream::BackUp(int count) {
   // Backup is only allowed on last returned chunk from `Next()`.
-  GOOGLE_CHECK_LE(static_cast<size_t>(count), size_ - available_);
+  GOOGLE_ABSL_CHECK_LE(static_cast<size_t>(count), size_ - available_);
 
   available_ += count;
   bytes_remaining_ += count;

@@ -252,7 +252,7 @@ class PROTOBUF_EXPORT ZeroCopyOutputStream {
 
   // Write a given chunk of data to the output.  Some output streams may
   // implement this in a way that avoids copying. Check AllowsAliasing() before
-  // calling WriteAliasedRaw(). It will GOOGLE_CHECK fail if WriteAliasedRaw() is
+  // calling WriteAliasedRaw(). It will GOOGLE_ABSL_CHECK fail if WriteAliasedRaw() is
   // called on a stream that does not allow aliasing.
   //
   // NOTE: It is caller's responsibility to ensure that the chunk of memory

@@ -46,10 +46,10 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
 #include "absl/cleanup/cleanup.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/functional/function_ref.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -885,8 +885,9 @@ auto Printer::WithDefs(
 
   for (auto& var : vars) {
     auto result = var_map.insert({var.key, var.value});
-    GOOGLE_CHECK(result.second) << "repeated variable in Emit() or WithVars() call: \""
-                         << var.key << "\"";
+    GOOGLE_ABSL_CHECK(result.second)
+        << "repeated variable in Emit() or WithVars() call: \"" << var.key
+        << "\"";
     if (var.annotation.has_value()) {
       annotation_map.insert({var.key, *var.annotation});
     }
@@ -903,7 +904,7 @@ auto Printer::WithDefs(
         }
 
         auto* f = absl::get_if<std::function<void()>>(&it->second);
-        GOOGLE_CHECK(f != nullptr);
+        GOOGLE_ABSL_CHECK(f != nullptr);
         return *f;
       });
 
