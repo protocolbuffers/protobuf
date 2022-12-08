@@ -147,8 +147,8 @@ namespace Google.Protobuf.WellKnownTypes
             var message = new RepeatedWellKnownTypes();
             Assert.Throws<ArgumentNullException>(() => message.BoolField.Add((bool?) null));
             Assert.Throws<ArgumentNullException>(() => message.Int32Field.Add((int?) null));
-            Assert.Throws<ArgumentNullException>(() => message.StringField.Add((string) null));
-            Assert.Throws<ArgumentNullException>(() => message.BytesField.Add((ByteString) null));
+            Assert.Throws<ArgumentNullException>(() => message.StringField.Add((string?) null));
+            Assert.Throws<ArgumentNullException>(() => message.BytesField.Add((ByteString?) null));
         }
 
         [Test]

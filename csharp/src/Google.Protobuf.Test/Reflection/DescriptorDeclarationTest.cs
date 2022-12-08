@@ -57,6 +57,7 @@ namespace Google.Protobuf.Test.Reflection
         public void ServiceComments()
         {
             var service = unitTestProto3Descriptor.FindTypeByName<ServiceDescriptor>("TestService");
+            Assert.NotNull(service);
             Assert.NotNull(service.Declaration);
             Assert.AreEqual(" This is a test service\n", service.Declaration.LeadingComments);
         }
@@ -65,7 +66,9 @@ namespace Google.Protobuf.Test.Reflection
         public void MethodComments()
         {
             var service = unitTestProto3Descriptor.FindTypeByName<ServiceDescriptor>("TestService");
+            Assert.NotNull(service);
             var method = service.FindMethodByName("Foo");
+            Assert.NotNull(method);
             Assert.NotNull(method.Declaration);
             Assert.AreEqual(" This is a test method\n", method.Declaration.LeadingComments);
         }
@@ -74,6 +77,7 @@ namespace Google.Protobuf.Test.Reflection
         public void MessageComments()
         {
             var message = unitTestProto3Descriptor.FindTypeByName<MessageDescriptor>("CommentMessage");
+            Assert.NotNull(message);
             Assert.NotNull(message.Declaration);
             Assert.AreEqual(" This is a leading comment\n", message.Declaration.LeadingComments);
             Assert.AreEqual(new[] { " This is leading detached comment 1\n", " This is leading detached comment 2\n" },
@@ -85,6 +89,7 @@ namespace Google.Protobuf.Test.Reflection
         public void MessageLocations()
         {
             var message = unitTestProto3Descriptor.FindTypeByName<MessageDescriptor>("CommentMessage");
+            Assert.NotNull(message);
             Assert.NotNull(message.Declaration);
             Assert.AreEqual(389, message.Declaration.StartLine);
             Assert.AreEqual(1, message.Declaration.StartColumn);
@@ -97,6 +102,7 @@ namespace Google.Protobuf.Test.Reflection
         public void EnumComments()
         {
             var descriptor = unitTestProto3Descriptor.FindTypeByName<EnumDescriptor>("CommentEnum");
+            Assert.NotNull(descriptor);
             Assert.NotNull(descriptor.Declaration);
             Assert.AreEqual(" Leading enum comment\n", descriptor.Declaration.LeadingComments);
         }
@@ -105,7 +111,9 @@ namespace Google.Protobuf.Test.Reflection
         public void NestedMessageComments()
         {
             var outer = unitTestProto3Descriptor.FindTypeByName<MessageDescriptor>("CommentMessage");
+            Assert.NotNull(outer);
             var nested = outer.FindDescriptor<MessageDescriptor>("NestedCommentMessage");
+            Assert.NotNull(nested);
             Assert.NotNull(nested.Declaration);
             Assert.AreEqual(" Leading nested message comment\n", nested.Declaration.LeadingComments);
         }
@@ -114,7 +122,9 @@ namespace Google.Protobuf.Test.Reflection
         public void NestedEnumComments()
         {
             var outer = unitTestProto3Descriptor.FindTypeByName<MessageDescriptor>("CommentMessage");
+            Assert.NotNull(outer);
             var nested = outer.FindDescriptor<EnumDescriptor>("NestedCommentEnum");
+            Assert.NotNull(nested);
             Assert.NotNull(nested.Declaration);
             Assert.AreEqual(" Leading nested enum comment\n", nested.Declaration.LeadingComments);
         }
@@ -123,7 +133,9 @@ namespace Google.Protobuf.Test.Reflection
         public void FieldComments()
         {
             var message = unitTestProto3Descriptor.FindTypeByName<MessageDescriptor>("CommentMessage");
+            Assert.NotNull(message);
             var field = message.FindFieldByName("text");
+            Assert.NotNull(field);
             Assert.NotNull(field.Declaration);
             Assert.AreEqual(" Leading field comment\n", field.Declaration.LeadingComments);
             Assert.AreEqual(" Trailing field comment\n", field.Declaration.TrailingComments);
@@ -133,8 +145,11 @@ namespace Google.Protobuf.Test.Reflection
         public void NestedMessageFieldComments()
         {
             var outer = unitTestProto3Descriptor.FindTypeByName<MessageDescriptor>("CommentMessage");
+            Assert.NotNull(outer);
             var nested = outer.FindDescriptor<MessageDescriptor>("NestedCommentMessage");
+            Assert.NotNull(nested);
             var field = nested.FindFieldByName("nested_text");
+            Assert.NotNull(field);
             Assert.NotNull(field.Declaration);
             Assert.AreEqual(" Leading nested message field comment\n", field.Declaration.LeadingComments);
         }
@@ -143,7 +158,9 @@ namespace Google.Protobuf.Test.Reflection
         public void EnumValueComments()
         {
             var enumDescriptor = unitTestProto3Descriptor.FindTypeByName<EnumDescriptor>("CommentEnum");
+            Assert.NotNull(enumDescriptor);
             var value = enumDescriptor.FindValueByName("ZERO_VALUE");
+            Assert.NotNull(value);
             Assert.NotNull(value.Declaration);
             Assert.AreEqual(" Zero value comment\n", value.Declaration.LeadingComments);
         }
@@ -152,8 +169,11 @@ namespace Google.Protobuf.Test.Reflection
         public void NestedEnumValueComments()
         {
             var outer = unitTestProto3Descriptor.FindTypeByName<MessageDescriptor>("CommentMessage");
+            Assert.NotNull(outer);
             var nested = outer.FindDescriptor<EnumDescriptor>("NestedCommentEnum");
+            Assert.NotNull(nested);
             var value = nested.FindValueByName("ZERO_VALUE");
+            Assert.NotNull(value);
             Assert.NotNull(value.Declaration);
             Assert.AreEqual(" Zero value comment\n", value.Declaration.LeadingComments);
         }

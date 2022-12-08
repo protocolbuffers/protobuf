@@ -50,7 +50,7 @@ namespace Google.Protobuf.ProtoDump
                 Console.Error.WriteLine("including assembly e.g. ProjectNamespace.Message,Company.Project");
                 return 1;
             }
-            Type type = Type.GetType(args[0]);
+            Type? type = Type.GetType(args[0]);
             if (type == null)
             {
                 Console.Error.WriteLine("Unable to load type {0}.", args[0]);
@@ -61,7 +61,7 @@ namespace Google.Protobuf.ProtoDump
                 Console.Error.WriteLine("Type {0} doesn't implement IMessage.", args[0]);
                 return 1;
             }
-            IMessage message = (IMessage) Activator.CreateInstance(type);
+            IMessage message = (IMessage) Activator.CreateInstance(type)!;
             using (var input = File.OpenRead(args[1]))
             {
                 message.MergeFrom(input);

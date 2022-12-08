@@ -115,7 +115,7 @@ namespace Google.Protobuf.WellKnownTypes
         [Test]
         public void Comparability()
         {
-            Timestamp
+            Timestamp?
                 a = null,
                 b = new Timestamp { Seconds = 1, Nanos = 1 },
                 c = new Timestamp { Seconds = 1, Nanos = 10 },
@@ -155,7 +155,7 @@ namespace Google.Protobuf.WellKnownTypes
         [Test]
         public void ComparabilityOperators()
         {
-            Timestamp
+            Timestamp?
                 a = null,
                 b = new Timestamp { Seconds = 1, Nanos = 1 },
                 c = new Timestamp { Seconds = 1, Nanos = 10 },

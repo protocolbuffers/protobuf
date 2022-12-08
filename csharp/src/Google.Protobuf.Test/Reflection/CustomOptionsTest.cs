@@ -62,7 +62,7 @@ namespace Google.Protobuf.Test.Reflection
                 }
                 else
                 {
-                    v = default;
+                    v = default!;
                     return false;
                 }
             };

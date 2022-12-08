@@ -625,7 +625,7 @@ namespace Google.Protobuf
         [TestCase(typeof(DoubleValue), 1.5d, "1.5")]
         public void Wrappers_Standalone(System.Type wrapperType, object value, string expectedJson)
         {
-            IMessage populated = (IMessage)Activator.CreateInstance(wrapperType);
+            IMessage populated = (IMessage)Activator.CreateInstance(wrapperType)!;
             populated.Descriptor.Fields[WrappersReflection.WrapperValueFieldNumber].Accessor.SetValue(populated, value);
             Assert.AreEqual(expectedJson, JsonFormatter.Default.Format(populated));
         }
@@ -875,7 +875,7 @@ namespace Google.Protobuf
             AssertWriteValue(value, "{ 'FieldName13': 0 }");
         }
 
-        private static void AssertWriteValue(object value, string expectedJson, JsonFormatter.Settings settings = null)
+        private static void AssertWriteValue(object value, string expectedJson, JsonFormatter.Settings? settings = null)
         {
             var writer = new StringWriter { NewLine = "\n" };
             new JsonFormatter(settings ?? JsonFormatter.Settings.Default).WriteValue(writer, value);

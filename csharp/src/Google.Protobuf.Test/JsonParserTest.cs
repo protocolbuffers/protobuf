@@ -148,8 +148,8 @@ namespace Google.Protobuf
         [TestCase(typeof(DoubleValue), "1.5", 1.5d)]
         public void Wrappers_Standalone(System.Type wrapperType, string json, object expectedValue)
         {
-            IMessage parsed = (IMessage)Activator.CreateInstance(wrapperType);
-            IMessage expected = (IMessage)Activator.CreateInstance(wrapperType);
+            IMessage parsed = (IMessage)Activator.CreateInstance(wrapperType)!;
+            IMessage expected = (IMessage)Activator.CreateInstance(wrapperType)!;
             JsonParser.Default.Merge(parsed, "null");
             Assert.AreEqual(expected, parsed);
 

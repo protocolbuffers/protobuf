@@ -41,10 +41,10 @@ namespace Google.Protobuf
 {
     public class DeprecatedMemberTest
     {
-        private static void AssertIsDeprecated(MemberInfo member)
+        private static void AssertIsDeprecated(MemberInfo? member)
         {
             Assert.NotNull(member);
-            Assert.IsTrue(member.IsDefined(typeof(ObsoleteAttribute), false), "Member not obsolete: " + member);
+            Assert.IsTrue(member!.IsDefined(typeof(ObsoleteAttribute), false), "Member not obsolete: " + member);
         }
 
         [Test]

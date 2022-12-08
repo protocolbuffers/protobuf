@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <OutputType>Exe</OutputType>
     <StartupObject>Google.Protobuf.Examples.AddressBook.Program</StartupObject>
+    <Nullable>Enable</Nullable>
     <IsPackable>False</IsPackable>
   </PropertyGroup>
 

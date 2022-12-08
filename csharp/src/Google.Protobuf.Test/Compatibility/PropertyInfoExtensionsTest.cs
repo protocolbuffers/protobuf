@@ -37,14 +37,14 @@ namespace Google.Protobuf.Compatibility
 {
     public class PropertyInfoExtensionsTest
     {
-        public string PublicReadWrite { get; set; }
-        private string PrivateReadWrite { get; set; }
-        public string PublicReadPrivateWrite { get; private set; }
-        public string PrivateReadPublicWrite { private get; set; }
-        public string PublicReadOnly { get { return null; } }
-        private string PrivateReadOnly { get { return null; } }
-        public string PublicWriteOnly { set { } }
-        private string PrivateWriteOnly { set {  } }
+        public string? PublicReadWrite { get; set; }
+        private string? PrivateReadWrite { get; set; }
+        public string? PublicReadPrivateWrite { get; private set; }
+        public string? PrivateReadPublicWrite { private get; set; }
+        public string? PublicReadOnly => null;
+        private string? PrivateReadOnly => null;
+        public string? PublicWriteOnly { set { } }
+        private string? PrivateWriteOnly { set {  } }
 
         [Test]
         [TestCase("PublicReadWrite")]

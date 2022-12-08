@@ -40,8 +40,8 @@ namespace Google.Protobuf.Compatibility
     public class TypeExtensionsTest
     {
         public class DerivedList : List<string> { }
-        public string PublicProperty { get; set; }
-        private string PrivateProperty { get; set; }
+        public string? PublicProperty { get; set; }
+        private string? PrivateProperty { get; set; }
 
         public void PublicMethod()
         {

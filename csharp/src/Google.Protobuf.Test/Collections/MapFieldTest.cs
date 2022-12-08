@@ -67,9 +67,9 @@ namespace Google.Protobuf.Collections
         private void TestNullValues<T>(T nonNullValue)
         {
             var map = new MapField<int, T>();
-            var nullValue = (T) (object) null;
-            Assert.Throws<ArgumentNullException>(() => map.Add(0, nullValue));
-            Assert.Throws<ArgumentNullException>(() => map[0] = nullValue);
+            var nullValue = (T?) (object?) null;
+            Assert.Throws<ArgumentNullException>(() => map.Add(0, nullValue!));
+            Assert.Throws<ArgumentNullException>(() => map[0] = nullValue!);
             map.Add(1, nonNullValue);
             map[1] = nonNullValue;
         }
@@ -78,14 +78,14 @@ namespace Google.Protobuf.Collections
         public void Add_ForbidsNullKeys()
         {
             var map = new MapField<string, ForeignMessage>();
-            Assert.Throws<ArgumentNullException>(() => map.Add(null, new ForeignMessage()));
+            Assert.Throws<ArgumentNullException>(() => map.Add(null!, new ForeignMessage()));
         }
 
         [Test]
         public void Indexer_ForbidsNullKeys()
         {
             var map = new MapField<string, ForeignMessage>();
-            Assert.Throws<ArgumentNullException>(() => map[null] = new ForeignMessage());
+            Assert.Throws<ArgumentNullException>(() => map[null!] = new ForeignMessage());
         }
 
         [Test]
@@ -230,7 +230,7 @@ namespace Google.Protobuf.Collections
             Assert.AreEqual(1, map.Count);
             Assert.IsTrue(map.Remove("foo"));
             Assert.AreEqual(0, map.Count);
-            Assert.Throws<ArgumentNullException>(() => map.Remove(null));
+            Assert.Throws<ArgumentNullException>(() => map.Remove(null!));
         }
 
         [Test]
@@ -245,7 +245,7 @@ namespace Google.Protobuf.Collections
             Assert.AreEqual(1, map.Count);
             Assert.IsTrue(collection.Remove(NewKeyValuePair("foo", "bar")));
             Assert.AreEqual(0, map.Count);
-            Assert.Throws<ArgumentException>(() => collection.Remove(new KeyValuePair<string, string>(null, "")));
+            Assert.Throws<ArgumentException>(() => collection.Remove(new KeyValuePair<string, string>(null!, "")));
         }
 
         [Test]
@@ -356,7 +356,7 @@ namespace Google.Protobuf.Collections
             Assert.AreEqual(1, dictionary.Count);
             dictionary.Remove("x");
             Assert.AreEqual(0, dictionary.Count);
-            Assert.Throws<ArgumentNullException>(() => dictionary.Remove(null));
+            Assert.Throws<ArgumentNullException>(() => dictionary.Remove(null!));
         }
 
         [Test]
@@ -369,7 +369,7 @@ namespace Google.Protobuf.Collections
             CollectionAssert.AreEqual(new[] { default, new DictionaryEntry("x", "y"), default }, array);
             var objectArray = new object[3];
             dictionary.CopyTo(objectArray, 1);
-            CollectionAssert.AreEqual(new object[] { null, new DictionaryEntry("x", "y"), null }, objectArray);
+            CollectionAssert.AreEqual(new object[] { null!, new DictionaryEntry("x", "y"), null! }, objectArray);
         }
 
         [Test]
@@ -415,7 +415,7 @@ namespace Google.Protobuf.Collections
             Assert.AreEqual("y", dictionary["x"]);
             Assert.IsNull(dictionary["a"]);
             Assert.IsNull(dictionary[5]);
-            Assert.Throws<ArgumentNullException>(() => dictionary[null].GetHashCode());
+            Assert.Throws<ArgumentNullException>(() => dictionary[null!]!.GetHashCode());
         }
 
         [Test]
@@ -429,7 +429,7 @@ namespace Google.Protobuf.Collections
             Assert.AreEqual("c", map["a"]);
             Assert.Throws<InvalidCastException>(() => dictionary[5] = "x");
             Assert.Throws<InvalidCastException>(() => dictionary["x"] = 5);
-            Assert.Throws<ArgumentNullException>(() => dictionary[null] = "z");
+            Assert.Throws<ArgumentNullException>(() => dictionary[null!] = "z");
             Assert.Throws<ArgumentNullException>(() => dictionary["x"] = null);
         }
 
@@ -503,7 +503,7 @@ namespace Google.Protobuf.Collections
             Assert.IsFalse(keys.Contains("bar")); // It's a value!
             Assert.IsFalse(keys.Contains("1"));
             // Keys can't be null, so we should prevent contains check
-            Assert.Throws<ArgumentNullException>(() => keys.Contains(null));
+            Assert.Throws<ArgumentNullException>(() => keys.Contains(null!));
         }
 
         [Test]
@@ -523,7 +523,7 @@ namespace Google.Protobuf.Collections
             Assert.IsFalse(values.Contains("foo")); // It's a key!
             Assert.IsFalse(values.Contains("1"));
             // Values can be null, so this makes sense
-            Assert.IsFalse(values.Contains(null));
+            Assert.IsFalse(values.Contains(null!));
         }
 
         [Test]

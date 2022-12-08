@@ -99,7 +99,7 @@ namespace Google.Protobuf.Collections
 
         private static void ValidateEqualityComparer<T>(EqualityComparer<T> comparer, IEnumerable<T> values)
         {
-            var array = values.ToArray();
+            T[] array = values.ToArray();
             // Each value should be equal to itself, but not to any other value.
             for (int i = 0; i < array.Length; i++)
             {
@@ -114,7 +114,7 @@ namespace Google.Protobuf.Collections
                     {
                         Assert.IsFalse(comparer.Equals(array[i], array[j]),
                             "{0} and {1} should not be equal", array[i], array[j]);
-                        Assert.AreNotEqual(comparer.GetHashCode(array[i]), comparer.GetHashCode(array[j]),
+                        Assert.AreNotEqual(comparer.GetHashCode(array[i]!), comparer.GetHashCode(array[j]!),
                             "Hash codes for {0} and {1} should not be equal", array[i], array[j]);
                     }
                 }

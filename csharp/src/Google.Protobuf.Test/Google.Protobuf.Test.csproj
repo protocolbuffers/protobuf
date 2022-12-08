@@ -4,6 +4,7 @@
     <TargetFrameworks>net462;netcoreapp3.1;net60</TargetFrameworks>
     <AssemblyOriginatorKeyFile>../../keys/Google.Protobuf.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
+    <Nullable>Enable</Nullable>
     <IsPackable>False</IsPackable>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>

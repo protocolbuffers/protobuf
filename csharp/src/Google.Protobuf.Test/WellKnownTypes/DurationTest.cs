@@ -132,7 +132,7 @@ namespace Google.Protobuf.WellKnownTypes
         [Test]
         public void Comparability()
         {
-            Duration[] durationsInExpectedSortOrder =
+            Duration?[] durationsInExpectedSortOrder =
             {
                 null,
                 new Duration { Seconds = -10, Nanos = -10 },

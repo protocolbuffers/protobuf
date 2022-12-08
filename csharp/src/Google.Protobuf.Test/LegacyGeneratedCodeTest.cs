@@ -90,7 +90,7 @@ namespace Google.Protobuf
                 var parsed = new ParseContextEnabledMessageB();
                 ParsingPrimitivesMessages.ReadRawMessage(ref parseCtx, parsed);
             });
-            Assert.AreEqual($"Message {typeof(LegacyGeneratedCodeMessageA).Name} doesn't provide the generated method that enables ParseContext-based parsing. You might need to regenerate the generated protobuf code.", exception.Message);
+            Assert.AreEqual($"Message {typeof(LegacyGeneratedCodeMessageA).Name} doesn't provide the generated method that enables ParseContext-based parsing. You might need to regenerate the generated protobuf code.", exception?.Message);
         }
 
         [Test]
@@ -142,11 +142,12 @@ namespace Google.Protobuf
                 WriteContext.Initialize(new TestArrayBufferWriter<byte>(), out WriteContext writeCtx);
                 ((IBufferMessage)message).InternalWriteTo(ref writeCtx);
             });
-            Assert.AreEqual($"Message {typeof(LegacyGeneratedCodeMessageA).Name} doesn't provide the generated method that enables WriteContext-based serialization. You might need to regenerate the generated protobuf code.", exception.Message);
+            Assert.AreEqual($"Message {typeof(LegacyGeneratedCodeMessageA).Name} doesn't provide the generated method that enables WriteContext-based serialization. You might need to regenerate the generated protobuf code.", exception?.Message);
         }
 
         // hand-modified version of a generated message that only provides the legacy
         // MergeFrom(CodedInputStream) method and doesn't implement IBufferMessage.
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         private sealed partial class LegacyGeneratedCodeMessageA : pb::IMessage {
           private pb::UnknownFieldSet _unknownFields;
 
@@ -290,5 +291,6 @@ namespace Google.Protobuf
             }
           }
         }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     }
 }

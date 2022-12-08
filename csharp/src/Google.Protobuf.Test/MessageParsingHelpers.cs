@@ -86,7 +86,7 @@ namespace Google.Protobuf
             Assert.Throws<TException>(() => parser.ParseFrom(new ReadOnlySpan<byte>(bytes)));
         }
 
-        public static void AssertRoundtrip<T>(MessageParser<T> parser, T message, Action<T> additionalAssert = null) where T : IMessage<T>
+        public static void AssertRoundtrip<T>(MessageParser<T> parser, T message, Action<T>? additionalAssert = null) where T : IMessage<T>
         {
             var bytes = message.ToByteArray();
 

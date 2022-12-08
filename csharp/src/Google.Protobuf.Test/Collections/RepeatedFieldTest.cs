@@ -48,11 +48,11 @@ namespace Google.Protobuf.Collections
         public void NullValuesRejected()
         {
             var list = new RepeatedField<string>();
-            Assert.Throws<ArgumentNullException>(() => list.Add((string)null));
-            Assert.Throws<ArgumentNullException>(() => list.Add((IEnumerable<string>)null));
-            Assert.Throws<ArgumentNullException>(() => list.Add((RepeatedField<string>)null));
-            Assert.Throws<ArgumentNullException>(() => list.Contains(null));
-            Assert.Throws<ArgumentNullException>(() => list.IndexOf(null));
+            Assert.Throws<ArgumentNullException>(() => list.Add((string?)null!));
+            Assert.Throws<ArgumentNullException>(() => list.Add((IEnumerable<string>?)null));
+            Assert.Throws<ArgumentNullException>(() => list.Add((RepeatedField<string>?)null));
+            Assert.Throws<ArgumentNullException>(() => list.Contains(null!));
+            Assert.Throws<ArgumentNullException>(() => list.IndexOf(null!));
         }
 
         [Test]
@@ -88,7 +88,7 @@ namespace Google.Protobuf.Collections
             var list = new RepeatedField<string>();
             // It's okay for this to throw ArgumentNullException if necessary.
             // It's not ideal, but not awful.
-            Assert.Catch<ArgumentException>(() => list.AddRange(new[] { "foo", null }.Select(x => x)));
+            Assert.Catch<ArgumentException>(() => list.AddRange(new[] { "foo", null! }.Select(x => x)));
         }
 
         [Test]
@@ -137,7 +137,7 @@ namespace Google.Protobuf.Collections
             var list = new RepeatedField<string>();
             // It's okay for this to throw ArgumentNullException if necessary.
             // It's not ideal, but not awful.
-            Assert.Catch<ArgumentException>(() => list.AddRange(new List<string> { "foo", null }));
+            Assert.Catch<ArgumentException>(() => list.AddRange(new List<string> { "foo", null! }));
         }
 
         [Test]
@@ -207,15 +207,15 @@ namespace Google.Protobuf.Collections
             var list = new RepeatedField<string> { "first", "second" };
             Assert.Throws<ArgumentOutOfRangeException>(() => list.Insert(-1, "foo"));
             Assert.Throws<ArgumentOutOfRangeException>(() => list.Insert(3, "foo"));
-            Assert.Throws<ArgumentNullException>(() => list.Insert(0, null));
+            Assert.Throws<ArgumentNullException>(() => list.Insert(0, null!));
         }
 
         [Test]
         public void Equals_RepeatedField()
         {
             var list = new RepeatedField<string> { "first", "second" };
-            Assert.IsFalse(list.Equals((RepeatedField<string>) null));
-            Assert.IsTrue(list.Equals(list));
+            Assert.IsFalse(list.Equals((RepeatedField<string>?) null));
+            Assert.IsTrue(list!.Equals(list));
             Assert.IsFalse(list.Equals(new RepeatedField<string> { "first", "third" }));
             Assert.IsFalse(list.Equals(new RepeatedField<string> { "first" }));
             Assert.IsTrue(list.Equals(new RepeatedField<string> { "first", "second" }));
@@ -225,8 +225,8 @@ namespace Google.Protobuf.Collections
         public void Equals_Object()
         {
             var list = new RepeatedField<string> { "first", "second" };
-            Assert.IsFalse(list.Equals((object) null));
-            Assert.IsTrue(list.Equals((object) list));
+            Assert.IsFalse(list.Equals((object?) null));
+            Assert.IsTrue(list!.Equals((object) list));
             Assert.IsFalse(list.Equals((object) new RepeatedField<string> { "first", "third" }));
             Assert.IsFalse(list.Equals((object) new RepeatedField<string> { "first" }));
             Assert.IsTrue(list.Equals((object) new RepeatedField<string> { "first", "second" }));
@@ -273,7 +273,7 @@ namespace Google.Protobuf.Collections
             var list = new RepeatedField<string> { "first", "second" };
             list[0] = "changed";
             Assert.AreEqual("changed", list[0]);
-            Assert.Throws<ArgumentNullException>(() => list[0] = null);
+            Assert.Throws<ArgumentNullException>(() => list[0] = null!);
             Assert.Throws<ArgumentOutOfRangeException>(() => list[-1] = "bad");
             Assert.Throws<ArgumentOutOfRangeException>(() => list[2] = "bad");
         }
