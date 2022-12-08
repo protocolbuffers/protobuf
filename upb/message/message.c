@@ -159,20 +159,6 @@ const upb_Message_Extension* _upb_Message_Getext(
   return NULL;
 }
 
-void _upb_Message_Clearext(upb_Message* msg,
-                           const upb_MiniTableExtension* ext_l) {
-  upb_Message_Internal* in = upb_Message_Getinternal(msg);
-  if (!in->internal) return;
-  const upb_Message_Extension* base =
-      UPB_PTR_AT(in->internal, in->internal->ext_begin, void);
-  upb_Message_Extension* ext =
-      (upb_Message_Extension*)_upb_Message_Getext(msg, ext_l);
-  if (ext) {
-    *ext = *base;
-    in->internal->ext_begin += sizeof(upb_Message_Extension);
-  }
-}
-
 upb_Message_Extension* _upb_Message_GetOrCreateExtension(
     upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* arena) {
   upb_Message_Extension* ext =

@@ -74,8 +74,6 @@ const upb_Message_Extension* _upb_Message_Getexts(const upb_Message* msg,
 const upb_Message_Extension* _upb_Message_Getext(
     const upb_Message* msg, const upb_MiniTableExtension* ext);
 
-void _upb_Message_Clearext(upb_Message* msg, const upb_MiniTableExtension* ext);
-
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

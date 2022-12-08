@@ -270,7 +270,7 @@ template <typename T, typename Extendee, typename Extension,
 void ClearExtension(
     const Ptr<T>& message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
-  _upb_Message_Clearext(message->msg(), id.mini_table_ext());
+  _upb_Message_ClearExtensionField(message->msg(), id.mini_table_ext());
 }
 
 template <typename T, typename Extendee, typename Extension,
@@ -278,7 +278,7 @@ template <typename T, typename Extendee, typename Extension,
 void ClearExtension(
     const T& message,
     const ::protos::internal::ExtensionIdentifier<Extendee, Extension>& id) {
-  _upb_Message_Clearext(message.msg(), id.mini_table_ext());
+  _upb_Message_ClearExtensionField(message.msg(), id.mini_table_ext());
 }
 
 template <typename T, typename Extendee, typename Extension,

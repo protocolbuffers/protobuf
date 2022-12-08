@@ -259,7 +259,7 @@ void GenerateExtensionInHeader(const protobuf::FieldDescriptor* ext,
   output(
       R"cc(
         UPB_INLINE bool $0_has_$1(const struct $2* msg) {
-          return _upb_MiniTable_HasExtensionField(msg, &$3);
+          return _upb_Message_HasExtensionField(msg, &$3);
         }
       )cc",
       ExtensionIdentBase(ext), ext->name(), MessageName(ext->containing_type()),
@@ -268,7 +268,7 @@ void GenerateExtensionInHeader(const protobuf::FieldDescriptor* ext,
   output(
       R"cc(
         UPB_INLINE void $0_clear_$1(struct $2* msg) {
-          _upb_MiniTable_ClearExtensionField(msg, &$3);
+          _upb_Message_ClearExtensionField(msg, &$3);
         }
       )cc",
       ExtensionIdentBase(ext), ext->name(), MessageName(ext->containing_type()),
@@ -285,7 +285,7 @@ void GenerateExtensionInHeader(const protobuf::FieldDescriptor* ext,
             UPB_ASSUME(_upb_MiniTableField_GetRep(&ext->field) == $5);
             $0 default_val = $6;
             $0 ret;
-            _upb_MiniTable_GetExtensionField(msg, ext, &default_val, &ret);
+            _upb_Message_GetExtensionField(msg, ext, &default_val, &ret);
             return ret;
           }
         )cc",
@@ -298,7 +298,7 @@ void GenerateExtensionInHeader(const protobuf::FieldDescriptor* ext,
             const upb_MiniTableExtension* ext = &$4;
             UPB_ASSUME(!upb_IsRepeatedOrMap(&ext->field));
             UPB_ASSUME(_upb_MiniTableField_GetRep(&ext->field) == $5);
-            bool ok = _upb_MiniTable_SetExtensionField(msg, ext, &val, arena);
+            bool ok = _upb_Message_SetExtensionField(msg, ext, &val, arena);
             UPB_ASSERT(ok);
           }
         )cc",
@@ -383,7 +383,7 @@ void GenerateHazzer(const protobuf::FieldDescriptor* field,
         R"cc(
           UPB_INLINE bool $0_has_$1(const $0* msg) {
             const upb_MiniTableField field = $2;
-            return _upb_MiniTable_HasNonExtensionField(msg, &field);
+            return _upb_Message_HasNonExtensionField(msg, &field);
           }
         )cc",
         msg_name, resolved_name, FieldInitializer(layout, field));
@@ -424,7 +424,7 @@ void GenerateClear(const protobuf::FieldDescriptor* field,
       R"cc(
         UPB_INLINE void $0_clear_$1($0* msg) {
           const upb_MiniTableField field = $2;
-          _upb_MiniTable_ClearNonExtensionField(msg, &field);
+          _upb_Message_ClearNonExtensionField(msg, &field);
         }
       )cc",
       msg_name, resolved_name, FieldInitializer(layout, field));
@@ -510,7 +510,7 @@ void GenerateScalarGetters(const protobuf::FieldDescriptor* field,
           $0 default_val = $3;
           $0 ret;
           const upb_MiniTableField field = $4;
-          _upb_MiniTable_GetNonExtensionField(msg, &field, &default_val, &ret);
+          _upb_Message_GetNonExtensionField(msg, &field, &default_val, &ret);
           return ret;
         }
       )cc",
@@ -650,7 +650,7 @@ void GenerateNonRepeatedSetters(const protobuf::FieldDescriptor* field,
     output(R"cc(
              UPB_INLINE void $0_set_$1($0 *msg, $2 value) {
                const upb_MiniTableField field = $3;
-               _upb_MiniTable_SetNonExtensionField(msg, &field, &value);
+               _upb_Message_SetNonExtensionField(msg, &field, &value);
              })cc",
            msg_name, field_name, CType(field), FieldInitializer(layout, field));
   }
