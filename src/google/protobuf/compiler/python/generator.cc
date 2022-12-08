@@ -77,7 +77,7 @@ namespace python {
 namespace {
 // Returns the alias we assign to the module of the given .proto filename
 // when importing. See testPackageInitializationImport in
-// net/proto2/python/internal/reflection_test.py
+// third_party/py/google/protobuf/internal/reflection_test.py
 // to see why we need the alias.
 std::string ModuleAlias(const std::string& filename) {
   std::string module_name = ModuleName(filename);
