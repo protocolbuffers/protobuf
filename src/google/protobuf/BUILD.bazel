@@ -255,6 +255,7 @@ cc_library(
     deps = [
         ":arena_allocation_policy",
         ":arena_cleanup",
+        ":arena_align",
         ":arena_config",
         "//src/google/protobuf/stubs:lite",
         "@com_google_absl//absl/synchronization",
