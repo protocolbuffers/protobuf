@@ -52,6 +52,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
 #include "absl/types/optional.h"
@@ -62,54 +63,6 @@ namespace google {
 namespace protobuf {
 namespace io {
 namespace {
-// Returns the number of spaces of the first non empty line.
-size_t RawStringIndentLen(absl::string_view format) {
-  // We are processing a call that looks like
-  //
-  // p->Emit(R"cc(
-  //   class Foo {
-  //     int x, y, z;
-  //   };
-  // )cc");
-  //
-  // or
-  //
-  // p->Emit(R"cc(
-  //
-  //   class Foo {
-  //     int x, y, z;
-  //   };
-  // )cc");
-  //
-  // To compute the indent, we need to discard all leading newlines, then
-  // count all spaces until we reach a non-space; this run of spaces is
-  // stripped off at the start of each line.
-  size_t len = 0;
-  while (absl::ConsumePrefix(&format, "\n")) {
-  }
-
-  while (absl::ConsumePrefix(&format, " ")) {
-    ++len;
-  }
-
-  return len;
-}
-
-// Returns the amount of additional indenting past `raw_string_indent_len`.
-size_t ConsumeIndentForLine(size_t raw_string_indent_len,
-                            absl::string_view& format) {
-  size_t total_indent = 0;
-  while (absl::ConsumePrefix(&format, " ")) {
-    ++total_indent;
-  }
-  if (total_indent < raw_string_indent_len) {
-    total_indent = 0;
-  } else {
-    total_indent -= raw_string_indent_len;
-  }
-  return total_indent;
-}
-
 template <typename T>
 absl::optional<T> LookupInFrameStack(
     absl::string_view var,
@@ -123,6 +76,170 @@ absl::optional<T> LookupInFrameStack(
   return absl::nullopt;
 }
 }  // namespace
+
+Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
+                                        const PrintOptions& options) {
+  Format format;
+  size_t raw_string_indent = 0;
+  if (options.strip_raw_string_indentation) {
+    // We are processing a call that looks like
+    //
+    // p->Emit(R"cc(
+    //   class Foo {
+    //     int x, y, z;
+    //   };
+    // )cc");
+    //
+    // or
+    //
+    // p->Emit(R"cc(
+    //
+    //   class Foo {
+    //     int x, y, z;
+    //   };
+    // )cc");
+    //
+    // To compute the indent, we need:
+    //   1. Iterate over each line.
+    //   2. Find the first line that contains non-whitespace characters.
+    //   3. Count the number of leading spaces on that line.
+    //
+    // The following pairs of loops assume the current line is the first line
+    // with non-whitespace characters; if we consume all the spaces and
+    // then immediately hit a newline, this means this wasn't the right line and
+    // we should start over.
+    //
+    // Note that the very first character *must* be a newline; that is how we
+    // detect that this is a multi-line raw string template, and as such this is
+    // a while loop, not a do/while loop.
+
+    absl::string_view orig = format_string;
+    while (absl::ConsumePrefix(&format_string, "\n")) {
+      raw_string_indent = 0;
+      format.is_raw_string = true;
+      while (absl::ConsumePrefix(&format_string, " ")) {
+        ++raw_string_indent;
+      }
+    }
+
+    // If we consume the entire string, this probably wasn't a raw string and
+    // was probably something like a couple of explicit newlines.
+    if (format_string.empty()) {
+      format_string = orig;
+      format.is_raw_string = false;
+      raw_string_indent = 0;
+    }
+  }
+
+  // We now split the remaining format string into lines and discard:
+  //   1. All leading spaces to compute that line's indent.
+  //      We do not do this for the first line, so that Emit("  ") works
+  //      correctly. We do this *regardless* of whether we are processing
+  //      a raw string, because existing non-raw-string calls to cpp::Formatter
+  //      rely on this. There is a test that validates this behavior.
+  //
+  //   2. Set the indent for that line to max(0, line_indent -
+  //      raw_string_indent), if this is not a raw string.
+  //
+  //   3. Trailing empty lines, if we know this is a raw string, except for
+  //      a single extra newline at the end.
+  //
+  // Each line is itself split into chunks along the variable delimiters, e.g.
+  // $...$.
+  bool is_first = true;
+  for (absl::string_view line_text : absl::StrSplit(format_string, '\n')) {
+    size_t line_indent = 0;
+    while (!is_first && absl::ConsumePrefix(&line_text, " ")) {
+      ++line_indent;
+    }
+    is_first = false;
+
+    format.lines.emplace_back();
+    auto& line = format.lines.back();
+    line.indent =
+        line_indent > raw_string_indent ? line_indent - raw_string_indent : 0;
+
+    bool is_var = false;
+    size_t total_len = 0;
+    for (absl::string_view chunk :
+         absl::StrSplit(line_text, options_.variable_delimiter)) {
+      // The special _start and _end variables should actually glom the next
+      // chunk into themselves, so as to be of the form _start$foo and _end$foo.
+      if (!line.chunks.empty() && !is_var) {
+        auto& prev = line.chunks.back();
+        if (prev.text == "_start" || prev.text == "_end") {
+          // The +1 below is to account for the $ in between them.
+          // This string is safe, because prev.text and chunk are contiguous
+          // by construction.
+          prev.text = absl::string_view(prev.text.data(),
+                                        prev.text.size() + 1 + chunk.size());
+
+          // Account for the foo$ part of $_start$foo$.
+          total_len += chunk.size() + 1;
+          continue;
+        }
+      }
+
+      if (is_var || !chunk.empty()) {
+        line.chunks.push_back(Format::Chunk{chunk, is_var});
+      }
+
+      total_len += chunk.size();
+      if (is_var) {
+        // This accounts for the $s around a variable.
+        total_len += 2;
+      }
+
+      is_var = !is_var;
+    }
+
+    // To ensure there are no unclosed $...$, we check that the computed length
+    // above equals the actual length of the string. If it's off, that means
+    // that there are missing or extra $ characters.
+    Validate(total_len == line_text.size(), options, [&line] {
+      if (line.chunks.empty()) {
+        return std::string("wrong number of variable delimiters");
+      }
+
+      return absl::StrFormat("unclosed variable name: `%s`",
+                             absl::CHexEscape(line.chunks.back().text));
+    });
+
+    // Trim any empty, non-variable chunks.
+    while (!line.chunks.empty()) {
+      auto& last = line.chunks.back();
+      if (last.is_var || !last.text.empty()) {
+        break;
+      }
+
+      line.chunks.pop_back();
+    }
+  }
+
+  // Discard any trailing newlines (i.e., lines which contain no chunks.)
+  if (format.is_raw_string) {
+    while (!format.lines.empty() && format.lines.back().chunks.empty()) {
+      format.lines.pop_back();
+    }
+  }
+
+#if 0  // Use this to aid debugging tokenization.
+  GOOGLE_LOG(INFO) << "--- " << format.lines.size() << " lines";
+  for (size_t i = 0; i < format.lines.size(); ++i) {
+    const auto& line = format.lines[i];
+
+    auto log_line = absl::StrFormat("[\" \" x %d]", line.indent);
+    for (const auto& chunk : line.chunks) {
+      absl::StrAppendFormat(&log_line, " %s\"%s\"", chunk.is_var ? "$" : "",
+                            absl::CHexEscape(chunk.text));
+    }
+    GOOGLE_LOG(INFO) << log_line;
+  }
+  GOOGLE_LOG(INFO) << "---";
+#endif
+
+  return format;
+}
 
 constexpr absl::string_view Printer::kProtocCodegenTrace;
 
@@ -241,12 +358,7 @@ void Printer::WriteRaw(const char* data, size_t size) {
   }
 
   if (at_start_of_line_ && data[0] != '\n') {
-    // Insert an indent.
-    at_start_of_line_ = false;
-    for (size_t i = 0; i < indent_; ++i) {
-      sink_.Write(" ");
-    }
-
+    IndentIfAtStart();
     if (failed_) {
       return;
     }
@@ -321,10 +433,10 @@ bool Printer::ValidateIndexLookupInBounds(size_t index,
 
 void Printer::PrintImpl(absl::string_view format,
                         absl::Span<const std::string> args, PrintOptions opts) {
-  // Inside of this function, we set indentation as we print new lines from the
-  // format string. No matter how we exit this function, we should fix up the
-  // indent to what it was before we entered; a cleanup makes it easy to avoid
-  // this mistake.
+  // Inside of this function, we set indentation as we print new lines from
+  // the format string. No matter how we exit this function, we should fix up
+  // the indent to what it was before we entered; a cleanup makes it easy to
+  // avoid this mistake.
   size_t original_indent = indent_;
   auto unindent =
       absl::MakeCleanup([this, original_indent] { indent_ = original_indent; });
@@ -337,312 +449,276 @@ void Printer::PrintImpl(absl::string_view format,
     substitutions_.clear();
   }
 
-  size_t raw_string_indent_len =
-      opts.strip_raw_string_indentation ? RawStringIndentLen(format) : 0;
-
-  if (opts.strip_raw_string_indentation) {
-    // We only want to remove a single newline from the input string to allow
-    // extra newlines at the start to go into the generated code.
-    absl::ConsumePrefix(&format, "\n");
-    while (absl::ConsumePrefix(&format, " ")) {
-    }
-  }
-
+  auto fmt = TokenizeFormat(format, opts);
   PrintCodegenTrace(opts.loc);
 
   size_t arg_index = 0;
+  bool skip_next_newline = false;
   std::vector<AnnotationCollector::Annotation> annot_stack;
   std::vector<std::pair<absl::string_view, size_t>> annot_records;
-  while (!format.empty()) {
-    // Skip to the next special character. We do this so that we can delay
-    // printing "normal" text until we know what kind of variable substitution
-    // we're doing, since that may require trimming whitespace.
-    size_t next_special = 0;
-    for (; next_special < format.size(); ++next_special) {
-      if (format[next_special] == options_.variable_delimiter ||
-          format[next_special] == '\n') {
-        break;
+  for (size_t line_idx = 0; line_idx < fmt.lines.size(); ++line_idx) {
+    const auto& line = fmt.lines[line_idx];
+
+    // We only print a newline for lines that follow the first; a loop iteration
+    // can also hint that we should not emit another newline through the
+    // `skip_next_newline` variable.
+    //
+    // We also assume that double newlines are undesirable, so we
+    // do not emit a newline if we are at the beginning of a line, *unless* the
+    // previous format line is actually empty. This behavior is specific to
+    // raw strings.
+    if (line_idx > 0) {
+      bool prev_was_empty = fmt.lines[line_idx - 1].chunks.empty();
+      bool should_skip_newline =
+          skip_next_newline ||
+          (fmt.is_raw_string && (at_start_of_line_ && !prev_was_empty));
+      if (!should_skip_newline) {
+        line_start_variables_.clear();
+        sink_.Write("\n");
+        at_start_of_line_ = true;
       }
     }
+    skip_next_newline = false;
 
-    absl::string_view next_chunk = format.substr(0, next_special);
-    format = format.substr(next_special);
+    indent_ = original_indent + line.indent;
 
-    if (format.empty()) {
-      PrintRaw(next_chunk);
-      break;
-    }
+    for (size_t chunk_idx = 0; chunk_idx < line.chunks.size(); ++chunk_idx) {
+      auto chunk = line.chunks[chunk_idx];
 
-    char c = format.front();
-    format = format.substr(1);
-    if (c == '\n') {
-      PrintRaw(next_chunk);
-      at_start_of_line_ = true;
-      line_start_variables_.clear();
-      sink_.Write("\n");
-      indent_ =
-          original_indent + ConsumeIndentForLine(raw_string_indent_len, format);
-      continue;
-    } else if (c != options_.variable_delimiter) {
-      PrintRaw(next_chunk);
-      continue;
-    }
-
-    size_t end = format.find(options_.variable_delimiter);
-    if (!Validate(end != absl::string_view::npos, opts, [format] {
-          return absl::StrCat("unclosed variable name: \"",
-                              absl::CHexEscape(format), "\"");
-        })) {
-      PrintRaw(next_chunk);
-      WriteRaw(&options_.variable_delimiter, 1);
-      PrintRaw(format);
-      break;
-    }
-
-    absl::string_view match = format.substr(0, end);
-    absl::string_view var = match;
-    format = format.substr(end + 1);
-
-    if (var.empty()) {
-      // `$$` is an escape for just `$`.
-      PrintRaw(next_chunk);
-      WriteRaw(&options_.variable_delimiter, 1);
-      continue;
-    }
-
-    if (opts.use_curly_brace_substitutions && absl::ConsumePrefix(&var, "{")) {
-      PrintRaw(next_chunk);
-
-      if (!Validate(var.size() == 1u, opts, "expected single-digit variable")) {
+      if (!chunk.is_var) {
+        PrintRaw(chunk.text);
         continue;
       }
 
-      if (!Validate(absl::ascii_isdigit(var[0]), opts,
-                    "expected digit after {")) {
+      if (chunk.text.empty()) {
+        // `$$` is an escape for just `$`.
+        WriteRaw(&options_.variable_delimiter, 1);
         continue;
       }
 
-      size_t idx = var[0] - '1';
-      if (!ValidateIndexLookupInBounds(idx, arg_index, args.size(), opts)) {
-        continue;
-      }
+      // If we get this far, we can conclude the chunk is a substitution
+      // variable; we rename the `chunk` variable to make this clear below.
+      absl::string_view var = chunk.text;
+      if (opts.use_curly_brace_substitutions &&
+          absl::ConsumePrefix(&var, "{")) {
+        if (!Validate(var.size() == 1u, opts,
+                      "expected single-digit variable")) {
+          continue;
+        }
 
-      if (idx == arg_index) {
-        ++arg_index;
-      }
+        if (!Validate(absl::ascii_isdigit(var[0]), opts,
+                      "expected digit after {")) {
+          continue;
+        }
 
-      IndentIfAtStart();
-      annot_stack.push_back({{sink_.bytes_written(), 0}, args[idx]});
-      continue;
-    } else if (opts.use_curly_brace_substitutions &&
-               absl::ConsumePrefix(&var, "}")) {
-      PrintRaw(next_chunk);
+        size_t idx = var[0] - '1';
+        if (!ValidateIndexLookupInBounds(idx, arg_index, args.size(), opts)) {
+          continue;
+        }
 
-      // The rest of var is actually ignored, and this is apparently
-      // public API now. Oops?
-      if (!Validate(!annot_stack.empty(), opts,
-                    "unexpected end of annotation")) {
-        continue;
-      }
+        if (idx == arg_index) {
+          ++arg_index;
+        }
 
-      annot_stack.back().first.second = sink_.bytes_written();
-      if (options_.annotation_collector != nullptr) {
-        options_.annotation_collector->AddAnnotationNew(annot_stack.back());
-      }
-      IndentIfAtStart();
-      annot_stack.pop_back();
-      continue;
-    }
-
-    absl::string_view prefix, suffix;
-    if (opts.strip_spaces_around_vars) {
-      var = absl::StripLeadingAsciiWhitespace(var);
-      prefix = match.substr(0, match.size() - var.size());
-      var = absl::StripTrailingAsciiWhitespace(var);
-      suffix = match.substr(prefix.size() + var.size());
-    }
-
-    if (!Validate(!var.empty(), opts, "unexpected empty variable")) {
-      PrintRaw(next_chunk);
-      continue;
-    }
-
-    LookupResult sub;
-    absl::optional<AnnotationRecord> same_name_record;
-    if (opts.allow_digit_substitutions && absl::ascii_isdigit(var[0])) {
-      PrintRaw(next_chunk);
-
-      if (!Validate(var.size() == 1u, opts, "expected single-digit variable")) {
-        continue;
-      }
-
-      size_t idx = var[0] - '1';
-      if (!ValidateIndexLookupInBounds(idx, arg_index, args.size(), opts)) {
-        continue;
-      }
-      if (idx == arg_index) {
-        ++arg_index;
-      }
-      sub = args[idx];
-    } else if (opts.use_annotation_frames &&
-               (var == "_start" || var == "_end")) {
-      bool is_start = var == "_start";
-
-      size_t next_delim = format.find('$');
-      if (!Validate(next_delim != absl::string_view::npos, opts,
-                    "$_start$ must be followed by a name and another $")) {
-        PrintRaw(next_chunk);
-        continue;
-      }
-
-      auto var = format.substr(0, next_delim);
-      format = format.substr(next_delim + 1);
-
-      if (is_start) {
-        PrintRaw(next_chunk);
         IndentIfAtStart();
-        annot_records.push_back({var, sink_.bytes_written()});
-        // Skip all whitespace immediately after a _start.
-        while (!format.empty() && absl::ascii_isspace(format.front())) {
-          format = format.substr(1);
+        annot_stack.push_back({{sink_.bytes_written(), 0}, args[idx]});
+        continue;
+      }
+
+      if (opts.use_curly_brace_substitutions &&
+          absl::ConsumePrefix(&var, "}")) {
+        // The rest of var is actually ignored, and this is apparently
+        // public API now. Oops?
+        if (!Validate(!annot_stack.empty(), opts,
+                      "unexpected end of annotation")) {
+          continue;
+        }
+
+        annot_stack.back().first.second = sink_.bytes_written();
+        if (options_.annotation_collector != nullptr) {
+          options_.annotation_collector->AddAnnotationNew(annot_stack.back());
+        }
+        annot_stack.pop_back();
+        continue;
+      }
+
+      absl::string_view prefix, suffix;
+      if (opts.strip_spaces_around_vars) {
+        var = absl::StripLeadingAsciiWhitespace(var);
+        prefix = chunk.text.substr(0, chunk.text.size() - var.size());
+        var = absl::StripTrailingAsciiWhitespace(var);
+        suffix = chunk.text.substr(prefix.size() + var.size());
+      }
+
+      if (!Validate(!var.empty(), opts, "unexpected empty variable")) {
+        continue;
+      }
+
+      bool is_start = absl::ConsumePrefix(&var, "_start$");
+      bool is_end = absl::ConsumePrefix(&var, "_end$");
+      if (opts.use_annotation_frames && (is_start || is_end)) {
+        if (is_start) {
+          IndentIfAtStart();
+          annot_records.push_back({var, sink_.bytes_written()});
+
+          // Skip all whitespace immediately after a _start.
+          ++chunk_idx;
+          if (chunk_idx < line.chunks.size()) {
+            absl::string_view text = line.chunks[chunk_idx].text;
+            while (absl::ConsumePrefix(&text, " ")) {
+            }
+            PrintRaw(text);
+          }
+        } else {
+          // If a line consisted *only* of an _end, this will likely result in
+          // a blank line if we do not zap the newline after it, so we do that
+          // here.
+          if (line.chunks.size() == 1) {
+            skip_next_newline = true;
+          }
+
+          auto record_var = annot_records.back();
+          annot_records.pop_back();
+
+          if (!Validate(record_var.first == var, opts, [record_var, var] {
+                return absl::StrFormat(
+                    "_start and _end variables must match, but got %s and %s, "
+                    "respectively",
+                    record_var.first, var);
+              })) {
+            continue;
+          }
+
+          absl::optional<AnnotationRecord> record =
+              LookupInFrameStack(var, absl::MakeSpan(annotation_lookups_));
+
+          if (!Validate(record.has_value(), opts, [var] {
+                return absl::StrCat("undefined annotation variable: \"",
+                                    absl::CHexEscape(var), "\"");
+              })) {
+            continue;
+          }
+
+          if (options_.annotation_collector != nullptr) {
+            options_.annotation_collector->AddAnnotation(
+                record_var.second, sink_.bytes_written(), record->file_path,
+                record->path);
+          }
+        }
+
+        continue;
+      }
+
+      LookupResult sub;
+      absl::optional<AnnotationRecord> same_name_record;
+      if (opts.allow_digit_substitutions && absl::ascii_isdigit(var[0])) {
+        if (!Validate(var.size() == 1u, opts,
+                      "expected single-digit variable")) {
+          continue;
+        }
+
+        size_t idx = var[0] - '1';
+        if (!ValidateIndexLookupInBounds(idx, arg_index, args.size(), opts)) {
+          continue;
+        }
+        if (idx == arg_index) {
+          ++arg_index;
+        }
+        sub = args[idx];
+      } else {
+        sub = LookupInFrameStack(var, absl::MakeSpan(var_lookups_));
+
+        if (opts.use_annotation_frames) {
+          same_name_record =
+              LookupInFrameStack(var, absl::MakeSpan(annotation_lookups_));
+        }
+      }
+
+      // By returning here in case of empty we also skip possible spaces inside
+      // the $...$, i.e. "void$ dllexpor$ f();" -> "void f();" in the empty
+      // case.
+      if (!Validate(sub.has_value(), opts, [var] {
+            return absl::StrCat("undefined variable: \"", absl::CHexEscape(var),
+                                "\"");
+          })) {
+        continue;
+      }
+
+      size_t range_start = sink_.bytes_written();
+      size_t range_end = sink_.bytes_written();
+
+      if (auto* str = absl::get_if<absl::string_view>(&*sub)) {
+        if (at_start_of_line_ && str->empty()) {
+          line_start_variables_.emplace_back(var);
+        }
+
+        if (!str->empty()) {
+          // If `sub` is empty, we do not print the spaces around it.
+          PrintRaw(prefix);
+          PrintRaw(*str);
+          range_end = sink_.bytes_written();
+          range_start = range_end - str->size();
+          PrintRaw(suffix);
         }
       } else {
-        // Skip all whitespace immediately *before* an _end.
-        while (!next_chunk.empty() && absl::ascii_isspace(next_chunk.back())) {
-          next_chunk = next_chunk.substr(0, next_chunk.size() - 1);
-        }
-        PrintRaw(next_chunk);
+        auto* fnc = absl::get_if<std::function<void()>>(&*sub);
+        GOOGLE_ABSL_CHECK(fnc != nullptr);
 
-        // If a line consisted *only* of an _end, this will likely result in
-        // a blank line if we do not zap the newline after it, and any
-        // indentation beyond that.
-        if (at_start_of_line_) {
-          absl::ConsumePrefix(&format, "\n");
-          indent_ = original_indent +
-                    ConsumeIndentForLine(raw_string_indent_len, format);
-        }
+        Validate(
+            prefix.empty() && suffix.empty(), opts,
+            "substitution that resolves to callback cannot contain whitespace");
 
-        auto record_var = annot_records.back();
-        annot_records.pop_back();
-
-        if (!Validate(record_var.first == var, opts, [record_var, var] {
-              return absl::StrFormat(
-                  "_start and _end variables must match, but got %s and %s, "
-                  "respectively",
-                  record_var.first, var);
-            })) {
-          continue;
-        }
-
-        absl::optional<AnnotationRecord> record =
-            LookupInFrameStack(var, absl::MakeSpan(annotation_lookups_));
-
-        if (!Validate(record.has_value(), opts, [var] {
-              return absl::StrCat("undefined variable: \"",
-                                  absl::CHexEscape(var), "\"");
-            })) {
-          continue;
-        }
-
-        if (options_.annotation_collector != nullptr) {
-          options_.annotation_collector->AddAnnotation(
-              record_var.second, sink_.bytes_written(), record->file_path,
-              record->path);
-        }
-      }
-
-      continue;
-    } else {
-      PrintRaw(next_chunk);
-      sub = LookupInFrameStack(var, absl::MakeSpan(var_lookups_));
-
-      if (opts.use_annotation_frames) {
-        same_name_record =
-            LookupInFrameStack(var, absl::MakeSpan(annotation_lookups_));
-      }
-    }
-
-    // By returning here in case of empty we also skip possible spaces inside
-    // the $...$, i.e. "void$ dllexpor$ f();" -> "void f();" in the empty case.
-    if (!Validate(sub.has_value(), opts, [var] {
-          return absl::StrCat("undefined variable: \"", absl::CHexEscape(var),
-                              "\"");
-        })) {
-      continue;
-    }
-
-    size_t range_start = sink_.bytes_written();
-    size_t range_end = sink_.bytes_written();
-
-    if (auto* str = absl::get_if<absl::string_view>(&*sub)) {
-      if (at_start_of_line_ && str->empty()) {
-        line_start_variables_.emplace_back(var);
-      }
-
-      if (!str->empty()) {
-        // If `sub` is empty, we do not print the spaces around it.
-        PrintRaw(prefix);
-        PrintRaw(*str);
+        range_start = sink_.bytes_written();
+        (*fnc)();
         range_end = sink_.bytes_written();
-        range_start = range_end - str->size();
-        PrintRaw(suffix);
+
+        // If we just evaluated a closure, and we are at the start of a line,
+        // that means it finished with a newline. If a newline follows
+        // immediately after, we drop it. This helps callback formatting "work
+        // as expected" with respect to forms like
+        //
+        //   class Foo {
+        //     $methods$;
+        //   };
+        //
+        // Without this line, this would turn into something like
+        //
+        //   class Foo {
+        //     void Bar() {}
+        //
+        //   };
+        //
+        // in many cases. We *also* do this if a ; or , follows the
+        // substitution, because this helps clang-format keep its head on in
+        // many cases. Users that need to keep the semi can write $foo$/**/;
+        ++chunk_idx;
+        if (chunk_idx < line.chunks.size()) {
+          absl::string_view text = line.chunks[chunk_idx].text;
+          if (!absl::ConsumePrefix(&text, ";")) {
+            absl::ConsumePrefix(&text, ",");
+          }
+          PrintRaw(text);
+        }
       }
-    } else {
-      auto* fnc = absl::get_if<std::function<void()>>(&*sub);
-      GOOGLE_ABSL_CHECK(fnc != nullptr);
 
-      Validate(
-          prefix.empty() && suffix.empty(), opts,
-          "substitution that resolves to callback cannot contain whitespace");
-
-      range_start = sink_.bytes_written();
-      (*fnc)();
-      range_end = sink_.bytes_written();
-
-      // If we just evaluated a closure, and we are at the start of a line, that
-      // means it finished with a newline. If a newline follows immediately
-      // after, we drop it. This helps callback formatting "work as expected"
-      // with respect to forms like
-      //
-      //   class Foo {
-      //     $methods$;
-      //   };
-      //
-      // Without this line, this would turn into something like
-      //
-      //   class Foo {
-      //     void Bar() {}
-      //
-      //   };
-      //
-      // in many cases. We *also* do this if a ; or , follows the substitution,
-      // because this helps clang-format keep its head on in many cases.
-      // Users that need to keep the semi can write $foo$/**/;
-      if (!absl::ConsumePrefix(&format, ";")) {
-        absl::ConsumePrefix(&format, ",");
+      if (same_name_record.has_value() &&
+          options_.annotation_collector != nullptr) {
+        options_.annotation_collector->AddAnnotation(
+            range_start, range_end, same_name_record->file_path,
+            same_name_record->path);
       }
-      absl::ConsumePrefix(&format, "\n");
-      indent_ =
-          original_indent + ConsumeIndentForLine(raw_string_indent_len, format);
-    }
 
-    if (same_name_record.has_value() &&
-        options_.annotation_collector != nullptr) {
-      options_.annotation_collector->AddAnnotation(range_start, range_end,
-                                                   same_name_record->file_path,
-                                                   same_name_record->path);
-    }
+      if (opts.use_substitution_map) {
+        auto insertion = substitutions_.emplace(
+            std::string(var), std::make_pair(range_start, range_end));
 
-    if (opts.use_substitution_map) {
-      auto insertion = substitutions_.emplace(
-          std::string(var), std::make_pair(range_start, range_end));
-
-      if (!insertion.second) {
-        // This variable was used multiple times.
-        // Make its span have negative length so
-        // we can detect it if it gets used in an
-        // annotation.
-        insertion.first->second = {1, 0};
+        if (!insertion.second) {
+          // This variable was used multiple times.
+          // Make its span have negative length so
+          // we can detect it if it gets used in an
+          // annotation.
+          insertion.first->second = {1, 0};
+        }
       }
     }
   }
@@ -654,6 +730,12 @@ void Printer::PrintImpl(absl::string_view format,
         "annotation range was not closed; expected %c}%c: %s",
         options_.variable_delimiter, options_.variable_delimiter, original);
   });
+
+  // For multiline raw strings, we always make sure to end on a newline.
+  if (fmt.is_raw_string && !at_start_of_line_) {
+    PrintRaw("\n");
+    at_start_of_line_ = true;
+  }
 }
 }  // namespace io
 }  // namespace protobuf
