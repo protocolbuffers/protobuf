@@ -4860,6 +4860,7 @@ class PROTOBUF_EXPORT FieldOptions final :
     kUnverifiedLazyFieldNumber = 15,
     kDeprecatedFieldNumber = 3,
     kWeakFieldNumber = 10,
+    kDebugRedactFieldNumber = 16,
   };
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   int uninterpreted_option_size() const;
@@ -4947,6 +4948,16 @@ class PROTOBUF_EXPORT FieldOptions final :
   private:
   bool _internal_weak() const;
   void _internal_set_weak(bool value);
+  public:
+
+  // optional bool debug_redact = 16 [default = false];
+  bool has_debug_redact() const;
+  void clear_debug_redact();
+  bool debug_redact() const;
+  void set_debug_redact(bool value);
+  private:
+  bool _internal_debug_redact() const;
+  void _internal_set_debug_redact(bool value);
   public:
 
 
@@ -5159,6 +5170,7 @@ class PROTOBUF_EXPORT FieldOptions final :
     bool unverified_lazy_;
     bool deprecated_;
     bool weak_;
+    bool debug_redact_;
   };
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fdescriptor_2eproto;
@@ -12849,6 +12861,31 @@ inline void FieldOptions::_internal_set_weak(bool value) {
 inline void FieldOptions::set_weak(bool value) {
   _internal_set_weak(value);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.weak)
+}
+
+// optional bool debug_redact = 16 [default = false];
+inline bool FieldOptions::has_debug_redact() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000080u) != 0;
+  return value;
+}
+inline void FieldOptions::clear_debug_redact() {
+  _impl_.debug_redact_ = false;
+  _impl_._has_bits_[0] &= ~0x00000080u;
+}
+inline bool FieldOptions::_internal_debug_redact() const {
+  return _impl_.debug_redact_;
+}
+inline bool FieldOptions::debug_redact() const {
+  // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.debug_redact)
+  return _internal_debug_redact();
+}
+inline void FieldOptions::_internal_set_debug_redact(bool value) {
+  _impl_._has_bits_[0] |= 0x00000080u;
+  _impl_.debug_redact_ = value;
+}
+inline void FieldOptions::set_debug_redact(bool value) {
+  _internal_set_debug_redact(value);
+  // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.debug_redact)
 }
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;

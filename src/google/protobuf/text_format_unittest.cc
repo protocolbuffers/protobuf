@@ -2281,6 +2281,59 @@ TEST(TextFormatUnknownFieldTest, TestUnknownExtension) {
   EXPECT_FALSE(parser.ParseFromString("unknown_field: 1", &proto));
 }
 
+template <bool silent, bool redact, bool randomize>
+class TextFormatBaseMarkerTest : public testing::Test {
+ public:
+  void SetUp() override {
+    saved_enable_debug_text_format_marker_ =
+        internal::enable_debug_text_format_marker;
+    saved_enable_debug_text_redaction_marker_ =
+        internal::enable_debug_text_redaction_marker;
+    saved_enable_debug_text_random_marker_ =
+        internal::enable_debug_text_random_marker;
+
+    internal::enable_debug_text_format_marker = silent;
+    internal::enable_debug_text_redaction_marker = redact;
+    internal::enable_debug_text_random_marker = randomize;
+  }
+
+  void TearDown() override {
+    internal::enable_debug_text_format_marker =
+        saved_enable_debug_text_format_marker_;
+    internal::enable_debug_text_redaction_marker =
+        saved_enable_debug_text_redaction_marker_;
+    internal::enable_debug_text_random_marker =
+        saved_enable_debug_text_random_marker_;
+  }
+
+ private:
+  bool saved_enable_debug_text_format_marker_;
+  bool saved_enable_debug_text_redaction_marker_;
+  bool saved_enable_debug_text_random_marker_;
+};
+
+using TextFormatRedactionTest = TextFormatBaseMarkerTest<false, true, false>;
+
+TEST_F(TextFormatRedactionTest, TestRedactedField) {
+  unittest::RedactedFields proto;
+  proto.set_optional_redacted_string("foo");
+  EXPECT_THAT(
+      proto.DebugString(),
+      testing::MatchesRegex("optional_redacted_string: \\[REDACTED\\]\n"));
+  EXPECT_THAT(
+      proto.ShortDebugString(),
+      testing::MatchesRegex("optional_redacted_string: \\[REDACTED\\]"));
+}
+
+TEST_F(TextFormatRedactionTest, TestTextFormatIsNotRedacted) {
+  unittest::RedactedFields proto;
+  proto.set_optional_redacted_string("foo");
+
+  std::string text;
+  ASSERT_TRUE(TextFormat::PrintToString(proto, &text));
+  EXPECT_EQ("optional_redacted_string: \"foo\"\n", text);
+}
+
 TEST(TextFormatFloatingPointTest, PreservesNegative0) {
   proto3_unittest::TestAllTypes in_message;
   in_message.set_optional_float(-0.0f);
