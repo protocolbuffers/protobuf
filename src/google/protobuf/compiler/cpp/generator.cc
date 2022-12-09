@@ -174,6 +174,10 @@ bool CppGenerator::Generate(const FileDescriptor* file,
       } while (pos < value.size());
     } else if (key == "unverified_lazy_message_sets") {
       file_options.unverified_lazy_message_sets = true;
+    } else if (key == "message_owned_arena_trial") {
+      // Intentionally left blank to allow early users of MOA trial to wind
+      // down. Removing this would break those users. TODO(b/261651178): remove
+      // this once users-side clean up is done.
     } else if (key == "force_eagerly_verified_lazy") {
       file_options.force_eagerly_verified_lazy = true;
     } else if (key == "experimental_tail_call_table_mode") {
