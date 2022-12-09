@@ -133,7 +133,7 @@ class PROTOBUF_EXPORT SourceContext final :
   }
   void UnsafeArenaSwap(SourceContext* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 

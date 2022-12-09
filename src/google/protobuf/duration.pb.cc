@@ -144,7 +144,7 @@ Duration::~Duration() {
 }
 
 inline void Duration::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void Duration::SetCachedSize(int size) const {
@@ -272,7 +272,7 @@ void Duration::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTO
   auto& from = static_cast<const Duration&>(from_msg);
 
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Duration)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 

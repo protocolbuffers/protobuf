@@ -133,7 +133,7 @@ class PROTOBUF_EXPORT Timestamp final :
   }
   void UnsafeArenaSwap(Timestamp* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 

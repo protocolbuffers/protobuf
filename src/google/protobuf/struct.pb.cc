@@ -267,7 +267,7 @@ Struct::~Struct() {
 }
 
 inline void Struct::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.fields_.Destruct();
   _impl_.fields_.~MapField();
 }
@@ -408,7 +408,7 @@ void Struct::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBU
   auto& from = static_cast<const Struct&>(from_msg);
 
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Struct)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -556,7 +556,7 @@ Value::~Value() {
 }
 
 inline void Value::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   if (has_kind()) {
     clear_kind();
   }
@@ -826,7 +826,7 @@ void Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF
   auto& from = static_cast<const Value&>(from_msg);
 
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Value)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -928,7 +928,7 @@ ListValue::~ListValue() {
 }
 
 inline void ListValue::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.values_.~RepeatedPtrField();
 }
 
@@ -1044,7 +1044,7 @@ void ListValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROT
   auto& from = static_cast<const ListValue&>(from_msg);
 
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ListValue)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 

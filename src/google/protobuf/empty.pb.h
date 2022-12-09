@@ -133,7 +133,7 @@ class PROTOBUF_EXPORT Empty final :
   }
   void UnsafeArenaSwap(Empty* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 

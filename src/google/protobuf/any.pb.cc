@@ -193,7 +193,7 @@ Any::~Any() {
 }
 
 inline void Any::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.type_url_.Destroy();
   _impl_.value_.Destroy();
   _impl_._any_metadata_.~AnyMetadata();
@@ -334,7 +334,7 @@ void Any::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_N
   auto& from = static_cast<const Any&>(from_msg);
 
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Any)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
