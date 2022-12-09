@@ -49,6 +49,8 @@ class MapFieldIter implements \Iterator
      */
     private $container;
 
+    private $key_type;
+
     /**
      * Create iterator instance for MapField.
      *
