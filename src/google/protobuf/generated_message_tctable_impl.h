@@ -297,9 +297,8 @@ class PROTOBUF_EXPORT TcParser final {
   //  - MpXXX functions expect `data` with a mini table ABI.
   //  - The fallback functions (both GenericFallbackXXX and the codegen ones)
   //    expect only the tag in `data`. In addition, if a null `ptr` is passed,
-  //    the function is used to push an unknown enum value into the
-  //    UnknownFieldSet. The function then expects `data` to use the unknown
-  //    enum ABI, as described in `struct TcFieldData`.
+  //    the function is used as a way to get a UnknownFieldOps vtable, returned
+  //    via the `const char*` return type. See `GetUnknownFieldOps()`
 
   static bool MustFallbackToGeneric(PROTOBUF_TC_PARAM_DECL) {
     return ptr == nullptr;
@@ -533,8 +532,7 @@ class PROTOBUF_EXPORT TcParser final {
  private:
   friend class GeneratedTcTableLiteTest;
   static void* MaybeGetSplitBase(MessageLite* msg, const bool is_split,
-                                 const TcParseTableBase* table,
-                                 google::protobuf::internal::ParseContext* ctx);
+                                 const TcParseTableBase* table);
 
   // Test only access to verify that the right function is being called via
   // MiniParse.
@@ -577,8 +575,39 @@ class PROTOBUF_EXPORT TcParser final {
 
   class ScopedArenaSwap;
 
+  struct UnknownFieldOps {
+    void (*write_varint)(MessageLite* msg, int number, int value);
+    void (*write_length_delimited)(MessageLite* msg, int number,
+                                   absl::string_view value);
+  };
+
+  static const UnknownFieldOps& GetUnknownFieldOps(
+      const TcParseTableBase* table);
+
+  template <typename UnknownFieldsT>
+  static void WriteVarintToUnknown(MessageLite* msg, int number, int value) {
+    internal::WriteVarint(
+        number, value,
+        msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>());
+  }
+  template <typename UnknownFieldsT>
+  static void WriteLengthDelimitedToUnknown(MessageLite* msg, int number,
+                                            absl::string_view value) {
+    internal::WriteLengthDelimited(
+        number, value,
+        msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>());
+  }
+
   template <class MessageBaseT, class UnknownFieldsT>
   static const char* GenericFallbackImpl(PROTOBUF_TC_PARAM_DECL) {
+    if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
+      // This is the ABI used by GetUnknownFieldOps(). Return the vtable.
+      static constexpr UnknownFieldOps kOps = {
+          WriteVarintToUnknown<UnknownFieldsT>,
+          WriteLengthDelimitedToUnknown<UnknownFieldsT>};
+      return reinterpret_cast<const char*>(&kOps);
+    }
+
     SyncHasbits(msg, hasbits, table);
     uint32_t tag = data.tag();
     if ((tag & 7) == WireFormatLite::WIRETYPE_END_GROUP || tag == 0) {
@@ -593,15 +622,6 @@ class PROTOBUF_EXPORT TcParser final {
           .ParseField(tag, ptr,
                       static_cast<const MessageBaseT*>(table->default_instance),
                       &msg->_internal_metadata_, ctx);
-    }
-
-    // Side channel for handling unknown data. Currently, only used for unknown
-    // enums. The value is in the 32 high bits of data.
-    if (ptr == nullptr) {
-      internal::WriteVarint(
-          num, data.unknown_enum_value(),
-          msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>());
-      return nullptr;
     }
 
     return UnknownFieldParse(
@@ -657,9 +677,8 @@ class PROTOBUF_EXPORT TcParser final {
       const char* ptr, Arena* arena, SerialArena* serial_arena,
       ParseContext* ctx, RepeatedPtrField<std::string>& field);
 
-  static void UnknownPackedEnum(MessageLite* msg, ParseContext* ctx,
-                                const TcParseTableBase* table, uint32_t tag,
-                                int32_t enum_value);
+  static void UnknownPackedEnum(MessageLite* msg, const TcParseTableBase* table,
+                                uint32_t tag, int32_t enum_value);
 
   // Mini field lookup:
   static const TcParseTableBase::FieldEntry* FindFieldEntry(

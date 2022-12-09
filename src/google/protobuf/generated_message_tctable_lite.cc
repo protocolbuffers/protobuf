@@ -30,7 +30,9 @@
 
 #include <cstdint>
 #include <numeric>
+#include <string>
 #include <type_traits>
+#include <utility>
 
 #include "absl/cleanup/cleanup.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
@@ -1260,16 +1262,21 @@ const char* TcParser::RepeatedEnum(PROTOBUF_TC_PARAM_DECL) {
   return ToParseLoop(PROTOBUF_TC_PARAM_PASS);
 }
 
-PROTOBUF_NOINLINE void TcParser::UnknownPackedEnum(
-    MessageLite* msg, ParseContext* ctx, const TcParseTableBase* table,
-    uint32_t tag, int32_t enum_value) {
+const TcParser::UnknownFieldOps& TcParser::GetUnknownFieldOps(
+    const TcParseTableBase* table) {
   // Call the fallback function in a special mode to only act as a
-  // way to push the unknown enum into the UnknownFieldSet. This is
-  // _not_ a tail call, and we should continue processing the packed
-  // input.
-  TcFieldData data;
-  data.data = (uint64_t{static_cast<uint32_t>(enum_value)} << 32) | tag;
-  table->fallback(msg, nullptr, ctx, data, table, 0);
+  // way to return the ops.
+  // Hiding the unknown fields vtable behind the fallback function avoids adding
+  // more pointers in TcParseTableBase, and the extra runtime jumps are not
+  // relevant because unknown fields are rare.
+  const char* ptr = table->fallback(nullptr, nullptr, nullptr, {}, nullptr, 0);
+  return *reinterpret_cast<const UnknownFieldOps*>(ptr);
+}
+
+PROTOBUF_NOINLINE void TcParser::UnknownPackedEnum(
+    MessageLite* msg, const TcParseTableBase* table, uint32_t tag,
+    int32_t enum_value) {
+  GetUnknownFieldOps(table).write_varint(msg, tag >> 3, enum_value);
 }
 
 template <typename TagType, uint16_t xform_val>
@@ -1292,7 +1299,7 @@ const char* TcParser::PackedEnum(PROTOBUF_TC_PARAM_DECL) {
   const TcParseTableBase::FieldAux aux = *table->field_aux(data.aux_idx());
   return ctx->ReadPackedVarint(ptr, [=](int32_t value) {
     if (!EnumIsValidAux(value, xform_val, aux)) {
-      UnknownPackedEnum(msg, ctx, table, FastDecodeTag(saved_tag), value);
+      UnknownPackedEnum(msg, table, FastDecodeTag(saved_tag), value);
     } else {
       field->Add(value);
     }
@@ -1455,7 +1462,7 @@ const char* TcParser::PackedEnumSmallRange(PROTOBUF_TC_PARAM_DECL) {
       }
       int32_t v32 = static_cast<int32_t>(tmp);
       if (PROTOBUF_PREDICT_FALSE(min > v32 || v32 > max)) {
-        UnknownPackedEnum(msg, ctx, table, FastDecodeTag(saved_tag), v32);
+        UnknownPackedEnum(msg, table, FastDecodeTag(saved_tag), v32);
       } else {
         field->Add(v32);
       }
@@ -1817,8 +1824,7 @@ uint32_t GetSizeofSplit(const TcParseTableBase* table) {
 }  // namespace
 
 void* TcParser::MaybeGetSplitBase(MessageLite* msg, const bool is_split,
-                                  const TcParseTableBase* table,
-                                  ::google::protobuf::internal::ParseContext* ctx) {
+                                  const TcParseTableBase* table) {
   void* out = msg;
   if (is_split) {
     const uint32_t split_offset = GetSplitOffset(table);
@@ -1867,7 +1873,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpFixed(PROTOBUF_TC_PARAM_DECL) {
   } else if (card == field_layout::kFcOneof) {
     ChangeOneof(table, entry, data.tag() >> 3, ctx, msg);
   }
-  void* const base = MaybeGetSplitBase(msg, is_split, table, ctx);
+  void* const base = MaybeGetSplitBase(msg, is_split, table);
   // Copy the value:
   if (rep == field_layout::kRep64Bits) {
     RefAt<uint64_t>(base, entry.offset) = UnalignedLoad<uint64_t>(ptr);
@@ -2008,7 +2014,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpVarint(PROTOBUF_TC_PARAM_DECL) {
     ChangeOneof(table, entry, data.tag() >> 3, ctx, msg);
   }
 
-  void* const base = MaybeGetSplitBase(msg, is_split, table, ctx);
+  void* const base = MaybeGetSplitBase(msg, is_split, table);
   if (rep == field_layout::kRep64Bits) {
     RefAt<uint64_t>(base, entry.offset) = tmp;
   } else if (rep == field_layout::kRep32Bits) {
@@ -2123,7 +2129,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpPackedVarint(PROTOBUF_TC_PARAM_DECL) {
       const TcParseTableBase::FieldAux aux = *table->field_aux(entry.aux_idx);
       return ctx->ReadPackedVarint(ptr, [=](int32_t value) {
         if (!EnumIsValidAux(value, xform_val, aux)) {
-          UnknownPackedEnum(msg, ctx, table, data.tag(), value);
+          UnknownPackedEnum(msg, table, data.tag(), value);
         } else {
           field->Add(value);
         }
@@ -2197,7 +2203,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   }
 
   bool is_valid = false;
-  void* const base = MaybeGetSplitBase(msg, is_split, table, ctx);
+  void* const base = MaybeGetSplitBase(msg, is_split, table);
   switch (rep) {
     case field_layout::kRepAString: {
       auto& field = RefAt<ArenaStringPtr>(base, entry.offset);
@@ -2352,7 +2358,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
     need_init = ChangeOneof(table, entry, data.tag() >> 3, ctx, msg);
   }
 
-  void* const base = MaybeGetSplitBase(msg, is_split, table, ctx);
+  void* const base = MaybeGetSplitBase(msg, is_split, table);
   SyncHasbits(msg, hasbits, table);
   MessageLite*& field = RefAt<MessageLite*>(base, entry.offset);
   if ((type_card & field_layout::kTvMask) == field_layout::kTvTable) {
@@ -2417,7 +2423,6 @@ const char* TcParser::MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL) {
   const auto aux = *table->field_aux(&entry);
   if ((type_card & field_layout::kTvMask) == field_layout::kTvTable) {
     auto* inner_table = aux.table;
-    auto& field = RefAt<RepeatedPtrFieldBase>(msg, entry.offset);
     MessageLite* value = field.Add<GenericTypeHandler<MessageLite>>(
         inner_table->default_instance);
     if (is_group) {
