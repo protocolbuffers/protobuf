@@ -34,8 +34,6 @@
 #include <utility>
 
 #include "absl/container/flat_hash_set.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_split.h"
@@ -386,7 +384,7 @@ std::string PyiGenerator::GetFieldType(
       return name;
     }
     default:
-      GOOGLE_ABSL_LOG(FATAL) << "Unsupported field type.";
+      GOOGLE_LOG(FATAL) << "Unsupported field type.";
   }
   return "";
 }
@@ -601,7 +599,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
   }
 
   std::unique_ptr<io::ZeroCopyOutputStream> output(context->Open(filename));
-  GOOGLE_ABSL_CHECK(output.get());
+  GOOGLE_CHECK(output.get());
   GeneratedCodeInfo annotations;
   io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
       &annotations);
