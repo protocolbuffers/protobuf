@@ -32,7 +32,6 @@
 
 #include <algorithm>
 
-#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_replace.h"
