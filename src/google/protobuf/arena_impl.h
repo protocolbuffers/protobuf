@@ -109,8 +109,6 @@ struct ArenaBlock {
   // data follows
 };
 
-using LifecycleIdAtomic = uint64_t;
-
 enum class AllocationClient { kDefault, kArray };
 
 class ThreadSafeArena;
@@ -582,16 +580,6 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 #pragma warning(disable : 4324)
 #endif
   struct alignas(kCacheAlignment) ThreadCache {
-#if defined(PROTOBUF_NO_THREADLOCAL)
-    // If we are using the ThreadLocalStorage class to store the ThreadCache,
-    // then the ThreadCache's default constructor has to be responsible for
-    // initializing it.
-    ThreadCache()
-        : next_lifecycle_id(0),
-          last_lifecycle_id_seen(-1),
-          last_serial_arena(nullptr) {}
-#endif
-
     // Number of per-thread lifecycle IDs to reserve. Must be power of two.
     // To reduce contention on a global atomic, each thread reserves a batch of
     // IDs.  The following number is calculated based on a stress test with
@@ -599,11 +587,11 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     static constexpr size_t kPerThreadIds = 256;
     // Next lifecycle ID available to this thread. We need to reserve a new
     // batch, if `next_lifecycle_id & (kPerThreadIds - 1) == 0`.
-    uint64_t next_lifecycle_id;
+    uint64_t next_lifecycle_id{0};
     // The ThreadCache is considered valid as long as this matches the
     // lifecycle_id of the arena being used.
-    uint64_t last_lifecycle_id_seen;
-    SerialArena* last_serial_arena;
+    uint64_t last_lifecycle_id_seen{static_cast<uint64_t>(-1)};
+    SerialArena* last_serial_arena{nullptr};
   };
 
   // Lifecycle_id can be highly contended variable in a situation of lots of
@@ -612,12 +600,9 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 #ifdef _MSC_VER
 #pragma warning(disable : 4324)
 #endif
-  struct alignas(kCacheAlignment) CacheAlignedLifecycleIdGenerator {
-    constexpr CacheAlignedLifecycleIdGenerator() : id{0} {}
-
-    std::atomic<LifecycleIdAtomic> id;
-  };
-  static CacheAlignedLifecycleIdGenerator lifecycle_id_generator_;
+  using LifecycleId = uint64_t;
+  ABSL_CONST_INIT alignas(
+      kCacheAlignment) static std::atomic<LifecycleId> lifecycle_id_;
 #if defined(PROTOBUF_NO_THREADLOCAL)
   // iOS does not support __thread keyword so we use a custom thread local
   // storage class we implemented.
@@ -627,7 +612,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // wrap them in static functions.
   static ThreadCache& thread_cache();
 #else
-  static PROTOBUF_THREAD_LOCAL ThreadCache thread_cache_;
+  ABSL_CONST_INIT static PROTOBUF_THREAD_LOCAL ThreadCache thread_cache_;
   static ThreadCache& thread_cache() { return thread_cache_; }
 #endif
 

@@ -441,8 +441,8 @@ ThreadSafeArena::SerialArenaChunk* ThreadSafeArena::SentrySerialArenaChunk() {
 }
 
 
-ThreadSafeArena::CacheAlignedLifecycleIdGenerator
-    ThreadSafeArena::lifecycle_id_generator_;
+ABSL_CONST_INIT alignas(kCacheAlignment)
+    std::atomic<ThreadSafeArena::LifecycleId> ThreadSafeArena::lifecycle_id_{0};
 #if defined(PROTOBUF_NO_THREADLOCAL)
 ThreadSafeArena::ThreadCache& ThreadSafeArena::thread_cache() {
   static internal::ThreadLocalStorage<ThreadCache>* thread_cache_ =
@@ -451,14 +451,12 @@ ThreadSafeArena::ThreadCache& ThreadSafeArena::thread_cache() {
 }
 #elif defined(PROTOBUF_USE_DLLS)
 ThreadSafeArena::ThreadCache& ThreadSafeArena::thread_cache() {
-  static PROTOBUF_THREAD_LOCAL ThreadCache thread_cache_ = {
-      0, static_cast<LifecycleIdAtomic>(-1), nullptr};
-  return thread_cache_;
+  static PROTOBUF_THREAD_LOCAL ThreadCache thread_cache;
+  return thread_cache;
 }
 #else
-PROTOBUF_THREAD_LOCAL ThreadSafeArena::ThreadCache
-    ThreadSafeArena::thread_cache_ = {0, static_cast<LifecycleIdAtomic>(-1),
-                                      nullptr};
+ABSL_CONST_INIT PROTOBUF_THREAD_LOCAL
+    ThreadSafeArena::ThreadCache ThreadSafeArena::thread_cache_;
 #endif
 
 ThreadSafeArena::ThreadSafeArena() : first_arena_(*this) { Init(); }
@@ -549,8 +547,7 @@ uint64_t ThreadSafeArena::GetNextLifeCycleId() {
     // On platforms that don't support uint64_t atomics we can certainly not
     // afford to increment by large intervals and expect uniqueness due to
     // wrapping, hence we only add by 1.
-    id = lifecycle_id_generator_.id.fetch_add(1, std::memory_order_relaxed) *
-         kInc;
+    id = lifecycle_id_.fetch_add(1, std::memory_order_relaxed) * kInc;
   }
   tc.next_lifecycle_id = id + kDelta;
   return id;
