@@ -622,4 +622,58 @@ TEST(GeneratedCode, PromoteUnknownMessage) {
   upb_Arena_Free(arena);
 }
 
+TEST(GeneratedCode, PromoteUnknownRepeatedMessage) {
+  upb_Arena* arena = upb_Arena_New();
+  upb_test_ModelWithSubMessages* input_msg =
+      upb_test_ModelWithSubMessages_new(arena);
+  upb_test_ModelWithSubMessages_set_id(input_msg, 123);
+
+  // Add 2 repeated messages to input_msg.
+  upb_test_ModelWithExtensions* item =
+      upb_test_ModelWithSubMessages_add_items(input_msg, arena);
+  upb_test_ModelWithExtensions_set_random_int32(item, 5);
+  item = upb_test_ModelWithSubMessages_add_items(input_msg, arena);
+  upb_test_ModelWithExtensions_set_random_int32(item, 6);
+
+  size_t serialized_size;
+  char* serialized = upb_test_ModelWithSubMessages_serialize(input_msg, arena,
+                                                             &serialized_size);
+
+  upb_MiniTable* mini_table = CreateMiniTableWithEmptySubTables(arena);
+  upb_Message* msg = _upb_Message_New(mini_table, arena);
+  upb_DecodeStatus decode_status = upb_Decode(serialized, serialized_size, msg,
+                                              mini_table, nullptr, 0, arena);
+  EXPECT_EQ(decode_status, kUpb_DecodeStatus_Ok);
+  int32_t val = upb_Message_GetInt32(
+      msg, upb_MiniTable_FindFieldByNumber(mini_table, 4), 0);
+  EXPECT_EQ(val, 123);
+
+  // Check that we have repeated field data in an unknown.
+  upb_FindUnknownRet unknown = upb_MiniTable_FindUnknown(msg, 6);
+  EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
+
+  // Update mini table and promote unknown to a message.
+  upb_MiniTable_SetSubMessage(mini_table,
+                              (upb_MiniTableField*)&mini_table->fields[2],
+                              &upb_test_ModelWithExtensions_msg_init);
+  const int decode_options =
+      UPB_DECODE_MAXDEPTH(100);  // UPB_DECODE_ALIAS disabled.
+  upb_UnknownToMessage_Status promote_result =
+      upb_MiniTable_PromoteUnknownToMessageArray(
+          msg, &mini_table->fields[2], &upb_test_ModelWithExtensions_msg_init,
+          decode_options, arena);
+  EXPECT_EQ(promote_result, kUpb_UnknownToMessage_Ok);
+
+  upb_Array* array = upb_MiniTable_GetMutableArray(msg, &mini_table->fields[2]);
+  const upb_Message* promoted_message = upb_Array_Get(array, 0).msg_val;
+  EXPECT_EQ(upb_test_ModelWithExtensions_random_int32(
+                (upb_test_ModelWithExtensions*)promoted_message),
+            5);
+  promoted_message = upb_Array_Get(array, 1).msg_val;
+  EXPECT_EQ(upb_test_ModelWithExtensions_random_int32(
+                (upb_test_ModelWithExtensions*)promoted_message),
+            6);
+  upb_Arena_Free(arena);
+}
+
 }  // namespace

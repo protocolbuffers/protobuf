@@ -446,6 +446,11 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
       if (ret.status == kUpb_UnknownToMessage_Ok) {
         upb_MessageValue value;
         value.msg_val = ret.message;
+        // Allocate array on demand before append.
+        if (!repeated_messages) {
+          upb_MiniTable_ResizeArray(msg, field, 0, arena);
+          repeated_messages = upb_MiniTable_GetMutableArray(msg, field);
+        }
         if (!upb_Array_Append(repeated_messages, value, arena)) {
           return kUpb_UnknownToMessage_OutOfMemory;
         }
