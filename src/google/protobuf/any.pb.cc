@@ -131,10 +131,9 @@ class Any::_Internal {
  public:
 };
 
-Any::Any(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+Any::Any(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Any)
 }
 Any::Any(const Any& from)
@@ -166,10 +165,8 @@ Any::Any(const Any& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Any)
 }
 
-inline void Any::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void Any::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.type_url_){}
     , decltype(_impl_.value_){}

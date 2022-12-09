@@ -236,7 +236,7 @@ class PROTOBUF_EXPORT Struct final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Struct* other);
@@ -247,8 +247,7 @@ class PROTOBUF_EXPORT Struct final :
     return "google.protobuf.Struct";
   }
   protected:
-  explicit Struct(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit Struct(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   private:
   static void ArenaDtor(void* object);
   public:
@@ -408,7 +407,7 @@ class PROTOBUF_EXPORT Value final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Value* other);
@@ -419,8 +418,7 @@ class PROTOBUF_EXPORT Value final :
     return "google.protobuf.Value";
   }
   protected:
-  explicit Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit Value(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -654,7 +652,7 @@ class PROTOBUF_EXPORT ListValue final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(ListValue* other);
@@ -665,8 +663,7 @@ class PROTOBUF_EXPORT ListValue final :
     return "google.protobuf.ListValue";
   }
   protected:
-  explicit ListValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit ListValue(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;

@@ -161,7 +161,7 @@ class PROTOBUF_EXPORT SourceContext final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(SourceContext* other);
@@ -172,8 +172,7 @@ class PROTOBUF_EXPORT SourceContext final :
     return "google.protobuf.SourceContext";
   }
   protected:
-  explicit SourceContext(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit SourceContext(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;

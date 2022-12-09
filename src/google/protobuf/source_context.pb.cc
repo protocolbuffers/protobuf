@@ -111,10 +111,9 @@ class SourceContext::_Internal {
  public:
 };
 
-SourceContext::SourceContext(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+SourceContext::SourceContext(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceContext)
 }
 SourceContext::SourceContext(const SourceContext& from)
@@ -136,10 +135,8 @@ SourceContext::SourceContext(const SourceContext& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceContext)
 }
 
-inline void SourceContext::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void SourceContext::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.file_name_){}
     , /*decltype(_impl_._cached_size_)*/{}

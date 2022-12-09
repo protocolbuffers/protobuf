@@ -111,10 +111,9 @@ class FieldMask::_Internal {
  public:
 };
 
-FieldMask::FieldMask(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+FieldMask::FieldMask(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldMask)
 }
 FieldMask::FieldMask(const FieldMask& from)
@@ -128,10 +127,8 @@ FieldMask::FieldMask(const FieldMask& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldMask)
 }
 
-inline void FieldMask::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void FieldMask::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.paths_){arena}
     , /*decltype(_impl_._cached_size_)*/{}

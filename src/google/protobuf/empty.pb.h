@@ -158,8 +158,7 @@ class PROTOBUF_EXPORT Empty final :
     return "google.protobuf.Empty";
   }
   protected:
-  explicit Empty(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit Empty(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;

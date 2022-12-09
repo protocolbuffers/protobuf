@@ -113,10 +113,9 @@ class Duration::_Internal {
  public:
 };
 
-Duration::Duration(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+Duration::Duration(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Duration)
 }
 Duration::Duration(const Duration& from)
@@ -126,10 +125,8 @@ Duration::Duration(const Duration& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Duration)
 }
 
-inline void Duration::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void Duration::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.seconds_){::int64_t{0}}
     , decltype(_impl_.nanos_){0}

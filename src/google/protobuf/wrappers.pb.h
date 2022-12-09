@@ -201,7 +201,7 @@ class PROTOBUF_EXPORT DoubleValue final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(DoubleValue* other);
@@ -212,8 +212,7 @@ class PROTOBUF_EXPORT DoubleValue final :
     return "google.protobuf.DoubleValue";
   }
   protected:
-  explicit DoubleValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit DoubleValue(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -348,7 +347,7 @@ class PROTOBUF_EXPORT FloatValue final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(FloatValue* other);
@@ -359,8 +358,7 @@ class PROTOBUF_EXPORT FloatValue final :
     return "google.protobuf.FloatValue";
   }
   protected:
-  explicit FloatValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit FloatValue(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -495,7 +493,7 @@ class PROTOBUF_EXPORT Int64Value final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Int64Value* other);
@@ -506,8 +504,7 @@ class PROTOBUF_EXPORT Int64Value final :
     return "google.protobuf.Int64Value";
   }
   protected:
-  explicit Int64Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit Int64Value(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -642,7 +639,7 @@ class PROTOBUF_EXPORT UInt64Value final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(UInt64Value* other);
@@ -653,8 +650,7 @@ class PROTOBUF_EXPORT UInt64Value final :
     return "google.protobuf.UInt64Value";
   }
   protected:
-  explicit UInt64Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit UInt64Value(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -789,7 +785,7 @@ class PROTOBUF_EXPORT Int32Value final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Int32Value* other);
@@ -800,8 +796,7 @@ class PROTOBUF_EXPORT Int32Value final :
     return "google.protobuf.Int32Value";
   }
   protected:
-  explicit Int32Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit Int32Value(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -936,7 +931,7 @@ class PROTOBUF_EXPORT UInt32Value final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(UInt32Value* other);
@@ -947,8 +942,7 @@ class PROTOBUF_EXPORT UInt32Value final :
     return "google.protobuf.UInt32Value";
   }
   protected:
-  explicit UInt32Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit UInt32Value(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -1083,7 +1077,7 @@ class PROTOBUF_EXPORT BoolValue final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(BoolValue* other);
@@ -1094,8 +1088,7 @@ class PROTOBUF_EXPORT BoolValue final :
     return "google.protobuf.BoolValue";
   }
   protected:
-  explicit BoolValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit BoolValue(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -1230,7 +1223,7 @@ class PROTOBUF_EXPORT StringValue final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(StringValue* other);
@@ -1241,8 +1234,7 @@ class PROTOBUF_EXPORT StringValue final :
     return "google.protobuf.StringValue";
   }
   protected:
-  explicit StringValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit StringValue(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -1382,7 +1374,7 @@ class PROTOBUF_EXPORT BytesValue final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(BytesValue* other);
@@ -1393,8 +1385,7 @@ class PROTOBUF_EXPORT BytesValue final :
     return "google.protobuf.BytesValue";
   }
   protected:
-  explicit BytesValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit BytesValue(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;

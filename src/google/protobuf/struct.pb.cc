@@ -228,11 +228,10 @@ class Struct::_Internal {
  public:
 };
 
-Struct::Struct(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
-  if (arena != nullptr && !is_message_owned) {
+Struct::Struct(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
+  if (arena != nullptr) {
     arena->OwnCustomDestructor(this, &Struct::ArenaDtor);
   }
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Struct)
@@ -249,10 +248,8 @@ Struct::Struct(const Struct& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Struct)
 }
 
-inline void Struct::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void Struct::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       /*decltype(_impl_.fields_)*/{::_pbi::ArenaInitialized(), arena}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -490,10 +487,9 @@ void Value::set_allocated_list_value(::PROTOBUF_NAMESPACE_ID::ListValue* list_va
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Value.list_value)
 }
-Value::Value(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+Value::Value(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Value)
 }
 Value::Value(const Value& from)
@@ -540,10 +536,8 @@ Value::Value(const Value& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Value)
 }
 
-inline void Value::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void Value::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.kind_){}
     , /*decltype(_impl_._cached_size_)*/{}
@@ -900,10 +894,9 @@ class ListValue::_Internal {
  public:
 };
 
-ListValue::ListValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+ListValue::ListValue(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ListValue)
 }
 ListValue::ListValue(const ListValue& from)
@@ -917,10 +910,8 @@ ListValue::ListValue(const ListValue& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ListValue)
 }
 
-inline void ListValue::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void ListValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.values_){arena}
     , /*decltype(_impl_._cached_size_)*/{}

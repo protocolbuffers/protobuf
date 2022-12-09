@@ -173,7 +173,7 @@ class PROTOBUF_EXPORT Api final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Api* other);
@@ -184,8 +184,7 @@ class PROTOBUF_EXPORT Api final :
     return "google.protobuf.Api";
   }
   protected:
-  explicit Api(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit Api(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -432,7 +431,7 @@ class PROTOBUF_EXPORT Method final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Method* other);
@@ -443,8 +442,7 @@ class PROTOBUF_EXPORT Method final :
     return "google.protobuf.Method";
   }
   protected:
-  explicit Method(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit Method(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -669,7 +667,7 @@ class PROTOBUF_EXPORT Mixin final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Mixin* other);
@@ -680,8 +678,7 @@ class PROTOBUF_EXPORT Mixin final :
     return "google.protobuf.Mixin";
   }
   protected:
-  explicit Mixin(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit Mixin(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;

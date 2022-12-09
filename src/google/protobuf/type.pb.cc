@@ -401,10 +401,9 @@ void Type::clear_source_context() {
   }
   _impl_.source_context_ = nullptr;
 }
-Type::Type(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+Type::Type(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Type)
 }
 Type::Type(const Type& from)
@@ -435,10 +434,8 @@ Type::Type(const Type& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Type)
 }
 
-inline void Type::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void Type::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.fields_){arena}
     , decltype(_impl_.oneofs_){arena}
@@ -792,10 +789,9 @@ class Field::_Internal {
  public:
 };
 
-Field::Field(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+Field::Field(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Field)
 }
 Field::Field(const Field& from)
@@ -853,10 +849,8 @@ Field::Field(const Field& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Field)
 }
 
-inline void Field::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void Field::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.options_){arena}
     , decltype(_impl_.name_){}
@@ -1342,10 +1336,9 @@ void Enum::clear_source_context() {
   }
   _impl_.source_context_ = nullptr;
 }
-Enum::Enum(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+Enum::Enum(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Enum)
 }
 Enum::Enum(const Enum& from)
@@ -1375,10 +1368,8 @@ Enum::Enum(const Enum& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Enum)
 }
 
-inline void Enum::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void Enum::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.enumvalue_){arena}
     , decltype(_impl_.options_){arena}
@@ -1693,10 +1684,9 @@ class EnumValue::_Internal {
  public:
 };
 
-EnumValue::EnumValue(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+EnumValue::EnumValue(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValue)
 }
 EnumValue::EnumValue(const EnumValue& from)
@@ -1721,10 +1711,8 @@ EnumValue::EnumValue(const EnumValue& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValue)
 }
 
-inline void EnumValue::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void EnumValue::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.options_){arena}
     , decltype(_impl_.name_){}
@@ -1975,10 +1963,9 @@ void Option::clear_value() {
   }
   _impl_.value_ = nullptr;
 }
-Option::Option(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+Option::Option(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Option)
 }
 Option::Option(const Option& from)
@@ -2004,10 +1991,8 @@ Option::Option(const Option& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Option)
 }
 
-inline void Option::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void Option::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.name_){}
     , decltype(_impl_.value_){nullptr}
