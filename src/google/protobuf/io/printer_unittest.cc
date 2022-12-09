@@ -41,12 +41,14 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
+#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/zero_copy_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace google {
@@ -561,18 +563,6 @@ TEST_F(PrinterTest, EmitWithSubs) {
             "class Foo {\n"
             "  int x, y, z = 42;\n"
             "};\n");
-}
-
-TEST_F(PrinterTest, EmitComments) {
-  {
-    Printer printer(output());
-    printer.Emit(R"cc(
-      // Yes.
-      //~ No.
-    )cc");
-  }
-
-  EXPECT_EQ(written(), "// Yes.\n");
 }
 
 TEST_F(PrinterTest, EmitWithVars) {
