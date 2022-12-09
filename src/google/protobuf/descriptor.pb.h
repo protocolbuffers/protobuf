@@ -489,7 +489,7 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   }
   void UnsafeArenaSwap(FileDescriptorSet* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -651,7 +651,7 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   }
   void UnsafeArenaSwap(FileDescriptorProto* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -1050,7 +1050,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   }
   void UnsafeArenaSwap(DescriptorProto_ExtensionRange* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -1234,7 +1234,7 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   }
   void UnsafeArenaSwap(DescriptorProto_ReservedRange* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -1401,7 +1401,7 @@ class PROTOBUF_EXPORT DescriptorProto final :
   }
   void UnsafeArenaSwap(DescriptorProto* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -1747,7 +1747,7 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   }
   void UnsafeArenaSwap(ExtensionRangeOptions* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -2101,7 +2101,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   }
   void UnsafeArenaSwap(FieldDescriptorProto* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -2463,7 +2463,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   }
   void UnsafeArenaSwap(OneofDescriptorProto* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -2640,7 +2640,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   }
   void UnsafeArenaSwap(EnumDescriptorProto_EnumReservedRange* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -2807,7 +2807,7 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   }
   void UnsafeArenaSwap(EnumDescriptorProto* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -3052,7 +3052,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   }
   void UnsafeArenaSwap(EnumValueDescriptorProto* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -3241,7 +3241,7 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   }
   void UnsafeArenaSwap(ServiceDescriptorProto* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -3438,7 +3438,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   }
   void UnsafeArenaSwap(MethodDescriptorProto* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -3673,7 +3673,7 @@ class PROTOBUF_EXPORT FileOptions final :
   }
   void UnsafeArenaSwap(FileOptions* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -4339,7 +4339,7 @@ class PROTOBUF_EXPORT MessageOptions final :
   }
   void UnsafeArenaSwap(MessageOptions* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -4742,7 +4742,7 @@ class PROTOBUF_EXPORT FieldOptions final :
   }
   void UnsafeArenaSwap(FieldOptions* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -5223,7 +5223,7 @@ class PROTOBUF_EXPORT OneofOptions final :
   }
   void UnsafeArenaSwap(OneofOptions* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -5577,7 +5577,7 @@ class PROTOBUF_EXPORT EnumOptions final :
   }
   void UnsafeArenaSwap(EnumOptions* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -5956,7 +5956,7 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   }
   void UnsafeArenaSwap(EnumValueOptions* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -6323,7 +6323,7 @@ class PROTOBUF_EXPORT ServiceOptions final :
   }
   void UnsafeArenaSwap(ServiceOptions* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -6690,7 +6690,7 @@ class PROTOBUF_EXPORT MethodOptions final :
   }
   void UnsafeArenaSwap(MethodOptions* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -7090,7 +7090,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   }
   void UnsafeArenaSwap(UninterpretedOption_NamePart* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -7265,7 +7265,7 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   }
   void UnsafeArenaSwap(UninterpretedOption* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -7517,7 +7517,7 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   }
   void UnsafeArenaSwap(SourceCodeInfo_Location* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -7770,7 +7770,7 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   }
   void UnsafeArenaSwap(SourceCodeInfo* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -7934,7 +7934,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   }
   void UnsafeArenaSwap(GeneratedCodeInfo_Annotation* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -8176,7 +8176,7 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   }
   void UnsafeArenaSwap(GeneratedCodeInfo* other) {
     if (other == this) return;
-    GOOGLE_DCHECK(GetOwningArena() == other->GetOwningArena());
+    GOOGLE_ABSL_DCHECK(GetOwningArena() == other->GetOwningArena());
     InternalSwap(other);
   }
 
@@ -8486,7 +8486,7 @@ inline void FileDescriptorProto::set_dependency(int index, std::string&& value) 
   // @@protoc_insertion_point(field_set:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::set_dependency(int index, const char* value) {
-  GOOGLE_DCHECK(value != nullptr);  _impl_.dependency_.Mutable(index)->assign(value);
+  GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.dependency_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::set_dependency(int index, const char* value, ::size_t size) {
@@ -8506,7 +8506,7 @@ inline void FileDescriptorProto::add_dependency(std::string&& value) {
   // @@protoc_insertion_point(field_add:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);  _impl_.dependency_.Add()->assign(value);
+  GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.dependency_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.FileDescriptorProto.dependency)
 }
 inline void FileDescriptorProto::add_dependency(const char* value, ::size_t size) {
@@ -9742,7 +9742,7 @@ inline void DescriptorProto::set_reserved_name(int index, std::string&& value) {
   // @@protoc_insertion_point(field_set:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::set_reserved_name(int index, const char* value) {
-  GOOGLE_DCHECK(value != nullptr);  _impl_.reserved_name_.Mutable(index)->assign(value);
+  GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.reserved_name_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::set_reserved_name(int index, const char* value, ::size_t size) {
@@ -9762,7 +9762,7 @@ inline void DescriptorProto::add_reserved_name(std::string&& value) {
   // @@protoc_insertion_point(field_add:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);  _impl_.reserved_name_.Add()->assign(value);
+  GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.reserved_name_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.DescriptorProto.reserved_name)
 }
 inline void DescriptorProto::add_reserved_name(const char* value, ::size_t size) {
@@ -10834,7 +10834,7 @@ inline void EnumDescriptorProto::set_reserved_name(int index, std::string&& valu
   // @@protoc_insertion_point(field_set:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::set_reserved_name(int index, const char* value) {
-  GOOGLE_DCHECK(value != nullptr);  _impl_.reserved_name_.Mutable(index)->assign(value);
+  GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.reserved_name_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::set_reserved_name(int index, const char* value, ::size_t size) {
@@ -10854,7 +10854,7 @@ inline void EnumDescriptorProto::add_reserved_name(std::string&& value) {
   // @@protoc_insertion_point(field_add:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);  _impl_.reserved_name_.Add()->assign(value);
+  GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.reserved_name_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.EnumDescriptorProto.reserved_name)
 }
 inline void EnumDescriptorProto::add_reserved_name(const char* value, ::size_t size) {
@@ -13895,7 +13895,7 @@ inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, st
   // @@protoc_insertion_point(field_set:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, const char* value) {
-  GOOGLE_DCHECK(value != nullptr);  _impl_.leading_detached_comments_.Mutable(index)->assign(value);
+  GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.leading_detached_comments_.Mutable(index)->assign(value);
   // @@protoc_insertion_point(field_set_char:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::set_leading_detached_comments(int index, const char* value, ::size_t size) {
@@ -13915,7 +13915,7 @@ inline void SourceCodeInfo_Location::add_leading_detached_comments(std::string&&
   // @@protoc_insertion_point(field_add:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);  _impl_.leading_detached_comments_.Add()->assign(value);
+  GOOGLE_ABSL_DCHECK(value != nullptr);  _impl_.leading_detached_comments_.Add()->assign(value);
   // @@protoc_insertion_point(field_add_char:google.protobuf.SourceCodeInfo.Location.leading_detached_comments)
 }
 inline void SourceCodeInfo_Location::add_leading_detached_comments(const char* value, ::size_t size) {

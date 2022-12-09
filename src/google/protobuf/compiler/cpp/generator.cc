@@ -84,11 +84,11 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
       {"GOOGLE_PROTOBUF", is_oss ? "GOOGLE_PROTOBUF"
                                  : "GOOGLE3_PROTOBU"
                                    "F"},
-      {"CHK", is_oss ? "GOOGLE_CHECK"
-                     : "CHEC"
+      {"CHK", is_oss ? "GOOGLE_ABSL_CHECK"
+                     : "ABSL_CHEC"
                        "K"},
-      {"DCHK", is_oss ? "GOOGLE_DCHECK"
-                      : "DCHEC"
+      {"DCHK", is_oss ? "GOOGLE_ABSL_DCHECK"
+                      : "ABSL_DCHEC"
                         "K"},
   };
 }

@@ -343,7 +343,7 @@ Version::~Version() {
 }
 
 inline void Version::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.suffix_.Destroy();
 }
 
@@ -538,7 +538,7 @@ void Version::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOB
   auto& from = static_cast<const Version&>(from_msg);
 
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.Version)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -676,7 +676,7 @@ CodeGeneratorRequest::~CodeGeneratorRequest() {
 }
 
 inline void CodeGeneratorRequest::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.file_to_generate_.~RepeatedPtrField();
   _impl_.proto_file_.~RepeatedPtrField();
   _impl_.parameter_.Destroy();
@@ -701,7 +701,7 @@ void CodeGeneratorRequest::Clear() {
       _impl_.parameter_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000002u) {
-      GOOGLE_DCHECK(_impl_.compiler_version_ != nullptr);
+      GOOGLE_ABSL_DCHECK(_impl_.compiler_version_ != nullptr);
       _impl_.compiler_version_->Clear();
     }
   }
@@ -902,7 +902,7 @@ void CodeGeneratorRequest::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, c
   auto& from = static_cast<const CodeGeneratorRequest&>(from_msg);
 
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorRequest)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1066,7 +1066,7 @@ CodeGeneratorResponse_File::~CodeGeneratorResponse_File() {
 }
 
 inline void CodeGeneratorResponse_File::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
   _impl_.insertion_point_.Destroy();
   _impl_.content_.Destroy();
@@ -1095,7 +1095,7 @@ void CodeGeneratorResponse_File::Clear() {
       _impl_.content_.ClearNonDefaultToEmpty();
     }
     if (cached_has_bits & 0x00000008u) {
-      GOOGLE_DCHECK(_impl_.generated_code_info_ != nullptr);
+      GOOGLE_ABSL_DCHECK(_impl_.generated_code_info_ != nullptr);
       _impl_.generated_code_info_->Clear();
     }
   }
@@ -1291,7 +1291,7 @@ void CodeGeneratorResponse_File::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_
   auto& from = static_cast<const CodeGeneratorResponse_File&>(from_msg);
 
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse.File)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1420,7 +1420,7 @@ CodeGeneratorResponse::~CodeGeneratorResponse() {
 }
 
 inline void CodeGeneratorResponse::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.file_.~RepeatedPtrField();
   _impl_.error_.Destroy();
 }
@@ -1600,7 +1600,7 @@ void CodeGeneratorResponse::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, 
   auto& from = static_cast<const CodeGeneratorResponse&>(from_msg);
 
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.compiler.CodeGeneratorResponse)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
