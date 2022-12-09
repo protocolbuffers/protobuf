@@ -132,22 +132,27 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
   }
 
   // We now split the remaining format string into lines and discard:
-  //   1. All leading spaces to compute that line's indent.
+  //   1. A trailing Printer-discarded comment.
+  //
+  //   2. All leading spaces to compute that line's indent.
   //      We do not do this for the first line, so that Emit("  ") works
   //      correctly. We do this *regardless* of whether we are processing
   //      a raw string, because existing non-raw-string calls to cpp::Formatter
   //      rely on this. There is a test that validates this behavior.
   //
-  //   2. Set the indent for that line to max(0, line_indent -
+  //   3. Set the indent for that line to max(0, line_indent -
   //      raw_string_indent), if this is not a raw string.
   //
-  //   3. Trailing empty lines, if we know this is a raw string, except for
+  //   4. Trailing empty lines, if we know this is a raw string, except for
   //      a single extra newline at the end.
   //
   // Each line is itself split into chunks along the variable delimiters, e.g.
   // $...$.
   bool is_first = true;
   for (absl::string_view line_text : absl::StrSplit(format_string, '\n')) {
+    size_t comment_index = line_text.find(options_.ignored_comment_start);
+    line_text = line_text.substr(0, comment_index);
+
     size_t line_indent = 0;
     while (!is_first && absl::ConsumePrefix(&line_text, " ")) {
       ++line_indent;
