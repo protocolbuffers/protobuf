@@ -63,10 +63,6 @@
 namespace google {
 namespace protobuf {
 
-MessageLite::~MessageLite(){
-// Defined out of line to save code space
-}
-
 std::string MessageLite::InitializationErrorString() const {
   return "(cannot determine missing fields for lite message)";
 }
@@ -513,15 +509,6 @@ template <>
 void GenericTypeHandler<std::string>::Merge(const std::string& from,
                                             std::string* to) {
   *to = from;
-}
-
-// Non-inline implementations of InternalMetadata destructor
-// This is moved out of the header because the GOOGLE_DCHECK produces a lot of code.
-void InternalMetadata::CheckedDestruct() {
-  if (HasMessageOwnedArenaTag()) {
-    GOOGLE_DCHECK(!HasUnknownFieldsTag());
-    delete reinterpret_cast<Arena*>(ptr_ - kMessageOwnedArenaTagMask);
-  }
 }
 
 // Non-inline variants of std::string specializations for

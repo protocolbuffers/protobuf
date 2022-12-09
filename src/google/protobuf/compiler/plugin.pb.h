@@ -222,7 +222,7 @@ class PROTOC_EXPORT Version final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(Version* other);
@@ -233,8 +233,7 @@ class PROTOC_EXPORT Version final :
     return "google.protobuf.compiler.Version";
   }
   protected:
-  explicit Version(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit Version(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -419,7 +418,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(CodeGeneratorRequest* other);
@@ -430,8 +429,7 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
     return "google.protobuf.compiler.CodeGeneratorRequest";
   }
   protected:
-  explicit CodeGeneratorRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit CodeGeneratorRequest(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -643,7 +641,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(CodeGeneratorResponse_File* other);
@@ -654,8 +652,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
     return "google.protobuf.compiler.CodeGeneratorResponse.File";
   }
   protected:
-  explicit CodeGeneratorResponse_File(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit CodeGeneratorResponse_File(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;
@@ -855,7 +852,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   int GetCachedSize() const final { return _impl_._cached_size_.Get(); }
 
   private:
-  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena, bool is_message_owned);
+  void SharedCtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   void SharedDtor();
   void SetCachedSize(int size) const final;
   void InternalSwap(CodeGeneratorResponse* other);
@@ -866,8 +863,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
     return "google.protobuf.compiler.CodeGeneratorResponse";
   }
   protected:
-  explicit CodeGeneratorResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                       bool is_message_owned = false);
+  explicit CodeGeneratorResponse(::PROTOBUF_NAMESPACE_ID::Arena* arena);
   public:
 
   static const ClassData _class_data_;

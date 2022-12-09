@@ -172,7 +172,7 @@ class PROTOBUF_EXPORT MessageLite {
   constexpr MessageLite() {}
   MessageLite(const MessageLite&) = delete;
   MessageLite& operator=(const MessageLite&) = delete;
-  virtual ~MessageLite();
+  virtual ~MessageLite() = default;
 
   // Basic Operations ------------------------------------------------
 
@@ -429,8 +429,7 @@ class PROTOBUF_EXPORT MessageLite {
     return Arena::CreateMaybeMessage<T>(arena);
   }
 
-  inline explicit MessageLite(Arena* arena, bool is_message_owned = false)
-      : _internal_metadata_(arena, is_message_owned) {}
+  inline explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}
 
   // Returns the arena, if any, that directly owns this message and its internal
   // memory (Arena::Own is different in that the arena doesn't directly own the

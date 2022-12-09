@@ -1642,7 +1642,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         "int GetCachedSize() const final { return "
         "$cached_size$.Get(); }"
         "\n\nprivate:\n"
-        "void SharedCtor(::$proto_ns$::Arena* arena, bool is_message_owned);\n"
+        "void SharedCtor(::$proto_ns$::Arena* arena);\n"
         "void SharedDtor();\n"
         "void SetCachedSize(int size) const$ full_final$;\n"
         "void InternalSwap($classname$* other);\n");
@@ -1661,8 +1661,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       // protos to give access to this constructor, breaking the invariants
       // we rely on.
       "protected:\n"
-      "explicit $classname$(::$proto_ns$::Arena* arena,\n"
-      "                     bool is_message_owned = false);\n");
+      "explicit $classname$(::$proto_ns$::Arena* arena);\n");
 
   switch (NeedsArenaDestructor()) {
     case ArenaDtorNeeds::kOnDemand:
@@ -2332,10 +2331,8 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* p) {
   Formatter format(p);
 
   format(
-      "inline void $classname$::SharedCtor(\n"
-      "    ::_pb::Arena* arena, bool is_message_owned) {\n"
-      "  (void)arena;\n"
-      "  (void)is_message_owned;\n");
+      "inline void $classname$::SharedCtor(::_pb::Arena* arena) {\n"
+      "  (void)arena;\n");
 
   format.Indent();
   // Impl_ _impl_.
@@ -2424,13 +2421,7 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* p) {
     // is needed.
     format("if (arena != nullptr) {\n");
     if (NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand) {
-      format(
-          "  if (!is_message_owned) {\n"
-          "    $inlined_string_donated_array$[0] = ~0u;\n"
-          "  } else {\n"
-          // We should not register ArenaDtor for MOA.
-          "    $inlined_string_donated_array$[0] = 0xFFFFFFFEu;\n"
-          "  }\n");
+      format("  $inlined_string_donated_array$[0] = ~0u;\n");
     } else {
       format("  $inlined_string_donated_array$[0] = 0xFFFFFFFEu;\n");
     }
@@ -2750,16 +2741,15 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
   Formatter format(p);
 
   format(
-      "$classname$::$classname$(::$proto_ns$::Arena* arena,\n"
-      "                         bool is_message_owned)\n"
-      "  : $1$(arena, is_message_owned) {\n",
+      "$classname$::$classname$(::$proto_ns$::Arena* arena)\n"
+      "  : $1$(arena) {\n",
       SuperClassName(descriptor_, options_));
 
   if (!HasSimpleBaseClass(descriptor_, options_)) {
-    format("  SharedCtor(arena, is_message_owned);\n");
+    format("  SharedCtor(arena);\n");
     if (NeedsArenaDestructor() == ArenaDtorNeeds::kRequired) {
       format(
-          "  if (arena != nullptr && !is_message_owned) {\n"
+          "  if (arena != nullptr) {\n"
           "    arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);\n"
           "  }\n");
     }

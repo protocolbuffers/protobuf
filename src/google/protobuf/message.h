@@ -415,8 +415,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Fail if "from" is a descendant of "to" as such copy is not allowed.
   static void FailIfCopyFromDescendant(Message& to, const Message& from);
 
-  inline explicit Message(Arena* arena, bool is_message_owned = false)
-      : MessageLite(arena, is_message_owned) {}
+  inline explicit Message(Arena* arena) : MessageLite(arena) {}
   size_t ComputeUnknownFieldsSize(size_t total_size,
                                   internal::CachedSize* cached_size) const;
   size_t MaybeComputeUnknownFieldsSize(size_t total_size,
