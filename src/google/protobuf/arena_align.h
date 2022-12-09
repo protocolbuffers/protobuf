@@ -173,7 +173,7 @@ struct ArenaAlign {
 
 inline ArenaAlign ArenaAlignAs(size_t align) {
   // align must be a non zero power of 2 >= 8
-  GOOGLE_DCHECK_NE(align, 0);
+  GOOGLE_DCHECK_NE(align, 0u);
   GOOGLE_DCHECK(absl::has_single_bit(align)) << "Invalid alignment " << align;
   return ArenaAlign{align};
 }
