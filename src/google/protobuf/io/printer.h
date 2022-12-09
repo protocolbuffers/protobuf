@@ -63,6 +63,7 @@
 namespace google {
 namespace protobuf {
 namespace io {
+
 // Records annotations about a Printer's output.
 class PROTOBUF_EXPORT AnnotationCollector {
  public:
@@ -802,6 +803,35 @@ class PROTOBUF_EXPORT Printer {
     // semantics of Emit() described in the class documentation.
     bool use_annotation_frames = true;
   };
+
+  friend class FormatIterator;
+
+  struct Format {
+    struct Chunk {
+      // The chunk's text; if this is a variable, it does not include the $...$.
+      absl::string_view text;
+
+      // Whether or not this is a variable name, i.e., a $...$.
+      bool is_var;
+    };
+
+    struct Line {
+      // Chunks to emit, split along $ and annotates as to whether it is a
+      // variable name.
+      std::vector<Chunk> chunks;
+
+      // The indentation for this chunk.
+      size_t indent;
+    };
+
+    std::vector<Line> lines;
+
+    // Whether this is a multiline raw string, according to internal heuristics.
+    bool is_raw_string = false;
+  };
+
+  Format TokenizeFormat(absl::string_view format_string,
+                        const PrintOptions& options);
 
   // Emit an annotation for the range defined by the given substitution
   // variables, as set by the most recent call to PrintImpl() that set

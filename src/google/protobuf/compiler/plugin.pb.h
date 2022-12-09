@@ -966,6 +966,7 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 };
+
 // ===================================================================
 
 

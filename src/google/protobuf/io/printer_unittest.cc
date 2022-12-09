@@ -547,34 +547,6 @@ TEST_F(PrinterTest, Emit) {
             "}\n");
 }
 
-TEST_F(PrinterTest, EmitKeepsExtraLine) {
-  {
-    Printer printer(output());
-    printer.Emit(R"cc(
-
-      class Foo {
-        int x, y, z;
-      };
-    )cc");
-    printer.Emit(R"java(
-
-      public final class Bar {
-        Bar() {}
-      }
-    )java");
-  }
-
-  EXPECT_EQ(written(),
-            "\n"
-            "class Foo {\n"
-            "  int x, y, z;\n"
-            "};\n"
-            "\n"
-            "public final class Bar {\n"
-            "  Bar() {}\n"
-            "}\n");
-}
-
 TEST_F(PrinterTest, EmitWithSubs) {
   {
     Printer printer(output());
