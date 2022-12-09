@@ -67,6 +67,16 @@ TEST(ArenaAlignDefault, Ceil) {
   EXPECT_THAT(align_default.Ceil(16), Eq(16));
 }
 
+TEST(ArenaAlignDefault, Padded) {
+  auto align_default = ArenaAlignDefault();
+  EXPECT_THAT(align_default.Padded(0), Eq(0));
+  EXPECT_THAT(align_default.Padded(8), Eq(8));
+  EXPECT_THAT(align_default.Padded(64), Eq(64));
+#ifdef PROTOBUF_HAS_DEATH_TEST
+  EXPECT_DEBUG_DEATH(align_default.Padded(1), ".*");
+#endif  // PROTOBUF_HAS_DEATH_TEST
+}
+
 TEST(ArenaAlignDefault, CeilPtr) {
   alignas(8) char p[17] = {0};
   auto align_default = ArenaAlignDefault();
@@ -145,6 +155,16 @@ TEST(ArenaAlign, Ceil) {
   EXPECT_THAT(align_64.Ceil(65), Eq(128));
   EXPECT_THAT(align_64.Ceil(127), Eq(128));
   EXPECT_THAT(align_64.Ceil(128), Eq(128));
+}
+
+TEST(ArenaAlign, Padded) {
+  auto align_64 = ArenaAlignAs(64);
+  EXPECT_THAT(align_64.Padded(64), Eq(64 + 64 - ArenaAlignDefault::align));
+  EXPECT_THAT(align_64.Padded(128), Eq(128 + 64 - ArenaAlignDefault::align));
+#ifdef PROTOBUF_HAS_DEATH_TEST
+  EXPECT_DEBUG_DEATH(align_64.Padded(16), ".*");
+  EXPECT_DEBUG_DEATH(ArenaAlignAs(2).Padded(8), ".*");
+#endif  // PROTOBUF_HAS_DEATH_TEST
 }
 
 TEST(ArenaAlign, CeilPtr) {
