@@ -33,9 +33,8 @@
 # indirect testing of the protocol compiler output.
 
 """Unittest that directly tests the output of the pure-Python protocol
-compiler.  See //google/protobuf/internal/reflection_test.py
-for a test which further ensures that we can use Python protocol message
-objects as we expect.
+compiler.  See //google/protobuf/internal/reflection_test.py for a test which
+further ensures that we can use Python protocol message objects as we expect.
 """
 
 __author__ = 'robinson@google.com (Will Robinson)'
