@@ -38,8 +38,10 @@
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "upb/base/string_view.h"
 #include "upb/collections/array.h"
+#include "upb/mini_table/common.h"
 #include "upb/mini_table/decode.h"
 #include "upb/mini_table/encode_internal.hpp"
+#include "upb/mini_table/field_internal.h"
 #include "upb/test/test.upb.h"
 #include "upb/upb.h"
 #include "upb/wire/decode.h"
@@ -673,6 +675,38 @@ TEST(GeneratedCode, PromoteUnknownRepeatedMessage) {
   EXPECT_EQ(upb_test_ModelWithExtensions_random_int32(
                 (upb_test_ModelWithExtensions*)promoted_message),
             6);
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, EnumClosedCheck) {
+  upb_Arena* arena = upb_Arena_New();
+
+  upb::MtDataEncoder e;
+  e.StartMessage(0);
+  e.PutField(kUpb_FieldType_Int32, 4, 0);
+  e.PutField(kUpb_FieldType_Enum, 5, 0);
+
+  upb_Status status;
+  upb_Status_Clear(&status);
+  upb_MiniTable* table =
+      upb_MiniTable_Build(e.data().data(), e.data().size(), arena, &status);
+
+  const upb_MiniTableField* enumField = &table->fields[1];
+  EXPECT_EQ(upb_MiniTableField_Type(enumField), kUpb_FieldType_Enum);
+  EXPECT_FALSE(upb_MiniTableField_IsClosedEnum(enumField));
+
+  upb::MtDataEncoder e2;
+  e2.StartMessage(0);
+  e2.PutField(kUpb_FieldType_Int32, 4, 0);
+  e2.PutField(kUpb_FieldType_Enum, 6, kUpb_FieldModifier_IsClosedEnum);
+
+  upb_Status_Clear(&status);
+  table =
+      upb_MiniTable_Build(e2.data().data(), e2.data().size(), arena, &status);
+
+  const upb_MiniTableField* closedEnumField = &table->fields[1];
+  EXPECT_EQ(upb_MiniTableField_Type(closedEnumField), kUpb_FieldType_Enum);
+  EXPECT_TRUE(upb_MiniTableField_IsClosedEnum(closedEnumField));
   upb_Arena_Free(arena);
 }
 

@@ -515,6 +515,12 @@ UPB_API_INLINE upb_Array* upb_MiniTable_GetMutableArray(
 void* upb_MiniTable_ResizeArray(upb_Message* msg,
                                 const upb_MiniTableField* field, size_t len,
                                 upb_Arena* arena);
+
+UPB_API_INLINE bool upb_MiniTableField_IsClosedEnum(
+    const upb_MiniTableField* field) {
+  return field->descriptortype == kUpb_FieldType_Enum;
+}
+
 typedef enum {
   kUpb_GetExtension_Ok,
   kUpb_GetExtension_NotPresent,
