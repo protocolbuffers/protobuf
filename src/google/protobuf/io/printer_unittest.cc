@@ -598,6 +598,27 @@ TEST_F(PrinterTest, EmitWithVars) {
             "};\n");
 }
 
+TEST_F(PrinterTest, EmitConsumeAfter) {
+  {
+    Printer printer(output());
+    printer.Emit(
+        {
+            {"class", "Foo"},
+            Printer::Sub{"var", "int x;"}.WithSuffix(";"),
+        },
+        R"cc(
+          class $class$ {
+            $var$;
+          };
+        )cc");
+  }
+
+  EXPECT_EQ(written(),
+            "class Foo {\n"
+            "  int x;\n"
+            "};\n");
+}
+
 TEST_F(PrinterTest, EmitWithSpacedVars) {
   {
     Printer printer(output());

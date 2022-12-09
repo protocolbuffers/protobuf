@@ -261,9 +261,10 @@ Printer::Printer(ZeroCopyOutputStream* output, Options options)
 }
 
 absl::string_view Printer::LookupVar(absl::string_view var) {
-  LookupResult result = LookupInFrameStack(var, absl::MakeSpan(var_lookups_));
+  auto result = LookupInFrameStack(var, absl::MakeSpan(var_lookups_));
   GOOGLE_ABSL_CHECK(result.has_value()) << "could not find " << var;
-  auto* view = absl::get_if<absl::string_view>(&*result);
+
+  auto* view = result->AsString();
   GOOGLE_ABSL_CHECK(view != nullptr)
       << "could not find " << var << "; found callback instead";
 
@@ -299,16 +300,13 @@ void Printer::Outdent() {
   indent_ -= options_.spaces_per_indent;
 }
 
-void Printer::Emit(
-    std::initializer_list<
-        VarDefinition<absl::string_view, /*allow_callbacks=*/true>>
-        vars,
-    absl::string_view format, SourceLocation loc) {
+void Printer::Emit(std::initializer_list<Sub> vars, absl::string_view format,
+                   SourceLocation loc) {
   PrintOptions opts;
   opts.strip_raw_string_indentation = true;
   opts.loc = loc;
 
-  auto defs = WithDefs(vars);
+  auto defs = WithDefs(vars, /*allow_callbacks=*/true);
 
   PrintImpl(format, {}, opts);
 }
@@ -323,9 +321,10 @@ absl::optional<std::pair<size_t, size_t>> Printer::GetSubstitutionRange(
   }
 
   std::pair<size_t, size_t> range = it->second;
-  if (!Validate(range.first <= range.second, opts, [varname] {
-        return absl::StrCat(
-            "variable used for annotation used multiple times: ", varname);
+  if (!Validate(range.first <= range.second, opts, [range, varname] {
+        return absl::StrFormat(
+            "variable used for annotation used multiple times: %s (%d..%d)",
+            varname, range.first, range.second);
       })) {
     return absl::nullopt;
   }
@@ -614,7 +613,7 @@ void Printer::PrintImpl(absl::string_view format,
         continue;
       }
 
-      LookupResult sub;
+      absl::optional<ValueView> sub;
       absl::optional<AnnotationRecord> same_name_record;
       if (opts.allow_digit_substitutions && absl::ascii_isdigit(var[0])) {
         if (!Validate(var.size() == 1u, opts,
@@ -652,7 +651,7 @@ void Printer::PrintImpl(absl::string_view format,
       size_t range_start = sink_.bytes_written();
       size_t range_end = sink_.bytes_written();
 
-      if (auto* str = absl::get_if<absl::string_view>(&*sub)) {
+      if (const absl::string_view* str = sub->AsString()) {
         if (at_start_of_line_ && str->empty()) {
           line_start_variables_.emplace_back(var);
         }
@@ -666,7 +665,7 @@ void Printer::PrintImpl(absl::string_view format,
           PrintRaw(suffix);
         }
       } else {
-        auto* fnc = absl::get_if<std::function<void()>>(&*sub);
+        const ValueView::Callback* fnc = sub->AsCallback();
         GOOGLE_ABSL_CHECK(fnc != nullptr);
 
         Validate(
@@ -676,34 +675,42 @@ void Printer::PrintImpl(absl::string_view format,
         range_start = sink_.bytes_written();
         (*fnc)();
         range_end = sink_.bytes_written();
+      }
 
-        // If we just evaluated a closure, and we are at the start of a line,
-        // that means it finished with a newline. If a newline follows
-        // immediately after, we drop it. This helps callback formatting "work
-        // as expected" with respect to forms like
-        //
-        //   class Foo {
-        //     $methods$;
-        //   };
-        //
-        // Without this line, this would turn into something like
-        //
-        //   class Foo {
-        //     void Bar() {}
-        //
-        //   };
-        //
-        // in many cases. We *also* do this if a ; or , follows the
-        // substitution, because this helps clang-format keep its head on in
-        // many cases. Users that need to keep the semi can write $foo$/**/;
-        ++chunk_idx;
-        if (chunk_idx < line.chunks.size()) {
-          absl::string_view text = line.chunks[chunk_idx].text;
-          if (!absl::ConsumePrefix(&text, ";")) {
-            absl::ConsumePrefix(&text, ",");
+      // If we just evaluated a value which specifies end-of-line consume-after
+      // characters, and we're at the start of a line, that means we finished
+      // with a newline.
+      //
+      // We trim a single end-of-line `consume_after` character in this case.
+      //
+      // This helps callback formatting "work as expected" with respect to forms
+      // like
+      //
+      //   class Foo {
+      //     $methods$;
+      //   };
+      //
+      // Without this post-processing, it would turn into
+      //
+      //   class Foo {
+      //     void Bar() {};
+      //   };
+      //
+      // in many cases. Without the `;`, clang-format may format the template
+      // incorrectly.
+      auto next_idx = chunk_idx + 1;
+      if (!sub->consume_after.empty() && next_idx < line.chunks.size() &&
+          !line.chunks[next_idx].is_var) {
+        chunk_idx = next_idx;
+
+        absl::string_view text = line.chunks[chunk_idx].text;
+        for (char c : sub->consume_after) {
+          if (absl::ConsumePrefix(&text, absl::string_view(&c, 1))) {
+            break;
           }
-          PrintRaw(text);
         }
+
+        PrintRaw(text);
       }
 
       if (same_name_record.has_value() &&

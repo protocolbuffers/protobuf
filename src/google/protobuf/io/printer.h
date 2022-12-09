@@ -172,6 +172,26 @@ class AnnotationProtoCollector : public AnnotationCollector {
 // will crash. Callers must statically know that every variable reference is
 // valid, and MUST NOT pass user-provided strings directly into Emit().
 //
+// Substitutions can be configured to "chomp" a single character after them, to
+// help make indentation work out. This can be configured by passing a
+// two-argument io::Printer::Value into Emit's substitution map:
+//
+//   p.Emit({{"var", io::Printer::Value{var_decl, ";"}}}, R"cc(
+//     class $class$ {
+//      public:
+//       $var$;
+//     };
+//   )cc");
+//
+// This will delete the ; after $var$, regardless of whether it was an empty
+// declaration or not. It will also intelligently attempt to clean up
+// empty lines that follow, if it was on an empty line; this promotes cleaner
+// formatting of the output.
+//
+// Any number of different characters can be potentially skipped, but only one
+// will actually be skipped. For example, callback substitutions (see below) use
+// ";," by default as their "chomping set".
+//
 // # Callback Substitution
 //
 // Instead of passing a string into Emit(), it is possible to pass in a callback
@@ -436,31 +456,71 @@ class PROTOBUF_EXPORT Printer {
     }
   };
 
-  // Sink type for constructing values to pass to WithVars() and Emit().
-  template <typename K, bool allow_callbacks>
-  struct VarDefinition {
-    using StringOrCallback = absl::variant<std::string, std::function<void()>>;
+  // Helper type for wrapping a variable substitution expansion result.
+  template <bool owned>
+  struct ValueImpl {
+   private:
+    template <typename T>
+    struct IsSubImpl : std::false_type {};
+    template <bool a>
+    struct IsSubImpl<ValueImpl<a>> : std::true_type {};
 
-    template <typename Key, typename Value>
-    VarDefinition(Key&& key, Value&& value)
-        : key(std::forward<Key>(key)),
-          value(ToStringOrCallback(std::forward<Value>(value), Rank2{})),
-          annotation(absl::nullopt) {}
+   public:
+    using StringType =
+        std::conditional_t<owned, std::string, absl::string_view>;
+    // These callbacks return false if this is a recursive call.
+    using Callback = std::function<bool()>;
+    using StringOrCallback = absl::variant<StringType, Callback>;
 
-    // NOTE: This is an overload rather than taking optional<AnnotationRecord>
-    // with a default argument of nullopt, because we want to pick up
-    // AnnotationRecord's user-defined conversions. Because going from
-    // e.g. Descriptor* -> optional<AnnotationRecord> requires two user-defined
-    // conversions, this does not work.
-    template <typename Key, typename Value>
-    VarDefinition(Key&& key, Value&& value, AnnotationRecord annotation)
-        : key(std::forward<Key>(key)),
-          value(ToStringOrCallback(std::forward<Value>(value), Rank2{})),
-          annotation(std::move(annotation)) {}
+    ValueImpl() = default;
 
-    K key;
+    // This is a template to avoid colliding with the copy constructor below.
+    template <typename Value,
+              std::enable_if_t<!IsSubImpl<absl::remove_cvref_t<Value>>::value,
+                               int> = 0>
+    ValueImpl(Value&& value)  // NOLINT
+        : value(ToStringOrCallback(std::forward<Value>(value), Rank2{})) {
+      if (absl::holds_alternative<Callback>(this->value)) {
+        consume_after = ";,";
+      }
+    }
+
+    // Copy ctor/assign allow interconversion of the two template parameters.
+    template <bool that_owned>
+    ValueImpl(const ValueImpl<that_owned>& that) {  // NOLINT
+      *this = that;
+    }
+
+    template <bool that_owned>
+    ValueImpl& operator=(const ValueImpl<that_owned>& that) {
+      // Cast to void* is required, since this and that may potentially be of
+      // different types (due to the `that_owned` parameter).
+      if (static_cast<const void*>(this) == static_cast<const void*>(&that)) {
+        return *this;
+      }
+
+      using ThatStringType = typename ValueImpl<that_owned>::StringType;
+
+      if (auto* str = absl::get_if<ThatStringType>(&that.value)) {
+        value = StringType(*str);
+      } else {
+        value = absl::get<Callback>(that.value);
+      }
+
+      consume_after = that.consume_after;
+      return *this;
+    }
+
+    const StringType* AsString() const {
+      return absl::get_if<StringType>(&value);
+    }
+
+    const Callback* AsCallback() const {
+      return absl::get_if<Callback>(&value);
+    }
+
     StringOrCallback value;
-    absl::optional<AnnotationRecord> annotation;
+    std::string consume_after;
 
    private:
     // go/ranked-overloads
@@ -474,21 +534,32 @@ class PROTOBUF_EXPORT Printer {
     //
     // This is done to produce a better error message than the "candidate does
     // not match" SFINAE errors.
-    template <bool allowed = allow_callbacks>
-    StringOrCallback ToStringOrCallback(std::function<void()> cb, Rank2) {
-      static_assert(
-          allowed, "callback-typed variables are not allowed in this location");
-      return cb;
+    template <typename Cb, typename = decltype(std::declval<Cb&&>()())>
+    StringOrCallback ToStringOrCallback(Cb&& cb, Rank2) {
+      return Callback(
+          [cb = std::forward<Cb>(cb), is_called = false]() mutable -> bool {
+            if (is_called) {
+              // Catch whether or not this function is being called recursively.
+              return false;
+            }
+            is_called = true;
+            cb();
+            is_called = false;
+            return true;
+          });
     }
 
     // Separate from the AlphaNum overload to avoid copies when taking strings
-    // by value.
-    StringOrCallback ToStringOrCallback(std::string s, Rank1) { return s; }
+    // by value when in `owned` mode.
+    StringOrCallback ToStringOrCallback(StringType s, Rank1) { return s; }
 
     StringOrCallback ToStringOrCallback(const absl::AlphaNum& s, Rank0) {
-      return std::string(s.Piece());
+      return StringType(s.Piece());
     }
   };
+
+  using ValueView = ValueImpl</*owned=*/false>;
+  using Value = ValueImpl</*owned=*/true>;
 
   // Provide a helper to use heterogeneous lookup when it's available.
   template <class...>
@@ -515,6 +586,44 @@ class PROTOBUF_EXPORT Printer {
   static constexpr char kDefaultVariableDelimiter = '$';
   static constexpr absl::string_view kProtocCodegenTrace =
       "PROTOC_CODEGEN_TRACE";
+
+  // Sink type for constructing substitutions to pass to WithVars() and Emit().
+  class Sub {
+   public:
+    template <typename Value>
+    Sub(std::string key, Value&& value)
+        : key_(std::move(key)),
+          value_(std::forward<Value>(value)),
+          annotation_(absl::nullopt) {}
+
+    // NOTE: This is an overload rather than taking optional<AnnotationRecord>
+    // with a default argument of nullopt, because we want to pick up
+    // AnnotationRecord's user-defined conversions. Because going from
+    // e.g. Descriptor* -> optional<AnnotationRecord> requires two user-defined
+    // conversions, this does not work.
+    template <typename Key, typename Value>
+    Sub(Key&& key, Value&& value, AnnotationRecord annotation)
+        : key_(std::forward<Key>(key)),
+          value_(std::forward<Value>(value)),
+          annotation_(std::move(annotation)) {}
+
+    Sub Annotate(AnnotationRecord annotation) && {
+      annotation_ = std::move(annotation);
+      return std::move(*this);
+    }
+
+    Sub WithSuffix(std::string sub_suffix) && {
+      value_.consume_after = std::move(sub_suffix);
+      return std::move(*this);
+    }
+
+   private:
+    friend class Printer;
+
+    std::string key_;
+    Value value_;
+    absl::optional<AnnotationRecord> annotation_;
+  };
 
   // Options for controlling how the output of a Printer is formatted.
   struct Options {
@@ -572,13 +681,14 @@ class PROTOBUF_EXPORT Printer {
   // Returns an RAII object that pops the lookup frame.
   template <typename Map>
   auto WithVars(const Map* vars) {
-    var_lookups_.emplace_back([vars](absl::string_view var) -> LookupResult {
-      auto it = vars->find(ToStringKey<Map>(var));
-      if (it == vars->end()) {
-        return absl::nullopt;
-      }
-      return absl::string_view(it->second);
-    });
+    var_lookups_.emplace_back(
+        [vars](absl::string_view var) -> absl::optional<ValueView> {
+          auto it = vars->find(ToStringKey<Map>(var));
+          if (it == vars->end()) {
+            return absl::nullopt;
+          }
+          return ValueView(it->second);
+        });
     return absl::MakeCleanup([this] { var_lookups_.pop_back(); });
   }
 
@@ -591,20 +701,19 @@ class PROTOBUF_EXPORT Printer {
   template <typename Map = absl::flat_hash_map<std::string, std::string>,
             std::enable_if_t<!std::is_pointer<Map>::value, int> = 0>
   auto WithVars(Map&& vars) {
-    var_lookups_.emplace_back([vars = std::forward<Map>(vars)](
-                                  absl::string_view var) -> LookupResult {
-      auto it = vars.find(ToStringKey<Map>(var));
-      if (it == vars.end()) {
-        return absl::nullopt;
-      }
-      return absl::string_view(it->second);
-    });
+    var_lookups_.emplace_back(
+        [vars = std::forward<Map>(vars)](
+            absl::string_view var) -> absl::optional<ValueView> {
+          auto it = vars.find(ToStringKey<Map>(var));
+          if (it == vars.end()) {
+            return absl::nullopt;
+          }
+          return ValueView(it->second);
+        });
     return absl::MakeCleanup([this] { var_lookups_.pop_back(); });
   }
 
-  auto WithVars(std::initializer_list<
-                VarDefinition<std::string, /*allow_callbacks=*/false>>
-                    vars);
+  auto WithVars(std::initializer_list<Sub> vars);
 
   // Looks up a variable set with WithVars().
   //
@@ -673,10 +782,7 @@ class PROTOBUF_EXPORT Printer {
   // documentation for more details.
   //
   // `format` MUST be a string constant.
-  void Emit(std::initializer_list<
-                VarDefinition<absl::string_view, /*allow_callbacks=*/true>>
-                vars,
-            absl::string_view format,
+  void Emit(std::initializer_list<Sub> vars, absl::string_view format,
             SourceLocation loc = SourceLocation::current());
 
   // Write a string directly to the underlying output, performing no formatting
@@ -881,10 +987,8 @@ class PROTOBUF_EXPORT Printer {
   // Prints a codegen trace, for the given location in the compiler's source.
   void PrintCodegenTrace(absl::optional<SourceLocation> loc);
 
-  // The core implementation for "fully-elaborated" variable definitions. This
-  // is a private function to avoid users being able to set `allow_callbacks`.
-  template <typename K, bool allow_callbacks>
-  auto WithDefs(std::initializer_list<VarDefinition<K, allow_callbacks>> vars);
+  // The core implementation for "fully-elaborated" variable definitions.
+  auto WithDefs(std::initializer_list<Sub> vars, bool allow_callbacks);
 
   // Returns the start and end of the value that was substituted in place of
   // the variable `varname` in the last call to PrintImpl() (with
@@ -899,10 +1003,8 @@ class PROTOBUF_EXPORT Printer {
   bool at_start_of_line_ = true;
   bool failed_ = false;
 
-  using LookupResult =
-      absl::optional<absl::variant<absl::string_view, std::function<void()>>>;
-
-  std::vector<std::function<LookupResult(absl::string_view)>> var_lookups_;
+  std::vector<std::function<absl::optional<ValueView>(absl::string_view)>>
+      var_lookups_;
 
   std::vector<
       std::function<absl::optional<AnnotationRecord>(absl::string_view)>>
@@ -918,39 +1020,33 @@ class PROTOBUF_EXPORT Printer {
   std::vector<std::string> line_start_variables_;
 };
 
-template <typename K, bool allow_callbacks>
-auto Printer::WithDefs(
-    std::initializer_list<VarDefinition<K, allow_callbacks>> vars) {
-  absl::flat_hash_map<K, absl::variant<std::string, std::function<void()>>>
-      var_map;
+inline auto Printer::WithDefs(std::initializer_list<Sub> vars,
+                              bool allow_callbacks) {
+  absl::flat_hash_map<std::string, Value> var_map;
   var_map.reserve(vars.size());
 
-  absl::flat_hash_map<K, AnnotationRecord> annotation_map;
+  absl::flat_hash_map<std::string, AnnotationRecord> annotation_map;
 
-  for (auto& var : vars) {
-    auto result = var_map.insert({var.key, var.value});
+  for (const auto& var : vars) {
+    GOOGLE_ABSL_CHECK(allow_callbacks || var.value_.AsCallback() == nullptr)
+        << "callback arguments are not permitted in this position";
+    auto result = var_map.insert({var.key_, var.value_});
     GOOGLE_ABSL_CHECK(result.second)
-        << "repeated variable in Emit() or WithVars() call: \"" << var.key
+        << "repeated variable in Emit() or WithVars() call: \"" << var.key_
         << "\"";
-    if (var.annotation.has_value()) {
-      annotation_map.insert({var.key, *var.annotation});
+    if (var.annotation_.has_value()) {
+      annotation_map.insert({var.key_, *var.annotation_});
     }
   }
 
-  var_lookups_.emplace_back(
-      [map = std::move(var_map)](absl::string_view var) -> LookupResult {
-        auto it = map.find(var);
-        if (it == map.end()) {
-          return absl::nullopt;
-        }
-        if (auto* str = absl::get_if<std::string>(&it->second)) {
-          return absl::string_view(*str);
-        }
-
-        auto* f = absl::get_if<std::function<void()>>(&it->second);
-        GOOGLE_ABSL_CHECK(f != nullptr);
-        return *f;
-      });
+  var_lookups_.emplace_back([map = std::move(var_map)](absl::string_view var)
+                                -> absl::optional<ValueView> {
+    auto it = map.find(var);
+    if (it == map.end()) {
+      return absl::nullopt;
+    }
+    return ValueView(it->second);
+  });
 
   bool has_annotations = !annotation_map.empty();
   if (has_annotations) {
@@ -973,10 +1069,8 @@ auto Printer::WithDefs(
   });
 }
 
-inline auto Printer::WithVars(
-    std::initializer_list<VarDefinition<std::string, /*allow_callbacks=*/false>>
-        vars) {
-  return WithDefs(vars);
+inline auto Printer::WithVars(std::initializer_list<Sub> vars) {
+  return WithDefs(vars, /*allow_callbacks=*/false);
 }
 }  // namespace io
 }  // namespace protobuf
