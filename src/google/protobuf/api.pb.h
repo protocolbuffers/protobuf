@@ -740,6 +740,7 @@ class PROTOBUF_EXPORT Mixin final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fapi_2eproto;
 };
+
 // ===================================================================
 
 

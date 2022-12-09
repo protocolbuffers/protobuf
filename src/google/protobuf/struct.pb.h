@@ -713,6 +713,7 @@ class PROTOBUF_EXPORT ListValue final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fstruct_2eproto;
 };
+
 // ===================================================================
 
 

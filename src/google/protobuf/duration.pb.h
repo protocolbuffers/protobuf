@@ -222,6 +222,7 @@ class PROTOBUF_EXPORT Duration final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fduration_2eproto;
 };
+
 // ===================================================================
 
 

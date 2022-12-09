@@ -1363,6 +1363,7 @@ class PROTOBUF_EXPORT Option final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftype_2eproto;
 };
+
 // ===================================================================
 
 

@@ -226,6 +226,7 @@ class PROTOBUF_EXPORT FieldMask final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ffield_5fmask_2eproto;
 };
+
 // ===================================================================
 
 

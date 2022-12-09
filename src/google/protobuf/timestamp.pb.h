@@ -222,6 +222,7 @@ class PROTOBUF_EXPORT Timestamp final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2ftimestamp_2eproto;
 };
+
 // ===================================================================
 
 

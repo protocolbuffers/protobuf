@@ -182,6 +182,7 @@ class PROTOBUF_EXPORT Empty final :
   };
   friend struct ::TableStruct_google_2fprotobuf_2fempty_2eproto;
 };
+
 // ===================================================================
 
 

@@ -216,6 +216,7 @@ class PROTOBUF_EXPORT SourceContext final :
   union { Impl_ _impl_; };
   friend struct ::TableStruct_google_2fprotobuf_2fsource_5fcontext_2eproto;
 };
+
 // ===================================================================
 
 
