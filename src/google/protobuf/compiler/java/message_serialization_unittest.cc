@@ -33,12 +33,12 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "google/protobuf/compiler/command_line_interface.h"
@@ -77,10 +77,10 @@ int CompileJavaProto(std::string proto_file_name) {
 }
 
 TEST(MessageSerializationTest, CollapseAdjacentExtensionRanges) {
-  GOOGLE_CHECK_EQ(CompileJavaProto("message_serialization_unittest.proto"), 0);
+  GOOGLE_ABSL_CHECK_EQ(CompileJavaProto("message_serialization_unittest.proto"), 0);
 
   std::string java_source;
-  GOOGLE_CHECK_OK(File::GetContents(
+  GOOGLE_ABSL_CHECK_OK(File::GetContents(
       // Open-source codebase does not support file::JoinPath, so we manually
       // concatenate instead.
       absl::StrCat(TestTempDir(),
