@@ -41,7 +41,7 @@ import unittest
 
 from google.protobuf import any_pb2
 from google.protobuf import struct_pb2
-from google.protobuf import descriptor_pb2
+from google3.net.proto2.proto import descriptor_pb2
 from google.protobuf.internal import any_test_pb2 as test_extend_any
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import message_set_extensions_pb2
