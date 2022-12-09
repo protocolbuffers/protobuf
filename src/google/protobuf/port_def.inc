@@ -1031,6 +1031,10 @@ static_assert(PROTOBUF_CLANG_MIN(5, 0), "Protobuf only supports Clang 6.0 and ne
 
 #define PROTO2_IS_OSS true
 
+#ifdef PROTOBUF_NO_THREADLOCAL
+#error PROTOBUF_NO_THREADLOCAL was previously defined
+#endif
+
 // We don't want code outside port_def doing complex testing, so
 // remove our portable condition test macros to nudge folks away from
 // using it themselves.

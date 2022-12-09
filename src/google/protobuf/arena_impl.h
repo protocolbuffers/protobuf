@@ -33,6 +33,7 @@
 #ifndef GOOGLE_PROTOBUF_ARENA_IMPL_H__
 #define GOOGLE_PROTOBUF_ARENA_IMPL_H__
 
+#include <algorithm>
 #include <atomic>
 #include <limits>
 #include <string>
@@ -41,6 +42,7 @@
 
 #include "google/protobuf/stubs/common.h"
 #include "google/protobuf/stubs/logging.h"
+#include "absl/base/attributes.h"
 #include "absl/numeric/bits.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena_allocation_policy.h"
@@ -53,17 +55,9 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
-
 namespace google {
 namespace protobuf {
 namespace internal {
-
-// To prevent sharing cache lines between threads
-#ifdef __cpp_aligned_new
-enum { kCacheAlignment = 64 };
-#else
-enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
-#endif
 
 inline PROTOBUF_ALWAYS_INLINE constexpr size_t AlignUpTo8(size_t n) {
   // Align n to next multiple of 8 (from Hacker's Delight, Chapter 3.)
@@ -588,7 +582,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 #pragma warning(disable : 4324)
 #endif
   struct alignas(kCacheAlignment) ThreadCache {
-#if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
+#if defined(PROTOBUF_NO_THREADLOCAL)
     // If we are using the ThreadLocalStorage class to store the ThreadCache,
     // then the ThreadCache's default constructor has to be responsible for
     // initializing it.
@@ -624,7 +618,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     std::atomic<LifecycleIdAtomic> id;
   };
   static CacheAlignedLifecycleIdGenerator lifecycle_id_generator_;
-#if defined(GOOGLE_PROTOBUF_NO_THREADLOCAL)
+#if defined(PROTOBUF_NO_THREADLOCAL)
   // iOS does not support __thread keyword so we use a custom thread local
   // storage class we implemented.
   static ThreadCache& thread_cache();

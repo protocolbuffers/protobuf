@@ -110,6 +110,13 @@ inline ToRef DownCast(From& f) {
   return *static_cast<To*>(&f);
 }
 
+// To prevent sharing cache lines between threads
+#ifdef __cpp_aligned_new
+enum { kCacheAlignment = 64 };
+#else
+enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
+#endif
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
