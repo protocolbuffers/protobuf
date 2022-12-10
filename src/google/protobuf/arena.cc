@@ -461,12 +461,6 @@ ABSL_CONST_INIT PROTOBUF_THREAD_LOCAL
 
 ThreadSafeArena::ThreadSafeArena() : first_arena_(*this) { Init(); }
 
-// Constructor solely used by message-owned arena.
-ThreadSafeArena::ThreadSafeArena(internal::MessageOwned)
-    : tag_and_id_(kMessageOwnedArena), first_arena_(*this) {
-  Init();
-}
-
 ThreadSafeArena::ThreadSafeArena(char* mem, size_t size)
     : first_arena_(FirstSerialArena{}, FirstBlock(mem, size), *this) {
   Init();
@@ -608,16 +602,10 @@ void ThreadSafeArena::AddSerialArena(void* id, SerialArena* serial) {
 }
 
 void ThreadSafeArena::Init() {
-  const bool message_owned = IsMessageOwned();
-  if (!message_owned) {
-    // Message-owned arenas bypass thread cache and do not need life cycle ID.
-    tag_and_id_ = GetNextLifeCycleId();
-  } else {
-    GOOGLE_DCHECK_EQ(tag_and_id_, kMessageOwnedArena);
-  }
+  // Message-owned arenas bypass thread cache and do not need life cycle ID.
+  tag_and_id_ = GetNextLifeCycleId();
   arena_stats_ = Sample();
   head_.store(SentrySerialArenaChunk(), std::memory_order_relaxed);
-  GOOGLE_DCHECK_EQ(message_owned, IsMessageOwned());
   first_owner_ = &thread_cache();
 
   // Record allocation for the first block that was either user-provided or

@@ -342,13 +342,6 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
 
   total_size += GetUnknownFields(message).SpaceUsedExcludingSelfLong();
 
-  // If this message owns an arena, add any unused space that's been allocated.
-  auto* arena = Arena::InternalGetArenaForAllocation(&message);
-  if (arena != nullptr && Arena::InternalGetOwningArena(&message) == nullptr &&
-      arena->InternalIsMessageOwnedArena()) {
-    total_size += arena->SpaceAllocated() - arena->SpaceUsed();
-  }
-
   if (schema_.HasExtensionSet()) {
     total_size += GetExtensionSet(message).SpaceUsedExcludingSelfLong();
   }

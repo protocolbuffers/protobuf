@@ -116,9 +116,7 @@ void StringFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
     format("::$proto_ns$::internal::ArenaStringPtr $name$_;\n");
   } else {
     // Skips the automatic destruction; rather calls it explicitly if
-    // allocating arena is null. This is required to support message-owned
-    // arena (go/path-to-arenas) where a root proto is destroyed but
-    // InlinedStringField may have arena-allocated memory.
+    // allocating arena is null.
     format("::$proto_ns$::internal::InlinedStringField $name$_;\n");
   }
 }
@@ -497,9 +495,7 @@ void StringFieldGenerator::GenerateDestructorCode(io::Printer* printer) const {
     return;
   }
   // Explicitly calls ~InlinedStringField as its automatic call is disabled.
-  // Destructor has been implicitly skipped as a union, and even the
-  // message-owned arena is enabled, arena could still be missing for
-  // Arena::CreateMessage(nullptr).
+  // Destructor has been implicitly skipped as a union.
   GOOGLE_ABSL_DCHECK(!ShouldSplit(descriptor_, options_));
   format("$field$.~InlinedStringField();\n");
 }

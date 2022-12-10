@@ -505,14 +505,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     return InternalHelper<T>::GetArenaForAllocation(p);
   }
 
-  // Creates message-owned arena.  For internal use only.
-  static Arena* InternalCreateMessageOwnedArena() {
-    return new Arena(internal::MessageOwned{});
-  }
-
-  // Checks whether this arena is message-owned.  For internal use only.
-  bool InternalIsMessageOwnedArena() { return IsMessageOwned(); }
-
   // Helper typetraits that indicates support for arenas in a type T at compile
   // time. This is public only to allow construction of higher-level templated
   // utilities.
@@ -533,14 +525,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
  private:
   internal::ThreadSafeArena impl_;
-
-  // Constructor solely used by message-owned arena.
-  inline Arena(internal::MessageOwned) : impl_(internal::MessageOwned{}) {}
-
-  // Checks whether this arena is message-owned.
-  PROTOBUF_ALWAYS_INLINE bool IsMessageOwned() const {
-    return impl_.IsMessageOwned();
-  }
 
   void ReturnArrayMemory(void* p, size_t size) {
     impl_.ReturnArrayMemory(p, size);

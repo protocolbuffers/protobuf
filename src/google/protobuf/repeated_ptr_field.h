@@ -640,15 +640,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   // Gets the Arena on which this RepeatedPtrField stores its elements.
-  // Message-owned arenas are not exposed by this method, which will return
-  // nullptr for messages owned by MOAs.
-  inline Arena* GetArena() const {
-    Arena* arena = GetOwningArena();
-    if (arena == nullptr || arena->InternalIsMessageOwnedArena()) {
-      return nullptr;
-    }
-    return arena;
-  }
+  inline Arena* GetArena() const { return GetOwningArena(); }
 
  protected:
   inline Arena* GetOwningArena() const { return arena_; }

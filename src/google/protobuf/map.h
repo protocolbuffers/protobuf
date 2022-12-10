@@ -1227,9 +1227,7 @@ class Map {
           key_type>::type;
       Node* node = this->template Alloc<Node>(1);
       // Even when arena is nullptr, CreateInArenaStorage is still used to
-      // ensure the arena of submessage will be consistent. Otherwise,
-      // submessage may have its own arena when message-owned arena is enabled.
-      // Note: This only works if `Key` is not arena constructible.
+      // ensure the arena of submessage will be consistent.
       Arena::CreateInArenaStorage(const_cast<Key*>(&node->kv.first),
                                   this->alloc_.arena(),
                                   static_cast<TypeToInit>(std::forward<K>(k)));
