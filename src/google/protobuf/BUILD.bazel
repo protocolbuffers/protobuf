@@ -253,7 +253,6 @@ cc_library(
         "//src/google/protobuf:__subpackages__",
     ],
     deps = [
-        ":arena_align",
         ":arena_allocation_policy",
         ":arena_cleanup",
         ":arena_config",
