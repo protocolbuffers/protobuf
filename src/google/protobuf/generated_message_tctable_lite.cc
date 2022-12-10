@@ -1797,13 +1797,6 @@ bool TcParser::ChangeOneof(const TcParseTableBase* table,
         }
         break;
       }
-      case field_layout::kRepLazy: {
-        auto& field = RefAt<LazyField*>(msg, current_entry->offset);
-        if (!msg->GetArenaForAllocation()) {
-          delete field;
-        }
-        break;
-      }
       default:
         GOOGLE_LOG(DFATAL) << "message rep not handled: "
                     << (current_rep >> field_layout::kRepShift);
