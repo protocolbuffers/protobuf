@@ -64,7 +64,6 @@ upb_EnumReservedRange* _upb_EnumReservedRanges_New(
         google_protobuf_EnumDescriptorProto_EnumReservedRange_start(protos[i]);
     const int32_t end =
         google_protobuf_EnumDescriptorProto_EnumReservedRange_end(protos[i]);
-    const int32_t max = kUpb_MaxFieldNumber + 1;
 
     // A full validation would also check that each range is disjoint, and that
     // none of the fields overlap with the extension ranges, but we are just
@@ -72,7 +71,7 @@ upb_EnumReservedRange* _upb_EnumReservedRanges_New(
 
     // Note: Not a typo! Unlike extension ranges and message reserved ranges,
     // the end value of an enum reserved range is *inclusive*!
-    if (start < 1 || end < start || end > max) {
+    if (end < start) {
       _upb_DefBuilder_Errf(ctx, "Reserved range (%d, %d) is invalid, enum=%s\n",
                            (int)start, (int)end, upb_EnumDef_FullName(e));
     }
