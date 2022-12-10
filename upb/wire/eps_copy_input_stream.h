@@ -259,7 +259,7 @@ typedef const char* upb_EpsCopyInputStream_ParseDelimitedFunc(
 // fits within this buffer, calls `func` with `ctx` as a parameter, where the
 // pushing and popping of limits is handled automatically and with lower cost
 // than the normal PushLimit()/PopLimit() sequence.
-UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
+static UPB_FORCEINLINE bool upb_EpsCopyInputStream_TryParseDelimitedFast(
     upb_EpsCopyInputStream* e, const char** ptr, int len,
     upb_EpsCopyInputStream_ParseDelimitedFunc* func, void* ctx) {
   if (!upb_EpsCopyInputStream_CheckSubMessageSizeAvailable(e, *ptr, len)) {
