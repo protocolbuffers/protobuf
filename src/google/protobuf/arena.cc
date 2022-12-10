@@ -441,7 +441,7 @@ ThreadSafeArena::SerialArenaChunk* ThreadSafeArena::SentrySerialArenaChunk() {
 }
 
 
-ABSL_CONST_INIT alignas(kCacheAlignment)
+alignas(kCacheAlignment) ABSL_CONST_INIT
     std::atomic<ThreadSafeArena::LifecycleId> ThreadSafeArena::lifecycle_id_{0};
 #if defined(PROTOBUF_NO_THREADLOCAL)
 ThreadSafeArena::ThreadCache& ThreadSafeArena::thread_cache() {
