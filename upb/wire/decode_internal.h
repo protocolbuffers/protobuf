@@ -36,6 +36,7 @@
 #include "upb/mem/arena_internal.h"
 #include "upb/message/internal.h"
 #include "upb/wire/decode.h"
+#include "upb/wire/eps_copy_input_stream.h"
 #include "utf8_range.h"
 
 // Must be last.
@@ -44,18 +45,14 @@
 #define DECODE_NOGROUP (uint32_t) - 1
 
 typedef struct upb_Decoder {
-  const char* end;          /* Can read up to 16 bytes slop beyond this. */
-  const char* limit_ptr;    /* = end + UPB_MIN(limit, 0) */
-  upb_Message* unknown_msg; /* Used for preserving unknown data. */
-  const char* unknown; /* Start of unknown data, preserve at buffer flip. */
-  const upb_ExtensionRegistry*
-      extreg;         /* For looking up extensions during the parse. */
-  int limit;          /* Submessage limit relative to end. */
-  int depth;          /* Tracks recursion depth to bound stack usage. */
-  uint32_t end_group; /* field number of END_GROUP tag, else DECODE_NOGROUP */
+  upb_EpsCopyInputStream input;
+  const upb_ExtensionRegistry* extreg;
+  const char* unknown;       // Start of unknown data, preserve at buffer flip
+  upb_Message* unknown_msg;  // Pointer to preserve data to
+  int depth;                 // Tracks recursion depth to bound stack usage.
+  uint32_t end_group;  // field number of END_GROUP tag, else DECODE_NOGROUP.
   uint16_t options;
   bool missing_required;
-  char patch[32];
   upb_Arena arena;
   jmp_buf err;
 
@@ -114,49 +111,29 @@ UPB_INLINE const upb_MiniTable* decode_totablep(intptr_t table) {
   return (const upb_MiniTable*)(table >> 8);
 }
 
-UPB_INLINE
-const char* _upb_Decoder_IsDoneFallbackInline(upb_Decoder* d, const char* ptr,
-                                              int overrun, int* status) {
-  if (overrun < d->limit) {
-    /* Need to copy remaining data into patch buffer. */
-    UPB_ASSERT(overrun < 16);
-    if (d->unknown) {
-      if (!_upb_Message_AddUnknown(d->unknown_msg, d->unknown, ptr - d->unknown,
-                                   &d->arena)) {
-        *status = kUpb_DecodeStatus_OutOfMemory;
-        return NULL;
-      }
-      d->unknown = &d->patch[0] + overrun;
-    }
-    memset(d->patch + 16, 0, 16);
-    memcpy(d->patch, d->end, 16);
-    ptr = &d->patch[0] + overrun;
-    d->end = &d->patch[16];
-    d->limit -= 16;
-    d->limit_ptr = d->end + d->limit;
-    d->options &= ~kUpb_DecodeOption_AliasString;
-    UPB_ASSERT(ptr < d->limit_ptr);
-    return ptr;
-  } else {
-    *status = kUpb_DecodeStatus_Malformed;
-    return NULL;
-  }
+const char* _upb_Decoder_IsDoneFallback(upb_EpsCopyInputStream* e,
+                                        const char* ptr, int overrun);
+
+UPB_INLINE bool _upb_Decoder_IsDone(upb_Decoder* d, const char** ptr) {
+  return upb_EpsCopyInputStream_IsDone(&d->input, ptr,
+                                       &_upb_Decoder_IsDoneFallback);
 }
 
-const char* _upb_Decoder_IsDoneFallback(upb_Decoder* d, const char* ptr,
-                                        int overrun);
+UPB_INLINE const char* _upb_Decoder_BufferFlipCallback(
+    upb_EpsCopyInputStream* e, const char* old_end, const char* new_start) {
+  upb_Decoder* d = (upb_Decoder*)e;
+  if (!old_end) _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
 
-UPB_INLINE
-bool _upb_Decoder_IsDone(upb_Decoder* d, const char** ptr) {
-  int overrun = *ptr - d->end;
-  if (UPB_LIKELY(*ptr < d->limit_ptr)) {
-    return false;
-  } else if (UPB_LIKELY(overrun == d->limit)) {
-    return true;
-  } else {
-    *ptr = _upb_Decoder_IsDoneFallback(d, *ptr, overrun);
-    return false;
+  if (d->unknown) {
+    if (!_upb_Message_AddUnknown(d->unknown_msg, d->unknown,
+                                 old_end - d->unknown, &d->arena)) {
+      _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
+    }
+    d->unknown = new_start;
   }
+
+  d->options &= ~kUpb_DecodeOption_AliasString;
+  return new_start;
 }
 
 #if UPB_FASTTABLE
@@ -180,30 +157,6 @@ UPB_INLINE uint32_t _upb_FastDecoder_LoadTag(const char* ptr) {
   uint16_t tag;
   memcpy(&tag, ptr, 2);
   return tag;
-}
-
-UPB_INLINE void _upb_Decoder_CheckLimit(upb_Decoder* d) {
-  UPB_ASSERT(d->limit_ptr == d->end + UPB_MIN(0, d->limit));
-}
-
-UPB_INLINE int _upb_Decoder_PushLimit(upb_Decoder* d, const char* ptr,
-                                      int size) {
-  int limit = size + (int)(ptr - d->end);
-  int delta = d->limit - limit;
-  _upb_Decoder_CheckLimit(d);
-  d->limit = limit;
-  d->limit_ptr = d->end + UPB_MIN(0, limit);
-  _upb_Decoder_CheckLimit(d);
-  return delta;
-}
-
-UPB_INLINE void _upb_Decoder_PopLimit(upb_Decoder* d, const char* ptr,
-                                      int saved_delta) {
-  UPB_ASSERT(ptr - d->end == d->limit);
-  _upb_Decoder_CheckLimit(d);
-  d->limit += saved_delta;
-  d->limit_ptr = d->end + UPB_MIN(0, d->limit);
-  _upb_Decoder_CheckLimit(d);
 }
 
 #include "upb/port/undef.inc"

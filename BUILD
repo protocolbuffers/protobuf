@@ -924,6 +924,7 @@ cc_library(
         "upb/wire/decode_fast.h",
         "upb/wire/decode_internal.h",
         "upb/wire/encode.h",
+        "upb/wire/eps_copy_input_stream.h",
         "upb/wire/swap_internal.h",
         "upb/wire/types.h",
     ],
@@ -938,6 +939,15 @@ cc_library(
         ":mini_table_internal",
         ":port",
         "@utf8_range",
+    ],
+)
+
+cc_test(
+    name = "eps_copy_input_stream_test",
+    srcs = ["upb/wire/eps_copy_input_stream_test.cc"],
+    deps = [
+        ":wire_internal",
+        "@com_google_googletest//:gtest_main",
     ],
 )
 
