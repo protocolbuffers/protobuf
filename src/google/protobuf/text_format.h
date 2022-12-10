@@ -691,6 +691,13 @@ class PROTOBUF_EXPORT TextFormat {
     // the maximum allowed nesting of proto messages.
     void SetRecursionLimit(int limit) { recursion_limit_ = limit; }
 
+    // If called, the parser will report an error if a parsed field had no
+    // effect on the resulting proto (for example, fields with no presence that
+    // were set to their default value).
+    void ErrorOnNoOpFields(bool return_error) {
+      error_on_no_op_fields_ = return_error;
+    }
+
    private:
     // Forward declaration of an internal class used to parse text
     // representations (see text_format.cc for implementation).
@@ -713,6 +720,7 @@ class PROTOBUF_EXPORT TextFormat {
     bool allow_relaxed_whitespace_;
     bool allow_singular_overwrites_;
     int recursion_limit_;
+    bool error_on_no_op_fields_ = false;
   };
 
 
