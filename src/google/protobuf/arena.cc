@@ -39,10 +39,12 @@
 
 #include "absl/base/attributes.h"
 #include "absl/synchronization/mutex.h"
+#include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
-#include "google/protobuf/arena_impl.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/serial_arena.h"
+#include "google/protobuf/thread_safe_arena.h"
 
 
 #ifdef ADDRESS_SANITIZER
@@ -194,20 +196,32 @@ void* SerialArena::AllocateAlignedFallback(size_t n) {
   return AllocateFromExisting(n);
 }
 
-PROTOBUF_NOINLINE
-void* SerialArena::AllocateAlignedWithCleanupFallback(
-    size_t n, size_t align, void (*destructor)(void*)) {
-  size_t required = AlignUpTo(n, align) + cleanup::Size(destructor);
-  AllocateNewBlock(required);
-  return AllocateFromExistingWithCleanupFallback(n, align, destructor);
+void* SerialArena::AllocateWithCleanupFallback(size_t size, cleanup::Tag tag) {
+  AllocateNewBlock(size);
+  return BlindlyAllocateWithCleanup(size, tag);
 }
 
-PROTOBUF_NOINLINE
-void SerialArena::AddCleanupFallback(void* elem, void (*destructor)(void*)) {
-  size_t required = cleanup::Size(destructor);
-  AllocateNewBlock(required);
-  AddCleanupFromExisting(elem, destructor);
+template <typename Align>
+void* SerialArena::AllocateWithCleanupFallback(size_t size, Align align,
+                                               void (*cleanup)(void*)) {
+  AllocateNewBlock(align.Padded(size) + cleanup::CleanupSize(cleanup));
+  return BlindlyAllocateWithCleanup(size, align, cleanup);
 }
+
+template void* SerialArena::AllocateWithCleanupFallback(size_t,
+                                                        ArenaAlignDefault,
+                                                        void (*)(void*));
+template void* SerialArena::AllocateWithCleanupFallback(size_t, ArenaAlign,
+                                                        void (*)(void*));
+
+template <typename TagOrCleanup>
+void SerialArena::AddCleanupFallback(void* elem, TagOrCleanup cleanup) {
+  AllocateNewBlock(cleanup::CleanupSize(cleanup));
+  BlindlyAddCleanup(elem, cleanup);
+}
+
+template void SerialArena::AddCleanupFallback(void*, cleanup::Tag);
+template void SerialArena::AddCleanupFallback(void*, void (*)(void*));
 
 void SerialArena::AllocateNewBlock(size_t n) {
   size_t used = 0;
@@ -694,29 +708,24 @@ uint64_t ThreadSafeArena::Reset() {
   return space_allocated;
 }
 
-void* ThreadSafeArena::AllocateAlignedWithCleanup(size_t n, size_t align,
-                                                  void (*destructor)(void*)) {
-  SerialArena* arena;
-  if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
-    return arena->AllocateAlignedWithCleanup(n, align, destructor);
-  } else {
-    return AllocateAlignedWithCleanupFallback(n, align, destructor);
-  }
+template <typename Align>
+void* ThreadSafeArena::AllocateWithCleanupFallback(size_t size, Align align,
+                                                   void (*cleanup)(void*)) {
+  const size_t n = align.Padded(size) + cleanup::CleanupSize(cleanup);
+  SerialArena* arena = GetSerialArenaFallback(n);
+  return arena->AllocateWithCleanup(size, align, cleanup);
 }
 
-void ThreadSafeArena::AddCleanup(void* elem, void (*cleanup)(void*)) {
-  SerialArena* arena;
-  if (PROTOBUF_PREDICT_FALSE(!GetSerialArenaFast(&arena))) {
-    arena = GetSerialArenaFallback(kMaxCleanupNodeSize);
-  }
-  arena->AddCleanup(elem, cleanup);
-}
+template void* ThreadSafeArena::AllocateWithCleanupFallback(size_t,
+                                                            ArenaAlignDefault,
+                                                            void (*)(void*));
+template void* ThreadSafeArena::AllocateWithCleanupFallback(size_t, ArenaAlign,
+                                                            void (*)(void*));
 
-PROTOBUF_NOINLINE
-void* ThreadSafeArena::AllocateAlignedWithCleanupFallback(
-    size_t n, size_t align, void (*destructor)(void*)) {
-  return GetSerialArenaFallback(n + kMaxCleanupNodeSize)
-      ->AllocateAlignedWithCleanup(n, align, destructor);
+void* ThreadSafeArena::AllocateWithCleanupFallback(size_t size,
+                                                   cleanup::Tag tag) {
+  SerialArena* arena = GetSerialArenaFallback(size);
+  return arena->AllocateWithCleanup(size, tag);
 }
 
 template <typename Functor>
@@ -845,10 +854,28 @@ void* Arena::AllocateForArray(size_t n) {
   return impl_.AllocateAligned<internal::AllocationClient::kArray>(n);
 }
 
-void* Arena::AllocateAlignedWithCleanup(size_t n, size_t align,
-                                        void (*destructor)(void*)) {
-  return impl_.AllocateAlignedWithCleanup(n, align, destructor);
+template <typename TagOrCleanup>
+void Arena::AddCleanup(void* object, TagOrCleanup cleanup) {
+  impl_.AddCleanup(object, cleanup);
 }
+
+template void Arena::AddCleanup(void*, internal::cleanup::Tag);
+template void Arena::AddCleanup(void*, void (*)(void*));
+
+void* Arena::AllocateWithCleanup(size_t size, internal::cleanup::Tag tag) {
+  return impl_.AllocateWithCleanup(size, tag);
+}
+
+template <typename Align>
+void* Arena::AllocateWithCleanup(size_t size, Align align,
+                                 void (*cleanup)(void*)) {
+  return impl_.AllocateWithCleanup(size, align, cleanup);
+}
+
+template void* Arena::AllocateWithCleanup(size_t, internal::ArenaAlign,
+                                          void (*)(void*));
+template void* Arena::AllocateWithCleanup(size_t, internal::ArenaAlignDefault,
+                                          void (*)(void*));
 
 }  // namespace protobuf
 }  // namespace google
