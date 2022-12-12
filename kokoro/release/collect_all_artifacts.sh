@@ -6,6 +6,7 @@ set -ex
 cd $(dirname $0)/../..
 
 # Initialize any submodules.
+git config --global --add safe.directory ${KOKORO_GFILE_DIR}/github/protobuf
 git submodule update --init --recursive
 
 # The directory with all resulting artifacts
