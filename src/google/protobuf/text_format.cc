@@ -64,6 +64,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/reflection_mode.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -103,6 +104,10 @@ PROTOBUF_EXPORT std::atomic<bool> enable_debug_text_format_marker;
 }  // namespace internal
 
 std::string Message::DebugString() const {
+  // `TextFormat::Printer` is implemented in terms of reflection: indicate
+  // that any scoped reflection calls are for diagnostics purposes only.
+  ScopedReflectionMode scoped(ReflectionMode::kDiagnostics);
+
   std::string debug_string;
 
   TextFormat::Printer printer;
