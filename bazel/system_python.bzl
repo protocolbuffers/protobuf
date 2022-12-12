@@ -27,9 +27,6 @@
 
 # Mock out rules_python's pip.bzl for cases where no system python is found.
 _mock_pip = """
-def fuzzing_py_install_deps():
-    print("WARNING: could not install fuzzing_py dependencies")
-
 def _pip_install_impl(repository_ctx):
     repository_ctx.file("BUILD.bazel", '''
 py_library(
@@ -58,7 +55,6 @@ pip_parse = pip_install
 # Alias rules_python's pip.bzl for cases where a system python is found.
 _alias_pip = """
 load("@rules_python//python:pip.bzl", _pip_install = "pip_install", _pip_parse = "pip_parse")
-load("@fuzzing_py_deps//:requirements.bzl", _fuzzing_py_install_deps = "install_deps")
 
 def _get_requirements(requirements, requirements_overrides):
     for version, override in requirements_overrides.items():
@@ -79,6 +75,16 @@ def pip_parse(requirements, requirements_overrides={{}}, **kwargs):
         requirements = _get_requirements(requirements, requirements_overrides),
         **kwargs,
     )
+"""
+
+_mock_fuzzing_py = """
+def fuzzing_py_install_deps():
+    print("WARNING: could not install fuzzing_py dependencies")
+"""
+
+# Alias rules_fuzzing's requirements.bzl for cases where a system python is found.
+_alias_fuzzing_py = """
+load("@fuzzing_py_deps//:requirements.bzl", _fuzzing_py_install_deps = "install_deps")
 
 def fuzzing_py_install_deps():
     _fuzzing_py_install_deps()
@@ -204,9 +210,11 @@ def _populate_package(ctx, path, python3, python_version):
             python_version = ".".join(python_version),
             repo = ctx.attr.name,
         ))
+        ctx.file("fuzzing_py.bzl", _alias_fuzzing_py)
     else:
-        # PIP dependencies are unlikely to be satisfiable for unsupported versions of python.
+        # Dependencies are unlikely to be satisfiable for unsupported versions of python.
         ctx.file("pip.bzl", _mock_pip)
+        ctx.file("fuzzing_py.bzl", _mock_fuzzing_py)
 
 def _populate_empty_package(ctx):
     # Mock out all the entrypoints we need to run from WORKSPACE.  Targets that
@@ -222,6 +230,7 @@ def _populate_empty_package(ctx):
     ctx.file("version.bzl", "SYSTEM_PYTHON_VERSION = 'None'")
     ctx.file("register.bzl", _mock_register)
     ctx.file("pip.bzl", _mock_pip)
+    ctx.file("fuzzing_py.bzl", _mock_fuzzing_py)
 
 def _system_python_impl(repository_ctx):
     path = _get_python_path(repository_ctx)
