@@ -430,8 +430,8 @@ uint8_t* ExtensionSet::SerializeMessageSetWithCachedSizesToArray(
   io::EpsCopyOutputStream stream(
       target, MessageSetByteSize(),
       io::CodedOutputStream::IsDefaultSerializationDeterministic());
-  return InternalSerializeMessageSetWithCachedSizesToArray(extendee, target,
-                                                           &stream);
+  return stream.Finalize(InternalSerializeMessageSetWithCachedSizesToArray(
+      extendee, target, &stream));
 }
 
 }  // namespace internal
