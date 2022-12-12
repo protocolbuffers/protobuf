@@ -693,6 +693,21 @@ static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
   }
 
   upb_MtDecoder_ParseMessage(d, data, len);
+  if (UPB_UNLIKELY(d->table->field_count != 2)) {
+    upb_MtDecoder_ErrorFormat(d, "%hu fields in map", d->table->field_count);
+    UPB_UNREACHABLE();
+  }
+  if (UPB_UNLIKELY(d->table->fields[0].number != 1)) {
+    upb_MtDecoder_ErrorFormat(d, "field %d in map key",
+                              d->table->fields[0].number);
+    UPB_UNREACHABLE();
+  }
+  if (UPB_UNLIKELY(d->table->fields[1].number != 2)) {
+    upb_MtDecoder_ErrorFormat(d, "field %d in map val",
+                              d->table->fields[1].number);
+    UPB_UNREACHABLE();
+  }
+
   upb_MtDecoder_AssignHasbits(d->table);
 
   // Map entries have a pre-determined layout, regardless of types.

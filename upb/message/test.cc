@@ -590,4 +590,10 @@ TEST(MessageTest, MapField) {
 //       901979906, 65537);
 // }
 //
+// // This test encodes a map field with extra cruft.
+// TEST(FuzzTest, DecodeEncodeArbitrarySchemaAndPayloadRegressionInvalidMap) {
+//   DecodeEncodeArbitrarySchemaAndPayload({{"%%%%///////"}, {}, "", {}},
+//                                         std::string("\035|", 2), 65536, 3);
+// }
+//
 // end:google_only
