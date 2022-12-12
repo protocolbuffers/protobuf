@@ -1270,7 +1270,7 @@ TEST(MESSAGE_TEST_NAME, TestEnumParsers) {
               continue;
             }
             SCOPED_TRACE(value_desc->number());
-            GOOGLE_CHECK_NE(value_desc->number(), kInvalidValue)
+            GOOGLE_ABSL_CHECK_NE(value_desc->number(), kInvalidValue)
                 << "Invalid value is a real label.";
             auto encoded =
                 EncodeEnumValue(field->number(), value_desc->number(),
@@ -1416,13 +1416,13 @@ class TestInputStream final : public io::ZeroCopyInputStream {
     return true;
   }
 
-  void BackUp(int) override { GOOGLE_CHECK(false); }
+  void BackUp(int) override { GOOGLE_ABSL_CHECK(false); }
   bool Skip(int) override {
-    GOOGLE_CHECK(false);
+    GOOGLE_ABSL_CHECK(false);
     return false;
   }
   int64_t ByteCount() const override {
-    GOOGLE_CHECK(false);
+    GOOGLE_ABSL_CHECK(false);
     return 0;
   }
 

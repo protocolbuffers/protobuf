@@ -38,6 +38,7 @@
 #include <string>
 
 #include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/cord.h"
 
 // Must be included last.

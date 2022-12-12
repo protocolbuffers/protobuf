@@ -59,7 +59,7 @@ inline int GetInitDepth(LazyVerifyOption option) {
 template <typename T>
 inline bool ParseWithOuterContextImpl(const T& input, LazyVerifyOption option,
                                       ParseContext* ctx, MessageLite* message) {
-  GOOGLE_DCHECK(ctx == nullptr || !ctx->AliasingEnabled());
+  GOOGLE_ABSL_DCHECK(ctx == nullptr || !ctx->AliasingEnabled());
 
   // Create local context with depth.
   const char* ptr;
@@ -137,9 +137,10 @@ bool LazyField::ParseWithOuterContext(MessageLite* message,
 }
 
 void LazyField::LogParseError(const MessageLite* message) {
-  GOOGLE_LOG_EVERY_N(INFO, 100) << "Lazy parsing failed for " << message->GetTypeName()
-                         << " error=" << message->InitializationErrorString()
-                         << " (N = " << COUNTER << ")";
+  GOOGLE_ABSL_LOG_EVERY_N(INFO, 100)
+      << "Lazy parsing failed for " << message->GetTypeName()
+      << " error=" << message->InitializationErrorString()
+      << " (N = " << COUNTER << ")";
 }
 
 }  // namespace internal

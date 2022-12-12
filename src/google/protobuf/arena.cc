@@ -93,8 +93,8 @@ static SerialArena::Memory AllocateMemory(const AllocationPolicy* policy_ptr,
     size = policy.start_block_size;
   }
   // Verify that min_bytes + kBlockHeaderSize won't overflow.
-  GOOGLE_CHECK_LE(min_bytes,
-           std::numeric_limits<size_t>::max() - SerialArena::kBlockHeaderSize);
+  GOOGLE_ABSL_CHECK_LE(min_bytes, std::numeric_limits<size_t>::max() -
+                               SerialArena::kBlockHeaderSize);
   size = std::max(size, SerialArena::kBlockHeaderSize + min_bytes);
 
   void* mem;
@@ -139,7 +139,7 @@ SerialArena::SerialArena(ArenaBlock* b, ThreadSafeArena& parent)
       head_{b},
       space_allocated_{b->size},
       parent_{parent} {
-  GOOGLE_DCHECK(!b->IsSentry());
+  GOOGLE_ABSL_DCHECK(!b->IsSentry());
 }
 
 // It is guaranteed that this is the first SerialArena. Use sentry block.
@@ -168,7 +168,8 @@ void SerialArena::Init(ArenaBlock* b, size_t offset) {
 }
 
 SerialArena* SerialArena::New(Memory mem, ThreadSafeArena& parent) {
-  GOOGLE_DCHECK_LE(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize, mem.size);
+  GOOGLE_ABSL_DCHECK_LE(kBlockHeaderSize + ThreadSafeArena::kSerialArenaSize,
+                 mem.size);
   ThreadSafeArenaStats::RecordAllocateStats(parent.arena_stats_.MutableStats(),
                                             /*used=*/0, /*allocated=*/mem.size,
                                             /*wasted=*/0);
@@ -277,7 +278,7 @@ void SerialArena::CleanupList() {
   do {
     char* limit = b->Limit();
     char* it = reinterpret_cast<char*>(b->cleanup_nodes);
-    GOOGLE_DCHECK(!b->IsSentry() || it == limit);
+    GOOGLE_ABSL_DCHECK(!b->IsSentry() || it == limit);
     while (it < limit) {
       it += cleanup::DestroyNode(it);
     }
@@ -350,7 +351,7 @@ class ThreadSafeArena::SerialArenaChunk {
     return Layout(capacity()).Slice<kIds>(ptr()).first(safe_size());
   }
   std::atomic<void*>& id(uint32_t i) {
-    GOOGLE_DCHECK_LT(i, capacity());
+    GOOGLE_ABSL_DCHECK_LT(i, capacity());
     return Layout(capacity()).Pointer<kIds>(ptr())[i];
   }
 
@@ -362,11 +363,11 @@ class ThreadSafeArena::SerialArenaChunk {
     return Layout(capacity()).Slice<kArenas>(ptr()).first(safe_size());
   }
   const std::atomic<SerialArena*>& arena(uint32_t i) const {
-    GOOGLE_DCHECK_LT(i, capacity());
+    GOOGLE_ABSL_DCHECK_LT(i, capacity());
     return Layout(capacity()).Pointer<kArenas>(ptr())[i];
   }
   std::atomic<SerialArena*>& arena(uint32_t i) {
-    GOOGLE_DCHECK_LT(i, capacity());
+    GOOGLE_ABSL_DCHECK_LT(i, capacity());
     return Layout(capacity()).Pointer<kArenas>(ptr())[i];
   }
 
@@ -473,7 +474,7 @@ ThreadSafeArena::ThreadSafeArena(void* mem, size_t size,
 }
 
 ArenaBlock* ThreadSafeArena::FirstBlock(void* buf, size_t size) {
-  GOOGLE_DCHECK_EQ(reinterpret_cast<uintptr_t>(buf) & 7, 0u);
+  GOOGLE_ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(buf) & 7, 0u);
   if (buf == nullptr || size <= kBlockHeaderSize) {
     return SentryArenaBlock();
   }
@@ -486,7 +487,7 @@ ArenaBlock* ThreadSafeArena::FirstBlock(void* buf, size_t size,
                                         const AllocationPolicy& policy) {
   if (policy.IsDefault()) return FirstBlock(buf, size);
 
-  GOOGLE_DCHECK_EQ(reinterpret_cast<uintptr_t>(buf) & 7, 0u);
+  GOOGLE_ABSL_DCHECK_EQ(reinterpret_cast<uintptr_t>(buf) & 7, 0u);
 
   SerialArena::Memory mem;
   if (buf == nullptr || size < kBlockHeaderSize + kAllocPolicySize) {
@@ -508,26 +509,26 @@ void ThreadSafeArena::InitializeWithPolicy(const AllocationPolicy& policy) {
 #ifndef NDEBUG
   const uint64_t old_alloc_policy = alloc_policy_.get_raw();
   // If there was a policy (e.g., in Reset()), make sure flags were preserved.
-#define GOOGLE_DCHECK_POLICY_FLAGS_() \
-  if (old_alloc_policy > 3)    \
-  GOOGLE_CHECK_EQ(old_alloc_policy & 3, alloc_policy_.get_raw() & 3)
+#define GOOGLE_ABSL_DCHECK_POLICY_FLAGS_() \
+  if (old_alloc_policy > 3)         \
+  GOOGLE_ABSL_CHECK_EQ(old_alloc_policy & 3, alloc_policy_.get_raw() & 3)
 #else
-#define GOOGLE_DCHECK_POLICY_FLAGS_()
+#define GOOGLE_ABSL_DCHECK_POLICY_FLAGS_()
 #endif  // NDEBUG
 
   // We ensured enough space so this cannot fail.
   void* p;
   if (!first_arena_.MaybeAllocateAligned(kAllocPolicySize, &p)) {
-    GOOGLE_LOG(FATAL) << "MaybeAllocateAligned cannot fail here.";
+    GOOGLE_ABSL_LOG(FATAL) << "MaybeAllocateAligned cannot fail here.";
     return;
   }
   new (p) AllocationPolicy{policy};
   // Low bits store flags, so they mustn't be overwritten.
-  GOOGLE_DCHECK_EQ(0, reinterpret_cast<uintptr_t>(p) & 3);
+  GOOGLE_ABSL_DCHECK_EQ(0, reinterpret_cast<uintptr_t>(p) & 3);
   alloc_policy_.set_policy(reinterpret_cast<AllocationPolicy*>(p));
-  GOOGLE_DCHECK_POLICY_FLAGS_();
+  GOOGLE_ABSL_DCHECK_POLICY_FLAGS_();
 
-#undef GOOGLE_DCHECK_POLICY_FLAGS_
+#undef GOOGLE_ABSL_DCHECK_POLICY_FLAGS_
 }
 
 uint64_t ThreadSafeArena::GetNextLifeCycleId() {
@@ -647,10 +648,10 @@ SerialArena::Memory ThreadSafeArena::Free(size_t* space_allocated) {
     // necessary to Free and we should revisit this. (b/247560530)
     for (auto it = span.rbegin(); it != span.rend(); ++it) {
       SerialArena* serial = it->load(std::memory_order_relaxed);
-      GOOGLE_DCHECK_NE(serial, nullptr);
+      GOOGLE_ABSL_DCHECK_NE(serial, nullptr);
       // Always frees the first block of "serial" as it cannot be user-provided.
       SerialArena::Memory mem = serial->Free(deallocator);
-      GOOGLE_DCHECK_NE(mem.ptr, nullptr);
+      GOOGLE_ABSL_DCHECK_NE(mem.ptr, nullptr);
       deallocator(mem);
     }
 
@@ -794,7 +795,7 @@ void ThreadSafeArena::CleanupList() {
     // and required not to break inter-object dependencies. (b/247560530)
     for (auto it = span.rbegin(); it != span.rend(); ++it) {
       SerialArena* serial = it->load(std::memory_order_relaxed);
-      GOOGLE_DCHECK_NE(serial, nullptr);
+      GOOGLE_ABSL_DCHECK_NE(serial, nullptr);
       serial->CleanupList();
     }
   });
@@ -817,7 +818,7 @@ SerialArena* ThreadSafeArena::GetSerialArenaFallback(size_t n) {
     for (uint32_t i = 0; i < ids.size(); ++i) {
       if (ids[i].load(std::memory_order_relaxed) == id) {
         serial = chunk->arena(i).load(std::memory_order_relaxed);
-        GOOGLE_DCHECK_NE(serial, nullptr);
+        GOOGLE_ABSL_DCHECK_NE(serial, nullptr);
         break;
       }
     }

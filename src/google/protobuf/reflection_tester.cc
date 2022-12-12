@@ -193,7 +193,7 @@ MapReflectionTester::MapReflectionTester(const Descriptor* base_descriptor)
       map_int32_foreign_message_key_,
       map_int32_foreign_message_val_};
   for (const FieldDescriptor* fdesc : all_map_descriptors) {
-    GOOGLE_CHECK(fdesc->containing_type() != nullptr) << fdesc->name();
+    GOOGLE_ABSL_CHECK(fdesc->containing_type() != nullptr) << fdesc->name();
     if (fdesc->name() == "key") {
       EXPECT_EQ(fdesc->containing_type()->map_key(), fdesc);
     } else {
@@ -207,7 +207,7 @@ MapReflectionTester::MapReflectionTester(const Descriptor* base_descriptor)
 const FieldDescriptor* MapReflectionTester::F(const std::string& name) {
   const FieldDescriptor* result = nullptr;
   result = base_descriptor_->FindFieldByName(name);
-  GOOGLE_CHECK(result != nullptr);
+  GOOGLE_ABSL_CHECK(result != nullptr);
   return result;
 }
 

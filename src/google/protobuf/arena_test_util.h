@@ -70,7 +70,7 @@ void TestParseCorruptedString(const T& message) {
   }
   // This next line is a low bar.  But getting through the test without crashing
   // due to use-after-free or other bugs is a big part of what we're checking.
-  GOOGLE_CHECK_GT(success_count, 0);
+  GOOGLE_ABSL_CHECK_GT(success_count, 0);
 }
 
 namespace internal {
@@ -105,8 +105,8 @@ class ArenaHolder {
   explicit ArenaHolder(Arena* arena)
       : field_(Arena::CreateMessage<T>(arena)),
         owned_by_arena_(arena != nullptr) {
-    GOOGLE_DCHECK(google::protobuf::Arena::is_arena_constructable<T>::value);
-    GOOGLE_DCHECK(google::protobuf::Arena::is_destructor_skippable<T>::value);
+    GOOGLE_ABSL_DCHECK(google::protobuf::Arena::is_arena_constructable<T>::value);
+    GOOGLE_ABSL_DCHECK(google::protobuf::Arena::is_destructor_skippable<T>::value);
   }
 
   ~ArenaHolder() {

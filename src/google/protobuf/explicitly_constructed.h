@@ -33,9 +33,8 @@
 
 #include <stdint.h>
 
+#include <string>
 #include <utility>
-
-#include "google/protobuf/stubs/logging.h"
 
 // clang-format off
 #include "google/protobuf/port_def.inc"

@@ -45,8 +45,8 @@
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
@@ -393,7 +393,7 @@ bool UnknownFieldSet::MergeFromMessage(const MessageType& message) {
 
 
 inline size_t UnknownField::GetLengthDelimitedSize() const {
-  GOOGLE_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
+  GOOGLE_ABSL_DCHECK_EQ(TYPE_LENGTH_DELIMITED, type());
   return data_.length_delimited_.string_value->size();
 }
 

@@ -46,11 +46,11 @@
 
 #include <memory>
 
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/cord.h"
 #include "google/protobuf/map_test_util.h"
 #include "google/protobuf/map_unittest.pb.h"
@@ -95,7 +95,7 @@ namespace {
 const FieldDescriptor* F(const std::string& name) {
   const FieldDescriptor* result =
       unittest::TestAllTypes::descriptor()->FindFieldByName(name);
-  GOOGLE_CHECK(result != nullptr);
+  GOOGLE_ABSL_CHECK(result != nullptr);
   return result;
 }
 

@@ -130,7 +130,7 @@ class PROTOBUF_EXPORT WireFormat {
     int expected_endpoint = output->ByteCount() + size;
     output->SetCur(
         _InternalSerialize(message, output->Cur(), output->EpsCopy()));
-    GOOGLE_CHECK_EQ(output->ByteCount(), expected_endpoint)
+    GOOGLE_ABSL_CHECK_EQ(output->ByteCount(), expected_endpoint)
         << ": Protocol message serialized to a size different from what was "
            "originally expected.  Perhaps it was modified by another thread "
            "during serialization?";

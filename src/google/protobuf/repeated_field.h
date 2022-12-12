@@ -52,9 +52,9 @@
 #include <type_traits>
 #include <utility>
 
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_ptr_field.h"
@@ -308,7 +308,7 @@ class RepeatedField final {
   // Swaps entire contents with "other". Should be called only if the caller can
   // guarantee that both repeated fields are on the same arena or are on the
   // heap. Swapping between different arenas is disallowed and caught by a
-  // GOOGLE_DCHECK (see API docs for details).
+  // GOOGLE_ABSL_DCHECK (see API docs for details).
   void UnsafeArenaSwap(RepeatedField* other);
 
   static constexpr int kInitialSize = 0;
@@ -355,7 +355,7 @@ class RepeatedField final {
   // Returns a pointer to elements array.
   // pre-condition: the array must have been allocated.
   Element* elements() const {
-    GOOGLE_DCHECK_GT(total_size_, 0);
+    GOOGLE_ABSL_DCHECK_GT(total_size_, 0);
     // Because of above pre-condition this cast is safe.
     return unsafe_elements();
   }
@@ -614,19 +614,19 @@ inline int RepeatedField<Element>::Capacity() const {
 
 template <typename Element>
 inline void RepeatedField<Element>::AddAlreadyReserved(const Element& value) {
-  GOOGLE_DCHECK_LT(current_size_, total_size_);
+  GOOGLE_ABSL_DCHECK_LT(current_size_, total_size_);
   elements()[ExchangeCurrentSize(current_size_ + 1)] = value;
 }
 
 template <typename Element>
 inline Element* RepeatedField<Element>::AddAlreadyReserved() {
-  GOOGLE_DCHECK_LT(current_size_, total_size_);
+  GOOGLE_ABSL_DCHECK_LT(current_size_, total_size_);
   return &elements()[ExchangeCurrentSize(current_size_ + 1)];
 }
 
 template <typename Element>
 inline Element* RepeatedField<Element>::AddNAlreadyReserved(int elements) {
-  GOOGLE_DCHECK_GE(total_size_ - current_size_, elements)
+  GOOGLE_ABSL_DCHECK_GE(total_size_ - current_size_, elements)
       << total_size_ << ", " << current_size_;
   // Warning: sometimes people call this when elements == 0 and
   // total_size_ == 0. In this case the return pointer points to a zero size
@@ -637,7 +637,7 @@ inline Element* RepeatedField<Element>::AddNAlreadyReserved(int elements) {
 
 template <typename Element>
 inline void RepeatedField<Element>::Resize(int new_size, const Element& value) {
-  GOOGLE_DCHECK_GE(new_size, 0);
+  GOOGLE_ABSL_DCHECK_GE(new_size, 0);
   if (new_size > current_size_) {
     Reserve(new_size);
     std::fill(&elements()[ExchangeCurrentSize(new_size)], &elements()[new_size],
@@ -649,36 +649,36 @@ inline void RepeatedField<Element>::Resize(int new_size, const Element& value) {
 
 template <typename Element>
 inline const Element& RepeatedField<Element>::Get(int index) const {
-  GOOGLE_DCHECK_GE(index, 0);
-  GOOGLE_DCHECK_LT(index, current_size_);
+  GOOGLE_ABSL_DCHECK_GE(index, 0);
+  GOOGLE_ABSL_DCHECK_LT(index, current_size_);
   return elements()[index];
 }
 
 template <typename Element>
 inline const Element& RepeatedField<Element>::at(int index) const {
-  GOOGLE_CHECK_GE(index, 0);
-  GOOGLE_CHECK_LT(index, current_size_);
+  GOOGLE_ABSL_CHECK_GE(index, 0);
+  GOOGLE_ABSL_CHECK_LT(index, current_size_);
   return elements()[index];
 }
 
 template <typename Element>
 inline Element& RepeatedField<Element>::at(int index) {
-  GOOGLE_CHECK_GE(index, 0);
-  GOOGLE_CHECK_LT(index, current_size_);
+  GOOGLE_ABSL_CHECK_GE(index, 0);
+  GOOGLE_ABSL_CHECK_LT(index, current_size_);
   return elements()[index];
 }
 
 template <typename Element>
 inline Element* RepeatedField<Element>::Mutable(int index) {
-  GOOGLE_DCHECK_GE(index, 0);
-  GOOGLE_DCHECK_LT(index, current_size_);
+  GOOGLE_ABSL_DCHECK_GE(index, 0);
+  GOOGLE_ABSL_DCHECK_LT(index, current_size_);
   return &elements()[index];
 }
 
 template <typename Element>
 inline void RepeatedField<Element>::Set(int index, const Element& value) {
-  GOOGLE_DCHECK_GE(index, 0);
-  GOOGLE_DCHECK_LT(index, current_size_);
+  GOOGLE_ABSL_DCHECK_GE(index, 0);
+  GOOGLE_ABSL_DCHECK_LT(index, current_size_);
   elements()[index] = value;
 }
 
@@ -727,16 +727,16 @@ inline void RepeatedField<Element>::Add(Iter begin, Iter end) {
 
 template <typename Element>
 inline void RepeatedField<Element>::RemoveLast() {
-  GOOGLE_DCHECK_GT(current_size_, 0);
+  GOOGLE_ABSL_DCHECK_GT(current_size_, 0);
   ExchangeCurrentSize(current_size_ - 1);
 }
 
 template <typename Element>
 void RepeatedField<Element>::ExtractSubrange(int start, int num,
                                              Element* elements) {
-  GOOGLE_DCHECK_GE(start, 0);
-  GOOGLE_DCHECK_GE(num, 0);
-  GOOGLE_DCHECK_LE(start + num, this->current_size_);
+  GOOGLE_ABSL_DCHECK_GE(start, 0);
+  GOOGLE_ABSL_DCHECK_GE(num, 0);
+  GOOGLE_ABSL_DCHECK_LE(start + num, this->current_size_);
 
   // Save the values of the removed elements if requested.
   if (elements != nullptr) {
@@ -758,7 +758,7 @@ inline void RepeatedField<Element>::Clear() {
 
 template <typename Element>
 inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
-  GOOGLE_DCHECK_NE(&other, this);
+  GOOGLE_ABSL_DCHECK_NE(&other, this);
   if (other.current_size_ != 0) {
     int existing_size = size();
     Reserve(existing_size + other.size());
@@ -809,7 +809,7 @@ inline const Element* RepeatedField<Element>::data() const {
 
 template <typename Element>
 inline void RepeatedField<Element>::InternalSwap(RepeatedField* other) {
-  GOOGLE_DCHECK(this != other);
+  GOOGLE_ABSL_DCHECK(this != other);
 
   // Swap all fields at once.
   static_assert(std::is_standard_layout<RepeatedField<Element>>::value,
@@ -842,7 +842,7 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
 template <typename Element>
 void RepeatedField<Element>::UnsafeArenaSwap(RepeatedField* other) {
   if (this == other) return;
-  GOOGLE_DCHECK_EQ(GetOwningArena(), other->GetOwningArena());
+  GOOGLE_ABSL_DCHECK_EQ(GetOwningArena(), other->GetOwningArena());
   InternalSwap(other);
 }
 
@@ -928,7 +928,7 @@ void RepeatedField<Element>::Reserve(int new_size) {
   new_size = internal::CalculateReserveSize<Element, kRepHeaderSize>(
       total_size_, new_size);
 
-  GOOGLE_DCHECK_LE(
+  GOOGLE_ABSL_DCHECK_LE(
       static_cast<size_t>(new_size),
       (std::numeric_limits<size_t>::max() - kRepHeaderSize) / sizeof(Element))
       << "Requested size is too large to fit into size_t.";
@@ -972,7 +972,7 @@ void RepeatedField<Element>::Reserve(int new_size) {
 
 template <typename Element>
 inline void RepeatedField<Element>::Truncate(int new_size) {
-  GOOGLE_DCHECK_LE(new_size, current_size_);
+  GOOGLE_ABSL_DCHECK_LE(new_size, current_size_);
   if (current_size_ > 0) {
     ExchangeCurrentSize(new_size);
   }

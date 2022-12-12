@@ -1230,7 +1230,7 @@ class WireFormatInvalidInputTest : public testing::Test {
     const FieldDescriptor* field =
         UNITTEST::TestAllTypes::descriptor()->FindFieldByName(
             "optional_nested_message");
-    GOOGLE_CHECK(field != nullptr);
+    GOOGLE_ABSL_CHECK(field != nullptr);
 
     std::string result;
 
@@ -1252,7 +1252,7 @@ class WireFormatInvalidInputTest : public testing::Test {
                                bool include_end_tag) {
     const FieldDescriptor* field =
         UNITTEST::TestAllTypes::descriptor()->FindFieldByName("optionalgroup");
-    GOOGLE_CHECK(field != nullptr);
+    GOOGLE_ABSL_CHECK(field != nullptr);
 
     std::string result;
 

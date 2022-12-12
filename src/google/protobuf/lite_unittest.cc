@@ -35,8 +35,8 @@
 #include <string>
 #include <utility>
 
-#include "google/protobuf/stubs/logging.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena_test_util.h"

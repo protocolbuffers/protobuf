@@ -202,7 +202,7 @@ std::string* ArenaStringPtr::MutableNoCopy(Arena* arena) {
   if (tagged_ptr_.IsMutable()) {
     return tagged_ptr_.Get();
   } else {
-    GOOGLE_DCHECK(IsDefault());
+    GOOGLE_ABSL_DCHECK(IsDefault());
     // Allocate empty. The contents are not relevant.
     return NewString(arena);
   }
@@ -211,7 +211,7 @@ std::string* ArenaStringPtr::MutableNoCopy(Arena* arena) {
 template <typename... Lazy>
 std::string* ArenaStringPtr::MutableSlow(::google::protobuf::Arena* arena,
                                          const Lazy&... lazy_default) {
-  GOOGLE_DCHECK(IsDefault());
+  GOOGLE_ABSL_DCHECK(IsDefault());
 
   // For empty defaults, this ends up calling the default constructor which is
   // more efficient than a copy construction from
@@ -285,7 +285,7 @@ const char* EpsCopyInputStream::ReadArenaString(const char* ptr,
                                                 ArenaStringPtr* s,
                                                 Arena* arena) {
   ScopedCheckPtrInvariants check(&s->tagged_ptr_);
-  GOOGLE_DCHECK(arena != nullptr);
+  GOOGLE_ABSL_DCHECK(arena != nullptr);
 
   int size = ReadSize(&ptr);
   if (!ptr) return nullptr;

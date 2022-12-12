@@ -34,7 +34,6 @@
 
 #include "google/protobuf/extension_set.h"
 
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"

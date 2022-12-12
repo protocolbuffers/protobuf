@@ -45,6 +45,7 @@
 #include <vector>
 
 #include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
@@ -399,7 +400,7 @@ TEST_F(MapImplTest, BeginIsFast) {
     frog += counter++;
     last_key =
         static_cast<int>(frog) >= 0 ? static_cast<int>(frog) : last_key ^ 1;
-    GOOGLE_DCHECK_GE(last_key, 0);
+    GOOGLE_ABSL_DCHECK_GE(last_key, 0);
     map[last_key] = last_key ^ 1;
   }
   std::vector<int64_t> times;
@@ -407,7 +408,7 @@ TEST_F(MapImplTest, BeginIsFast) {
   // just in case one iteration is fast compared to the granularity of
   // our time keeping, we measure kChunkSize iterations per outer-loop iter.
   const int kChunkSize = 1000;
-  GOOGLE_CHECK_EQ(kTestSize % kChunkSize, 0);
+  GOOGLE_ABSL_CHECK_EQ(kTestSize % kChunkSize, 0);
   do {
     const int64_t start = Now();
     for (int i = 0; i < kChunkSize; i++) {
@@ -419,12 +420,12 @@ TEST_F(MapImplTest, BeginIsFast) {
     }
   } while (!map.empty());
   if (times.size() < .99 * kTestSize / kChunkSize) {
-    GOOGLE_LOG(WARNING) << "Now() isn't helping us measure time";
+    GOOGLE_ABSL_LOG(WARNING) << "Now() isn't helping us measure time";
     return;
   }
   int64_t x0 = median(times.begin(), times.begin() + 9);
   int64_t x1 = median(times.begin() + times.size() - 9, times.end());
-  GOOGLE_LOG(INFO) << "x0=" << x0 << ", x1=" << x1;
+  GOOGLE_ABSL_LOG(INFO) << "x0=" << x0 << ", x1=" << x1;
   // x1 will greatly exceed x0 if the code we just executed took O(n^2) time.
   // And we'll probably time out and never get here.  So, this test is
   // intentionally loose: we check that x0 and x1 are within a factor of 8.
@@ -516,7 +517,7 @@ static void TestOldVersusNewIterator(int skip, Map<int, int>* m) {
   }
   if (it == m->end()) return;
   const IteratorType old = it;
-  GOOGLE_LOG(INFO) << "skip=" << skip << ", old->first=" << old->first;
+  GOOGLE_ABSL_LOG(INFO) << "skip=" << skip << ", old->first=" << old->first;
   const int target_size =
       initial_size < 100 ? initial_size * 5 : initial_size * 5 / 4;
   for (int i = 0; m->size() <= target_size; i++) {
@@ -544,8 +545,8 @@ static void TestOldVersusNewIterator(int skip, Map<int, int>* m) {
 
 // Create and test an n-element Map, with emphasis on iterator correctness.
 static void StressTestIterators(int n) {
-  GOOGLE_LOG(INFO) << "StressTestIterators " << n;
-  GOOGLE_CHECK_GT(n, 0);
+  GOOGLE_ABSL_LOG(INFO) << "StressTestIterators " << n;
+  GOOGLE_ABSL_CHECK_GT(n, 0);
   // Create a random-looking map of size n.  Use non-negative integer keys.
   Map<int, int> m;
   uint32_t frog = 123987 + n;
@@ -557,7 +558,7 @@ static void StressTestIterators(int n) {
     frog += counter++;
     last_key =
         static_cast<int>(frog) >= 0 ? static_cast<int>(frog) : last_key ^ 1;
-    GOOGLE_DCHECK_GE(last_key, 0);
+    GOOGLE_ABSL_DCHECK_GE(last_key, 0);
     m[last_key] = last_key ^ 1;
   }
   // Test it.
@@ -3833,7 +3834,7 @@ TEST(MapSerializationTest, DeterministicSubmessage) {
   UNITTEST::TestMaps t;
   const std::string filename = "golden_message_maps";
   std::string golden;
-  GOOGLE_CHECK_OK(File::GetContents(
+  GOOGLE_ABSL_CHECK_OK(File::GetContents(
       TestUtil::GetTestDataPath("third_party/protobuf/testdata/" + filename),
       &golden, true));
   t.ParseFromString(golden);
@@ -3875,7 +3876,7 @@ TEST(TextFormatMapTest, DynamicMessage) {
   tester.SetMapFieldsViaReflection(message.get());
 
   std::string expected_text;
-  GOOGLE_CHECK_OK(
+  GOOGLE_ABSL_CHECK_OK(
       File::GetContents(TestUtil::GetTestDataPath("third_party/protobuf/"
                                                   "testdata/map_test_data.txt"),
                         &expected_text, true));
@@ -3891,7 +3892,7 @@ TEST(TextFormatMapTest, Sorted) {
   tester.SetMapFieldsViaReflection(&message);
 
   std::string expected_text;
-  GOOGLE_CHECK_OK(
+  GOOGLE_ABSL_CHECK_OK(
       File::GetContents(TestUtil::GetTestDataPath("third_party/protobuf/"
                                                   "testdata/map_test_data.txt"),
                         &expected_text, true));
@@ -3911,12 +3912,12 @@ TEST(TextFormatMapTest, Sorted) {
 
 TEST(TextFormatMapTest, ParseCorruptedString) {
   std::string serialized_message;
-  GOOGLE_CHECK_OK(File::GetContents(
+  GOOGLE_ABSL_CHECK_OK(File::GetContents(
       TestUtil::GetTestDataPath(
           "third_party/protobuf/testdata/golden_message_maps"),
       &serialized_message, true));
   UNITTEST::TestMaps message;
-  GOOGLE_CHECK(message.ParseFromString(serialized_message));
+  GOOGLE_ABSL_CHECK(message.ParseFromString(serialized_message));
   TestParseCorruptedString<UNITTEST::TestMaps, true>(message);
   TestParseCorruptedString<UNITTEST::TestMaps, false>(message);
 }
@@ -3978,7 +3979,7 @@ TEST(TextFormatMapTest, NoDisableReflectionIterator) {
   const Reflection* map_entry_reflection = iter->GetReflection();
   const FieldDescriptor* value_field_desc = iter->GetDescriptor()->map_value();
   map_entry_reflection->SetInt32(&(*iter), value_field_desc, 2);
-  GOOGLE_LOG(INFO) << iter->DebugString();
+  GOOGLE_ABSL_LOG(INFO) << iter->DebugString();
 
   // In previous implementation, the new change won't be reflected in text
   // format, because the previous iterator has been invalidated.

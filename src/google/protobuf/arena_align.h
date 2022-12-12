@@ -104,7 +104,7 @@ struct ArenaAlignDefault {
   // Address sanitizer enabled alignment check
   template <typename T>
   static T* CheckAligned(T* ptr) {
-    GOOGLE_DCHECK(IsAligned(ptr)) << static_cast<void*>(ptr);
+    GOOGLE_ABSL_DCHECK(IsAligned(ptr)) << static_cast<void*>(ptr);
     return ptr;
   }
 };
@@ -138,15 +138,15 @@ struct ArenaAlign {
   // Address sanitizer enabled alignment check
   template <typename T>
   T* CheckAligned(T* ptr) const {
-    GOOGLE_DCHECK(IsAligned(ptr)) << static_cast<void*>(ptr);
+    GOOGLE_ABSL_DCHECK(IsAligned(ptr)) << static_cast<void*>(ptr);
     return ptr;
   }
 };
 
 inline ArenaAlign ArenaAlignAs(size_t align) {
   // align must be a non zero power of 2 >= 8
-  GOOGLE_DCHECK_NE(align, 0);
-  GOOGLE_DCHECK(absl::has_single_bit(align)) << "Invalid alignment " << align;
+  GOOGLE_ABSL_DCHECK_NE(align, 0);
+  GOOGLE_ABSL_DCHECK(absl::has_single_bit(align)) << "Invalid alignment " << align;
   return ArenaAlign{align};
 }
 

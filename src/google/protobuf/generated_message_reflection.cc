@@ -41,9 +41,10 @@
 #include <set>
 #include <string>
 
-#include "google/protobuf/stubs/logging.h"
 #include "absl/base/casts.h"
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/match.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
@@ -177,18 +178,18 @@ using internal::GetPointerAtOffset;
 void ReportReflectionUsageError(const Descriptor* descriptor,
                                 const FieldDescriptor* field,
                                 const char* method, const char* description) {
-  GOOGLE_LOG(FATAL) << "Protocol Buffer reflection usage error:\n"
-                "  Method      : google::protobuf::Reflection::"
-             << method
-             << "\n"
-                "  Message type: "
-             << descriptor->full_name()
-             << "\n"
-                "  Field       : "
-             << field->full_name()
-             << "\n"
-                "  Problem     : "
-             << description;
+  GOOGLE_ABSL_LOG(FATAL) << "Protocol Buffer reflection usage error:\n"
+                     "  Method      : google::protobuf::Reflection::"
+                  << method
+                  << "\n"
+                     "  Message type: "
+                  << descriptor->full_name()
+                  << "\n"
+                     "  Field       : "
+                  << field->full_name()
+                  << "\n"
+                     "  Problem     : "
+                  << description;
 }
 
 const char* cpptype_names_[FieldDescriptor::MAX_CPPTYPE + 1] = {
@@ -199,7 +200,7 @@ const char* cpptype_names_[FieldDescriptor::MAX_CPPTYPE + 1] = {
 static void ReportReflectionUsageTypeError(
     const Descriptor* descriptor, const FieldDescriptor* field,
     const char* method, FieldDescriptor::CppType expected_type) {
-  GOOGLE_LOG(FATAL)
+  GOOGLE_ABSL_LOG(FATAL)
       << "Protocol Buffer reflection usage error:\n"
          "  Method      : google::protobuf::Reflection::"
       << method
@@ -221,27 +222,27 @@ static void ReportReflectionUsageTypeError(
 static void ReportReflectionUsageEnumTypeError(
     const Descriptor* descriptor, const FieldDescriptor* field,
     const char* method, const EnumValueDescriptor* value) {
-  GOOGLE_LOG(FATAL) << "Protocol Buffer reflection usage error:\n"
-                "  Method      : google::protobuf::Reflection::"
-             << method
-             << "\n"
-                "  Message type: "
-             << descriptor->full_name()
-             << "\n"
-                "  Field       : "
-             << field->full_name()
-             << "\n"
-                "  Problem     : Enum value did not match field type:\n"
-                "    Expected  : "
-             << field->enum_type()->full_name()
-             << "\n"
-                "    Actual    : "
-             << value->full_name();
+  GOOGLE_ABSL_LOG(FATAL) << "Protocol Buffer reflection usage error:\n"
+                     "  Method      : google::protobuf::Reflection::"
+                  << method
+                  << "\n"
+                     "  Message type: "
+                  << descriptor->full_name()
+                  << "\n"
+                     "  Field       : "
+                  << field->full_name()
+                  << "\n"
+                     "  Problem     : Enum value did not match field type:\n"
+                     "    Expected  : "
+                  << field->enum_type()->full_name()
+                  << "\n"
+                     "    Actual    : "
+                  << value->full_name();
 }
 
 inline void CheckInvalidAccess(const internal::ReflectionSchema& schema,
                                const FieldDescriptor* field) {
-  GOOGLE_CHECK(!schema.IsFieldStripped(field))
+  GOOGLE_ABSL_CHECK(!schema.IsFieldStripped(field))
       << "invalid access to a stripped field " << field->full_name();
 }
 
@@ -514,7 +515,7 @@ struct OneofFieldMover {
         }
         break;
       default:
-        GOOGLE_LOG(FATAL) << "unimplemented type: " << field->cpp_type();
+        GOOGLE_ABSL_LOG(FATAL) << "unimplemented type: " << field->cpp_type();
     }
     if (unsafe_shallow_swap) {
       // Not clearing oneof case after move may cause unwanted "ClearOneof"
@@ -598,7 +599,7 @@ void SwapFieldHelper::SwapInlinedStrings(const Reflection* r, Message* lhs,
   auto* lhs_string = r->MutableRaw<InlinedStringField>(lhs, field);
   auto* rhs_string = r->MutableRaw<InlinedStringField>(rhs, field);
   uint32_t index = r->schema_.InlinedStringIndex(field);
-  GOOGLE_DCHECK_GT(index, 0);
+  GOOGLE_ABSL_DCHECK_GT(index, 0);
   uint32_t* lhs_array = r->MutableInlinedStringDonatedArray(lhs);
   uint32_t* rhs_array = r->MutableInlinedStringDonatedArray(rhs);
   uint32_t* lhs_state = &lhs_array[index / 32];
@@ -769,7 +770,7 @@ void SwapFieldHelper::SwapNonMessageNonStringField(
     SWAP_VALUES(ENUM, int);
 #undef SWAP_VALUES
     default:
-      GOOGLE_LOG(FATAL) << "Unimplemented type: " << field->cpp_type();
+      GOOGLE_ABSL_LOG(FATAL) << "Unimplemented type: " << field->cpp_type();
   }
 }
 
@@ -805,7 +806,7 @@ void Reflection::SwapField(Message* message1, Message* message2,
         break;
 
       default:
-        GOOGLE_LOG(FATAL) << "Unimplemented type: " << field->cpp_type();
+        GOOGLE_ABSL_LOG(FATAL) << "Unimplemented type: " << field->cpp_type();
     }
   } else {
     switch (field->cpp_type()) {
@@ -868,7 +869,7 @@ void Reflection::UnsafeShallowSwapField(Message* message1, Message* message2,
       break;
 
     default:
-      GOOGLE_LOG(FATAL) << "Unimplemented type: " << field->cpp_type();
+      GOOGLE_ABSL_LOG(FATAL) << "Unimplemented type: " << field->cpp_type();
   }
 }
 
@@ -962,7 +963,7 @@ void Reflection::SwapOneofField(Message* lhs, Message* rhs,
     const FieldDescriptor* field;
   };
 
-  GOOGLE_DCHECK(!oneof_descriptor->is_synthetic());
+  GOOGLE_ABSL_DCHECK(!oneof_descriptor->is_synthetic());
   uint32_t oneof_case_lhs = GetOneofCase(*lhs, oneof_descriptor);
   uint32_t oneof_case_rhs = GetOneofCase(*rhs, oneof_descriptor);
 
@@ -1003,7 +1004,7 @@ void Reflection::Swap(Message* message1, Message* message2) const {
   if (message1 == message2) return;
 
   // TODO(kenton):  Other Reflection methods should probably check this too.
-  GOOGLE_CHECK_EQ(message1->GetReflection(), this)
+  GOOGLE_ABSL_CHECK_EQ(message1->GetReflection(), this)
       << "First argument to Swap() (of type \""
       << message1->GetDescriptor()->full_name()
       << "\") is not compatible with this reflection object (which is for type "
@@ -1011,7 +1012,7 @@ void Reflection::Swap(Message* message1, Message* message2) const {
       << descriptor_->full_name()
       << "\").  Note that the exact same class is required; not just the same "
          "descriptor.";
-  GOOGLE_CHECK_EQ(message2->GetReflection(), this)
+  GOOGLE_ABSL_CHECK_EQ(message2->GetReflection(), this)
       << "Second argument to Swap() (of type \""
       << message2->GetDescriptor()->full_name()
       << "\") is not compatible with this reflection object (which is for type "
@@ -1058,7 +1059,7 @@ void Reflection::SwapFieldsImpl(
   if (message1 == message2) return;
 
   // TODO(kenton):  Other Reflection methods should probably check this too.
-  GOOGLE_CHECK_EQ(message1->GetReflection(), this)
+  GOOGLE_ABSL_CHECK_EQ(message1->GetReflection(), this)
       << "First argument to SwapFields() (of type \""
       << message1->GetDescriptor()->full_name()
       << "\") is not compatible with this reflection object (which is for type "
@@ -1066,7 +1067,7 @@ void Reflection::SwapFieldsImpl(
       << descriptor_->full_name()
       << "\").  Note that the exact same class is required; not just the same "
          "descriptor.";
-  GOOGLE_CHECK_EQ(message2->GetReflection(), this)
+  GOOGLE_ABSL_CHECK_EQ(message2->GetReflection(), this)
       << "Second argument to SwapFields() (of type \""
       << message2->GetDescriptor()->full_name()
       << "\") is not compatible with this reflection object (which is for type "
@@ -1113,9 +1114,9 @@ void Reflection::SwapFieldsImpl(
           SwapBit(message1, message2, field);
           if (field->options().ctype() == FieldOptions::STRING &&
               IsInlined(field)) {
-            GOOGLE_DCHECK(!unsafe_shallow_swap ||
-                   message1->GetArenaForAllocation() ==
-                       message2->GetArenaForAllocation());
+            GOOGLE_ABSL_DCHECK(!unsafe_shallow_swap ||
+                        message1->GetArenaForAllocation() ==
+                            message2->GetArenaForAllocation());
             SwapInlinedStringDonated(message1, message2, field);
           }
         }
@@ -1133,8 +1134,8 @@ void Reflection::SwapFields(
 void Reflection::UnsafeShallowSwapFields(
     Message* message1, Message* message2,
     const std::vector<const FieldDescriptor*>& fields) const {
-  GOOGLE_DCHECK_EQ(message1->GetArenaForAllocation(),
-            message2->GetArenaForAllocation());
+  GOOGLE_ABSL_DCHECK_EQ(message1->GetArenaForAllocation(),
+                 message2->GetArenaForAllocation());
 
   SwapFieldsImpl<true>(message1, message2, fields);
 }
@@ -1142,7 +1143,7 @@ void Reflection::UnsafeShallowSwapFields(
 void Reflection::UnsafeArenaSwapFields(
     Message* lhs, Message* rhs,
     const std::vector<const FieldDescriptor*>& fields) const {
-  GOOGLE_DCHECK_EQ(lhs->GetArenaForAllocation(), rhs->GetArenaForAllocation());
+  GOOGLE_ABSL_DCHECK_EQ(lhs->GetArenaForAllocation(), rhs->GetArenaForAllocation());
   UnsafeShallowSwapFields(lhs, rhs, fields);
 }
 
@@ -1166,7 +1167,7 @@ bool Reflection::HasField(const Message& message,
 }
 
 void Reflection::UnsafeArenaSwap(Message* lhs, Message* rhs) const {
-  GOOGLE_DCHECK_EQ(lhs->GetOwningArena(), rhs->GetOwningArena());
+  GOOGLE_ABSL_DCHECK_EQ(lhs->GetOwningArena(), rhs->GetOwningArena());
   InternalSwap(lhs, rhs);
 }
 
@@ -1236,8 +1237,8 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
                                  ? 0
                                  // One extra bit for the arena dtor tracking.
                                  : (inlined_string_count + 1 + 31) / 32;
-    GOOGLE_CHECK_EQ((lhs_donated_array[0] & 0x1u) == 0,
-             (rhs_donated_array[0] & 0x1u) == 0);
+    GOOGLE_ABSL_CHECK_EQ((lhs_donated_array[0] & 0x1u) == 0,
+                  (rhs_donated_array[0] & 0x1u) == 0);
     for (int i = 0; i < donated_array_size; i++) {
       std::swap(lhs_donated_array[i], rhs_donated_array[i]);
     }
@@ -1289,7 +1290,7 @@ int Reflection::FieldSize(const Message& message,
         }
     }
 
-    GOOGLE_LOG(FATAL) << "Can't get here.";
+    GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
     return 0;
   }
 }
@@ -1550,7 +1551,7 @@ struct FieldNumberSorter {
 };
 
 bool IsIndexInHasBitSet(const uint32_t* has_bit_set, uint32_t has_bit_index) {
-  GOOGLE_DCHECK_NE(has_bit_index, ~0u);
+  GOOGLE_ABSL_DCHECK_NE(has_bit_index, ~0u);
   return ((has_bit_set[has_bit_index / 32] >> (has_bit_index % 32)) &
           static_cast<uint32_t>(1)) != 0;
 }
@@ -1771,7 +1772,7 @@ void Reflection::SetString(Message* message, const FieldDescriptor* field,
       case FieldOptions::STRING: {
         if (IsInlined(field)) {
           const uint32_t index = schema_.InlinedStringIndex(field);
-          GOOGLE_DCHECK_GT(index, 0);
+          GOOGLE_ABSL_DCHECK_GT(index, 0);
           uint32_t* states =
               &MutableInlinedStringDonatedArray(message)[index / 32];
           uint32_t mask = ~(static_cast<uint32_t>(1) << (index % 32));
@@ -2150,8 +2151,9 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
 
 void Reflection::SetAllocatedMessage(Message* message, Message* sub_message,
                                      const FieldDescriptor* field) const {
-  GOOGLE_DCHECK(sub_message == nullptr || sub_message->GetOwningArena() == nullptr ||
-         sub_message->GetOwningArena() == message->GetArenaForAllocation());
+  GOOGLE_ABSL_DCHECK(
+      sub_message == nullptr || sub_message->GetOwningArena() == nullptr ||
+      sub_message->GetOwningArena() == message->GetArenaForAllocation());
   CheckInvalidAccess(schema_, field);
 
   // If message and sub-message are in different memory ownership domains
@@ -2367,7 +2369,7 @@ void* Reflection::MutableRawRepeatedField(Message* message,
     ReportReflectionUsageTypeError(descriptor_, field,
                                    "MutableRawRepeatedField", cpptype);
   if (desc != nullptr)
-    GOOGLE_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
+    GOOGLE_ABSL_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
   if (field->is_extension()) {
     return MutableExtensionSet(message)->MutableRawRepeatedField(
         field->number(), field->type(), field->is_packed(), field);
@@ -2391,9 +2393,9 @@ const void* Reflection::GetRawRepeatedField(const Message& message,
     ReportReflectionUsageTypeError(descriptor_, field, "GetRawRepeatedField",
                                    cpptype);
   if (ctype >= 0)
-    GOOGLE_CHECK_EQ(field->options().ctype(), ctype) << "subtype mismatch";
+    GOOGLE_ABSL_CHECK_EQ(field->options().ctype(), ctype) << "subtype mismatch";
   if (desc != nullptr)
-    GOOGLE_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
+    GOOGLE_ABSL_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
   if (field->is_extension()) {
     // Should use extension_set::GetRawRepeatedField. However, the required
     // parameter "default repeated value" is not very easy to get here.
@@ -2517,7 +2519,7 @@ const Type& Reflection::GetRawNonOneof(const Message& message,
 }
 
 void Reflection::PrepareSplitMessageForWrite(Message* message) const {
-  GOOGLE_DCHECK_NE(message, schema_.default_instance_);
+  GOOGLE_ABSL_DCHECK_NE(message, schema_.default_instance_);
   void** split = MutableSplitField(message);
   const void* default_split = GetSplitField(schema_.default_instance_);
   if (*split == default_split) {
@@ -2553,18 +2555,18 @@ Type* Reflection::MutableRaw(Message* message,
 }
 
 const uint32_t* Reflection::GetHasBits(const Message& message) const {
-  GOOGLE_DCHECK(schema_.HasHasbits());
+  GOOGLE_ABSL_DCHECK(schema_.HasHasbits());
   return &GetConstRefAtOffset<uint32_t>(message, schema_.HasBitsOffset());
 }
 
 uint32_t* Reflection::MutableHasBits(Message* message) const {
-  GOOGLE_DCHECK(schema_.HasHasbits());
+  GOOGLE_ABSL_DCHECK(schema_.HasHasbits());
   return GetPointerAtOffset<uint32_t>(message, schema_.HasBitsOffset());
 }
 
 uint32_t* Reflection::MutableOneofCase(
     Message* message, const OneofDescriptor* oneof_descriptor) const {
-  GOOGLE_DCHECK(!oneof_descriptor->is_synthetic());
+  GOOGLE_ABSL_DCHECK(!oneof_descriptor->is_synthetic());
   return GetPointerAtOffset<uint32_t>(
       message, schema_.GetOneofCaseOffset(oneof_descriptor));
 }
@@ -2592,13 +2594,13 @@ InternalMetadata* Reflection::MutableInternalMetadata(Message* message) const {
 
 const uint32_t* Reflection::GetInlinedStringDonatedArray(
     const Message& message) const {
-  GOOGLE_DCHECK(schema_.HasInlinedString());
+  GOOGLE_ABSL_DCHECK(schema_.HasInlinedString());
   return &GetConstRefAtOffset<uint32_t>(message,
                                         schema_.InlinedStringDonatedOffset());
 }
 
 uint32_t* Reflection::MutableInlinedStringDonatedArray(Message* message) const {
-  GOOGLE_DCHECK(schema_.HasInlinedString());
+  GOOGLE_ABSL_DCHECK(schema_.HasInlinedString());
   return GetPointerAtOffset<uint32_t>(message,
                                       schema_.InlinedStringDonatedOffset());
 }
@@ -2607,7 +2609,7 @@ uint32_t* Reflection::MutableInlinedStringDonatedArray(Message* message) const {
 bool Reflection::IsInlinedStringDonated(const Message& message,
                                         const FieldDescriptor* field) const {
   uint32_t index = schema_.InlinedStringIndex(field);
-  GOOGLE_DCHECK_GT(index, 0);
+  GOOGLE_ABSL_DCHECK_GT(index, 0);
   return IsIndexInHasBitSet(GetInlinedStringDonatedArray(message), index);
 }
 
@@ -2636,11 +2638,11 @@ void Reflection::SwapInlinedStringDonated(Message* lhs, Message* rhs,
   // If one is undonated, both must have already registered ArenaDtor.
   uint32_t* lhs_array = MutableInlinedStringDonatedArray(lhs);
   uint32_t* rhs_array = MutableInlinedStringDonatedArray(rhs);
-  GOOGLE_CHECK_EQ(lhs_array[0] & 0x1u, 0u);
-  GOOGLE_CHECK_EQ(rhs_array[0] & 0x1u, 0u);
+  GOOGLE_ABSL_CHECK_EQ(lhs_array[0] & 0x1u, 0u);
+  GOOGLE_ABSL_CHECK_EQ(rhs_array[0] & 0x1u, 0u);
   // Swap donation status bit.
   uint32_t index = schema_.InlinedStringIndex(field);
-  GOOGLE_DCHECK_GT(index, 0);
+  GOOGLE_ABSL_DCHECK_GT(index, 0);
   if (rhs_donated) {
     SetInlinedStringDonated(index, lhs_array);
     ClearInlinedStringDonated(index, rhs_array);
@@ -2653,7 +2655,7 @@ void Reflection::SwapInlinedStringDonated(Message* lhs, Message* rhs,
 // Simple accessors for manipulating has_bits_.
 bool Reflection::HasBit(const Message& message,
                         const FieldDescriptor* field) const {
-  GOOGLE_DCHECK(!field->options().weak());
+  GOOGLE_ABSL_DCHECK(!field->options().weak());
   if (schema_.HasBitIndex(field) != static_cast<uint32_t>(-1)) {
     return IsIndexInHasBitSet(GetHasBits(message), schema_.HasBitIndex(field));
   }
@@ -2715,13 +2717,13 @@ bool Reflection::HasBit(const Message& message,
         // handled above; avoid warning
         break;
     }
-    GOOGLE_LOG(FATAL) << "Reached impossible case in HasBit().";
+    GOOGLE_ABSL_LOG(FATAL) << "Reached impossible case in HasBit().";
     return false;
   }
 }
 
 void Reflection::SetBit(Message* message, const FieldDescriptor* field) const {
-  GOOGLE_DCHECK(!field->options().weak());
+  GOOGLE_ABSL_DCHECK(!field->options().weak());
   const uint32_t index = schema_.HasBitIndex(field);
   if (index == static_cast<uint32_t>(-1)) return;
   MutableHasBits(message)[index / 32] |=
@@ -2730,7 +2732,7 @@ void Reflection::SetBit(Message* message, const FieldDescriptor* field) const {
 
 void Reflection::ClearBit(Message* message,
                           const FieldDescriptor* field) const {
-  GOOGLE_DCHECK(!field->options().weak());
+  GOOGLE_ABSL_DCHECK(!field->options().weak());
   const uint32_t index = schema_.HasBitIndex(field);
   if (index == static_cast<uint32_t>(-1)) return;
   MutableHasBits(message)[index / 32] &=
@@ -2739,7 +2741,7 @@ void Reflection::ClearBit(Message* message,
 
 void Reflection::SwapBit(Message* message1, Message* message2,
                          const FieldDescriptor* field) const {
-  GOOGLE_DCHECK(!field->options().weak());
+  GOOGLE_ABSL_DCHECK(!field->options().weak());
   if (!schema_.HasHasbits()) {
     return;
   }
@@ -2933,15 +2935,15 @@ void* Reflection::RepeatedFieldData(Message* message,
                                     const FieldDescriptor* field,
                                     FieldDescriptor::CppType cpp_type,
                                     const Descriptor* message_type) const {
-  GOOGLE_CHECK(field->is_repeated());
-  GOOGLE_CHECK(field->cpp_type() == cpp_type ||
-        (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM &&
-         cpp_type == FieldDescriptor::CPPTYPE_INT32))
+  GOOGLE_ABSL_CHECK(field->is_repeated());
+  GOOGLE_ABSL_CHECK(field->cpp_type() == cpp_type ||
+             (field->cpp_type() == FieldDescriptor::CPPTYPE_ENUM &&
+              cpp_type == FieldDescriptor::CPPTYPE_INT32))
       << "The type parameter T in RepeatedFieldRef<T> API doesn't match "
       << "the actual field type (for enums T should be the generated enum "
       << "type or int32_t).";
   if (message_type != nullptr) {
-    GOOGLE_CHECK_EQ(message_type, field->message_type());
+    GOOGLE_ABSL_CHECK_EQ(message_type, field->message_type());
   }
   if (field->is_extension()) {
     return MutableExtensionSet(message)->MutableRawRepeatedField(
@@ -3088,7 +3090,7 @@ static internal::TailCallParseFunc GetFastParseFunction(
       };
   auto it = map->find(name);
   if (it == map->end()) {
-    GOOGLE_LOG(DFATAL) << "Failed to find function: " << name;
+    GOOGLE_ABSL_LOG(DFATAL) << "Failed to find function: " << name;
     // Let's not crash in opt, just in case.
     // MiniParse is always a valid parser.
     return &internal::TcParser::MiniParse;
@@ -3109,8 +3111,8 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTableForMessageSet()
   auto* full_table = ::new (p) Table{
       {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, schema_.default_instance_, nullptr},
       {{{&internal::TcParser::ReflectionParseLoop, {}}}}};
-  GOOGLE_DCHECK_EQ(static_cast<void*>(&full_table->header),
-            static_cast<void*>(full_table));
+  GOOGLE_ABSL_DCHECK_EQ(static_cast<void*>(&full_table->header),
+                 static_cast<void*>(full_table));
   return &full_table->header;
 }
 
@@ -3221,7 +3223,7 @@ void Reflection::PopulateTcParseFieldAux(
       case internal::TailCallTableInfo::kSubTable:
       case internal::TailCallTableInfo::kSubMessageWeak:
       case internal::TailCallTableInfo::kMessageVerifyFunc:
-        GOOGLE_LOG(FATAL) << "Not supported";
+        GOOGLE_ABSL_LOG(FATAL) << "Not supported";
         break;
       case internal::TailCallTableInfo::kSubMessage:
         field_aux++->message_default_p =
@@ -3232,7 +3234,7 @@ void Reflection::PopulateTcParseFieldAux(
                                    aux_entry.enum_range.size};
         break;
       case internal::TailCallTableInfo::kEnumValidator:
-        GOOGLE_LOG(FATAL) << "Not supported.";
+        GOOGLE_ABSL_LOG(FATAL) << "Not supported.";
         break;
       case internal::TailCallTableInfo::kNumericOffset:
         field_aux++->offset = aux_entry.offset;
@@ -3306,7 +3308,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       inlined_string_indices);
 
   const size_t fast_entries_count = table_info.fast_path_fields.size();
-  GOOGLE_CHECK_EQ(fast_entries_count, 1 << table_info.table_size_log2);
+  GOOGLE_ABSL_CHECK_EQ(fast_entries_count, 1 << table_info.table_size_log2);
   const uint16_t lookup_table_offset = AlignTo<uint16_t>(
       sizeof(TcParseTableBase) +
       fast_entries_count * sizeof(TcParseTableBase::FastFieldEntry));
@@ -3349,9 +3351,9 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
            table_info.field_name_data.size());
   }
   // Validation to make sure we used all the bytes correctly.
-  GOOGLE_CHECK_EQ(res->name_data() + table_info.field_name_data.size() -
-               reinterpret_cast<char*>(res),
-           byte_size);
+  GOOGLE_ABSL_CHECK_EQ(res->name_data() + table_info.field_name_data.size() -
+                    reinterpret_cast<char*>(res),
+                byte_size);
 
   return res;
 }
@@ -3505,7 +3507,7 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
   const FileDescriptor* file =
       DescriptorPool::internal_generated_pool()->FindFileByName(
           table->filename);
-  GOOGLE_CHECK(file != nullptr);
+  GOOGLE_ABSL_CHECK(file != nullptr);
 
   MessageFactory* factory = MessageFactory::generated_factory();
 
