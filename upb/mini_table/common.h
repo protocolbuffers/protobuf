@@ -58,6 +58,8 @@ UPB_API const upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
 
 UPB_API upb_FieldType upb_MiniTableField_Type(const upb_MiniTableField* field);
 
+UPB_API upb_CType upb_MiniTableField_CType(const upb_MiniTableField* field);
+
 UPB_API_INLINE bool upb_MiniTableField_IsExtension(
     const upb_MiniTableField* field) {
   return field->mode & kUpb_LabelFlags_IsExtension;

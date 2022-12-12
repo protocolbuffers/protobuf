@@ -28,7 +28,10 @@
 #ifndef UPB_MESSAGE_ACCESSORS_H_
 #define UPB_MESSAGE_ACCESSORS_H_
 
+#include "upb/base/descriptor_constants.h"
 #include "upb/collections/array.h"
+#include "upb/collections/map.h"
+#include "upb/collections/map_internal.h"
 #include "upb/message/extension_internal.h"
 #include "upb/message/internal.h"
 #include "upb/mini_table/common.h"
@@ -521,6 +524,35 @@ UPB_API_INLINE bool upb_MiniTableField_IsClosedEnum(
   return field->descriptortype == kUpb_FieldType_Enum;
 }
 
+UPB_API_INLINE upb_Map* upb_MiniTable_GetMutableMap(
+    upb_Message* msg, const upb_MiniTable* map_entry_mini_table,
+    const upb_MiniTableField* field, upb_Arena* arena) {
+  UPB_ASSERT(map_entry_mini_table != NULL);
+  UPB_ASSUME(upb_IsRepeatedOrMap(field));
+  upb_Map* map = NULL;
+  upb_Map* default_map_value = NULL;
+  _upb_Message_GetNonExtensionField(msg, field, &default_map_value, &map);
+  if (!map) {
+    // Allocate map.
+    UPB_ASSERT(field->descriptortype == kUpb_FieldType_Message ||
+               field->descriptortype == kUpb_FieldType_Group);
+    const upb_MiniTableField* map_entry_key_field =
+        &map_entry_mini_table->fields[0];
+    const upb_MiniTableField* map_entry_value_field =
+        &map_entry_mini_table->fields[1];
+    map = upb_Map_New(arena, upb_MiniTableField_CType(map_entry_key_field),
+                      upb_MiniTableField_CType(map_entry_value_field));
+    _upb_Message_SetNonExtensionField(msg, field, &map);
+  }
+  return map;
+}
+
+// Updates a map entry given an entry message.
+upb_MapInsertStatus upb_Message_InsertMapEntry(
+    upb_Map* map, const upb_MiniTable* map_entry_mini_table,
+    const upb_MiniTableField* field, upb_Message* map_entry_message,
+    upb_Arena* arena);
+
 typedef enum {
   kUpb_GetExtension_Ok,
   kUpb_GetExtension_NotPresent,
@@ -602,6 +634,15 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
 upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
     upb_Message* msg, const upb_MiniTableField* field,
     const upb_MiniTable* mini_table, int decode_options, upb_Arena* arena);
+
+// Promotes all unknown data that matches field tag id to upb_Map.
+//
+// The unknown data is removed from message after upb_Map is populated.
+// Since repeated messages can't be packed we remove each unknown that
+// contains the target tag id.
+upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
+    upb_Message* msg, const upb_MiniTable* mini_table,
+    const upb_MiniTableField* field, int decode_options, upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */
