@@ -76,7 +76,7 @@ typedef struct upb_ExtensionRegistry upb_ExtensionRegistry;
 
 // Creates a upb_ExtensionRegistry in the given arena.
 // The arena must outlive any use of the extreg.
-upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena);
+UPB_API upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena);
 
 // Adds the given extension info for the array |e| of size |count| into the
 // registry. If there are any errors, the entire array is backed out.
