@@ -599,7 +599,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     typename TypeHandler::Type* new_result;
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
     new_result = copy<TypeHandler>(result);
-    if (arena == nullptr) delete result;
+    if (arena == nullptr && sizeof(*result) != 0) delete result;
 #else   // PROTOBUF_FORCE_COPY_IN_RELEASE
     new_result = (arena == nullptr) ? result : copy<TypeHandler>(result);
 #endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
@@ -809,7 +809,7 @@ class GenericTypeHandler {
     return New(arena);
   }
   static inline void Delete(GenericType* value, Arena* arena) {
-    if (arena == nullptr) {
+    if (arena == nullptr && sizeof(*value) != 0) {
       delete value;
     }
   }
@@ -1379,6 +1379,7 @@ inline void RepeatedPtrField<Element>::ExtractSubrangeInternal(
   GOOGLE_DCHECK_GE(num, 0);
   GOOGLE_DCHECK_LE(start + num, size());
 
+  if (sizeof(Element) == 0) return;
   if (num == 0) return;
 
   GOOGLE_DCHECK_NE(elements, nullptr)
