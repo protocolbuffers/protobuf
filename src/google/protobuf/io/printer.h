@@ -224,6 +224,17 @@ class AnnotationProtoCollector : public AnnotationCollector {
 //     }
 //   };
 //
+// # Comments
+//
+// It may be desirable to place comments in a raw string that are stripped out
+// before printing. The prefix for Printer-ignored comments can be configured
+// in Options. By default, this is `//~`.
+//
+//   p.Emit(R"cc(
+//     // Will be printed in the output.
+//     //~ Won't be.
+//   )cc");
+//
 // # Lookup Frames
 //
 // If many calls to Emit() use the same set of variables, they can be stored
@@ -445,6 +456,9 @@ class PROTOBUF_EXPORT Printer {
     // to allow the Printer to emit debugging annotations in the source code
     // output.
     absl::string_view comment_start = "//";
+    // The token for beginning comments that are discarded by Printer's internal
+    // formatter.
+    absl::string_view ignored_comment_start = "//~";
     // The number of spaces that a single level of indentation adds by default;
     // this is the amount that WithIndent() increases indentation by.
     size_t spaces_per_indent = 2;
