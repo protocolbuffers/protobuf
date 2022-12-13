@@ -41,10 +41,11 @@
 #include <typeinfo>
 
 #include "google/protobuf/stubs/common.h"
-#include "absl/base/attributes.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/numeric/bits.h"
+#include "absl/strings/cord.h"
 #include "absl/synchronization/mutex.h"
+#include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_config.h"
@@ -58,29 +59,6 @@
 namespace google {
 namespace protobuf {
 namespace internal {
-
-inline PROTOBUF_ALWAYS_INLINE constexpr size_t AlignUpTo8(size_t n) {
-  // Align n to next multiple of 8 (from Hacker's Delight, Chapter 3.)
-  return (n + 7) & static_cast<size_t>(-8);
-}
-
-inline PROTOBUF_ALWAYS_INLINE constexpr size_t AlignUpTo(size_t n, size_t a) {
-  // We are wasting space by over allocating align - 8 bytes. Compared to a
-  // dedicated function that takes current alignment in consideration.  Such a
-  // scheme would only waste (align - 8)/2 bytes on average, but requires a
-  // dedicated function in the outline arena allocation functions. Possibly
-  // re-evaluate tradeoffs later.
-  return a <= 8 ? AlignUpTo8(n) : n + a - 8;
-}
-
-inline PROTOBUF_ALWAYS_INLINE void* AlignTo(void* p, size_t a) {
-  if (a <= 8) {
-    return p;
-  } else {
-    auto u = reinterpret_cast<uintptr_t>(p);
-    return reinterpret_cast<void*>((u + a - 1) & (~a + 1));
-  }
-}
 
 // Arena blocks are variable length malloc-ed objects.  The following structure
 // describes the common header for all blocks.
@@ -172,7 +150,7 @@ class PROTOBUF_EXPORT SerialArena {
   // from it.
   template <AllocationClient alloc_client = AllocationClient::kDefault>
   void* AllocateAligned(size_t n) {
-    GOOGLE_ABSL_DCHECK_EQ(internal::AlignUpTo8(n), n);  // Must be already aligned.
+    GOOGLE_ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
     GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
 
     if (alloc_client == AllocationClient::kArray) {
@@ -188,6 +166,22 @@ class PROTOBUF_EXPORT SerialArena {
   }
 
  private:
+  static inline PROTOBUF_ALWAYS_INLINE constexpr size_t AlignUpTo(size_t n,
+                                                                  size_t a) {
+    // We are wasting space by over allocating align - 8 bytes. Compared to a
+    // dedicated function that takes current alignment in consideration.  Such a
+    // scheme would only waste (align - 8)/2 bytes on average, but requires a
+    // dedicated function in the outline arena allocation functions. Possibly
+    // re-evaluate tradeoffs later.
+    return a <= 8 ? ArenaAlignDefault::Ceil(n) : ArenaAlignAs(a).Padded(n);
+  }
+
+  static inline PROTOBUF_ALWAYS_INLINE void* AlignTo(void* p, size_t a) {
+    return (a <= ArenaAlignDefault::align)
+               ? ArenaAlignDefault::CeilDefaultAligned(p)
+               : ArenaAlignAs(a).CeilDefaultAligned(p);
+  }
+
   void* AllocateFromExisting(size_t n) {
     PROTOBUF_UNPOISON_MEMORY_REGION(ptr(), n);
     void* ret = ptr();
@@ -248,7 +242,7 @@ class PROTOBUF_EXPORT SerialArena {
  public:
   // Allocate space if the current region provides enough space.
   bool MaybeAllocateAligned(size_t n, void** out) {
-    GOOGLE_ABSL_DCHECK_EQ(internal::AlignUpTo8(n), n);  // Must be already aligned.
+    GOOGLE_ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
     GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(n))) return false;
     *out = AllocateFromExisting(n);
@@ -264,7 +258,7 @@ class PROTOBUF_EXPORT SerialArena {
     static_assert(!std::is_trivially_destructible<T>::value,
                   "This function is only for non-trivial types.");
 
-    constexpr int aligned_size = AlignUpTo8(sizeof(T));
+    constexpr int aligned_size = ArenaAlignDefault::Ceil(sizeof(T));
     constexpr auto destructor = cleanup::arena_destruct_object<T>;
     size_t required = aligned_size + cleanup::Size(destructor);
     if (PROTOBUF_PREDICT_FALSE(!HasSpace(required))) {
@@ -300,7 +294,7 @@ class PROTOBUF_EXPORT SerialArena {
                                                 void (*destructor)(void*)) {
     n = AlignUpTo(n, align);
     PROTOBUF_UNPOISON_MEMORY_REGION(ptr(), n);
-    void* ret = internal::AlignTo(ptr(), align);
+    void* ret = ArenaAlignAs(align).CeilDefaultAligned(ptr());
     set_ptr(ptr() + n);
     GOOGLE_ABSL_DCHECK_GE(limit_, ptr());
     AddCleanupFromExisting(ret, destructor);
@@ -384,7 +378,8 @@ class PROTOBUF_EXPORT SerialArena {
   inline void Init(ArenaBlock* b, size_t offset);
 
  public:
-  static constexpr size_t kBlockHeaderSize = AlignUpTo8(sizeof(ArenaBlock));
+  static constexpr size_t kBlockHeaderSize =
+      ArenaAlignDefault::Ceil(sizeof(ArenaBlock));
 };
 
 // This class provides the core Arena memory allocation library. Different
@@ -603,7 +598,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   static constexpr size_t kSerialArenaSize =
       (sizeof(SerialArena) + 7) & static_cast<size_t>(-8);
   static constexpr size_t kAllocPolicySize =
-      AlignUpTo8(sizeof(AllocationPolicy));
+      ArenaAlignDefault::Ceil(sizeof(AllocationPolicy));
   static constexpr size_t kMaxCleanupNodeSize = 16;
   static_assert(kBlockHeaderSize % 8 == 0,
                 "kBlockHeaderSize must be a multiple of 8.");
