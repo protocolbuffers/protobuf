@@ -44,8 +44,6 @@
 #include <sstream>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
@@ -54,6 +52,8 @@
 #include "absl/base/casts.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
@@ -771,7 +771,6 @@ TEST_F(MapImplTest, InsertSingleBraceInitListTypeMismatch) {
 
   EXPECT_TRUE(result1.first == result2.first);
 }
-
 
 TEST_F(MapImplTest, TryEmplace) {
   using ::testing::Pair;
@@ -2856,8 +2855,9 @@ TEST(GeneratedMapFieldTest, KeysValuesUnknownsWireFormat) {
       for (int k = i, j = 0; j < items; j++, k >>= kBitsOfIPerItem) {
         bool is_key = k & 0x1;
         bool is_value = !is_key && (k & 0x2);
-        wire_format.push_back(is_key ? kKeyTag
-                                     : is_value ? kValueTag : kJunkTag);
+        wire_format.push_back(is_key     ? kKeyTag
+                              : is_value ? kValueTag
+                                         : kJunkTag);
         char c = static_cast<char>(k & mask) >> 2;  // One char after the tag.
         wire_format.push_back(c);
         if (is_key) expected_key = static_cast<int>(c);
@@ -3628,41 +3628,26 @@ TEST(WireFormatForMapFieldTest, MapByteSizeDynamicMessage) {
   EXPECT_EQ(dynamic_message->ByteSizeLong(), duplicate_serialized_data.size());
 
   // Force the map field to mark with map CLEAN
-  EXPECT_EQ(reflection_tester.MapSize(
-      *dynamic_message, "map_int32_int32"), 2);
-  EXPECT_EQ(reflection_tester.MapSize(
-      *dynamic_message, "map_int32_int32"), 2);
-  EXPECT_EQ(reflection_tester.MapSize(
-      *dynamic_message, "map_int64_int64"), 2);
-  EXPECT_EQ(reflection_tester.MapSize(
-      *dynamic_message, "map_uint32_uint32"), 2);
-  EXPECT_EQ(reflection_tester.MapSize(
-      *dynamic_message, "map_uint64_uint64"), 2);
-  EXPECT_EQ(reflection_tester.MapSize(
-      *dynamic_message, "map_sint32_sint32"), 2);
-  EXPECT_EQ(reflection_tester.MapSize(
-      *dynamic_message, "map_sint64_sint64"), 2);
-  EXPECT_EQ(reflection_tester.MapSize(
-      *dynamic_message, "map_fixed32_fixed32"), 2);
-  EXPECT_EQ(reflection_tester.MapSize(
-      *dynamic_message, "map_fixed64_fixed64"), 2);
-  EXPECT_EQ(reflection_tester.MapSize(
-      *dynamic_message, "map_sfixed32_sfixed32"), 2);
-  EXPECT_EQ(reflection_tester.MapSize(
-      *dynamic_message, "map_sfixed64_sfixed64"), 2);
-  EXPECT_EQ(reflection_tester.MapSize(
-      *dynamic_message, "map_int32_float"), 2);
-  EXPECT_EQ(reflection_tester.MapSize(
-      *dynamic_message, "map_int32_double"), 2);
-  EXPECT_EQ(reflection_tester.MapSize(
-      *dynamic_message, "map_bool_bool"), 2);
-  EXPECT_EQ(reflection_tester.MapSize(
-      *dynamic_message, "map_string_string"), 2);
-  EXPECT_EQ(reflection_tester.MapSize(
-      *dynamic_message, "map_int32_bytes"), 2);
-  EXPECT_EQ(reflection_tester.MapSize(
-      *dynamic_message, "map_int32_enum"), 2);
-  EXPECT_EQ(reflection_tester.MapSize(*dynamic_message, "map_int32_foreign_message"), 2);
+  auto& msg = *dynamic_message;
+  EXPECT_EQ(reflection_tester.MapSize(msg, "map_int32_int32"), 2);
+  EXPECT_EQ(reflection_tester.MapSize(msg, "map_int32_int32"), 2);
+  EXPECT_EQ(reflection_tester.MapSize(msg, "map_int64_int64"), 2);
+  EXPECT_EQ(reflection_tester.MapSize(msg, "map_uint32_uint32"), 2);
+  EXPECT_EQ(reflection_tester.MapSize(msg, "map_uint64_uint64"), 2);
+  EXPECT_EQ(reflection_tester.MapSize(msg, "map_sint32_sint32"), 2);
+  EXPECT_EQ(reflection_tester.MapSize(msg, "map_sint64_sint64"), 2);
+  EXPECT_EQ(reflection_tester.MapSize(msg, "map_fixed32_fixed32"), 2);
+  EXPECT_EQ(reflection_tester.MapSize(msg, "map_fixed64_fixed64"), 2);
+  EXPECT_EQ(reflection_tester.MapSize(msg, "map_sfixed32_sfixed32"), 2);
+  EXPECT_EQ(reflection_tester.MapSize(msg, "map_sfixed64_sfixed64"), 2);
+  EXPECT_EQ(reflection_tester.MapSize(msg, "map_int32_float"), 2);
+  EXPECT_EQ(reflection_tester.MapSize(msg, "map_int32_double"), 2);
+  EXPECT_EQ(reflection_tester.MapSize(msg, "map_bool_bool"), 2);
+  EXPECT_EQ(reflection_tester.MapSize(msg, "map_string_string"), 2);
+  EXPECT_EQ(reflection_tester.MapSize(msg, "map_int32_bytes"), 2);
+  EXPECT_EQ(reflection_tester.MapSize(msg, "map_int32_enum"), 2);
+  EXPECT_EQ(reflection_tester.MapSize(msg, "map_int32_foreign_message"), 2);
+
   // The map field is marked as CLEAN, ByteSizeLong() will use map which do not
   // have duplicate keys to calculate.
   int size = dynamic_message->ByteSizeLong();
