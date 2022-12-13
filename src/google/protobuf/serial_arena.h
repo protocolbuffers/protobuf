@@ -35,11 +35,13 @@
 
 #include <algorithm>
 #include <atomic>
+#include <string>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
 
 #include "google/protobuf/stubs/common.h"
+#include "absl/base/attributes.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/numeric/bits.h"
 #include "google/protobuf/arena_align.h"
@@ -47,6 +49,7 @@
 #include "google/protobuf/arena_config.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/typed_block.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -109,11 +112,23 @@ class PROTOBUF_EXPORT SerialArena {
     size_t size;
   };
 
-  void CleanupList();
+  size_t CleanupList();
   uint64_t SpaceAllocated() const {
     return space_allocated_.load(std::memory_order_relaxed);
   }
+  void SpaceAllocatedAdd(size_t n) {
+    space_allocated_.store(space_allocated_.load(std::memory_order_relaxed) + n,
+                           std::memory_order_relaxed);
+  }
   uint64_t SpaceUsed() const;
+  void SpaceUsedAdd(size_t n) {
+    space_used_.store(space_used_.load(std::memory_order_relaxed) + n,
+                      std::memory_order_relaxed);
+  }
+  void SpaceUsedSub(size_t n) {
+    space_used_.store(space_used_.load(std::memory_order_relaxed) - n,
+                      std::memory_order_relaxed);
+  }
 
   bool HasSpace(size_t n) const {
     return n <= static_cast<size_t>(limit_ - ptr());
@@ -284,6 +299,9 @@ class PROTOBUF_EXPORT SerialArena {
     AddCleanupFromExisting(elem, destructor);
   }
 
+  void* AllocateString() ABSL_ATTRIBUTE_RETURNS_NONNULL;
+  void* TryAllocateString();
+
  private:
   void* AllocateFromExistingWithCleanupFallback(size_t n, size_t align,
                                                 void (*destructor)(void*)) {
@@ -307,7 +325,11 @@ class PROTOBUF_EXPORT SerialArena {
     cleanup::CreateNode(tag, limit_, elem, destructor);
   }
 
+  void* AllocateStringFallback();
+
  private:
+  using StringBlock = TypedBlock<std::string>;
+
   friend class ThreadSafeArena;
 
   // Creates a new SerialArena inside mem using the remaining memory as for
@@ -330,7 +352,8 @@ class PROTOBUF_EXPORT SerialArena {
   char* limit_ = nullptr;
 
   std::atomic<ArenaBlock*> head_{nullptr};  // Head of linked list of blocks.
-  std::atomic<size_t> space_used_{0};       // Necessary for metrics.
+  StringBlock* string_block_ = StringBlock::sentinel();  // String blocks
+  std::atomic<size_t> space_used_{0};  // Necessary for metrics.
   std::atomic<size_t> space_allocated_{0};
   ThreadSafeArena& parent_;
 
@@ -376,6 +399,22 @@ class PROTOBUF_EXPORT SerialArena {
   static constexpr size_t kBlockHeaderSize =
       ArenaAlignDefault::Ceil(sizeof(ArenaBlock));
 };
+
+inline PROTOBUF_NDEBUG_INLINE void* SerialArena::AllocateString() {
+  void* ptr = string_block_->TryAllocate();
+  if (PROTOBUF_PREDICT_TRUE(ptr != nullptr)) return ptr;
+  return AllocateStringFallback();
+}
+
+inline PROTOBUF_NDEBUG_INLINE void* SerialArena::TryAllocateString() {
+  return string_block_->TryAllocate();
+}
+
+template <>
+inline PROTOBUF_ALWAYS_INLINE void*
+SerialArena::MaybeAllocateWithCleanup<std::string>() {
+  return TryAllocateString();
+}
 
 }  // namespace internal
 }  // namespace protobuf
