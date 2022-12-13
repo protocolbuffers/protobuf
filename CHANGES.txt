@@ -1,3 +1,11 @@
+2022-12-13 version 21.12 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
+
+  Python
+  * Fix broken enum ranges (#11171)
+  * Stop requiring extension fields to have a sythetic oneof (#11091)
+  * Python runtime 4.21.10 not works generated code can not load valid proto.
+    (#11171)
+
 2022-12-07 version 21.11 (C++/Java/Python/PHP/Objective-C/C#/Ruby)
   Python
   * Add license file to pypi wheels (#10936)
