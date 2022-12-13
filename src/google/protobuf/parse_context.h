@@ -222,7 +222,6 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // call Done for further checks.
   bool DataAvailable(const char* ptr) { return ptr < limit_end_; }
 
- protected:
   // Returns true is limit (either an explicit limit or end of stream) is
   // reached. It aligns *ptr across buffer seams.
   // If limit is exceeded it returns true and ptr is set to null.
@@ -279,7 +278,10 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
  private:
   const char* limit_end_;  // buffer_end_ + min(limit_, 0)
+ public:
   const char* buffer_end_;
+
+ private:
   const char* next_chunk_;
   int size_;
   int limit_;  // relative to buffer_end_;
@@ -711,8 +713,8 @@ RotRight7AndReplaceLowByte(uint64_t res, const char& byte) {
   return res;
 };
 
-inline PROTOBUF_ALWAYS_INLINE
-const char* ReadTagInlined(const char* ptr, uint32_t* out) {
+inline PROTOBUF_ALWAYS_INLINE const char* ReadTagInlined(const char* ptr,
+                                                         uint32_t* out) {
   uint64_t res = 0xFF & ptr[0];
   if (PROTOBUF_PREDICT_FALSE(res >= 128)) {
     res = RotRight7AndReplaceLowByte(res, ptr[1]);
