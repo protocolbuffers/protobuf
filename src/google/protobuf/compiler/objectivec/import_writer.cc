@@ -36,6 +36,7 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "google/protobuf/compiler/objectivec/line_consumer.h"
@@ -197,7 +198,7 @@ void ImportWriter::PrintRuntimeImports(io::Printer* p,
 
   // If bundled, no need to do the framework support below.
   if (for_bundled_proto_) {
-    GOOGLE_DCHECK(!default_cpp_symbol);
+    GOOGLE_ABSL_DCHECK(!default_cpp_symbol);
     for (const auto& header : protobuf_imports_) {
       p->Print("#import \"$header$\"\n", "header", header);
     }

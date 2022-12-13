@@ -39,12 +39,13 @@
 #include <memory>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
@@ -105,7 +106,7 @@ void MockCodeGenerator::ExpectGenerated(
     const std::string& first_parsed_file_name,
     const std::string& output_directory) {
   std::string content;
-  GOOGLE_CHECK_OK(
+  GOOGLE_ABSL_CHECK_OK(
       File::GetContents(output_directory + "/" + GetOutputFileName(name, file),
                         &content, true));
 
@@ -163,15 +164,15 @@ void MockCodeGenerator::CheckGeneratedAnnotations(
     const std::string& name, const std::string& file,
     const std::string& output_directory) {
   std::string file_content;
-  GOOGLE_CHECK_OK(
+  GOOGLE_ABSL_CHECK_OK(
       File::GetContents(output_directory + "/" + GetOutputFileName(name, file),
                         &file_content, true));
   std::string meta_content;
-  GOOGLE_CHECK_OK(File::GetContents(
+  GOOGLE_ABSL_CHECK_OK(File::GetContents(
       output_directory + "/" + GetOutputFileName(name, file) + ".pb.meta",
       &meta_content, true));
   GeneratedCodeInfo annotations;
-  GOOGLE_CHECK(TextFormat::ParseFromString(meta_content, &annotations));
+  GOOGLE_ABSL_CHECK(TextFormat::ParseFromString(meta_content, &annotations));
   ASSERT_EQ(7, annotations.annotation_size());
 
   CheckSingleAnnotation("first_annotation", "first", file_content,
@@ -245,7 +246,7 @@ bool MockCodeGenerator::Generate(const FileDescriptor* file,
                   << " " << compiler_version.suffix() << std::endl;
         abort();
       } else {
-        GOOGLE_LOG(FATAL) << "Unknown MockCodeGenerator command: " << command;
+        GOOGLE_ABSL_LOG(FATAL) << "Unknown MockCodeGenerator command: " << command;
       }
     }
   }
