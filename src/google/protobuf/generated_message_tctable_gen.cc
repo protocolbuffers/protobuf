@@ -336,8 +336,6 @@ std::vector<const FieldDescriptor*> FilterMiniParsedFields(
   std::vector<const FieldDescriptor*> generated_fallback_fields;
 
   for (const auto* field : fields) {
-    auto options = option_provider.GetForField(field);
-
     bool handled = false;
     switch (field->type()) {
       case FieldDescriptor::TYPE_DOUBLE:
@@ -354,20 +352,13 @@ std::vector<const FieldDescriptor*> FilterMiniParsedFields(
       case FieldDescriptor::TYPE_SINT64:
       case FieldDescriptor::TYPE_INT64:
       case FieldDescriptor::TYPE_ENUM:
+      case FieldDescriptor::TYPE_BYTES:
+      case FieldDescriptor::TYPE_STRING:
         // These are handled by MiniParse, so we don't need any generated
         // fallback code.
         handled = true;
         break;
 
-      case FieldDescriptor::TYPE_BYTES:
-      case FieldDescriptor::TYPE_STRING:
-        if (options.is_string_inlined) {
-          // TODO(b/198211897): support InilnedStringField.
-          handled = false;
-        } else {
-          handled = true;
-        }
-        break;
 
       case FieldDescriptor::TYPE_MESSAGE:
       case FieldDescriptor::TYPE_GROUP:
