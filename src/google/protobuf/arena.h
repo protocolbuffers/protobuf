@@ -51,8 +51,9 @@ using type_info = ::type_info;
 #include <type_traits>
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_config.h"
-#include "google/protobuf/arena_impl.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/serial_arena.h"
+#include "google/protobuf/thread_safe_arena.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -274,11 +275,10 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
       return new T(std::forward<Args>(args)...);
     }
-    auto destructor =
-        internal::ObjectDestructor<std::is_trivially_destructible<T>::value,
-                                   T>::destructor;
-    return new (arena->AllocateInternal(sizeof(T), alignof(T), destructor))
-        T(std::forward<Args>(args)...);
+    void* mem = std::is_trivially_destructible<T>::value
+                    ? arena->AllocateAligned(sizeof(T), alignof(T))
+                    : arena->AllocateWithCleanup<T>();
+    return new (mem) T(std::forward<Args>(args)...);
   }
 
   // API to delete any objects not on an arena.  This can be used to safely
@@ -375,9 +375,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // arena-allocated memory.
   template <typename T>
   PROTOBUF_ALWAYS_INLINE void OwnDestructor(T* object) {
-    if (object != nullptr) {
-      impl_.AddCleanup(object, &internal::cleanup::arena_destruct_object<T>);
-    }
+    if (object != nullptr) AddCleanup(object);
   }
 
   // Adds a custom member function on an object to the list of destructors that
@@ -565,15 +563,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     }
   }
 
-  PROTOBUF_NDEBUG_INLINE void* AllocateInternal(size_t size, size_t align,
-                                                void (*destructor)(void*)) {
-    // Monitor allocation if needed.
-    if (destructor == nullptr) {
-      return AllocateAligned(size, align);
-    } else {
-      return AllocateAlignedWithCleanup(size, align, destructor);
-    }
-  }
+  template <typename T, bool enable_tags = internal::cleanup::EnableTags()>
+  void* AllocateWithCleanup();
 
   // CreateMessage<T> requires that T supports arenas, but this private method
   // works whether or not T supports arenas. These are not exposed to user code
@@ -603,12 +594,10 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE T* DoCreateMessage(Args&&... args) {
-    return InternalHelper<T>::Construct(
-        AllocateInternal(sizeof(T), alignof(T),
-                         internal::ObjectDestructor<
-                             InternalHelper<T>::is_destructor_skippable::value,
-                             T>::destructor),
-        this, std::forward<Args>(args)...);
+    void* mem = InternalHelper<T>::is_destructor_skippable::value
+                    ? AllocateAligned(sizeof(T), alignof(T))
+                    : AllocateWithCleanup<T>();
+    return InternalHelper<T>::Construct(mem, this, std::forward<Args>(args)...);
   }
 
   // CreateInArenaStorage is used to implement map field. Without it,
@@ -670,8 +659,17 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   void* Allocate(size_t n);
   void* AllocateForArray(size_t n);
-  void* AllocateAlignedWithCleanup(size_t n, size_t align,
-                                   void (*destructor)(void*));
+
+  template <typename T, bool enable_tags = internal::cleanup::EnableTags()>
+  void AddCleanup(T* object);
+
+  template <typename TagOrCleanup>
+  void AddCleanup(void* object, TagOrCleanup cleanup);
+
+  template <typename Align, typename TagOrDtor>
+  void* AllocateWithCleanup(size_t size, Align align, TagOrDtor cleanup);
+  void* AllocateEmbedded(size_t size, internal::cleanup::Tag tag);
+  std::string* AllocateString();
 
   template <typename Type>
   friend class internal::GenericTypeHandler;
@@ -687,6 +685,50 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   friend class internal::RepeatedPtrFieldBase;  // For ReturnArrayMemory
   friend struct internal::ArenaTestPeer;
 };
+
+// Default implementation returns `AddCleanup(T*object, dtor<T>)`
+template <typename T, bool enable_tags>
+inline PROTOBUF_NDEBUG_INLINE void Arena::AddCleanup(T* object) {
+  AddCleanup(object, &internal::cleanup::arena_destruct_object<T>);
+}
+
+#ifdef PROTO_USE_TAGGED_CLEANUPS
+
+// Specialization for `AddCleanup<std::string>()`
+template <>
+inline PROTOBUF_NDEBUG_INLINE void Arena::AddCleanup<std::string, true>(
+    std::string* object) {
+  AddCleanup(object, internal::cleanup::Tag::kString);
+}
+
+// Specialization for `AddCleanup<absl::Cord>()`
+template <>
+inline PROTOBUF_NDEBUG_INLINE void Arena::AddCleanup<absl::Cord, true>(
+    absl::Cord* object) {
+  AddCleanup(object, internal::cleanup::Tag::kCord);
+}
+#endif  // PROTO_USE_TAGGED_CLEANUPS
+
+template <typename T, bool enable_tags>
+inline PROTOBUF_NDEBUG_INLINE void* Arena::AllocateWithCleanup() {
+  constexpr auto align = internal::ArenaAlignOf<T>();
+  return AllocateWithCleanup(align.Ceil(sizeof(T)), align,
+                             &internal::cleanup::arena_destruct_object<T>);
+}
+
+template <>
+inline PROTOBUF_NDEBUG_INLINE void*
+Arena::AllocateWithCleanup<std::string, true>() {
+  return AllocateString();
+}
+
+template <>
+inline PROTOBUF_NDEBUG_INLINE void*
+Arena::AllocateWithCleanup<absl::Cord, true>() {
+  return AllocateWithCleanup(internal::cleanup::AllocationSize<absl::Cord>(),
+                             internal::ArenaAlignDefault(),
+                             internal::cleanup::Tag::kCord);
+}
 
 }  // namespace protobuf
 }  // namespace google

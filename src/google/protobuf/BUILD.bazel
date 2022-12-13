@@ -244,8 +244,9 @@ cc_library(
     hdrs = [
         "arena.h",
         "arena_config.h",
-        "arena_impl.h",
         "arenaz_sampler.h",
+        "serial_arena.h",
+        "thread_safe_arena.h",
     ],
     include_prefix = "google/protobuf",
     visibility = [
@@ -284,7 +285,6 @@ cc_library(
     hdrs = [
         "any.h",
         "arena.h",
-        "arena_impl.h",
         "arenastring.h",
         "arenaz_sampler.h",
         "endian.h",
@@ -308,6 +308,8 @@ cc_library(
         "port.h",
         "repeated_field.h",
         "repeated_ptr_field.h",
+        "serial_arena.h",
+        "thread_safe_arena.h",
         "wire_format_lite.h",
     ],
     copts = COPTS + select({
@@ -326,6 +328,7 @@ cc_library(
     # In Bazel 6.0+, these will be `interface_deps`:
     deps = [
         ":arena",
+        ":arena_align",
         ":arena_config",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs:lite",

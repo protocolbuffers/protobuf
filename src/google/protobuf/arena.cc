@@ -35,14 +35,19 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <string>
 #include <typeinfo>
 
 #include "absl/base/attributes.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/synchronization/mutex.h"
+#include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
-#include "google/protobuf/arena_impl.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/serial_arena.h"
+#include "google/protobuf/thread_safe_arena.h"
 
 
 #ifdef ADDRESS_SANITIZER
@@ -161,6 +166,7 @@ void SerialArena::Init(ArenaBlock* b, size_t offset) {
   set_ptr(b->Pointer(offset));
   limit_ = b->Limit();
   head_.store(b, std::memory_order_relaxed);
+  strings_ = StringBlock::sentinel();
   space_used_.store(0, std::memory_order_relaxed);
   space_allocated_.store(b->size, std::memory_order_relaxed);
   cached_block_length_ = 0;
@@ -195,20 +201,44 @@ void* SerialArena::AllocateAlignedFallback(size_t n) {
   return AllocateFromExisting(n);
 }
 
-PROTOBUF_NOINLINE
-void* SerialArena::AllocateAlignedWithCleanupFallback(
-    size_t n, size_t align, void (*destructor)(void*)) {
-  size_t required = AlignUpTo(n, align) + cleanup::Size(destructor);
-  AllocateNewBlock(required);
-  return AllocateFromExistingWithCleanupFallback(n, align, destructor);
+void* SerialArena::AllocateEmbeddedFallback(size_t size, cleanup::Tag tag) {
+  AllocateNewBlock(size);
+  return BlindlyAllocateEmbedded(size, tag);
 }
 
-PROTOBUF_NOINLINE
-void SerialArena::AddCleanupFallback(void* elem, void (*destructor)(void*)) {
-  size_t required = cleanup::Size(destructor);
-  AllocateNewBlock(required);
-  AddCleanupFromExisting(elem, destructor);
+// https://godbolt.org/z/EcGPxbMdW
+std::string* SerialArena::AllocateStringFallback() {
+  constexpr size_t kMin = 10;
+  constexpr size_t kMax = 170;
+  size_t n = std::min(std::max(strings_->capacity() * 2, kMin), kMax);
+  strings_ = StringBlock::Create(n, strings_);
+  return strings_->Allocate();
 }
+
+template <typename Align, typename TagOrDtor>
+void* SerialArena::AllocateWithCleanupFallback(size_t size, Align align,
+                                               TagOrDtor cleanup) {
+  AllocateNewBlock(align.Padded(size) + cleanup::CleanupSize(cleanup));
+  return BlindlyAllocateWithCleanup(size, align, cleanup);
+}
+
+template void* SerialArena::AllocateWithCleanupFallback(size_t,
+                                                        ArenaAlignDefault,
+                                                        cleanup::Tag);
+template void* SerialArena::AllocateWithCleanupFallback(size_t,
+                                                        ArenaAlignDefault,
+                                                        void (*)(void*));
+template void* SerialArena::AllocateWithCleanupFallback(size_t, ArenaAlign,
+                                                        void (*)(void*));
+
+template <typename TagOrCleanup>
+void SerialArena::AddCleanupFallback(void* elem, TagOrCleanup cleanup) {
+  AllocateNewBlock(cleanup::CleanupSize(cleanup));
+  BlindlyAddCleanup(elem, cleanup);
+}
+
+template void SerialArena::AddCleanupFallback(void*, cleanup::Tag);
+template void SerialArena::AddCleanupFallback(void*, void (*)(void*));
 
 void SerialArena::AllocateNewBlock(size_t n) {
   size_t used = 0;
@@ -271,6 +301,13 @@ uint64_t SerialArena::SpaceUsed() const {
 }
 
 void SerialArena::CleanupList() {
+  StringBlock* block = strings_;
+  while (StringBlock* next = block->next()) {
+    block->DestroyAll();
+    StringBlock::Delete(block);
+    block = next;
+  }
+
   ArenaBlock* b = head();
   if (b->IsSentry()) return;
 
@@ -694,29 +731,31 @@ uint64_t ThreadSafeArena::Reset() {
   return space_allocated;
 }
 
-void* ThreadSafeArena::AllocateAlignedWithCleanup(size_t n, size_t align,
-                                                  void (*destructor)(void*)) {
-  SerialArena* arena;
-  if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
-    return arena->AllocateAlignedWithCleanup(n, align, destructor);
-  } else {
-    return AllocateAlignedWithCleanupFallback(n, align, destructor);
-  }
+template <typename Align, typename TagOrDtor>
+void* ThreadSafeArena::AllocateWithCleanupFallback(size_t size, Align align,
+                                                   TagOrDtor cleanup) {
+  const size_t n = align.Padded(size) + cleanup::CleanupSize(cleanup);
+  SerialArena* arena = GetSerialArenaFallback(n);
+  return arena->AllocateWithCleanup(size, align, cleanup);
 }
 
-void ThreadSafeArena::AddCleanup(void* elem, void (*cleanup)(void*)) {
-  SerialArena* arena;
-  if (PROTOBUF_PREDICT_FALSE(!GetSerialArenaFast(&arena))) {
-    arena = GetSerialArenaFallback(kMaxCleanupNodeSize);
-  }
-  arena->AddCleanup(elem, cleanup);
+template void* ThreadSafeArena::AllocateWithCleanupFallback(size_t,
+                                                            ArenaAlignDefault,
+                                                            cleanup::Tag);
+template void* ThreadSafeArena::AllocateWithCleanupFallback(size_t,
+                                                            ArenaAlignDefault,
+                                                            void (*)(void*));
+template void* ThreadSafeArena::AllocateWithCleanupFallback(size_t, ArenaAlign,
+                                                            void (*)(void*));
+
+void* ThreadSafeArena::AllocateEmbeddedFallback(size_t size, cleanup::Tag tag) {
+  SerialArena* arena = GetSerialArenaFallback(size);
+  return arena->AllocateEmbedded(size, tag);
 }
 
-PROTOBUF_NOINLINE
-void* ThreadSafeArena::AllocateAlignedWithCleanupFallback(
-    size_t n, size_t align, void (*destructor)(void*)) {
-  return GetSerialArenaFallback(n + kMaxCleanupNodeSize)
-      ->AllocateAlignedWithCleanup(n, align, destructor);
+std::string* ThreadSafeArena::AllocateStringFallback() {
+  SerialArena* arena = GetSerialArenaFallback(0);
+  return arena->AllocateString();
 }
 
 template <typename Functor>
@@ -845,10 +884,31 @@ void* Arena::AllocateForArray(size_t n) {
   return impl_.AllocateAligned<internal::AllocationClient::kArray>(n);
 }
 
-void* Arena::AllocateAlignedWithCleanup(size_t n, size_t align,
-                                        void (*destructor)(void*)) {
-  return impl_.AllocateAlignedWithCleanup(n, align, destructor);
+template <typename TagOrCleanup>
+void Arena::AddCleanup(void* object, TagOrCleanup cleanup) {
+  impl_.AddCleanup(object, cleanup);
 }
+
+template void Arena::AddCleanup(void*, internal::cleanup::Tag);
+template void Arena::AddCleanup(void*, void (*)(void*));
+
+void* Arena::AllocateEmbedded(size_t size, internal::cleanup::Tag tag) {
+  return impl_.AllocateEmbedded(size, tag);
+}
+
+std::string* Arena::AllocateString() { return impl_.AllocateString(); }
+
+template <typename Align, typename TagOrDtor>
+void* Arena::AllocateWithCleanup(size_t size, Align align, TagOrDtor cleanup) {
+  return impl_.AllocateWithCleanup(size, align, cleanup);
+}
+
+template void* Arena::AllocateWithCleanup(size_t, internal::ArenaAlignDefault,
+                                          internal::cleanup::Tag);
+template void* Arena::AllocateWithCleanup(size_t, internal::ArenaAlignDefault,
+                                          void (*)(void*));
+template void* Arena::AllocateWithCleanup(size_t, internal::ArenaAlign,
+                                          void (*)(void*));
 
 }  // namespace protobuf
 }  // namespace google
