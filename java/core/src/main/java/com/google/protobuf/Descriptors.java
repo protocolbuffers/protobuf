@@ -1054,7 +1054,7 @@ public final class Descriptors {
   // =================================================================
 
   /** Describes a field of a message type. */
-  public static final class FieldDescriptor extends GenericDescriptor
+public static final class FieldDescriptor extends GenericDescriptor
       implements Comparable<FieldDescriptor>, FieldSet.FieldDescriptorLite<FieldDescriptor> {
     private static final NumberGetter<FieldDescriptor> NUMBER_GETTER =
         new NumberGetter<FieldDescriptor>() {
