@@ -717,7 +717,9 @@ TEST_F(PrinterTest, EmitThreeArgWithVars) {
   FakeAnnotationCollector collector;
   {
     Printer printer(output(), '$', &collector);
-    auto v = printer.WithVars({{"class", "Foo", "file.proto"}});
+    auto v = printer.WithVars({
+        Printer::Sub("class", "Foo").AnnotatedAs("file.proto"),
+    });
 
     printer.Emit({{"f1", "x"}, {"f2", "y"}, {"f3", "z"}}, R"cc(
       class $class$ {
