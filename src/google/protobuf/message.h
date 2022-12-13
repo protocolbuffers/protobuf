@@ -412,9 +412,6 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // type, and thus uses GetClassData().
   static void CopyWithSourceCheck(Message& to, const Message& from);
 
-  // Fail if "from" is a descendant of "to" as such copy is not allowed.
-  static void FailIfCopyFromDescendant(Message& to, const Message& from);
-
   inline explicit Message(Arena* arena) : MessageLite(arena) {}
   size_t ComputeUnknownFieldsSize(size_t total_size,
                                   internal::CachedSize* cached_size) const;

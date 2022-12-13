@@ -3602,20 +3602,21 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
     // It is also disabled if a message has neither message fields nor
     // extensions, as it's impossible to copy from its descendant.
     //
-    // Note that FailIfCopyFromDescendant is implemented by reflection and not
-    // available for lite runtime. In that case, check if the size of the source
-    // has changed after Clear.
-    format("#ifndef NDEBUG\n");
+    // Note that IsDescendant is implemented by reflection and not available for
+    // lite runtime. In that case, check if the size of the source has changed
+    // after Clear.
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      format("FailIfCopyFromDescendant(*this, from);\n");
-    } else {
-      format("::size_t from_size = from.ByteSizeLong();\n");
-    }
-    format(
-        "#endif\n"
-        "Clear();\n");
-    if (!HasDescriptorMethods(descriptor_->file(), options_)) {
       format(
+          "$DCHK$(!::_pbi::IsDescendant(*this, from))\n"
+          "    << \"Source of CopyFrom cannot be a descendant of the "
+          "target.\";\n"
+          "Clear();\n");
+    } else {
+      format(
+          "#ifndef NDEBUG\n"
+          "::size_t from_size = from.ByteSizeLong();\n"
+          "#endif\n"
+          "Clear();\n"
           "#ifndef NDEBUG\n"
           "$CHK$_EQ(from_size, from.ByteSizeLong())\n"
           "  << \"Source of CopyFrom changed when clearing target.  Either \"\n"

@@ -121,20 +121,12 @@ void Message::CopyFrom(const Message& from) {
 }
 
 void Message::CopyWithSourceCheck(Message& to, const Message& from) {
-#ifndef NDEBUG
-  FailIfCopyFromDescendant(to, from);
-#endif
+  // Fail if "from" is a descendant of "to" as such copy is not allowed.
+  GOOGLE_ABSL_DCHECK(!internal::IsDescendant(to, from))
+      << "Source of CopyFrom cannot be a descendant of the target.";
+
   to.Clear();
   to.GetClassData()->merge_to_from(to, from);
-}
-
-void Message::FailIfCopyFromDescendant(Message& to, const Message& from) {
-  auto* arena = to.GetArenaForAllocation();
-  bool same_message_owned_arena = to.GetOwningArena() == nullptr &&
-                                  arena != nullptr &&
-                                  arena == from.GetOwningArena();
-  GOOGLE_ABSL_CHECK(!same_message_owned_arena && !internal::IsDescendant(to, from))
-      << "Source of CopyFrom cannot be a descendant of the target.";
 }
 
 std::string Message::GetTypeName() const {

@@ -516,7 +516,6 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     GOOGLE_ABSL_DCHECK(GetOwningArena() == nullptr)
         << "ReleaseCleared() can only be used on a RepeatedPtrField not on "
         << "an arena.";
-    GOOGLE_ABSL_DCHECK(GetOwningArena() == nullptr);
     GOOGLE_ABSL_DCHECK(rep_ != nullptr);
     GOOGLE_ABSL_DCHECK_GT(rep_->allocated_size, current_size_);
     return cast<TypeHandler>(rep_->elements[--rep_->allocated_size]);

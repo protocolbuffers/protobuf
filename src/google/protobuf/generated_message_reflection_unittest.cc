@@ -614,10 +614,16 @@ TEST(GeneratedMessageReflectionTest, ReleaseLast) {
   (void)expected;  // unused in somce configurations
   std::unique_ptr<Message> released(message.GetReflection()->ReleaseLast(
       &message, descriptor->FindFieldByName("repeated_foreign_message")));
+#ifndef PROTOBUF_FORCE_COPY_IN_RELEASE
   EXPECT_EQ(expected, released.get());
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
 }
 
 TEST(GeneratedMessageReflectionTest, ReleaseLastExtensions) {
+#ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
+  GTEST_SKIP() << "Won't work with FORCE_COPY_IN_RELEASE.";
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
+
   unittest::TestAllExtensions message;
   const Descriptor* descriptor = message.GetDescriptor();
   TestUtil::ReflectionTester reflection_tester(descriptor);
@@ -1041,7 +1047,9 @@ TEST(GeneratedMessageReflectionTest, SetAllocatedOneofMessageTest) {
   released = reflection->ReleaseMessage(
       &to_message, descriptor->FindFieldByName("foo_lazy_message"));
   EXPECT_TRUE(released != nullptr);
+#ifndef PROTOBUF_FORCE_COPY_IN_RELEASE
   EXPECT_EQ(&sub_message, released);
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   delete released;
 
   TestUtil::ReflectionTester::SetOneofViaReflection(&from_message2);
@@ -1059,7 +1067,9 @@ TEST(GeneratedMessageReflectionTest, SetAllocatedOneofMessageTest) {
   released = reflection->ReleaseMessage(
       &to_message, descriptor->FindFieldByName("foo_message"));
   EXPECT_TRUE(released != nullptr);
+#ifndef PROTOBUF_FORCE_COPY_IN_RELEASE
   EXPECT_EQ(&sub_message2, released);
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   delete released;
 }
 
@@ -1180,7 +1190,9 @@ TEST(GeneratedMessageReflectionTest, ReleaseOneofMessageTest) {
       &message, descriptor->FindFieldByName("foo_lazy_message"));
 
   EXPECT_TRUE(released != nullptr);
+#ifndef PROTOBUF_FORCE_COPY_IN_RELEASE
   EXPECT_EQ(&sub_message, released);
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   delete released;
 
   released = reflection->ReleaseMessage(

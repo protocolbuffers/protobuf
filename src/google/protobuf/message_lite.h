@@ -187,8 +187,7 @@ class PROTOBUF_EXPORT MessageLite {
   // if arena is a nullptr.
   virtual MessageLite* New(Arena* arena) const = 0;
 
-  // Returns user-owned arena; nullptr if it's message owned.
-  Arena* GetArena() const { return _internal_metadata_.user_arena(); }
+  Arena* GetArena() const { return _internal_metadata_.arena(); }
 
   // Clear all fields of the message and set them to their default values.
   // Clear() assumes that any memory allocated to hold parts of the message
@@ -436,7 +435,7 @@ class PROTOBUF_EXPORT MessageLite {
   // internal memory). This method is used in proto's implementation for
   // swapping, moving and setting allocated, for deciding whether the ownership
   // of this message or its internal memory could be changed.
-  Arena* GetOwningArena() const { return _internal_metadata_.owning_arena(); }
+  Arena* GetOwningArena() const { return _internal_metadata_.arena(); }
 
   // Returns the arena, used for allocating internal objects(e.g., child
   // messages, etc), or owning incoming objects (e.g., set allocated).

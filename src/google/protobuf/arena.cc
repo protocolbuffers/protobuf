@@ -603,7 +603,6 @@ void ThreadSafeArena::AddSerialArena(void* id, SerialArena* serial) {
 }
 
 void ThreadSafeArena::Init() {
-  // Message-owned arenas bypass thread cache and do not need life cycle ID.
   tag_and_id_ = GetNextLifeCycleId();
   arena_stats_ = Sample();
   head_.store(SentrySerialArenaChunk(), std::memory_order_relaxed);

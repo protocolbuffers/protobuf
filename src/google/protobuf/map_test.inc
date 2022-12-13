@@ -3170,7 +3170,9 @@ TEST(GeneratedMapFieldReflectionTest, ReleaseLast) {
   std::vector<const Message*> release_last =
       MapTestUtil::GetMapEntriesFromRelease(&message);
   MapTestUtil::ExpectMapsSize(message, 1);
+#ifndef PROTOBUF_FORCE_COPY_IN_RELEASE
   EXPECT_TRUE(expect_last == release_last);
+#endif  // !PROTOBUF_FORCE_COPY_IN_RELEASE
   for (std::vector<const Message*>::iterator it = release_last.begin();
        it != release_last.end(); ++it) {
     delete *it;

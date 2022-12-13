@@ -829,8 +829,7 @@ TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
 
   // Repeated primitive extensions will increase space used by at least a
   // RepeatedField<T>, and will cause additional allocations when the array
-  // gets too big for the initial space.  Note, we explicitly allocate on the
-  // heap to avoid message-owned arenas.
+  // gets too big for the initial space.
   // This macro:
   //   - Adds a value to the repeated extension, then clears it, establishing
   //     the base size.
