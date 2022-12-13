@@ -36,6 +36,7 @@
 #include "google/protobuf/message_lite.h"
 
 #include <climits>
+#include <cstddef>
 #include <cstdint>
 #include <istream>
 #include <ostream>
@@ -47,10 +48,12 @@
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/strings/cord.h"
+#include "absl/strings/cord_buffer.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -200,6 +203,9 @@ class ZeroCopyCodedInputStream : public io::ZeroCopyInputStream {
 
   bool aliasing_enabled() { return cis_->aliasing_enabled_; }
 
+  bool ReadCord(absl::Cord* cord, int count) final {
+    return cis_->ReadCord(cord, count);
+  }
  private:
   io::CodedInputStream* cis_;
 };
@@ -316,6 +322,43 @@ bool MessageLite::MergeFromString(absl::string_view data) {
   return ParseFrom<kMerge>(data);
 }
 
+
+namespace internal {
+
+template <>
+struct SourceWrapper<absl::Cord> {
+  explicit SourceWrapper(const absl::Cord* c) : cord(c) {}
+  template <bool alias>
+  bool MergeInto(MessageLite* msg, MessageLite::ParseFlags parse_flags) const {
+    absl::optional<absl::string_view> flat = cord->TryFlat();
+    if (flat && flat->size() <= ParseContext::kMaxCordBytesToCopy) {
+      return MergeFromImpl<alias>(*flat, msg, parse_flags);
+    } else {
+      io::CordInputStream input(cord);
+      return MergeFromImpl<alias>(&input, msg, parse_flags);
+    }
+  }
+
+  const absl::Cord* const cord;
+};
+
+}  // namespace internal
+
+bool MessageLite::MergeFromCord(const absl::Cord& cord) {
+  return ParseFrom<kMerge>(internal::SourceWrapper<absl::Cord>(&cord));
+}
+
+bool MessageLite::MergePartialFromCord(const absl::Cord& cord) {
+  return ParseFrom<kMergePartial>(internal::SourceWrapper<absl::Cord>(&cord));
+}
+
+bool MessageLite::ParseFromCord(const absl::Cord& cord) {
+  return ParseFrom<kParse>(internal::SourceWrapper<absl::Cord>(&cord));
+}
+
+bool MessageLite::ParsePartialFromCord(const absl::Cord& cord) {
+  return ParseFrom<kParsePartial>(internal::SourceWrapper<absl::Cord>(&cord));
+}
 
 // ===================================================================
 
@@ -498,6 +541,78 @@ std::string MessageLite::SerializePartialAsString() const {
   return output;
 }
 
+bool MessageLite::AppendToCord(absl::Cord* output) const {
+  GOOGLE_ABSL_DCHECK(IsInitialized())
+      << InitializationErrorMessage("serialize", *this);
+  return AppendPartialToCord(output);
+}
+
+bool MessageLite::AppendPartialToCord(absl::Cord* output) const {
+  // For efficiency, we'd like to pass a size hint to CordOutputStream with
+  // the exact total size expected.
+  const size_t size = ByteSizeLong();
+  const size_t total_size = size + output->size();
+  if (size > INT_MAX) {
+    GOOGLE_ABSL_LOG(ERROR) << "Exceeded maximum protobuf size of 2GB.";
+    return false;
+  }
+
+
+  // Allocate a CordBuffer (which may utilize private capacity in 'output').
+  absl::CordBuffer buffer = output->GetAppendBuffer(size);
+  absl::Span<char> available = buffer.available();
+  auto target = reinterpret_cast<uint8_t*>(available.data());
+  if (available.size() >= size) {
+    // Use EpsCopyOutputStream with full available capacity, as serialization
+    // may in the future use the extra slop bytes if available.
+    io::EpsCopyOutputStream out(
+        target, static_cast<int>(available.size()),
+        io::CodedOutputStream::IsDefaultSerializationDeterministic());
+    auto res = _InternalSerialize(target, &out);
+    GOOGLE_ABSL_DCHECK_EQ(res, target + size);
+    buffer.IncreaseLengthBy(size);
+    output->Append(std::move(buffer));
+    GOOGLE_ABSL_DCHECK_EQ(output->size(), total_size);
+    return true;
+  }
+
+  // Donate the buffer to the CordOutputStream with length := capacity.
+  // This follows the eager `EpsCopyOutputStream` initialization logic.
+  buffer.SetLength(buffer.capacity());
+  io::CordOutputStream output_stream(std::move(*output), std::move(buffer),
+                                     total_size);
+  io::EpsCopyOutputStream out(
+      target, static_cast<int>(available.size()), &output_stream,
+      io::CodedOutputStream::IsDefaultSerializationDeterministic(), &target);
+  target = _InternalSerialize(target, &out);
+  out.Trim(target);
+  if (out.HadError()) return false;
+  *output = output_stream.Consume();
+  GOOGLE_ABSL_DCHECK_EQ(output->size(), total_size);
+  return true;
+}
+
+bool MessageLite::SerializeToCord(absl::Cord* output) const {
+  output->Clear();
+  return AppendToCord(output);
+}
+
+bool MessageLite::SerializePartialToCord(absl::Cord* output) const {
+  output->Clear();
+  return AppendPartialToCord(output);
+}
+
+absl::Cord MessageLite::SerializeAsCord() const {
+  absl::Cord output;
+  if (!AppendToCord(&output)) output.Clear();
+  return output;
+}
+
+absl::Cord MessageLite::SerializePartialAsCord() const {
+  absl::Cord output;
+  if (!AppendPartialToCord(&output)) output.Clear();
+  return output;
+}
 
 namespace internal {
 

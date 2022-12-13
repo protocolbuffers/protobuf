@@ -49,6 +49,7 @@
 #include "google/protobuf/port.h"
 #include "absl/base/call_once.h"
 #include "google/protobuf/stubs/logging.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/explicitly_constructed.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -371,6 +372,36 @@ class PROTOBUF_EXPORT MessageLite {
   // Like AppendToString(), but allows missing required fields.
   bool AppendPartialToString(std::string* output) const;
 
+  // Reads a protocol buffer from a Cord and merges it into this message.
+  bool MergeFromCord(const absl::Cord& cord);
+  // Like MergeFromCord(), but accepts messages that are missing
+  // required fields.
+  bool MergePartialFromCord(const absl::Cord& cord);
+  // Parse a protocol buffer contained in a Cord.
+  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParseFromCord(const absl::Cord& cord);
+  // Like ParseFromCord(), but accepts messages that are missing
+  // required fields.
+  PROTOBUF_ATTRIBUTE_REINITIALIZES bool ParsePartialFromCord(
+      const absl::Cord& cord);
+
+  // Serialize the message and store it in the given Cord.  All required
+  // fields must be set.
+  bool SerializeToCord(absl::Cord* output) const;
+  // Like SerializeToCord(), but allows missing required fields.
+  bool SerializePartialToCord(absl::Cord* output) const;
+
+  // Make a Cord encoding the message. Is equivalent to calling
+  // SerializeToCord() on a Cord and using that.  Returns an empty
+  // Cord if SerializeToCord() would have returned an error.
+  absl::Cord SerializeAsCord() const;
+  // Like SerializeAsCord(), but allows missing required fields.
+  absl::Cord SerializePartialAsCord() const;
+
+  // Like SerializeToCord(), but appends to the data to the Cord's existing
+  // contents.  All required fields must be set.
+  bool AppendToCord(absl::Cord* output) const;
+  // Like AppendToCord(), but allows missing required fields.
+  bool AppendPartialToCord(absl::Cord* output) const;
 
   // Computes the serialized size of the message.  This recursively calls
   // ByteSizeLong() on all embedded messages.
