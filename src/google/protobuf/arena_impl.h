@@ -581,8 +581,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 #pragma warning(disable : 4324)
 #endif
   using LifecycleId = uint64_t;
-  alignas(kCacheAlignment) ABSL_CONST_INIT static std::atomic<LifecycleId>
-      lifecycle_id_;
+  alignas(kCacheAlignment) ABSL_CONST_INIT
+      static std::atomic<LifecycleId> lifecycle_id_;
 #if defined(PROTOBUF_NO_THREADLOCAL)
   // iOS does not support __thread keyword so we use a custom thread local
   // storage class we implemented.
