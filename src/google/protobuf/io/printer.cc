@@ -77,6 +77,30 @@ absl::optional<T> LookupInFrameStack(
 }
 }  // namespace
 
+struct Printer::Format {
+  struct Chunk {
+    // The chunk's text; if this is a variable, it does not include the $...$.
+    absl::string_view text;
+
+    // Whether or not this is a variable name, i.e., a $...$.
+    bool is_var;
+  };
+
+  struct Line {
+    // Chunks to emit, split along $ and annotates as to whether it is a
+    // variable name.
+    std::vector<Chunk> chunks;
+
+    // The indentation for this chunk.
+    size_t indent;
+  };
+
+  std::vector<Line> lines;
+
+  // Whether this is a multiline raw string, according to internal heuristics.
+  bool is_raw_string = false;
+};
+
 Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
                                         const PrintOptions& options) {
   Format format;
@@ -668,7 +692,8 @@ void Printer::PrintImpl(absl::string_view format,
             "substitution that resolves to callback cannot contain whitespace");
 
         range_start = sink_.bytes_written();
-        (*fnc)();
+        GOOGLE_ABSL_CHECK((*fnc)())
+            << "recursive call encountered while evaluating \"" << var << "\"";
         range_end = sink_.bytes_written();
       }
 
