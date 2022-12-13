@@ -905,18 +905,7 @@ class Printer::Sub {
         value_(std::forward<Value>(value)),
         annotation_(absl::nullopt) {}
 
-  // NOTE: This is an overload rather than taking optional<AnnotationRecord>
-  // with a default argument of nullopt, because we want to pick up
-  // AnnotationRecord's user-defined conversions. Because going from
-  // e.g. Descriptor* -> optional<AnnotationRecord> requires two user-defined
-  // conversions, this does not work.
-  template <typename Key, typename Value>
-  Sub(Key&& key, Value&& value, AnnotationRecord annotation)
-      : key_(std::forward<Key>(key)),
-        value_(std::forward<Value>(value)),
-        annotation_(std::move(annotation)) {}
-
-  Sub Annotate(AnnotationRecord annotation) && {
+  Sub AnnotatedAs(AnnotationRecord annotation) && {
     annotation_ = std::move(annotation);
     return std::move(*this);
   }
