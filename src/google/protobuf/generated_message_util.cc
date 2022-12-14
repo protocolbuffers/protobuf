@@ -317,7 +317,7 @@ class AccessorHelper {
 };
 
 void SerializeNotImplemented(int field) {
-  GOOGLE_LOG(FATAL) << "Not implemented field number " << field;
+  GOOGLE_ABSL_LOG(FATAL) << "Not implemented field number " << field;
 }
 
 // When switching to c++11 we should make these constexpr functions
@@ -389,9 +389,9 @@ void GenericSwap(MessageLite* m1, MessageLite* m2) {
 MessageLite* GetOwnedMessageInternal(Arena* message_arena,
                                      MessageLite* submessage,
                                      Arena* submessage_arena) {
-  GOOGLE_DCHECK(Arena::InternalGetOwningArena(submessage) == submessage_arena);
-  GOOGLE_DCHECK(message_arena != submessage_arena);
-  GOOGLE_DCHECK_EQ(submessage_arena, nullptr);
+  GOOGLE_ABSL_DCHECK(Arena::InternalGetOwningArena(submessage) == submessage_arena);
+  GOOGLE_ABSL_DCHECK(message_arena != submessage_arena);
+  GOOGLE_ABSL_DCHECK_EQ(submessage_arena, nullptr);
   if (message_arena != nullptr && submessage_arena == nullptr) {
     message_arena->Own(submessage);
     return submessage;

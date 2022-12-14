@@ -51,6 +51,8 @@
 #include "google/protobuf/map_entry_lite.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -102,7 +104,7 @@ std::string ConditionalToCheckBitmasks(
     parts.push_back(
         absl::StrCat("((", has_bits_var, "[", i, "] & ", m, ") ^ ", m, ")"));
   }
-  GOOGLE_CHECK(!parts.empty());
+  GOOGLE_ABSL_CHECK(!parts.empty());
   // If we have multiple parts, each expected to be 0, then bitwise-or them.
   std::string result =
       parts.size() == 1
@@ -176,23 +178,6 @@ bool IsPOD(const FieldDescriptor* field) {
   }
 }
 
-// Helper for the code that emits the SharedCtor() and InternalSwap() methods.
-// Anything that is a POD or a "normal" message (represented by a pointer) can
-// be manipulated as raw bytes.
-bool CanBeManipulatedAsRawBytes(const FieldDescriptor* field,
-                                const Options& options,
-                                MessageSCCAnalyzer* scc_analyzer) {
-  bool ret = CanInitializeByZeroing(field);
-
-  // Non-repeated, non-lazy message fields are simply raw pointers, so we can
-  // swap them or use memset to initialize these in SharedCtor. We cannot use
-  // this in Clear, as we need to potentially delete the existing value.
-  ret =
-      ret || (!field->is_repeated() && !IsLazy(field, options, scc_analyzer) &&
-              field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE);
-  return ret;
-}
-
 // Finds runs of fields for which `predicate` is true.
 // RunMap maps from fields that start each run to the number of fields in that
 // run.  This is optimized for the common case that there are very few runs in
@@ -223,7 +208,7 @@ RunMap FindRuns(const std::vector<const FieldDescriptor*>& fields,
 // !HasHasbit(field).
 bool EmitFieldNonDefaultCondition(io::Printer* p, const std::string& prefix,
                                   const FieldDescriptor* field) {
-  GOOGLE_CHECK(!HasHasbit(field));
+  GOOGLE_ABSL_CHECK(!HasHasbit(field));
   Formatter format(p);
   auto v = p->WithVars({{
       {"prefix", prefix},
@@ -259,7 +244,8 @@ bool EmitFieldNonDefaultCondition(io::Printer* p, const std::string& prefix,
     format.Indent();
     return true;
   } else if (field->real_containing_oneof()) {
-    format("if (_internal_has_$name$()) {\n");
+    auto v = p->WithVars(OneofFieldVars(field));
+    format("if ($has_field$) {\n");
     format.Indent();
     return true;
   }
@@ -278,11 +264,16 @@ bool HasHasMethod(const FieldDescriptor* field) {
          field->has_optional_keyword() || field->real_containing_oneof();
 }
 
+bool HasInternalHasMethod(const FieldDescriptor* field) {
+  return !HasHasbit(field) &&
+         field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE;
+}
+
 // Collects map entry message type information.
 void CollectMapInfo(
     const Options& options, const Descriptor* descriptor,
     absl::flat_hash_map<absl::string_view, std::string>* variables) {
-  GOOGLE_CHECK(IsMapEntryMessage(descriptor));
+  GOOGLE_ABSL_CHECK(IsMapEntryMessage(descriptor));
   absl::flat_hash_map<absl::string_view, std::string>& vars = *variables;
   const FieldDescriptor* key = descriptor->map_key();
   const FieldDescriptor* val = descriptor->map_value();
@@ -301,14 +292,6 @@ void CollectMapInfo(
       "TYPE_" + absl::AsciiStrToUpper(DeclaredTypeMethodName(key->type()));
   vars["val_wire_type"] =
       "TYPE_" + absl::AsciiStrToUpper(DeclaredTypeMethodName(val->type()));
-}
-
-// Does the given field have a private (internal helper only) has_$name$()
-// method?
-bool HasPrivateHasMethod(const FieldDescriptor* field) {
-  // Only for oneofs in message types with no field presence. has_$name$(),
-  // based on the oneof case, is still useful internally for generated code.
-  return IsProto3(field->file()) && field->real_containing_oneof();
 }
 
 
@@ -376,16 +359,16 @@ std::vector<std::vector<const FieldDescriptor*>> CollectFields(
 // masked to tell if any thing in "fields" is present.
 uint32_t GenChunkMask(const std::vector<const FieldDescriptor*>& fields,
                       const std::vector<int>& has_bit_indices) {
-  GOOGLE_CHECK(!fields.empty());
+  GOOGLE_ABSL_CHECK(!fields.empty());
   int first_index_offset = has_bit_indices[fields.front()->index()] / 32;
   uint32_t chunk_mask = 0;
   for (auto field : fields) {
     // "index" defines where in the _has_bits_ the field appears.
     int index = has_bit_indices[field->index()];
-    GOOGLE_CHECK_EQ(first_index_offset, index / 32);
+    GOOGLE_ABSL_CHECK_EQ(first_index_offset, index / 32);
     chunk_mask |= static_cast<uint32_t>(1) << (index % 32);
   }
-  GOOGLE_CHECK_NE(0, chunk_mask);
+  GOOGLE_ABSL_CHECK_NE(0, chunk_mask);
   return chunk_mask;
 }
 
@@ -482,7 +465,7 @@ void ColdChunkSkipper::OnStartChunk(int chunk, int cached_has_word_index,
       for (auto field : chunks_[chunk]) {
         int hasbit_index = has_bit_indices_[field->index()];
         // Fields on a chunk must be in the same word.
-        GOOGLE_CHECK_EQ(this_word, hasbit_index / 32);
+        GOOGLE_ABSL_CHECK_EQ(this_word, hasbit_index / 32);
         mask |= 1 << (hasbit_index % 32);
       }
     }
@@ -637,6 +620,16 @@ absl::flat_hash_map<absl::string_view, std::string> ClassVars(
   }
 
   return vars;
+}
+
+absl::flat_hash_map<absl::string_view, std::string> HasbitVars(
+    int has_bit_index) {
+  return {
+      {"has_array_index", absl::StrCat(has_bit_index / 32)},
+      {"has_mask",
+       absl::StrCat(
+           "0x", absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8), "u")},
+  };
 }
 
 }  // anonymous namespace
@@ -803,17 +796,13 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
             "public:\n",
             field);
       }
-    } else if (HasHasMethod(field)) {
-      format("$deprecated_attr$bool ${1$has_$name$$}$() const$2$\n", field,
-             !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
-      if (!IsFieldStripped(field, options_)) {
+    } else {
+      if (HasHasMethod(field)) {
         format(
-            "private:\n"
-            "bool _internal_has_$name$() const;\n"
-            "public:\n");
+            "$deprecated_attr$bool ${1$has_$name$$}$() const$2$\n", field,
+            !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
       }
-    } else if (HasPrivateHasMethod(field)) {
-      if (!IsFieldStripped(field, options_)) {
+      if (HasInternalHasMethod(field) && !IsFieldStripped(field, options_)) {
         format(
             "private:\n"
             "bool ${1$_internal_has_$name$$}$() const;\n"
@@ -1072,17 +1061,13 @@ void MessageGenerator::GenerateSingularFieldHasBits(
   }
   if (HasHasbit(field)) {
     int has_bit_index = HasBitIndex(field);
-    GOOGLE_CHECK_NE(has_bit_index, kNoHasbit);
+    GOOGLE_ABSL_CHECK_NE(has_bit_index, kNoHasbit);
 
-    auto v = p->WithVars({
-        {"has_array_index", has_bit_index / 32},
-        {"has_mask", absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8)},
-    });
-
+    auto v = p->WithVars(HasbitVars(has_bit_index));
     format(
-        "inline bool $classname$::_internal_has_$name$() const {\n"
-        "  bool value = "
-        "($has_bits$[$has_array_index$] & 0x$has_mask$u) != 0;\n");
+        "inline bool $classname$::has_$name$() const {\n"
+        "$annotate_has$"
+        "  bool value = ($has_bits$[$has_array_index$] & $has_mask$) != 0;\n");
 
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
         !IsLazy(field, options_, scc_analyzer_)) {
@@ -1094,10 +1079,6 @@ void MessageGenerator::GenerateSingularFieldHasBits(
 
     format(
         "  return value;\n"
-        "}\n"
-        "inline bool $classname$::has_$name$() const {\n"
-        "$annotate_has$"
-        "  return _internal_has_$name$();\n"
         "}\n");
   } else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
     // Message fields have a has_$name$() method.
@@ -1141,6 +1122,7 @@ void MessageGenerator::GenerateOneofHasBits(io::Printer* p) {
 
 void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
                                                   io::Printer* p) {
+  auto v = p->WithVars(OneofFieldVars(field));
   Formatter format(p);
   if (IsFieldStripped(field, options_)) {
     if (HasHasMethod(field)) {
@@ -1156,25 +1138,18 @@ void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
   // Singular field in a oneof
   // N.B.: Without field presence, we do not use has-bits or generate
   // has_$name$() methods, but oneofs still have set_has_$name$().
-  // Oneofs also have has_$name$() but only as a private helper
-  // method, so that generated code is slightly cleaner (vs.  comparing
-  // _oneof_case_[index] against a constant everywhere).
-  //
-  // If has_$name$() is private, there is no need to add an internal accessor.
-  // Only annotate public accessors.
+  // Oneofs also have private _internal_has_$name$() a helper method.
   if (HasHasMethod(field)) {
     format(
-        "inline bool $classname$::_internal_has_$name$() const {\n"
-        "  return $oneof_name$_case() == k$field_name$;\n"
-        "}\n"
         "inline bool $classname$::has_$name$() const {\n"
         "$annotate_has$"
-        "  return _internal_has_$name$();\n"
+        "  return $has_field$;\n"
         "}\n");
-  } else if (HasPrivateHasMethod(field)) {
+  }
+  if (HasInternalHasMethod(field)) {
     format(
         "inline bool $classname$::_internal_has_$name$() const {\n"
-        "  return $oneof_name$_case() == k$field_name$;\n"
+        "  return $has_field$;\n"
         "}\n");
   }
   // set_has_$name$() for oneof fields is always private; hence should not be
@@ -1205,7 +1180,7 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
     // Clear this field only if it is the active field in this oneof,
     // otherwise ignore
     auto v = p->WithVars(OneofFieldVars(field));
-    format("if (_internal_has_$name$()) {\n");
+    format("if ($has_field$) {\n");
     format.Indent();
     field_generators_.get(field).GenerateClearingCode(p);
     format("clear_has_$oneof_name$();\n");
@@ -1218,10 +1193,8 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
     field_generators_.get(field).GenerateClearingCode(p);
     if (HasHasbit(field)) {
       int has_bit_index = HasBitIndex(field);
-      auto v = p->WithVars({{"has_array_index", has_bit_index / 32},
-                            {"has_mask", absl::Hex(1u << (has_bit_index % 32),
-                                                   absl::kZeroPad8)}});
-      format("$has_bits$[$has_array_index$] &= ~0x$has_mask$u;\n");
+      auto v = p->WithVars(HasbitVars(has_bit_index));
+      format("$has_bits$[$has_array_index$] &= ~$has_mask$;\n");
     }
   }
   format("$annotate_clear$");
@@ -1262,11 +1235,6 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
                 : "");
       }
     } else if (field->real_containing_oneof()) {
-      auto v = p->WithVars({
-          {"field_name", UnderscoresToCamelCase(field->name(), true)},
-          {"oneof_name", field->containing_oneof()->name()},
-          {"oneof_index", absl::StrCat(field->containing_oneof()->index())},
-      });
       GenerateOneofMemberHasBits(field, p);
     } else {
       // Singular field.
@@ -1332,7 +1300,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             " }\n",
             descriptor_->field(0)->full_name());
       } else {
-        GOOGLE_CHECK(utf8_check == Utf8CheckMode::kVerify);
+        GOOGLE_ABSL_CHECK(utf8_check == Utf8CheckMode::kVerify);
         format(
             "  static bool ValidateKey(std::string* s) {\n"
             "#ifndef NDEBUG\n"
@@ -1361,7 +1329,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             " }\n",
             descriptor_->field(1)->full_name());
       } else {
-        GOOGLE_CHECK(utf8_check == Utf8CheckMode::kVerify);
+        GOOGLE_ABSL_CHECK(utf8_check == Utf8CheckMode::kVerify);
         format(
             "  static bool ValidateValue(std::string* s) {\n"
             "#ifndef NDEBUG\n"
@@ -1399,18 +1367,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
   format(" public:\n");
   format.Indent();
 
-  if (EnableMessageOwnedArena(descriptor_, options_)) {
-    format(
-        "inline $classname$() : $classname$("
-        "::$proto_ns$::Arena::InternalCreateMessageOwnedArena(), true) {}\n");
-  } else if (EnableMessageOwnedArenaTrial(descriptor_, options_)) {
-    format(
-        "inline $classname$() : $classname$(InMoaTrial() ? "
-        "::$proto_ns$::Arena::InternalCreateMessageOwnedArena() : nullptr, "
-        "InMoaTrial()) {}\n");
-  } else {
-    format("inline $classname$() : $classname$(nullptr) {}\n");
-  }
+  format("inline $classname$() : $classname$(nullptr) {}\n");
   if (!HasSimpleBaseClass(descriptor_, options_)) {
     format("~$classname$() override;\n");
   }
@@ -1685,7 +1642,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         "int GetCachedSize() const final { return "
         "$cached_size$.Get(); }"
         "\n\nprivate:\n"
-        "void SharedCtor(::$proto_ns$::Arena* arena, bool is_message_owned);\n"
+        "void SharedCtor(::$proto_ns$::Arena* arena);\n"
         "void SharedDtor();\n"
         "void SetCachedSize(int size) const$ full_final$;\n"
         "void InternalSwap($classname$* other);\n");
@@ -1704,8 +1661,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
       // protos to give access to this constructor, breaking the invariants
       // we rely on.
       "protected:\n"
-      "explicit $classname$(::$proto_ns$::Arena* arena,\n"
-      "                     bool is_message_owned = false);\n");
+      "explicit $classname$(::$proto_ns$::Arena* arena);\n");
 
   switch (NeedsArenaDestructor()) {
     case ArenaDtorNeeds::kOnDemand:
@@ -1999,7 +1955,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
   format.Outdent();
   format("};");
-  GOOGLE_DCHECK(!need_to_emit_cached_size);
+  GOOGLE_ABSL_DCHECK(!need_to_emit_cached_size);
 }  // NOLINT(readability/fn_size)
 
 void MessageGenerator::GenerateInlineMethods(io::Printer* p) {
@@ -2036,8 +1992,8 @@ void MessageGenerator::GenerateSchema(io::Printer* p, int offset,
   if (inlined_string_indices_.empty()) {
     inlined_string_indices_offset = -1;
   } else {
-    GOOGLE_DCHECK_NE(has_offset, -1);
-    GOOGLE_DCHECK(!IsMapEntryMessage(descriptor_));
+    GOOGLE_ABSL_DCHECK_NE(has_offset, -1);
+    GOOGLE_ABSL_DCHECK(!IsMapEntryMessage(descriptor_));
     inlined_string_indices_offset = has_offset + has_bit_indices_.size();
   }
   format("{ $1$, $2$, $3$, sizeof($classtype$)},\n", offset, has_offset,
@@ -2121,7 +2077,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     }
     if (HasHasbit(field)) {
       int has_bit_index = HasBitIndex(field);
-      GOOGLE_CHECK_NE(has_bit_index, kNoHasbit) << field->full_name();
+      GOOGLE_ABSL_CHECK_NE(has_bit_index, kNoHasbit) << field->full_name();
       format(
           "static void set_has_$1$(HasBits* has_bits) {\n"
           "  (*has_bits)[$2$] |= $3$u;\n"
@@ -2341,7 +2297,7 @@ std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(io::Printer* p) {
     format("PROTOBUF_FIELD_OFFSET($classtype$, _impl_.$1$_),\n", oneof->name());
     count++;
   }
-  GOOGLE_CHECK_EQ(count, descriptor_->real_oneof_decl_count());
+  GOOGLE_ABSL_CHECK_EQ(count, descriptor_->real_oneof_decl_count());
 
   if (IsMapEntryMessage(descriptor_)) {
     entries += 2;
@@ -2375,10 +2331,8 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* p) {
   Formatter format(p);
 
   format(
-      "inline void $classname$::SharedCtor(\n"
-      "    ::_pb::Arena* arena, bool is_message_owned) {\n"
-      "  (void)arena;\n"
-      "  (void)is_message_owned;\n");
+      "inline void $classname$::SharedCtor(::_pb::Arena* arena) {\n"
+      "  (void)arena;\n");
 
   format.Indent();
   // Impl_ _impl_.
@@ -2413,7 +2367,7 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* p) {
 
   // Initialize member variables with arena constructor.
   for (auto field : optimized_order_) {
-    GOOGLE_DCHECK(!IsFieldStripped(field, options_));
+    GOOGLE_ABSL_DCHECK(!IsFieldStripped(field, options_));
     if (ShouldSplit(field, options_)) {
       continue;
     }
@@ -2467,13 +2421,7 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* p) {
     // is needed.
     format("if (arena != nullptr) {\n");
     if (NeedsArenaDestructor() == ArenaDtorNeeds::kOnDemand) {
-      format(
-          "  if (!is_message_owned) {\n"
-          "    $inlined_string_donated_array$[0] = ~0u;\n"
-          "  } else {\n"
-          // We should not register ArenaDtor for MOA.
-          "    $inlined_string_donated_array$[0] = 0xFFFFFFFEu;\n"
-          "  }\n");
+      format("  $inlined_string_donated_array$[0] = ~0u;\n");
     } else {
       format("  $inlined_string_donated_array$[0] = 0xFFFFFFFEu;\n");
     }
@@ -2593,7 +2541,7 @@ ArenaDtorNeeds MessageGenerator::NeedsArenaDestructor() const {
 }
 
 void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
-  GOOGLE_CHECK(NeedsArenaDestructor() > ArenaDtorNeeds::kNone);
+  GOOGLE_ABSL_CHECK(NeedsArenaDestructor() > ArenaDtorNeeds::kNone);
 
   Formatter format(p);
 
@@ -2793,16 +2741,15 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
   Formatter format(p);
 
   format(
-      "$classname$::$classname$(::$proto_ns$::Arena* arena,\n"
-      "                         bool is_message_owned)\n"
-      "  : $1$(arena, is_message_owned) {\n",
+      "$classname$::$classname$(::$proto_ns$::Arena* arena)\n"
+      "  : $1$(arena) {\n",
       SuperClassName(descriptor_, options_));
 
   if (!HasSimpleBaseClass(descriptor_, options_)) {
-    format("  SharedCtor(arena, is_message_owned);\n");
+    format("  SharedCtor(arena);\n");
     if (NeedsArenaDestructor() == ArenaDtorNeeds::kRequired) {
       format(
-          "  if (arena != nullptr && !is_message_owned) {\n"
+          "  if (arena != nullptr) {\n"
           "    arena->OwnCustomDestructor(this, &$classname$::ArenaDtor);\n"
           "  }\n");
     }
@@ -3069,7 +3016,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
   // checks all hasbits in the chunk and skips it if none are set.
   int zero_init_bytes = 0;
   for (const auto& field : optimized_order_) {
-    if (CanInitializeByZeroing(field)) {
+    if (CanClearByZeroing(field)) {
       zero_init_bytes += EstimateAlignmentSize(field);
     }
   }
@@ -3082,12 +3029,12 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
         chunk_count++;
         // This predicate guarantees that there is only a single zero-init
         // (memset) per chunk, and if present it will be at the beginning.
-        bool same = HasByteIndex(a) == HasByteIndex(b) &&
-                    a->is_repeated() == b->is_repeated() &&
-                    ShouldSplit(a, options_) == ShouldSplit(b, options_) &&
-                    (CanInitializeByZeroing(a) == CanInitializeByZeroing(b) ||
-                     (CanInitializeByZeroing(a) &&
-                      (chunk_count == 1 || merge_zero_init)));
+        bool same =
+            HasByteIndex(a) == HasByteIndex(b) &&
+            a->is_repeated() == b->is_repeated() &&
+            ShouldSplit(a, options_) == ShouldSplit(b, options_) &&
+            (CanClearByZeroing(a) == CanClearByZeroing(b) ||
+             (CanClearByZeroing(a) && (chunk_count == 1 || merge_zero_init)));
         if (!same) chunk_count = 0;
         return same;
       });
@@ -3106,7 +3053,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
     bool chunk_is_split =
         !chunk.empty() && ShouldSplit(chunk.front(), options_);
     // All chunks after the first split chunk should also be split.
-    GOOGLE_CHECK(!first_split_chunk_processed || chunk_is_split);
+    GOOGLE_ABSL_CHECK(!first_split_chunk_processed || chunk_is_split);
     if (chunk_is_split && !first_split_chunk_processed) {
       // Some fields are cleared without checking has_bit. So we add the
       // condition here to avoid writing to the default split instance.
@@ -3116,8 +3063,8 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
     }
 
     for (const auto& field : chunk) {
-      if (CanInitializeByZeroing(field)) {
-        GOOGLE_CHECK(!saw_non_zero_init);
+      if (CanClearByZeroing(field)) {
+        GOOGLE_ABSL_CHECK(!saw_non_zero_init);
         if (!memset_start) memset_start = field;
         memset_end = field;
       } else {
@@ -3143,8 +3090,8 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
       // Check (up to) 8 has_bits at a time if we have more than one field in
       // this chunk.  Due to field layout ordering, we may check
       // _has_bits_[last_chunk * 8 / 32] multiple times.
-      GOOGLE_DCHECK_LE(2, popcnt(chunk_mask));
-      GOOGLE_DCHECK_GE(8, popcnt(chunk_mask));
+      GOOGLE_ABSL_DCHECK_LE(2, popcnt(chunk_mask));
+      GOOGLE_ABSL_DCHECK_GE(8, popcnt(chunk_mask));
 
       if (cached_has_word_index != HasWordIndex(chunk.front())) {
         cached_has_word_index = HasWordIndex(chunk.front());
@@ -3159,8 +3106,8 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
         // For clarity, do not memset a single field.
         field_generators_.get(memset_start).GenerateMessageClearingCode(p);
       } else {
-        GOOGLE_CHECK_EQ(chunk_is_split, ShouldSplit(memset_start, options_));
-        GOOGLE_CHECK_EQ(chunk_is_split, ShouldSplit(memset_end, options_));
+        GOOGLE_ABSL_CHECK_EQ(chunk_is_split, ShouldSplit(memset_start, options_));
+        GOOGLE_ABSL_CHECK_EQ(chunk_is_split, ShouldSplit(memset_end, options_));
         format(
             "::memset(&$1$, 0, static_cast<::size_t>(\n"
             "    reinterpret_cast<char*>(&$2$) -\n"
@@ -3172,7 +3119,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
 
     // Clear all non-zero-initializable fields in the chunk.
     for (const auto& field : chunk) {
-      if (CanInitializeByZeroing(field)) continue;
+      if (CanClearByZeroing(field)) continue;
       // It's faster to just overwrite primitive types, but we should only
       // clear strings and messages if they were set.
       //
@@ -3310,7 +3257,7 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
     const RunMap runs =
         FindRuns(optimized_order_, [this](const FieldDescriptor* field) {
           return !ShouldSplit(field, options_) &&
-                 CanBeManipulatedAsRawBytes(field, options_, scc_analyzer_);
+                 HasTrivialSwap(field, options_, scc_analyzer_);
         });
 
     for (size_t i = 0; i < optimized_order_.size(); ++i) {
@@ -3433,7 +3380,8 @@ void MessageGenerator::GenerateMergeFrom(io::Printer* p) {
 
 void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
-  // Generate the class-specific MergeFrom, which avoids the GOOGLE_CHECK and cast.
+  // Generate the class-specific MergeFrom, which avoids the GOOGLE_ABSL_CHECK and
+  // cast.
   Formatter format(p);
   if (!HasDescriptorMethods(descriptor_->file(), options_)) {
     // For messages that don't inherit from Message, just implement MergeFrom
@@ -3496,8 +3444,8 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
       // Check (up to) 8 has_bits at a time if we have more than one field in
       // this chunk.  Due to field layout ordering, we may check
       // _has_bits_[last_chunk * 8 / 32] multiple times.
-      GOOGLE_DCHECK_LE(2, popcnt(chunk_mask));
-      GOOGLE_DCHECK_GE(8, popcnt(chunk_mask));
+      GOOGLE_ABSL_DCHECK_LE(2, popcnt(chunk_mask));
+      GOOGLE_ABSL_DCHECK_GE(8, popcnt(chunk_mask));
 
       if (cached_has_word_index != HasWordIndex(chunk.front())) {
         cached_has_word_index = HasWordIndex(chunk.front());
@@ -3529,15 +3477,17 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
       } else if (field->options().weak() ||
                  cached_has_word_index != HasWordIndex(field)) {
         // Check hasbit, not using cached bits.
-        GOOGLE_CHECK(HasHasbit(field));
-        format("if (from._internal_has_$1$()) {\n", FieldName(field));
+        GOOGLE_ABSL_CHECK(HasHasbit(field));
+        auto v = p->WithVars(HasbitVars(HasBitIndex(field)));
+        format(
+            "if ((from.$has_bits$[$has_array_index$] & $has_mask$) != 0) {\n");
         format.Indent();
         generator.GenerateMergingCode(p);
         format.Outdent();
         format("}\n");
       } else {
         // Check hasbit, using cached bits.
-        GOOGLE_CHECK(HasHasbit(field));
+        GOOGLE_ABSL_CHECK(HasHasbit(field));
         int has_bit_index = has_bit_indices_[field->index()];
         const std::string mask = absl::StrCat(
             absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
@@ -3561,7 +3511,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
     if (have_outer_if) {
       if (deferred_has_bit_changes) {
         // Flush the has bits for the primitives we deferred.
-        GOOGLE_CHECK_LE(0, cached_has_word_index);
+        GOOGLE_ABSL_CHECK_LE(0, cached_has_word_index);
         format("_this->$has_bits$[$1$] |= cached_has_bits;\n",
                cached_has_word_index);
       }
@@ -3652,20 +3602,21 @@ void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
     // It is also disabled if a message has neither message fields nor
     // extensions, as it's impossible to copy from its descendant.
     //
-    // Note that FailIfCopyFromDescendant is implemented by reflection and not
-    // available for lite runtime. In that case, check if the size of the source
-    // has changed after Clear.
-    format("#ifndef NDEBUG\n");
+    // Note that IsDescendant is implemented by reflection and not available for
+    // lite runtime. In that case, check if the size of the source has changed
+    // after Clear.
     if (HasDescriptorMethods(descriptor_->file(), options_)) {
-      format("FailIfCopyFromDescendant(*this, from);\n");
-    } else {
-      format("::size_t from_size = from.ByteSizeLong();\n");
-    }
-    format(
-        "#endif\n"
-        "Clear();\n");
-    if (!HasDescriptorMethods(descriptor_->file(), options_)) {
       format(
+          "$DCHK$(!::_pbi::IsDescendant(*this, from))\n"
+          "    << \"Source of CopyFrom cannot be a descendant of the "
+          "target.\";\n"
+          "Clear();\n");
+    } else {
+      format(
+          "#ifndef NDEBUG\n"
+          "::size_t from_size = from.ByteSizeLong();\n"
+          "#endif\n"
+          "Clear();\n"
           "#ifndef NDEBUG\n"
           "$CHK$_EQ(from_size, from.ByteSizeLong())\n"
           "  << \"Source of CopyFrom changed when clearing target.  Either \"\n"
@@ -3688,7 +3639,7 @@ void MessageGenerator::GenerateVerify(io::Printer* p) {
 void MessageGenerator::GenerateSerializeOneofFields(
     io::Printer* p, const std::vector<const FieldDescriptor*>& fields) {
   Formatter format(p);
-  GOOGLE_CHECK(!fields.empty());
+  GOOGLE_ABSL_CHECK(!fields.empty());
   if (fields.size() == 1) {
     GenerateSerializeOneField(p, fields[0], -1);
     return;
@@ -3721,18 +3672,18 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
     PrintFieldComment(format, field);
   }
 
+  const FieldGenerator& field_gen = field_generators_.get(field);
+
   bool have_enclosing_if = false;
   if (field->options().weak()) {
   } else if (HasHasbit(field)) {
     // Attempt to use the state of cached_has_bits, if possible.
     int has_bit_index = HasBitIndex(field);
+    auto v = p->WithVars(HasbitVars(has_bit_index));
     if (cached_has_bits_index == has_bit_index / 32) {
-      const std::string mask =
-          absl::StrCat(absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
-
-      format("if (cached_has_bits & 0x$1$u) {\n", mask);
+      format("if (cached_has_bits & $has_mask$) {\n");
     } else {
-      format("if (_internal_has_$1$()) {\n", FieldName(field));
+      field_gen.GenerateIfHasField(p);
     }
 
     format.Indent();
@@ -3741,7 +3692,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
     have_enclosing_if = EmitFieldNonDefaultCondition(p, "this->", field);
   }
 
-  field_generators_.get(field).GenerateSerializeWithCachedSizesToArray(p);
+  field_gen.GenerateSerializeWithCachedSizesToArray(p);
 
   if (have_enclosing_if) {
     format.Outdent();
@@ -4051,7 +4002,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
 
   int num_fields = ordered_fields.size() + sorted_extensions.size();
   constexpr int kLargePrime = 1000003;
-  GOOGLE_CHECK_LT(num_fields, kLargePrime)
+  GOOGLE_ABSL_CHECK_LT(num_fields, kLargePrime)
       << "Prime offset must be greater than the number of fields to ensure "
          "those are coprime.";
 
@@ -4167,13 +4118,12 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     format("::size_t total_size = 0;\n");
     for (auto field : optimized_order_) {
       if (field->is_required()) {
-        format(
-            "\n"
-            "if (_internal_has_$1$()) {\n",
-            FieldName(field));
+        const FieldGenerator& field_gen = field_generators_.get(field);
+        format("\n");
+        field_gen.GenerateIfHasField(p);
         format.Indent();
         PrintFieldComment(format, field);
-        field_generators_.get(field).GenerateByteSize(p);
+        field_gen.GenerateByteSize(p);
         format.Outdent();
         format("}\n");
       }
@@ -4227,9 +4177,10 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     for (auto field : optimized_order_) {
       if (!field->is_required()) continue;
       PrintFieldComment(format, field);
-      format("if (_internal_has_$1$()) {\n", FieldName(field));
+      const FieldGenerator& field_gen = field_generators_.get(field);
+      field_gen.GenerateIfHasField(p);
       format.Indent();
-      field_generators_.get(field).GenerateByteSize(p);
+      field_gen.GenerateByteSize(p);
       format.Outdent();
       format("}\n");
     }
@@ -4270,8 +4221,8 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
       // Check (up to) 8 has_bits at a time if we have more than one field in
       // this chunk.  Due to field layout ordering, we may check
       // _has_bits_[last_chunk * 8 / 32] multiple times.
-      GOOGLE_DCHECK_LE(2, popcnt(chunk_mask));
-      GOOGLE_DCHECK_GE(8, popcnt(chunk_mask));
+      GOOGLE_ABSL_DCHECK_LE(2, popcnt(chunk_mask));
+      GOOGLE_ABSL_DCHECK_GE(8, popcnt(chunk_mask));
 
       if (cached_has_word_index != HasWordIndex(chunk.front())) {
         cached_has_word_index = HasWordIndex(chunk.front());

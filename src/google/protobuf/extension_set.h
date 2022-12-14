@@ -321,7 +321,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   // This is an overload of MutableRawRepeatedField to maintain compatibility
   // with old code using a previous API. This version of
-  // MutableRawRepeatedField() will GOOGLE_CHECK-fail on a missing extension.
+  // MutableRawRepeatedField() will GOOGLE_ABSL_CHECK-fail on a missing extension.
   // (E.g.: borg/clients/internal/proto1/proto2_reflection.cc.)
   void* MutableRawRepeatedField(int number);
 
@@ -570,9 +570,9 @@ class PROTOBUF_EXPORT ExtensionSet {
     virtual void MergeFromMessage(const MessageLite& msg, Arena* arena) = 0;
     virtual void Clear() = 0;
 
-    virtual const char* _InternalParse(const Message& prototype, Arena* arena,
-                                       LazyVerifyOption option, const char* ptr,
-                                       ParseContext* ctx) = 0;
+    virtual const char* _InternalParse(const MessageLite& prototype,
+                                       Arena* arena, LazyVerifyOption option,
+                                       const char* ptr, ParseContext* ctx) = 0;
     virtual uint8_t* WriteMessageToArray(
         const MessageLite* prototype, int number, uint8_t* target,
         io::EpsCopyOutputStream* stream) const = 0;
@@ -790,8 +790,8 @@ class PROTOBUF_EXPORT ExtensionSet {
       return false;
     }
 
-    GOOGLE_DCHECK(extension->type > 0 &&
-           extension->type <= WireFormatLite::MAX_FIELD_TYPE);
+    GOOGLE_ABSL_DCHECK(extension->type > 0 &&
+                extension->type <= WireFormatLite::MAX_FIELD_TYPE);
     auto real_type = static_cast<WireFormatLite::FieldType>(extension->type);
 
     WireFormatLite::WireType expected_wire_type =
@@ -1257,7 +1257,7 @@ class EnumTypeTraits {
   }
   static inline void Set(int number, FieldType field_type, ConstType value,
                          ExtensionSet* set) {
-    GOOGLE_DCHECK(IsValid(value));
+    GOOGLE_ABSL_DCHECK(IsValid(value));
     set->SetEnum(number, field_type, value, nullptr);
   }
   template <typename ExtendeeT>
@@ -1289,12 +1289,12 @@ class RepeatedEnumTypeTraits {
   }
   static inline void Set(int number, int index, ConstType value,
                          ExtensionSet* set) {
-    GOOGLE_DCHECK(IsValid(value));
+    GOOGLE_ABSL_DCHECK(IsValid(value));
     set->SetRepeatedEnum(number, index, value);
   }
   static inline void Add(int number, FieldType field_type, bool is_packed,
                          ConstType value, ExtensionSet* set) {
-    GOOGLE_DCHECK(IsValid(value));
+    GOOGLE_ABSL_DCHECK(IsValid(value));
     set->AddEnum(number, field_type, is_packed, value, nullptr);
   }
   static inline const RepeatedField<Type>& GetRepeated(

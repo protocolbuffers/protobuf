@@ -73,7 +73,7 @@ namespace {
 std::string MapValueImmutableClassdName(const Descriptor* descriptor,
                                         ClassNameResolver* name_resolver) {
   const FieldDescriptor* value_field = descriptor->map_value();
-  GOOGLE_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, value_field->type());
+  GOOGLE_ABSL_CHECK_EQ(FieldDescriptor::TYPE_MESSAGE, value_field->type());
   return name_resolver->GetImmutableClassName(value_field->message_type());
 }
 }  // namespace
@@ -85,7 +85,7 @@ MessageGenerator::MessageGenerator(const Descriptor* descriptor)
   for (int i = 0; i < descriptor_->field_count(); i++) {
     if (IsRealOneof(descriptor_->field(i))) {
       const OneofDescriptor* oneof = descriptor_->field(i)->containing_oneof();
-      GOOGLE_CHECK(oneofs_.emplace(oneof->index(), oneof).first->second == oneof);
+      GOOGLE_ABSL_CHECK(oneofs_.emplace(oneof->index(), oneof).first->second == oneof);
     }
   }
 }
@@ -99,7 +99,7 @@ ImmutableMessageGenerator::ImmutableMessageGenerator(
       context_(context),
       name_resolver_(context->GetNameResolver()),
       field_generators_(descriptor, context_) {
-  GOOGLE_CHECK(HasDescriptorMethods(descriptor->file(), context->EnforceLite()))
+  GOOGLE_ABSL_CHECK(HasDescriptorMethods(descriptor->file(), context->EnforceLite()))
       << "Generator factory error: A non-lite message generator is used to "
          "generate lite messages.";
 }
@@ -1396,7 +1396,7 @@ void ImmutableMessageGenerator::GenerateKotlinExtensions(
       "com.google.protobuf.ExtensionLite<$message$, T>): T {\n"
       "  return if (extension.isRepeated) {\n"
       "    get(extension as com.google.protobuf.ExtensionLite<$message$, "
-      "List<*>>) as T\n"
+      "kotlin.collections.List<*>>) as T\n"
       "  } else {\n"
       "    _builder.getExtension(extension)\n"
       "  }\n"
@@ -1409,7 +1409,8 @@ void ImmutableMessageGenerator::GenerateKotlinExtensions(
       "(com.google.protobuf.kotlin.OnlyForUseByGeneratedProtoCode::class)\n"
       "@kotlin.jvm.JvmName(\"-getRepeatedExtension\")\n"
       "public operator fun <E : kotlin.Any> get(\n"
-      "  extension: com.google.protobuf.ExtensionLite<$message$, List<E>>\n"
+      "  extension: com.google.protobuf.ExtensionLite<$message$, "
+      "kotlin.collections.List<E>>\n"
       "): com.google.protobuf.kotlin.ExtensionList<E, $message$> {\n"
       "  return com.google.protobuf.kotlin.ExtensionList(extension, "
       "_builder.getExtension(extension))\n"
@@ -1436,8 +1437,7 @@ void ImmutableMessageGenerator::GenerateKotlinExtensions(
 
   printer->Print(
       "@kotlin.jvm.JvmSynthetic\n"
-      "@kotlin.PublishedApi\n"
-      "internal fun <T : kotlin.Any> setExtension(extension: "
+      "public fun <T : kotlin.Any> setExtension(extension: "
       "com.google.protobuf.ExtensionLite<$message$, T>, "
       "value: T) {\n"
       "  _builder.setExtension(extension, value)\n"

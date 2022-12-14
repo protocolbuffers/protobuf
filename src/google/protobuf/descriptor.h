@@ -64,9 +64,10 @@
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/port.h"
 #include "absl/base/call_once.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/port.h"
@@ -1799,7 +1800,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   //   this pool will be slower, since they will have to obtain locks too.
   // - An ErrorCollector may optionally be given to collect validation errors
   //   in files loaded from the database.  If not given, errors will be printed
-  //   to GOOGLE_LOG(ERROR).  Remember that files are built on-demand, so this
+  //   to GOOGLE_ABSL_LOG(ERROR).  Remember that files are built on-demand, so this
   //   ErrorCollector may be called from any thread that calls one of the
   //   Find*By*() methods.
   // - The DescriptorDatabase must not be mutated during the lifetime of
@@ -1926,7 +1927,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   // this DescriptorPool.  All dependencies of the file must already be in
   // the pool.  Returns the resulting FileDescriptor, or nullptr if there were
   // problems with the input (e.g. the message was invalid, or dependencies
-  // were missing).  Details about the errors are written to GOOGLE_LOG(ERROR).
+  // were missing).  Details about the errors are written to GOOGLE_ABSL_LOG(ERROR).
   const FileDescriptor* BuildFile(const FileDescriptorProto& proto);
 
   // Same as BuildFile() except errors are sent to the given ErrorCollector.
@@ -2325,12 +2326,12 @@ inline const OneofDescriptor* FieldDescriptor::containing_oneof() const {
 }
 
 inline int FieldDescriptor::index_in_oneof() const {
-  GOOGLE_DCHECK(is_oneof_);
+  GOOGLE_ABSL_DCHECK(is_oneof_);
   return static_cast<int>(this - scope_.containing_oneof->field(0));
 }
 
 inline const Descriptor* FieldDescriptor::extension_scope() const {
-  GOOGLE_CHECK(is_extension_);
+  GOOGLE_ABSL_CHECK(is_extension_);
   return scope_.extension_scope;
 }
 
@@ -2514,7 +2515,7 @@ struct FieldRangeImpl {
     value_type operator*() { return descriptor->field(idx); }
 
     friend bool operator==(const Iterator& a, const Iterator& b) {
-      GOOGLE_DCHECK(a.descriptor == b.descriptor);
+      GOOGLE_ABSL_DCHECK(a.descriptor == b.descriptor);
       return a.idx == b.idx;
     }
     friend bool operator!=(const Iterator& a, const Iterator& b) {

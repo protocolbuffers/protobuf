@@ -113,10 +113,9 @@ class Timestamp::_Internal {
  public:
 };
 
-Timestamp::Timestamp(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+Timestamp::Timestamp(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Timestamp)
 }
 Timestamp::Timestamp(const Timestamp& from)
@@ -126,10 +125,8 @@ Timestamp::Timestamp(const Timestamp& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Timestamp)
 }
 
-inline void Timestamp::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void Timestamp::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.seconds_){::int64_t{0}}
     , decltype(_impl_.nanos_){0}
@@ -147,7 +144,7 @@ Timestamp::~Timestamp() {
 }
 
 inline void Timestamp::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
 }
 
 void Timestamp::SetCachedSize(int size) const {
@@ -275,7 +272,7 @@ void Timestamp::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROT
   auto& from = static_cast<const Timestamp&>(from_msg);
 
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Timestamp)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 

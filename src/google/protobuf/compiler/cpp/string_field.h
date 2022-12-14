@@ -37,6 +37,7 @@
 
 #include <string>
 
+#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/compiler/cpp/field.h"
 
 namespace google {
@@ -119,7 +120,7 @@ class RepeatedStringFieldGenerator : public FieldGenerator {
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateConstructorCode(io::Printer* printer) const override {}
   void GenerateCopyConstructorCode(io::Printer*  /*printer*/) const override {
-    GOOGLE_CHECK(!ShouldSplit(descriptor_, options_));
+    GOOGLE_ABSL_CHECK(!ShouldSplit(descriptor_, options_));
   }
   void GenerateDestructorCode(io::Printer* printer) const override;
   void GenerateSerializeWithCachedSizesToArray(

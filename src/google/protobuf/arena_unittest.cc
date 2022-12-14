@@ -39,10 +39,9 @@
 #include <typeinfo>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/barrier.h"
 #include "google/protobuf/arena_test_util.h"
@@ -332,6 +331,16 @@ TEST(ArenaTest, CreateDestroy) {
   // The arena message should still exist.
   EXPECT_EQ(strlen(original.optional_string().c_str()),
             strlen(arena_message->optional_string().c_str()));
+}
+
+struct OnlyArenaConstructible {
+  using InternalArenaConstructable_ = void;
+  explicit OnlyArenaConstructible(Arena* arena) {}
+};
+
+TEST(ArenaTest, ArenaOnlyTypesCanBeConstructed) {
+  Arena arena;
+  Arena::CreateMessage<OnlyArenaConstructible>(&arena);
 }
 
 TEST(ArenaTest, Parsing) {
@@ -1458,7 +1467,7 @@ TEST(ArenaTest, Alignment) {
   Arena arena;
   for (int i = 0; i < 200; i++) {
     void* p = Arena::CreateArray<char>(&arena, i);
-    GOOGLE_CHECK_EQ(reinterpret_cast<uintptr_t>(p) % 8, 0) << i << ": " << p;
+    GOOGLE_ABSL_CHECK_EQ(reinterpret_cast<uintptr_t>(p) % 8, 0) << i << ": " << p;
   }
 }
 

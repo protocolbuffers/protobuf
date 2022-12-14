@@ -170,6 +170,10 @@ enum TransformValidation : uint16_t {
   kTvDefault   = 1 << kTvShift,  // Aux has default_instance*
   kTvTable     = 2 << kTvShift,  // Aux has TcParseTableBase*
   kTvWeakPtr   = 3 << kTvShift,  // Aux has default_instance** (for weak)
+
+  // Lazy message fields:
+  kTvEager     = 1 << kTvShift,
+  kTvLazy      = 2 << kTvShift,
 };
 
 static_assert((kTvEnum & kTvRange) != 0,
@@ -261,7 +265,7 @@ enum FieldType : uint16_t {
 #ifndef NDEBUG
 template <size_t align>
 void AlignFail(uintptr_t address) {
-  GOOGLE_LOG(FATAL) << "Unaligned (" << align << ") access at " << address;
+  GOOGLE_ABSL_LOG(FATAL) << "Unaligned (" << align << ") access at " << address;
 
   // Explicit abort to let compilers know this function does not return
   abort();
@@ -293,9 +297,8 @@ class PROTOBUF_EXPORT TcParser final {
   //  - MpXXX functions expect `data` with a mini table ABI.
   //  - The fallback functions (both GenericFallbackXXX and the codegen ones)
   //    expect only the tag in `data`. In addition, if a null `ptr` is passed,
-  //    the function is used to push an unknown enum value into the
-  //    UnknownFieldSet. The function then expects `data` to use the unknown
-  //    enum ABI, as described in `struct TcFieldData`.
+  //    the function is used as a way to get a UnknownFieldOps vtable, returned
+  //    via the `const char*` return type. See `GetUnknownFieldOps()`
 
   static bool MustFallbackToGeneric(PROTOBUF_TC_PARAM_DECL) {
     return ptr == nullptr;
@@ -456,7 +459,7 @@ class PROTOBUF_EXPORT TcParser final {
 
   // Functions referenced by generated fast tables (message types):
   //   M: message    G: group
-  //   d: default*   t: TcParseTable* (the contents of aux)
+  //   d: default*   t: TcParseTable* (the contents of aux)  l: lazy
   //   S: singular   R: repeated
   //   1/2: tag length (bytes)
   static const char* FastMdS1(PROTOBUF_TC_PARAM_DECL);
@@ -467,6 +470,9 @@ class PROTOBUF_EXPORT TcParser final {
   static const char* FastMtS2(PROTOBUF_TC_PARAM_DECL);
   static const char* FastGtS1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastGtS2(PROTOBUF_TC_PARAM_DECL);
+
+  static const char* FastMlS1(PROTOBUF_TC_PARAM_DECL);
+  static const char* FastMlS2(PROTOBUF_TC_PARAM_DECL);
 
   static const char* FastMdR1(PROTOBUF_TC_PARAM_DECL);
   static const char* FastMdR2(PROTOBUF_TC_PARAM_DECL);
@@ -526,8 +532,7 @@ class PROTOBUF_EXPORT TcParser final {
  private:
   friend class GeneratedTcTableLiteTest;
   static void* MaybeGetSplitBase(MessageLite* msg, const bool is_split,
-                                 const TcParseTableBase* table,
-                                 google::protobuf::internal::ParseContext* ctx);
+                                 const TcParseTableBase* table);
 
   // Test only access to verify that the right function is being called via
   // MiniParse.
@@ -545,6 +550,8 @@ class PROTOBUF_EXPORT TcParser final {
   static inline const char* SingularParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
   template <typename TagType, bool group_coding, bool aux_is_table>
   static inline const char* RepeatedParseMessageAuxImpl(PROTOBUF_TC_PARAM_DECL);
+  template <typename TagType>
+  static inline const char* LazyMessage(PROTOBUF_TC_PARAM_DECL);
 
   template <typename TagType>
   static const char* FastEndGroupImpl(PROTOBUF_TC_PARAM_DECL);
@@ -568,8 +575,39 @@ class PROTOBUF_EXPORT TcParser final {
 
   class ScopedArenaSwap;
 
+  struct UnknownFieldOps {
+    void (*write_varint)(MessageLite* msg, int number, int value);
+    void (*write_length_delimited)(MessageLite* msg, int number,
+                                   absl::string_view value);
+  };
+
+  static const UnknownFieldOps& GetUnknownFieldOps(
+      const TcParseTableBase* table);
+
+  template <typename UnknownFieldsT>
+  static void WriteVarintToUnknown(MessageLite* msg, int number, int value) {
+    internal::WriteVarint(
+        number, value,
+        msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>());
+  }
+  template <typename UnknownFieldsT>
+  static void WriteLengthDelimitedToUnknown(MessageLite* msg, int number,
+                                            absl::string_view value) {
+    internal::WriteLengthDelimited(
+        number, value,
+        msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>());
+  }
+
   template <class MessageBaseT, class UnknownFieldsT>
   static const char* GenericFallbackImpl(PROTOBUF_TC_PARAM_DECL) {
+    if (PROTOBUF_PREDICT_FALSE(ptr == nullptr)) {
+      // This is the ABI used by GetUnknownFieldOps(). Return the vtable.
+      static constexpr UnknownFieldOps kOps = {
+          WriteVarintToUnknown<UnknownFieldsT>,
+          WriteLengthDelimitedToUnknown<UnknownFieldsT>};
+      return reinterpret_cast<const char*>(&kOps);
+    }
+
     SyncHasbits(msg, hasbits, table);
     uint32_t tag = data.tag();
     if ((tag & 7) == WireFormatLite::WIRETYPE_END_GROUP || tag == 0) {
@@ -584,15 +622,6 @@ class PROTOBUF_EXPORT TcParser final {
           .ParseField(tag, ptr,
                       static_cast<const MessageBaseT*>(table->default_instance),
                       &msg->_internal_metadata_, ctx);
-    }
-
-    // Side channel for handling unknown data. Currently, only used for unknown
-    // enums. The value is in the 32 high bits of data.
-    if (ptr == nullptr) {
-      internal::WriteVarint(
-          num, data.unknown_enum_value(),
-          msg->_internal_metadata_.mutable_unknown_fields<UnknownFieldsT>());
-      return nullptr;
     }
 
     return UnknownFieldParse(
@@ -648,9 +677,8 @@ class PROTOBUF_EXPORT TcParser final {
       const char* ptr, Arena* arena, SerialArena* serial_arena,
       ParseContext* ctx, RepeatedPtrField<std::string>& field);
 
-  static void UnknownPackedEnum(MessageLite* msg, ParseContext* ctx,
-                                const TcParseTableBase* table, uint32_t tag,
-                                int32_t enum_value);
+  static void UnknownPackedEnum(MessageLite* msg, const TcParseTableBase* table,
+                                uint32_t tag, int32_t enum_value);
 
   // Mini field lookup:
   static const TcParseTableBase::FieldEntry* FindFieldEntry(
@@ -692,6 +720,7 @@ class PROTOBUF_EXPORT TcParser final {
   template <bool is_split>
   static const char* MpMessage(PROTOBUF_TC_PARAM_DECL);
   static const char* MpRepeatedMessage(PROTOBUF_TC_PARAM_DECL);
+  static const char* MpLazyMessage(PROTOBUF_TC_PARAM_DECL);
   static const char* MpFallback(PROTOBUF_TC_PARAM_DECL);
 };
 

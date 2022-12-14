@@ -219,10 +219,9 @@ void Api::clear_source_context() {
   }
   _impl_.source_context_ = nullptr;
 }
-Api::Api(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+Api::Api(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Api)
 }
 Api::Api(const Api& from)
@@ -262,10 +261,8 @@ Api::Api(const Api& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Api)
 }
 
-inline void Api::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void Api::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.methods_){arena}
     , decltype(_impl_.options_){arena}
@@ -296,7 +293,7 @@ Api::~Api() {
 }
 
 inline void Api::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.methods_.~RepeatedPtrField();
   _impl_.options_.~RepeatedPtrField();
   _impl_.mixins_.~RepeatedPtrField();
@@ -586,7 +583,7 @@ void Api::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_N
   auto& from = static_cast<const Api&>(from_msg);
 
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Api)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -659,10 +656,9 @@ class Method::_Internal {
 void Method::clear_options() {
   _impl_.options_.Clear();
 }
-Method::Method(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+Method::Method(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Method)
 }
 Method::Method(const Method& from)
@@ -709,10 +705,8 @@ Method::Method(const Method& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Method)
 }
 
-inline void Method::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void Method::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.options_){arena}
     , decltype(_impl_.name_){}
@@ -747,7 +741,7 @@ Method::~Method() {
 }
 
 inline void Method::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.options_.~RepeatedPtrField();
   _impl_.name_.Destroy();
   _impl_.request_type_url_.Destroy();
@@ -1019,7 +1013,7 @@ void Method::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBU
   auto& from = static_cast<const Method&>(from_msg);
 
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Method)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 
@@ -1094,10 +1088,9 @@ class Mixin::_Internal {
  public:
 };
 
-Mixin::Mixin(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::Message(arena, is_message_owned) {
-  SharedCtor(arena, is_message_owned);
+Mixin::Mixin(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Mixin)
 }
 Mixin::Mixin(const Mixin& from)
@@ -1128,10 +1121,8 @@ Mixin::Mixin(const Mixin& from)
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Mixin)
 }
 
-inline void Mixin::SharedCtor(
-    ::_pb::Arena* arena, bool is_message_owned) {
+inline void Mixin::SharedCtor(::_pb::Arena* arena) {
   (void)arena;
-  (void)is_message_owned;
   new (&_impl_) Impl_{
       decltype(_impl_.name_){}
     , decltype(_impl_.root_){}
@@ -1157,7 +1148,7 @@ Mixin::~Mixin() {
 }
 
 inline void Mixin::SharedDtor() {
-  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  GOOGLE_ABSL_DCHECK(GetArenaForAllocation() == nullptr);
   _impl_.name_.Destroy();
   _impl_.root_.Destroy();
 }
@@ -1302,7 +1293,7 @@ void Mixin::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF
   auto& from = static_cast<const Mixin&>(from_msg);
 
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Mixin)
-  GOOGLE_DCHECK_NE(&from, _this);
+  GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
 

@@ -85,6 +85,9 @@ message DescriptorPoolTest2 {
       enum NestedEnum {
         LAMBDA = 11;
         MU = 12;
+
+        reserved -1;
+        reserved 536870913;  // 0x20000001
       }
       optional NestedEnum nested_enum = 1 [default = MU];
       optional string nested_field = 2 [default = "lambda"];

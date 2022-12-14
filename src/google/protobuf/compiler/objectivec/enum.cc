@@ -88,7 +88,7 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor)
   }
 }
 
-void EnumGenerator::GenerateHeader(io::Printer* printer) {
+void EnumGenerator::GenerateHeader(io::Printer* printer) const {
   std::string enum_comments;
   SourceLocation location;
   if (descriptor_->GetSourceLocation(&location)) {
@@ -173,7 +173,7 @@ void EnumGenerator::GenerateHeader(io::Printer* printer) {
       "name", name_);
 }
 
-void EnumGenerator::GenerateSource(io::Printer* printer) {
+void EnumGenerator::GenerateSource(io::Printer* printer) const {
   printer->Print(
       "#pragma mark - Enum $name$\n"
       "\n",
@@ -229,9 +229,13 @@ void EnumGenerator::GenerateSource(io::Printer* printer) {
         "                                       valueNames:valueNames\n"
         "                                           values:values\n"
         "                                            count:(uint32_t)(sizeof(values) / sizeof(int32_t))\n"
-        "                                     enumVerifier:$name$_IsValidValue];\n",
+        "                                     enumVerifier:$name$_IsValidValue\n"
+        "                                            flags:$flags$];\n",
         // clang-format on
-        "name", name_);
+        "name", name_, "flags",
+        (descriptor_->is_closed()
+             ? "GPBEnumDescriptorInitializationFlag_IsClosed"
+             : "GPBEnumDescriptorInitializationFlag_None"));
   } else {
     printer->Print(
         // clang-format off
@@ -242,10 +246,14 @@ void EnumGenerator::GenerateSource(io::Printer* printer) {
         "                                           values:values\n"
         "                                            count:(uint32_t)(sizeof(values) / sizeof(int32_t))\n"
         "                                     enumVerifier:$name$_IsValidValue\n"
+        "                                            flags:$flags$\n"
         "                              extraTextFormatInfo:extraTextFormatInfo];\n",
         // clang-format on
-        "name", name_, "extraTextFormatInfo",
-        absl::CEscape(text_format_decode_data.Data()));
+        "name", name_, "flags",
+        (descriptor_->is_closed()
+             ? "GPBEnumDescriptorInitializationFlag_IsClosed"
+             : "GPBEnumDescriptorInitializationFlag_None"),
+        "extraTextFormatInfo", absl::CEscape(text_format_decode_data.Data()));
   }
   // clang-format off
   printer->Print(

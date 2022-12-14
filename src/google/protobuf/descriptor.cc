@@ -48,13 +48,14 @@
 #include <vector>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/base/dynamic_annotations.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/hash/hash.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
@@ -361,7 +362,7 @@ class FlatAllocatorImpl {
   template <typename U>
   void PlanArray(int array_size) {
     // We can't call PlanArray after FinalizePlanning has been called.
-    GOOGLE_CHECK(!has_allocated());
+    GOOGLE_ABSL_CHECK(!has_allocated());
     if (std::is_trivially_destructible<U>::value) {
       // Trivial types are aligned to 8 bytes.
       static_assert(alignof(U) <= 8, "");
@@ -382,13 +383,13 @@ class FlatAllocatorImpl {
     using TypeToUse = typename std::conditional<trivial, char, U>::type;
 
     // We can only allocate after FinalizePlanning has been called.
-    GOOGLE_CHECK(has_allocated());
+    GOOGLE_ABSL_CHECK(has_allocated());
 
     TypeToUse*& data = pointers_.template Get<TypeToUse>();
     int& used = used_.template Get<TypeToUse>();
     U* res = reinterpret_cast<U*>(data + used);
     used += trivial ? RoundUpTo<8>(array_size * sizeof(U)) : array_size;
-    GOOGLE_CHECK_LE(used, total_.template Get<TypeToUse>());
+    GOOGLE_ABSL_CHECK_LE(used, total_.template Get<TypeToUse>());
     return res;
   }
 
@@ -407,7 +408,7 @@ class FlatAllocatorImpl {
   // and the other 3 indices are specified in the result.
   void PlanFieldNames(const std::string& name,
                       const std::string* opt_json_name) {
-    GOOGLE_CHECK(!has_allocated());
+    GOOGLE_ABSL_CHECK(!has_allocated());
 
     // Fast path for snake_case names, which follow the style guide.
     if (opt_json_name == nullptr) {
@@ -448,7 +449,7 @@ class FlatAllocatorImpl {
   FieldNamesResult AllocateFieldNames(const std::string& name,
                                       const std::string& scope,
                                       const std::string* opt_json_name) {
-    GOOGLE_CHECK(has_allocated());
+    GOOGLE_ABSL_CHECK(has_allocated());
 
     std::string full_name =
         scope.empty() ? name : absl::StrCat(scope, ".", name);
@@ -504,11 +505,11 @@ class FlatAllocatorImpl {
 
   template <typename Alloc>
   void FinalizePlanning(Alloc& alloc) {
-    GOOGLE_CHECK(!has_allocated());
+    GOOGLE_ABSL_CHECK(!has_allocated());
 
     pointers_ = alloc->CreateFlatAlloc(total_)->Pointers();
 
-    GOOGLE_CHECK(has_allocated());
+    GOOGLE_ABSL_CHECK(has_allocated());
   }
 
   void ExpectConsumed() const {
@@ -544,7 +545,7 @@ class FlatAllocatorImpl {
 
   template <typename U>
   bool ExpectConsumed() const {
-    GOOGLE_CHECK_EQ(total_.template Get<U>(), used_.template Get<U>());
+    GOOGLE_ABSL_CHECK_EQ(total_.template Get<U>(), used_.template Get<U>());
     return true;
   }
 
@@ -693,7 +694,7 @@ class Symbol {
         return absl::string_view(sub_package_file_descriptor()->file->package())
             .substr(0, sub_package_file_descriptor()->name_size);
       default:
-        GOOGLE_CHECK(false);
+        GOOGLE_ABSL_CHECK(false);
     }
     return "";
   }
@@ -726,7 +727,7 @@ class Symbol {
       case METHOD:
         return {method_descriptor()->service(), method_descriptor()->name()};
       default:
-        GOOGLE_CHECK(false);
+        GOOGLE_ABSL_CHECK(false);
     }
     return {};
   }
@@ -814,7 +815,7 @@ const char* FileDescriptor::SyntaxName(FileDescriptor::Syntax syntax) {
     case SYNTAX_UNKNOWN:
       return "unknown";
   }
-  GOOGLE_LOG(FATAL) << "can't reach here.";
+  GOOGLE_ABSL_LOG(FATAL) << "can't reach here.";
   return nullptr;
 }
 
@@ -1393,7 +1394,7 @@ DescriptorPool::Tables::Tables() {
   });
 }
 
-DescriptorPool::Tables::~Tables() { GOOGLE_DCHECK(checkpoints_.empty()); }
+DescriptorPool::Tables::~Tables() { GOOGLE_ABSL_DCHECK(checkpoints_.empty()); }
 
 FileDescriptorTables::FileDescriptorTables() {}
 
@@ -1409,11 +1410,11 @@ inline const FileDescriptorTables& FileDescriptorTables::GetEmptyInstance() {
 }
 
 void DescriptorPool::Tables::AddCheckpoint() {
-  checkpoints_.push_back(CheckPoint(this));
+  checkpoints_.emplace_back(this);
 }
 
 void DescriptorPool::Tables::ClearLastCheckpoint() {
-  GOOGLE_DCHECK(!checkpoints_.empty());
+  GOOGLE_ABSL_DCHECK(!checkpoints_.empty());
   checkpoints_.pop_back();
   if (checkpoints_.empty()) {
     // All checkpoints have been cleared: we can now commit all of the pending
@@ -1425,7 +1426,7 @@ void DescriptorPool::Tables::ClearLastCheckpoint() {
 }
 
 void DescriptorPool::Tables::RollbackToLastCheckpoint() {
-  GOOGLE_DCHECK(!checkpoints_.empty());
+  GOOGLE_ABSL_DCHECK(!checkpoints_.empty());
   const CheckPoint& checkpoint = checkpoints_.back();
 
   for (size_t i = checkpoint.pending_symbols_before_checkpoint;
@@ -1679,7 +1680,7 @@ inline void DescriptorPool::Tables::FindAllExtensions(
 
 bool DescriptorPool::Tables::AddSymbol(const std::string& full_name,
                                        Symbol symbol) {
-  GOOGLE_DCHECK_EQ(full_name, symbol.full_name());
+  GOOGLE_ABSL_DCHECK_EQ(full_name, symbol.full_name());
   if (symbols_by_name_.insert(symbol).second) {
     symbols_after_checkpoint_.push_back(symbol);
     return true;
@@ -1691,8 +1692,8 @@ bool DescriptorPool::Tables::AddSymbol(const std::string& full_name,
 bool FileDescriptorTables::AddAliasUnderParent(const void* parent,
                                                const std::string& name,
                                                Symbol symbol) {
-  GOOGLE_DCHECK_EQ(name, symbol.parent_name_key().second);
-  GOOGLE_DCHECK_EQ(parent, symbol.parent_name_key().first);
+  GOOGLE_ABSL_DCHECK_EQ(name, symbol.parent_name_key().second);
+  GOOGLE_ABSL_DCHECK_EQ(parent, symbol.parent_name_key().first);
   return symbols_by_parent_.insert(symbol).second;
 }
 
@@ -1926,7 +1927,7 @@ void DescriptorPool::InternalAddGeneratedFile(
   // Therefore, when we parse one, we have to be very careful to avoid using
   // any descriptor-based operations, since this might cause infinite recursion
   // or deadlock.
-  GOOGLE_CHECK(GeneratedDatabase()->Add(encoded_file_descriptor, size));
+  GOOGLE_ABSL_CHECK(GeneratedDatabase()->Add(encoded_file_descriptor, size));
 }
 
 
@@ -2230,13 +2231,13 @@ const EnumValueDescriptor* Descriptor::FindEnumValueByName(
 
 const FieldDescriptor* Descriptor::map_key() const {
   if (!options().map_entry()) return nullptr;
-  GOOGLE_DCHECK_EQ(field_count(), 2);
+  GOOGLE_ABSL_DCHECK_EQ(field_count(), 2);
   return field(0);
 }
 
 const FieldDescriptor* Descriptor::map_value() const {
   if (!options().map_entry()) return nullptr;
-  GOOGLE_DCHECK_EQ(field_count(), 2);
+  GOOGLE_ABSL_DCHECK_EQ(field_count(), 2);
   return field(1);
 }
 
@@ -2357,13 +2358,19 @@ bool DescriptorPool::TryFindFileInFallbackDatabase(
     absl::string_view name) const {
   if (fallback_database_ == nullptr) return false;
 
-  auto name_string = std::string(name);
-  if (tables_->known_bad_files_.count(name_string) > 0) return false;
+  if (tables_->known_bad_files_.contains(name)) return false;
 
-  FileDescriptorProto file_proto;
-  if (!fallback_database_->FindFileByName(name_string, &file_proto) ||
-      BuildFileFromDatabase(file_proto) == nullptr) {
-    tables_->known_bad_files_.insert(std::move(name_string));
+  // NOINLINE to reduce the stack cost of the operation in the caller.
+  const auto find_file = [](DescriptorDatabase& database,
+                            absl::string_view filename,
+                            FileDescriptorProto& output) PROTOBUF_NOINLINE {
+    return database.FindFileByName(std::string(filename), &output);
+  };
+
+  auto file_proto = absl::make_unique<FileDescriptorProto>();
+  if (!find_file(*fallback_database_, name, *file_proto) ||
+      BuildFileFromDatabase(*file_proto) == nullptr) {
+    tables_->known_bad_files_.emplace(name);
     return false;
   }
   return true;
@@ -2395,10 +2402,10 @@ bool DescriptorPool::TryFindSymbolInFallbackDatabase(
     absl::string_view name) const {
   if (fallback_database_ == nullptr) return false;
 
-  auto name_string = std::string(name);
-  if (tables_->known_bad_symbols_.count(name_string) > 0) return false;
+  if (tables_->known_bad_symbols_.contains(name)) return false;
 
-  FileDescriptorProto file_proto;
+  std::string name_string(name);
+  auto file_proto = absl::make_unique<FileDescriptorProto>();
   if (  // We skip looking in the fallback database if the name is a sub-symbol
         // of any descriptor that already exists in the descriptor pool (except
         // for package descriptors).  This is valid because all symbols except
@@ -2418,15 +2425,16 @@ bool DescriptorPool::TryFindSymbolInFallbackDatabase(
       IsSubSymbolOfBuiltType(name)
 
       // Look up file containing this symbol in fallback database.
-      || !fallback_database_->FindFileContainingSymbol(name_string, &file_proto)
+      || !fallback_database_->FindFileContainingSymbol(name_string,
+                                                       file_proto.get())
 
       // Check if we've already built this file. If so, it apparently doesn't
       // contain the symbol we're looking for.  Some DescriptorDatabases
       // return false positives.
-      || tables_->FindFile(file_proto.name()) != nullptr
+      || tables_->FindFile(file_proto->name()) != nullptr
 
       // Build the file.
-      || BuildFileFromDatabase(file_proto) == nullptr) {
+      || BuildFileFromDatabase(*file_proto) == nullptr) {
     tables_->known_bad_symbols_.insert(std::move(name_string));
     return false;
   }
@@ -2438,20 +2446,20 @@ bool DescriptorPool::TryFindExtensionInFallbackDatabase(
     const Descriptor* containing_type, int field_number) const {
   if (fallback_database_ == nullptr) return false;
 
-  FileDescriptorProto file_proto;
+  auto file_proto = absl::make_unique<FileDescriptorProto>();
   if (!fallback_database_->FindFileContainingExtension(
-          containing_type->full_name(), field_number, &file_proto)) {
+          containing_type->full_name(), field_number, file_proto.get())) {
     return false;
   }
 
-  if (tables_->FindFile(file_proto.name()) != nullptr) {
+  if (tables_->FindFile(file_proto->name()) != nullptr) {
     // We've already loaded this file, and it apparently doesn't contain the
     // extension we're looking for.  Some DescriptorDatabases return false
     // positives.
     return false;
   }
 
-  if (BuildFileFromDatabase(file_proto) == nullptr) {
+  if (BuildFileFromDatabase(*file_proto) == nullptr) {
     return false;
   }
 
@@ -2466,7 +2474,7 @@ bool FieldDescriptor::is_map_message_type() const {
 
 std::string FieldDescriptor::DefaultValueAsString(
     bool quote_string_type) const {
-  GOOGLE_CHECK(has_default_value()) << "No default value";
+  GOOGLE_ABSL_CHECK(has_default_value()) << "No default value";
   switch (cpp_type()) {
     case CPPTYPE_INT32:
       return absl::StrCat(default_value_int32_t());
@@ -2495,10 +2503,10 @@ std::string FieldDescriptor::DefaultValueAsString(
     case CPPTYPE_ENUM:
       return default_value_enum()->name();
     case CPPTYPE_MESSAGE:
-      GOOGLE_LOG(DFATAL) << "Messages can't have default values!";
+      GOOGLE_ABSL_LOG(DFATAL) << "Messages can't have default values!";
       break;
   }
-  GOOGLE_LOG(FATAL) << "Can't get here: failed to get default value as string";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here: failed to get default value as string";
   return "";
 }
 
@@ -2552,7 +2560,7 @@ void FileDescriptor::CopyHeadingTo(FileDescriptorProto* proto) const {
 void FileDescriptor::CopyJsonNameTo(FileDescriptorProto* proto) const {
   if (message_type_count() != proto->message_type_size() ||
       extension_count() != proto->extension_size()) {
-    GOOGLE_LOG(ERROR) << "Cannot copy json_name to a proto of a different size.";
+    GOOGLE_ABSL_LOG(ERROR) << "Cannot copy json_name to a proto of a different size.";
     return;
   }
   for (int i = 0; i < message_type_count(); i++) {
@@ -2609,7 +2617,7 @@ void Descriptor::CopyJsonNameTo(DescriptorProto* proto) const {
   if (field_count() != proto->field_size() ||
       nested_type_count() != proto->nested_type_size() ||
       extension_count() != proto->extension_size()) {
-    GOOGLE_LOG(ERROR) << "Cannot copy json_name to a proto of a different size.";
+    GOOGLE_ABSL_LOG(ERROR) << "Cannot copy json_name to a proto of a different size.";
     return;
   }
   for (int i = 0; i < field_count(); i++) {
@@ -2831,8 +2839,8 @@ bool RetrieveOptions(int depth, const Message& options,
       return RetrieveOptionsAssumingRightPool(depth, *dynamic_options,
                                               option_entries);
     } else {
-      GOOGLE_LOG(ERROR) << "Found invalid proto option data for: "
-                 << options.GetDescriptor()->full_name();
+      GOOGLE_ABSL_LOG(ERROR) << "Found invalid proto option data for: "
+                      << options.GetDescriptor()->full_name();
       return RetrieveOptionsAssumingRightPool(depth, options, option_entries);
     }
   }
@@ -3454,7 +3462,7 @@ void MethodDescriptor::DebugString(
 
 bool FileDescriptor::GetSourceLocation(const std::vector<int>& path,
                                        SourceLocation* out_location) const {
-  GOOGLE_CHECK(out_location != nullptr);
+  GOOGLE_ABSL_CHECK(out_location != nullptr);
   if (source_code_info_) {
     if (const SourceCodeInfo_Location* loc =
             tables_->GetSourceLocation(path, source_code_info_)) {
@@ -3625,13 +3633,21 @@ struct OptionsToInterpret {
 
 class DescriptorBuilder {
  public:
-  DescriptorBuilder(const DescriptorPool* pool, DescriptorPool::Tables* tables,
-                    DescriptorPool::ErrorCollector* error_collector);
+  static std::unique_ptr<DescriptorBuilder> New(
+      const DescriptorPool* pool, DescriptorPool::Tables* tables,
+      DescriptorPool::ErrorCollector* error_collector) {
+    return std::unique_ptr<DescriptorBuilder>(
+        new DescriptorBuilder(pool, tables, error_collector));
+  }
+
   ~DescriptorBuilder();
 
   const FileDescriptor* BuildFile(const FileDescriptorProto& proto);
 
  private:
+  DescriptorBuilder(const DescriptorPool* pool, DescriptorPool::Tables* tables,
+                    DescriptorPool::ErrorCollector* error_collector);
+
   friend class OptionInterpreter;
 
   // Non-recursive part of BuildFile functionality.
@@ -4093,38 +4109,38 @@ class DescriptorBuilder {
 
 const FileDescriptor* DescriptorPool::BuildFile(
     const FileDescriptorProto& proto) {
-  GOOGLE_CHECK(fallback_database_ == nullptr)
+  GOOGLE_ABSL_CHECK(fallback_database_ == nullptr)
       << "Cannot call BuildFile on a DescriptorPool that uses a "
          "DescriptorDatabase.  You must instead find a way to get your file "
          "into the underlying database.";
-  GOOGLE_CHECK(mutex_ == nullptr);  // Implied by the above GOOGLE_CHECK.
+  GOOGLE_ABSL_CHECK(mutex_ == nullptr);  // Implied by the above GOOGLE_ABSL_CHECK.
   tables_->known_bad_symbols_.clear();
   tables_->known_bad_files_.clear();
-  return DescriptorBuilder(this, tables_.get(), nullptr).BuildFile(proto);
+  return DescriptorBuilder::New(this, tables_.get(), nullptr)->BuildFile(proto);
 }
 
 const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
     const FileDescriptorProto& proto, ErrorCollector* error_collector) {
-  GOOGLE_CHECK(fallback_database_ == nullptr)
+  GOOGLE_ABSL_CHECK(fallback_database_ == nullptr)
       << "Cannot call BuildFile on a DescriptorPool that uses a "
          "DescriptorDatabase.  You must instead find a way to get your file "
          "into the underlying database.";
-  GOOGLE_CHECK(mutex_ == nullptr);  // Implied by the above GOOGLE_CHECK.
+  GOOGLE_ABSL_CHECK(mutex_ == nullptr);  // Implied by the above GOOGLE_ABSL_CHECK.
   tables_->known_bad_symbols_.clear();
   tables_->known_bad_files_.clear();
-  return DescriptorBuilder(this, tables_.get(), error_collector)
-      .BuildFile(proto);
+  return DescriptorBuilder::New(this, tables_.get(), error_collector)
+      ->BuildFile(proto);
 }
 
 const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
     const FileDescriptorProto& proto) const {
   mutex_->AssertHeld();
-  if (tables_->known_bad_files_.count(proto.name()) > 0) {
+  if (tables_->known_bad_files_.contains(proto.name())) {
     return nullptr;
   }
   const FileDescriptor* result =
-      DescriptorBuilder(this, tables_.get(), default_error_collector_)
-          .BuildFile(proto);
+      DescriptorBuilder::New(this, tables_.get(), default_error_collector_)
+          ->BuildFile(proto);
   if (result == nullptr) {
     tables_->known_bad_files_.insert(proto.name());
   }
@@ -4143,16 +4159,16 @@ DescriptorBuilder::DescriptorBuilder(
 
 DescriptorBuilder::~DescriptorBuilder() {}
 
-void DescriptorBuilder::AddError(
+PROTOBUF_NOINLINE void DescriptorBuilder::AddError(
     const std::string& element_name, const Message& descriptor,
     DescriptorPool::ErrorCollector::ErrorLocation location,
     const std::string& error) {
   if (error_collector_ == nullptr) {
     if (!had_errors_) {
-      GOOGLE_LOG(ERROR) << "Invalid proto descriptor for file \"" << filename_
-                 << "\":";
+      GOOGLE_ABSL_LOG(ERROR) << "Invalid proto descriptor for file \"" << filename_
+                      << "\":";
     }
-    GOOGLE_LOG(ERROR) << "  " << element_name << ": " << error;
+    GOOGLE_ABSL_LOG(ERROR) << "  " << element_name << ": " << error;
   } else {
     error_collector_->AddError(filename_, element_name, &descriptor, location,
                                error);
@@ -4160,13 +4176,13 @@ void DescriptorBuilder::AddError(
   had_errors_ = true;
 }
 
-void DescriptorBuilder::AddError(
+PROTOBUF_NOINLINE void DescriptorBuilder::AddError(
     const std::string& element_name, const Message& descriptor,
     DescriptorPool::ErrorCollector::ErrorLocation location, const char* error) {
   AddError(element_name, descriptor, location, std::string(error));
 }
 
-void DescriptorBuilder::AddNotDefinedError(
+PROTOBUF_NOINLINE void DescriptorBuilder::AddNotDefinedError(
     const std::string& element_name, const Message& descriptor,
     DescriptorPool::ErrorCollector::ErrorLocation location,
     const std::string& undefined_symbol) {
@@ -4198,12 +4214,12 @@ void DescriptorBuilder::AddNotDefinedError(
   }
 }
 
-void DescriptorBuilder::AddWarning(
+PROTOBUF_NOINLINE void DescriptorBuilder::AddWarning(
     const std::string& element_name, const Message& descriptor,
     DescriptorPool::ErrorCollector::ErrorLocation location,
     const std::string& error) {
   if (error_collector_ == nullptr) {
-    GOOGLE_LOG(WARNING) << filename_ << " " << element_name << ": " << error;
+    GOOGLE_ABSL_LOG(WARNING) << filename_ << " " << element_name << ": " << error;
   } else {
     error_collector_->AddWarning(filename_, element_name, &descriptor, location,
                                  error);
@@ -4581,10 +4597,10 @@ bool DescriptorBuilder::AddSymbol(const std::string& full_name,
       // This is only possible if there was already an error adding something of
       // the same name.
       if (!had_errors_) {
-        GOOGLE_LOG(DFATAL) << "\"" << full_name
-                    << "\" not previously defined in "
-                       "symbols_by_name_, but was defined in "
-                       "symbols_by_parent_; this shouldn't be possible.";
+        GOOGLE_ABSL_LOG(DFATAL) << "\"" << full_name
+                         << "\" not previously defined in "
+                            "symbols_by_name_, but was defined in "
+                            "symbols_by_parent_; this shouldn't be possible.";
       }
       return false;
     }
@@ -4770,7 +4786,7 @@ void DescriptorBuilder::AllocateOptionsImpl(
     METHOD(INPUT.NAME(i), PARENT, OUTPUT->NAME##s_ + i, alloc);        \
   }
 
-void DescriptorBuilder::AddRecursiveImportError(
+PROTOBUF_NOINLINE void DescriptorBuilder::AddRecursiveImportError(
     const FileDescriptorProto& proto, int from_here) {
   std::string error_message("File recursively imports itself: ");
   for (size_t i = from_here; i < tables_->pending_files_.size(); i++) {
@@ -4808,8 +4824,8 @@ void DescriptorBuilder::AddImportError(const FileDescriptorProto& proto,
            DescriptorPool::ErrorCollector::IMPORT, message);
 }
 
-static bool ExistingFileMatchesProto(const FileDescriptor* existing_file,
-                                     const FileDescriptorProto& proto) {
+PROTOBUF_NOINLINE static bool ExistingFileMatchesProto(
+    const FileDescriptor* existing_file, const FileDescriptorProto& proto) {
   FileDescriptorProto existing_proto;
   existing_file->CopyTo(&existing_proto);
   // TODO(liujisi): Remove it when CopyTo supports copying syntax params when
@@ -4827,7 +4843,7 @@ static bool ExistingFileMatchesProto(const FileDescriptor* existing_file,
 // necessary memory allocations that BuildXXX functions below will do on the
 // Tables object.
 // They *must* be kept in sync. If we miss some PlanArray call we won't have
-// enough memory and will GOOGLE_CHECK-fail.
+// enough memory and will GOOGLE_ABSL_CHECK-fail.
 static void PlanAllocationSize(
     const RepeatedPtrField<EnumValueDescriptorProto>& values,
     internal::FlatAllocator& alloc) {
@@ -5013,16 +5029,16 @@ const FileDescriptor* DescriptorBuilder::BuildFile(
   // Checkpoint the tables so that we can roll back if something goes wrong.
   tables_->AddCheckpoint();
 
-  internal::FlatAllocator alloc;
-  PlanAllocationSize(proto, alloc);
-  alloc.FinalizePlanning(tables_);
-  FileDescriptor* result = BuildFileImpl(proto, alloc);
+  auto alloc = absl::make_unique<internal::FlatAllocator>();
+  PlanAllocationSize(proto, *alloc);
+  alloc->FinalizePlanning(tables_);
+  FileDescriptor* result = BuildFileImpl(proto, *alloc);
 
   file_tables_->FinalizeTables();
   if (result) {
     tables_->ClearLastCheckpoint();
     result->finished_building_ = true;
-    alloc.ExpectConsumed();
+    alloc->ExpectConsumed();
   } else {
     tables_->RollbackToLastCheckpoint();
   }
@@ -5487,6 +5503,12 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   }
 }
 
+namespace {
+bool IsAllowedReservedField(const FieldDescriptorProto& field) {
+  return false;
+}
+}  // namespace
+
 void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
                                               Descriptor* parent,
                                               FieldDescriptor* result,
@@ -5713,7 +5735,8 @@ void DescriptorBuilder::BuildFieldOrExtension(const FieldDescriptorProto& proto,
              absl::Substitute("Field numbers cannot be greater than $0.",
                               FieldDescriptor::kMaxNumber));
   } else if (result->number() >= FieldDescriptor::kFirstReservedNumber &&
-             result->number() <= FieldDescriptor::kLastReservedNumber) {
+             result->number() <= FieldDescriptor::kLastReservedNumber &&
+             !IsAllowedReservedField(proto)) {
     message_hints_[parent].RequestHintOnFieldNumbers(
         proto, DescriptorPool::ErrorCollector::NUMBER);
     AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NUMBER,
@@ -6251,8 +6274,8 @@ void DescriptorBuilder::CrossLinkMessage(Descriptor* message,
         // Verify that they are contiguous.
         // This is assumed by OneofDescriptor::field(i).
         // But only if there are no errors.
-        GOOGLE_CHECK_EQ(out_oneof_decl.fields_ + out_oneof_decl.field_count_,
-                 message->field(i));
+        GOOGLE_ABSL_CHECK_EQ(out_oneof_decl.fields_ + out_oneof_decl.field_count_,
+                      message->field(i));
       }
       ++out_oneof_decl.field_count_;
     }
@@ -7228,7 +7251,7 @@ void DescriptorBuilder::ValidateJSType(FieldDescriptor* field,
 DescriptorBuilder::OptionInterpreter::OptionInterpreter(
     DescriptorBuilder* builder)
     : builder_(builder) {
-  GOOGLE_CHECK(builder_);
+  GOOGLE_ABSL_CHECK(builder_);
 }
 
 DescriptorBuilder::OptionInterpreter::~OptionInterpreter() {}
@@ -7247,7 +7270,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
   // and clear them, since we're about to interpret them.
   const FieldDescriptor* uninterpreted_options_field =
       options->GetDescriptor()->FindFieldByName("uninterpreted_option");
-  GOOGLE_CHECK(uninterpreted_options_field != nullptr)
+  GOOGLE_ABSL_CHECK(uninterpreted_options_field != nullptr)
       << "No field named \"uninterpreted_option\" in the Options proto.";
   options->GetReflection()->ClearField(options, uninterpreted_options_field);
 
@@ -7258,7 +7281,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretOptions(
   const FieldDescriptor* original_uninterpreted_options_field =
       original_options->GetDescriptor()->FindFieldByName(
           "uninterpreted_option");
-  GOOGLE_CHECK(original_uninterpreted_options_field != nullptr)
+  GOOGLE_ABSL_CHECK(original_uninterpreted_options_field != nullptr)
       << "No field named \"uninterpreted_option\" in the Options proto.";
 
   const int num_uninterpreted_options =
@@ -7351,7 +7374,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
     // generated pool's mutex, so we can search it the straightforward way.
     options_descriptor = options->GetDescriptor();
   }
-  GOOGLE_CHECK(options_descriptor);
+  GOOGLE_ABSL_CHECK(options_descriptor);
 
   // We iterate over the name parts to drill into the submessages until we find
   // the leaf field for the option. As we drill down we remember the current
@@ -7486,7 +7509,7 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
       case FieldDescriptor::TYPE_MESSAGE: {
         std::string* outstr =
             parent_unknown_fields->AddLengthDelimited((*iter)->number());
-        GOOGLE_CHECK(unknown_fields->SerializeToString(outstr))
+        GOOGLE_ABSL_CHECK(unknown_fields->SerializeToString(outstr))
             << "Unexpected failure while serializing option submessage "
             << debug_msg_name << "\".";
         break;
@@ -7499,8 +7522,8 @@ bool DescriptorBuilder::OptionInterpreter::InterpretSingleOption(
       }
 
       default:
-        GOOGLE_LOG(FATAL) << "Invalid wire type for CPPTYPE_MESSAGE: "
-                   << (*iter)->type();
+        GOOGLE_ABSL_LOG(FATAL) << "Invalid wire type for CPPTYPE_MESSAGE: "
+                        << (*iter)->type();
         return false;
     }
     unknown_fields.reset(parent_unknown_fields.release());
@@ -7618,7 +7641,7 @@ void DescriptorBuilder::OptionInterpreter::AddWithoutInterpreting(
     const UninterpretedOption& uninterpreted_option, Message* options) {
   const FieldDescriptor* field =
       options->GetDescriptor()->FindFieldByName("uninterpreted_option");
-  GOOGLE_CHECK(field != nullptr);
+  GOOGLE_ABSL_CHECK(field != nullptr);
 
   options->GetReflection()
       ->AddMessage(options, field)
@@ -7678,7 +7701,7 @@ bool DescriptorBuilder::OptionInterpreter::ExamineIfOptionIsSet(
           break;
 
         default:
-          GOOGLE_LOG(FATAL) << "Invalid wire type for CPPTYPE_MESSAGE: " << type;
+          GOOGLE_ABSL_LOG(FATAL) << "Invalid wire type for CPPTYPE_MESSAGE: " << type;
           return false;
       }
     }
@@ -8001,7 +8024,7 @@ bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
 
   const Descriptor* type = option_field->message_type();
   std::unique_ptr<Message> dynamic(dynamic_factory_.GetPrototype(type)->New());
-  GOOGLE_CHECK(dynamic.get() != nullptr)
+  GOOGLE_ABSL_CHECK(dynamic.get() != nullptr)
       << "Could not create an instance of " << option_field->DebugString();
 
   AggregateErrorCollector collector;
@@ -8021,7 +8044,7 @@ bool DescriptorBuilder::OptionInterpreter::SetAggregateOption(
     if (option_field->type() == FieldDescriptor::TYPE_MESSAGE) {
       unknown_fields->AddLengthDelimited(option_field->number(), serial);
     } else {
-      GOOGLE_CHECK_EQ(option_field->type(), FieldDescriptor::TYPE_GROUP);
+      GOOGLE_ABSL_CHECK_EQ(option_field->type(), FieldDescriptor::TYPE_GROUP);
       UnknownFieldSet* group = unknown_fields->AddGroup(option_field->number());
       group->ParseFromString(serial);
     }
@@ -8048,7 +8071,7 @@ void DescriptorBuilder::OptionInterpreter::SetInt32(
       break;
 
     default:
-      GOOGLE_LOG(FATAL) << "Invalid wire type for CPPTYPE_INT32: " << type;
+      GOOGLE_ABSL_LOG(FATAL) << "Invalid wire type for CPPTYPE_INT32: " << type;
       break;
   }
 }
@@ -8071,7 +8094,7 @@ void DescriptorBuilder::OptionInterpreter::SetInt64(
       break;
 
     default:
-      GOOGLE_LOG(FATAL) << "Invalid wire type for CPPTYPE_INT64: " << type;
+      GOOGLE_ABSL_LOG(FATAL) << "Invalid wire type for CPPTYPE_INT64: " << type;
       break;
   }
 }
@@ -8089,7 +8112,7 @@ void DescriptorBuilder::OptionInterpreter::SetUInt32(
       break;
 
     default:
-      GOOGLE_LOG(FATAL) << "Invalid wire type for CPPTYPE_UINT32: " << type;
+      GOOGLE_ABSL_LOG(FATAL) << "Invalid wire type for CPPTYPE_UINT32: " << type;
       break;
   }
 }
@@ -8107,7 +8130,7 @@ void DescriptorBuilder::OptionInterpreter::SetUInt64(
       break;
 
     default:
-      GOOGLE_LOG(FATAL) << "Invalid wire type for CPPTYPE_UINT64: " << type;
+      GOOGLE_ABSL_LOG(FATAL) << "Invalid wire type for CPPTYPE_UINT64: " << type;
       break;
   }
 }
@@ -8149,7 +8172,7 @@ Symbol DescriptorPool::CrossLinkOnDemandHelper(absl::string_view name,
 // be looked up when the accessor for the type was called. Set type_,
 // enum_type_, message_type_, and default_value_enum_ appropriately.
 void FieldDescriptor::InternalTypeOnceInit() const {
-  GOOGLE_CHECK(file()->finished_building_ == true);
+  GOOGLE_ABSL_CHECK(file()->finished_building_ == true);
   const EnumDescriptor* enum_type = nullptr;
   const char* lazy_type_name = reinterpret_cast<const char*>(type_once_ + 1);
   const char* lazy_default_value_enum_name =
@@ -8184,7 +8207,7 @@ void FieldDescriptor::InternalTypeOnceInit() const {
     if (!default_value_enum_) {
       // We use the first defined value as the default
       // if a default is not explicitly defined.
-      GOOGLE_CHECK(enum_type->value_count());
+      GOOGLE_ABSL_CHECK(enum_type->value_count());
       default_value_enum_ = enum_type->value(0);
     }
   }
@@ -8230,7 +8253,7 @@ const std::string& FieldDescriptor::PrintableNameForExtension() const {
 }
 
 void FileDescriptor::InternalDependenciesOnceInit() const {
-  GOOGLE_CHECK(finished_building_ == true);
+  GOOGLE_ABSL_CHECK(finished_building_ == true);
   const char* names_ptr = reinterpret_cast<const char*>(dependencies_once_ + 1);
   for (int i = 0; i < dependency_count(); i++) {
     const char* name = names_ptr;
@@ -8265,18 +8288,18 @@ const Descriptor* MethodDescriptor::output_type() const {
 
 namespace internal {
 void LazyDescriptor::Set(const Descriptor* descriptor) {
-  GOOGLE_CHECK(!once_);
+  GOOGLE_ABSL_CHECK(!once_);
   descriptor_ = descriptor;
 }
 
 void LazyDescriptor::SetLazy(absl::string_view name,
                              const FileDescriptor* file) {
   // verify Init() has been called and Set hasn't been called yet.
-  GOOGLE_CHECK(!descriptor_);
-  GOOGLE_CHECK(!once_);
-  GOOGLE_CHECK(file && file->pool_);
-  GOOGLE_CHECK(file->pool_->lazily_build_dependencies_);
-  GOOGLE_CHECK(!file->finished_building_);
+  GOOGLE_ABSL_CHECK(!descriptor_);
+  GOOGLE_ABSL_CHECK(!once_);
+  GOOGLE_ABSL_CHECK(file && file->pool_);
+  GOOGLE_ABSL_CHECK(file->pool_->lazily_build_dependencies_);
+  GOOGLE_ABSL_CHECK(!file->finished_building_);
   once_ = ::new (file->pool_->tables_->AllocateBytes(static_cast<int>(
       sizeof(absl::once_flag) + name.size() + 1))) absl::once_flag{};
   char* lazy_name = reinterpret_cast<char*>(once_ + 1);
@@ -8288,7 +8311,7 @@ void LazyDescriptor::Once(const ServiceDescriptor* service) {
   if (once_) {
     absl::call_once(*once_, [&] {
       auto* file = service->file();
-      GOOGLE_CHECK(file->finished_building_);
+      GOOGLE_ABSL_CHECK(file->finished_building_);
       const char* lazy_name = reinterpret_cast<const char*>(once_ + 1);
       descriptor_ =
           file->pool_->CrossLinkOnDemandHelper(lazy_name, false).descriptor();

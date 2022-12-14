@@ -34,6 +34,7 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/match.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
@@ -78,7 +79,7 @@ const char* MapEntryTypeName(const FieldDescriptor* descriptor, bool isKey) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return nullptr;
 }
 
@@ -112,6 +113,9 @@ MapFieldGenerator::MapFieldGenerator(const FieldDescriptor* descriptor)
   }
   if (absl::StrContains(value_field_flags, "GPBFieldHasEnumDescriptor")) {
     field_flags.push_back("GPBFieldHasEnumDescriptor");
+    if (absl::StrContains(value_field_flags, "GPBFieldClosedEnum")) {
+      field_flags.push_back("GPBFieldClosedEnum");
+    }
   }
 
   variables_["fieldflags"] = BuildFlagsString(FLAGTYPE_FIELD, field_flags);
@@ -184,7 +188,7 @@ void MapFieldGenerator::DetermineForwardDeclarations(
       descriptor_->file() == value_msg_descriptor->file()) {
     const std::string& value_storage_type =
         value_field_generator_->variable("storage_type");
-    fwd_decls->insert("@class " + value_storage_type);
+    fwd_decls->insert(absl::StrCat("@class ", value_storage_type, ";"));
   }
 }
 

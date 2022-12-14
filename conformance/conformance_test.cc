@@ -41,6 +41,7 @@
 #include "google/protobuf/util/field_comparator.h"
 #include "google/protobuf/util/json_util.h"
 #include "google/protobuf/util/message_differencer.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "conformance/conformance.pb.h"
@@ -111,7 +112,7 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
     }
 
     default:
-      GOOGLE_LOG(FATAL) << "Unspecified input format";
+      GOOGLE_ABSL_LOG(FATAL) << "Unspecified input format";
   }
 
   request_.set_test_category(test_category);
@@ -143,7 +144,7 @@ string ConformanceTestSuite::ConformanceRequestSetting::
     case REQUIRED: return "Required";
     case RECOMMENDED: return "Recommended";
   }
-  GOOGLE_LOG(FATAL) << "Unknown value: " << level;
+  GOOGLE_ABSL_LOG(FATAL) << "Unknown value: " << level;
   return "";
 }
 
@@ -157,7 +158,7 @@ string ConformanceTestSuite::ConformanceRequestSetting::
     case conformance::TEXT_FORMAT:
       return "TextFormatInput";
     default:
-      GOOGLE_LOG(FATAL) << "Unspecified output format";
+      GOOGLE_ABSL_LOG(FATAL) << "Unspecified output format";
   }
   return "";
 }
@@ -172,7 +173,7 @@ string ConformanceTestSuite::ConformanceRequestSetting::
     case conformance::TEXT_FORMAT:
       return "TextFormatOutput";
     default:
-      GOOGLE_LOG(FATAL) << "Unspecified output format";
+      GOOGLE_ABSL_LOG(FATAL) << "Unspecified output format";
   }
   return "";
 }
@@ -278,8 +279,8 @@ void ConformanceTestSuite::RunValidInputTest(
     const ConformanceRequestSetting& setting,
     const string& equivalent_text_format) {
   std::unique_ptr<Message> reference_message(setting.NewTestMessage());
-  GOOGLE_CHECK(TextFormat::ParseFromString(equivalent_text_format,
-                                    reference_message.get()))
+  GOOGLE_ABSL_CHECK(TextFormat::ParseFromString(equivalent_text_format,
+                                         reference_message.get()))
       << "Failed to parse data for test case: " << setting.GetTestName()
       << ", data: " << equivalent_text_format;
   const string equivalent_wire_format = reference_message->SerializeAsString();
@@ -306,7 +307,7 @@ void ConformanceTestSuite::VerifyResponse(
   ConformanceLevel level = setting.GetLevel();
   std::unique_ptr<Message> reference_message = setting.NewTestMessage();
 
-  GOOGLE_CHECK(reference_message->ParseFromString(equivalent_wire_format))
+  GOOGLE_ABSL_CHECK(reference_message->ParseFromString(equivalent_wire_format))
       << "Failed to parse wire data for test case: " << test_name;
 
   switch (response.result_case()) {
@@ -341,7 +342,8 @@ void ConformanceTestSuite::VerifyResponse(
   bool check = false;
 
   if (require_same_wire_format) {
-    GOOGLE_DCHECK_EQ(response.result_case(), ConformanceResponse::kProtobufPayload);
+    GOOGLE_ABSL_DCHECK_EQ(response.result_case(),
+                   ConformanceResponse::kProtobufPayload);
     const string& protobuf_payload = response.protobuf_payload();
     check = equivalent_wire_format == protobuf_payload;
     differences = absl::StrCat("Expect: ", ToOctString(equivalent_wire_format),
@@ -366,7 +368,7 @@ void ConformanceTestSuite::RunTest(const string& test_name,
                                    const ConformanceRequest& request,
                                    ConformanceResponse* response) {
   if (test_names_.insert(test_name).second == false) {
-    GOOGLE_LOG(FATAL) << "Duplicated test name: " << test_name;
+    GOOGLE_ABSL_LOG(FATAL) << "Duplicated test name: " << test_name;
   }
 
   string serialized_request;
@@ -441,7 +443,7 @@ string ConformanceTestSuite::WireFormatToString(
     case conformance::UNSPECIFIED:
       return "UNSPECIFIED";
     default:
-      GOOGLE_LOG(FATAL) << "unknown wire type: " << wire_format;
+      GOOGLE_ABSL_LOG(FATAL) << "unknown wire type: " << wire_format;
   }
   return "";
 }

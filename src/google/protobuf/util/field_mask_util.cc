@@ -35,6 +35,8 @@
 #include <string>
 #include <vector>
 
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "google/protobuf/message.h"
@@ -448,7 +450,7 @@ void FieldMaskTree::MergeLeafNodesToTree(const std::string& prefix,
 void FieldMaskTree::MergeMessage(const Node* node, const Message& source,
                                  const FieldMaskUtil::MergeOptions& options,
                                  Message* destination) {
-  GOOGLE_DCHECK(!node->children.empty());
+  GOOGLE_ABSL_DCHECK(!node->children.empty());
   const Reflection* source_reflection = source.GetReflection();
   const Reflection* destination_reflection = destination->GetReflection();
   const Descriptor* descriptor = source.GetDescriptor();
@@ -458,18 +460,18 @@ void FieldMaskTree::MergeMessage(const Node* node, const Message& source,
     const Node* child = it->second;
     const FieldDescriptor* field = descriptor->FindFieldByName(field_name);
     if (field == nullptr) {
-      GOOGLE_LOG(ERROR) << "Cannot find field \"" << field_name << "\" in message "
-                 << descriptor->full_name();
+      GOOGLE_ABSL_LOG(ERROR) << "Cannot find field \"" << field_name
+                      << "\" in message " << descriptor->full_name();
       continue;
     }
     if (!child->children.empty()) {
       // Sub-paths are only allowed for singular message fields.
       if (field->is_repeated() ||
           field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-        GOOGLE_LOG(ERROR) << "Field \"" << field_name << "\" in message "
-                   << descriptor->full_name()
-                   << " is not a singular message field and cannot "
-                   << "have sub-fields.";
+        GOOGLE_ABSL_LOG(ERROR) << "Field \"" << field_name << "\" in message "
+                        << descriptor->full_name()
+                        << " is not a singular message field and cannot "
+                        << "have sub-fields.";
         continue;
       }
       MergeMessage(child, source_reflection->GetMessage(source, field), options,
@@ -584,7 +586,7 @@ void FieldMaskTree::AddRequiredFieldPath(Node* node,
 }
 
 bool FieldMaskTree::TrimMessage(const Node* node, Message* message) {
-  GOOGLE_DCHECK(!node->children.empty());
+  GOOGLE_ABSL_DCHECK(!node->children.empty());
   const Reflection* reflection = message->GetReflection();
   const Descriptor* descriptor = message->GetDescriptor();
   const int32_t field_count = descriptor->field_count();
@@ -683,7 +685,7 @@ bool FieldMaskUtil::IsPathInFieldMask(absl::string_view path,
 void FieldMaskUtil::MergeMessageTo(const Message& source, const FieldMask& mask,
                                    const MergeOptions& options,
                                    Message* destination) {
-  GOOGLE_CHECK(source.GetDescriptor() == destination->GetDescriptor());
+  GOOGLE_ABSL_CHECK(source.GetDescriptor() == destination->GetDescriptor());
   // Build a FieldMaskTree and walk through the tree to merge all specified
   // fields.
   FieldMaskTree tree;

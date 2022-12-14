@@ -45,6 +45,7 @@
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
 #include "absl/algorithm/container.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/match.h"
@@ -178,7 +179,7 @@ struct Proto2Descriptor {
                                  JsonLocation::SourceLocation::current()) {
     auto f = FieldByNumber(d, number);
     if (!f.has_value()) {
-      GOOGLE_LOG(FATAL)
+      GOOGLE_ABSL_LOG(FATAL)
           << absl::StrFormat(
                  "%s has, by definition, a field numbered %d, but it could not "
                  "be "
@@ -266,6 +267,10 @@ struct Proto2Descriptor {
   static bool IsRepeated(Field f) { return f->is_repeated(); }
 
   static bool IsOptional(Field f) { return f->has_presence(); }
+
+  static bool IsImplicitPresence(Field f) {
+    return !f->is_repeated() && !f->has_presence();
+  }
 
   static bool IsExtension(Field f) { return f->is_extension(); }
 
@@ -355,7 +360,7 @@ struct Proto3Type {
                                  JsonLocation::SourceLocation::current()) {
     auto f = FieldByNumber(d, number);
     if (!f.has_value()) {
-      GOOGLE_LOG(FATAL)
+      GOOGLE_ABSL_LOG(FATAL)
           << absl::StrFormat(
                  "%s has, by definition, a field numbered %d, but it could not "
                  "be "
@@ -449,8 +454,20 @@ struct Proto3Type {
   }
 
   static bool IsOptional(Field f) {
+    // Implicit presence requires this weird check: in proto3, everything is
+    // implicit presence, except for things that are members of oneofs,
+    // which is how proto3 optional is represented.
+    if (f->parent().proto().syntax() == google::protobuf::SYNTAX_PROTO3) {
+      return f->proto().oneof_index() != 0;
+    }
+
     return f->proto().cardinality() ==
-           google::protobuf::Field::CARDINALITY_OPTIONAL;
+               google::protobuf::Field::CARDINALITY_OPTIONAL ||
+           google::protobuf::Field::CARDINALITY_REQUIRED;
+  }
+
+  static bool IsImplicitPresence(Field f) {
+    return !IsRepeated(f) && !IsOptional(f);
   }
 
   static bool IsExtension(Field f) { return false; }

@@ -45,6 +45,7 @@
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -70,8 +71,8 @@ using ::google::protobuf::internal::WireFormatLite;
 
 absl::StatusOr<const ResolverPool::Message*> ResolverPool::Field::MessageType()
     const {
-  GOOGLE_CHECK(proto().kind() == google::protobuf::Field::TYPE_MESSAGE ||
-        proto().kind() == google::protobuf::Field::TYPE_GROUP)
+  GOOGLE_ABSL_CHECK(proto().kind() == google::protobuf::Field::TYPE_MESSAGE ||
+             proto().kind() == google::protobuf::Field::TYPE_GROUP)
       << proto().kind();
   if (type_ == nullptr) {
     auto type = pool_->FindMessage(proto().type_url());
@@ -83,7 +84,8 @@ absl::StatusOr<const ResolverPool::Message*> ResolverPool::Field::MessageType()
 
 absl::StatusOr<const ResolverPool::Enum*> ResolverPool::Field::EnumType()
     const {
-  GOOGLE_CHECK(proto().kind() == google::protobuf::Field::TYPE_ENUM) << proto().kind();
+  GOOGLE_ABSL_CHECK(proto().kind() == google::protobuf::Field::TYPE_ENUM)
+      << proto().kind();
   if (type_ == nullptr) {
     auto type = pool_->FindEnum(proto().type_url());
     RETURN_IF_ERROR(type.status());
@@ -293,7 +295,7 @@ absl::Status UntypedMessage::Decode(io::CodedInputStream& stream,
         break;
       }
       case WireFormatLite::WIRETYPE_END_GROUP:
-        GOOGLE_CHECK(false) << "unreachable";
+        GOOGLE_ABSL_CHECK(false) << "unreachable";
         break;
       default:
         return absl::InvalidArgumentError(

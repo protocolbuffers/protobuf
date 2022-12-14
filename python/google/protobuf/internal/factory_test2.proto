@@ -42,7 +42,7 @@ enum Factory2Enum {
 }
 
 message Factory2Message {
-  required int32 mandatory = 1;
+  optional int32 mandatory = 1;
   optional Factory2Enum factory_2_enum = 2;
   enum NestedFactory2Enum {
     NESTED_FACTORY_2_VALUE_0 = 0;

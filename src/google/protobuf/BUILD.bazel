@@ -253,6 +253,7 @@ cc_library(
         "//src/google/protobuf:__subpackages__",
     ],
     deps = [
+        ":arena_align",
         ":arena_allocation_policy",
         ":arena_cleanup",
         ":arena_config",
@@ -328,6 +329,7 @@ cc_library(
         ":arena_config",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs:lite",
+        "@com_google_absl//absl/cleanup",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/numeric:bits",
         "@com_google_absl//absl/strings:internal",

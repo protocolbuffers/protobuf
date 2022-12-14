@@ -1169,7 +1169,8 @@ TEST2_FILE = ProtoFile(
         'google/protobuf/internal/more_messages.proto',
         'google/protobuf/internal/descriptor_pool_test1.proto',
     ],
-    public_dependencies=['google/protobuf/internal/more_messages.proto'])
+    public_dependencies=[
+        'google/protobuf/internal/more_messages.proto'])
 
 
 if __name__ == '__main__':

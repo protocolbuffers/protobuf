@@ -6,6 +6,8 @@
 # This script selects a specific Dockerfile (for building a Docker image) and
 # a script to run inside that image.
 
+set -eux
+
 use_bazel.sh 4.2.2
 
 # Change to repo root

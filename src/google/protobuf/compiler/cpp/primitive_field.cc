@@ -37,11 +37,12 @@
 #include <string>
 #include <tuple>
 
-#include "google/protobuf/io/printer.h"
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.pb.h"
+#include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
 
 namespace google {
@@ -99,7 +100,7 @@ int FixedSize(FieldDescriptor::Type type) {
       // No default because we want the compiler to complain if any new
       // types are added.
   }
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return -1;
 }
 
@@ -270,13 +271,13 @@ void PrimitiveOneofFieldGenerator::GenerateInlineAccessorDefinitions(
   Formatter format(printer, variables_);
   format(
       "inline $type$ $classname$::_internal_$name$() const {\n"
-      "  if (_internal_has_$name$()) {\n"
+      "  if ($has_field$) {\n"
       "    return $field$;\n"
       "  }\n"
       "  return $default$;\n"
       "}\n"
       "inline void $classname$::_internal_set_$name$($type$ value) {\n"
-      "  if (!_internal_has_$name$()) {\n"
+      "  if ($not_has_field$) {\n"
       "    clear_$oneof_name$();\n"
       "    set_has_$name$();\n"
       "  }\n"

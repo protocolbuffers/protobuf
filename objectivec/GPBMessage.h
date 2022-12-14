@@ -90,15 +90,13 @@ CF_EXTERN_C_END
  * The set of unknown fields for this message.
  *
  * Only messages from proto files declared with "proto2" syntax support unknown
- * fields. For "proto3" syntax, any unknown fields found while parsing are
- * dropped.
+ * fields.
  **/
 @property(nonatomic, copy, nullable) GPBUnknownFieldSet *unknownFields;
 
 /**
  * Whether the message, along with all submessages, have the required fields
- * set. This is only applicable for files declared with "proto2" syntax, as
- * there are no required fields for "proto3" syntax.
+ * set.
  **/
 @property(nonatomic, readonly, getter=isInitialized) BOOL initialized;
 
@@ -411,6 +409,12 @@ CF_EXTERN_C_END
  * Extensions use boxed values (NSNumbers) for PODs and NSMutableArrays for
  * repeated fields. If the extension is a Message one will be auto created for
  * you and returned similar to fields.
+ *
+ * NOTE: For Enum extensions, if the enum was _closed_, then unknown values
+ * were parsed into the message's unknown fields instead of ending up in the
+ * extensions, just like what happens with singular/repeated fields. For open
+ * enums, the _raw_ value will be in the NSNumber, meaning if one does a
+ * `switch` on the values, a `default` case should also be included.
  *
  * @param extension The extension descriptor of the extension to fetch.
  *

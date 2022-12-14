@@ -38,15 +38,16 @@
 #include <memory>
 #include <string>
 
+#include "google/protobuf/descriptor.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/primitive_field.h"
 #include "google/protobuf/compiler/cpp/string_field.h"
 #include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/compiler/cpp/enum_field.h"
 #include "google/protobuf/compiler/cpp/map_field.h"
 #include "google/protobuf/compiler/cpp/message_field.h"
@@ -84,27 +85,29 @@ std::string GenerateTemplateForOneofString(const FieldDescriptor* descriptor,
       descriptor->options().ctype() == google::protobuf::FieldOptions::STRING
           ? "$0.UnsafeGetPointer()"
           : "$0";
+  std::string has_field = absl::StrFormat(
+      "%s_case() == k%s", descriptor->containing_oneof()->name(),
+      UnderscoresToCamelCase(descriptor->name(), true));
 
   if (descriptor->default_value_string().empty()) {
-    return absl::Substitute(absl::StrCat("_internal_has_", field_name, "() ? ",
-                                         field_pointer, ": nullptr"),
-                            field_member);
+    return absl::Substitute(
+        absl::StrCat(has_field, " ? ", field_pointer, ": nullptr"),
+        field_member);
   }
 
   if (descriptor->options().ctype() == google::protobuf::FieldOptions::STRING_PIECE) {
-    return absl::Substitute(absl::StrCat("_internal_has_", field_name, "() ? ",
-                                         field_pointer, ": nullptr"),
-                            field_member);
+    return absl::Substitute(
+        absl::StrCat(has_field, " ? ", field_pointer, ": nullptr"),
+        field_member);
   }
 
   std::string default_value_pointer =
       descriptor->options().ctype() == google::protobuf::FieldOptions::STRING
           ? "&$1.get()"
           : "&$1";
-  return absl::Substitute(
-      absl::StrCat("_internal_has_", field_name, "() ? ", field_pointer, " : ",
-                   default_value_pointer),
-      field_member, MakeDefaultFieldName(descriptor));
+  return absl::Substitute(absl::StrCat(has_field, " ? ", field_pointer, " : ",
+                                       default_value_pointer),
+                          field_member, MakeDefaultFieldName(descriptor));
 }
 
 std::string GenerateTemplateForSingleString(const FieldDescriptor* descriptor,
@@ -289,8 +292,18 @@ absl::flat_hash_map<absl::string_view, std::string> OneofFieldVars(
   if (descriptor->containing_oneof() == nullptr) {
     return {};
   }
+  std::string oneof_name = descriptor->containing_oneof()->name();
+  std::string field_name = UnderscoresToCamelCase(descriptor->name(), true);
 
-  return {{"oneof_name", descriptor->containing_oneof()->name()}};
+  return {
+      {"oneof_name", oneof_name},
+      {"field_name", field_name},
+      {"oneof_index", absl::StrCat(descriptor->containing_oneof()->index())},
+      {"has_field",
+       absl::StrFormat("%s_case() == k%s", oneof_name, field_name)},
+      {"not_has_field",
+       absl::StrFormat("%s_case() != k%s", oneof_name, field_name)},
+  };
 }
 
 void SetCommonOneofFieldVariables(
@@ -303,24 +316,29 @@ void SetCommonOneofFieldVariables(
 
 void FieldGenerator::SetHasBitIndex(int32_t has_bit_index) {
   if (!internal::cpp::HasHasbit(descriptor_) || has_bit_index < 0) {
-    GOOGLE_CHECK_EQ(has_bit_index, -1);
+    GOOGLE_ABSL_CHECK_EQ(has_bit_index, -1);
     return;
   }
-  variables_["set_hasbit"] = absl::StrCat(
-      variables_["has_bits"], "[", has_bit_index / 32, "] |= 0x",
-      absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8), "u;");
-  variables_["clear_hasbit"] = absl::StrCat(
-      variables_["has_bits"], "[", has_bit_index / 32, "] &= ~0x",
-      absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8), "u;");
+  int32_t index = has_bit_index / 32;
+  std::string mask =
+      absl::StrCat(absl::Hex(1u << (has_bit_index % 32), absl::kZeroPad8));
+  const std::string& has_bits = variables_["has_bits"];
+
+  variables_["has_hasbit"] =
+      absl::StrFormat("%s[%d] & 0x%su", has_bits, index, mask);
+  variables_["set_hasbit"] =
+      absl::StrFormat("%s[%d] |= 0x%su;", has_bits, index, mask);
+  variables_["clear_hasbit"] =
+      absl::StrFormat("%s[%d] &= ~0x%su;", has_bits, index, mask);
 }
 
 void FieldGenerator::SetInlinedStringIndex(int32_t inlined_string_index) {
   if (!IsStringInlined(descriptor_, options_)) {
-    GOOGLE_CHECK_EQ(inlined_string_index, -1);
+    GOOGLE_ABSL_CHECK_EQ(inlined_string_index, -1);
     return;
   }
   // The first bit is the tracking bit for on demand registering ArenaDtor.
-  GOOGLE_CHECK_GT(inlined_string_index, 0)
+  GOOGLE_ABSL_CHECK_GT(inlined_string_index, 0)
       << "_inlined_string_donated_'s bit 0 is reserved for arena dtor tracking";
   variables_["inlined_string_donated"] = absl::StrCat(
       "(", variables_["inlined_string_donated_array"], "[",
@@ -363,6 +381,14 @@ void FieldGenerator::GenerateCopyConstructorCode(io::Printer* printer) const {
     Formatter format(printer, variables_);
     format("$field$ = from.$field$;\n");
   }
+}
+
+void FieldGenerator::GenerateIfHasField(io::Printer* printer) const {
+  GOOGLE_ABSL_CHECK(internal::cpp::HasHasbit(descriptor_));
+  GOOGLE_ABSL_CHECK(variables_.find("has_hasbit") != variables_.end());
+
+  Formatter format(printer, variables_);
+  format("if (($has_hasbit$) != 0) {\n");
 }
 
 FieldGenerator::~FieldGenerator() {}
@@ -439,7 +465,7 @@ FieldGeneratorMap::~FieldGeneratorMap() {}
 
 const FieldGenerator& FieldGeneratorMap::get(
     const FieldDescriptor* field) const {
-  GOOGLE_CHECK_EQ(field->containing_type(), descriptor_);
+  GOOGLE_ABSL_CHECK_EQ(field->containing_type(), descriptor_);
   return *field_generators_[field->index()];
 }
 

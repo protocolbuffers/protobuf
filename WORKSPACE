@@ -55,13 +55,6 @@ pinned_maven_install()
 # For `cc_proto_blacklist_test` and `build_test`.
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
-load("@rules_python//python:pip.bzl", "pip_install")
-
-pip_install(
-    name="pip_deps",
-    requirements = "//python:requirements.txt"
-)
-
 bazel_skylib_workspace()
 
 load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
@@ -78,12 +71,27 @@ load("@upb//bazel:workspace_deps.bzl", "upb_deps")
 upb_deps()
 
 load("@upb//bazel:system_python.bzl", "system_python")
-system_python(name = "local_config_python")
+system_python(
+    name = "system_python",
+    minimum_python_version = "3.7",
+)
+
+load("@system_python//:pip.bzl", "pip_parse")
+pip_parse(
+    name="pip_deps",
+    requirements = "@upb//python:requirements.txt",
+    requirements_overrides = {
+        "3.11": "@upb//python:requirements_311.txt",
+    },
+)
+
+load("@pip_deps//:requirements.bzl", "install_deps")
+install_deps()
 
 load("@utf8_range//:workspace_deps.bzl", "utf8_range_deps")
 utf8_range_deps()
 
 bind(
     name = "python_headers",
-    actual = "@local_config_python//:python_headers",
+    actual = "@system_python//:python_headers",
 )

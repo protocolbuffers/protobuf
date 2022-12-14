@@ -107,9 +107,8 @@ class Empty::_Internal {
  public:
 };
 
-Empty::Empty(::PROTOBUF_NAMESPACE_ID::Arena* arena,
-                         bool is_message_owned)
-  : ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase(arena, is_message_owned) {
+Empty::Empty(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::internal::ZeroFieldsBase(arena) {
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Empty)
 }
 Empty::Empty(const Empty& from)

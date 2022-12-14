@@ -34,8 +34,6 @@
 #include <utility>
 #include <vector>
 
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/common.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"

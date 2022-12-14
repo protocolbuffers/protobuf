@@ -217,7 +217,7 @@
 #ifdef PROTOBUF_VERSION
 #error PROTOBUF_VERSION was previously defined
 #endif
-#define PROTOBUF_VERSION 3021009
+#define PROTOBUF_VERSION 3021010
 
 #ifdef PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC
 #error PROTOBUF_MIN_HEADER_VERSION_FOR_PROTOC was previously defined
@@ -534,13 +534,6 @@
 #define PROTOBUF_NODISCARD
 #endif
 
-// Enable all stable experiments if this flag is set.  This allows us to group
-// all of these experiments under a single build flag, which can be enabled in
-// the protobuf.stable-experiments TAP project.
-#ifdef PROTOBUF_ENABLE_STABLE_EXPERIMENTS
-#define PROTOBUF_FORCE_MESSAGE_OWNED_ARENA
-#endif  // !PROTOBUF_ENABLE_STABLE_EXPERIMENTS
-
 #ifdef PROTOBUF_FORCE_COPY_IN_RELEASE
 #error PROTOBUF_FORCE_COPY_IN_RELEASE was previously defined
 #endif
@@ -585,7 +578,7 @@
 #endif
 
 // PROTOBUF_ASSUME(pred) tells the compiler that it can assume pred is true. To
-// be safe, we also validate the assumption with a GOOGLE_DCHECK in unoptimized
+// be safe, we also validate the assumption with a GOOGLE_ABSL_DCHECK in unoptimized
 // builds. The macro does not do anything useful if the compiler does not
 // support __builtin_assume.
 #ifdef PROTOBUF_ASSUME
@@ -593,10 +586,10 @@
 #endif
 #if __has_builtin(__builtin_assume)
 #define PROTOBUF_ASSUME(pred) \
-  GOOGLE_DCHECK(pred);               \
+  GOOGLE_ABSL_DCHECK(pred);               \
   __builtin_assume(pred)
 #else
-#define PROTOBUF_ASSUME(pred) GOOGLE_DCHECK(pred)
+#define PROTOBUF_ASSUME(pred) GOOGLE_ABSL_DCHECK(pred)
 #endif
 
 // Specify memory alignment for structs, classes, etc.
@@ -661,18 +654,6 @@
 #else
 #error "endian detection failed for current compiler"
 #endif
-
-// For enabling message owned arena, one major blocker is semantic change from
-// moving to copying when there is ownership transfer (e.g., move ctor, swap,
-// set allocated, release). This change not only causes performance regression
-// but also breaks users code (e.g., dangling reference). For top-level
-// messages, since it owns the arena, we can mitigate the issue by transferring
-// ownership of arena. However, we cannot do that for nested messages. In order
-// to tell how many usages of nested messages affected by message owned arena,
-// we need to simulate the arena ownership.
-// This experiment is purely for the purpose of gathering data. All code guarded
-// by this flag is supposed to be removed after this experiment.
-#define PROTOBUF_MESSAGE_OWNED_ARENA_EXPERIMENT
 
 #ifdef PROTOBUF_CONSTINIT
 #error PROTOBUF_CONSTINIT was previously defined
@@ -1027,16 +1008,20 @@ static_assert(PROTOBUF_CLANG_MIN(5, 0), "Protobuf only supports Clang 6.0 and ne
 #define PROTOBUF_DEBUG false
 #endif
 
-// This `for` allows us to condition the `GOOGLE_LOG` on the define above, so that
+// This `for` allows us to condition the `GOOGLE_ABSL_LOG` on the define above, so that
 // code can write `PROTOBUF_DLOG(INFO) << ...;` and have it turned off when
 // debug logging is off.
 //
 // This is a `for`, not and `if`, to avoid it accidentally chaining with an
 // `else` below it.
 #define PROTOBUF_DLOG(x) \
-  for (bool b = PROTOBUF_DEBUG; b; b = false) GOOGLE_LOG(x)
+  for (bool b = PROTOBUF_DEBUG; b; b = false) GOOGLE_ABSL_LOG(x)
 
 #define PROTO2_IS_OSS true
+
+#ifdef PROTOBUF_NO_THREADLOCAL
+#error PROTOBUF_NO_THREADLOCAL was previously defined
+#endif
 
 // We don't want code outside port_def doing complex testing, so
 // remove our portable condition test macros to nudge folks away from
