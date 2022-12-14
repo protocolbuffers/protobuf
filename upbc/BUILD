@@ -77,6 +77,7 @@ cc_binary(
     deps = [
         "//:mem",
         "//:message",
+        "//:message_accessors",
         "//:mini_table",
         "//upbc:upbdev",
     ],

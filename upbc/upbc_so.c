@@ -30,6 +30,7 @@
 #define UPB_BUILD_API
 
 #include "upb/mem/arena.h"
+#include "upb/message/accessors.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/decode.h"
 #include "upbc/upbdev.h"
