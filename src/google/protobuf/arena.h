@@ -51,8 +51,9 @@ using type_info = ::type_info;
 #include <type_traits>
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_config.h"
-#include "google/protobuf/arena_impl.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/serial_arena.h"
+#include "google/protobuf/thread_safe_arena.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"

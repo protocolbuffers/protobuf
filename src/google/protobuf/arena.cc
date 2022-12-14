@@ -40,9 +40,10 @@
 #include "absl/base/attributes.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena_allocation_policy.h"
-#include "google/protobuf/arena_impl.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/serial_arena.h"
+#include "google/protobuf/thread_safe_arena.h"
 
 
 #ifdef ADDRESS_SANITIZER
