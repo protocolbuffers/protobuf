@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 # go to the repo root
 cd $(dirname $0)/../../..

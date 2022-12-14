@@ -10,6 +10,7 @@ load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@pip_deps//:requirements.bzl", "requirement")
 load("//:protobuf.bzl", "internal_py_proto_library")
+load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 load("//conformance:defs.bzl", "conformance_test")
 load(":internal.bzl", "internal_copy_files", "internal_py_test")
@@ -80,6 +81,16 @@ cc_binary(
     }),
 )
 
+aarch64_test(
+    name = "api_implementation_aarch64_test",
+    bazel_binaries = [":google/protobuf/internal/_api_implementation.so"],
+)
+
+x86_64_test(
+    name = "api_implementation_x86_64_test",
+    bazel_binaries = [":google/protobuf/internal/_api_implementation.so"],
+)
+
 config_setting(
     name = "allow_oversize_protos",
     values = {
@@ -116,6 +127,16 @@ cc_binary(
         "//conditions:default": [],
         ":use_fast_cpp_protos": ["//external:python_headers"],
     }),
+)
+
+aarch64_test(
+    name = "message_aarch64_test",
+    bazel_binaries = [":google/protobuf/pyext/_message.so"],
+)
+
+x86_64_test(
+    name = "message_x86_64_test",
+    bazel_binaries = [":google/protobuf/pyext/_message.so"],
 )
 
 py_library(
