@@ -157,13 +157,6 @@ class PROTOBUF_EXPORT ZeroCopyInputStream {
   // buffer that goes beyond what you wanted to read, you can use BackUp()
   // to return to the point where you intended to finish.
   //
-  // This method can be called with `count = 0` to finalize (flush) any
-  // previously returned buffer. For example, a file output stream can
-  // flush buffers returned from a previous call to Next() upon such
-  // BackUp(0) invocations. ZeroCopyOutputStream callers should always
-  // invoke BackUp() after a final Next() call, even if there is no
-  // excess buffer data to be backed up to indicate a flush point.
-  //
   // Preconditions:
   // * The last method called must have been Next().
   // * count must be less than or equal to the size of the last buffer
@@ -175,10 +168,14 @@ class PROTOBUF_EXPORT ZeroCopyInputStream {
   //   the same data again before producing new data.
   virtual void BackUp(int count) = 0;
 
-  // Skips a number of bytes.  Returns false if the end of the stream is
-  // reached or some input error occurred.  In the end-of-stream case, the
-  // stream is advanced to the end of the stream (so ByteCount() will return
-  // the total size of the stream).
+  // Skips `count` number of bytes.
+  // Returns true on success, or false if some input error occurred, or `count`
+  // exceeds the end of the stream. This function may skip up to `count - 1`
+  // bytes in case of failure.
+  //
+  // Preconditions:
+  // * `count` is non-negative.
+  //
   virtual bool Skip(int count) = 0;
 
   // Returns the total number of bytes read since this object was created.
@@ -234,6 +231,13 @@ class PROTOBUF_EXPORT ZeroCopyOutputStream {
   // writing all the data you want to write, but the last buffer was bigger
   // than you needed.  You don't want to write a bunch of garbage after the
   // end of your data, so you use BackUp() to back up.
+  //
+  // This method can be called with `count = 0` to finalize (flush) any
+  // previously returned buffer. For example, a file output stream can
+  // flush buffers returned from a previous call to Next() upon such
+  // BackUp(0) invocations. ZeroCopyOutputStream callers should always
+  // invoke BackUp() after a final Next() call, even if there is no
+  // excess buffer data to be backed up to indicate a flush point.
   //
   // Preconditions:
   // * The last method called must have been Next().
