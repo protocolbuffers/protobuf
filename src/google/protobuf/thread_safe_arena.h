@@ -124,6 +124,14 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Add object pointer and cleanup function pointer to the list.
   void AddCleanup(void* elem, void (*cleanup)(void*));
 
+  PROTOBUF_NDEBUG_INLINE void* AllocateString() {
+    SerialArena* arena;
+    if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+      return arena->AllocateString();
+    }
+    return GetSerialArenaFallback(0)->AllocateStringFallback();
+  }
+
  private:
   friend class ArenaBenchmark;
   friend class TcParser;
@@ -179,7 +187,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   void Init();
 
   // Delete or Destruct all objects owned by the arena.
-  void CleanupList();
+  size_t CleanupList();
 
   inline void CacheSerialArena(SerialArena* serial) {
     thread_cache().last_serial_arena = serial;
