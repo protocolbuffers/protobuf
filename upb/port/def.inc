@@ -80,10 +80,6 @@
  */
 #define UPB_PTR_AT(msg, ofs, type) ((type*)((char*)(msg) + (ofs)))
 
-#define UPB_WRITE_ONEOF(msg, fieldtype, offset, value, case_offset, case_val) \
-  *UPB_PTR_AT(msg, case_offset, int) = case_val;                             \
-  *UPB_PTR_AT(msg, offset, fieldtype) = value;
-
 #define UPB_MAPTYPE_STRING 0
 
 // UPB_EXPORT: always generate a public symbol.

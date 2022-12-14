@@ -112,7 +112,7 @@ UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
 // we are left with ideal code.  This can happen either through through
 // literals or UPB_ASSUME():
 //
-//   // Via string literals.
+//   // Via struct literals.
 //   bool FooMessage_set_bool_field(const upb_Message* msg, bool val) {
 //     const upb_MiniTableField field = {1, 0, 0, /* etc... */};
 //     // All value in "field" are compile-time known.
@@ -132,7 +132,7 @@ UPB_INLINE void _upb_MiniTable_CopyFieldData(void* to, const void* from,
 // As a result, we can use these universal getters/setters for *all* message
 // accessors: generated code, MiniTable accessors, and reflection.  The only
 // exception is the binary encoder/decoder, which need to be a bit more clever
-// about how the read/write the message data, for efficiency.
+// about how they read/write the message data, for efficiency.
 //
 // These functions work on both extensions and non-extensions. If the field
 // of a setter is known to be a non-extension, the arena may be NULL and the
@@ -240,7 +240,7 @@ UPB_INLINE void _upb_Message_ClearExtensionField(
 UPB_INLINE void _upb_Message_ClearNonExtensionField(
     upb_Message* msg, const upb_MiniTableField* field) {
   if (field->presence > 0) {
-    _upb_clearhas_field(msg, field);
+    _upb_clearhas(msg, _upb_Message_Hasidx(field));
   } else if (_upb_MiniTableField_InOneOf(field)) {
     uint32_t* oneof_case = _upb_oneofcase_field(msg, field);
     if (*oneof_case != field->number) return;
@@ -271,6 +271,12 @@ UPB_API_INLINE bool upb_Message_HasField(const upb_Message* msg,
   } else {
     return _upb_Message_HasNonExtensionField(msg, field);
   }
+}
+
+UPB_API_INLINE uint32_t upb_Message_WhichOneofFieldNumber(
+    const upb_Message* message, const upb_MiniTableField* oneof_field) {
+  UPB_ASSUME(_upb_MiniTableField_InOneOf(oneof_field));
+  return _upb_getoneofcase_field(message, oneof_field);
 }
 
 UPB_API_INLINE bool upb_Message_GetBool(const upb_Message* msg,

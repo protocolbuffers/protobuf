@@ -367,10 +367,12 @@ void GenerateOneofInHeader(const protobuf::OneofDescriptor* oneof,
   output(
       R"cc(
         UPB_INLINE $0_oneofcases $1_$2_case(const $1* msg) {
-          return ($0_oneofcases)*UPB_PTR_AT(msg, $3, int32_t);
+          const upb_MiniTableField field = $3;
+          return ($0_oneofcases)upb_Message_WhichOneofFieldNumber(msg, &field);
         }
       )cc",
-      fullname, msg_name, oneof->name(), layout.GetOneofCaseOffset(oneof));
+      fullname, msg_name, oneof->name(),
+      FieldInitializer(layout, oneof->field(0)));
 }
 
 void GenerateHazzer(const protobuf::FieldDescriptor* field,
