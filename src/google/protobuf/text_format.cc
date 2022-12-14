@@ -174,7 +174,6 @@ void PerformAbslStringify(const Message& message,
   // TODO(b/249835002): consider using the single line version for short
   TextFormat::Printer printer;
   printer.SetExpandAny(true);
-  printer.SetInsertSilentMarker(true);
   printer.SetRedactDebugString(true);
   printer.SetRandomizeDebugString(true);
   std::string result;
