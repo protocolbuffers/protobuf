@@ -152,7 +152,7 @@ inline bool IsValidNumericCast(Source source) {
 // (this is static_asserted), though this could be supported if necessary.
 template <class Dest, class Source>
 inline Dest checked_numeric_cast(Source source) {
-  GOOGLE_CHECK(IsValidNumericCast<Dest>(source));
+  GOOGLE_ABSL_CHECK(IsValidNumericCast<Dest>(source));
   return static_cast<Dest>(source);
 }
 

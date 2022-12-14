@@ -36,7 +36,6 @@
 #include <memory>
 #include <string>
 
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
@@ -125,27 +124,27 @@ static bool PythonToMapKey(MapContainer* self, PyObject* obj, MapKey* key) {
       self->parent_field_descriptor->message_type()->map_key();
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
-      GOOGLE_CHECK_GET_INT32(obj, value, false);
+      PROTOBUF_CHECK_GET_INT32(obj, value, false);
       key->SetInt32Value(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
-      GOOGLE_CHECK_GET_INT64(obj, value, false);
+      PROTOBUF_CHECK_GET_INT64(obj, value, false);
       key->SetInt64Value(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
-      GOOGLE_CHECK_GET_UINT32(obj, value, false);
+      PROTOBUF_CHECK_GET_UINT32(obj, value, false);
       key->SetUInt32Value(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
-      GOOGLE_CHECK_GET_UINT64(obj, value, false);
+      PROTOBUF_CHECK_GET_UINT64(obj, value, false);
       key->SetUInt64Value(value);
       break;
     }
     case FieldDescriptor::CPPTYPE_BOOL: {
-      GOOGLE_CHECK_GET_BOOL(obj, value, false);
+      PROTOBUF_CHECK_GET_BOOL(obj, value, false);
       key->SetBoolValue(value);
       break;
     }
@@ -231,37 +230,37 @@ static bool PythonToMapValueRef(MapContainer* self, PyObject* obj,
       self->parent_field_descriptor->message_type()->map_value();
   switch (field_descriptor->cpp_type()) {
     case FieldDescriptor::CPPTYPE_INT32: {
-      GOOGLE_CHECK_GET_INT32(obj, value, false);
+      PROTOBUF_CHECK_GET_INT32(obj, value, false);
       value_ref->SetInt32Value(value);
       return true;
     }
     case FieldDescriptor::CPPTYPE_INT64: {
-      GOOGLE_CHECK_GET_INT64(obj, value, false);
+      PROTOBUF_CHECK_GET_INT64(obj, value, false);
       value_ref->SetInt64Value(value);
       return true;
     }
     case FieldDescriptor::CPPTYPE_UINT32: {
-      GOOGLE_CHECK_GET_UINT32(obj, value, false);
+      PROTOBUF_CHECK_GET_UINT32(obj, value, false);
       value_ref->SetUInt32Value(value);
       return true;
     }
     case FieldDescriptor::CPPTYPE_UINT64: {
-      GOOGLE_CHECK_GET_UINT64(obj, value, false);
+      PROTOBUF_CHECK_GET_UINT64(obj, value, false);
       value_ref->SetUInt64Value(value);
       return true;
     }
     case FieldDescriptor::CPPTYPE_FLOAT: {
-      GOOGLE_CHECK_GET_FLOAT(obj, value, false);
+      PROTOBUF_CHECK_GET_FLOAT(obj, value, false);
       value_ref->SetFloatValue(value);
       return true;
     }
     case FieldDescriptor::CPPTYPE_DOUBLE: {
-      GOOGLE_CHECK_GET_DOUBLE(obj, value, false);
+      PROTOBUF_CHECK_GET_DOUBLE(obj, value, false);
       value_ref->SetDoubleValue(value);
       return true;
     }
     case FieldDescriptor::CPPTYPE_BOOL: {
-      GOOGLE_CHECK_GET_BOOL(obj, value, false);
+      PROTOBUF_CHECK_GET_BOOL(obj, value, false);
       value_ref->SetBoolValue(value);
       return true;
     }
@@ -274,7 +273,7 @@ static bool PythonToMapValueRef(MapContainer* self, PyObject* obj,
       return true;
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
-      GOOGLE_CHECK_GET_INT32(obj, value, false);
+      PROTOBUF_CHECK_GET_INT32(obj, value, false);
       if (allow_unknown_enum_values) {
         value_ref->SetEnumValue(value);
         return true;

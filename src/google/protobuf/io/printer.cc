@@ -254,7 +254,7 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
   }
 
 #if 0  // Use this to aid debugging tokenization.
-  GOOGLE_LOG(INFO) << "--- " << format.lines.size() << " lines";
+  LOG(INFO) << "--- " << format.lines.size() << " lines";
   for (size_t i = 0; i < format.lines.size(); ++i) {
     const auto& line = format.lines[i];
 
@@ -263,9 +263,9 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
       absl::StrAppendFormat(&log_line, " %s\"%s\"", chunk.is_var ? "$" : "",
                             absl::CHexEscape(chunk.text));
     }
-    GOOGLE_LOG(INFO) << log_line;
+    LOG(INFO) << log_line;
   }
-  GOOGLE_LOG(INFO) << "---";
+  LOG(INFO) << "---";
 #endif
 
   return format;
