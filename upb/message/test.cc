@@ -596,4 +596,10 @@ TEST(MessageTest, MapField) {
 //                                         std::string("\035|", 2), 65536, 3);
 // }
 //
+// // This test found a case where presence was unset for a mini table field.
+// TEST(FuzzTest, DecodeEncodeArbitrarySchemaAndPayloadRegressionMsan) {
+//   DecodeEncodeArbitrarySchemaAndPayload({{"%-#^#"}, {}, "", {}}, std::string(),
+//                                         -1960166338, 16809991);
+// }
+//
 // end:google_only

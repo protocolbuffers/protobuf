@@ -693,22 +693,36 @@ static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
   }
 
   upb_MtDecoder_ParseMessage(d, data, len);
+  upb_MtDecoder_AssignHasbits(d->table);
+
   if (UPB_UNLIKELY(d->table->field_count != 2)) {
     upb_MtDecoder_ErrorFormat(d, "%hu fields in map", d->table->field_count);
     UPB_UNREACHABLE();
   }
-  if (UPB_UNLIKELY(d->table->fields[0].number != 1)) {
-    upb_MtDecoder_ErrorFormat(d, "field %d in map key",
-                              d->table->fields[0].number);
-    UPB_UNREACHABLE();
-  }
-  if (UPB_UNLIKELY(d->table->fields[1].number != 2)) {
-    upb_MtDecoder_ErrorFormat(d, "field %d in map val",
-                              d->table->fields[1].number);
+
+  const int num0 = d->table->fields[0].number;
+  if (UPB_UNLIKELY(num0 != 1)) {
+    upb_MtDecoder_ErrorFormat(d, "field %d in map key", num0);
     UPB_UNREACHABLE();
   }
 
-  upb_MtDecoder_AssignHasbits(d->table);
+  const int num1 = d->table->fields[1].number;
+  if (UPB_UNLIKELY(num1 != 2)) {
+    upb_MtDecoder_ErrorFormat(d, "field %d in map val", num1);
+    UPB_UNREACHABLE();
+  }
+
+  const int off0 = d->table->fields[0].offset;
+  if (UPB_UNLIKELY(off0 != kNoPresence && off0 != kHasbitPresence)) {
+    upb_MtDecoder_ErrorFormat(d, "bad offset %d in map key", off0);
+    UPB_UNREACHABLE();
+  }
+
+  const int off1 = d->table->fields[1].offset;
+  if (UPB_UNLIKELY(off1 != kNoPresence && off1 != kHasbitPresence)) {
+    upb_MtDecoder_ErrorFormat(d, "bad offset %d in map val", off1);
+    UPB_UNREACHABLE();
+  }
 
   // Map entries have a pre-determined layout, regardless of types.
   // NOTE: sync with mini_table/message_internal.h.
