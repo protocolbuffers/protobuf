@@ -255,6 +255,19 @@ bool UnknownFieldSet::SerializeToCodedStream(
   google::protobuf::internal::WireFormat::SerializeUnknownFields(*this, output);
   return !output->HadError();
 }
+
+bool UnknownFieldSet::SerializeToCord(absl::Cord* output) const {
+  const size_t size =
+      google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(*this);
+  io::CordOutputStream cord_output_stream(size);
+  {
+    io::CodedOutputStream coded_output_stream(&cord_output_stream);
+    if (!SerializeToCodedStream(&coded_output_stream)) return false;
+  }
+  *output = cord_output_stream.Consume();
+  return true;
+}
+
 void UnknownField::Delete() {
   switch (type()) {
     case UnknownField::TYPE_LENGTH_DELIMITED:
