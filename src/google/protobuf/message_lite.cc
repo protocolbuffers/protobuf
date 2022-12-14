@@ -382,7 +382,7 @@ inline uint8_t* SerializeToArrayImpl(const MessageLite& msg, uint8_t* target,
     io::EpsCopyOutputStream out(
         target, size,
         io::CodedOutputStream::IsDefaultSerializationDeterministic());
-    uint8_t* res = msg._InternalSerialize(target, &out);
+    uint8_t* res = out.Finalize(msg._InternalSerialize(target, &out));
     GOOGLE_ABSL_DCHECK(target + size == res);
     return res;
   }
@@ -568,7 +568,7 @@ bool MessageLite::AppendPartialToCord(absl::Cord* output) const {
     io::EpsCopyOutputStream out(
         target, static_cast<int>(available.size()),
         io::CodedOutputStream::IsDefaultSerializationDeterministic());
-    auto res = _InternalSerialize(target, &out);
+    uint8_t* res = out.Finalize(_InternalSerialize(target, &out));
     GOOGLE_ABSL_DCHECK_EQ(res, target + size);
     buffer.IncreaseLengthBy(size);
     output->Append(std::move(buffer));
