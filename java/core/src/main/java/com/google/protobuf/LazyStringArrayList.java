@@ -75,6 +75,8 @@ public class LazyStringArrayList extends AbstractProtobufList<String>
   /**
    * For compatibility with older runtimes.
    *
+   * <p>TODO(b/258340024) Remove this in a breaking release.
+   *
    * @deprecated use {@link emptyList()} instead
    */
   @Deprecated public static final LazyStringList EMPTY = EMPTY_LIST;
