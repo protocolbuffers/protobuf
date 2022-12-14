@@ -35,6 +35,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <string>
 #include <typeinfo>
 
 #include "absl/base/attributes.h"
@@ -166,6 +167,7 @@ void SerialArena::Init(ArenaBlock* b, size_t offset) {
   space_allocated_.store(b->size, std::memory_order_relaxed);
   cached_block_length_ = 0;
   cached_blocks_ = nullptr;
+  string_block_ = StringBlock::sentinel();
 }
 
 SerialArena* SerialArena::New(Memory mem, ThreadSafeArena& parent) {
@@ -188,6 +190,17 @@ SerialArena::Memory SerialArena::Free(Deallocator deallocator) {
     mem = {b, b->size};
   }
   return mem;
+}
+
+void* SerialArena::AllocateStringFallback() {
+  constexpr size_t kMin = 10;
+  constexpr size_t kMax = 682;  // 16K at 24b per string
+
+  size_t n = std::min(std::max(kMin, string_block_->capacity() * 2), kMax);
+  SpaceUsedAdd(string_block_->space_used());
+  string_block_ = StringBlock::Create(n, string_block_);
+  SpaceAllocatedAdd(string_block_->space_allocated());
+  return string_block_->Allocate();
 }
 
 PROTOBUF_NOINLINE
@@ -222,8 +235,7 @@ void SerialArena::AllocateNewBlock(size_t n) {
     // Record how much used in this block.
     used = static_cast<size_t>(ptr() - old_head->Pointer(kBlockHeaderSize));
     wasted = old_head->size - used;
-    space_used_.store(space_used_.load(std::memory_order_relaxed) + used,
-                      std::memory_order_relaxed);
+    SpaceUsedAdd(used);
   }
 
   // TODO(sbenza): Evaluate if pushing unused space into the cached blocks is a
@@ -232,12 +244,7 @@ void SerialArena::AllocateNewBlock(size_t n) {
   // the microbenchmark.
 
   auto mem = AllocateMemory(parent_.AllocPolicy(), old_head->size, n);
-  // We don't want to emit an expensive RMW instruction that requires
-  // exclusive access to a cacheline. Hence we write it in terms of a
-  // regular add.
-  space_allocated_.store(
-      space_allocated_.load(std::memory_order_relaxed) + mem.size,
-      std::memory_order_relaxed);
+  SpaceAllocatedAdd(mem.size);
   ThreadSafeArenaStats::RecordAllocateStats(parent_.arena_stats_.MutableStats(),
                                             /*used=*/used,
                                             /*allocated=*/mem.size, wasted);
@@ -260,20 +267,32 @@ uint64_t SerialArena::SpaceUsed() const {
   // usage of the *current* block.
   // TODO(mkruskal) Consider eliminating this race in exchange for a possible
   // performance hit on ARM (see cl/455186837).
+  uint64_t current_space_used = string_block_->space_used();
   const ArenaBlock* h = head_.load(std::memory_order_acquire);
-  if (h->IsSentry()) return 0;
-
-  const uint64_t current_block_size = h->size;
-  uint64_t current_space_used = std::min(
-      static_cast<uint64_t>(
-          ptr() - const_cast<ArenaBlock*>(h)->Pointer(kBlockHeaderSize)),
-      current_block_size);
+  if (!h->IsSentry()) {
+    const uint64_t current_block_size = h->size;
+    current_space_used += std::min(
+        static_cast<uint64_t>(
+            ptr() - const_cast<ArenaBlock*>(h)->Pointer(kBlockHeaderSize)),
+        current_block_size);
+  }
   return current_space_used + space_used_.load(std::memory_order_relaxed);
 }
 
-void SerialArena::CleanupList() {
+size_t SerialArena::CleanupList() {
+  size_t deallocated = 0;
+  StringBlock* block = string_block_;
+  while (StringBlock* next = block->next()) {
+    block->DestroyAll();
+    if (block->heap_allocated()) {
+      deallocated += block->space_allocated();
+      StringBlock::Delete(block);
+    }
+    block = next;
+  }
+
   ArenaBlock* b = head();
-  if (b->IsSentry()) return;
+  if (b->IsSentry()) return deallocated;
 
   b->cleanup_nodes = limit_;
   do {
@@ -285,6 +304,7 @@ void SerialArena::CleanupList() {
     }
     b = b->next;
   } while (b);
+  return deallocated;
 }
 
 // Stores arrays of void* and SerialArena* instead of linked list of
@@ -667,11 +687,10 @@ SerialArena::Memory ThreadSafeArena::Free(size_t* space_allocated) {
 uint64_t ThreadSafeArena::Reset() {
   // Have to do this in a first pass, because some of the destructors might
   // refer to memory in other blocks.
-  CleanupList();
+  size_t space_allocated = CleanupList();
 
   // Discard all blocks except the first one. Whether it is user-provided or
   // allocated, always reuse the first block for the first arena.
-  size_t space_allocated = 0;
   auto mem = Free(&space_allocated);
   space_allocated += mem.size;
 
@@ -787,8 +806,9 @@ template void* ThreadSafeArena::AllocateAlignedFallback<
 template void*
     ThreadSafeArena::AllocateAlignedFallback<AllocationClient::kArray>(size_t);
 
-void ThreadSafeArena::CleanupList() {
-  WalkSerialArenaChunk([](SerialArenaChunk* chunk) {
+size_t ThreadSafeArena::CleanupList() {
+  size_t deallocated = 0;
+  WalkSerialArenaChunk([&](SerialArenaChunk* chunk) {
     absl::Span<std::atomic<SerialArena*>> span = chunk->arenas();
     // Walks arenas backward to handle the first serial arena the last.
     // Destroying in reverse-order to the construction is often assumed by users
@@ -796,11 +816,13 @@ void ThreadSafeArena::CleanupList() {
     for (auto it = span.rbegin(); it != span.rend(); ++it) {
       SerialArena* serial = it->load(std::memory_order_relaxed);
       GOOGLE_ABSL_DCHECK_NE(serial, nullptr);
-      serial->CleanupList();
+      deallocated += serial->CleanupList();
     }
   });
   // First arena must be cleaned up last. (b/247560530)
-  first_arena_.CleanupList();
+  deallocated += first_arena_.CleanupList();
+
+  return deallocated;
 }
 
 PROTOBUF_NOINLINE
@@ -849,6 +871,11 @@ void* Arena::AllocateForArray(size_t n) {
 void* Arena::AllocateAlignedWithCleanup(size_t n, size_t align,
                                         void (*destructor)(void*)) {
   return impl_.AllocateAlignedWithCleanup(n, align, destructor);
+}
+
+template <>
+void* Arena::AllocateInternal<std::string>() {
+  return impl_.AllocateString();
 }
 
 }  // namespace protobuf

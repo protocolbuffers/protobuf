@@ -51,6 +51,15 @@ namespace protobuf {
 namespace internal {
 
 
+struct SizedPtr {
+  void* p;
+  size_t n
+};
+
+inline SizedPtr SizedAllocate(size_t size) {
+  return {::operator new(size), size};
+}
+
 inline void SizedDelete(void* p, size_t size) {
 #if defined(__cpp_sized_deallocation)
   ::operator delete(p, size);
