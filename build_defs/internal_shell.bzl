@@ -9,8 +9,6 @@ def inline_sh_binary(
         tools = [],
         deps = [],
         cmd = "",
-        testonly = None,
-        tags = [],
         **kwargs):
     """Bazel rule to wrap up an inline bash script in a binary.
 
@@ -28,9 +26,6 @@ def inline_sh_binary(
         with rootpath/execpath/location must be declared here or in `srcs`.
       deps: a list of dependency labels that are required to run this binary.
       cmd: the inline sh command to run.
-      testonly: common rule attribute (see:
-          https://bazel.build/reference/be/common-definitions#common-attributes)
-      tags: tags to apply to all rules.
       **kwargs: other keyword arguments that are passed to sh_binary.
     """
 
@@ -40,17 +35,16 @@ def inline_sh_binary(
         exec_tools = tools,
         outs = [name + ".sh"],
         cmd = "cat <<'EOF' >$(OUTS)\n#!/bin/bash -exu\n%s\nEOF\n" % cmd,
-        testonly = testonly,
         visibility = ["//visibility:private"],
-        tags = tags,
+        tags = kwargs["tags"] if "tags" in kwargs else None,
+        target_compatible_with = kwargs["target_compatible_with"] if "target_compatible_with" in kwargs else None,
+        testonly = kwargs["testonly"] if "testonly" in kwargs else None,
     )
 
     native.sh_binary(
         name = name,
         srcs = [name + "_genrule"],
         data = srcs + tools + deps,
-        testonly = testonly,
-        tags = tags,
         **kwargs
     )
 
@@ -60,7 +54,6 @@ def inline_sh_test(
         tools = [],
         deps = [],
         cmd = "",
-        tags = [],
         **kwargs):
     """Bazel rule to wrap up an inline bash script in a test.
 
@@ -77,7 +70,6 @@ def inline_sh_test(
         with rootpath/execpath/location must be declared here or in `srcs`.
       deps: a list of dependency labels that are required to run this binary.
       cmd: the inline sh command to run.
-      tags: tags to apply to all rules.
       **kwargs: other keyword arguments that are passed to sh_binary.
           https://bazel.build/reference/be/common-definitions#common-attributes)
     """
@@ -89,13 +81,14 @@ def inline_sh_test(
         outs = [name + ".sh"],
         cmd = "cat <<'EOF' >$(OUTS)\n#!/bin/bash -exu\n%s\nEOF\n" % cmd,
         visibility = ["//visibility:private"],
-        tags = tags,
+        tags = kwargs["tags"] if "tags" in kwargs else None,
+        target_compatible_with = kwargs["target_compatible_with"] if "target_compatible_with" in kwargs else None,
+        testonly = kwargs["testonly"] if "testonly" in kwargs else None,
     )
 
     native.sh_test(
         name = name,
         srcs = [name + "_genrule"],
         data = srcs + tools + deps,
-        tags = tags,
         **kwargs
     )

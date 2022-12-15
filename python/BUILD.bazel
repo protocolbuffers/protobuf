@@ -125,9 +125,6 @@ aarch64_test(
         "google/protobuf/internal/_api_implementation.so",
         "google/protobuf/pyext/_message.so",
     ],
-    tags = [
-        "manual",
-    ],
 )
 
 x86_64_test(
@@ -135,9 +132,6 @@ x86_64_test(
     bazel_binaries = [
         "google/protobuf/internal/_api_implementation.so",
         "google/protobuf/pyext/_message.so",
-    ],
-    tags = [
-        "manual",
     ],
 )
 
