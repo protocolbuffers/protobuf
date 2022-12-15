@@ -158,14 +158,14 @@
 #if defined(__GNUC__) && defined(__GNUC_MINOR__) \
     && defined(__GNUC_PATCHLEVEL__)
 #  define PROTOBUF_GNUC_MIN(x, y) \
-  (__GNUC__ > (x) || __GNUC__ == (x) && __GNUC_MINOR__ >= (y))
+  (__GNUC__ > (x) || (__GNUC__ == (x) && __GNUC_MINOR__ >= (y)))
 #else
 #  define PROTOBUF_GNUC_MIN(x, y) 0
 #endif
 
 #if defined(__clang__) && defined(__clang_major__) && defined(__clang_minor__)
 #define PROTOBUF_CLANG_MIN(x, y) \
-  (__clang_major__ > (x) || __clang_major__ == (x) && __clang_minor__ >= (y))
+  (__clang_major__ > (x) || (__clang_major__ == (x) && __clang_minor__ >= (y)))
 #else
 #define PROTOBUF_CLANG_MIN(x, y) 0
 #endif
@@ -186,6 +186,17 @@
 #else
 #define PROTOBUF_CPLUSPLUS_MIN(x) (_MSVC_LANG >= x)
 #endif
+
+// Check minimum Protobuf support defined at:
+// https://github.com/google/oss-policies-info/blob/main/foundational-cxx-support-matrix.md
+#ifdef __clang__
+static_assert(PROTOBUF_CLANG_MIN(6, 0), "Protobuf only supports Clang 6.0 and newer.");
+#elif defined(__GNUC__)
+static_assert(PROTOBUF_GNUC_MIN(7, 3), "Protobuf only supports GCC 7.3 and newer.");
+#elif defined(_MSVC_LANG)
+static_assert(PROTOBUF_MSC_VER_MIN(1910), "Protobuf only supports MSVC 2017 and newer.");
+#endif
+static_assert(PROTOBUF_CPLUSPLUS_MIN(201402L), "Protobuf only supports C++14 and newer.");
 
 // Future versions of protobuf will include breaking changes to some APIs.
 // This macro can be set to enable these API changes ahead of time, so that
@@ -252,7 +263,7 @@
 // For functions we want to force inline.
 #if defined(PROTOBUF_NO_INLINE)
 # define PROTOBUF_ALWAYS_INLINE
-#elif PROTOBUF_GNUC_MIN(3, 1)
+#elif defined(__GNUC__)
 # define PROTOBUF_ALWAYS_INLINE __attribute__((always_inline))
 #elif defined(_MSC_VER)
 # define PROTOBUF_ALWAYS_INLINE __forceinline
@@ -280,7 +291,7 @@
 #ifdef PROTOBUF_NOINLINE
 #error PROTOBUF_NOINLINE was previously defined
 #endif
-#if PROTOBUF_GNUC_MIN(3, 1)
+#if defined(__GNUC__)
 # define PROTOBUF_NOINLINE __attribute__((noinline))
 #elif defined(_MSC_VER)
 // Seems to have been around since at least Visual Studio 2005
@@ -352,7 +363,7 @@
 #ifdef PROTOBUF_COLD
 #error PROTOBUF_COLD was previously defined
 #endif
-#if __has_attribute(cold) || PROTOBUF_GNUC_MIN(4, 3)
+#if __has_attribute(cold) || defined(__GNUC__)
 # define PROTOBUF_COLD __attribute__((cold))
 #else
 # define PROTOBUF_COLD
@@ -374,7 +385,7 @@
 #if defined(PROTOBUF_DEPRECATED_MSG)
 #error PROTOBUF_DEPRECATED_MSG was previously defined
 #endif
-#if __has_attribute(deprecated) || PROTOBUF_GNUC_MIN(3, 0)
+#if __has_attribute(deprecated) || defined(__GNUC__)
 # define PROTOBUF_DEPRECATED __attribute__((deprecated))
 # define PROTOBUF_DEPRECATED_MSG(msg) __attribute__((deprecated(msg)))
 #elif defined(_MSC_VER)
@@ -388,7 +399,7 @@
 #if defined(PROTOBUF_DEPRECATED_ENUM)
 #error PROTOBUF_DEPRECATED_ENUM was previously defined
 #endif
-#if defined(__clang__) || PROTOBUF_GNUC_MIN(6, 0)
+#if defined(__clang__) || defined(__GNUC__)
 // https://gcc.gnu.org/gcc-6/changes.html
 # define PROTOBUF_DEPRECATED_ENUM __attribute__((deprecated))
 #else
@@ -398,7 +409,7 @@
 #ifdef PROTOBUF_RETURNS_NONNULL
 #error PROTOBUF_RETURNS_NONNULL was previously defined
 #endif
-#if __has_attribute(returns_nonnull) || PROTOBUF_GNUC_MIN(4, 9)
+#if __has_attribute(returns_nonnull) || defined(__GNUC__)
 #define PROTOBUF_RETURNS_NONNULL __attribute__((returns_nonnull))
 #else
 #define PROTOBUF_RETURNS_NONNULL
@@ -459,7 +470,7 @@
   _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") \
   __builtin_offsetof(TYPE, FIELD)                            \
   _Pragma("clang diagnostic pop")
-#elif PROTOBUF_GNUC_MIN(4, 8)
+#elif defined(__GNUC__)
 #define PROTOBUF_FIELD_OFFSET(TYPE, FIELD) __builtin_offsetof(TYPE, FIELD)
 #else  // defined(__clang__)
 // Note that we calculate relative to the pointer value 16 here since if we
@@ -515,7 +526,7 @@
 #if defined(PROTOBUF_PREDICT_TRUE) || defined(PROTOBUF_PREDICT_FALSE)
 #error PROTOBUF_PREDICT_(TRUE|FALSE) was previously defined
 #endif
-#if PROTOBUF_GNUC_MIN(3, 0)
+#if defined(__GNUC__)
 # define PROTOBUF_PREDICT_TRUE(x) (__builtin_expect(false || (x), true))
 # define PROTOBUF_PREDICT_FALSE(x) (__builtin_expect(false || (x), false))
 #else
@@ -528,7 +539,7 @@
 #endif
 #if __has_cpp_attribute(nodiscard) && PROTOBUF_CPLUSPLUS_MIN(201703L)
 #define PROTOBUF_NODISCARD [[nodiscard]]
-#elif __has_attribute(warn_unused_result) || PROTOBUF_GNUC_MIN(4, 8)
+#elif __has_attribute(warn_unused_result) || defined(__GNUC__)
 #define PROTOBUF_NODISCARD __attribute__((warn_unused_result))
 #else
 #define PROTOBUF_NODISCARD
@@ -571,7 +582,7 @@
 #define PROTOBUF_FALLTHROUGH_INTENDED [[fallthrough]]
 #elif __has_feature(cxx_attributes) && __has_warning("-Wimplicit-fallthrough")
 #define PROTOBUF_FALLTHROUGH_INTENDED [[clang::fallthrough]]
-#elif PROTOBUF_GNUC_MIN(7, 0)
+#elif defined(__GNUC__)
 #define PROTOBUF_FALLTHROUGH_INTENDED [[gnu::fallthrough]]
 #else
 #define PROTOBUF_FALLTHROUGH_INTENDED
@@ -618,7 +629,7 @@
 #endif
 #if defined(_MSC_VER)
 #define PROTOBUF_ALIGNAS(byte_alignment) __declspec(align(byte_alignment))
-#elif PROTOBUF_GNUC_MIN(3, 0)
+#elif defined(__GNUC__)
 #define PROTOBUF_ALIGNAS(byte_alignment) \
   __attribute__((aligned(byte_alignment)))
 #else
@@ -732,7 +743,7 @@
 #ifdef PROTOBUF_ATTRIBUTE_INIT_PRIORITY2
 #error PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 was previously defined
 #endif
-#if PROTOBUF_GNUC_MIN(3, 0) && (!defined(__APPLE__) || defined(__clang__)) && \
+#if defined(__GNUC__) && (!defined(__APPLE__) || defined(__clang__)) && \
     !((defined(sun) || defined(__sun)) &&                                     \
       (defined(__SVR4) || defined(__svr4__)))
 #define PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 __attribute__((init_priority((101))))
@@ -785,7 +796,7 @@
 #  if __has_feature(memory_sanitizer)
 #    define PROTOBUF_MSAN 1
 #  endif
-#elif PROTOBUF_GNUC_MIN(3, 0)
+#elif defined(__GNUC__)
 // Double-guard is needed for -Wundef:
 #  ifdef __SANITIZE_ADDRESS__
 #  if    __SANITIZE_ADDRESS__
@@ -835,7 +846,7 @@
 #if __has_cpp_attribute(maybe_unused) || \
     (PROTOBUF_MSC_VER_MIN(1911) && PROTOBUF_CPLUSPLUS_MIN(201703L))
 #define PROTOBUF_UNUSED [[maybe_unused]]
-#elif __has_attribute(unused) || PROTOBUF_GNUC_MIN(3, 0)
+#elif __has_attribute(unused) || defined(__GNUC__)
 #define PROTOBUF_UNUSED __attribute__((__unused__))
 #else
 #define PROTOBUF_UNUSED
@@ -944,12 +955,12 @@
 #undef TYPE_BOOL
 #endif  // __APPLE__
 
-#if defined(__clang__) || PROTOBUF_GNUC_MIN(3, 0) || defined(_MSC_VER)
+#if defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 // Don't let Objective-C Macros interfere with proto identifiers with the same
 // name.
 #pragma push_macro("DEBUG")
 #undef DEBUG
-#endif // defined(__clang__) || PROTOBUF_GNUC_MIN(3, 0) || defined(_MSC_VER)
+#endif // defined(__clang__) || defined(__GNUC__) || defined(_MSC_VER)
 
 // Protobuf does not support building with a number of warnings that are noisy
 // (and of variable quality across compiler versions) or impossible to implement
@@ -970,10 +981,6 @@
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60875, so we disable this one
 // globally even though it's only used for PROTOBUF_FIELD_OFFSET.
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
-#ifdef __clang__
-// TODO(b/255348263): Upgrade our kokoro Ubuntu to use clang 6, then change th 5 to a 6
-static_assert(PROTOBUF_CLANG_MIN(5, 0), "Protobuf only supports Clang 6.0 and newer.");
-#endif
 // Some versions of GCC seem to think that
 //  [this] { Foo(); }
 // leaves `this` unused, even though `Foo();` is a member function of the

@@ -117,6 +117,9 @@ enum { kCacheAlignment = 64 };
 enum { kCacheAlignment = alignof(max_align_t) };  // do the best we can
 #endif
 
+// The maximum byte alignment we support.
+enum { kMaxMessageAlignment = 8 };
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

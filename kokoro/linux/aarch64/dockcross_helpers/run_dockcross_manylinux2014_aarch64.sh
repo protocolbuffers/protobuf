@@ -18,7 +18,7 @@ fi
 # before https://github.com/dockcross/dockcross/pull/449
 # Thanks to that, wheel build with this image aren't actually
 # compliant with manylinux2014, but only with manylinux_2_24
-PINNED_DOCKCROSS_IMAGE_VERSION=quay.io/pypa/manylinux_2_24_aarch64
+PINNED_DOCKCROSS_IMAGE_VERSION=quay.io/pypa/manylinux2014_aarch64:2022-12-10-a8f854a
 
 # running dockcross image without any arguments generates a wrapper
 # scripts that can be used to run commands under the dockcross image

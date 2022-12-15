@@ -272,7 +272,7 @@ struct NodeBase {
   // Align the node to allow KeyNode to predict the location of the key.
   // This way sizeof(NodeBase) contains any possible padding it was going to
   // have between NodeBase and the key.
-  alignas(int64_t) alignas(double) alignas(void*) NodeBase* next;
+  alignas(kMaxMessageAlignment) NodeBase* next;
 };
 
 inline NodeBase* EraseFromLinkedList(NodeBase* item, NodeBase* head) {
