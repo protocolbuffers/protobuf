@@ -26,7 +26,6 @@ export CXX=g++
 
 ##
 # Install Python 2 by default
-
 eval "$(pyenv init -)"
 pyenv install -v -s 2.7.18 && pyenv global 2.7.18
 
@@ -34,6 +33,7 @@ pyenv install -v -s 2.7.18 && pyenv global 2.7.18
 # Install Tox
 
 if [[ "${KOKORO_INSTALL_TOX:-}" == "yes" ]] ; then
+  brew install zlib
   pyenv install -v -s 3.7.13
   pyenv global 3.7.13
   sudo python -m pip install --upgrade pip tox tox-pyenv
