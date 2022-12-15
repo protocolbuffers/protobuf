@@ -554,10 +554,11 @@ UPB_API_INLINE upb_Map* upb_MiniTable_GetMutableMap(
 }
 
 // Updates a map entry given an entry message.
-upb_MapInsertStatus upb_Message_InsertMapEntry(
-    upb_Map* map, const upb_MiniTable* map_entry_mini_table,
-    const upb_MiniTableField* field, upb_Message* map_entry_message,
-    upb_Arena* arena);
+upb_MapInsertStatus upb_Message_InsertMapEntry(upb_Map* map,
+                                               const upb_MiniTable* mini_table,
+                                               const upb_MiniTableField* field,
+                                               upb_Message* map_entry_message,
+                                               upb_Arena* arena);
 
 typedef enum {
   kUpb_GetExtension_Ok,
