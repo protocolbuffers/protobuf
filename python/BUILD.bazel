@@ -6,11 +6,12 @@
 #   //:protobuf_python
 #   //:well_known_types_py_pb2
 
+load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@rules_pkg//:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@pip_deps//:requirements.bzl", "requirement")
 load("//:protobuf.bzl", "internal_py_proto_library")
-load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
+load("//build_defs:arch_tests.bzl", "binary_architecture_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 load("//conformance:defs.bzl", "conformance_test")
 load(":internal.bzl", "internal_copy_files", "internal_py_test")
@@ -119,20 +120,38 @@ cc_binary(
     }),
 )
 
-aarch64_test(
+selects.config_setting_group(
+    name = "_aarch64_and_fast_cpp",
+    match_all = ["//build_defs:aarch64", ":use_fast_cpp_protos"],
+)
+binary_architecture_test(
     name = "aarch64_test",
-    bazel_binaries = [
+    architecture = "aarch64",
+    binaries = [
         "google/protobuf/internal/_api_implementation.so",
         "google/protobuf/pyext/_message.so",
     ],
+    target_compatible_with = select({
+        ":_aarch64_and_fast_cpp": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
 )
 
-x86_64_test(
+selects.config_setting_group(
+    name = "_x86_64_and_fast_cpp",
+    match_all = ["//build_defs:x86_64", ":use_fast_cpp_protos"],
+)
+binary_architecture_test(
     name = "x86_64_test",
-    bazel_binaries = [
+    architecture = "x86_64",
+    binaries = [
         "google/protobuf/internal/_api_implementation.so",
         "google/protobuf/pyext/_message.so",
     ],
+    target_compatible_with = select({
+        ":_x86_64_and_fast_cpp": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
 )
 
 py_library(

@@ -10,7 +10,7 @@ load(
     "strip_prefix",
 )
 load("@rules_proto//proto:defs.bzl", "proto_library")
-load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
+load("//build_defs:arch_tests.bzl", "binary_architecture_test")
 load("//build_defs:cpp_opts.bzl", "COPTS", "LINK_OPTS", "PROTOC_LINK_OPTS")
 
 proto_library(
@@ -144,14 +144,28 @@ alias(
 )
 
 # Test that the protoc binary is built for the correct architecture.
-aarch64_test(
-    name = "protoc_aarch64_test",
-    bazel_binaries = ["//:protoc"],
+binary_architecture_test(
+    name = "aarch64_test",
+    architecture = "aarch64",
+    binaries = [
+        "//:protoc",
+    ],
+    target_compatible_with = select({
+        "//build_defs:aarch64": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
 )
 
-x86_64_test(
-    name = "protoc_x86_64_test",
-    bazel_binaries = ["//:protoc"],
+binary_architecture_test(
+    name = "x86_64_test",
+    architecture = "x86_64",
+    binaries = [
+        "//:protoc",
+    ],
+    target_compatible_with = select({
+        "//build_defs:x86_64": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
 )
 
 ################################################################################
