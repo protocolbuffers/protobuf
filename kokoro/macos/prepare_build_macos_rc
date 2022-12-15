@@ -33,7 +33,9 @@ pyenv install -v -s 2.7.18 && pyenv global 2.7.18
 # Install Tox
 
 if [[ "${KOKORO_INSTALL_TOX:-}" == "yes" ]] ; then
-  brew install zlib
+  # pyenv needs to be directed towards its dependencies.
+  CFLAGS="-I$(brew --prefix zlib)/include" \
+  LDFLAGS="-L$(brew --prefix zlib)/lib" \
   pyenv install -v -s 3.7.13
   pyenv global 3.7.13
   sudo python -m pip install --upgrade pip tox tox-pyenv
