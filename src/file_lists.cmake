@@ -168,8 +168,8 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_ops.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.h
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/serial_arena.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/service.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/serial_arena.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/callback.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/common.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/stubs/logging.h
