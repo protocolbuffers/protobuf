@@ -95,10 +95,6 @@ class PROTOBUF_EXPORT InternalMetadata {
     }
   }
 
-  PROTOBUF_NDEBUG_INLINE Arena* owning_arena() const { return arena(); }
-
-  PROTOBUF_NDEBUG_INLINE Arena* user_arena() const { return arena(); }
-
   PROTOBUF_NDEBUG_INLINE Arena* arena() const {
     if (PROTOBUF_PREDICT_FALSE(have_unknown_fields())) {
       return PtrValue<ContainerBase>()->arena;

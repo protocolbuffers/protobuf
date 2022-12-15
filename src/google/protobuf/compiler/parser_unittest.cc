@@ -45,6 +45,7 @@
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/test_util2.h"
@@ -2855,14 +2856,14 @@ class SourceInfoTest : public ParserTest {
     while (*text != '\0') {
       if (*text == '$') {
         ++text;
-        GOOGLE_CHECK_NE('\0', *text);
+        GOOGLE_ABSL_CHECK_NE('\0', *text);
         if (*text == '$') {
           text_without_markers_ += '$';
           ++column;
         } else {
           markers_[*text] = std::make_pair(line, column);
           ++text;
-          GOOGLE_CHECK_EQ('$', *text);
+          GOOGLE_ABSL_CHECK_EQ('$', *text);
         }
       } else if (*text == '\n') {
         ++line;

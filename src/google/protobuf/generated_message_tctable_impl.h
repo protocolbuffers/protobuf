@@ -265,7 +265,7 @@ enum FieldType : uint16_t {
 #ifndef NDEBUG
 template <size_t align>
 void AlignFail(uintptr_t address) {
-  GOOGLE_LOG(FATAL) << "Unaligned (" << align << ") access at " << address;
+  GOOGLE_ABSL_LOG(FATAL) << "Unaligned (" << align << ") access at " << address;
 
   // Explicit abort to let compilers know this function does not return
   abort();

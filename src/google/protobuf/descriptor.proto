@@ -518,6 +518,18 @@ message MessageOptions {
   reserved 8;  // javalite_serializable
   reserved 9;  // javanano_as_lite
 
+  // Enable the legacy handling of JSON field name conflicts.  This lowercases
+  // and strips underscored from the fields before comparison in proto3 only.
+  // The new behavior takes `json_name` into account and applies to proto2 as
+  // well.
+  //
+  // This should only be used as a temporary measure against broken builds due
+  // to the change in behavior for JSON field name conflicts.
+  //
+  // TODO(b/261750190) This is legacy behavior we plan to remove once downstream
+  // teams have had time to migrate.
+  optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
@@ -645,6 +657,14 @@ message EnumOptions {
   optional bool deprecated = 3 [default = false];
 
   reserved 5;  // javanano_as_lite
+
+  // Enable the legacy handling of JSON field name conflicts.  This lowercases
+  // and strips underscored from the fields before comparison in proto3 only.
+  // The new behavior takes `json_name` into account and applies to proto2 as
+  // well.
+  // TODO(b/261750190) Remove this legacy behavior once downstream teams have
+  // had time to migrate.
+  optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
 
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;

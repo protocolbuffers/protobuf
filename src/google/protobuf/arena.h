@@ -49,9 +49,11 @@ using type_info = ::type_info;
 #endif
 
 #include <type_traits>
+#include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_config.h"
-#include "google/protobuf/arena_impl.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/serial_arena.h"
+#include "google/protobuf/thread_safe_arena.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -270,7 +272,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   // is obtained from the arena).
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE static T* Create(Arena* arena, Args&&... args) {
-    if (arena == nullptr) {
+    if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
       return new T(std::forward<Args>(args)...);
     }
     auto destructor =
@@ -291,15 +293,16 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   // Allocates memory with the specific size and alignment.
   void* AllocateAligned(size_t size, size_t align = 8) {
-    if (align <= 8) {
-      return Allocate(internal::AlignUpTo8(size));
+    if (align <= internal::ArenaAlignDefault::align) {
+      return Allocate(internal::ArenaAlignDefault::Ceil(size));
     } else {
       // We are wasting space by over allocating align - 8 bytes. Compared
       // to a dedicated function that takes current alignment in consideration.
       // Such a scheme would only waste (align - 8)/2 bytes on average, but
       // requires a dedicated function in the outline arena allocation
       // functions. Possibly re-evaluate tradeoffs later.
-      return internal::AlignTo(Allocate(size + align - 8), align);
+      auto align_as = internal::ArenaAlignAs(align);
+      return align_as.Ceil(Allocate(align_as.Padded(size)));
     }
   }
 
@@ -316,12 +319,15 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                   "CreateArray requires a trivially constructible type");
     static_assert(std::is_trivially_destructible<T>::value,
                   "CreateArray requires a trivially destructible type");
-    GOOGLE_CHECK_LE(num_elements, std::numeric_limits<size_t>::max() / sizeof(T))
+    GOOGLE_ABSL_CHECK_LE(num_elements, std::numeric_limits<size_t>::max() / sizeof(T))
         << "Requested size is too large to fit into size_t.";
-    if (arena == nullptr) {
+    if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
       return static_cast<T*>(::operator new[](num_elements * sizeof(T)));
     } else {
-      return arena->CreateInternalRawArray<T>(num_elements);
+      // We count on compiler to realize that if sizeof(T) is a multiple of
+      // 8 AlignUpTo can be elided.
+      return static_cast<T*>(
+          arena->AllocateAlignedForArray(sizeof(T) * num_elements, alignof(T)));
     }
   }
 
@@ -596,18 +602,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
                                    std::forward<Args>(args)...);
   }
 
-  // Just allocate the required size for the given type assuming the
-  // type has a trivial constructor.
-  template <typename T>
-  PROTOBUF_NDEBUG_INLINE T* CreateInternalRawArray(size_t num_elements) {
-    GOOGLE_CHECK_LE(num_elements, std::numeric_limits<size_t>::max() / sizeof(T))
-        << "Requested size is too large to fit into size_t.";
-    // We count on compiler to realize that if sizeof(T) is a multiple of
-    // 8 AlignUpTo can be elided.
-    const size_t n = sizeof(T) * num_elements;
-    return static_cast<T*>(AllocateAlignedForArray(n, alignof(T)));
-  }
-
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE T* DoCreateMessage(Args&&... args) {
     return InternalHelper<T>::Construct(
@@ -662,15 +656,16 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   }
 
   void* AllocateAlignedForArray(size_t n, size_t align) {
-    if (align <= 8) {
-      return AllocateForArray(internal::AlignUpTo8(n));
+    if (align <= internal::ArenaAlignDefault::align) {
+      return AllocateForArray(internal::ArenaAlignDefault::Ceil(n));
     } else {
       // We are wasting space by over allocating align - 8 bytes. Compared
       // to a dedicated function that takes current alignment in consideration.
       // Such a scheme would only waste (align - 8)/2 bytes on average, but
       // requires a dedicated function in the outline arena allocation
       // functions. Possibly re-evaluate tradeoffs later.
-      return internal::AlignTo(AllocateForArray(n + align - 8), align);
+      auto align_as = internal::ArenaAlignAs(align);
+      return align_as.Ceil(AllocateForArray(align_as.Padded(n)));
     }
   }
 

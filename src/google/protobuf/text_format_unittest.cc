@@ -42,13 +42,13 @@
 #include <memory>
 #include <string>
 
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/any.pb.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -91,7 +91,7 @@ const std::string kEscapeTestStringEscaped =
 class TextFormatTest : public testing::Test {
  public:
   static void SetUpTestSuite() {
-    GOOGLE_CHECK_OK(File::GetContents(
+    GOOGLE_ABSL_CHECK_OK(File::GetContents(
         TestUtil::GetTestDataPath(
             "third_party/protobuf/"
             "testdata/text_format_unittest_data_oneof_implemented.txt"),
@@ -113,7 +113,7 @@ std::string TextFormatTest::static_proto_text_format_;
 class TextFormatExtensionsTest : public testing::Test {
  public:
   static void SetUpTestSuite() {
-    GOOGLE_CHECK_OK(File::GetContents(
+    GOOGLE_ABSL_CHECK_OK(File::GetContents(
         TestUtil::GetTestDataPath("third_party/protobuf/testdata/"
                                   "text_format_unittest_extensions_data.txt"),
         &static_proto_text_format_, true));

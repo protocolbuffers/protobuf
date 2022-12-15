@@ -69,6 +69,8 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
+using Sub = ::google::protobuf::io::Printer::Sub;
+
 absl::flat_hash_map<absl::string_view, std::string> FileVars(
     const FileDescriptor* file, const Options& options) {
   return {
@@ -1121,7 +1123,7 @@ class FileGenerator::ForwardDeclarations {
 
   void Print(io::Printer* p, const Options& options) const {
     for (const auto& e : enums_) {
-      p->Emit({{"enum", e.first, e.second}}, R"cc(
+      p->Emit({Sub("enum", e.first).AnnotatedAs(e.second)}, R"cc(
         enum $enum$ : int;
         bool $enum$_IsValid(int value);
       )cc");
@@ -1131,7 +1133,7 @@ class FileGenerator::ForwardDeclarations {
       const Descriptor* desc = c.second;
       p->Emit(
           {
-              {"class", c.first, desc},
+              Sub("class", c.first).AnnotatedAs(desc),
               {"default_type", DefaultInstanceType(desc, options)},
               {"default_name", DefaultInstanceName(desc, options)},
           },

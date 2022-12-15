@@ -163,7 +163,7 @@ TEST_F(FindFieldEntryTest, SequentialFieldRange) {
                 IsEntryForFieldNum(&table, i, table_field_numbers));
   }
   for (int i : {0, 1, 6, 7, 110, 112, 500000000}) {
-    GOOGLE_LOG(WARNING) << "Field " << i;
+    GOOGLE_ABSL_LOG(WARNING) << "Field " << i;
     EXPECT_THAT(FindFieldEntry(table, i), Eq(nullptr));
   }
 }

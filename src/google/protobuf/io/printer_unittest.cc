@@ -41,14 +41,12 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
-#include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 namespace google {
@@ -56,7 +54,6 @@ namespace protobuf {
 namespace io {
 using ::testing::AllOf;
 using ::testing::ElementsAre;
-using ::testing::ExplainMatchResult;
 using ::testing::Field;
 using ::testing::IsEmpty;
 using ::testing::MatchesRegex;
@@ -565,6 +562,19 @@ TEST_F(PrinterTest, EmitWithSubs) {
             "};\n");
 }
 
+TEST_F(PrinterTest, EmitComments) {
+  {
+    Printer printer(output());
+    printer.Emit(R"cc(
+      // Yes.
+      //~ No.
+    )cc");
+    printer.Emit("//~ Not a raw string.");
+  }
+
+  EXPECT_EQ(written(), "// Yes.\n//~ Not a raw string.");
+}
+
 TEST_F(PrinterTest, EmitWithVars) {
   {
     Printer printer(output());
@@ -707,7 +717,9 @@ TEST_F(PrinterTest, EmitThreeArgWithVars) {
   FakeAnnotationCollector collector;
   {
     Printer printer(output(), '$', &collector);
-    auto v = printer.WithVars({{"class", "Foo", "file.proto"}});
+    auto v = printer.WithVars({
+        Printer::Sub("class", "Foo").AnnotatedAs("file.proto"),
+    });
 
     printer.Emit({{"f1", "x"}, {"f2", "y"}, {"f3", "z"}}, R"cc(
       class $class$ {

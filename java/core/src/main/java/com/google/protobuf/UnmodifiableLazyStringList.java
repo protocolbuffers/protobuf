@@ -43,7 +43,9 @@ import java.util.RandomAccess;
  * it cannot be modified via the wrapper.
  *
  * @author jonp@google.com (Jon Perlow)
+ * @deprecated use {@link LazyStringArrayList#makeImmutable} instead.
  */
+@Deprecated
 public class UnmodifiableLazyStringList extends AbstractList<String>
     implements LazyStringList, RandomAccess {
 

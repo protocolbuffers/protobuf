@@ -156,7 +156,6 @@
                     <include>ProtoSyntax.java</include>
                     <include>Protobuf.java</include>
                     <include>ProtobufArrayList.java</include>
-                    <include>ProtobufLists.java</include>
                     <include>ProtocolStringList.java</include>
                     <include>RawMessageInfo.java</include>
                     <include>Reader.java</include>

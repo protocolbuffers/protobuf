@@ -44,23 +44,23 @@
 #include <limits>
 #include <vector>
 
-#include "google/protobuf/message.h"
-#include "absl/strings/cord.h"
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
 #include <fstream>
 #include <sstream>
 
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/stubs/logging.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -1036,8 +1036,7 @@ TEST(MESSAGE_TEST_NAME, IsInitializedSplitBytestream) {
   fab.mutable_optional_message()->set_b(2);
   fc.mutable_optional_message()->set_c(3);
 
-  bytes =
-      fab.SerializePartialAsString() + fc.SerializePartialAsString();
+  bytes = fab.SerializePartialAsString() + fc.SerializePartialAsString();
 
   UNITTEST::TestRequiredForeign fconcatenated;
   EXPECT_TRUE(fconcatenated.ParsePartialFromString(bytes));
@@ -1150,11 +1149,16 @@ TEST(MESSAGE_TEST_NAME, CheckSerializationWhenInterleavedExtensions) {
   EXPECT_EQ(3, out_message.foo_three());
   EXPECT_EQ(4, out_message.foo_four());
 
-  EXPECT_EQ(1, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_one));
-  EXPECT_EQ(2, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_two));
-  EXPECT_EQ(3, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_three));
-  EXPECT_EQ(4, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_four));
-  EXPECT_EQ(5, out_message.GetExtension(UNITTEST::TestExtensionRangeSerialize::bar_five));
+  EXPECT_EQ(1, out_message.GetExtension(
+                   UNITTEST::TestExtensionRangeSerialize::bar_one));
+  EXPECT_EQ(2, out_message.GetExtension(
+                   UNITTEST::TestExtensionRangeSerialize::bar_two));
+  EXPECT_EQ(3, out_message.GetExtension(
+                   UNITTEST::TestExtensionRangeSerialize::bar_three));
+  EXPECT_EQ(4, out_message.GetExtension(
+                   UNITTEST::TestExtensionRangeSerialize::bar_four));
+  EXPECT_EQ(5, out_message.GetExtension(
+                   UNITTEST::TestExtensionRangeSerialize::bar_five));
 }
 
 TEST(MESSAGE_TEST_NAME, PreservesFloatingPointNegative0) {
@@ -1270,7 +1274,7 @@ TEST(MESSAGE_TEST_NAME, TestEnumParsers) {
               continue;
             }
             SCOPED_TRACE(value_desc->number());
-            GOOGLE_CHECK_NE(value_desc->number(), kInvalidValue)
+            GOOGLE_ABSL_CHECK_NE(value_desc->number(), kInvalidValue)
                 << "Invalid value is a real label.";
             auto encoded =
                 EncodeEnumValue(field->number(), value_desc->number(),
@@ -1416,13 +1420,13 @@ class TestInputStream final : public io::ZeroCopyInputStream {
     return true;
   }
 
-  void BackUp(int) override { GOOGLE_CHECK(false); }
+  void BackUp(int) override { GOOGLE_ABSL_CHECK(false); }
   bool Skip(int) override {
-    GOOGLE_CHECK(false);
+    GOOGLE_ABSL_CHECK(false);
     return false;
   }
   int64_t ByteCount() const override {
-    GOOGLE_CHECK(false);
+    GOOGLE_ABSL_CHECK(false);
     return 0;
   }
 
@@ -1448,26 +1452,26 @@ TEST(MESSAGE_TEST_NAME, TestRepeatedStringParsers) {
     SCOPED_TRACE(size);
     const std::string value = sample.substr(0, size);
     for (int i = 0; i < descriptor->field_count(); ++i) {
-        const auto* field = descriptor->field(i);
-        SCOPED_TRACE(field->full_name());
-        const auto encoded = EncodeStringValue(field->number(), sample) +
-                             EncodeStringValue(field->number(), value);
-        // Check for different breaks in the input stream to test cases where
-        // the payload can be read and can't be read in one go.
-        for (size_t i = 1; i <= encoded.size(); ++i) {
-          TestInputStream input_stream(encoded, i);
+      const auto* field = descriptor->field(i);
+      SCOPED_TRACE(field->full_name());
+      const auto encoded = EncodeStringValue(field->number(), sample) +
+                           EncodeStringValue(field->number(), value);
+      // Check for different breaks in the input stream to test cases where
+      // the payload can be read and can't be read in one go.
+      for (size_t i = 1; i <= encoded.size(); ++i) {
+        TestInputStream input_stream(encoded, i);
 
-          auto& obj = *arena.CreateMessage<UNITTEST::StringParseTester>(&arena);
-          auto* ref = obj.GetReflection();
-          EXPECT_TRUE(obj.ParseFromZeroCopyStream(&input_stream));
-          if (field->is_repeated()) {
-            ASSERT_EQ(ref->FieldSize(obj, field), 2);
-            EXPECT_EQ(ref->GetRepeatedString(obj, field, 0), sample);
-            EXPECT_EQ(ref->GetRepeatedString(obj, field, 1), value);
-          } else {
-            EXPECT_EQ(ref->GetString(obj, field), value);
-          }
+        auto& obj = *arena.CreateMessage<UNITTEST::StringParseTester>(&arena);
+        auto* ref = obj.GetReflection();
+        EXPECT_TRUE(obj.ParseFromZeroCopyStream(&input_stream));
+        if (field->is_repeated()) {
+          ASSERT_EQ(ref->FieldSize(obj, field), 2);
+          EXPECT_EQ(ref->GetRepeatedString(obj, field, 0), sample);
+          EXPECT_EQ(ref->GetRepeatedString(obj, field, 1), value);
+        } else {
+          EXPECT_EQ(ref->GetString(obj, field), value);
         }
+      }
     }
   }
 }
@@ -1481,7 +1485,7 @@ TEST(MESSAGE_TEST_NAME, TestRegressionOnParseFailureNotSettingHasBits) {
     message.set_optional_int32(17);
     single_field = message.SerializeAsString();
   }
-  const auto validate_message = [] (auto& message) {
+  const auto validate_message = [](auto& message) {
     if (!message.has_optional_int32()) {
       EXPECT_EQ(message.optional_int32(), 0);
     }

@@ -45,9 +45,9 @@
 #include <string>
 
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/port.h"
 #include "absl/base/casts.h"
+#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
@@ -1085,7 +1085,7 @@ template <typename CType, enum WireFormatLite::FieldType DeclaredType>
 inline bool WireFormatLite::ReadRepeatedFixedSizePrimitive(
     int tag_size, uint32_t tag, io::CodedInputStream* input,
     RepeatedField<CType>* values) {
-  GOOGLE_DCHECK_EQ(UInt32Size(tag), static_cast<size_t>(tag_size));
+  GOOGLE_ABSL_DCHECK_EQ(UInt32Size(tag), static_cast<size_t>(tag_size));
   CType value;
   if (!ReadPrimitive<CType, DeclaredType>(input, &value)) return false;
   values->Add(value);
@@ -1446,7 +1446,7 @@ inline uint8_t* WireFormatLite::WritePrimitiveNoTagToArray(
     const RepeatedField<T>& value, uint8_t* (*Writer)(T, uint8_t*),
     uint8_t* target) {
   const int n = value.size();
-  GOOGLE_DCHECK_GT(n, 0);
+  GOOGLE_ABSL_DCHECK_GT(n, 0);
 
   const T* ii = value.data();
   int i = 0;
@@ -1465,7 +1465,7 @@ inline uint8_t* WireFormatLite::WriteFixedNoTagToArray(
   (void)Writer;
 
   const int n = value.size();
-  GOOGLE_DCHECK_GT(n, 0);
+  GOOGLE_ABSL_DCHECK_GT(n, 0);
 
   const T* ii = value.data();
   const int bytes = n * static_cast<int>(sizeof(ii[0]));

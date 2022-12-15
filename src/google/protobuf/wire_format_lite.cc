@@ -40,6 +40,7 @@
 #include <vector>
 
 #include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
@@ -482,7 +483,7 @@ void WireFormatLite::WriteString(int field_number, const std::string& value,
                                  io::CodedOutputStream* output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK_LE(value.size(), kInt32MaxSize);
+  GOOGLE_ABSL_CHECK_LE(value.size(), kInt32MaxSize);
   output->WriteVarint32(value.size());
   output->WriteString(value);
 }
@@ -491,14 +492,14 @@ void WireFormatLite::WriteStringMaybeAliased(int field_number,
                                              io::CodedOutputStream* output) {
   // String is for UTF-8 text only
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK_LE(value.size(), kInt32MaxSize);
+  GOOGLE_ABSL_CHECK_LE(value.size(), kInt32MaxSize);
   output->WriteVarint32(value.size());
   output->WriteRawMaybeAliased(value.data(), value.size());
 }
 void WireFormatLite::WriteBytes(int field_number, const std::string& value,
                                 io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK_LE(value.size(), kInt32MaxSize);
+  GOOGLE_ABSL_CHECK_LE(value.size(), kInt32MaxSize);
   output->WriteVarint32(value.size());
   output->WriteString(value);
 }
@@ -506,7 +507,7 @@ void WireFormatLite::WriteBytesMaybeAliased(int field_number,
                                             const std::string& value,
                                             io::CodedOutputStream* output) {
   WriteTag(field_number, WIRETYPE_LENGTH_DELIMITED, output);
-  GOOGLE_CHECK_LE(value.size(), kInt32MaxSize);
+  GOOGLE_ABSL_CHECK_LE(value.size(), kInt32MaxSize);
   output->WriteVarint32(value.size());
   output->WriteRawMaybeAliased(value.data(), value.size());
 }
@@ -614,7 +615,7 @@ void PrintUTF8ErrorLog(absl::string_view message_name,
                    " a protocol buffer. Use the 'bytes' type if you intend to "
                    "send raw bytes. ",
                    stacktrace);
-  GOOGLE_LOG(ERROR) << error_message;
+  GOOGLE_ABSL_LOG(ERROR) << error_message;
 }
 
 bool WireFormatLite::VerifyUtf8String(const char* data, int size, Operation op,

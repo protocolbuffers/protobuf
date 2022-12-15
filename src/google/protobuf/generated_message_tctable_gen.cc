@@ -53,7 +53,7 @@ namespace {
 
 bool GetEnumValidationRange(const EnumDescriptor* enum_type, int16_t& start,
                             uint16_t& size) {
-  GOOGLE_CHECK_GT(enum_type->value_count(), 0) << enum_type->DebugString();
+  GOOGLE_ABSL_CHECK_GT(enum_type->value_count(), 0) << enum_type->DebugString();
 
   // Check if the enum values are a single, contiguous range.
   std::vector<int> enum_values;
@@ -149,7 +149,7 @@ void PopulateFastFieldEntry(const TailCallTableInfo::FieldEntryInfo& entry,
       name.append("c");
     } else if (options.is_string_inlined) {
       name.append("i");
-      GOOGLE_CHECK(!field->is_repeated());
+      GOOGLE_ABSL_CHECK(!field->is_repeated());
       aux_idx = static_cast<uint8_t>(entry.inlined_string_idx);
     }
   }
@@ -205,7 +205,7 @@ bool IsFieldEligibleForFastParsing(
         return false;
       }
       if (options.is_string_inlined) {
-        GOOGLE_CHECK(!field->is_repeated());
+        GOOGLE_ABSL_CHECK(!field->is_repeated());
         // For inlined strings, the donation state index is stored in the
         // `aux_idx` field of the fast parsing info. We need to check the range
         // of that value instead of the auxiliary index.
@@ -220,7 +220,7 @@ bool IsFieldEligibleForFastParsing(
   if (cpp::HasHasbit(field)) {
     // The tailcall parser can only update the first 32 hasbits. Fields with
     // has-bits beyond the first 32 are handled by mini parsing/fallback.
-    GOOGLE_CHECK_GE(entry.hasbit_idx, 0) << field->DebugString();
+    GOOGLE_ABSL_CHECK_GE(entry.hasbit_idx, 0) << field->DebugString();
     if (entry.hasbit_idx >= 32) return false;
   }
 
@@ -255,7 +255,7 @@ absl::optional<uint32_t> GetEndGroupTag(const Descriptor* descriptor) {
 }
 
 uint32_t RecodeTagForFastParsing(uint32_t tag) {
-  GOOGLE_DCHECK_LE(tag, 0x3FFF);
+  GOOGLE_ABSL_DCHECK_LE(tag, 0x3FFF);
   // Construct the varint-coded tag. If it is more than 7 bits, we need to
   // shift the high bits and add a continue bit.
   if (uint32_t hibits = tag & 0xFFFFFF80) {
@@ -318,7 +318,7 @@ std::vector<TailCallTableInfo::FastFieldInfo> SplitFastFieldsForSize(
     }
 
     // Fill in this field's entry:
-    GOOGLE_CHECK(info.func_name.empty()) << info.func_name;
+    GOOGLE_ABSL_CHECK(info.func_name.empty()) << info.func_name;
     PopulateFastFieldEntry(entry, options, info);
     info.field = field;
     info.coded_tag = tag;
@@ -336,8 +336,6 @@ std::vector<const FieldDescriptor*> FilterMiniParsedFields(
   std::vector<const FieldDescriptor*> generated_fallback_fields;
 
   for (const auto* field : fields) {
-    auto options = option_provider.GetForField(field);
-
     bool handled = false;
     switch (field->type()) {
       case FieldDescriptor::TYPE_DOUBLE:
@@ -354,20 +352,13 @@ std::vector<const FieldDescriptor*> FilterMiniParsedFields(
       case FieldDescriptor::TYPE_SINT64:
       case FieldDescriptor::TYPE_INT64:
       case FieldDescriptor::TYPE_ENUM:
+      case FieldDescriptor::TYPE_BYTES:
+      case FieldDescriptor::TYPE_STRING:
         // These are handled by MiniParse, so we don't need any generated
         // fallback code.
         handled = true;
         break;
 
-      case FieldDescriptor::TYPE_BYTES:
-      case FieldDescriptor::TYPE_STRING:
-        if (options.is_string_inlined) {
-          // TODO(b/198211897): support InilnedStringField.
-          handled = false;
-        } else {
-          handled = true;
-        }
-        break;
 
       case FieldDescriptor::TYPE_MESSAGE:
       case FieldDescriptor::TYPE_GROUP:
@@ -486,7 +477,7 @@ TailCallTableInfo::NumToEntryTable MakeNumToEntryTable(
   for (; field_entry_index != N; ++field_entry_index) {
     auto* field_descriptor = field_descriptors[field_entry_index];
     uint32_t fnum = static_cast<uint32_t>(field_descriptor->number());
-    GOOGLE_CHECK_GT(fnum, last_skip_entry_start);
+    GOOGLE_ABSL_CHECK_GT(fnum, last_skip_entry_start);
     if (start_new_block == false) {
       // If the next field number is within 15 of the last_skip_entry_start, we
       // continue writing just to that entry.  If it's between 16 and 31 more,
@@ -653,8 +644,8 @@ uint16_t MakeTypeCardForField(
       } else {
         type_card |= fl::kMessage;
         if (options.lazy_opt != 0) {
-          GOOGLE_CHECK(options.lazy_opt == field_layout::kTvEager ||
-                options.lazy_opt == field_layout::kTvLazy);
+          GOOGLE_ABSL_CHECK(options.lazy_opt == field_layout::kTvEager ||
+                     options.lazy_opt == field_layout::kTvLazy);
           type_card |= +fl::kRepLazy | options.lazy_opt;
         } else {
           if (options.is_implicitly_weak) {
@@ -774,7 +765,7 @@ TailCallTableInfo::TailCallTableInfo(
     } else if ((field->type() == FieldDescriptor::TYPE_STRING ||
                 field->type() == FieldDescriptor::TYPE_BYTES) &&
                options.is_string_inlined) {
-      GOOGLE_CHECK(!field->is_repeated());
+      GOOGLE_ABSL_CHECK(!field->is_repeated());
       // Inlined strings have an extra marker to represent their donation state.
       int idx = inlined_string_indices[static_cast<size_t>(field->index())];
       // For mini parsing, the donation state index is stored as an `offset`
@@ -795,7 +786,7 @@ TailCallTableInfo::TailCallTableInfo(
     size_t try_size = 1 << try_size_log2;
     auto split_fields = SplitFastFieldsForSize(end_group_tag, field_entries,
                                                try_size_log2, option_provider);
-    GOOGLE_CHECK_EQ(split_fields.size(), try_size);
+    GOOGLE_ABSL_CHECK_EQ(split_fields.size(), try_size);
     int try_num_fast_fields = 0;
     for (const auto& info : split_fields) {
       if (info.field != nullptr) ++try_num_fast_fields;
@@ -831,7 +822,7 @@ TailCallTableInfo::TailCallTableInfo(
   fallback_fields = FilterMiniParsedFields(ordered_fields, option_provider);
 
   num_to_entry_table = MakeNumToEntryTable(ordered_fields);
-  GOOGLE_CHECK_EQ(field_entries.size(), ordered_fields.size());
+  GOOGLE_ABSL_CHECK_EQ(field_entries.size(), ordered_fields.size());
   field_name_data = GenerateFieldNames(descriptor, field_entries);
 
   // If there are no fallback fields, and at most one extension range, the

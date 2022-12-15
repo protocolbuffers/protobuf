@@ -32,6 +32,8 @@
 
 #include "google/protobuf/pyext/descriptor.h"
 
+#include "google/protobuf/stubs/logging.h"
+
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <frameobject.h>
@@ -404,7 +406,7 @@ PyObject* NewInternedDescriptor(PyTypeObject* type,
   std::unordered_map<const void*, PyObject*>::iterator it =
       interned_descriptors->find(descriptor);
   if (it != interned_descriptors->end()) {
-    GOOGLE_DCHECK(Py_TYPE(it->second) == type);
+    GOOGLE_ABSL_DCHECK(Py_TYPE(it->second) == type);
     Py_INCREF(it->second);
     return it->second;
   }

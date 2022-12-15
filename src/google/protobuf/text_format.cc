@@ -174,7 +174,6 @@ void PerformAbslStringify(const Message& message,
   // TODO(b/249835002): consider using the single line version for short
   TextFormat::Printer printer;
   printer.SetExpandAny(true);
-  printer.SetInsertSilentMarker(true);
   printer.SetRedactDebugString(true);
   printer.SetRandomizeDebugString(true);
   std::string result;
@@ -206,11 +205,11 @@ void CheckFieldIndex(const FieldDescriptor* field, int index) {
   }
 
   if (field->is_repeated() && index == -1) {
-    GOOGLE_LOG(DFATAL) << "Index must be in range of repeated field values. "
-                << "Field: " << field->name();
+    GOOGLE_ABSL_LOG(DFATAL) << "Index must be in range of repeated field values. "
+                     << "Field: " << field->name();
   } else if (!field->is_repeated() && index != -1) {
-    GOOGLE_LOG(DFATAL) << "Index must be -1 for singular fields."
-                << "Field: " << field->name();
+    GOOGLE_ABSL_LOG(DFATAL) << "Index must be -1 for singular fields."
+                     << "Field: " << field->name();
   }
 }
 
@@ -346,7 +345,7 @@ class TextFormat::Parser::ParserImpl {
   // Parses the ASCII representation specified in input and saves the
   // information into the output pointer (a Message). Returns
   // false if an error occurs (an error will also be logged to
-  // GOOGLE_LOG(ERROR)).
+  // GOOGLE_ABSL_LOG(ERROR)).
   bool Parse(Message* output) {
     // Consume fields until we cannot do so anymore.
     while (true) {
@@ -354,7 +353,7 @@ class TextFormat::Parser::ParserImpl {
         // Ensures recursion limit properly unwinded, but only for success
         // cases. This implicitly avoids the check when `Parse` returns false
         // via `DO(...)`.
-        GOOGLE_DCHECK(had_errors_ || recursion_limit_ == initial_recursion_limit_)
+        GOOGLE_ABSL_DCHECK(had_errors_ || recursion_limit_ == initial_recursion_limit_)
             << "Recursion limit at end of parse should be "
             << initial_recursion_limit_ << ", but was " << recursion_limit_
             << ". Difference of " << initial_recursion_limit_ - recursion_limit_
@@ -381,12 +380,12 @@ class TextFormat::Parser::ParserImpl {
     had_errors_ = true;
     if (error_collector_ == nullptr) {
       if (line >= 0) {
-        GOOGLE_LOG(ERROR) << "Error parsing text-format "
-                   << root_message_type_->full_name() << ": " << (line + 1)
-                   << ":" << (col + 1) << ": " << message;
+        GOOGLE_ABSL_LOG(ERROR) << "Error parsing text-format "
+                        << root_message_type_->full_name() << ": " << (line + 1)
+                        << ":" << (col + 1) << ": " << message;
       } else {
-        GOOGLE_LOG(ERROR) << "Error parsing text-format "
-                   << root_message_type_->full_name() << ": " << message;
+        GOOGLE_ABSL_LOG(ERROR) << "Error parsing text-format "
+                        << root_message_type_->full_name() << ": " << message;
       }
     } else {
       error_collector_->AddError(line, col, message);
@@ -396,12 +395,12 @@ class TextFormat::Parser::ParserImpl {
   void ReportWarning(int line, int col, const std::string& message) {
     if (error_collector_ == nullptr) {
       if (line >= 0) {
-        GOOGLE_LOG(WARNING) << "Warning parsing text-format "
-                     << root_message_type_->full_name() << ": " << (line + 1)
-                     << ":" << (col + 1) << ": " << message;
+        GOOGLE_ABSL_LOG(WARNING) << "Warning parsing text-format "
+                          << root_message_type_->full_name() << ": "
+                          << (line + 1) << ":" << (col + 1) << ": " << message;
       } else {
-        GOOGLE_LOG(WARNING) << "Warning parsing text-format "
-                     << root_message_type_->full_name() << ": " << message;
+        GOOGLE_ABSL_LOG(WARNING) << "Warning parsing text-format "
+                          << root_message_type_->full_name() << ": " << message;
       }
     } else {
       error_collector_->AddWarning(line, col, message);
@@ -591,7 +590,8 @@ class TextFormat::Parser::ParserImpl {
 
     // Skips unknown or reserved fields.
     if (field == nullptr) {
-      GOOGLE_CHECK(allow_unknown_field_ || allow_unknown_extension_ || reserved_field);
+      GOOGLE_ABSL_CHECK(allow_unknown_field_ || allow_unknown_extension_ ||
+                 reserved_field);
 
       // Try to guess the type of this field.
       // If this field is not a message, there should be a ":" between the
@@ -925,7 +925,7 @@ class TextFormat::Parser::ParserImpl {
       case FieldDescriptor::CPPTYPE_MESSAGE: {
         // We should never get here. Put here instead of a default
         // so that if new types are added, we get a nice compiler warning.
-        GOOGLE_LOG(FATAL) << "Reached an unintended state: CPPTYPE_MESSAGE";
+        GOOGLE_ABSL_LOG(FATAL) << "Reached an unintended state: CPPTYPE_MESSAGE";
         break;
       }
     }
@@ -1429,7 +1429,7 @@ class TextFormat::Printer::TextGenerator
   // level is zero.
   void Outdent() override {
     if (indent_level_ == 0 || indent_level_ < initial_indent_level_) {
-      GOOGLE_LOG(DFATAL) << " Outdent() without matching Indent().";
+      GOOGLE_ABSL_LOG(DFATAL) << " Outdent() without matching Indent().";
       return;
     }
 
@@ -1523,7 +1523,7 @@ class TextFormat::Printer::TextGenerator
     if (indent_level_ == 0) {
       return;
     }
-    GOOGLE_DCHECK(!failed_);
+    GOOGLE_ABSL_DCHECK(!failed_);
     int size = GetCurrentIndentationSize();
 
     while (size > buffer_size_) {
@@ -2102,7 +2102,7 @@ bool TextFormat::Printer::RegisterMessagePrinter(
 
 bool TextFormat::Printer::PrintToString(const Message& message,
                                         std::string* output) const {
-  GOOGLE_DCHECK(output) << "output specified is nullptr";
+  GOOGLE_ABSL_DCHECK(output) << "output specified is nullptr";
 
   output->clear();
   io::StringOutputStream output_stream(output);
@@ -2112,7 +2112,7 @@ bool TextFormat::Printer::PrintToString(const Message& message,
 
 bool TextFormat::Printer::PrintUnknownFieldsToString(
     const UnknownFieldSet& unknown_fields, std::string* output) const {
-  GOOGLE_DCHECK(output) << "output specified is nullptr";
+  GOOGLE_ABSL_DCHECK(output) << "output specified is nullptr";
 
   output->clear();
   io::StringOutputStream output_stream(output);
@@ -2195,8 +2195,8 @@ bool TextFormat::Printer::PrintAny(const Message& message,
       finder_ ? finder_->FindAnyType(message, url_prefix, full_type_name)
               : DefaultFinderFindAnyType(message, url_prefix, full_type_name);
   if (value_descriptor == nullptr) {
-    GOOGLE_LOG(WARNING) << "Can't print proto content: proto type " << type_url
-                 << " not found";
+    GOOGLE_ABSL_LOG(WARNING) << "Can't print proto content: proto type " << type_url
+                      << " not found";
     return false;
   }
   DynamicMessageFactory factory;
@@ -2204,7 +2204,7 @@ bool TextFormat::Printer::PrintAny(const Message& message,
       factory.GetPrototype(value_descriptor)->New());
   std::string serialized_value = reflection->GetString(message, value_field);
   if (!value_message->ParseFromString(serialized_value)) {
-    GOOGLE_LOG(WARNING) << type_url << ": failed to parse contents";
+    GOOGLE_ABSL_LOG(WARNING) << type_url << ": failed to parse contents";
     return false;
   }
   generator->PrintLiteral("[");
@@ -2281,7 +2281,7 @@ void TextFormat::Printer::PrintFieldValueToString(const Message& message,
                                                   const FieldDescriptor* field,
                                                   int index,
                                                   std::string* output) const {
-  GOOGLE_DCHECK(output) << "output specified is nullptr";
+  GOOGLE_ABSL_DCHECK(output) << "output specified is nullptr";
 
   output->clear();
   io::StringOutputStream output_stream(output);
@@ -2329,7 +2329,7 @@ class MapEntryMessageComparator {
         return first < second;
       }
       default:
-        GOOGLE_LOG(DFATAL) << "Invalid key for map field.";
+        GOOGLE_ABSL_LOG(DFATAL) << "Invalid key for map field.";
         return true;
     }
   }
@@ -2400,7 +2400,7 @@ void MapFieldPrinterHelper::CopyKey(const MapKey& key, Message* message,
     case FieldDescriptor::CPPTYPE_FLOAT:
     case FieldDescriptor::CPPTYPE_ENUM:
     case FieldDescriptor::CPPTYPE_MESSAGE:
-      GOOGLE_LOG(ERROR) << "Not supported.";
+      GOOGLE_ABSL_LOG(ERROR) << "Not supported.";
       break;
     case FieldDescriptor::CPPTYPE_STRING:
       reflection->SetString(message, field_desc, key.GetStringValue());
@@ -2575,7 +2575,7 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
                                           const FieldDescriptor* field,
                                           int index,
                                           BaseTextGenerator* generator) const {
-  GOOGLE_DCHECK(field->is_repeated() || (index == -1))
+  GOOGLE_ABSL_DCHECK(field->is_repeated() || (index == -1))
       << "Index must be -1 for non-repeated fields";
 
   const FastFieldValuePrinter* printer = GetFieldPrinter(field);
@@ -2627,7 +2627,7 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
       if (field->type() == FieldDescriptor::TYPE_STRING) {
         printer->PrintString(*value_to_print, generator);
       } else {
-        GOOGLE_DCHECK_EQ(field->type(), FieldDescriptor::TYPE_BYTES);
+        GOOGLE_ABSL_DCHECK_EQ(field->type(), FieldDescriptor::TYPE_BYTES);
         printer->PrintBytes(*value_to_print, generator);
       }
       break;

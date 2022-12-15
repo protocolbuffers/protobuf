@@ -49,7 +49,6 @@
 #include "google/protobuf/stubs/logging.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
-#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/str_split.h"
@@ -76,6 +75,30 @@ absl::optional<T> LookupInFrameStack(
   return absl::nullopt;
 }
 }  // namespace
+
+struct Printer::Format {
+  struct Chunk {
+    // The chunk's text; if this is a variable, it does not include the $...$.
+    absl::string_view text;
+
+    // Whether or not this is a variable name, i.e., a $...$.
+    bool is_var;
+  };
+
+  struct Line {
+    // Chunks to emit, split along $ and annotates as to whether it is a
+    // variable name.
+    std::vector<Chunk> chunks;
+
+    // The indentation for this chunk.
+    size_t indent;
+  };
+
+  std::vector<Line> lines;
+
+  // Whether this is a multiline raw string, according to internal heuristics.
+  bool is_raw_string = false;
+};
 
 Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
                                         const PrintOptions& options) {
@@ -132,22 +155,29 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
   }
 
   // We now split the remaining format string into lines and discard:
-  //   1. All leading spaces to compute that line's indent.
+  //   1. A trailing Printer-discarded comment, if this is a raw string.
+  //
+  //   2. All leading spaces to compute that line's indent.
   //      We do not do this for the first line, so that Emit("  ") works
   //      correctly. We do this *regardless* of whether we are processing
   //      a raw string, because existing non-raw-string calls to cpp::Formatter
   //      rely on this. There is a test that validates this behavior.
   //
-  //   2. Set the indent for that line to max(0, line_indent -
+  //   3. Set the indent for that line to max(0, line_indent -
   //      raw_string_indent), if this is not a raw string.
   //
-  //   3. Trailing empty lines, if we know this is a raw string, except for
+  //   4. Trailing empty lines, if we know this is a raw string, except for
   //      a single extra newline at the end.
   //
   // Each line is itself split into chunks along the variable delimiters, e.g.
   // $...$.
   bool is_first = true;
   for (absl::string_view line_text : absl::StrSplit(format_string, '\n')) {
+    if (format.is_raw_string) {
+      size_t comment_index = line_text.find(options_.ignored_comment_start);
+      line_text = line_text.substr(0, comment_index);
+    }
+
     size_t line_indent = 0;
     while (!is_first && absl::ConsumePrefix(&line_text, " ")) {
       ++line_indent;
@@ -224,7 +254,7 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
   }
 
 #if 0  // Use this to aid debugging tokenization.
-  GOOGLE_LOG(INFO) << "--- " << format.lines.size() << " lines";
+  LOG(INFO) << "--- " << format.lines.size() << " lines";
   for (size_t i = 0; i < format.lines.size(); ++i) {
     const auto& line = format.lines[i];
 
@@ -233,9 +263,9 @@ Printer::Format Printer::TokenizeFormat(absl::string_view format_string,
       absl::StrAppendFormat(&log_line, " %s\"%s\"", chunk.is_var ? "$" : "",
                             absl::CHexEscape(chunk.text));
     }
-    GOOGLE_LOG(INFO) << log_line;
+    LOG(INFO) << log_line;
   }
-  GOOGLE_LOG(INFO) << "---";
+  LOG(INFO) << "---";
 #endif
 
   return format;
@@ -668,7 +698,8 @@ void Printer::PrintImpl(absl::string_view format,
             "substitution that resolves to callback cannot contain whitespace");
 
         range_start = sink_.bytes_written();
-        (*fnc)();
+        GOOGLE_ABSL_CHECK((*fnc)())
+            << "recursive call encountered while evaluating \"" << var << "\"";
         range_end = sink_.bytes_written();
       }
 

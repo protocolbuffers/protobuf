@@ -324,7 +324,7 @@ bool CodedInputStream::ReadStringFallback(std::string* buffer, int size) {
 }
 
 bool CodedInputStream::ReadCord(absl::Cord* output, int size) {
-  GOOGLE_DCHECK_NE(output, nullptr);
+  GOOGLE_ABSL_DCHECK_NE(output, nullptr);
 
   // security: size is often user-supplied
   if (size < 0) {

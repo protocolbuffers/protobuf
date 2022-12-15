@@ -6,6 +6,7 @@ set -ex
 cd $(dirname $0)/../..
 
 # Initialize any submodules.
+git config --global --add safe.directory '*'
 git submodule update --init --recursive
 
 # The directory with all resulting artifacts
@@ -48,11 +49,10 @@ cp ${INPUT_ARTIFACTS_DIR}/build64/src/protoc protoc/macosx_x64/protoc
 
 # Install nuget (will also install  mono)
 # TODO(jtattermusch): use "mono:5.14" docker image instead so we don't have to apt-get install
+sudo apt update
+sudo apt install -y gnupg ca-certificates
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-echo "deb https://download.mono-project.com/repo/ubuntu stable-xenial main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-# NVidia has stopped publishing Cuda packages for Ubuntu 16.04, so we need to
-# delete this file to allow the apt update to run successfully.
-sudo rm -f /etc/apt/sources.list.d/cuda.list
+echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
 sudo apt update
 sudo apt-get install -y nuget
 

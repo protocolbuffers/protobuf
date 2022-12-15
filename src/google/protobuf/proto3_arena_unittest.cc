@@ -314,8 +314,8 @@ TEST(Proto3OptionalTest, Extensions) {
       "protobuf_unittest.Proto3OptionalExtensions.ext_no_optional");
   const FieldDescriptor* with_optional = p->FindExtensionByName(
       "protobuf_unittest.Proto3OptionalExtensions.ext_with_optional");
-  GOOGLE_CHECK(no_optional);
-  GOOGLE_CHECK(with_optional);
+  GOOGLE_ABSL_CHECK(no_optional);
+  GOOGLE_ABSL_CHECK(with_optional);
   EXPECT_FALSE(no_optional->has_optional_keyword());
   EXPECT_TRUE(with_optional->has_optional_keyword());
 
@@ -363,8 +363,8 @@ TEST(Proto3OptionalTest, OptionalFieldReflection) {
   const google::protobuf::Reflection* r = msg.GetReflection();
   const google::protobuf::FieldDescriptor* f = d->FindFieldByName("optional_int32");
   const google::protobuf::OneofDescriptor* o = d->FindOneofByName("_optional_int32");
-  GOOGLE_CHECK(f);
-  GOOGLE_CHECK(o);
+  GOOGLE_ABSL_CHECK(f);
+  GOOGLE_ABSL_CHECK(o);
   EXPECT_TRUE(o->is_synthetic());
 
   EXPECT_FALSE(r->HasField(msg, f));

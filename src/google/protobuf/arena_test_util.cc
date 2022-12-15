@@ -33,7 +33,7 @@
 #include "google/protobuf/stubs/logging.h"
 
 
-#define EXPECT_EQ GOOGLE_CHECK_EQ
+#define EXPECT_EQ GOOGLE_ABSL_CHECK_EQ
 
 namespace google {
 namespace protobuf {

@@ -46,7 +46,6 @@
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_custom_options.pb.h"
 #include "google/protobuf/stubs/common.h"
-#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
@@ -55,6 +54,8 @@
 #include <gmock/gmock.h>
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/unittest_lazy_dependencies.pb.h"
 #include "google/protobuf/unittest_lazy_dependencies_custom_option.pb.h"
 #include "google/protobuf/unittest_lazy_dependencies_enum.pb.h"
@@ -2990,7 +2991,7 @@ class AllowUnknownDependenciesTest
         return pool_->FindFileByName(proto.name());
       }
     }
-    GOOGLE_LOG(FATAL) << "Can't get here.";
+    GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
     return nullptr;
   }
 
@@ -3215,7 +3216,7 @@ TEST_P(AllowUnknownDependenciesTest,
 
   const FileDescriptor* file = BuildFile(test_proto);
   ASSERT_TRUE(file != nullptr);
-  GOOGLE_LOG(INFO) << file->DebugString();
+  GOOGLE_ABSL_LOG(INFO) << file->DebugString();
 
   EXPECT_EQ(0, file->dependency_count());
   ASSERT_EQ(1, file->message_type_count());
@@ -6067,7 +6068,7 @@ TEST_F(ValidationErrorTest, RollbackAfterError) {
 }
 
 TEST_F(ValidationErrorTest, ErrorsReportedToLogError) {
-  // Test that errors are reported to GOOGLE_LOG(ERROR) if no error collector is
+  // Test that errors are reported to GOOGLE_ABSL_LOG(ERROR) if no error collector is
   // provided.
 
   FileDescriptorProto file_proto;
@@ -7402,11 +7403,11 @@ class ExponentialErrorDatabase : public DescriptorDatabase {
                  absl::string_view end_with, int32_t* file_num) {
     if (!absl::ConsumePrefix(&name, begin_with)) return;
     if (!absl::ConsumeSuffix(&name, end_with)) return;
-    GOOGLE_CHECK(absl::SimpleAtoi(name, file_num));
+    GOOGLE_ABSL_CHECK(absl::SimpleAtoi(name, file_num));
   }
 
   bool PopulateFile(int file_num, FileDescriptorProto* output) {
-    GOOGLE_CHECK_GE(file_num, 0);
+    GOOGLE_ABSL_CHECK_GE(file_num, 0);
     output->Clear();
     output->set_name(absl::Substitute("file$0.proto", file_num));
     // file0.proto doesn't define Message0
@@ -7431,7 +7432,7 @@ TEST_F(DatabaseBackedPoolTest, DoesntReloadKnownBadFiles) {
   ExponentialErrorDatabase error_database;
   DescriptorPool pool(&error_database);
 
-  GOOGLE_LOG(INFO) << "A timeout in this test probably indicates a real bug.";
+  GOOGLE_ABSL_LOG(INFO) << "A timeout in this test probably indicates a real bug.";
 
   EXPECT_TRUE(pool.FindFileByName("file40.proto") == nullptr);
   EXPECT_TRUE(pool.FindMessageTypeByName("Message40") == nullptr);
@@ -7476,8 +7477,8 @@ class AbortingErrorCollector : public DescriptorPool::ErrorCollector {
   void AddError(const std::string& filename, const std::string& element_name,
                 const Message* message, ErrorLocation location,
                 const std::string& error_message) override {
-    GOOGLE_LOG(FATAL) << "AddError() called unexpectedly: " << filename << " ["
-               << element_name << "]: " << error_message;
+    GOOGLE_ABSL_LOG(FATAL) << "AddError() called unexpectedly: " << filename << " ["
+                    << element_name << "]: " << error_message;
   }
 };
 

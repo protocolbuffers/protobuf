@@ -510,7 +510,7 @@ bool Convert_PhpToUpbAutoWrap(zval *val, upb_MessageValue *upb_val, TypeInfo typ
     const upb_FieldDef *val_f = upb_MessageDef_FindFieldByNumber(subm, 1);
     upb_MessageValue msgval;
     if (!Convert_PhpToUpb(val, &msgval, TypeInfo_Get(val_f), arena)) return false;
-    upb_Message_Set(wrapper, val_f, msgval, arena);
+    upb_Message_SetFieldByDef(wrapper, val_f, msgval, arena);
     upb_val->msg_val = wrapper;
     return true;
   } else {

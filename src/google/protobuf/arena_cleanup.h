@@ -35,8 +35,9 @@
 #include <cstdint>
 #include <string>
 
-#include "google/protobuf/stubs/logging.h"
 #include "absl/base/attributes.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/cord.h"
 
 
@@ -91,7 +92,7 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE void CreateNode(Tag tag, void* pos,
                                                     void (*destructor)(void*)) {
   auto elem = reinterpret_cast<uintptr_t>(elem_raw);
   if (EnableSpecializedTags()) {
-    GOOGLE_DCHECK_EQ(elem & 3, 0ULL);  // Must be aligned
+    GOOGLE_ABSL_DCHECK_EQ(elem & 3, 0ULL);  // Must be aligned
     switch (tag) {
       case Tag::kString: {
         TaggedNode n = {elem | static_cast<uintptr_t>(Tag::kString)};
@@ -186,7 +187,7 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE Tag Type(void* raw) {
     case Tag::kCord:
       return Tag::kCord;
     default:
-      GOOGLE_LOG(FATAL) << "Corrupted cleanup tag: " << (elem & 0x7ULL);
+      GOOGLE_ABSL_LOG(FATAL) << "Corrupted cleanup tag: " << (elem & 0x7ULL);
       return Tag::kDynamic;
   }
 }
@@ -203,7 +204,7 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t Size(Tag tag) {
     case Tag::kCord:
       return sizeof(TaggedNode);
     default:
-      GOOGLE_LOG(FATAL) << "Corrupted cleanup tag: " << static_cast<int>(tag);
+      GOOGLE_ABSL_LOG(FATAL) << "Corrupted cleanup tag: " << static_cast<int>(tag);
       return sizeof(DynamicNode);
   }
 }

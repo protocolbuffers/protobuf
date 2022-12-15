@@ -36,6 +36,8 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/enum_field.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
@@ -167,7 +169,7 @@ bool HasNonZeroDefaultValue(const FieldDescriptor* field) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return false;
 }
 
@@ -476,7 +478,7 @@ FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor)
 
 const FieldGenerator& FieldGeneratorMap::get(
     const FieldDescriptor* field) const {
-  GOOGLE_CHECK_EQ(field->containing_type(), descriptor_);
+  GOOGLE_ABSL_CHECK_EQ(field->containing_type(), descriptor_);
   return *field_generators_[field->index()];
 }
 

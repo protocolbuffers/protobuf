@@ -80,7 +80,6 @@ LITE_SRCS = [
     "src/main/java/com/google/protobuf/ProtoSyntax.java",
     "src/main/java/com/google/protobuf/Protobuf.java",
     "src/main/java/com/google/protobuf/ProtobufArrayList.java",
-    "src/main/java/com/google/protobuf/ProtobufLists.java",
     "src/main/java/com/google/protobuf/ProtocolStringList.java",
     "src/main/java/com/google/protobuf/RawMessageInfo.java",
     "src/main/java/com/google/protobuf/Reader.java",

@@ -34,6 +34,7 @@
 #include <vector>
 
 #include "absl/container/btree_set.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/match.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
 #include "google/protobuf/compiler/objectivec/names.h"
@@ -78,7 +79,7 @@ const char* MapEntryTypeName(const FieldDescriptor* descriptor, bool isKey) {
 
   // Some compilers report reaching end of function even though all cases of
   // the enum are handed in the switch.
-  GOOGLE_LOG(FATAL) << "Can't get here.";
+  GOOGLE_ABSL_LOG(FATAL) << "Can't get here.";
   return nullptr;
 }
 
