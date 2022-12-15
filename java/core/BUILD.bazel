@@ -122,6 +122,9 @@ internal_gen_well_known_protos_java(
 # Should be used as `//java/lite`.
 java_library(
     name = "lite",
+    resources = [
+        "src/main/resources/META-INF/proguard/protolite.pro"
+    ],
     srcs = LITE_SRCS + [
         ":gen_well_known_protos_javalite",
     ],
