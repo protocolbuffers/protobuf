@@ -44,7 +44,6 @@
   * Annotate generated C++ public aliases for enum types.
   * Change default arena max block size from 8K to 32K.
 
-
   Kotlin
   * Suppress deprecation warnings in Kotlin generated code.
   * Kotlin generated code comments now use kdoc format instead of javadoc.
