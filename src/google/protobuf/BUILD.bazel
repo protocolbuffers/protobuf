@@ -237,6 +237,16 @@ cc_library(
 )
 
 cc_library(
+    name = "typed_block",
+    hdrs = ["typed_block.h"],
+    include_prefix = "google/protobuf",
+    visibility = [
+        "//:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+)
+
+cc_library(
     name = "arena",
     srcs = [
         "arena.cc",
@@ -258,6 +268,7 @@ cc_library(
         ":arena_allocation_policy",
         ":arena_cleanup",
         ":arena_config",
+        ":typed_block",
         "//src/google/protobuf/stubs:lite",
         "@com_google_absl//absl/synchronization",
     ],
@@ -330,6 +341,7 @@ cc_library(
         ":arena",
         ":arena_align",
         ":arena_config",
+        ":typed_block",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs:lite",
         "@com_google_absl//absl/cleanup",

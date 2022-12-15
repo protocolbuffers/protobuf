@@ -139,6 +139,14 @@ class PROTOBUF_EXPORT ThreadSafeArena {
     return tag_and_id_ & kMessageOwnedArena;
   }
 
+  PROTOBUF_NDEBUG_INLINE void* AllocateString() {
+    SerialArena* arena;
+    if (PROTOBUF_PREDICT_FALSE(!GetSerialArenaFast(&arena))) {
+      arena = GetSerialArenaFallback(0);
+    }
+    return arena->AllocateString();
+  }
+
  private:
   friend class ArenaBenchmark;
   friend class TcParser;
@@ -197,7 +205,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   void Init();
 
   // Delete or Destruct all objects owned by the arena.
-  void CleanupList();
+  size_t CleanupList();
 
   inline void CacheSerialArena(SerialArena* serial) {
     if (!IsMessageOwned()) {

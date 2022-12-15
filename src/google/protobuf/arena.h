@@ -275,11 +275,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     if (PROTOBUF_PREDICT_FALSE(arena == nullptr)) {
       return new T(std::forward<Args>(args)...);
     }
-    auto destructor =
-        internal::ObjectDestructor<std::is_trivially_destructible<T>::value,
-                                   T>::destructor;
-    return new (arena->AllocateInternal(sizeof(T), alignof(T), destructor))
-        T(std::forward<Args>(args)...);
+    return new (arena->AllocateInternal<T>()) T(std::forward<Args>(args)...);
   }
 
   // API to delete any objects not on an arena.  This can be used to safely
@@ -566,13 +562,13 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
     }
   }
 
-  PROTOBUF_NDEBUG_INLINE void* AllocateInternal(size_t size, size_t align,
-                                                void (*destructor)(void*)) {
-    // Monitor allocation if needed.
-    if (destructor == nullptr) {
-      return AllocateAligned(size, align);
+  template <typename T>
+  PROTOBUF_NDEBUG_INLINE void* AllocateInternal() {
+    if (is_destructor_skippable<T>::value) {
+      return AllocateAligned(sizeof(T), alignof(T));
     } else {
-      return AllocateAlignedWithCleanup(size, align, destructor);
+      constexpr auto dtor = &internal::cleanup::arena_destruct_object<T>;
+      return AllocateAlignedWithCleanup(sizeof(T), alignof(T), dtor);
     }
   }
 
@@ -604,12 +600,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
 
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE T* DoCreateMessage(Args&&... args) {
-    return InternalHelper<T>::Construct(
-        AllocateInternal(sizeof(T), alignof(T),
-                         internal::ObjectDestructor<
-                             InternalHelper<T>::is_destructor_skippable::value,
-                             T>::destructor),
-        this, std::forward<Args>(args)...);
+    return InternalHelper<T>::Construct(AllocateInternal<T>(), this,
+                                        std::forward<Args>(args)...);
   }
 
   // CreateInArenaStorage is used to implement map field. Without it,
@@ -688,6 +680,9 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   friend class internal::RepeatedPtrFieldBase;  // For ReturnArrayMemory
   friend struct internal::ArenaTestPeer;
 };
+
+template <>
+void* Arena::AllocateInternal<std::string>();
 
 }  // namespace protobuf
 }  // namespace google
