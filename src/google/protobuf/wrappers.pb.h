@@ -228,14 +228,13 @@ class PROTOBUF_EXPORT DoubleValue final :
     kValueFieldNumber = 1,
   };
   // double value = 1;
-  void clear_value();
+  void clear_value() ;
   double value() const;
   void set_value(double value);
   private:
   double _internal_value() const;
   void _internal_set_value(double value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.DoubleValue)
  private:
   class _Internal;
@@ -374,14 +373,13 @@ class PROTOBUF_EXPORT FloatValue final :
     kValueFieldNumber = 1,
   };
   // float value = 1;
-  void clear_value();
+  void clear_value() ;
   float value() const;
   void set_value(float value);
   private:
   float _internal_value() const;
   void _internal_set_value(float value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.FloatValue)
  private:
   class _Internal;
@@ -520,14 +518,13 @@ class PROTOBUF_EXPORT Int64Value final :
     kValueFieldNumber = 1,
   };
   // int64 value = 1;
-  void clear_value();
+  void clear_value() ;
   ::int64_t value() const;
   void set_value(::int64_t value);
   private:
   ::int64_t _internal_value() const;
   void _internal_set_value(::int64_t value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.Int64Value)
  private:
   class _Internal;
@@ -666,14 +663,13 @@ class PROTOBUF_EXPORT UInt64Value final :
     kValueFieldNumber = 1,
   };
   // uint64 value = 1;
-  void clear_value();
+  void clear_value() ;
   ::uint64_t value() const;
   void set_value(::uint64_t value);
   private:
   ::uint64_t _internal_value() const;
   void _internal_set_value(::uint64_t value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.UInt64Value)
  private:
   class _Internal;
@@ -812,14 +808,13 @@ class PROTOBUF_EXPORT Int32Value final :
     kValueFieldNumber = 1,
   };
   // int32 value = 1;
-  void clear_value();
+  void clear_value() ;
   ::int32_t value() const;
   void set_value(::int32_t value);
   private:
   ::int32_t _internal_value() const;
   void _internal_set_value(::int32_t value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.Int32Value)
  private:
   class _Internal;
@@ -958,14 +953,13 @@ class PROTOBUF_EXPORT UInt32Value final :
     kValueFieldNumber = 1,
   };
   // uint32 value = 1;
-  void clear_value();
+  void clear_value() ;
   ::uint32_t value() const;
   void set_value(::uint32_t value);
   private:
   ::uint32_t _internal_value() const;
   void _internal_set_value(::uint32_t value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.UInt32Value)
  private:
   class _Internal;
@@ -1104,14 +1098,13 @@ class PROTOBUF_EXPORT BoolValue final :
     kValueFieldNumber = 1,
   };
   // bool value = 1;
-  void clear_value();
+  void clear_value() ;
   bool value() const;
   void set_value(bool value);
   private:
   bool _internal_value() const;
   void _internal_set_value(bool value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.BoolValue)
  private:
   class _Internal;
@@ -1250,7 +1243,7 @@ class PROTOBUF_EXPORT StringValue final :
     kValueFieldNumber = 1,
   };
   // string value = 1;
-  void clear_value();
+  void clear_value() ;
   const std::string& value() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_value(ArgT0&& arg0, ArgT... args);
@@ -1262,7 +1255,6 @@ class PROTOBUF_EXPORT StringValue final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_value(const std::string& value);
   std::string* _internal_mutable_value();
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.StringValue)
  private:
   class _Internal;
@@ -1401,7 +1393,7 @@ class PROTOBUF_EXPORT BytesValue final :
     kValueFieldNumber = 1,
   };
   // bytes value = 1;
-  void clear_value();
+  void clear_value() ;
   const std::string& value() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_value(ArgT0&& arg0, ArgT... args);
@@ -1413,7 +1405,6 @@ class PROTOBUF_EXPORT BytesValue final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_value(const std::string& value);
   std::string* _internal_mutable_value();
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.BytesValue)
  private:
   class _Internal;

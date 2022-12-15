@@ -209,8 +209,9 @@ class PROTOBUF_EXPORT Api final :
   int methods_size() const;
   private:
   int _internal_methods_size() const;
+
   public:
-  void clear_methods();
+  void clear_methods() ;
   ::PROTOBUF_NAMESPACE_ID::Method* mutable_methods(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Method >*
       mutable_methods();
@@ -222,13 +223,13 @@ class PROTOBUF_EXPORT Api final :
   ::PROTOBUF_NAMESPACE_ID::Method* add_methods();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Method >&
       methods() const;
-
   // repeated .google.protobuf.Option options = 3;
   int options_size() const;
   private:
   int _internal_options_size() const;
+
   public:
-  void clear_options();
+  void clear_options() ;
   ::PROTOBUF_NAMESPACE_ID::Option* mutable_options(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option >*
       mutable_options();
@@ -240,13 +241,13 @@ class PROTOBUF_EXPORT Api final :
   ::PROTOBUF_NAMESPACE_ID::Option* add_options();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option >&
       options() const;
-
   // repeated .google.protobuf.Mixin mixins = 6;
   int mixins_size() const;
   private:
   int _internal_mixins_size() const;
+
   public:
-  void clear_mixins();
+  void clear_mixins() ;
   ::PROTOBUF_NAMESPACE_ID::Mixin* mutable_mixins(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Mixin >*
       mutable_mixins();
@@ -258,9 +259,8 @@ class PROTOBUF_EXPORT Api final :
   ::PROTOBUF_NAMESPACE_ID::Mixin* add_mixins();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Mixin >&
       mixins() const;
-
   // string name = 1;
-  void clear_name();
+  void clear_name() ;
   const std::string& name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
@@ -272,9 +272,8 @@ class PROTOBUF_EXPORT Api final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
   public:
-
   // string version = 4;
-  void clear_version();
+  void clear_version() ;
   const std::string& version() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_version(ArgT0&& arg0, ArgT... args);
@@ -286,13 +285,13 @@ class PROTOBUF_EXPORT Api final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_version(const std::string& value);
   std::string* _internal_mutable_version();
   public:
-
   // .google.protobuf.SourceContext source_context = 5;
   bool has_source_context() const;
   private:
   bool _internal_has_source_context() const;
+
   public:
-  void clear_source_context();
+  void clear_source_context() ;
   const ::PROTOBUF_NAMESPACE_ID::SourceContext& source_context() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
   ::PROTOBUF_NAMESPACE_ID::SourceContext* mutable_source_context();
@@ -304,16 +303,14 @@ class PROTOBUF_EXPORT Api final :
   void unsafe_arena_set_allocated_source_context(
       ::PROTOBUF_NAMESPACE_ID::SourceContext* source_context);
   ::PROTOBUF_NAMESPACE_ID::SourceContext* unsafe_arena_release_source_context();
-
   // .google.protobuf.Syntax syntax = 7;
-  void clear_syntax();
+  void clear_syntax() ;
   ::PROTOBUF_NAMESPACE_ID::Syntax syntax() const;
   void set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value);
   private:
   ::PROTOBUF_NAMESPACE_ID::Syntax _internal_syntax() const;
   void _internal_set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.Api)
  private:
   class _Internal;
@@ -467,8 +464,9 @@ class PROTOBUF_EXPORT Method final :
   int options_size() const;
   private:
   int _internal_options_size() const;
+
   public:
-  void clear_options();
+  void clear_options() ;
   ::PROTOBUF_NAMESPACE_ID::Option* mutable_options(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option >*
       mutable_options();
@@ -480,9 +478,8 @@ class PROTOBUF_EXPORT Method final :
   ::PROTOBUF_NAMESPACE_ID::Option* add_options();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option >&
       options() const;
-
   // string name = 1;
-  void clear_name();
+  void clear_name() ;
   const std::string& name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
@@ -494,9 +491,8 @@ class PROTOBUF_EXPORT Method final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
   public:
-
   // string request_type_url = 2;
-  void clear_request_type_url();
+  void clear_request_type_url() ;
   const std::string& request_type_url() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_request_type_url(ArgT0&& arg0, ArgT... args);
@@ -508,9 +504,8 @@ class PROTOBUF_EXPORT Method final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_request_type_url(const std::string& value);
   std::string* _internal_mutable_request_type_url();
   public:
-
   // string response_type_url = 4;
-  void clear_response_type_url();
+  void clear_response_type_url() ;
   const std::string& response_type_url() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_response_type_url(ArgT0&& arg0, ArgT... args);
@@ -522,34 +517,30 @@ class PROTOBUF_EXPORT Method final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_response_type_url(const std::string& value);
   std::string* _internal_mutable_response_type_url();
   public:
-
   // bool request_streaming = 3;
-  void clear_request_streaming();
+  void clear_request_streaming() ;
   bool request_streaming() const;
   void set_request_streaming(bool value);
   private:
   bool _internal_request_streaming() const;
   void _internal_set_request_streaming(bool value);
   public:
-
   // bool response_streaming = 5;
-  void clear_response_streaming();
+  void clear_response_streaming() ;
   bool response_streaming() const;
   void set_response_streaming(bool value);
   private:
   bool _internal_response_streaming() const;
   void _internal_set_response_streaming(bool value);
   public:
-
   // .google.protobuf.Syntax syntax = 7;
-  void clear_syntax();
+  void clear_syntax() ;
   ::PROTOBUF_NAMESPACE_ID::Syntax syntax() const;
   void set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value);
   private:
   ::PROTOBUF_NAMESPACE_ID::Syntax _internal_syntax() const;
   void _internal_set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.Method)
  private:
   class _Internal;
@@ -695,7 +686,7 @@ class PROTOBUF_EXPORT Mixin final :
     kRootFieldNumber = 2,
   };
   // string name = 1;
-  void clear_name();
+  void clear_name() ;
   const std::string& name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
@@ -707,9 +698,8 @@ class PROTOBUF_EXPORT Mixin final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
   public:
-
   // string root = 2;
-  void clear_root();
+  void clear_root() ;
   const std::string& root() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_root(ArgT0&& arg0, ArgT... args);
@@ -721,7 +711,6 @@ class PROTOBUF_EXPORT Mixin final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_root(const std::string& value);
   std::string* _internal_mutable_root();
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.Mixin)
  private:
   class _Internal;

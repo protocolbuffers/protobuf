@@ -269,8 +269,9 @@ class PROTOBUF_EXPORT Struct final :
   int fields_size() const;
   private:
   int _internal_fields_size() const;
+
   public:
-  void clear_fields();
+  void clear_fields() ;
   private:
   const ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >&
       _internal_fields() const;
@@ -281,7 +282,6 @@ class PROTOBUF_EXPORT Struct final :
       fields() const;
   ::PROTOBUF_NAMESPACE_ID::Map< std::string, ::PROTOBUF_NAMESPACE_ID::Value >*
       mutable_fields();
-
   // @@protoc_insertion_point(class_scope:google.protobuf.Struct)
  private:
   class _Internal;
@@ -440,27 +440,25 @@ class PROTOBUF_EXPORT Value final :
   };
   // .google.protobuf.NullValue null_value = 1;
   bool has_null_value() const;
-  void clear_null_value();
+  void clear_null_value() ;
   ::PROTOBUF_NAMESPACE_ID::NullValue null_value() const;
   void set_null_value(::PROTOBUF_NAMESPACE_ID::NullValue value);
   private:
   ::PROTOBUF_NAMESPACE_ID::NullValue _internal_null_value() const;
   void _internal_set_null_value(::PROTOBUF_NAMESPACE_ID::NullValue value);
   public:
-
   // double number_value = 2;
   bool has_number_value() const;
-  void clear_number_value();
+  void clear_number_value() ;
   double number_value() const;
   void set_number_value(double value);
   private:
   double _internal_number_value() const;
   void _internal_set_number_value(double value);
   public:
-
   // string string_value = 3;
   bool has_string_value() const;
-  void clear_string_value();
+  void clear_string_value() ;
   const std::string& string_value() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_string_value(ArgT0&& arg0, ArgT... args);
@@ -472,23 +470,22 @@ class PROTOBUF_EXPORT Value final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(const std::string& value);
   std::string* _internal_mutable_string_value();
   public:
-
   // bool bool_value = 4;
   bool has_bool_value() const;
-  void clear_bool_value();
+  void clear_bool_value() ;
   bool bool_value() const;
   void set_bool_value(bool value);
   private:
   bool _internal_bool_value() const;
   void _internal_set_bool_value(bool value);
   public:
-
   // .google.protobuf.Struct struct_value = 5;
   bool has_struct_value() const;
   private:
   bool _internal_has_struct_value() const;
+
   public:
-  void clear_struct_value();
+  void clear_struct_value() ;
   const ::PROTOBUF_NAMESPACE_ID::Struct& struct_value() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::Struct* release_struct_value();
   ::PROTOBUF_NAMESPACE_ID::Struct* mutable_struct_value();
@@ -500,13 +497,13 @@ class PROTOBUF_EXPORT Value final :
   void unsafe_arena_set_allocated_struct_value(
       ::PROTOBUF_NAMESPACE_ID::Struct* struct_value);
   ::PROTOBUF_NAMESPACE_ID::Struct* unsafe_arena_release_struct_value();
-
   // .google.protobuf.ListValue list_value = 6;
   bool has_list_value() const;
   private:
   bool _internal_has_list_value() const;
+
   public:
-  void clear_list_value();
+  void clear_list_value() ;
   const ::PROTOBUF_NAMESPACE_ID::ListValue& list_value() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::ListValue* release_list_value();
   ::PROTOBUF_NAMESPACE_ID::ListValue* mutable_list_value();
@@ -518,7 +515,6 @@ class PROTOBUF_EXPORT Value final :
   void unsafe_arena_set_allocated_list_value(
       ::PROTOBUF_NAMESPACE_ID::ListValue* list_value);
   ::PROTOBUF_NAMESPACE_ID::ListValue* unsafe_arena_release_list_value();
-
   void clear_kind();
   KindCase kind_case() const;
   // @@protoc_insertion_point(class_scope:google.protobuf.Value)
@@ -682,8 +678,9 @@ class PROTOBUF_EXPORT ListValue final :
   int values_size() const;
   private:
   int _internal_values_size() const;
+
   public:
-  void clear_values();
+  void clear_values() ;
   ::PROTOBUF_NAMESPACE_ID::Value* mutable_values(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Value >*
       mutable_values();
@@ -695,7 +692,6 @@ class PROTOBUF_EXPORT ListValue final :
   ::PROTOBUF_NAMESPACE_ID::Value* add_values();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Value >&
       values() const;
-
   // @@protoc_insertion_point(class_scope:google.protobuf.ListValue)
  private:
   class _Internal;

@@ -188,7 +188,7 @@ class PROTOBUF_EXPORT SourceContext final :
     kFileNameFieldNumber = 1,
   };
   // string file_name = 1;
-  void clear_file_name();
+  void clear_file_name() ;
   const std::string& file_name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_file_name(ArgT0&& arg0, ArgT... args);
@@ -200,7 +200,6 @@ class PROTOBUF_EXPORT SourceContext final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_file_name(const std::string& value);
   std::string* _internal_mutable_file_name();
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceContext)
  private:
   class _Internal;

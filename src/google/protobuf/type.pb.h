@@ -334,8 +334,9 @@ class PROTOBUF_EXPORT Type final :
   int fields_size() const;
   private:
   int _internal_fields_size() const;
+
   public:
-  void clear_fields();
+  void clear_fields() ;
   ::PROTOBUF_NAMESPACE_ID::Field* mutable_fields(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Field >*
       mutable_fields();
@@ -347,13 +348,13 @@ class PROTOBUF_EXPORT Type final :
   ::PROTOBUF_NAMESPACE_ID::Field* add_fields();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Field >&
       fields() const;
-
   // repeated string oneofs = 3;
   int oneofs_size() const;
   private:
   int _internal_oneofs_size() const;
+
   public:
-  void clear_oneofs();
+  void clear_oneofs() ;
   const std::string& oneofs(int index) const;
   std::string* mutable_oneofs(int index);
   void set_oneofs(int index, const std::string& value);
@@ -371,13 +372,13 @@ class PROTOBUF_EXPORT Type final :
   const std::string& _internal_oneofs(int index) const;
   std::string* _internal_add_oneofs();
   public:
-
   // repeated .google.protobuf.Option options = 4;
   int options_size() const;
   private:
   int _internal_options_size() const;
+
   public:
-  void clear_options();
+  void clear_options() ;
   ::PROTOBUF_NAMESPACE_ID::Option* mutable_options(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option >*
       mutable_options();
@@ -389,9 +390,8 @@ class PROTOBUF_EXPORT Type final :
   ::PROTOBUF_NAMESPACE_ID::Option* add_options();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option >&
       options() const;
-
   // string name = 1;
-  void clear_name();
+  void clear_name() ;
   const std::string& name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
@@ -403,13 +403,13 @@ class PROTOBUF_EXPORT Type final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
   public:
-
   // .google.protobuf.SourceContext source_context = 5;
   bool has_source_context() const;
   private:
   bool _internal_has_source_context() const;
+
   public:
-  void clear_source_context();
+  void clear_source_context() ;
   const ::PROTOBUF_NAMESPACE_ID::SourceContext& source_context() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
   ::PROTOBUF_NAMESPACE_ID::SourceContext* mutable_source_context();
@@ -421,16 +421,14 @@ class PROTOBUF_EXPORT Type final :
   void unsafe_arena_set_allocated_source_context(
       ::PROTOBUF_NAMESPACE_ID::SourceContext* source_context);
   ::PROTOBUF_NAMESPACE_ID::SourceContext* unsafe_arena_release_source_context();
-
   // .google.protobuf.Syntax syntax = 6;
-  void clear_syntax();
+  void clear_syntax() ;
   ::PROTOBUF_NAMESPACE_ID::Syntax syntax() const;
   void set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value);
   private:
   ::PROTOBUF_NAMESPACE_ID::Syntax _internal_syntax() const;
   void _internal_set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.Type)
  private:
   class _Internal;
@@ -645,8 +643,9 @@ class PROTOBUF_EXPORT Field final :
   int options_size() const;
   private:
   int _internal_options_size() const;
+
   public:
-  void clear_options();
+  void clear_options() ;
   ::PROTOBUF_NAMESPACE_ID::Option* mutable_options(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option >*
       mutable_options();
@@ -658,9 +657,8 @@ class PROTOBUF_EXPORT Field final :
   ::PROTOBUF_NAMESPACE_ID::Option* add_options();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option >&
       options() const;
-
   // string name = 4;
-  void clear_name();
+  void clear_name() ;
   const std::string& name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
@@ -672,9 +670,8 @@ class PROTOBUF_EXPORT Field final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
   public:
-
   // string type_url = 6;
-  void clear_type_url();
+  void clear_type_url() ;
   const std::string& type_url() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_type_url(ArgT0&& arg0, ArgT... args);
@@ -686,9 +683,8 @@ class PROTOBUF_EXPORT Field final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_type_url(const std::string& value);
   std::string* _internal_mutable_type_url();
   public:
-
   // string json_name = 10;
-  void clear_json_name();
+  void clear_json_name() ;
   const std::string& json_name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_json_name(ArgT0&& arg0, ArgT... args);
@@ -700,9 +696,8 @@ class PROTOBUF_EXPORT Field final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_json_name(const std::string& value);
   std::string* _internal_mutable_json_name();
   public:
-
   // string default_value = 11;
-  void clear_default_value();
+  void clear_default_value() ;
   const std::string& default_value() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_default_value(ArgT0&& arg0, ArgT... args);
@@ -714,52 +709,46 @@ class PROTOBUF_EXPORT Field final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_default_value(const std::string& value);
   std::string* _internal_mutable_default_value();
   public:
-
   // .google.protobuf.Field.Kind kind = 1;
-  void clear_kind();
+  void clear_kind() ;
   ::PROTOBUF_NAMESPACE_ID::Field_Kind kind() const;
   void set_kind(::PROTOBUF_NAMESPACE_ID::Field_Kind value);
   private:
   ::PROTOBUF_NAMESPACE_ID::Field_Kind _internal_kind() const;
   void _internal_set_kind(::PROTOBUF_NAMESPACE_ID::Field_Kind value);
   public:
-
   // .google.protobuf.Field.Cardinality cardinality = 2;
-  void clear_cardinality();
+  void clear_cardinality() ;
   ::PROTOBUF_NAMESPACE_ID::Field_Cardinality cardinality() const;
   void set_cardinality(::PROTOBUF_NAMESPACE_ID::Field_Cardinality value);
   private:
   ::PROTOBUF_NAMESPACE_ID::Field_Cardinality _internal_cardinality() const;
   void _internal_set_cardinality(::PROTOBUF_NAMESPACE_ID::Field_Cardinality value);
   public:
-
   // int32 number = 3;
-  void clear_number();
+  void clear_number() ;
   ::int32_t number() const;
   void set_number(::int32_t value);
   private:
   ::int32_t _internal_number() const;
   void _internal_set_number(::int32_t value);
   public:
-
   // int32 oneof_index = 7;
-  void clear_oneof_index();
+  void clear_oneof_index() ;
   ::int32_t oneof_index() const;
   void set_oneof_index(::int32_t value);
   private:
   ::int32_t _internal_oneof_index() const;
   void _internal_set_oneof_index(::int32_t value);
   public:
-
   // bool packed = 8;
-  void clear_packed();
+  void clear_packed() ;
   bool packed() const;
   void set_packed(bool value);
   private:
   bool _internal_packed() const;
   void _internal_set_packed(bool value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.Field)
  private:
   class _Internal;
@@ -914,8 +903,9 @@ class PROTOBUF_EXPORT Enum final :
   int enumvalue_size() const;
   private:
   int _internal_enumvalue_size() const;
+
   public:
-  void clear_enumvalue();
+  void clear_enumvalue() ;
   ::PROTOBUF_NAMESPACE_ID::EnumValue* mutable_enumvalue(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumValue >*
       mutable_enumvalue();
@@ -927,13 +917,13 @@ class PROTOBUF_EXPORT Enum final :
   ::PROTOBUF_NAMESPACE_ID::EnumValue* add_enumvalue();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumValue >&
       enumvalue() const;
-
   // repeated .google.protobuf.Option options = 3;
   int options_size() const;
   private:
   int _internal_options_size() const;
+
   public:
-  void clear_options();
+  void clear_options() ;
   ::PROTOBUF_NAMESPACE_ID::Option* mutable_options(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option >*
       mutable_options();
@@ -945,9 +935,8 @@ class PROTOBUF_EXPORT Enum final :
   ::PROTOBUF_NAMESPACE_ID::Option* add_options();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option >&
       options() const;
-
   // string name = 1;
-  void clear_name();
+  void clear_name() ;
   const std::string& name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
@@ -959,13 +948,13 @@ class PROTOBUF_EXPORT Enum final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
   public:
-
   // .google.protobuf.SourceContext source_context = 4;
   bool has_source_context() const;
   private:
   bool _internal_has_source_context() const;
+
   public:
-  void clear_source_context();
+  void clear_source_context() ;
   const ::PROTOBUF_NAMESPACE_ID::SourceContext& source_context() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::SourceContext* release_source_context();
   ::PROTOBUF_NAMESPACE_ID::SourceContext* mutable_source_context();
@@ -977,16 +966,14 @@ class PROTOBUF_EXPORT Enum final :
   void unsafe_arena_set_allocated_source_context(
       ::PROTOBUF_NAMESPACE_ID::SourceContext* source_context);
   ::PROTOBUF_NAMESPACE_ID::SourceContext* unsafe_arena_release_source_context();
-
   // .google.protobuf.Syntax syntax = 5;
-  void clear_syntax();
+  void clear_syntax() ;
   ::PROTOBUF_NAMESPACE_ID::Syntax syntax() const;
   void set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value);
   private:
   ::PROTOBUF_NAMESPACE_ID::Syntax _internal_syntax() const;
   void _internal_set_syntax(::PROTOBUF_NAMESPACE_ID::Syntax value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.Enum)
  private:
   class _Internal;
@@ -1134,8 +1121,9 @@ class PROTOBUF_EXPORT EnumValue final :
   int options_size() const;
   private:
   int _internal_options_size() const;
+
   public:
-  void clear_options();
+  void clear_options() ;
   ::PROTOBUF_NAMESPACE_ID::Option* mutable_options(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option >*
       mutable_options();
@@ -1147,9 +1135,8 @@ class PROTOBUF_EXPORT EnumValue final :
   ::PROTOBUF_NAMESPACE_ID::Option* add_options();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::Option >&
       options() const;
-
   // string name = 1;
-  void clear_name();
+  void clear_name() ;
   const std::string& name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
@@ -1161,16 +1148,14 @@ class PROTOBUF_EXPORT EnumValue final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
   public:
-
   // int32 number = 2;
-  void clear_number();
+  void clear_number() ;
   ::int32_t number() const;
   void set_number(::int32_t value);
   private:
   ::int32_t _internal_number() const;
   void _internal_set_number(::int32_t value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumValue)
  private:
   class _Internal;
@@ -1312,7 +1297,7 @@ class PROTOBUF_EXPORT Option final :
     kValueFieldNumber = 2,
   };
   // string name = 1;
-  void clear_name();
+  void clear_name() ;
   const std::string& name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
@@ -1324,13 +1309,13 @@ class PROTOBUF_EXPORT Option final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
   public:
-
   // .google.protobuf.Any value = 2;
   bool has_value() const;
   private:
   bool _internal_has_value() const;
+
   public:
-  void clear_value();
+  void clear_value() ;
   const ::PROTOBUF_NAMESPACE_ID::Any& value() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::Any* release_value();
   ::PROTOBUF_NAMESPACE_ID::Any* mutable_value();
@@ -1342,7 +1327,6 @@ class PROTOBUF_EXPORT Option final :
   void unsafe_arena_set_allocated_value(
       ::PROTOBUF_NAMESPACE_ID::Any* value);
   ::PROTOBUF_NAMESPACE_ID::Any* unsafe_arena_release_value();
-
   // @@protoc_insertion_point(class_scope:google.protobuf.Option)
  private:
   class _Internal;

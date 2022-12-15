@@ -189,23 +189,21 @@ class PROTOBUF_EXPORT Duration final :
     kNanosFieldNumber = 2,
   };
   // int64 seconds = 1;
-  void clear_seconds();
+  void clear_seconds() ;
   ::int64_t seconds() const;
   void set_seconds(::int64_t value);
   private:
   ::int64_t _internal_seconds() const;
   void _internal_set_seconds(::int64_t value);
   public:
-
   // int32 nanos = 2;
-  void clear_nanos();
+  void clear_nanos() ;
   ::int32_t nanos() const;
   void set_nanos(::int32_t value);
   private:
   ::int32_t _internal_nanos() const;
   void _internal_set_nanos(::int32_t value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.Duration)
  private:
   class _Internal;

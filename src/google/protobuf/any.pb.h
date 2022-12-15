@@ -224,7 +224,7 @@ class PROTOBUF_EXPORT Any final :
     kValueFieldNumber = 2,
   };
   // string type_url = 1;
-  void clear_type_url();
+  void clear_type_url() ;
   const std::string& type_url() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_type_url(ArgT0&& arg0, ArgT... args);
@@ -236,9 +236,8 @@ class PROTOBUF_EXPORT Any final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_type_url(const std::string& value);
   std::string* _internal_mutable_type_url();
   public:
-
   // bytes value = 2;
-  void clear_value();
+  void clear_value() ;
   const std::string& value() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_value(ArgT0&& arg0, ArgT... args);
@@ -250,7 +249,6 @@ class PROTOBUF_EXPORT Any final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_value(const std::string& value);
   std::string* _internal_mutable_value();
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.Any)
  private:
   class _Internal;

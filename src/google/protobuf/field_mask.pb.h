@@ -191,8 +191,9 @@ class PROTOBUF_EXPORT FieldMask final :
   int paths_size() const;
   private:
   int _internal_paths_size() const;
+
   public:
-  void clear_paths();
+  void clear_paths() ;
   const std::string& paths(int index) const;
   std::string* mutable_paths(int index);
   void set_paths(int index, const std::string& value);
@@ -210,7 +211,6 @@ class PROTOBUF_EXPORT FieldMask final :
   const std::string& _internal_paths(int index) const;
   std::string* _internal_add_paths();
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldMask)
  private:
   class _Internal;
