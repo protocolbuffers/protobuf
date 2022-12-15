@@ -10,6 +10,7 @@ def inline_sh_binary(
         deps = [],
         cmd = "",
         testonly = None,
+        tags = [],
         **kwargs):
     """Bazel rule to wrap up an inline bash script in a binary.
 
@@ -27,9 +28,10 @@ def inline_sh_binary(
         with rootpath/execpath/location must be declared here or in `srcs`.
       deps: a list of dependency labels that are required to run this binary.
       cmd: the inline sh command to run.
-      **kwargs: other keyword arguments that are passed to sh_binary.
       testonly: common rule attribute (see:
           https://bazel.build/reference/be/common-definitions#common-attributes)
+      tags: tags to apply to all rules.
+      **kwargs: other keyword arguments that are passed to sh_binary.
     """
 
     native.genrule(
@@ -40,6 +42,7 @@ def inline_sh_binary(
         cmd = "cat <<'EOF' >$(OUTS)\n#!/bin/bash -exu\n%s\nEOF\n" % cmd,
         testonly = testonly,
         visibility = ["//visibility:private"],
+        tags = tags,
     )
 
     native.sh_binary(
@@ -47,6 +50,7 @@ def inline_sh_binary(
         srcs = [name + "_genrule"],
         data = srcs + tools + deps,
         testonly = testonly,
+        tags = tags,
         **kwargs
     )
 
@@ -56,6 +60,7 @@ def inline_sh_test(
         tools = [],
         deps = [],
         cmd = "",
+        tags = [],
         **kwargs):
     """Bazel rule to wrap up an inline bash script in a test.
 
@@ -72,6 +77,7 @@ def inline_sh_test(
         with rootpath/execpath/location must be declared here or in `srcs`.
       deps: a list of dependency labels that are required to run this binary.
       cmd: the inline sh command to run.
+      tags: tags to apply to all rules.
       **kwargs: other keyword arguments that are passed to sh_binary.
           https://bazel.build/reference/be/common-definitions#common-attributes)
     """
@@ -83,11 +89,13 @@ def inline_sh_test(
         outs = [name + ".sh"],
         cmd = "cat <<'EOF' >$(OUTS)\n#!/bin/bash -exu\n%s\nEOF\n" % cmd,
         visibility = ["//visibility:private"],
+        tags = tags,
     )
 
     native.sh_test(
         name = name,
         srcs = [name + "_genrule"],
         data = srcs + tools + deps,
+        tags = tags,
         **kwargs
     )

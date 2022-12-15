@@ -81,16 +81,6 @@ cc_binary(
     }),
 )
 
-aarch64_test(
-    name = "api_implementation_aarch64_test",
-    bazel_binaries = [":google/protobuf/internal/_api_implementation.so"],
-)
-
-x86_64_test(
-    name = "api_implementation_x86_64_test",
-    bazel_binaries = [":google/protobuf/internal/_api_implementation.so"],
-)
-
 config_setting(
     name = "allow_oversize_protos",
     values = {
@@ -130,13 +120,25 @@ cc_binary(
 )
 
 aarch64_test(
-    name = "message_aarch64_test",
-    bazel_binaries = [":google/protobuf/pyext/_message.so"],
+    name = "aarch64_test",
+    bazel_binaries = [
+        "google/protobuf/internal/_api_implementation.so",
+        "google/protobuf/pyext/_message.so",
+    ],
+    tags = [
+        "manual",
+    ],
 )
 
 x86_64_test(
-    name = "message_x86_64_test",
-    bazel_binaries = [":google/protobuf/pyext/_message.so"],
+    name = "x86_64_test",
+    bazel_binaries = [
+        "google/protobuf/internal/_api_implementation.so",
+        "google/protobuf/pyext/_message.so",
+    ],
+    tags = [
+        "manual",
+    ],
 )
 
 py_library(
