@@ -34,15 +34,17 @@ namespace Google\Protobuf\Internal;
 
 class GPBJsonWire
 {
-
     public static function serializeFieldToStream(
         $value,
         $field,
-        &$output, $has_field_name = true)
+        &$output,
+        $has_field_name = true,
+        $preserve_proto_field_names = false
+    )
     {
         if ($has_field_name) {
             $output->writeRaw("\"", 1);
-            $field_name = GPBJsonWire::formatFieldName($field);
+            $field_name = GPBJsonWire::formatFieldName($field, $preserve_proto_field_names);
             $output->writeRaw($field_name, strlen($field_name));
             $output->writeRaw("\":", 2);
         }
@@ -243,9 +245,10 @@ class GPBJsonWire
         return true;
     }
 
-    private static function formatFieldName($field)
+    public static function formatFieldName($field, $preserve_proto_field_names)
     {
-        return $field->getJsonName();
+        return (boolval($preserve_proto_field_names) === false || $field->hasCustomJsonName()) ?
+            $field->getJsonName() : $field->getName();
     }
 
     // Used for escaping control chars in strings.

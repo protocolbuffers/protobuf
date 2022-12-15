@@ -802,6 +802,10 @@ PHP_METHOD(Message, mergeFromJsonString) {
   }
 }
 
+// JSON options - this must match as JSONENC_* in message.c
+static const char JSONENC_EMIT_DEFAULTS[] = "emit_defaults";
+static const char JSONENC_PRESERVE_PROTO_FIELD_NAMES[] = "preserve_proto_field_names";
+
 /**
  * Message::serializeToJsonString()
  *
@@ -813,16 +817,39 @@ PHP_METHOD(Message, serializeToJsonString) {
   size_t size;
   int options = 0;
   char buf[1024];
-  zend_bool preserve_proto_fieldnames = false;
   upb_Status status;
+  zval *options_arr = NULL;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS(), "|b",
-                            &preserve_proto_fieldnames) == FAILURE) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "|a!", &options_arr) == FAILURE) {
     return;
   }
 
-  if (preserve_proto_fieldnames) {
-    options |= upb_JsonEncode_UseProtoNames;
+  if (options_arr && Z_TYPE_P(options_arr) == IS_ARRAY) {
+    HashTable* table = HASH_OF(options_arr);
+    zval *opt_defaults;
+    zval *opt_names;
+
+    zend_string *emit_defaults_str = zend_string_init(JSONENC_EMIT_DEFAULTS, strlen(JSONENC_EMIT_DEFAULTS), 0);
+    if ((opt_defaults = zend_hash_find(table, emit_defaults_str))) {
+      if (Z_ISREF_P(opt_defaults)) {
+        ZVAL_DEREF(opt_defaults);
+      }
+      if (Z_TYPE_P(opt_defaults) == IS_TRUE) {
+        options |= upb_JsonEncode_EmitDefaults;
+      }
+    }
+    zend_string_release(emit_defaults_str);
+
+    zend_string *preserve_names_str = zend_string_init(JSONENC_PRESERVE_PROTO_FIELD_NAMES, strlen(JSONENC_PRESERVE_PROTO_FIELD_NAMES), 0);
+    if ((opt_names = zend_hash_find(table, preserve_names_str))) {
+      if (Z_ISREF_P(opt_names)) {
+        ZVAL_DEREF(opt_names);
+      }
+      if (Z_TYPE_P(opt_names) == IS_TRUE) {
+        options |= upb_JsonEncode_UseProtoNames;
+      }
+    }
+    zend_string_release(preserve_names_str);
   }
 
   upb_Status_Clear(&status);
@@ -1112,6 +1139,10 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_mergeFrom, 0, 0, 1)
   ZEND_ARG_INFO(0, data)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_serializeToJson, 0, 0, 0)
+  ZEND_ARG_INFO(0, arg)
+ZEND_END_ARG_INFO()
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_mergeFromWithArg, 0, 0, 1)
   ZEND_ARG_INFO(0, data)
   ZEND_ARG_INFO(0, arg)
@@ -1131,7 +1162,7 @@ static zend_function_entry Message_methods[] = {
   PHP_ME(Message, discardUnknownFields,  arginfo_void,      ZEND_ACC_PUBLIC)
   PHP_ME(Message, serializeToString,     arginfo_void,      ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFromString,       arginfo_mergeFrom, ZEND_ACC_PUBLIC)
-  PHP_ME(Message, serializeToJsonString, arginfo_void,      ZEND_ACC_PUBLIC)
+  PHP_ME(Message, serializeToJsonString, arginfo_serializeToJson,  ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFromJsonString,   arginfo_mergeFromWithArg, ZEND_ACC_PUBLIC)
   PHP_ME(Message, mergeFrom,             arginfo_mergeFrom, ZEND_ACC_PUBLIC)
   PHP_ME(Message, readWrapperValue,      arginfo_read,      ZEND_ACC_PROTECTED)

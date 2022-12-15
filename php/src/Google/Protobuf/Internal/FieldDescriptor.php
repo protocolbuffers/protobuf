@@ -48,6 +48,7 @@ class FieldDescriptor
     private $packed;
     private $oneof_index = -1;
     private $proto3_optional;
+    private $custom_json_name = false;
 
     /** @var OneofDescriptor $containing_oneof */
     private $containing_oneof;
@@ -280,6 +281,7 @@ class FieldDescriptor
 
         $field = new FieldDescriptor();
         $field->setName($proto->getName());
+        $field->setCustomJsonName($proto->hasJsonName());
 
         if ($proto->hasJsonName()) {
             $json_name = $proto->getJsonName();
@@ -322,5 +324,15 @@ class FieldDescriptor
     public static function buildFromProto($proto)
     {
         return FieldDescriptor::getFieldDescriptor($proto);
+    }
+
+    public function hasCustomJsonName(): bool
+    {
+        return $this->custom_json_name;
+    }
+
+    public function setCustomJsonName(bool $custom_json_name)
+    {
+        $this->custom_json_name = $custom_json_name;
     }
 }
