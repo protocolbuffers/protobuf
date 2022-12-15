@@ -214,6 +214,67 @@ inline ABSL_ATTRIBUTE_ALWAYS_INLINE size_t Size(void (*destructor)(void*)) {
   return destructor == nullptr ? 0 : Size(Type(destructor));
 }
 
+template <typename T>
+constexpr bool IsString() {
+  return std::is_same<std::string, typename std::remove_cv<T>::type>();
+}
+
+// Block on the arena for std::strings so that we can destruct them efficiently.
+// This is a linked list. The first block may be partially full, but all other
+// blocks are full.
+// TODO(b/251562172): experiment with growing the sizes of StringBlocks
+// dynamically rather than using constant capacity.
+// TODO(b/251562172): experiment with avoiding wasting space on arena blocks:
+//  - We could not allocate from the arena block, and have these be separate
+//  allocations.
+//  - We could allocate up-to 512 bytes or whatever is left (if it is long
+//  enough to hold a few strings).
+//  - We could use the normal allocation (eg string on the normal arena block
+//  with a cleanup) if the allocating a string block would be too wasteful.
+struct StringBlock {
+  static constexpr size_t kMaxSize = 512;
+  static constexpr size_t kCapacity =
+      (kMaxSize - sizeof(StringBlock*)) / sizeof(std::string);
+
+  ABSL_ATTRIBUTE_ALWAYS_INLINE void* GetSpace(size_t i) {
+    static_assert(sizeof(StringBlock) <= kMaxSize, "");
+    return space + sizeof(std::string) * i;
+  }
+  ABSL_ATTRIBUTE_ALWAYS_INLINE std::string* Get(size_t i) {
+    return static_cast<std::string*>(GetSpace(i));
+  }
+
+  StringBlock* next = nullptr;
+  alignas(std::string) char space[kCapacity * sizeof(std::string)];
+};
+
+inline ABSL_ATTRIBUTE_ALWAYS_INLINE void DestroyStrings(
+    StringBlock* block, size_t first_block_size) {
+  // Some compilers don't like fully qualified explicit dtor calls,
+  // so use an alias to avoid having to type `::`.
+  using string_type = std::string;
+
+#ifndef PROTO2_OPENSOURCE
+  // Prefetch the next block if non-null.
+  if (block->next != nullptr) ::compiler::PrefetchNta(block->next);
+#endif
+  for (size_t i = 0; i < first_block_size; ++i) {
+    block->Get(i)->~string_type();
+  }
+
+  // All blocks other than the first are full.
+  while (block->next != nullptr) {
+    block = block->next;
+#ifndef PROTO2_OPENSOURCE
+    // Prefetch the next block if non-null.
+    if (block->next != nullptr) ::compiler::PrefetchNta(block->next);
+#endif
+    for (size_t i = 0; i < StringBlock::kCapacity; ++i) {
+      block->Get(i)->~string_type();
+    }
+  }
+}
+
 }  // namespace cleanup
 }  // namespace internal
 }  // namespace protobuf

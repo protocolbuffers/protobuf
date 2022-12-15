@@ -35,11 +35,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <string>
 #include <typeinfo>
 
 #include "absl/base/attributes.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena_allocation_policy.h"
+#include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arenaz_sampler.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
@@ -163,6 +165,9 @@ void SerialArena::Init(ArenaBlock* b, size_t offset) {
   space_allocated_.store(b->size, std::memory_order_relaxed);
   cached_block_length_ = 0;
   cached_blocks_ = nullptr;
+  first_string_block_size_.store(cleanup::StringBlock::kCapacity,
+                                 std::memory_order_relaxed);
+  string_blocks_ = nullptr;
 }
 
 SerialArena* SerialArena::New(SizedPtr mem, ThreadSafeArena& parent) {
@@ -264,10 +269,20 @@ uint64_t SerialArena::SpaceUsed() const {
       static_cast<uint64_t>(
           ptr() - const_cast<ArenaBlock*>(h)->Pointer(kBlockHeaderSize)),
       current_block_size);
+  // Subtract out the unused capacity on the first string block.
+  const uint8_t first_string_block_size =
+      first_string_block_size_.load(std::memory_order_relaxed);
+  current_space_used -= sizeof(std::string) * (cleanup::StringBlock::kCapacity -
+                                               first_string_block_size);
   return current_space_used + space_used_.load(std::memory_order_relaxed);
 }
 
 void SerialArena::CleanupList() {
+  if (string_blocks_ != nullptr) {
+    cleanup::DestroyStrings(string_blocks_, first_string_block_size_.load(
+                                                std::memory_order_relaxed));
+  }
+
   ArenaBlock* b = head();
   if (b->IsSentry()) return;
 
@@ -702,6 +717,15 @@ void* ThreadSafeArena::AllocateAlignedWithCleanup(size_t n, size_t align,
   }
 }
 
+void* ThreadSafeArena::AllocateString() {
+  SerialArena* arena;
+  if (PROTOBUF_PREDICT_TRUE(GetSerialArenaFast(&arena))) {
+    return arena->AllocateString();
+  } else {
+    return AllocateStringFallback();
+  }
+}
+
 void ThreadSafeArena::AddCleanup(void* elem, void (*cleanup)(void*)) {
   SerialArena* arena;
   if (PROTOBUF_PREDICT_FALSE(!GetSerialArenaFast(&arena))) {
@@ -715,6 +739,11 @@ void* ThreadSafeArena::AllocateAlignedWithCleanupFallback(
     size_t n, size_t align, void (*destructor)(void*)) {
   return GetSerialArenaFallback(n + kMaxCleanupNodeSize)
       ->AllocateAlignedWithCleanup(n, align, destructor);
+}
+
+PROTOBUF_NOINLINE
+void* ThreadSafeArena::AllocateStringFallback() {
+  return GetSerialArenaFallback(sizeof(cleanup::StringBlock))->AllocateString();
 }
 
 template <typename Functor>

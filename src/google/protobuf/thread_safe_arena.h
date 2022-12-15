@@ -120,6 +120,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   void* AllocateAlignedWithCleanup(size_t n, size_t align,
                                    void (*destructor)(void*));
+  void* AllocateString();
 
   // Add object pointer and cleanup function pointer to the list.
   void AddCleanup(void* elem, void (*cleanup)(void*));
@@ -175,6 +176,7 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   void InitializeWithPolicy(const AllocationPolicy& policy);
   void* AllocateAlignedWithCleanupFallback(size_t n, size_t align,
                                            void (*destructor)(void*));
+  void* AllocateStringFallback();
 
   void Init();
 

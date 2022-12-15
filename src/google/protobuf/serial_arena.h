@@ -35,6 +35,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <limits>
 #include <type_traits>
 #include <typeinfo>
 #include <utility>
@@ -248,6 +249,16 @@ class PROTOBUF_EXPORT SerialArena {
     ABSL_DCHECK_GE(limit_, ptr());
     static_assert(!std::is_trivially_destructible<T>::value,
                   "This function is only for non-trivial types.");
+    if (cleanup::IsString<T>()) {
+      if (PROTOBUF_PREDICT_FALSE(!HasStringSpace())) {
+        if (!HasSpace(ArenaAlignDefault::Ceil(sizeof(cleanup::StringBlock))))
+          return nullptr;
+        AllocateStringBlock();
+      }
+      void* ptr = AllocateStringFromExisting();
+      PROTOBUF_ASSUME(ptr != nullptr);
+      return ptr;
+    }
 
     constexpr int aligned_size = ArenaAlignDefault::Ceil(sizeof(T));
     constexpr auto destructor = cleanup::arena_destruct_object<T>;
@@ -271,6 +282,11 @@ class PROTOBUF_EXPORT SerialArena {
     return AllocateFromExistingWithCleanupFallback(n, align, destructor);
   }
 
+  PROTOBUF_ALWAYS_INLINE void* AllocateString() {
+    if (PROTOBUF_PREDICT_FALSE(!HasStringSpace())) AllocateStringBlock();
+    return AllocateStringFromExisting();
+  }
+
   PROTOBUF_ALWAYS_INLINE
   void AddCleanup(void* elem, void (*destructor)(void*)) {
     size_t required = cleanup::Size(destructor);
@@ -281,6 +297,8 @@ class PROTOBUF_EXPORT SerialArena {
   }
 
  private:
+  friend class ThreadSafeArena;
+
   void* AllocateFromExistingWithCleanupFallback(size_t n, size_t align,
                                                 void (*destructor)(void*)) {
     n = AlignUpTo(n, align);
@@ -301,6 +319,30 @@ class PROTOBUF_EXPORT SerialArena {
     limit_ -= n;
     ABSL_DCHECK_GE(limit_, ptr());
     cleanup::CreateNode(tag, limit_, elem, destructor);
+  }
+
+  PROTOBUF_ALWAYS_INLINE bool HasStringSpace() const {
+    static_assert(
+        cleanup::StringBlock::kCapacity <= std::numeric_limits<uint8_t>::max(),
+        "");
+    return first_string_block_size_.load(std::memory_order_relaxed) <
+           cleanup::StringBlock::kCapacity;
+  }
+  PROTOBUF_ALWAYS_INLINE void* AllocateStringFromExisting() {
+    uint8_t first_string_block_size =
+        first_string_block_size_.load(std::memory_order_relaxed);
+    void* ptr = string_blocks_->GetSpace(first_string_block_size);
+    first_string_block_size_.store(first_string_block_size + 1);
+    return ptr;
+  }
+  void AllocateStringBlock() {
+    ABSL_DCHECK_EQ(first_string_block_size_.load(std::memory_order_relaxed),
+                   cleanup::StringBlock::kCapacity);
+    auto* new_block = static_cast<cleanup::StringBlock*>(
+        AllocateAligned(ArenaAlignDefault::Ceil(sizeof(cleanup::StringBlock))));
+    new_block->next = string_blocks_;
+    string_blocks_ = new_block;
+    first_string_block_size_.store(0, std::memory_order_relaxed);
   }
 
  private:
@@ -341,8 +383,14 @@ class PROTOBUF_EXPORT SerialArena {
     // Simple linked list.
     CachedBlock* next;
   };
-  uint8_t cached_block_length_ = 0;
   CachedBlock** cached_blocks_ = nullptr;
+  uint8_t cached_block_length_ = 0;
+
+  // Size of the first StringBlock. Other blocks are all full.
+  std::atomic<uint8_t> first_string_block_size_{
+      cleanup::StringBlock::kCapacity};
+  // Pointer to string destruct block list.
+  cleanup::StringBlock* string_blocks_ = nullptr;
 
   // Helper getters/setters to handle relaxed operations on atomic variables.
   ArenaBlock* head() { return head_.load(std::memory_order_relaxed); }

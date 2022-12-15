@@ -34,6 +34,7 @@
 #define GOOGLE_PROTOBUF_ARENA_H__
 
 #include <limits>
+#include <string>
 #include <type_traits>
 #include <utility>
 #if defined(_MSC_VER) && !defined(_LIBCPP_STD_VER) && !_HAS_EXCEPTIONS
@@ -680,6 +681,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8) Arena final {
   friend class internal::RepeatedPtrFieldBase;  // For ReturnArrayMemory
   friend struct internal::ArenaTestPeer;
 };
+
+template <>
+inline void* Arena::AllocateInternal<std::string, false>() {
+  return impl_.AllocateString();
+}
 
 }  // namespace protobuf
 }  // namespace google

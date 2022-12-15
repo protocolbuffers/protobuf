@@ -77,6 +77,29 @@ using protobuf_unittest::TestRepeatedString;
 
 namespace google {
 namespace protobuf {
+namespace internal {
+
+// Test that when we use string blocks, we don't leak memory.
+TEST(StringBlock, Sanity) {
+  using cleanup::StringBlock;
+
+  std::vector<StringBlock> string_blocks(11);
+  std::string long_str = "really really really really really long string";
+  for (int i = 0; i < 10; ++i) {
+    string_blocks[i + 1].next = &string_blocks[i];
+    for (size_t j = 0; j < StringBlock::kCapacity; ++j) {
+      new (string_blocks[i].GetSpace(j)) std::string(long_str);
+    }
+  }
+  size_t first_block_size = 5;
+  EXPECT_LT(first_block_size, StringBlock::kCapacity);
+  for (size_t i = 0; i < first_block_size; ++i) {
+    new (string_blocks.back().GetSpace(i)) std::string(long_str);
+  }
+  cleanup::DestroyStrings(&string_blocks.back(), first_block_size);
+}
+
+}  // namespace internal
 
 class Notifier {
  public:
