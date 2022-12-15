@@ -116,6 +116,11 @@ std::pair<size_t, size_t> ThreadSafeArenaStats::MinMaxBlockSizeForBin(
 
 void RecordAllocateSlow(ThreadSafeArenaStats* info, size_t used,
                         size_t allocated, size_t wasted) {
+  // When a ThreadSafeArena is init'd, it might have been provided with a block
+  // of memory by the application to start with.  In case no block was provided,
+  // we should get allocated size as 0 and we skip these instances.
+  if (allocated == 0) return;
+
   // Update the allocated bytes for the current block.
   ThreadSafeArenaStats::BlockStats& curr =
       info->block_histogram[ThreadSafeArenaStats::FindBin(allocated)];
