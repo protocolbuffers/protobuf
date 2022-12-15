@@ -4,9 +4,6 @@ on:
   - push
   - pull_request
 
-permissions:
-  contents: read  #  to fetch code (actions/checkout)
-
 jobs:
   build-php:
     name: Build PHP extension

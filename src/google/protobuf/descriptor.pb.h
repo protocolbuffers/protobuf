@@ -547,8 +547,9 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   int file_size() const;
   private:
   int _internal_file_size() const;
+
   public:
-  void clear_file();
+  void clear_file() ;
   ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto* mutable_file(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto >*
       mutable_file();
@@ -560,7 +561,6 @@ class PROTOBUF_EXPORT FileDescriptorSet final :
   ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto* add_file();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto >&
       file() const;
-
   // @@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorSet)
  private:
   class _Internal;
@@ -721,8 +721,9 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   int dependency_size() const;
   private:
   int _internal_dependency_size() const;
+
   public:
-  void clear_dependency();
+  void clear_dependency() ;
   const std::string& dependency(int index) const;
   std::string* mutable_dependency(int index);
   void set_dependency(int index, const std::string& value);
@@ -740,13 +741,13 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   const std::string& _internal_dependency(int index) const;
   std::string* _internal_add_dependency();
   public:
-
   // repeated .google.protobuf.DescriptorProto message_type = 4;
   int message_type_size() const;
   private:
   int _internal_message_type_size() const;
+
   public:
-  void clear_message_type();
+  void clear_message_type() ;
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto* mutable_message_type(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::DescriptorProto >*
       mutable_message_type();
@@ -758,13 +759,13 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto* add_message_type();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::DescriptorProto >&
       message_type() const;
-
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
   int enum_type_size() const;
   private:
   int _internal_enum_type_size() const;
+
   public:
-  void clear_enum_type();
+  void clear_enum_type() ;
   ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* mutable_enum_type(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto >*
       mutable_enum_type();
@@ -776,13 +777,13 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* add_enum_type();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto >&
       enum_type() const;
-
   // repeated .google.protobuf.ServiceDescriptorProto service = 6;
   int service_size() const;
   private:
   int _internal_service_size() const;
+
   public:
-  void clear_service();
+  void clear_service() ;
   ::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto* mutable_service(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto >*
       mutable_service();
@@ -794,13 +795,13 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   ::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto* add_service();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::ServiceDescriptorProto >&
       service() const;
-
   // repeated .google.protobuf.FieldDescriptorProto extension = 7;
   int extension_size() const;
   private:
   int _internal_extension_size() const;
+
   public:
-  void clear_extension();
+  void clear_extension() ;
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* mutable_extension(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto >*
       mutable_extension();
@@ -812,13 +813,13 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* add_extension();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto >&
       extension() const;
-
   // repeated int32 public_dependency = 10;
   int public_dependency_size() const;
   private:
   int _internal_public_dependency_size() const;
+
   public:
-  void clear_public_dependency();
+  void clear_public_dependency() ;
   private:
   ::int32_t _internal_public_dependency(int index) const;
   const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::int32_t >&
@@ -834,13 +835,13 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
       public_dependency() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::int32_t >*
       mutable_public_dependency();
-
   // repeated int32 weak_dependency = 11;
   int weak_dependency_size() const;
   private:
   int _internal_weak_dependency_size() const;
+
   public:
-  void clear_weak_dependency();
+  void clear_weak_dependency() ;
   private:
   ::int32_t _internal_weak_dependency(int index) const;
   const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::int32_t >&
@@ -856,10 +857,9 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
       weak_dependency() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::int32_t >*
       mutable_weak_dependency();
-
   // optional string name = 1;
   bool has_name() const;
-  void clear_name();
+  void clear_name() ;
   const std::string& name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
@@ -871,10 +871,9 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
   public:
-
   // optional string package = 2;
   bool has_package() const;
-  void clear_package();
+  void clear_package() ;
   const std::string& package() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_package(ArgT0&& arg0, ArgT... args);
@@ -886,10 +885,9 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_package(const std::string& value);
   std::string* _internal_mutable_package();
   public:
-
   // optional string syntax = 12;
   bool has_syntax() const;
-  void clear_syntax();
+  void clear_syntax() ;
   const std::string& syntax() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_syntax(ArgT0&& arg0, ArgT... args);
@@ -901,10 +899,9 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_syntax(const std::string& value);
   std::string* _internal_mutable_syntax();
   public:
-
   // optional string edition = 13;
   bool has_edition() const;
-  void clear_edition();
+  void clear_edition() ;
   const std::string& edition() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_edition(ArgT0&& arg0, ArgT... args);
@@ -916,10 +913,9 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_edition(const std::string& value);
   std::string* _internal_mutable_edition();
   public:
-
   // optional .google.protobuf.FileOptions options = 8;
   bool has_options() const;
-  void clear_options();
+  void clear_options() ;
   const ::PROTOBUF_NAMESPACE_ID::FileOptions& options() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::FileOptions* release_options();
   ::PROTOBUF_NAMESPACE_ID::FileOptions* mutable_options();
@@ -931,10 +927,9 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   void unsafe_arena_set_allocated_options(
       ::PROTOBUF_NAMESPACE_ID::FileOptions* options);
   ::PROTOBUF_NAMESPACE_ID::FileOptions* unsafe_arena_release_options();
-
   // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
   bool has_source_code_info() const;
-  void clear_source_code_info();
+  void clear_source_code_info() ;
   const ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo& source_code_info() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* release_source_code_info();
   ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* mutable_source_code_info();
@@ -946,7 +941,6 @@ class PROTOBUF_EXPORT FileDescriptorProto final :
   void unsafe_arena_set_allocated_source_code_info(
       ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* source_code_info);
   ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo* unsafe_arena_release_source_code_info();
-
   // @@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorProto)
  private:
   class _Internal;
@@ -1108,7 +1102,7 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   };
   // optional .google.protobuf.ExtensionRangeOptions options = 3;
   bool has_options() const;
-  void clear_options();
+  void clear_options() ;
   const ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions& options() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* release_options();
   ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* mutable_options();
@@ -1120,27 +1114,24 @@ class PROTOBUF_EXPORT DescriptorProto_ExtensionRange final :
   void unsafe_arena_set_allocated_options(
       ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* options);
   ::PROTOBUF_NAMESPACE_ID::ExtensionRangeOptions* unsafe_arena_release_options();
-
   // optional int32 start = 1;
   bool has_start() const;
-  void clear_start();
+  void clear_start() ;
   ::int32_t start() const;
   void set_start(::int32_t value);
   private:
   ::int32_t _internal_start() const;
   void _internal_set_start(::int32_t value);
   public:
-
   // optional int32 end = 2;
   bool has_end() const;
-  void clear_end();
+  void clear_end() ;
   ::int32_t end() const;
   void set_end(::int32_t value);
   private:
   ::int32_t _internal_end() const;
   void _internal_set_end(::int32_t value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto.ExtensionRange)
  private:
   class _Internal;
@@ -1291,24 +1282,22 @@ class PROTOBUF_EXPORT DescriptorProto_ReservedRange final :
   };
   // optional int32 start = 1;
   bool has_start() const;
-  void clear_start();
+  void clear_start() ;
   ::int32_t start() const;
   void set_start(::int32_t value);
   private:
   ::int32_t _internal_start() const;
   void _internal_set_start(::int32_t value);
   public:
-
   // optional int32 end = 2;
   bool has_end() const;
-  void clear_end();
+  void clear_end() ;
   ::int32_t end() const;
   void set_end(::int32_t value);
   private:
   ::int32_t _internal_end() const;
   void _internal_set_end(::int32_t value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto.ReservedRange)
  private:
   class _Internal;
@@ -1471,8 +1460,9 @@ class PROTOBUF_EXPORT DescriptorProto final :
   int field_size() const;
   private:
   int _internal_field_size() const;
+
   public:
-  void clear_field();
+  void clear_field() ;
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* mutable_field(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto >*
       mutable_field();
@@ -1484,13 +1474,13 @@ class PROTOBUF_EXPORT DescriptorProto final :
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* add_field();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto >&
       field() const;
-
   // repeated .google.protobuf.DescriptorProto nested_type = 3;
   int nested_type_size() const;
   private:
   int _internal_nested_type_size() const;
+
   public:
-  void clear_nested_type();
+  void clear_nested_type() ;
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto* mutable_nested_type(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::DescriptorProto >*
       mutable_nested_type();
@@ -1502,13 +1492,13 @@ class PROTOBUF_EXPORT DescriptorProto final :
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto* add_nested_type();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::DescriptorProto >&
       nested_type() const;
-
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
   int enum_type_size() const;
   private:
   int _internal_enum_type_size() const;
+
   public:
-  void clear_enum_type();
+  void clear_enum_type() ;
   ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* mutable_enum_type(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto >*
       mutable_enum_type();
@@ -1520,13 +1510,13 @@ class PROTOBUF_EXPORT DescriptorProto final :
   ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto* add_enum_type();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto >&
       enum_type() const;
-
   // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
   int extension_range_size() const;
   private:
   int _internal_extension_range_size() const;
+
   public:
-  void clear_extension_range();
+  void clear_extension_range() ;
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange* mutable_extension_range(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange >*
       mutable_extension_range();
@@ -1538,13 +1528,13 @@ class PROTOBUF_EXPORT DescriptorProto final :
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange* add_extension_range();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ExtensionRange >&
       extension_range() const;
-
   // repeated .google.protobuf.FieldDescriptorProto extension = 6;
   int extension_size() const;
   private:
   int _internal_extension_size() const;
+
   public:
-  void clear_extension();
+  void clear_extension() ;
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* mutable_extension(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto >*
       mutable_extension();
@@ -1556,13 +1546,13 @@ class PROTOBUF_EXPORT DescriptorProto final :
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto* add_extension();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto >&
       extension() const;
-
   // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
   int oneof_decl_size() const;
   private:
   int _internal_oneof_decl_size() const;
+
   public:
-  void clear_oneof_decl();
+  void clear_oneof_decl() ;
   ::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto* mutable_oneof_decl(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto >*
       mutable_oneof_decl();
@@ -1574,13 +1564,13 @@ class PROTOBUF_EXPORT DescriptorProto final :
   ::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto* add_oneof_decl();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::OneofDescriptorProto >&
       oneof_decl() const;
-
   // repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;
   int reserved_range_size() const;
   private:
   int _internal_reserved_range_size() const;
+
   public:
-  void clear_reserved_range();
+  void clear_reserved_range() ;
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange* mutable_reserved_range(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange >*
       mutable_reserved_range();
@@ -1592,13 +1582,13 @@ class PROTOBUF_EXPORT DescriptorProto final :
   ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange* add_reserved_range();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::DescriptorProto_ReservedRange >&
       reserved_range() const;
-
   // repeated string reserved_name = 10;
   int reserved_name_size() const;
   private:
   int _internal_reserved_name_size() const;
+
   public:
-  void clear_reserved_name();
+  void clear_reserved_name() ;
   const std::string& reserved_name(int index) const;
   std::string* mutable_reserved_name(int index);
   void set_reserved_name(int index, const std::string& value);
@@ -1616,10 +1606,9 @@ class PROTOBUF_EXPORT DescriptorProto final :
   const std::string& _internal_reserved_name(int index) const;
   std::string* _internal_add_reserved_name();
   public:
-
   // optional string name = 1;
   bool has_name() const;
-  void clear_name();
+  void clear_name() ;
   const std::string& name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
@@ -1631,10 +1620,9 @@ class PROTOBUF_EXPORT DescriptorProto final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
   public:
-
   // optional .google.protobuf.MessageOptions options = 7;
   bool has_options() const;
-  void clear_options();
+  void clear_options() ;
   const ::PROTOBUF_NAMESPACE_ID::MessageOptions& options() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::MessageOptions* release_options();
   ::PROTOBUF_NAMESPACE_ID::MessageOptions* mutable_options();
@@ -1646,7 +1634,6 @@ class PROTOBUF_EXPORT DescriptorProto final :
   void unsafe_arena_set_allocated_options(
       ::PROTOBUF_NAMESPACE_ID::MessageOptions* options);
   ::PROTOBUF_NAMESPACE_ID::MessageOptions* unsafe_arena_release_options();
-
   // @@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto)
  private:
   class _Internal;
@@ -1805,8 +1792,9 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   int uninterpreted_option_size() const;
   private:
   int _internal_uninterpreted_option_size() const;
+
   public:
-  void clear_uninterpreted_option();
+  void clear_uninterpreted_option() ;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* mutable_uninterpreted_option(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >*
       mutable_uninterpreted_option();
@@ -1818,197 +1806,174 @@ class PROTOBUF_EXPORT ExtensionRangeOptions final :
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
       uninterpreted_option() const;
-
-
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline bool HasExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void ClearExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
     _impl_._extensions_.ClearExtension(id.number());
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline int ExtensionSize(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
-    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_,
-                                  id.default_value());
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
-    return _proto_TypeTraits::Mutable(id.number(), _field_type,
-                                      &_impl_._extensions_);
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
+    return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetAllocatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
-
+    ;
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void UnsafeArenaSetAllocatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
-
+    ;
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   PROTOBUF_NODISCARD inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
-          const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-              ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
-    return _proto_TypeTraits::Release(id.number(), _field_type,
-                                      &_impl_._extensions_);
+          const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) {
+    ;
+    return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType
   UnsafeArenaReleaseExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index) const {
-
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index) {
-
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
-
+    ;
     return to_add;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void AddExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
-
   // @@protoc_insertion_point(class_scope:google.protobuf.ExtensionRangeOptions)
  private:
   class _Internal;
@@ -2224,7 +2189,7 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   };
   // optional string name = 1;
   bool has_name() const;
-  void clear_name();
+  void clear_name() ;
   const std::string& name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
@@ -2236,10 +2201,9 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
   public:
-
   // optional string extendee = 2;
   bool has_extendee() const;
-  void clear_extendee();
+  void clear_extendee() ;
   const std::string& extendee() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_extendee(ArgT0&& arg0, ArgT... args);
@@ -2251,10 +2215,9 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_extendee(const std::string& value);
   std::string* _internal_mutable_extendee();
   public:
-
   // optional string type_name = 6;
   bool has_type_name() const;
-  void clear_type_name();
+  void clear_type_name() ;
   const std::string& type_name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_type_name(ArgT0&& arg0, ArgT... args);
@@ -2266,10 +2229,9 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_type_name(const std::string& value);
   std::string* _internal_mutable_type_name();
   public:
-
   // optional string default_value = 7;
   bool has_default_value() const;
-  void clear_default_value();
+  void clear_default_value() ;
   const std::string& default_value() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_default_value(ArgT0&& arg0, ArgT... args);
@@ -2281,10 +2243,9 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_default_value(const std::string& value);
   std::string* _internal_mutable_default_value();
   public:
-
   // optional string json_name = 10;
   bool has_json_name() const;
-  void clear_json_name();
+  void clear_json_name() ;
   const std::string& json_name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_json_name(ArgT0&& arg0, ArgT... args);
@@ -2296,10 +2257,9 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_json_name(const std::string& value);
   std::string* _internal_mutable_json_name();
   public:
-
   // optional .google.protobuf.FieldOptions options = 8;
   bool has_options() const;
-  void clear_options();
+  void clear_options() ;
   const ::PROTOBUF_NAMESPACE_ID::FieldOptions& options() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::FieldOptions* release_options();
   ::PROTOBUF_NAMESPACE_ID::FieldOptions* mutable_options();
@@ -2311,57 +2271,51 @@ class PROTOBUF_EXPORT FieldDescriptorProto final :
   void unsafe_arena_set_allocated_options(
       ::PROTOBUF_NAMESPACE_ID::FieldOptions* options);
   ::PROTOBUF_NAMESPACE_ID::FieldOptions* unsafe_arena_release_options();
-
   // optional int32 number = 3;
   bool has_number() const;
-  void clear_number();
+  void clear_number() ;
   ::int32_t number() const;
   void set_number(::int32_t value);
   private:
   ::int32_t _internal_number() const;
   void _internal_set_number(::int32_t value);
   public:
-
   // optional int32 oneof_index = 9;
   bool has_oneof_index() const;
-  void clear_oneof_index();
+  void clear_oneof_index() ;
   ::int32_t oneof_index() const;
   void set_oneof_index(::int32_t value);
   private:
   ::int32_t _internal_oneof_index() const;
   void _internal_set_oneof_index(::int32_t value);
   public:
-
   // optional bool proto3_optional = 17;
   bool has_proto3_optional() const;
-  void clear_proto3_optional();
+  void clear_proto3_optional() ;
   bool proto3_optional() const;
   void set_proto3_optional(bool value);
   private:
   bool _internal_proto3_optional() const;
   void _internal_set_proto3_optional(bool value);
   public:
-
   // optional .google.protobuf.FieldDescriptorProto.Label label = 4;
   bool has_label() const;
-  void clear_label();
+  void clear_label() ;
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label label() const;
   void set_label(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label value);
   private:
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label _internal_label() const;
   void _internal_set_label(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Label value);
   public:
-
   // optional .google.protobuf.FieldDescriptorProto.Type type = 5;
   bool has_type() const;
-  void clear_type();
+  void clear_type() ;
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type type() const;
   void set_type(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type value);
   private:
   ::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type _internal_type() const;
   void _internal_set_type(::PROTOBUF_NAMESPACE_ID::FieldDescriptorProto_Type value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldDescriptorProto)
  private:
   class _Internal;
@@ -2520,7 +2474,7 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   };
   // optional string name = 1;
   bool has_name() const;
-  void clear_name();
+  void clear_name() ;
   const std::string& name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
@@ -2532,10 +2486,9 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
   public:
-
   // optional .google.protobuf.OneofOptions options = 2;
   bool has_options() const;
-  void clear_options();
+  void clear_options() ;
   const ::PROTOBUF_NAMESPACE_ID::OneofOptions& options() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::OneofOptions* release_options();
   ::PROTOBUF_NAMESPACE_ID::OneofOptions* mutable_options();
@@ -2547,7 +2500,6 @@ class PROTOBUF_EXPORT OneofDescriptorProto final :
   void unsafe_arena_set_allocated_options(
       ::PROTOBUF_NAMESPACE_ID::OneofOptions* options);
   ::PROTOBUF_NAMESPACE_ID::OneofOptions* unsafe_arena_release_options();
-
   // @@protoc_insertion_point(class_scope:google.protobuf.OneofDescriptorProto)
  private:
   class _Internal;
@@ -2697,24 +2649,22 @@ class PROTOBUF_EXPORT EnumDescriptorProto_EnumReservedRange final :
   };
   // optional int32 start = 1;
   bool has_start() const;
-  void clear_start();
+  void clear_start() ;
   ::int32_t start() const;
   void set_start(::int32_t value);
   private:
   ::int32_t _internal_start() const;
   void _internal_set_start(::int32_t value);
   public:
-
   // optional int32 end = 2;
   bool has_end() const;
-  void clear_end();
+  void clear_end() ;
   ::int32_t end() const;
   void set_end(::int32_t value);
   private:
   ::int32_t _internal_end() const;
   void _internal_set_end(::int32_t value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumDescriptorProto.EnumReservedRange)
  private:
   class _Internal;
@@ -2871,8 +2821,9 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   int value_size() const;
   private:
   int _internal_value_size() const;
+
   public:
-  void clear_value();
+  void clear_value() ;
   ::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto* mutable_value(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto >*
       mutable_value();
@@ -2884,13 +2835,13 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   ::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto* add_value();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumValueDescriptorProto >&
       value() const;
-
   // repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;
   int reserved_range_size() const;
   private:
   int _internal_reserved_range_size() const;
+
   public:
-  void clear_reserved_range();
+  void clear_reserved_range() ;
   ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange* mutable_reserved_range(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange >*
       mutable_reserved_range();
@@ -2902,13 +2853,13 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange* add_reserved_range();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::EnumDescriptorProto_EnumReservedRange >&
       reserved_range() const;
-
   // repeated string reserved_name = 5;
   int reserved_name_size() const;
   private:
   int _internal_reserved_name_size() const;
+
   public:
-  void clear_reserved_name();
+  void clear_reserved_name() ;
   const std::string& reserved_name(int index) const;
   std::string* mutable_reserved_name(int index);
   void set_reserved_name(int index, const std::string& value);
@@ -2926,10 +2877,9 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   const std::string& _internal_reserved_name(int index) const;
   std::string* _internal_add_reserved_name();
   public:
-
   // optional string name = 1;
   bool has_name() const;
-  void clear_name();
+  void clear_name() ;
   const std::string& name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
@@ -2941,10 +2891,9 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
   public:
-
   // optional .google.protobuf.EnumOptions options = 3;
   bool has_options() const;
-  void clear_options();
+  void clear_options() ;
   const ::PROTOBUF_NAMESPACE_ID::EnumOptions& options() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::EnumOptions* release_options();
   ::PROTOBUF_NAMESPACE_ID::EnumOptions* mutable_options();
@@ -2956,7 +2905,6 @@ class PROTOBUF_EXPORT EnumDescriptorProto final :
   void unsafe_arena_set_allocated_options(
       ::PROTOBUF_NAMESPACE_ID::EnumOptions* options);
   ::PROTOBUF_NAMESPACE_ID::EnumOptions* unsafe_arena_release_options();
-
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumDescriptorProto)
  private:
   class _Internal;
@@ -3110,7 +3058,7 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   };
   // optional string name = 1;
   bool has_name() const;
-  void clear_name();
+  void clear_name() ;
   const std::string& name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
@@ -3122,10 +3070,9 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
   public:
-
   // optional .google.protobuf.EnumValueOptions options = 3;
   bool has_options() const;
-  void clear_options();
+  void clear_options() ;
   const ::PROTOBUF_NAMESPACE_ID::EnumValueOptions& options() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::EnumValueOptions* release_options();
   ::PROTOBUF_NAMESPACE_ID::EnumValueOptions* mutable_options();
@@ -3137,17 +3084,15 @@ class PROTOBUF_EXPORT EnumValueDescriptorProto final :
   void unsafe_arena_set_allocated_options(
       ::PROTOBUF_NAMESPACE_ID::EnumValueOptions* options);
   ::PROTOBUF_NAMESPACE_ID::EnumValueOptions* unsafe_arena_release_options();
-
   // optional int32 number = 2;
   bool has_number() const;
-  void clear_number();
+  void clear_number() ;
   ::int32_t number() const;
   void set_number(::int32_t value);
   private:
   ::int32_t _internal_number() const;
   void _internal_set_number(::int32_t value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumValueDescriptorProto)
  private:
   class _Internal;
@@ -3301,8 +3246,9 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   int method_size() const;
   private:
   int _internal_method_size() const;
+
   public:
-  void clear_method();
+  void clear_method() ;
   ::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto* mutable_method(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto >*
       mutable_method();
@@ -3314,10 +3260,9 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   ::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto* add_method();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::MethodDescriptorProto >&
       method() const;
-
   // optional string name = 1;
   bool has_name() const;
-  void clear_name();
+  void clear_name() ;
   const std::string& name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
@@ -3329,10 +3274,9 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
   public:
-
   // optional .google.protobuf.ServiceOptions options = 3;
   bool has_options() const;
-  void clear_options();
+  void clear_options() ;
   const ::PROTOBUF_NAMESPACE_ID::ServiceOptions& options() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::ServiceOptions* release_options();
   ::PROTOBUF_NAMESPACE_ID::ServiceOptions* mutable_options();
@@ -3344,7 +3288,6 @@ class PROTOBUF_EXPORT ServiceDescriptorProto final :
   void unsafe_arena_set_allocated_options(
       ::PROTOBUF_NAMESPACE_ID::ServiceOptions* options);
   ::PROTOBUF_NAMESPACE_ID::ServiceOptions* unsafe_arena_release_options();
-
   // @@protoc_insertion_point(class_scope:google.protobuf.ServiceDescriptorProto)
  private:
   class _Internal;
@@ -3499,7 +3442,7 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   };
   // optional string name = 1;
   bool has_name() const;
-  void clear_name();
+  void clear_name() ;
   const std::string& name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
@@ -3511,10 +3454,9 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
   public:
-
   // optional string input_type = 2;
   bool has_input_type() const;
-  void clear_input_type();
+  void clear_input_type() ;
   const std::string& input_type() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_input_type(ArgT0&& arg0, ArgT... args);
@@ -3526,10 +3468,9 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_input_type(const std::string& value);
   std::string* _internal_mutable_input_type();
   public:
-
   // optional string output_type = 3;
   bool has_output_type() const;
-  void clear_output_type();
+  void clear_output_type() ;
   const std::string& output_type() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_output_type(ArgT0&& arg0, ArgT... args);
@@ -3541,10 +3482,9 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_output_type(const std::string& value);
   std::string* _internal_mutable_output_type();
   public:
-
   // optional .google.protobuf.MethodOptions options = 4;
   bool has_options() const;
-  void clear_options();
+  void clear_options() ;
   const ::PROTOBUF_NAMESPACE_ID::MethodOptions& options() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::MethodOptions* release_options();
   ::PROTOBUF_NAMESPACE_ID::MethodOptions* mutable_options();
@@ -3556,27 +3496,24 @@ class PROTOBUF_EXPORT MethodDescriptorProto final :
   void unsafe_arena_set_allocated_options(
       ::PROTOBUF_NAMESPACE_ID::MethodOptions* options);
   ::PROTOBUF_NAMESPACE_ID::MethodOptions* unsafe_arena_release_options();
-
   // optional bool client_streaming = 5 [default = false];
   bool has_client_streaming() const;
-  void clear_client_streaming();
+  void clear_client_streaming() ;
   bool client_streaming() const;
   void set_client_streaming(bool value);
   private:
   bool _internal_client_streaming() const;
   void _internal_set_client_streaming(bool value);
   public:
-
   // optional bool server_streaming = 6 [default = false];
   bool has_server_streaming() const;
-  void clear_server_streaming();
+  void clear_server_streaming() ;
   bool server_streaming() const;
   void set_server_streaming(bool value);
   private:
   bool _internal_server_streaming() const;
   void _internal_set_server_streaming(bool value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.MethodDescriptorProto)
  private:
   class _Internal;
@@ -3772,8 +3709,9 @@ class PROTOBUF_EXPORT FileOptions final :
   int uninterpreted_option_size() const;
   private:
   int _internal_uninterpreted_option_size() const;
+
   public:
-  void clear_uninterpreted_option();
+  void clear_uninterpreted_option() ;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* mutable_uninterpreted_option(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >*
       mutable_uninterpreted_option();
@@ -3785,10 +3723,9 @@ class PROTOBUF_EXPORT FileOptions final :
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
       uninterpreted_option() const;
-
   // optional string java_package = 1;
   bool has_java_package() const;
-  void clear_java_package();
+  void clear_java_package() ;
   const std::string& java_package() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_java_package(ArgT0&& arg0, ArgT... args);
@@ -3800,10 +3737,9 @@ class PROTOBUF_EXPORT FileOptions final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_java_package(const std::string& value);
   std::string* _internal_mutable_java_package();
   public:
-
   // optional string java_outer_classname = 8;
   bool has_java_outer_classname() const;
-  void clear_java_outer_classname();
+  void clear_java_outer_classname() ;
   const std::string& java_outer_classname() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_java_outer_classname(ArgT0&& arg0, ArgT... args);
@@ -3815,10 +3751,9 @@ class PROTOBUF_EXPORT FileOptions final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_java_outer_classname(const std::string& value);
   std::string* _internal_mutable_java_outer_classname();
   public:
-
   // optional string go_package = 11;
   bool has_go_package() const;
-  void clear_go_package();
+  void clear_go_package() ;
   const std::string& go_package() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_go_package(ArgT0&& arg0, ArgT... args);
@@ -3830,10 +3765,9 @@ class PROTOBUF_EXPORT FileOptions final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_go_package(const std::string& value);
   std::string* _internal_mutable_go_package();
   public:
-
   // optional string objc_class_prefix = 36;
   bool has_objc_class_prefix() const;
-  void clear_objc_class_prefix();
+  void clear_objc_class_prefix() ;
   const std::string& objc_class_prefix() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_objc_class_prefix(ArgT0&& arg0, ArgT... args);
@@ -3845,10 +3779,9 @@ class PROTOBUF_EXPORT FileOptions final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_objc_class_prefix(const std::string& value);
   std::string* _internal_mutable_objc_class_prefix();
   public:
-
   // optional string csharp_namespace = 37;
   bool has_csharp_namespace() const;
-  void clear_csharp_namespace();
+  void clear_csharp_namespace() ;
   const std::string& csharp_namespace() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_csharp_namespace(ArgT0&& arg0, ArgT... args);
@@ -3860,10 +3793,9 @@ class PROTOBUF_EXPORT FileOptions final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_csharp_namespace(const std::string& value);
   std::string* _internal_mutable_csharp_namespace();
   public:
-
   // optional string swift_prefix = 39;
   bool has_swift_prefix() const;
-  void clear_swift_prefix();
+  void clear_swift_prefix() ;
   const std::string& swift_prefix() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_swift_prefix(ArgT0&& arg0, ArgT... args);
@@ -3875,10 +3807,9 @@ class PROTOBUF_EXPORT FileOptions final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_swift_prefix(const std::string& value);
   std::string* _internal_mutable_swift_prefix();
   public:
-
   // optional string php_class_prefix = 40;
   bool has_php_class_prefix() const;
-  void clear_php_class_prefix();
+  void clear_php_class_prefix() ;
   const std::string& php_class_prefix() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_php_class_prefix(ArgT0&& arg0, ArgT... args);
@@ -3890,10 +3821,9 @@ class PROTOBUF_EXPORT FileOptions final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_php_class_prefix(const std::string& value);
   std::string* _internal_mutable_php_class_prefix();
   public:
-
   // optional string php_namespace = 41;
   bool has_php_namespace() const;
-  void clear_php_namespace();
+  void clear_php_namespace() ;
   const std::string& php_namespace() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_php_namespace(ArgT0&& arg0, ArgT... args);
@@ -3905,10 +3835,9 @@ class PROTOBUF_EXPORT FileOptions final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_php_namespace(const std::string& value);
   std::string* _internal_mutable_php_namespace();
   public:
-
   // optional string php_metadata_namespace = 44;
   bool has_php_metadata_namespace() const;
-  void clear_php_metadata_namespace();
+  void clear_php_metadata_namespace() ;
   const std::string& php_metadata_namespace() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_php_metadata_namespace(ArgT0&& arg0, ArgT... args);
@@ -3920,10 +3849,9 @@ class PROTOBUF_EXPORT FileOptions final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_php_metadata_namespace(const std::string& value);
   std::string* _internal_mutable_php_metadata_namespace();
   public:
-
   // optional string ruby_package = 45;
   bool has_ruby_package() const;
-  void clear_ruby_package();
+  void clear_ruby_package() ;
   const std::string& ruby_package() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_ruby_package(ArgT0&& arg0, ArgT... args);
@@ -3935,297 +3863,264 @@ class PROTOBUF_EXPORT FileOptions final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_ruby_package(const std::string& value);
   std::string* _internal_mutable_ruby_package();
   public:
-
   // optional bool java_multiple_files = 10 [default = false];
   bool has_java_multiple_files() const;
-  void clear_java_multiple_files();
+  void clear_java_multiple_files() ;
   bool java_multiple_files() const;
   void set_java_multiple_files(bool value);
   private:
   bool _internal_java_multiple_files() const;
   void _internal_set_java_multiple_files(bool value);
   public:
-
   // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
-  PROTOBUF_DEPRECATED bool has_java_generate_equals_and_hash() const;
-  PROTOBUF_DEPRECATED void clear_java_generate_equals_and_hash();
+  PROTOBUF_DEPRECATED  bool has_java_generate_equals_and_hash() const;
+  PROTOBUF_DEPRECATED  void clear_java_generate_equals_and_hash() ;
   PROTOBUF_DEPRECATED bool java_generate_equals_and_hash() const;
   PROTOBUF_DEPRECATED void set_java_generate_equals_and_hash(bool value);
   private:
   bool _internal_java_generate_equals_and_hash() const;
   void _internal_set_java_generate_equals_and_hash(bool value);
   public:
-
   // optional bool java_string_check_utf8 = 27 [default = false];
   bool has_java_string_check_utf8() const;
-  void clear_java_string_check_utf8();
+  void clear_java_string_check_utf8() ;
   bool java_string_check_utf8() const;
   void set_java_string_check_utf8(bool value);
   private:
   bool _internal_java_string_check_utf8() const;
   void _internal_set_java_string_check_utf8(bool value);
   public:
-
   // optional bool cc_generic_services = 16 [default = false];
   bool has_cc_generic_services() const;
-  void clear_cc_generic_services();
+  void clear_cc_generic_services() ;
   bool cc_generic_services() const;
   void set_cc_generic_services(bool value);
   private:
   bool _internal_cc_generic_services() const;
   void _internal_set_cc_generic_services(bool value);
   public:
-
   // optional bool java_generic_services = 17 [default = false];
   bool has_java_generic_services() const;
-  void clear_java_generic_services();
+  void clear_java_generic_services() ;
   bool java_generic_services() const;
   void set_java_generic_services(bool value);
   private:
   bool _internal_java_generic_services() const;
   void _internal_set_java_generic_services(bool value);
   public:
-
   // optional bool py_generic_services = 18 [default = false];
   bool has_py_generic_services() const;
-  void clear_py_generic_services();
+  void clear_py_generic_services() ;
   bool py_generic_services() const;
   void set_py_generic_services(bool value);
   private:
   bool _internal_py_generic_services() const;
   void _internal_set_py_generic_services(bool value);
   public:
-
   // optional bool php_generic_services = 42 [default = false];
   bool has_php_generic_services() const;
-  void clear_php_generic_services();
+  void clear_php_generic_services() ;
   bool php_generic_services() const;
   void set_php_generic_services(bool value);
   private:
   bool _internal_php_generic_services() const;
   void _internal_set_php_generic_services(bool value);
   public:
-
   // optional bool deprecated = 23 [default = false];
   bool has_deprecated() const;
-  void clear_deprecated();
+  void clear_deprecated() ;
   bool deprecated() const;
   void set_deprecated(bool value);
   private:
   bool _internal_deprecated() const;
   void _internal_set_deprecated(bool value);
   public:
-
   // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
   bool has_optimize_for() const;
-  void clear_optimize_for();
+  void clear_optimize_for() ;
   ::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode optimize_for() const;
   void set_optimize_for(::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode value);
   private:
   ::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode _internal_optimize_for() const;
   void _internal_set_optimize_for(::PROTOBUF_NAMESPACE_ID::FileOptions_OptimizeMode value);
   public:
-
   // optional bool cc_enable_arenas = 31 [default = true];
   bool has_cc_enable_arenas() const;
-  void clear_cc_enable_arenas();
+  void clear_cc_enable_arenas() ;
   bool cc_enable_arenas() const;
   void set_cc_enable_arenas(bool value);
   private:
   bool _internal_cc_enable_arenas() const;
   void _internal_set_cc_enable_arenas(bool value);
   public:
-
-
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline bool HasExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void ClearExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
     _impl_._extensions_.ClearExtension(id.number());
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline int ExtensionSize(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
-    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_,
-                                  id.default_value());
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
-    return _proto_TypeTraits::Mutable(id.number(), _field_type,
-                                      &_impl_._extensions_);
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
+    return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetAllocatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
-
+    ;
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void UnsafeArenaSetAllocatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
-
+    ;
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   PROTOBUF_NODISCARD inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
-          const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-              FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
-    return _proto_TypeTraits::Release(id.number(), _field_type,
-                                      &_impl_._extensions_);
+          const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) {
+    ;
+    return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType
   UnsafeArenaReleaseExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index) const {
-
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index) {
-
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
-
+    ;
     return to_add;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void AddExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
-
   // @@protoc_insertion_point(class_scope:google.protobuf.FileOptions)
  private:
   class _Internal;
@@ -4402,8 +4297,9 @@ class PROTOBUF_EXPORT MessageOptions final :
   int uninterpreted_option_size() const;
   private:
   int _internal_uninterpreted_option_size() const;
+
   public:
-  void clear_uninterpreted_option();
+  void clear_uninterpreted_option() ;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* mutable_uninterpreted_option(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >*
       mutable_uninterpreted_option();
@@ -4415,247 +4311,219 @@ class PROTOBUF_EXPORT MessageOptions final :
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
       uninterpreted_option() const;
-
   // optional bool message_set_wire_format = 1 [default = false];
   bool has_message_set_wire_format() const;
-  void clear_message_set_wire_format();
+  void clear_message_set_wire_format() ;
   bool message_set_wire_format() const;
   void set_message_set_wire_format(bool value);
   private:
   bool _internal_message_set_wire_format() const;
   void _internal_set_message_set_wire_format(bool value);
   public:
-
   // optional bool no_standard_descriptor_accessor = 2 [default = false];
   bool has_no_standard_descriptor_accessor() const;
-  void clear_no_standard_descriptor_accessor();
+  void clear_no_standard_descriptor_accessor() ;
   bool no_standard_descriptor_accessor() const;
   void set_no_standard_descriptor_accessor(bool value);
   private:
   bool _internal_no_standard_descriptor_accessor() const;
   void _internal_set_no_standard_descriptor_accessor(bool value);
   public:
-
   // optional bool deprecated = 3 [default = false];
   bool has_deprecated() const;
-  void clear_deprecated();
+  void clear_deprecated() ;
   bool deprecated() const;
   void set_deprecated(bool value);
   private:
   bool _internal_deprecated() const;
   void _internal_set_deprecated(bool value);
   public:
-
   // optional bool map_entry = 7;
   bool has_map_entry() const;
-  void clear_map_entry();
+  void clear_map_entry() ;
   bool map_entry() const;
   void set_map_entry(bool value);
   private:
   bool _internal_map_entry() const;
   void _internal_set_map_entry(bool value);
   public:
-
   // optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
-  PROTOBUF_DEPRECATED bool has_deprecated_legacy_json_field_conflicts() const;
-  PROTOBUF_DEPRECATED void clear_deprecated_legacy_json_field_conflicts();
+  PROTOBUF_DEPRECATED  bool has_deprecated_legacy_json_field_conflicts() const;
+  PROTOBUF_DEPRECATED  void clear_deprecated_legacy_json_field_conflicts() ;
   PROTOBUF_DEPRECATED bool deprecated_legacy_json_field_conflicts() const;
   PROTOBUF_DEPRECATED void set_deprecated_legacy_json_field_conflicts(bool value);
   private:
   bool _internal_deprecated_legacy_json_field_conflicts() const;
   void _internal_set_deprecated_legacy_json_field_conflicts(bool value);
   public:
-
-
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline bool HasExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void ClearExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
     _impl_._extensions_.ClearExtension(id.number());
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline int ExtensionSize(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
-    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_,
-                                  id.default_value());
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
-    return _proto_TypeTraits::Mutable(id.number(), _field_type,
-                                      &_impl_._extensions_);
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
+    return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetAllocatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
-
+    ;
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void UnsafeArenaSetAllocatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
-
+    ;
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   PROTOBUF_NODISCARD inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
-          const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-              MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
-    return _proto_TypeTraits::Release(id.number(), _field_type,
-                                      &_impl_._extensions_);
+          const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) {
+    ;
+    return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType
   UnsafeArenaReleaseExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index) const {
-
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index) {
-
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
-
+    ;
     return to_add;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void AddExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
-
   // @@protoc_insertion_point(class_scope:google.protobuf.MessageOptions)
  private:
   class _Internal;
@@ -4861,8 +4729,9 @@ class PROTOBUF_EXPORT FieldOptions final :
   int uninterpreted_option_size() const;
   private:
   int _internal_uninterpreted_option_size() const;
+
   public:
-  void clear_uninterpreted_option();
+  void clear_uninterpreted_option() ;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* mutable_uninterpreted_option(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >*
       mutable_uninterpreted_option();
@@ -4874,267 +4743,237 @@ class PROTOBUF_EXPORT FieldOptions final :
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
       uninterpreted_option() const;
-
   // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
   bool has_ctype() const;
-  void clear_ctype();
+  void clear_ctype() ;
   ::PROTOBUF_NAMESPACE_ID::FieldOptions_CType ctype() const;
   void set_ctype(::PROTOBUF_NAMESPACE_ID::FieldOptions_CType value);
   private:
   ::PROTOBUF_NAMESPACE_ID::FieldOptions_CType _internal_ctype() const;
   void _internal_set_ctype(::PROTOBUF_NAMESPACE_ID::FieldOptions_CType value);
   public:
-
   // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
   bool has_jstype() const;
-  void clear_jstype();
+  void clear_jstype() ;
   ::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType jstype() const;
   void set_jstype(::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType value);
   private:
   ::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType _internal_jstype() const;
   void _internal_set_jstype(::PROTOBUF_NAMESPACE_ID::FieldOptions_JSType value);
   public:
-
   // optional bool packed = 2;
   bool has_packed() const;
-  void clear_packed();
+  void clear_packed() ;
   bool packed() const;
   void set_packed(bool value);
   private:
   bool _internal_packed() const;
   void _internal_set_packed(bool value);
   public:
-
   // optional bool lazy = 5 [default = false];
   bool has_lazy() const;
-  void clear_lazy();
+  void clear_lazy() ;
   bool lazy() const;
   void set_lazy(bool value);
   private:
   bool _internal_lazy() const;
   void _internal_set_lazy(bool value);
   public:
-
   // optional bool unverified_lazy = 15 [default = false];
   bool has_unverified_lazy() const;
-  void clear_unverified_lazy();
+  void clear_unverified_lazy() ;
   bool unverified_lazy() const;
   void set_unverified_lazy(bool value);
   private:
   bool _internal_unverified_lazy() const;
   void _internal_set_unverified_lazy(bool value);
   public:
-
   // optional bool deprecated = 3 [default = false];
   bool has_deprecated() const;
-  void clear_deprecated();
+  void clear_deprecated() ;
   bool deprecated() const;
   void set_deprecated(bool value);
   private:
   bool _internal_deprecated() const;
   void _internal_set_deprecated(bool value);
   public:
-
   // optional bool weak = 10 [default = false];
   bool has_weak() const;
-  void clear_weak();
+  void clear_weak() ;
   bool weak() const;
   void set_weak(bool value);
   private:
   bool _internal_weak() const;
   void _internal_set_weak(bool value);
   public:
-
-
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline bool HasExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void ClearExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
     _impl_._extensions_.ClearExtension(id.number());
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline int ExtensionSize(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
-    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_,
-                                  id.default_value());
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
-    return _proto_TypeTraits::Mutable(id.number(), _field_type,
-                                      &_impl_._extensions_);
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
+    return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetAllocatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
-
+    ;
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void UnsafeArenaSetAllocatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
-
+    ;
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   PROTOBUF_NODISCARD inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
-          const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-              FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
-    return _proto_TypeTraits::Release(id.number(), _field_type,
-                                      &_impl_._extensions_);
+          const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) {
+    ;
+    return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType
   UnsafeArenaReleaseExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index) const {
-
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index) {
-
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
-
+    ;
     return to_add;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void AddExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
-
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldOptions)
  private:
   class _Internal;
@@ -5293,8 +5132,9 @@ class PROTOBUF_EXPORT OneofOptions final :
   int uninterpreted_option_size() const;
   private:
   int _internal_uninterpreted_option_size() const;
+
   public:
-  void clear_uninterpreted_option();
+  void clear_uninterpreted_option() ;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* mutable_uninterpreted_option(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >*
       mutable_uninterpreted_option();
@@ -5306,197 +5146,174 @@ class PROTOBUF_EXPORT OneofOptions final :
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
       uninterpreted_option() const;
-
-
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline bool HasExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void ClearExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
     _impl_._extensions_.ClearExtension(id.number());
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline int ExtensionSize(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
-    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_,
-                                  id.default_value());
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
-    return _proto_TypeTraits::Mutable(id.number(), _field_type,
-                                      &_impl_._extensions_);
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
+    return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetAllocatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
-
+    ;
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void UnsafeArenaSetAllocatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
-
+    ;
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   PROTOBUF_NODISCARD inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
-          const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-              OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
-    return _proto_TypeTraits::Release(id.number(), _field_type,
-                                      &_impl_._extensions_);
+          const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) {
+    ;
+    return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType
   UnsafeArenaReleaseExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index) const {
-
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index) {
-
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
-
+    ;
     return to_add;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void AddExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
-
   // @@protoc_insertion_point(class_scope:google.protobuf.OneofOptions)
  private:
   class _Internal;
@@ -5650,8 +5467,9 @@ class PROTOBUF_EXPORT EnumOptions final :
   int uninterpreted_option_size() const;
   private:
   int _internal_uninterpreted_option_size() const;
+
   public:
-  void clear_uninterpreted_option();
+  void clear_uninterpreted_option() ;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* mutable_uninterpreted_option(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >*
       mutable_uninterpreted_option();
@@ -5663,227 +5481,201 @@ class PROTOBUF_EXPORT EnumOptions final :
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
       uninterpreted_option() const;
-
   // optional bool allow_alias = 2;
   bool has_allow_alias() const;
-  void clear_allow_alias();
+  void clear_allow_alias() ;
   bool allow_alias() const;
   void set_allow_alias(bool value);
   private:
   bool _internal_allow_alias() const;
   void _internal_set_allow_alias(bool value);
   public:
-
   // optional bool deprecated = 3 [default = false];
   bool has_deprecated() const;
-  void clear_deprecated();
+  void clear_deprecated() ;
   bool deprecated() const;
   void set_deprecated(bool value);
   private:
   bool _internal_deprecated() const;
   void _internal_set_deprecated(bool value);
   public:
-
   // optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
-  PROTOBUF_DEPRECATED bool has_deprecated_legacy_json_field_conflicts() const;
-  PROTOBUF_DEPRECATED void clear_deprecated_legacy_json_field_conflicts();
+  PROTOBUF_DEPRECATED  bool has_deprecated_legacy_json_field_conflicts() const;
+  PROTOBUF_DEPRECATED  void clear_deprecated_legacy_json_field_conflicts() ;
   PROTOBUF_DEPRECATED bool deprecated_legacy_json_field_conflicts() const;
   PROTOBUF_DEPRECATED void set_deprecated_legacy_json_field_conflicts(bool value);
   private:
   bool _internal_deprecated_legacy_json_field_conflicts() const;
   void _internal_set_deprecated_legacy_json_field_conflicts(bool value);
   public:
-
-
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline bool HasExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void ClearExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
     _impl_._extensions_.ClearExtension(id.number());
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline int ExtensionSize(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
-    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_,
-                                  id.default_value());
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
-    return _proto_TypeTraits::Mutable(id.number(), _field_type,
-                                      &_impl_._extensions_);
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
+    return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetAllocatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
-
+    ;
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void UnsafeArenaSetAllocatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
-
+    ;
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   PROTOBUF_NODISCARD inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
-          const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-              EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
-    return _proto_TypeTraits::Release(id.number(), _field_type,
-                                      &_impl_._extensions_);
+          const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) {
+    ;
+    return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType
   UnsafeArenaReleaseExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index) const {
-
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index) {
-
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
-
+    ;
     return to_add;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void AddExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
-
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumOptions)
  private:
   class _Internal;
@@ -6039,8 +5831,9 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   int uninterpreted_option_size() const;
   private:
   int _internal_uninterpreted_option_size() const;
+
   public:
-  void clear_uninterpreted_option();
+  void clear_uninterpreted_option() ;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* mutable_uninterpreted_option(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >*
       mutable_uninterpreted_option();
@@ -6052,207 +5845,183 @@ class PROTOBUF_EXPORT EnumValueOptions final :
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
       uninterpreted_option() const;
-
   // optional bool deprecated = 1 [default = false];
   bool has_deprecated() const;
-  void clear_deprecated();
+  void clear_deprecated() ;
   bool deprecated() const;
   void set_deprecated(bool value);
   private:
   bool _internal_deprecated() const;
   void _internal_set_deprecated(bool value);
   public:
-
-
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline bool HasExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void ClearExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
     _impl_._extensions_.ClearExtension(id.number());
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline int ExtensionSize(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
-    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_,
-                                  id.default_value());
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
-    return _proto_TypeTraits::Mutable(id.number(), _field_type,
-                                      &_impl_._extensions_);
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
+    return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetAllocatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
-
+    ;
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void UnsafeArenaSetAllocatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
-
+    ;
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   PROTOBUF_NODISCARD inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
-          const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-              EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
-    return _proto_TypeTraits::Release(id.number(), _field_type,
-                                      &_impl_._extensions_);
+          const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) {
+    ;
+    return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType
   UnsafeArenaReleaseExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index) const {
-
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index) {
-
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
-
+    ;
     return to_add;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void AddExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
-
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumValueOptions)
  private:
   class _Internal;
@@ -6406,8 +6175,9 @@ class PROTOBUF_EXPORT ServiceOptions final :
   int uninterpreted_option_size() const;
   private:
   int _internal_uninterpreted_option_size() const;
+
   public:
-  void clear_uninterpreted_option();
+  void clear_uninterpreted_option() ;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* mutable_uninterpreted_option(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >*
       mutable_uninterpreted_option();
@@ -6419,207 +6189,183 @@ class PROTOBUF_EXPORT ServiceOptions final :
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
       uninterpreted_option() const;
-
   // optional bool deprecated = 33 [default = false];
   bool has_deprecated() const;
-  void clear_deprecated();
+  void clear_deprecated() ;
   bool deprecated() const;
   void set_deprecated(bool value);
   private:
   bool _internal_deprecated() const;
   void _internal_set_deprecated(bool value);
   public:
-
-
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline bool HasExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void ClearExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
     _impl_._extensions_.ClearExtension(id.number());
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline int ExtensionSize(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
-    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_,
-                                  id.default_value());
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
-    return _proto_TypeTraits::Mutable(id.number(), _field_type,
-                                      &_impl_._extensions_);
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
+    return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetAllocatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
-
+    ;
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void UnsafeArenaSetAllocatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
-
+    ;
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   PROTOBUF_NODISCARD inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
-          const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-              ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
-    return _proto_TypeTraits::Release(id.number(), _field_type,
-                                      &_impl_._extensions_);
+          const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) {
+    ;
+    return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType
   UnsafeArenaReleaseExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index) const {
-
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index) {
-
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
-
+    ;
     return to_add;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void AddExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
-
   // @@protoc_insertion_point(class_scope:google.protobuf.ServiceOptions)
  private:
   class _Internal;
@@ -6795,8 +6541,9 @@ class PROTOBUF_EXPORT MethodOptions final :
   int uninterpreted_option_size() const;
   private:
   int _internal_uninterpreted_option_size() const;
+
   public:
-  void clear_uninterpreted_option();
+  void clear_uninterpreted_option() ;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* mutable_uninterpreted_option(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >*
       mutable_uninterpreted_option();
@@ -6808,217 +6555,192 @@ class PROTOBUF_EXPORT MethodOptions final :
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption* add_uninterpreted_option();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption >&
       uninterpreted_option() const;
-
   // optional bool deprecated = 33 [default = false];
   bool has_deprecated() const;
-  void clear_deprecated();
+  void clear_deprecated() ;
   bool deprecated() const;
   void set_deprecated(bool value);
   private:
   bool _internal_deprecated() const;
   void _internal_set_deprecated(bool value);
   public:
-
   // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
   bool has_idempotency_level() const;
-  void clear_idempotency_level();
+  void clear_idempotency_level() ;
   ::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel idempotency_level() const;
   void set_idempotency_level(::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel value);
   private:
   ::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel _internal_idempotency_level() const;
   void _internal_set_idempotency_level(::PROTOBUF_NAMESPACE_ID::MethodOptions_IdempotencyLevel value);
   public:
-
-
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline bool HasExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.Has(id.number());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void ClearExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
     _impl_._extensions_.ClearExtension(id.number());
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline int ExtensionSize(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _impl_._extensions_.ExtensionSize(id.number());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
-    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_,
-                                  id.default_value());
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
+    return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, id.default_value());
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
-    return _proto_TypeTraits::Mutable(id.number(), _field_type,
-                                      &_impl_._extensions_);
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
+    return _proto_TypeTraits::Mutable(id.number(), _field_type, &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
     _proto_TypeTraits::Set(id.number(), _field_type, value, &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetAllocatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
                                     &_impl_._extensions_);
-
+    ;
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void UnsafeArenaSetAllocatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
                                                value, &_impl_._extensions_);
-
+    ;
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   PROTOBUF_NODISCARD inline
       typename _proto_TypeTraits::Singular::MutableType
       ReleaseExtension(
-          const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-              MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
-    return _proto_TypeTraits::Release(id.number(), _field_type,
-                                      &_impl_._extensions_);
+          const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) {
+    ;
+    return _proto_TypeTraits::Release(id.number(), _field_type, &_impl_._extensions_);
   }
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Singular::MutableType
   UnsafeArenaReleaseExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
                                                  &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index) const {
-
+    ;
     return _proto_TypeTraits::Get(id.number(), _impl_._extensions_, index);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index) {
-
+    ;
     return _proto_TypeTraits::Mutable(id.number(), index, &_impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void SetExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       int index, typename _proto_TypeTraits::Repeated::ConstType value) {
     _proto_TypeTraits::Set(id.number(), index, value, &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
         _proto_TypeTraits::Add(id.number(), _field_type, &_impl_._extensions_);
-
+    ;
     return to_add;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline void AddExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id,
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
     _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
                            &_impl_._extensions_);
-
+    ;
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
   GetRepeatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) const {
+    ;
     return _proto_TypeTraits::GetRepeated(id.number(), _impl_._extensions_);
   }
 
-  template <typename _proto_TypeTraits,
-            ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
+  template <typename _proto_TypeTraits, ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
             bool _is_packed>
   inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
   MutableRepeatedExtension(
-      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-          MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-
+      const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
+                                       _field_type, _is_packed>& id) {
+    ;
     return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
                                               _is_packed, &_impl_._extensions_);
   }
-
   // @@protoc_insertion_point(class_scope:google.protobuf.MethodOptions)
  private:
   class _Internal;
@@ -7171,7 +6893,7 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   };
   // required string name_part = 1;
   bool has_name_part() const;
-  void clear_name_part();
+  void clear_name_part() ;
   const std::string& name_part() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name_part(ArgT0&& arg0, ArgT... args);
@@ -7183,17 +6905,15 @@ class PROTOBUF_EXPORT UninterpretedOption_NamePart final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name_part(const std::string& value);
   std::string* _internal_mutable_name_part();
   public:
-
   // required bool is_extension = 2;
   bool has_is_extension() const;
-  void clear_is_extension();
+  void clear_is_extension() ;
   bool is_extension() const;
   void set_is_extension(bool value);
   private:
   bool _internal_is_extension() const;
   void _internal_set_is_extension(bool value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.UninterpretedOption.NamePart)
  private:
   class _Internal;
@@ -7355,8 +7075,9 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   int name_size() const;
   private:
   int _internal_name_size() const;
+
   public:
-  void clear_name();
+  void clear_name() ;
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart* mutable_name(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart >*
       mutable_name();
@@ -7368,10 +7089,9 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart* add_name();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::UninterpretedOption_NamePart >&
       name() const;
-
   // optional string identifier_value = 3;
   bool has_identifier_value() const;
-  void clear_identifier_value();
+  void clear_identifier_value() ;
   const std::string& identifier_value() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_identifier_value(ArgT0&& arg0, ArgT... args);
@@ -7383,10 +7103,9 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_identifier_value(const std::string& value);
   std::string* _internal_mutable_identifier_value();
   public:
-
   // optional bytes string_value = 7;
   bool has_string_value() const;
-  void clear_string_value();
+  void clear_string_value() ;
   const std::string& string_value() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_string_value(ArgT0&& arg0, ArgT... args);
@@ -7398,10 +7117,9 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(const std::string& value);
   std::string* _internal_mutable_string_value();
   public:
-
   // optional string aggregate_value = 8;
   bool has_aggregate_value() const;
-  void clear_aggregate_value();
+  void clear_aggregate_value() ;
   const std::string& aggregate_value() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_aggregate_value(ArgT0&& arg0, ArgT... args);
@@ -7413,37 +7131,33 @@ class PROTOBUF_EXPORT UninterpretedOption final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_aggregate_value(const std::string& value);
   std::string* _internal_mutable_aggregate_value();
   public:
-
   // optional uint64 positive_int_value = 4;
   bool has_positive_int_value() const;
-  void clear_positive_int_value();
+  void clear_positive_int_value() ;
   ::uint64_t positive_int_value() const;
   void set_positive_int_value(::uint64_t value);
   private:
   ::uint64_t _internal_positive_int_value() const;
   void _internal_set_positive_int_value(::uint64_t value);
   public:
-
   // optional int64 negative_int_value = 5;
   bool has_negative_int_value() const;
-  void clear_negative_int_value();
+  void clear_negative_int_value() ;
   ::int64_t negative_int_value() const;
   void set_negative_int_value(::int64_t value);
   private:
   ::int64_t _internal_negative_int_value() const;
   void _internal_set_negative_int_value(::int64_t value);
   public:
-
   // optional double double_value = 6;
   bool has_double_value() const;
-  void clear_double_value();
+  void clear_double_value() ;
   double double_value() const;
   void set_double_value(double value);
   private:
   double _internal_double_value() const;
   void _internal_set_double_value(double value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.UninterpretedOption)
  private:
   class _Internal;
@@ -7603,8 +7317,9 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   int path_size() const;
   private:
   int _internal_path_size() const;
+
   public:
-  void clear_path();
+  void clear_path() ;
   private:
   ::int32_t _internal_path(int index) const;
   const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::int32_t >&
@@ -7620,13 +7335,13 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
       path() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::int32_t >*
       mutable_path();
-
   // repeated int32 span = 2 [packed = true];
   int span_size() const;
   private:
   int _internal_span_size() const;
+
   public:
-  void clear_span();
+  void clear_span() ;
   private:
   ::int32_t _internal_span(int index) const;
   const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::int32_t >&
@@ -7642,13 +7357,13 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
       span() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::int32_t >*
       mutable_span();
-
   // repeated string leading_detached_comments = 6;
   int leading_detached_comments_size() const;
   private:
   int _internal_leading_detached_comments_size() const;
+
   public:
-  void clear_leading_detached_comments();
+  void clear_leading_detached_comments() ;
   const std::string& leading_detached_comments(int index) const;
   std::string* mutable_leading_detached_comments(int index);
   void set_leading_detached_comments(int index, const std::string& value);
@@ -7666,10 +7381,9 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   const std::string& _internal_leading_detached_comments(int index) const;
   std::string* _internal_add_leading_detached_comments();
   public:
-
   // optional string leading_comments = 3;
   bool has_leading_comments() const;
-  void clear_leading_comments();
+  void clear_leading_comments() ;
   const std::string& leading_comments() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_leading_comments(ArgT0&& arg0, ArgT... args);
@@ -7681,10 +7395,9 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_leading_comments(const std::string& value);
   std::string* _internal_mutable_leading_comments();
   public:
-
   // optional string trailing_comments = 4;
   bool has_trailing_comments() const;
-  void clear_trailing_comments();
+  void clear_trailing_comments() ;
   const std::string& trailing_comments() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_trailing_comments(ArgT0&& arg0, ArgT... args);
@@ -7696,7 +7409,6 @@ class PROTOBUF_EXPORT SourceCodeInfo_Location final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_trailing_comments(const std::string& value);
   std::string* _internal_mutable_trailing_comments();
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceCodeInfo.Location)
  private:
   class _Internal;
@@ -7854,8 +7566,9 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   int location_size() const;
   private:
   int _internal_location_size() const;
+
   public:
-  void clear_location();
+  void clear_location() ;
   ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location* mutable_location(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location >*
       mutable_location();
@@ -7867,7 +7580,6 @@ class PROTOBUF_EXPORT SourceCodeInfo final :
   ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location* add_location();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::SourceCodeInfo_Location >&
       location() const;
-
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceCodeInfo)
  private:
   class _Internal;
@@ -8041,8 +7753,9 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   int path_size() const;
   private:
   int _internal_path_size() const;
+
   public:
-  void clear_path();
+  void clear_path() ;
   private:
   ::int32_t _internal_path(int index) const;
   const ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::int32_t >&
@@ -8058,10 +7771,9 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
       path() const;
   ::PROTOBUF_NAMESPACE_ID::RepeatedField< ::int32_t >*
       mutable_path();
-
   // optional string source_file = 2;
   bool has_source_file() const;
-  void clear_source_file();
+  void clear_source_file() ;
   const std::string& source_file() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_source_file(ArgT0&& arg0, ArgT... args);
@@ -8073,37 +7785,33 @@ class PROTOBUF_EXPORT GeneratedCodeInfo_Annotation final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_source_file(const std::string& value);
   std::string* _internal_mutable_source_file();
   public:
-
   // optional int32 begin = 3;
   bool has_begin() const;
-  void clear_begin();
+  void clear_begin() ;
   ::int32_t begin() const;
   void set_begin(::int32_t value);
   private:
   ::int32_t _internal_begin() const;
   void _internal_set_begin(::int32_t value);
   public:
-
   // optional int32 end = 4;
   bool has_end() const;
-  void clear_end();
+  void clear_end() ;
   ::int32_t end() const;
   void set_end(::int32_t value);
   private:
   ::int32_t _internal_end() const;
   void _internal_set_end(::int32_t value);
   public:
-
   // optional .google.protobuf.GeneratedCodeInfo.Annotation.Semantic semantic = 5;
   bool has_semantic() const;
-  void clear_semantic();
+  void clear_semantic() ;
   ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic semantic() const;
   void set_semantic(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic value);
   private:
   ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic _internal_semantic() const;
   void _internal_set_semantic(::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation_Semantic value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.GeneratedCodeInfo.Annotation)
  private:
   class _Internal;
@@ -8260,8 +7968,9 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   int annotation_size() const;
   private:
   int _internal_annotation_size() const;
+
   public:
-  void clear_annotation();
+  void clear_annotation() ;
   ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation* mutable_annotation(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation >*
       mutable_annotation();
@@ -8273,7 +7982,6 @@ class PROTOBUF_EXPORT GeneratedCodeInfo final :
   ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation* add_annotation();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo_Annotation >&
       annotation() const;
-
   // @@protoc_insertion_point(class_scope:google.protobuf.GeneratedCodeInfo)
  private:
   class _Internal;

@@ -61,6 +61,9 @@ absl::flat_hash_map<absl::string_view, std::string> CommonVars(
   bool is_oss = options.opensource_runtime;
   return {
       {"proto_ns", ProtobufNamespace(options)},
+      {"pb", absl::StrCat("::", ProtobufNamespace(options))},
+      {"pbi", absl::StrCat("::", ProtobufNamespace(options), "::internal")},
+
       {"string", "std::string"},
       {"int8", "::int8_t"},
       {"int32", "::int32_t"},

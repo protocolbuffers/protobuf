@@ -79,13 +79,12 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-
-using internal::WireFormat;
-using internal::WireFormatLite;
-using internal::cpp::HasHasbit;
-using internal::cpp::Utf8CheckMode;
-
 namespace {
+using ::google::protobuf::internal::WireFormat;
+using ::google::protobuf::internal::WireFormatLite;
+using ::google::protobuf::internal::cpp::HasHasbit;
+using ::google::protobuf::internal::cpp::Utf8CheckMode;
+using Sub = ::google::protobuf::io::Printer::Sub;
 
 static constexpr int kNoHasbit = -1;
 
@@ -509,6 +508,13 @@ void AnnotationVar(const Descriptor* desc, const Options& options,
 absl::flat_hash_map<absl::string_view, std::string> ClassVars(
     const Descriptor* desc, Options opts) {
   absl::flat_hash_map<absl::string_view, std::string> vars = MessageVars(desc);
+
+  vars.emplace("Msg", ClassName(desc, false));
+  vars.emplace("pkg::Msg", QualifiedClassName(desc, opts));
+  vars.emplace("pkg.Msg", desc->full_name());
+
+  // Old-style names, to be removed once all usages are gone in this and other
+  // files.
   vars.emplace("classname", ClassName(desc, false));
   vars.emplace("classtype", QualifiedClassName(desc, opts));
   vars.emplace("full_name", desc->full_name());
@@ -749,7 +755,9 @@ void MessageGenerator::AddGenerators(
 }
 
 void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
+  auto v = p->WithVars(MessageVars(descriptor_));
   Formatter format(p);
+
   // optimized_fields_ does not contain fields where
   //    field->real_containing_oneof()
   // so we need to iterate over those as well.
@@ -759,9 +767,9 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
   // able to infer these indices from the k[FIELDNAME]FieldNumber order.
   std::vector<const FieldDescriptor*> ordered_fields;
   ordered_fields.reserve(descriptor_->field_count());
-
   ordered_fields.insert(ordered_fields.begin(), optimized_order_.begin(),
                         optimized_order_.end());
+
   for (auto field : FieldRange(descriptor_)) {
     if (!field->real_containing_oneof() && !field->options().weak() &&
         !IsFieldStripped(field, options_)) {
@@ -771,51 +779,101 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
   }
 
   if (!ordered_fields.empty()) {
-    format("enum : int {\n");
-    for (auto field : ordered_fields) {
-      Formatter::SaveState save(&format);
-
-      absl::flat_hash_map<absl::string_view, std::string> vars;
-      SetCommonFieldVariables(field, &vars, options_);
-      auto v = p->WithVars(std::move(vars));
-      format("  ${1$$2$$}$ = $number$,\n", field, FieldConstantName(field));
-    }
-    format("};\n");
+    p->Emit({{
+                "kFields",
+                [&] {
+                  for (auto field : ordered_fields) {
+                    auto v = p->WithVars(FieldVars(field, options_));
+                    p->Emit({Sub("kField", FieldConstantName(field))
+                                 .AnnotatedAs(field)},
+                            R"cc(
+                              $kField$ = $number$,
+                            )cc");
+                  }
+                },
+            }},
+            R"cc(
+              enum : int {
+                $kFields$,
+              };
+            )cc");
   }
   for (auto field : ordered_fields) {
-    PrintFieldComment(format, field);
+    bool stripped = IsFieldStripped(field, options_);
+    auto name = FieldName(field);
 
     auto v = p->WithVars(FieldVars(field, options_));
-    if (field->is_repeated()) {
-      format("$deprecated_attr$int ${1$$name$_size$}$() const$2$\n", field,
-             !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
-      if (!IsFieldStripped(field, options_)) {
-        format(
-            "private:\n"
-            "int ${1$_internal_$name$_size$}$() const;\n"
-            "public:\n",
-            field);
-      }
-    } else {
-      if (HasHasMethod(field)) {
-        format(
-            "$deprecated_attr$bool ${1$has_$name$$}$() const$2$\n", field,
-            !IsFieldStripped(field, options_) ? ";" : " {__builtin_trap();}");
-      }
-      if (HasInternalHasMethod(field) && !IsFieldStripped(field, options_)) {
-        format(
-            "private:\n"
-            "bool ${1$_internal_has_$name$$}$() const;\n"
-            "public:\n",
-            field);
-      }
-    }
-    format("$deprecated_attr$void ${1$clear_$name$$}$()$2$\n", field,
-           !IsFieldStripped(field, options_) ? ";" : "{__builtin_trap();}");
+    p->Emit(
+        {{"field_comment", FieldComment(field)},
+         Sub("const_impl", !stripped ? "const;" : "const { __builtin_trap(); }")
+             .WithSuffix(";"),
+         Sub("impl", !stripped ? ";" : " { __builtin_trap(); }")
+             .WithSuffix(";"),
+         {"sizer",
+          [&] {
+            if (!field->is_repeated()) return;
+            p->Emit({Sub("name_size", absl::StrCat(name, "_size"))
+                         .AnnotatedAs(field)},
+                    R"cc(
+                      $deprecated_attr $int $name_size$() $const_impl$;
+                    )cc");
 
-    // Generate type-specific accessor declarations.
-    field_generators_.get(field).GenerateAccessorDeclarations(p);
-    format("\n");
+            if (stripped) return;
+            p->Emit({Sub("_internal_name_size",
+                         absl::StrCat("_internal_", name, "_size"))
+                         .AnnotatedAs(field)},
+                    R"cc(
+                      private:
+                      int $_internal_name_size$() const;
+
+                      public:
+                    )cc");
+          }},
+         {"hazzer",
+          [&] {
+            if (!field->has_presence()) return;
+            p->Emit({Sub("has_name", absl::StrCat("has_", name))
+                         .AnnotatedAs(field)},
+                    R"cc(
+                      $deprecated_attr $bool $has_name$() $const_impl$;
+                    )cc");
+          }},
+         {"internal_hazzer",
+          [&] {
+            if (field->is_repeated() || !HasInternalHasMethod(field) ||
+                stripped) {
+              return;
+            }
+            p->Emit(
+                {Sub("_internal_has_name", absl::StrCat("_internal_has_", name))
+                     .AnnotatedAs(field)},
+                R"cc(
+                  private:
+                  bool $_internal_has_name$() const;
+
+                  public:
+                )cc");
+          }},
+         {"clearer",
+          [&] {
+            p->Emit({Sub("clear_name", absl::StrCat("clear_", name))
+                         .AnnotatedAs(field)},
+                    R"cc(
+                      $deprecated_attr $void $clear_name$() $impl$;
+                    )cc");
+          }},
+         {"accessors",
+          [&] {
+            field_generators_.get(field).GenerateAccessorDeclarations(p);
+          }}},
+        R"cc(
+          // $field_comment$
+          $sizer$;
+          $hazzer$;
+          $internal_hazzer$;
+          $clearer$;
+          $accessors$;
+        )cc");
   }
 
   if (descriptor_->extension_range_count() > 0) {
@@ -828,204 +886,186 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
     // For similar reason, we use "_field_type" and "_is_packed" as parameter
     // names below, so that "field_type" and "is_packed" can be used as field
     // names.
-    format(R"(
-template <typename _proto_TypeTraits,
-          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
-          bool _is_packed>
-inline bool HasExtension(
-    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-$annotate_extension_has$
-  return $extensions$.Has(id.number());
-}
+    p->Emit(R"cc(
+      template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
+                bool _is_packed>
+      inline bool HasExtension(
+          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) const {
+        $annotate_extension_has$;
+        return $extensions$.Has(id.number());
+      }
 
-template <typename _proto_TypeTraits,
-          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
-          bool _is_packed>
-inline void ClearExtension(
-    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) {
-  $extensions$.ClearExtension(id.number());
-$annotate_extension_clear$
-}
+      template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
+                bool _is_packed>
+      inline void ClearExtension(
+          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) {
+        $extensions$.ClearExtension(id.number());
+        $annotate_extension_clear$;
+      }
 
-template <typename _proto_TypeTraits,
-          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
-          bool _is_packed>
-inline int ExtensionSize(
-    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-$annotate_extension_repeated_size$
-  return $extensions$.ExtensionSize(id.number());
-}
+      template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
+                bool _is_packed>
+      inline int ExtensionSize(
+          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) const {
+        $annotate_extension_repeated_size$;
+        return $extensions$.ExtensionSize(id.number());
+      }
 
-template <typename _proto_TypeTraits,
-          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
-          bool _is_packed>
-inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
-    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-$annotate_extension_get$
-  return _proto_TypeTraits::Get(id.number(), $extensions$,
-                                id.default_value());
-}
+      template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
+                bool _is_packed>
+      inline typename _proto_TypeTraits::Singular::ConstType GetExtension(
+          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) const {
+        $annotate_extension_get$;
+        return _proto_TypeTraits::Get(id.number(), $extensions$, id.default_value());
+      }
 
-template <typename _proto_TypeTraits,
-          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
-          bool _is_packed>
-inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
-    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) {
-$annotate_extension_mutable$
-  return _proto_TypeTraits::Mutable(id.number(), _field_type,
-                                    &$extensions$);
-}
+      template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
+                bool _is_packed>
+      inline typename _proto_TypeTraits::Singular::MutableType MutableExtension(
+          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) {
+        $annotate_extension_mutable$;
+        return _proto_TypeTraits::Mutable(id.number(), _field_type, &$extensions$);
+      }
 
-template <typename _proto_TypeTraits,
-          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
-          bool _is_packed>
-inline void SetExtension(
-    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
-    typename _proto_TypeTraits::Singular::ConstType value) {
-  _proto_TypeTraits::Set(id.number(), _field_type, value, &$extensions$);
-$annotate_extension_set$
-}
+      template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
+                bool _is_packed>
+      inline void SetExtension(
+          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id,
+          typename _proto_TypeTraits::Singular::ConstType value) {
+        _proto_TypeTraits::Set(id.number(), _field_type, value, &$extensions$);
+        $annotate_extension_set$;
+      }
 
-template <typename _proto_TypeTraits,
-          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
-          bool _is_packed>
-inline void SetAllocatedExtension(
-    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
-    typename _proto_TypeTraits::Singular::MutableType value) {
-  _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
-                                  &$extensions$);
-$annotate_extension_set$
-}
-template <typename _proto_TypeTraits,
-          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
-          bool _is_packed>
-inline void UnsafeArenaSetAllocatedExtension(
-    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
-    typename _proto_TypeTraits::Singular::MutableType value) {
-  _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
-                                             value, &$extensions$);
-$annotate_extension_set$
-}
-template <typename _proto_TypeTraits,
-          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
-          bool _is_packed>
-PROTOBUF_NODISCARD inline
-    typename _proto_TypeTraits::Singular::MutableType
-    ReleaseExtension(
-        const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-            $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) {
-$annotate_extension_release$
-  return _proto_TypeTraits::Release(id.number(), _field_type,
-                                    &$extensions$);
-}
-template <typename _proto_TypeTraits,
-          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
-          bool _is_packed>
-inline typename _proto_TypeTraits::Singular::MutableType
-UnsafeArenaReleaseExtension(
-    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) {
-$annotate_extension_release$
-  return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
-                                               &$extensions$);
-}
+      template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
+                bool _is_packed>
+      inline void SetAllocatedExtension(
+          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id,
+          typename _proto_TypeTraits::Singular::MutableType value) {
+        _proto_TypeTraits::SetAllocated(id.number(), _field_type, value,
+                                        &$extensions$);
+        $annotate_extension_set$;
+      }
+      template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
+                bool _is_packed>
+      inline void UnsafeArenaSetAllocatedExtension(
+          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id,
+          typename _proto_TypeTraits::Singular::MutableType value) {
+        _proto_TypeTraits::UnsafeArenaSetAllocated(id.number(), _field_type,
+                                                   value, &$extensions$);
+        $annotate_extension_set$;
+      }
+      template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
+                bool _is_packed>
+      PROTOBUF_NODISCARD inline
+          typename _proto_TypeTraits::Singular::MutableType
+          ReleaseExtension(
+              const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                               _field_type, _is_packed>& id) {
+        $annotate_extension_release$;
+        return _proto_TypeTraits::Release(id.number(), _field_type, &$extensions$);
+      }
+      template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
+                bool _is_packed>
+      inline typename _proto_TypeTraits::Singular::MutableType
+      UnsafeArenaReleaseExtension(
+          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) {
+        $annotate_extension_release$;
+        return _proto_TypeTraits::UnsafeArenaRelease(id.number(), _field_type,
+                                                     &$extensions$);
+      }
 
-template <typename _proto_TypeTraits,
-          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
-          bool _is_packed>
-inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
-    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
-    int index) const {
-$annotate_repeated_extension_get$
-  return _proto_TypeTraits::Get(id.number(), $extensions$, index);
-}
+      template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
+                bool _is_packed>
+      inline typename _proto_TypeTraits::Repeated::ConstType GetExtension(
+          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id,
+          int index) const {
+        $annotate_repeated_extension_get$;
+        return _proto_TypeTraits::Get(id.number(), $extensions$, index);
+      }
 
-template <typename _proto_TypeTraits,
-          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
-          bool _is_packed>
-inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
-    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
-    int index) {
-$annotate_repeated_extension_mutable$
-  return _proto_TypeTraits::Mutable(id.number(), index, &$extensions$);
-}
+      template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
+                bool _is_packed>
+      inline typename _proto_TypeTraits::Repeated::MutableType MutableExtension(
+          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id,
+          int index) {
+        $annotate_repeated_extension_mutable$;
+        return _proto_TypeTraits::Mutable(id.number(), index, &$extensions$);
+      }
 
-template <typename _proto_TypeTraits,
-          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
-          bool _is_packed>
-inline void SetExtension(
-    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
-    int index, typename _proto_TypeTraits::Repeated::ConstType value) {
-  _proto_TypeTraits::Set(id.number(), index, value, &$extensions$);
-$annotate_repeated_extension_set$
-}
+      template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
+                bool _is_packed>
+      inline void SetExtension(
+          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id,
+          int index, typename _proto_TypeTraits::Repeated::ConstType value) {
+        _proto_TypeTraits::Set(id.number(), index, value, &$extensions$);
+        $annotate_repeated_extension_set$;
+      }
 
-template <typename _proto_TypeTraits,
-          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
-          bool _is_packed>
-inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
-    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) {
-  typename _proto_TypeTraits::Repeated::MutableType to_add =
-      _proto_TypeTraits::Add(id.number(), _field_type, &$extensions$);
-$annotate_repeated_extension_add_mutable$
-  return to_add;
-}
+      template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
+                bool _is_packed>
+      inline typename _proto_TypeTraits::Repeated::MutableType AddExtension(
+          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) {
+        typename _proto_TypeTraits::Repeated::MutableType to_add =
+            _proto_TypeTraits::Add(id.number(), _field_type, &$extensions$);
+        $annotate_repeated_extension_add_mutable$;
+        return to_add;
+      }
 
-template <typename _proto_TypeTraits,
-          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
-          bool _is_packed>
-inline void AddExtension(
-    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id,
-    typename _proto_TypeTraits::Repeated::ConstType value) {
-  _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
-                         &$extensions$);
-$annotate_repeated_extension_add$
-}
+      template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
+                bool _is_packed>
+      inline void AddExtension(
+          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id,
+          typename _proto_TypeTraits::Repeated::ConstType value) {
+        _proto_TypeTraits::Add(id.number(), _field_type, _is_packed, value,
+                               &$extensions$);
+        $annotate_repeated_extension_add$;
+      }
 
-template <typename _proto_TypeTraits,
-          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
-          bool _is_packed>
-inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
-GetRepeatedExtension(
-    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) const {
-$annotate_repeated_extension_list$
-  return _proto_TypeTraits::GetRepeated(id.number(), $extensions$);
-}
+      template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
+                bool _is_packed>
+      inline const typename _proto_TypeTraits::Repeated::RepeatedFieldType&
+      GetRepeatedExtension(
+          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) const {
+        $annotate_repeated_extension_list$;
+        return _proto_TypeTraits::GetRepeated(id.number(), $extensions$);
+      }
 
-template <typename _proto_TypeTraits,
-          ::PROTOBUF_NAMESPACE_ID::internal::FieldType _field_type,
-          bool _is_packed>
-inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
-MutableRepeatedExtension(
-    const ::PROTOBUF_NAMESPACE_ID::internal::ExtensionIdentifier<
-        $classname$, _proto_TypeTraits, _field_type, _is_packed>& id) {
-$annotate_repeated_extension_list_mutable$
-  return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
-                                            _is_packed, &$extensions$);
-}
+      template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
+                bool _is_packed>
+      inline typename _proto_TypeTraits::Repeated::RepeatedFieldType*
+      MutableRepeatedExtension(
+          const $pbi$::ExtensionIdentifier<$Msg$, _proto_TypeTraits,
+                                           _field_type, _is_packed>& id) {
+        $annotate_repeated_extension_list_mutable$;
+        return _proto_TypeTraits::MutableRepeated(id.number(), _field_type,
+                                                  _is_packed, &$extensions$);
+      }
+    )cc");
 
-)");
     // Generate MessageSet specific APIs for proto2 MessageSet.
     // For testing purposes we don't check for bridge.MessageSet, so
     // we don't use IsProto2MessageSet
     if (descriptor_->options().message_set_wire_format() &&
         !options_.opensource_runtime && !options_.lite_implicit_weak_fields) {
-      // Special-case MessageSet
-      format("GOOGLE_PROTOBUF_EXTENSION_MESSAGE_SET_ACCESSORS($classname$)\n");
+      // Special-case MessageSet.
+      p->Emit(R"cc(
+        GOOGLE_PROTOBUF_EXTENSION_MESSAGE_SET_ACCESSORS($Msg$);
+      )cc");
     }
   }
 

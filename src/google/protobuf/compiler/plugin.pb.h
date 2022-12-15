@@ -253,7 +253,7 @@ class PROTOC_EXPORT Version final :
   };
   // optional string suffix = 4;
   bool has_suffix() const;
-  void clear_suffix();
+  void clear_suffix() ;
   const std::string& suffix() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_suffix(ArgT0&& arg0, ArgT... args);
@@ -265,37 +265,33 @@ class PROTOC_EXPORT Version final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_suffix(const std::string& value);
   std::string* _internal_mutable_suffix();
   public:
-
   // optional int32 major = 1;
   bool has_major() const;
-  void clear_major();
+  void clear_major() ;
   ::int32_t major() const;
   void set_major(::int32_t value);
   private:
   ::int32_t _internal_major() const;
   void _internal_set_major(::int32_t value);
   public:
-
   // optional int32 minor = 2;
   bool has_minor() const;
-  void clear_minor();
+  void clear_minor() ;
   ::int32_t minor() const;
   void set_minor(::int32_t value);
   private:
   ::int32_t _internal_minor() const;
   void _internal_set_minor(::int32_t value);
   public:
-
   // optional int32 patch = 3;
   bool has_patch() const;
-  void clear_patch();
+  void clear_patch() ;
   ::int32_t patch() const;
   void set_patch(::int32_t value);
   private:
   ::int32_t _internal_patch() const;
   void _internal_set_patch(::int32_t value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.Version)
  private:
   class _Internal;
@@ -451,8 +447,9 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   int file_to_generate_size() const;
   private:
   int _internal_file_to_generate_size() const;
+
   public:
-  void clear_file_to_generate();
+  void clear_file_to_generate() ;
   const std::string& file_to_generate(int index) const;
   std::string* mutable_file_to_generate(int index);
   void set_file_to_generate(int index, const std::string& value);
@@ -470,13 +467,13 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   const std::string& _internal_file_to_generate(int index) const;
   std::string* _internal_add_file_to_generate();
   public:
-
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   int proto_file_size() const;
   private:
   int _internal_proto_file_size() const;
+
   public:
-  void clear_proto_file();
+  void clear_proto_file() ;
   ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto* mutable_proto_file(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto >*
       mutable_proto_file();
@@ -488,10 +485,9 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto* add_proto_file();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::FileDescriptorProto >&
       proto_file() const;
-
   // optional string parameter = 2;
   bool has_parameter() const;
-  void clear_parameter();
+  void clear_parameter() ;
   const std::string& parameter() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_parameter(ArgT0&& arg0, ArgT... args);
@@ -503,10 +499,9 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_parameter(const std::string& value);
   std::string* _internal_mutable_parameter();
   public:
-
   // optional .google.protobuf.compiler.Version compiler_version = 3;
   bool has_compiler_version() const;
-  void clear_compiler_version();
+  void clear_compiler_version() ;
   const ::PROTOBUF_NAMESPACE_ID::compiler::Version& compiler_version() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::compiler::Version* release_compiler_version();
   ::PROTOBUF_NAMESPACE_ID::compiler::Version* mutable_compiler_version();
@@ -518,7 +513,6 @@ class PROTOC_EXPORT CodeGeneratorRequest final :
   void unsafe_arena_set_allocated_compiler_version(
       ::PROTOBUF_NAMESPACE_ID::compiler::Version* compiler_version);
   ::PROTOBUF_NAMESPACE_ID::compiler::Version* unsafe_arena_release_compiler_version();
-
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorRequest)
  private:
   class _Internal;
@@ -672,7 +666,7 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   };
   // optional string name = 1;
   bool has_name() const;
-  void clear_name();
+  void clear_name() ;
   const std::string& name() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_name(ArgT0&& arg0, ArgT... args);
@@ -684,10 +678,9 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_name(const std::string& value);
   std::string* _internal_mutable_name();
   public:
-
   // optional string insertion_point = 2;
   bool has_insertion_point() const;
-  void clear_insertion_point();
+  void clear_insertion_point() ;
   const std::string& insertion_point() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_insertion_point(ArgT0&& arg0, ArgT... args);
@@ -699,10 +692,9 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_insertion_point(const std::string& value);
   std::string* _internal_mutable_insertion_point();
   public:
-
   // optional string content = 15;
   bool has_content() const;
-  void clear_content();
+  void clear_content() ;
   const std::string& content() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_content(ArgT0&& arg0, ArgT... args);
@@ -714,10 +706,9 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_content(const std::string& value);
   std::string* _internal_mutable_content();
   public:
-
   // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
   bool has_generated_code_info() const;
-  void clear_generated_code_info();
+  void clear_generated_code_info() ;
   const ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo& generated_code_info() const;
   PROTOBUF_NODISCARD ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* release_generated_code_info();
   ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* mutable_generated_code_info();
@@ -729,7 +720,6 @@ class PROTOC_EXPORT CodeGeneratorResponse_File final :
   void unsafe_arena_set_allocated_generated_code_info(
       ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* generated_code_info);
   ::PROTOBUF_NAMESPACE_ID::GeneratedCodeInfo* unsafe_arena_release_generated_code_info();
-
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse.File)
  private:
   class _Internal;
@@ -906,8 +896,9 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   int file_size() const;
   private:
   int _internal_file_size() const;
+
   public:
-  void clear_file();
+  void clear_file() ;
   ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File* mutable_file(int index);
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File >*
       mutable_file();
@@ -919,10 +910,9 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File* add_file();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PROTOBUF_NAMESPACE_ID::compiler::CodeGeneratorResponse_File >&
       file() const;
-
   // optional string error = 1;
   bool has_error() const;
-  void clear_error();
+  void clear_error() ;
   const std::string& error() const;
   template <typename ArgT0 = const std::string&, typename... ArgT>
   void set_error(ArgT0&& arg0, ArgT... args);
@@ -934,17 +924,15 @@ class PROTOC_EXPORT CodeGeneratorResponse final :
   inline PROTOBUF_ALWAYS_INLINE void _internal_set_error(const std::string& value);
   std::string* _internal_mutable_error();
   public:
-
   // optional uint64 supported_features = 2;
   bool has_supported_features() const;
-  void clear_supported_features();
+  void clear_supported_features() ;
   ::uint64_t supported_features() const;
   void set_supported_features(::uint64_t value);
   private:
   ::uint64_t _internal_supported_features() const;
   void _internal_set_supported_features(::uint64_t value);
   public:
-
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse)
  private:
   class _Internal;
