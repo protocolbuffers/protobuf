@@ -192,7 +192,7 @@ class Message(object):
     raise NotImplementedError
 
   def ParseFromString(self, serialized):
-    """Parse serialized protocol buffer data into this message.
+    """Parse serialized protocol buffer data in binary form into this message.
 
     Like :func:`MergeFromString()`, except we clear the object first.
 
