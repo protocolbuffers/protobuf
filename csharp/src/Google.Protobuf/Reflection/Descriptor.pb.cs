@@ -107,62 +107,64 @@ namespace Google.Protobuf.Reflection {
             "cGFjZRgsIAEoCRIUCgxydWJ5X3BhY2thZ2UYLSABKAkSQwoUdW5pbnRlcnBy",
             "ZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJw",
             "cmV0ZWRPcHRpb24iOgoMT3B0aW1pemVNb2RlEgkKBVNQRUVEEAESDQoJQ09E",
-            "RV9TSVpFEAISEAoMTElURV9SVU5USU1FEAMqCQjoBxCAgICAAkoECCYQJyKE",
+            "RV9TSVpFEAISEAoMTElURV9SVU5USU1FEAMqCQjoBxCAgICAAkoECCYQJyK4",
             "AgoOTWVzc2FnZU9wdGlvbnMSJgoXbWVzc2FnZV9zZXRfd2lyZV9mb3JtYXQY",
             "ASABKAg6BWZhbHNlEi4KH25vX3N0YW5kYXJkX2Rlc2NyaXB0b3JfYWNjZXNz",
             "b3IYAiABKAg6BWZhbHNlEhkKCmRlcHJlY2F0ZWQYAyABKAg6BWZhbHNlEhEK",
-            "CW1hcF9lbnRyeRgHIAEoCBJDChR1bmludGVycHJldGVkX29wdGlvbhjnByAD",
-            "KAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbioJCOgH",
-            "EICAgIACSgQIBBAFSgQIBRAGSgQIBhAHSgQICBAJSgQICRAKIr4DCgxGaWVs",
-            "ZE9wdGlvbnMSOgoFY3R5cGUYASABKA4yIy5nb29nbGUucHJvdG9idWYuRmll",
-            "bGRPcHRpb25zLkNUeXBlOgZTVFJJTkcSDgoGcGFja2VkGAIgASgIEj8KBmpz",
-            "dHlwZRgGIAEoDjIkLmdvb2dsZS5wcm90b2J1Zi5GaWVsZE9wdGlvbnMuSlNU",
-            "eXBlOglKU19OT1JNQUwSEwoEbGF6eRgFIAEoCDoFZmFsc2USHgoPdW52ZXJp",
-            "ZmllZF9sYXp5GA8gASgIOgVmYWxzZRIZCgpkZXByZWNhdGVkGAMgASgIOgVm",
-            "YWxzZRITCgR3ZWFrGAogASgIOgVmYWxzZRJDChR1bmludGVycHJldGVkX29w",
-            "dGlvbhjnByADKAsyJC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9w",
-            "dGlvbiIvCgVDVHlwZRIKCgZTVFJJTkcQABIICgRDT1JEEAESEAoMU1RSSU5H",
-            "X1BJRUNFEAIiNQoGSlNUeXBlEg0KCUpTX05PUk1BTBAAEg0KCUpTX1NUUklO",
-            "RxABEg0KCUpTX05VTUJFUhACKgkI6AcQgICAgAJKBAgEEAUiXgoMT25lb2ZP",
-            "cHRpb25zEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2ds",
-            "ZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIikwEK",
-            "C0VudW1PcHRpb25zEhMKC2FsbG93X2FsaWFzGAIgASgIEhkKCmRlcHJlY2F0",
-            "ZWQYAyABKAg6BWZhbHNlEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMo",
-            "CzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQ",
-            "gICAgAJKBAgFEAYifQoQRW51bVZhbHVlT3B0aW9ucxIZCgpkZXByZWNhdGVk",
-            "GAEgASgIOgVmYWxzZRJDChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsy",
+            "CW1hcF9lbnRyeRgHIAEoCBIyCiZkZXByZWNhdGVkX2xlZ2FjeV9qc29uX2Zp",
+            "ZWxkX2NvbmZsaWN0cxgLIAEoCEICGAESQwoUdW5pbnRlcnByZXRlZF9vcHRp",
+            "b24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRp",
+            "b24qCQjoBxCAgICAAkoECAQQBUoECAUQBkoECAYQB0oECAgQCUoECAkQCiK+",
+            "AwoMRmllbGRPcHRpb25zEjoKBWN0eXBlGAEgASgOMiMuZ29vZ2xlLnByb3Rv",
+            "YnVmLkZpZWxkT3B0aW9ucy5DVHlwZToGU1RSSU5HEg4KBnBhY2tlZBgCIAEo",
+            "CBI/CgZqc3R5cGUYBiABKA4yJC5nb29nbGUucHJvdG9idWYuRmllbGRPcHRp",
+            "b25zLkpTVHlwZToJSlNfTk9STUFMEhMKBGxhenkYBSABKAg6BWZhbHNlEh4K",
+            "D3VudmVyaWZpZWRfbGF6eRgPIAEoCDoFZmFsc2USGQoKZGVwcmVjYXRlZBgD",
+            "IAEoCDoFZmFsc2USEwoEd2VhaxgKIAEoCDoFZmFsc2USQwoUdW5pbnRlcnBy",
+            "ZXRlZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJw",
+            "cmV0ZWRPcHRpb24iLwoFQ1R5cGUSCgoGU1RSSU5HEAASCAoEQ09SRBABEhAK",
+            "DFNUUklOR19QSUVDRRACIjUKBkpTVHlwZRINCglKU19OT1JNQUwQABINCglK",
+            "U19TVFJJTkcQARINCglKU19OVU1CRVIQAioJCOgHEICAgIACSgQIBBAFIl4K",
+            "DE9uZW9mT3B0aW9ucxJDChR1bmludGVycHJldGVkX29wdGlvbhjnByADKAsy",
             "JC5nb29nbGUucHJvdG9idWYuVW5pbnRlcnByZXRlZE9wdGlvbioJCOgHEICA",
-            "gIACInsKDlNlcnZpY2VPcHRpb25zEhkKCmRlcHJlY2F0ZWQYISABKAg6BWZh",
-            "bHNlEkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5w",
-            "cm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uKgkI6AcQgICAgAIirQIKDU1l",
-            "dGhvZE9wdGlvbnMSGQoKZGVwcmVjYXRlZBghIAEoCDoFZmFsc2USXwoRaWRl",
-            "bXBvdGVuY3lfbGV2ZWwYIiABKA4yLy5nb29nbGUucHJvdG9idWYuTWV0aG9k",
-            "T3B0aW9ucy5JZGVtcG90ZW5jeUxldmVsOhNJREVNUE9URU5DWV9VTktOT1dO",
-            "EkMKFHVuaW50ZXJwcmV0ZWRfb3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90",
-            "b2J1Zi5VbmludGVycHJldGVkT3B0aW9uIlAKEElkZW1wb3RlbmN5TGV2ZWwS",
-            "FwoTSURFTVBPVEVOQ1lfVU5LTk9XThAAEhMKD05PX1NJREVfRUZGRUNUUxAB",
-            "Eg4KCklERU1QT1RFTlQQAioJCOgHEICAgIACIp4CChNVbmludGVycHJldGVk",
-            "T3B0aW9uEjsKBG5hbWUYAiADKAsyLS5nb29nbGUucHJvdG9idWYuVW5pbnRl",
-            "cnByZXRlZE9wdGlvbi5OYW1lUGFydBIYChBpZGVudGlmaWVyX3ZhbHVlGAMg",
-            "ASgJEhoKEnBvc2l0aXZlX2ludF92YWx1ZRgEIAEoBBIaChJuZWdhdGl2ZV9p",
-            "bnRfdmFsdWUYBSABKAMSFAoMZG91YmxlX3ZhbHVlGAYgASgBEhQKDHN0cmlu",
-            "Z192YWx1ZRgHIAEoDBIXCg9hZ2dyZWdhdGVfdmFsdWUYCCABKAkaMwoITmFt",
-            "ZVBhcnQSEQoJbmFtZV9wYXJ0GAEgAigJEhQKDGlzX2V4dGVuc2lvbhgCIAIo",
-            "CCLVAQoOU291cmNlQ29kZUluZm8SOgoIbG9jYXRpb24YASADKAsyKC5nb29n",
-            "bGUucHJvdG9idWYuU291cmNlQ29kZUluZm8uTG9jYXRpb24ahgEKCExvY2F0",
-            "aW9uEhAKBHBhdGgYASADKAVCAhABEhAKBHNwYW4YAiADKAVCAhABEhgKEGxl",
-            "YWRpbmdfY29tbWVudHMYAyABKAkSGQoRdHJhaWxpbmdfY29tbWVudHMYBCAB",
-            "KAkSIQoZbGVhZGluZ19kZXRhY2hlZF9jb21tZW50cxgGIAMoCSKcAgoRR2Vu",
-            "ZXJhdGVkQ29kZUluZm8SQQoKYW5ub3RhdGlvbhgBIAMoCzItLmdvb2dsZS5w",
-            "cm90b2J1Zi5HZW5lcmF0ZWRDb2RlSW5mby5Bbm5vdGF0aW9uGsMBCgpBbm5v",
-            "dGF0aW9uEhAKBHBhdGgYASADKAVCAhABEhMKC3NvdXJjZV9maWxlGAIgASgJ",
-            "Eg0KBWJlZ2luGAMgASgFEgsKA2VuZBgEIAEoBRJICghzZW1hbnRpYxgFIAEo",
-            "DjI2Lmdvb2dsZS5wcm90b2J1Zi5HZW5lcmF0ZWRDb2RlSW5mby5Bbm5vdGF0",
-            "aW9uLlNlbWFudGljIigKCFNlbWFudGljEggKBE5PTkUQABIHCgNTRVQQARIJ",
-            "CgVBTElBUxACQn4KE2NvbS5nb29nbGUucHJvdG9idWZCEERlc2NyaXB0b3JQ",
-            "cm90b3NIAVotZ29vZ2xlLmdvbGFuZy5vcmcvcHJvdG9idWYvdHlwZXMvZGVz",
-            "Y3JpcHRvcnBi+AEBogIDR1BCqgIaR29vZ2xlLlByb3RvYnVmLlJlZmxlY3Rp",
-            "b24="));
+            "gIACIscBCgtFbnVtT3B0aW9ucxITCgthbGxvd19hbGlhcxgCIAEoCBIZCgpk",
+            "ZXByZWNhdGVkGAMgASgIOgVmYWxzZRIyCiZkZXByZWNhdGVkX2xlZ2FjeV9q",
+            "c29uX2ZpZWxkX2NvbmZsaWN0cxgGIAEoCEICGAESQwoUdW5pbnRlcnByZXRl",
+            "ZF9vcHRpb24Y5wcgAygLMiQuZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0",
+            "ZWRPcHRpb24qCQjoBxCAgICAAkoECAUQBiJ9ChBFbnVtVmFsdWVPcHRpb25z",
+            "EhkKCmRlcHJlY2F0ZWQYASABKAg6BWZhbHNlEkMKFHVuaW50ZXJwcmV0ZWRf",
+            "b3B0aW9uGOcHIAMoCzIkLmdvb2dsZS5wcm90b2J1Zi5VbmludGVycHJldGVk",
+            "T3B0aW9uKgkI6AcQgICAgAIiewoOU2VydmljZU9wdGlvbnMSGQoKZGVwcmVj",
+            "YXRlZBghIAEoCDoFZmFsc2USQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcg",
+            "AygLMiQuZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24qCQjo",
+            "BxCAgICAAiKtAgoNTWV0aG9kT3B0aW9ucxIZCgpkZXByZWNhdGVkGCEgASgI",
+            "OgVmYWxzZRJfChFpZGVtcG90ZW5jeV9sZXZlbBgiIAEoDjIvLmdvb2dsZS5w",
+            "cm90b2J1Zi5NZXRob2RPcHRpb25zLklkZW1wb3RlbmN5TGV2ZWw6E0lERU1Q",
+            "T1RFTkNZX1VOS05PV04SQwoUdW5pbnRlcnByZXRlZF9vcHRpb24Y5wcgAygL",
+            "MiQuZ29vZ2xlLnByb3RvYnVmLlVuaW50ZXJwcmV0ZWRPcHRpb24iUAoQSWRl",
+            "bXBvdGVuY3lMZXZlbBIXChNJREVNUE9URU5DWV9VTktOT1dOEAASEwoPTk9f",
+            "U0lERV9FRkZFQ1RTEAESDgoKSURFTVBPVEVOVBACKgkI6AcQgICAgAIingIK",
+            "E1VuaW50ZXJwcmV0ZWRPcHRpb24SOwoEbmFtZRgCIAMoCzItLmdvb2dsZS5w",
+            "cm90b2J1Zi5VbmludGVycHJldGVkT3B0aW9uLk5hbWVQYXJ0EhgKEGlkZW50",
+            "aWZpZXJfdmFsdWUYAyABKAkSGgoScG9zaXRpdmVfaW50X3ZhbHVlGAQgASgE",
+            "EhoKEm5lZ2F0aXZlX2ludF92YWx1ZRgFIAEoAxIUCgxkb3VibGVfdmFsdWUY",
+            "BiABKAESFAoMc3RyaW5nX3ZhbHVlGAcgASgMEhcKD2FnZ3JlZ2F0ZV92YWx1",
+            "ZRgIIAEoCRozCghOYW1lUGFydBIRCgluYW1lX3BhcnQYASACKAkSFAoMaXNf",
+            "ZXh0ZW5zaW9uGAIgAigIItUBCg5Tb3VyY2VDb2RlSW5mbxI6Cghsb2NhdGlv",
+            "bhgBIAMoCzIoLmdvb2dsZS5wcm90b2J1Zi5Tb3VyY2VDb2RlSW5mby5Mb2Nh",
+            "dGlvbhqGAQoITG9jYXRpb24SEAoEcGF0aBgBIAMoBUICEAESEAoEc3BhbhgC",
+            "IAMoBUICEAESGAoQbGVhZGluZ19jb21tZW50cxgDIAEoCRIZChF0cmFpbGlu",
+            "Z19jb21tZW50cxgEIAEoCRIhChlsZWFkaW5nX2RldGFjaGVkX2NvbW1lbnRz",
+            "GAYgAygJIpwCChFHZW5lcmF0ZWRDb2RlSW5mbxJBCgphbm5vdGF0aW9uGAEg",
+            "AygLMi0uZ29vZ2xlLnByb3RvYnVmLkdlbmVyYXRlZENvZGVJbmZvLkFubm90",
+            "YXRpb24awwEKCkFubm90YXRpb24SEAoEcGF0aBgBIAMoBUICEAESEwoLc291",
+            "cmNlX2ZpbGUYAiABKAkSDQoFYmVnaW4YAyABKAUSCwoDZW5kGAQgASgFEkgK",
+            "CHNlbWFudGljGAUgASgOMjYuZ29vZ2xlLnByb3RvYnVmLkdlbmVyYXRlZENv",
+            "ZGVJbmZvLkFubm90YXRpb24uU2VtYW50aWMiKAoIU2VtYW50aWMSCAoETk9O",
+            "RRAAEgcKA1NFVBABEgkKBUFMSUFTEAJCfgoTY29tLmdvb2dsZS5wcm90b2J1",
+            "ZkIQRGVzY3JpcHRvclByb3Rvc0gBWi1nb29nbGUuZ29sYW5nLm9yZy9wcm90",
+            "b2J1Zi90eXBlcy9kZXNjcmlwdG9ycGL4AQGiAgNHUEKqAhpHb29nbGUuUHJv",
+            "dG9idWYuUmVmbGVjdGlvbg=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
@@ -178,10 +180,10 @@ namespace Google.Protobuf.Reflection {
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.ServiceDescriptorProto), global::Google.Protobuf.Reflection.ServiceDescriptorProto.Parser, new[]{ "Name", "Method", "Options" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MethodDescriptorProto), global::Google.Protobuf.Reflection.MethodDescriptorProto.Parser, new[]{ "Name", "InputType", "OutputType", "Options", "ClientStreaming", "ServerStreaming" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FileOptions), global::Google.Protobuf.Reflection.FileOptions.Parser, new[]{ "JavaPackage", "JavaOuterClassname", "JavaMultipleFiles", "JavaGenerateEqualsAndHash", "JavaStringCheckUtf8", "OptimizeFor", "GoPackage", "CcGenericServices", "JavaGenericServices", "PyGenericServices", "PhpGenericServices", "Deprecated", "CcEnableArenas", "ObjcClassPrefix", "CsharpNamespace", "SwiftPrefix", "PhpClassPrefix", "PhpNamespace", "PhpMetadataNamespace", "RubyPackage", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FileOptions.Types.OptimizeMode) }, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MessageOptions), global::Google.Protobuf.Reflection.MessageOptions.Parser, new[]{ "MessageSetWireFormat", "NoStandardDescriptorAccessor", "Deprecated", "MapEntry", "UninterpretedOption" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MessageOptions), global::Google.Protobuf.Reflection.MessageOptions.Parser, new[]{ "MessageSetWireFormat", "NoStandardDescriptorAccessor", "Deprecated", "MapEntry", "DeprecatedLegacyJsonFieldConflicts", "UninterpretedOption" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.FieldOptions), global::Google.Protobuf.Reflection.FieldOptions.Parser, new[]{ "Ctype", "Packed", "Jstype", "Lazy", "UnverifiedLazy", "Deprecated", "Weak", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.CType), typeof(global::Google.Protobuf.Reflection.FieldOptions.Types.JSType) }, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.OneofOptions), global::Google.Protobuf.Reflection.OneofOptions.Parser, new[]{ "UninterpretedOption" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumOptions), global::Google.Protobuf.Reflection.EnumOptions.Parser, new[]{ "AllowAlias", "Deprecated", "UninterpretedOption" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumOptions), global::Google.Protobuf.Reflection.EnumOptions.Parser, new[]{ "AllowAlias", "Deprecated", "DeprecatedLegacyJsonFieldConflicts", "UninterpretedOption" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.EnumValueOptions), global::Google.Protobuf.Reflection.EnumValueOptions.Parser, new[]{ "Deprecated", "UninterpretedOption" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.ServiceOptions), global::Google.Protobuf.Reflection.ServiceOptions.Parser, new[]{ "Deprecated", "UninterpretedOption" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Google.Protobuf.Reflection.MethodOptions), global::Google.Protobuf.Reflection.MethodOptions.Parser, new[]{ "Deprecated", "IdempotencyLevel", "UninterpretedOption" }, null, new[]{ typeof(global::Google.Protobuf.Reflection.MethodOptions.Types.IdempotencyLevel) }, null, null),
@@ -6512,6 +6514,7 @@ namespace Google.Protobuf.Reflection {
       noStandardDescriptorAccessor_ = other.noStandardDescriptorAccessor_;
       deprecated_ = other.deprecated_;
       mapEntry_ = other.mapEntry_;
+      deprecatedLegacyJsonFieldConflicts_ = other.deprecatedLegacyJsonFieldConflicts_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
       _extensions = pb::ExtensionSet.Clone(other._extensions);
@@ -6685,6 +6688,48 @@ namespace Google.Protobuf.Reflection {
       _hasBits0 &= ~8;
     }
 
+    /// <summary>Field number for the "deprecated_legacy_json_field_conflicts" field.</summary>
+    public const int DeprecatedLegacyJsonFieldConflictsFieldNumber = 11;
+    private readonly static bool DeprecatedLegacyJsonFieldConflictsDefaultValue = false;
+
+    private bool deprecatedLegacyJsonFieldConflicts_;
+    /// <summary>
+    /// Enable the legacy handling of JSON field name conflicts.  This lowercases
+    /// and strips underscored from the fields before comparison in proto3 only.
+    /// The new behavior takes `json_name` into account and applies to proto2 as
+    /// well.
+    ///
+    /// This should only be used as a temporary measure against broken builds due
+    /// to the change in behavior for JSON field name conflicts.
+    ///
+    /// TODO(b/261750190) This is legacy behavior we plan to remove once downstream
+    /// teams have had time to migrate.
+    /// </summary>
+    [global::System.ObsoleteAttribute]
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool DeprecatedLegacyJsonFieldConflicts {
+      get { if ((_hasBits0 & 16) != 0) { return deprecatedLegacyJsonFieldConflicts_; } else { return DeprecatedLegacyJsonFieldConflictsDefaultValue; } }
+      set {
+        _hasBits0 |= 16;
+        deprecatedLegacyJsonFieldConflicts_ = value;
+      }
+    }
+    /// <summary>Gets whether the "deprecated_legacy_json_field_conflicts" field is set</summary>
+    [global::System.ObsoleteAttribute]
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasDeprecatedLegacyJsonFieldConflicts {
+      get { return (_hasBits0 & 16) != 0; }
+    }
+    /// <summary>Clears the value of the "deprecated_legacy_json_field_conflicts" field</summary>
+    [global::System.ObsoleteAttribute]
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearDeprecatedLegacyJsonFieldConflicts() {
+      _hasBits0 &= ~16;
+    }
+
     /// <summary>Field number for the "uninterpreted_option" field.</summary>
     public const int UninterpretedOptionFieldNumber = 999;
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
@@ -6718,6 +6763,7 @@ namespace Google.Protobuf.Reflection {
       if (NoStandardDescriptorAccessor != other.NoStandardDescriptorAccessor) return false;
       if (Deprecated != other.Deprecated) return false;
       if (MapEntry != other.MapEntry) return false;
+      if (DeprecatedLegacyJsonFieldConflicts != other.DeprecatedLegacyJsonFieldConflicts) return false;
       if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
       if (!Equals(_extensions, other._extensions)) {
         return false;
@@ -6733,6 +6779,7 @@ namespace Google.Protobuf.Reflection {
       if (HasNoStandardDescriptorAccessor) hash ^= NoStandardDescriptorAccessor.GetHashCode();
       if (HasDeprecated) hash ^= Deprecated.GetHashCode();
       if (HasMapEntry) hash ^= MapEntry.GetHashCode();
+      if (HasDeprecatedLegacyJsonFieldConflicts) hash ^= DeprecatedLegacyJsonFieldConflicts.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
       if (_extensions != null) {
         hash ^= _extensions.GetHashCode();
@@ -6771,6 +6818,10 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(56);
         output.WriteBool(MapEntry);
       }
+      if (HasDeprecatedLegacyJsonFieldConflicts) {
+        output.WriteRawTag(88);
+        output.WriteBool(DeprecatedLegacyJsonFieldConflicts);
+      }
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
       if (_extensions != null) {
         _extensions.WriteTo(output);
@@ -6801,6 +6852,10 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(56);
         output.WriteBool(MapEntry);
       }
+      if (HasDeprecatedLegacyJsonFieldConflicts) {
+        output.WriteRawTag(88);
+        output.WriteBool(DeprecatedLegacyJsonFieldConflicts);
+      }
       uninterpretedOption_.WriteTo(ref output, _repeated_uninterpretedOption_codec);
       if (_extensions != null) {
         _extensions.WriteTo(ref output);
@@ -6825,6 +6880,9 @@ namespace Google.Protobuf.Reflection {
         size += 1 + 1;
       }
       if (HasMapEntry) {
+        size += 1 + 1;
+      }
+      if (HasDeprecatedLegacyJsonFieldConflicts) {
         size += 1 + 1;
       }
       size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
@@ -6854,6 +6912,9 @@ namespace Google.Protobuf.Reflection {
       }
       if (other.HasMapEntry) {
         MapEntry = other.MapEntry;
+      }
+      if (other.HasDeprecatedLegacyJsonFieldConflicts) {
+        DeprecatedLegacyJsonFieldConflicts = other.DeprecatedLegacyJsonFieldConflicts;
       }
       uninterpretedOption_.Add(other.uninterpretedOption_);
       pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
@@ -6888,6 +6949,10 @@ namespace Google.Protobuf.Reflection {
           }
           case 56: {
             MapEntry = input.ReadBool();
+            break;
+          }
+          case 88: {
+            DeprecatedLegacyJsonFieldConflicts = input.ReadBool();
             break;
           }
           case 7994: {
@@ -6925,6 +6990,10 @@ namespace Google.Protobuf.Reflection {
           }
           case 56: {
             MapEntry = input.ReadBool();
+            break;
+          }
+          case 88: {
+            DeprecatedLegacyJsonFieldConflicts = input.ReadBool();
             break;
           }
           case 7994: {
@@ -7922,6 +7991,7 @@ namespace Google.Protobuf.Reflection {
       _hasBits0 = other._hasBits0;
       allowAlias_ = other.allowAlias_;
       deprecated_ = other.deprecated_;
+      deprecatedLegacyJsonFieldConflicts_ = other.deprecatedLegacyJsonFieldConflicts_;
       uninterpretedOption_ = other.uninterpretedOption_.Clone();
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
       _extensions = pb::ExtensionSet.Clone(other._extensions);
@@ -7997,6 +8067,44 @@ namespace Google.Protobuf.Reflection {
       _hasBits0 &= ~2;
     }
 
+    /// <summary>Field number for the "deprecated_legacy_json_field_conflicts" field.</summary>
+    public const int DeprecatedLegacyJsonFieldConflictsFieldNumber = 6;
+    private readonly static bool DeprecatedLegacyJsonFieldConflictsDefaultValue = false;
+
+    private bool deprecatedLegacyJsonFieldConflicts_;
+    /// <summary>
+    /// Enable the legacy handling of JSON field name conflicts.  This lowercases
+    /// and strips underscored from the fields before comparison in proto3 only.
+    /// The new behavior takes `json_name` into account and applies to proto2 as
+    /// well.
+    /// TODO(b/261750190) Remove this legacy behavior once downstream teams have
+    /// had time to migrate.
+    /// </summary>
+    [global::System.ObsoleteAttribute]
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool DeprecatedLegacyJsonFieldConflicts {
+      get { if ((_hasBits0 & 4) != 0) { return deprecatedLegacyJsonFieldConflicts_; } else { return DeprecatedLegacyJsonFieldConflictsDefaultValue; } }
+      set {
+        _hasBits0 |= 4;
+        deprecatedLegacyJsonFieldConflicts_ = value;
+      }
+    }
+    /// <summary>Gets whether the "deprecated_legacy_json_field_conflicts" field is set</summary>
+    [global::System.ObsoleteAttribute]
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool HasDeprecatedLegacyJsonFieldConflicts {
+      get { return (_hasBits0 & 4) != 0; }
+    }
+    /// <summary>Clears the value of the "deprecated_legacy_json_field_conflicts" field</summary>
+    [global::System.ObsoleteAttribute]
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public void ClearDeprecatedLegacyJsonFieldConflicts() {
+      _hasBits0 &= ~4;
+    }
+
     /// <summary>Field number for the "uninterpreted_option" field.</summary>
     public const int UninterpretedOptionFieldNumber = 999;
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
@@ -8028,6 +8136,7 @@ namespace Google.Protobuf.Reflection {
       }
       if (AllowAlias != other.AllowAlias) return false;
       if (Deprecated != other.Deprecated) return false;
+      if (DeprecatedLegacyJsonFieldConflicts != other.DeprecatedLegacyJsonFieldConflicts) return false;
       if(!uninterpretedOption_.Equals(other.uninterpretedOption_)) return false;
       if (!Equals(_extensions, other._extensions)) {
         return false;
@@ -8041,6 +8150,7 @@ namespace Google.Protobuf.Reflection {
       int hash = 1;
       if (HasAllowAlias) hash ^= AllowAlias.GetHashCode();
       if (HasDeprecated) hash ^= Deprecated.GetHashCode();
+      if (HasDeprecatedLegacyJsonFieldConflicts) hash ^= DeprecatedLegacyJsonFieldConflicts.GetHashCode();
       hash ^= uninterpretedOption_.GetHashCode();
       if (_extensions != null) {
         hash ^= _extensions.GetHashCode();
@@ -8071,6 +8181,10 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(24);
         output.WriteBool(Deprecated);
       }
+      if (HasDeprecatedLegacyJsonFieldConflicts) {
+        output.WriteRawTag(48);
+        output.WriteBool(DeprecatedLegacyJsonFieldConflicts);
+      }
       uninterpretedOption_.WriteTo(output, _repeated_uninterpretedOption_codec);
       if (_extensions != null) {
         _extensions.WriteTo(output);
@@ -8093,6 +8207,10 @@ namespace Google.Protobuf.Reflection {
         output.WriteRawTag(24);
         output.WriteBool(Deprecated);
       }
+      if (HasDeprecatedLegacyJsonFieldConflicts) {
+        output.WriteRawTag(48);
+        output.WriteBool(DeprecatedLegacyJsonFieldConflicts);
+      }
       uninterpretedOption_.WriteTo(ref output, _repeated_uninterpretedOption_codec);
       if (_extensions != null) {
         _extensions.WriteTo(ref output);
@@ -8111,6 +8229,9 @@ namespace Google.Protobuf.Reflection {
         size += 1 + 1;
       }
       if (HasDeprecated) {
+        size += 1 + 1;
+      }
+      if (HasDeprecatedLegacyJsonFieldConflicts) {
         size += 1 + 1;
       }
       size += uninterpretedOption_.CalculateSize(_repeated_uninterpretedOption_codec);
@@ -8134,6 +8255,9 @@ namespace Google.Protobuf.Reflection {
       }
       if (other.HasDeprecated) {
         Deprecated = other.Deprecated;
+      }
+      if (other.HasDeprecatedLegacyJsonFieldConflicts) {
+        DeprecatedLegacyJsonFieldConflicts = other.DeprecatedLegacyJsonFieldConflicts;
       }
       uninterpretedOption_.Add(other.uninterpretedOption_);
       pb::ExtensionSet.MergeFrom(ref _extensions, other._extensions);
@@ -8160,6 +8284,10 @@ namespace Google.Protobuf.Reflection {
           }
           case 24: {
             Deprecated = input.ReadBool();
+            break;
+          }
+          case 48: {
+            DeprecatedLegacyJsonFieldConflicts = input.ReadBool();
             break;
           }
           case 7994: {
@@ -8189,6 +8317,10 @@ namespace Google.Protobuf.Reflection {
           }
           case 24: {
             Deprecated = input.ReadBool();
+            break;
+          }
+          case 48: {
+            DeprecatedLegacyJsonFieldConflicts = input.ReadBool();
             break;
           }
           case 7994: {
