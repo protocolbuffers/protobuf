@@ -82,6 +82,8 @@
 // - MSVC: https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes-history
 //         https://docs.microsoft.com/en-us/visualstudio/releasenotes/vs2017-relnotes-history
 
+// noop2
+
 // Portable fallbacks for C++20 feature test macros:
 // https://en.cppreference.com/w/cpp/feature_test
 #ifndef __has_cpp_attribute
