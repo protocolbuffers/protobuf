@@ -521,6 +521,17 @@ UPB_API_INLINE upb_Array* upb_Message_GetMutableArray(
   return (upb_Array*)upb_Message_GetArray(msg, field);
 }
 
+UPB_API_INLINE upb_Array* upb_Message_GetOrCreateMutableArray(
+    upb_Message* msg, const upb_MiniTableField* field, upb_CType ctype,
+    upb_Arena* arena) {
+  upb_Array* array = upb_Message_GetMutableArray(msg, field);
+  if (!array) {
+    array = upb_Array_New(arena, ctype);
+    _upb_Message_SetField(msg, field, &array, arena);
+  }
+  return array;
+}
+
 void* upb_Message_ResizeArray(upb_Message* msg, const upb_MiniTableField* field,
                               size_t len, upb_Arena* arena);
 

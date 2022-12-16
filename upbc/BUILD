@@ -75,10 +75,12 @@ cc_binary(
     linkstatic = 1,
     visibility = ["//visibility:public"],
     deps = [
+        "//:collections",
         "//:mem",
         "//:message",
         "//:message_accessors",
         "//:mini_table",
+        "//:port",
         "//upbc:upbdev",
     ],
 )
