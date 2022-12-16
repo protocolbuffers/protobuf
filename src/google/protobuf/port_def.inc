@@ -102,6 +102,8 @@
 #define PROTOBUF_has_warning_DEFINED_
 #endif
 
+//noop
+
 // Portable fallbacks for the __has_attribute macro (GCC and Clang):
 // https://clang.llvm.org/docs/LanguageExtensions.html#has-attribute
 // https://gcc.gnu.org/onlinedocs/cpp/_005f_005fhas_005fattribute.html
