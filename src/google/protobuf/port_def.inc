@@ -98,6 +98,8 @@
 #define PROTOBUF_has_feature_DEFINED_
 #endif
 
+// noop 3
+
 // Portable fallback for Clang's __has_warning macro:
 #ifndef __has_warning
 #define __has_warning(x) 0
