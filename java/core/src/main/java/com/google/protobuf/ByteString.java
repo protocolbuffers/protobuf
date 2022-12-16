@@ -74,7 +74,7 @@ import java.util.NoSuchElementException;
  * @author martinrb@google.com Martin Buchholz
  */
 @CheckReturnValue
-public abstract class ByteString implements Iterable<Byte>, Serializable {
+public abstract class ByteString implements Iterable<Byte>, Serializable, Comparable<ByteString> {
   private static final long serialVersionUID = 1L;
 
   /**
@@ -331,6 +331,11 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    */
   public static Comparator<ByteString> unsignedLexicographicalComparator() {
     return UNSIGNED_LEXICOGRAPHICAL_COMPARATOR;
+  }
+
+  @Override
+  public int compareTo(ByteString that) {
+    return UNSIGNED_LEXICOGRAPHICAL_COMPARATOR.compare(this, that);
   }
 
   // =================================================================
