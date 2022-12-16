@@ -608,6 +608,23 @@ class JsonFormatTest(JsonFormatBase):
     json_format.Parse('{"value": null}', message)
     self.assertEqual(message.value.WhichOneof('kind'), 'null_value')
 
+  def testValueMessageErrors(self):
+    message = json_format_proto3_pb2.TestValue()
+    message.value.number_value = math.inf
+    with self.assertRaises(json_format.SerializeToJsonError) as cm:
+      json_format.MessageToJson(message)
+    self.assertEqual(
+        'Failed to serialize value field: Fail to serialize Infinity for '
+        'Value.number_value, which would parse as string_value.',
+        str(cm.exception))
+    message.value.number_value = math.nan
+    with self.assertRaises(json_format.SerializeToJsonError) as cm:
+      json_format.MessageToJson(message)
+    self.assertEqual(
+        'Failed to serialize value field: Fail to serialize NaN for '
+        'Value.number_value, which would parse as string_value.',
+        str(cm.exception))
+
   def testListValueMessage(self):
     message = json_format_proto3_pb2.TestListValue()
     message.value.values.add().number_value = 11.1

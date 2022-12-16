@@ -354,8 +354,14 @@ class _Printer(object):
       return None
     if which == 'list_value':
       return self._ListValueMessageToJsonObject(message.list_value)
-    if which == 'struct_value':
-      value = message.struct_value
+    if which == 'number_value':
+      value = message.number_value
+      if math.isinf(value):
+        raise ValueError('Fail to serialize Infinity for Value.number_value, '
+                         'which would parse as string_value')
+      if math.isnan(value):
+        raise ValueError('Fail to serialize NaN for Value.number_value, '
+                         'which would parse as string_value')
     else:
       value = getattr(message, which)
     oneof_descriptor = message.DESCRIPTOR.fields_by_name[which]
