@@ -325,7 +325,7 @@ void Printer::Outdent() {
   indent_ -= options_.spaces_per_indent;
 }
 
-void Printer::Emit(std::initializer_list<Sub> vars, absl::string_view format,
+void Printer::Emit(absl::Span<const Sub> vars, absl::string_view format,
                    SourceLocation loc) {
   PrintOptions opts;
   opts.strip_raw_string_indentation = true;

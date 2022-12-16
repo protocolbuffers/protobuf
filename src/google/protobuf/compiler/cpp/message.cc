@@ -67,6 +67,7 @@
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/cpp/padding_optimizer.h"
 #include "google/protobuf/compiler/cpp/parse_function_generator.h"
+#include "google/protobuf/compiler/cpp/tracker.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
@@ -493,18 +494,6 @@ bool ColdChunkSkipper::OnEndChunk(int chunk, io::Printer* p) {
   return true;
 }
 
-void AnnotationVar(const Descriptor* desc, const Options& options,
-                   absl::flat_hash_map<absl::string_view, std::string>& vars,
-                   absl::string_view name, absl::string_view val) {
-  if (!HasTracker(desc, options) ||
-      options.field_listener_options.forbidden_field_listener_events.contains(
-          absl::StripPrefix(name, "annotate_"))) {
-    val = "";
-  }
-
-  vars.emplace(name, absl::StrCat(absl::StripAsciiWhitespace(val), "\n"));
-}
-
 absl::flat_hash_map<absl::string_view, std::string> ClassVars(
     const Descriptor* desc, Options opts) {
   absl::flat_hash_map<absl::string_view, std::string> vars = MessageVars(desc);
@@ -522,107 +511,6 @@ absl::flat_hash_map<absl::string_view, std::string> ClassVars(
 
   for (auto& pair : UnknownFieldsVars(desc, opts)) {
     vars.emplace(pair);
-  }
-
-  AnnotationVar(desc, opts, vars, "annotate_serialize", R"cc(
-    Impl_::_tracker_.OnSerialize(this);
-  )cc");
-  AnnotationVar(desc, opts, vars, "annotate_deserialize", R"cc(
-    Impl_::_tracker_.OnDeserialize(this);
-  )cc");
-  // TODO(danilak): Ideally annotate_reflection should not exist and we need
-  // to annotate all reflective calls on our own, however, as this is a cause
-  // for side effects, i.e. reading values dynamically, we want the users know
-  // that dynamic access can happen.
-  AnnotationVar(desc, opts, vars, "annotate_reflection", R"cc(
-    Impl_::_tracker_.OnGetMetadata();
-  )cc");
-  AnnotationVar(desc, opts, vars, "annotate_bytesize", R"cc(
-    Impl_::_tracker_.OnByteSize(this);
-  )cc");
-  AnnotationVar(desc, opts, vars, "annotate_mergefrom", R"cc(
-    Impl_::_tracker_.OnMergeFrom(_this, &from);
-  )cc");
-
-  static constexpr std::array<std::pair<absl::string_view, absl::string_view>,
-                              14>
-      kVarToHook = {{
-          {"annotate_extension_has", "OnHasExtension"},
-          {"annotate_extension_clear", "OnClearExtension"},
-          {"annotate_extension_repeated_size", "OnExtensionSize"},
-          {"annotate_extension_get", "OnGetExtension"},
-          {"annotate_extension_mutable", "OnMutableExtension"},
-          {"annotate_extension_set", "OnSetExtension"},
-          {"annotate_extension_release", "OnReleaseExtension"},
-          {"annotate_repeated_extension_get", "OnGetExtension"},
-          {"annotate_repeated_extension_mutable", "OnMutableExtension"},
-          {"annotate_repeated_extension_set", "OnSetExtension"},
-          {"annotate_repeated_extension_add", "OnAddExtension"},
-          {"annotate_repeated_extension_add_mutable", "OnAddMutableExtension"},
-          {"annotate_repeated_extension_list", "OnListExtension"},
-          {"annotate_repeated_extension_list_mutable",
-           "OnMutableListExtension"},
-      }};
-
-  for (const auto& annotation : kVarToHook) {
-    vars[annotation.first] = "";
-  }
-  if (!HasTracker(desc, opts)) {
-    return vars;
-  }
-
-  absl::string_view extensions = vars["extensions"];
-  for (const auto& annotation : kVarToHook) {
-    absl::string_view name = annotation.first;
-    absl::string_view call = annotation.second;
-
-    if (!absl::StrContains(name, "repeated") &&
-        !absl::StrContains(name, "size") && !absl::StrContains(name, "clear")) {
-      // Primitive fields accessors.
-      // "Has" is here as users calling "has" on a repeated field is a mistake.
-      vars[name] = std::string(absl::StripAsciiWhitespace(absl::Substitute(
-          R"cc(
-            Impl_::_tracker_.$0(this, id.number(),
-                                _proto_TypeTraits::GetPtr(
-                                    id.number(), $1, id.default_value_ref()));
-          )cc",
-          call, extensions)));
-      continue;
-    }
-
-    if (absl::StrContains(name, "repeated") &&
-        !absl::StrContains(name, "list") && !absl::StrContains(name, "size")) {
-      // Repeated index accessors.
-      std::string str_index = "index";
-      if (absl::StrContains(name, "add")) {
-        str_index = absl::StrCat(extensions, ".ExtensionSize(id.number()) - 1");
-      }
-      vars[name] = std::string(absl::StripAsciiWhitespace(absl::Substitute(
-          R"cc(
-            Impl_::_tracker_.$0(this, id.number(),
-                                _proto_TypeTraits::GetPtr(id.number(), $1, $2));
-          )cc",
-          call, extensions, str_index)));
-      continue;
-    }
-
-    if (absl::StrContains(name, "list") || absl::StrContains(name, "size")) {
-      // Repeated full accessors.
-      vars[name] = std::string(absl::StripAsciiWhitespace(absl::Substitute(
-          R"cc(
-            Impl_::_tracker_.$0(this, id.number(),
-                                _proto_TypeTraits::GetRepeatedPtr(id.number(),
-                                                                  $1));
-          )cc",
-          call, extensions)));
-      continue;
-    }
-
-    // Generic accessors such as "clear".
-    // TODO(b/190614678): Generalize clear from both repeated and non repeated
-    // calls, currently their underlying memory interfaces are very different.
-    // Or think of removing clear callback as no usages are needed and no
-    // memory exist after calling clear().
   }
 
   return vars;
@@ -803,6 +691,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
     auto name = FieldName(field);
 
     auto v = p->WithVars(FieldVars(field, options_));
+    auto t = p->WithVars(MakeTrackerCalls(field, options_));
     p->Emit(
         {{"field_comment", FieldComment(field)},
          Sub("const_impl", !stripped ? "const;" : "const { __builtin_trap(); }")
@@ -1084,6 +973,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
 
 void MessageGenerator::GenerateSingularFieldHasBits(
     const FieldDescriptor* field, io::Printer* p) {
+  auto t = p->WithVars(MakeTrackerCalls(field, options_));
   Formatter format(p);
   if (IsFieldStripped(field, options_)) {
     format(
@@ -1163,6 +1053,7 @@ void MessageGenerator::GenerateOneofHasBits(io::Printer* p) {
 void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
                                                   io::Printer* p) {
   auto v = p->WithVars(OneofFieldVars(field));
+  auto t = p->WithVars(MakeTrackerCalls(field, options_));
   Formatter format(p);
   if (IsFieldStripped(field, options_)) {
     if (HasHasMethod(field)) {
@@ -1202,6 +1093,7 @@ void MessageGenerator::GenerateOneofMemberHasBits(const FieldDescriptor* field,
 
 void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
                                           bool is_inline, io::Printer* p) {
+  auto t = p->WithVars(MakeTrackerCalls(field, options_));
   Formatter format(p);
   if (IsFieldStripped(field, options_)) {
     format("void $classname$::clear_$name$() { __builtin_trap(); }\n");
@@ -1220,6 +1112,7 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
     // Clear this field only if it is the active field in this oneof,
     // otherwise ignore
     auto v = p->WithVars(OneofFieldVars(field));
+    auto t = p->WithVars(MakeTrackerCalls(field, options_));
     format("if ($has_field$) {\n");
     format.Indent();
     field_generators_.get(field).GenerateClearingCode(p);
@@ -1254,6 +1147,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
     }
 
     auto v = p->WithVars(FieldVars(field, options_));
+    auto t = p->WithVars(MakeTrackerCalls(field, options_));
     // Generate has_$name$() or $name$_size().
     if (field->is_repeated()) {
       if (IsFieldStripped(field, options_)) {
@@ -1298,6 +1192,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
 
 void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
   auto v = p->WithVars(ClassVars(descriptor_, options_));
+  auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
 
   if (IsMapEntryMessage(descriptor_)) {
@@ -2000,6 +1895,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
 void MessageGenerator::GenerateInlineMethods(io::Printer* p) {
   auto v = p->WithVars(ClassVars(descriptor_, options_));
+  auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   if (IsMapEntryMessage(descriptor_)) return;
   GenerateFieldAccessorDefinitions(p);
 
@@ -2024,6 +1920,7 @@ void MessageGenerator::GenerateInlineMethods(io::Printer* p) {
 void MessageGenerator::GenerateSchema(io::Printer* p, int offset,
                                       int has_offset) {
   auto v = p->WithVars(ClassVars(descriptor_, options_));
+  auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
   has_offset = !has_bit_indices_.empty() || IsMapEntryMessage(descriptor_)
                    ? offset + has_offset
@@ -2042,6 +1939,7 @@ void MessageGenerator::GenerateSchema(io::Printer* p, int offset,
 
 void MessageGenerator::GenerateClassMethods(io::Printer* p) {
   auto v = p->WithVars(ClassVars(descriptor_, options_));
+  auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
   if (IsMapEntryMessage(descriptor_)) {
     format(
@@ -2111,6 +2009,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
         "  PROTOBUF_FIELD_OFFSET($classtype$, $oneof_case$);\n");
   }
   for (auto field : FieldRange(descriptor_)) {
+    auto t = p->WithVars(MakeTrackerCalls(field, options_));
     field_generators_.get(field).GenerateInternalAccessorDeclarations(p);
     if (IsFieldStripped(field, options_)) {
       continue;
@@ -2148,10 +2047,12 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     if (IsFieldStripped(field, options_)) {
       continue;
     }
+
+    auto v = p->WithVars(FieldVars(field, options_));
+    auto t = p->WithVars(MakeTrackerCalls(field, options_));
     field_generators_.get(field).GenerateNonInlineAccessorDefinitions(p);
     if (IsCrossFileMaybeMap(field)) {
-      auto v1 = p->WithVars(FieldVars(field, options_));
-      auto v2 = p->WithVars(OneofFieldVars(field));
+      auto v = p->WithVars(OneofFieldVars(field));
       GenerateFieldClear(field, false, p);
     }
   }
@@ -2250,6 +2151,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
 
 std::pair<size_t, size_t> MessageGenerator::GenerateOffsets(io::Printer* p) {
   auto v = p->WithVars(ClassVars(descriptor_, options_));
+  auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
 
   if (!has_bit_indices_.empty() || IsMapEntryMessage(descriptor_)) {
@@ -2498,6 +2400,7 @@ void MessageGenerator::GenerateInitDefaultSplitInstance(io::Printer* p) {
   if (!ShouldSplit(descriptor_, options_)) return;
 
   auto v = p->WithVars(ClassVars(descriptor_, options_));
+  auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
   const char* field_sep = " ";
   const auto put_sep = [&] {
@@ -2630,6 +2533,7 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
 
 void MessageGenerator::GenerateConstexprConstructor(io::Printer* p) {
   auto v = p->WithVars(ClassVars(descriptor_, options_));
+  auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
 
   if (IsMapEntryMessage(descriptor_) || !HasImplData(descriptor_, options_)) {
@@ -3019,6 +2923,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
 
 void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* p) {
   auto v = p->WithVars(ClassVars(descriptor_, options_));
+  auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
   Formatter format(p);
   format(
       "template<> "
