@@ -29,7 +29,7 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/auth@v0
         with:
-          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+          credentials_json: ${{ secrets.GCR_SERVICE_ACCOUNT }}
           export_environment_variables: true
       - name: Use gcloud CLI
         run: gcloud info
