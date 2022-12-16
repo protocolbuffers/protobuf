@@ -426,6 +426,22 @@ conformance_test(
 ################################################################################
 
 pkg_files(
+    name = "python_source_files",
+    srcs = glob(
+        [
+            "google/protobuf/**/*.py",
+        ],
+        exclude = [
+            "google/protobuf/internal/*_test.py",
+            "google/protobuf/internal/test_util.py",
+            "google/protobuf/internal/import_test_package/__init__.py",
+        ],
+    ),
+    visibility = ["@upb//:__subpackages__"],
+    strip_prefix = "",
+)
+
+pkg_files(
     name = "dist_files",
     srcs = glob([
         "google/**/*.proto",
