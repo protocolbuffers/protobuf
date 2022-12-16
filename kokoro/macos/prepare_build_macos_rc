@@ -13,6 +13,7 @@ export DEVELOPER_DIR=/Applications/Xcode_14.app/Contents/Developer
 sudo xcode-select -s "${DEVELOPER_DIR}"
 
 ##
+# Use Python 2 by default (for googletest)
 pyenv global 2.7.18
 
 ##

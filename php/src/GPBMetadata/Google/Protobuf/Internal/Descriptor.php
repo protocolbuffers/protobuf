@@ -273,13 +273,6 @@ class Descriptor
             ->optional('source_file', \Google\Protobuf\Internal\GPBType::STRING, 2)
             ->optional('begin', \Google\Protobuf\Internal\GPBType::INT32, 3)
             ->optional('end', \Google\Protobuf\Internal\GPBType::INT32, 4)
-            ->optional('semantic', \Google\Protobuf\Internal\GPBType::ENUM, 5, 'google.protobuf.internal.GeneratedCodeInfo.Annotation.Semantic')
-            ->finalizeToPool();
-
-        $pool->addEnum('google.protobuf.internal.GeneratedCodeInfo.Annotation.Semantic', \Google\Protobuf\Internal\Semantic::class)
-            ->value("NONE", 0)
-            ->value("SET", 1)
-            ->value("ALIAS", 2)
             ->finalizeToPool();
 
         $pool->finish();
