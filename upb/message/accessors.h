@@ -508,7 +508,7 @@ UPB_API_INLINE upb_Message* upb_MiniTable_GetMutableMessage(
   return sub_message;
 }
 
-UPB_API_INLINE const upb_Array* upb_MiniTable_GetArray(
+UPB_API_INLINE const upb_Array* upb_Message_GetArray(
     const upb_Message* msg, const upb_MiniTableField* field) {
   const upb_Array* ret;
   const upb_Array* default_val = NULL;
@@ -516,14 +516,13 @@ UPB_API_INLINE const upb_Array* upb_MiniTable_GetArray(
   return ret;
 }
 
-UPB_API_INLINE upb_Array* upb_MiniTable_GetMutableArray(
+UPB_API_INLINE upb_Array* upb_Message_GetMutableArray(
     upb_Message* msg, const upb_MiniTableField* field) {
-  return (upb_Array*)upb_MiniTable_GetArray(msg, field);
+  return (upb_Array*)upb_Message_GetArray(msg, field);
 }
 
-void* upb_MiniTable_ResizeArray(upb_Message* msg,
-                                const upb_MiniTableField* field, size_t len,
-                                upb_Arena* arena);
+void* upb_Message_ResizeArray(upb_Message* msg, const upb_MiniTableField* field,
+                              size_t len, upb_Arena* arena);
 
 UPB_API_INLINE bool upb_MiniTableField_IsClosedEnum(
     const upb_MiniTableField* field) {

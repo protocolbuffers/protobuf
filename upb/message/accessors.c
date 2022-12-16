@@ -64,9 +64,8 @@ static int _upb_MiniTableField_CTypeLg2Size(const upb_MiniTableField* f) {
   return sizes[f->descriptortype];
 }
 
-void* upb_MiniTable_ResizeArray(upb_Message* msg,
-                                const upb_MiniTableField* field, size_t len,
-                                upb_Arena* arena) {
+void* upb_Message_ResizeArray(upb_Message* msg, const upb_MiniTableField* field,
+                              size_t len, upb_Arena* arena) {
   return _upb_Array_Resize_accessor2(
       msg, field->offset, len, _upb_MiniTableField_CTypeLg2Size(field), arena);
 }
@@ -412,7 +411,7 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
 upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
     upb_Message* msg, const upb_MiniTableField* field,
     const upb_MiniTable* mini_table, int decode_options, upb_Arena* arena) {
-  upb_Array* repeated_messages = upb_MiniTable_GetMutableArray(msg, field);
+  upb_Array* repeated_messages = upb_Message_GetMutableArray(msg, field);
   // Find all unknowns with given field number and parse.
   upb_FindUnknownRet unknown;
   do {
@@ -426,8 +425,8 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
         value.msg_val = ret.message;
         // Allocate array on demand before append.
         if (!repeated_messages) {
-          upb_MiniTable_ResizeArray(msg, field, 0, arena);
-          repeated_messages = upb_MiniTable_GetMutableArray(msg, field);
+          upb_Message_ResizeArray(msg, field, 0, arena);
+          repeated_messages = upb_Message_GetMutableArray(msg, field);
         }
         if (!upb_Array_Append(repeated_messages, value, arena)) {
           return kUpb_UnknownToMessage_OutOfMemory;

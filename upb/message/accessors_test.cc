@@ -329,7 +329,7 @@ TEST(GeneratedCode, RepeatedScalar) {
   // Test Get/Set Array values, validate with C API.
   EXPECT_EQ(0, len);
   EXPECT_EQ(NULL, arr);
-  EXPECT_EQ(NULL, upb_MiniTable_GetArray(msg, repeated_int32_field));
+  EXPECT_EQ(NULL, upb_Message_GetArray(msg, repeated_int32_field));
   protobuf_test_messages_proto2_TestAllTypesProto2_resize_repeated_int32(
       msg, 10, arena);
   int32_t* mutable_values =
@@ -337,13 +337,13 @@ TEST(GeneratedCode, RepeatedScalar) {
           msg, &len);
   mutable_values[5] = 123;
   const upb_Array* readonly_arr =
-      upb_MiniTable_GetArray(msg, repeated_int32_field);
+      upb_Message_GetArray(msg, repeated_int32_field);
   EXPECT_EQ(123, upb_Array_Get(readonly_arr, 5).int32_val);
 
   upb_MessageValue new_value;
   new_value.int32_val = 567;
   upb_Array* mutable_array =
-      upb_MiniTable_GetMutableArray(msg, repeated_int32_field);
+      upb_Message_GetMutableArray(msg, repeated_int32_field);
   upb_Array_Set(mutable_array, 5, new_value);
   EXPECT_EQ(new_value.int32_val,
             protobuf_test_messages_proto2_TestAllTypesProto2_repeated_int32(
@@ -702,7 +702,7 @@ TEST(GeneratedCode, PromoteUnknownRepeatedMessage) {
           decode_options, arena);
   EXPECT_EQ(promote_result, kUpb_UnknownToMessage_Ok);
 
-  upb_Array* array = upb_MiniTable_GetMutableArray(msg, &mini_table->fields[2]);
+  upb_Array* array = upb_Message_GetMutableArray(msg, &mini_table->fields[2]);
   const upb_Message* promoted_message = upb_Array_Get(array, 0).msg_val;
   EXPECT_EQ(upb_test_ModelWithExtensions_random_int32(
                 (upb_test_ModelWithExtensions*)promoted_message),
