@@ -55,13 +55,6 @@ namespace google {
 namespace protobuf {
 namespace internal {
 
-// Tag type used to invoke the constructor of message-owned arena.
-// Only message-owned arenas use this constructor for creation.
-// Such constructors are internal implementation details of the library.
-struct MessageOwned {
-  explicit MessageOwned() = default;
-};
-
 // This class provides the core Arena memory allocation library. Different
 // implementations only need to implement the public interface below.
 // Arena is not a template type as that would only be useful if all protos
@@ -71,9 +64,6 @@ struct MessageOwned {
 class PROTOBUF_EXPORT ThreadSafeArena {
  public:
   ThreadSafeArena();
-
-  // Constructor solely used by message-owned arena.
-  explicit ThreadSafeArena(internal::MessageOwned);
 
   ThreadSafeArena(char* mem, size_t size);
 
@@ -134,11 +124,6 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // Add object pointer and cleanup function pointer to the list.
   void AddCleanup(void* elem, void (*cleanup)(void*));
 
-  // Checks whether this arena is message-owned.
-  PROTOBUF_ALWAYS_INLINE bool IsMessageOwned() const {
-    return tag_and_id_ & kMessageOwnedArena;
-  }
-
  private:
   friend class ArenaBenchmark;
   friend class TcParser;
@@ -183,9 +168,6 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   // user-provided initial block.
   SerialArena first_arena_;
 
-  // The LSB of tag_and_id_ indicates if the arena is message-owned.
-  enum : uint64_t { kMessageOwnedArena = 1 };
-
   static_assert(std::is_trivially_destructible<SerialArena>{},
                 "SerialArena needs to be trivially destructible.");
 
@@ -200,10 +182,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   void CleanupList();
 
   inline void CacheSerialArena(SerialArena* serial) {
-    if (!IsMessageOwned()) {
-      thread_cache().last_serial_arena = serial;
-      thread_cache().last_lifecycle_id_seen = tag_and_id_;
-    }
+    thread_cache().last_serial_arena = serial;
+    thread_cache().last_lifecycle_id_seen = tag_and_id_;
   }
 
   PROTOBUF_NDEBUG_INLINE bool GetSerialArenaFast(SerialArena** arena) {

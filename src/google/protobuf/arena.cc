@@ -535,17 +535,14 @@ void ThreadSafeArena::InitializeWithPolicy(const AllocationPolicy& policy) {
 uint64_t ThreadSafeArena::GetNextLifeCycleId() {
   ThreadCache& tc = thread_cache();
   uint64_t id = tc.next_lifecycle_id;
-  // We increment lifecycle_id's by multiples of two so we can use bit 0 as
-  // a tag.
-  constexpr uint64_t kDelta = 2;
-  constexpr uint64_t kInc = ThreadCache::kPerThreadIds * kDelta;
+  constexpr uint64_t kInc = ThreadCache::kPerThreadIds;
   if (PROTOBUF_PREDICT_FALSE((id & (kInc - 1)) == 0)) {
     // On platforms that don't support uint64_t atomics we can certainly not
     // afford to increment by large intervals and expect uniqueness due to
     // wrapping, hence we only add by 1.
     id = lifecycle_id_.fetch_add(1, std::memory_order_relaxed) * kInc;
   }
-  tc.next_lifecycle_id = id + kDelta;
+  tc.next_lifecycle_id = id + 1;
   return id;
 }
 
