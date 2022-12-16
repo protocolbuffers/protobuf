@@ -158,6 +158,12 @@ internal_ruby_proto_library(
 # Protocol Buffers Compiler
 ################################################################################
 
+alias(
+    name = "protoc_lib",
+    actual = "//src/google/protobuf/compiler:protoc_lib",
+    visibility = ["//visibility:public"],
+)
+
 cc_binary(
     name = "protoc",
     copts = COPTS,
