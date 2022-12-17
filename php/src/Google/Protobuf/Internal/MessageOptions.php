@@ -76,20 +76,6 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      */
     protected $map_entry = null;
     /**
-     * Enable the legacy handling of JSON field name conflicts.  This lowercases
-     * and strips underscored from the fields before comparison in proto3 only.
-     * The new behavior takes `json_name` into account and applies to proto2 as
-     * well.
-     * This should only be used as a temporary measure against broken builds due
-     * to the change in behavior for JSON field name conflicts.
-     * TODO(b/261750190) This is legacy behavior we plan to remove once downstream
-     * teams have had time to migrate.
-     *
-     * Generated from protobuf field <code>optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];</code>
-     * @deprecated
-     */
-    protected $deprecated_legacy_json_field_conflicts = null;
-    /**
      * The parser stores options it doesn't recognize here. See above.
      *
      * Generated from protobuf field <code>repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;</code>
@@ -146,15 +132,6 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
      *           use a native map in the target language to hold the keys and values.
      *           The reflection APIs in such implementations still need to work as
      *           if the field is a repeated message field.
-     *     @type bool $deprecated_legacy_json_field_conflicts
-     *           Enable the legacy handling of JSON field name conflicts.  This lowercases
-     *           and strips underscored from the fields before comparison in proto3 only.
-     *           The new behavior takes `json_name` into account and applies to proto2 as
-     *           well.
-     *           This should only be used as a temporary measure against broken builds due
-     *           to the change in behavior for JSON field name conflicts.
-     *           TODO(b/261750190) This is legacy behavior we plan to remove once downstream
-     *           teams have had time to migrate.
      *     @type array<\Google\Protobuf\Internal\UninterpretedOption>|\Google\Protobuf\Internal\RepeatedField $uninterpreted_option
      *           The parser stores options it doesn't recognize here. See above.
      * }
@@ -376,62 +353,6 @@ class MessageOptions extends \Google\Protobuf\Internal\Message
     {
         GPBUtil::checkBool($var);
         $this->map_entry = $var;
-
-        return $this;
-    }
-
-    /**
-     * Enable the legacy handling of JSON field name conflicts.  This lowercases
-     * and strips underscored from the fields before comparison in proto3 only.
-     * The new behavior takes `json_name` into account and applies to proto2 as
-     * well.
-     * This should only be used as a temporary measure against broken builds due
-     * to the change in behavior for JSON field name conflicts.
-     * TODO(b/261750190) This is legacy behavior we plan to remove once downstream
-     * teams have had time to migrate.
-     *
-     * Generated from protobuf field <code>optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];</code>
-     * @return bool
-     * @deprecated
-     */
-    public function getDeprecatedLegacyJsonFieldConflicts()
-    {
-        @trigger_error('deprecated_legacy_json_field_conflicts is deprecated.', E_USER_DEPRECATED);
-        return isset($this->deprecated_legacy_json_field_conflicts) ? $this->deprecated_legacy_json_field_conflicts : false;
-    }
-
-    public function hasDeprecatedLegacyJsonFieldConflicts()
-    {
-        @trigger_error('deprecated_legacy_json_field_conflicts is deprecated.', E_USER_DEPRECATED);
-        return isset($this->deprecated_legacy_json_field_conflicts);
-    }
-
-    public function clearDeprecatedLegacyJsonFieldConflicts()
-    {
-        @trigger_error('deprecated_legacy_json_field_conflicts is deprecated.', E_USER_DEPRECATED);
-        unset($this->deprecated_legacy_json_field_conflicts);
-    }
-
-    /**
-     * Enable the legacy handling of JSON field name conflicts.  This lowercases
-     * and strips underscored from the fields before comparison in proto3 only.
-     * The new behavior takes `json_name` into account and applies to proto2 as
-     * well.
-     * This should only be used as a temporary measure against broken builds due
-     * to the change in behavior for JSON field name conflicts.
-     * TODO(b/261750190) This is legacy behavior we plan to remove once downstream
-     * teams have had time to migrate.
-     *
-     * Generated from protobuf field <code>optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];</code>
-     * @param bool $var
-     * @return $this
-     * @deprecated
-     */
-    public function setDeprecatedLegacyJsonFieldConflicts($var)
-    {
-        @trigger_error('deprecated_legacy_json_field_conflicts is deprecated.', E_USER_DEPRECATED);
-        GPBUtil::checkBool($var);
-        $this->deprecated_legacy_json_field_conflicts = $var;
 
         return $this;
     }

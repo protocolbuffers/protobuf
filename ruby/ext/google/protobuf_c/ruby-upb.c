@@ -999,7 +999,7 @@ static const upb_MiniTableSub google_protobuf_FieldOptions_submsgs[3] = {
   {.submsg = &google_protobuf_UninterpretedOption_msg_init},
 };
 
-static const upb_MiniTableField google_protobuf_FieldOptions__fields[8] = {
+static const upb_MiniTableField google_protobuf_FieldOptions__fields[9] = {
   {1, 4, 1, 0, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
   {2, 8, 2, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
   {3, 9, 3, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
@@ -1007,13 +1007,14 @@ static const upb_MiniTableField google_protobuf_FieldOptions__fields[8] = {
   {6, 12, 5, 1, 14, kUpb_FieldMode_Scalar | (kUpb_FieldRep_4Byte << kUpb_FieldRep_Shift)},
   {10, 16, 6, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
   {15, 17, 7, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
+  {16, 18, 8, kUpb_NoSub, 8, kUpb_FieldMode_Scalar | (kUpb_FieldRep_1Byte << kUpb_FieldRep_Shift)},
   {999, UPB_SIZE(20, 24), 0, 2, 11, kUpb_FieldMode_Array | (UPB_SIZE(kUpb_FieldRep_4Byte, kUpb_FieldRep_8Byte) << kUpb_FieldRep_Shift)},
 };
 
 const upb_MiniTable google_protobuf_FieldOptions_msg_init = {
   &google_protobuf_FieldOptions_submsgs[0],
   &google_protobuf_FieldOptions__fields[0],
-  UPB_SIZE(24, 32), 8, kUpb_ExtMode_Extendable, 3, 255, 0,
+  UPB_SIZE(24, 32), 9, kUpb_ExtMode_Extendable, 3, 255, 0,
 };
 
 static const upb_MiniTableSub google_protobuf_OneofOptions_submsgs[1] = {

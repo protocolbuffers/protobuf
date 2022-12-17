@@ -627,6 +627,10 @@ message FieldOptions {
   // For Google-internal migration only. Do not use.
   optional bool weak = 10 [default = false];
 
+  // Indicate that the field value should not be printed out when using debug
+  // formats, e.g. when the field contains sensitive credentials.
+  optional bool debug_redact = 16 [default = false];
+
   // The parser stores options it doesn't recognize here. See above.
   repeated UninterpretedOption uninterpreted_option = 999;
 
