@@ -3129,11 +3129,8 @@ void Reflection::PopulateTcParseFastEntries(
         *fast_entries++ = {GetFastParseFunction(fast_field.func_name),
                            {fast_field.coded_tag, fast_field.nonfield_info}};
       }
-    } else if (absl::StrContains(fast_field.func_name, "TcParser::FastMl")) {
-      // We can't use fast parsing for these entries because we can't specify
-      // the validator.
-      *fast_entries++ = {internal::TcParser::MiniParse, {}};
-    } else if (absl::StrContains(fast_field.func_name, "TcParser::FastEv")) {
+    } else if (fast_field.func_name.find("TcParser::FastEv") !=
+               fast_field.func_name.npos) {
       // We can't use fast parsing for these entries because we can't specify
       // the validator. Use the reflection based parser called from MiniParse.
       // TODO(b/239592582): Implement a fast parser for these enums.
@@ -3171,12 +3168,6 @@ void Reflection::PopulateTcParseEntries(
       // Weak fields are handled by the generated fallback function.
       // (These are handled by legacy Google-internal logic.)
       *entries = {};
-    } else if (IsLazyField(field)) {
-      // Lazy fields require validators, which we can't access from reflection.
-      // We can just handle them in the reflection fallback for now.
-      *entries = {};
-      table_info.aux_entries[entry.aux_idx] =
-          table_info.aux_entries[entry.aux_idx + 1] = {};
     } else if (field->type() == field->TYPE_ENUM &&
                table_info.aux_entries[entry.aux_idx].type ==
                    internal::TailCallTableInfo::kEnumValidator) {
@@ -3222,7 +3213,6 @@ void Reflection::PopulateTcParseFieldAux(
         break;
       case internal::TailCallTableInfo::kSubTable:
       case internal::TailCallTableInfo::kSubMessageWeak:
-      case internal::TailCallTableInfo::kMessageVerifyFunc:
         GOOGLE_ABSL_LOG(FATAL) << "Not supported";
         break;
       case internal::TailCallTableInfo::kSubMessage:
@@ -3279,15 +3269,8 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
     explicit ReflectionOptionProvider(const Reflection& ref) : ref_(ref) {}
     internal::TailCallTableInfo::PerFieldOptions GetForField(
         const FieldDescriptor* field) const final {
-      const auto verify_flag = [&] {
-        if (ref_.IsEagerlyVerifiedLazyField(field))
-          return internal::field_layout::kTvEager;
-        if (ref_.IsLazilyVerifiedLazyField(field))
-          return internal::field_layout::kTvLazy;
-        return internal::field_layout::TransformValidation{};
-      };
-      return {verify_flag(),
-              ref_.IsInlined(field),  //
+      return {ref_.IsLazyField(field),  //
+              ref_.IsInlined(field),    //
 
               // Only LITE can be implicitly weak.
               /* is_implicitly_weak */ false,
