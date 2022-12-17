@@ -37,6 +37,7 @@
 #include "google/protobuf/compiler/plugin.pb.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/stubs/logging.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/strip.h"
 
@@ -62,7 +63,7 @@ bool CodeGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
           "description.";
     }
     if (error && !error->empty()) {
-      *error = file->name() + ": " + *error;
+      *error = absl::StrCat(file->name(), ": ", *error);
       break;
     }
     if (!succeeded) {

@@ -46,6 +46,7 @@
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/io/io_win32.h"
 #include "google/protobuf/message.h"
@@ -124,7 +125,7 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode) {
   }
 
   // Invoking cmd.exe allows for '.bat' files from the path as well as '.exe'.
-  std::string command_line = "cmd.exe /c \"" + program + "\"";
+  std::string command_line = absl::StrCat("cmd.exe /c \"", program, "\"");
 
   // get wide string version of command line as the path may contain non-ascii characters
   std::wstring wcommand_line;
@@ -269,7 +270,8 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   }
 
   if (!output->ParseFromString(output_data)) {
-    *error = "Plugin output is unparseable: " + absl::CEscape(output_data);
+    *error = absl::StrCat("Plugin output is unparseable: ",
+                          absl::CEscape(output_data));
     return false;
   }
 
@@ -485,7 +487,8 @@ bool Subprocess::Communicate(const Message& input, Message* output,
   }
 
   if (!output->ParseFromString(output_data)) {
-    *error = "Plugin output is unparseable: " + absl::CEscape(output_data);
+    *error = absl::StrCat("Plugin output is unparseable: ",
+                          absl::CEscape(output_data));
     return false;
   }
 
