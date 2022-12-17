@@ -31,6 +31,7 @@
 #include "google/protobuf/reflection_tester.h"
 
 #include <gtest/gtest.h>
+#include "absl/container/flat_hash_map.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 
@@ -888,7 +889,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
   ASSERT_EQ(2, reflection->FieldSize(message, F("map_int32_foreign_message")));
 
   {
-    std::map<int32_t, int32_t> map;
+    absl::flat_hash_map<int32_t, int32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -916,7 +917,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int64_t, int64_t> map;
+    absl::flat_hash_map<int64_t, int64_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -944,7 +945,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<uint32_t, uint32_t> map;
+    absl::flat_hash_map<uint32_t, uint32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -972,7 +973,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<uint64_t, uint64_t> map;
+    absl::flat_hash_map<uint64_t, uint64_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -1000,7 +1001,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int32_t, int32_t> map;
+    absl::flat_hash_map<int32_t, int32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -1028,7 +1029,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int64_t, int64_t> map;
+    absl::flat_hash_map<int64_t, int64_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -1056,7 +1057,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<uint32_t, uint32_t> map;
+    absl::flat_hash_map<uint32_t, uint32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -1084,7 +1085,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<uint64_t, uint64_t> map;
+    absl::flat_hash_map<uint64_t, uint64_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -1112,7 +1113,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int32_t, int32_t> map;
+    absl::flat_hash_map<int32_t, int32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -1141,7 +1142,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int64_t, int64_t> map;
+    absl::flat_hash_map<int64_t, int64_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -1170,7 +1171,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int32_t, float> map;
+    absl::flat_hash_map<int32_t, float> map;
     map[0] = 0.0;
     map[1] = 1.0;
     for (int i = 0; i < 2; i++) {
@@ -1198,7 +1199,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int32_t, double> map;
+    absl::flat_hash_map<int32_t, double> map;
     map[0] = 0.0;
     map[1] = 1.0;
     for (int i = 0; i < 2; i++) {
@@ -1226,7 +1227,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<bool, bool> map;
+    absl::flat_hash_map<bool, bool> map;
     map[false] = false;
     map[true] = true;
     std::vector<bool> keys = {false, true};
@@ -1256,7 +1257,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<std::string, std::string> map;
+    absl::flat_hash_map<std::string, std::string> map;
     map["0"] = "0";
     map["1"] = "1";
     std::vector<std::string> keys = {"0", "1"};
@@ -1286,7 +1287,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int32_t, std::string> map;
+    absl::flat_hash_map<int32_t, std::string> map;
     map[0] = "0";
     map[1] = "1";
     for (int i = 0; i < 2; i++) {
@@ -1314,7 +1315,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int32_t, const EnumValueDescriptor*> map;
+    absl::flat_hash_map<int32_t, const EnumValueDescriptor*> map;
     map[0] = map_enum_bar_;
     map[1] = map_enum_baz_;
     for (int i = 0; i < 2; i++) {
@@ -1342,7 +1343,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
     }
   }
   {
-    std::map<int32_t, int32_t> map;
+    absl::flat_hash_map<int32_t, int32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (int i = 0; i < 2; i++) {
@@ -1403,7 +1404,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
   ASSERT_EQ(2, reflection->FieldSize(*message, F("map_int32_foreign_message")));
 
   {
-    std::map<int32_t, int32_t> map;
+    absl::flat_hash_map<int32_t, int32_t> map;
     map[0] = 0;
     map[1] = 1;
     int size = 0;
@@ -1422,7 +1423,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     EXPECT_EQ(size, 2);
   }
   {
-    std::map<int64_t, int64_t> map;
+    absl::flat_hash_map<int64_t, int64_t> map;
     map[0] = 0;
     map[1] = 1;
     for (MapIterator iter = reflection->MapBegin(message, F("map_int64_int64"));
@@ -1432,7 +1433,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<uint32_t, uint32_t> map;
+    absl::flat_hash_map<uint32_t, uint32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (MapIterator iter =
@@ -1443,7 +1444,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<uint64_t, uint64_t> map;
+    absl::flat_hash_map<uint64_t, uint64_t> map;
     map[0] = 0;
     map[1] = 1;
     for (MapIterator iter =
@@ -1454,7 +1455,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<int32_t, int32_t> map;
+    absl::flat_hash_map<int32_t, int32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (MapIterator iter =
@@ -1465,7 +1466,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<int64_t, int64_t> map;
+    absl::flat_hash_map<int64_t, int64_t> map;
     map[0] = 0;
     map[1] = 1;
     for (MapIterator iter =
@@ -1476,7 +1477,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<uint32_t, uint32_t> map;
+    absl::flat_hash_map<uint32_t, uint32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (MapIterator iter =
@@ -1488,7 +1489,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<uint64_t, uint64_t> map;
+    absl::flat_hash_map<uint64_t, uint64_t> map;
     map[0] = 0;
     map[1] = 1;
     for (MapIterator iter =
@@ -1500,7 +1501,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<int32_t, int32_t> map;
+    absl::flat_hash_map<int32_t, int32_t> map;
     map[0] = 0;
     map[1] = 1;
     for (MapIterator iter =
@@ -1512,7 +1513,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<int32_t, float> map;
+    absl::flat_hash_map<int32_t, float> map;
     map[0] = 0.0;
     map[1] = 1.0;
     for (MapIterator iter = reflection->MapBegin(message, F("map_int32_float"));
@@ -1522,7 +1523,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<int32_t, double> map;
+    absl::flat_hash_map<int32_t, double> map;
     map[0] = 0.0;
     map[1] = 1.0;
     for (MapIterator iter =
@@ -1533,7 +1534,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<bool, bool> map;
+    absl::flat_hash_map<bool, bool> map;
     map[false] = false;
     map[true] = true;
     for (MapIterator iter = reflection->MapBegin(message, F("map_bool_bool"));
@@ -1543,7 +1544,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<std::string, std::string> map;
+    absl::flat_hash_map<std::string, std::string> map;
     map["0"] = "0";
     map["1"] = "1";
     int size = 0;
@@ -1563,7 +1564,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     EXPECT_EQ(size, 2);
   }
   {
-    std::map<int32_t, std::string> map;
+    absl::flat_hash_map<int32_t, std::string> map;
     map[0] = "0";
     map[1] = "1";
     for (MapIterator iter = reflection->MapBegin(message, F("map_int32_bytes"));
@@ -1573,7 +1574,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<int32_t, const EnumValueDescriptor*> map;
+    absl::flat_hash_map<int32_t, const EnumValueDescriptor*> map;
     map[0] = map_enum_bar_;
     map[1] = map_enum_baz_;
     for (MapIterator iter = reflection->MapBegin(message, F("map_int32_enum"));
@@ -1583,7 +1584,7 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflectionIterator(
     }
   }
   {
-    std::map<int32_t, int32_t> map;
+    absl::flat_hash_map<int32_t, int32_t> map;
     map[0] = 0;
     map[1] = 1;
     int size = 0;

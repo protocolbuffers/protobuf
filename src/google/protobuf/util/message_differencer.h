@@ -44,9 +44,7 @@
 #define GOOGLE_PROTOBUF_UTIL_MESSAGE_DIFFERENCER_H__
 
 #include <functional>
-#include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -55,6 +53,8 @@
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/stubs/common.h"
 #include "absl/container/fixed_array.h"
+#include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/util/field_comparator.h"
 
@@ -934,23 +934,14 @@ class PROTOBUF_EXPORT MessageDifferencer {
       const FieldDescriptor* field,
       const RepeatedFieldComparison& new_comparison);
 
-  // Defines a map between field descriptors and their MapKeyComparators.
-  // Used for repeated fields when they are configured as TreatAsMap.
-  typedef std::map<const FieldDescriptor*, const MapKeyComparator*>
-      FieldKeyComparatorMap;
-
-  // Defines a set to store field descriptors.  Used for repeated fields when
-  // they are configured as TreatAsSet.
-  typedef std::set<const FieldDescriptor*> FieldSet;
-  typedef std::map<const FieldDescriptor*, RepeatedFieldComparison> FieldMap;
-
   Reporter* reporter_;
   DefaultFieldComparator default_field_comparator_;
   MessageFieldComparison message_field_comparison_;
   Scope scope_;
   RepeatedFieldComparison repeated_field_comparison_;
 
-  FieldMap repeated_field_comparisons_;
+  absl::flat_hash_map<const FieldDescriptor*, RepeatedFieldComparison>
+      repeated_field_comparisons_;
   // Keeps track of MapKeyComparators that are created within
   // MessageDifferencer. These MapKeyComparators should be deleted
   // before MessageDifferencer is destroyed.
@@ -958,13 +949,14 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // store the supplied FieldDescriptors directly. Instead, a new
   // MapKeyComparator is created for comparison purpose.
   std::vector<MapKeyComparator*> owned_key_comparators_;
-  FieldKeyComparatorMap map_field_key_comparator_;
+  absl::flat_hash_map<const FieldDescriptor*, const MapKeyComparator*>
+      map_field_key_comparator_;
   MapEntryKeyComparator map_entry_key_comparator_;
   std::vector<std::unique_ptr<IgnoreCriteria>> ignore_criteria_;
   // Reused multiple times in RetrieveFields to avoid extra allocations
   std::vector<const FieldDescriptor*> tmp_message_fields_;
 
-  FieldSet ignored_fields_;
+  absl::flat_hash_set<const FieldDescriptor*> ignored_fields_;
 
   union {
     DefaultFieldComparator* default_impl;

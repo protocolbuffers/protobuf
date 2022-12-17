@@ -42,11 +42,11 @@
 #include <climits>
 #include <cmath>
 #include <limits>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/container/btree_set.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/numbers.h"
@@ -2061,7 +2061,7 @@ bool TextFormat::Printer::RegisterFieldValuePrinter(
   }
   std::unique_ptr<FieldValuePrinterWrapper> wrapper(
       new FieldValuePrinterWrapper(nullptr));
-  auto pair = custom_printers_.insert(std::make_pair(field, nullptr));
+  auto pair = custom_printers_.emplace(field, nullptr);
   if (pair.second) {
     wrapper->SetDelegate(printer);
     pair.first->second = std::move(wrapper);
@@ -2076,7 +2076,7 @@ bool TextFormat::Printer::RegisterFieldValuePrinter(
   if (field == nullptr || printer == nullptr) {
     return false;
   }
-  auto pair = custom_printers_.insert(std::make_pair(field, nullptr));
+  auto pair = custom_printers_.emplace(field, nullptr);
   if (pair.second) {
     pair.first->second.reset(printer);
     return true;
@@ -2090,8 +2090,7 @@ bool TextFormat::Printer::RegisterMessagePrinter(
   if (descriptor == nullptr || printer == nullptr) {
     return false;
   }
-  auto pair =
-      custom_message_printers_.insert(std::make_pair(descriptor, nullptr));
+  auto pair = custom_message_printers_.emplace(descriptor, nullptr);
   if (pair.second) {
     pair.first->second.reset(printer);
     return true;
