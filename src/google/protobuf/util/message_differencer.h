@@ -510,7 +510,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
   //       !key_field_path[i]->is_repeated()
   void TreatAsMapWithMultipleFieldPathsAsKey(
       const FieldDescriptor* field,
-      const std::vector<std::vector<const FieldDescriptor*> >& key_field_paths);
+      const std::vector<std::vector<const FieldDescriptor*>>& key_field_paths);
 
   // Uses a custom MapKeyComparator to determine if two elements have the same
   // key when comparing a repeated field as a map.
@@ -524,7 +524,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
 
   // Initiates and returns a new instance of MultipleFieldsMapKeyComparator.
   MapKeyComparator* CreateMultipleFieldsMapKeyComparator(
-      const std::vector<std::vector<const FieldDescriptor*> >& key_field_paths);
+      const std::vector<std::vector<const FieldDescriptor*>>& key_field_paths);
 
   // Add a custom ignore criteria that is evaluated in addition to the
   // ignored fields added with IgnoreField.

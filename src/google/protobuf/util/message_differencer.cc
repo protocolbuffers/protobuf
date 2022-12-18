@@ -57,6 +57,7 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/str_join.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
@@ -790,48 +791,44 @@ bool MessageDifferencer::CompareWithFieldsInternal(
   const Reflection* reflection1 = message1.GetReflection();
   const Reflection* reflection2 = message2.GetReflection();
 
+  SpecificField specific_field;
+  specific_field.message1 = &message1;
+  specific_field.message2 = &message2;
+  specific_field.unpacked_any = unpacked_any;
+
   while (true) {
     const FieldDescriptor* field1 = message1_fields[field_index1];
     const FieldDescriptor* field2 = message2_fields[field_index2];
 
     // Once we have reached sentinel values, we are done the comparison.
-    if (field1 == NULL && field2 == NULL) {
+    if (field1 == nullptr && field2 == nullptr) {
       break;
     }
 
     // Check for differences in the field itself.
     if (FieldBefore(field1, field2)) {
+      specific_field.field = field1;
+      parent_fields->push_back(specific_field);
       // Field 1 is not in the field list for message 2.
       if (IsIgnored(message1, message2, field1, *parent_fields)) {
         // We are ignoring field1. Report the ignore and move on to
         // the next field in message1_fields.
-        if (reporter_ != NULL) {
-          SpecificField specific_field;
-          specific_field.message1 = &message1;
-          specific_field.message2 = &message2;
-          specific_field.unpacked_any = unpacked_any;
-          specific_field.field = field1;
-          parent_fields->push_back(specific_field);
+        if (reporter_ != nullptr) {
           if (report_ignores_) {
             reporter_->ReportIgnored(message1, message2, *parent_fields);
           }
-          parent_fields->pop_back();
         }
         ++field_index1;
+        parent_fields->pop_back();
         continue;
       }
-
-      if (reporter_ != NULL) {
-        assert(field1 != NULL);
+      parent_fields->pop_back();
+      if (reporter_ != nullptr) {
+        assert(field1 != nullptr);
         int count = field1->is_repeated()
                         ? reflection1->FieldSize(message1, field1)
                         : 1;
-
         for (int i = 0; i < count; ++i) {
-          SpecificField specific_field;
-          specific_field.message1 = &message1;
-          specific_field.message2 = &message2;
-          specific_field.unpacked_any = unpacked_any;
           specific_field.field = field1;
           if (field1->is_repeated()) {
             AddSpecificIndex(&specific_field, message1, field1, i);
@@ -843,46 +840,35 @@ bool MessageDifferencer::CompareWithFieldsInternal(
           reporter_->ReportDeleted(message1, message2, *parent_fields);
           parent_fields->pop_back();
         }
-
         isDifferent = true;
       } else {
         return false;
       }
-
       ++field_index1;
       continue;
     } else if (FieldBefore(field2, field1)) {
+      specific_field.field = field2;
+      parent_fields->push_back(specific_field);
       // Field 2 is not in the field list for message 1.
       if (IsIgnored(message1, message2, field2, *parent_fields)) {
         // We are ignoring field2. Report the ignore and move on to
         // the next field in message2_fields.
-        if (reporter_ != NULL) {
-          SpecificField specific_field;
-          specific_field.message1 = &message1;
-          specific_field.message2 = &message2;
-          specific_field.unpacked_any = unpacked_any;
-          specific_field.field = field2;
-          parent_fields->push_back(specific_field);
+        if (reporter_ != nullptr) {
           if (report_ignores_) {
             reporter_->ReportIgnored(message1, message2, *parent_fields);
           }
-          parent_fields->pop_back();
         }
         ++field_index2;
+        parent_fields->pop_back();
         continue;
       }
 
-      if (reporter_ != NULL) {
+      parent_fields->pop_back();
+      if (reporter_ != nullptr) {
         int count = field2->is_repeated()
                         ? reflection2->FieldSize(message2, field2)
                         : 1;
-
         for (int i = 0; i < count; ++i) {
-          SpecificField specific_field;
-          specific_field.message1 = &message1,
-          specific_field.message2 = &message2;
-          specific_field.unpacked_any = unpacked_any;
-          specific_field.field = field2;
           if (field2->is_repeated()) {
             specific_field.index = i;
             AddSpecificNewIndex(&specific_field, message2, field2, i);
@@ -895,40 +881,35 @@ bool MessageDifferencer::CompareWithFieldsInternal(
           reporter_->ReportAdded(message1, message2, *parent_fields);
           parent_fields->pop_back();
         }
-
         isDifferent = true;
       } else {
         return false;
       }
-
       ++field_index2;
       continue;
     }
 
     // By this point, field1 and field2 are guaranteed to point to the same
     // field, so we can now compare the values.
+    specific_field.field = field1;
+    parent_fields->push_back(specific_field);
     if (IsIgnored(message1, message2, field1, *parent_fields)) {
       // Ignore this field. Report and move on.
-      if (reporter_ != NULL) {
-        SpecificField specific_field;
-        specific_field.message1 = &message1;
-        specific_field.message2 = &message2;
-        specific_field.unpacked_any = unpacked_any;
-        specific_field.field = field1;
-        parent_fields->push_back(specific_field);
+      if (reporter_ != nullptr) {
         if (report_ignores_) {
           reporter_->ReportIgnored(message1, message2, *parent_fields);
         }
-        parent_fields->pop_back();
       }
 
       ++field_index1;
       ++field_index2;
+      parent_fields->pop_back();
       continue;
     }
 
+    parent_fields->pop_back();
     bool fieldDifferent = false;
-    assert(field1 != NULL);
+    assert(field1 != nullptr);
     if (field1->is_map()) {
       fieldDifferent = !CompareMapField(message1, message2, unpacked_any,
                                         field1, parent_fields);
@@ -940,11 +921,6 @@ bool MessageDifferencer::CompareWithFieldsInternal(
           message1, message2, unpacked_any, field1, -1, -1, parent_fields);
 
       if (reporter_ != nullptr) {
-        SpecificField specific_field;
-        specific_field.message1 = &message1;
-        specific_field.message2 = &message2;
-        specific_field.unpacked_any = unpacked_any;
-        specific_field.field = field1;
         parent_fields->push_back(specific_field);
         if (fieldDifferent) {
           reporter_->ReportModified(message1, message2, *parent_fields);
@@ -1667,7 +1643,7 @@ bool MessageDifferencer::CompareUnknownFields(
 
     if (IsUnknownFieldIgnored(message1, message2, specific_field,
                               *parent_field)) {
-      if (report_ignores_ && reporter_ != NULL) {
+      if (report_ignores_ && reporter_ != nullptr) {
         parent_field->push_back(specific_field);
         reporter_->ReportUnknownFieldIgnored(message1, message2, *parent_field);
         parent_field->pop_back();
@@ -1679,7 +1655,7 @@ bool MessageDifferencer::CompareUnknownFields(
 
     if (change_type == ADDITION || change_type == DELETION ||
         change_type == MODIFICATION) {
-      if (reporter_ == NULL) {
+      if (reporter_ == nullptr) {
         // We found a difference and we have no reporter.
         return false;
       }
