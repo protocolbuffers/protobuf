@@ -563,7 +563,7 @@ TAGBYTES(p)
       _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);            \
     }                                                                       \
   } else {                                                                  \
-    _upb_Array_Resize(arr, elems, &d->arena);                               \
+    _upb_Array_ResizeUninitialized(arr, elems, &d->arena);                  \
   }                                                                         \
                                                                             \
   char* dst = _upb_array_ptr(arr);                                          \

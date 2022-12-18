@@ -95,8 +95,9 @@ UPB_INLINE bool _upb_array_reserve(upb_Array* arr, size_t size,
   return true;
 }
 
-UPB_INLINE bool _upb_Array_Resize(upb_Array* arr, size_t size,
-                                  upb_Arena* arena) {
+// Resize without initializing new elements.
+UPB_INLINE bool _upb_Array_ResizeUninitialized(upb_Array* arr, size_t size,
+                                               upb_Arena* arena) {
   if (!_upb_array_reserve(arr, size, arena)) return false;
   arr->size = size;
   return true;

@@ -72,7 +72,7 @@ UPB_API bool upb_Array_Insert(upb_Array* array, size_t i, size_t count,
 // REQUIRES: `i + count <= upb_Array_Size(arr)`
 UPB_API void upb_Array_Delete(upb_Array* array, size_t i, size_t count);
 
-// Changes the size of a vector. New elements are initialized to empty/0.
+// Changes the size of a vector. New elements are initialized to NULL/0.
 // Returns false on allocation failure.
 UPB_API bool upb_Array_Resize(upb_Array* array, size_t size, upb_Arena* arena);
 

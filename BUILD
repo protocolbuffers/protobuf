@@ -682,6 +682,16 @@ cc_test(
 )
 
 cc_test(
+    name = "collections_test",
+    srcs = ["upb/collections/test.cc"],
+    deps = [
+        ":collections",
+        ":upb",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "message_test",
     srcs = ["upb/message/test.cc"],
     deps = [
