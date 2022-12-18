@@ -39,41 +39,42 @@
 extern "C" {
 #endif
 
-/* Creates a new array on the given arena that holds elements of this type. */
-upb_Array* upb_Array_New(upb_Arena* a, upb_CType type);
+// Creates a new array on the given arena that holds elements of this type.
+UPB_API upb_Array* upb_Array_New(upb_Arena* a, upb_CType type);
 
-/* Returns the number of elements in the array. */
-size_t upb_Array_Size(const upb_Array* arr);
+// Returns the number of elements in the array.
+UPB_API size_t upb_Array_Size(const upb_Array* arr);
 
-/* Returns the given element, which must be within the array's current size. */
-upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i);
+// Returns the given element, which must be within the array's current size.
+UPB_API upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i);
 
-/* Sets the given element, which must be within the array's current size. */
-void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val);
+// Sets the given element, which must be within the array's current size.
+UPB_API void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val);
 
-/* Appends an element to the array.  Returns false on allocation failure. */
-bool upb_Array_Append(upb_Array* array, upb_MessageValue val, upb_Arena* arena);
+// Appends an element to the array. Returns false on allocation failure.
+UPB_API bool upb_Array_Append(upb_Array* array, upb_MessageValue val,
+                              upb_Arena* arena);
 
-/* Moves elements within the array using memmove(). Like memmove(), the source
- * and destination elements may be overlapping. */
-void upb_Array_Move(upb_Array* array, size_t dst_idx, size_t src_idx,
-                    size_t count);
+// Moves elements within the array using memmove().
+// Like memmove(), the source and destination elements may be overlapping.
+UPB_API void upb_Array_Move(upb_Array* array, size_t dst_idx, size_t src_idx,
+                            size_t count);
 
-/* Inserts one or more empty elements into the array.  Existing elements are
- * shifted right.  The new elements have undefined state and must be set with
- * `upb_Array_Set()`.
- * REQUIRES: `i <= upb_Array_Size(arr)` */
-bool upb_Array_Insert(upb_Array* array, size_t i, size_t count,
-                      upb_Arena* arena);
+// Inserts one or more empty elements into the array.
+// Existing elements are shifted right.
+// The new elements have undefined state and must be set with `upb_Array_Set()`.
+// REQUIRES: `i <= upb_Array_Size(arr)`
+UPB_API bool upb_Array_Insert(upb_Array* array, size_t i, size_t count,
+                              upb_Arena* arena);
 
-/* Deletes one or more elements from the array.  Existing elements are shifted
- * left.
- * REQUIRES: `i + count <= upb_Array_Size(arr)` */
-void upb_Array_Delete(upb_Array* array, size_t i, size_t count);
+// Deletes one or more elements from the array.
+// Existing elements are shifted left.
+// REQUIRES: `i + count <= upb_Array_Size(arr)`
+UPB_API void upb_Array_Delete(upb_Array* array, size_t i, size_t count);
 
-/* Changes the size of a vector.  New elements are initialized to empty/0.
- * Returns false on allocation failure. */
-bool upb_Array_Resize(upb_Array* array, size_t size, upb_Arena* arena);
+// Changes the size of a vector. New elements are initialized to empty/0.
+// Returns false on allocation failure.
+UPB_API bool upb_Array_Resize(upb_Array* array, size_t size, upb_Arena* arena);
 
 #ifdef __cplusplus
 } /* extern "C" */
