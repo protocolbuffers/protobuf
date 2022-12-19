@@ -51,7 +51,7 @@ class PrimitiveFieldGenerator : public FieldGenerator {
                           const Options& options);
   PrimitiveFieldGenerator(const PrimitiveFieldGenerator&) = delete;
   PrimitiveFieldGenerator& operator=(const PrimitiveFieldGenerator&) = delete;
-  ~PrimitiveFieldGenerator() override;
+  ~PrimitiveFieldGenerator() override = default;
 
   // implements FieldGenerator ---------------------------------------
   void GeneratePrivateMembers(io::Printer* printer) const override;
@@ -78,7 +78,7 @@ class PrimitiveOneofFieldGenerator : public PrimitiveFieldGenerator {
   PrimitiveOneofFieldGenerator(const PrimitiveOneofFieldGenerator&) = delete;
   PrimitiveOneofFieldGenerator& operator=(const PrimitiveOneofFieldGenerator&) =
       delete;
-  ~PrimitiveOneofFieldGenerator() override;
+  ~PrimitiveOneofFieldGenerator() override = default;
 
   // implements FieldGenerator ---------------------------------------
   void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
@@ -95,7 +95,7 @@ class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
       delete;
   RepeatedPrimitiveFieldGenerator& operator=(
       const RepeatedPrimitiveFieldGenerator&) = delete;
-  ~RepeatedPrimitiveFieldGenerator() override;
+  ~RepeatedPrimitiveFieldGenerator() override = default;
 
   // implements FieldGenerator ---------------------------------------
   void GeneratePrivateMembers(io::Printer* printer) const override;
