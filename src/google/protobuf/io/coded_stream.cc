@@ -511,6 +511,7 @@ bool CodedInputStream::ReadVarint32Slow(uint32_t* value) {
 }
 
 int64_t CodedInputStream::ReadVarint32Fallback(uint32_t first_byte_or_zero) {
+  LOGGING2;
   if (BufferSize() >= kMaxVarintBytes ||
       // Optimization:  We're also safe if the buffer is non-empty and it ends
       // with a byte that would terminate a varint.
@@ -541,6 +542,7 @@ int CodedInputStream::ReadVarintSizeAsIntSlow() {
 }
 
 int CodedInputStream::ReadVarintSizeAsIntFallback() {
+  LOGGING2;
   if (BufferSize() >= kMaxVarintBytes ||
       // Optimization:  We're also safe if the buffer is non-empty and it ends
       // with a byte that would terminate a varint.
@@ -559,6 +561,7 @@ int CodedInputStream::ReadVarintSizeAsIntFallback() {
 }
 
 uint32_t CodedInputStream::ReadTagSlow() {
+  LOGGING2;
   if (buffer_ == buffer_end_) {
     // Call refresh.
     if (!Refresh()) {
@@ -585,6 +588,7 @@ uint32_t CodedInputStream::ReadTagSlow() {
 }
 
 uint32_t CodedInputStream::ReadTagFallback(uint32_t first_byte_or_zero) {
+  LOGGING2;
   const int buf_size = BufferSize();
   if (buf_size >= kMaxVarintBytes ||
       // Optimization:  We're also safe if the buffer is non-empty and it ends
@@ -625,6 +629,7 @@ bool CodedInputStream::ReadVarint64Slow(uint64_t* value) {
   // Slow path:  This read might cross the end of the buffer, so we
   // need to check and refresh the buffer if and when it does.
 
+  LOGGING2;
   uint64_t result = 0;
   int count = 0;
   uint32_t b;
@@ -651,6 +656,7 @@ bool CodedInputStream::ReadVarint64Slow(uint64_t* value) {
 }
 
 std::pair<uint64_t, bool> CodedInputStream::ReadVarint64Fallback() {
+  LOGGING2;
   if (BufferSize() >= kMaxVarintBytes ||
       // Optimization:  We're also safe if the buffer is non-empty and it ends
       // with a byte that would terminate a varint.
@@ -689,6 +695,7 @@ bool CodedInputStream::Refresh() {
   const void* void_buffer;
   int buffer_size;
   if (NextNonEmpty(input_, &void_buffer, &buffer_size)) {
+    LOGGING2;
     buffer_ = reinterpret_cast<const uint8_t*>(void_buffer);
     buffer_end_ = buffer_ + buffer_size;
     GOOGLE_ABSL_CHECK_GE(buffer_size, 0);
@@ -757,7 +764,48 @@ int EpsCopyOutputStream::Flush(uint8_t* ptr) {
   return s;
 }
 
+uint8_t* EpsCopyOutputStream::FlushArray(uint8_t* ptr) {
+  LOGGING2;
+  DCHECK(stream_ == nullptr);
+  if (PROTOBUF_PREDICT_FALSE(had_error_)) return ptr;
+  if (buffer_end_ != nullptr) {
+    LOGGING2;
+    const ptrdiff_t bytes = ptr - buffer_;
+    DCHECK_GE(bytes, 0);
+    DCHECK_LE(bytes, array_end_ - buffer_end_);
+    memcpy(buffer_end_, buffer_, static_cast<size_t>(bytes));
+    ptr = buffer_end_ + bytes;
+    buffer_end_ = nullptr;
+  }
+  return ptr;
+}
+
+std::pair<uint8_t*, uint8_t*> EpsCopyOutputStream::ConsumeArray(uint8_t* ptr,
+                                                                int size) {
+  LOGGING2;
+  DCHECK(array_end_ != nullptr);
+
+  if (buffer_end_ == nullptr) {
+    int avail = array_end_ - ptr;
+    if (size > avail) return {nullptr, nullptr};
+    return {ptr, ptr + size};
+  }
+  DCHECK(ptr >= buffer_ && ptr <= buffer_ + kSlopBytes);
+
+  int bytes = ptr - buffer_;
+  int avail = array_end_ - buffer_end_ - bytes;
+  if (size > avail) return {nullptr, nullptr};
+
+  memcpy(buffer_end_, buffer_, bytes);
+  ptr = buffer_end_ + bytes;
+  buffer_end_ += bytes + size;
+  end_ = buffer_ + kSlopBytes;
+
+  return {ptr, buffer_};
+}
+
 uint8_t* EpsCopyOutputStream::Trim(uint8_t* ptr) {
+  LOGGING2;
   if (had_error_) return ptr;
   int s = Flush(ptr);
   stream_->BackUp(s);
@@ -841,6 +889,7 @@ uint8_t* EpsCopyOutputStream::GetDirectBufferForNBytesAndAdvance(int size,
 }
 
 uint8_t* EpsCopyOutputStream::Next() {
+  LOGGING2;
   GOOGLE_ABSL_DCHECK(!had_error_);  // NOLINT
   if (PROTOBUF_PREDICT_FALSE(stream_ == nullptr)) return Error();
   if (buffer_end_) {
@@ -879,6 +928,32 @@ uint8_t* EpsCopyOutputStream::Next() {
 }
 
 uint8_t* EpsCopyOutputStream::EnsureSpaceFallback(uint8_t* ptr) {
+  LOGGING2;
+  if (array_end_) {
+    LOGGING2;
+    if (PROTOBUF_PREDICT_FALSE(had_error_)) return buffer_;
+    int bytes = ptr - buffer_;
+    if (buffer_end_ == nullptr) {
+      buffer_end_ = ptr;
+      LOGGING2;
+      if (LOGGING3)
+        std::cerr << "end_1 " << (uint64_t*)end_ << " "
+                  << (uint64_t*)buffer_end_ << " " << (uint64_t*)buffer_ << " "
+                  << " " << (uint64_t*)ptr << " " << bytes << std::endl;
+      end_ = buffer_ + kSlopBytes;
+      if (LOGGING3) std::cerr << "end_2 " << (uint64_t*)end_ << std::endl;
+    } else {
+      DCHECK(ptr >= buffer_ && ptr <= buffer_ + kSlopBytes);
+      memcpy(buffer_end_, buffer_, bytes);
+      buffer_end_ += bytes;
+      LOGGING2;
+      if (LOGGING3)
+        std::cerr << "end_1 " << (uint64_t*)end_ << " " << bytes << std::endl;
+      end_ = buffer_ + kSlopBytes;
+      if (LOGGING3) std::cerr << "end_2 " << (uint64_t*)end_ << std::endl;
+    }
+    return buffer_;
+  }
   do {
     if (PROTOBUF_PREDICT_FALSE(had_error_)) return buffer_;
     int overrun = ptr - end_;
@@ -892,6 +967,15 @@ uint8_t* EpsCopyOutputStream::EnsureSpaceFallback(uint8_t* ptr) {
 
 uint8_t* EpsCopyOutputStream::WriteRawFallback(const void* data, int size,
                                              uint8_t* ptr) {
+  LOGGING2;
+  if (array_end_) {
+    LOGGING2;
+    auto ptrs = ConsumeArray(ptr, size);
+    if (PROTOBUF_PREDICT_FALSE(ptrs.first == nullptr)) return Error();
+    memcpy(ptrs.first, data, size);
+    return ptrs.second;
+  }
+
   int s = GetSize(ptr);
   while (s < size) {
     std::memcpy(ptr, data, s);
@@ -965,16 +1049,17 @@ uint8_t* EpsCopyOutputStream::WriteRawLittleEndian64(const void* data, int size,
 #endif
 
 uint8_t* EpsCopyOutputStream::WriteCord(const absl::Cord& cord, uint8_t* ptr) {
-  int s = GetSize(ptr);
+  LOGGING2;
   if (stream_ == nullptr) {
-    if (static_cast<int64_t>(cord.size()) <= s) {
-      // Just copy it to the current buffer.
-      return CopyCordToArray(cord, ptr);
-    } else {
-      return Error();
-    }
-  } else if (static_cast<int64_t>(cord.size()) <= s &&
-             static_cast<int64_t>(cord.size()) < kMaxCordBytesToCopy) {
+    auto ptrs = ConsumeArray(ptr, static_cast<int>(cord.size()));
+    if (PROTOBUF_PREDICT_FALSE(ptrs.first == nullptr)) return Error();
+    // Just copy it to the current buffer.
+    CopyCordToArray(cord, ptr);
+    return ptrs.second;
+  }
+  int s = GetSize(ptr);
+  if (static_cast<int64_t>(cord.size()) <= s &&
+      static_cast<int64_t>(cord.size()) < kMaxCordBytesToCopy) {
     // Just copy it to the current buffer.
     return CopyCordToArray(cord, ptr);
   } else {
@@ -988,6 +1073,7 @@ uint8_t* EpsCopyOutputStream::WriteCord(const absl::Cord& cord, uint8_t* ptr) {
 uint8_t* EpsCopyOutputStream::WriteStringMaybeAliasedOutline(uint32_t num,
                                                            const std::string& s,
                                                            uint8_t* ptr) {
+  LOGGING2;
   ptr = EnsureSpace(ptr);
   uint32_t size = s.size();
   ptr = WriteLengthDelim(num, size, ptr);

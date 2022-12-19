@@ -708,9 +708,10 @@ TEST(LiteStringTest, AllLite28) {
     std::string data;
     MapLiteTestUtil::SetMapFields(&message1);
     size_t size = message1.ByteSizeLong();
-    data.resize(size);
+    data.resize(size + 16);
     ::uint8_t* start = reinterpret_cast<::uint8_t*>(&data[0]);
     ::uint8_t* end = message1.SerializeWithCachedSizesToArray(start);
+    data.resize(size);
     EXPECT_EQ(size, end - start);
     EXPECT_TRUE(message2.ParseFromString(data));
     MapLiteTestUtil::ExpectMapFieldsSet(message2);

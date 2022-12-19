@@ -180,11 +180,13 @@ class PROTOBUF_EXPORT WireFormat {
   // Returns a pointer past the last written byte.
   static uint8_t* SerializeUnknownFieldsToArray(
       const UnknownFieldSet& unknown_fields, uint8_t* target) {
+    LOGGING2;
     io::EpsCopyOutputStream stream(
         target, static_cast<int>(ComputeUnknownFieldsSize(unknown_fields)),
         io::CodedOutputStream::IsDefaultSerializationDeterministic());
-    return InternalSerializeUnknownFieldsToArray(unknown_fields, target,
-                                                 &stream);
+    target =
+        InternalSerializeUnknownFieldsToArray(unknown_fields, target, &stream);
+    return stream.Finalize(target);
   }
   static uint8_t* InternalSerializeUnknownFieldsToArray(
       const UnknownFieldSet& unknown_fields, uint8_t* target,
