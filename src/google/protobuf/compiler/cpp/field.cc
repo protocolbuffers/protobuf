@@ -167,8 +167,8 @@ void FieldGenerator::SetInlinedStringIndex(int32_t inlined_string_index) {
       "u");
 }
 
-void FieldGenerator::GenerateAggregateInitializer(io::Printer* printer) const {
-  Formatter format(printer, variables_);
+void FieldGenerator::GenerateAggregateInitializer(io::Printer* p) const {
+  Formatter format(p, variables_);
   if (ShouldSplit(descriptor_, options_)) {
     format("decltype(Impl_::Split::$name$_){arena}");
     return;
@@ -177,110 +177,97 @@ void FieldGenerator::GenerateAggregateInitializer(io::Printer* printer) const {
 }
 
 void FieldGenerator::GenerateConstexprAggregateInitializer(
-    io::Printer* printer) const {
-  Formatter format(printer, variables_);
+    io::Printer* p) const {
+  Formatter format(p, variables_);
   format("/*decltype($field$)*/{}");
 }
 
-void FieldGenerator::GenerateCopyAggregateInitializer(
-    io::Printer* printer) const {
-  Formatter format(printer, variables_);
+void FieldGenerator::GenerateCopyAggregateInitializer(io::Printer* p) const {
+  Formatter format(p, variables_);
   format("decltype($field$){from.$field$}");
 }
 
-void FieldGenerator::GenerateCopyConstructorCode(io::Printer* printer) const {
+void FieldGenerator::GenerateCopyConstructorCode(io::Printer* p) const {
   if (ShouldSplit(descriptor_, options_)) {
     // There is no copy constructor for the `Split` struct, so we need to copy
     // the value here.
-    Formatter format(printer, variables_);
+    Formatter format(p, variables_);
     format("$field$ = from.$field$;\n");
   }
 }
 
-void FieldGenerator::GenerateIfHasField(io::Printer* printer) const {
+void FieldGenerator::GenerateIfHasField(io::Printer* p) const {
   GOOGLE_ABSL_CHECK(internal::cpp::HasHasbit(descriptor_));
   GOOGLE_ABSL_CHECK(variables_.find("has_hasbit") != variables_.end());
 
-  Formatter format(printer, variables_);
+  Formatter format(p, variables_);
   format("if (($has_hasbit$) != 0) {\n");
 }
 
-FieldGenerator::~FieldGenerator() {}
-
-FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor,
-                                     const Options& options,
-                                     MessageSCCAnalyzer* scc_analyzer)
-    : descriptor_(descriptor), field_generators_(descriptor->field_count()) {
-  // Construct all the FieldGenerators.
-  for (int i = 0; i < descriptor->field_count(); i++) {
-    field_generators_[i].reset(
-        MakeGenerator(descriptor->field(i), options, scc_analyzer));
-  }
-}
-
-FieldGenerator* FieldGeneratorMap::MakeGoogleInternalGenerator(
+namespace {
+std::unique_ptr<FieldGenerator> MakeGenerator(
     const FieldDescriptor* field, const Options& options,
     MessageSCCAnalyzer* scc_analyzer) {
-
-  return nullptr;
-}
-
-FieldGenerator* FieldGeneratorMap::MakeGenerator(
-    const FieldDescriptor* field, const Options& options,
-    MessageSCCAnalyzer* scc_analyzer) {
-  FieldGenerator* generator =
-      MakeGoogleInternalGenerator(field, options, scc_analyzer);
-  if (generator) {
-    return generator;
-  }
-
   if (field->is_repeated()) {
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_MESSAGE:
         if (field->is_map()) {
-          return new MapFieldGenerator(field, options, scc_analyzer);
+          return absl::make_unique<MapFieldGenerator>(field, options,
+                                                      scc_analyzer);
         } else {
-          return new RepeatedMessageFieldGenerator(field, options,
-                                                   scc_analyzer);
+          return absl::make_unique<RepeatedMessageFieldGenerator>(
+              field, options, scc_analyzer);
         }
       case FieldDescriptor::CPPTYPE_STRING:
-        return new RepeatedStringFieldGenerator(field, options);
+        return absl::make_unique<RepeatedStringFieldGenerator>(field, options);
       case FieldDescriptor::CPPTYPE_ENUM:
-        return new RepeatedEnumFieldGenerator(field, options);
+        return absl::make_unique<RepeatedEnumFieldGenerator>(field, options);
       default:
-        return new RepeatedPrimitiveFieldGenerator(field, options);
+        return absl::make_unique<RepeatedPrimitiveFieldGenerator>(field,
+                                                                  options);
     }
   } else if (field->real_containing_oneof()) {
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        return new MessageOneofFieldGenerator(field, options, scc_analyzer);
+        return absl::make_unique<MessageOneofFieldGenerator>(field, options,
+                                                             scc_analyzer);
       case FieldDescriptor::CPPTYPE_STRING:
-        return new StringOneofFieldGenerator(field, options);
+        return absl::make_unique<StringOneofFieldGenerator>(field, options);
       case FieldDescriptor::CPPTYPE_ENUM:
-        return new EnumOneofFieldGenerator(field, options);
+        return absl::make_unique<EnumOneofFieldGenerator>(field, options);
       default:
-        return new PrimitiveOneofFieldGenerator(field, options);
+        return absl::make_unique<PrimitiveOneofFieldGenerator>(field, options);
     }
   } else {
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        return new MessageFieldGenerator(field, options, scc_analyzer);
+        return absl::make_unique<MessageFieldGenerator>(field, options,
+                                                        scc_analyzer);
       case FieldDescriptor::CPPTYPE_STRING:
-        return new StringFieldGenerator(field, options);
+        return absl::make_unique<StringFieldGenerator>(field, options);
       case FieldDescriptor::CPPTYPE_ENUM:
-        return new EnumFieldGenerator(field, options);
+        return absl::make_unique<EnumFieldGenerator>(field, options);
       default:
-        return new PrimitiveFieldGenerator(field, options);
+        return absl::make_unique<PrimitiveFieldGenerator>(field, options);
     }
   }
 }
+}  // namespace
 
-FieldGeneratorMap::~FieldGeneratorMap() {}
+FieldGenWrapper::FieldGenWrapper(const FieldDescriptor* field,
+                                 const Options& options,
+                                 MessageSCCAnalyzer* scc_analyzer)
+    : impl_(MakeGenerator(field, options, scc_analyzer)) {}
 
-const FieldGenerator& FieldGeneratorMap::get(
-    const FieldDescriptor* field) const {
-  GOOGLE_ABSL_CHECK_EQ(field->containing_type(), descriptor_);
-  return *field_generators_[field->index()];
+FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor,
+                                     const Options& options,
+                                     MessageSCCAnalyzer* scc_analyzer)
+    : descriptor_(descriptor) {
+  // Construct all the FieldGenerators.
+  fields_.reserve(descriptor->field_count());
+  for (const auto* field : internal::FieldRange(descriptor)) {
+    fields_.emplace_back(field, options, scc_analyzer);
+  }
 }
 
 }  // namespace cpp

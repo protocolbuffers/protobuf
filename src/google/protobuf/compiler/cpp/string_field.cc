@@ -108,8 +108,6 @@ StringFieldGenerator::StringFieldGenerator(const FieldDescriptor* descriptor,
   SetStringVariables(descriptor, &variables_, options);
 }
 
-StringFieldGenerator::~StringFieldGenerator() {}
-
 void StringFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
   Formatter format(printer, variables_);
   if (!inlined_) {
@@ -579,8 +577,6 @@ StringOneofFieldGenerator::StringOneofFieldGenerator(
   SetCommonOneofFieldVariables(descriptor, &variables_);
 }
 
-StringOneofFieldGenerator::~StringOneofFieldGenerator() {}
-
 void StringOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
@@ -684,8 +680,6 @@ RepeatedStringFieldGenerator::RepeatedStringFieldGenerator(
     : FieldGenerator(descriptor, options) {
   SetStringVariables(descriptor, &variables_, options);
 }
-
-RepeatedStringFieldGenerator::~RepeatedStringFieldGenerator() {}
 
 void RepeatedStringFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {

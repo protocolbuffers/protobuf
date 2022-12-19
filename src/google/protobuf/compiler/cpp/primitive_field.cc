@@ -135,8 +135,6 @@ PrimitiveFieldGenerator::PrimitiveFieldGenerator(
   SetPrimitiveVariables(descriptor, &variables_, options);
 }
 
-PrimitiveFieldGenerator::~PrimitiveFieldGenerator() {}
-
 void PrimitiveFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
@@ -264,8 +262,6 @@ PrimitiveOneofFieldGenerator::PrimitiveOneofFieldGenerator(
   SetCommonOneofFieldVariables(descriptor, &variables_);
 }
 
-PrimitiveOneofFieldGenerator::~PrimitiveOneofFieldGenerator() {}
-
 void PrimitiveOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
@@ -327,8 +323,6 @@ RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(
     variables_["repeated_reader"] = "ReadRepeatedPrimitive";
   }
 }
-
-RepeatedPrimitiveFieldGenerator::~RepeatedPrimitiveFieldGenerator() {}
 
 void RepeatedPrimitiveFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {

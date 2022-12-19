@@ -1799,10 +1799,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 
   // Emit some private and static members
   for (auto field : optimized_order_) {
-    const FieldGenerator& generator = field_generators_.get(field);
-    generator.GenerateStaticMembers(p);
+    field_generators_.get(field).GenerateStaticMembers(p);
     if (!ShouldSplit(field, options_)) {
-      generator.GeneratePrivateMembers(p);
+      field_generators_.get(field).GeneratePrivateMembers(p);
     }
   }
   if (ShouldSplit(descriptor_, options_)) {
@@ -1810,8 +1809,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
     format.Indent();
     for (auto field : optimized_order_) {
       if (!ShouldSplit(field, options_)) continue;
-      const FieldGenerator& generator = field_generators_.get(field);
-      generator.GeneratePrivateMembers(p);
+      field_generators_.get(field).GeneratePrivateMembers(p);
     }
     format.Outdent();
     format(
@@ -2503,8 +2501,7 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
   for (auto field : optimized_order_) {
     if (IsFieldStripped(field, options_) || ShouldSplit(field, options_))
       continue;
-    const FieldGenerator& fg = field_generators_.get(field);
-    fg.GenerateArenaDestructorCode(p);
+    field_generators_.get(field).GenerateArenaDestructorCode(p);
   }
   if (ShouldSplit(descriptor_, options_)) {
     format("if (!_this->IsSplitMessageDefault()) {\n");
@@ -2512,8 +2509,7 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
     for (auto field : optimized_order_) {
       if (IsFieldStripped(field, options_) || !ShouldSplit(field, options_))
         continue;
-      const FieldGenerator& fg = field_generators_.get(field);
-      fg.GenerateArenaDestructorCode(p);
+      field_generators_.get(field).GenerateArenaDestructorCode(p);
     }
     format.Outdent();
     format("}\n");
@@ -3405,7 +3401,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
     // Go back and emit merging code for each of the fields we processed.
     bool deferred_has_bit_changes = false;
     for (const auto field : chunk) {
-      const FieldGenerator& generator = field_generators_.get(field);
+      const auto& generator = field_generators_.get(field);
 
       if (field->is_repeated()) {
         generator.GenerateMergingCode(p);
@@ -3617,8 +3613,6 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
     PrintFieldComment(format, field);
   }
 
-  const FieldGenerator& field_gen = field_generators_.get(field);
-
   bool have_enclosing_if = false;
   if (field->options().weak()) {
   } else if (HasHasbit(field)) {
@@ -3628,7 +3622,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
     if (cached_has_bits_index == has_bit_index / 32) {
       format("if (cached_has_bits & $has_mask$) {\n");
     } else {
-      field_gen.GenerateIfHasField(p);
+      field_generators_.get(field).GenerateIfHasField(p);
     }
 
     format.Indent();
@@ -3637,7 +3631,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
     have_enclosing_if = EmitFieldNonDefaultCondition(p, "this->", field);
   }
 
-  field_gen.GenerateSerializeWithCachedSizesToArray(p);
+  field_generators_.get(field).GenerateSerializeWithCachedSizesToArray(p);
 
   if (have_enclosing_if) {
     format.Outdent();
@@ -4063,12 +4057,11 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     format("::size_t total_size = 0;\n");
     for (auto field : optimized_order_) {
       if (field->is_required()) {
-        const FieldGenerator& field_gen = field_generators_.get(field);
         format("\n");
-        field_gen.GenerateIfHasField(p);
+        field_generators_.get(field).GenerateIfHasField(p);
         format.Indent();
         PrintFieldComment(format, field);
-        field_gen.GenerateByteSize(p);
+        field_generators_.get(field).GenerateByteSize(p);
         format.Outdent();
         format("}\n");
       }
@@ -4122,10 +4115,9 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     for (auto field : optimized_order_) {
       if (!field->is_required()) continue;
       PrintFieldComment(format, field);
-      const FieldGenerator& field_gen = field_generators_.get(field);
-      field_gen.GenerateIfHasField(p);
+      field_generators_.get(field).GenerateIfHasField(p);
       format.Indent();
-      field_gen.GenerateByteSize(p);
+      field_generators_.get(field).GenerateByteSize(p);
       format.Outdent();
       format("}\n");
     }
@@ -4180,7 +4172,6 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     // Go back and emit checks for each of the fields we processed.
     for (int j = 0; j < chunk.size(); j++) {
       const FieldDescriptor* field = chunk[j];
-      const FieldGenerator& generator = field_generators_.get(field);
       bool have_enclosing_if = false;
       bool need_extra_newline = false;
 
@@ -4198,7 +4189,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
         have_enclosing_if = EmitFieldNonDefaultCondition(p, "this->", field);
       }
 
-      generator.GenerateByteSize(p);
+      field_generators_.get(field).GenerateByteSize(p);
 
       if (have_enclosing_if) {
         format.Outdent();

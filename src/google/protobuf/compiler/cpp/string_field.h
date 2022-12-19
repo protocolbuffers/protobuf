@@ -51,7 +51,7 @@ class StringFieldGenerator : public FieldGenerator {
                        const Options& options);
   StringFieldGenerator(const StringFieldGenerator&) = delete;
   StringFieldGenerator& operator=(const StringFieldGenerator&) = delete;
-  ~StringFieldGenerator() override;
+  ~StringFieldGenerator() override = default;
 
   // implements FieldGenerator ---------------------------------------
   void GeneratePrivateMembers(io::Printer* printer) const override;
@@ -89,7 +89,7 @@ class StringOneofFieldGenerator : public StringFieldGenerator {
   StringOneofFieldGenerator(const StringOneofFieldGenerator&) = delete;
   StringOneofFieldGenerator& operator=(const StringOneofFieldGenerator&) =
       delete;
-  ~StringOneofFieldGenerator() override;
+  ~StringOneofFieldGenerator() override = default;
 
   // implements FieldGenerator ---------------------------------------
   void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
@@ -109,7 +109,7 @@ class RepeatedStringFieldGenerator : public FieldGenerator {
   RepeatedStringFieldGenerator(const RepeatedStringFieldGenerator&) = delete;
   RepeatedStringFieldGenerator& operator=(const RepeatedStringFieldGenerator&) =
       delete;
-  ~RepeatedStringFieldGenerator() override;
+  ~RepeatedStringFieldGenerator() override = default;
 
   // implements FieldGenerator ---------------------------------------
   void GeneratePrivateMembers(io::Printer* printer) const override;
