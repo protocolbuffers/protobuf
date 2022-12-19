@@ -57,7 +57,6 @@
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/port.h"
 
-
 namespace google {
 namespace protobuf {
 namespace compiler {

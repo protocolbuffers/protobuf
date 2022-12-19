@@ -40,17 +40,12 @@
 
 #include "google/protobuf/descriptor.h"
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "absl/strings/substitute.h"
+#include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
-#include "google/protobuf/compiler/cpp/primitive_field.h"
-#include "google/protobuf/compiler/cpp/string_field.h"
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/compiler/cpp/enum_field.h"
-#include "google/protobuf/compiler/cpp/map_field.h"
-#include "google/protobuf/compiler/cpp/message_field.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/wire_format.h"
 
@@ -205,51 +200,48 @@ void FieldGenerator::GenerateIfHasField(io::Printer* p) const {
 }
 
 namespace {
-std::unique_ptr<FieldGenerator> MakeGenerator(
-    const FieldDescriptor* field, const Options& options,
-    MessageSCCAnalyzer* scc_analyzer) {
+std::unique_ptr<FieldGenerator> MakeGenerator(const FieldDescriptor* field,
+                                              const Options& options,
+                                              MessageSCCAnalyzer* scc) {
+
+  if (field->is_map()) {
+    return MakeMapGenerator(field, options, scc);
+  }
   if (field->is_repeated()) {
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        if (field->is_map()) {
-          return absl::make_unique<MapFieldGenerator>(field, options,
-                                                      scc_analyzer);
-        } else {
-          return absl::make_unique<RepeatedMessageFieldGenerator>(
-              field, options, scc_analyzer);
-        }
+        return MakeRepeatedMessageGenerator(field, options, scc);
       case FieldDescriptor::CPPTYPE_STRING:
-        return absl::make_unique<RepeatedStringFieldGenerator>(field, options);
+        return MakeRepeatedStringGenerator(field, options, scc);
       case FieldDescriptor::CPPTYPE_ENUM:
-        return absl::make_unique<RepeatedEnumFieldGenerator>(field, options);
+        return MakeRepeatedEnumGenerator(field, options, scc);
       default:
-        return absl::make_unique<RepeatedPrimitiveFieldGenerator>(field,
-                                                                  options);
+        return MakeRepeatedPrimitiveGenerator(field, options, scc);
     }
-  } else if (field->real_containing_oneof()) {
+  }
+
+  if (field->real_containing_oneof()) {
     switch (field->cpp_type()) {
       case FieldDescriptor::CPPTYPE_MESSAGE:
-        return absl::make_unique<MessageOneofFieldGenerator>(field, options,
-                                                             scc_analyzer);
+        return MakeOneofMessageGenerator(field, options, scc);
       case FieldDescriptor::CPPTYPE_STRING:
-        return absl::make_unique<StringOneofFieldGenerator>(field, options);
+        return MakeOneofStringGenerator(field, options, scc);
       case FieldDescriptor::CPPTYPE_ENUM:
-        return absl::make_unique<EnumOneofFieldGenerator>(field, options);
+        return MakeOneofEnumGenerator(field, options, scc);
       default:
-        return absl::make_unique<PrimitiveOneofFieldGenerator>(field, options);
+        return MakeOneofPrimitiveGenerator(field, options, scc);
     }
-  } else {
-    switch (field->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_MESSAGE:
-        return absl::make_unique<MessageFieldGenerator>(field, options,
-                                                        scc_analyzer);
-      case FieldDescriptor::CPPTYPE_STRING:
-        return absl::make_unique<StringFieldGenerator>(field, options);
-      case FieldDescriptor::CPPTYPE_ENUM:
-        return absl::make_unique<EnumFieldGenerator>(field, options);
-      default:
-        return absl::make_unique<PrimitiveFieldGenerator>(field, options);
-    }
+  }
+
+  switch (field->cpp_type()) {
+    case FieldDescriptor::CPPTYPE_MESSAGE:
+      return MakeSinguarMessageGenerator(field, options, scc);
+    case FieldDescriptor::CPPTYPE_STRING:
+      return MakeSinguarStringGenerator(field, options, scc);
+    case FieldDescriptor::CPPTYPE_ENUM:
+      return MakeSinguarEnumGenerator(field, options, scc);
+    default:
+      return MakeSinguarPrimitiveGenerator(field, options, scc);
   }
 }
 }  // namespace
@@ -261,12 +253,12 @@ FieldGenWrapper::FieldGenWrapper(const FieldDescriptor* field,
 
 FieldGeneratorMap::FieldGeneratorMap(const Descriptor* descriptor,
                                      const Options& options,
-                                     MessageSCCAnalyzer* scc_analyzer)
+                                     MessageSCCAnalyzer* scc)
     : descriptor_(descriptor) {
   // Construct all the FieldGenerators.
   fields_.reserve(descriptor->field_count());
   for (const auto* field : internal::FieldRange(descriptor)) {
-    fields_.emplace_back(field, options, scc_analyzer);
+    fields_.emplace_back(field, options, scc);
   }
 }
 
