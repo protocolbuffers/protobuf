@@ -15,27 +15,27 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":names_internal",
-        "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler:code_generator",
     ],
 )
 
 cc_library(
     name = "names_internal",
+    srcs = [
+        "helpers.cc",
+    ],
     hdrs = [
         "helpers.h",
         "names.h",
         "options.h",
     ],
-    srcs = [
-        "helpers.cc",
-    ],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/cpp",
     visibility = ["//pkg:__pkg__"],
     deps = [
-        "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf:protobuf_nowkt",
+        "//src/google/protobuf/compiler:code_generator",
     ],
 )
 
@@ -56,6 +56,7 @@ cc_library(
         "primitive_field.cc",
         "service.cc",
         "string_field.cc",
+        "tracker.cc",
     ],
     hdrs = [
         "enum.h",
@@ -73,6 +74,7 @@ cc_library(
         "primitive_field.h",
         "service.h",
         "string_field.h",
+        "tracker.h",
     ],
     copts = COPTS,
     include_prefix = "google/protobuf/compiler/cpp",
@@ -82,9 +84,8 @@ cc_library(
         "@io_kythe//kythe/cxx/tools:__subpackages__",
     ],
     deps = [
-        ":names_internal",
         ":names",
-        "//src/google/protobuf:protobuf_nowkt",
+        ":names_internal",
         "//src/google/protobuf/compiler:code_generator",
         "@com_google_absl//absl/base:core_headers",
         "@com_google_absl//absl/container:btree",

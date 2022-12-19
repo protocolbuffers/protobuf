@@ -499,13 +499,17 @@ class PROTOBUF_EXPORT Printer {
   //
   // Returns an RAII object that pops the lookup frame.
   template <typename Map = absl::flat_hash_map<std::string, std::string>,
-            typename = std::enable_if_t<!std::is_pointer<Map>::value>>
+            typename = std::enable_if_t<!std::is_pointer<Map>::value>,
+            // Prefer the more specific span impl if this could be turned into
+            // a span.
+            typename = std::enable_if_t<
+                !std::is_convertible<Map, absl::Span<const Sub>>::value>>
   auto WithVars(Map&& vars);
 
   // Pushes a new variable lookup frame that stores `vars` by value.
   //
   // Returns an RAII object that pops the lookup frame.
-  auto WithVars(std::initializer_list<Sub> vars);
+  auto WithVars(absl::Span<const Sub> vars);
 
   // Looks up a variable set with WithVars().
   //
@@ -551,7 +555,7 @@ class PROTOBUF_EXPORT Printer {
   // documentation for more details.
   //
   // `format` MUST be a string constant.
-  void Emit(std::initializer_list<Sub> vars, absl::string_view format,
+  void Emit(absl::Span<const Sub> vars, absl::string_view format,
             SourceLocation loc = SourceLocation::current());
 
   // Write a string directly to the underlying output, performing no formatting
@@ -694,7 +698,7 @@ class PROTOBUF_EXPORT Printer {
   void PrintCodegenTrace(absl::optional<SourceLocation> loc);
 
   // The core implementation for "fully-elaborated" variable definitions.
-  auto WithDefs(std::initializer_list<Sub> vars, bool allow_callbacks);
+  auto WithDefs(absl::Span<const Sub> vars, bool allow_callbacks);
 
   // Returns the start and end of the value that was substituted in place of
   // the variable `varname` in the last call to PrintImpl() (with
@@ -915,6 +919,15 @@ class Printer::Sub {
     return std::move(*this);
   }
 
+  absl::string_view key() const { return key_; }
+
+  absl::string_view value() const {
+    const auto* str = value_.AsString();
+    GOOGLE_ABSL_CHECK(str != nullptr)
+        << "could not find " << key() << "; found callback instead";
+    return *str;
+  }
+
  private:
   friend class Printer;
 
@@ -936,7 +949,7 @@ auto Printer::WithVars(const Map* vars) {
   return absl::MakeCleanup([this] { var_lookups_.pop_back(); });
 }
 
-template <typename Map, typename /*Sfinae*/>
+template <typename Map, typename, typename /*Sfinae*/>
 auto Printer::WithVars(Map&& vars) {
   var_lookups_.emplace_back(
       [vars = std::forward<Map>(vars)](
@@ -977,12 +990,6 @@ auto Printer::WithAnnotations(Map&& vars) {
   return absl::MakeCleanup([this] { annotation_lookups_.pop_back(); });
 }
 
-// In GCC older than GCC 9, this code (which constructs an empty
-// std::initializer_list<Sub>) incorrectly fails to compile if it does not
-// follow the definition of the type Sub; this is the only reason it is
-// out-of-line.
-//
-// See https://godbolt.org/z/e4KnM3PE7.
 inline void Printer::Emit(absl::string_view format, SourceLocation loc) {
   Emit({}, format, loc);
 }
@@ -1037,7 +1044,7 @@ void Printer::FormatInternal(absl::Span<const std::string> args,
   PrintImpl(format, args, opts);
 }
 
-inline auto Printer::WithDefs(std::initializer_list<Sub> vars,
+inline auto Printer::WithDefs(absl::Span<const Sub> vars,
                               bool allow_callbacks) {
   absl::flat_hash_map<std::string, Value> var_map;
   var_map.reserve(vars.size());
@@ -1086,7 +1093,7 @@ inline auto Printer::WithDefs(std::initializer_list<Sub> vars,
   });
 }
 
-inline auto Printer::WithVars(std::initializer_list<Sub> vars) {
+inline auto Printer::WithVars(absl::Span<const Sub> vars) {
   return WithDefs(vars, /*allow_callbacks=*/false);
 }
 }  // namespace io
