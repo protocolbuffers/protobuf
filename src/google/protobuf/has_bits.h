@@ -61,6 +61,14 @@ class HasBits {
   PROTOBUF_NDEBUG_INLINE const uint32_t& operator[](int index) const {
     return has_bits_[index];
   }
+  
+  PROTOBUF_NDEBUG_INLINE uint32_t& operator[](size_t index) {
+    return has_bits_[index];
+  }
+
+  PROTOBUF_NDEBUG_INLINE const uint32_t& operator[](size_t index) const {
+    return has_bits_[index];
+  }
 
   bool operator==(const HasBits<doublewords>& rhs) const {
     return memcmp(has_bits_, rhs.has_bits_, sizeof(has_bits_)) == 0;
