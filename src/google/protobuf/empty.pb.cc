@@ -135,7 +135,6 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Empty::GetClassData() const { 
 
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Empty::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fempty_2eproto_getter, &descriptor_table_google_2fprotobuf_2fempty_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fempty_2eproto[0]);

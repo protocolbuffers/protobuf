@@ -492,7 +492,6 @@ void Type::Clear() {
 }
 
 const char* Type::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -597,7 +596,6 @@ failure:
 
 ::uint8_t* Type::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Type)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -661,7 +659,6 @@ failure:
 }
 
 ::size_t Type::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Type)
   ::size_t total_size = 0;
 
@@ -724,7 +721,6 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Type::GetClassData() const { r
 void Type::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<Type*>(&to_msg);
   auto& from = static_cast<const Type&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Type)
   GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -778,7 +774,6 @@ void Type::InternalSwap(Type* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Type::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2ftype_2eproto_getter, &descriptor_table_google_2fprotobuf_2ftype_2eproto_once,
       file_level_metadata_google_2fprotobuf_2ftype_2eproto[0]);
@@ -922,7 +917,6 @@ void Field::Clear() {
 }
 
 const char* Field::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -1058,7 +1052,6 @@ failure:
 
 ::uint8_t* Field::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Field)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1152,7 +1145,6 @@ failure:
 }
 
 ::size_t Field::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Field)
   ::size_t total_size = 0;
 
@@ -1235,7 +1227,6 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Field::GetClassData() const { 
 void Field::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<Field*>(&to_msg);
   auto& from = static_cast<const Field&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Field)
   GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -1314,7 +1305,6 @@ void Field::InternalSwap(Field* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Field::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2ftype_2eproto_getter, &descriptor_table_google_2fprotobuf_2ftype_2eproto_once,
       file_level_metadata_google_2fprotobuf_2ftype_2eproto[1]);
@@ -1423,7 +1413,6 @@ void Enum::Clear() {
 }
 
 const char* Enum::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -1512,7 +1501,6 @@ failure:
 
 ::uint8_t* Enum::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Enum)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1566,7 +1554,6 @@ failure:
 }
 
 ::size_t Enum::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Enum)
   ::size_t total_size = 0;
 
@@ -1621,7 +1608,6 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Enum::GetClassData() const { r
 void Enum::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<Enum*>(&to_msg);
   auto& from = static_cast<const Enum&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Enum)
   GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -1673,7 +1659,6 @@ void Enum::InternalSwap(Enum* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Enum::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2ftype_2eproto_getter, &descriptor_table_google_2fprotobuf_2ftype_2eproto_once,
       file_level_metadata_google_2fprotobuf_2ftype_2eproto[2]);
@@ -1757,7 +1742,6 @@ void EnumValue::Clear() {
 }
 
 const char* EnumValue::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -1822,7 +1806,6 @@ failure:
 
 ::uint8_t* EnumValue::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.EnumValue)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1860,7 +1843,6 @@ failure:
 }
 
 ::size_t EnumValue::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.EnumValue)
   ::size_t total_size = 0;
 
@@ -1900,7 +1882,6 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*EnumValue::GetClassData() cons
 void EnumValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<EnumValue*>(&to_msg);
   auto& from = static_cast<const EnumValue&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValue)
   GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -1941,7 +1922,6 @@ void EnumValue::InternalSwap(EnumValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata EnumValue::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2ftype_2eproto_getter, &descriptor_table_google_2fprotobuf_2ftype_2eproto_once,
       file_level_metadata_google_2fprotobuf_2ftype_2eproto[3]);
@@ -2038,7 +2018,6 @@ void Option::Clear() {
 }
 
 const char* Option::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -2089,7 +2068,6 @@ failure:
 
 ::uint8_t* Option::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Option)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -2120,7 +2098,6 @@ failure:
 }
 
 ::size_t Option::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Option)
   ::size_t total_size = 0;
 
@@ -2155,7 +2132,6 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Option::GetClassData() const {
 void Option::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<Option*>(&to_msg);
   auto& from = static_cast<const Option&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Option)
   GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -2195,7 +2171,6 @@ void Option::InternalSwap(Option* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Option::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2ftype_2eproto_getter, &descriptor_table_google_2fprotobuf_2ftype_2eproto_once,
       file_level_metadata_google_2fprotobuf_2ftype_2eproto[4]);

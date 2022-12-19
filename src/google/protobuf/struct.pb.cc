@@ -291,7 +291,6 @@ void Struct::Clear() {
 }
 
 const char* Struct::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -336,7 +335,6 @@ failure:
 
 ::uint8_t* Struct::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Struct)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -376,7 +374,6 @@ failure:
 }
 
 ::size_t Struct::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Struct)
   ::size_t total_size = 0;
 
@@ -406,7 +403,6 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Struct::GetClassData() const {
 void Struct::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<Struct*>(&to_msg);
   auto& from = static_cast<const Struct&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Struct)
   GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -434,7 +430,6 @@ void Struct::InternalSwap(Struct* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Struct::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fstruct_2eproto[1]);
@@ -616,7 +611,6 @@ void Value::Clear() {
 }
 
 const char* Value::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -704,7 +698,6 @@ failure:
 
 ::uint8_t* Value::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Value)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -761,7 +754,6 @@ failure:
 }
 
 ::size_t Value::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Value)
   ::size_t total_size = 0;
 
@@ -824,7 +816,6 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*Value::GetClassData() const { 
 void Value::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<Value*>(&to_msg);
   auto& from = static_cast<const Value&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Value)
   GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -883,7 +874,6 @@ void Value::InternalSwap(Value* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata Value::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fstruct_2eproto[2]);
@@ -947,7 +937,6 @@ void ListValue::Clear() {
 }
 
 const char* ListValue::_InternalParse(const char* ptr, ::_pbi::ParseContext* ctx) {
-
 #define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
   while (!ctx->Done(&ptr)) {
     ::uint32_t tag;
@@ -992,7 +981,6 @@ failure:
 
 ::uint8_t* ListValue::_InternalSerialize(
     ::uint8_t* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.ListValue)
   ::uint32_t cached_has_bits = 0;
   (void) cached_has_bits;
@@ -1014,7 +1002,6 @@ failure:
 }
 
 ::size_t ListValue::ByteSizeLong() const {
-
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.ListValue)
   ::size_t total_size = 0;
 
@@ -1042,7 +1029,6 @@ const ::PROTOBUF_NAMESPACE_ID::Message::ClassData*ListValue::GetClassData() cons
 void ListValue::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const ::PROTOBUF_NAMESPACE_ID::Message& from_msg) {
   auto* const _this = static_cast<ListValue*>(&to_msg);
   auto& from = static_cast<const ListValue&>(from_msg);
-
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ListValue)
   GOOGLE_ABSL_DCHECK_NE(&from, _this);
   ::uint32_t cached_has_bits = 0;
@@ -1070,7 +1056,6 @@ void ListValue::InternalSwap(ListValue* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata ListValue::GetMetadata() const {
-
   return ::_pbi::AssignDescriptors(
       &descriptor_table_google_2fprotobuf_2fstruct_2eproto_getter, &descriptor_table_google_2fprotobuf_2fstruct_2eproto_once,
       file_level_metadata_google_2fprotobuf_2fstruct_2eproto[3]);
