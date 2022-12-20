@@ -12,7 +12,7 @@ set -ex
 cd $(dirname $0)/../../..
 GIT_REPO_ROOT=$(pwd)
 
-CONTAINER_IMAGE=gcr.io/protobuf-build/php/32bit@sha256:824cbdff02ee543eb69ee4b02c8c58cc7887f70f49e41725a35765d92a898b4f
+CONTAINER_IMAGE=gcr.io/protobuf-build/php/32bit@sha256:8c3cf171ac8a3f91296517d822a26b1cbb6696035bdb723db68928d52bdbfc40
 
 git submodule update --init --recursive
 
