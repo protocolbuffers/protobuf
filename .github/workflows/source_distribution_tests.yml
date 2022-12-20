@@ -88,7 +88,7 @@ jobs:
       - name: Install numpy
         run: pip install numpy
       - name: Install Protobuf Test wheel
-        run: pip install -vvv --no-index protobuftests
+        run: pip install -vvv --no-index --find-links . protobuftests
       - name: Install python source
         run: cd protobuf-*/ && python setup.py install
       - name: Test that module is importable
