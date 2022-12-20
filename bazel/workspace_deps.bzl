@@ -41,7 +41,7 @@ def upb_deps():
     maybe(
         http_archive,
         name = "rules_pkg",
-        url = "https://github.com/bazelbuild/rules_pkg/archives/refs/tags/{}.tar.gz".format(rules_pkg_version),
+        url = "https://github.com/bazelbuild/rules_pkg/archive/refs/tags/{}.tar.gz".format(rules_pkg_version),
         sha256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558941c2",
     )
 
