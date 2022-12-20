@@ -88,7 +88,7 @@ jobs:
       - name: Install numpy
         run: pip install numpy
       - name: Install Protobuf Wheels
-        run: pip install -vvv --no-index --find-links wheels protobuf protobuftests
+        run: pip install -vvv --no-index protobuf protobuftests
       - name: Test that module is importable
         run: python -v -c 'from google._upb import _message; assert "google._upb._message.MessageMeta" in str(_message.MessageMeta)'
         if: ${{ !matrix.pure_python }}
