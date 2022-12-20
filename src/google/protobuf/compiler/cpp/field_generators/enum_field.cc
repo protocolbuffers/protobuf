@@ -32,24 +32,23 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include "google/protobuf/compiler/cpp/enum_field.h"
-
+#include <memory>
 #include <string>
 #include <tuple>
 
 #include "absl/container/flat_hash_map.h"
+#include "google/protobuf/stubs/logging.h"
+#include "absl/memory/memory.h"
 #include "google/protobuf/compiler/cpp/field.h"
+#include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.pb.h"
-#include "google/protobuf/wire_format.h"
 
 namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-
 namespace {
-
 void SetEnumVariables(
     const FieldDescriptor* descriptor,
     absl::flat_hash_map<absl::string_view, std::string>* variables,
@@ -65,7 +64,66 @@ void SetEnumVariables(
       MakeVarintCachedSizeFieldName(descriptor, cold);
 }
 
-}  // namespace
+class EnumFieldGenerator : public FieldGenerator {
+ public:
+  EnumFieldGenerator(const FieldDescriptor* descriptor, const Options& options);
+  ~EnumFieldGenerator() override = default;
+
+  void GeneratePrivateMembers(io::Printer* printer) const override;
+  void GenerateAccessorDeclarations(io::Printer* printer) const override;
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
+  void GenerateClearingCode(io::Printer* printer) const override;
+  void GenerateMergingCode(io::Printer* printer) const override;
+  void GenerateSwappingCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override {}
+  void GenerateCopyConstructorCode(io::Printer* printer) const override;
+  void GenerateSerializeWithCachedSizesToArray(
+      io::Printer* printer) const override;
+  void GenerateByteSize(io::Printer* printer) const override;
+  void GenerateConstexprAggregateInitializer(
+      io::Printer* printer) const override;
+  void GenerateAggregateInitializer(io::Printer* printer) const override;
+  void GenerateCopyAggregateInitializer(io::Printer* printer) const override;
+};
+
+class EnumOneofFieldGenerator : public EnumFieldGenerator {
+ public:
+  EnumOneofFieldGenerator(const FieldDescriptor* descriptor,
+                          const Options& options);
+  ~EnumOneofFieldGenerator() override = default;
+
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
+  void GenerateClearingCode(io::Printer* printer) const override;
+  void GenerateSwappingCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override;
+};
+
+class RepeatedEnumFieldGenerator : public FieldGenerator {
+ public:
+  RepeatedEnumFieldGenerator(const FieldDescriptor* descriptor,
+                             const Options& options);
+  ~RepeatedEnumFieldGenerator() override = default;
+
+  // implements FieldGenerator ---------------------------------------
+  void GeneratePrivateMembers(io::Printer* printer) const override;
+  void GenerateAccessorDeclarations(io::Printer* printer) const override;
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
+  void GenerateClearingCode(io::Printer* printer) const override;
+  void GenerateMergingCode(io::Printer* printer) const override;
+  void GenerateSwappingCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override;
+  void GenerateCopyConstructorCode(io::Printer* /*printer*/) const override {
+    GOOGLE_ABSL_CHECK(!ShouldSplit(descriptor_, options_));
+  }
+  void GenerateDestructorCode(io::Printer* printer) const override;
+  void GenerateSerializeWithCachedSizesToArray(
+      io::Printer* printer) const override;
+  void GenerateByteSize(io::Printer* printer) const override;
+  void GenerateConstexprAggregateInitializer(
+      io::Printer* printer) const override;
+  void GenerateAggregateInitializer(io::Printer* printer) const override;
+  void GenerateCopyAggregateInitializer(io::Printer* printer) const override;
+};
 
 // ===================================================================
 
@@ -74,8 +132,6 @@ EnumFieldGenerator::EnumFieldGenerator(const FieldDescriptor* descriptor,
     : FieldGenerator(descriptor, options) {
   SetEnumVariables(descriptor, &variables_, options);
 }
-
-EnumFieldGenerator::~EnumFieldGenerator() {}
 
 void EnumFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
   Formatter format(printer, variables_);
@@ -191,8 +247,6 @@ EnumOneofFieldGenerator::EnumOneofFieldGenerator(
   SetCommonOneofFieldVariables(descriptor, &variables_);
 }
 
-EnumOneofFieldGenerator::~EnumOneofFieldGenerator() {}
-
 void EnumOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
@@ -248,8 +302,6 @@ RepeatedEnumFieldGenerator::RepeatedEnumFieldGenerator(
     : FieldGenerator(descriptor, options) {
   SetEnumVariables(descriptor, &variables_, options);
 }
-
-RepeatedEnumFieldGenerator::~RepeatedEnumFieldGenerator() {}
 
 void RepeatedEnumFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {
@@ -449,6 +501,25 @@ void RepeatedEnumFieldGenerator::GenerateCopyAggregateInitializer(
     // std::atomic has no copy constructor.
     format("\n, /*decltype($cached_byte_size_field$)*/{0}");
   }
+}
+}  // namespace
+
+std::unique_ptr<FieldGenerator> MakeSinguarEnumGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc) {
+  return absl::make_unique<EnumFieldGenerator>(desc, options);
+}
+
+std::unique_ptr<FieldGenerator> MakeRepeatedEnumGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc) {
+  return absl::make_unique<RepeatedEnumFieldGenerator>(desc, options);
+}
+
+std::unique_ptr<FieldGenerator> MakeOneofEnumGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc) {
+  return absl::make_unique<EnumOneofFieldGenerator>(desc, options);
 }
 
 }  // namespace cpp

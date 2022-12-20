@@ -32,14 +32,15 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include "google/protobuf/compiler/cpp/primitive_field.h"
-
+#include <memory>
 #include <string>
 #include <tuple>
 
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/stubs/logging.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
@@ -49,10 +50,8 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-
-using internal::WireFormatLite;
-
 namespace {
+using internal::WireFormatLite;
 
 // For encodings with fixed sizes, returns that size in bytes.  Otherwise
 // returns -1.
@@ -125,9 +124,66 @@ void SetPrimitiveVariables(
   (*variables)["full_name"] = descriptor->full_name();
 }
 
-}  // namespace
+class PrimitiveFieldGenerator : public FieldGenerator {
+ public:
+  PrimitiveFieldGenerator(const FieldDescriptor* descriptor,
+                          const Options& options);
+  ~PrimitiveFieldGenerator() override = default;
 
-// ===================================================================
+  void GeneratePrivateMembers(io::Printer* printer) const override;
+  void GenerateAccessorDeclarations(io::Printer* printer) const override;
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
+  void GenerateClearingCode(io::Printer* printer) const override;
+  void GenerateMergingCode(io::Printer* printer) const override;
+  void GenerateSwappingCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override {}
+  void GenerateCopyConstructorCode(io::Printer* printer) const override;
+  void GenerateSerializeWithCachedSizesToArray(
+      io::Printer* printer) const override;
+  void GenerateByteSize(io::Printer* printer) const override;
+  void GenerateConstexprAggregateInitializer(
+      io::Printer* printer) const override;
+  void GenerateAggregateInitializer(io::Printer* printer) const override;
+  void GenerateCopyAggregateInitializer(io::Printer* printer) const override;
+};
+
+class PrimitiveOneofFieldGenerator : public PrimitiveFieldGenerator {
+ public:
+  PrimitiveOneofFieldGenerator(const FieldDescriptor* descriptor,
+                               const Options& options);
+  ~PrimitiveOneofFieldGenerator() override = default;
+
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
+  void GenerateClearingCode(io::Printer* printer) const override;
+  void GenerateSwappingCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override;
+};
+
+class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
+ public:
+  RepeatedPrimitiveFieldGenerator(const FieldDescriptor* descriptor,
+                                  const Options& options);
+  ~RepeatedPrimitiveFieldGenerator() override = default;
+
+  void GeneratePrivateMembers(io::Printer* printer) const override;
+  void GenerateAccessorDeclarations(io::Printer* printer) const override;
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
+  void GenerateClearingCode(io::Printer* printer) const override;
+  void GenerateMergingCode(io::Printer* printer) const override;
+  void GenerateSwappingCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override {}
+  void GenerateCopyConstructorCode(io::Printer* /*printer*/) const override {
+    GOOGLE_ABSL_CHECK(!ShouldSplit(descriptor_, options_));
+  }
+  void GenerateDestructorCode(io::Printer* printer) const override;
+  void GenerateSerializeWithCachedSizesToArray(
+      io::Printer* printer) const override;
+  void GenerateByteSize(io::Printer* printer) const override;
+  void GenerateConstexprAggregateInitializer(
+      io::Printer* printer) const override;
+  void GenerateAggregateInitializer(io::Printer* printer) const override;
+  void GenerateCopyAggregateInitializer(io::Printer* printer) const override;
+};
 
 PrimitiveFieldGenerator::PrimitiveFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options)
@@ -526,7 +582,6 @@ void RepeatedPrimitiveFieldGenerator::GenerateAggregateInitializer(
 
 void RepeatedPrimitiveFieldGenerator::GenerateCopyAggregateInitializer(
     io::Printer* printer) const {
-
   Formatter format(printer, variables_);
   format("decltype($field$){from.$field$}");
   if (descriptor_->is_packed() && FixedSize(descriptor_->type()) == -1 &&
@@ -534,6 +589,25 @@ void RepeatedPrimitiveFieldGenerator::GenerateCopyAggregateInitializer(
     // std::atomic has no move constructor.
     format("\n, /*decltype($cached_byte_size_field$)*/{0}");
   }
+}
+}  // namespace
+
+std::unique_ptr<FieldGenerator> MakeSinguarPrimitiveGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc) {
+  return absl::make_unique<PrimitiveFieldGenerator>(desc, options);
+}
+
+std::unique_ptr<FieldGenerator> MakeRepeatedPrimitiveGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc) {
+  return absl::make_unique<RepeatedPrimitiveFieldGenerator>(desc, options);
+}
+
+std::unique_ptr<FieldGenerator> MakeOneofPrimitiveGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc) {
+  return absl::make_unique<PrimitiveOneofFieldGenerator>(desc, options);
 }
 
 }  // namespace cpp

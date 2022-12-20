@@ -32,12 +32,15 @@
 //  Based on original Protocol Buffers design by
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
-#include "google/protobuf/compiler/cpp/message_field.h"
+#include <memory>
+#include <string>
 
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/stubs/logging.h"
+#include "absl/memory/memory.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/field.h"
+#include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/io/printer.h"
 
@@ -45,7 +48,6 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
-
 namespace {
 std::string ReinterpretCast(const std::string& type,
                             const std::string& expression,
@@ -92,7 +94,85 @@ void SetMessageVariables(
   (*variables)["full_name"] = descriptor->full_name();
 }
 
-}  // namespace
+class MessageFieldGenerator : public FieldGenerator {
+ public:
+  MessageFieldGenerator(const FieldDescriptor* descriptor,
+                        const Options& options,
+                        MessageSCCAnalyzer* scc_analyzer);
+  ~MessageFieldGenerator() override = default;
+
+  void GeneratePrivateMembers(io::Printer* printer) const override;
+  void GenerateAccessorDeclarations(io::Printer* printer) const override;
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
+  void GenerateNonInlineAccessorDefinitions(
+      io::Printer* printer) const override;
+  void GenerateInternalAccessorDeclarations(
+      io::Printer* printer) const override;
+  void GenerateInternalAccessorDefinitions(io::Printer* printer) const override;
+  void GenerateClearingCode(io::Printer* printer) const override;
+  void GenerateMessageClearingCode(io::Printer* printer) const override;
+  void GenerateMergingCode(io::Printer* printer) const override;
+  void GenerateSwappingCode(io::Printer* printer) const override;
+  void GenerateDestructorCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override {}
+  void GenerateCopyConstructorCode(io::Printer* printer) const override;
+  void GenerateSerializeWithCachedSizesToArray(
+      io::Printer* printer) const override;
+  void GenerateByteSize(io::Printer* printer) const override;
+  void GenerateIsInitialized(io::Printer* printer) const override;
+  void GenerateConstexprAggregateInitializer(
+      io::Printer* printer) const override;
+  void GenerateAggregateInitializer(io::Printer* printer) const override;
+  void GenerateCopyAggregateInitializer(io::Printer* printer) const override;
+
+ protected:
+  bool implicit_weak_field_;
+  bool has_required_fields_;
+};
+
+class MessageOneofFieldGenerator : public MessageFieldGenerator {
+ public:
+  MessageOneofFieldGenerator(const FieldDescriptor* descriptor,
+                             const Options& options,
+                             MessageSCCAnalyzer* scc_analyzer);
+  ~MessageOneofFieldGenerator() override = default;
+
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
+  void GenerateNonInlineAccessorDefinitions(
+      io::Printer* printer) const override;
+  void GenerateClearingCode(io::Printer* printer) const override;
+  void GenerateMessageClearingCode(io::Printer* printer) const override;
+  void GenerateSwappingCode(io::Printer* printer) const override;
+  void GenerateDestructorCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override;
+  void GenerateIsInitialized(io::Printer* printer) const override;
+};
+
+class RepeatedMessageFieldGenerator : public FieldGenerator {
+ public:
+  RepeatedMessageFieldGenerator(const FieldDescriptor* descriptor,
+                                const Options& options,
+                                MessageSCCAnalyzer* scc_analyzer);
+  ~RepeatedMessageFieldGenerator() override = default;
+
+  void GeneratePrivateMembers(io::Printer* printer) const override;
+  void GenerateAccessorDeclarations(io::Printer* printer) const override;
+  void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
+  void GenerateClearingCode(io::Printer* printer) const override;
+  void GenerateMergingCode(io::Printer* printer) const override;
+  void GenerateSwappingCode(io::Printer* printer) const override;
+  void GenerateConstructorCode(io::Printer* printer) const override;
+  void GenerateCopyConstructorCode(io::Printer* printer) const override {}
+  void GenerateDestructorCode(io::Printer* printer) const override;
+  void GenerateSerializeWithCachedSizesToArray(
+      io::Printer* printer) const override;
+  void GenerateByteSize(io::Printer* printer) const override;
+  void GenerateIsInitialized(io::Printer* printer) const override;
+
+ private:
+  bool implicit_weak_field_;
+  bool has_required_fields_;
+};
 
 // ===================================================================
 
@@ -106,8 +186,6 @@ MessageFieldGenerator::MessageFieldGenerator(const FieldDescriptor* descriptor,
           scc_analyzer->HasRequiredFields(descriptor->message_type())) {
   SetMessageVariables(descriptor, options, implicit_weak_field_, &variables_);
 }
-
-MessageFieldGenerator::~MessageFieldGenerator() {}
 
 void MessageFieldGenerator::GeneratePrivateMembers(io::Printer* printer) const {
   Formatter format(printer, variables_);
@@ -563,8 +641,6 @@ MessageOneofFieldGenerator::MessageOneofFieldGenerator(
   SetCommonOneofFieldVariables(descriptor, &variables_);
 }
 
-MessageOneofFieldGenerator::~MessageOneofFieldGenerator() {}
-
 void MessageOneofFieldGenerator::GenerateNonInlineAccessorDefinitions(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
@@ -750,8 +826,6 @@ RepeatedMessageFieldGenerator::RepeatedMessageFieldGenerator(
           scc_analyzer->HasRequiredFields(descriptor->message_type())) {
   SetMessageVariables(descriptor, options, implicit_weak_field_, &variables_);
 }
-
-RepeatedMessageFieldGenerator::~RepeatedMessageFieldGenerator() {}
 
 void RepeatedMessageFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {
@@ -980,6 +1054,25 @@ void RepeatedMessageFieldGenerator::GenerateIsInitialized(
         "if (!::$proto_ns$::internal::AllAreInitialized($field$))\n"
         "  return false;\n");
   }
+}
+}  // namespace
+
+std::unique_ptr<FieldGenerator> MakeSinguarMessageGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc) {
+  return absl::make_unique<MessageFieldGenerator>(desc, options, scc);
+}
+
+std::unique_ptr<FieldGenerator> MakeRepeatedMessageGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc) {
+  return absl::make_unique<RepeatedMessageFieldGenerator>(desc, options, scc);
+}
+
+std::unique_ptr<FieldGenerator> MakeOneofMessageGenerator(
+    const FieldDescriptor* desc, const Options& options,
+    MessageSCCAnalyzer* scc) {
+  return absl::make_unique<MessageOneofFieldGenerator>(desc, options, scc);
 }
 
 }  // namespace cpp
