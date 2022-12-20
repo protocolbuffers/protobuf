@@ -218,7 +218,7 @@ filegroup(
 pkg_files(
     name = "message_extension",
     srcs = [":message_srcs"],
-    prefix = "google/protobuf/pyext",
+    prefix = "python/",
 )
 
 py_extension(
