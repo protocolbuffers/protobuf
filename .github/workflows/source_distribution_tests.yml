@@ -1,4 +1,4 @@
-name: Python Tests
+name: Python Source Distribution Tests
 
 on:
   push:
@@ -67,7 +67,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: python-wheels
-          path: wheels
+          path: ${{ github.workspace }}
       - name: Extract tar
         run: tar -xzvf *.tar.gz
       - uses: actions/setup-python@v2
