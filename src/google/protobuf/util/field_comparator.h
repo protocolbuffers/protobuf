@@ -33,7 +33,6 @@
 #ifndef GOOGLE_PROTOBUF_UTIL_FIELD_COMPARATOR_H__
 #define GOOGLE_PROTOBUF_UTIL_FIELD_COMPARATOR_H__
 
-
 #include <cstdint>
 #include <map>
 #include <string>

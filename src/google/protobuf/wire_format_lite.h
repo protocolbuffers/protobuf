@@ -40,7 +40,6 @@
 #ifndef GOOGLE_PROTOBUF_WIRE_FORMAT_LITE_H__
 #define GOOGLE_PROTOBUF_WIRE_FORMAT_LITE_H__
 
-
 #include <limits>
 #include <string>
 

@@ -39,7 +39,6 @@
 #ifndef GOOGLE_PROTOBUF_WIRE_FORMAT_H__
 #define GOOGLE_PROTOBUF_WIRE_FORMAT_H__
 
-
 #include "google/protobuf/stubs/common.h"
 #include "absl/base/casts.h"
 #include "google/protobuf/descriptor.h"

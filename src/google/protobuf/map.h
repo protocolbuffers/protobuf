@@ -37,7 +37,6 @@
 #ifndef GOOGLE_PROTOBUF_MAP_H__
 #define GOOGLE_PROTOBUF_MAP_H__
 
-
 #include <algorithm>
 #include <functional>
 #include <initializer_list>

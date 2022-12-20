@@ -33,7 +33,6 @@
 #ifndef GOOGLE_PROTOBUF_ARENA_H__
 #define GOOGLE_PROTOBUF_ARENA_H__
 
-
 #include <limits>
 #include <type_traits>
 #include <utility>

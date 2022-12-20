@@ -38,7 +38,6 @@
 #ifndef GOOGLE_PROTOBUF_DYNAMIC_MESSAGE_H__
 #define GOOGLE_PROTOBUF_DYNAMIC_MESSAGE_H__
 
-
 #include <algorithm>
 #include <memory>
 #include <vector>
