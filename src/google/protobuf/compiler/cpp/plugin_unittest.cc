@@ -149,11 +149,16 @@ class TestGenerator : public CodeGenerator {
     TryInsert("test.pb.h", "field_list:foo.Bar.repeatedCord", context);
     TryInsert("test.pb.h", "field_mutable:foo.Bar.repeatedCord", context);
     TryInsert("test.pb.h", "field_mutable_list:foo.Bar.repeatedCord", context);
+    TryInsert("test.pb.h", "field_add_string_piece:foo.Bar.repeatedCord",
+              context);
+    TryInsert("test.pb.h", "field_set_string_piece:foo.Bar.repeatedCord",
+              context);
 
     // Check field accessors for a cord inside oneof{}:
     TryInsert("test.pb.h", "field_get:foo.Bar.oneOfCord", context);
     TryInsert("test.pb.h", "field_set:foo.Bar.oneOfCord", context);
     TryInsert("test.pb.h", "field_mutable:foo.Bar.oneOfCord", context);
+    TryInsert("test.pb.h", "field_set_string_piece:foo.Bar.oneOfCord", context);
 
     return true;
   }
