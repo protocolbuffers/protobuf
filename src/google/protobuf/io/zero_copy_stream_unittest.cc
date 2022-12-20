@@ -46,10 +46,6 @@
 //   "parametized tests" so that one set of tests can be used on all the
 //   implementations.
 
-#include <algorithm>
-#include <chrono>
-#include <thread>
-
 #ifndef _WIN32
 #include <sys/socket.h>
 #include <unistd.h>
@@ -60,15 +56,26 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <algorithm>
+#include <chrono>
 #include <iterator>
 #include <memory>
 #include <sstream>
+#include <thread>
 #include <utility>
 #include <vector>
 
+#include "google/protobuf/stubs/common.h"
 #include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/googletest.h"
+#include <gtest/gtest.h>
+#include "google/protobuf/stubs/logging.h"
+#include "google/protobuf/stubs/logging.h"
+#include "absl/status/status.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/cord_buffer.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/io_win32.h"
@@ -78,17 +85,6 @@
 #if HAVE_ZLIB
 #include "google/protobuf/io/gzip_stream.h"
 #endif
-
-#include "google/protobuf/stubs/common.h"
-#include "google/protobuf/testing/file.h"
-#include "google/protobuf/testing/googletest.h"
-#include <gtest/gtest.h>
-#include "google/protobuf/stubs/logging.h"
-#include "google/protobuf/stubs/logging.h"
-#include "absl/status/status.h"
-#include "absl/strings/cord.h"
-#include "absl/strings/cord_buffer.h"
-#include "absl/strings/string_view.h"
 
 
 // Must be included last.
@@ -1447,7 +1443,8 @@ TEST_F(IoTest, CordOutputBufferEndsAtSizeHint) {
 
 // To test files, we create a temporary file, write, read, truncate, repeat.
 TEST_F(IoTest, FileIo) {
-  std::string filename = TestTempDir() + "/zero_copy_stream_test_file";
+  std::string filename =
+      absl::StrCat(TestTempDir(), "/zero_copy_stream_test_file");
 
   for (int i = 0; i < kBlockSizeCount; i++) {
     for (int j = 0; j < kBlockSizeCount; j++) {
@@ -1544,7 +1541,8 @@ TEST_F(IoTest, BlockingFileIoWithTimeout) {
 
 #if HAVE_ZLIB
 TEST_F(IoTest, GzipFileIo) {
-  std::string filename = TestTempDir() + "/zero_copy_stream_test_file";
+  std::string filename =
+      absl::StrCat(TestTempDir(), "/zero_copy_stream_test_file");
 
   for (int i = 0; i < kBlockSizeCount; i++) {
     for (int j = 0; j < kBlockSizeCount; j++) {
