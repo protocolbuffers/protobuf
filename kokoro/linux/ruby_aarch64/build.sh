@@ -8,8 +8,10 @@ set -ex
 # Change to repo root
 cd $(dirname $0)/../../..
 
-# Initialize any submodules.
+# Initialize any submodules and regenerate files.
 git submodule update --init --recursive
+use_bazel.sh 5.1.1
+./regenerate_stale_files.sh
 
 kokoro/linux/aarch64/qemu_helpers/prepare_qemu.sh
 

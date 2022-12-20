@@ -19,9 +19,11 @@ export CTEST_PARALLEL_LEVEL
 cd $(dirname $0)/../../..
 
 #
-# Update submodules
+# Update submodules and regenerate files
 #
 git submodule update --init --recursive
+bazel test //src:cmake_lists_staleness_test || ./bazel-bin/src/cmake_lists_staleness_test --fix
+bazel test //src/google/protobuf:well_known_types_staleness_test || ./bazel-bin/src/google/protobuf/well_known_types_staleness_test --fix
 
 #
 # Run build
