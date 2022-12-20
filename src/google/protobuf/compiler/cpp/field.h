@@ -38,6 +38,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "google/protobuf/descriptor.h"
@@ -45,6 +46,7 @@
 #include "google/protobuf/stubs/logging.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
 #include "google/protobuf/compiler/cpp/options.h"
+#include "google/protobuf/io/printer.h"
 
 namespace google {
 namespace protobuf {
@@ -63,6 +65,8 @@ class FieldGenerator {
   FieldGenerator& operator=(const FieldGenerator&) = delete;
 
   virtual ~FieldGenerator() = 0;
+
+  virtual std::vector<io::Printer::Sub> MakeVars() const { return {}; }
 
   virtual void GeneratePrivateMembers(io::Printer* p) const = 0;
 
@@ -120,9 +124,6 @@ class FieldGenerator {
     return ArenaDtorNeeds::kNone;
   }
 
-  void SetHasBitIndex(int32_t has_bit_index);
-  void SetInlinedStringIndex(int32_t inlined_string_index);
-
  protected:
   // TODO(b/245791219): Remove these members and make this a pure interface.
   const FieldDescriptor* descriptor_;
@@ -133,9 +134,30 @@ class FieldGenerator {
 inline FieldGenerator::~FieldGenerator() = default;
 
 class FieldGenWrapper {
+ private:
+  // This function must be defined here so that the inline definitions below
+  // can see it, which is required because it has deduced return type.
+  auto PushVarsForCall(io::Printer* p) const {
+    // NOTE: we use a struct here because:
+    // * We want to ensure that order of evaluation below is well-defined,
+    //   which {...} guarantees but (...) does not.
+    // * We do not require C++17 as of writing and therefore cannot use
+    //   std::tuple with CTAD.
+    // * std::make_tuple uses (...), not {...}.
+    struct Vars {
+      decltype(p->WithVars(field_vars_)) cleanup1;
+      decltype(p->WithVars(tracker_vars_)) cleanup2;
+      decltype(p->WithVars(per_generator_vars_)) cleanup3;
+    };
+
+    return Vars{p->WithVars(field_vars_), p->WithVars(tracker_vars_),
+                p->WithVars(per_generator_vars_)};
+  }
+
  public:
   FieldGenWrapper(const FieldDescriptor* field, const Options& options,
-                  MessageSCCAnalyzer* scc_analyzer);
+                  MessageSCCAnalyzer* scc_analyzer, int32_t hasbit_index,
+                  int32_t inlined_string_index);
 
   FieldGenWrapper(const FieldGenWrapper&) = delete;
   FieldGenWrapper& operator=(const FieldGenWrapper&) = delete;
@@ -146,6 +168,7 @@ class FieldGenWrapper {
   //
   // These are placed inside the class definition.
   void GeneratePrivateMembers(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GeneratePrivateMembers(p);
   }
 
@@ -153,6 +176,7 @@ class FieldGenWrapper {
   //
   // These are placed inside the class definition.
   void GenerateStaticMembers(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateStaticMembers(p);
   }
 
@@ -161,6 +185,7 @@ class FieldGenWrapper {
   //
   // These are placed inside the class definition.
   void GenerateAccessorDeclarations(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateAccessorDeclarations(p);
   }
 
@@ -169,6 +194,7 @@ class FieldGenWrapper {
   // These are placed in namespace scope in the header after all class
   // definitions.
   void GenerateInlineAccessorDefinitions(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateInlineAccessorDefinitions(p);
   }
 
@@ -176,16 +202,19 @@ class FieldGenWrapper {
   //
   // These are placed in namespace scope in the .cc file.
   void GenerateNonInlineAccessorDefinitions(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateNonInlineAccessorDefinitions(p);
   }
 
   // Generates declarations of accessors that are for internal purposes only.
   void GenerateInternalAccessorDefinitions(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateInternalAccessorDefinitions(p);
   }
 
   // Generates definitions of accessors that are for internal purposes only.
   void GenerateInternalAccessorDeclarations(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateInternalAccessorDeclarations(p);
   }
 
@@ -193,6 +222,7 @@ class FieldGenWrapper {
   //
   // This is used to define the clear_$name$() method.
   void GenerateClearingCode(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateClearingCode(p);
   }
 
@@ -203,6 +233,7 @@ class FieldGenWrapper {
   // MessageGenerator::GenerateClear will have already checked the presence
   // bits.
   void GenerateMessageClearingCode(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateMessageClearingCode(p);
   }
 
@@ -215,6 +246,7 @@ class FieldGenWrapper {
   // Details of this usage can be found in message.cc under the
   // GenerateMergeFrom method.
   void GenerateMergingCode(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateMergingCode(p);
   }
 
@@ -222,6 +254,7 @@ class FieldGenWrapper {
   //
   // TODO(b/245791219): Document this properly.
   void GenerateCopyConstructorCode(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateCopyConstructorCode(p);
   }
 
@@ -231,6 +264,7 @@ class FieldGenWrapper {
   // This is used to define the Swap method. Details of usage can be found in
   // message.cc under the GenerateSwap method.
   void GenerateSwappingCode(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateSwappingCode(p);
   }
 
@@ -240,12 +274,14 @@ class FieldGenWrapper {
   // These go into the message class's SharedCtor() method, invoked by each of
   // the generated constructors.
   void GenerateConstructorCode(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateConstructorCode(p);
   }
 
   // Generates any code that needs to go in the class's SharedDtor() method,
   // invoked by the destructor.
   void GenerateDestructorCode(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateDestructorCode(p);
   }
 
@@ -272,6 +308,7 @@ class FieldGenWrapper {
   // (even though it's not used). Because of this, we need to comment out the
   // decltype and fallback to implicit construction.
   void GenerateAggregateInitializer(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateAggregateInitializer(p);
   }
 
@@ -282,6 +319,7 @@ class FieldGenWrapper {
   // _impl_ struct and must follow the syntax `/*decltype($field$)*/{}` (see
   // above). Does not include `:` or `,` separators.
   void GenerateConstexprAggregateInitializer(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateConstexprAggregateInitializer(p);
   }
 
@@ -292,6 +330,7 @@ class FieldGenWrapper {
   // struct and must follow the syntax `decltype($field$){from.$field$}` (see
   // above). Does not include `:` or `,` separators.
   void GenerateCopyAggregateInitializer(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateCopyAggregateInitializer(p);
   }
 
@@ -301,21 +340,27 @@ class FieldGenWrapper {
   //
   // This must also advance `target` past the written bytes.
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateSerializeWithCachedSizesToArray(p);
   }
 
   // Generates statements to compute the serialized size of this field, which
   // are placed in the message's ByteSize() method.
-  void GenerateByteSize(io::Printer* p) const { impl_->GenerateByteSize(p); }
+  void GenerateByteSize(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GenerateByteSize(p);
+  }
 
   // Generates lines to call IsInitialized() for eligible message fields. Non
   // message fields won't need to override this function.
   void GenerateIsInitialized(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateIsInitialized(p);
   }
 
   // TODO(b/245791219): Document this properly.
   void GenerateIfHasField(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
     impl_->GenerateIfHasField(p);
   }
 
@@ -329,33 +374,29 @@ class FieldGenWrapper {
 
  private:
   friend class FieldGeneratorMap;
+
   std::unique_ptr<FieldGenerator> impl_;
+  std::vector<io::Printer::Sub> field_vars_;
+  std::vector<io::Printer::Sub> tracker_vars_;
+  std::vector<io::Printer::Sub> per_generator_vars_;
 };
 
 // Convenience class which constructs FieldGenerators for a Descriptor.
 class FieldGeneratorMap {
  public:
-  FieldGeneratorMap(const Descriptor* descriptor, const Options& options,
-                    MessageSCCAnalyzer* scc_analyzer);
+  explicit FieldGeneratorMap(const Descriptor* descriptor)
+      : descriptor_(descriptor) {}
 
   FieldGeneratorMap(const FieldGeneratorMap&) = delete;
   FieldGeneratorMap& operator=(const FieldGeneratorMap&) = delete;
 
+  void Build(const Options& options, MessageSCCAnalyzer* scc_analyzer,
+             absl::Span<const int32_t> has_bit_indices,
+             absl::Span<const int32_t> inlined_string_indices);
+
   const FieldGenWrapper& get(const FieldDescriptor* field) const {
     GOOGLE_ABSL_CHECK_EQ(field->containing_type(), descriptor_);
     return fields_[field->index()];
-  }
-
-  void SetHasBitIndices(absl::Span<const int> has_bit_indices) {
-    for (int i = 0; i < descriptor_->field_count(); ++i) {
-      fields_[i].impl_->SetHasBitIndex(has_bit_indices[i]);
-    }
-  }
-
-  void SetInlinedStringIndices(absl::Span<const int> inlined_string_indices) {
-    for (int i = 0; i < descriptor_->field_count(); ++i) {
-      fields_[i].impl_->SetInlinedStringIndex(inlined_string_indices[i]);
-    }
   }
 
  private:
@@ -372,7 +413,7 @@ class FieldGeneratorMap {
 // map" and a new version that returns a new map object for use with WithVars().
 
 absl::flat_hash_map<absl::string_view, std::string> FieldVars(
-    const FieldDescriptor* desc, const Options& opts);
+    const FieldDescriptor* field, const Options& opts);
 
 absl::flat_hash_map<absl::string_view, std::string> OneofFieldVars(
     const FieldDescriptor* descriptor);

@@ -276,11 +276,7 @@ void MessageFieldGenerator::GenerateInlineAccessorDefinitions(
   } else {
     format("  $field$ = $name$;\n");
   }
-  auto nonempty = [this](const char* fn) {
-    auto var_it = variables_.find(fn);
-    return var_it != variables_.end() && !var_it->second.empty();
-  };
-  if (nonempty("set_hasbit") || nonempty("clear_hasbit")) {
+  if (internal::cpp::HasHasbit(descriptor_)) {
     format(
         "  if ($name$) {\n"
         "    $set_hasbit$\n"

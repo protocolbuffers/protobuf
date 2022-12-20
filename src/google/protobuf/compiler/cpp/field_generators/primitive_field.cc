@@ -35,13 +35,15 @@
 #include <memory>
 #include <string>
 #include <tuple>
+#include <vector>
 
+#include "google/protobuf/descriptor.h"
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/stubs/logging.h"
 #include "absl/memory/memory.h"
-#include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/field_generators/generators.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
+#include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/wire_format.h"
@@ -51,7 +53,9 @@ namespace protobuf {
 namespace compiler {
 namespace cpp {
 namespace {
-using internal::WireFormatLite;
+using ::google::protobuf::internal::WireFormat;
+using ::google::protobuf::internal::WireFormatLite;
+using Sub = ::google::protobuf::io::Printer::Sub;
 
 // For encodings with fixed sizes, returns that size in bytes.  Otherwise
 // returns -1.
@@ -103,25 +107,20 @@ int FixedSize(FieldDescriptor::Type type) {
   return -1;
 }
 
-void SetPrimitiveVariables(
-    const FieldDescriptor* descriptor,
-    absl::flat_hash_map<absl::string_view, std::string>* variables,
-    const Options& options) {
-  SetCommonFieldVariables(descriptor, variables, options);
-  (*variables)["type"] = PrimitiveTypeName(options, descriptor->cpp_type());
-  (*variables)["default"] = DefaultValue(options, descriptor);
-  (*variables)["cached_byte_size_name"] = MakeVarintCachedSizeName(descriptor);
-  bool cold = ShouldSplit(descriptor, options);
-  (*variables)["cached_byte_size_field"] =
-      MakeVarintCachedSizeFieldName(descriptor, cold);
-  (*variables)["tag"] = absl::StrCat(internal::WireFormat::MakeTag(descriptor));
-  int fixed_size = FixedSize(descriptor->type());
-  if (fixed_size != -1) {
-    (*variables)["fixed_size"] = absl::StrCat(fixed_size);
-  }
-  (*variables)["wire_format_field_type"] = FieldDescriptorProto_Type_Name(
-      static_cast<FieldDescriptorProto_Type>(descriptor->type()));
-  (*variables)["full_name"] = descriptor->full_name();
+std::vector<Sub> Vars(const FieldDescriptor* field, const Options& options) {
+  bool cold = ShouldSplit(field, options);
+  return {
+      {"type", PrimitiveTypeName(options, field->cpp_type())},
+      {"default", DefaultValue(options, field)},
+      {"cached_byte_size_name", MakeVarintCachedSizeName(field)},
+      {"cached_byte_size_field", MakeVarintCachedSizeFieldName(field, cold)},
+      {"tag", WireFormat::MakeTag(field)},
+      {"fixed_size", FixedSize(field->type())},
+      {"wire_format_field_type",
+       FieldDescriptorProto_Type_Name(
+           static_cast<FieldDescriptorProto::Type>(field->type()))},
+      {"full_name", field->full_name()},
+  };
 }
 
 class PrimitiveFieldGenerator : public FieldGenerator {
@@ -129,6 +128,10 @@ class PrimitiveFieldGenerator : public FieldGenerator {
   PrimitiveFieldGenerator(const FieldDescriptor* descriptor,
                           const Options& options);
   ~PrimitiveFieldGenerator() override = default;
+
+  std::vector<Sub> MakeVars() const override {
+    return Vars(descriptor_, options_);
+  }
 
   void GeneratePrivateMembers(io::Printer* printer) const override;
   void GenerateAccessorDeclarations(io::Printer* printer) const override;
@@ -165,6 +168,10 @@ class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
                                   const Options& options);
   ~RepeatedPrimitiveFieldGenerator() override = default;
 
+  std::vector<Sub> MakeVars() const override {
+    return Vars(descriptor_, options_);
+  }
+
   void GeneratePrivateMembers(io::Printer* printer) const override;
   void GenerateAccessorDeclarations(io::Printer* printer) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* printer) const override;
@@ -187,19 +194,17 @@ class RepeatedPrimitiveFieldGenerator : public FieldGenerator {
 
 PrimitiveFieldGenerator::PrimitiveFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options)
-    : FieldGenerator(descriptor, options) {
-  SetPrimitiveVariables(descriptor, &variables_, options);
-}
+    : FieldGenerator(descriptor, options) {}
 
 void PrimitiveFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("$type$ $name$_;\n");
 }
 
 void PrimitiveFieldGenerator::GenerateAccessorDeclarations(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("$deprecated_attr$$type$ ${1$$name$$}$() const;\n", descriptor_);
   format("$deprecated_attr$void ${1$set_$name$$}$($type$ value);\n",
          std::make_tuple(descriptor_, GeneratedCodeInfo::Annotation::SET));
@@ -213,7 +218,7 @@ void PrimitiveFieldGenerator::GenerateAccessorDeclarations(
 
 void PrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format(
       "inline $type$ $classname$::_internal_$name$() const {\n"
       "  return $field$;\n"
@@ -236,29 +241,29 @@ void PrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
 }
 
 void PrimitiveFieldGenerator::GenerateClearingCode(io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("$field$ = $default$;\n");
 }
 
 void PrimitiveFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("_this->_internal_set_$name$(from._internal_$name$());\n");
 }
 
 void PrimitiveFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("swap($field$, other->$field$);\n");
 }
 
 void PrimitiveFieldGenerator::GenerateCopyConstructorCode(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("_this->$field$ = from.$field$;\n");
 }
 
 void PrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format(
       "target = stream->EnsureSpace(target);\n"
       "target = "
@@ -267,7 +272,7 @@ void PrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
 }
 
 void PrimitiveFieldGenerator::GenerateByteSize(io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   int fixed_size = FixedSize(descriptor_->type());
   if (fixed_size == -1) {
     if (internal::WireFormat::TagSize(descriptor_->number(),
@@ -290,13 +295,13 @@ void PrimitiveFieldGenerator::GenerateByteSize(io::Printer* printer) const {
 
 void PrimitiveFieldGenerator::GenerateConstexprAggregateInitializer(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("/*decltype($field$)*/$default$");
 }
 
 void PrimitiveFieldGenerator::GenerateAggregateInitializer(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   if (ShouldSplit(descriptor_, options_)) {
     format("decltype(Impl_::Split::$name$_){$default$}");
     return;
@@ -306,7 +311,7 @@ void PrimitiveFieldGenerator::GenerateAggregateInitializer(
 
 void PrimitiveFieldGenerator::GenerateCopyAggregateInitializer(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("decltype($field$){}");
 }
 
@@ -320,7 +325,7 @@ PrimitiveOneofFieldGenerator::PrimitiveOneofFieldGenerator(
 
 void PrimitiveOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format(
       "inline $type$ $classname$::_internal_$name$() const {\n"
       "  if ($has_field$) {\n"
@@ -349,7 +354,7 @@ void PrimitiveOneofFieldGenerator::GenerateInlineAccessorDefinitions(
 
 void PrimitiveOneofFieldGenerator::GenerateClearingCode(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("$field$ = $default$;\n");
 }
 
@@ -360,7 +365,7 @@ void PrimitiveOneofFieldGenerator::GenerateSwappingCode(
 
 void PrimitiveOneofFieldGenerator::GenerateConstructorCode(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("$ns$::_$classname$_default_instance_.$field$ = $default$;\n");
 }
 
@@ -368,21 +373,11 @@ void PrimitiveOneofFieldGenerator::GenerateConstructorCode(
 
 RepeatedPrimitiveFieldGenerator::RepeatedPrimitiveFieldGenerator(
     const FieldDescriptor* descriptor, const Options& options)
-    : FieldGenerator(descriptor, options) {
-  SetPrimitiveVariables(descriptor, &variables_, options);
-
-  if (descriptor->is_packed()) {
-    variables_["packed_reader"] = "ReadPackedPrimitive";
-    variables_["repeated_reader"] = "ReadRepeatedPrimitiveNoInline";
-  } else {
-    variables_["packed_reader"] = "ReadPackedPrimitiveNoInline";
-    variables_["repeated_reader"] = "ReadRepeatedPrimitive";
-  }
-}
+    : FieldGenerator(descriptor, options) {}
 
 void RepeatedPrimitiveFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("::$proto_ns$::RepeatedField< $type$ > $name$_;\n");
   if (descriptor_->is_packed() && FixedSize(descriptor_->type()) == -1 &&
       HasGeneratedMethods(descriptor_->file(), options_)) {
@@ -394,7 +389,7 @@ void RepeatedPrimitiveFieldGenerator::GeneratePrivateMembers(
 
 void RepeatedPrimitiveFieldGenerator::GenerateAccessorDeclarations(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format(
       "private:\n"
       "$type$ ${1$_internal_$name$$}$(int index) const;\n"
@@ -416,7 +411,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateAccessorDeclarations(
 
 void RepeatedPrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format(
       "inline $type$ $classname$::_internal_$name$(int index) const {\n"
       "  return $field$.Get(index);\n"
@@ -463,31 +458,31 @@ void RepeatedPrimitiveFieldGenerator::GenerateInlineAccessorDefinitions(
 
 void RepeatedPrimitiveFieldGenerator::GenerateClearingCode(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("$field$.Clear();\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("_this->$field$.MergeFrom(from.$field$);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateSwappingCode(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("$field$.InternalSwap(&other->$field$);\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateDestructorCode(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("$field$.~RepeatedField();\n");
 }
 
 void RepeatedPrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   if (descriptor_->is_packed()) {
     if (FixedSize(descriptor_->type()) == -1) {
       format(
@@ -519,7 +514,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateSerializeWithCachedSizesToArray(
 
 void RepeatedPrimitiveFieldGenerator::GenerateByteSize(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("{\n");
   format.Indent();
   int fixed_size = FixedSize(descriptor_->type());
@@ -560,7 +555,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateByteSize(
 
 void RepeatedPrimitiveFieldGenerator::GenerateConstexprAggregateInitializer(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("/*decltype($field$)*/{}");
   if (descriptor_->is_packed() && FixedSize(descriptor_->type()) == -1 &&
       HasGeneratedMethods(descriptor_->file(), options_)) {
@@ -570,7 +565,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateConstexprAggregateInitializer(
 
 void RepeatedPrimitiveFieldGenerator::GenerateAggregateInitializer(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("decltype($field$){arena}");
   if (descriptor_->is_packed() && FixedSize(descriptor_->type()) == -1 &&
       HasGeneratedMethods(descriptor_->file(), options_)) {
@@ -582,7 +577,7 @@ void RepeatedPrimitiveFieldGenerator::GenerateAggregateInitializer(
 
 void RepeatedPrimitiveFieldGenerator::GenerateCopyAggregateInitializer(
     io::Printer* printer) const {
-  Formatter format(printer, variables_);
+  Formatter format(printer);
   format("decltype($field$){from.$field$}");
   if (descriptor_->is_packed() && FixedSize(descriptor_->type()) == -1 &&
       HasGeneratedMethods(descriptor_->file(), options_)) {

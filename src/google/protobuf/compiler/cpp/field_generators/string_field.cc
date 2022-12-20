@@ -382,11 +382,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
       "inline void $classname$::set_allocated_$name$(std::string* $name$) {\n"
       "$maybe_prepare_split_message$");
 
-  auto nonempty = [this](const char* fn) {
-    auto var_it = variables_.find(fn);
-    return var_it != variables_.end() && !var_it->second.empty();
-  };
-  if (nonempty("set_hasbit") || nonempty("clear_hasbit")) {
+  if (internal::cpp::HasHasbit(descriptor_)) {
     format(
         "  if ($name$ != nullptr) {\n"
         "    $set_hasbit$\n"
@@ -394,6 +390,7 @@ void StringFieldGenerator::GenerateInlineAccessorDefinitions(
         "    $clear_hasbit$\n"
         "  }\n");
   }
+
   if (!inlined_) {
     format("  $field$.SetAllocated($name$, GetArenaForAllocation());\n");
     if (descriptor_->default_value_string().empty()) {
