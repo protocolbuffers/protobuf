@@ -42,7 +42,7 @@ def upb_deps():
         http_archive,
         name = "rules_pkg",
         url = "https://github.com/bazelbuild/rules_pkg/archive/refs/tags/{}.tar.gz".format(rules_pkg_version),
-        sha256 = "8a298e832762eda1830597d64fe7db58178aa84cd5926d76d5b744d6558941c2",
+        sha256 = "e110311d898c1ff35f39829ae3ec56e39c0ef92eb44de74418982a114f51e132",
     )
 
     rules_python_version = "0.14.0"  # Latest @ November 20, 2022
