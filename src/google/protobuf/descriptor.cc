@@ -130,18 +130,6 @@ std::string ToJsonName(const std::string& input) {
   return result;
 }
 
-template <typename OptionsT>
-bool IsLegacyJsonFieldConflictEnabled(const OptionsT& options) {
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-  return options.deprecated_legacy_json_field_conflicts();
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
-}
-
 // Backport of fold expressions for the comma operator to C++11.
 // Usage:  Fold({expr...});
 // Guaranteed to evaluate left-to-right
@@ -3882,6 +3870,8 @@ class DescriptorBuilder {
                           internal::FlatAllocator& alloc);
   void BuildOneof(const OneofDescriptorProto& proto, Descriptor* parent,
                   OneofDescriptor* result, internal::FlatAllocator& alloc);
+  void CheckEnumValueUniqueness(const EnumDescriptorProto& proto,
+                                const EnumDescriptor* result);
   void BuildEnum(const EnumDescriptorProto& proto, const Descriptor* parent,
                  EnumDescriptor* result, internal::FlatAllocator& alloc);
   void BuildEnumValue(const EnumValueDescriptorProto& proto,
@@ -3892,15 +3882,6 @@ class DescriptorBuilder {
   void BuildMethod(const MethodDescriptorProto& proto,
                    const ServiceDescriptor* parent, MethodDescriptor* result,
                    internal::FlatAllocator& alloc);
-
-  void CheckFieldJsonNameUniqueness(const DescriptorProto& proto,
-                                    const Descriptor* result);
-  void CheckFieldJsonNameUniqueness(const std::string& message_name,
-                                    const DescriptorProto& message,
-                                    FileDescriptor::Syntax syntax,
-                                    bool use_custom_names);
-  void CheckEnumValueUniqueness(const EnumDescriptorProto& proto,
-                                const EnumDescriptor* result);
 
   void LogUnusedDependency(const FileDescriptorProto& proto,
                            const FileDescriptor* result);
@@ -5458,8 +5439,6 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   }
 
 
-  // Check that fields aren't using reserved names or numbers and that they
-  // aren't using extension numbers.
   for (int i = 0; i < result->field_count(); i++) {
     const FieldDescriptor* field = result->field(i);
     for (int j = 0; j < result->extension_range_count(); j++) {
@@ -5520,103 +5499,6 @@ void DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
                                   range2->start, range2->end - 1, range1->start,
                                   range1->end - 1));
       }
-    }
-  }
-}
-
-void DescriptorBuilder::CheckFieldJsonNameUniqueness(
-    const DescriptorProto& proto, const Descriptor* result) {
-  FileDescriptor::Syntax syntax = result->file()->syntax();
-  std::string message_name = result->full_name();
-  if (IsLegacyJsonFieldConflictEnabled(result->options())) {
-    if (syntax == FileDescriptor::SYNTAX_PROTO3) {
-      // Only check default JSON names for conflicts in proto3.  This is legacy
-      // behavior that will be removed in a later version.
-      CheckFieldJsonNameUniqueness(message_name, proto, syntax, false);
-    }
-  } else {
-    // Check both with and without taking json_name into consideration.  This is
-    // needed for field masks, which don't use json_name.
-    CheckFieldJsonNameUniqueness(message_name, proto, syntax, false);
-    CheckFieldJsonNameUniqueness(message_name, proto, syntax, true);
-  }
-}
-
-namespace {
-// Helpers for function below
-
-struct JsonNameDetails {
-  const FieldDescriptorProto* field;
-  std::string orig_name;
-  bool is_custom;
-};
-
-JsonNameDetails GetJsonNameDetails(const FieldDescriptorProto* field,
-                                   bool use_custom) {
-  std::string default_json_name = ToJsonName(field->name());
-  if (use_custom && field->has_json_name() &&
-      field->json_name() != default_json_name) {
-    return {field, field->json_name(), true};
-  }
-  return {field, default_json_name, false};
-}
-
-bool JsonNameLooksLikeExtension(std::string name) {
-  return !name.empty() && name.front() == '[' && name.back() == ']';
-}
-
-}  // namespace
-
-void DescriptorBuilder::CheckFieldJsonNameUniqueness(
-    const std::string& message_name, const DescriptorProto& message,
-    FileDescriptor::Syntax syntax, bool use_custom_names) {
-  absl::flat_hash_map<std::string, JsonNameDetails> name_to_field;
-  for (const FieldDescriptorProto& field : message.field()) {
-    JsonNameDetails details = GetJsonNameDetails(&field, use_custom_names);
-    if (details.is_custom && JsonNameLooksLikeExtension(details.orig_name)) {
-      std::string error_message = absl::StrFormat(
-          "The custom JSON name of field \"%s\" (\"%s\") is invalid: "
-          "JSON names may not start with '[' and end with ']'.",
-          field.name(), details.orig_name);
-      AddError(message_name, field, DescriptorPool::ErrorCollector::NAME,
-               error_message);
-      continue;
-    }
-    auto it_inserted = name_to_field.try_emplace(details.orig_name, details);
-    if (it_inserted.second) {
-      continue;
-    }
-    JsonNameDetails& match = it_inserted.first->second;
-    if (use_custom_names && !details.is_custom && !match.is_custom) {
-      // if this pass is considering custom JSON names, but neither of the
-      // names involved in the conflict are custom, don't bother with a
-      // message. That will have been reported from other pass (non-custom
-      // JSON names).
-      continue;
-    }
-    absl::string_view this_type = details.is_custom ? "custom" : "default";
-    absl::string_view existing_type = match.is_custom ? "custom" : "default";
-    // If the matched name differs (which it can only differ in case), include
-    // it in the error message, for maximum clarity to user.
-    std::string name_suffix = "";
-    if (details.orig_name != match.orig_name) {
-      name_suffix = absl::StrCat(" (\"", match.orig_name, "\")");
-    }
-    std::string error_message = absl::StrFormat(
-        "The %s JSON name of field \"%s\" (\"%s\") conflicts "
-        "with the %s JSON name of field \"%s\"%s.",
-        this_type, field.name(), details.orig_name, existing_type,
-        match.field->name(), name_suffix);
-
-    bool involves_default = !details.is_custom || !match.is_custom;
-    if (syntax == FileDescriptor::SYNTAX_PROTO2 && involves_default) {
-      // TODO(b/261750676) Upgrade this to an error once downstream proto2 files
-      // have been fixed.
-      AddWarning(message_name, field, DescriptorPool::ErrorCollector::NAME,
-                 error_message);
-    } else {
-      AddError(message_name, field, DescriptorPool::ErrorCollector::NAME,
-               error_message);
     }
   }
 }
@@ -6035,12 +5917,13 @@ void DescriptorBuilder::CheckEnumValueUniqueness(
   //     NAME_TYPE_LAST_NAME = 2,
   //   }
   PrefixRemover remover(result->name());
-  absl::flat_hash_map<std::string, const EnumValueDescriptor*> values;
+  std::map<std::string, const EnumValueDescriptor*> values;
   for (int i = 0; i < result->value_count(); i++) {
     const EnumValueDescriptor* value = result->value(i);
     std::string stripped =
         EnumValueToPascalCase(remover.MaybeRemove(value->name()));
-    auto insert_result = values.try_emplace(stripped, value);
+    std::pair<std::map<std::string, const EnumValueDescriptor*>::iterator, bool>
+        insert_result = values.insert(std::make_pair(stripped, value));
     bool inserted = insert_result.second;
 
     // We don't throw the error if the two conflicting symbols are identical, or
@@ -6051,21 +5934,22 @@ void DescriptorBuilder::CheckEnumValueUniqueness(
     // stripping should de-dup the labels in this case).
     if (!inserted && insert_result.first->second->name() != value->name() &&
         insert_result.first->second->number() != value->number()) {
-      std::string error_message = absl::StrFormat(
-          "Enum name %s has the same name as %s if you ignore case and strip "
-          "out the enum name prefix (if any). (If you are using allow_alias, "
-          "please assign the same numeric value to both enums.)",
-          value->name(), values[stripped]->name());
+      std::string error_message =
+          "Enum name " + value->name() + " has the same name as " +
+          values[stripped]->name() +
+          " if you ignore case and strip out the enum name prefix (if any). "
+          "This is error-prone and can lead to undefined behavior. "
+          "Please avoid doing this. If you are using allow_alias, please "
+          "assign the same numeric value to both enums.";
       // There are proto2 enums out there with conflicting names, so to preserve
       // compatibility we issue only a warning for proto2.
-      if (IsLegacyJsonFieldConflictEnabled(result->options()) &&
-          result->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
+      if (result->file()->syntax() == FileDescriptor::SYNTAX_PROTO2) {
         AddWarning(value->full_name(), proto.value(i),
                    DescriptorPool::ErrorCollector::NAME, error_message);
-        continue;
+      } else {
+        AddError(value->full_name(), proto.value(i),
+                 DescriptorPool::ErrorCollector::NAME, error_message);
       }
-      AddError(value->full_name(), proto.value(i),
-               DescriptorPool::ErrorCollector::NAME, error_message);
     }
   }
 }
@@ -6118,6 +6002,8 @@ void DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
     result->reserved_names_[i] =
         alloc.AllocateStrings(proto.reserved_name(i));
   }
+
+  CheckEnumValueUniqueness(proto, result);
 
   // Copy options.
   result->options_ = nullptr;  // Set to default_instance later if necessary.
@@ -6927,6 +6813,20 @@ void DescriptorBuilder::ValidateProto3(FileDescriptor* file,
   }
 }
 
+static std::string ToLowercaseWithoutUnderscores(const std::string& name) {
+  std::string result;
+  for (char character : name) {
+    if (character != '_') {
+      if (character >= 'A' && character <= 'Z') {
+        result.push_back(character - 'A' + 'a');
+      } else {
+        result.push_back(character);
+      }
+    }
+  }
+  return result;
+}
+
 void DescriptorBuilder::ValidateProto3Message(Descriptor* message,
                                               const DescriptorProto& proto) {
   for (int i = 0; i < message->nested_type_count(); ++i) {
@@ -6950,6 +6850,25 @@ void DescriptorBuilder::ValidateProto3Message(Descriptor* message,
     // Using MessageSet doesn't make sense since we disallow extensions.
     AddError(message->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
              "MessageSet is not supported in proto3.");
+  }
+
+  // In proto3, we reject field names if they conflict in camelCase.
+  // Note that we currently enforce a stricter rule: Field names must be
+  // unique after being converted to lowercase with underscores removed.
+  std::map<std::string, const FieldDescriptor*> name_to_field;
+  for (int i = 0; i < message->field_count(); ++i) {
+    std::string lowercase_name =
+        ToLowercaseWithoutUnderscores(message->field(i)->name());
+    if (name_to_field.find(lowercase_name) != name_to_field.end()) {
+      AddError(message->full_name(), proto.field(i),
+               DescriptorPool::ErrorCollector::NAME,
+               "The JSON camel-case name of field \"" +
+                   message->field(i)->name() + "\" conflicts with field \"" +
+                   name_to_field[lowercase_name]->name() + "\". This is not " +
+                   "allowed in proto3.");
+    } else {
+      name_to_field[lowercase_name] = message->field(i);
+    }
   }
 }
 
@@ -7003,8 +6922,6 @@ void DescriptorBuilder::ValidateMessageOptions(Descriptor* message,
   VALIDATE_OPTIONS_FROM_ARRAY(message, nested_type, Message);
   VALIDATE_OPTIONS_FROM_ARRAY(message, enum_type, Enum);
   VALIDATE_OPTIONS_FROM_ARRAY(message, extension, Field);
-
-  CheckFieldJsonNameUniqueness(proto, message);
 
   const int64_t max_extension_range =
       static_cast<int64_t>(message->options().message_set_wire_format()
@@ -7107,9 +7024,6 @@ void DescriptorBuilder::ValidateFieldOptions(
 void DescriptorBuilder::ValidateEnumOptions(EnumDescriptor* enm,
                                             const EnumDescriptorProto& proto) {
   VALIDATE_OPTIONS_FROM_ARRAY(enm, value, EnumValue);
-
-  CheckEnumValueUniqueness(proto, enm);
-
   if (!enm->options().has_allow_alias() || !enm->options().allow_alias()) {
     std::map<int, std::string> used_values;
     for (int i = 0; i < enm->value_count(); ++i) {
