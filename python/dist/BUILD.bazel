@@ -27,6 +27,8 @@ load("//bazel:py_proto_library.bzl", "py_proto_library")
 load(":dist.bzl", "py_dist", "py_dist_module")
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@com_google_protobuf//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")
+load("@rules_pkg//:mappings.bzl", "pkg_files")
+load("@rules_pkg//:pkg.bzl", "pkg_tar")
 load("@rules_python//python:packaging.bzl", "py_wheel")
 load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
 
@@ -43,7 +45,6 @@ py_proto_library(
     deps = [
         "@com_google_protobuf//:any_proto",
         "@com_google_protobuf//:api_proto",
-        "@com_google_protobuf//:compiler_plugin_proto",
         "@com_google_protobuf//:descriptor_proto",
         "@com_google_protobuf//:duration_proto",
         "@com_google_protobuf//:empty_proto",
@@ -54,6 +55,11 @@ py_proto_library(
         "@com_google_protobuf//:type_proto",
         "@com_google_protobuf//:wrappers_proto",
     ],
+)
+
+py_proto_library(
+    name = "well_known_proto_compiler_py_pb2",
+    deps = ["@com_google_protobuf//:compiler_plugin_proto"],
 )
 
 config_setting(
@@ -187,6 +193,38 @@ selects.config_setting_group(
     ],
 )
 
+pkg_files(
+    name = "generated_wkt",
+    srcs = [
+        ":well_known_proto_py_pb2",
+    ],
+    prefix = "google/protobuf",
+)
+
+pkg_files(
+    name = "generated_wkt_compiler",
+    srcs = [
+        ":well_known_proto_compiler_py_pb2",
+    ],
+    prefix = "google/protobuf/compiler",
+)
+
+pkg_tar(
+    name = "source_wheel",
+    extension = "tar.gz",
+    srcs = [
+        ":generated_wkt",
+        ":generated_wkt_compiler",
+        "setup.py",
+        "//:LICENSE",
+        "//python:message_extension",
+        "@com_google_protobuf//python:python_source_files",
+    ],
+    package_file_name = "protobuf-%s.tar.gz" % PROTOBUF_PYTHON_VERSION,
+    package_dir = "protobuf-%s" % PROTOBUF_PYTHON_VERSION,
+)
+
+
 py_wheel(
     name = "binary_wheel",
     abi = select({
@@ -240,6 +278,7 @@ py_wheel(
     version = PROTOBUF_PYTHON_VERSION,
     deps = [
         ":message_mod",
+        ":well_known_proto_compiler_py_pb2",
         ":well_known_proto_py_pb2",
         "@com_google_protobuf//:python_srcs",
     ],
@@ -278,6 +317,7 @@ py_wheel(
     version = PROTOBUF_PYTHON_VERSION,
     deps = [
         ":well_known_proto_py_pb2",
+        ":well_known_proto_compiler_py_pb2",
         "@com_google_protobuf//:python_srcs",
     ],
 )

@@ -241,6 +241,9 @@ class WorkspaceFileFunctions(object):
   def rules_fuzzing_init(self):
     pass
 
+  def rules_pkg_dependencies(self):
+    pass
+
   def system_python(self, **kwargs):
     pass
 
